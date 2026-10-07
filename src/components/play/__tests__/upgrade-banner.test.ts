@@ -13,6 +13,9 @@ import { FINAL_REASON_TEXT, noticeOf } from '../UpgradeBanner';
 const REASONS = Object.keys(FINAL_REASON_TEXT) as DraftFinalReason[];
 
 describe('noticeOf', () => {
+  it('an unchanged upgrade never claims all requested actions are present', () => {
+    expect(noticeOf({ kind: 'final', reason: 'UNCHANGED' })?.text).toBe("The full-detail version didn't add more. Keep playing the quick one.");
+  });
   it('idle nic neukáže', () => {
     expect(noticeOf({ kind: 'idle' })).toBeNull();
   });
@@ -32,8 +35,9 @@ describe('noticeOf', () => {
   });
 
   it('všech 10 důvodů má vlastní větu', () => {
-    expect(REASONS).toHaveLength(10);
-    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(10);
+    expect(REASONS).toHaveLength(11);
+    expect(REASONS).toContain('ACTION_LOST');
+    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(11);
     expect(noticeOf({ kind: 'final', reason: 'MODEL_UNAVAILABLE' })?.text).toContain("Couldn't make the full-detail version right now");
     expect(noticeOf({ kind: 'final', reason: 'NOT_PLAYABLE' })?.text).toBe("The full-detail version wasn't playable in a test run. The quick one stays.");
   });

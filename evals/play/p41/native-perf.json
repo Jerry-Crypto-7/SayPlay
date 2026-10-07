@@ -1,0 +1,993 @@
+{
+  "version": "p28e-play-perf-v1",
+  "measuredAt": "2026-10-06T15:57:15.247Z",
+  "browser": "151.0.7922.34",
+  "note": "Mobile profile is emulation: CPU throttled ×4 and Fast 4G via CDP on this machine's GPU, not a phone. Values per cell are medians of the runs.",
+  "repeats": 3,
+  "results": {
+    "drive/moto-g-power-emulated": {
+      "game": "drive",
+      "sentence": "game in a car with shooting and racing",
+      "profile": "moto-g-power-emulated",
+      "cpuThrottle": 4,
+      "network": {
+        "offline": false,
+        "latency": 165,
+        "downloadThroughput": 1012500,
+        "uploadThroughput": 168750
+      },
+      "median": {
+        "firstDrawMs": 3964.3000000715256,
+        "firstTickMs": 4118.300000071526,
+        "fpsP50": 59.88023952095548,
+        "fpsP5": 29.94011976047774,
+        "maxFrameMs": 83.29999999999927,
+        "drawnFpsPlaying": 43.098718012670226,
+        "drawnFpsPaused": 0,
+        "drawnFpsEnded": 24.528489509292587,
+        "callsMedian": 73,
+        "trianglesMedian": 12629,
+        "glbTransferBytes": 219369,
+        "jsTransferBytes": 892102,
+        "allTransferBytes": 1185261,
+        "glbShareOfTransfer": 0.18508075436549418
+      },
+      "runs": [
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 4371,
+          "firstTickMs": 4711.799999952316,
+          "glb": {
+            "count": 9,
+            "transferBytes": 219369,
+            "encodedBytes": 216669
+          },
+          "js": {
+            "count": 31,
+            "transferBytes": 892102,
+            "encodedBytes": 882802
+          },
+          "all": {
+            "count": 53,
+            "transferBytes": 1185261,
+            "encodedBytes": 1169361
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10023.5,
+            "rafFrames": 432,
+            "drawnFrames": 432,
+            "rafFps": 43.098718012670226,
+            "drawnFps": 43.098718012670226,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 29.94011976047774,
+            "maxFrameMs": 66.60000000000036,
+            "callsMedian": 73,
+            "callsMax": 92,
+            "trianglesMedian": 12613,
+            "trianglesMax": 20077
+          },
+          "paused": {
+            "ms": 3016.2999999523163,
+            "rafFrames": 180,
+            "drawnFrames": 0,
+            "rafFps": 59.67576169573503,
+            "drawnFps": 0,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.52380952380888,
+            "maxFrameMs": 33.400000000000546,
+            "callsMedian": null,
+            "callsMax": null,
+            "trianglesMedian": null,
+            "trianglesMax": null
+          },
+          "ended": {
+            "ms": 3011.7000000476837,
+            "rafFrames": 167,
+            "drawnFrames": 76,
+            "rafFps": 55.450410066525855,
+            "drawnFps": 25.23491715602374,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 150,
+            "callsMedian": 21,
+            "callsMax": 21,
+            "trianglesMedian": 8499,
+            "trianglesMax": 8499
+          },
+          "endState": "won",
+          "errors": []
+        },
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 3820.5999999046326,
+          "firstTickMs": 3955.1999999284744,
+          "glb": {
+            "count": 9,
+            "transferBytes": 219369,
+            "encodedBytes": 216669
+          },
+          "js": {
+            "count": 31,
+            "transferBytes": 892102,
+            "encodedBytes": 882802
+          },
+          "all": {
+            "count": 53,
+            "transferBytes": 1185261,
+            "encodedBytes": 1169361
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10021.599999904633,
+            "rafFrames": 451,
+            "drawnFrames": 451,
+            "rafFps": 45.00279396546378,
+            "drawnFps": 45.00279396546378,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 29.94011976047774,
+            "maxFrameMs": 83.29999999999927,
+            "callsMedian": 73,
+            "callsMax": 92,
+            "trianglesMedian": 12675,
+            "trianglesMax": 20077
+          },
+          "paused": {
+            "ms": 3013.2000000476837,
+            "rafFrames": 182,
+            "drawnFrames": 0,
+            "rafFps": 60.400902693853666,
+            "drawnFps": 0,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.52380952380888,
+            "maxFrameMs": 33.400000000000546,
+            "callsMedian": null,
+            "callsMax": null,
+            "trianglesMedian": null,
+            "trianglesMax": null
+          },
+          "ended": {
+            "ms": 3016.899999976158,
+            "rafFrames": 161,
+            "drawnFrames": 74,
+            "rafFps": 53.366037986433874,
+            "drawnFps": 24.528489509292587,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 30.030030030027405,
+            "maxFrameMs": 183.29999999999927,
+            "callsMedian": 21,
+            "callsMax": 21,
+            "trianglesMedian": 8499,
+            "trianglesMax": 8499
+          },
+          "endState": "won",
+          "errors": []
+        },
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 3964.3000000715256,
+          "firstTickMs": 4118.300000071526,
+          "glb": {
+            "count": 9,
+            "transferBytes": 219369,
+            "encodedBytes": 216669
+          },
+          "js": {
+            "count": 31,
+            "transferBytes": 892102,
+            "encodedBytes": 882802
+          },
+          "all": {
+            "count": 53,
+            "transferBytes": 1185261,
+            "encodedBytes": 1169361
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10033.600000023842,
+            "rafFrames": 396,
+            "drawnFrames": 396,
+            "rafFps": 39.46738957094752,
+            "drawnFps": 39.46738957094752,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 29.94011976047774,
+            "maxFrameMs": 116.69999999999891,
+            "callsMedian": 73,
+            "callsMax": 92,
+            "trianglesMedian": 12629,
+            "trianglesMax": 20077
+          },
+          "paused": {
+            "ms": 3006.5,
+            "rafFrames": 179,
+            "drawnFrames": 0,
+            "rafFps": 59.537668385165475,
+            "drawnFps": 0,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.88023952095548,
+            "maxFrameMs": 33.400000000000546,
+            "callsMedian": null,
+            "callsMax": null,
+            "trianglesMedian": null,
+            "trianglesMax": null
+          },
+          "ended": {
+            "ms": 3014.1999999284744,
+            "rafFrames": 153,
+            "drawnFrames": 61,
+            "rafFps": 50.759737244917595,
+            "drawnFps": 20.237542300261264,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 29.940119760481,
+            "maxFrameMs": 216.59999999999854,
+            "callsMedian": 21,
+            "callsMax": 21,
+            "trianglesMedian": 8499,
+            "trianglesMax": 8499
+          },
+          "endState": "won",
+          "errors": []
+        }
+      ]
+    },
+    "glide/moto-g-power-emulated": {
+      "game": "glide",
+      "sentence": "a fish swims through a coral reef",
+      "profile": "moto-g-power-emulated",
+      "cpuThrottle": 4,
+      "network": {
+        "offline": false,
+        "latency": 165,
+        "downloadThroughput": 1012500,
+        "uploadThroughput": 168750
+      },
+      "median": {
+        "firstDrawMs": 3761.399999976158,
+        "firstTickMs": 3933.899999976158,
+        "fpsP50": 59.880239520962,
+        "fpsP5": 59.523809523812105,
+        "maxFrameMs": 66.70000000000073,
+        "drawnFpsPlaying": 58.25378300451977,
+        "drawnFpsPaused": 0,
+        "drawnFpsEnded": 26.83452045718072,
+        "callsMedian": 30,
+        "trianglesMedian": 5793,
+        "glbTransferBytes": 154672,
+        "jsTransferBytes": 892102,
+        "allTransferBytes": 1116842,
+        "glbShareOfTransfer": 0.13849049373143202
+      },
+      "runs": [
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 3761.399999976158,
+          "firstTickMs": 3933.899999976158,
+          "glb": {
+            "count": 7,
+            "transferBytes": 154672,
+            "encodedBytes": 152572
+          },
+          "js": {
+            "count": 31,
+            "transferBytes": 892102,
+            "encodedBytes": 882802
+          },
+          "all": {
+            "count": 51,
+            "transferBytes": 1116842,
+            "encodedBytes": 1101542
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10025.100000023842,
+            "rafFrames": 584,
+            "drawnFrames": 584,
+            "rafFps": 58.25378300451977,
+            "drawnFps": 58.25378300451977,
+            "fpsP50": 59.880239520962,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 66.69999999999891,
+            "callsMedian": 30,
+            "callsMax": 40,
+            "trianglesMedian": 5793,
+            "trianglesMax": 8153
+          },
+          "paused": {
+            "ms": 3019.899999976158,
+            "rafFrames": 181,
+            "drawnFrames": 0,
+            "rafFps": 59.93575946270704,
+            "drawnFps": 0,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.88023952095548,
+            "maxFrameMs": 33.30000000000018,
+            "callsMedian": null,
+            "callsMax": null,
+            "trianglesMedian": null,
+            "trianglesMax": null
+          },
+          "ended": {
+            "ms": 3017.7999999523163,
+            "rafFrames": 172,
+            "drawnFrames": 84,
+            "rafFps": 56.995162039471715,
+            "drawnFps": 27.834846577416418,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 116.70000000000073,
+            "callsMedian": 10,
+            "callsMax": 12,
+            "trianglesMedian": 4801,
+            "trianglesMax": 4801
+          },
+          "endState": "won",
+          "errors": []
+        },
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 3860.600000023842,
+          "firstTickMs": 3973.600000023842,
+          "glb": {
+            "count": 7,
+            "transferBytes": 154672,
+            "encodedBytes": 152572
+          },
+          "js": {
+            "count": 31,
+            "transferBytes": 892102,
+            "encodedBytes": 882802
+          },
+          "all": {
+            "count": 51,
+            "transferBytes": 1116842,
+            "encodedBytes": 1101542
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10022.600000023842,
+            "rafFrames": 585,
+            "drawnFrames": 585,
+            "rafFps": 58.36808812070804,
+            "drawnFps": 58.36808812070804,
+            "fpsP50": 59.880239520962,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 66.70000000000073,
+            "callsMedian": 30,
+            "callsMax": 40,
+            "trianglesMedian": 5793,
+            "trianglesMax": 8153
+          },
+          "paused": {
+            "ms": 3018.2999999523163,
+            "rafFrames": 181,
+            "drawnFrames": 0,
+            "rafFps": 59.96753139279047,
+            "drawnFps": 0,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.88023952095548,
+            "maxFrameMs": 33.30000000000018,
+            "callsMedian": null,
+            "callsMax": null,
+            "trianglesMedian": null,
+            "trianglesMax": null
+          },
+          "ended": {
+            "ms": 3013.1999999284744,
+            "rafFrames": 162,
+            "drawnFrames": 73,
+            "rafFps": 53.76344086149126,
+            "drawnFps": 24.226735696844827,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 59.523809523799216,
+            "maxFrameMs": 216.60000000000218,
+            "callsMedian": 10,
+            "callsMax": 12,
+            "trianglesMedian": 4801,
+            "trianglesMax": 4801
+          },
+          "endState": "won",
+          "errors": []
+        },
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 3710.399999976158,
+          "firstTickMs": 3857.7999999523163,
+          "glb": {
+            "count": 7,
+            "transferBytes": 154672,
+            "encodedBytes": 152572
+          },
+          "js": {
+            "count": 31,
+            "transferBytes": 892102,
+            "encodedBytes": 882802
+          },
+          "all": {
+            "count": 51,
+            "transferBytes": 1116842,
+            "encodedBytes": 1101542
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10016.299999952316,
+            "rafFrames": 554,
+            "drawnFrames": 554,
+            "rafFps": 55.30984495299036,
+            "drawnFps": 55.30984495299036,
+            "fpsP50": 59.880239520962,
+            "fpsP5": 30.030030030030687,
+            "maxFrameMs": 83.39999999999964,
+            "callsMedian": 30,
+            "callsMax": 40,
+            "trianglesMedian": 5793,
+            "trianglesMax": 8153
+          },
+          "paused": {
+            "ms": 3006.8000000715256,
+            "rafFrames": 181,
+            "drawnFrames": 0,
+            "rafFps": 60.196887054574425,
+            "drawnFps": 0,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.52380952380888,
+            "maxFrameMs": 16.800000000000182,
+            "callsMedian": null,
+            "callsMax": null,
+            "trianglesMedian": null,
+            "trianglesMax": null
+          },
+          "ended": {
+            "ms": 3018.5,
+            "rafFrames": 170,
+            "drawnFrames": 81,
+            "rafFps": 56.319363922478054,
+            "drawnFps": 26.83452045718072,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 133.40000000000146,
+            "callsMedian": 10,
+            "callsMax": 12,
+            "trianglesMedian": 4801,
+            "trianglesMax": 4801
+          },
+          "endState": "won",
+          "errors": []
+        }
+      ]
+    },
+    "walker/moto-g-power-emulated": {
+      "game": "walker",
+      "sentence": "a cat sneaks past guards to steal a fish",
+      "profile": "moto-g-power-emulated",
+      "cpuThrottle": 4,
+      "network": {
+        "offline": false,
+        "latency": 165,
+        "downloadThroughput": 1012500,
+        "uploadThroughput": 168750
+      },
+      "median": {
+        "firstDrawMs": 3974.6999999284744,
+        "firstTickMs": 4255.899999976158,
+        "fpsP50": 59.880239520962,
+        "fpsP5": 30.030030030030687,
+        "maxFrameMs": 50.100000000000364,
+        "drawnFpsPlaying": 54.787685245247246,
+        "drawnFpsPaused": 0.3311477581349064,
+        "drawnFpsEnded": 25.618844823809955,
+        "callsMedian": 30,
+        "trianglesMedian": 6129,
+        "glbTransferBytes": 503446,
+        "jsTransferBytes": 892102,
+        "allTransferBytes": 1467212,
+        "glbShareOfTransfer": 0.3431310539990131
+      },
+      "runs": [
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 3974.6999999284744,
+          "firstTickMs": 4255.899999976158,
+          "glb": {
+            "count": 9,
+            "transferBytes": 503446,
+            "encodedBytes": 500746
+          },
+          "js": {
+            "count": 31,
+            "transferBytes": 892102,
+            "encodedBytes": 882802
+          },
+          "all": {
+            "count": 53,
+            "transferBytes": 1467212,
+            "encodedBytes": 1451312
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10012.600000023842,
+            "rafFrames": 577,
+            "drawnFrames": 577,
+            "rafFps": 57.627389489106335,
+            "drawnFps": 57.627389489106335,
+            "fpsP50": 59.880239520962,
+            "fpsP5": 59.52380952380566,
+            "maxFrameMs": 50.099999999998545,
+            "callsMedian": 30,
+            "callsMax": 33,
+            "trianglesMedian": 6129,
+            "trianglesMax": 25623
+          },
+          "paused": {
+            "ms": 3014.100000023842,
+            "rafFrames": 177,
+            "drawnFrames": 1,
+            "rafFps": 58.723997212633925,
+            "drawnFps": 0.3317739955516041,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.52380952380888,
+            "maxFrameMs": 66.69999999999982,
+            "callsMedian": 33,
+            "callsMax": 33,
+            "trianglesMedian": 27987,
+            "trianglesMax": 27987
+          },
+          "ended": {
+            "ms": 3026.5,
+            "rafFrames": 158,
+            "drawnFrames": 69,
+            "rafFps": 52.20551792499587,
+            "drawnFps": 22.79861225838427,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 29.94011976047774,
+            "maxFrameMs": 150,
+            "callsMedian": 31,
+            "callsMax": 31,
+            "trianglesMedian": 7389,
+            "trianglesMax": 7389
+          },
+          "endState": "won",
+          "errors": []
+        },
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 4223.900000095367,
+          "firstTickMs": 4503,
+          "glb": {
+            "count": 9,
+            "transferBytes": 503446,
+            "encodedBytes": 500746
+          },
+          "js": {
+            "count": 31,
+            "transferBytes": 892102,
+            "encodedBytes": 882802
+          },
+          "all": {
+            "count": 53,
+            "transferBytes": 1467212,
+            "encodedBytes": 1451312
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10018.800000071526,
+            "rafFrames": 514,
+            "drawnFrames": 514,
+            "rafFps": 51.30354932689848,
+            "drawnFps": 51.30354932689848,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 29.94011976047937,
+            "maxFrameMs": 66.70000000000073,
+            "callsMedian": 30,
+            "callsMax": 33,
+            "trianglesMedian": 6129,
+            "trianglesMax": 25623
+          },
+          "paused": {
+            "ms": 3011.5,
+            "rafFrames": 181,
+            "drawnFrames": 0,
+            "rafFps": 60.102938734849744,
+            "drawnFps": 0,
+            "fpsP50": 59.880239520962,
+            "fpsP5": 59.88023952095548,
+            "maxFrameMs": 33.30000000000109,
+            "callsMedian": null,
+            "callsMax": null,
+            "trianglesMedian": null,
+            "trianglesMax": null
+          },
+          "ended": {
+            "ms": 3015.600000023842,
+            "rafFrames": 166,
+            "drawnFrames": 79,
+            "rafFps": 55.0470884728371,
+            "drawnFps": 26.1971083696032,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 59.523809523799216,
+            "maxFrameMs": 166.60000000000218,
+            "callsMedian": 31,
+            "callsMax": 31,
+            "trianglesMedian": 7389,
+            "trianglesMax": 7389
+          },
+          "endState": "won",
+          "errors": []
+        },
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 3654.899999976158,
+          "firstTickMs": 3879.8000000715256,
+          "glb": {
+            "count": 9,
+            "transferBytes": 503446,
+            "encodedBytes": 500746
+          },
+          "js": {
+            "count": 31,
+            "transferBytes": 892102,
+            "encodedBytes": 882802
+          },
+          "all": {
+            "count": 53,
+            "transferBytes": 1467212,
+            "encodedBytes": 1451312
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10020.5,
+            "rafFrames": 549,
+            "drawnFrames": 549,
+            "rafFps": 54.787685245247246,
+            "drawnFps": 54.787685245247246,
+            "fpsP50": 59.880239520962,
+            "fpsP5": 30.030030030030687,
+            "maxFrameMs": 50.100000000000364,
+            "callsMedian": 30,
+            "callsMax": 33,
+            "trianglesMedian": 6129,
+            "trianglesMax": 25623
+          },
+          "paused": {
+            "ms": 3019.7999999523163,
+            "rafFrames": 153,
+            "drawnFrames": 1,
+            "rafFps": 50.66560699464068,
+            "drawnFps": 0.3311477581349064,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.52380952380888,
+            "maxFrameMs": 516.6000000000004,
+            "callsMedian": 33,
+            "callsMax": 33,
+            "trianglesMedian": 27987,
+            "trianglesMax": 27987
+          },
+          "ended": {
+            "ms": 3005.5999999046326,
+            "rafFrames": 162,
+            "drawnFrames": 77,
+            "rafFps": 53.899387811132634,
+            "drawnFps": 25.618844823809955,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 30.030030030030687,
+            "maxFrameMs": 150.09999999999854,
+            "callsMedian": 31,
+            "callsMax": 31,
+            "trianglesMedian": 7389,
+            "trianglesMax": 7389
+          },
+          "endState": "won",
+          "errors": []
+        }
+      ]
+    },
+    "ball/moto-g-power-emulated": {
+      "game": "ball",
+      "sentence": "a penguin plays football against a walrus",
+      "profile": "moto-g-power-emulated",
+      "cpuThrottle": 4,
+      "network": {
+        "offline": false,
+        "latency": 165,
+        "downloadThroughput": 1012500,
+        "uploadThroughput": 168750
+      },
+      "median": {
+        "firstDrawMs": 3480.100000023842,
+        "firstTickMs": 4705.899999976158,
+        "fpsP50": 59.880239520962,
+        "fpsP5": 59.523809523812105,
+        "maxFrameMs": 50,
+        "drawnFpsPlaying": 14.488119741742686,
+        "drawnFpsPaused": 0,
+        "drawnFpsEnded": 0.332214876579542,
+        "callsMedian": 30,
+        "trianglesMedian": 3825,
+        "glbTransferBytes": 32957,
+        "jsTransferBytes": 1722761,
+        "allTransferBytes": 1820094,
+        "glbShareOfTransfer": 0.01810730654570588
+      },
+      "runs": [
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 3732.2000000476837,
+          "firstTickMs": 4975.900000095367,
+          "glb": {
+            "count": 2,
+            "transferBytes": 32957,
+            "encodedBytes": 32357
+          },
+          "js": {
+            "count": 32,
+            "transferBytes": 1722761,
+            "encodedBytes": 1713161
+          },
+          "all": {
+            "count": 48,
+            "transferBytes": 1820094,
+            "encodedBytes": 1805694
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10016.300000071526,
+            "rafFrames": 583,
+            "drawnFrames": 142,
+            "rafFps": 58.20512564478269,
+            "drawnFps": 14.176891666482232,
+            "fpsP50": 59.880239520962,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 50,
+            "callsMedian": 30,
+            "callsMax": 39,
+            "trianglesMedian": 3825,
+            "trianglesMax": 4601
+          },
+          "paused": {
+            "ms": 3019.5,
+            "rafFrames": 177,
+            "drawnFrames": 0,
+            "rafFps": 58.61897665176354,
+            "drawnFps": 0,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 83.30000000000018,
+            "callsMedian": null,
+            "callsMax": null,
+            "trianglesMedian": null,
+            "trianglesMax": null
+          },
+          "ended": {
+            "ms": 3018.2000000476837,
+            "rafFrames": 182,
+            "drawnFrames": 1,
+            "rafFps": 60.30084156024274,
+            "drawnFps": 0.331323305276059,
+            "fpsP50": 59.880239520968516,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 16.80000000000291,
+            "callsMedian": 30,
+            "callsMax": 30,
+            "trianglesMedian": 3825,
+            "trianglesMax": 3825
+          },
+          "endState": "won",
+          "errors": []
+        },
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 3460.3000000715256,
+          "firstTickMs": 4555.600000023842,
+          "glb": {
+            "count": 2,
+            "transferBytes": 32957,
+            "encodedBytes": 32357
+          },
+          "js": {
+            "count": 32,
+            "transferBytes": 1722761,
+            "encodedBytes": 1713161
+          },
+          "all": {
+            "count": 48,
+            "transferBytes": 1820094,
+            "encodedBytes": 1805694
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10008.200000047684,
+            "rafFrames": 593,
+            "drawnFrames": 145,
+            "rafFps": 59.251413840368365,
+            "drawnFps": 14.488119741742686,
+            "fpsP50": 59.880239520962,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 83.29999999999927,
+            "callsMedian": 30,
+            "callsMax": 39,
+            "trianglesMedian": 3825,
+            "trianglesMax": 4601
+          },
+          "paused": {
+            "ms": 3007.600000023842,
+            "rafFrames": 176,
+            "drawnFrames": 0,
+            "rafFps": 58.51842000219604,
+            "drawnFps": 0,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.52380952380888,
+            "maxFrameMs": 33.400000000000546,
+            "callsMedian": null,
+            "callsMax": null,
+            "trianglesMedian": null,
+            "trianglesMax": null
+          },
+          "ended": {
+            "ms": 3008.2000000476837,
+            "rafFrames": 179,
+            "drawnFrames": 1,
+            "rafFps": 59.504022337997014,
+            "drawnFps": 0.332424705798866,
+            "fpsP50": 59.88023952095548,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 33.29999999999927,
+            "callsMedian": 30,
+            "callsMax": 30,
+            "trianglesMedian": 3825,
+            "trianglesMax": 3825
+          },
+          "endState": "won",
+          "errors": []
+        },
+        {
+          "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+          "dpr": 1.75,
+          "viewport": {
+            "width": 412,
+            "height": 823
+          },
+          "quality": "low",
+          "firstDrawMs": 3480.100000023842,
+          "firstTickMs": 4705.899999976158,
+          "glb": {
+            "count": 2,
+            "transferBytes": 32957,
+            "encodedBytes": 32357
+          },
+          "js": {
+            "count": 32,
+            "transferBytes": 1722761,
+            "encodedBytes": 1713161
+          },
+          "all": {
+            "count": 48,
+            "transferBytes": 1820094,
+            "encodedBytes": 1805694
+          },
+          "robot": "startDemo",
+          "playing": {
+            "ms": 10003.099999904633,
+            "rafFrames": 592,
+            "drawnFrames": 147,
+            "rafFps": 59.18165368792114,
+            "drawnFps": 14.69544441237231,
+            "fpsP50": 59.880239520962,
+            "fpsP5": 59.523809523812105,
+            "maxFrameMs": 50,
+            "callsMedian": 30,
+            "callsMax": 39,
+            "trianglesMedian": 3825,
+            "trianglesMax": 4601
+          },
+          "paused": {
+            "ms": 3014.5,
+            "rafFrames": 180,
+            "drawnFrames": 0,
+            "rafFps": 59.71139492453143,
+            "drawnFps": 0,
+            "fpsP50": 59.88023952095874,
+            "fpsP5": 59.52380952380888,
+            "maxFrameMs": 33.30000000000018,
+            "callsMedian": null,
+            "callsMax": null,
+            "trianglesMedian": null,
+            "trianglesMax": null
+          },
+          "ended": {
+            "ms": 3010.100000023842,
+            "rafFrames": 181,
+            "drawnFrames": 1,
+            "rafFps": 60.1308926608971,
+            "drawnFps": 0.332214876579542,
+            "fpsP50": 59.880239520968516,
+            "fpsP5": 59.88023952095548,
+            "maxFrameMs": 16.80000000000291,
+            "callsMedian": 30,
+            "callsMax": 30,
+            "trianglesMedian": 3825,
+            "trianglesMax": 3825
+          },
+          "endState": "won",
+          "errors": []
+        }
+      ]
+    }
+  }
+}

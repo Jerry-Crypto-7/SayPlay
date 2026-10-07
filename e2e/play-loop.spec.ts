@@ -73,3 +73,50 @@ test('a played and shared game, then its link opened elsewhere, log each step on
   await context.close();
   await friend.close();
 });
+
+/** T31: follow a verified mechanic chip through the real publication endpoint. */
+test('post-run mechanic remix opens a distinct playable child', async ({ page, request }) => {
+  const made = await request.post('/api/play/games', { data: { sentence: 'A fox runs', seed: 1 } });
+  expect(made.ok(), await made.text()).toBe(true);
+  const parent = await made.json() as { url: string; versionId: string };
+  await page.goto(parent.url);
+  await startGame(page);
+  await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+  await page.evaluate(() => window.__playShell!.playWitness());
+  await expect(page.getByTestId('play-outcome')).toBeVisible();
+  // This request runs real robot/witness checks before offering a chip. Observe
+  // its result rather than spending the default 5s assertion window on server work.
+  const offered = page.waitForResponse(response => response.request().method() === 'GET'
+    && response.url().includes(`/api/play/games/${parent.versionId}/remix?suggestions=1`), { timeout: 15_000 });
+  await page.getByRole('button', { name: 'Remix it', exact: true }).click();
+  const suggestionResponse = await offered;
+  expect(suggestionResponse.status(), await suggestionResponse.text()).toBe(200);
+  const { suggestions } = await suggestionResponse.json() as { suggestions: { id: string; label: string; cellId: string }[] };
+  expect(Array.isArray(suggestions)).toBe(true);
+  expect(suggestions.length).toBeGreaterThanOrEqual(2);
+  expect(suggestions.length).toBeLessThanOrEqual(3);
+  for (const suggestion of suggestions) expect(suggestion).toEqual({
+    id: expect.any(String), label: expect.any(String), cellId: expect.any(String),
+  });
+  const chips = page.getByTestId('recipe-remix-chip');
+  await expect(chips).toHaveCount(suggestions.length);
+  const shooting = chips.filter({ hasText: 'Add shooting' });
+  await expect(shooting).toBeVisible();
+  const response = page.waitForResponse(response => response.request().method() === 'POST' && response.url().includes(`/api/play/games/${parent.versionId}/remix`));
+  await shooting.click();
+  const remixed = await response;
+  expect(remixed.ok(), await remixed.text()).toBe(true);
+  expect(remixed.status()).not.toBe(202);
+  const child = await remixed.json() as { versionId: string; url: string };
+  expect(child.versionId).not.toBe(parent.versionId);
+  await expect(page).toHaveURL(child.url);
+  const fetched = await request.get(`/api/play/games/${child.versionId}`);
+  expect(fetched.ok()).toBe(true);
+  const stored = await fetched.json() as { version: { parentId: string }; spec: { addons?: string[] } };
+  expect(stored.version.parentId).toBe(parent.versionId);
+  expect(stored.spec.addons).toContain('shoot');
+  await startGame(page);
+  await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+  await page.evaluate(() => window.__playShell!.playWitness());
+  await expect(page.getByTestId('play-outcome')).toBeVisible();
+});

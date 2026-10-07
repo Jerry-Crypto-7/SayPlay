@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 /**
  * Scéna závodu (P25F T6): kamera za vozidlem a nad ním, asfalt po úsecích
  * trati mezi mantinely, tráva okolo. Vstup: šipky/A-D a tah prstem do strany
@@ -16,7 +18,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 
 import { color } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, AXIS_MAX, BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase, rampedSpeed } from '@/play/arcade/contract';
+import { ARCADE_HZ, BODY, FLAG, HEADER, UNIT, bodyBase, rampedSpeed } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { STEER, type SteerCourse } from '@/play/arcade/pieces/steer';
 import type { HeroAction } from '@/play/spec';
@@ -29,7 +31,9 @@ import { buildWater } from '../look/rig/terrain/water';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { FittedModel } from '../World';
 import { keySteer } from './key-steer';
+import { driveInput } from './drive-input';
 import { VoyageHero } from './VoyageHero';
 import { type VoyageLayout, centerOf, nearShotsInView, voyageLayoutOf } from './voyageLayout';
 
@@ -60,6 +64,8 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
     look.set(road + (x - road) * 0.6, 0.8, z + 12);
   }
   camera.lookAt(look);
+  // Small visual roll follows the car across the road, never the hashed world.
+  camera.rotateZ(Math.max(-0.045, Math.min(0.045, (x - road) * 0.012)));
 }
 
 /**
@@ -171,6 +177,7 @@ export function SteerBackdrop({
   look,
   ghost,
   namedHazard = false,
+  namedPad,
 }: {
   readonly session: ArcadeSession;
   readonly course: SteerCourse | undefined;
@@ -180,11 +187,12 @@ export function SteerBackdrop({
   readonly ghost?: ArcadeGhost;
   /** Nástraha plavby z věty (P39 T9): kreslí ji `World` modelem jejího jména, útesy a koule scény se schovají. */
   readonly namedHazard?: boolean;
+  readonly namedPad?: string;
 }) {
   const voyage = useVoyageSession();
   return (
     <>
-      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} /> : <RoadBackdrop course={course} length={length} look={look} />}
+      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} namedPad={namedPad} /> : <RoadBackdrop course={course} length={length} look={look} />}
       {/* Slot ducha (P37-0 T3) pro silnici i plavbu. */}
       <GhostSlot ghost={ghost} session={session} />
     </>
@@ -350,7 +358,7 @@ function shoreOf(layout: VoyageLayout, far: number): IslandSpot[] {
  * těl kreslí (model nemá), se schovají – běží po `World`, protože se připojí
  * až s rozvržením.
  */
-function VoyageBackdrop({ session, layout, length, look, namedHazard }: { readonly session: ArcadeSession; readonly layout: VoyageLayout; readonly length: number; readonly look: Look; readonly namedHazard: boolean }) {
+function VoyageBackdrop({ session, layout, length, look, namedHazard, namedPad }: { readonly session: ArcadeSession; readonly layout: VoyageLayout; readonly length: number; readonly look: Look; readonly namedHazard: boolean; readonly namedPad?: string }) {
   const camera = useThree((three) => three.camera);
   const scene = useThree((three) => three.scene);
   const gl = useThree((three) => three.gl);
@@ -421,6 +429,7 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard }: { readon
   const bodies = useRef<Object3D[]>([]);
 
   useFrame(() => {
+    if (renderHeld(session)) return;
     const seconds = performance.now() / 1000;
     water?.setTime(seconds);
     const state = session.state();
@@ -588,10 +597,10 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard }: { readon
       )}
       {layout.pad !== null && (
         <group position={[layout.pad.x, layout.pad.y, layout.pad.z]}>
-          <mesh position={[0, layout.pad.h / 2, 0]} castShadow receiveShadow>
+          {namedPad !== undefined ? <FittedModel id={namedPad} w={layout.pad.w} h={layout.pad.h} d={layout.pad.d} fallback={look.track} /> : <mesh position={[0, layout.pad.h / 2, 0]} castShadow receiveShadow>
             <boxGeometry args={[layout.pad.w, layout.pad.h, layout.pad.d]} />
             <meshStandardMaterial color={look.track} roughness={0.8} />
-          </mesh>
+          </mesh>}
           {/* Svítící lem plochy: kam dosednout, je vidět i z výšky. */}
           {[-1, 1].map((side) => (
             <mesh key={`x${side}`} material={glow.pad} position={[(side * layout.pad!.w) / 2, layout.pad!.h + 0.05, 0]} userData={{ rigShadow: 'none' }}>
@@ -610,18 +619,12 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard }: { readon
   );
 }
 
-const BRAKE_KEYS = new Set(['arrowdown', 's']);
-/** Tah přistávače (P32F T4): šipka nahoru, W nebo mezerník; na dotyku druhý prst. */
-const THRUST_KEYS = new Set(['arrowup', 'w', ' ']);
-
 /**
  * Šipky/A-D = zatáčení (osa s náběhem ~0,25 s, `key-steer.ts`), šipka dolů/S = brzda. Dotyk: první prst táhne
  * do strany (osa podle vzdálenosti od místa stisku, plná po `DRAG_PX`),
- * druhý prst kdekoli brzdí. Brzda je držené tlačítko relace – padne do
+ * druhý prst kdekoli brzdí, se střelbou střílí, při přistání drží tah. Tlačítko padne do
  * každého tiku, ať snímků za sekundu je kolik chce (P28B T5).
  */
-const DRAG_PX = 90;
-
 export function useSteerInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
   // Most relace do scény závodu (`SteerBackdrop`), i když vstup zrovna neběží.
   useEffect(() => {
@@ -637,61 +640,44 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     if (!active || element === null) return;
     // Přistávač (P32F T4): osa klopí, tah drží šipka nahoru/W/mezerník nebo druhý prst místo brzdy.
     const lands = (baseControlOf(session.world.control).params as { land?: unknown }).land !== undefined;
-    const keys = new Set<'left' | 'right' | 'brake' | 'thrust'>();
-    const pointers = new Map<number, { readonly x: number; axis: number }>();
+    const shoots = session.world.rules.some(rule => rule.id === 'blaster');
+    const input = driveInput(lands ? 'land' : shoots ? 'shoot' : 'drive');
     const sync = (): void => {
-      const drag = [...pointers.values()][0]?.axis ?? 0;
-      const second = pointers.size > 1;
       // Šipky točí volantem plynule (P36C T3); dojíždějící rejd po puštění má přednost před prstem jen do středu.
-      session.hold(wheel.axis() !== 0 ? wheel.axis() : drag);
-      session.holdButtons((keys.has('brake') || (second && !lands) ? BUTTON.DOWN : 0) | (keys.has('thrust') || (second && lands) ? BUTTON.UP : 0));
+      const held = input.snapshot(wheel.axis());
+      session.hold(held.axis);
+      session.holdButtons(held.buttons);
     };
     const wheel = keySteer(session, sync);
-    const steerKeys = (): void => wheel.aim(((keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0)) * AXIS_MAX);
-    const keyOf = (key: string): 'left' | 'right' | 'brake' | 'thrust' | null =>
-      key === 'arrowleft' || key === 'a'
-        ? 'left'
-        : key === 'arrowright' || key === 'd'
-          ? 'right'
-          : BRAKE_KEYS.has(key)
-            ? 'brake'
-            : lands && THRUST_KEYS.has(key)
-              ? 'thrust'
-              : null;
+    const steerKeys = (): void => wheel.aim(input.keyAxis());
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
-      const key = keyOf(event.key.toLowerCase());
-      if (key === null) return;
+      if (!input.key(event.key.toLowerCase(), true)) return;
       event.preventDefault();
-      keys.add(key);
       steerKeys();
       sync();
     };
     const onKeyUp = (event: KeyboardEvent) => {
-      const key = keyOf(event.key.toLowerCase());
-      if (key === null) return;
-      keys.delete(key);
+      if (!input.key(event.key.toLowerCase(), false)) return;
       steerKeys();
       sync();
     };
     const onDown = (event: PointerEvent) => {
       // Tah, který vyjede z plátna, se musí pustit i venku – jinak řízení zůstane vytočené.
       element.setPointerCapture(event.pointerId);
-      pointers.set(event.pointerId, { x: event.clientX, axis: 0 });
+      input.down(event.pointerId, event.clientX);
       sync();
     };
     const onMove = (event: PointerEvent) => {
-      const pointer = pointers.get(event.pointerId);
-      if (pointer === undefined) return;
-      pointer.axis = Math.round(Math.max(-1, Math.min(1, (event.clientX - pointer.x) / DRAG_PX)) * AXIS_MAX);
+      input.move(event.pointerId, event.clientX);
       sync();
     };
     const onUp = (event: PointerEvent) => {
-      if (pointers.delete(event.pointerId)) sync();
+      input.up(event.pointerId);
+      sync();
     };
     const release = (): void => {
-      keys.clear();
-      pointers.clear();
+      input.clear();
       wheel.reset();
     };
     window.addEventListener('keydown', onKeyDown);
@@ -701,7 +687,9 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     element.addEventListener('pointermove', onMove);
     element.addEventListener('pointerup', onUp);
     element.addEventListener('pointercancel', onUp);
+    element.addEventListener('lostpointercapture', onUp);
     return () => {
+      release();
       wheel.dispose();
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
@@ -710,6 +698,7 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
       element.removeEventListener('pointermove', onMove);
       element.removeEventListener('pointerup', onUp);
       element.removeEventListener('pointercancel', onUp);
+      element.removeEventListener('lostpointercapture', onUp);
     };
   }, [session, target, active]);
 }

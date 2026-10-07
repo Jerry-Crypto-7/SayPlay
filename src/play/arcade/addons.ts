@@ -10,6 +10,7 @@
  */
 
 import { z } from 'zod';
+import { pacedBotBase } from './pieces/phase-pieces';
 
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -38,10 +39,12 @@ import {
 import { GRAVITY } from './kernel';
 import { ARENA } from './pieces/arena';
 import { FLAP } from './pieces/flap';
+import { GLIDE, glideControlParams, glidePathOf, glideVelocity } from './pieces/glide';
+import { centerAt, courseOf, courseSchema, type SteerCourse } from './pieces/steer';
 import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
-import { census } from './pieces/shots';
+import { census, shotHit } from './pieces/shots';
 
 /** Parametry kusu pod obalem, přečtené jednou: obal běží každý tik a zod parse by ho zpomalil. */
 const parsedParams = new WeakMap<object, unknown>();
@@ -67,7 +70,7 @@ export interface ArcadeParts {
  * poznat běžce a scéna podle něj volí kameru a vstup.
  */
 export const baseControlOf = (control: PieceRef): PieceRef =>
-  control.id === 'addon_control' ? (control.params as { base: PieceRef }).base : control;
+  control.id === 'addon_control' || control.id === 'phase_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
 const baseControl = (parts: ArcadeParts): PieceRef => baseControlOf(parts.control);
 
 export interface AddonContext {
@@ -229,7 +232,20 @@ export const finishCollected: RulePiece<z.infer<typeof needParams>> = {
   },
 };
 
-export const ADDON_RULES = { collect_count: collectCount, finish_collected: finishCollected } as const;
+/** Rivals remain physical race opponents even when a stray shot touches them. */
+export const glideShotHit: RulePiece = {
+  ...shotHit,
+  id: 'glide_shot_hit',
+  params: noParams,
+  fire(ctx) {
+    if (ctx.other < 0) return [];
+    const at = bodyBase(ctx.other);
+    if (ctx.state[at + BODY.role] === ROLE.enemy && (ctx.state[at + BODY.flags]! & FLAG.kinematic)) return [];
+    return shotHit.fire(ctx, {});
+  },
+};
+
+export const ADDON_RULES = { collect_count: collectCount, finish_collected: finishCollected, glide_shot_hit: glideShotHit } as const;
 
 // ---------------------------------------------------------------------------
 // +shoot
@@ -275,6 +291,19 @@ function runnerRows(level: ArcadeLevel): Map<number, Set<number>> {
  * mezery trubky. Každý druhý úsek, ať mezi nimi zbude čas.
  */
 function enemiesFor(control: string, level: ArcadeLevel): BodyInit[] {
+  if (control === 'glide') {
+    // Actual XYZ ring apertures, not a floor-level track: there is enough time
+    // to settle into the next ring's lane and fire before reaching its target.
+    const size = 2 * GLIDE.size;
+    return glidePathOf(level).filter((_node, index) => index % 2 === 0)
+      .map(node => enemy(node.x, node.y - size / 2, node.z, size));
+  }
+  if (control === 'steer') {
+    const course = courseOf(level);
+    // A target on the opening straight gives the driver a clear forward shot;
+    // later targets use the actual track center, never an off-road decoration.
+    return [25 * UNIT, Math.floor(level.length * 0.55)].map(z => enemy(centerAt(course, z), 0, z));
+  }
   if (control === 'runner') {
     const rows = runnerRows(level);
     const zs = [...rows.keys()].sort((a, b) => a - b);
@@ -347,9 +376,21 @@ const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
   if (recent.some((seen) => (seen.buttons & BUTTON.FIRE) !== 0)) return input;
   if (base.id === 'arena_bot' && census(state).projectiles > 0) return input;
   const p = bodyBase(player);
-  const px = state[p + BODY.x] as number;
-  const pz = (state[p + BODY.z] as number) + (state[p + BODY.vz] as number) * recent.length;
+  let px = state[p + BODY.x] as number;
+  let pz = (state[p + BODY.z] as number) + (state[p + BODY.vz] as number) * recent.length;
   let py = state[p + BODY.y] as number;
+  if (base.id === 'glide_bot') {
+    // Fáze smí rychlost zvednout nad autorský strop 240; tvar se ověří, rychlost zůstane běhová.
+    const topSpeed = typeof base.params.topSpeed === 'number' ? base.params.topSpeed : GLIDE.speed;
+    const params = { ...paramsOf({ params: glideControlParams }, { ...base.params, topSpeed: GLIDE.speed }) as ReturnType<typeof glideControlParams.parse>, topSpeed };
+    let now = { x: px, y: py, z: state[p + BODY.z]!, vx: state[p + BODY.vx]!, vy: state[p + BODY.vy]!, vz: state[p + BODY.vz]! };
+    // Blaster fires after control and movement, not at the stale observation.
+    for (const seen of [...recent, input]) {
+      const velocity = glideVelocity(now, seen, params);
+      now = { ...velocity, x: now.x + velocity.vx, y: now.y + velocity.vy, z: now.z + velocity.vz };
+    }
+    px = now.x; py = now.y; pz = now.z;
+  }
   const grounded = ((state[p + BODY.flags] as number) & FLAG.grounded) !== 0;
   if (base.id === 'runner_bot' && (px % RUNNER.laneWidth !== 0 || recent.some((seen) => (seen.buttons & (BUTTON.LEFT | BUTTON.RIGHT)) !== 0))) return input;
   if (base.id === 'platform_bot' && (!grounded || recent.some((seen) => (seen.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0))) return input;
@@ -368,6 +409,8 @@ const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
   for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
     const b = bodyBase(i);
     if (i === player || state[b + BODY.role] !== ROLE.enemy || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    // The moving race opponent is not a shooting target.
+    if (base.id === 'glide_bot' && (state[b + BODY.flags]! & FLAG.kinematic)) continue;
     const ex = (state[b + BODY.x] as number) - from.x;
     const ez = (state[b + BODY.z] as number) - from.z;
     const w = state[b + BODY.w] as number;
@@ -405,7 +448,7 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
     const rules: PieceRef[] = [
       ...parts.rules,
       { id: 'blaster', params: { template, aim: control === 'move_free' ? 'heading' : 'forward' } },
-      { id: 'shot_hit', params: {} },
+      { id: control === 'glide' ? 'glide_shot_hit' : 'shot_hit', params: {} },
     ];
     // Aréna náraz do buňky řeší sama (`arena_eat`).
     if (control !== 'move_free') rules.push({ id: 'hit', params: hitParamsFor('enemy', health) });
@@ -451,12 +494,17 @@ export const CHASE = {
 } as const;
 
 /** `oncoming`: běží jen proti hráči a pruh dorovnává, jen dokud je dál než `commit` – pak se rozběhne rovně. */
-type ChaseSpeed = { readonly along: number; readonly across: number; readonly oncoming?: boolean; readonly commit?: number };
+type ChaseSpeed = { readonly along: number; readonly across: number; readonly oncoming?: boolean; readonly commit?: number; readonly course?: SteerCourse };
 
 /** Kde pronásledovatel startuje: běžci naproti tak, aby se potkali v mezeře mezi řadami; plošinovce za zády; aréně v protějším rohu. */
 function chaserFor(control: PieceRef, level: ArcadeLevel): { body: BodyInit; speed: ChaseSpeed } | null {
   const player = level.bodies[0] as BodyInit;
   const at = (x: number, y: number, z: number): BodyInit => ({ role: 'chaser', kind: 'chaser', x, y, z, w: CHASE.w, h: CHASE.h, d: CHASE.d, solid: false, kinematic: true });
+  if (control.id === 'steer' && control.params.land === undefined) {
+    const course = courseOf(level);
+    const z = player.z - 18 * UNIT;
+    return { body: at(centerAt(course, z), player.y, z), speed: { along: Math.floor(((control.params.topSpeed as number | undefined) ?? 300) * 0.7), across: 160, course } };
+  }
   if (control.id === 'runner') {
     const zs = [...runnerRows(level).keys()].sort((a, b) => a - b);
     if (zs.length < 2) return null;
@@ -492,6 +540,14 @@ function chase(state: Int32Array, player: number, speed: ChaseSpeed): void {
       const aiming = (state[b + BODY.z] as number) - (state[p + BODY.z] as number) > (speed.commit ?? 0);
       state[b + BODY.vx] = aiming ? clamp((state[p + BODY.x] as number) - (state[b + BODY.x] as number), speed.across) : 0;
       state[b + BODY.vz] = -speed.along;
+      continue;
+    }
+    if (speed.course !== undefined) {
+      const z = state[b + BODY.z] as number;
+      const playerZ = state[p + BODY.z] as number;
+      const offset = Math.max(-speed.course.halfWidth / 2, Math.min(speed.course.halfWidth / 2, (state[p + BODY.x] as number) - centerAt(speed.course, playerZ)));
+      state[b + BODY.vx] = clamp(centerAt(speed.course, z + 6000) + offset - (state[b + BODY.x] as number), speed.across);
+      state[b + BODY.vz] = clamp(playerZ - z, speed.along);
       continue;
     }
     state[b + BODY.vx] = clamp((state[p + BODY.x] as number) - (state[b + BODY.x] as number), speed.across);
@@ -576,7 +632,7 @@ export const ADDON_PIECES: Readonly<Record<AddonId, AddonPiece | undefined>> = {
 const wrappedControlParams = z
   .object({
     base: z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) }).strict(),
-    chase: z.object({ along: z.int().min(1), across: z.int().min(0), oncoming: z.boolean().optional(), commit: z.int().min(0).optional() }).strict().optional(),
+    chase: z.object({ along: z.int().min(1), across: z.int().min(0), oncoming: z.boolean().optional(), commit: z.int().min(0).optional(), course: courseSchema.optional() }).strict().optional(),
   })
   .strict();
 
@@ -657,7 +713,7 @@ export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>): BotPiec
       let input = base.decide(observation, paramsOf(base, params.base.params));
       for (const id of params.addons) {
         const step = ADDON_PIECES[id]?.bot;
-        if (step !== undefined) input = step(observation, input, params.base);
+        if (step !== undefined) input = step(observation, input, pacedBotBase(params.base, observation));
       }
       return input;
     },

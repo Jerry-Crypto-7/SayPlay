@@ -1,0 +1,8 @@
+﻿{
+  "transport": "codex-cli",
+  "status": "blocked",
+  "calls": 0,
+  "rows": [],
+  "errors": ["Automatic approval review rejected sending the owner sentence and internal game JSON contract to OpenAI through subscription Codex CLI without explicit payload/destination consent. User consent requested; no process or model call executed."],
+  "attemptedConfig": { "model": "gpt-6-astra", "effort": "medium", "callCap": 9, "spendCapUsd": 5, "accountingUsdPerMTokOut": 25, "accountingSource": "Existing project subscription convention in scripts/effort-servers.mjs; not an API price claim", "paidApiFallback": false }
+}

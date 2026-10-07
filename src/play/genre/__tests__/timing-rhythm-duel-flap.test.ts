@@ -24,7 +24,8 @@ import { GENRE_MODULES } from '../index';
 /** Věty poptávky (`evals/play/demand/corpus.json`) podle ruční třídy slovesa (`rules/coverage.json`). */
 const SENTENCES: readonly (readonly [string, string])[] = [
   ['tap at the right time to stop the moving platform', 'timing'],
-  ['time your jumps through spinning rings', 'timing'],
+  // P41: the jumps must actually move the hero; timing remains an unmet action.
+  ['time your jumps through spinning rings', 'platformer'],
   ['cut the rope at the right moment to feed the monster', 'timing'],
   ['tap to the beat with glowing tiles', 'rhythm'],
   ['piano tiles but falling from space', 'rhythm'],

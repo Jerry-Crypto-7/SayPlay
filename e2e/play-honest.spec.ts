@@ -30,15 +30,29 @@ async function post(request: APIRequestContext, data: unknown): Promise<{ url: s
 }
 
 test.describe('/play/[id] – honesty strip', () => {
+  test('missing actions agree between publication, repeated publication and page reload', async ({ page, request }) => {
+    const sentence = 'a grandma knits a scarf';
+    const game = await publish(request, sentence);
+    const honesty = game.honesty as { reason: string; unmet: { verb: string }[] };
+    expect(honesty.unmet.map(item => item.verb)).toContain('knit');
+    expect((await publish(request, sentence)).honesty).toEqual(honesty);
+    await page.goto(game.url);
+    await expect(page.getByTestId('play-honest-reason')).toHaveText(honesty.reason);
+    await page.reload();
+    await expect(page.getByTestId('play-honest-reason')).toHaveText(honesty.reason);
+    // This fallback is rhythm: its renderer exposes lane edges, not player X.
+    await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-lane-edges', /.+/, { timeout: 60_000 });
+    await page.keyboard.press('Space');
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
+  });
   test('a match-3 sentence shows the strip and the game still runs', async ({ page, request }) => {
     const game = await publish(request, 'a match 3 game with fruits');
     expect(game.honesty).toBeDefined();
     await page.goto(game.url);
     const strip = page.getByTestId('play-honest');
     await expect(strip).toBeVisible();
-    await expect(strip).toContainText("This one isn't playable yet – here's the closest game we can build");
-    // Hláška jmenuje hru, kterou návrh postaví – od žánrových návrhů úkol, ne běžec (naměřeno P36A T12).
-    await expect(page.getByTestId('play-honest-reason')).toContainText('a quest');
+    const honesty = game.honesty as { reason: string };
+    await expect(page.getByTestId('play-honest-reason')).toContainText(honesty.reason);
     await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
 

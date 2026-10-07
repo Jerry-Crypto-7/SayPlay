@@ -139,7 +139,7 @@ describe('the director repairs rules before publishing', () => {
   it('rules of the first answer reach the GameSpec of the genre and go through untouched when they all fire', async () => {
     const { game, branch } = await run(answer(), []);
     expect(branch.calls).toHaveLength(1);
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 0, spec: { genre: { id: 'quest', mode: 'spatial' } } });
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 0 });
     expect(verbsOf(game.spec)).toEqual(['pick', 'throw', 'ring']);
     expect(game.spec.roles.map((role) => role.id)).toEqual(expect.arrayContaining(['player', 'rock', 'bell']));
     expect(robot(game.spec)).toEqual([]);
@@ -186,7 +186,7 @@ describe('the director repairs rules before publishing', () => {
   it('when a rule stays invalid, the genre plays without rules', async () => {
     const bad = [{ op: 'add', path: '/rules', value: BUCKET.map(({ if: cond, ...rule }) => (cond === null ? rule : { ...rule, if: cond })) }];
     const { game } = await run(answer(BUCKET), [bad, bad]);
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED', spec: { genre: { id: 'quest', mode: 'spatial' } } });
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED' });
     expect(game.spec.rules).toBeUndefined();
     expect(game.failure?.detail).toContain('bucket');
   });

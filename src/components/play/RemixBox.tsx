@@ -85,6 +85,7 @@ function followRemix(url: string, deadlineAt: number, onView: (view: RemixView) 
 }
 
 export interface RemixJob {
+  readonly versionId?: string;
   readonly view: RemixView;
   readonly sent: string;
   submit(sentence: string): void;
@@ -138,7 +139,7 @@ export function useRemixJob(versionId: string, showing: boolean): RemixJob {
     [versionId, router],
   );
 
-  return { view, sent, submit: (sentence) => void submit(sentence) };
+  return { versionId, view, sent, submit: (sentence) => void submit(sentence) };
 }
 
 /** Remix dorazil během hraní: nabídka místo přesměrování uprostřed běhu. */
@@ -155,11 +156,42 @@ export function RemixReadyChip({ job }: { readonly job: RemixJob }) {
 }
 
 /** `suggestions` = čipy karty po hře (P33 T4), mezi polem a stavem – hláška „Try one of the changes above“ na ně ukazuje. */
+export interface RecipeRemixChip {
+  readonly id: string;
+  readonly label: string;
+  readonly cellId: string;
+}
+
+/** Only small, server-verified summaries cross the client boundary. */
+export function RecipeRemixChips({ chips, submit, disabled }: {
+  readonly chips: readonly RecipeRemixChip[];
+  readonly submit: (sentence: string) => void;
+  readonly disabled: boolean;
+}) {
+  if (chips.length === 0) return null;
+  return <div className="play-remix-chips" aria-label="Add a mechanic">
+    {chips.map(chip => <button key={chip.id} type="button" className="sp-chip" data-testid="recipe-remix-chip" data-cell={chip.cellId} disabled={disabled} onClick={() => submit(chip.label)}>{chip.label}</button>)}
+  </div>;
+}
 export function RemixBox({ job, suggestions }: { readonly job: RemixJob; readonly suggestions?: ReactNode }) {
   const { view, sent, submit } = job;
   const form = useRef<HTMLFormElement | null>(null);
   const fieldId = useId();
   const [text, setText] = useState('');
+  const [recipeChips, setRecipeChips] = useState<readonly RecipeRemixChip[]>([]);
+  useEffect(() => {
+    setRecipeChips([]);
+    if (job.versionId === undefined) return;
+    const control = new AbortController();
+    void fetch(`/api/play/games/${job.versionId}/remix?suggestions=1`, { signal: control.signal, cache: 'no-store' })
+      .then(async response => response.ok ? response.json() as Promise<{ suggestions?: unknown }> : null)
+      .then(body => {
+        if (control.signal.aborted || !Array.isArray(body?.suggestions)) return;
+        setRecipeChips(body.suggestions.filter((item): item is RecipeRemixChip => typeof item === 'object' && item !== null && typeof item.id === 'string' && typeof item.label === 'string' && typeof item.cellId === 'string').slice(0, 3));
+      })
+      .catch(() => { /* Existing free-form remix remains usable during a failed fetch. */ });
+    return () => control.abort();
+  }, [job.versionId]);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -213,7 +245,7 @@ export function RemixBox({ job, suggestions }: { readonly job: RemixJob; readonl
           />
         </div>
       </div>
-      {suggestions}
+      {recipeChips.length > 0 ? <RecipeRemixChips chips={recipeChips} submit={submit} disabled={working} /> : suggestions}
       <Button size="l" type="submit" className="sp-btn--block" data-testid="remix-submit" disabled={working || sentence.length === 0}>
         {REMIX_IT}
       </Button>

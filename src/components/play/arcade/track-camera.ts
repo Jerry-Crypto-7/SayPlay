@@ -116,6 +116,11 @@ export interface ChaserSpot {
  */
 export function chaserSpot(control: string, hero: Spot, chaser: Spot, view: number, aspect: number): ChaserSpot {
   const dz = chaser.z - hero.z;
+  if (control === 'steer' && dz < -4) {
+    // Keep a distant pursuer visible behind the vehicle. Near contact its
+    // position is exact, so this presentation never shifts the collision.
+    return { spot: { x: chaser.x, y: chaser.y, z: hero.z - 4 }, oncoming: false };
+  }
   if (control === 'platform') {
     const behind = aspect < 1 ? CHASER_VIEW.platformBehindTall : CHASER_VIEW.platformBehind;
     return { spot: dz >= -behind ? chaser : { x: chaser.x, y: chaser.y, z: hero.z - behind }, oncoming: false };

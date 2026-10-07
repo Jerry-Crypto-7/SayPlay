@@ -14,9 +14,9 @@ import { type CSSProperties, memo, type ReactNode, useCallback, useEffect, useMe
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
-import { instantiate, worldHasPhysics } from '@/play/arcade/kernel';
+import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
-import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
+import { chaserModel, enemyModel, heroModel, propModels, sceneModelOf } from '@/play/arcade/models';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setMusicTension, setSoundLook, vibrateFor } from '@/play/audio';
 import { musicFor, narrationUrl, tenseMusicFor } from '@/play/audio/library';
@@ -65,7 +65,7 @@ if (typeof window !== 'undefined') void import('./ArcadeStage');
 
 
 /** Střelba a hod nemají trať: místo metrů ukazují zbývající rány. */
-const aiming = (spec: GameSpecV1): boolean => spec.control === 'shooter' || spec.control === 'throw';
+const aiming = (spec: GameSpecV1): boolean => spec.control === 'shooter' || spec.control === 'throw' || spec.control === 'ball';
 
 /**
  * Co hra počítá: se `scoring` (P36A T5) body s kombem a bonusem za výhru, ne kusy;
@@ -113,7 +113,7 @@ function collectNeed(world: ArcadeWorld): number | null {
   return Number.isFinite(need) && need > 0 ? need : null;
 }
 
-const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true;
+const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true || spec.control === 'steer' && typeof spec.controlParams?.crashBudget === 'number';
 
 /**
  * Fakta skončeného běhu pro výsledek (P34 T6) – jen čísla, která relace
@@ -375,7 +375,13 @@ function ArcadePlayGame({
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
   // Nápověda dotyku, kterou text hry neřekne (zóny plošinovky, P36C T2).
   const zoneHint = ZONE_HINTS[baseControlOf(arcade.control).id];
-  const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }), [spec]);
+  const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec),
+    things: Object.fromEntries(spec.roles.flatMap(role => {
+      if (role.id === 'pad' && role.label === 'landing pad') return [];
+      const model = sceneModelOf(role.label, false);
+      return model === undefined ? [] : [[role.id, model]];
+    })),
+  }), [spec]);
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
@@ -769,6 +775,9 @@ function ArcadePlayGame({
         return { runState: now.runState, tick: now.tick, progress: now.progress, score: now.score, items: now.items };
       },
       inputs: () => session.inputs(),
+      /** One synchronous sample: real input events and the exact state they reached. */
+      capture: () => ({ inputs: session.inputs(), tick: session.snapshot().tick, hash: hashArcade(session.state()) }),
+      physicsReady: () => !worldHasPhysics(arcade) || rapierIfLoaded() !== null,
       tick: () => session.snapshot().tick,
       /** Živá těla role (P29D T9) – e2e jimi měří „more enemies“. */
       bodies: (role: ArcadeRole) => aliveOf(session.state(), role),

@@ -75,9 +75,9 @@ export interface QualityState {
 
 const rank = (tier: QualityTier): number => QUALITY_TIERS.indexOf(tier);
 
-/** Hustý displej (telefon) začíná o úroveň níž; FPS pak rozhodne. */
-export function startQuality(devicePixelRatio: number): QualityState {
-  return { tier: devicePixelRatio > 2 ? 'medium' : 'high', ceiling: 'high', slowSince: null, fastSince: null, raisedAt: null, lastAt: null };
+/** Touch devices start cheaply; measured spare frame time can raise quality. */
+export function startQuality(devicePixelRatio: number, coarsePointer = false): QualityState {
+  return { tier: coarsePointer ? 'low' : devicePixelRatio > 2 ? 'medium' : 'high', ceiling: 'high', slowSince: null, fastSince: null, raisedAt: null, lastAt: null };
 }
 
 /**

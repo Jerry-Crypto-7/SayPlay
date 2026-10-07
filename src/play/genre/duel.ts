@@ -26,6 +26,7 @@ export const duelGenre: GenreModule<'duel'> = {
   paramBounds: {
     /** Soupeřů za sebou. */
     rounds: { min: DUEL_GENRE.minRounds, max: DUEL.maxRounds },
+    roundRise: { min: 1, max: 3 },
   },
   availability: () => 'ready',
   compile: (spec) => {
@@ -34,7 +35,7 @@ export const duelGenre: GenreModule<'duel'> = {
     const rivals = plural(singular(rival), 2);
     return legacySpec(spec, {
       control: 'duel',
-      controlParams: { difficulty: 'normal', rounds },
+      controlParams: { difficulty: 'normal', rounds, ...(spec.params?.roundRise === undefined ? {} : { roundRise: spec.params.roundRise }) },
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} Duel`,
       objective: { kind: 'reach', description: `Beat ${String(rounds)} ${rivals} in a row. Each one attacks faster.`, role: 'finish' },

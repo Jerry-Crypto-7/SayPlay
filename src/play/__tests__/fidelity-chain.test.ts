@@ -35,9 +35,9 @@ describe('fidelityChain', () => {
   });
 
   // P39 T14: terč střelnice nese věc z věty a kreslí ji jejím modelem – mince na střelnici je čtená i vidět.
-  it('counts the named thing on the shooter range as read and drawn', () => {
+  it('counts the named collectible in the selected live scene as read and drawn', () => {
     const mansion = draftGameSpec('collect coins, dodge ghosts and shoot bats in a haunted mansion');
-    expect(mansion.roles.find((role) => role.id === 'target')?.label).toBe('coin');
+    expect(mansion.roles.find((role) => role.kind === 'collectible')?.label).toBe('coin');
     expect(stages(fidelityChain(mansion, [{ item: 'coin', slot: 'role', match: ['coin'] }]))).toEqual([['coin', true, true, true, 'ok']]);
   });
 

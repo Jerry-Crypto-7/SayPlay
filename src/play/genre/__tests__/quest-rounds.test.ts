@@ -19,7 +19,8 @@ import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { WAVE_PLAN, waveOf } from '@/play/arcade/pieces/waves';
 import { runBot } from '@/play/arcade/verify';
-import { draftGameSpecWithMeta } from '@/play/draft';
+import { draftGameSpecWithMeta, draftGenreFor } from '@/play/draft';
+import { classifyGenre } from '@/play/genre/classify';
 import { compileGenre } from '@/play/genre/index';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -34,7 +35,7 @@ interface Published {
 
 /** Jako dveře publikace: první semínko, na kterém robot vyhraje a nečinný hráč ne. */
 function publish(sentence: string, edit: (spec: GameSpecV1) => GameSpecV1 = (spec) => spec): Published {
-  const spec = edit(draftGameSpecWithMeta(sentence, 1).spec);
+  const spec = edit(legacySpec(sentence));
   for (const seed of derivedSeeds(seedFrom(sentence))) {
     const compiled = compileArcade(spec, seed);
     if (!compiled.ok) continue;
@@ -142,7 +143,9 @@ const STORED = [
 
 describe('stored quest games without rounds', () => {
   it.each(STORED)('$sentence: same seed, the robot wins on the same tick', ({ sentence, seed, tick }) => {
-    const spec = draftGameSpecWithMeta(sentence, 1).spec;
+    // Reconstruct the stored quest assembly, not today's intent-based choice.
+    const pick = classifyGenre(sentence, null).ranked[0];
+    const spec = compileGenre(draftGenreFor(sentence, pick.genre, pick.mode)!);
     const { rounds: _rounds, hold: _hold, ...tuning } = tuningOf(spec);
     const steps = (tuning.count as number) * ((tuning.states as number) - 1);
     const old = Math.min(80, Math.max(40, steps * ((tuning.chasers as number | undefined) ? 7 : 3)));
@@ -201,9 +204,17 @@ describe('quest with seconds from the sentence – only as many rounds as fit th
   });
 
   it('a quest without seconds builds the same world as before', () => {
-    const spec = draftGameSpecWithMeta('light five candles before the ghost catches you', 1).spec;
+    const spec = legacySpec('light five candles before the ghost catches you');
     const compiled = compileArcade(spec, 624372740);
     if (!compiled.ok) throw new Error(compiled.issues.join('; '));
     expect(compiled.value.worldHash).toBe('8ea05655');
   });
 });
+
+/** Frozen pre-P41 mechanics: routing to new movement families is tested separately. */
+function legacySpec(sentence: string): GameSpecV1 {
+  const pick = classifyGenre(sentence, null).ranked[0];
+  const genre = draftGenreFor(sentence, pick.genre, pick.mode);
+  if (genre === null) throw new Error(`missing legacy fixture: ${sentence}`);
+  return compileGenre(genre);
+}

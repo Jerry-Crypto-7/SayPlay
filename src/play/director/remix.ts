@@ -24,6 +24,15 @@ import { type Operation, applyPatch, createPatch } from 'rfc6902';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { MODE_GENERATORS } from '../arcade/library';
+import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
+import { loadRapier } from '../arcade/physics/world';
+import { verifyArcade } from '../arcade/verify';
+import { matchesWitness, type ActionWitness } from '../arcade/witness';
+import { assemblyOfCell, liveCells } from '../compose/allowed';
+import { compileRecipe } from '../compose/compile';
+import { PRESETS } from '../compose/presets';
+import type { CastItem } from '../genre/contract';
+import { ACTIONS, MOVES, THREATS, essentialTriples, type Intent, type IntentTriple } from '../intent/contract';
 import { STEER_DIFFICULTIES } from '../arcade/pieces/steer';
 import { aimHarder, aimSwap, beatHarder, difficultyHarder, hazardSwap, runnerHarder, runnerSwapObstacles, runnerTwist, targetSwap } from '../arcade/remix';
 import { pickControl } from '../draft/controls';
@@ -49,6 +58,89 @@ export {
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+export interface RecipeRemixSuggestion {
+  readonly id: string;
+  readonly label: string;
+  readonly cellId: string;
+  readonly spec: GameSpecV1;
+  readonly ops: readonly Operation[];
+}
+
+/** Server-only: revalidate these at POST time, never trust a client-supplied spec. */
+export async function verifiedRecipeRemixes(parent: GameSpecV1, seed: number, options: {
+  readonly intent?: Intent;
+  readonly unmet?: readonly IntentTriple[];
+} = {}): Promise<readonly RecipeRemixSuggestion[]> {
+  // An unfinished request must not be advertised as a complete remix.
+  if (options.unmet?.length) return [];
+  await preloadPhysics(parent, loadRapier);
+  const original = arcadeWorldOf(parent, seed);
+  if (!original.ok) return [];
+  const before = verifyArcade(original.world, undefined, original.roleBindings);
+  if (!before.publishEligible) return [];
+  const hero = parent.roles.find(role => role.kind === 'player')?.label ?? 'hero';
+  const has = (verb: string) => before.witnesses.some(witness => witness.verb === verb);
+  const preset = parent.genre === undefined ? undefined : PRESETS[`${parent.genre.id}.${parent.genre.mode}`];
+  const declared = options.intent?.items.filter(item => item.essential);
+  const moves = declared === undefined ? preset === undefined ? MOVES.filter(has) : MOVES.filter(move => move === preset.move) : MOVES.filter(move => declared.some(item => item.axis === 'move' && item.verb === move));
+  const actions = declared === undefined ? ACTIONS.filter(action => (preset === undefined ? has(action) : preset.actions.includes(action)) || (parent.addons as readonly string[] | undefined)?.includes(action)) : ACTIONS.filter(action => declared.some(item => item.axis === 'action' && item.verb === action));
+  const threats = declared === undefined ? THREATS.filter(threat => (preset === undefined ? has(threat) : preset.threats.includes(threat)) || (parent.addons as readonly string[] | undefined)?.includes(threat)) : THREATS.filter(threat => declared.some(item => item.axis === 'threat' && item.verb === threat));
+  const retainedVerbs: readonly string[] = [...moves, ...actions, ...threats, ...(preset === undefined ? ['race', 'escape', 'reach', 'score'].filter(has) : [preset.objective])];
+  const triples = options.intent === undefined
+    ? before.witnesses.filter(witness => retainedVerbs.includes(witness.verb)).map(witness => ({ actor: witness.actor.label, verb: witness.verb, object: witness.object?.label ?? null }))
+    : essentialTriples(options.intent);
+  if (triples.some(triple => !before.witnesses.some(witness => matchesWitness(triple, witness)))) return [];
+  const cast: CastItem[] = [];
+  const castRole: Readonly<Record<string, CastItem['does']>> = { shoot: 'shoot_at', throw: 'throw_at', fight: 'fight', collect: 'collect', reach: 'reach', interact: 'reach' };
+  for (const witness of before.witnesses) {
+    const does = witness.actor.player ? castRole[witness.verb] : ['chaser', 'guard'].includes(witness.verb) ? 'chase_me' : undefined;
+    const label = witness.actor.player ? witness.object?.label : witness.actor.label;
+    if (does !== undefined && label !== undefined && !cast.some(item => item.label === label && item.does === does)) cast.push({ label, does });
+  }
+  const result: RecipeRemixSuggestion[] = [];
+  const choices = [
+    { id: 'add-shooting', label: 'Add shooting', verb: 'shoot' },
+    { id: 'make-race', label: 'Make it a race', verb: 'race' },
+    { id: 'swap-boat', label: 'Swap to a boat', verb: 'drive' },
+    { id: 'add-chase', label: 'Add a chase', verb: 'chaser' },
+    { id: 'add-collecting', label: 'Add collecting', verb: 'collect' },
+  ];
+  for (const choice of choices) {
+    if (result.length === 3) break;
+    const swap = choice.id === 'swap-boat';
+    if (swap ? /\b(?:boat|ship|sailboat|yacht)\b/i.test(hero) : has(choice.verb)) continue;
+    for (const cell of liveCells()) {
+      const recipe = cell.recipe;
+      if (swap ? recipe.move !== 'drive' : moves.length > 0 && !moves.includes(recipe.move as typeof moves[number])) continue;
+      if (actions.some(action => !recipe.actions.includes(action)) || threats.some(threat => !recipe.threats.includes(threat))) continue;
+      if (!swap && !([...recipe.actions, recipe.objective, ...recipe.threats] as readonly string[]).includes(choice.verb)) continue;
+      // A race request replaces the goal; other chips retain a proved race/escape.
+      if (choice.verb !== 'race' && ['race', 'escape'].some(verb => has(verb) && recipe.objective !== verb)) continue;
+      const content = { ...cell.preset, hero: swap ? 'boat' : hero, setting: swap ? 'ocean' : parent.theme.setting,
+        cast: [...cast, ...(cell.preset.cast ?? []).filter(item => !cast.some(existing => existing.does === item.does))] };
+      let spec: GameSpecV1;
+      let witnesses: readonly ActionWitness[];
+      try {
+        spec = compileRecipe(assemblyOfCell(cell, content));
+        await preloadPhysics(spec, loadRapier);
+        const built = arcadeWorldOf(spec, seed);
+        if (!built.ok) continue;
+        const verified = verifyArcade(built.world, undefined, built.roleBindings);
+        if (!verified.publishEligible) continue;
+        witnesses = verified.witnesses;
+      } catch { continue; }
+      const needed = [...(recipe.move === 'stationary' ? [] : [recipe.move]), ...recipe.actions, ...recipe.threats, recipe.objective];
+      if (needed.some(verb => !witnesses.some(witness => witness.verb === verb))) continue;
+      const preserved = triples.filter(triple => !(swap && (MOVES as readonly string[]).includes(triple.verb)) && !(choice.verb === 'race' && ['reach', 'score', 'survive'].includes(triple.verb)))
+        .map(triple => swap ? { ...triple, actor: triple.actor === hero || triple.actor === 'hero' ? 'boat' : triple.actor, object: triple.object === hero ? 'boat' : triple.object } : triple);
+      if (preserved.some(triple => !witnesses.some(witness => matchesWitness(triple, witness)))) continue;
+      result.push({ id: choice.id, label: choice.label, cellId: cell.id, spec, ops: createPatch(parent, spec) });
+      break;
+    }
+  }
+  return result;
 }
 
 function cap(text: string, max: number): string {
@@ -135,6 +227,7 @@ interface GenreStep {
  * Rychlost a výdrž soupeře před počtem – počet mění i to, co hra slibuje.
  */
 const GENRE_HARDER: Readonly<Record<string, readonly GenreStep[]>> = {
+  arena_catch: [{ key: 'preySpeed', step: 20 }],
   arena_escape: [{ key: 'chaserSpeed', step: 10 }, { key: 'chasers', step: 1, role: 'chaser' }],
   arena_collect: [{ key: 'items', step: 2, role: 'collectible' }],
   fight: [{ key: 'enemyHp', step: 1 }, { key: 'enemySpeed', step: 10 }],

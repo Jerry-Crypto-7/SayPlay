@@ -1,3 +1,7 @@
+import { recipeKey } from '../compose/recipe';
+import { assemblyOfCell, liveCells } from '../compose/allowed';
+import { compileRecipe } from '../compose/compile';
+import { readGenreAnswer, readRecipeAnswer, readRecipeContent } from './read';
 /**
  * Ověřené příklady do promptu režiséra (P30A T8): k větě 3–5 nejbližších her
  * z `examples.json`, deterministicky podle slov věty. Každý příklad je věta
@@ -31,10 +35,24 @@ export const DIRECTOR_EXAMPLES: readonly DirectorExample[] = EXAMPLES;
 export const exampleSpec = (example: DirectorExample): GenreSpec => example.answer.spec as GenreSpec;
 
 /** Příklady, jejichž režim dnes hraje; jen z nich se vybírá. */
-const READY_EXAMPLES = DIRECTOR_EXAMPLES.filter((example) => {
-  const spec = exampleSpec(example);
-  return readyModes(GENRE_MODULES[spec.genre] as GenreModule).includes(spec.mode);
-});
+export function exampleReady(example: DirectorExample): boolean {
+  const raw = example.answer.spec as Record<string, unknown>;
+  if (raw && 'recipe' in raw) return readRecipeAnswer(example.answer).ok;
+  const spec = exampleSpec(example), module = GENRE_MODULES[spec.genre] as GenreModule | undefined;
+  return module !== undefined && readyModes(module).includes(spec.mode);
+}
+export function exampleGame(example: DirectorExample) {
+  const raw = example.answer.spec as Record<string, unknown>;
+  if (!raw || !('recipe' in raw)) return readGenreAnswer(example.answer);
+  const read = readRecipeAnswer(example.answer);
+  if (!read.ok) return read;
+  const cell = liveCells().find(cell => recipeKey(cell.recipe) === recipeKey(read.value.recipe))!;
+  const {recipe,unmet:_unmet,...content}=read.value;
+  const checked=readRecipeContent(cell,content);
+  if (!checked.ok) return checked;
+  return {ok:true as const,spec:compileRecipe({...assemblyOfCell(cell,checked.value),...recipe})};
+}
+const READY_EXAMPLES = DIRECTOR_EXAMPLES.filter(exampleReady);
 
 /** Verze sady příkladů do klíče cache: jiné příklady = jiný prompt. */
 export const EXAMPLES_VERSION = canonicalHash(DIRECTOR_EXAMPLES);

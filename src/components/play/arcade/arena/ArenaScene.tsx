@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 /**
  * Scéna arény (P25F T6): kamera shora nad hráčem, velikosti na první pohled.
  * Každé tělo je kotouč o průměru své šířky; barva říká, co s ním: hráč
@@ -148,6 +150,7 @@ function AgarWorld({ session, half, surface, look: scene, targets, ghost }: Aren
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
+    if (renderHeld(session)) return;
     if (bodiesStale(discs, session)) setDiscs(bodiesOf(session));
     const state = session.state();
     const prev = session.prev();
@@ -328,7 +331,7 @@ type Part = 'hero' | 'chaser' | 'enemy' | 'item' | 'block';
 function partOf(view: BodyView): Part {
   if (view.role === ROLE.player) return 'hero';
   if (view.role === ROLE.chaser) return 'chaser';
-  if (view.kind === 'enemy') return 'enemy';
+  if (view.kind === 'enemy' || (view.kind === 'prey' && view.role === ROLE.enemy)) return 'enemy';
   if (view.role === ROLE.collectible) return 'item';
   return 'block';
 }
@@ -508,6 +511,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
     // Hodiny kresby souboje: stojí s pauzou (zastavený snímek drží záblesk i švih); jádro tiká celý čas snímku vždy, hit-stop jen čte stav po tiku.
     const now = session.paused() ? fxClock.current : (fxClock.current += Math.min(delta, MAX_FX_STEP_S) * 1000);
     const alpha = advanceFrame(session, watch, delta * 1000, now);
+    if (renderHeld(session)) return;
     if (bodiesStale(views, session)) setViews(bodiesOf(session));
     const state = session.state();
     const prev = session.prev();

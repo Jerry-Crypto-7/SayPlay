@@ -1,0 +1,982 @@
+{
+  "summary": [
+    {
+      "cell": "drive.reach+shoot+collect",
+      "wins": {
+        "novice": 9,
+        "intermediate": 18,
+        "expert": 20
+      }
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "wins": {
+        "novice": 6,
+        "intermediate": 19,
+        "expert": 20
+      }
+    }
+  ],
+  "rows": [
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 1,
+      "profile": "novice",
+      "won": false,
+      "hash": "b331a7d2",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "f7ed530f",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 1,
+      "profile": "expert",
+      "won": true,
+      "hash": "75a298b3",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 2,
+      "profile": "novice",
+      "won": false,
+      "hash": "a9440201",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "6f80aaa2",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 2,
+      "profile": "expert",
+      "won": true,
+      "hash": "52b92b07",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 3,
+      "profile": "novice",
+      "won": false,
+      "hash": "27b0d136",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "0841a5f5",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 3,
+      "profile": "expert",
+      "won": true,
+      "hash": "e5801af4",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 4,
+      "profile": "novice",
+      "won": true,
+      "hash": "9800628e",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "16534c2d",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 4,
+      "profile": "expert",
+      "won": true,
+      "hash": "b191798b",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 5,
+      "profile": "novice",
+      "won": true,
+      "hash": "0e26467c",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "7e711e22",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 5,
+      "profile": "expert",
+      "won": true,
+      "hash": "4a7657b0",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 6,
+      "profile": "novice",
+      "won": false,
+      "hash": "3cb49448",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "fade41eb",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 6,
+      "profile": "expert",
+      "won": true,
+      "hash": "a023d8a4",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 7,
+      "profile": "novice",
+      "won": true,
+      "hash": "cb9da841",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 7,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "7bfe1305",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 7,
+      "profile": "expert",
+      "won": true,
+      "hash": "4980a022",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 8,
+      "profile": "novice",
+      "won": true,
+      "hash": "fe3ff279",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "1e0278c8",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 8,
+      "profile": "expert",
+      "won": true,
+      "hash": "d6497479",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 9,
+      "profile": "novice",
+      "won": false,
+      "hash": "d749774d",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 9,
+      "profile": "intermediate",
+      "won": false,
+      "hash": "0a0dac28",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 9,
+      "profile": "expert",
+      "won": true,
+      "hash": "7cc6f776",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 10,
+      "profile": "novice",
+      "won": false,
+      "hash": "119ba83d",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 10,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "46982f7a",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 10,
+      "profile": "expert",
+      "won": true,
+      "hash": "89bf7609",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 11,
+      "profile": "novice",
+      "won": false,
+      "hash": "9c458b26",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 11,
+      "profile": "intermediate",
+      "won": false,
+      "hash": "9c458b26",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 11,
+      "profile": "expert",
+      "won": true,
+      "hash": "e685ad01",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 12,
+      "profile": "novice",
+      "won": true,
+      "hash": "cfc75388",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "e9ad7e56",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 12,
+      "profile": "expert",
+      "won": true,
+      "hash": "0140cb81",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 13,
+      "profile": "novice",
+      "won": true,
+      "hash": "aab2985a",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "bb30331b",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 13,
+      "profile": "expert",
+      "won": true,
+      "hash": "77368bd6",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 14,
+      "profile": "novice",
+      "won": false,
+      "hash": "1f55b116",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "38e2295a",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 14,
+      "profile": "expert",
+      "won": true,
+      "hash": "37fc051c",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 15,
+      "profile": "novice",
+      "won": true,
+      "hash": "38e3426e",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "62b0bc94",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 15,
+      "profile": "expert",
+      "won": true,
+      "hash": "ee00c860",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 16,
+      "profile": "novice",
+      "won": false,
+      "hash": "2bde6816",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "994fcfb9",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 16,
+      "profile": "expert",
+      "won": true,
+      "hash": "982be024",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 17,
+      "profile": "novice",
+      "won": true,
+      "hash": "8b7adb0c",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "9cc6d725",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 17,
+      "profile": "expert",
+      "won": true,
+      "hash": "50c2eb54",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 18,
+      "profile": "novice",
+      "won": false,
+      "hash": "0550da30",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "e822ac1f",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 18,
+      "profile": "expert",
+      "won": true,
+      "hash": "e8704f6e",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 19,
+      "profile": "novice",
+      "won": true,
+      "hash": "fe293cc6",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "15d2c1c5",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 19,
+      "profile": "expert",
+      "won": true,
+      "hash": "e44d4d32",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 20,
+      "profile": "novice",
+      "won": false,
+      "hash": "215f1024",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "0e413e62",
+      "replayEqual": true
+    },
+    {
+      "cell": "drive.reach+shoot+collect",
+      "seed": 20,
+      "profile": "expert",
+      "won": true,
+      "hash": "a8f4c884",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 1,
+      "profile": "novice",
+      "won": true,
+      "hash": "613c3594",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "32e1b455",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 1,
+      "profile": "expert",
+      "won": true,
+      "hash": "88f0d1ae",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 2,
+      "profile": "novice",
+      "won": true,
+      "hash": "702f400f",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "bc4bf334",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 2,
+      "profile": "expert",
+      "won": true,
+      "hash": "351b7954",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 3,
+      "profile": "novice",
+      "won": false,
+      "hash": "faad117b",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "0b1c94f7",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 3,
+      "profile": "expert",
+      "won": true,
+      "hash": "23146932",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 4,
+      "profile": "novice",
+      "won": true,
+      "hash": "1dd66ac8",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "bc236fc0",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 4,
+      "profile": "expert",
+      "won": true,
+      "hash": "bc236fc0",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 5,
+      "profile": "novice",
+      "won": true,
+      "hash": "86cbb3e8",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "7ad5a3a3",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 5,
+      "profile": "expert",
+      "won": true,
+      "hash": "178bd42c",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 6,
+      "profile": "novice",
+      "won": false,
+      "hash": "8146136b",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "82862816",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 6,
+      "profile": "expert",
+      "won": true,
+      "hash": "daad561d",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 7,
+      "profile": "novice",
+      "won": false,
+      "hash": "b51ea465",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 7,
+      "profile": "intermediate",
+      "won": false,
+      "hash": "acb1bcc9",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 7,
+      "profile": "expert",
+      "won": true,
+      "hash": "60b6342b",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 8,
+      "profile": "novice",
+      "won": true,
+      "hash": "91e5eb82",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "b5b6c63b",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 8,
+      "profile": "expert",
+      "won": true,
+      "hash": "8a9f62e4",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 9,
+      "profile": "novice",
+      "won": false,
+      "hash": "e004739c",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 9,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "c4bf175f",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 9,
+      "profile": "expert",
+      "won": true,
+      "hash": "fc170ab1",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 10,
+      "profile": "novice",
+      "won": false,
+      "hash": "53a53859",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 10,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "ae76723f",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 10,
+      "profile": "expert",
+      "won": true,
+      "hash": "cc61d99f",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 11,
+      "profile": "novice",
+      "won": false,
+      "hash": "d7bc8145",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 11,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "2182056a",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 11,
+      "profile": "expert",
+      "won": true,
+      "hash": "9d61eaae",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 12,
+      "profile": "novice",
+      "won": false,
+      "hash": "6e94cc47",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "f5b4fd4b",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 12,
+      "profile": "expert",
+      "won": true,
+      "hash": "2148395a",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 13,
+      "profile": "novice",
+      "won": false,
+      "hash": "fea38c6e",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "66dceac9",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 13,
+      "profile": "expert",
+      "won": true,
+      "hash": "e1f4344f",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 14,
+      "profile": "novice",
+      "won": false,
+      "hash": "44684c48",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "3441b7fe",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 14,
+      "profile": "expert",
+      "won": true,
+      "hash": "e841d7a4",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 15,
+      "profile": "novice",
+      "won": false,
+      "hash": "3365f8e4",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "a1be4dbc",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 15,
+      "profile": "expert",
+      "won": true,
+      "hash": "fe4e4ad6",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 16,
+      "profile": "novice",
+      "won": false,
+      "hash": "aa0e04f2",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "70a4399e",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 16,
+      "profile": "expert",
+      "won": true,
+      "hash": "ab4153d1",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 17,
+      "profile": "novice",
+      "won": false,
+      "hash": "b646f8d1",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "90b681a7",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 17,
+      "profile": "expert",
+      "won": true,
+      "hash": "af459d41",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 18,
+      "profile": "novice",
+      "won": false,
+      "hash": "cfde7926",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "7784a259",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 18,
+      "profile": "expert",
+      "won": true,
+      "hash": "7c15aff4",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 19,
+      "profile": "novice",
+      "won": false,
+      "hash": "74eeeaa9",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "0f4a332e",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 19,
+      "profile": "expert",
+      "won": true,
+      "hash": "b6e94cfb",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 20,
+      "profile": "novice",
+      "won": true,
+      "hash": "01c56564",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "hash": "3bb9cc98",
+      "replayEqual": true
+    },
+    {
+      "cell": "walk.escape+collect+guard",
+      "seed": 20,
+      "profile": "expert",
+      "won": true,
+      "hash": "c5354c9f",
+      "replayEqual": true
+    }
+  ]
+}

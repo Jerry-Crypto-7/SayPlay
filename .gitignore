@@ -49,6 +49,11 @@ evals/worldstream/create-raw.json
 # Vyhrazené jméno kill-gate-report.json commitnutelné zůstává.
 evals/dev-report.*.json
 
+# Surový výstup Codex CLI ze slepého soudce prostředí (P41 T30). Stderr na
+# Windows nese cesty k domovskému adresáři, a ty do veřejného repa nepatří.
+evals/play/p41/env/judgements/**/events.jsonl
+evals/play/p41/env/judgements/**/stderr.txt
+
 # Vazba tagu na artefakt, výstup `npm run build:from-tag`. Necommituje se ze dvou
 # důvodů: nese hash commitu, ve kterém by musel ležet, a pipeline sama vyžaduje
 # čistý strom – trackovaný by po každém běhu shodil ten další na vlastním výstupu.

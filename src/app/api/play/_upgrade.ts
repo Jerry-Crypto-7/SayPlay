@@ -26,6 +26,8 @@ import { join } from 'node:path';
 import { after } from 'next/server';
 
 import { gameSpecHash } from '@/play/spec';
+import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
+import { extractIntent } from '@/play/intent/extract';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
 import { DIRECTOR_BUDGET_MS, getDirector } from './_director';
@@ -36,6 +38,7 @@ export type DraftFinalReason =
   | 'MALFORMED'
   | 'UNREPAIRED'
   | 'VERB_UNPROVED'
+  | 'ACTION_LOST'
   | 'UNCHANGED'
   | 'NOT_PLAYABLE'
   | 'STORE_UNAVAILABLE'
@@ -108,10 +111,16 @@ function forgetSettled(map: Map<string, Job>): void {
 }
 
 /** Dítě návrhu, které už je autorskou verzí – z úložiště, ne z paměti procesu. */
-async function publishedUpgrade(versions: VersionStore, draftId: string): Promise<string | null> {
+async function publishedUpgrade(versions: VersionStore, draft: PublishedGame, sentence: string): Promise<string | null> {
+  const draftId = draft.version.versionId;
+  const intent = extractIntent(sentence);
+  let before: Awaited<ReturnType<typeof actionEvidence>> | undefined;
   for (const childId of await versions.childrenOf(draftId)) {
     const child = await versions.get(childId);
-    if (child?.relation === 'upgrade' && child.version.parentId === draftId) return childId;
+    if (child?.relation !== 'upgrade' || child.version.parentId !== draftId) continue;
+    before ??= await actionEvidence(draft.spec, draft.version.seed, draft.arcade);
+    const after = await actionEvidence(child.spec, child.version.seed, child.arcade);
+    if (lostActions(intent, before, after).length === 0) return childId;
   }
   return null;
 }
@@ -133,7 +142,7 @@ export const DRAFT_FINAL_TTL_SECONDS = 3600;
  * nic – uložené by na hodinu zmrazily cizí návrh a útočník by to uměl
  * vyvolat zdarma (revize R10). Další dotaz pak dostane nový pokus.
  */
-const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'UNCHANGED', 'NOT_PLAYABLE', 'BLOCKED']);
+const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'ACTION_LOST', 'UNCHANGED', 'NOT_PLAYABLE', 'BLOCKED']);
 
 export function isTransient(outcome: UpgradeOutcome): boolean {
   return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);
@@ -141,7 +150,7 @@ export function isTransient(outcome: UpgradeOutcome): boolean {
 
 async function runUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
-  const existing = await publishedUpgrade(versions, draftId);
+  const existing = await publishedUpgrade(versions, draft, request.sentence);
   if (existing !== null) return { status: 'ready', versionId: existing };
   // Čte se jen verdikt o větě: záznam z buildu před revizí R10 (nebo z jiného
   // nasazení nad týmž prefixem) může nést přechodný důvod.
@@ -225,7 +234,16 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
   // Ovládání smí AI vyměnit (P26 T4, ruší R1 z P25A): návrh ze slov žánr jen
   // odhaduje a nová hra projde tímtéž ověřením robotem jako každá jiná.
 
-  const published = await publishReadSpec(versions, directed.spec, seeds, draftId, {
+  const intent = extractIntent(request.sentence);
+  const before = await actionEvidence(draft.spec, draft.version.seed, draft.arcade);
+  const preservingSeeds: number[] = [];
+  for (const seed of seeds) {
+    const after = await actionEvidence(directed.spec, seed);
+    if (lostActions(intent, before, after).length === 0) preservingSeeds.push(seed);
+  }
+  if (preservingSeeds.length === 0) return final('ACTION_LOST', { stage: 'upgrade', reason: 'ACTION_LOST', detail: 'No candidate seed preserves all essential actions witnessed in the published quick version.', raw: directed.spec });
+
+  const published = await publishReadSpec(versions, directed.spec, preservingSeeds, draftId, {
     relation: 'upgrade',
     timings: { ackMs: request.ackMs, draftReadyMs: request.draftReadyMs, directorMs, source: directed.source },
   });

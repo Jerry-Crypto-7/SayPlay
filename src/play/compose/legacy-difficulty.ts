@@ -1,0 +1,23 @@
+/** Opt-in P41 recipe settings. Legacy genre compilation keeps its old defaults. */
+export const LEGACY_DIFFICULTY: Readonly<Record<string, Readonly<Record<string, number>>>> = {
+  'runner.default+shoot_at': { fullRowPct: 0, lives: 5 },
+  'runner.default+chase_me+shoot_at': { fullRowPct: 0, lives: 5 },
+  'voyage.race': { hazards: 0, turbo: 1, lengthM: 700, topSpeed: 300, roadWidth: 3600, roadEntryWidth: 4000, crashBudget: 1 },
+  'voyage.land': { touchdownSpeed: 19, gravityRisePct: 1, lives: 1 },
+  'shooter.default': { targetWidthPct: 30, movingTargets: 0, lives: 1 },
+  'arena.escape': { entryDistance: 6000, chaseLead: 29, chaserSpeed: 65, lives: 1 },
+  'arena.escape+collect': { chasers: 1, items: 8, pursuitCeiling: 107, itemSizePct: 125 },
+  'arena.collect': { items: 8, pursuitCeiling: 115, itemSizePct: 125 },
+  'throw.default': { paceBudgetPct: 60 },
+  'quest.station': { paceBudgetPct: 55 },
+  'runner.default': { fullRowPct: 50 },
+  'runner.default+chase_me': { fullRowPct: 50 },
+  'run.escape': { fullRowPct: 25 },
+  'jump.escape': { difficulty: 0, lengthM: 250 },
+  'flap.default': { lengthM: 250 },
+  'timing.stack': { timeLimit: 34 },
+  'timing.precision': { timeLimit: 34 },
+  'timing.bridge': { timeLimit: 34 },
+  'duel.default': { roundRise: 1 },
+  'arena.fight': { timeLimit: 70 },
+};

@@ -23,7 +23,7 @@ const FAMILY_SENTENCES: Readonly<Record<string, Expect>> = {
   // P37A T4.
   craft: { genre: 'rhythm', mode: 'default', heroAction: 'knit', object: 'none', ids: ['u01', 'u02', 'u16', 'u17', 'u41', 'u59', 'n05', 'm17'] },
   'garden (water)': { genre: 'quest', mode: 'spatial', heroAction: 'water', object: 'target', ids: ['u06'] },
-  'garden (plant, dig)': { genre: 'quest', mode: 'spatial', heroAction: 'dig', object: 'target', ids: ['u07', 'u08'] },
+  'garden (plant, dig)': { genre: 'quest', mode: 'spatial', heroAction: 'dig', object: 'target', ids: ['u07'] },
   fix: { genre: 'quest', mode: 'station', heroAction: 'fix', object: 'target', ids: ['u23', 'u25', 'n39'] },
   paint: { genre: 'quest', mode: 'spatial', heroAction: 'paint', object: 'target', ids: ['u18', 'u53'] },
   care: { genre: 'quest', mode: 'station', heroAction: 'carry', object: 'target', ids: ['u32', 'u49'] },
@@ -75,6 +75,18 @@ describe.each(Object.entries(FAMILY_SENTENCES))('family %s on dev-150', (_family
       expect([id, row.bot.end, row.idle.end]).toEqual([id, 'won', 'lost']);
     }
   }, 120_000);
+});
+
+// P41: digging and searching are separate actions. The live collect recipe can
+// play the carrots; a quest stand-in must not claim to have dug tunnels.
+it('u08 collects the named carrots and admits the missing digging action', () => {
+  const meta = draftGameSpecWithMeta(textOf('u08'), 1);
+  expect(meta.composition?.recipe).toMatchObject({ move: 'walk', objective: 'collect' });
+  expect(castFor(meta.genre!, 'collect')?.label).toBe('carrot');
+  expect(meta.spec.heroAction).toBe('dig');
+  expect(meta.composition?.unmet).toContainEqual({ actor: 'mole', verb: 'dig', object: 'tunnel' });
+  const row = measureSentence({ set: 'dev', id: 'u08', text: textOf('u08') });
+  expect([row.bot.end, row.idle.end]).toEqual(['won', 'lost']);
 });
 
 describe('outside the families', () => {

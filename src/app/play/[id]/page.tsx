@@ -11,7 +11,7 @@ import { authorshipOf, labFacts, readFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import type { GameVersion } from '@/play/contracts';
-import { type Honesty, sentenceOf, unsupportedGame } from '@/play/draft/unsupported';
+import { type Honesty, sentenceOf, honestyOf } from '@/play/draft/unsupported';
 import { DARE_ID_PATTERN, type PublishedGame, versionStoreFromEnv } from '@/play/version';
 
 type Params = { params: Promise<{ id: string }> };
@@ -58,7 +58,7 @@ const load = cache(async (id: string): Promise<Loaded> => {
   const game = await versions.get(id);
   if (game === null) return { kind: 'missing' };
   const [children, lineage, sentence] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id), sentenceOf(versions, game)]);
-  const honesty = sentence === null ? null : unsupportedGame(sentence, game.spec);
+  const honesty = await honestyOf(versions, game);
   return { kind: 'game', game, children, lineage, honesty, sentence };
 });
 

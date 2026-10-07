@@ -14,7 +14,10 @@
 
 import { z } from 'zod';
 
-import { applyRemix, chipOf, REMIX_CHIPS, remixPatch } from '@/play/director/remix';
+import { applyRemix, chipOf, REMIX_CHIPS, remixPatch, verifiedRecipeRemixes } from '@/play/director/remix';
+import { honestyOf, sentenceOf } from '@/play/draft/unsupported';
+import { extractIntent } from '@/play/intent/extract';
+import type { PublishedGame, VersionStore } from '@/play/version';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { getCompiler } from '../../../_compiler';
@@ -51,6 +54,18 @@ const bodySchema = z
 
 const JOB_PATTERN = /^[0-9a-f]{32}$/;
 
+// UI protocol labels, not capabilities: availability always comes from live robot/witness verification.
+const RECIPE_LABELS = new Set(['add shooting', 'make it a race', 'swap to a boat', 'add a chase', 'add collecting']);
+async function recipeSuggestions(versions: VersionStore, parent: PublishedGame) {
+  const sentence = await sentenceOf(versions, parent);
+  const honesty = await honestyOf(versions, parent);
+  return verifiedRecipeRemixes(parent.spec, parent.version.seed, {
+    ...(sentence === null ? {} : { intent: extractIntent(sentence) }),
+    unmet: honesty?.unmet ?? [],
+  });
+}
+
+
 function noStore(body: unknown, status = 200): Response {
   return Response.json(body, { status, headers: { 'cache-control': 'no-store' } });
 }
@@ -86,6 +101,18 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const versions = store();
   const parent = await versions.get(id);
   if (parent === null) return notFound();
+
+  if (sentence !== null && RECIPE_LABELS.has(sentence.toLowerCase())) {
+    // A supplied seed must not change the already advertised/verified world.
+    const verifiedSeed = parent.version.seed;
+    if (seed !== undefined && seed !== verifiedSeed) return fail(400, 'BAD_REQUEST', 'a verified remix uses its parent seed');
+    const candidates = await recipeSuggestions(versions, parent);
+    const candidate = candidates.find(option => option.label.toLowerCase() === sentence.toLowerCase());
+    // A stale/unavailable verified chip never silently becomes a model job.
+    if (candidate === undefined) return fail(422, 'SPEC_REJECTED', 'this verified change is not available for this game');
+    const published = await publishReadSpec(versions, candidate.spec, [verifiedSeed], id);
+    return published.ok ? publishedResponse(published.value) : published.response;
+  }
 
   if (sentence !== null && chip === undefined) {
     // Úložiště, které by dítě stejně nezapsalo, nesmí nejdřív zaplatit model.
@@ -131,7 +158,16 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const refused = await admit(request, 'snapshots');
   if (refused !== null) return refused;
   const { id } = await context.params;
-  const job = new URL(request.url).searchParams.get('job') ?? '';
+  const query = new URL(request.url).searchParams;
+  if (query.get('suggestions') === '1') {
+    if (!VERSION_ID_PATTERN.test(id)) return notFound();
+    const versions = store();
+    const parent = await versions.get(id);
+    if (parent === null) return notFound();
+    const candidates = await recipeSuggestions(versions, parent);
+    return noStore({ suggestions: candidates.map(({ id, label, cellId }) => ({ id, label, cellId })) });
+  }
+  const job = query.get('job') ?? '';
   if (!VERSION_ID_PATTERN.test(id) || !JOB_PATTERN.test(job)) return notFound();
   const status = await remixStatus(store(), id, job);
   return status === null ? notFound() : noStore(status);

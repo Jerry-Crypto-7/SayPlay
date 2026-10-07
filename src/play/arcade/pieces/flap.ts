@@ -104,6 +104,8 @@ const generatorParams = z
     difficulty: z.enum(FLAP_DIFFICULTIES).default('normal'),
     lengthM: z.int().min(FLAP_TRACK.minLengthM).max(FLAP_TRACK.maxLengthM).default(150),
     coins: z.boolean().default(true),
+    /** Opt-in collect course: visible gap collectibles, mandatory before the finish. */
+    collectAll: z.boolean().optional(),
     /** Přesný počet mincí z počtu rolí (P26D T9); bez hodnoty co mezery dají. */
     coinCount: z.int().min(1).max(FLAP_TRACK.maxCoins).optional(),
     /**
@@ -151,7 +153,7 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
       tier = tierAt(params, z, length);
       bodies.push(pipe(z, 0, bottom), pipe(z, bottom + tier.gap, FLAP.ceiling));
       // Branka v mezeře: průlet = bod.
-      bodies.push({ role: 'collectible', kind: 'gate', x: 0, y: bottom, z, w: FLAP.pipeW, h: tier.gap, d: 200, solid: false });
+      bodies.push({ role: 'collectible', kind: params.collectAll === true ? 'coin' : 'gate', x: 0, y: bottom, z, w: FLAP.pipeW, h: tier.gap, d: 200, solid: false });
       if (prev !== null) coinSpots.push({ z: Math.floor((prev.z + z) / 2), y: Math.floor((prev.bottom + bottom + tier.gap - FLAP.size) / 2) });
       prev = { z, bottom };
       const spacing = rng.int(tier.spacing[0], tier.spacing[1]);
@@ -175,12 +177,12 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
  * se proletí za ~13 tiků, bez milosti by v ní padly všechny životy. `feel`
  * (P37A T7): dotek země prohraje až po tikách odpuštění, které počítá ovládání.
  */
-export function flapRules(health?: number, grace = false, feel = false): PieceRef[] {
+export function flapRules(health?: number, grace = false, feel = false, collectAll = false): PieceRef[] {
   const damage = grace ? { effect: 'damage', grace: HIT_GRACE } : { effect: 'damage' };
   const rules: PieceRef[] = [
     { id: 'hit', params: { role: 'obstacle', ...(health === undefined ? { effect: 'lose' } : damage) } },
     { id: 'pickup', params: {} },
-    { id: 'finish', params: {} },
+    { id: 'finish', params: collectAll ? { allItems: true } : {} },
     // Země drží hráče na y = 0: dotek země = spodní stěna pod 1.
     { id: 'fall_out', params: { belowY: 1, effect: 'lose', ...(feel ? { afterTicks: PLATFORM_FEEL.coyoteTicks } : {}) } },
   ];

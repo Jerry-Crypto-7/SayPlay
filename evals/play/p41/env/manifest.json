@@ -1,0 +1,147 @@
+{
+  "schema": "p41.env-capture.v1",
+  "capturedAt": "2026-10-06T18:27:22.856Z",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "frames": [
+    {
+      "id": "01",
+      "sentence": "Drive a car to the finish through a desert.",
+      "control": "steer",
+      "environment": "desert",
+      "aliases": [
+        "desert",
+        "sandy desert",
+        "dunes",
+        "sand dunes"
+      ],
+      "file": "01.png",
+      "sha256": "4483463c735b0398934286ea0e4e89995ed27c51f0d3e6d2a210e83c15c2c576",
+      "versionId": "2e9e5adbd9a15c7613ad97cbaef05286",
+      "seed": 41,
+      "tick": 60,
+      "theme": {
+        "look": "desert",
+        "mood": "adventurous",
+        "setting": "desert"
+      }
+    },
+    {
+      "id": "02",
+      "sentence": "Drive a car to the finish through a city at night.",
+      "control": "steer",
+      "environment": "city",
+      "aliases": [
+        "city",
+        "urban",
+        "city at night",
+        "night city",
+        "urban street"
+      ],
+      "file": "02.png",
+      "sha256": "98a9b2f555e5945c2ec6954d6bd47882e2b6be719fe3c1088e64919e2b3bd664",
+      "versionId": "017518ca554752b987d7511ce9938d86",
+      "seed": 41,
+      "tick": 60,
+      "theme": {
+        "look": "city",
+        "mood": "adventurous",
+        "setting": "city at night",
+        "timeOfDay": "night"
+      }
+    },
+    {
+      "id": "03",
+      "sentence": "Swim a submarine through rings underwater.",
+      "control": "glide",
+      "environment": "underwater",
+      "aliases": [
+        "underwater",
+        "underwater ocean",
+        "ocean",
+        "undersea",
+        "ocean floor",
+        "coral reef"
+      ],
+      "file": "03.png",
+      "sha256": "64540afd0e055f4ed0f954aca198d92acb5de4d67a8f587bec7f3e82e85e8f6c",
+      "versionId": "aaa14da2d2446a307ed5cc21aba81ec7",
+      "seed": 41,
+      "tick": 60,
+      "theme": {
+        "mood": "adventurous",
+        "setting": "rings underwater"
+      }
+    },
+    {
+      "id": "04",
+      "sentence": "Fly a spaceship through rings in outer space.",
+      "control": "glide",
+      "environment": "space",
+      "aliases": [
+        "space",
+        "outer space",
+        "cosmos",
+        "deep space",
+        "starfield"
+      ],
+      "file": "04.png",
+      "sha256": "de7589d6ed14fa7d096f4cd99f9362608c56271180bffc58d0a69b8c877b2c4a",
+      "versionId": "5a973b2c83a5ca9a10ddba7aae8c4bdf",
+      "seed": 41,
+      "tick": 60,
+      "theme": {
+        "mood": "adventurous",
+        "setting": "spaceship"
+      }
+    },
+    {
+      "id": "05",
+      "sentence": "Walk through a forest maze to the exit.",
+      "control": "walker",
+      "environment": "forest",
+      "aliases": [
+        "forest",
+        "woods",
+        "woodland",
+        "woodlands"
+      ],
+      "file": "05.png",
+      "sha256": "8bcf968ae5b7119e0706943d1f437e006ece11150684d894c7595c5c289a8f71",
+      "versionId": "cd34fc685a170a09b26d23da46570130",
+      "seed": 41,
+      "tick": 60,
+      "theme": {
+        "look": "forest",
+        "mood": "adventurous",
+        "setting": "forest"
+      }
+    },
+    {
+      "id": "06",
+      "sentence": "Play football and score goals in a snowy field.",
+      "control": "ball",
+      "environment": "snow",
+      "aliases": [
+        "snow",
+        "snowy field",
+        "snowy landscape",
+        "snowfield",
+        "winter",
+        "ice",
+        "icy landscape"
+      ],
+      "file": "06.png",
+      "sha256": "5553f0111b33ec10df1bf36df288fc78b94bb8e937600a5dab19100b6463a35f",
+      "versionId": "853c9b7474252f60f14938e78dc7ed60",
+      "seed": 41,
+      "tick": 60,
+      "theme": {
+        "mood": "adventurous",
+        "setting": "snowy field"
+      }
+    }
+  ]
+}

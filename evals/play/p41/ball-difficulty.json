@@ -1,0 +1,1624 @@
+{
+  "rows": [
+    {
+      "cell": "ball.defeat",
+      "seed": 1,
+      "profile": "novice",
+      "won": false,
+      "tick": 601,
+      "hash": "38717f7e",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "245b4841",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 1,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "85ea4cf5",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 2,
+      "profile": "novice",
+      "won": true,
+      "tick": 600,
+      "hash": "ffebdea2",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "33917e72",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 2,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "4acd984e",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 3,
+      "profile": "novice",
+      "won": true,
+      "tick": 594,
+      "hash": "2e176529",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "abbe7afb",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 3,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "efea0e67",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 4,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "3f05e059",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "1c5fd871",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 4,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "f245249d",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 5,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "871a51ce",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "d9662906",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 5,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "1f2d93da",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 6,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "0170cfc1",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "d5779399",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 6,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "d8e72a55",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 7,
+      "profile": "novice",
+      "won": false,
+      "tick": 601,
+      "hash": "036b6435",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 7,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 594,
+      "hash": "d12e5414",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 7,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "56460c1a",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 8,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "12595321",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "a0b58739",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 8,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "bd88463d",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 9,
+      "profile": "novice",
+      "won": false,
+      "tick": 601,
+      "hash": "f825d070",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 9,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 596,
+      "hash": "70443520",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 9,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "8369a4a0",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 10,
+      "profile": "novice",
+      "won": false,
+      "tick": 601,
+      "hash": "43cedde1",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 10,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "ad3894c6",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 10,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "789b7772",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 11,
+      "profile": "novice",
+      "won": false,
+      "tick": 601,
+      "hash": "903c6704",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 11,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "792b6384",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 11,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "1676d298",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 12,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "9243c58c",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "40aadfc7",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 12,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "22d5417b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 13,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "0f4a7abb",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 596,
+      "hash": "c7cbbfbf",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 13,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "83bee6cf",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 14,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "868049d6",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "d679270e",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 14,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "32b055e2",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 15,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "8eac21cf",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "16c7f467",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 15,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "5e9ad80b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 16,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "b856e827",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "b2ebbf5f",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 16,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "1c7fba8b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 17,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "cdb60a63",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "013b1a8b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 17,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "b6f1df37",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 18,
+      "profile": "novice",
+      "won": true,
+      "tick": 598,
+      "hash": "58d531e2",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 592,
+      "hash": "e3a0bba4",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 18,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "7b263b28",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 19,
+      "profile": "novice",
+      "won": false,
+      "tick": 601,
+      "hash": "51a7d5d9",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 596,
+      "hash": "0d0bd38a",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 19,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "a6fe7d02",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 20,
+      "profile": "novice",
+      "won": true,
+      "tick": 592,
+      "hash": "8e8b130f",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 596,
+      "hash": "a0e35e9f",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.defeat",
+      "seed": 20,
+      "profile": "expert",
+      "won": true,
+      "tick": 592,
+      "hash": "8e8b130f",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 1,
+      "profile": "novice",
+      "won": true,
+      "tick": 898,
+      "hash": "0145dd49",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 892,
+      "hash": "3bd4e2a5",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 1,
+      "profile": "expert",
+      "won": true,
+      "tick": 886,
+      "hash": "c608410b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 2,
+      "profile": "novice",
+      "won": false,
+      "tick": 901,
+      "hash": "0ba7271f",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 880,
+      "hash": "3594cfdb",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 2,
+      "profile": "expert",
+      "won": true,
+      "tick": 877,
+      "hash": "d06d7172",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 3,
+      "profile": "novice",
+      "won": true,
+      "tick": 880,
+      "hash": "255aadef",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 865,
+      "hash": "fce2c4fa",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 3,
+      "profile": "expert",
+      "won": true,
+      "tick": 865,
+      "hash": "451275c6",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 4,
+      "profile": "novice",
+      "won": true,
+      "tick": 881,
+      "hash": "aea6d7ba",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 885,
+      "hash": "f97ff23b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 4,
+      "profile": "expert",
+      "won": true,
+      "tick": 881,
+      "hash": "1182a553",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 5,
+      "profile": "novice",
+      "won": true,
+      "tick": 874,
+      "hash": "402d0c57",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 874,
+      "hash": "e9748a60",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 5,
+      "profile": "expert",
+      "won": true,
+      "tick": 874,
+      "hash": "1d00eb54",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 6,
+      "profile": "novice",
+      "won": true,
+      "tick": 852,
+      "hash": "b03b926f",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 852,
+      "hash": "82a91fe0",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 6,
+      "profile": "expert",
+      "won": true,
+      "tick": 852,
+      "hash": "ad9ede24",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 7,
+      "profile": "novice",
+      "won": false,
+      "tick": 901,
+      "hash": "2befea98",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 7,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 879,
+      "hash": "48a976c3",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 7,
+      "profile": "expert",
+      "won": true,
+      "tick": 875,
+      "hash": "3a11d853",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 8,
+      "profile": "novice",
+      "won": true,
+      "tick": 881,
+      "hash": "e427a167",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 877,
+      "hash": "8c8f44eb",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 8,
+      "profile": "expert",
+      "won": true,
+      "tick": 873,
+      "hash": "73a7073b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 9,
+      "profile": "novice",
+      "won": true,
+      "tick": 890,
+      "hash": "82808793",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 9,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 890,
+      "hash": "de042840",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 9,
+      "profile": "expert",
+      "won": true,
+      "tick": 878,
+      "hash": "a5411000",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 10,
+      "profile": "novice",
+      "won": false,
+      "tick": 901,
+      "hash": "5580b81f",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 10,
+      "profile": "intermediate",
+      "won": false,
+      "tick": 901,
+      "hash": "c3d89c80",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 10,
+      "profile": "expert",
+      "won": true,
+      "tick": 897,
+      "hash": "97684bbf",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 11,
+      "profile": "novice",
+      "won": true,
+      "tick": 883,
+      "hash": "f997ebef",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 11,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 873,
+      "hash": "dfe13365",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 11,
+      "profile": "expert",
+      "won": true,
+      "tick": 871,
+      "hash": "6fd07497",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 12,
+      "profile": "novice",
+      "won": true,
+      "tick": 877,
+      "hash": "1185151b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 877,
+      "hash": "1104db57",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 12,
+      "profile": "expert",
+      "won": true,
+      "tick": 877,
+      "hash": "fb2ba7c3",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 13,
+      "profile": "novice",
+      "won": true,
+      "tick": 899,
+      "hash": "f7938e57",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 882,
+      "hash": "958a3198",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 13,
+      "profile": "expert",
+      "won": true,
+      "tick": 878,
+      "hash": "c50614b0",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 14,
+      "profile": "novice",
+      "won": false,
+      "tick": 901,
+      "hash": "e1dc1dfe",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 884,
+      "hash": "88982104",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 14,
+      "profile": "expert",
+      "won": true,
+      "tick": 880,
+      "hash": "93ed74f4",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 15,
+      "profile": "novice",
+      "won": false,
+      "tick": 901,
+      "hash": "3382f67d",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 873,
+      "hash": "2e43a39b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 15,
+      "profile": "expert",
+      "won": true,
+      "tick": 869,
+      "hash": "a9457113",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 16,
+      "profile": "novice",
+      "won": true,
+      "tick": 887,
+      "hash": "40d1e399",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 887,
+      "hash": "db30a44d",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 16,
+      "profile": "expert",
+      "won": true,
+      "tick": 887,
+      "hash": "59ac4029",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 17,
+      "profile": "novice",
+      "won": true,
+      "tick": 888,
+      "hash": "d5347dcf",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 892,
+      "hash": "7c6df7d9",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 17,
+      "profile": "expert",
+      "won": true,
+      "tick": 888,
+      "hash": "07f2f1a1",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 18,
+      "profile": "novice",
+      "won": true,
+      "tick": 853,
+      "hash": "293d79a5",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 853,
+      "hash": "5357f6cd",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 18,
+      "profile": "expert",
+      "won": true,
+      "tick": 853,
+      "hash": "7019ae59",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 19,
+      "profile": "novice",
+      "won": false,
+      "tick": 901,
+      "hash": "5437cdf8",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 886,
+      "hash": "ae33449a",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 19,
+      "profile": "expert",
+      "won": true,
+      "tick": 886,
+      "hash": "ddf19256",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 20,
+      "profile": "novice",
+      "won": true,
+      "tick": 881,
+      "hash": "f2d6be93",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 880,
+      "hash": "19ec59e0",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score",
+      "seed": 20,
+      "profile": "expert",
+      "won": true,
+      "tick": 880,
+      "hash": "e3206b8c",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 1,
+      "profile": "novice",
+      "won": true,
+      "tick": 947,
+      "hash": "a45d9882",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 947,
+      "hash": "f4ea7d48",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 1,
+      "profile": "expert",
+      "won": true,
+      "tick": 947,
+      "hash": "9ddb0804",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 2,
+      "profile": "novice",
+      "won": true,
+      "tick": 955,
+      "hash": "2d50c659",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 943,
+      "hash": "4bba48b2",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 2,
+      "profile": "expert",
+      "won": true,
+      "tick": 943,
+      "hash": "7f4ae736",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 3,
+      "profile": "novice",
+      "won": true,
+      "tick": 933,
+      "hash": "295b19fc",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 933,
+      "hash": "55b9f12c",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 3,
+      "profile": "expert",
+      "won": true,
+      "tick": 933,
+      "hash": "a73132f8",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 4,
+      "profile": "novice",
+      "won": true,
+      "tick": 949,
+      "hash": "2346722e",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 949,
+      "hash": "95d87fe7",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 4,
+      "profile": "expert",
+      "won": true,
+      "tick": 949,
+      "hash": "696e56f3",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 5,
+      "profile": "novice",
+      "won": true,
+      "tick": 942,
+      "hash": "9ec9255f",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 930,
+      "hash": "dc38ebdd",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 5,
+      "profile": "expert",
+      "won": true,
+      "tick": 930,
+      "hash": "53433931",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 6,
+      "profile": "novice",
+      "won": true,
+      "tick": 936,
+      "hash": "f4e3a7a4",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 931,
+      "hash": "2af87f90",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 6,
+      "profile": "expert",
+      "won": true,
+      "tick": 931,
+      "hash": "0fa1f66c",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 7,
+      "profile": "novice",
+      "won": true,
+      "tick": 951,
+      "hash": "12ff8477",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 7,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 949,
+      "hash": "90608b10",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 7,
+      "profile": "expert",
+      "won": true,
+      "tick": 949,
+      "hash": "0121c6fc",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 8,
+      "profile": "novice",
+      "won": true,
+      "tick": 935,
+      "hash": "26500e9a",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 935,
+      "hash": "45130667",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 8,
+      "profile": "expert",
+      "won": true,
+      "tick": 935,
+      "hash": "5cbf48cb",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 9,
+      "profile": "novice",
+      "won": true,
+      "tick": 938,
+      "hash": "7a7d43c7",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 9,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 938,
+      "hash": "ed78aa80",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 9,
+      "profile": "expert",
+      "won": true,
+      "tick": 938,
+      "hash": "308470f4",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 10,
+      "profile": "novice",
+      "won": false,
+      "tick": 961,
+      "hash": "6f3af82b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 10,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 948,
+      "hash": "1914777a",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 10,
+      "profile": "expert",
+      "won": true,
+      "tick": 948,
+      "hash": "eb11aa56",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 11,
+      "profile": "novice",
+      "won": false,
+      "tick": 961,
+      "hash": "8414a22b",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 11,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 940,
+      "hash": "3385b782",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 11,
+      "profile": "expert",
+      "won": true,
+      "tick": 940,
+      "hash": "6bf12a06",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 12,
+      "profile": "novice",
+      "won": false,
+      "tick": 961,
+      "hash": "aaddd261",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 950,
+      "hash": "f8a29f9d",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 12,
+      "profile": "expert",
+      "won": true,
+      "tick": 950,
+      "hash": "ff36dab1",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 13,
+      "profile": "novice",
+      "won": false,
+      "tick": 961,
+      "hash": "68ab9a55",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 939,
+      "hash": "3b0d4624",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 13,
+      "profile": "expert",
+      "won": true,
+      "tick": 939,
+      "hash": "1d1f8fb0",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 14,
+      "profile": "novice",
+      "won": false,
+      "tick": 961,
+      "hash": "0d904647",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 948,
+      "hash": "440c58bf",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 14,
+      "profile": "expert",
+      "won": true,
+      "tick": 948,
+      "hash": "8184c3fb",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 15,
+      "profile": "novice",
+      "won": true,
+      "tick": 934,
+      "hash": "96e18a4a",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 935,
+      "hash": "5afdc1f7",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 15,
+      "profile": "expert",
+      "won": true,
+      "tick": 934,
+      "hash": "62403a13",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 16,
+      "profile": "novice",
+      "won": true,
+      "tick": 939,
+      "hash": "613bbbe9",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 939,
+      "hash": "6547006d",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 16,
+      "profile": "expert",
+      "won": true,
+      "tick": 939,
+      "hash": "353caee1",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 17,
+      "profile": "novice",
+      "won": true,
+      "tick": 938,
+      "hash": "5c74abb5",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 938,
+      "hash": "4f768bda",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 17,
+      "profile": "expert",
+      "won": true,
+      "tick": 938,
+      "hash": "bfaf6616",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 18,
+      "profile": "novice",
+      "won": true,
+      "tick": 937,
+      "hash": "0ba02e55",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 937,
+      "hash": "3b8e7fb5",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 18,
+      "profile": "expert",
+      "won": true,
+      "tick": 937,
+      "hash": "0eb56939",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 19,
+      "profile": "novice",
+      "won": false,
+      "tick": 961,
+      "hash": "55efd54e",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 945,
+      "hash": "343d4f30",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 19,
+      "profile": "expert",
+      "won": true,
+      "tick": 945,
+      "hash": "25a445ac",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 20,
+      "profile": "novice",
+      "won": true,
+      "tick": 943,
+      "hash": "9dc1ce00",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "tick": 935,
+      "hash": "8715a6d8",
+      "replayEqual": true
+    },
+    {
+      "cell": "ball.score+rival",
+      "seed": 20,
+      "profile": "expert",
+      "won": true,
+      "tick": 935,
+      "hash": "dd5846f4",
+      "replayEqual": true
+    }
+  ]
+}

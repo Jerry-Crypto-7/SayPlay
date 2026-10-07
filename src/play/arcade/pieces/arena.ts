@@ -200,6 +200,7 @@ const toward = (value: number, target: number, step: number): number => (value <
 export const chaseParams = z
   .object({
     speed: z.int().min(ESCAPE.chaserSpeed.min).max(ESCAPE.chaserSpeed.max),
+    ceiling: z.int().min(90).max(140).optional(),
     /** Horizont předvídání v ticích: míří tam, kde hráč bude, nejvýš tak daleko dopředu. */
     lead: z.int().min(0).max(2 * ARCADE_HZ),
     /** Úkol (P32G G-R1): dokud hráč drží „Use“ (`BUTTON.INTERACT`), běží pronásledovatelé poloviční rychlostí. */
@@ -214,7 +215,7 @@ export type ChaseParams = z.infer<typeof chaseParams>;
 
 /** Rychlost pronásledovatelů v běžící vlně; svět bez vln (`step`) jede stálou `speed`. */
 export const chaseSpeedOf = (chase: ChaseParams, state: Int32Array): number =>
-  chase.step === undefined ? chase.speed : Math.min(ESCAPE.chaserSpeed.max, chase.speed + chase.step * waveOf(state));
+  chase.step === undefined ? chase.speed : Math.min(chase.ceiling ?? ESCAPE.chaserSpeed.max, chase.speed + chase.step * waveOf(state));
 
 const controlParams = z
   .object({
@@ -222,6 +223,7 @@ const controlParams = z
     /** Útěk a sběr: hráč má pevnou velikost; bez ní roste se skóre (agar). */
     size: z.int().min(ESCAPE.itemSize).max(ARENA.maxSize).optional(),
     /** Útěk: pronásledovatele vede ovládání a odpočítává ochranu (`GRACE_COUNTER`). */
+    preySpeed: z.int().min(20).max(300).optional(),
     chase: chaseParams.optional(),
   })
   .strict();
@@ -238,7 +240,7 @@ function bounce(position: number, velocity: number, size: number, half: number):
   return velocity;
 }
 
-function moveCells(state: Int32Array, player: number, half: number): void {
+function moveCells(state: Int32Array, player: number, half: number, preySpeed: number = ARENA.preySpeed): void {
   const count = state[HEADER.bodyCount] as number;
   const tick = state[HEADER.tick] as number;
   const p = bodyBase(player);
@@ -260,10 +262,10 @@ function moveCells(state: Int32Array, player: number, half: number): void {
       speed = ARENA.hunterSpeed;
     } else if (Math.abs(px - x) + Math.abs(pz - zz) < ARENA.fleeRadius) {
       direction = directionToward(x - px, zz - pz);
-      speed = ARENA.preySpeed;
+      speed = preySpeed;
     } else {
       direction = wanderDirection(i, tick + i * 7);
-      speed = ARENA.preySpeed;
+      speed = preySpeed;
     }
     const dir = direction < 0 ? { dx: 0, dz: 0 } : DIRECTIONS[direction]!;
     state[base + BODY.vx] = bounce(x, Math.trunc((dir.dx * speed) / 1000), size, half);
@@ -435,7 +437,7 @@ export const moveFreeControl: ControlPiece<ArenaControlParams> = {
     state[base + BODY.vx] = Math.max(-limit - x, Math.min(limit - x, vx));
     state[base + BODY.vz] = Math.max(-limit - zz, Math.min(limit - zz, vz));
 
-    moveCells(state, player, params.half);
+    moveCells(state, player, params.half, params.preySpeed);
     if (params.chase !== undefined) steerChasers(state, player, params.half, params.chase, input.buttons);
   },
 };
@@ -827,6 +829,10 @@ export function checkEscapeLevel(level: ArcadeLevel, params: { readonly items: n
 
 const escapeParams = z
   .object({
+    entryDistance: z.int().min(6000).max(20000).optional(),
+    chaseLead: z.int().min(0).max(2 * ARCADE_HZ).optional(),
+    pursuitCeiling: z.int().min(90).max(140).optional(),
+    itemSizePct: z.int().min(100).max(150).optional(),
     chasers: z.int().min(ESCAPE.chasers.min).max(ESCAPE.chasers.max).default(ESCAPE.chasers.default),
     chaserSpeed: z.int().min(ESCAPE.chaserSpeed.min).max(ESCAPE.chaserSpeed.max).default(ESCAPE.chaserSpeed.default),
     items: z.int().min(0).max(ESCAPE.items.max).default(0),
@@ -836,10 +842,16 @@ const escapeParams = z
     /** Hlídka (P36A T8, píše žánr): pronásledovatelé honí až hráče v dohledu (`ChaseParams.patrol`). */
     patrol: z.int().min(UNIT).max(40 * UNIT).optional(),
   })
-  .strict();
+  .strict().superRefine((params, context) => {
+    if (params.entryDistance !== undefined && params.waves === undefined) context.addIssue({ code: 'custom', path: ['entryDistance'], message: 'entryDistance requires reinforcement waves' });
+  });
 export type EscapeParams = z.infer<typeof escapeParams>;
 
 interface WaveSetup {
+  readonly entryDistance?: number;
+  readonly chaseLead?: number;
+  readonly pursuitCeiling?: number;
+  readonly itemSizePct?: number;
   /** Pronásledovatelů na startu (sběr 0) a jejich rychlost v první vlně. */
   readonly chasers: number;
   readonly speed: number;
@@ -855,7 +867,8 @@ const chaserTemplate: BodyInit = { role: 'chaser', kind: 'chaser', x: 0, y: 0, z
 
 /** První vlna: přesně `items` věcí (bez rezervy – vlna končí poslední sebranou), u sběru předloha pronásledovatele. */
 function waveLevel(seed: number, setup: WaveSetup): ArcadeLevel {
-  const level = openArena(seed, setup.chasers, setup.speed, setup.items, setup.items);
+  const original = openArena(seed, setup.chasers, setup.speed, setup.items, setup.items);
+  const level = setup.itemSizePct === undefined ? original : { ...original, bodies: original.bodies.map(body => body.role === 'collectible' ? { ...body, w: Math.round(body.w * setup.itemSizePct! / 100), d: Math.round(body.d * setup.itemSizePct! / 100) } : body) };
   // Sloty pro probuzené a nové pronásledovatele (nejvýš `chasers.max`) a pro věci jedné vlny.
   return { ...level, bodies: setup.chasers === 0 ? [...level.bodies, chaserTemplate] : level.bodies, spawnSlots: ESCAPE.chasers.max + setup.items };
 }
@@ -874,7 +887,7 @@ function waveParts(seed: number, setup: WaveSetup, health: number | undefined): 
   const rng = createCompileRng(seed, 'spawn');
   const spots = entrySpots(rng, ARENA.half - ESCAPE.chaserSize);
   const edge = ARENA.half - ESCAPE.itemSize / 2 - WAVE_PLAN.itemInset;
-  const chase: ChaseParams = { speed, lead: ESCAPE.lead, step: waveSpeedStep(waves), ...(setup.patrol === undefined ? {} : { patrol: setup.patrol }) };
+  const chase: ChaseParams = { speed, lead: setup.chaseLead ?? ESCAPE.lead, step: setup.pursuitCeiling === undefined ? waveSpeedStep(waves) : Math.min(40, Math.ceil((setup.pursuitCeiling - speed) / 2)), ...(setup.pursuitCeiling === undefined ? {} : { ceiling: setup.pursuitCeiling }), ...(setup.patrol === undefined ? {} : { patrol: setup.patrol }) };
   const later = Array.from({ length: waves - 1 }, (_, k) => ({
     ...(items > 0 ? { items: wavePositions(rng, items, edge, ESCAPE.itemClearance.item) } : { at: Math.round(((k + 1) * setup.seconds * ARCADE_HZ) / waves) }),
     chasers: wavesChasers(chasers, k + 1) - wavesChasers(chasers, k),
@@ -887,7 +900,7 @@ function waveParts(seed: number, setup: WaveSetup, health: number | undefined): 
   if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
   // Předlohy: první věc leží za pronásledovateli, pronásledovatel je první tělo za hráčem (u sběru mrtvá předloha na konci).
   const template = { item: 1 + chasers, chaser: chasers === 0 ? level.bodies.length - 1 : 1 };
-  rules.push({ id: 'arena_waves', params: { until: items > 0 ? 'items' : 'ticks', ...(items > 0 ? { item: template.item } : {}), chaser: template.chaser, spots, waves: later } });
+  rules.push({ id: 'arena_waves', params: { until: items > 0 ? 'items' : 'ticks', ...(items > 0 ? { item: template.item } : {}), chaser: template.chaser, spots, waves: later, ...(setup.entryDistance === undefined ? {} : { entryDistance: setup.entryDistance }) } });
   return {
     control: { id: 'move_free', params: { half: ARENA.half, size: ESCAPE.playerSize, chase } },
     bot: { id: 'arena_bot', params: { half: ARENA.half, chase } },
@@ -905,12 +918,12 @@ export const arenaEscape: ModeGeneratorPiece<EscapeParams> = {
   roles: ['player', 'chaser', 'collectible'],
   cost: (params) => ({ bodies: 1 + 2 * params.chasers + itemCount(params.items), rules: 3 }),
   generate: (seed, params) =>
-    params.waves === undefined ? openArena(seed, params.chasers, params.chaserSpeed, params.items) : waveLevel(seed, { chasers: params.chasers, speed: params.chaserSpeed, items: params.items, seconds: params.seconds, waves: params.waves }),
+    params.waves === undefined ? openArena(seed, params.chasers, params.chaserSpeed, params.items) : waveLevel(seed, { chasers: params.chasers, speed: params.chaserSpeed, items: params.items, seconds: params.seconds, waves: params.waves, ...(params.pursuitCeiling === undefined ? {} : { pursuitCeiling: params.pursuitCeiling }), ...(params.entryDistance === undefined ? {} : { entryDistance: params.entryDistance }), ...(params.chaseLead === undefined ? {} : { chaseLead: params.chaseLead }), ...(params.itemSizePct === undefined ? {} : { itemSizePct: params.itemSizePct }) }),
   parts: (seed, params, health) => {
     const patrol = params.patrol === undefined ? {} : { patrol: params.patrol };
-    if (params.waves !== undefined) return waveParts(seed, { chasers: params.chasers, speed: params.chaserSpeed, items: params.items, seconds: params.seconds, waves: params.waves, ...patrol }, health);
+    if (params.waves !== undefined) return waveParts(seed, { chasers: params.chasers, speed: params.chaserSpeed, items: params.items, seconds: params.seconds, waves: params.waves, ...patrol, ...(params.pursuitCeiling === undefined ? {} : { pursuitCeiling: params.pursuitCeiling }), ...(params.entryDistance === undefined ? {} : { entryDistance: params.entryDistance }), ...(params.chaseLead === undefined ? {} : { chaseLead: params.chaseLead }), ...(params.itemSizePct === undefined ? {} : { itemSizePct: params.itemSizePct }) }, health);
     const level = arenaEscape.generate(seed, params);
-    const chase: ChaseParams = { speed: params.chaserSpeed, lead: ESCAPE.lead, ...patrol };
+    const chase: ChaseParams = { speed: params.chaserSpeed, lead: params.chaseLead ?? ESCAPE.lead, ...patrol };
     const rules: PieceRef[] = [
       { id: 'arena_eat', params: health === undefined ? { effect: 'lose', grace: ESCAPE.graceTicks } : { effect: 'damage', grace: ESCAPE.graceTicks, knockback: ESCAPE.knockback } },
       params.items > 0 ? { id: 'grow_to', params: { points: params.items, wake: true } } : { id: 'survive_time', params: { seconds: params.seconds, wake: true } },
@@ -928,6 +941,8 @@ export const arenaEscape: ModeGeneratorPiece<EscapeParams> = {
 
 const collectParams = z
   .object({
+    pursuitCeiling: z.int().min(90).max(140).optional(),
+    itemSizePct: z.int().min(100).max(150).optional(),
     items: z.int().min(1).max(ESCAPE.items.max).default(ESCAPE.items.collectDefault),
     /** Vlny (P36A T4, píše je žánr): `items` věcí v každé vlně, pronásledovatelé od druhé, hodiny; bez nich jako dřív. */
     waves: z.int().min(2).max(WAVE_LIMITS.waves).optional(),
@@ -935,7 +950,7 @@ const collectParams = z
   .strict();
 export type CollectParams = z.infer<typeof collectParams>;
 
-const collectSetup = (items: number, waves: number): WaveSetup => ({ chasers: 0, speed: WAVE_PLAN.collectSpeed, items, seconds: 0, waves });
+const collectSetup = (items: number, waves: number, params: Pick<CollectParams, 'pursuitCeiling' | 'itemSizePct'>): WaveSetup => ({ chasers: 0, speed: WAVE_PLAN.collectSpeed, items, seconds: 0, waves, ...(params.pursuitCeiling === undefined ? {} : { pursuitCeiling: params.pursuitCeiling }), ...(params.itemSizePct === undefined ? {} : { itemSizePct: params.itemSizePct }) });
 
 /**
  * Režim `arena.collect`: sbírej N věcí, v první vlně tě nikdo nehoní. Ve vlnách
@@ -947,9 +962,9 @@ export const arenaCollect: ModeGeneratorPiece<CollectParams> = {
   params: collectParams,
   roles: ['player', 'collectible'],
   cost: (params) => ({ bodies: 1 + itemCount(params.items), rules: 2 }),
-  generate: (seed, params) => (params.waves === undefined ? openArena(seed, 0, 0, params.items) : waveLevel(seed, collectSetup(params.items, params.waves))),
+  generate: (seed, params) => (params.waves === undefined ? openArena(seed, 0, 0, params.items) : waveLevel(seed, collectSetup(params.items, params.waves, params))),
   parts: (seed, params, health) => {
-    if (params.waves !== undefined) return waveParts(seed, collectSetup(params.items, params.waves), health);
+    if (params.waves !== undefined) return waveParts(seed, collectSetup(params.items, params.waves, params), health);
     const level = arenaCollect.generate(seed, params);
     const rules: PieceRef[] = [
       { id: 'arena_eat', params: { effect: health === undefined ? 'lose' : 'damage' } },

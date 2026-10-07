@@ -20,7 +20,9 @@ import { ARCADE_HZ, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, NO_INPUT, ROL
 import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { runBot } from '@/play/arcade/verify';
-import { draftGameSpecWithMeta } from '@/play/draft';
+import { draftGameSpecWithMeta, draftGenreFor } from '@/play/draft';
+import { classifyGenre } from '@/play/genre/classify';
+import { compileGenre } from '@/play/genre';
 import type { GameSpecV1 } from '@/play/spec';
 
 interface Published {
@@ -34,7 +36,7 @@ interface Published {
 
 /** Jako dveře publikace: první semínko, na kterém robot vyhraje a nečinný hráč ne. */
 function publish(sentence: string, edit: (spec: GameSpecV1) => GameSpecV1 = (spec) => spec): Published {
-  const spec = edit(draftGameSpecWithMeta(sentence, 1).spec);
+  const spec = edit(legacySpec(sentence));
   for (const seed of derivedSeeds(seedFrom(sentence))) {
     const compiled = compileArcade(spec, seed);
     if (!compiled.ok) continue;
@@ -175,7 +177,7 @@ const STORED = [
 describe('stored arena games without waves', () => {
   it.each(STORED)('„%s“ keeps its old world and win tick', (sentence, seed, ticks, hash) => {
     // Uložená hra neměla ani `scoring` (T5).
-    const { spec: { scoring: _scoring, ...spec } } = draftGameSpecWithMeta(sentence, 1);
+    const { scoring: _scoring, ...spec } = legacySpec(sentence);
     const { tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly tuning: Record<string, unknown> };
     const { waves: _waves, ...old } = tuning;
     const compiled = compileArcade({ ...spec, controlParams: { ...own, tuning: old } as GameSpecV1['controlParams'] }, seed);
@@ -185,3 +187,11 @@ describe('stored arena games without waves', () => {
     expect(compiled.value.worldHash).toBe(hash);
   });
 });
+
+/** Frozen pre-P41 mechanics: routing to new movement families is tested separately. */
+function legacySpec(sentence: string): GameSpecV1 {
+  const pick = classifyGenre(sentence, null).ranked[0];
+  const genre = draftGenreFor(sentence, pick.genre, pick.mode);
+  if (genre === null) throw new Error(`missing legacy fixture: ${sentence}`);
+  return compileGenre(genre);
+}

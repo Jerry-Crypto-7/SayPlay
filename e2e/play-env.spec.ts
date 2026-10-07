@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { join } from 'node:path';
+import sharp from 'sharp';
 
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
@@ -195,4 +196,63 @@ test.describe('custom panorama', () => {
     await page.getByTestId('play-grid-stage').screenshot({ path: test.info().outputPath('custom-cuckoo-clock.png') });
     expect(await skyDominantShare(page, 'play-grid-stage')).toBeLessThan(SKY_DOMINANT_MAX);
   });
+});
+
+/** P41 T30: six independent sentences, frozen anonymous frames for the blind judge. */
+const P41_ENV_CASES = [
+  { id: '01', sentence: 'Drive a car to the finish through a desert.', control: 'steer', environment: 'desert', aliases: ['desert', 'sandy desert', 'dunes', 'sand dunes'] },
+  { id: '02', sentence: 'Drive a car to the finish through a city at night.', control: 'steer', environment: 'city', aliases: ['city', 'urban', 'city at night', 'night city', 'urban street'] },
+  { id: '03', sentence: 'Swim a submarine through rings underwater.', control: 'glide', environment: 'underwater', aliases: ['underwater', 'underwater ocean', 'ocean', 'undersea', 'ocean floor', 'coral reef'] },
+  { id: '04', sentence: 'Fly a spaceship through rings in outer space.', control: 'glide', environment: 'space', aliases: ['space', 'outer space', 'cosmos', 'deep space', 'starfield'] },
+  { id: '05', sentence: 'Walk through a forest maze to the exit.', control: 'walker', environment: 'forest', aliases: ['forest', 'woods', 'woodland', 'woodlands'] },
+  { id: '06', sentence: 'Play football and score goals in a snowy field.', control: 'ball', environment: 'snow', aliases: ['snow', 'snowy field', 'snowy landscape', 'snowfield', 'winter', 'ice', 'icy landscape'] },
+] as const;
+
+test('P41 six environments produce anonymous frames across four native movements', async ({ page, request }) => {
+  test.setTimeout(300_000);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const { existsSync, mkdirSync, unlinkSync, writeFileSync } = await import('node:fs');
+  const { createHash } = await import('node:crypto');
+  const out = join(process.cwd(), 'evals/play/p41/env');
+  mkdirSync(out, { recursive: true });
+  const manifestPath = join(out, 'manifest.json');
+  if (existsSync(manifestPath)) unlinkSync(manifestPath);
+  const frames: Record<string, unknown>[] = [];
+  for (const entry of P41_ENV_CASES) {
+    const response = await request.post('/api/play/games', { data: { sentence: entry.sentence, seed: 41 } });
+    expect(response.ok(), await response.text()).toBe(true);
+    const published = await response.json() as { versionId: string; url: string };
+    const storedResponse = await request.get(`/api/play/games/${published.versionId}`);
+    expect(storedResponse.ok()).toBe(true);
+    const stored = await storedResponse.json() as { spec: { control: string; theme: unknown }; arcade: unknown };
+    expect(stored.spec.control, entry.sentence).toBe(entry.control);
+    expect(stored.arcade).toBeDefined();
+    await page.goto(published.url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playRender !== undefined && window.__playRender().calls > 0, undefined, { timeout: 60_000 });
+    await page.waitForFunction(() => (window.__playShell as unknown as { physicsReady(): boolean }).physicsReady(), undefined, { timeout: 30_000 });
+    await page.evaluate(() => {
+      const probe = window.__playShell as unknown as {
+        byHand(on: boolean): void; start(): void; botWants(): { axis: number; buttons: number };
+        hold(axis: number): void; press(buttons: number): void; tickByHand(): unknown;
+      };
+      probe.byHand(true);
+      probe.start();
+      for (let tick = 0; tick < 60; tick++) {
+        const input = probe.botWants();
+        probe.hold(input.axis);
+        probe.press(input.buttons);
+        probe.tickByHand();
+      }
+    });
+    // Text/UI must not tell the judge the scene's name; capture WebGL only.
+    await page.addStyleTag({ content: 'body * { visibility: hidden !important; } [data-testid="arcade-stage"] canvas { visibility: visible !important; }' });
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+    const canvas = page.locator('[data-testid="arcade-stage"] canvas').first();
+    const file = `${entry.id}.png`;
+    const image = await sharp(await canvas.screenshot()).png().toBuffer();
+    writeFileSync(join(out, file), image);
+    frames.push({ ...entry, file, sha256: createHash('sha256').update(image).digest('hex'), versionId: published.versionId, seed: 41, tick: await page.evaluate(() => window.__playShell!.tick()), theme: stored.spec.theme });
+  }
+  // Ground truth never enters any blind judge's cwd or prompt.
+  writeFileSync(join(out, 'manifest.json'), JSON.stringify({ schema: 'p41.env-capture.v1', capturedAt: new Date().toISOString(), viewport: { width: 1280, height: 800 }, frames }, null, 2));
 });

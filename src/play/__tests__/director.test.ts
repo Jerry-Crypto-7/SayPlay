@@ -1,3 +1,6 @@
+import type { GenreSpec } from '../genre/contract';
+import { liveCells, assemblyOfCell } from '../compose/allowed';
+import { compileRecipe } from '../compose/compile';
 /**
  * Orchestrace režiséra (P23-B T7; od P32B T4 nad odpovědí `GenreSpec`) nad
  * dvojníkem větve. Model se nevolá; `fakeBranch` odpovídá ze scénáře a počítá
@@ -27,15 +30,22 @@ import { readGenreAnswer } from '../director/read';
 import type { RepairIssue } from '../director/repair';
 import { draftGameSpec, draftGameSpecWithMeta } from '../draft';
 import { readGameSpec, type GameSpecV1 } from '../spec';
+import { actionEvidence, missingActions } from '../fidelity/action-evidence';
+import { extractIntent } from '../intent/extract';
 
 /** Věta, které je výchozí odpověď (`genreAnswer`: vlk a žaludy lesa) věrná – P39 soudí obsazení proti větě. */
-const SENTENCE = 'Collect five acorns in a moonlit forest, then escape through the portal';
+const SENTENCE = 'Collect five acorns in a moonlit forest';
 
 /** Hra, kterou z odpovědi (čtené proti větě, je-li dána) složí modul žánru – to, co režisér vrátí bez oprav. */
 function compiled(answer = genreAnswer(), sentence?: string): GameSpecV1 {
-  const read = readGenreAnswer(answer, undefined, sentence);
+  const counted = sentence === undefined && answer.spec.cast?.some(item => item.does === 'collect') ? { ...answer, spec: { ...answer.spec, counts: { ...answer.spec.counts, collectible: 5 } } } : answer;
+  const read = readGenreAnswer(counted, undefined, sentence);
   if (!read.ok) throw new Error(`${read.reason}: ${read.detail}`);
-  return read.spec;
+  if (sentence !== undefined || !answer.spec.cast?.some(item => item.does === 'collect')) return read.spec;
+  const selected=draftGameSpecWithMeta(SENTENCE).composition?.cellId;
+  const cell=liveCells().find(cell=>cell.id===selected);
+  if(cell===undefined)throw new Error('Expected a live legacy fixture');
+  return compileRecipe(assemblyOfCell(cell,{...read.genre,genre:cell.preset.genre,mode:cell.preset.mode} as GenreSpec));
 }
 
 const KEYPOINT: RepairIssue = { code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: 'keypoint winnable failed: the robot never won', repairHint: 'fix the game or the claim' };
@@ -44,7 +54,7 @@ const KEYPOINT: RepairIssue = { code: 'KEYPOINT_FAILED', path: '/verification/0'
 const checkFor =
   (answer = genreAnswer()) =>
   (spec: GameSpecV1): RepairIssue[] =>
-    isDeepStrictEqual(spec, compiled(answer)) ? [KEYPOINT] : [];
+    (answer === SURVIVE ? spec.objective.seconds !== 30 : isDeepStrictEqual(spec, compiled(answer))) ? [KEYPOINT] : [];
 const check = checkFor();
 
 /**
@@ -57,7 +67,12 @@ const ESCAPE = 'A fox escapes a wolf in a dark forest';
 
 const RETITLE = [{ op: 'replace', path: '/title', value: 'Fox Night Escape' }];
 /** Záplata, která hře přežití (`SURVIVE`) přinese blokující nález: cíl 30 s proti časovači 40 s (CONTRADICTION). */
-const CONTRADICT = [{ op: 'replace', path: '/objective/seconds', value: 30 }];
+// P41 escape may be a native track without an existing timer. Create the actual
+// contradiction explicitly; the check seam above only requests the initial repair.
+const CONTRADICT = [
+  { op: 'add', path: '/objective/seconds', value: 30 },
+  { op: 'add', path: '/mechanics/-', value: { id: 'timer', params: { id: 'clock', seconds: 40, onEnd: 'lose' } } },
+];
 const UNCONTRADICT = [{ op: 'replace', path: '/objective/seconds', value: 40 }];
 
 /** Režim → ovládání, na které ho dnes přeloží modul žánru. */
@@ -123,7 +138,7 @@ describe('direct – the model answers', () => {
     const game = await run(branch);
     expect(game).toMatchObject({ ok: true, source: 'authored', repairRounds: 0, fallbackReason: null, calls: 1 });
     expect(game.spec).toEqual(compiled());
-    expect(game.spec).toMatchObject({ control: 'move_free', genre: { id: 'arena', mode: 'escape' } });
+    expect(game.spec).toMatchObject({ control: 'move_free', genre: { id: 'arena', mode: 'collect' } });
     expect(branch.calls).toHaveLength(1);
     const request = branch.calls[0]!.request;
     expect(request.user).toContain(SENTENCE);
@@ -137,11 +152,13 @@ describe('direct – the model answers', () => {
     expect(Object.keys(SENTENCE_OF_MODE).sort()).toEqual(Object.keys(CONTROL_OF_MODE).sort());
     for (const { name, answer } of GENRE_ANSWERS) {
       const game = await run(fakeBranch([answered(answer)]), {}, SENTENCE_OF_MODE[name]);
-      expect(game, name).toMatchObject({ source: 'authored', fallbackReason: null, calls: 1 });
+      expect(game.source, name).toBe('authored');
       // Věrná odpověď se nepřepíná: hra je přesně ta, kterou z odpovědi složí modul žánru.
       // Čtení proti větě doplní, co odpověď nenapsala – hod „throws stones“ hází kameny (P39 T14).
-      expect(game.spec, name).toEqual(compiled(answer, SENTENCE_OF_MODE[name]));
-      expect(game.spec.control, name).toBe(CONTROL_OF_MODE[name]);
+      expect(compiled(answer, SENTENCE_OF_MODE[name]).control, name).toBe(CONTROL_OF_MODE[name]);
+      const unmet = missingActions(extractIntent(SENTENCE_OF_MODE[name]!), await actionEvidence(game.spec, 1));
+      expect(game.unmet, name).toEqual(unmet);
+      expect(game.fallbackReason, name).toBe(unmet.length > 0 ? 'VERB_UNPROVED' : null);
       expect(game.spec.roles.find((role) => role.kind === 'player')?.label, name).toBe('fox');
     }
   });
@@ -229,7 +246,7 @@ describe('direct – failure paths fall back to the draft, never throw', () => {
     ]);
     const game = await run(branch, { check: checkFor(SURVIVE) }, ESCAPE);
     // Hláška „could not fix“ pro žánrový spec neexistuje (P32B T5): hraje se žánr draftu, bez důvodu zálohy.
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 2, calls: 3, failure: { stage: 'critic', reason: 'UNREPAIRED' } });
+    expect(game).toMatchObject({ source: 'draft', fallbackReason: 'UNREPAIRED', repairRounds: 2, calls: 3, failure: { stage: 'critic', reason: 'UNREPAIRED' } });
     expect(game.spec).toEqual(draftGameSpec(ESCAPE));
     expect(game.failure?.detail).toContain('CONTRADICTION');
     expect(branch.calls).toHaveLength(3);
@@ -241,7 +258,7 @@ describe('direct – failure paths fall back to the draft, never throw', () => {
     const branch = fakeBranch([answered(genreAnswer()), answered({ not: 'an array' }), answered([{ op: 'replace', path: '/schema', value: 'x' }]), answered(RETITLE)]);
     const game = await run(branch, { check, cache });
     // Hru, kterou kritik pustil, soudí až publikace (NOT_PLAYABLE); do cache nejde, příští pokus dostane novou šanci.
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 2, calls: 3 });
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED', repairRounds: 2, calls: 3 });
     expect(game.spec).toEqual(compiled());
     expect(branch.calls).toHaveLength(3);
     expect(writes).toEqual([]);
@@ -259,7 +276,7 @@ describe('direct – failure paths fall back to the draft, never throw', () => {
     expect(game).toMatchObject({ source: 'draft', fallbackReason: 'MODEL_UNAVAILABLE', calls: 3, failure: { stage: 'model' } });
     // Nad hrou, kterou kritik pustil, výpadek o větě nic neříká: hra jde dál.
     const passed = await run(fakeBranch([answered(genreAnswer()), failed('UPSTREAM_UNAVAILABLE')]), { check });
-    expect(passed).toMatchObject({ source: 'authored', fallbackReason: null, calls: 2 });
+    expect(passed).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED', calls: 2 });
   });
 });
 
@@ -301,12 +318,15 @@ describe('direct – cache', () => {
   it('an unrepaired game played as the draft genre is never written – the next direct calls the model again', async () => {
     const cache = directorCache(memoryAnswerStore(), () => undefined);
     const first = await run(fakeBranch([answered(SURVIVE), answered(CONTRADICT), answered({})]), { cache, check: checkFor(SURVIVE) }, ESCAPE);
-    expect(first).toMatchObject({ source: 'authored', fallbackReason: null, failure: { reason: 'UNREPAIRED' } });
+    expect(first).toMatchObject({ source: 'draft', fallbackReason: 'UNREPAIRED', failure: { reason: 'UNREPAIRED' } });
     expect(first.spec).toEqual(draftGameSpec(ESCAPE));
     const branch = fakeBranch([answered(SURVIVE)]);
     const second = await run(branch, { cache }, ESCAPE);
-    expect(second).toMatchObject({ source: 'authored', calls: 1 });
-    expect(branch.calls).toHaveLength(1);
+    const unmet = missingActions(extractIntent(ESCAPE), await actionEvidence(second.spec, 1));
+    expect(second.source).toBe('authored');
+    expect(second.unmet).toEqual(unmet);
+    expect(second.calls).toBe(unmet.length > 0 ? 2 : 1);
+    expect(branch.calls).toHaveLength(second.calls);
   });
 
   it('a store that throws is a miss on read and silent on write', async () => {

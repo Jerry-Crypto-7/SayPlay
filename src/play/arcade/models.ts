@@ -260,7 +260,9 @@ export function heroModel(spec: GameSpecV1): string {
 export function enemyModel(spec: GameSpecV1): string {
   // B-R9: soupeř souboje žánru arény je role druhu `hazard` (`rival`), ne role `enemy`.
   const rival = spec.controlParams?.generator === 'fight' ? spec.roles.find((role) => role.kind === 'hazard') : undefined;
-  const label = spec.roles.find((role) => role.id === 'enemy')?.label ?? rival?.label ?? '';
+  const native = spec.control === 'walker' || spec.control === 'ball' ? spec.roles.find(role => role.kind === 'patrol') : undefined;
+  const prey = spec.controlParams?.generator === 'arena_catch' ? spec.roles.find(role => role.id === 'prey') : undefined;
+  const label = spec.roles.find((role) => role.id === 'enemy')?.label ?? prey?.label ?? native?.label ?? rival?.label ?? '';
   return heroChoice(label, undefined, spec.control, 'enemy').model;
 }
 
@@ -274,7 +276,7 @@ export function chaserModel(spec: GameSpecV1): string {
  * a závodu (P27A T4); od P30B T4 i mantinel závodu, nota rytmu a díl věže načasování; od P35 T3 cíl skákačky;
  * od P39 T9 nástrahy `HAZARD_ROLES`.
  */
-export const PROP_ROLES = ['coin', 'obstacle', 'target', 'rival', 'barrier', 'note', 'block', 'finish', 'spikes', 'pipe', 'hazard'] as const;
+export const PROP_ROLES = ['coin', 'obstacle', 'target', 'rival', 'barrier', 'turbo', 'note', 'block', 'finish', 'spikes', 'pipe', 'hazard'] as const;
 export type PropRole = (typeof PROP_ROLES)[number];
 
 /**
@@ -306,6 +308,7 @@ const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
   rival: ['rival-car', 'race-car'],
   // „barriers“ je v katalogu překážka běžce; obecný popisek mantinelu nechá pneumatiky.
   barrier: ['tire-barrier', 'hurdle'],
+  turbo: ['turbo'],
   // Nota a díl věže jsou v jádře barevné kvádry; „tiles“ a „blocks“ jmenují právě je.
   note: ['hazard-tile'],
   block: ['wood-block'],
@@ -328,7 +331,7 @@ export function namedProps(spec: GameSpecV1): Partial<Record<PropRole, string>> 
   const out: Partial<Record<PropRole, string>> = {};
   const control = controlOf(spec);
   for (const id of PROP_ROLES) {
-    const role = spec.roles.find((candidate) => candidate.id === id);
+    const role = spec.roles.find((candidate) => candidate.id === id || (spec.control === 'glide' && id === 'rival' && candidate.id === 'glide_rival'));
     if (role === undefined || !readsLabel(control, role)) continue;
     // Nástraha i terč střelnice z věty bývá zvíře („animals“) – smí i třídu postav.
     const found = id === 'rival' ? rivalModel(role.label, control) : sceneModelOf(role.label, namesThing(control, id));
@@ -351,7 +354,9 @@ export function propModels(spec: GameSpecV1): Partial<Record<PropRole, string>> 
   const out: Partial<Record<PropRole, string>> = {};
   for (const id of PROP_ROLES) {
     const model = namesThing(control, id) ? hazardModel(spec, id) : named[id];
-    if (model !== undefined && !OWN_KINDS[id].includes(model)) out[id] = model;
+    // Native glide draws a navigation ring, so even the standard coin needs
+    // its named model at the pickup body rather than the legacy coin primitive.
+    if (model !== undefined && (control === 'glide' && id === 'coin' || !OWN_KINDS[id].includes(model))) out[id] = model;
   }
   return out;
 }

@@ -200,6 +200,8 @@ const generatorParams = z
   .object({
     speed: z.enum(RUNNER_SPEEDS).default('normal'),
     density: z.enum(RUNNER_DENSITIES).default('normal'),
+    /** Optional frequency of fully occupied rows; row spacing and speed still rise by section. */
+    fullRowPct: z.int().min(0).max(100).optional(),
     lengthM: z.int().min(RUNNER_TRACK.minLengthM).max(RUNNER_TRACK.maxLengthM).default(250),
     obstacles: z.array(z.enum(OBSTACLE_KINDS)).min(1).max(OBSTACLE_KINDS.length).default([...OBSTACLE_KINDS]),
     coins: z.boolean().default(true),
@@ -235,7 +237,9 @@ function obstacleRow(rng: CompileRng, params: RunnerTrackParams, density: Runner
   const passable = params.obstacles.filter((kind) => OBSTACLES[kind].passBy !== 'lane');
   const [minLanes, maxLanes] = ROW_LANES[density];
   // Bez přeskočitelné překážky smí řada obsadit nejvýš dva pruhy.
-  const cap = passable.length > 0 ? maxLanes : Math.min(maxLanes, RUNNER.lanes - 1);
+  const ceiling = params.fullRowPct !== undefined && maxLanes === RUNNER.lanes
+      ? (rng.int(1, 100) <= params.fullRowPct ? RUNNER.lanes : RUNNER.lanes - 1) : RUNNER.lanes;
+  const cap = Math.min(ceiling, passable.length > 0 ? maxLanes : Math.min(maxLanes, RUNNER.lanes - 1));
   const taken = rng.shuffle(LANES).slice(0, rng.int(Math.min(minLanes, cap), cap));
   // Nečinný hráč nesmí trať proběhnout.
   if (first && !taken.includes(0)) taken[0] = 0;
@@ -348,7 +352,9 @@ export const runnerTrack: GeneratorPiece<RunnerTrackParams> = {
     let z = RUNNER_TRACK.startClear;
     for (let row = 0; row < maxRows && z <= length - RUNNER_TRACK.endClear; row += 1) {
       // Bez přeskočitelné překážky smí řada obsadit nejvýš dva pruhy.
-      const cap = passable.length > 0 ? maxLanes : Math.min(maxLanes, RUNNER.lanes - 1);
+      const ceiling = params.fullRowPct !== undefined && maxLanes === RUNNER.lanes
+      ? (rng.int(1, 100) <= params.fullRowPct ? RUNNER.lanes : RUNNER.lanes - 1) : RUNNER.lanes;
+  const cap = Math.min(ceiling, passable.length > 0 ? maxLanes : Math.min(maxLanes, RUNNER.lanes - 1));
       const taken = rng.shuffle(lanes).slice(0, rng.int(Math.min(minLanes, cap), cap));
       // První řada vždy stojí i ve startovním pruhu: nečinný hráč nesmí trať proběhnout.
       if (row === 0 && !taken.includes(0)) taken[0] = 0;

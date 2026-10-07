@@ -10,7 +10,7 @@ import { startGame } from './play-start';
  *
  *   FALLBACK_SMOKE_URL=http://127.0.0.1:3131 npx playwright test e2e/play-perf.spec.ts --project=chromium --grep @measure
  *
- * Tři hry (běžec, aréna, mřížkové sbírání) × dva profily (desktop 1440×900,
+ * Tři původní hry a čtyři pohyby P41 × dva profily (desktop 1440×900,
  * emulace Moto G Power: CPU ×4 a síť „Fast 4G“) × 3 opakování, každé
  * v čerstvém kontextu, tedy s prázdnou HTTP cache.
  *
@@ -29,6 +29,10 @@ const GAMES = [
   { id: 'runner', sentence: 'jumping arcade game with a lot of obstacles', arcade: true },
   { id: 'arena', sentence: 'like agar.io but you are a fish eating smaller fish', arcade: true },
   { id: 'grid-collect', sentence: 'Collect five glowing mushrooms then open a portal.', arcade: false },
+  { id: 'drive', sentence: 'game in a car with shooting and racing', arcade: true },
+  { id: 'glide', sentence: 'a fish swims through a coral reef', arcade: true },
+  { id: 'walker', sentence: 'a cat sneaks past guards to steal a fish', arcade: true },
+  { id: 'ball', sentence: 'a penguin plays football against a walrus', arcade: true },
 ] as const;
 
 /** Předvolba „Fast 4G“ z Chrome DevTools (SDK `NetworkManager`): 9 Mb/s dolů, 1,5 Mb/s nahoru, RTT 60 ms × 2,75. */
@@ -248,6 +252,7 @@ async function measureOnce(browser: Browser, url: string, game: (typeof GAMES)[n
         userAgent: navigator.userAgent,
         dpr: devicePixelRatio,
         viewport: { width: innerWidth, height: innerHeight },
+        quality: document.querySelector('[data-testid="arcade-stage"]')?.getAttribute('data-quality') ?? null,
         firstDrawMs: window.__perf!.firstDrawMs,
         firstTickMs: window.__perf!.firstTickMs,
         glb: sum((path) => path.endsWith('.glb')),
@@ -290,7 +295,7 @@ function summarise(runs: readonly Run[]) {
   };
 }
 
-test('@measure play performance baseline: 3 games × desktop and emulated mid phone', async ({ browser, request }) => {
+test('@measure play performance: legacy and P41 movements × desktop and emulated mid phone', async ({ browser, request }) => {
   test.setTimeout(60 * 60_000);
   const out = process.env.PERF_OUT ?? join('evals', 'play', 'perf', `baseline-${new Date().toISOString().slice(0, 10)}.json`);
   mkdirSync(join(out, '..'), { recursive: true });
@@ -319,7 +324,16 @@ test('@measure play performance baseline: 3 games × desktop and emulated mid ph
         results[`${game.id}/${profile.id}`] = { game: game.id, sentence: game.sentence, profile: profile.id, cpuThrottle: profile.cpu, network: profile.network, median: summarise(runs), runs };
         save();
       }
-      for (const run of runs) expect(run.errors).toEqual([]);
+      for (const run of runs) expect.soft(run.errors).toEqual([]);
+      if (['drive', 'glide', 'walker', 'ball'].includes(game.id) && profile.id === 'moto-g-power-emulated') {
+        expect.soft(summarise(runs).fpsP50, `${game.id}: median FPS in phone emulation`).not.toBeNull();
+        expect.soft(summarise(runs).fpsP50!, `${game.id}: median FPS in phone emulation`).toBeGreaterThanOrEqual(40);
+        for (const run of runs) {
+          expect.soft(run.robot).toBe('startDemo');
+          expect.soft(run.endState).toBe('won');
+          expect.soft(run.playing.drawnFrames).toBeGreaterThan(0);
+        }
+      }
     }
   }
 });

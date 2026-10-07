@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { compileArcade } from '@/play/arcade/compile';
 import { LOOK_IDS } from '@/play/arcade/look';
 import { modelOf } from '@/play/arcade/models';
-import { draftGameSpec } from '@/play/draft/draft';
+import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft/draft';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import { type GenreId, type GenreSpec, GENRES } from '../contract';
@@ -88,8 +88,9 @@ describe('voyage and platformer genre modules (P32F T3)', () => {
 
   it('a walk with no goal in the sentence heads for a place of the setting, not a coin (P35 T8)', () => {
     const game = draftGameSpec(DOG);
-    expect(game.tutorial.goalLine).toBe('Pass every gate and reach the fountain.');
-    expect(roleOf(game, 'exit')?.label).toBe('fountain');
+    expect(game.control).toBe('walker');
+    expect(game.tutorial.goalLine).toContain('path through the maze');
+    expect(roleOf(game, 'exit')?.label).toBe('city');
     expect(game.roles.map((role) => role.label)).not.toContain('coin');
     // AI verze bez věci a cíle jede tamtéž, ne k „finish line“.
     const ai = compileGenre({ genre: 'voyage', mode: 'race', hero: 'dog', setting: 'city' });
@@ -97,9 +98,10 @@ describe('voyage and platformer genre modules (P32F T3)', () => {
   });
 
   it('a goal the sentence names stays the goal (P35 T8)', () => {
-    const game = draftGameSpec(PIRATE);
-    expect(roleOf(game, 'exit')?.label).toMatch(/\btreasure$/);
-    expect(game.tutorial.goalLine).toMatch(/reach the (?:buried )?treasure\.$/);
+    const made = draftGameSpecWithMeta(PIRATE);
+    // Finding treasure now selects a real pickup instead of renaming the exit.
+    expect(roleOf(made.spec, 'collectible')?.label).toMatch(/\btreasure$/);
+    expect(made.composition?.witnesses).toContainEqual(expect.objectContaining({ verb: 'collect', object: expect.objectContaining({ label: expect.stringMatching(/\btreasure$/) }) }));
     const ai = compileGenre({ genre: 'voyage', mode: 'race', hero: 'dog', setting: 'city', cast: [{ label: 'dog park', does: 'reach', verb: 'reach', states: 2 }] });
     expect(roleOf(ai, 'exit')?.label).toBe('dog park');
   });

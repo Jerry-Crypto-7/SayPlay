@@ -1,3 +1,5 @@
+import { makePacedControl, makePacedBot } from './pieces/phase-pieces';
+import { objectiveOrder, objectiveWalkerBot } from './pieces/objective-order';
 /**
  * Knihovna arkádových kusů (P25A): id → kus. Svět odkazuje na kusy jménem
  * (`PieceRef`), jádro i ověření je hledají tady. Co tu není, neexistuje.
@@ -7,6 +9,7 @@ import { ADDON_RULES, makeAddonBot, makeAddonControl } from './addons';
 import type { BotPiece, ControlPiece, ModeGeneratorPiece } from './contract';
 import type { ArcadeLibrary } from './kernel';
 import { arenaCollect, arenaEat, arenaEscape, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
+import { arenaCatch, arenaCatchContact } from './pieces/arena-catch';
 import { arenaBot } from './pieces/arena-bot';
 import { FIGHT_RULES, fightArena, fightControl } from './pieces/fight';
 import { fightBot } from './pieces/fight-bot';
@@ -26,7 +29,7 @@ import { rhythmBot } from './pieces/rhythm-bot';
 import { gun, shooterControl, shooterRange } from './pieces/shooter';
 import { shooterBot } from './pieces/shooter-bot';
 import { SHOT_RULES } from './pieces/shots';
-import { rivalFinish, steerControl, steerTrack, voyageLand, voyageRace } from './pieces/steer';
+import { rivalFinish, steerCrash, steerControl, steerTrack, voyageLand, voyageRace } from './pieces/steer';
 import { steerBot } from './pieces/steer-bot';
 import { launch, throwControl, throwField, throwRounds } from './pieces/throw';
 import { throwBot } from './pieces/throw-bot';
@@ -35,7 +38,19 @@ import { timingBot } from './pieces/timing-bot';
 import { arenaWaves } from './pieces/waves';
 import { SPEC_RULES } from './rules/compile';
 
+import { glideControl, glideCourse, glideFinish } from './pieces/glide';
+import { glideBot } from './pieces/glide-bot';
+
+import { walkerControl, walkerLabyrinth, walkerStealth, walkerEscape, walkerCaught } from './pieces/walker';
+import { walkerBot } from './pieces/walker-bot';
+
+import { ballControl, ballPitch, ballLaunch, ballScore, ballKnockdown } from './pieces/ball';
+import { ballBot } from './pieces/ball-bot';
+
 const BASE_BOTS = {
+  ball_bot: ballBot,
+  walker_bot: walkerBot,
+  glide_bot: glideBot,
   runner_bot: runnerBot,
   platform_bot: platformBot,
   flap_bot: flapBot,
@@ -55,6 +70,10 @@ const BASE_BOTS = {
  * (`arcade/compile.ts`). Stopy P32E–G plní jen jejich těla, registrace je tady.
  */
 export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
+  glide_course: glideCourse,
+  ball_pitch: ballPitch,
+  walker_labyrinth: walkerLabyrinth, walker_stealth: walkerStealth, walker_escape: walkerEscape,
+  arena_catch: arenaCatch,
   arena_escape: arenaEscape,
   arena_collect: arenaCollect,
   fight: fightArena,
@@ -65,6 +84,9 @@ export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
 };
 
 const BASE_CONTROLS = {
+  ball: ballControl,
+  walker: walkerControl,
+  glide: glideControl,
   runner: runnerControl,
   platform: platformControl,
   flap: flapControl,
@@ -77,9 +99,11 @@ const BASE_CONTROLS = {
   duel: duelControl,
 } as const;
 
+const PROGRESSION_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
+const PROGRESSION_BOTS = { ...BASE_BOTS, objective_walker_bot: objectiveWalkerBot, phase_bot: makePacedBot(BASE_BOTS) };
 export const ARCADE_LIBRARY: ArcadeLibrary = {
-  controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
+  controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
+  rules: { arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,
@@ -93,5 +117,5 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
     duel_arena: duelArena,
     ...MODE_GENERATORS,
   },
-  bots: { ...BASE_BOTS, addon_bot: makeAddonBot(BASE_BOTS) as BotPiece },
+  bots: { ...PROGRESSION_BOTS, addon_bot: makeAddonBot(PROGRESSION_BOTS) as BotPiece },
 };

@@ -1,0 +1,2464 @@
+{
+  "schema": "play-regression-report.v1",
+  "measuredAt": "2026-10-06T21:09:19.611Z",
+  "seed": 1,
+  "rows": [
+    {
+      "id": "chase_escape-1",
+      "bucket": "chase_escape",
+      "expectArchetype": "chase_escape",
+      "draftMs": 828.7,
+      "archetype": "hazard_crossing",
+      "genre": "runner.default",
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2873,
+      "entities": 114,
+      "rules": 6,
+      "compileMs": 95.1,
+      "verifyMs": 226.9,
+      "evidence": {
+        "hero": "hamster",
+        "cellId": "run.escape",
+        "essential": [
+          {
+            "actor": "hamster",
+            "verb": "escape",
+            "object": "supermarket"
+          },
+          {
+            "actor": "roomba",
+            "verb": "chaser",
+            "object": "hamster"
+          },
+          {
+            "actor": "hamster",
+            "verb": "escape",
+            "object": "roomba"
+          }
+        ],
+        "missing": [
+          {
+            "actor": "hamster",
+            "verb": "escape",
+            "object": "supermarket"
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "hamster",
+            "verb": "escape",
+            "object": "supermarket"
+          }
+        ],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "chase_escape-2",
+      "bucket": "chase_escape",
+      "expectArchetype": "chase_escape",
+      "draftMs": 1016.1,
+      "archetype": "hazard_crossing",
+      "genre": "platformer.default",
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3791,
+      "entities": 105,
+      "rules": 9,
+      "compileMs": 130.4,
+      "verifyMs": 250.4,
+      "evidence": {
+        "hero": "mouse",
+        "cellId": "jump.escape",
+        "essential": [
+          {
+            "actor": "mouse",
+            "verb": "escape",
+            "object": "library"
+          },
+          {
+            "actor": "cat",
+            "verb": "chaser",
+            "object": "mouse"
+          },
+          {
+            "actor": "mouse",
+            "verb": "escape",
+            "object": "cat"
+          }
+        ],
+        "missing": [
+          {
+            "actor": "mouse",
+            "verb": "escape",
+            "object": "library"
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "mouse",
+            "verb": "escape",
+            "object": "library"
+          }
+        ],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "chase_escape-3",
+      "bucket": "chase_escape",
+      "expectArchetype": "chase_escape",
+      "draftMs": 582.2,
+      "archetype": "hazard_crossing",
+      "genre": "runner.default",
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2873,
+      "entities": 114,
+      "rules": 6,
+      "compileMs": 121.2,
+      "verifyMs": 230.9,
+      "evidence": {
+        "hero": null,
+        "cellId": "run.escape",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "escape",
+            "object": "subway"
+          },
+          {
+            "actor": "drone",
+            "verb": "chaser",
+            "object": "hero"
+          },
+          {
+            "actor": "hero",
+            "verb": "escape",
+            "object": "drone"
+          }
+        ],
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "escape",
+            "object": "subway"
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "hero",
+            "verb": "escape",
+            "object": "subway"
+          }
+        ],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "chase_escape-4",
+      "bucket": "chase_escape",
+      "expectArchetype": "chase_escape",
+      "draftMs": 837.2,
+      "archetype": "hazard_crossing",
+      "genre": "platformer.default",
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2430,
+      "entities": 73,
+      "rules": 9,
+      "compileMs": 95.5,
+      "verifyMs": 145.8,
+      "evidence": {
+        "hero": "penguin",
+        "cellId": "platformer.default+chase_me",
+        "essential": [
+          {
+            "actor": "penguin",
+            "verb": "escape",
+            "object": "seal"
+          },
+          {
+            "actor": "seal",
+            "verb": "chaser",
+            "object": "penguin"
+          },
+          {
+            "actor": "penguin",
+            "verb": "reach",
+            "object": "burrow"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "collect_exit-1",
+      "bucket": "collect_exit",
+      "expectArchetype": "collect_exit",
+      "draftMs": 340.5,
+      "archetype": "collect_exit",
+      "genre": "arena.collect",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3240,
+      "entities": 8,
+      "rules": 6,
+      "compileMs": 116.7,
+      "verifyMs": 169.2,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.collect",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "mushroom"
+          },
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "mushroom"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "collect",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "collect_exit-2",
+      "bucket": "collect_exit",
+      "expectArchetype": "collect_exit",
+      "draftMs": 317.1,
+      "archetype": "collect_exit",
+      "genre": "arena.collect",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3935,
+      "entities": 11,
+      "rules": 6,
+      "compileMs": 135.1,
+      "verifyMs": 222.7,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.collect",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "coin"
+          },
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "coin"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "collect",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "collect_exit-3",
+      "bucket": "collect_exit",
+      "expectArchetype": "collect_exit",
+      "draftMs": 104,
+      "archetype": "collect_exit",
+      "genre": "arena.collect",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2157,
+      "entities": 6,
+      "rules": 6,
+      "compileMs": 66,
+      "verifyMs": 100.6,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.collect",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "key"
+          },
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "key"
+          },
+          {
+            "actor": "hero",
+            "verb": "interact",
+            "object": "gate"
+          }
+        ],
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "interact",
+            "object": "gate"
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "hero",
+            "verb": "interact",
+            "object": "gate"
+          }
+        ],
+        "objectiveKind": "collect",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "collect_exit-4",
+      "bucket": "collect_exit",
+      "expectArchetype": "collect_exit",
+      "draftMs": 204.8,
+      "archetype": "collect_exit",
+      "genre": "arena.collect",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3381,
+      "entities": 9,
+      "rules": 6,
+      "compileMs": 110.8,
+      "verifyMs": 172.1,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.collect",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "duck"
+          },
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "duck"
+          },
+          {
+            "actor": "hero",
+            "verb": "exit",
+            "object": null
+          }
+        ],
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "exit",
+            "object": null
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "hero",
+            "verb": "exit",
+            "object": null
+          }
+        ],
+        "objectiveKind": "collect",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "survival_timer-1",
+      "bucket": "survival_timer",
+      "expectArchetype": "survival_timer",
+      "draftMs": 297.3,
+      "archetype": "survival_timer",
+      "genre": "arena.escape",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3600,
+      "entities": 4,
+      "rules": 5,
+      "compileMs": 154.2,
+      "verifyMs": 189,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.escape",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "survive",
+            "object": null
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "survive",
+        "requestedSeconds": 60,
+        "actualSeconds": 60,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "survival_timer-2",
+      "bucket": "survival_timer",
+      "expectArchetype": "survival_timer",
+      "draftMs": 341.6,
+      "archetype": "survival_timer",
+      "genre": "arena.escape",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 4800,
+      "entities": 4,
+      "rules": 5,
+      "compileMs": 178.6,
+      "verifyMs": 282.7,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.escape",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "survive",
+            "object": null
+          },
+          {
+            "actor": "drone",
+            "verb": "sweep",
+            "object": "area"
+          }
+        ],
+        "missing": [
+          {
+            "actor": "drone",
+            "verb": "sweep",
+            "object": "area"
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "drone",
+            "verb": "sweep",
+            "object": "area"
+          }
+        ],
+        "objectiveKind": "survive",
+        "requestedSeconds": 90,
+        "actualSeconds": 80,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "survival_timer-3",
+      "bucket": "survival_timer",
+      "expectArchetype": "survival_timer",
+      "draftMs": 170.9,
+      "archetype": "survival_timer",
+      "genre": "arena.escape",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2700,
+      "entities": 4,
+      "rules": 5,
+      "compileMs": 138.3,
+      "verifyMs": 154.1,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.escape",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "survive",
+            "object": null
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "survive",
+        "requestedSeconds": null,
+        "actualSeconds": 45,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "survival_timer-4",
+      "bucket": "survival_timer",
+      "expectArchetype": "survival_timer",
+      "draftMs": 322.4,
+      "archetype": "survival_timer",
+      "genre": "arena.escape",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 4800,
+      "entities": 4,
+      "rules": 5,
+      "compileMs": 158.6,
+      "verifyMs": 288.5,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.escape",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "survive",
+            "object": null
+          },
+          {
+            "actor": "stove",
+            "verb": "flare",
+            "object": "up"
+          }
+        ],
+        "missing": [
+          {
+            "actor": "stove",
+            "verb": "flare",
+            "object": "up"
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "stove",
+            "verb": "flare",
+            "object": "up"
+          }
+        ],
+        "objectiveKind": "survive",
+        "requestedSeconds": 120,
+        "actualSeconds": 80,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "checkpoint_race-1",
+      "bucket": "checkpoint_race",
+      "expectArchetype": "checkpoint_race",
+      "draftMs": 872.5,
+      "archetype": "hazard_crossing",
+      "genre": null,
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2124,
+      "entities": 114,
+      "rules": 5,
+      "compileMs": 97.1,
+      "verifyMs": 232.1,
+      "evidence": {
+        "hero": null,
+        "cellId": "drive.race",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "race",
+            "object": null
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "checkpoint_race-2",
+      "bucket": "checkpoint_race",
+      "expectArchetype": "checkpoint_race",
+      "draftMs": 89.6,
+      "archetype": "hazard_crossing",
+      "genre": null,
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 907,
+      "entities": 44,
+      "rules": 6,
+      "compileMs": 18.9,
+      "verifyMs": 36.9,
+      "evidence": {
+        "hero": "plane",
+        "cellId": "glide.reach",
+        "essential": [
+          {
+            "actor": "plane",
+            "verb": "glide",
+            "object": null
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "checkpoint_race-3",
+      "bucket": "checkpoint_race",
+      "expectArchetype": "checkpoint_race",
+      "draftMs": 230.6,
+      "archetype": "hazard_crossing",
+      "genre": "runner.default",
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2005,
+      "entities": 100,
+      "rules": 5,
+      "compileMs": 35.9,
+      "verifyMs": 66,
+      "evidence": {
+        "hero": null,
+        "cellId": "runner.default",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "hero",
+            "verb": "race",
+            "object": null
+          }
+        ],
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "race",
+            "object": null
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "hero",
+            "verb": "race",
+            "object": null
+          }
+        ],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "checkpoint_race-4",
+      "bucket": "checkpoint_race",
+      "expectArchetype": "checkpoint_race",
+      "draftMs": 365.3,
+      "archetype": "hazard_crossing",
+      "genre": "runner.default",
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2875,
+      "entities": 116,
+      "rules": 5,
+      "compileMs": 61.6,
+      "verifyMs": 85.2,
+      "evidence": {
+        "hero": null,
+        "cellId": "runner.default",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "hero",
+            "verb": "run",
+            "object": "out"
+          }
+        ],
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "run",
+            "object": "out"
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "hero",
+            "verb": "run",
+            "object": "out"
+          }
+        ],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "delivery-1",
+      "bucket": "delivery",
+      "expectArchetype": "delivery",
+      "draftMs": 293.4,
+      "archetype": "hazard_crossing",
+      "genre": null,
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 2076,
+      "entities": 112,
+      "rules": 5,
+      "compileMs": 65.6,
+      "verifyMs": 185.4,
+      "evidence": {
+        "hero": null,
+        "cellId": "drive.reach+deliver",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "deliver",
+            "object": "cake"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "delivery-2",
+      "bucket": "delivery",
+      "expectArchetype": "delivery",
+      "draftMs": 304.4,
+      "archetype": "hazard_crossing",
+      "genre": null,
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 2076,
+      "entities": 112,
+      "rules": 5,
+      "compileMs": 71.6,
+      "verifyMs": 159.4,
+      "evidence": {
+        "hero": null,
+        "cellId": "drive.reach+deliver",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "deliver",
+            "object": "pizza"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "delivery-3",
+      "bucket": "delivery",
+      "expectArchetype": "delivery",
+      "draftMs": 301.6,
+      "archetype": "hazard_crossing",
+      "genre": null,
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 2076,
+      "entities": 112,
+      "rules": 5,
+      "compileMs": 67.9,
+      "verifyMs": 158,
+      "evidence": {
+        "hero": null,
+        "cellId": "drive.reach+deliver",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "deliver",
+            "object": "crystal"
+          },
+          {
+            "actor": "mine",
+            "verb": "hazard",
+            "object": "hero"
+          }
+        ],
+        "missing": [
+          {
+            "actor": "mine",
+            "verb": "hazard",
+            "object": "hero"
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "mine",
+            "verb": "hazard",
+            "object": "hero"
+          }
+        ],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "delivery-4",
+      "bucket": "delivery",
+      "expectArchetype": "delivery",
+      "draftMs": 288.9,
+      "archetype": "hazard_crossing",
+      "genre": null,
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 2076,
+      "entities": 112,
+      "rules": 5,
+      "compileMs": 90.9,
+      "verifyMs": 133.1,
+      "evidence": {
+        "hero": null,
+        "cellId": "drive.reach+deliver",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "deliver",
+            "object": "egg"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "switch_puzzle-1",
+      "bucket": "switch_puzzle",
+      "expectArchetype": "switch_puzzle",
+      "draftMs": 422.8,
+      "archetype": "switch_puzzle",
+      "genre": "quest.spatial",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 4192,
+      "entities": 12,
+      "rules": 6,
+      "compileMs": 282.6,
+      "verifyMs": 285.2,
+      "evidence": {
+        "hero": null,
+        "cellId": "quest.spatial",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "interact",
+            "object": "door"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "puzzle",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "switch_puzzle-2",
+      "bucket": "switch_puzzle",
+      "expectArchetype": "switch_puzzle",
+      "draftMs": 516.5,
+      "archetype": "switch_puzzle",
+      "genre": "quest.spatial",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 4938,
+      "entities": 10,
+      "rules": 6,
+      "compileMs": 325.3,
+      "verifyMs": 465.1,
+      "evidence": {
+        "hero": null,
+        "cellId": "quest.spatial",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "interact",
+            "object": "lever"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "puzzle",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "switch_puzzle-3",
+      "bucket": "switch_puzzle",
+      "expectArchetype": "switch_puzzle",
+      "draftMs": 338.9,
+      "archetype": "switch_puzzle",
+      "genre": "quest.spatial",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 4192,
+      "entities": 12,
+      "rules": 6,
+      "compileMs": 179,
+      "verifyMs": 320,
+      "evidence": {
+        "hero": null,
+        "cellId": "quest.spatial",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "interact",
+            "object": "button"
+          },
+          {
+            "actor": "door",
+            "verb": "open",
+            "object": null
+          }
+        ],
+        "missing": [
+          {
+            "actor": "door",
+            "verb": "open",
+            "object": null
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "door",
+            "verb": "open",
+            "object": null
+          }
+        ],
+        "objectiveKind": "puzzle",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "switch_puzzle-4",
+      "bucket": "switch_puzzle",
+      "expectArchetype": "switch_puzzle",
+      "draftMs": 367.3,
+      "archetype": "switch_puzzle",
+      "genre": "quest.spatial",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 4192,
+      "entities": 12,
+      "rules": 6,
+      "compileMs": 193.1,
+      "verifyMs": 315.2,
+      "evidence": {
+        "hero": null,
+        "cellId": "quest.spatial",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "interact",
+            "object": "switch"
+          },
+          {
+            "actor": "door",
+            "verb": "interact",
+            "object": null
+          }
+        ],
+        "missing": [
+          {
+            "actor": "door",
+            "verb": "interact",
+            "object": null
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "door",
+            "verb": "interact",
+            "object": null
+          }
+        ],
+        "objectiveKind": "puzzle",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "hazard_crossing-1",
+      "bucket": "hazard_platforming",
+      "expectArchetype": "hazard_crossing",
+      "draftMs": 476.8,
+      "archetype": "hazard_crossing",
+      "genre": "platformer.default",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2430,
+      "entities": 72,
+      "rules": 8,
+      "compileMs": 51.1,
+      "verifyMs": 72,
+      "evidence": {
+        "hero": null,
+        "cellId": "platformer.default",
+        "essential": [],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "hazard_crossing-2",
+      "bucket": "hazard_crossing",
+      "expectArchetype": "hazard_crossing",
+      "draftMs": 482.4,
+      "archetype": "hazard_crossing",
+      "genre": "platformer.default",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2430,
+      "entities": 72,
+      "rules": 8,
+      "compileMs": 53.4,
+      "verifyMs": 68.4,
+      "evidence": {
+        "hero": null,
+        "cellId": "platformer.default",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "cross",
+            "object": "field"
+          },
+          {
+            "actor": "lava",
+            "verb": "hazard",
+            "object": "hero"
+          },
+          {
+            "actor": "hero",
+            "verb": "linger",
+            "object": null
+          }
+        ],
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "cross",
+            "object": "field"
+          },
+          {
+            "actor": "hero",
+            "verb": "linger",
+            "object": null
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "hero",
+            "verb": "cross",
+            "object": "field"
+          },
+          {
+            "actor": "hero",
+            "verb": "linger",
+            "object": null
+          }
+        ],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "hazard_crossing-3",
+      "bucket": "hazard_crossing",
+      "expectArchetype": "hazard_crossing",
+      "draftMs": 295.7,
+      "archetype": "hazard_crossing",
+      "genre": "runner.default",
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2875,
+      "entities": 116,
+      "rules": 5,
+      "compileMs": 51.9,
+      "verifyMs": 115.2,
+      "evidence": {
+        "hero": null,
+        "cellId": "runner.default",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "cross",
+            "object": "lake"
+          },
+          {
+            "actor": "ice",
+            "verb": "crack",
+            "object": null
+          },
+          {
+            "actor": "ice",
+            "verb": "every",
+            "object": null
+          }
+        ],
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "cross",
+            "object": "lake"
+          },
+          {
+            "actor": "ice",
+            "verb": "crack",
+            "object": null
+          },
+          {
+            "actor": "ice",
+            "verb": "every",
+            "object": null
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "hero",
+            "verb": "cross",
+            "object": "lake"
+          },
+          {
+            "actor": "ice",
+            "verb": "crack",
+            "object": null
+          },
+          {
+            "actor": "ice",
+            "verb": "every",
+            "object": null
+          }
+        ],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "hazard_crossing-4",
+      "bucket": "hazard_crossing",
+      "expectArchetype": "hazard_crossing",
+      "draftMs": 363.8,
+      "archetype": "hazard_crossing",
+      "genre": "platformer.default",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2430,
+      "entities": 72,
+      "rules": 8,
+      "compileMs": 38,
+      "verifyMs": 86.4,
+      "evidence": {
+        "hero": null,
+        "cellId": "platformer.default",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "jump",
+            "object": null
+          },
+          {
+            "actor": "acid",
+            "verb": "hazard",
+            "object": "hero"
+          },
+          {
+            "actor": "hero",
+            "verb": "reach",
+            "object": "door"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "reach",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "combat_lite-1",
+      "bucket": "combat_lite",
+      "expectArchetype": "combat_lite",
+      "draftMs": 199.2,
+      "archetype": "combat_lite",
+      "genre": "arena.fight",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3565,
+      "entities": 5,
+      "rules": 6,
+      "compileMs": 45.7,
+      "verifyMs": 110.4,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.fight",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "defeat",
+            "object": "target"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "defeat_targets",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "combat_lite-2",
+      "bucket": "combat_lite",
+      "expectArchetype": "combat_lite",
+      "draftMs": 143.1,
+      "archetype": "combat_lite",
+      "genre": "arena.fight",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3565,
+      "entities": 5,
+      "rules": 6,
+      "compileMs": 37,
+      "verifyMs": 102.9,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.fight",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "defeat",
+            "object": "dummy"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "defeat_targets",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "combat_lite-3",
+      "bucket": "combat_lite",
+      "expectArchetype": "combat_lite",
+      "draftMs": 141.4,
+      "archetype": "combat_lite",
+      "genre": "arena.fight",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3565,
+      "entities": 5,
+      "rules": 6,
+      "compileMs": 41.7,
+      "verifyMs": 110.5,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.fight",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "defeat",
+            "object": "robot"
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "defeat_targets",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "combat_lite-4",
+      "bucket": "combat_lite",
+      "expectArchetype": "combat_lite",
+      "draftMs": 408.9,
+      "archetype": "switch_puzzle",
+      "genre": "quest.spatial",
+      "genreHit": false,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 4192,
+      "entities": 12,
+      "rules": 6,
+      "compileMs": 201.6,
+      "verifyMs": 354,
+      "evidence": {
+        "hero": null,
+        "cellId": "quest.spatial",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "hit",
+            "object": "nest"
+          }
+        ],
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "hit",
+            "object": "nest"
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "hero",
+            "verb": "hit",
+            "object": "nest"
+          }
+        ],
+        "objectiveKind": "puzzle",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "ambiguity-1",
+      "bucket": "ambiguity",
+      "expectArchetype": null,
+      "draftMs": 294.5,
+      "archetype": "collect_exit",
+      "genre": "arena.collect",
+      "genreHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3935,
+      "entities": 11,
+      "rules": 6,
+      "compileMs": 149.8,
+      "verifyMs": 255.1,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.collect",
+        "essential": [],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "collect",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "contradiction-1",
+      "bucket": "contradiction",
+      "expectArchetype": null,
+      "draftMs": 301.1,
+      "archetype": "collect_exit",
+      "genre": "arena.collect",
+      "genreHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3935,
+      "entities": 11,
+      "rules": 6,
+      "compileMs": 126.3,
+      "verifyMs": 234.1,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.collect",
+        "essential": [],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "collect",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "scale-1",
+      "bucket": "scale",
+      "expectArchetype": null,
+      "draftMs": 24.6,
+      "archetype": "combat_lite",
+      "genre": null,
+      "genreHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 373,
+      "entities": 2,
+      "rules": 2,
+      "compileMs": 8.6,
+      "verifyMs": 10.3,
+      "evidence": {
+        "hero": null,
+        "cellId": "roam.catch",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "catch",
+            "object": null
+          }
+        ],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "defeat_targets",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "remix-1",
+      "bucket": "remix",
+      "expectArchetype": null,
+      "draftMs": 271,
+      "archetype": "collect_exit",
+      "genre": "arena.collect",
+      "genreHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3935,
+      "entities": 11,
+      "rules": 6,
+      "compileMs": 107.2,
+      "verifyMs": 204.8,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.collect",
+        "essential": [],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "collect",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "remix-2",
+      "bucket": "remix",
+      "expectArchetype": null,
+      "draftMs": 271.5,
+      "archetype": "collect_exit",
+      "genre": "arena.collect",
+      "genreHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3935,
+      "entities": 11,
+      "rules": 6,
+      "compileMs": 134,
+      "verifyMs": 236.6,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.collect",
+        "essential": [],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "collect",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "remix-3",
+      "bucket": "remix",
+      "expectArchetype": null,
+      "draftMs": 292.8,
+      "archetype": "collect_exit",
+      "genre": "arena.collect",
+      "genreHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3935,
+      "entities": 11,
+      "rules": 6,
+      "compileMs": 136.4,
+      "verifyMs": 238.8,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.collect",
+        "essential": [],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "collect",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": false
+      }
+    },
+    {
+      "id": "count-1",
+      "bucket": "count",
+      "expectArchetype": null,
+      "draftMs": 279.4,
+      "archetype": "collect_exit",
+      "genre": "arena.collect",
+      "genreHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 3935,
+      "entities": 11,
+      "rules": 6,
+      "compileMs": 132.9,
+      "verifyMs": 233.8,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.collect",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "exactly",
+            "object": "statue"
+          }
+        ],
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "exactly",
+            "object": "statue"
+          }
+        ],
+        "admitted": [
+          {
+            "actor": "hero",
+            "verb": "exactly",
+            "object": "statue"
+          }
+        ],
+        "objectiveKind": "collect",
+        "requestedSeconds": null,
+        "actualSeconds": null,
+        "preservationFailure": true
+      }
+    },
+    {
+      "id": "relation-1",
+      "bucket": "relation",
+      "expectArchetype": null,
+      "draftMs": 165.7,
+      "archetype": "survival_timer",
+      "genre": "arena.escape",
+      "genreHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2400,
+      "entities": 4,
+      "rules": 5,
+      "compileMs": 98.4,
+      "verifyMs": 142.7,
+      "evidence": {
+        "hero": null,
+        "cellId": "arena.escape",
+        "essential": [],
+        "missing": [],
+        "admitted": [],
+        "objectiveKind": "survive",
+        "requestedSeconds": null,
+        "actualSeconds": 40,
+        "preservationFailure": false
+      }
+    }
+  ],
+  "summary": {
+    "specValid": 40,
+    "compiled": 40,
+    "eligible": 40,
+    "total": 40,
+    "genreHits": 18,
+    "withExpect": 32,
+    "medianCompileMs": 98.4,
+    "p90CompileMs": 179
+  },
+  "historicalGenreHitTarget": 26,
+  "historicalDifferences": [
+    {
+      "id": "chase_escape-1",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "survival_timer",
+          "after": "hazard_crossing"
+        },
+        {
+          "field": "genre",
+          "before": "arena.escape",
+          "after": "runner.default"
+        },
+        {
+          "field": "genreHit",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2400,
+          "after": 2873
+        },
+        {
+          "field": "entities",
+          "before": 4,
+          "after": 114
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 6
+        }
+      ]
+    },
+    {
+      "id": "chase_escape-2",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "survival_timer",
+          "after": "hazard_crossing"
+        },
+        {
+          "field": "genre",
+          "before": "arena.escape",
+          "after": "platformer.default"
+        },
+        {
+          "field": "genreHit",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2400,
+          "after": 3791
+        },
+        {
+          "field": "entities",
+          "before": 4,
+          "after": 105
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 9
+        }
+      ]
+    },
+    {
+      "id": "chase_escape-3",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "survival_timer",
+          "after": "hazard_crossing"
+        },
+        {
+          "field": "genre",
+          "before": "arena.escape",
+          "after": "runner.default"
+        },
+        {
+          "field": "genreHit",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2400,
+          "after": 2873
+        },
+        {
+          "field": "entities",
+          "before": 4,
+          "after": 114
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 6
+        }
+      ]
+    },
+    {
+      "id": "chase_escape-4",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "survival_timer",
+          "after": "hazard_crossing"
+        },
+        {
+          "field": "genre",
+          "before": "arena.escape",
+          "after": "platformer.default"
+        },
+        {
+          "field": "genreHit",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2400,
+          "after": 2430
+        },
+        {
+          "field": "entities",
+          "before": 4,
+          "after": 73
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 9
+        }
+      ]
+    },
+    {
+      "id": "collect_exit-2",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 2144,
+          "after": 3935
+        }
+      ]
+    },
+    {
+      "id": "survival_timer-2",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "collect_exit",
+          "after": "survival_timer"
+        },
+        {
+          "field": "genre",
+          "before": "arena.collect",
+          "after": "arena.escape"
+        },
+        {
+          "field": "genreHit",
+          "before": false,
+          "after": true
+        },
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 4800
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 4
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 5
+        }
+      ]
+    },
+    {
+      "id": "checkpoint_race-1",
+      "fields": [
+        {
+          "field": "genre",
+          "before": "voyage.race",
+          "after": null
+        },
+        {
+          "field": "genreHit",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2446,
+          "after": 2124
+        },
+        {
+          "field": "entities",
+          "before": 106,
+          "after": 114
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 5
+        }
+      ]
+    },
+    {
+      "id": "checkpoint_race-2",
+      "fields": [
+        {
+          "field": "genre",
+          "before": "voyage.race",
+          "after": null
+        },
+        {
+          "field": "genreHit",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2446,
+          "after": 907
+        },
+        {
+          "field": "entities",
+          "before": 106,
+          "after": 44
+        }
+      ]
+    },
+    {
+      "id": "checkpoint_race-3",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "switch_puzzle",
+          "after": "hazard_crossing"
+        },
+        {
+          "field": "genre",
+          "before": "quest.spatial",
+          "after": "runner.default"
+        },
+        {
+          "field": "keypointsPassed",
+          "before": 5,
+          "after": 4
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 5,
+          "after": 4
+        },
+        {
+          "field": "winsAtTick",
+          "before": 4201,
+          "after": 2005
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 100
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 5
+        }
+      ]
+    },
+    {
+      "id": "checkpoint_race-4",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 2897,
+          "after": 2875
+        },
+        {
+          "field": "entities",
+          "before": 112,
+          "after": 116
+        }
+      ]
+    },
+    {
+      "id": "delivery-1",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "switch_puzzle",
+          "after": "hazard_crossing"
+        },
+        {
+          "field": "genre",
+          "before": "quest.spatial",
+          "after": null
+        },
+        {
+          "field": "genreHit",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "winsAtTick",
+          "before": 5181,
+          "after": 2076
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 112
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 5
+        }
+      ]
+    },
+    {
+      "id": "delivery-2",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "switch_puzzle",
+          "after": "hazard_crossing"
+        },
+        {
+          "field": "genre",
+          "before": "quest.spatial",
+          "after": null
+        },
+        {
+          "field": "genreHit",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "winsAtTick",
+          "before": 4192,
+          "after": 2076
+        },
+        {
+          "field": "entities",
+          "before": 12,
+          "after": 112
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 5
+        }
+      ]
+    },
+    {
+      "id": "delivery-3",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "switch_puzzle",
+          "after": "hazard_crossing"
+        },
+        {
+          "field": "genre",
+          "before": "quest.spatial",
+          "after": null
+        },
+        {
+          "field": "genreHit",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "winsAtTick",
+          "before": 4192,
+          "after": 2076
+        },
+        {
+          "field": "entities",
+          "before": 12,
+          "after": 112
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 5
+        }
+      ]
+    },
+    {
+      "id": "delivery-4",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "switch_puzzle",
+          "after": "hazard_crossing"
+        },
+        {
+          "field": "genre",
+          "before": "quest.spatial",
+          "after": null
+        },
+        {
+          "field": "genreHit",
+          "before": true,
+          "after": false
+        },
+        {
+          "field": "winsAtTick",
+          "before": 4192,
+          "after": 2076
+        },
+        {
+          "field": "entities",
+          "before": 12,
+          "after": 112
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 5
+        }
+      ]
+    },
+    {
+      "id": "hazard_crossing-3",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 2897,
+          "after": 2875
+        },
+        {
+          "field": "entities",
+          "before": 112,
+          "after": 116
+        }
+      ]
+    },
+    {
+      "id": "combat_lite-1",
+      "fields": [
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 6
+        }
+      ]
+    },
+    {
+      "id": "combat_lite-2",
+      "fields": [
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 6
+        }
+      ]
+    },
+    {
+      "id": "combat_lite-3",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "switch_puzzle",
+          "after": "combat_lite"
+        },
+        {
+          "field": "genre",
+          "before": "quest.spatial",
+          "after": "arena.fight"
+        },
+        {
+          "field": "genreHit",
+          "before": false,
+          "after": true
+        },
+        {
+          "field": "keypointsPassed",
+          "before": 5,
+          "after": 4
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 5,
+          "after": 4
+        },
+        {
+          "field": "winsAtTick",
+          "before": 4201,
+          "after": 3565
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 5
+        }
+      ]
+    },
+    {
+      "id": "ambiguity-1",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 3935
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 11
+        }
+      ]
+    },
+    {
+      "id": "contradiction-1",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 3935
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 11
+        }
+      ]
+    },
+    {
+      "id": "scale-1",
+      "fields": [
+        {
+          "field": "archetype",
+          "before": "survival_timer",
+          "after": "combat_lite"
+        },
+        {
+          "field": "genre",
+          "before": "arena.escape",
+          "after": null
+        },
+        {
+          "field": "winsAtTick",
+          "before": 4800,
+          "after": 373
+        },
+        {
+          "field": "entities",
+          "before": 4,
+          "after": 2
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 2
+        }
+      ]
+    },
+    {
+      "id": "remix-1",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 3935
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 11
+        }
+      ]
+    },
+    {
+      "id": "remix-2",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 3935
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 11
+        }
+      ]
+    },
+    {
+      "id": "remix-3",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 3935
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 11
+        }
+      ]
+    },
+    {
+      "id": "count-1",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 3935
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 11
+        }
+      ]
+    }
+  ],
+  "preservationFailures": [
+    "chase_escape-1",
+    "chase_escape-2",
+    "chase_escape-3",
+    "collect_exit-3",
+    "collect_exit-4",
+    "survival_timer-2",
+    "survival_timer-4",
+    "checkpoint_race-3",
+    "checkpoint_race-4",
+    "delivery-3",
+    "switch_puzzle-3",
+    "switch_puzzle-4",
+    "hazard_crossing-2",
+    "hazard_crossing-3",
+    "combat_lite-4",
+    "count-1"
+  ],
+  "scope": "Extracted essential triples plus survival duration; not full manual sentence preservation."
+}

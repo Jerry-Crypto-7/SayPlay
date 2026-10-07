@@ -15,6 +15,12 @@ const STEP_MS = 500;
 /** Desktop, který už v čase 0 měří (první vzorek po startu jen začne měřit). */
 const measuring = (): QualityState => sampleQuality(startQuality(1), 50, 0);
 
+it('starts touch devices cheaply even when their pixel ratio is below two', () => {
+  expect(startQuality(1.75, true).tier).toBe('low');
+  expect(startQuality(3, true).ceiling).toBe('high');
+  expect(startQuality(1.75, false).tier).toBe('high');
+});
+
 /** Vzorky po půl sekundě s daným FPS po dobu `ms`; vrací stav a úroveň po každém vzorku. */
 function run(state: QualityState, fps: number, ms: number, from: number): { readonly state: QualityState; readonly tiers: readonly QualityTier[]; readonly at: number } {
   const tiers: QualityTier[] = [];

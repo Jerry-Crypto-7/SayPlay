@@ -1,0 +1,38 @@
+/** Per-instance pacing delegates every native movement; no position writes. */
+import { z } from 'zod';
+import { BODY, bodyBase, type ControlPiece, type BotPiece, type PieceRef, type ArcadeObservation } from '../contract';
+import { phasesSchema, phaseSpeed } from '../../compose/progression';
+const paramsSchema = z.object({ base: z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) }), phases: phasesSchema, length: z.int().positive() });
+export function makePacedControl(controls: Readonly<Record<string, ControlPiece>>): ControlPiece<z.infer<typeof paramsSchema>> {
+  return { id: 'phase_control', params: paramsSchema, roles: ['player'], cost: () => ({ bodies: 0, rules: 0 }),
+    step(state, player, input, params) {
+      const native = controls[params.base.id];
+      if (!native) throw new Error(`Unknown paced control ${params.base.id}`);
+      const p = bodyBase(player), raw = params.base.params;
+      const at = state[p + BODY.z]!;
+      const speed = (value: number) => phaseSpeed(value, at, params.length, params.phases);
+      const adjusted = { ...raw, ...(typeof raw.topSpeed === 'number' ? { topSpeed: speed(raw.topSpeed) } : {}), ...(typeof raw.speed === 'number' ? { speed: speed(raw.speed) } : {}) };
+      // Original schema is parsed at compilation; scaled speed is a bounded runtime value.
+      native.step(state, player, input, adjusted);
+      if (params.base.id === 'runner' || params.base.id === 'platform') state[p + BODY.vz] = speed(state[p + BODY.vz]!);
+    } };
+}
+export function makePacedBot(bots: Readonly<Record<string, BotPiece>>): BotPiece<z.infer<typeof paramsSchema>> {
+  return { id: 'phase_bot', params: paramsSchema, roles: ['player'], reactionTicks: 8, cost: () => ({ bodies: 0, rules: 0 }),
+    decide(observation, params) {
+      const native = bots[params.base.id];
+      if (!native) throw new Error(`Unknown paced bot ${params.base.id}`);
+      const raw = params.base.params, at = observation.state[bodyBase(observation.player) + BODY.z]!;
+      const speed = (value: number) => phaseSpeed(value, at, params.length, params.phases);
+      return native.decide(observation, { ...raw, ...(typeof raw.topSpeed === 'number' ? { topSpeed: speed(raw.topSpeed) } : {}), ...(typeof raw.speed === 'number' ? { speed: speed(raw.speed) } : {}) });
+    } };
+}
+
+/** Addon aiming must still see the native movement and its current speed. */
+export function pacedBotBase(ref: PieceRef, observation: ArcadeObservation): PieceRef {
+  if (ref.id !== 'phase_bot') return ref;
+  const params = paramsSchema.parse(ref.params), raw = params.base.params;
+  const at = observation.state[bodyBase(observation.player) + BODY.z]!;
+  const speed = (value: number) => phaseSpeed(value, at, params.length, params.phases);
+  return { ...params.base, params: { ...raw, ...(typeof raw.topSpeed === 'number' ? { topSpeed: speed(raw.topSpeed) } : {}), ...(typeof raw.speed === 'number' ? { speed: speed(raw.speed) } : {}) } };
+}

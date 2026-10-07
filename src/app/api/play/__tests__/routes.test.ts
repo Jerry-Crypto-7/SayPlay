@@ -544,20 +544,20 @@ const UNWINNABLE_RACE_SEED = 1;
 
 describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
   // P32B T2: nová hra jde přes žánr, osm karet tedy přistane ve čtyřech žánrech (aréna, plavba, úkol, plošinovka), ne v osmi archetypech mřížky.
-  it('osm startovních vět → čtyři žánry; každá 201 a GET nese ověřené keypointy', async () => {
-    const genres = new Set<string>();
+  it('osm startovních vět → hratelné recepty; každá 201 a GET nese ověřené keypointy', async () => {
+    const controls = new Set<string>();
     for (const starter of STARTERS) {
       const created = await publish(starter.sentence);
       expect(created.status, starter.sentence).toBe(201);
       const game = await read(created.body.versionId);
-      expect(game.body.spec.genre?.id, starter.sentence).toBeDefined();
-      genres.add(game.body.spec.genre.id);
+      expect(game.body.spec.control, starter.sentence).toBeDefined();
+      controls.add(game.body.spec.control);
       expect(game.body.version.compilerVersion).toBe(ARCADE_COMPILER_VERSION);
       expect(game.body.report.keypoints.length, starter.sentence).toBeGreaterThan(0);
       expect(game.body.report.publishEligible, starter.sentence).toBe(true);
       expect('stub' in game.body.report).toBe(false);
     }
-    expect([...genres].sort()).toEqual(['arena', 'platformer', 'quest', 'voyage']);
+    expect(controls.size).toBeGreaterThanOrEqual(4);
   });
 
   it('spec, jehož keypoint neprojde, je 422 NOT_PUBLISHABLE s ids a nic se neuložilo', async () => {

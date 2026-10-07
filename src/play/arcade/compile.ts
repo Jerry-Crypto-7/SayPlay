@@ -34,6 +34,10 @@ import {
 import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHasPhysics } from './kernel';
 import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
+import { progressionParts } from './pieces/progression-parts';
+import { glideCourse } from './pieces/glide';
+import { walkerLabyrinth } from './pieces/walker';
+import { ballPitch } from './pieces/ball';
 import { rapierIfLoaded } from './physics/world';
 import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
@@ -47,11 +51,12 @@ import { throwBudgetIn, throwField, throwParts } from './pieces/throw';
 import { timingParts } from './pieces/timing';
 import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
+import { bindRoles, type RoleBinding } from './witness';
 
 /** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra. */
 export const ARCADE_COMPILER_VERSION = `${GAME_COMPILER_VERSION}/${ARCADE_RUNTIME_VERSION}`;
 
-export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld } | { readonly ok: false; readonly issues: readonly string[] };
+export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld; readonly roleBindings: readonly RoleBinding[] } | { readonly ok: false; readonly issues: readonly string[] };
 
 /**
  * Počet role jako parametr generátoru (P26D T9). Schéma dává `count` výchozí 1,
@@ -79,6 +84,9 @@ const limitSeconds = (seconds: number): number => Math.min(ARCADE_LIMITS.maxTick
 /** Ovládání, trať a pravidla, která se liší podle `control`. */
 function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
   const counts = countParams(spec);
+  if (spec.control === 'ball') return ballPitch.parts(seed, ballPitch.params.parse(ownParams(spec) ?? {}), health);
+  if (spec.control === 'walker') return walkerLabyrinth.parts(seed, walkerLabyrinth.params.parse(ownParams(spec) ?? {}), health);
+  if (spec.control === 'glide') return glideCourse.parts(seed, glideCourse.params.parse(ownParams(spec) ?? {}), health);
   if (spec.control === 'timing') return timingParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'rhythm') return rhythmParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'duel') return duelParts(seed, { ...spec.controlParams }, health);
@@ -98,7 +106,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const params = steerTrack.params.parse({ ...spec.controlParams });
     const level = steerTrack.generate(seed, params);
     // Závod životy nebere (P26 T5): bez `health: undefined` by svět nesl počet, který nic neubere.
-    return { control: steerControlRef(level, params), bot: steerBotRef(level, params), level, rules: steerRules(level), health: undefined };
+    return { control: steerControlRef(level, params), bot: steerBotRef(level, params), level, rules: steerRules(level, params), health: params.crashBudget };
   }
   if (spec.control === 'move_free') {
     // `readGameSpec` už odmítl spec, kde by cíl a časovač nesouhlasily.
@@ -113,7 +121,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const ramp = rampMarks(level.length);
     // Odpuštění pozdního vzletu (P37A T7) jen s `feel` ze specu – uložený spec bez něj staví tentýž svět.
     const feel = params.feel === undefined ? {} : { feel: params.feel };
-    return { control: { id: 'flap', params: { ramp, ...feel } }, bot: { id: 'flap_bot', params: { ramp } }, level, rules: flapRules(health, params.rise === true, params.feel === 2) };
+    return { control: { id: 'flap', params: { ramp, ...feel } }, bot: { id: 'flap_bot', params: { ramp } }, level, rules: flapRules(health, params.rise === true, params.feel === 2, params.collectAll === true) };
   }
   if (spec.control === 'shooter') {
     const params = shooterRange.params.parse({ ...spec.controlParams, ...counts });
@@ -124,7 +132,9 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const params = throwField.params.parse({ ...spec.controlParams });
     // Rozpočet kol a hodiny jsou dvě pole specu: remix, který zkrátí jen hodiny, by nechal kola na delší hru (review P36A F5).
     const clock = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
-    const fitted = params.budget === undefined || clock?.onEnd !== 'lose' ? params : { ...params, budget: Math.min(params.budget, throwBudgetIn(limitSeconds(clock.seconds))) };
+    // The opt-in pace ratio keeps the authored work budget, but the actual timer
+    // and HUD use the shorter deadline. Without it the legacy remix clamp is unchanged.
+    const fitted = params.budget === undefined || clock?.onEnd !== 'lose' ? params : { ...params, budget: Math.min(params.budget, throwBudgetIn(limitSeconds(params.paceBudgetPct === undefined ? clock.seconds : Math.ceil(clock.seconds * 100 / params.paceBudgetPct)))) };
     return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, fitted), health: undefined };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });
@@ -145,6 +155,9 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
 
 /** Generátor, který ovládání staví bez `controlParams.generator`. */
 const CONTROL_GENERATORS: Readonly<Record<string, string>> = {
+  glide: 'glide_course',
+  walker: 'walker_labyrinth',
+  ball: 'ball_pitch',
   runner: 'runner_track',
   platform: 'platform_level',
   flap: 'flap_track',
@@ -195,7 +208,8 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   const plain = { ...spec, controlParams: ownParams(spec) } as GameSpecV1;
   const base = { ...plain, controlParams: addonControlParams(plain) } as GameSpecV1;
   // Pravidla, která sama vyhrávají, hrají na dvorku místo arény (P29A, `rules/compile.ts`).
-  const own = mode !== undefined ? mode.parts(seed, params?.data, health) : rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
+  const generated = mode !== undefined ? mode.parts(seed, params?.data, health) : rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
+  const own = progressionParts(generated, spec);
   // Pahýl módu vrací prázdnou úroveň s issue; doplňky by z ní četly tělo hráče (revize T4 kolo 2).
   if (own.issues !== undefined && own.issues.length > 0) return { ok: false, issues: own.issues };
   const lives = 'health' in own ? own.health : health;
@@ -218,7 +232,7 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   }
 
   const built = buildWorld({ seed, control, rules: scored.rules, bot, level: scored.level, ...(lives === undefined ? {} : { health: lives }) }, ARCADE_LIBRARY);
-  return built.ok ? { ok: true, world: built.world } : built;
+  return built.ok ? { ok: true, world: built.world, roleBindings: bindRoles(spec, built.world) } : built;
 }
 
 /**
@@ -275,7 +289,7 @@ function reachableTarget(spec: GameSpecV1, seed: number, target: number): number
 }
 
 /** Chce spec fyzikální tělesa (P29A T13)? Jen pak se smí stahovat Rapier. */
-export const specNeedsPhysics = (spec: GameSpecV1): boolean => (spec.things ?? []).some((thing) => thing.physics === true);
+export const specNeedsPhysics = (spec: GameSpecV1): boolean => spec.control === 'ball' || (spec.things ?? []).some((thing) => thing.physics === true);
 
 /**
  * Načte Rapier, když ho hra potřebuje; hra bez fyziky modul nestáhne. Jádro je

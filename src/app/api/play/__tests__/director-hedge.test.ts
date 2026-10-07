@@ -17,7 +17,7 @@ import { processSpendCap, resetProcessSpendCap } from '@/server/spend-cap';
 import { resetConcurrency } from '../../worldstream/sessions/route';
 import { DEFAULT_HEDGE_MS, getDirector, hedged } from '../_director';
 
-const SENTENCE = 'a penguin jumps over icebergs';
+const SENTENCE = 'a penguin jumps';
 
 const LIVE = {
   WORLDSMITH_BRANCH: 'live',

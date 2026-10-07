@@ -56,6 +56,10 @@ import {
 } from '../genre/contract';
 import { familyOf, heroActionOf } from '../genre/families';
 import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
+import { compose, type Composition } from '../compose/compose';
+import { compileRecipe } from '../compose/compile';
+import { extractIntent } from '../intent/extract';
+import type { Intent } from '../intent/contract';
 import { defaultCollectible, defaultFoe, defaultHero, defaultTarget, heroFits } from '../genre/roles';
 import { AMMO_VERB } from '../genre/throw';
 import { lookFor, lookWords } from '../arcade/look';
@@ -110,6 +114,8 @@ const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
 const PLAYER_LABELS = ['explorer', 'robot', 'fox', 'kid', 'raccoon', 'astronaut', 'knight', 'penguin'] as const;
 
 export interface DraftMeta {
+  readonly intent?: Intent;
+  readonly composition?: Composition;
   readonly spec: GameSpecV1;
   readonly archetype: ArchetypeId;
   readonly scores: Readonly<Record<ArchetypeId, number>>;
@@ -1350,6 +1356,15 @@ export function draftGameSpecWithMeta(sentence: string, seed = 1, options: Draft
   const modules = options.modules ?? GENRE_MODULES;
   const scores = scoreArchetypes(sentence);
   const readBy = reading === null ? 'keywords' : 'model';
+  if (options.modules === undefined || options.modules === GENRE_MODULES) {
+    const intent = extractIntent(sentence);
+    const composition = compose(intent, seed, reading);
+    const compiled = compileRecipe(composition.recipe);
+    const goal = twistGoalFor(sentence, composition.recipe.content, reading);
+    const read = readGameSpec(goal === null ? compiled : { ...compiled, tutorial: { ...compiled.tutorial, goalLine: goal } });
+    if (!read.ok) throw new Error(`Composed draft is invalid: ${read.issues.join('; ')}`);
+    return { spec: read.value, archetype: read.value.archetype, scores, fellBack: false, readBy, genre: composition.recipe.content, genreWhy: `Live recipe ${composition.cellId}`, intent, composition };
+  }
   // P32B T2: nová hra jde přes žánr – první režim z pořadí klasifikátoru, který se přeloží.
   // T5b: hrdina, kterého věta říká a žánr neumí (koloběžka v Úkolu), žánr přeskočí; neumí-li ho žádný, platí první.
   const ranking = classifyGenre(sentence, reading, modules);
@@ -1456,6 +1471,11 @@ function twistFirst(ranked: readonly GenreChoice[], twist: Twist | null): readon
   return first === undefined ? ranked : [{ ...first, why: `no game verb – ${mode === 'escape' ? 'dodge' : 'collect'} what the sentence names` }, ...ranked.filter((choice) => choice !== first)];
 }
 
+/** Shared fallback ordering for a sentence with no recognized gameplay action. */
+export function draftChoiceOrder(sentence: string, ranking: GenreRanking, reading: Reading | null): readonly GenreChoice[] {
+  return twistFirst(ranking.ranked, reading === null ? twistFor(sentence, ranking) : null);
+}
+
 /**
  * Návrh ze slov pro ovládání, které vybral někdo jiný (P27D T2, kompaktní
  * režie): parametry z věty, když slova ukazují na totéž ovládání, jinak
@@ -1463,6 +1483,8 @@ function twistFirst(ranked: readonly GenreChoice[], twist: Twist | null): readon
  */
 export function draftForControl(sentence: string, control: ControlId, seed = 1): GameSpecV1 | null {
   if (control === 'tap_go') return draftGrid(sentence, seed, scoreArchetypes(sentence)).spec;
+  // Native recipe controls do not have a legacy single-control template.
+  if (control === 'glide' || control === 'walker' || control === 'ball') return null;
   const pick = pickControl(sentence.toLowerCase());
   return draftArcade(sentence, seed, pick?.control === control ? pick : DEFAULT_CHOICE[control]);
 }

@@ -16,7 +16,7 @@
  * Referenční věta: „A frog jumps across lily pads to reach the island“.
  */
 
-import { PLATFORM_LEVEL } from '../arcade/pieces/platform';
+import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from '../arcade/pieces/platform';
 import { nounPhrase, plural, singular } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, type GenreSpecOf, addonRoles, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
@@ -50,6 +50,7 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
     control: 'platform',
     controlParams: {
       checkpoints: true,
+      ...(spec.params?.difficulty === undefined ? {} : { difficulty: PLATFORM_DIFFICULTIES[spec.params.difficulty] }),
       ...(spec.params?.lengthM === undefined ? {} : { lengthM: spec.params.lengthM }),
       // Tři úseky s rostoucí obtížností, checkpoint na začátku druhého a třetího, hodiny (P36A T4).
       tuning: { feel: 2, sections: 3, ...(collect ? { collectAll: true, coinCount: count } : {}) },
@@ -97,6 +98,7 @@ export const platformerGenre: GenreModule<'platformer'> = {
   heroClasses: ['animal', 'bird', 'humanoid', 'robot', 'monster'],
   paramBounds: {
     lengthM: { min: PLATFORM_LEVEL.minLengthM, max: PLATFORM_LEVEL.maxLengthM },
+    difficulty: { min: 0, max: PLATFORM_DIFFICULTIES.length - 1 },
     /** Kolik věcí sebrat (`counts.collectible`); nejvýš tolik, kolik míst na zemi má i nejkratší úroveň. */
     items: { min: 1, max: PLATFORM_LEVEL.maxCollect },
   },

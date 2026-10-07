@@ -1,3 +1,4 @@
+import { draftGameSpec } from '@/play/draft';
 /**
  * Švy obálky nad skutečnými vrstvami (P23-D T1): každý archetyp se zkompiluje
  * do platného, hratelného a navzájem odlišného světa, verifikátor ho pustí
@@ -64,7 +65,7 @@ describe('getDirector bez modelu', () => {
     const game = await getDirector(Date.now(), 'test-caller')('A hamster escapes a supermarket while a giant Roomba hunts it.');
     expect(game.source).toBe('draft');
     // Návrh nové hry je od P32B T2 žánr: útěk v Aréně, archetyp mu dává modul.
-    expect(game.spec.genre).toMatchObject({ id: 'arena', mode: 'escape' });
+    expect(game.spec).toEqual(draftGameSpec('A hamster escapes a supermarket while a giant Roomba hunts it.'));
     expect(game.fallbackReason).toBe('MODEL_UNAVAILABLE');
   });
 });

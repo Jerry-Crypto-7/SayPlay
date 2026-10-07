@@ -163,6 +163,8 @@ const TIERS: Readonly<Record<DuelDifficulty, Tier>> = {
 const generatorParams = z
   .object({
     difficulty: z.enum(DUEL_DIFFICULTIES).default('normal'),
+    /** Actual ticks removed from each successive opponent's windows. */
+    roundRise: z.int().min(1).max(3).optional(),
     /** Žánr Souboj (P36A T11): soupeřů za sebou, každý rychlejší o `DUEL.rise`; bez toho jeden soupeř. */
     rounds: z.int().min(1).max(DUEL.maxRounds).optional(),
   })
@@ -216,13 +218,13 @@ export function duelParts(seed: number, raw: Readonly<Record<string, unknown>>, 
   const foeHealth = TIERS[params.difficulty].foeHealth;
   const lives = health ?? DUEL.lives;
   const rounds = params.rounds ?? 1;
-  const ramp = params.rounds === undefined ? {} : { rounds, rise: DUEL.rise };
+  const ramp = params.rounds === undefined ? {} : { rounds, rise: params.roundRise ?? DUEL.rise };
   return {
     control: { id: 'duel', params: { pattern, foeHealth, ...ramp } },
     bot: { id: 'duel_bot', params: {} },
     level,
     rules: judgeRules(foeHealth * rounds, lives),
-    issues: checkDuelPattern(pattern, rounds - 1, params.rounds === undefined ? 0 : DUEL.rise),
+    issues: checkDuelPattern(pattern, rounds - 1, params.rounds === undefined ? 0 : params.roundRise ?? DUEL.rise),
     health: lives,
   };
 }

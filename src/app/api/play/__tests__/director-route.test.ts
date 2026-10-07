@@ -53,7 +53,7 @@ const ASTRA_BACKUP = {
 } as const;
 
 const COMPACT = genreAnswer({ genre: 'platformer', mode: 'default', hero: 'penguin', cast: undefined, setting: 'frozen iceberg field', palette: 'snow' });
-const SENTENCE = 'a penguin jumps over icebergs';
+const SENTENCE = 'a penguin jumps';
 const USAGE = { inputTokens: 2000, outputTokens: 900 };
 const ASTRA_PRICE = { usdPerMTokIn: 1.25, usdPerMTokOut: 10 };
 

@@ -50,7 +50,7 @@ const { blockedText } = await import('../_errors');
 const { derivedSeeds, publishReadSpec, readSpecOrFail, seedFrom, store } = await import('../_publish');
 
 const CALLER = { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.11' };
-const SENTENCE = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
+const SENTENCE = 'A hamster escapes a giant Roomba in a supermarket.';
 const BLOCKED = "We can't make that one. Try a different idea.";
 
 beforeEach(() => {
@@ -142,7 +142,7 @@ describe('věta: rychlá verze a AI verze', () => {
   });
 
   it('čistá AI verze dál projde jako ready', async () => {
-    director.script = [answered(genreAnswer({ hero: 'hamster', cast: [{ label: 'giant roomba', does: 'chase_me' }, { label: 'cheese', does: 'collect' }], setting: 'supermarket', palette: 'supermarket' }))];
+    director.script = [answered(genreAnswer({ hero: 'hamster', cast: [{ label: 'giant roomba', does: 'chase_me' }, { label: 'cheese', does: 'collect' }], setting: 'supermarket', palette: 'city' }))];
     const created = await create({ sentence: SENTENCE });
     expect((await settled(created.body.versionId)).status).toBe('ready');
   });

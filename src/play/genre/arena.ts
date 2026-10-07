@@ -13,6 +13,7 @@
  * hry) staví svět jako dřív.
  */
 
+import { ARCADE_HZ } from '../arcade/contract';
 import { ESCAPE } from '../arcade/pieces/arena';
 import { FIGHT, fightWaveCount } from '../arcade/pieces/fight';
 import { WAVE_PLAN, itemWaveCount, survivalSeconds } from '../arcade/pieces/waves';
@@ -21,7 +22,7 @@ import { type GenreModule, type GenreSpecOf, castFor, draftRoles, legacySpec, li
 
 /** Klíče `spec.params`, které režim předá generátoru v `tuning`. */
 const TUNING = {
-  escape: ['chasers', 'chaserSpeed'],
+  escape: ['entryDistance', 'chaseLead', 'chasers', 'chaserSpeed', 'pursuitCeiling', 'itemSizePct'],
   collect: [],
   fight: ['enemies', 'enemyHp', 'enemySpeed', 'playerHp'],
 } as const;
@@ -63,7 +64,7 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
     const things = plural(singular(thing), items);
     return legacySpec(spec, {
       control: 'move_free',
-      controlParams: { generator: 'arena_collect', tuning: { items, waves } },
+      controlParams: { generator: 'arena_collect', tuning: { items, waves, ...(spec.params?.pursuitCeiling === undefined ? {} : { pursuitCeiling: spec.params.pursuitCeiling }), ...(spec.params?.itemSizePct === undefined ? {} : { itemSizePct: spec.params.itemSizePct }) } },
       archetype: 'collect_exit',
       title: `${title} Hunt`,
       objective: { kind: 'collect', description: `Collect ${String(items)} ${things} in each of ${String(waves)} waves before time runs out.`, count: items, role: 'item' },
@@ -122,8 +123,12 @@ export const arenaGenre: GenreModule<'arena'> = {
   cues: ['chase', 'catch', 'escape', 'run from', 'before it catches', 'collect', 'gather', 'fight', 'duel', 'battle', 'box'],
   heroClasses: ['animal', 'bird', 'robot', 'vehicle', 'humanoid', 'monster', 'prop'],
   paramBounds: {
+    entryDistance: { min: 6000, max: 20000 },
+    chaseLead: { min: 0, max: 2 * ARCADE_HZ },
     seconds: { min: 20, max: 80 },
     items: { min: 1, max: ESCAPE.items.max },
+    pursuitCeiling: { min: 90, max: 140 },
+    itemSizePct: { min: 100, max: 150 },
     chasers: { min: ESCAPE.chasers.min, max: ESCAPE.chasers.max },
     chaserSpeed: { min: ESCAPE.chaserSpeed.min, max: ESCAPE.chaserSpeed.max },
     enemies: { min: FIGHT.enemies.min, max: FIGHT.enemies.max },

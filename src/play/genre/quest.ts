@@ -150,7 +150,8 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
     ? questRounds(steps, () => stationRoundSeconds({ count, states, hold: hold ?? STATION.hold, after: STATION.after }), clock)
     : questRounds(steps, (k) => spatialRoundSeconds(count, states, wavesChasers(chasers, k)), clock);
   // Hodiny jako u sběru ve vlnách: robot je stihne s rezervou, pod horizontem ověření.
-  const seconds = clock ?? Math.min(WAVE_PLAN.clockMax, Math.round(plan.seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin));
+  const plannedSeconds = clock ?? Math.min(WAVE_PLAN.clockMax, Math.round(plan.seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin));
+  const seconds = spec.params?.paceBudgetPct === undefined ? plannedSeconds : Math.floor(plannedSeconds * spec.params.paceBudgetPct / 100);
   const hunter = foe?.label ?? 'hunter';
   const verbText = capital(verb);
   const each = plan.rounds > 1 ? ` in each of ${String(plan.rounds)} rounds` : '';
@@ -199,6 +200,7 @@ export const questGenre: GenreModule<'quest'> = {
   heroClasses: ['humanoid', 'robot', 'animal', 'bird', 'monster'],
   paramBounds: {
     seconds: { min: 20, max: 80 },
+    paceBudgetPct: { min: 50, max: 100 },
     count: { min: 1, max: 8 },
     chasers: { min: 0, max: CHASERS_MAX },
   },

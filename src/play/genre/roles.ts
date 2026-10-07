@@ -145,3 +145,15 @@ export const DEFAULT_LABELS: ReadonlySet<string> = new Set([
   ...Object.values(TARGET_DEFAULT),
   'star',
 ]);
+
+/** Equipment implied by a named sport, not a global permission to invent cast. */
+export function semanticRoleDefaults(sentence: string): readonly string[] {
+  const text = sentence.toLowerCase();
+  // This runtime has no table-tennis net/rally contract. Football equipment must
+  // never become a permitted substitute merely because both games use a ball.
+  if (/\b(?:table tennis|tennis|ping[ -]?pong)\b/.test(text)) return ['ball'];
+  if (/\b(?:basketball|free throws?)\b/.test(text)) return ['basketball', 'hoop'];
+  if (/\b(?:mini[ -]?)?golf\b/.test(text)) return ['golf ball', 'hole'];
+  if (/\b(?:soccer|football|penalty kicks?)\b/.test(text)) return ['football', 'goal'];
+  return [];
+}

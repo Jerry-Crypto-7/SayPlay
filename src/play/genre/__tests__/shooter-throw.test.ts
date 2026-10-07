@@ -22,7 +22,9 @@ import { hashArcade, instantiate, replay } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { shooterRules } from '@/play/arcade/pieces/shooter';
 import { runBot } from '@/play/arcade/verify';
-import { draftGameSpecWithMeta } from '@/play/draft';
+import { draftGameSpecWithMeta, draftGenreFor } from '@/play/draft';
+import { classifyGenre } from '@/play/genre/classify';
+import { compileGenre } from '@/play/genre';
 import { type GenreModule, type GenreSpec, castFor } from '@/play/genre/contract';
 import { compileWith } from '@/play/genre/index';
 import { shooterGenre } from '@/play/genre/shooter';
@@ -61,7 +63,7 @@ interface Published {
 
 /** Jako dveře publikace: první semínko, na kterém robot vyhraje. */
 function publish(sentence: string, edit: (spec: GameSpecV1) => GameSpecV1 = (spec) => spec): Published {
-  const spec = edit(draftGameSpecWithMeta(sentence, 1).spec);
+  const spec = edit(legacySpec(sentence));
   for (const seed of derivedSeeds(seedFrom(sentence))) {
     const compiled = compileArcade(spec, seed);
     if (!compiled.ok) continue;
@@ -91,14 +93,22 @@ const livesOf = (world: ArcadeWorld): number => instantiate(world)[HEADER.counte
 describe('shooter and throw sentences pick their genre (P36A T10)', () => {
   it.each(SHOOT)('"%s" → shooter', (sentence) => {
     const drafted = draftGameSpecWithMeta(sentence, 1);
-    expect(drafted.genre?.genre).toBe('shooter');
-    expect(drafted.spec.control).toBe('shooter');
+    if (sentence.startsWith('a spaceship ')) {
+      expect(drafted.composition?.recipe.move).toBe('glide');
+      expect(drafted.composition?.recipe.actions).toContain('shoot');
+      expect(drafted.spec.control).toBe('glide');
+      expect(drafted.spec.addons).toContain('shoot');
+    } else {
+      expect(drafted.genre?.genre).toBe('shooter');
+      expect(drafted.spec.control).toBe('shooter');
+    }
   });
 
   it.each(THROW)('"%s" → throw', (sentence) => {
     const drafted = draftGameSpecWithMeta(sentence, 1);
     expect(drafted.genre?.genre).toBe('throw');
-    expect(drafted.spec.control).toBe('throw');
+    expect(drafted.spec.control).toBe(sentence.startsWith('mini golf ') ? 'ball' : 'throw');
+    if (sentence.startsWith('mini golf ')) expect(drafted.spec.controlParams).toMatchObject({ goal: 'hole' });
   });
 
   it('popping, smashing and zapping stay a quest', () => {
@@ -327,3 +337,11 @@ describe('the throw genre has a clock', () => {
     expect(game.world.rules.find((rule) => rule.id === 'shot_hit')?.params).toHaveProperty('combo');
   });
 });
+
+/** Frozen pre-P41 mechanics: routing to new movement families is tested separately. */
+function legacySpec(sentence: string): GameSpecV1 {
+  const pick = classifyGenre(sentence, null).ranked[0];
+  const genre = draftGenreFor(sentence, pick.genre, pick.mode);
+  if (genre === null) throw new Error(`missing legacy fixture: ${sentence}`);
+  return compileGenre(genre);
+}

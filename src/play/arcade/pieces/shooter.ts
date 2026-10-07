@@ -229,6 +229,7 @@ export const SHOOTER_RISE_MAX = 8;
 const generatorParams = z
   .object({
     difficulty: z.enum(SHOOTER_DIFFICULTIES).default('normal'),
+    targetWidthPct: z.int().min(25).max(100).optional(),
     /** Náboje v zásobníku; bez hodnoty podle obtížnosti. */
     magazine: z.int().min(2).max(30).optional(),
     /** Přebití v sekundách; bez hodnoty podle obtížnosti. */
@@ -321,6 +322,10 @@ export const shooterRange: GeneratorPiece<ShooterParams> = {
       });
     }
 
+    if (params.targetWidthPct !== undefined) for (let i = 2; i < bodies.length; i++) {
+      const body = bodies[i]!;
+      bodies[i] = { ...body, w: Math.round(body.w * params.targetWidthPct / 100) };
+    }
     const foes = bodies.length - 2;
     const rounds = foes * 2 + gunParams.magazine;
     return {

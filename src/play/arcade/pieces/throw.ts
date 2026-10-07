@@ -309,6 +309,8 @@ const generatorParams = z
      * se do něj vejde, aspoň jedno. Bez hodnoty jedno pole jako dřív.
      */
     budget: z.int().min(1).max(90).optional(),
+    /** Opt-in ratio of the visible clock to the original work budget; read by arcade compilation. */
+    paceBudgetPct: z.int().min(50).max(100).optional(),
   })
   .strict();
 export type ThrowParams = z.infer<typeof generatorParams>;

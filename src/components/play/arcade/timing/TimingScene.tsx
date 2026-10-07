@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 /**
  * Scéna načasování (P25H T5): pohled zepředu na věž, můstek nebo lištu.
  *
@@ -127,6 +129,7 @@ export function TimingScene({
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
+    if (renderHeld(session)) return;
     const state = session.state();
     const prev = session.prev();
     const s = bodyBase(TIMING_SLOTS.slider);

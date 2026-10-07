@@ -61,14 +61,14 @@ describe('draft from the local reading', () => {
     expect(meta.spec.roles.map((role) => role.label)).toContain('key');
   });
 
-  it('the hero, the setting and the roles of the reading win; keywords fill only what it lacks', () => {
+  it('a reading cannot replace the explicit hero, setting or action target from the sentence', () => {
     const sentence = 'A corgi runs through a park grabbing sausages and jumping over sprinklers';
     const read = draftGameSpecWithMeta(sentence, 1, {
       reading: reading({ hero: 'penguin', roles: [{ noun: 'fish', kind: 'collectible', count: null }], setting: 'an ice floe' }),
     }).spec;
-    expect(label(read, 'player')).toBe('penguin');
-    expect(label(read, 'coin')).toBe('fish');
-    expect(read.theme.setting).toBe('ice floe');
+    expect(label(read, 'player')).toBe('corgi');
+    expect(label(read, 'coin')).toBe('sausage');
+    expect(read.theme.setting).toBe('park');
     // Překážku čtení nejmenuje – zůstane z klíčových slov.
     expect(label(read, 'obstacle')).toBe('sprinkler');
     // Hrdinu čtení nejmenuje – zůstane z klíčových slov.

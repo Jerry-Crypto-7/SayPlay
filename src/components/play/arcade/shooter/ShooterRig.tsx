@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 /**
  * Scéna střelnice (P25G T6): kamera za hráčem a nad ním (na výšku strměji
  * shora, ať se vejde šířka střelnice), zaměřovač ve směru míření a vstup.
@@ -45,6 +47,7 @@ export function ShooterRig({
   const look = useMemo(() => new Vector3(), []);
 
   useFrame(() => {
+    if (renderHeld(session)) return;
     const state = session.state();
     const p = bodyBase(state[HEADER.player] as number);
     const z = (state[p + BODY.z] as number) / UNIT;

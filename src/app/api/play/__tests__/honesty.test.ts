@@ -37,6 +37,7 @@ describe('POST /api/play/games – honesty', () => {
     expect(created.status).toBe(201);
     expect(created.body.url).toMatch(/^\/play\/[a-f0-9]+$/);
     expect(created.body.honesty).toEqual({
+      kind: 'manipulate',
       reason: 'Swapping, sorting and sliding pieces around is not something we can build yet.',
       // P32B T2: „match 3“ drafuje žánr Úkol na místě, ne běžec bez narážky.
       closest: 'a quest',

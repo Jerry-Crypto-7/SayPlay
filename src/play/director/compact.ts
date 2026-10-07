@@ -21,7 +21,7 @@ import { examplesBlock, nearestExamples } from './retrieval';
 
 /** Systémový text bez věty; stavěný při volání, aby změna modulu žánru prošla ven. */
 export function compactSystemPrompt(): string {
-  return ["Choose how the user's sentence plays. Never output code. Answer one JSON object {plan, spec}: plan = one short line, spec = the GenreSpec.", genrePromptLines(), rulesPromptLines()].join('\n');
+  return ["Choose how the user's sentence plays. Never output code. Answer one JSON object {plan, spec}: plan = one short line, spec = a live recipe with named content and explicit unmet; legacy GenreSpec remains accepted.", genrePromptLines(), rulesPromptLines()].join('\n');
 }
 
 /** Jako `DIRECTOR_PROMPT_VERSION`: text i schéma odpovědi (P36A T7), změna kteréhokoli zneplatní cache. */

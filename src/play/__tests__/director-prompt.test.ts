@@ -11,6 +11,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
+import { writeFileSync } from 'node:fs';
 
 import { EMISSION_MODEL } from '@/model/prompt';
 
@@ -26,7 +27,9 @@ import { draftGameSpecWithMeta } from '../draft';
 import { CAST_ROLES, type GenreModule } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
 import { ARCHETYPE_IDS, MECHANIC_IDS } from '../registry';
-import { CONTROLS } from '../spec';
+import { liveCells } from '../compose/allowed';
+import { extractIntent } from '../intent/extract';
+import { essentialTriples } from '../intent/contract';
 
 const MODULES = Object.values(GENRE_MODULES) as GenreModule[];
 
@@ -56,7 +59,8 @@ describe('director prompt', () => {
       expect(request.user).toContain('Main verb: "stir" (family cook) – genre quest, mode station.');
       expect(request.system).toContain('Checklist and main verb (in the request) are what the keyword reader found');
       // P38: dvě činnosti věty se hrají obě – skákání nese žánr, střelbu doplněk.
-      expect(request.system).toContain('jump + shoot = platformer with the shot things shoot_at');
+      expect(request.system).toContain('Multiple actions must coexist in the live recipe');
+      expect(request.system).toContain('FULL INTENT is authoritative');
     }
   });
 
@@ -93,16 +97,11 @@ describe('director prompt', () => {
     }
   });
 
-  it('names no legacy control and no tap_go in either prompt', () => {
-    const words = new Set(MODULES.flatMap((module) => [module.id, ...module.cues]));
-    const draft = draftGameSpecWithMeta('a fox runs through a forest').genre;
-    for (const system of [buildDirectorRequest('x', draft).system, buildCompactRequest('x', draft).system]) {
+  it('offers live recipe movement names without exposing low-level control specs', () => {
+    for (const system of [directorSystemPrompt(), buildCompactRequest('x', null).system]) {
       expect(system).not.toMatch(/tap_go|CONTROLS|controlParams/);
-      for (const control of CONTROLS) {
-        expect(system, control).not.toContain(`"${control}"`);
-        // Ovládání, které je i žánrem nebo narážkou („runner“, „duel“), smí zaznít jako slovo.
-        if (!words.has(control)) expect(system, control).not.toMatch(new RegExp(`\\b${control}\\b`));
-      }
+      for (const cell of liveCells()) expect(system).toContain(`- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`);
+      expect(system).toContain('unmet');
     }
   });
 
@@ -128,16 +127,20 @@ describe('director prompt', () => {
   // P37A T8: 8 908 B – kontrolní seznam věty a hlavní sloveso s rodinou v požadavku a řádek, podle kterého brána upgradu AI verzi pustí.
   // P38: 9 254 B – výchozí bod je odhad, ne kostra; dvě činnosti věty (skok + střelba); věta v jiném jazyce.
   // P39 T11: 10 082 B – obsazení místo `enemy`/`enemyMoves`/`collectible`/`target`: tvar položky a řádek na každé `does`.
-  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 10 082 B)', () => {
+  it('stays under 12 700 bytes for all forty golden sentences, with examples and the complete intent', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(entry.prompt).genre;
       for (const request of [buildDirectorRequest(entry.prompt, draft), buildCompactRequest(entry.prompt, draft, true)]) {
-        max = Math.max(max, Buffer.byteLength(request.system + request.user));
+        const intent = extractIntent(entry.prompt);
+        const fullIntent = `\n\nFULL INTENT:\n${JSON.stringify({ sentence: entry.prompt, essential: essentialTriples(intent), negated: intent.negated })}`;
+        max = Math.max(max, Buffer.byteLength(request.system + request.user + fullIntent));
       }
     }
     expect(max).toBeLessThanOrEqual(12_700);
-    expect(max).toBeLessThanOrEqual(10_082);
+    // P41 adds a live recipe table and all essential triples; the historical
+    // 10,082 B observation was not the 12,700 B budget. Report both channels.
+    if (process.env.P41_PROMPT_REPORT) writeFileSync(process.env.P41_PROMPT_REPORT, JSON.stringify({ maxPromptBytes: max, outputSchemaBytes: Buffer.byteLength(JSON.stringify(GENRE_ANSWER_SCHEMA)), includesFullIntent: true, budgetBytes: 12_700 }, null, 2));
   });
 
   it('rejects an addon the control does not take and the deterministic repair drops it', () => {

@@ -1,0 +1,10 @@
+﻿{
+    "schema":  "p41.env-judge.v1",
+    "status":  "blocked",
+    "blocker":  "auto_review_rejected_external_image_egress",
+    "calls":  0,
+    "score":  null,
+    "requiredCorrect":  5,
+    "total":  6,
+    "details":  "Automatic approval review requires explicit consent to send the six local anonymous PNG frames to OpenAI through Codex CLI. Async user question is pending; command was not executed."
+}

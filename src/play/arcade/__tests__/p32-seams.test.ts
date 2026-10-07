@@ -75,8 +75,8 @@ function scriptedWorld(level: ArcadeLevel, plan: readonly { readonly at: number;
 }
 
 describe('P32-0 T4 kernel seams', () => {
-  it('registers a stub generator for every planned mode, in MODE_GENERATORS and in the library', () => {
-    expect(Object.keys(MODE_GENERATORS).sort()).toEqual(MODES.map(([, id]) => id).sort());
+  it('keeps every original planned mode registered when native modes are added', () => {
+    expect(Object.keys(MODE_GENERATORS)).toEqual(expect.arrayContaining(MODES.map(([, id]) => id)));
     for (const [, id] of MODES) {
       expect(MODE_GENERATORS[id]?.id).toBe(id);
       expect(ARCADE_LIBRARY.generators[id]).toBe(MODE_GENERATORS[id]);

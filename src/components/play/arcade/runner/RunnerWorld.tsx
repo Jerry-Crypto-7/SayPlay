@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 /**
  * Svět běžce (P32-0 T5, vlastní P32A). Obal nad sdíleným `World` s pevným
  * ovládáním `runner`: kamera za hráčem a těla jsou společná, podklad je vlastní –
@@ -187,6 +189,7 @@ function HeroPose({ session, hero, rides }: { readonly session: ArcadeSession; r
   );
 
   useFrame(() => {
+    if (renderHeld(session)) return;
     if (found.current === null || found.current.parent === null) found.current = heroIn(scene);
     const group = found.current;
     const blob = shadow.current;

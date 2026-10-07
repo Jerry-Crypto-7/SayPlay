@@ -54,6 +54,7 @@ export const runnerGenre: GenreModule<'runner'> = {
     speed: { min: 0, max: RUNNER_SPEEDS.length - 1 },
     /** Index do `RUNNER_DENSITIES` (řídce, normálně, hustě). */
     density: { min: 0, max: RUNNER_DENSITIES.length - 1 },
+    fullRowPct: { min: 0, max: 100 },
     /** 1 = hrdina jede (klouže, lyžuje, surfuje), ne běží – jen póza ve scéně (`theme.motion`, T5-R1). */
     ride: { min: 0, max: 1 },
     /** Kolik věcí sebrat po trati (`counts.collectible`, P36A T4); trať má aspoň tolik řad. */
@@ -74,6 +75,7 @@ export const runnerGenre: GenreModule<'runner'> = {
         ...(lengthM === undefined ? {} : { lengthM }),
         ...(speed === undefined ? {} : { speed: RUNNER_SPEEDS[speed] }),
         ...(density === undefined ? {} : { density: RUNNER_DENSITIES[density] }),
+        ...(spec.params?.fullRowPct === undefined ? {} : { fullRowPct: spec.params.fullRowPct }),
         obstacles: OVERHEAD.test(obstacle) ? [...OBSTACLE_KINDS] : OBSTACLE_KINDS.filter((kind) => kind !== 'slide-bar'),
         // Skok odpouští jako skákačka: chvilku po hraně i stisk těsně před dopadem (P36A T6).
         feel: 2,
