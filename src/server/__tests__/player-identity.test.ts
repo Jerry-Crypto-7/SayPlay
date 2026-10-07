@@ -91,6 +91,23 @@ describe('identitySecret', () => {
     expect(identitySecret({ VERCEL: '1', NODE_ENV: 'production', PLAY_STORE_DIR: tempDir() })).toBeNull();
   });
 
+  it('with a shared store and no secret returns null outside Vercel too (instances would disagree)', () => {
+    const shared = { KV_REST_API_URL: 'https://fixture.invalid', KV_REST_API_TOKEN: 'FIXTURE_ONLY_TOKEN' };
+    expect(identitySecret({ ...shared, PLAY_STORE_DIR: tempDir() })).toBeNull();
+    expect(identitySecret({ ...shared, PLAY_IDENTITY_SECRET: SECRET })).toBe(SECRET);
+  });
+
+  it('never overwrites a short secret file another process may still be writing', () => {
+    const dir = tempDir();
+    const path = join(dir, 'identity-secret');
+    writeFileSync(path, 'half');
+    const env = { PLAY_STORE_DIR: dir };
+    const secret = identitySecret(env);
+    expect(secret).not.toBeNull();
+    expect(secret!.length).toBeGreaterThanOrEqual(32);
+    expect(readFileSync(path, 'utf8')).toBe('half');
+  });
+
   it('outside Vercel creates identity-secret beside the file store and reuses it', () => {
     const dir = tempDir();
     const log = [vi.spyOn(console, 'log').mockImplementation(() => undefined), vi.spyOn(console, 'warn').mockImplementation(() => undefined), vi.spyOn(console, 'info').mockImplementation(() => undefined)];
@@ -137,7 +154,10 @@ describe('playerCookie', () => {
     expect(flags).not.toContain('Secure');
   });
 
-  it('adds Secure only for https', () => {
-    expect(playerCookie(value, new Request('https://sayplay.example/api/play/me')).split(';').map((part) => part.trim())).toContain('Secure');
+  it('adds Secure only for https, including https ended by a proxy in front of next start', () => {
+    const flags = (request: Request): string[] => playerCookie(value, request).split(';').map((part) => part.trim());
+    expect(flags(new Request('https://sayplay.example/api/play/me'))).toContain('Secure');
+    expect(flags(new Request('http://127.0.0.1:3217/api/play/me', { headers: { 'x-forwarded-proto': 'https' } }))).toContain('Secure');
+    expect(flags(new Request('http://127.0.0.1:3217/api/play/me', { headers: { 'x-forwarded-proto': 'http' } }))).not.toContain('Secure');
   });
 });

@@ -17,6 +17,7 @@ import { join } from 'node:path';
 
 import { writableDir } from '@/play/version/file-store';
 import { fileStoreDirFromEnv } from '@/play/version/store';
+import { sharedStoreFromEnv } from '@/server/spend-store';
 
 export const PLAYER_COOKIE = 'sp_player';
 export const MIN_SECRET_CHARS = 32;
@@ -38,21 +39,24 @@ function secrets(): Map<string, string> {
 
 const freshSecret = (): string => randomBytes(32).toString('base64url');
 
-function fileSecret(dir: string): string {
+/**
+ * Tajemství ze souboru; `null` = soubor je, ale krátký. Krátký se nepřepisuje: může to být
+ * soubor, který jiný proces právě založil a ještě nedopsal (nález revize T2-1) – přepis by
+ * dal dvěma procesům dvě tajemství a cookie by mezi nimi „blikaly“.
+ */
+function fileSecret(dir: string): string | null {
   const path = join(dir, SECRET_FILE);
   const known = secrets().get(path);
   if (known !== undefined) return known;
+  let secret = freshSecret();
   try {
     // `wx`: dva procesy nad týmž adresářem si tajemství nepřepíšou; druhý přečte prvního.
-    writeFileSync(path, freshSecret(), { mode: 0o600, flag: 'wx' });
+    // Práva 0600 platí jen mimo Windows – tam soubor dědí práva adresáře úložiště.
+    writeFileSync(path, secret, { mode: 0o600, flag: 'wx' });
   } catch {
     // Soubor už je (restart, jiný proces).
-  }
-  let secret = readFileSync(path, 'utf8').trim();
-  if (secret.length < MIN_SECRET_CHARS) {
-    // Ručně zkrácený soubor: nové tajemství, staré cookie tím přestanou platit.
-    secret = freshSecret();
-    writeFileSync(path, secret, { mode: 0o600 });
+    secret = readFileSync(path, 'utf8').trim();
+    if (secret.length < MIN_SECRET_CHARS) return null;
   }
   secrets().set(path, secret);
   return secret;
@@ -66,11 +70,13 @@ export function identitySecret(env: Record<string, string | undefined> = process
     console.warn(`[play] PLAY_IDENTITY_SECRET is shorter than ${MIN_SECRET_CHARS} characters: player identity is off`);
     return null;
   }
-  if (env.VERCEL !== undefined) return null;
+  // Se sdíleným úložištěm běží instancí víc i mimo Vercel; tajemství každé z nich by se lišilo (nález revize T2-1).
+  if (env.VERCEL !== undefined || sharedStoreFromEnv(env) !== null) return null;
   const dir = fileStoreDirFromEnv(env);
   if (dir !== null && writableDir(dir)) {
     try {
-      return fileSecret(dir);
+      const secret = fileSecret(dir);
+      if (secret !== null) return secret;
     } catch {
       // Nečitelný soubor: jako bez adresáře.
     }
@@ -115,8 +121,13 @@ export function playerOf(request: Request, env: Record<string, string | undefine
   return supplied.length === expected.length && timingSafeEqual(supplied, expected) ? id : null;
 }
 
-/** Hodnota hlavičky `set-cookie`; `Secure` jen na https – na `http://` v místní síti by ji prohlížeč zahodil. */
+/**
+ * Hodnota hlavičky `set-cookie`; `Secure` jen na https – na `http://` v místní síti by ji prohlížeč zahodil.
+ * Https končící v proxy před `next start` (tunel) pozná `x-forwarded-proto` (nález revize T2-1); podvržená
+ * hlavička uškodí jen tomu, kdo ji poslal – jeho cookie pak po http nepůjde.
+ */
 export function playerCookie(value: string, request: Request): string {
-  const secure = new URL(request.url).protocol === 'https:' ? '; Secure' : '';
+  const forwarded = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim().toLowerCase();
+  const secure = new URL(request.url).protocol === 'https:' || forwarded === 'https' ? '; Secure' : '';
   return `${PLAYER_COOKIE}=${value}; Path=/; Max-Age=${PLAYER_COOKIE_MAX_AGE_SECONDS}; HttpOnly; SameSite=Lax${secure}`;
 }
