@@ -42,7 +42,9 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
     flap: { genre: 'flap', mode: 'default' }, drive: { genre: 'voyage', mode: 'race' },
     glide: { genre: 'voyage', mode: 'race' }, walk: { genre: 'quest', mode: 'spatial' },
     ball: { genre: 'throw', mode: 'default' },
-    roam: { genre: 'arena', mode: action.includes('fight') && !action.some(verb => ['collect', 'deliver', 'interact'].includes(verb)) ? 'fight' : objective === 'survive' || objective === 'escape' || intent.negated.includes('collect') ? 'escape' : 'collect' },
+    // Only the escape arena has someone on the field: a pursuer, guard or thing to dodge plays there.
+    roam: { genre: 'arena', mode: action.includes('fight') && !action.some(verb => ['collect', 'deliver', 'interact'].includes(verb)) ? 'fight'
+      : objective === 'survive' || objective === 'escape' || threats.some(threat => ['chaser', 'guard', 'obstacle'].includes(threat) && !intent.negated.includes(threat)) || intent.negated.includes('collect') ? 'escape' : 'collect' },
   };
   // The movement's genre replaces a reading of another genre on the same movement
   // only when that reading cannot play every requested action (a quest is no arena).
