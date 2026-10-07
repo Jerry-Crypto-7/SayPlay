@@ -8,7 +8,8 @@ import { GLIDE_MODES, glideControl, glideCourse, glideFinish, type GlideCoursePa
 import { glideBot } from '../pieces/glide-bot';
 import { shotHit } from '../pieces/shots';
 import { bindRoles } from '../witness';
-import { verifyArcade } from '../verify';
+import { runBot, verifyArcade } from '../verify';
+import { arcadeWorldOf } from '../compile';
 
 // Exercise real pieces before the root production registry/capability gate lands.
 const controls = { ...ARCADE_LIBRARY.controls, glide: glideControl };
@@ -74,5 +75,15 @@ describe('native glide plus forward shooting', () => {
     expect(state).toEqual(before);
     const target = bodyWithKind(world, 'enemy')!;
     expect(glideShotHit.fire({ ...ctx, other: target }, {})).toContainEqual({ kind: 'despawn', body: target });
+  });
+
+  it('a phase above the authored speed cap still verifies with shooting', () => {
+    const spec = nativeSpec({ move: 'glide', actions: ['shoot'], objective: 'reach', threats: [] }, {
+      genre: 'voyage', mode: 'race', hero: 'submarine', setting: 'ocean', cast: [{ label: 'robot', does: 'shoot_at' }],
+    });
+    const paced = { ...spec, controlParams: { ...spec.controlParams, topSpeed: 200 }, phases: [{ start: 0, speedPercent: 125 }] };
+    const made = arcadeWorldOf(paced, 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    expect(() => runBot(made.world, undefined, { planner: false })).not.toThrow();
   });
 });

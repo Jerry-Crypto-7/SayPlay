@@ -380,7 +380,9 @@ const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
   let pz = (state[p + BODY.z] as number) + (state[p + BODY.vz] as number) * recent.length;
   let py = state[p + BODY.y] as number;
   if (base.id === 'glide_bot') {
-    const params = paramsOf({ params: glideControlParams }, base.params) as ReturnType<typeof glideControlParams.parse>;
+    // Fáze smí rychlost zvednout nad autorský strop 240; tvar se ověří, rychlost zůstane běhová.
+    const topSpeed = typeof base.params.topSpeed === 'number' ? base.params.topSpeed : GLIDE.speed;
+    const params = { ...paramsOf({ params: glideControlParams }, { ...base.params, topSpeed: GLIDE.speed }) as ReturnType<typeof glideControlParams.parse>, topSpeed };
     let now = { x: px, y: py, z: state[p + BODY.z]!, vx: state[p + BODY.vx]!, vy: state[p + BODY.vy]!, vz: state[p + BODY.vz]! };
     // Blaster fires after control and movement, not at the stale observation.
     for (const seen of [...recent, input]) {
