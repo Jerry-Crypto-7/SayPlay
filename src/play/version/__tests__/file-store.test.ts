@@ -17,12 +17,16 @@ import { __resetProcessVersionStore, DEFAULT_WRITE_LIMITS, fileStoreDirFromEnv, 
 import type { PublishedGame } from '../version';
 
 /** Disk, který přejmenování odmítne – antivir drží soubor (Windows EPERM) nebo je plný. */
-const disk = vi.hoisted(() => ({ broken: false }));
+const disk = vi.hoisted(() => ({ broken: false, busyRenames: 0 }));
 vi.mock('node:fs', async (importOriginal) => {
   const fs = await importOriginal<typeof import('node:fs')>();
   return {
     ...fs,
     renameSync: (...args: Parameters<typeof fs.renameSync>) => {
+      if (disk.busyRenames > 0) {
+        disk.busyRenames -= 1;
+        throw Object.assign(new Error('EPERM: operation not permitted, rename'), { code: 'EPERM' });
+      }
       if (disk.broken) throw Object.assign(new Error('EPERM: operation not permitted, rename'), { code: 'EPERM' });
       fs.renameSync(...args);
     },
@@ -44,6 +48,7 @@ function freshDir(): string {
 
 afterEach(() => {
   disk.broken = false;
+  disk.busyRenames = 0;
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
   __resetProcessVersionStore();
@@ -114,6 +119,15 @@ describe('fileVersionStore', () => {
     disk.broken = false;
     // Ne `exists` nad kopií jen v paměti: odkaz by po restartu hlásil „Game not found“.
     expect(await store.put(parent)).toBe('stored');
+    expect(await fileVersionStore(dir).get(parent.version.versionId)).not.toBeNull();
+  });
+
+  it('chvilkově držený soubor (Windows EPERM pod antivirem) zápis neshodí: přejmenování se zopakuje', async () => {
+    const dir = freshDir();
+    const store = fileVersionStore(dir);
+    disk.busyRenames = 2;
+    expect(await store.put(parent)).toBe('stored');
+    expect(disk.busyRenames).toBe(0);
     expect(await fileVersionStore(dir).get(parent.version.versionId)).not.toBeNull();
   });
 
