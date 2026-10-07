@@ -350,7 +350,8 @@ function actorIn(segment: string): string | null {
   const first = bare.split(' ')[0];
   if (PLAYER_WORDS.has(first)) return HERO;
   // „play chess with…“: rozkaz na začátku věty podmět nemá.
-  if (first === '' || OTHER_PRONOUNS.has(first) || META_VERBS.has(first) || LIGHT_VERBS.has(first)) return null;
+  // „where there is shooting…“: existenciální „there“ podmět nemá.
+  if (first === '' || first === 'there' || OTHER_PRONOUNS.has(first) || META_VERBS.has(first) || LIGHT_VERBS.has(first)) return null;
   const words = nounPhrase(bare, 4)?.split(' ') ?? [];
   // „pull the pins to…“, „knock down towers…“: člen nebo částice uvnitř = sloveso a jeho předmět, ne podmět.
   if (words.some((word, index) => index > 0 && (ARTICLE_WORDS.has(word) || PARTICLES.has(word)))) return null;

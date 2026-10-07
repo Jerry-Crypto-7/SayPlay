@@ -30,3 +30,15 @@ it('preserves player subjects and distinguishes moving noun modifiers', () => {
   expect(rows[6].hero).toBe('dog');
   expect(rows[7].hero).toBe('car');
 });
+
+it('never takes existential "there" for the actor', () => {
+  for (const sentence of ['Game where there is shooting animals in a car while racing', 'there are zombies and you shoot them']) {
+    const intent = extractIntent(sentence);
+    expect(intent.hero).not.toBe('there');
+    expect(intent.items.some(item => item.actor === 'there' || item.object === 'there')).toBe(false);
+  }
+  expect(extractIntent('Game where there is shooting animals in a car while racing').items).toEqual(expect.arrayContaining([
+    expect.objectContaining({ verb: 'shoot', object: 'animal', essential: true }),
+    expect.objectContaining({ verb: 'race', essential: true }),
+  ]));
+});
