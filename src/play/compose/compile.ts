@@ -79,11 +79,25 @@ function compileRecipeBase(assembly: RecipeAssembly): GameSpecV1 {
 }
 
 /** Compile a movement, then attach independently named gameplay parts. */
+/** A separately attached rival turns a non-ball race into reaching the finish. */
+const assembledObjective = (assembly: RecipeAssembly) =>
+  (assembly.parts ?? []).some(part => part.kind === 'rival') && assembly.move !== 'ball' ? 'reach' as const : assembly.objective;
+
+/**
+ * Factory a composed movement compiles through: `drive` and `native` (glide, walk, ball)
+ * read native params, anything else a legacy genre – the director validates answer content by it.
+ */
+export function assemblyFactory(assembly: RecipeAssembly): 'drive' | 'native' | undefined {
+  if (assembly.move === 'drive') return 'drive';
+  if (assembly.move === 'glide' && assembledObjective(assembly) === 'land') return undefined;
+  return ['glide', 'walk', 'ball'].includes(assembly.move) ? 'native' : undefined;
+}
+
 function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
   const { content, move } = assembly;
   const parts = assembly.parts ?? [];
   const separate = new Set<string>(parts.map(part => part.kind));
-  const recipe = { move, objective: separate.has('rival') && move !== 'ball' ? 'reach' as const : assembly.objective, actions: assembly.actions.filter(action => !separate.has(action)), threats: assembly.threats.filter(threat => !separate.has(threat)) };
+  const recipe = { move, objective: assembledObjective(assembly), actions: assembly.actions.filter(action => !separate.has(action)), threats: assembly.threats.filter(threat => !separate.has(threat)) };
   let base: GameSpecV1;
   if (move === 'drive') {
     base = driveSpec({ ...recipe, objective: ['race', 'escape'].includes(recipe.objective) ? recipe.objective : 'reach',
