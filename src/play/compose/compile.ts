@@ -9,6 +9,7 @@ import { driveSpec } from './drive';
 import { nativeSpec } from './native';
 import { timeOfDayFor } from '../arcade/look';
 import { BALL_DIFFICULTY } from './ball-difficulty';
+import { singular } from '../draft/lexicon';
 
 /** Recipes select an assembly; existing piece builders retain their frozen output. */
 export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
@@ -93,9 +94,17 @@ export function assemblyFactory(assembly: RecipeAssembly): 'drive' | 'native' | 
   return ['glide', 'walk', 'ball'].includes(assembly.move) ? 'native' : undefined;
 }
 
+/** Names belong to parts: the content without the things the parts play; a named projectile stays the ammunition. */
+export function withoutPartNames(content: GenreSpec, parts: readonly { readonly label: string }[]): GenreSpec {
+  const head = (label: string) => singular(label.toLowerCase()).split(' ').at(-1);
+  return { ...content, cast: content.cast?.filter(member => member.does === 'scenery' && member.verb === 'shoot' || !parts.some(part => head(part.label) === head(member.label))) };
+}
+
 function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
-  const { content, move } = assembly;
+  const { move } = assembly;
   const parts = assembly.parts ?? [];
+  // Whoever wrote the content – the composer or the director – the base genre never plays a part's thing (no second shark).
+  const content = withoutPartNames(assembly.content, parts);
   const separate = new Set<string>(parts.map(part => part.kind));
   const recipe = { move, objective: assembledObjective(assembly), actions: assembly.actions.filter(action => !separate.has(action)), threats: assembly.threats.filter(threat => !separate.has(threat)) };
   let base: GameSpecV1;

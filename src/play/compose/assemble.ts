@@ -4,7 +4,6 @@ import { heroClass } from '../genre/roles';
 import { PRESETS, type RecipeAssembly } from './presets';
 import type { Recipe } from './recipe';
 import type { AssemblyPart } from './parts';
-import { singular } from '../draft/lexicon';
 
 export interface AssemblySource {
   id: string;
@@ -73,7 +72,12 @@ export function unplayed(source: AssemblySource): number {
   return source.recipe.actions.filter(verb => !own.includes(verb) && !PART_ACTIONS.includes(verb)).length;
 }
 
-/** Names belong to parts, not to whichever genre happened to provide scenery. */
+/**
+ * Names belong to parts, not to whichever genre happened to provide scenery.
+ * The content still lists every named thing – it is the quick version's
+ * GenreSpec the director and the fidelity check read; `compileAssembly` drops
+ * the names its parts play from the base genre.
+ */
 export function assemble(intent: Intent, source: AssemblySource, content: GenreSpec): RecipeAssembly {
   const parts: (AssemblyPart & { label: string })[] = [];
   const phaseAt = intent.sentence.toLowerCase().search(/\band then\b|\bthen\b/);
@@ -98,7 +102,5 @@ export function assemble(intent: Intent, source: AssemblySource, content: GenreS
     parts.push({ kind, label, role: `part_${parts.length}`, phase: phaseAt >= 0 && at > phaseAt ? 1 : 0,
       motion: /\b(?:laser|arrow|missile|bullet)/i.test(label) ? 'fly' : 'fall' });
   }
-  const head = (label: string) => singular(label.toLowerCase()).split(' ').at(-1);
-  const cast = content.cast?.filter(member => member.does === 'scenery' && member.verb === 'shoot' || !parts.some(part => head(part.label) === head(member.label)));
-  return { ...source.recipe, preset: 'assembled', content: { ...content, cast }, parts };
+  return { ...source.recipe, preset: 'assembled', content, parts };
 }

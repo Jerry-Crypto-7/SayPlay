@@ -11,7 +11,7 @@ import { essentialTriples, type Intent, type IntentTriple } from '../intent/cont
 import type { GameSpecV1 } from '../spec';
 import type { Reading } from '../read/schema';
 import { assemble, sourceFor, unplayed, type AssemblySource } from './assemble';
-import { compileRecipe } from './compile';
+import { compileRecipe, withoutPartNames } from './compile';
 import { namedProjectiles } from './projectiles';
 import { type RecipeAssembly } from './presets';
 
@@ -200,7 +200,8 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
     // A failed combination is reduced one independent part at a time. Every
     // removed/unproved triple is still included in the public admission.
     for (let count = requested.parts?.length ?? 0; count >= 0; count--) {
-      const recipe = { ...requested, parts: requested.parts?.slice(0, count) };
+      // A dropped part's thing does not come back as a base-genre role (a tossed pancake is no throw target).
+      const recipe = { ...requested, parts: requested.parts?.slice(0, count), content: withoutPartNames(requested.content, requested.parts?.slice(count) ?? []) };
       try {
         const spec = compileRecipe(recipe);
         const key = JSON.stringify(spec);

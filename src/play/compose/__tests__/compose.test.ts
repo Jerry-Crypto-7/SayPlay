@@ -4,6 +4,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { extractIntent } from '@/play/intent/extract';
 import { essentialTriples } from '@/play/intent/contract';
 import { matchesWitness } from '@/play/arcade/witness';
+import type { GameSpecV1 } from '@/play/spec';
+import { compileRecipe } from '../compile';
 import { compose } from '../compose';
 
 type Label = { id: string; sentence: string };
@@ -42,6 +44,18 @@ describe('compose a live recipe from the full intent', () => {
       expect.objectContaining({ verb: 'shoot', evidence: 'projectile-hit' }),
       expect.objectContaining({ verb: 'race', evidence: 'overtake' }),
     ]));
+  });
+
+  // The content is the quick version's GenreSpec (the director's starting point, the fidelity check):
+  // it names the part's thing, but only the part plays it – also when the director wrote the content.
+  it('names a part’s thing in the content and plays it once, as the part', () => {
+    const made = compose(extractIntent('a seal swims across a harbour dodging sharks'));
+    expect(made.recipe.parts).toEqual([expect.objectContaining({ kind: 'hazard', label: 'shark' })]);
+    expect(made.recipe.content.cast).toContainEqual({ label: 'shark', does: 'avoid' });
+    const sharks = (spec: GameSpecV1) => spec.roles.filter(role => role.label.includes('shark')).map(role => role.id);
+    expect(sharks(made.spec)).toEqual(['part_0']);
+    const directed = compileRecipe({ ...made.recipe, content: { ...made.recipe.content, cast: [{ label: 'sharks', does: 'avoid' }, { label: 'shark', does: 'chase_me' }] } });
+    expect(sharks(directed)).toEqual(['part_0']);
   });
 });
 
