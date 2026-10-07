@@ -138,6 +138,14 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
     const basketball = /\b(?:basketball|hoops?)\b/.test(intent.sentence.toLowerCase());
     const golf = /\b(?:golf|putt(?:ing)?)\b/.test(intent.sentence.toLowerCase());
     const racket = /\b(?:table tennis|tennis|ping[ -]?pong)\b/.test(intent.sentence.toLowerCase());
+    // A named hero that rolls („a hedgehog rolling down a hill“) reads as the ball
+    // movement. With no ball, sport or goal in the sentence the hero is the rolled
+    // body: no football and no goal. The target is a thing the sentence names, else
+    // the contract's neutral „target“ (the pitch needs one to score into).
+    const roller = basketball || golf || racket || /\b(?:balls?|football|soccer|goals?|penalty kicks?)\b/.test(intent.sentence.toLowerCase()) ? undefined
+      : intent.items.find(item => item.essential && item.verb === 'ball' && /^roll/.test(item.said) && item.actor === intent.hero);
+    const namedTarget = roller === undefined ? undefined
+      : cast.find(member => member.does === 'scenery' && head(member.label) !== roller.actor && sentenceHeads.includes(head(member.label)))?.label;
     // Legacy throw content has environmental scenery/targets (e.g. bees in a
     // park). Those cannot replace a sports ball and its physical goal.
     for (let index = cast.length - 1; index >= 0; index--) {
@@ -145,8 +153,9 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
       if (member.does === 'scenery' && !/\b(?:ball|football|basketball)\b/.test(member.label)) { cast.splice(index, 1); continue; }
       if (['scenery', 'throw_at', 'fight'].includes(member.does) && !spoken.includes(member.label) && !sentenceHeads.includes(head(member.label))) cast.splice(index, 1);
     }
-    if (!cast.some(member => member.does === 'scenery' && /(?:ball|football|basketball)$/.test(member.label))) cast.push({ label: racket ? 'ball' : basketball ? 'basketball' : golf ? 'golf ball' : 'football', does: 'scenery', verb: 'throw' });
-    if (!cast.some(member => member.does === 'throw_at')) cast.push({ label: cell.recipe.objective === 'defeat' ? 'pin' : racket ? 'target' : basketball ? 'hoop' : golf ? 'hole' : 'goal', does: 'throw_at' });
+    if (roller !== undefined) cast.push({ label: roller.actor, does: 'scenery', verb: 'throw' });
+    else if (!cast.some(member => member.does === 'scenery' && /(?:ball|football|basketball)$/.test(member.label))) cast.push({ label: racket ? 'ball' : basketball ? 'basketball' : golf ? 'golf ball' : 'football', does: 'scenery', verb: 'throw' });
+    if (!cast.some(member => member.does === 'throw_at')) cast.push({ label: cell.recipe.objective === 'defeat' ? 'pin' : roller !== undefined ? namedTarget ?? 'target' : racket ? 'target' : basketball ? 'hoop' : golf ? 'hole' : 'goal', does: 'throw_at' });
     if (cell.recipe.threats.includes('rival') && !cast.some(member => member.does === 'fight')) cast.push({ label: 'goalkeeper', does: 'fight' });
   }
   const removed = new Set(intent.negated);
