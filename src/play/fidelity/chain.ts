@@ -30,7 +30,7 @@ import { rapierIfLoaded } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
 import { matchesWitness, type ActionWitness } from '../arcade/witness';
 import type { IntentTriple } from '../intent/contract';
-import { PROP_ROLES, chaserModel, enemyModel, heroModel, namedProps, propModels, riggedModelOf, sceneModelOf, type PropRole } from '../arcade/models';
+import { PROP_ROLES, chaserModel, enemyModel, heroChoice, heroModel, namedProps, propModels, riggedModelOf, sceneModelOf, type PropRole } from '../arcade/models';
 import { CAPABILITIES, controlOf, readsLabel, readsMechanic } from '../capabilities';
 import { assetSource } from '../compile/assets';
 import type { VerbProof } from '../contracts';
@@ -197,10 +197,13 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
   const { bodies } = built;
   if (built.styled && (role.kind === 'hazard' || role.kind === 'collectible' || role.kind === 'target')) return styledReads(role, built) && styledDraws(spec, role);
   if (PLAYER(role)) {
-    if (!bodies.has('player')) return false;
+    // Rytmus hrdinu nekreslí vůbec (`RhythmScene.tsx`).
+    if (!bodies.has('player') || control === 'rhythm') return false;
     // Výchozí hrdina (průzkumník, závodní auto, ptáček) popisek nekreslí – kromě popisku, který ho jmenuje.
-    const named = control === 'steer' ? sceneModelOf(role.label, false) : (riggedModelOf(role.label) ?? sceneModelOf(role.label, true));
-    return named !== undefined && named === heroModel(spec);
+    // P43 T14b: ptá se stejné volby jako scéna (`heroModel`); `sceneModelOf` dal rytíři katalogový
+    // model, scéna rigovaného rytíře, a hrdina z popisku se počítal jako nenakreslený.
+    const choice = heroChoice(role.label, spec.genre?.id, spec.control);
+    return choice.level !== 'fallback' && choice.model === heroModel(spec);
   }
   // Native scenery has its own body-driven scene layer. Only the slots which
   // actually render a named model may claim drawn (reef/current remain shapes).

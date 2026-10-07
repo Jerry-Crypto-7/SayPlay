@@ -112,18 +112,21 @@ function Figure({ fighter, color, facing, w, h, model }: { readonly fighter: Fig
   );
 }
 
-/** Model soupeře vepsaný do jeho těla (m); scéna arkády ho dodá, když popisek model jmenuje. */
+/** Model bojovníka vepsaný do jeho těla (m); scéna arkády ho dodá, když popisek model jmenuje. */
 export type RivalModel = (w: number, h: number, d: number) => React.ReactNode;
 
 export function DuelScene({
   session,
   look: scene,
+  heroModel,
   rivalModel,
   heroAction,
   ghost,
 }: {
   readonly session: ArcadeSession;
   readonly look: Look;
+  /** P43 T14b: hrdina z věty (rytíř, pirát) místo kvádru; ruka z primitiv zůstává pro úder. */
+  readonly heroModel?: RivalModel;
   readonly rivalModel?: RivalModel;
   readonly heroAction: HeroAction;
   readonly ghost?: ArcadeGhost;
@@ -190,7 +193,7 @@ export function DuelScene({
         <InkOutline ink="hero" />
         {/* Činnost hrdiny (P37B T2) – `none` nechá postavu beze změny stromu. */}
         <HeroActionBody action={heroAction} session={session} h={hero.h}>
-          <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} />
+          <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} model={heroModel?.(hero.w, hero.h, hero.d)} />
         </HeroActionBody>
       </group>
       {/* Slot ducha (P37-0 T3) vedle hrdiny, ne v jeho skupině. */}
