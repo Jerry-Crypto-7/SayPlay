@@ -40,7 +40,9 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   // Preserve descriptive modifiers only for the same place. A draft phrase
   // elsewhere in the sentence must not override the parsed locative argument.
   const samePlace = intent.setting !== null && placeHead(namedPlace) === placeHead(intent.setting);
-  const place = intent.setting === null || explicitlyNamed && samePlace ? draft.setting : text.includes(`burning ${intent.setting}`) ? `burning ${intent.setting}` : intent.setting;
+  // A scenery category the sentence never says (classroom → school) is no parsed place.
+  const categoryOnly = intent.setting !== null && !words.includes(singular(intent.setting));
+  const place = intent.setting === null || explicitlyNamed && (samePlace || categoryOnly) ? draft.setting : text.includes(`burning ${intent.setting}`) ? `burning ${intent.setting}` : intent.setting;
   const time = timeOfDayFor(intent.sentence);
   const setting = time !== null && place !== time && timeOfDayFor(place) === null ? `${place} at ${time}` : place;
   const cast: CastItem[] = (draft.cast ?? []).map(item => {
