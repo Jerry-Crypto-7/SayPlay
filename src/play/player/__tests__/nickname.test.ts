@@ -36,6 +36,19 @@ describe('readNickname', () => {
   it('refuses a name the PLAY moderation blocks', () => {
     expect(readNickname('make a bomb')).toEqual({ ok: false, reason: 'blocked' });
   });
+
+  // T3a: urážka nebo cizí autorita na veřejném žebříčku vypadá jako jakékoli jiné jméno.
+  it.each(['fuck', 'FuckYou 7', 'f.u.c.k', 'f u c k', 'Big_Shit', 'kurva', 'K-U-R-V-A', 'Píča', 'p.i.c.a', 'čurák', 'Kokot99', 'sračka', 'Zmrd', 'nigger', 'Hitler', 'ass', 'a s s'])('blocks the insult %j', (name) => {
+    expect(readNickname(name)).toEqual({ ok: false, reason: 'blocked' });
+  });
+
+  it.each(['admin', 'Admin 7', 'a.d.m.i.n', 'ADMIN_', 'SayPlay', 'Sayplay Team', 'say-play', 'moderator', 'Mod Erator', 'Official', 'OfficialAda', 'system', 'support', 'Ada Support'])('blocks the reserved name %j', (name) => {
+    expect(readNickname(name)).toEqual({ ok: false, reason: 'blocked' });
+  });
+
+  it.each(['Badminton', 'Picasso', 'Grape', 'Bass', 'Cassandra', 'Peacock', 'Scott', 'Dickens', 'Sussex', 'Negroni'])('still accepts the innocent %j', (name) => {
+    expect(readNickname(name)).toEqual({ ok: true, nickname: name });
+  });
 });
 
 describe('shownNickname', () => {
@@ -44,5 +57,10 @@ describe('shownNickname', () => {
     expect(shownNickname(ID, null)).toBe(defaultNickname(ID));
     expect(shownNickname(ID, '<img src=x>')).toBe(defaultNickname(ID));
     expect(shownNickname(ID, 'make a bomb')).toBe(defaultNickname(ID));
+  });
+
+  it('replaces a stored insult or reserved name with the default (stored before T3a)', () => {
+    expect(shownNickname(ID, 'K u r v a')).toBe(defaultNickname(ID));
+    expect(shownNickname(ID, 'Sayplay Team')).toBe(defaultNickname(ID));
   });
 });

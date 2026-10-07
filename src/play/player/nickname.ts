@@ -9,6 +9,8 @@ import { createHash } from 'node:crypto';
 
 import { moderatePrompt, PLAY_MODERATION } from '@/server/moderation';
 
+import { isBlockedName } from './blocked-names';
+
 const ADJECTIVES = [
   'Swift', 'Brave', 'Clever', 'Lucky', 'Quiet', 'Bold', 'Happy', 'Sunny',
   'Jolly', 'Mighty', 'Nimble', 'Rapid', 'Steady', 'Witty', 'Gentle', 'Fierce',
@@ -34,13 +36,13 @@ const NICKNAME_PATTERN = /^[\p{L}\p{N} ._-]+$/u;
 
 export type NicknameRead = { readonly ok: true; readonly nickname: string } | { readonly ok: false; readonly reason: 'shape' | 'blocked' };
 
-/** Jméno od hráče: po ořezu 2–20 znaků z písmen, číslic, mezery a `._-`, a moderace PLAY. */
+/** Jméno od hráče: po ořezu 2–20 znaků z písmen, číslic, mezery a `._-`, bez urážek a vyhrazených jmen (T3a) a moderace PLAY. */
 export function readNickname(value: unknown): NicknameRead {
   if (typeof value !== 'string') return { ok: false, reason: 'shape' };
   const nickname = value.normalize('NFC').trim();
   const length = [...nickname].length;
   if (length < NICKNAME_MIN_CHARS || length > NICKNAME_MAX_CHARS || !NICKNAME_PATTERN.test(nickname)) return { ok: false, reason: 'shape' };
-  if (!moderatePrompt(nickname, PLAY_MODERATION).ok) return { ok: false, reason: 'blocked' };
+  if (isBlockedName(nickname) || !moderatePrompt(nickname, PLAY_MODERATION).ok) return { ok: false, reason: 'blocked' };
   return { ok: true, nickname };
 }
 
