@@ -29,15 +29,23 @@ node --experimental-strip-types scripts/play-fidelity.mjs judge --clip --run <id
 P43_RUN=<id> P43_OUT=<soubor>.json npx vitest run --config vitest.measure.mts evals/play/p43/visible.measure.ts
 ```
 
-| | `baseline.json` |
-|---|---|
-| sloveso poznané v klipu | 8/30 |
-| sloveso poznané u vět se svědkem | 7/20 |
-| hrdina modelem | 17/23 |
-| hrdina poznaný | 7/23 |
-| položka modelem | 13/38 |
+| | `baseline.json` | `after-a.json` |
+|---|---|---|
+| sloveso poznané v klipu | 8/30 | 9/30 |
+| sloveso poznané u vět se svědkem | 7/20 | 8/20 |
+| hrdina modelem | 17/23 | 17/23 |
+| hrdina poznaný | 7/23 | 6/23 |
+| položka modelem | 13/38 | 13/38 |
 
 Baseline 7. 10. 2026: klip z buildu `118f26da` (před změnami vykreslení P43), návrh bez režiséra, běh `p43-baseline`.
+
+Po proudu A 7. 10. 2026: klip z buildu `47602c61` (podněty akce, střela a hod, sebrání a doručení, řádek se slovesem), běh `p43-after-a`. Výkon v profilu telefonu `e2e/p35-perf.spec.ts` nad týmž buildem 16/16 zelený, práh FPS beze změny.
+
+**Práh nesplněn: sloveso u vět se svědkem 8/20 (40 %), cíl ≥ 50 %.** Proud A posunul o jednu větu, což je v šumu soudce. Čtení:
+
+- Řádek se slovesem („Shoot the goblins!“) do čísla nevstupuje – klip skrývá všechno HTML a soudí jen scénu.
+- Snímky klipu leží na pevných ticích (30, 90, 120); robot ukázky mezi tiky 51 a 126 nestřílí, takže snímky 1 a 2 akci často nezachytí. Posun snímků by změnil měřidlo T2, proto zůstává.
+- „Hrdina poznaný“ 7 → 6 je jedna věta, v šumu; hrdinu ani modely proud A neměnil (to dělá proud B).
 
 ## `missing.json` – podstatná jména bez modelu
 
