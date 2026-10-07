@@ -26,7 +26,7 @@ vi.mock('@/play/director', async (importOriginal) => {
 });
 
 import { getDirector } from '../../app/api/play/_director';
-import { resetConcurrency } from '../../app/api/worldstream/sessions/route';
+import { resetConcurrency } from '../paid-slots';
 import type { GenerationCall } from '../pipeline';
 import { resetRateWindows } from '../rate-limit';
 import { costUsd, processFallbackSpendCap, processSpendCap, resetProcessSpendCap } from '../spend-cap';

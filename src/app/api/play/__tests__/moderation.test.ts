@@ -15,7 +15,7 @@ import { moderatePrompt, PLAY_MODERATION } from '@/server/moderation';
 import { resetRateWindows } from '@/server/rate-limit';
 import { resetProcessSpendCap } from '@/server/spend-cap';
 
-import { resetConcurrency } from '../../worldstream/sessions/route';
+import { resetConcurrency } from '@/server/paid-slots';
 import { MAX_SENTENCE_CHARS, store } from '../_publish';
 import { __rememberedRemixes, __resetRemixes } from '../_remix-jobs';
 import { POST as remix } from '../games/[id]/remix/route';

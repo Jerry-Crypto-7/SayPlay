@@ -16,7 +16,7 @@
  *   node scripts/legacy-reach.mjs --check [adresář…]   po smazání: exit 1, když
  *                                                      chybí vstup nebo soubor,
  *                                                      který něco importuje
- *   --exclude <regex>                                  soubor ber jako smazaný
+ *   --exclude <regex…>                                 soubor ber jako smazaný
  *
  * **Test není vstupní bod ani důvod ponechání.** Test (`*.test.*`, cokoli pod
  * `__tests__/` a `__fixtures__/`) jde smazat, když všechno, co testuje, je nedosažitelné; když
@@ -323,8 +323,9 @@ const under = (dirs) => (file) => dirs.length === 0 || dirs.some((dir) => file =
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const root = process.cwd();
-  const excludeArg = argValues('--exclude')?.[0];
-  const exclude = excludeArg ? new RegExp(excludeArg) : undefined;
+  // Víc regexů za `--exclude` místo `a|b`: shim `node.cmd` na Windows bere `|` jako rouru.
+  const excludeArgs = argValues('--exclude') ?? [];
+  const exclude = excludeArgs.length > 0 ? new RegExp(excludeArgs.map((arg) => `(?:${arg})`).join('|')) : undefined;
   if (argValues('--check')) {
     const dirs = argValues('--check');
     const head = execFileSync('git', ['ls-tree', '-r', '--name-only', 'HEAD'], { cwd: root, encoding: 'utf8', maxBuffer: 64 << 20 }).split('\n');

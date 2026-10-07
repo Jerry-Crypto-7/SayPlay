@@ -25,9 +25,8 @@ import { killState } from '@/server/kill-switch';
 import type { UpstreamRequest } from '@/model/prompt';
 import type { GenerationBranch, GenerationOutcome } from '@/server/pipeline';
 import { costUsd, processFallbackSpendCap, processSpendCap, type Reserved } from '@/server/spend-cap';
+import { acquireSlot, releaseSlot } from '@/server/paid-slots';
 import { upstreamBranch, type UpstreamConfig, upstreamConfigFromEnv } from '@/server/upstream';
-
-import { acquireSlot, releaseSlot } from '../worldstream/sessions/route';
 
 /**
  * `callerLimited`: model se nezavolal, protože volající vyčerpal svůj denní

@@ -29,7 +29,7 @@ vi.mock('@/play/director', async (importOriginal) => {
   return { ...actual, directorCacheFromEnv: () => actual.directorCache(answers.store ?? memoryAnswerStore()) };
 });
 
-import { acquireSlot, releaseSlot, resetConcurrency, slotsDetail } from '../../worldstream/sessions/route';
+import { acquireSlot, releaseSlot, resetConcurrency, slotsDetail } from '@/server/paid-slots';
 import { billedLine, DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS, minCallMs, OSS_MIN_CALL_MS } from '../_director';
 
 const OSS = {

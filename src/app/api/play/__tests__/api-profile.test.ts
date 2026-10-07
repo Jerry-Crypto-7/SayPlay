@@ -13,7 +13,7 @@ import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version'
 import { resetRateWindows } from '@/server/rate-limit';
 import { resetProcessSpendCap } from '@/server/spend-cap';
 
-import { resetConcurrency } from '../../worldstream/sessions/route';
+import { resetConcurrency } from '@/server/paid-slots';
 import { __resetUpgrades } from '../_upgrade';
 import { GET as readUpgrade } from '../games/[id]/upgrade/route';
 import { POST as createGame } from '../games/route';
