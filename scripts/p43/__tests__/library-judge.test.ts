@@ -59,14 +59,14 @@ describe('questionFor', () => {
 
 describe('verdictsOf', () => {
   it('maps cell numbers to the asset in that cell and checks the name against label and tags', () => {
-    const v = verdictsOf(index.sheets[0], answerFor('grid-001'), namesOf);
+    const v = verdictsOf(index.sheets[0]!, answerFor('grid-001'), namesOf)!;
     expect(v.cat).toMatchObject({ sheet: 'grid-001', cell: 1, recognizable: true, nameFits: true });
     expect(v['cc0-ak']).toMatchObject({ cell: 2, nameFits: true });
     expect(v['cc0-ambulance']).toMatchObject({ cell: 3, nameFits: true, suggestedName: null });
   });
 
   it('suggests a name only for a recognisable model whose catalog name does not fit', () => {
-    const v = verdictsOf(index.sheets[1], answerFor('grid-002'), namesOf);
+    const v = verdictsOf(index.sheets[1]!, answerFor('grid-002'), namesOf)!;
     expect(v['washing-machine']).toMatchObject({ nameFits: false, suggestedName: 'dishwasher', realSize: 0.85 });
     expect(v.raptor).toMatchObject({ recognizable: false, nameFits: false, suggestedName: null });
   });
