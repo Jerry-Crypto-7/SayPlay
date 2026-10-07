@@ -60,8 +60,11 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
     (firedWithoutTarget(label) || !intent.items.some(item => item.essential && item.verb === 'shoot' && item.object !== null && head(item.object) === head(label)));
   // Ammo is an item carried by the actual projectile, never an enemy renamed
   // after a rocket. Older genre drafting conflates these two argument roles.
+  // „fires fireballs at ogres“ čte návrh i jako sbírání koulí; bez slovesa sbírání je to jen munice.
+  const collectRequested = (label: string) => intent.items.some(item => item.verb === 'collect' && item.object !== null && head(item.object) === head(label));
   for (let index = cast.length - 1; index >= 0; index--) {
-    if (cast[index].does === 'shoot_at' && ammoWithoutTargetRequest(cast[index].label)) cast.splice(index, 1);
+    const { does, label } = cast[index];
+    if ((does === 'shoot_at' || (does === 'collect' && !collectRequested(label))) && ammoWithoutTargetRequest(label)) cast.splice(index, 1);
   }
   for (const fallback of cell.preset.cast ?? []) {
     const roles = draft.genre === 'arena' && fallback.does === 'chase_me'
