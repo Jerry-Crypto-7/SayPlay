@@ -712,15 +712,11 @@ describe('jediný strop procesu', () => {
       expect(code, `${path} resetuje strop procesu`).not.toContain('resetProcessSpendCap(');
     }
 
-    // A obě placené routy přes singleton chodí doopravdy, ne jen „nevyrábějí".
-    for (const route of ['src/app/api/generate/route.ts', 'src/server/worldstream-emitter.ts'])
-      expect(stripComments(readFileSync(route, 'utf8')), `${route} nechodí přes singleton`).toContain(
-        'processSpendCap()',
-      );
-    expect(stripComments(readFileSync('src/app/api/worldstream/sessions/route.ts', 'utf8')))
-      .toContain("import { cloudEmitter } from '../../../../server/worldstream-emitter'");
-    expect(stripComments(readFileSync('src/worldstream/sessions.ts', 'utf8')))
-      .toContain("import { cloudEmitter } from '../server/worldstream-emitter'");
+    // A placený režisér `/play` přes singleton chodí doopravdy, ne jen „nevyrábí".
+    const director = 'src/app/api/play/_director.ts';
+    expect(stripComments(readFileSync(director, 'utf8')), `${director} nechodí přes singleton`).toContain(
+      'processSpendCap()',
+    );
   });
 
   // P15 `T30-capfloor`, druhé kolo nezávislé revize 4. 9. 2026. Postup zotavení
@@ -745,10 +741,12 @@ describe('jediný strop procesu', () => {
   // Co se tím vzdává, napsané nahlas: nová **čtvrtá** kopie v souboru, který
   // tady není vyjmenovaný, projde. Revize prošla všechny git-tracked soubory
   // a čtvrtou kopii nenašla, a nová by přišla s vlastní revizí.
-  it('všechny tři popisy zotavení vědí, že soubor strop nezvedne', () => {
+  //
+  // Třetí kopie bydlela v trase starého studia (`/api/worldstream/sessions`)
+  // a odešla s ní 7. 10. 2026.
+  it('oba popisy zotavení vědí, že soubor strop nezvedne', () => {
     const bloky = [
       ['src/server/spend-store.ts', 'Zotavení je ruční'],
-      ['src/app/api/worldstream/sessions/route.ts', 'Zotavení pak není mazání klíče'],
       ['.env.example', 'POSTUP PŘI INCIDENTU'],
     ] as const;
 

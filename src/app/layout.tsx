@@ -5,7 +5,7 @@ import './theme.css';
 
 // Ikony a manifest jsou z kitu Sayplay (`public/brand/app-icon/`). Barvu lišty
 // pro `/play` přepisuje `src/app/play/layout.tsx`; tady zůstává tmavá plocha
-// `/studio`.
+// pro ostatní stránky (404).
 export const metadata: Metadata = {
   title: 'sayplay',
   description: 'Say it. Play it.',
