@@ -36,10 +36,21 @@ export interface ShootThrowFrame {
 
 const alive = (state: Int32Array, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
 
-/** Střely, které od minula nově žijí, jako události `spawn`; `known` si drží živé střely mezi snímky. */
+/** Ústí: záblesk kousek před hrdinou po směru střely, ať ho nezakryje (kamera střelce stojí za zády). */
+export const MUZZLE = 0.6;
+/** Největší poloměr záblesku v metrech – hrdina je kolem 1 m, větší koule ho schová. */
+export const FLASH_RADIUS = 0.45;
+
+/**
+ * Střely, které od minula nově žijí, jako události `spawn` v tiku a na místě vypuštění;
+ * `known` si drží živé střely mezi snímky. Klip robota se krokuje po 30 ticích, takže
+ * střelu poprvé uvidí v půli letu: stáří se dopočte ze vzdálenosti od hrdiny a rychlosti,
+ * a střela starší než záblesk vypuštěním není (jinak by záblesk visel ve vzduchu).
+ */
 export function projectileSpawns(state: Int32Array, known: Set<number>): VisualEvent[] {
   const events: VisualEvent[] = [];
   const tick = state[HEADER.tick] as number;
+  const hero = bodyBase(state[HEADER.player] as number);
   for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
     const base = bodyBase(body);
     if (state[base + BODY.role] !== ROLE.projectile || !alive(state, body)) {
@@ -48,7 +59,15 @@ export function projectileSpawns(state: Int32Array, known: Set<number>): VisualE
     }
     if (known.has(body)) continue;
     known.add(body);
-    events.push({ kind: 'spawn', body, role: ROLE.projectile, x: (state[base + BODY.x] as number) / UNIT, y: (state[base + BODY.y] as number) / UNIT, z: (state[base + BODY.z] as number) / UNIT, tick });
+    const at = (axis: number) => (state[base + axis] as number) / UNIT;
+    const v = [at(BODY.vx), at(BODY.vy), at(BODY.vz)] as const;
+    const speed = Math.hypot(...v);
+    const flown = Math.hypot(at(BODY.x) - (state[hero + BODY.x] as number) / UNIT, at(BODY.y) - (state[hero + BODY.y] as number) / UNIT, at(BODY.z) - (state[hero + BODY.z] as number) / UNIT);
+    const age = speed > 0 ? Math.round(flown / speed) : 0;
+    if (age >= FLASH_TICKS) continue;
+    // Místo vypuštění (poloha minus let) posunuté o ústí po směru střely.
+    const step = speed > 0 ? MUZZLE / speed - age : 0;
+    events.push({ kind: 'spawn', body, role: ROLE.projectile, x: at(BODY.x) + v[0] * step, y: at(BODY.y) + v[1] * step, z: at(BODY.z) + v[2] * step, tick: tick - age });
   }
   return events;
 }
@@ -96,7 +115,7 @@ export function ShootThrowFx({ session, verb }: { readonly session: Pick<ArcadeS
       mesh.visible = flash !== undefined;
       if (flash === undefined) return;
       mesh.position.set(flash.at[0], flash.at[1], flash.at[2]);
-      mesh.scale.setScalar(0.25 + 0.55 * flash.life);
+      mesh.scale.setScalar(FLASH_RADIUS * (0.4 + 0.6 * flash.life));
     });
     trails.current.forEach((mesh, index) => {
       if (mesh === null) return;

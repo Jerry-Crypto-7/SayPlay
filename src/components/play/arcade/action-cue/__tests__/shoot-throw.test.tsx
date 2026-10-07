@@ -14,7 +14,7 @@ import type { ArcadeSession } from '../../session';
 import { ShooterRig } from '../../shooter/ShooterRig';
 import { ThrowRig } from '../../throw/ThrowRig';
 import { cuesOf, heroActionOf } from '../cues';
-import { FLASH_TICKS, ShootThrowFx, projectileSpawns, shootThrowFrame } from '../ShootThrowFx';
+import { FLASH_RADIUS, FLASH_TICKS, MUZZLE, ShootThrowFx, projectileSpawns, shootThrowFrame } from '../ShootThrowFx';
 
 vi.mock('react', async (importOriginal) => {
   const react = await importOriginal<typeof import('react')>();
@@ -51,26 +51,37 @@ function stateWith(flying: boolean, tick = 100): Int32Array {
 }
 
 describe('shoot and throw cues', () => {
-  it('a newly launched projectile is a shoot cue at the muzzle, once', () => {
+  it('a newly launched projectile is a shoot cue at its launch point, back-dated to the launch tick, once', () => {
     const known = new Set<number>();
     const spawns = projectileSpawns(stateWith(true), known);
-    expect(cuesOf(['shoot'], spawns, PLAYER)).toEqual([{ verb: 'shoot', at: 100, target: BULLET, x: 1, y: 0, z: 1 }]);
+    // 1 m from the hero at 0.5 m per tick: launched 2 ticks ago from the hero; the muzzle is MUZZLE m along the shot.
+    expect(cuesOf(['shoot'], spawns, PLAYER)).toEqual([{ verb: 'shoot', at: 98, target: BULLET, x: 1, y: 0, z: MUZZLE }]);
     expect(projectileSpawns(stateWith(true, 101), known)).toEqual([]);
     // Spawned elsewhere: a stack cue, never a shot.
     expect(cuesOf(['stack'], spawns, PLAYER)).toEqual([]);
   });
 
-  it('draws a flash at the hero for FLASH_TICKS ticks and a trail behind the flying projectile', () => {
+  it('a projectile first seen far into its flight is no launch (the hand-stepped clip skips ticks)', () => {
+    const state = stateWith(true);
+    state[bodyBase(BULLET) + BODY.z] = 20 * UNIT; // 40 ticks of flight
+    const known = new Set<number>();
+    expect(projectileSpawns(state, known)).toEqual([]);
+    expect(known.has(BULLET)).toBe(true);
+    expect(shootThrowFrame([], state).trails).toHaveLength(1);
+  });
+
+  it('draws a small flash just ahead of the hero for FLASH_TICKS ticks and a trail behind the flying projectile', () => {
     const cues = cuesOf(['shoot'], projectileSpawns(stateWith(true), new Set()), PLAYER);
     const now = shootThrowFrame(cues, stateWith(true, 101));
     expect(now.flashes).toHaveLength(1);
-    // Scene mirrors x like every body (`-x`).
+    // Scene mirrors x like every body (`-x`); the flash sits MUZZLE m along the shot, not on the hero.
     expect(now.flashes[0]!.at[0]).toBe(-1);
-    expect(now.flashes[0]!.at[2]).toBe(1);
+    expect(now.flashes[0]!.at[2]).toBeCloseTo(MUZZLE);
+    expect(FLASH_RADIUS).toBeLessThanOrEqual(0.5);
     expect(now.trails).toHaveLength(1);
     const [from, to] = [now.trails[0]!.from, now.trails[0]!.to];
     expect(to[2]).toBeGreaterThan(from[2]);
-    expect(shootThrowFrame(cues, stateWith(true, 100 + FLASH_TICKS)).flashes).toEqual([]);
+    expect(shootThrowFrame(cues, stateWith(true, 98 + FLASH_TICKS)).flashes).toEqual([]);
   });
 
   it('draws nothing when nothing was launched', () => {
