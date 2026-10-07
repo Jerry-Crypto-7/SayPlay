@@ -20,7 +20,7 @@ export const TIMES_OF_DAY = ['day', 'dusk', 'night'] as const;
 export type TimeOfDay = (typeof TIMES_OF_DAY)[number];
 
 export function timeOfDayFor(setting: string): TimeOfDay | null {
-  if (/\b(?:at night|nighttime|night-time|midnight)\b/i.test(setting)) return 'night';
+  if (/\b(?:at night|nighttime|night-time|midnight)\b/i.test(setting) || /^night$/i.test(setting.trim())) return 'night';
   if (/\b(?:dusk|sunset|evening)\b/i.test(setting)) return 'dusk';
   return null;
 }

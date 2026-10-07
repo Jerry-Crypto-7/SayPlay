@@ -14,7 +14,7 @@ beforeAll(loadRapier);
 it('the gravity-and-thrust lander is airborne movement and preserves the actual landing target', () => {
   for (const seed of [1, 2, 3, 4, 5]) {
     const made = compose(extractIntent('land a helicopter on a ship'), seed);
-    expect(made.cellId).toBe('voyage.land');
+    expect(made.recipe).toMatchObject({ move: 'glide', objective: 'land' });
     expect(made.recipe.move).toBe('glide');
     expect(made.witnesses.some(w => matchesWitness({ actor: 'helicopter', verb: 'land', object: 'ship' }, w))).toBe(true);
     expect(made.witnesses.some(w => w.verb === 'glide')).toBe(true);

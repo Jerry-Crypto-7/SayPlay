@@ -7,7 +7,7 @@ import { GRAVITY } from '../kernel';
 export const BALL_GOALS = ['goal', 'hoop', 'hole'] as const;
 export type BallGoal = typeof BALL_GOALS[number];
 export const BALL = { size: 400, launchY: 1000, launchZ: 500, maxCharge: 60, minSpeed: 100, chargeSpeed: 4, timeout: 3600, flightTicks: 160, keeperSpeed: 60, keeperPeriod: 80 } as const;
-export const ballParams = z.object({ goal: z.enum(BALL_GOALS).default('goal'), keeper: z.boolean().default(false), knockdown: z.boolean().optional(), difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'), targets: z.int().min(1).max(5).default(1), shotRecoveryTicks: z.int().min(120).max(240).optional(), shotRecoveryRiseTicks: z.int().min(0).max(12).optional(), paceSeconds: z.int().min(10).max(90).optional() }).strict();
+export const ballParams = z.object({ goal: z.enum(BALL_GOALS).default('goal'), keeper: z.boolean().default(false), team: z.boolean().optional(), knockdown: z.boolean().optional(), difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'), targets: z.int().min(1).max(5).default(1), shotRecoveryTicks: z.int().min(120).max(240).optional(), shotRecoveryRiseTicks: z.int().min(0).max(12).optional(), paceSeconds: z.int().min(10).max(90).optional() }).strict();
 export type BallPitchParams = z.infer<typeof ballParams>;
 export const ballControlParams = z.object({}).strict();
 export const ballLoft = (goal: BallGoal): number => goal === 'hoop' ? 300 : goal === 'hole' ? 150 : 80;
@@ -32,24 +32,32 @@ export const ballControl: ControlPiece<z.infer<typeof ballControlParams>> = {
     state[p + BODY.aux1] = input.buttons & BUTTON.TAP ? -Math.max(1, charge) : charge;
   },
 };
-const launchParams = z.object({ template: z.int().min(1), goal: z.enum(BALL_GOALS), shotRecoveryTicks: z.int().min(120).max(240).optional(), shotRecoveryRiseTicks: z.int().min(0).max(12).optional() }).strict();
+const teamSchema = z.object({ template: z.int().min(1), forward: z.int().min(1), goal: z.int().min(1), goalsToLose: z.int().min(2) }).strict();
+const launchParams = z.object({ team: teamSchema.optional(), template: z.int().min(1), goal: z.enum(BALL_GOALS), shotRecoveryTicks: z.int().min(120).max(240).optional(), shotRecoveryRiseTicks: z.int().min(0).max(12).optional() }).strict();
 export const ballLaunch: RulePiece<z.infer<typeof launchParams>> = {
   id: 'ball_launch', params: launchParams, roles: ['player', 'thing'], trigger: 'tick', cost: () => ({ bodies: 0, rules: 1 }),
   fire({ state, player }, params) {
+    // Opposing forwards launch the same dynamic sphere as the player. A missed
+    // shot cannot score; only the opposing goal's volume ends a possession.
+    if (params.team && state[HEADER.tick]! % 240 === 1) {
+      const t = bodyBase(params.team.template), f = bodyBase(params.team.forward);
+      const active = Array.from({ length: state[HEADER.bodyCount]! }, (_, i) => bodyBase(i)).some(b => (state[b + BODY.flags]! & FLAG.alive) && state[b + BODY.kind] === state[t + BODY.kind]);
+      if (!active) return [{ kind: 'spawn', template: params.team.template, x: state[f + BODY.x]!, y: BALL.launchY, z: state[f + BODY.z]!, vx: 0, vy: 300, vz: -200 }];
+    }
     const cooldown = state[HEADER.counters + COUNTER.cooldown]!;
     if (cooldown > 0) return [{ kind: 'count', counter: 'cooldown', amount: -1 }];
     const p = bodyBase(player), charge = -state[p + BODY.aux1]!;
     if (charge <= 0 || state[HEADER.counters + COUNTER.ammo]! <= 0) return [];
     for (let i = 0; i < state[HEADER.bodyCount]!; i++) {
       const b = bodyBase(i);
-      if ((state[b + BODY.flags]! & (FLAG.alive | FLAG.physics | FLAG.ball)) === (FLAG.alive | FLAG.physics | FLAG.ball)) return [];
+      if ((state[b + BODY.flags]! & (FLAG.alive | FLAG.physics | FLAG.ball)) === (FLAG.alive | FLAG.physics | FLAG.ball) && state[b + BODY.kind] === state[bodyBase(params.template) + BODY.kind]) return [];
     }
     const recovery = (params.shotRecoveryTicks ?? BALL.flightTicks) + Math.min(4, state[HEADER.counters + COUNTER.score]!) * (params.shotRecoveryRiseTicks ?? 0);
     return [{ kind: 'count', counter: 'ammo', amount: -1 }, { kind: 'count', counter: 'cooldown', amount: recovery }, { kind: 'spawn', template: params.template, x: 0, y: BALL.launchY, z: BALL.launchZ, ...ballVelocity(params.goal, state[p + BODY.aux0]!, charge) }];
   },
 };
 
-const scoreParams = z.object({ goal: z.enum(BALL_GOALS), timeout: z.int().min(100).default(BALL.timeout) }).strict();
+const scoreParams = z.object({ team: teamSchema.optional(), goal: z.enum(BALL_GOALS), timeout: z.int().min(100).default(BALL.timeout) }).strict();
 export const ballScore: RulePiece<z.infer<typeof scoreParams>> = {
   id: 'ball_score', params: scoreParams, roles: ['thing', 'target'], trigger: 'tick', cost: () => ({ bodies: 0, rules: 1 }),
   fire({ state }, params) {
@@ -62,6 +70,13 @@ export const ballScore: RulePiece<z.infer<typeof scoreParams>> = {
     }
     for (const ball of balls) {
       const b = bodyBase(ball);
+      if (params.team && state[b + BODY.kind] === state[bodyBase(params.team.template) + BODY.kind]) {
+        const g = bodyBase(params.team.goal);
+        const inside = Math.abs(state[b + BODY.x]! - state[g + BODY.x]!) < state[g + BODY.w]! / 2 && Math.abs(state[b + BODY.z]! - state[g + BODY.z]!) < state[g + BODY.d]! / 2 && state[b + BODY.y]! + BALL.size / 2 >= state[g + BODY.y]! && state[b + BODY.y]! + BALL.size / 2 <= state[g + BODY.y]! + state[g + BODY.h]!;
+        if (inside) return [{ kind: 'count', counter: 'reserve', amount: 1 }, { kind: 'despawn', body: ball }, ...(state[HEADER.counters + COUNTER.reserve]! + 1 >= params.team.goalsToLose ? [{ kind: 'lose' as const }] : [])];
+        if (state[b + BODY.z]! < -2000) return [{ kind: 'despawn', body: ball }];
+        continue;
+      }
       for (const target of targets) {
         const t = bodyBase(target);
         const inside = Math.abs(state[b + BODY.x]! - state[t + BODY.x]!) < state[t + BODY.w]! / 2 && Math.abs(state[b + BODY.z]! - state[t + BODY.z]!) < state[t + BODY.d]! / 2 && state[b + BODY.y]! + BALL.size / 2 >= state[t + BODY.y]! && state[b + BODY.y]! + BALL.size / 2 <= state[t + BODY.y]! + state[t + BODY.h]!;
@@ -117,16 +132,23 @@ function generate(seed: number, params: BallPitchParams): ArcadeLevel {
     if (params.knockdown) { bodies.push({ role: 'target', kind: 'pin', x, y: 0, z: 5000, w: 350, h: 2000, d: 350, solid: true, physics: true }); continue; }
     bodies.push({ role: 'target', kind: params.goal, x, y: params.goal === 'hole' ? 0 : Math.max(0, centerY - 500), z: flight.z, w: aperture, h: params.goal === 'hole' ? 600 : 1000, d: aperture, solid: false });
   }
-  if (params.keeper) {
+  if (params.keeper || params.team) {
     const target = bodies[2]!;
     bodies.push({ role: 'enemy', kind: 'goalkeeper', x: -2400, y: 0, z: Math.floor(target.z * 0.6), w: 1000, h: 2300, d: 600, solid: true, kinematic: true, vx: BALL.keeperSpeed, period: BALL.keeperPeriod });
   }
-  return { bodies, length: 0, spawnSlots: 1, counters: { ammo: params.targets * 3 } };
+  if (params.team) {
+    bodies.push({ role: 'enemy', kind: 'opponent-forward', x: 3500, y: 0, z: 15000, w: 600, h: 1700, d: 600, solid: true });
+    bodies.push({ role: 'thing', kind: 'opponent-ball', x: 3500, y: BALL.launchY, z: 15000, w: BALL.size, h: BALL.size, d: BALL.size, solid: true, physics: true, ball: true, restitution: 150, template: true });
+    bodies.push({ role: 'goal', kind: 'home-goal', x: 3500, y: 0, z: 1600, w: 1600, h: 5000, d: 1600, solid: false });
+  }
+  return { bodies, length: 0, spawnSlots: params.team ? 2 : 1, counters: { ammo: params.targets * 3 } };
 }
 export const ballPitch: ModeGeneratorPiece<BallPitchParams> = {
-  id: 'ball_pitch', params: ballParams, roles: ['player', 'thing', 'target', 'enemy'], cost: params => ({ bodies: 3 + params.targets + Number(params.keeper), rules: 2 }), generate,
+  id: 'ball_pitch', params: ballParams, roles: ['player', 'thing', 'target', 'enemy'], cost: params => ({ bodies: 3 + params.targets + Number(params.keeper || params.team) + (params.team ? 4 : 0), rules: 2 }), generate,
   parts(seed, params, health) {
+    const level = generate(seed, params);
+    const team = params.team ? { team: { forward: level.bodies.findIndex(b => b.kind === 'opponent-forward'), template: level.bodies.findIndex(b => b.kind === 'opponent-ball'), goal: level.bodies.findIndex(b => b.kind === 'home-goal'), goalsToLose: params.targets + 1 } } : {};
     const recovery = { ...(params.shotRecoveryTicks === undefined ? {} : { shotRecoveryTicks: params.shotRecoveryTicks }), ...(params.shotRecoveryRiseTicks === undefined ? {} : { shotRecoveryRiseTicks: params.shotRecoveryRiseTicks }) };
-    return { level: generate(seed, params), control: { id: 'ball', params: {} }, bot: { id: 'ball_bot', params: { goal: params.goal } }, rules: [{ id: 'ball_launch', params: { template: 1, goal: params.goal, ...recovery } }, { id: params.knockdown ? 'ball_knockdown' : 'ball_score', params: { goal: params.goal, timeout: BALL.timeout } }, ...(params.paceSeconds === undefined ? [] : [{ id: 'time_limit', params: { seconds: params.paceSeconds } }])], health };
+    return { level, control: { id: 'ball', params: {} }, bot: { id: 'ball_bot', params: { goal: params.goal } }, rules: [{ id: 'ball_launch', params: { template: 1, goal: params.goal, ...recovery, ...team } }, { id: params.knockdown ? 'ball_knockdown' : 'ball_score', params: { goal: params.goal, timeout: BALL.timeout, ...team } }, ...(params.paceSeconds === undefined ? [] : [{ id: 'time_limit', params: { seconds: params.paceSeconds } }])], health };
   },
 };

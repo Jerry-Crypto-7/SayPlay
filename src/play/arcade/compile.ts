@@ -35,6 +35,7 @@ import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHas
 import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { progressionParts } from './pieces/progression-parts';
+import { assemblyParts } from './pieces/assembly-parts';
 import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
 import { ballPitch } from './pieces/ball';
@@ -213,7 +214,7 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   // Pahýl módu vrací prázdnou úroveň s issue; doplňky by z ní četly tělo hráče (revize T4 kolo 2).
   if (own.issues !== undefined && own.issues.length > 0) return { ok: false, issues: own.issues };
   const lives = 'health' in own ? own.health : health;
-  const { control, bot, level: baseLevel, rules, issues } = applyAddons(own, { spec, seed, health: lives });
+  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(applyAddons(own, { spec, seed, health: lives }), spec, ARCADE_LIBRARY.rules);
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
   // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění.
   const ruled = compileRules(spec, baseLevel, seed);

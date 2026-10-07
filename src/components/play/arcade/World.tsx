@@ -99,7 +99,7 @@ export function modelIdOf(view: BodyView, cast: Cast): string {
   // P35 T3: cíl skákačky z věty („moon“, „battery“); bez modelu v katalogu vlajka.
   if (view.kind === 'finish') return cast.props.finish ?? 'finish-flag';
   if (view.kind === 'goal' && cast.props.finish !== undefined) return cast.props.finish;
-  if (view.kind === 'enemy' || view.kind === 'guard' || view.kind === 'goalkeeper') return cast.enemy;
+  if (view.kind === 'enemy' || view.kind === 'guard' || view.kind === 'goalkeeper' || view.kind === 'opponent-forward') return cast.enemy;
   if (view.kind === 'glide-rival') return cast.props.rival ?? cast.enemy;
   // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
   if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
@@ -266,7 +266,7 @@ const FAR_MARGIN_M = 12;
 /** Role, které sonda záběru bere jako cíl nebo hrozbu; mantinely závodu jsou kulisa, ne cíl. */
 const FRAME_TARGET_ROLES: ReadonlySet<number> = new Set([ROLE.obstacle, ROLE.collectible, ROLE.chaser, ROLE.hazard, ROLE.enemy, ROLE.target]);
 const frameTagOf = (view: BodyView): 'hero' | 'target' | undefined =>
-  view.role === ROLE.player ? 'hero' : FRAME_TARGET_ROLES.has(view.role) && view.kind !== 'tire-barrier' ? 'target' : undefined;
+  view.role === ROLE.player ? 'hero' : (FRAME_TARGET_ROLES.has(view.role) || view.kind.startsWith('thing:part_')) && view.kind !== 'tire-barrier' ? 'target' : undefined;
 
 /** Obrys těla (P36C T6): hrdina inkoustem, nepřítel a pronásledovatel rajčatovou, ostatní bez obrysu. */
 const inkOf = (view: BodyView): Ink | undefined =>

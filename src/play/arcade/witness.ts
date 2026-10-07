@@ -8,8 +8,9 @@ import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type Arcad
 import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
 import { ballKeeperProbeInput } from './pieces/ball-probe';
-import { walkerVisible, type WalkerMap } from './pieces/walker';
-import { ballLaunchEvidence, ballScoreEvidence, ballPinImpact, keeperBlockEvidence, type BallLaunchEvidence } from './ball-evidence';
+import { walkerVisible, walkerCell, walkerWaypoint, walkerVelocity, type WalkerMap } from './pieces/walker';
+import { ballLaunchEvidence, ballScoreEvidence, ballPinImpact, keeperBlockEvidence, opponentBallEvidence, type BallLaunchEvidence } from './ball-evidence';
+import type { PieceRef } from './contract';
 import { pinFallen } from './pieces/ball';
 import { TIMING_SLOTS } from './pieces/timing';
 
@@ -35,6 +36,7 @@ export interface ActionWitness {
 const roleAt = (state: ArrayLike<number>, body: number): number => state[bodyBase(body) + BODY.role]!;
 const live = (state: ArrayLike<number>, body: number): boolean => (state[bodyBase(body) + BODY.flags]! & FLAG.alive) !== 0;
 const kindAt = (world: ArcadeWorld, state: ArrayLike<number>, body: number): string => world.kinds[state[bodyBase(body) + BODY.kind]!] ?? '';
+const underlyingRule = (ref: PieceRef): PieceRef => ref.id.startsWith('assembly_gate_') ? underlyingRule(ref.params.base as PieceRef) : ref;
 
 /** Bez hádání mezi více kandidáty. Neobsazené tělo nemůže dokazovat jméno z věty. */
 export function bindRoles(spec: GameSpecV1, world: ArcadeWorld): readonly RoleBinding[] {
@@ -44,8 +46,9 @@ export function bindRoles(spec: GameSpecV1, world: ArcadeWorld): readonly RoleBi
     const code = roleAt(world.initial, body);
     const kind = kindAt(world, world.initial, body);
     const player = body === world.initial[HEADER.player];
-    const named = kind.startsWith('thing:') ? kind.slice(6) : kind === 'rival-car' || kind === 'foe' ? 'rival' : kind === 'tire-barrier' ? 'barrier' : kind;
+    const named = kind.startsWith('thing:') ? kind.slice(6) : kind === 'opponent-forward' ? 'goalkeeper' : kind === 'opponent-ball' ? 'physics_ball' : kind === 'rival-car' || kind === 'foe' ? 'rival' : kind === 'tire-barrier' ? 'barrier' : kind;
     let role = player ? unique(spec.roles.filter(r => r.kind === 'player')) : spec.roles.find(r => r.id === named && r.kind !== 'player');
+    if (!player && code === ROLE.projectile && kind === 'bullet') role = spec.roles.find(r => r.id === 'ammunition' && r.kind === 'item') ?? role;
     // Native body kinds are kebab-case; stored role IDs are schema-safe names.
     if (role === undefined && /^(?:glide-|physics-ball$)/.test(kind)) role = spec.roles.find(r => r.id === kind.replaceAll('-', '_') && r.kind !== 'player');
     if (role === undefined && !kind.startsWith('thing:')) {
@@ -72,6 +75,7 @@ export function matchesWitness(triple: IntentTriple, witness: ActionWitness): bo
 
 /** Sonda mění jen vstup hráče; svět, rychlosti i pravidla zůstávají stejné. */
 export function threatProbeInput(world: ArcadeWorld, target: number, observation: ArcadeObservation, normal: ArcadeInput): ArcadeInput {
+  world = { ...world, rules: world.rules.map(underlyingRule) };
   const { state, player } = observation;
   const baseControl = baseControlOf(world.control);
   const control = baseControl.id;
@@ -95,6 +99,61 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
   const t = bodyBase(target);
   const dx = state[t + BODY.x]! - state[p + BODY.x]!;
   const dz = state[t + BODY.z]! - state[p + BODY.z]!;
+  const attached = world.rules.find(ref => ref.id === 'assembly_part' && (ref.params.part as { body: number }).body === target)?.params.part as { kind: string; motion: string; startY: number } | undefined;
+  if (attached !== undefined) {
+    if (attached.kind === 'rival' || attached.kind === 'chaser') {
+      if (attached.kind === 'rival' && (control === 'runner' || control === 'flap')) return { ...normal, buttons: normal.buttons | BUTTON.DOWN };
+      if (attached.kind === 'rival' && control === 'platform') return NO_INPUT;
+      if (control === 'steer') return { buttons: BUTTON.DOWN, axis: 0 };
+      if (control === 'glide') return { buttons: BUTTON.HOLD, axis: 0 };
+      if (control === 'walker' || control === 'move_free' || control === 'ball') return NO_INPUT;
+    }
+    if (control === 'walker' && baseControl.params.size !== undefined) {
+      const map = baseControl.params as unknown as WalkerMap;
+      const speed = Number(baseControl.params.speed ?? 110);
+      let x = state[p + BODY.x]!, z = state[p + BODY.z]!;
+      for (const input of observation.recent) { const v = walkerVelocity(input, speed); x += v.vx; z += v.vz; }
+      const waypoint = walkerWaypoint(map, x, z, walkerCell(map, state[t + BODY.x]!, state[t + BODY.z]!));
+      if (waypoint) {
+        const mx = waypoint.x - x, mz = waypoint.z - z;
+        return Math.abs(mx) > 80 ? { axis: Math.round(Math.max(-1, Math.min(1, mx / speed)) * AXIS_MAX), buttons: 0 }
+          : { axis: 0, buttons: Math.abs(mz) > 80 ? mz > 0 ? BUTTON.UP : BUTTON.DOWN : 0 };
+      }
+    }
+    if (control === 'ball') return { axis: 0, buttons: (Math.abs(dx) > 200 ? dx > 0 ? BUTTON.RIGHT : BUTTON.LEFT : 0) | (Math.abs(dz) > 200 ? dz > 0 ? BUTTON.UP : BUTTON.DOWN : 0) };
+    if (Math.abs(dz) > 6500) return normal;
+    if (control === 'platform') {
+      // Keep the native jumps across earlier gaps. Only walk into the threat
+      // once both bodies are over the same supporting slab; stopping jumps
+      // several metres early can fall into an unrelated pit instead.
+      const px = state[p + BODY.x]!, pz = state[p + BODY.z]!;
+      for (let body = 0; body < state[HEADER.bodyCount]!; body++) {
+        const slab = bodyBase(body);
+        if (!live(state, body) || roleAt(state, body) !== ROLE.platform) continue;
+        const near = state[slab + BODY.z]! - state[slab + BODY.d]! / 2;
+        const far = state[slab + BODY.z]! + state[slab + BODY.d]! / 2;
+        const top = state[slab + BODY.y]! + state[slab + BODY.h]!;
+        if (Math.abs(px - state[slab + BODY.x]!) < state[slab + BODY.w]! / 2 && pz >= near && pz <= far
+          && state[t + BODY.z]! - state[t + BODY.d]! / 2 >= near && state[t + BODY.z]! + state[t + BODY.d]! / 2 <= far
+          && Math.abs(state[p + BODY.y]! - top) < 100) return { buttons: 0, axis: Math.abs(dz) < 200 ? 0 : dz > 0 ? AXIS_MAX : -AXIS_MAX };
+      }
+      return normal;
+    }
+    if (control === 'runner') return { buttons: Math.abs(dx) < 500 ? 0 : dx > 0 ? BUTTON.RIGHT : BUTTON.LEFT, axis: 0 };
+    if (control === 'steer') return { buttons: state[p + BODY.vz]! > 60 || dz < 500 ? BUTTON.DOWN : 0, axis: Math.round(Math.max(-AXIS_MAX, Math.min(AXIS_MAX, dx * 2 - state[p + BODY.vx]! * 4))) };
+    if (control === 'walker') return { buttons: dz >= 0 ? BUTTON.UP : BUTTON.DOWN, axis: Math.abs(dx) < 200 ? 0 : Math.sign(dx) * AXIS_MAX };
+    if (control === 'glide') {
+      const desiredY = attached.motion === 'fall' ? attached.startY - 7000 : state[t + BODY.y]!;
+      const dy = desiredY - state[p + BODY.y]! - state[p + BODY.vy]! * 6;
+      return { buttons: (state[p + BODY.vz]! > 60 || dz < 500 ? BUTTON.HOLD : 0) | (dy > 100 ? BUTTON.UP : dy < -100 ? BUTTON.DOWN : 0),
+        axis: Math.round(Math.max(-AXIS_MAX, Math.min(AXIS_MAX, dx * 2 - state[p + BODY.vx]! * 4))) };
+    }
+    if (control === 'flap') {
+      if (Math.abs(dz) > 1800) return normal;
+      const desired = state[t + BODY.y]! + state[t + BODY.h]! / 2 - state[p + BODY.h]! / 2;
+      return { axis: 0, buttons: state[p + BODY.y]! < desired && state[p + BODY.vy]! < 50 ? BUTTON.TAP : 0 };
+    }
+  }
   if (control === 'move_free' || control === 'fight') return { buttons: 0, axis: axisOfDirection(directionToward(dx, dz)) };
   if (control === 'steer' && roleAt(state, target) === ROLE.chaser) return { buttons: BUTTON.DOWN, axis: 0 };
   if (control === 'glide' && roleAt(state, target) === ROLE.chaser) return { buttons: BUTTON.HOLD, axis: 0 };
@@ -144,7 +203,7 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
   return NO_INPUT;
 }
 
-type Origin = { readonly other: number; readonly source: number; readonly held: number; readonly ballBefore?: ArcadeState; readonly ballEffects?: readonly ArcadeEffect[] };
+type Origin = { readonly other: number; readonly source: number; readonly held: number; readonly ballBefore?: ArcadeState; readonly ballEffects?: readonly ArcadeEffect[]; readonly projectileBefore?: ArcadeState };
 
 /** Pozorovatel pravidel: kopie efektů nesou kontext kontaktu, jádro stále rozhoduje, co se skutečně provedlo. */
 export class WitnessRecorder {
@@ -154,8 +213,17 @@ export class WitnessRecorder {
   private readonly origins = new WeakMap<ArcadeEffect, Origin>();
   private readonly found = new Map<string, ActionWitness>();
   private readonly bindings: ReadonlyMap<number, RoleBinding>;
+  private readonly templates = new Map<number, Map<string, RoleBinding | null>>();
+  private readonly resolved = new Map<number, { code: number; kind: string; binding: RoleBinding | undefined }>();
   private readonly control: string;
-  private readonly moved = new Set<string>();
+  // Index the same (role, body) pairs without allocating string keys each tick.
+  // A recycled body can retain movement history for more than one role.
+  private readonly moved = new Map<string, Set<number>>();
+  private readonly knockdown: boolean;
+  private readonly team: boolean;
+  private readonly race: boolean;
+  private readonly stack: boolean;
+  private readonly movementVerb: string | undefined;
   private readonly positions = new Map<number, { roleId: string; x: number; y: number; z: number }>();
   private readonly hurt = new Set<string>();
   private readonly start: readonly number[];
@@ -163,14 +231,36 @@ export class WitnessRecorder {
   private readonly pendingLosses: { body: number; evidence: string }[] = [];
   private readonly ballLaunches = new Map<number, BallLaunchEvidence>();
   private readonly struckPins = new Set<number>();
+  private readonly teamShots = new Set<string>();
+  private readonly namedAmmunition: boolean;
+  private readonly launched = new Map<number, { x: number; y: number; z: number; tick: number }>();
 
   constructor(world: ArcadeWorld, bindings: readonly RoleBinding[], run: 'winner' | 'probe', runId: string) {
-    this.world = world;
+    this.world = { ...world, rules: world.rules.map(underlyingRule) };
     this.run = run;
     this.runId = runId;
     this.bindings = new Map(bindings.map(b => [b.body, b]));
+    this.namedAmmunition = bindings.some(binding => binding.roleId === 'ammunition' && binding.roleKind === 'item');
     this.control = baseControlOf(world.control).id;
+    this.knockdown = this.world.rules.some(rule => rule.id === 'ball_knockdown');
+    this.team = this.world.rules.some(rule => rule.params.team !== undefined);
+    this.race = this.control === 'steer' && this.world.rules.some(rule => rule.id === 'rival_finish' && !('land' in rule.params)) ||
+      this.control === 'glide' && this.world.rules.some(rule => rule.id === 'glide_finish' && rule.params.race === true);
+    this.stack = this.control === 'timing' && baseControlOf(this.world.control).params.mode === 'stack';
+    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk' };
+    this.movementVerb = this.control === 'steer' && this.world.control.params.land !== undefined ? 'glide' : movement[this.control];
     this.start = world.initial;
+    for (const binding of this.bindings.values()) {
+      const code = roleAt(this.start, binding.body);
+      const kind = kindAt(this.world, this.start, binding.body);
+      this.resolved.set(binding.body, { code, kind, binding });
+      let kinds = this.templates.get(code);
+      if (kinds === undefined) this.templates.set(code, kinds = new Map());
+      const known = kinds.get(kind);
+      // Matching templates with different role identities remain ambiguous.
+      if (known === undefined) kinds.set(kind, binding);
+      else if (known === null || known.roleId !== binding.roleId) kinds.set(kind, null);
+    }
     for (const binding of bindings) {
       const base = bodyBase(binding.body);
       this.positions.set(binding.body, { roleId: binding.roleId, x: this.start[base + BODY.x]!, y: this.start[base + BODY.y]!, z: this.start[base + BODY.z]! });
@@ -181,11 +271,14 @@ export class WitnessRecorder {
     return { ...library, rules: Object.fromEntries(Object.entries(library.rules).map(([id, piece]) => [id, {
       ...piece,
       fire: (ctx: Parameters<typeof piece.fire>[0], params: unknown) => {
-        const ballBefore = id === 'ball_launch' || id === 'ball_score' || id === 'launch' ? ctx.state.slice() : undefined;
+        const effective = underlyingRule({ id, params: params as Record<string, unknown> });
+        const ballBefore = effective.id === 'ball_launch' || effective.id === 'ball_score' || effective.id === 'launch' ? ctx.state.slice() : undefined;
         const effects = piece.fire(ctx, params);
+        const projectileBefore = this.namedAmmunition && (effective.id === 'blaster' || effective.id === 'gun') && effects.some(effect => effect.kind === 'spawn') ? ctx.state.slice() : undefined;
         return effects.map(effect => {
           const copy = { ...effect };
           this.origins.set(copy, { other: ctx.other, source: ctx.source, held: ctx.state[HEADER.held]! - 1,
+            ...(projectileBefore === undefined ? {} : { projectileBefore }),
             ...(ballBefore === undefined ? {} : { ballBefore, ballEffects: effects }) });
           return copy;
         });
@@ -197,12 +290,18 @@ export class WitnessRecorder {
     if (body < 0 || body >= state[HEADER.bodyCount]!) return undefined;
     const code = roleAt(state, body);
     const kind = kindAt(this.world, state, body);
+    const cached = this.resolved.get(body);
+    if (cached !== undefined && cached.code === code && cached.kind === kind) return cached.binding;
     const direct = this.bindings.get(body);
-    if (direct !== undefined && code === roleAt(this.start, body) && kind === kindAt(this.world, this.start, body)) return direct;
+    if (direct !== undefined && code === roleAt(this.start, body) && kind === kindAt(this.world, this.start, body)) {
+      this.resolved.set(body, { code, kind, binding: direct });
+      return direct;
+    }
     // Nová kopie předlohy: totožnost jen když všechny shodné předlohy patří téže roli.
-    const candidates = [...this.bindings.values()].filter(b => roleAt(this.start, b.body) === code && kindAt(this.world, this.start, b.body) === kind);
-    if (candidates.length === 0 || candidates.some(b => b.roleId !== candidates[0]!.roleId)) return undefined;
-    return { ...candidates[0]!, body };
+    const template = this.templates.get(code)?.get(kind);
+    const binding = template == null ? undefined : { ...template, body };
+    this.resolved.set(body, { code, kind, binding });
+    return binding;
   }
 
   private add(verb: string, actor: number, object: number | null, tick: number, evidence: string, state: ArcadeState): void {
@@ -218,12 +317,32 @@ export class WitnessRecorder {
     const origin = this.origins.get(effect);
     if (ref === undefined || origin === undefined) return;
     const player = state[HEADER.player]!;
+    const launchBefore = origin.projectileBefore;
+    if (launchBefore !== undefined && effect.kind === 'spawn' && effect.template === ref.params.template &&
+        roleAt(launchBefore, effect.template) === ROLE.projectile && kindAt(this.world, launchBefore, effect.template) === 'bullet' &&
+        this.binding(effect.template, launchBefore)?.roleId === 'ammunition' &&
+        state[HEADER.counters + COUNTER.ammo]! < launchBefore[HEADER.counters + COUNTER.ammo]! &&
+        effect.vx * effect.vx + effect.vy * effect.vy + effect.vz * effect.vz > 0) {
+      for (let body = state[HEADER.spawnBase]!; body < state[HEADER.bodyCount]!; body++) {
+        const b = bodyBase(body);
+        if (!live(launchBefore, body) && live(state, body) && roleAt(state, body) === ROLE.projectile && kindAt(this.world, state, body) === 'bullet' &&
+            state[b + BODY.x] === effect.x && state[b + BODY.y] === effect.y && state[b + BODY.z] === effect.z &&
+            state[b + BODY.vx] === effect.vx && state[b + BODY.vy] === effect.vy && state[b + BODY.vz] === effect.vz) {
+          this.launched.set(body, { x: effect.x, y: effect.y, z: effect.z, tick });
+        }
+      }
+    }
     if (ref.id === 'ball_knockdown' && effect.kind === 'despawn' && this.struckPins.has(effect.body) && pinFallen(state, effect.body)) {
       this.add('ball', player, null, tick, 'physical-ball-knockdown', state);
       this.add('defeat', player, effect.body, tick, 'physical-pin-knocked-down', state);
     }
     if (origin.ballBefore !== undefined && origin.ballEffects !== undefined) {
       const observation = { world: this.world, rule, before: origin.ballBefore, after: state, effects: origin.ballEffects };
+      for (const shot of opponentBallEvidence(observation)) {
+        const team = this.binding(shot.opponent, state);
+        if (team !== undefined) this.teamShots.add(team.roleId);
+        if (shot.event === 'goal' && this.run === 'probe') this.add('rival', shot.opponent, player, tick, 'opponent-physical-goal', state);
+      }
       for (const launch of ballLaunchEvidence(observation)) {
         this.ballLaunches.set(launch.ball, launch);
         // A hoop shot launches a real sphere upward. Require its subsequent
@@ -243,6 +362,26 @@ export class WitnessRecorder {
       for (const scored of ballScoreEvidence(observation, [...this.ballLaunches.values()])) {
         this.add('ball', player, null, tick, 'physical-ball-scored', state);
         this.add('score', player, scored.target, tick, 'physical-ball-in-goal', state);
+        // The goal course launches a ground-level shot. Require the same real
+        // launch, travel and goal evidence as scoring; a label cannot prove a kick.
+        if (scored.goal === 'goal') this.add('kick', player, scored.ball, tick, 'physical-ball-kicked-into-goal', state);
+      }
+    }
+    if (ref.id === 'assembly_part') {
+      const part = ref.params.part as { body: number; kind: string; startX: number; startY: number; startZ: number; goalX: number; goalZ: number };
+      const binding = this.binding(part.body, state);
+      const b = bodyBase(part.body), p = bodyBase(player);
+      const travelled = Math.hypot(state[b + BODY.x]! - part.startX, state[b + BODY.y]! - part.startY, state[b + BODY.z]! - part.startZ) >= UNIT;
+      if (effect.kind === 'stateChange' && effect.body === part.body && effect.state === 2) {
+        if (part.kind === 'catch' && travelled && binding !== undefined && this.binding(player, state) !== undefined && this.hasMoved(this.binding(player, state)!, state)) this.add('catch', player, part.body, tick, 'moving-prey-contact', state);
+        if ((part.kind === 'duel' || part.kind === 'fight') && bodyHp(state, part.body) === 0) this.add(part.kind, player, part.body, tick, 'opponent-knocked-out', state);
+        if ((part.kind === 'deliver' || part.kind === 'interact') && origin.held === part.body && Math.hypot(state[p + BODY.x]! - part.goalX, state[p + BODY.z]! - part.goalZ) < 1800) this.add(part.kind, player, part.body, tick, 'carried-to-destination', state);
+        if (part.kind === 'rival' && travelled) this.add('race', player, part.body, tick, 'finished-before-moving-rival', state);
+        if (part.kind === 'escape' && state[p + BODY.z]! >= (ref.params.length as number) - 1200 && this.binding(player, state) !== undefined && this.hasMoved(this.binding(player, state)!, state)) this.add('escape', player, part.body, tick, 'left-location-after-phase', state);
+      }
+      if ((effect.kind === 'damage' || effect.kind === 'lose') && this.run === 'probe' && travelled && ['hazard', 'chaser', 'rival'].includes(part.kind)) {
+        this.add(part.kind, part.body, player, tick, part.kind === 'rival' ? 'rival-finished-first' : 'moving-threat-contact', state);
+        if (binding !== undefined) this.hurt.add(binding.roleId);
       }
     }
     if (ref.id === 'objective_order' && effect.kind === 'stateChange' && effect.state === 1) {
@@ -353,8 +492,7 @@ export class WitnessRecorder {
   }
 
   private hasMoved(binding: RoleBinding, state: ArcadeState): boolean {
-    const key = `${binding.roleId}:${binding.body}`;
-    if (this.moved.has(key)) return true;
+    if (this.moved.get(binding.roleId)?.has(binding.body)) return true;
     const start = this.positions.get(binding.body);
     if (start === undefined || start.roleId !== binding.roleId) return false;
     const base = bodyBase(binding.body);
@@ -363,7 +501,7 @@ export class WitnessRecorder {
 
   afterTick(before: ArcadeState, state: ArcadeState, tick: number): void {
     const player = state[HEADER.player]!;
-    if (this.control === 'timing' && baseControlOf(this.world.control).params.mode === 'stack' &&
+    if (this.stack &&
         state[bodyBase(player) + BODY.z]! > before[bodyBase(player) + BODY.z]!) {
       // The control actually activates a placed block; bind that object, not
       // the abstract timing target or an arbitrary collectible role.
@@ -375,9 +513,9 @@ export class WitnessRecorder {
     }
     for (const launch of this.ballLaunches.values()) {
       for (const binding of this.bindings.values()) {
-        if (this.world.rules.some(rule => rule.id === 'ball_knockdown') && ballPinImpact(before, state, launch, binding.body)) this.struckPins.add(binding.body);
+        if (this.knockdown && ballPinImpact(before, state, launch, binding.body)) this.struckPins.add(binding.body);
         const blocked = keeperBlockEvidence(this.world, before, state, launch, binding.body, this.run);
-        if (blocked !== null) this.add('rival', blocked.keeper, player, tick, 'keeper-deflected-physical-ball', state);
+        if (blocked !== null && (!this.team || this.teamShots.has(binding.roleId))) this.add('rival', blocked.keeper, player, tick, 'keeper-deflected-physical-ball', state);
       }
       if (!live(state, launch.ball)) this.ballLaunches.delete(launch.ball);
     }
@@ -387,19 +525,29 @@ export class WitnessRecorder {
     for (let body = 0; body < state[HEADER.bodyCount]!; body += 1) {
       const binding = this.binding(body, state);
       if (binding === undefined) continue;
-      const key = `${binding.roleId}:${body}`;
       if (!live(state, body)) {
         this.positions.delete(body);
-        this.moved.delete(key);
+        this.moved.get(binding.roleId)?.delete(body);
         continue;
       }
-      if (this.hasMoved(binding, state)) this.moved.add(key);
+      let moved = this.moved.get(binding.roleId);
+      if (!moved?.has(body) && this.hasMoved(binding, state)) {
+        if (moved === undefined) this.moved.set(binding.roleId, moved = new Set());
+        moved.add(body);
+      }
       if (this.positions.get(body)?.roleId !== binding.roleId) {
         const base = bodyBase(body);
         this.positions.set(body, { roleId: binding.roleId, x: state[base + BODY.x]!, y: state[base + BODY.y]!, z: state[base + BODY.z]! });
       }
     }
     if (this.run !== 'winner') return;
+    for (const [body, launch] of this.launched) {
+      const b = bodyBase(body);
+      const active = live(state, body) && tick - launch.tick <= 20 && roleAt(state, body) === ROLE.projectile && kindAt(this.world, state, body) === 'bullet' && this.binding(body, state)?.roleId === 'ammunition';
+      const travelled = active && (state[b + BODY.x]! - launch.x) ** 2 + (state[b + BODY.y]! - launch.y) ** 2 + (state[b + BODY.z]! - launch.z) ** 2 >= UNIT * UNIT;
+      if (travelled) this.add('shoot', player, body, tick, 'launched-projectile-moved', state);
+      if (!active || travelled) this.launched.delete(body);
+    }
     for (let i = this.thrown.length - 1; i >= 0; i -= 1) {
       const motion = this.thrown[i]!;
       const base = bodyBase(motion.body);
@@ -410,13 +558,12 @@ export class WitnessRecorder {
     }
     if (this.control === 'runner' && (before[p + BODY.flags]! & FLAG.grounded) !== 0 &&
         (state[p + BODY.flags]! & FLAG.grounded) === 0 && state[p + BODY.y]! > before[p + BODY.y]! && state[p + BODY.vy]! > 0) this.add('jump', player, null, tick, 'runner-takeoff', state);
-    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk' };
     // The legacy lander shares the steer control id, but actually flies under
     // gravity and thrust. Its airborne translation is not driving on a road.
-    const verb = this.control === 'steer' && this.world.control.params.land !== undefined ? 'glide' : movement[this.control];
+    const verb = this.movementVerb;
     const hero = this.binding(player, state);
     if (verb !== undefined && hero !== undefined && this.hasMoved(hero, state) && (verb !== 'jump' || (state[p + BODY.y]! > before[p + BODY.y]! && (state[p + BODY.flags]! & FLAG.grounded) === 0))) this.add(verb, player, null, tick, 'player-moved', state);
-    if (this.control === 'steer' && this.world.rules.some(r => r.id === 'rival_finish' && !('land' in r.params)) || this.control === 'glide' && this.world.rules.some(r => r.id === 'glide_finish' && r.params.race === true)) {
+    if (this.race) {
       for (const b of this.bindings.values()) {
         if (roleAt(state, b.body) !== ROLE.enemy || !live(state, b.body)) continue;
         const z = bodyBase(b.body) + BODY.z;
