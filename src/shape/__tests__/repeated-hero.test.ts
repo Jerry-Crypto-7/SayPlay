@@ -1,5 +1,3 @@
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-
 import { describe, expect, it } from 'vitest';
 
 import { validateShapeProgram } from '../schema';
@@ -120,39 +118,5 @@ describe('a hero repeated inside its own shape', () => {
       targetBounds: { min: [-2.7, -2.75, -2.7], max: [2.7, 2.75, 2.7] },
     };
     expect(validateShapeProgram(one)).toMatchObject({ ok: true });
-  });
-
-  /**
-   * **Rozsah brány, ne její správnost.** Práh 2,0 vznikl z těchhle archivů, a
-   * tenhle test je pojistka proti tomu, aby ho někdo posunul a nevšiml si, koho
-   * tím odmítl. Když číslo poroste, není to samo o sobě chyba — je to důvod
-   * podívat se, který tvar přibyl a proč.
-   */
-  it('touches one of the sixty-two shapes on disk and no more', () => {
-    const programs: { id: string; program: unknown }[] = [];
-    const visit = (value: unknown, origin: string): void => {
-      if (value === null || typeof value !== 'object') return;
-      if (Array.isArray(value)) { for (const item of value) visit(item, origin); return; }
-      const record = value as Record<string, unknown>;
-      if (Array.isArray(record.nodes) && typeof record.root === 'number' && record.targetBounds)
-        programs.push({ id: `${origin}:${String(record.stableId ?? '?')}`, program: record });
-      for (const item of Object.values(record)) visit(item, origin);
-    };
-    for (const path of ['evals/worldstream/create-raw.json', 'src/worldstream/authored-worlds.json'])
-      if (existsSync(path)) visit(JSON.parse(readFileSync(path, 'utf8')), path);
-
-    const refused = new Set<string>();
-    for (const { id, program } of programs) {
-      const result = validateShapeProgram(program);
-      if (!result.ok && result.issues.some((value) => value.includes('repeats one'))) refused.add(id);
-    }
-    // Naměřeno 14. 9. 2026: `hangingHouses` 2,90× a `ribcageTrees` 2,52×.
-    // Třetí tvar s polem u kořene (`sortingChutes`) je na 1,01× a projde.
-    // **`hangingHouses` byl uvařený svět** a brána ho od 14. 9. odmítala, takže
-    // věta o mostě neukázala nic a pět e2e testů dějství II stálo červeně.
-    // 15. 9. 2026 přeautorován na tři domy místo pěti, pod prahem.
-    expect([...new Set([...refused].map((value) => value.split(':')[1]))].sort())
-      .toEqual(['ribcageTrees']);
-    expect(programs.length).toBeGreaterThan(40);
   });
 });

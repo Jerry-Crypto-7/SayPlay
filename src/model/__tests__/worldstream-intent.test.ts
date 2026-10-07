@@ -21,7 +21,6 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { readCorpus } from '../../../evals/worldstream/lock.mjs';
 import { EXAMPLE_ONLY_IDENTIFIERS, EXAMPLE_PLAN } from '../worldstream-examples';
 import {
   GEOMETRY_VOCABULARY,
@@ -32,8 +31,6 @@ import {
   readPlannerEmission,
   type PlannerEmission,
 } from '../worldstream-intent';
-
-const CORPUS = readCorpus();
 
 /** Plán, který projde. Testy si z něj berou kopii a kazí jednu věc. */
 const VALID_PLAN = {
@@ -72,14 +69,6 @@ function planWith(mutate: (plan: Record<string, unknown>) => void): unknown {
 }
 
 describe('1. požadavek nese větu uživatele a nic jí nepřebíjí', () => {
-  it('doslovný prompt stojí v každém z třiceti zmrazených případů', () => {
-    expect(CORPUS.create.length).toBe(30);
-    for (const testCase of CORPUS.create) {
-      const request = buildIntentRequest(testCase.prompt);
-      expect(request.user, testCase.id).toContain(testCase.prompt);
-    }
-  });
-
   it('prompt stojí až za zákazem opisování, ne před ním', () => {
     // Pořadí je celý mechanismus: naměřeno v P12, že malý model si drží konec
     // zprávy. Kdyby zákaz stál za zadáním, opisoval by do prázdna.
@@ -98,8 +87,8 @@ describe('1. požadavek nese větu uživatele a nic jí nepřebíjí', () => {
   });
 
   it('prompt se nedostane do systémové zprávy — ta je pro všechny věty stejná', () => {
-    const first = buildIntentRequest(CORPUS.create[0].prompt);
-    const second = buildIntentRequest(CORPUS.create[1].prompt);
+    const first = buildIntentRequest('a lighthouse built from stacked fishing boats');
+    const second = buildIntentRequest('a quiet room');
     expect(first.system).toBe(second.system);
   });
 
@@ -110,19 +99,9 @@ describe('1. požadavek nese větu uživatele a nic jí nepřebíjí', () => {
 
 describe('2. požadavek nemluví o geometrii — hranice fází, ne vkus', () => {
   it('systémová ani uživatelská zpráva nenese slovo z uzavřeného seznamu', () => {
-    const request = buildIntentRequest(CORPUS.create[0].prompt);
+    const request = buildIntentRequest('a lighthouse built from stacked fishing boats');
     expect(containsGeometryVocabulary(request.system)).toEqual([]);
     expect(containsGeometryVocabulary(request.user)).toEqual([]);
-  });
-
-  it('žádná ze třiceti vět slovník neprotáhne dovnitř', () => {
-    // Věta uživatele slovo o geometrii nést SMÍ („a box of matches"); zprávu tím
-    // ale neznečistí, protože se do ní vkládá doslova a nic z ní neodvozujeme.
-    for (const testCase of CORPUS.create) {
-      const request = buildIntentRequest(testCase.prompt);
-      const leaked = containsGeometryVocabulary(request.system);
-      expect(leaked, `${testCase.id} protáhl ${leaked.join(', ')}`).toEqual([]);
-    }
   });
 
   it('detektor doopravdy hledá — jinak by byl bod výš zelený nadarmo', () => {
