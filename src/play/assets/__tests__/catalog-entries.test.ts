@@ -24,8 +24,9 @@ import { assetEntrySchema } from '../manifest';
  * Počet záznamů 29. 9. 2026 – mění se jen vědomě, s novým modelem v katalogu nebo novým slovem třídy.
  * 3. 10.: +3 z pilotu P37D (frog, submarine, monster truck – ostatní nová jména třídu nemají).
  * 7. 10.: −1 ze slepého soudu P43 T13 (`gen3d-stage-magician` nepoznatelný, hrdinu nehraje).
+ * 7. 10.: +1 z P43 T12 (`gen3d-caveman`; ostatních 16 nových jmen třídu nemá).
  */
-const COUNT = 260;
+const COUNT = 261;
 
 const LICENSES = new Map(disclosure.entries.map((entry) => [entry.name, entry.license]));
 const TAGS = new Map(catalog.assets.map((asset) => [asset.path, asset.tags]));
