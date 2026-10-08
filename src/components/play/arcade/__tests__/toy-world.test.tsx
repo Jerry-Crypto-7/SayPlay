@@ -18,16 +18,18 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { arcadeWorldOf } from '@/play/arcade/compile';
-import { type ArcadeWorld, NO_INPUT } from '@/play/arcade/contract';
+import { type ArcadeWorld, HEADER, NO_INPUT } from '@/play/arcade/contract';
 import { hashArcade, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { releasePhysics } from '@/play/arcade/physics/step';
 import { loadRapier } from '@/play/arcade/physics/world';
+import { toyViewOf } from '@/play/arcade/toy-motion';
 import { runBot } from '@/play/arcade/verify';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
 import { readGameSpec } from '@/play/spec';
 
+import { RiggedModel } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
 import { fitModel, toyTargetOf, World } from '../World';
 
@@ -185,6 +187,34 @@ describe('toy motion in every scene drawn by the shared world (P45D T7)', () => 
   it.each(Object.keys(WORLDS))('%s: ?toy=off leaves the hero at rest, only turned where it walks', (control) => {
     stubPage('?toy=off');
     for (const sample of play(WORLDS[control]!(), { mount: true }).samples) expect(atRest(sample), `${control}: ${sample.join(', ')}`).toBe(true);
+  });
+});
+
+/** Prvky stromu bez volání komponent. */
+function elementsOf(node: ReactNode): Element[] {
+  if (Array.isArray(node)) return node.flatMap((child: ReactNode) => elementsOf(child));
+  if (!isValidElement(node)) return [];
+  const element = node as Element;
+  return [element, ...elementsOf(element.props.children as ReactNode)];
+}
+
+describe('rigged bodies in the shared world (P45D T13)', () => {
+  it('the rigged hero gets the toy frame of its own body after the tick', () => {
+    stubPage('');
+    const world = WORLDS.runner!();
+    const state = instantiate(world);
+    try {
+      const session = { world, state: () => state, prev: () => state, advance: () => 0, alpha: () => 0.5, snapshot: () => ({ tick: 0, runState: 'running' }), subscribe: () => () => undefined, onEvents: () => () => undefined, paused: () => false } as unknown as ArcadeSession;
+      const tree = World({ session, control: 'runner', cast: { player: 'rigged:boy-a', enemy: 'rigged:knight', chaser: '', props: {} }, surface: { current: null }, scene: { block: undefined } as never, enabled: true, heroAction: 'none' });
+      const rigged = elementsOf(tree).filter((element) => element.type === RiggedModel);
+      expect(rigged.length).toBeGreaterThan(0);
+      // Jediná riggovaná postava běžce je hrdina (`boy-a`); překážky jsou modely katalogu.
+      expect(rigged.map((element) => (element.props.character as { id: string }).id)).toEqual(['boy-a']);
+      const frame = (rigged[0]!.props.toy as (() => { view: unknown; tick: number }) | undefined)?.();
+      expect(frame).toEqual({ view: toyViewOf(state, state, state[HEADER.player] as number), tick: (state[HEADER.tick] as number) + 0.5 });
+    } finally {
+      releasePhysics(state);
+    }
   });
 });
 

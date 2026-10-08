@@ -557,6 +557,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                 // Klip hráče čte e2e z DOM – z obrázku se nepřečte.
                 onClip={view.role === ROLE.player ? (state) => { if (surface.current !== null) surface.current.dataset.animClip = state; } : undefined}
                 yaw={control === 'platform' || control === 'walker' || view.role === ROLE.chaser ? () => yaws.current[view.index] ?? 0 : undefined}
+                // Stavy bez klipu (výhra, nesení, výpad) dohraje hračkový pohyb (P45D T13).
+                toy={POSED_ROLES.has(view.role) ? () => ({ view: toyViewOf(session.state(), session.prev(), view.index), tick: (session.state()[HEADER.tick] as number) + session.alpha() }) : undefined}
               />
             ) : view.kind === 'pipe' ? (
               <ModelColumn id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
