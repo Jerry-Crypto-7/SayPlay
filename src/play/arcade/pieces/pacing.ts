@@ -289,11 +289,17 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
     const spots = params.spots.length >> 1;
     const order = params.space === 'plane' ? spotsAway(state, player, params.spots) : [];
     const p = bodyBase(player);
-    for (const entry of due) for (let k = 0; k < entry.count && room > 0; k += 1, room -= 1) {
-      const at = params.space === 'plane' ? (order[k % spots] as number) : (entry.entry + k) % spots;
-      const x = params.spots[2 * at] as number;
-      const z = (params.spots[2 * at + 1] as number) + (params.space === 'track' ? (state[p + BODY.z] as number) : 0);
-      effects.push({ kind: 'spawn', template: entry.template, x, y: 0, z, vx: 0, vy: 0, vz: 0 });
+    for (const entry of due) {
+      const ref = params.behaviours?.find((candidate) => candidate.template === entry.template);
+      const group = ref === undefined ? undefined : BEHAVIOURS[ref.id].group;
+      for (let k = 0; k < entry.count && room > 0; k += 1, room -= 1) {
+        // Hejno přijde celé na jednom místě, po `spacing` vedle sebe (rovina) nebo za sebou (trať).
+        const at = params.space === 'plane' ? (order[group === undefined ? k % spots : 0] as number) : (entry.entry + (group === undefined ? k : 0)) % spots;
+        const shift = group === undefined ? 0 : Math.trunc(((2 * k - entry.count + 1) * group.spacing) / 2);
+        const x = (params.spots[2 * at] as number) + (params.space === 'plane' ? shift : 0);
+        const z = (params.spots[2 * at + 1] as number) + (params.space === 'track' ? (state[p + BODY.z] as number) + shift : 0);
+        effects.push({ kind: 'spawn', template: entry.template, x, y: 0, z, vx: 0, vy: 0, vz: 0 });
+      }
     }
     return effects;
   },
@@ -338,7 +344,12 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const moved = refs.length === 0 ? {} : { behaviours: refs };
   const bodies = [...parts.level.bodies, ...[...setup.behaviours.map((actor) => actor.body), ...shotBodies].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
   const schedule = setup.behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(createCompileRng(setup.seed, 'pacing'), TENSION_CURVE, setup.budget, setup.behaviours.length)
-    .map((entry) => ({ atPermille: Math.max(1, entry.atPermille), template: first + entry.behaviour, count: entry.count, entry: entry.entry }));
+    .map((entry) => {
+      const actor = setup.behaviours[entry.behaviour]?.behaviour;
+      // Hejno je jeden spawn celé, i ve vrcholu (dvě hejna naráz by přetekla `maxActors`).
+      const group = actor === undefined ? undefined : BEHAVIOURS[actor].group;
+      return { atPermille: Math.max(1, entry.atPermille), template: first + entry.behaviour, count: group?.size ?? entry.count, entry: entry.entry };
+    });
   const half = parts.control.params.half;
   const edge = setup.space === 'plane' && shooters.length > 0 && typeof half === 'number' ? { half } : {};
   const rule: PieceRef | null = schedule.length === 0 && setup.finale === undefined && refs.length === 0 ? null : {

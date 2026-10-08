@@ -25,9 +25,12 @@ import { z } from 'zod';
 
 import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase } from '../../contract';
 import { ambusher } from './ambusher';
-import { flanker } from './flanker';
+import { flanker, overlaps } from './flanker';
 import { guardian } from './guardian';
 import { sniper } from './sniper';
+import { swarm } from './swarm';
+
+export { overlaps };
 
 /** Nejkratší varování před úderem: 0,5 s. */
 export const TELEGRAPH_MIN = 30;
@@ -47,7 +50,7 @@ export const BEHAVIOUR_SPACE: Readonly<Record<string, BehaviourSpace>> = {
 };
 
 /** Jak scéna varování kreslí: čára výpadu, přejezd do pruhu, zamčená přímka výstřelu, chvění, kruh dosahu… */
-export type TelegraphKind = 'dash' | 'lane' | 'line' | 'shake' | 'ring';
+export type TelegraphKind = 'dash' | 'lane' | 'line' | 'shake' | 'ring' | 'cluster';
 
 export interface PhaseTicks {
   /** Aspoň `TELEGRAPH_MIN`. */
@@ -89,6 +92,8 @@ export interface Behaviour {
   readonly body: BodyInit;
   /** Předloha výstřelu (role `hazard`, jiný podpis než tělo); `effects` ho vydá jako `spawn` předlohy `ref.shot`. */
   readonly shot?: BodyInit;
+  /** Hejno: kolik těl přijde jedním spawnem rozvrhu, na jednom místě po `spacing` od sebe. */
+  readonly group?: { readonly size: number; readonly spacing: number };
   /** V `idle`: je čas varovat? */
   ready(view: BehaviourStep): boolean;
   /** Na začátku `telegraph`: kam úder půjde. */
@@ -104,9 +109,9 @@ export interface Behaviour {
 }
 
 /** Kód chování = pořadí + 1. Je součást hashe: nové jen na konec, nepřečíslovat. */
-export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian'] as const;
+export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian', 'swarm'] as const;
 export type BehaviourId = (typeof BEHAVIOUR_IDS)[number];
-export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian };
+export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian, swarm };
 
 /** Chování ve světě: id a index předlohy, ze které se čte podpis; `shot` = předloha výstřelu. */
 export const behaviourRefSchema = z.object({ id: z.enum(BEHAVIOUR_IDS), template: z.int().min(1), shot: z.int().min(1).optional() }).strict();
@@ -213,17 +218,6 @@ export function shotBodies(state: ArcadeState, player: number, refs: readonly Be
   const bodies = state[HEADER.bodyCount] as number;
   for (let body = 0; body < bodies; body += 1) if (body !== player && alive(state, body) && shots.some((shot) => matches(state, body, shot))) found.push(body);
   return found;
-}
-
-/** Překrývají se kvádry těl `a` a `b` (střed spodní stěny, celé rozměry)? */
-export function overlaps(state: ArcadeState, a: number, b: number): boolean {
-  const p = bodyBase(a);
-  const q = bodyBase(b);
-  const apart = (slot: 'x' | 'z', size: 'w' | 'd'): boolean => Math.abs((state[p + BODY[slot]] as number) - (state[q + BODY[slot]] as number)) * 2 >= (state[p + BODY[size]] as number) + (state[q + BODY[size]] as number);
-  if (apart('x', 'w') || apart('z', 'd')) return false;
-  const py = state[p + BODY.y] as number;
-  const qy = state[q + BODY.y] as number;
-  return py < qy + (state[q + BODY.h] as number) && qy < py + (state[p + BODY.h] as number);
 }
 
 // ---------------------------------------------------------------------------

@@ -21,7 +21,7 @@ function behindNearest(bodies: readonly BodyInit[]): { x: number; z: number } {
   return { x: clamp(item.x + Math.trunc(((item.x - player.x) * GUARDIAN.radius) / gap(item))), z: clamp(item.z + Math.trunc(((item.z - player.z) * GUARDIAN.radius) / gap(item))) };
 }
 
-const guard = (seed: number): { world: ArcadeWorld; body: number } => behaviourHarness('plane', 'guardian', seed, behindNearest);
+const guard = (seed: number): { world: ArcadeWorld; body: number } => behaviourHarness('plane', 'guardian', seed, { place: (bodies) => [behindNearest(bodies)] });
 
 /** Hlídaná věc po prvním tiku a jestli žije na konci záznamu; největší odstup strážce od ní, dokud žije. */
 function watch(world: ArcadeWorld, body: number, inputs: readonly InputEvent[]): { item: number; taken: boolean; farthest: number } {

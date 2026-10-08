@@ -37,18 +37,28 @@ function baseParts(space: BehaviourSpace, seed: number): ArcadeParts {
   };
 }
 
-/** Svět `space` s jedním tělem chování `behaviour`: kde určí `place`, jinak v aréně v rohu, na trati za hráčem ve vedlejším pruhu. */
-export function behaviourHarness(space: BehaviourSpace, behaviour: BehaviourId, seed: number, place?: (bodies: readonly BodyInit[]) => { x: number; z: number }): Harness {
+export interface HarnessOptions {
+  /** Kde stojí těla chování (i žádné); jinak jedno – v aréně v rohu, na trati za hráčem ve vedlejším pruhu. */
+  readonly place?: (bodies: readonly BodyInit[]) => readonly { readonly x: number; readonly z: number }[];
+  /** Spawny z rozvrhu, místa vstupu a za kolik tiků postup dojde k cíli. */
+  readonly budget?: number;
+  readonly spots?: readonly number[];
+  readonly ticks?: number;
+}
+
+/** Svět `space` s tělem chování `behaviour` (`body` = první položené). */
+export function behaviourHarness(space: BehaviourSpace, behaviour: BehaviourId, seed: number, options: HarnessOptions = {}): Harness {
   const base = baseParts(space, seed);
   const template = BEHAVIOURS[behaviour].body;
   const player = base.level.bodies[0];
   if (player === undefined) throw new Error('no player');
   const side = seed % 2 === 0 ? 1 : -1;
-  const at = place !== undefined ? place(base.level.bodies) : space === 'plane' ? { x: side * 12 * UNIT, z: (seed % 4 < 2 ? 1 : -1) * 12 * UNIT } : { x: side * RUNNER.laneWidth, z: player.z - 5 * UNIT };
+  const at = options.place !== undefined ? options.place(base.level.bodies) : [space === 'plane' ? { x: side * 12 * UNIT, z: (seed % 4 < 2 ? 1 : -1) * 12 * UNIT } : { x: side * RUNNER.laneWidth, z: player.z - 5 * UNIT }];
   const body = base.level.bodies.length;
+  const ticks = options.ticks ?? ARCADE_LIMITS.maxTicks;
   const parts = withPacing(
-    { ...base, level: { ...base.level, bodies: [...base.level.bodies, { ...template, ...at }] } },
-    { seed, goal: { by: 'time', need: ARCADE_LIMITS.maxTicks, limit: ARCADE_LIMITS.maxTicks }, space, spots: [0, 0], behaviours: [{ body: template, behaviour }], budget: 0 },
+    { ...base, level: { ...base.level, bodies: [...base.level.bodies, ...at.map((point) => ({ ...template, ...point }))] } },
+    { seed, goal: { by: 'time', need: ticks, limit: ticks }, space, spots: options.spots ?? [0, 0], behaviours: [{ body: template, behaviour }], budget: options.budget ?? 0 },
   );
   if (parts.issues !== undefined && parts.issues.length > 0) throw new Error(parts.issues.join('; '));
   const made = buildWorld({ seed, ...parts, health: HEALTH }, ARCADE_LIBRARY);

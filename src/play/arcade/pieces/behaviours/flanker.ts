@@ -47,6 +47,17 @@ export const set = (state: ArcadeState, body: number, vx: number, vz: number): v
 export const length = (dx: number, dz: number): number => Math.floor(Math.sqrt(dx * dx + dz * dz));
 export const clampTo = (value: number, limit: number): number => Math.max(-limit, Math.min(limit, value));
 
+/** Překrývají se kvádry těl `a` a `b` (střed spodní stěny, celé rozměry)? */
+export function overlaps(state: ArcadeState, a: number, b: number): boolean {
+  const p = bodyBase(a);
+  const q = bodyBase(b);
+  const apart = (slot: 'x' | 'z', size: 'w' | 'd'): boolean => Math.abs((state[p + BODY[slot]] as number) - (state[q + BODY[slot]] as number)) * 2 >= (state[p + BODY[size]] as number) + (state[q + BODY[size]] as number);
+  if (apart('x', 'w') || apart('z', 'd')) return false;
+  const py = state[p + BODY.y] as number;
+  const qy = state[q + BODY.y] as number;
+  return py < qy + (state[q + BODY.h] as number) && qy < py + (state[p + BODY.h] as number);
+}
+
 /** Bod uvnitř plochy, když ji ovládání zná. */
 export function inside(view: BehaviourStep, x: number, z: number): { x: number; z: number } {
   if (view.half === undefined) return { x, z };
