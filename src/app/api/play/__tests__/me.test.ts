@@ -13,7 +13,7 @@ import { __resetProcessVersionStore } from '@/play/version';
 import { issuePlayer, PLAYER_COOKIE } from '@/server/player-identity';
 import { MAX_REQUESTS_PER_WINDOW, resetRateWindows } from '@/server/rate-limit';
 
-import { NEW_PLAYERS_PER_HOUR } from '../_player';
+import { NEW_PLAYERS_PER_DAY, NEW_PLAYERS_PER_HOUR, NEW_PLAYERS_PER_HOUR_SHARED } from '../_player';
 import { GET, PUT } from '../me/route';
 
 const SECRET = 'FIXTURE_ONLY_NOT_A_REAL_SECRET_0000000000';
@@ -147,11 +147,17 @@ describe.each(['memory', 'file'])('GET and PUT /api/play/me over the %s store', 
     expect(await nicknameOf(player.cookie)).toBe(player.nickname);
   });
 
-  it(`off Vercel a new x-forwarded-for does not reset the cap of ${NEW_PLAYERS_PER_HOUR} new identities an hour (review T3-1)`, async () => {
+  it(`off Vercel everyone shares one bucket of ${NEW_PLAYERS_PER_HOUR_SHARED} new identities an hour; a new x-forwarded-for does not reset it (review T3-1, T3b)`, async () => {
     vi.useFakeTimers({ now: Date.parse('2026-10-07T20:10:00Z'), toFake: ['Date'] });
     try {
       const players = [];
-      for (let i = 0; i < NEW_PLAYERS_PER_HOUR; i++) players.push(await newPlayer());
+      // 21. identita projde: 20 požadavků jednoho cizince už místnost nezavře (T3b).
+      for (let i = 0; i < NEW_PLAYERS_PER_HOUR_SHARED; i++) {
+        resetRateWindows();
+        players.push(await newPlayer());
+      }
+      expect(players.length).toBeGreaterThan(NEW_PLAYERS_PER_HOUR);
+      resetRateWindows();
       const refused = await GET(get(freshCaller()));
       expect(refused.status).toBe(429);
       expect(((await refused.json()) as { error: { code: string } }).error.code).toBe('NEW_PLAYER_QUOTA');
@@ -191,6 +197,35 @@ describe('on Vercel with a secret', () => {
     }
     expect((await GET(trusted('203.0.113.7'))).status).toBe(429);
     expect((await GET(trusted('203.0.113.8'))).status).toBe(200);
+  });
+
+  it(`caps one trusted address at ${NEW_PLAYERS_PER_DAY} new identities a day, not ${NEW_PLAYERS_PER_HOUR} × 24 (T3b)`, async () => {
+    vi.stubEnv('VERCEL', '1');
+    vi.useFakeTimers({ now: Date.parse('2026-10-07T20:10:00Z'), toFake: ['Date'] });
+    const trusted = (ip: string): Request => new Request(URL_ME, { headers: { 'x-vercel-forwarded-for': ip, 'x-forwarded-for': freshCaller() } });
+    const mint = async (ip: string): Promise<Response> => {
+      resetRateWindows();
+      return GET(trusted(ip));
+    };
+    try {
+      let issued = 0;
+      for (let hour = 0; issued < NEW_PLAYERS_PER_DAY; hour++) {
+        vi.setSystemTime(Date.parse('2026-10-07T20:10:00Z') + hour * 3600_000);
+        for (let i = 0; i < NEW_PLAYERS_PER_HOUR && issued < NEW_PLAYERS_PER_DAY; i++, issued++) expect((await mint('203.0.113.9')).status).toBe(200);
+      }
+      // Nová hodina, týž den: hodinový strop by pustil, denní ne.
+      vi.setSystemTime(Date.parse('2026-10-07T23:30:00Z'));
+      const refused = await mint('203.0.113.9');
+      expect(refused.status).toBe(429);
+      expect(((await refused.json()) as { error: { code: string } }).error.code).toBe('NEW_PLAYER_QUOTA');
+      expect(refused.headers.get('set-cookie')).toBeNull();
+      expect((await mint('203.0.113.10')).status).toBe(200);
+      // Další den (UTC) strop obnoví.
+      vi.setSystemTime(Date.parse('2026-10-08T00:05:00Z'));
+      expect((await mint('203.0.113.9')).status).toBe(200);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

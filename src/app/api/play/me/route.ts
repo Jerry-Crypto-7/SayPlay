@@ -1,8 +1,8 @@
 /**
  * `GET|PUT /api/play/me` – kdo hraje (P44B T3). `GET` vrátí `{ nickname }`
  * hráče z podepsané cookie `sp_player`; bez platné cookie vydá novou (strop
- * `NEW_PLAYERS_PER_HOUR` na důvěryhodného volajícího, mimo Vercel jeden společný,
- * viz `_player.ts`). `PUT { nickname }` jméno změní, jen
+ * `NEW_PLAYERS_PER_HOUR` a `NEW_PLAYERS_PER_DAY` na důvěryhodného volajícího, mimo Vercel
+ * jeden širší společný koš, viz `_player.ts`). `PUT { nickname }` jméno změní, jen
  * majiteli platné cookie a jen s `content-type: application/json` – cizí
  * stránka takový požadavek bez preflightu neodešle a `SameSite=Lax` cookie
  * k němu nepřibalí. Tělo odpovědi nikdy nenese id hráče ani hodnotu cookie.

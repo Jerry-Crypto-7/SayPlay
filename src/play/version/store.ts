@@ -22,7 +22,7 @@
  * - `<prefix>:play:loop:<finish|dare|skip|start|clear>:<versionId>` – čítače událostí smyčky pro řazení
  *   feedu (P36B T9) a „clear rate“ (P37C T5), hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den,
  * - `<prefix>:play:player:<id hráče>` – JSON `PlayerRecord` (P44B T3), nově vydané identity
- *   `<prefix>:play:new-player:<hodina UTC>:<hash volajícího>`.
+ *   `<prefix>:play:new-player:<hodina UTC>:<hash volajícího>` a `<prefix>:play:new-player-day:<den UTC>:<hash volajícího>` (T3b).
  * - `<prefix>:play:funnel:<den UTC>:<stupeň>` – denní čítač trychtýře (P44B T12), započtené
  *   `<prefix>:play:funnel-seen:<den>:<stupeň>:<hra>:<relace>` (`SET NX`, dva dny).
  *
@@ -134,10 +134,11 @@ export interface VersionStore {
   /** Uloží hráče na dobu života hry. Výpadek je `VersionStoreUnavailable`. */
   putPlayer(playerId: string, player: PlayerRecord): Promise<void>;
   /**
-   * Započte volajícímu (`voter`) jednu nově vydanou identitu v této hodině (UTC); `false` = byla
-   * by nad `limit` (sybil, debata P44B T1). Výpadek úložiště je `VersionStoreUnavailable`.
+   * Započte volajícímu (`voter`) jednu nově vydanou identitu v této hodině a v tomto dni (UTC);
+   * `false` = byla by nad `perHour` nebo `perDay` (sybil, debata P44B T1; `perDay: null` = bez
+   * denního stropu, T3b). Výpadek úložiště je `VersionStoreUnavailable`.
    */
-  countNewPlayer(voter: string, limit: number): Promise<boolean>;
+  countNewPlayer(voter: string, perHour: number, perDay: number | null): Promise<boolean>;
   /**
    * Ověřený běh hráče do žebříčku hry (P44B T4): na hráče jen nejlepší podle `bestRank`, nejvýš
    * `BOARD_KEPT` hráčů (nejslabší vypadne), žije jako hra od posledního zápisu. Nad
@@ -844,10 +845,13 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         throw new VersionStoreUnavailable(thrown);
       }
     },
-    async countNewPlayer(voter, limit) {
+    async countNewPlayer(voter, perHour, perDay) {
       try {
+        const at = new Date(now()).toISOString();
         // Hodina v UTC (`2026-10-07T21`); klíč vyprší po dvou.
-        return (await raw.incr(`${prefix}:play:new-player:${new Date(now()).toISOString().slice(0, 13)}:${voter}`, 2 * 3600)) <= limit;
+        if ((await raw.incr(`${prefix}:play:new-player:${at.slice(0, 13)}:${voter}`, 2 * 3600)) > perHour) return false;
+        // Den v UTC (T3b) jen pod hodinovým stropem: odmítnutý pokus den nespotřebuje.
+        return perDay === null || (await raw.incr(`${prefix}:play:new-player-day:${at.slice(0, 10)}:${voter}`, 2 * 24 * 3600)) <= perDay;
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }

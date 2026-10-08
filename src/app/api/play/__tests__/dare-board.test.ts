@@ -16,7 +16,7 @@ import { __resetProcessVersionStore, versionStoreFromEnv, VersionStoreUnavailabl
 import { PLAYER_COOKIE } from '@/server/player-identity';
 import { resetRateWindows } from '@/server/rate-limit';
 
-import { NEW_PLAYERS_PER_HOUR } from '../_player';
+import { NEW_PLAYERS_PER_HOUR_SHARED } from '../_player';
 import { GET as readDareRoute } from '../games/[id]/dare/[dareId]/route';
 import { GET as me } from '../me/route';
 import { freshCaller, player, publishedGame, SECRET, send } from './dare-fixtures';
@@ -165,8 +165,11 @@ describe.each(['memory', 'file'])('POST …/dare feeds the leaderboard over the 
 
   it('nad stropem nových hráčů výzva projde bez cookie a bez žebříčku', async () => {
     const { id, runs } = await publishedGame();
-    // Mimo Vercel sdílí všichni jeden koš stropu (T3); vyčerpá ho kdokoli.
-    for (let n = 0; n < NEW_PLAYERS_PER_HOUR; n++) expect((await me(new Request('http://play.test/api/play/me', { headers: freshCaller() }))).status).toBe(200);
+    // Mimo Vercel sdílí všichni jeden koš stropu (T3, od T3b širší); vyčerpá ho kdokoli.
+    for (let n = 0; n < NEW_PLAYERS_PER_HOUR_SHARED; n++) {
+      resetRateWindows();
+      expect((await me(new Request('http://play.test/api/play/me', { headers: freshCaller() }))).status).toBe(200);
+    }
     const sent = await send(id, { inputs: packInputs(runs.better.inputs) });
     expect(sent.status).toBe(201);
     expect(sent.setCookie).toBeNull();
