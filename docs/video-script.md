@@ -4,7 +4,7 @@ Tvrdý limit je **3:00** (`RULES.md` §2); tohle video má **2:35**, zbytek je r
 
 Příběh je jedna smyčka: **věta → hra → AI verze → výzva kamarádovi → žebříček → remix**, a pak důkaz, že to není demo na kolejích: věta porotce mimo kategorii a další cizí věty. Každý záběr je skutečný prohlížeč nad buildem, žádná fixtura vydávaná za generaci.
 
-**Klipy:** sloupec `Scéna` je zároveň jméno klipu. `e2e/demo-capture.spec.ts` ho čte z této tabulky a natočí každou scénu dvakrát, `videos/raw/<scéna>-desktop.webm` (1920 × 1080) a `videos/raw/<scéna>-phone.webm` (390 × 844). Stopáž a povinné scény hlídá `node scripts/video-check.mjs docs/video-script.md`.
+**Klipy:** sloupec `Scéna` je zároveň jméno klipu. `e2e/demo-capture.spec.ts` ho čte z této tabulky a natočí každou scénu dvakrát, `videos/raw/<scéna>-desktop.webm` (1920 × 1080) a `videos/raw/<scéna>-phone.webm` (390 × 844); `dare-friend` má navíc klip kamaráda `dare-friend-<profil>-friend.webm`. Stopáž a povinné scény hlídá `node scripts/video-check.mjs docs/video-script.md`.
 
 ## Časová osa 2:35
 

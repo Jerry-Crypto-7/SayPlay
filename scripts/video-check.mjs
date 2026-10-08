@@ -19,7 +19,7 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { basename } from 'node:path';
 
 /** Tvrdý limit z `RULES.md` §2. Nad ním se video nedá odevzdat. */
 export const LIMIT_SECONDS = 180;
@@ -140,8 +140,8 @@ export function main(argv) {
   return 0;
 }
 
-// `pathToFileURL`, ne ruční `file://` — na Windows je `process.argv[1]` cesta
-// s `D:\`, kterou by ruční složení URL zakódovalo jinak než `import.meta.url`.
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// Jméno souboru, ne `import.meta.url`: scény čte i `e2e/demo-capture.spec.ts` a Playwright
+// tenhle soubor překládá do CommonJS, kde `import.meta` neexistuje.
+if (process.argv[1] !== undefined && basename(process.argv[1]) === 'video-check.mjs') {
   process.exit(main(process.argv.slice(2)));
 }
