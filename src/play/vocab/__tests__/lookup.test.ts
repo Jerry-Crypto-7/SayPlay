@@ -30,7 +30,8 @@ describe('vocabVerb', () => {
   });
 
   it('gives a pose without an axis when only the pose maps', () => {
-    expect(vocabVerb('whisk')).toEqual({ axis: null, id: null, hero: 'stir', score: 1 });
+    expect(vocabVerb('whisk')).toEqual({ lemma: 'whisk', axis: null, id: null, hero: 'stir', score: 1 });
+    expect(vocabVerb('stabbing')?.lemma).toBe('stab');
   });
 
   it('leaves verbs that are not game actions alone', () => {

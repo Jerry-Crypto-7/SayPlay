@@ -13,6 +13,8 @@ import table from './verbs.json';
 export type VocabAxis = 'move' | 'action' | 'objective';
 
 export interface VocabVerb {
+  /** Základní tvar slovesa z věty („stabbing“ → „stab“) – tak ho hra jmenuje v přiznání. */
+  readonly lemma: string;
   /** Osa záměru a id na ní; `null`, když sloveso nese jen pózu hrdiny. */
   readonly axis: VocabAxis | null;
   readonly id: MoveId | ActionId | ObjectiveId | null;
@@ -57,6 +59,7 @@ export function vocabVerb(word: string): VocabVerb | null {
   const [axisIndex, heroIndex, score] = verbs[lemma];
   const [axis, id] = axisIndex === -1 ? [null, null] : targets[axisIndex].split(':');
   return {
+    lemma,
     axis: axis as VocabAxis | null,
     id: id as VocabVerb['id'],
     hero: heroIndex === -1 ? null : (targets[heroIndex].slice('hero:'.length) as VocabVerb['hero']),

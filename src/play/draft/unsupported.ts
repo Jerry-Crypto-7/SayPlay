@@ -22,10 +22,14 @@ import { bindRoles, matchesWitness } from '../arcade/witness';
 import type { ArcadeWorld } from '../arcade/contract';
 import { essentialTriples, type IntentTriple } from '../intent/contract';
 import { extractIntent } from '../intent/extract';
+import { vocabVerb } from '../vocab';
 import { canonical } from '@/ir/worlddoc';
 
-/** `no_verb` (P28D T4): věta hru nechce vůbec („explain quantum physics“) – hraje se hra o jejím tématu (od P36A T11 sběr v Aréně, dřív běžec). */
-export type UnsupportedKind = 'sandbox' | 'manipulate' | 'idle' | 'build_place' | 'no_verb' | 'actions';
+/**
+ * `no_verb` (P28D T4): věta hru nechce vůbec („explain quantum physics“) – hraje se hra o jejím tématu (od P36A T11 sběr v Aréně, dřív běžec).
+ * `played_as` (P44C T9): hra splnila všechno, ale sloveso z věty jen přiblížila tabulkou („Stab plays as a fight.“).
+ */
+export type UnsupportedKind = 'sandbox' | 'manipulate' | 'idle' | 'build_place' | 'no_verb' | 'actions' | 'played_as';
 
 export interface Honesty {
   readonly unmet?: readonly IntentTriple[];
@@ -179,18 +183,39 @@ export async function honestyForSpec(sentence: string, spec: GameSpecV1, seed: n
 
 const honesties = new Map<string, Honesty | null>();
 
+const LABELS: Readonly<Record<string, string>> = { drive: 'driving', run: 'running', jump: 'jumping', glide: 'gliding', roam: 'free movement', race: 'racing', shoot: 'shooting', collect: 'collecting', escape: 'escaping', fight: 'fighting', duel: 'duelling', reach: 'reaching the goal', deliver: 'delivery', interact: 'interaction', chaser: 'the chase', guard: 'the guards', hazard: 'the hazards', obstacle: 'the obstacles', rival: 'the rivals' };
+/** Co hra hraje místo slovesa z věty („Stab plays as a fight.“); jinak popisek kusu. */
+const PLAYED_AS: Readonly<Record<string, string>> = { fight: 'a fight', duel: 'a duel', race: 'a race', deliver: 'a delivery' };
+
+const capital = (text: string) => `${text[0]!.toUpperCase()}${text.slice(1)}`;
+const listed = (words: readonly string[]) => (words.length === 1 ? words[0]! : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`);
+/** „stab“ → „stabbing“, „lug“ → „lugging“, „escape“ → „escaping“. */
+const gerund = (lemma: string) => (/[^e]e$/.test(lemma) ? `${lemma.slice(0, -1)}ing` : /^[^aeiou]*[aeiou][^aeiouwxy]$/.test(lemma) ? `${lemma}${lemma.at(-1)}ing` : `${lemma}ing`);
+
 async function measureHonesty(sentence: string, spec: GameSpecV1, seed: number, publishedWorld?: ArcadeWorld): Promise<Honesty | null> {
-  const triples = essentialTriples(extractIntent(sentence));
+  const intent = extractIntent(sentence);
+  const triples = essentialTriples(intent);
   await preloadPhysics(spec, loadRapier);
   const made = publishedWorld === undefined ? arcadeWorldOf(spec, seed) : { ok: true as const, world: publishedWorld, roleBindings: bindRoles(spec, publishedWorld) };
   const witnesses = made.ok ? verifyArcade(made.world, undefined, made.roleBindings).witnesses : [];
   const unmet = triples.filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
-  if (unmet.length === 0) return unsupportedGame(sentence, spec);
-  const labels: Record<string, string> = { drive: 'driving', run: 'running', jump: 'jumping', glide: 'gliding', roam: 'free movement', race: 'racing', shoot: 'shooting', collect: 'collecting', escape: 'escaping', fight: 'fighting', duel: 'duelling', reach: 'reaching the goal', deliver: 'delivery', interact: 'interaction', chaser: 'the chase', guard: 'the guards', hazard: 'the hazards', obstacle: 'the obstacles', rival: 'the rivals' };
-  const missing = [...new Set(unmet.map(item => labels[item.verb] ?? item.verb))];
-  const subject = missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(', ')} and ${missing.at(-1)}`;
+  // P44C: sloveso přiblížené tabulkou se jmenuje slovem z věty, ne kanonickým kusem.
+  const mapped = intent.items.filter(item => item.mapped === true && item.essential);
+  const lemmaOf = (item: { readonly said: string }) => vocabVerb(item.said)?.lemma ?? item.said;
+  if (unmet.length === 0) {
+    const unsupported = unsupportedGame(sentence, spec);
+    if (unsupported !== null || mapped.length === 0) return unsupported;
+    const pairs = [...new Map(mapped.map(item => [lemmaOf(item), PLAYED_AS[item.verb] ?? LABELS[item.verb] ?? item.verb])).entries()];
+    const [first, ...rest] = pairs.map(([lemma, played], at) => (at === 0 ? `${capital(lemma)} plays as ${played}` : `${lemma} as ${played}`));
+    return { kind: 'played_as', closest: closestOf(spec), reason: `${rest.length === 0 ? first : `${first}, ${listed(rest)}`}.` };
+  }
+  const said = (triple: IntentTriple) => mapped.find(item => item.verb === triple.verb && item.actor === triple.actor && item.object === triple.object);
+  const missing = [...new Set(unmet.map(triple => {
+    const item = said(triple);
+    return item === undefined ? (LABELS[triple.verb] ?? triple.verb) : gerund(lemmaOf(item));
+  }))];
   const closest = spec.control === 'steer' && !witnesses.some(w => w.verb === 'race') ? 'a driving game' : closestOf(spec);
-  return { kind: 'actions', unmet, closest, reason: `${subject[0].toUpperCase()}${subject.slice(1)} ${missing.length === 1 ? "isn't" : "aren't"} here yet – here's ${closest}.` };
+  return { kind: 'actions', unmet, closest, reason: `${capital(listed(missing))} ${missing.length === 1 ? "isn't" : "aren't"} here yet – here's ${closest}.` };
 }
 
 export async function sentenceOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<string | null> {
