@@ -569,7 +569,69 @@ async function clip(page, base, id, path) {
   return { robot, frames };
 }
 
-async function runOne(sentence, base, runDir, page, { clip: withClip = false, draftOnly = false } = {}) {
+/** Klip průběhu (P45A T8): první snímek po `leadTicks`, pak každých `gapTicks` (6 s hry), nejvýš `maxFrames`. */
+export const PACE = { leadTicks: 90, gapTicks: 360, maxFrames: 8 };
+
+/**
+ * Tiky snímků klipu průběhu pro běh, který skončil v `endTick` (`null` = nedoběhl
+ * za poslední snímek). Skončí-li dřív, poslední snímek je stav po konci – po něm
+ * by klip fotil prázdnou scénu a vypadal jako dlouhá hra.
+ */
+export function paceTicks(endTick) {
+  const ticks = [];
+  for (let tick = PACE.leadTicks; ticks.length < PACE.maxFrames; tick += PACE.gapTicks) {
+    if (endTick !== null && tick >= endTick) return [...ticks, endTick];
+    ticks.push(tick);
+  }
+  return ticks;
+}
+
+/**
+ * Robot hraje jako v `clip` (ruční hodiny sondy) a klip fotí celý jeho běh podle
+ * `paceTicks`. Hra bez sondy arkády se fotí ve skutečném čase a nese `robot: false`.
+ */
+async function paceClip(page, base, id, path) {
+  await page.goto(`${base}/play/${id}`);
+  await page.locator('canvas').first().waitFor({ timeout: 30_000 });
+  const robot = await page.waitForFunction(() => typeof window.__playShell?.byHand === 'function', undefined, { timeout: 30_000 }).then(
+    () => true,
+    () => false,
+  );
+  if (robot) {
+    await page.evaluate(() => window.__playShell.byHand(true));
+    await page.getByTestId('play-pause').click();
+    await page.getByTestId('play-demo-start').click({ timeout: 30_000 });
+  }
+  await page.addStyleTag(SCENE_ONLY);
+  const frames = [];
+  let tick = 0;
+  let endedAtTick = null;
+  for (const target of paceTicks(null)) {
+    if (robot) {
+      const now = await page.evaluate(async (count) => {
+        let last = null;
+        for (let step = 0; step < count; step += 1) {
+          last = window.__playShell.tickByHand();
+          if (last.runState !== 'running') break;
+        }
+        await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+        return last;
+      }, target - tick);
+      tick = now?.tick ?? target;
+      if (now !== null && now.runState !== 'running') endedAtTick = tick;
+    } else {
+      await page.waitForTimeout(((target - tick) * 1000) / CLIP.hz);
+      tick = target;
+    }
+    const frame = `${path}-pace-${frames.length + 1}.png`;
+    await page.screenshot({ path: frame });
+    frames.push(basename(frame));
+    if (endedAtTick !== null) break;
+  }
+  return { robot, frames, endedAtTick };
+}
+
+async function runOne(sentence, base, runDir, page, { clip: withClip = false, pace = false, draftOnly = false } = {}) {
   const started = Date.now();
   const response = await fetch(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence: sentence.text }) });
   const created = await response.json();
@@ -606,6 +668,7 @@ async function runOne(sentence, base, runDir, page, { clip: withClip = false, dr
   };
   result.draft.env = await shoot(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
   if (withClip) result.draft.clip = await clip(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
+  if (pace) result.pace = await paceClip(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
   if (ai) result.ai.env = await shoot(page, base, upgrade.versionId, join(runDir, `${sentence.id}-ai`));
   if (ai && withClip) result.ai.clip = await clip(page, base, upgrade.versionId, join(runDir, `${sentence.id}-ai`));
   return result;
@@ -629,7 +692,7 @@ async function run(options) {
     for (const sentence of sentences) {
       const path = join(runDir, `${sentence.id}.json`);
       if (existsSync(path)) continue;
-      const result = await runOne(sentence, base, runDir, page, { clip: options.clip === true, draftOnly: options['draft-only'] === true });
+      const result = await runOne(sentence, base, runDir, page, { clip: options.clip === true, pace: options['pace-clip'] === true, draftOnly: options['draft-only'] === true });
       writeJson(path, result);
       const robot = result.draft.clip ? ` robot ${result.draft.clip.robot ? 'yes' : 'no'}` : '';
       console.log(`${sentence.id} ${result.ai ? 'ai' : `draft (${result.upgrade.reason ?? result.upgrade.status})`} ${Math.round(result.upgrade.ms / 1000)} s env ${result.ai?.env ?? result.draft.env}${robot}`);
@@ -1281,7 +1344,7 @@ if (isMain) {
   else if (step === 'summary') summary(options);
   else if (step === 'roles') roles(options);
   else {
-    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
+    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--pace-clip] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
     process.exit(2);
   }
 }
