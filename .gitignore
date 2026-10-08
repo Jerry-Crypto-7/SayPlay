@@ -131,6 +131,8 @@ ops/**/*.jsonl
 # vzniká při každém pytest běhu a repo jde podle RULES.md §2 ven.
 __pycache__/
 *.pyc
+# Dočasné adresáře pytestu, když mu Windows nepustí `.pytest_cache`.
+pytest-cache-files-*/
 
 # Výstupy pojmenovaných běhů Playwrightu (T18 a spol.). `test-results/` výše pokrývá
 # jen výchozí jméno; každý pojmenovaný běh si zakládá vlastní adresář.
