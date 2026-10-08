@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "6039ca1535b472cda6628b91fc1061593ab63050cb2afda60de206b2cda4f3fd",
+ "catalogHash": "c92952d6df8dfb58eefc4e51d3e046fbc63dd3a742ac9de877794512b5fafcb5",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -930,6 +930,24 @@
   "gen3d-sign": {"class":"prop"},
   "gen3d-sleigh": {"class":"prop"},
   "gen3d-boxer": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-icicle": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-icicle": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-paper-ball": {"class":"prop"},
+  "gen3d-hippo": {"class":"quadruped","regions":{"tailZ":-0.31,"legY":0.25}},
+  "gen3d-spy": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-spaghetti": {"class":"prop"},
+  "gen3d-ramp": {"class":"prop"},
+  "gen3d-orca": {"class":"prop"},
+  "gen3d-portrait": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-searchlight": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-snowmobile": {"class":"vehicle"},
+  "gen3d-genie": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-orange": {"class":"prop"},
+  "gen3d-pie": {"class":"prop"},
+  "gen3d-statue": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-snowboard": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-playing-card": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-crossbow": {"class":"prop"},
+  "gen3d-dishwasher": {"class":"prop"},
+  "gen3d-jetpack": {"class":"biped","regions":{"legY":0.25}}
  }
 }
