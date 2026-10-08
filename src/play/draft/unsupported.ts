@@ -22,7 +22,7 @@ import { bindRoles, matchesWitness } from '../arcade/witness';
 import type { ArcadeWorld } from '../arcade/contract';
 import { essentialTriples, type IntentTriple } from '../intent/contract';
 import { extractIntent } from '../intent/extract';
-import { vocabVerb } from '../vocab';
+import { vocabVerb, vocabVersion } from '../vocab';
 import { canonical } from '@/ir/worlddoc';
 
 /**
@@ -173,7 +173,8 @@ export async function honestyOf(versions: Pick<VersionStore, 'get'>, game: Publi
 
 /** Read the final version afresh, including cold physics, never its draft's claims. */
 export async function honestyForSpec(sentence: string, spec: GameSpecV1, seed: number, publishedWorld?: ArcadeWorld): Promise<Honesty | null> {
-  const key = canonical({ sentence, spec, seed, world: publishedWorld ?? null });
+  // Přiznání čte tabulku P44C – stejný spec dá jiné přiznání podle toho, jestli je zapnutá.
+  const key = canonical({ sentence, spec, seed, world: publishedWorld ?? null, vocab: vocabVersion() });
   if (honesties.has(key)) return structuredClone(honesties.get(key)!);
   const answer = await measureHonesty(sentence, spec, seed, publishedWorld);
   if (honesties.size >= 64) honesties.delete(honesties.keys().next().value!);

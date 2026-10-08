@@ -53,6 +53,13 @@ describe('played_as honesty', () => {
     expect((await honestyOfSentence(STAB))?.kind).not.toBe('played_as');
   });
 
+  it('does not serve an answer cached under the other table setting for the same spec', async () => {
+    const spec = draftGameSpecWithMeta(STAB, 1).spec;
+    expect((await honestyForSpec(STAB, spec, 1))?.kind).toBe('played_as');
+    vi.stubEnv('PLAY_VOCAB', 'off');
+    expect((await honestyForSpec(STAB, spec, 1))?.kind).not.toBe('played_as');
+  });
+
   it('reaches the response of POST /api/play/games', async () => {
     const response = await createGame(
       new Request('http://play.test/api/play/games', {
