@@ -43,3 +43,17 @@ Po třídách (soud): prop 11/19, flat 3/13, biped 2/9, quadruped 2/3, flyer 0/2
 - **„cyclops“** normalizace dávky zkrátí na „cyclop“ (`ops/gen3d/cache.py`, množné číslo) – patří do `IRREGULAR`.
 - **Ploché věci** zůstávají nejslabší (flat 3/13): předkontrola je zastaví levně, ale znak v zadání nestačí.
 - Slabé přijaté modely pro prohlídku majitelem: portrait (oranžový blok s rámem), dishwasher (pomačkaná bílá krabice).
+
+## T5 – zbytek chybějících jmen podle poptávky
+
+**Vstup:** 39 jmen z `node scripts/p37d/gen-list.mjs --rest` (bin `missing`, mimo `gen-nouns.json` a katalog, bez `scripts/p45d/not-models.txt`), seřazená podle počtu vět – všechna mají 0 vět, takže pořadí je abecední. Dávky po 10 v `D:/caches/p45e/b1..b4/list.json`. Třídu jsme ve vstupu opravili u čtyř jmen, kde ji `bodyOfNoun` určí špatně: captain, demon, singer → biped; chicken leg → prop. Stejná cesta jako T4, jen `--record D:/caches/p45e/b<n>/batch.json --limit 10`.
+
+| Dávka | Jmen | Předkontrola a brána | Soud | Povýšeno |
+|---|---|---|---|---|
+| 1 (22:06–22:21) | 10 | 3 | 1 | 0 |
+
+**Dávka 1:**
+- Přijatý, nepovýšený: **demon** (top1). S modelem by manifest P32 (`src/play/assets/entries/catalog.json`) získal záznam třídy monster a `src/play/assets/__tests__/catalog-entries.test.ts:29` drží počet 261 → vyřazeno `--drop` jako lizard. Model leží v `D:/claude/_gen3d-cache-p45e/demon/`; povýšit jde, až linie P45D / P44C zvedne počet v testu.
+- Soudce poznal něco jiného: coral: fire pit · drill: spark plug.
+- Předkontrola odmítla všechny tři obrázky: anthill: rock · blanket: monolith / stone pillar / hedge · canvas: monolith / pillar / pants · captain: military officer / police officer · centaur: horse · comet: plumb bob / ore rock / crystal pendant · dumpling: rock / potato.
+- „canvas“ dávka zkrátí na „canva“ – stejná chyba množného čísla jako „cyclop“ (`ops/gen3d/cache.py`, `IRREGULAR`).
