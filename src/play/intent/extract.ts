@@ -18,6 +18,8 @@
  * Čisté a deterministické: žádný model, žádná náhoda, jen regulární výrazy nad větou.
  */
 
+import { familyOf } from '../genre/families';
+import { vocabVerb } from '../vocab';
 import { NUMBER_WORDS, nounPhrase, readCountedNouns, readLives, RED_LIGHT, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
 
 import { type ActionId, HERO, type Intent, type IntentAction, type IntentAxis, type MoveId, type ObjectiveId, type ThreatId } from './contract';
@@ -43,9 +45,11 @@ interface Emit {
   readonly who: Who;
   /** Domyšlený kus („defeat“ bez jiné akce = rvačka): podstatný není a padne, když věta na téže ose řekne vlastní. */
   readonly fallback: boolean;
+  /** Sloveso mimo tabulku, přiblížené tabulkou P44C. */
+  readonly mapped?: true;
 }
 
-const move = (id: MoveId, who: Who = 'bare'): Emit => ({ axis: 'move', id, who, fallback: false });
+const move =(id: MoveId, who: Who = 'bare'): Emit => ({ axis: 'move', id, who, fallback: false });
 const act = (id: ActionId, fallback = false): Emit => ({ axis: 'action', id, who: 'doer', fallback });
 const goal = (id: ObjectiveId | 'each', who: Who = 'doer'): Emit => ({ axis: 'objective', id, who, fallback: false });
 const threat = (id: ThreatId | 'avoid', who: Who): Emit => ({ axis: 'threat', id, who, fallback: false });
@@ -445,7 +449,15 @@ interface Hit {
 const isNounRow = (entry: Row): boolean => entry.emits.every((emit) => emit.who === 'noun');
 /** Slovesa s předmětem, která berou jméno před „to“ jako předmět („with moths to catch“). */
 const RELATIVE_OBJECT_VERBS = new Set(['collect', 'catch', 'throw', 'deliver', 'reach']);
-const unknownRow = (verb: string): Row => row(/$^/, [{ axis: 'unknown', id: verb, who: 'doer', fallback: false }]);
+/**
+ * Sloveso mimo tabulku: na osu, kam ho přiblíží tabulka P44C, jinak osa `unknown`.
+ * Sloveso ruční rodiny („lassos“ → pastevectví) zůstává `unknown` – rodinu čte žánr z téhle osy.
+ */
+function unknownRow(verb: string): Row {
+  const vocab = familyOf(verb) === null ? vocabVerb(verb) : null;
+  if (vocab?.axis != null && vocab.id !== null) return row(/$^/, [{ axis: vocab.axis, id: vocab.id, who: 'doer', fallback: false, mapped: true }]);
+  return row(/$^/, [{ axis: 'unknown', id: verb, who: 'doer', fallback: false }]);
+}
 
 function hitsOf(text: string): Hit[] {
   const hits = ROWS.flatMap((entry) =>
@@ -744,7 +756,7 @@ export function extractIntent(sentence: string): Intent {
       const verb = emit.id === 'each' ? (thing?.many === true ? 'collect' : 'reach') : emit.id === 'avoid' ? threatOf(object) : emit.id;
       // "Light all lanterns" requests interaction, not picking the lanterns up.
       // The inferred route/quantity goal is guidance, never another essential verb.
-      const base = { axis: emit.axis, verb, essential: !emit.fallback && emit.id !== 'each', said: hit.said, at: hit.at, fallback: emit.fallback, negated: negated && emit.axis !== 'threat' };
+      const base = { axis: emit.axis, verb, essential: !emit.fallback && emit.id !== 'each', said: hit.said, at: hit.at, fallback: emit.fallback, negated: negated && emit.axis !== 'threat', ...(emit.mapped ? { mapped: true as const } : {}) };
       if (emit.who === 'noun') drafts.push({ ...base, actor: hit.row.noun ?? headOf(hit.said), object: heroName });
       else if (emit.who === 'reverse' || emit.who === 'versus') {
         const opposed = emit.who === 'reverse' || /^(?:against|vs|versus)$/.test(thing?.via ?? '');
@@ -955,7 +967,7 @@ export function extractIntent(sentence: string): Intent {
     sentence,
     hero,
     setting: settingOf(text),
-    items: unique(settled.sort((a, b) => a.at - b.at)).map(({ actor, verb, object, axis, essential, said: word }) => ({ actor, verb, object, axis, essential, said: word })),
+    items: unique(settled.sort((a, b) => a.at - b.at)).map(({ actor, verb, object, axis, essential, said: word, mapped }) => ({ actor, verb, object, axis, essential, said: word, ...(mapped ? { mapped } : {}) })),
     negated,
     counts: countsOf(sentence),
   };

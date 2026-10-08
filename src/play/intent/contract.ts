@@ -57,6 +57,8 @@ export interface IntentAction<A extends IntentAxis = IntentAxis> {
   readonly essential: boolean;
   /** Slovo z věty, které položku neslo („racing“, „chases“) – pro přiznání a ladění. */
   readonly said: string;
+  /** Sloveso mimo ruční tabulku, které tabulka P44C (`vocab/`) přiblížila na tuhle osu – hra ho přizná. */
+  readonly mapped?: true;
 }
 
 export interface Intent {
