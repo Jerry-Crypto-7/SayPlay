@@ -2057,6 +2057,57 @@ button.play-version-switch__item:not(:disabled) {
   color: var(--sp-text-secondary);
 }
 
+/* Žebříček hry (P44B T9): po výhře a v listu „About this game“; vlastní řádek slunečný. */
+.play-board {
+  margin-top: var(--sp-space-4);
+}
+
+.play-board-standing,
+.play-board-empty {
+  margin: var(--sp-space-1) 0 0;
+  color: var(--sp-text-secondary);
+}
+
+.play-board-rows {
+  margin: var(--sp-space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-board-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-space-2);
+  padding: var(--sp-space-1) var(--sp-space-2);
+  border-radius: var(--sp-radius-sm);
+}
+
+.play-board-row--you {
+  background: var(--sp-secondary);
+}
+
+.play-board-place {
+  min-width: 2.5em;
+  font-weight: 700;
+}
+
+.play-board-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.play-board-you {
+  font-size: var(--sp-text-body-s-size);
+}
+
+.play-board-value {
+  font-weight: 700;
+}
+
 /* Proužek výzvy (P44B T8): kdo vyzývá a co porazit, slunečná linka jako odměna; bez tlačítka. */
 .play-dare-strip {
   flex: 0 0 auto;

@@ -26,6 +26,7 @@ import type { Dare } from './best';
 import { WithPlayEnv } from './arcade/look/play-env';
 import { DareStrip } from './DareStrip';
 import { HonestyStrip } from './HonestyStrip';
+import { BoardInfoPart } from './Leaderboard';
 import type { LabFacts, ReadFacts } from './lab';
 import { InfoSheetProvider } from './ui/InfoContext';
 
@@ -66,7 +67,11 @@ export function PlayShell({
   // Info o hře je jeden list (P33 T7): shell dá sourozencům `SentenceRead`, `HowItWorks` a `Lineage` společný kontext.
   const shell = (
     <WithPlayEnv theme={rest.spec.theme} versionId={rest.versionId}>
-      <InfoSheetProvider>{game}</InfoSheetProvider>
+      <InfoSheetProvider>
+        {/* Žebříček mají jen arkádové hry – ověřený běh píše jen výzva (P44B T9). */}
+        {arcade !== undefined && <BoardInfoPart versionId={rest.versionId} />}
+        {game}
+      </InfoSheetProvider>
     </WithPlayEnv>
   );
   const dare = arcade !== undefined && rest.challenge ? rest.challenge : null;

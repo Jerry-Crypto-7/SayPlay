@@ -15,7 +15,8 @@
 
 import { createContext, type ReactNode, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 
-export type InfoPart = 'how' | 'lineage';
+/** `board` = žebříček hry (P44B T9), zapisuje ho `BoardInfoPart` z `PlayShell`. */
+export type InfoPart = 'how' | 'lineage' | 'board';
 type Parts = Readonly<Partial<Record<InfoPart, ReactNode>>>;
 
 interface InfoStore {

@@ -44,7 +44,9 @@ import type { Stars as StarCount } from '@/play/score/stars';
 
 import { isTyping } from './arcade/input';
 import { type BestOutcome, type Dare, dareVerdict } from './best';
+import { dareResult } from './board-client';
 import { beatText } from './Feed';
+import { Leaderboard } from './Leaderboard';
 import { RemixBox, type RemixJob } from './RemixBox';
 import { type DarePublish, type LivePublish, ShareButton } from './ShareButton';
 import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_BACK, DARE_SHORT, NEW_BEST, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_BEAT_IT, YOU_DID_IT } from './starters';
@@ -350,6 +352,8 @@ export function PostRun({
 
   const result = runResult(facts, record, challenge);
   const { won } = facts;
+  // Co server o tomhle běhu řekl po přehrání (P44B T9); `null`, dokud výzva není `ready`.
+  const verified = won && dare?.state === 'ready' ? dareResult(dare.dareId) : null;
   // Hlavní akce: po výhře Dare, po prohře (a v ukázce domova) znovu hrát.
   const replayMain = offline || !won;
   const replay = (
@@ -404,6 +408,11 @@ export function PostRun({
             {result.dare.text}
           </p>
         )}
+        {challenge !== null && verified?.beat === true && (
+          <p className="play-result-best play-result-beat-friend" data-testid="play-beat-friend">
+            You beat {challenge.by ?? 'your friend'}!
+          </p>
+        )}
         {beat !== null && (
           <p className="play-result-best play-result-beat" data-testid="play-beat">
             {beatText(beat)}
@@ -420,6 +429,8 @@ export function PostRun({
             ))}
           </ul>
         )}
+        {/* Žebříček až po ověření běhu: dřív by ukázal stav před tímhle zápisem. */}
+        {won && !offline && dare !== undefined && dare.state !== 'pending' && <Leaderboard versionId={versionId} limit={5} standing={verified?.board ?? null} />}
         <div className="play-result-actions">
           {offline ? (
             replay
