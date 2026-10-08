@@ -12,6 +12,11 @@
  * (`throwHeld`), položit (`release`), strčit (`push`), stisknout (`press`),
  * nasbírat na čítač (`count`), držet Use u cíle (`interact`) a projít branou,
  * kterou otevře `toggle`.
+ * Logiku (P45B) plánuje stejně pozpátku: mez proměnné splní pravidlo, které ji
+ * k mezi posune (`add`, `set`), fázi pravidlo s `goPhase`, běžící časovač
+ * přečká, stojící spustí, událost vyšle pravidlo s `emit` a tělo z vlny
+ * přivolá pravidlo s `wave`. Fáze, časovače i proměnné čte z pozorovaného
+ * stavu, takže ani tady si nic nepamatuje.
  * Vidí jako robot arény svět o `reactionTicks` starší a svou polohu dopočítá.
  */
 
@@ -26,11 +31,16 @@ import {
   COUNTER,
   FLAG,
   HEADER,
+  LOGIC_SLOTS,
   NO_INPUT,
   ROLE,
   bodyBase,
+  logicBase,
+  phaseOf,
   targetStateOf,
+  timerLeft,
   underlyingRule,
+  varValue,
 } from '../contract';
 import { ARENA, DIRECTIONS, arenaAxis, axisOfDirection, directionOfAxis } from '../pieces/arena';
 import { predict } from '../pieces/arena-bot';
@@ -186,6 +196,37 @@ const counterRulesFor = (view: View, name: ArcadeCounter): CompiledRule[] =>
 
 const counterValue = (state: Int32Array, name: ArcadeCounter): number => state[HEADER.counters + COUNTER[name]] as number;
 
+// Logika (P45B): jen pravidla světa s blokem `logic` ji čtou, takže logická těla tu jsou.
+
+interface VarBound {
+  readonly index: number;
+  readonly atLeast?: number | undefined;
+  readonly below?: number | undefined;
+}
+
+/** Hodnota v mezi (`ruleIssues` u proměnné hlídá právě jednu z `atLeast` / `below`). */
+const inBound = (value: number, bound: VarBound): boolean => (bound.atLeast === undefined || value >= bound.atLeast) && (bound.below === undefined || value < bound.below);
+
+/** Efekt posune proměnnou meze `bound` směrem do ní: `add` správným znaménkem, `set` na hodnotu v mezi. */
+const towards = (effect: CompiledRule['do'][number], bound: VarBound): boolean =>
+  ('add' in effect && effect.add.var === bound.index && (bound.atLeast !== undefined ? effect.add.amount > 0 : effect.add.amount < 0)) ||
+  ('set' in effect && effect.set.var === bound.index && inBound(effect.set.value, bound));
+
+const varRulesFor = (view: View, bound: VarBound): CompiledRule[] => view.rules.filter((rule) => rule.do.some((effect) => towards(effect, bound)));
+
+const phaseRulesFor = (view: View, wanted: (phase: number) => boolean): CompiledRule[] => view.rules.filter((rule) => rule.do.some((effect) => 'goPhase' in effect && wanted(effect.goPhase)));
+
+/** Pravidla, která časovač `timer` spustí (`start`) nebo zastaví. */
+const timerRulesFor = (view: View, timer: number, start: boolean): CompiledRule[] =>
+  view.rules.filter((rule) => rule.do.some((effect) => (start ? 'startTimer' in effect && effect.startTimer.timer === timer : 'stopTimer' in effect && effect.stopTimer === timer)));
+
+const emittersOf = (view: View, event: number): CompiledRule[] => view.rules.filter((rule) => rule.do.some((effect) => 'emit' in effect && effect.emit === event));
+
+/** Pravidla, jejichž vlna rodí tělo role `role` (role předlohy). */
+const waveRulesFor = (view: View, role: number): CompiledRule[] => view.rules.filter((rule) => rule.do.some((effect) => 'wave' in effect && roleOf(view.state, effect.wave.template) === role));
+
+const latchedOf = (state: Int32Array, bit: number): boolean => (((state[logicBase(state) + LOGIC_SLOTS.varLatch] as number) >>> bit) & 1) === 1;
+
 // ---------------------------------------------------------------------------
 // Pohyb
 
@@ -295,6 +336,14 @@ function achieve(view: View, rule: CompiledRule, depth: number, seen: ReadonlySe
   const held = heldOf(state);
   const heldRole = held >= 0 && aliveAt(state, held) ? roleOf(state, held) : -1;
   const sub = (next: CompiledRule | undefined): Action | null => (next === undefined ? null : achieve(view, next, depth + 1, path));
+  /** První z pravidel `rules`, ke kterému robot zná cestu. */
+  const any = (rules: readonly CompiledRule[]): Action | null => {
+    for (const next of rules) {
+      const action = sub(next);
+      if (action !== null) return action;
+    }
+    return null;
+  };
   const dropHeld = (): Action | null => sub(holdingRule(view, heldRole, 'release')) ?? sub(holdingRule(view, heldRole, 'throwHeld'));
 
   for (const cond of rule.if) {
@@ -310,16 +359,29 @@ function achieve(view: View, rule: CompiledRule, depth: number, seen: ReadonlySe
       const value = counterValue(state, cond.counter.name);
       if (cond.counter.below !== undefined && value >= cond.counter.below) return null;
       if (cond.counter.atLeast === undefined || value >= cond.counter.atLeast) continue;
-      for (const next of counterRulesFor(view, cond.counter.name)) {
-        const action = sub(next);
-        if (action !== null) return action;
-      }
-      return null;
+      return any(counterRulesFor(view, cond.counter.name));
     }
-    // Podmínky logiky (P45B) plánovač zatím nesplní – naučí ho to T6.
-    if (!('near' in cond)) return null;
+    // Logika (P45B): mez proměnné posune pravidlo s `add` / `set` – po výstřelu na výstřel, každý tik znovu z pozorované hodnoty.
+    if ('var' in cond) {
+      if (inBound(varValue(state, logicBase(state), cond.var.index), cond.var)) continue;
+      return any(varRulesFor(view, cond.var));
+    }
+    if ('inPhase' in cond) {
+      if (phaseOf(state, logicBase(state)) === cond.inPhase) continue;
+      return any(phaseRulesFor(view, (phase) => phase === cond.inPhase));
+    }
+    if ('timerRunning' in cond) {
+      if (timerLeft(state, logicBase(state), cond.timerRunning) > 0) continue;
+      return any(timerRulesFor(view, cond.timerRunning, true));
+    }
+    if ('timerStopped' in cond) {
+      if (timerLeft(state, logicBase(state), cond.timerStopped) === 0) continue;
+      // Zastavit, zná-li robot jak; jinak časovač přečkat – sám doběhne.
+      return any(timerRulesFor(view, cond.timerStopped, false)) ?? hold(view, cond.timerStopped);
+    }
     const near = nearestOf(view, cond.near.role);
-    if (near === null) return null;
+    // Nic živého na dosah: tělo napřed odhalí přepnutí nebo přivolá vlna.
+    if (near === null) return reveal(view, cond.near.role, depth, path);
     if (Math.max(Math.abs(near.x - view.me.x) - (near.w + playerSize(view).w) / 2, Math.abs(near.z - view.me.z) - (near.d + playerSize(view).d) / 2) > cond.near.within) {
       return navigate(view, near, false, depth, path);
     }
@@ -338,14 +400,23 @@ function achieve(view: View, rule: CompiledRule, depth: number, seen: ReadonlySe
   if ('hit' in when) return null;
   if ('counter' in when) {
     if (counterValue(state, when.counter.name) >= when.counter.atLeast) return WAIT;
-    for (const next of counterRulesFor(view, when.counter.name)) {
-      const action = sub(next);
-      if (action !== null) return action;
-    }
-    return null;
+    return any(counterRulesFor(view, when.counter.name));
   }
-  // Spouštěče logiky (P45B) plánovač zatím nesplní – naučí ho to T6.
-  if (!('contact' in when)) return null;
+  // Spouštěče logiky (P45B).
+  if ('timer' in when) return timerLeft(state, logicBase(state), when.timer) > 0 ? hold(view, when.timer) : any(timerRulesFor(view, when.timer, true));
+  // Do fáze, ve které hra už je, se vstoupit nedá – vstup vystřelil, když do ní přišla.
+  if ('phase' in when) return phaseOf(state, logicBase(state)) === when.phase ? null : any(phaseRulesFor(view, (phase) => phase === when.phase));
+  if ('phaseExit' in when) {
+    const now = phaseOf(state, logicBase(state));
+    // Z fáze odejít jinam; mimo ni do ní napřed vstoupit.
+    return any(phaseRulesFor(view, now === when.phaseExit ? (phase) => phase !== now : (phase) => phase === when.phaseExit));
+  }
+  if ('var' in when) {
+    if (!inBound(varValue(state, logicBase(state), when.var.index), when.var)) return any(varRulesFor(view, when.var));
+    // V mezi: volná západka vystřelí v příštím průchodu čítačů, zaklapnutá už vystřelila a znovu až po návratu z meze.
+    return latchedOf(state, when.var.latch) ? null : WAIT;
+  }
+  if ('event' in when) return any(emittersOf(view, when.event));
   const [a, b] = when.contact;
   if (a === ROLE.player) return reach(view, b, depth, path);
   return bring(view, a, b, heldRole, depth, path) ?? bring(view, b, a, heldRole, depth, path);
@@ -357,14 +428,38 @@ function reach(view: View, role: number, depth: number, seen: ReadonlySet<Compil
   return body !== null ? navigate(view, body, false, depth, seen) : reveal(view, role, depth, seen);
 }
 
-/** Skryté tělo role napřed odhalí pravidlo, které ho přepne; nic skrytého = null. */
+/**
+ * Skryté tělo role napřed odhalí pravidlo, které ho přepne, nebo přivolá vlna (P45B – předloha
+ * vlny je mrtvé tělo té role); nic skrytého = null.
+ */
 function reveal(view: View, role: number, depth: number, seen: ReadonlySet<CompiledRule>): Action | null {
   if (!hiddenOf(view.state, role)) return null;
-  for (const rule of toggleRulesFor(view, role)) {
+  for (const rule of [...toggleRulesFor(view, role), ...waveRulesFor(view, role)]) {
     const action = achieve(view, rule, depth + 1, seen);
     if (action !== null) return action;
   }
   return null;
+}
+
+/**
+ * Čekání na časovač `timer` (P45B): stát – jen ne na tělese, jehož dotek časovač znovu spustí
+ * nebo zastaví. Robot stojící na rozbušce by ji každý tik natáhl a nedočkal by se; z tělesa
+ * proto napřed odstoupí. Tělesům prohry se vyhne `avoidingLosses` kolem plánovače.
+ */
+function hold(view: View, timer: number): Action {
+  const { me } = view;
+  const player = playerSize(view);
+  for (const rule of [...timerRulesFor(view, timer, true), ...timerRulesFor(view, timer, false)]) {
+    const contact = contactOf(rule);
+    if (contact === null || contact[0] !== ROLE.player) continue;
+    const body = nearestOf(view, contact[1]);
+    if (body === null || Math.abs(me.x - body.x) * 2 >= player.w + body.w + 2 * ALIGN || Math.abs(me.z - body.z) * 2 >= player.d + body.d + 2 * ALIGN) continue;
+    // Pryč od středu tělesa; stojí-li přesně na něm, couvne ke startu (−z).
+    const dx = me.x - body.x;
+    const dz = me.z - body.z;
+    return dx === 0 && dz === 0 ? { kind: 'move', x: me.x, z: me.z - 1000, arrive: false } : { kind: 'move', x: me.x + dx, z: me.z + dz, arrive: false };
+  }
+  return WAIT;
 }
 
 /** Dostat tělo role `mover` do dotyku s tělem role `target`: hodem, nesením, položením, nebo strkáním. */
@@ -428,7 +523,10 @@ export interface RulesPlanner {
 export function rulesPlanner(world: ArcadeWorld): RulesPlanner | null {
   if (world.control.id !== 'move_free') return null;
   const rules = specRules(world);
-  return plannerFor(rules, rules.filter((rule) => has(rule, 'win')));
+  const planner = plannerFor(rules, rules.filter((rule) => has(rule, 'win')));
+  // Ve světě s logikou (P45B) robot čeká na časovač či fázi mezi tělesy prohry (i z vlny): obchází je
+  // jako robot světa (P36A F2). Svět bez logiky hraje plánovač beze změny.
+  return planner === null || world.logic === undefined ? planner : { ...planner, decide: avoidingLosses(world, planner.decide) };
 }
 
 // Složená hra (P42) má pravidla specu v obalu `assembly_gate_*`.
@@ -450,12 +548,20 @@ function plannerFor(rules: readonly CompiledRule[], goals: readonly CompiledRule
   };
 }
 
-/** Pravidlo, které hru prohraje nebo ubere život a nic nevyhrává (P36A T8). */
-const losing = (rule: CompiledRule): boolean => (has(rule, 'lose') || has(rule, 'damage')) && !has(rule, 'win');
+/**
+ * Pravidlo, které hru prohraje nebo ubere život a nic nevyhrává (P36A T8). S logikou (P45B) i to,
+ * které posune proměnnou k mezi, jejíž překročení prohrává („lives −1“, když „lives < 1“ = konec).
+ */
+function losingIn(rules: readonly CompiledRule[]): (rule: CompiledRule) => boolean {
+  const ends = (rule: CompiledRule): boolean => (has(rule, 'lose') || has(rule, 'damage')) && !has(rule, 'win');
+  const fatal = rules.flatMap((rule) => ('var' in rule.when && ends(rule) ? [rule.when.var] : []));
+  return (rule) => ends(rule) || (!has(rule, 'win') && rule.do.some((effect) => fatal.some((bound) => towards(effect, bound))));
+}
 
 /** Slovesa, která nesou jen pravidla prohry či zranění – vítězný robot je obchází, dokáže je až běh „na prohru“. */
 export function losingVerbs(world: ArcadeWorld): Set<string> {
   const rules = specRules(world);
+  const losing = losingIn(rules);
   return new Set(rules.filter((rule) => rules.every((other) => other.verb !== rule.verb || losing(other))).map((rule) => rule.verb));
 }
 
@@ -467,6 +573,7 @@ const AVOID = { ticks: 15, margin: 300 } as const;
  * či zranění – kromě rolí, které potřebuje i pravidlo, jež neprohrává.
  */
 function losingRoles(rules: readonly CompiledRule[]): Set<number> {
+  const losing = losingIn(rules);
   const touched = (rule: CompiledRule): number[] => ('contact' in rule.when ? rule.when.contact.filter((role) => role !== ROLE.player) : []);
   const needed = new Set(rules.filter((rule) => !losing(rule)).flatMap(touched));
   return new Set(rules.filter(losing).flatMap(touched).filter((role) => !needed.has(role)));
@@ -528,5 +635,6 @@ export function avoidingLosses(world: ArcadeWorld, decide: (observation: ArcadeO
 export function lossPlanner(world: ArcadeWorld, verbs: ReadonlySet<string>): RulesPlanner | null {
   if (world.control.id !== 'move_free') return null;
   const rules = specRules(world);
+  const losing = losingIn(rules);
   return plannerFor(rules, rules.filter((rule) => losing(rule) && verbs.has(rule.verb)));
 }
