@@ -65,8 +65,17 @@ const BODY_OF_CLASS = {
 export const SWIMMERS = new Set(['fish', 'shark', 'whale', 'orca', 'octopus', 'squid', 'eel', 'snake', 'dolphin', 'narwhal', 'ray', 'seahorse', 'piranha', 'puffer', 'koi', 'betta', 'tetra', 'tuna', 'turbot', 'snapper', 'tang', 'humphead', 'worm']);
 /** Zvířata a příšery, které létají. */
 export const FLYERS = new Set(['bat', 'bee', 'wasp', 'butterfly', 'dragon', 'dragonfly', 'firefly', 'housefly', 'mosquito', 'griffin', 'flying']);
-/** Třída těla, kterou slovo id určí lépe než manifest (robotický vysavač nemá nohy). */
-const BODY_OF_WORD = { roomba: 'vehicle' };
+/**
+ * Třída těla, kterou slovo id určí lépe než manifest (robotický vysavač nemá nohy), a tvorové, které
+ * `heroClass` nezná – chybějící jména kola generování (T16) a jejich budoucí modely (T19).
+ */
+const BODY_OF_WORD = {
+  roomba: 'vehicle',
+  snowmobile: 'vehicle',
+  ...Object.fromEntries(['mole', 'hippo', 'lizard', 'rhino', 'centaur'].map((word) => [word, 'quadruped'])),
+  ...Object.fromEntries(['cyclops', 'golem', 'genie', 'robber', 'spy', 'poacher', 'stickman', 'manager', 'advisor'].map((word) => [word, 'biped'])),
+  peacock: 'flyer',
+};
 
 /** Role dílu podle hlavního (posledního) slova jeho jména. */
 const ROLE_WORDS = {
@@ -119,6 +128,8 @@ const exceptionOf = (words) => {
 /** Třída těla podstatného jména bez modelu (P45D T16, šablona zadání generátoru); `null` = slova třídu neznají. */
 export function bodyOfNoun(noun) {
   const words = noun.toLowerCase().split(/[\s-]+/);
+  const byWord = words.map((word) => BODY_OF_WORD[word]).find((body) => body !== undefined);
+  if (byWord !== undefined) return byWord;
   const kind = heroClass(noun);
   if (kind === null || kind === 'animal' || kind === 'monster') {
     const exception = exceptionOf(words);
