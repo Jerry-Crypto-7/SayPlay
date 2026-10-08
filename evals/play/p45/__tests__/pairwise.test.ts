@@ -121,7 +121,8 @@ describe('pairwise judge', () => {
     const out = join(runsDir, 'verdict.json');
     const seen: { files: string[]; args: string[]; question: string }[] = [];
     const ask = async (sheet: string, schema: string, answerFile: string, question: string): Promise<{ code: number }> => {
-      const { cwd, args } = blindQuestion(sheet, schema, question);
+      // Adresář a argumenty staví skutečný `blindQuestion`; otázku test kontroluje zvlášť.
+      const { cwd, args } = blindQuestion(sheet, schema);
       seen.push({ files: readdirSync(cwd).sort(), args, question });
       rmSync(cwd, { recursive: true, force: true });
       writeFileSync(answerFile, JSON.stringify({ winner: 'A', why: 'test' }));
