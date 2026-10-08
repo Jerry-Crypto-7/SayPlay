@@ -61,6 +61,8 @@ const { readSentence } = await import('../src/play/read/client.ts');
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'evals', 'play', 'fidelity');
 const P30 = join(ROOT, 'evals', 'play', 'p30');
+const P44E = join(ROOT, 'evals', 'play', 'p44e');
+const SEALS = { test: { dir: P30, file: 'test-opened.json' }, 'sealed-p44e': { dir: P44E, file: 'sealed-opened.json' } };
 
 export const SLOTS = ['hero', 'role', 'any', 'setting', 'verb'];
 
@@ -451,13 +453,13 @@ export function normalizeSentence(text) {
  * `source: "test"` otevře sadu jen s `--open-test-once` a jen jednou –
  * `test-opened.json` se zapíše dřív, než odejde první věta.
  */
-function breakSeal(file, { openTestOnce, runId, sealDir }) {
-  const seal = join(sealDir, 'test-opened.json');
+function breakSeal(file, { openTestOnce, runId, sealDir, sealFile }) {
+  const seal = join(sealDir, sealFile);
   if (existsSync(seal)) {
     const opened = readJson(seal);
     throw new Error(`test set already opened by run ${opened.runId} at ${opened.openedAt} (${seal}); a second opening would tune on it`);
   }
-  if (!openTestOnce) throw new Error('test set is sealed; pass --open-test-once for the one final measurement');
+  if (!openTestOnce) throw new Error('test set is sealed; pass --open-sealed-once for the one final measurement');
   const sha256 = createHash('sha256').update(readFileSync(file, 'utf8').replace(/\r\n/g, '\n')).digest('hex');
   writeJson(seal, { openedAt: new Date().toISOString(), runId, commit: commit(), sha256 });
 }
@@ -466,18 +468,19 @@ function breakSeal(file, { openTestOnce, runId, sealDir }) {
  * Sada podle `--set`: `dev` a `test` jsou sady P30A v `evals/play/p30/`, jiný
  * název je soubor ve `fidelity/` (`judge-10.json`), bez názvu korpus.
  */
-const setFile = (name) => (name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : resolve(DIR, name ?? 'corpus.json'));
+const setFile = (name) => (name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : name === 'p44e-sealed' ? join(P44E, 'sealed-200.json') : resolve(DIR, name ?? 'corpus.json'));
 const picked = (sentences, only) => {
   const ids = typeof only === 'string' ? new Set(only.split(',')) : null;
   return sentences.filter((sentence) => ids === null || ids.has(sentence.id));
 };
 
-export function loadSet(name, { only, openTestOnce = false, runId = null, sealDir = P30 } = {}) {
+export function loadSet(name, { only, openTestOnce = false, runId = null, sealDir } = {}) {
   const file = setFile(name);
   const corpus = readJson(file);
   const issues = checkCorpus(corpus);
   if (issues.length > 0) throw new Error(`${file} is invalid:\n${issues.join('\n')}`);
-  if (corpus.sentences.some((sentence) => sentence.source === 'test')) breakSeal(file, { openTestOnce, runId, sealDir });
+  const sealed = Object.entries(SEALS).find(([source]) => corpus.sentences.some((sentence) => sentence.source === source));
+  if (sealed !== undefined) breakSeal(file, { openTestOnce, runId, sealDir: sealDir ?? sealed[1].dir, sealFile: sealed[1].file });
   return picked(corpus.sentences, only);
 }
 
@@ -610,7 +613,7 @@ async function run(options) {
   const runId = options.run ?? `${new Date().toISOString().slice(0, 10)}-${commit()}`;
   // Sada před složkou a prohlížečem: odmítnutá pečeť nesmí nechat stopu běhu.
   // `--set judge-10.json` / `dev` / `test` se vykazují ve vlastním `--run`.
-  const sentences = loadSet(typeof options.set === 'string' ? options.set : undefined, { only: options.only, openTestOnce: options['open-test-once'] === true, runId });
+  const sentences = loadSet(typeof options.set === 'string' ? options.set : undefined, { only: options.only, openTestOnce: options['open-test-once'] === true || options['open-sealed-once'] === true, runId });
   const runDir = join(DIR, 'runs', runId);
   mkdirSync(runDir, { recursive: true });
   const require = createRequire(import.meta.url);
@@ -997,7 +1000,7 @@ async function compare(options) {
   // Build před sadou: zastaralý build nesmí spotřebovat jediné otevření testovací sady.
   const nextDir = join(ROOT, '.next');
   const buildId = buildStamp(nextDir, commitMs());
-  const sentences = loadSet(typeof options.set === 'string' ? options.set : undefined, { only: options.only, openTestOnce: options['open-test-once'] === true, runId });
+  const sentences = loadSet(typeof options.set === 'string' ? options.set : undefined, { only: options.only, openTestOnce: options['open-test-once'] === true || options['open-sealed-once'] === true, runId });
   const port = options.port === undefined ? 3331 : Number(options.port);
   const rawDir = join(DIR, 'runs', `compare-${runId}`);
   mkdirSync(rawDir, { recursive: true });

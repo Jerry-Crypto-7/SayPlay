@@ -1,0 +1,7413 @@
+{
+  "about": "Independently authored English sentences from a hackathon juror perspective. These cases probe everyday intentions, uncommon actions, physical motion, and fantasy scenes. Noun checks describe the intended player, another role, either role when the player is unspecified, or the setting; each verb check records observable controls or mechanics that would realize the action. Authored without implementation, plans, or other evaluation corpora.",
+  "sentences": [
+    {
+      "id": "e001",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A librarian reassures a child about a lost bookmark.",
+      "checklist": [
+        {
+          "item": "librarian",
+          "slot": "hero",
+          "match": [
+            "librarian"
+          ]
+        },
+        {
+          "item": "child",
+          "slot": "role",
+          "match": [
+            "child"
+          ]
+        },
+        {
+          "item": "bookmark",
+          "slot": "role",
+          "match": [
+            "bookmark"
+          ]
+        },
+        {
+          "item": "reassure",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e002",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A baker reminisces with an apprentice over a recipe.",
+      "checklist": [
+        {
+          "item": "baker",
+          "slot": "hero",
+          "match": [
+            "baker"
+          ]
+        },
+        {
+          "item": "apprentice",
+          "slot": "role",
+          "match": [
+            "apprentice"
+          ]
+        },
+        {
+          "item": "recipe",
+          "slot": "role",
+          "match": [
+            "recipe"
+          ]
+        },
+        {
+          "item": "reminisce",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "sequence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e003",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A tailor sympathizes with a bride over a torn veil.",
+      "checklist": [
+        {
+          "item": "tailor",
+          "slot": "hero",
+          "match": [
+            "tailor"
+          ]
+        },
+        {
+          "item": "bride",
+          "slot": "role",
+          "match": [
+            "bride"
+          ]
+        },
+        {
+          "item": "veil",
+          "slot": "role",
+          "match": [
+            "veil"
+          ]
+        },
+        {
+          "item": "sympathize",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e004",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A gardener explains a seedling to a neighbor.",
+      "checklist": [
+        {
+          "item": "gardener",
+          "slot": "hero",
+          "match": [
+            "gardener"
+          ]
+        },
+        {
+          "item": "neighbor",
+          "slot": "role",
+          "match": [
+            "neighbor"
+          ]
+        },
+        {
+          "item": "seedling",
+          "slot": "role",
+          "match": [
+            "seedling"
+          ]
+        },
+        {
+          "item": "explain",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e005",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A grandmother admires a portrait beside her grandson.",
+      "checklist": [
+        {
+          "item": "grandmother",
+          "slot": "hero",
+          "match": [
+            "grandmother"
+          ]
+        },
+        {
+          "item": "grandson",
+          "slot": "role",
+          "match": [
+            "grandson"
+          ]
+        },
+        {
+          "item": "portrait",
+          "slot": "role",
+          "match": [
+            "portrait"
+          ]
+        },
+        {
+          "item": "admire",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e006",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A nurse consoles a musician holding a broken flute.",
+      "checklist": [
+        {
+          "item": "nurse",
+          "slot": "hero",
+          "match": [
+            "nurse"
+          ]
+        },
+        {
+          "item": "musician",
+          "slot": "role",
+          "match": [
+            "musician"
+          ]
+        },
+        {
+          "item": "flute",
+          "slot": "role",
+          "match": [
+            "flute"
+          ]
+        },
+        {
+          "item": "console",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e007",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A carpenter appraises a chair for a collector.",
+      "checklist": [
+        {
+          "item": "carpenter",
+          "slot": "hero",
+          "match": [
+            "carpenter"
+          ]
+        },
+        {
+          "item": "collector",
+          "slot": "role",
+          "match": [
+            "collector"
+          ]
+        },
+        {
+          "item": "chair",
+          "slot": "role",
+          "match": [
+            "chair"
+          ]
+        },
+        {
+          "item": "appraise",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e008",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A student paraphrases a poem for a tutor.",
+      "checklist": [
+        {
+          "item": "student",
+          "slot": "hero",
+          "match": [
+            "student"
+          ]
+        },
+        {
+          "item": "tutor",
+          "slot": "role",
+          "match": [
+            "tutor"
+          ]
+        },
+        {
+          "item": "poem",
+          "slot": "role",
+          "match": [
+            "poem"
+          ]
+        },
+        {
+          "item": "paraphrase",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e009",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A chef recommends a soup to a guest.",
+      "checklist": [
+        {
+          "item": "chef",
+          "slot": "hero",
+          "match": [
+            "chef"
+          ]
+        },
+        {
+          "item": "guest",
+          "slot": "role",
+          "match": [
+            "guest"
+          ]
+        },
+        {
+          "item": "soup",
+          "slot": "role",
+          "match": [
+            "soup"
+          ]
+        },
+        {
+          "item": "recommend",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e010",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A mechanic diagnoses a scooter for a courier.",
+      "checklist": [
+        {
+          "item": "mechanic",
+          "slot": "hero",
+          "match": [
+            "mechanic"
+          ]
+        },
+        {
+          "item": "courier",
+          "slot": "role",
+          "match": [
+            "courier"
+          ]
+        },
+        {
+          "item": "scooter",
+          "slot": "role",
+          "match": [
+            "scooter"
+          ]
+        },
+        {
+          "item": "diagnose",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e011",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A florist dedicates a bouquet to a teacher.",
+      "checklist": [
+        {
+          "item": "florist",
+          "slot": "hero",
+          "match": [
+            "florist"
+          ]
+        },
+        {
+          "item": "teacher",
+          "slot": "role",
+          "match": [
+            "teacher"
+          ]
+        },
+        {
+          "item": "bouquet",
+          "slot": "role",
+          "match": [
+            "bouquet"
+          ]
+        },
+        {
+          "item": "dedicate",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e012",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A father negotiates a bedtime with his daughter.",
+      "checklist": [
+        {
+          "item": "father",
+          "slot": "hero",
+          "match": [
+            "father"
+          ]
+        },
+        {
+          "item": "daughter",
+          "slot": "role",
+          "match": [
+            "daughter"
+          ]
+        },
+        {
+          "item": "bedtime",
+          "slot": "role",
+          "match": [
+            "bedtime"
+          ]
+        },
+        {
+          "item": "negotiate",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e013",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A curator attributes a painting to an artist.",
+      "checklist": [
+        {
+          "item": "curator",
+          "slot": "hero",
+          "match": [
+            "curator"
+          ]
+        },
+        {
+          "item": "artist",
+          "slot": "role",
+          "match": [
+            "artist"
+          ]
+        },
+        {
+          "item": "painting",
+          "slot": "role",
+          "match": [
+            "painting"
+          ]
+        },
+        {
+          "item": "attribute",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e014",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A grocer disputes an invoice with a supplier.",
+      "checklist": [
+        {
+          "item": "grocer",
+          "slot": "hero",
+          "match": [
+            "grocer"
+          ]
+        },
+        {
+          "item": "supplier",
+          "slot": "role",
+          "match": [
+            "supplier"
+          ]
+        },
+        {
+          "item": "invoice",
+          "slot": "role",
+          "match": [
+            "invoice"
+          ]
+        },
+        {
+          "item": "dispute",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e015",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A poet describes a sunset to a friend.",
+      "checklist": [
+        {
+          "item": "poet",
+          "slot": "hero",
+          "match": [
+            "poet"
+          ]
+        },
+        {
+          "item": "friend",
+          "slot": "role",
+          "match": [
+            "friend"
+          ]
+        },
+        {
+          "item": "sunset",
+          "slot": "role",
+          "match": [
+            "sunset"
+          ]
+        },
+        {
+          "item": "describe",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e016",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A dentist reassesses a tooth for a patient.",
+      "checklist": [
+        {
+          "item": "dentist",
+          "slot": "hero",
+          "match": [
+            "dentist"
+          ]
+        },
+        {
+          "item": "patient",
+          "slot": "role",
+          "match": [
+            "patient"
+          ]
+        },
+        {
+          "item": "tooth",
+          "slot": "role",
+          "match": [
+            "tooth"
+          ]
+        },
+        {
+          "item": "reassess",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e017",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A translator clarifies a letter for a passenger.",
+      "checklist": [
+        {
+          "item": "translator",
+          "slot": "hero",
+          "match": [
+            "translator"
+          ]
+        },
+        {
+          "item": "passenger",
+          "slot": "role",
+          "match": [
+            "passenger"
+          ]
+        },
+        {
+          "item": "letter",
+          "slot": "role",
+          "match": [
+            "letter"
+          ]
+        },
+        {
+          "item": "clarify",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e018",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "An architect envisions a balcony for a client.",
+      "checklist": [
+        {
+          "item": "architect",
+          "slot": "hero",
+          "match": [
+            "architect"
+          ]
+        },
+        {
+          "item": "client",
+          "slot": "role",
+          "match": [
+            "client"
+          ]
+        },
+        {
+          "item": "balcony",
+          "slot": "role",
+          "match": [
+            "balcony"
+          ]
+        },
+        {
+          "item": "envision",
+          "slot": "verb",
+          "controls": [
+            "placement",
+            "preview"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e019",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A scientist questions an assistant about a sample.",
+      "checklist": [
+        {
+          "item": "scientist",
+          "slot": "hero",
+          "match": [
+            "scientist"
+          ]
+        },
+        {
+          "item": "assistant",
+          "slot": "role",
+          "match": [
+            "assistant"
+          ]
+        },
+        {
+          "item": "sample",
+          "slot": "role",
+          "match": [
+            "sample"
+          ]
+        },
+        {
+          "item": "question",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e020",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A conductor compliments a violinist on a melody.",
+      "checklist": [
+        {
+          "item": "conductor",
+          "slot": "hero",
+          "match": [
+            "conductor"
+          ]
+        },
+        {
+          "item": "violinist",
+          "slot": "role",
+          "match": [
+            "violinist"
+          ]
+        },
+        {
+          "item": "melody",
+          "slot": "role",
+          "match": [
+            "melody"
+          ]
+        },
+        {
+          "item": "compliment",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e021",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A potter discusses a glaze with a pupil.",
+      "checklist": [
+        {
+          "item": "potter",
+          "slot": "hero",
+          "match": [
+            "potter"
+          ]
+        },
+        {
+          "item": "pupil",
+          "slot": "role",
+          "match": [
+            "pupil"
+          ]
+        },
+        {
+          "item": "glaze",
+          "slot": "role",
+          "match": [
+            "glaze"
+          ]
+        },
+        {
+          "item": "discuss",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e022",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A lawyer interprets a clause for a tenant.",
+      "checklist": [
+        {
+          "item": "lawyer",
+          "slot": "hero",
+          "match": [
+            "lawyer"
+          ]
+        },
+        {
+          "item": "tenant",
+          "slot": "role",
+          "match": [
+            "tenant"
+          ]
+        },
+        {
+          "item": "clause",
+          "slot": "role",
+          "match": [
+            "clause"
+          ]
+        },
+        {
+          "item": "interpret",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e023",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A coach motivates a runner with a speech.",
+      "checklist": [
+        {
+          "item": "coach",
+          "slot": "hero",
+          "match": [
+            "coach"
+          ]
+        },
+        {
+          "item": "runner",
+          "slot": "role",
+          "match": [
+            "runner"
+          ]
+        },
+        {
+          "item": "speech",
+          "slot": "role",
+          "match": [
+            "speech"
+          ]
+        },
+        {
+          "item": "motivate",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e024",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A mother forgives her son for a stain.",
+      "checklist": [
+        {
+          "item": "mother",
+          "slot": "hero",
+          "match": [
+            "mother"
+          ]
+        },
+        {
+          "item": "son",
+          "slot": "role",
+          "match": [
+            "son"
+          ]
+        },
+        {
+          "item": "stain",
+          "slot": "role",
+          "match": [
+            "stain"
+          ]
+        },
+        {
+          "item": "forgive",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e025",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A jeweler evaluates a necklace for a customer.",
+      "checklist": [
+        {
+          "item": "jeweler",
+          "slot": "hero",
+          "match": [
+            "jeweler"
+          ]
+        },
+        {
+          "item": "customer",
+          "slot": "role",
+          "match": [
+            "customer"
+          ]
+        },
+        {
+          "item": "necklace",
+          "slot": "role",
+          "match": [
+            "necklace"
+          ]
+        },
+        {
+          "item": "evaluate",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e026",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A farmer contemplates a scarecrow with a visitor.",
+      "checklist": [
+        {
+          "item": "farmer",
+          "slot": "hero",
+          "match": [
+            "farmer"
+          ]
+        },
+        {
+          "item": "visitor",
+          "slot": "role",
+          "match": [
+            "visitor"
+          ]
+        },
+        {
+          "item": "scarecrow",
+          "slot": "role",
+          "match": [
+            "scarecrow"
+          ]
+        },
+        {
+          "item": "contemplate",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e027",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A host introduces a newcomer to a pianist.",
+      "checklist": [
+        {
+          "item": "host",
+          "slot": "hero",
+          "match": [
+            "host"
+          ]
+        },
+        {
+          "item": "newcomer",
+          "slot": "role",
+          "match": [
+            "newcomer"
+          ]
+        },
+        {
+          "item": "pianist",
+          "slot": "role",
+          "match": [
+            "pianist"
+          ]
+        },
+        {
+          "item": "introduce",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e028",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A counselor mediates between a roommate and a landlord.",
+      "checklist": [
+        {
+          "item": "counselor",
+          "slot": "hero",
+          "match": [
+            "counselor"
+          ]
+        },
+        {
+          "item": "roommate",
+          "slot": "role",
+          "match": [
+            "roommate"
+          ]
+        },
+        {
+          "item": "landlord",
+          "slot": "role",
+          "match": [
+            "landlord"
+          ]
+        },
+        {
+          "item": "mediate",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e029",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A sibling empathizes with a brother over an exam.",
+      "checklist": [
+        {
+          "item": "sibling",
+          "slot": "hero",
+          "match": [
+            "sibling"
+          ]
+        },
+        {
+          "item": "brother",
+          "slot": "role",
+          "match": [
+            "brother"
+          ]
+        },
+        {
+          "item": "exam",
+          "slot": "role",
+          "match": [
+            "exam"
+          ]
+        },
+        {
+          "item": "empathize",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e030",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "An editor summarizes a manuscript for a publisher.",
+      "checklist": [
+        {
+          "item": "editor",
+          "slot": "hero",
+          "match": [
+            "editor"
+          ]
+        },
+        {
+          "item": "publisher",
+          "slot": "role",
+          "match": [
+            "publisher"
+          ]
+        },
+        {
+          "item": "manuscript",
+          "slot": "role",
+          "match": [
+            "manuscript"
+          ]
+        },
+        {
+          "item": "summarize",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e031",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A designer consults a weaver about a rug.",
+      "checklist": [
+        {
+          "item": "designer",
+          "slot": "hero",
+          "match": [
+            "designer"
+          ]
+        },
+        {
+          "item": "weaver",
+          "slot": "role",
+          "match": [
+            "weaver"
+          ]
+        },
+        {
+          "item": "rug",
+          "slot": "role",
+          "match": [
+            "rug"
+          ]
+        },
+        {
+          "item": "consult",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e032",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A researcher hypothesizes about a fossil beside a colleague.",
+      "checklist": [
+        {
+          "item": "researcher",
+          "slot": "hero",
+          "match": [
+            "researcher"
+          ]
+        },
+        {
+          "item": "colleague",
+          "slot": "role",
+          "match": [
+            "colleague"
+          ]
+        },
+        {
+          "item": "fossil",
+          "slot": "role",
+          "match": [
+            "fossil"
+          ]
+        },
+        {
+          "item": "hypothesize",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e033",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A pensioner cherishes a photograph with a granddaughter.",
+      "checklist": [
+        {
+          "item": "pensioner",
+          "slot": "hero",
+          "match": [
+            "pensioner"
+          ]
+        },
+        {
+          "item": "granddaughter",
+          "slot": "role",
+          "match": [
+            "granddaughter"
+          ]
+        },
+        {
+          "item": "photograph",
+          "slot": "role",
+          "match": [
+            "photograph"
+          ]
+        },
+        {
+          "item": "cherish",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e034",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A lecturer contextualizes a map for a historian.",
+      "checklist": [
+        {
+          "item": "lecturer",
+          "slot": "hero",
+          "match": [
+            "lecturer"
+          ]
+        },
+        {
+          "item": "historian",
+          "slot": "role",
+          "match": [
+            "historian"
+          ]
+        },
+        {
+          "item": "map",
+          "slot": "role",
+          "match": [
+            "map"
+          ]
+        },
+        {
+          "item": "contextualize",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e035",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "An aunt persuades a nephew to try a peach.",
+      "checklist": [
+        {
+          "item": "aunt",
+          "slot": "hero",
+          "match": [
+            "aunt"
+          ]
+        },
+        {
+          "item": "nephew",
+          "slot": "role",
+          "match": [
+            "nephew"
+          ]
+        },
+        {
+          "item": "peach",
+          "slot": "role",
+          "match": [
+            "peach"
+          ]
+        },
+        {
+          "item": "persuade",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e036",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A musician improvises a lullaby for a baby.",
+      "checklist": [
+        {
+          "item": "musician",
+          "slot": "hero",
+          "match": [
+            "musician"
+          ]
+        },
+        {
+          "item": "baby",
+          "slot": "role",
+          "match": [
+            "baby"
+          ]
+        },
+        {
+          "item": "lullaby",
+          "slot": "role",
+          "match": [
+            "lullaby"
+          ]
+        },
+        {
+          "item": "improvise",
+          "slot": "verb",
+          "controls": [
+            "rhythm",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e037",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A receptionist reschedules an appointment for a traveler.",
+      "checklist": [
+        {
+          "item": "receptionist",
+          "slot": "hero",
+          "match": [
+            "receptionist"
+          ]
+        },
+        {
+          "item": "traveler",
+          "slot": "role",
+          "match": [
+            "traveler"
+          ]
+        },
+        {
+          "item": "appointment",
+          "slot": "role",
+          "match": [
+            "appointment"
+          ]
+        },
+        {
+          "item": "reschedule",
+          "slot": "verb",
+          "controls": [
+            "selection",
+            "placement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e038",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A critic analyzes a sculpture with an intern.",
+      "checklist": [
+        {
+          "item": "critic",
+          "slot": "hero",
+          "match": [
+            "critic"
+          ]
+        },
+        {
+          "item": "intern",
+          "slot": "role",
+          "match": [
+            "intern"
+          ]
+        },
+        {
+          "item": "sculpture",
+          "slot": "role",
+          "match": [
+            "sculpture"
+          ]
+        },
+        {
+          "item": "analyze",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e039",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A secretary transcribes a memo for a manager.",
+      "checklist": [
+        {
+          "item": "secretary",
+          "slot": "hero",
+          "match": [
+            "secretary"
+          ]
+        },
+        {
+          "item": "manager",
+          "slot": "role",
+          "match": [
+            "manager"
+          ]
+        },
+        {
+          "item": "memo",
+          "slot": "role",
+          "match": [
+            "memo"
+          ]
+        },
+        {
+          "item": "transcribe",
+          "slot": "verb",
+          "controls": [
+            "typing",
+            "sequence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e040",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A beekeeper explains a honeycomb to a niece.",
+      "checklist": [
+        {
+          "item": "beekeeper",
+          "slot": "hero",
+          "match": [
+            "beekeeper"
+          ]
+        },
+        {
+          "item": "niece",
+          "slot": "role",
+          "match": [
+            "niece"
+          ]
+        },
+        {
+          "item": "honeycomb",
+          "slot": "role",
+          "match": [
+            "honeycomb"
+          ]
+        },
+        {
+          "item": "explain",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e041",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A brewer debates a flavor with a taster.",
+      "checklist": [
+        {
+          "item": "brewer",
+          "slot": "hero",
+          "match": [
+            "brewer"
+          ]
+        },
+        {
+          "item": "taster",
+          "slot": "role",
+          "match": [
+            "taster"
+          ]
+        },
+        {
+          "item": "flavor",
+          "slot": "role",
+          "match": [
+            "flavor"
+          ]
+        },
+        {
+          "item": "debate",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e042",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A groom thanks a seamstress for a waistcoat.",
+      "checklist": [
+        {
+          "item": "groom",
+          "slot": "hero",
+          "match": [
+            "groom"
+          ]
+        },
+        {
+          "item": "seamstress",
+          "slot": "role",
+          "match": [
+            "seamstress"
+          ]
+        },
+        {
+          "item": "waistcoat",
+          "slot": "role",
+          "match": [
+            "waistcoat"
+          ]
+        },
+        {
+          "item": "thank",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e043",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A student confides a worry to a mentor.",
+      "checklist": [
+        {
+          "item": "student",
+          "slot": "hero",
+          "match": [
+            "student"
+          ]
+        },
+        {
+          "item": "mentor",
+          "slot": "role",
+          "match": [
+            "mentor"
+          ]
+        },
+        {
+          "item": "worry",
+          "slot": "role",
+          "match": [
+            "worry"
+          ]
+        },
+        {
+          "item": "confide",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e044",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A proprietor reconciles an account with a bookkeeper.",
+      "checklist": [
+        {
+          "item": "proprietor",
+          "slot": "hero",
+          "match": [
+            "proprietor"
+          ]
+        },
+        {
+          "item": "bookkeeper",
+          "slot": "role",
+          "match": [
+            "bookkeeper"
+          ]
+        },
+        {
+          "item": "account",
+          "slot": "role",
+          "match": [
+            "account"
+          ]
+        },
+        {
+          "item": "reconcile",
+          "slot": "verb",
+          "controls": [
+            "comparison",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e045",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A grandmother bequeaths a brooch to a niece.",
+      "checklist": [
+        {
+          "item": "grandmother",
+          "slot": "hero",
+          "match": [
+            "grandmother"
+          ]
+        },
+        {
+          "item": "niece",
+          "slot": "role",
+          "match": [
+            "niece"
+          ]
+        },
+        {
+          "item": "brooch",
+          "slot": "role",
+          "match": [
+            "brooch"
+          ]
+        },
+        {
+          "item": "bequeath",
+          "slot": "verb",
+          "controls": [
+            "selection",
+            "transfer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e046",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A diner savors a pudding beside a companion.",
+      "checklist": [
+        {
+          "item": "diner",
+          "slot": "hero",
+          "match": [
+            "diner"
+          ]
+        },
+        {
+          "item": "companion",
+          "slot": "role",
+          "match": [
+            "companion"
+          ]
+        },
+        {
+          "item": "pudding",
+          "slot": "role",
+          "match": [
+            "pudding"
+          ]
+        },
+        {
+          "item": "savor",
+          "slot": "verb",
+          "controls": [
+            "timing",
+            "focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e047",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A vicar commemorates a sailor with a candle.",
+      "checklist": [
+        {
+          "item": "vicar",
+          "slot": "hero",
+          "match": [
+            "vicar"
+          ]
+        },
+        {
+          "item": "sailor",
+          "slot": "role",
+          "match": [
+            "sailor"
+          ]
+        },
+        {
+          "item": "candle",
+          "slot": "role",
+          "match": [
+            "candle"
+          ]
+        },
+        {
+          "item": "commemorate",
+          "slot": "verb",
+          "controls": [
+            "placement",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e048",
+      "source": "sealed-p44e",
+      "group": "everyday-human-intentions",
+      "tags": [
+        "non-game",
+        "unknown-verb"
+      ],
+      "text": "A reviewer endorses a novel for a bookseller.",
+      "checklist": [
+        {
+          "item": "reviewer",
+          "slot": "hero",
+          "match": [
+            "reviewer"
+          ]
+        },
+        {
+          "item": "bookseller",
+          "slot": "role",
+          "match": [
+            "bookseller"
+          ]
+        },
+        {
+          "item": "novel",
+          "slot": "role",
+          "match": [
+            "novel"
+          ]
+        },
+        {
+          "item": "endorse",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e049",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A detective deduces the connection between a glove and a receipt.",
+      "checklist": [
+        {
+          "item": "detective",
+          "slot": "hero",
+          "match": [
+            "detective"
+          ]
+        },
+        {
+          "item": "glove",
+          "slot": "role",
+          "match": [
+            "glove"
+          ]
+        },
+        {
+          "item": "receipt",
+          "slot": "role",
+          "match": [
+            "receipt"
+          ]
+        },
+        {
+          "item": "deduce",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e050",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A robot categorizes a pebble and a shell.",
+      "checklist": [
+        {
+          "item": "robot",
+          "slot": "hero",
+          "match": [
+            "robot"
+          ]
+        },
+        {
+          "item": "pebble",
+          "slot": "role",
+          "match": [
+            "pebble"
+          ]
+        },
+        {
+          "item": "shell",
+          "slot": "role",
+          "match": [
+            "shell"
+          ]
+        },
+        {
+          "item": "categorize",
+          "slot": "verb",
+          "controls": [
+            "selection",
+            "sorting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e051",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A diplomat arbitrates between a captain and a merchant.",
+      "checklist": [
+        {
+          "item": "diplomat",
+          "slot": "hero",
+          "match": [
+            "diplomat"
+          ]
+        },
+        {
+          "item": "captain",
+          "slot": "role",
+          "match": [
+            "captain"
+          ]
+        },
+        {
+          "item": "merchant",
+          "slot": "role",
+          "match": [
+            "merchant"
+          ]
+        },
+        {
+          "item": "arbitrate",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e052",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A fox befriends a hedgehog in an orchard.",
+      "checklist": [
+        {
+          "item": "fox",
+          "slot": "hero",
+          "match": [
+            "fox"
+          ]
+        },
+        {
+          "item": "hedgehog",
+          "slot": "role",
+          "match": [
+            "hedgehog"
+          ]
+        },
+        {
+          "item": "orchard",
+          "slot": "setting",
+          "match": [
+            "orchard"
+          ]
+        },
+        {
+          "item": "befriend",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e053",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A diver assesses a wreck beneath the reef.",
+      "checklist": [
+        {
+          "item": "diver",
+          "slot": "hero",
+          "match": [
+            "diver"
+          ]
+        },
+        {
+          "item": "wreck",
+          "slot": "role",
+          "match": [
+            "wreck"
+          ]
+        },
+        {
+          "item": "reef",
+          "slot": "setting",
+          "match": [
+            "reef"
+          ]
+        },
+        {
+          "item": "assess",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e054",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A cartographer annotates a chart inside a tent.",
+      "checklist": [
+        {
+          "item": "cartographer",
+          "slot": "hero",
+          "match": [
+            "cartographer"
+          ]
+        },
+        {
+          "item": "chart",
+          "slot": "role",
+          "match": [
+            "chart"
+          ]
+        },
+        {
+          "item": "tent",
+          "slot": "setting",
+          "match": [
+            "tent"
+          ]
+        },
+        {
+          "item": "annotate",
+          "slot": "verb",
+          "controls": [
+            "selection",
+            "placement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e055",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A scholar deciphers a tablet in a courtyard.",
+      "checklist": [
+        {
+          "item": "scholar",
+          "slot": "hero",
+          "match": [
+            "scholar"
+          ]
+        },
+        {
+          "item": "tablet",
+          "slot": "role",
+          "match": [
+            "tablet"
+          ]
+        },
+        {
+          "item": "courtyard",
+          "slot": "setting",
+          "match": [
+            "courtyard"
+          ]
+        },
+        {
+          "item": "decipher",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "sequence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e056",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A miner estimates a seam in a quarry.",
+      "checklist": [
+        {
+          "item": "miner",
+          "slot": "hero",
+          "match": [
+            "miner"
+          ]
+        },
+        {
+          "item": "seam",
+          "slot": "role",
+          "match": [
+            "seam"
+          ]
+        },
+        {
+          "item": "quarry",
+          "slot": "setting",
+          "match": [
+            "quarry"
+          ]
+        },
+        {
+          "item": "estimate",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e057",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A scout anticipates an avalanche on a mountain.",
+      "checklist": [
+        {
+          "item": "scout",
+          "slot": "hero",
+          "match": [
+            "scout"
+          ]
+        },
+        {
+          "item": "avalanche",
+          "slot": "role",
+          "match": [
+            "avalanche"
+          ]
+        },
+        {
+          "item": "mountain",
+          "slot": "setting",
+          "match": [
+            "mountain"
+          ]
+        },
+        {
+          "item": "anticipate",
+          "slot": "verb",
+          "controls": [
+            "timing",
+            "focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e058",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A penguin mourns a snowman on the ice.",
+      "checklist": [
+        {
+          "item": "penguin",
+          "slot": "hero",
+          "match": [
+            "penguin"
+          ]
+        },
+        {
+          "item": "snowman",
+          "slot": "role",
+          "match": [
+            "snowman"
+          ]
+        },
+        {
+          "item": "ice",
+          "slot": "setting",
+          "match": [
+            "ice"
+          ]
+        },
+        {
+          "item": "mourn",
+          "slot": "verb",
+          "controls": [
+            "focus",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e059",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A pilot calibrates a compass in a hangar.",
+      "checklist": [
+        {
+          "item": "pilot",
+          "slot": "hero",
+          "match": [
+            "pilot"
+          ]
+        },
+        {
+          "item": "compass",
+          "slot": "role",
+          "match": [
+            "compass"
+          ]
+        },
+        {
+          "item": "hangar",
+          "slot": "setting",
+          "match": [
+            "hangar"
+          ]
+        },
+        {
+          "item": "calibrate",
+          "slot": "verb",
+          "controls": [
+            "rotation",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e060",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A captain commemorates a voyage at the harbor.",
+      "checklist": [
+        {
+          "item": "captain",
+          "slot": "hero",
+          "match": [
+            "captain"
+          ]
+        },
+        {
+          "item": "voyage",
+          "slot": "role",
+          "match": [
+            "voyage"
+          ]
+        },
+        {
+          "item": "harbor",
+          "slot": "setting",
+          "match": [
+            "harbor"
+          ]
+        },
+        {
+          "item": "commemorate",
+          "slot": "verb",
+          "controls": [
+            "selection",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e061",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A squirrel stockpiles acorns in an attic.",
+      "checklist": [
+        {
+          "item": "squirrel",
+          "slot": "hero",
+          "match": [
+            "squirrel"
+          ]
+        },
+        {
+          "item": "acorns",
+          "slot": "role",
+          "match": [
+            "acorns"
+          ]
+        },
+        {
+          "item": "attic",
+          "slot": "setting",
+          "match": [
+            "attic"
+          ]
+        },
+        {
+          "item": "stockpile",
+          "slot": "verb",
+          "controls": [
+            "pickup",
+            "placement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e062",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A detective corroborates an alibi at a station.",
+      "checklist": [
+        {
+          "item": "detective",
+          "slot": "hero",
+          "match": [
+            "detective"
+          ]
+        },
+        {
+          "item": "alibi",
+          "slot": "role",
+          "match": [
+            "alibi"
+          ]
+        },
+        {
+          "item": "station",
+          "slot": "setting",
+          "match": [
+            "station"
+          ]
+        },
+        {
+          "item": "corroborate",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e063",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "An astronomer extrapolates an orbit at an observatory.",
+      "checklist": [
+        {
+          "item": "astronomer",
+          "slot": "hero",
+          "match": [
+            "astronomer"
+          ]
+        },
+        {
+          "item": "orbit",
+          "slot": "role",
+          "match": [
+            "orbit"
+          ]
+        },
+        {
+          "item": "observatory",
+          "slot": "setting",
+          "match": [
+            "observatory"
+          ]
+        },
+        {
+          "item": "extrapolate",
+          "slot": "verb",
+          "controls": [
+            "placement",
+            "preview"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e064",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A ranger nurtures a sapling in the wetlands.",
+      "checklist": [
+        {
+          "item": "ranger",
+          "slot": "hero",
+          "match": [
+            "ranger"
+          ]
+        },
+        {
+          "item": "sapling",
+          "slot": "role",
+          "match": [
+            "sapling"
+          ]
+        },
+        {
+          "item": "wetlands",
+          "slot": "setting",
+          "match": [
+            "wetlands"
+          ]
+        },
+        {
+          "item": "nurture",
+          "slot": "verb",
+          "controls": [
+            "interaction",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e065",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "An otter imitates a swan on a canal.",
+      "checklist": [
+        {
+          "item": "otter",
+          "slot": "hero",
+          "match": [
+            "otter"
+          ]
+        },
+        {
+          "item": "swan",
+          "slot": "role",
+          "match": [
+            "swan"
+          ]
+        },
+        {
+          "item": "canal",
+          "slot": "setting",
+          "match": [
+            "canal"
+          ]
+        },
+        {
+          "item": "imitate",
+          "slot": "verb",
+          "controls": [
+            "sequence",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e066",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A courier memorizes a route in a maze.",
+      "checklist": [
+        {
+          "item": "courier",
+          "slot": "hero",
+          "match": [
+            "courier"
+          ]
+        },
+        {
+          "item": "route",
+          "slot": "role",
+          "match": [
+            "route"
+          ]
+        },
+        {
+          "item": "maze",
+          "slot": "setting",
+          "match": [
+            "maze"
+          ]
+        },
+        {
+          "item": "memorize",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "sequence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e067",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A sculptor conceptualizes a monument in a studio.",
+      "checklist": [
+        {
+          "item": "sculptor",
+          "slot": "hero",
+          "match": [
+            "sculptor"
+          ]
+        },
+        {
+          "item": "monument",
+          "slot": "role",
+          "match": [
+            "monument"
+          ]
+        },
+        {
+          "item": "studio",
+          "slot": "setting",
+          "match": [
+            "studio"
+          ]
+        },
+        {
+          "item": "conceptualize",
+          "slot": "verb",
+          "controls": [
+            "placement",
+            "preview"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e068",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A mariner triangulates a beacon in the bay.",
+      "checklist": [
+        {
+          "item": "mariner",
+          "slot": "hero",
+          "match": [
+            "mariner"
+          ]
+        },
+        {
+          "item": "beacon",
+          "slot": "role",
+          "match": [
+            "beacon"
+          ]
+        },
+        {
+          "item": "bay",
+          "slot": "setting",
+          "match": [
+            "bay"
+          ]
+        },
+        {
+          "item": "triangulate",
+          "slot": "verb",
+          "controls": [
+            "aim",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e069",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A geologist classifies a crystal in a cavern.",
+      "checklist": [
+        {
+          "item": "geologist",
+          "slot": "hero",
+          "match": [
+            "geologist"
+          ]
+        },
+        {
+          "item": "crystal",
+          "slot": "role",
+          "match": [
+            "crystal"
+          ]
+        },
+        {
+          "item": "cavern",
+          "slot": "setting",
+          "match": [
+            "cavern"
+          ]
+        },
+        {
+          "item": "classify",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "sorting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e070",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A heron scrutinizes a ripple in a marsh.",
+      "checklist": [
+        {
+          "item": "heron",
+          "slot": "hero",
+          "match": [
+            "heron"
+          ]
+        },
+        {
+          "item": "ripple",
+          "slot": "role",
+          "match": [
+            "ripple"
+          ]
+        },
+        {
+          "item": "marsh",
+          "slot": "setting",
+          "match": [
+            "marsh"
+          ]
+        },
+        {
+          "item": "scrutinize",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e071",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A collector authenticates a coin at an auction.",
+      "checklist": [
+        {
+          "item": "collector",
+          "slot": "hero",
+          "match": [
+            "collector"
+          ]
+        },
+        {
+          "item": "coin",
+          "slot": "role",
+          "match": [
+            "coin"
+          ]
+        },
+        {
+          "item": "auction",
+          "slot": "setting",
+          "match": [
+            "auction"
+          ]
+        },
+        {
+          "item": "authenticate",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e072",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A monk interprets an omen in a cloister.",
+      "checklist": [
+        {
+          "item": "monk",
+          "slot": "hero",
+          "match": [
+            "monk"
+          ]
+        },
+        {
+          "item": "omen",
+          "slot": "role",
+          "match": [
+            "omen"
+          ]
+        },
+        {
+          "item": "cloister",
+          "slot": "setting",
+          "match": [
+            "cloister"
+          ]
+        },
+        {
+          "item": "interpret",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e073",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A parrot mistrusts a mannequin in a shop.",
+      "checklist": [
+        {
+          "item": "parrot",
+          "slot": "hero",
+          "match": [
+            "parrot"
+          ]
+        },
+        {
+          "item": "mannequin",
+          "slot": "role",
+          "match": [
+            "mannequin"
+          ]
+        },
+        {
+          "item": "shop",
+          "slot": "setting",
+          "match": [
+            "shop"
+          ]
+        },
+        {
+          "item": "mistrust",
+          "slot": "verb",
+          "controls": [
+            "choice",
+            "distance"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e074",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A mountaineer acclimatizes beside a yak on a plateau.",
+      "checklist": [
+        {
+          "item": "mountaineer",
+          "slot": "hero",
+          "match": [
+            "mountaineer"
+          ]
+        },
+        {
+          "item": "yak",
+          "slot": "role",
+          "match": [
+            "yak"
+          ]
+        },
+        {
+          "item": "plateau",
+          "slot": "setting",
+          "match": [
+            "plateau"
+          ]
+        },
+        {
+          "item": "acclimatize",
+          "slot": "verb",
+          "controls": [
+            "timing",
+            "rest"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e075",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "An archaeologist reconstructs a vase in a museum.",
+      "checklist": [
+        {
+          "item": "archaeologist",
+          "slot": "hero",
+          "match": [
+            "archaeologist"
+          ]
+        },
+        {
+          "item": "vase",
+          "slot": "role",
+          "match": [
+            "vase"
+          ]
+        },
+        {
+          "item": "museum",
+          "slot": "setting",
+          "match": [
+            "museum"
+          ]
+        },
+        {
+          "item": "reconstruct",
+          "slot": "verb",
+          "controls": [
+            "rotation",
+            "placement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e076",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A ferret investigates a thimble in a pantry.",
+      "checklist": [
+        {
+          "item": "ferret",
+          "slot": "hero",
+          "match": [
+            "ferret"
+          ]
+        },
+        {
+          "item": "thimble",
+          "slot": "role",
+          "match": [
+            "thimble"
+          ]
+        },
+        {
+          "item": "pantry",
+          "slot": "setting",
+          "match": [
+            "pantry"
+          ]
+        },
+        {
+          "item": "investigate",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e077",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A mathematician conjectures about a pattern in a classroom.",
+      "checklist": [
+        {
+          "item": "mathematician",
+          "slot": "hero",
+          "match": [
+            "mathematician"
+          ]
+        },
+        {
+          "item": "pattern",
+          "slot": "role",
+          "match": [
+            "pattern"
+          ]
+        },
+        {
+          "item": "classroom",
+          "slot": "setting",
+          "match": [
+            "classroom"
+          ]
+        },
+        {
+          "item": "conjecture",
+          "slot": "verb",
+          "controls": [
+            "comparison",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e078",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "An elephant commemorates a tortoise in a savanna.",
+      "checklist": [
+        {
+          "item": "elephant",
+          "slot": "hero",
+          "match": [
+            "elephant"
+          ]
+        },
+        {
+          "item": "tortoise",
+          "slot": "role",
+          "match": [
+            "tortoise"
+          ]
+        },
+        {
+          "item": "savanna",
+          "slot": "setting",
+          "match": [
+            "savanna"
+          ]
+        },
+        {
+          "item": "commemorate",
+          "slot": "verb",
+          "controls": [
+            "timing",
+            "placement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e079",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A navigator rationalizes a detour in a fjord.",
+      "checklist": [
+        {
+          "item": "navigator",
+          "slot": "hero",
+          "match": [
+            "navigator"
+          ]
+        },
+        {
+          "item": "detour",
+          "slot": "role",
+          "match": [
+            "detour"
+          ]
+        },
+        {
+          "item": "fjord",
+          "slot": "setting",
+          "match": [
+            "fjord"
+          ]
+        },
+        {
+          "item": "rationalize",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e080",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A diver acclimates a seahorse in an aquarium.",
+      "checklist": [
+        {
+          "item": "diver",
+          "slot": "hero",
+          "match": [
+            "diver"
+          ]
+        },
+        {
+          "item": "seahorse",
+          "slot": "role",
+          "match": [
+            "seahorse"
+          ]
+        },
+        {
+          "item": "aquarium",
+          "slot": "setting",
+          "match": [
+            "aquarium"
+          ]
+        },
+        {
+          "item": "acclimate",
+          "slot": "verb",
+          "controls": [
+            "timing",
+            "adjustment"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e081",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A conservator restores a fresco in a chapel.",
+      "checklist": [
+        {
+          "item": "conservator",
+          "slot": "hero",
+          "match": [
+            "conservator"
+          ]
+        },
+        {
+          "item": "fresco",
+          "slot": "role",
+          "match": [
+            "fresco"
+          ]
+        },
+        {
+          "item": "chapel",
+          "slot": "setting",
+          "match": [
+            "chapel"
+          ]
+        },
+        {
+          "item": "restore",
+          "slot": "verb",
+          "controls": [
+            "brush",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e082",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A crane balances a branch above a lagoon.",
+      "checklist": [
+        {
+          "item": "crane",
+          "slot": "hero",
+          "match": [
+            "crane"
+          ]
+        },
+        {
+          "item": "branch",
+          "slot": "role",
+          "match": [
+            "branch"
+          ]
+        },
+        {
+          "item": "lagoon",
+          "slot": "setting",
+          "match": [
+            "lagoon"
+          ]
+        },
+        {
+          "item": "balance",
+          "slot": "verb",
+          "controls": [
+            "tilt",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e083",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A visitor contemplates a sundial in a garden.",
+      "checklist": [
+        {
+          "item": "visitor",
+          "slot": "hero",
+          "match": [
+            "visitor"
+          ]
+        },
+        {
+          "item": "sundial",
+          "slot": "role",
+          "match": [
+            "sundial"
+          ]
+        },
+        {
+          "item": "garden",
+          "slot": "setting",
+          "match": [
+            "garden"
+          ]
+        },
+        {
+          "item": "contemplate",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e084",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A mole surveys a tunnel beneath a meadow.",
+      "checklist": [
+        {
+          "item": "mole",
+          "slot": "hero",
+          "match": [
+            "mole"
+          ]
+        },
+        {
+          "item": "tunnel",
+          "slot": "role",
+          "match": [
+            "tunnel"
+          ]
+        },
+        {
+          "item": "meadow",
+          "slot": "setting",
+          "match": [
+            "meadow"
+          ]
+        },
+        {
+          "item": "survey",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e085",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "An engineer simulates a turbine in a laboratory.",
+      "checklist": [
+        {
+          "item": "engineer",
+          "slot": "hero",
+          "match": [
+            "engineer"
+          ]
+        },
+        {
+          "item": "turbine",
+          "slot": "role",
+          "match": [
+            "turbine"
+          ]
+        },
+        {
+          "item": "laboratory",
+          "slot": "setting",
+          "match": [
+            "laboratory"
+          ]
+        },
+        {
+          "item": "simulate",
+          "slot": "verb",
+          "controls": [
+            "adjustment",
+            "preview"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e086",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A fox negotiates with a badger in a burrow.",
+      "checklist": [
+        {
+          "item": "fox",
+          "slot": "hero",
+          "match": [
+            "fox"
+          ]
+        },
+        {
+          "item": "badger",
+          "slot": "role",
+          "match": [
+            "badger"
+          ]
+        },
+        {
+          "item": "burrow",
+          "slot": "setting",
+          "match": [
+            "burrow"
+          ]
+        },
+        {
+          "item": "negotiate",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e087",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A painter idealizes a windmill in a valley.",
+      "checklist": [
+        {
+          "item": "painter",
+          "slot": "hero",
+          "match": [
+            "painter"
+          ]
+        },
+        {
+          "item": "windmill",
+          "slot": "role",
+          "match": [
+            "windmill"
+          ]
+        },
+        {
+          "item": "valley",
+          "slot": "setting",
+          "match": [
+            "valley"
+          ]
+        },
+        {
+          "item": "idealize",
+          "slot": "verb",
+          "controls": [
+            "brush",
+            "adjustment"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e088",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A shepherd reassures a lamb in a storm.",
+      "checklist": [
+        {
+          "item": "shepherd",
+          "slot": "hero",
+          "match": [
+            "shepherd"
+          ]
+        },
+        {
+          "item": "lamb",
+          "slot": "role",
+          "match": [
+            "lamb"
+          ]
+        },
+        {
+          "item": "storm",
+          "slot": "setting",
+          "match": [
+            "storm"
+          ]
+        },
+        {
+          "item": "reassure",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e089",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A stork adopts a gosling beside a pond.",
+      "checklist": [
+        {
+          "item": "stork",
+          "slot": "hero",
+          "match": [
+            "stork"
+          ]
+        },
+        {
+          "item": "gosling",
+          "slot": "role",
+          "match": [
+            "gosling"
+          ]
+        },
+        {
+          "item": "pond",
+          "slot": "setting",
+          "match": [
+            "pond"
+          ]
+        },
+        {
+          "item": "adopt",
+          "slot": "verb",
+          "controls": [
+            "choice",
+            "interaction"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e090",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A physicist measures a pendulum in a tower.",
+      "checklist": [
+        {
+          "item": "physicist",
+          "slot": "hero",
+          "match": [
+            "physicist"
+          ]
+        },
+        {
+          "item": "pendulum",
+          "slot": "role",
+          "match": [
+            "pendulum"
+          ]
+        },
+        {
+          "item": "tower",
+          "slot": "setting",
+          "match": [
+            "tower"
+          ]
+        },
+        {
+          "item": "measure",
+          "slot": "verb",
+          "controls": [
+            "timing",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e091",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A locksmith improvises a key in a workshop.",
+      "checklist": [
+        {
+          "item": "locksmith",
+          "slot": "hero",
+          "match": [
+            "locksmith"
+          ]
+        },
+        {
+          "item": "key",
+          "slot": "role",
+          "match": [
+            "key"
+          ]
+        },
+        {
+          "item": "workshop",
+          "slot": "setting",
+          "match": [
+            "workshop"
+          ]
+        },
+        {
+          "item": "improvise",
+          "slot": "verb",
+          "controls": [
+            "placement",
+            "adjustment"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e092",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A crocodile envies a flamingo in a delta.",
+      "checklist": [
+        {
+          "item": "crocodile",
+          "slot": "hero",
+          "match": [
+            "crocodile"
+          ]
+        },
+        {
+          "item": "flamingo",
+          "slot": "role",
+          "match": [
+            "flamingo"
+          ]
+        },
+        {
+          "item": "delta",
+          "slot": "setting",
+          "match": [
+            "delta"
+          ]
+        },
+        {
+          "item": "envy",
+          "slot": "verb",
+          "controls": [
+            "focus",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e093",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A tracker interprets a footprint in a ravine.",
+      "checklist": [
+        {
+          "item": "tracker",
+          "slot": "hero",
+          "match": [
+            "tracker"
+          ]
+        },
+        {
+          "item": "footprint",
+          "slot": "role",
+          "match": [
+            "footprint"
+          ]
+        },
+        {
+          "item": "ravine",
+          "slot": "setting",
+          "match": [
+            "ravine"
+          ]
+        },
+        {
+          "item": "interpret",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e094",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A botanist crossbreeds an orchid in a greenhouse.",
+      "checklist": [
+        {
+          "item": "botanist",
+          "slot": "hero",
+          "match": [
+            "botanist"
+          ]
+        },
+        {
+          "item": "orchid",
+          "slot": "role",
+          "match": [
+            "orchid"
+          ]
+        },
+        {
+          "item": "greenhouse",
+          "slot": "setting",
+          "match": [
+            "greenhouse"
+          ]
+        },
+        {
+          "item": "crossbreed",
+          "slot": "verb",
+          "controls": [
+            "selection",
+            "interaction"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e095",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A raccoon camouflages a basket in a thicket.",
+      "checklist": [
+        {
+          "item": "raccoon",
+          "slot": "hero",
+          "match": [
+            "raccoon"
+          ]
+        },
+        {
+          "item": "basket",
+          "slot": "role",
+          "match": [
+            "basket"
+          ]
+        },
+        {
+          "item": "thicket",
+          "slot": "setting",
+          "match": [
+            "thicket"
+          ]
+        },
+        {
+          "item": "camouflage",
+          "slot": "verb",
+          "controls": [
+            "placement",
+            "adjustment"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e096",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A technician synchronizes a metronome backstage.",
+      "checklist": [
+        {
+          "item": "technician",
+          "slot": "hero",
+          "match": [
+            "technician"
+          ]
+        },
+        {
+          "item": "metronome",
+          "slot": "role",
+          "match": [
+            "metronome"
+          ]
+        },
+        {
+          "item": "backstage",
+          "slot": "setting",
+          "match": [
+            "backstage"
+          ]
+        },
+        {
+          "item": "synchronize",
+          "slot": "verb",
+          "controls": [
+            "rhythm",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e097",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A seal appraises a buoy in an estuary.",
+      "checklist": [
+        {
+          "item": "seal",
+          "slot": "hero",
+          "match": [
+            "seal"
+          ]
+        },
+        {
+          "item": "buoy",
+          "slot": "role",
+          "match": [
+            "buoy"
+          ]
+        },
+        {
+          "item": "estuary",
+          "slot": "setting",
+          "match": [
+            "estuary"
+          ]
+        },
+        {
+          "item": "appraise",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e098",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "An explorer chronicles a geyser in a basin.",
+      "checklist": [
+        {
+          "item": "explorer",
+          "slot": "hero",
+          "match": [
+            "explorer"
+          ]
+        },
+        {
+          "item": "geyser",
+          "slot": "role",
+          "match": [
+            "geyser"
+          ]
+        },
+        {
+          "item": "basin",
+          "slot": "setting",
+          "match": [
+            "basin"
+          ]
+        },
+        {
+          "item": "chronicle",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "sequence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e099",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A tortoise reconsiders a shortcut in a canyon.",
+      "checklist": [
+        {
+          "item": "tortoise",
+          "slot": "hero",
+          "match": [
+            "tortoise"
+          ]
+        },
+        {
+          "item": "shortcut",
+          "slot": "role",
+          "match": [
+            "shortcut"
+          ]
+        },
+        {
+          "item": "canyon",
+          "slot": "setting",
+          "match": [
+            "canyon"
+          ]
+        },
+        {
+          "item": "reconsider",
+          "slot": "verb",
+          "controls": [
+            "choice",
+            "preview"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e100",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A sailor befriends an albatross on an island.",
+      "checklist": [
+        {
+          "item": "sailor",
+          "slot": "hero",
+          "match": [
+            "sailor"
+          ]
+        },
+        {
+          "item": "albatross",
+          "slot": "role",
+          "match": [
+            "albatross"
+          ]
+        },
+        {
+          "item": "island",
+          "slot": "setting",
+          "match": [
+            "island"
+          ]
+        },
+        {
+          "item": "befriend",
+          "slot": "verb",
+          "controls": [
+            "interaction",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e101",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A programmer debugs a terminal in a bunker.",
+      "checklist": [
+        {
+          "item": "programmer",
+          "slot": "hero",
+          "match": [
+            "programmer"
+          ]
+        },
+        {
+          "item": "terminal",
+          "slot": "role",
+          "match": [
+            "terminal"
+          ]
+        },
+        {
+          "item": "bunker",
+          "slot": "setting",
+          "match": [
+            "bunker"
+          ]
+        },
+        {
+          "item": "debug",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "sequence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e102",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A peacock courts a peahen in a clearing.",
+      "checklist": [
+        {
+          "item": "peacock",
+          "slot": "hero",
+          "match": [
+            "peacock"
+          ]
+        },
+        {
+          "item": "peahen",
+          "slot": "role",
+          "match": [
+            "peahen"
+          ]
+        },
+        {
+          "item": "clearing",
+          "slot": "setting",
+          "match": [
+            "clearing"
+          ]
+        },
+        {
+          "item": "court",
+          "slot": "verb",
+          "controls": [
+            "rhythm",
+            "sequence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e103",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A puppeteer animates a marionette in a theater.",
+      "checklist": [
+        {
+          "item": "puppeteer",
+          "slot": "hero",
+          "match": [
+            "puppeteer"
+          ]
+        },
+        {
+          "item": "marionette",
+          "slot": "role",
+          "match": [
+            "marionette"
+          ]
+        },
+        {
+          "item": "theater",
+          "slot": "setting",
+          "match": [
+            "theater"
+          ]
+        },
+        {
+          "item": "animate",
+          "slot": "verb",
+          "controls": [
+            "drag",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e104",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A camel endures a mirage in a desert.",
+      "checklist": [
+        {
+          "item": "camel",
+          "slot": "hero",
+          "match": [
+            "camel"
+          ]
+        },
+        {
+          "item": "mirage",
+          "slot": "role",
+          "match": [
+            "mirage"
+          ]
+        },
+        {
+          "item": "desert",
+          "slot": "setting",
+          "match": [
+            "desert"
+          ]
+        },
+        {
+          "item": "endure",
+          "slot": "verb",
+          "controls": [
+            "timing",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e105",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A winemaker ferments grapes in a cellar.",
+      "checklist": [
+        {
+          "item": "winemaker",
+          "slot": "hero",
+          "match": [
+            "winemaker"
+          ]
+        },
+        {
+          "item": "grapes",
+          "slot": "role",
+          "match": [
+            "grapes"
+          ]
+        },
+        {
+          "item": "cellar",
+          "slot": "setting",
+          "match": [
+            "cellar"
+          ]
+        },
+        {
+          "item": "ferment",
+          "slot": "verb",
+          "controls": [
+            "adjustment",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e106",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A biologist catalogues a moth in a conservatory.",
+      "checklist": [
+        {
+          "item": "biologist",
+          "slot": "hero",
+          "match": [
+            "biologist"
+          ]
+        },
+        {
+          "item": "moth",
+          "slot": "role",
+          "match": [
+            "moth"
+          ]
+        },
+        {
+          "item": "conservatory",
+          "slot": "setting",
+          "match": [
+            "conservatory"
+          ]
+        },
+        {
+          "item": "catalogue",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "sorting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e107",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A chameleon mimics a leaf in a jungle.",
+      "checklist": [
+        {
+          "item": "chameleon",
+          "slot": "hero",
+          "match": [
+            "chameleon"
+          ]
+        },
+        {
+          "item": "leaf",
+          "slot": "role",
+          "match": [
+            "leaf"
+          ]
+        },
+        {
+          "item": "jungle",
+          "slot": "setting",
+          "match": [
+            "jungle"
+          ]
+        },
+        {
+          "item": "mimic",
+          "slot": "verb",
+          "controls": [
+            "selection",
+            "adjustment"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e108",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A historian dates a parchment in an archive.",
+      "checklist": [
+        {
+          "item": "historian",
+          "slot": "hero",
+          "match": [
+            "historian"
+          ]
+        },
+        {
+          "item": "parchment",
+          "slot": "role",
+          "match": [
+            "parchment"
+          ]
+        },
+        {
+          "item": "archive",
+          "slot": "setting",
+          "match": [
+            "archive"
+          ]
+        },
+        {
+          "item": "date",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e109",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A crow bargains for a walnut at a market.",
+      "checklist": [
+        {
+          "item": "crow",
+          "slot": "hero",
+          "match": [
+            "crow"
+          ]
+        },
+        {
+          "item": "walnut",
+          "slot": "role",
+          "match": [
+            "walnut"
+          ]
+        },
+        {
+          "item": "market",
+          "slot": "setting",
+          "match": [
+            "market"
+          ]
+        },
+        {
+          "item": "bargain",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e110",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A welder reinforces a railing on a bridge.",
+      "checklist": [
+        {
+          "item": "welder",
+          "slot": "hero",
+          "match": [
+            "welder"
+          ]
+        },
+        {
+          "item": "railing",
+          "slot": "role",
+          "match": [
+            "railing"
+          ]
+        },
+        {
+          "item": "bridge",
+          "slot": "setting",
+          "match": [
+            "bridge"
+          ]
+        },
+        {
+          "item": "reinforce",
+          "slot": "verb",
+          "controls": [
+            "aim",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e111",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A hedgehog hibernates beneath a fern in a forest.",
+      "checklist": [
+        {
+          "item": "hedgehog",
+          "slot": "hero",
+          "match": [
+            "hedgehog"
+          ]
+        },
+        {
+          "item": "fern",
+          "slot": "role",
+          "match": [
+            "fern"
+          ]
+        },
+        {
+          "item": "forest",
+          "slot": "setting",
+          "match": [
+            "forest"
+          ]
+        },
+        {
+          "item": "hibernate",
+          "slot": "verb",
+          "controls": [
+            "rest",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e112",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A photographer composes a silhouette on a beach.",
+      "checklist": [
+        {
+          "item": "photographer",
+          "slot": "hero",
+          "match": [
+            "photographer"
+          ]
+        },
+        {
+          "item": "silhouette",
+          "slot": "role",
+          "match": [
+            "silhouette"
+          ]
+        },
+        {
+          "item": "beach",
+          "slot": "setting",
+          "match": [
+            "beach"
+          ]
+        },
+        {
+          "item": "compose",
+          "slot": "verb",
+          "controls": [
+            "aim",
+            "focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e113",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A donkey sympathizes with a mule in a stable.",
+      "checklist": [
+        {
+          "item": "donkey",
+          "slot": "hero",
+          "match": [
+            "donkey"
+          ]
+        },
+        {
+          "item": "mule",
+          "slot": "role",
+          "match": [
+            "mule"
+          ]
+        },
+        {
+          "item": "stable",
+          "slot": "setting",
+          "match": [
+            "stable"
+          ]
+        },
+        {
+          "item": "sympathize",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e114",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A perfumer distills lavender in a cottage.",
+      "checklist": [
+        {
+          "item": "perfumer",
+          "slot": "hero",
+          "match": [
+            "perfumer"
+          ]
+        },
+        {
+          "item": "lavender",
+          "slot": "role",
+          "match": [
+            "lavender"
+          ]
+        },
+        {
+          "item": "cottage",
+          "slot": "setting",
+          "match": [
+            "cottage"
+          ]
+        },
+        {
+          "item": "distill",
+          "slot": "verb",
+          "controls": [
+            "adjustment",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e115",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A ranger rehabilitates a falcon in a sanctuary.",
+      "checklist": [
+        {
+          "item": "ranger",
+          "slot": "hero",
+          "match": [
+            "ranger"
+          ]
+        },
+        {
+          "item": "falcon",
+          "slot": "role",
+          "match": [
+            "falcon"
+          ]
+        },
+        {
+          "item": "sanctuary",
+          "slot": "setting",
+          "match": [
+            "sanctuary"
+          ]
+        },
+        {
+          "item": "rehabilitate",
+          "slot": "verb",
+          "controls": [
+            "interaction",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e116",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A geographer names a tributary in a gorge.",
+      "checklist": [
+        {
+          "item": "geographer",
+          "slot": "hero",
+          "match": [
+            "geographer"
+          ]
+        },
+        {
+          "item": "tributary",
+          "slot": "role",
+          "match": [
+            "tributary"
+          ]
+        },
+        {
+          "item": "gorge",
+          "slot": "setting",
+          "match": [
+            "gorge"
+          ]
+        },
+        {
+          "item": "name",
+          "slot": "verb",
+          "controls": [
+            "typing",
+            "selection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e117",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A koala dozes beside a cockatoo in a grove.",
+      "checklist": [
+        {
+          "item": "koala",
+          "slot": "hero",
+          "match": [
+            "koala"
+          ]
+        },
+        {
+          "item": "cockatoo",
+          "slot": "role",
+          "match": [
+            "cockatoo"
+          ]
+        },
+        {
+          "item": "grove",
+          "slot": "setting",
+          "match": [
+            "grove"
+          ]
+        },
+        {
+          "item": "doze",
+          "slot": "verb",
+          "controls": [
+            "rest",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e118",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A saboteur impersonates a guard in a fortress.",
+      "checklist": [
+        {
+          "item": "saboteur",
+          "slot": "hero",
+          "match": [
+            "saboteur"
+          ]
+        },
+        {
+          "item": "guard",
+          "slot": "role",
+          "match": [
+            "guard"
+          ]
+        },
+        {
+          "item": "fortress",
+          "slot": "setting",
+          "match": [
+            "fortress"
+          ]
+        },
+        {
+          "item": "impersonate",
+          "slot": "verb",
+          "controls": [
+            "dialogue",
+            "sequence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e119",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "The abandoned conservatory slowly humidifies a violin.",
+      "checklist": [
+        {
+          "item": "violin",
+          "slot": "any",
+          "match": [
+            "violin"
+          ]
+        },
+        {
+          "item": "conservatory",
+          "slot": "setting",
+          "match": [
+            "conservatory"
+          ]
+        },
+        {
+          "item": "humidify",
+          "slot": "verb",
+          "controls": [
+            "adjustment",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e120",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "At the academy, a theorem gradually becomes comprehensible.",
+      "checklist": [
+        {
+          "item": "theorem",
+          "slot": "any",
+          "match": [
+            "theorem"
+          ]
+        },
+        {
+          "item": "academy",
+          "slot": "setting",
+          "match": [
+            "academy"
+          ]
+        },
+        {
+          "item": "comprehend",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "sequence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e121",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A faded tapestry is painstakingly authenticated in the gallery.",
+      "checklist": [
+        {
+          "item": "tapestry",
+          "slot": "any",
+          "match": [
+            "tapestry"
+          ]
+        },
+        {
+          "item": "gallery",
+          "slot": "setting",
+          "match": [
+            "gallery"
+          ]
+        },
+        {
+          "item": "authenticate",
+          "slot": "verb",
+          "controls": [
+            "inspect",
+            "comparison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e122",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "In the monastery, a chant is carefully harmonized.",
+      "checklist": [
+        {
+          "item": "chant",
+          "slot": "any",
+          "match": [
+            "chant"
+          ]
+        },
+        {
+          "item": "monastery",
+          "slot": "setting",
+          "match": [
+            "monastery"
+          ]
+        },
+        {
+          "item": "harmonize",
+          "slot": "verb",
+          "controls": [
+            "rhythm",
+            "adjustment"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e123",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "A weathered inscription is paraphrased at the excavation.",
+      "checklist": [
+        {
+          "item": "inscription",
+          "slot": "any",
+          "match": [
+            "inscription"
+          ]
+        },
+        {
+          "item": "excavation",
+          "slot": "setting",
+          "match": [
+            "excavation"
+          ]
+        },
+        {
+          "item": "paraphrase",
+          "slot": "verb",
+          "controls": [
+            "selection",
+            "sequence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e124",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "In the amphitheater, an aria is reinterpreted softly.",
+      "checklist": [
+        {
+          "item": "aria",
+          "slot": "any",
+          "match": [
+            "aria"
+          ]
+        },
+        {
+          "item": "amphitheater",
+          "slot": "setting",
+          "match": [
+            "amphitheater"
+          ]
+        },
+        {
+          "item": "reinterpret",
+          "slot": "verb",
+          "controls": [
+            "rhythm",
+            "choice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e125",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "An heirloom is ceremonially bequeathed at the manor.",
+      "checklist": [
+        {
+          "item": "heirloom",
+          "slot": "any",
+          "match": [
+            "heirloom"
+          ]
+        },
+        {
+          "item": "manor",
+          "slot": "setting",
+          "match": [
+            "manor"
+          ]
+        },
+        {
+          "item": "bequeath",
+          "slot": "verb",
+          "controls": [
+            "choice",
+            "transfer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e126",
+      "source": "sealed-p44e",
+      "group": "interpretation-and-unusual-actions",
+      "tags": [
+        "unknown-verb"
+      ],
+      "text": "In the solarium, a chrysanthemum is patiently acclimatized.",
+      "checklist": [
+        {
+          "item": "chrysanthemum",
+          "slot": "any",
+          "match": [
+            "chrysanthemum"
+          ]
+        },
+        {
+          "item": "solarium",
+          "slot": "setting",
+          "match": [
+            "solarium"
+          ]
+        },
+        {
+          "item": "acclimatize",
+          "slot": "verb",
+          "controls": [
+            "adjustment",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e127",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A rabbit jumps over a log in the woods.",
+      "checklist": [
+        {
+          "item": "rabbit",
+          "slot": "any",
+          "match": [
+            "rabbit"
+          ]
+        },
+        {
+          "item": "woods",
+          "slot": "setting",
+          "match": [
+            "woods"
+          ]
+        },
+        {
+          "item": "jump",
+          "slot": "verb",
+          "controls": [
+            "jump",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e128",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A marble rolls across the kitchen.",
+      "checklist": [
+        {
+          "item": "marble",
+          "slot": "any",
+          "match": [
+            "marble"
+          ]
+        },
+        {
+          "item": "kitchen",
+          "slot": "setting",
+          "match": [
+            "kitchen"
+          ]
+        },
+        {
+          "item": "roll",
+          "slot": "verb",
+          "controls": [
+            "tilt",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e129",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A crab dodges sideways on the shore.",
+      "checklist": [
+        {
+          "item": "crab",
+          "slot": "any",
+          "match": [
+            "crab"
+          ]
+        },
+        {
+          "item": "shore",
+          "slot": "setting",
+          "match": [
+            "shore"
+          ]
+        },
+        {
+          "item": "dodge",
+          "slot": "verb",
+          "controls": [
+            "dodge",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e130",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A mouse runs through the granary.",
+      "checklist": [
+        {
+          "item": "mouse",
+          "slot": "any",
+          "match": [
+            "mouse"
+          ]
+        },
+        {
+          "item": "granary",
+          "slot": "setting",
+          "match": [
+            "granary"
+          ]
+        },
+        {
+          "item": "run",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "sprint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e131",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A frog swims across the reservoir.",
+      "checklist": [
+        {
+          "item": "frog",
+          "slot": "any",
+          "match": [
+            "frog"
+          ]
+        },
+        {
+          "item": "reservoir",
+          "slot": "setting",
+          "match": [
+            "reservoir"
+          ]
+        },
+        {
+          "item": "swim",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "swim"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e132",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A climber ascends the cliff.",
+      "checklist": [
+        {
+          "item": "climber",
+          "slot": "any",
+          "match": [
+            "climber"
+          ]
+        },
+        {
+          "item": "cliff",
+          "slot": "setting",
+          "match": [
+            "cliff"
+          ]
+        },
+        {
+          "item": "climb",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "climb"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e133",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A coin spins across the arcade.",
+      "checklist": [
+        {
+          "item": "coin",
+          "slot": "any",
+          "match": [
+            "coin"
+          ]
+        },
+        {
+          "item": "arcade",
+          "slot": "setting",
+          "match": [
+            "arcade"
+          ]
+        },
+        {
+          "item": "spin",
+          "slot": "verb",
+          "controls": [
+            "rotation",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e134",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A skater slides along the frozen canal.",
+      "checklist": [
+        {
+          "item": "skater",
+          "slot": "any",
+          "match": [
+            "skater"
+          ]
+        },
+        {
+          "item": "canal",
+          "slot": "setting",
+          "match": [
+            "canal"
+          ]
+        },
+        {
+          "item": "slide",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "slide"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e135",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A drone flies through the warehouse.",
+      "checklist": [
+        {
+          "item": "drone",
+          "slot": "any",
+          "match": [
+            "drone"
+          ]
+        },
+        {
+          "item": "warehouse",
+          "slot": "setting",
+          "match": [
+            "warehouse"
+          ]
+        },
+        {
+          "item": "fly",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "vertical"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e136",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A beetle crawls through the terrarium.",
+      "checklist": [
+        {
+          "item": "beetle",
+          "slot": "any",
+          "match": [
+            "beetle"
+          ]
+        },
+        {
+          "item": "terrarium",
+          "slot": "setting",
+          "match": [
+            "terrarium"
+          ]
+        },
+        {
+          "item": "crawl",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "crouch"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e137",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A kangaroo leaps across the outback.",
+      "checklist": [
+        {
+          "item": "kangaroo",
+          "slot": "any",
+          "match": [
+            "kangaroo"
+          ]
+        },
+        {
+          "item": "outback",
+          "slot": "setting",
+          "match": [
+            "outback"
+          ]
+        },
+        {
+          "item": "leap",
+          "slot": "verb",
+          "controls": [
+            "jump",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e138",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A submarine dives beneath the ocean.",
+      "checklist": [
+        {
+          "item": "submarine",
+          "slot": "any",
+          "match": [
+            "submarine"
+          ]
+        },
+        {
+          "item": "ocean",
+          "slot": "setting",
+          "match": [
+            "ocean"
+          ]
+        },
+        {
+          "item": "dive",
+          "slot": "verb",
+          "controls": [
+            "vertical",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e139",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A skier races down the slope.",
+      "checklist": [
+        {
+          "item": "skier",
+          "slot": "any",
+          "match": [
+            "skier"
+          ]
+        },
+        {
+          "item": "slope",
+          "slot": "setting",
+          "match": [
+            "slope"
+          ]
+        },
+        {
+          "item": "race",
+          "slot": "verb",
+          "controls": [
+            "steer",
+            "accelerate"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e140",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A balloon floats above the city.",
+      "checklist": [
+        {
+          "item": "balloon",
+          "slot": "any",
+          "match": [
+            "balloon"
+          ]
+        },
+        {
+          "item": "city",
+          "slot": "setting",
+          "match": [
+            "city"
+          ]
+        },
+        {
+          "item": "float",
+          "slot": "verb",
+          "controls": [
+            "vertical",
+            "steer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e141",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A tractor plows the field.",
+      "checklist": [
+        {
+          "item": "tractor",
+          "slot": "any",
+          "match": [
+            "tractor"
+          ]
+        },
+        {
+          "item": "field",
+          "slot": "setting",
+          "match": [
+            "field"
+          ]
+        },
+        {
+          "item": "plow",
+          "slot": "verb",
+          "controls": [
+            "steer",
+            "interact"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e142",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A penguin slides through the ice cave.",
+      "checklist": [
+        {
+          "item": "penguin",
+          "slot": "any",
+          "match": [
+            "penguin"
+          ]
+        },
+        {
+          "item": "ice cave",
+          "slot": "setting",
+          "match": [
+            "ice cave"
+          ]
+        },
+        {
+          "item": "slide",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "slide"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e143",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A gymnast flips across the gymnasium.",
+      "checklist": [
+        {
+          "item": "gymnast",
+          "slot": "any",
+          "match": [
+            "gymnast"
+          ]
+        },
+        {
+          "item": "gymnasium",
+          "slot": "setting",
+          "match": [
+            "gymnasium"
+          ]
+        },
+        {
+          "item": "flip",
+          "slot": "verb",
+          "controls": [
+            "jump",
+            "rotation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e144",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A miner digs beneath the hillside.",
+      "checklist": [
+        {
+          "item": "miner",
+          "slot": "any",
+          "match": [
+            "miner"
+          ]
+        },
+        {
+          "item": "hillside",
+          "slot": "setting",
+          "match": [
+            "hillside"
+          ]
+        },
+        {
+          "item": "dig",
+          "slot": "verb",
+          "controls": [
+            "aim",
+            "interact"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e145",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A goose charges across the park.",
+      "checklist": [
+        {
+          "item": "goose",
+          "slot": "any",
+          "match": [
+            "goose"
+          ]
+        },
+        {
+          "item": "park",
+          "slot": "setting",
+          "match": [
+            "park"
+          ]
+        },
+        {
+          "item": "charge",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "sprint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e146",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A cyclist pedals around the velodrome.",
+      "checklist": [
+        {
+          "item": "cyclist",
+          "slot": "any",
+          "match": [
+            "cyclist"
+          ]
+        },
+        {
+          "item": "velodrome",
+          "slot": "setting",
+          "match": [
+            "velodrome"
+          ]
+        },
+        {
+          "item": "pedal",
+          "slot": "verb",
+          "controls": [
+            "accelerate",
+            "steer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e147",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A sled accelerates down the glacier.",
+      "checklist": [
+        {
+          "item": "sled",
+          "slot": "any",
+          "match": [
+            "sled"
+          ]
+        },
+        {
+          "item": "glacier",
+          "slot": "setting",
+          "match": [
+            "glacier"
+          ]
+        },
+        {
+          "item": "accelerate",
+          "slot": "verb",
+          "controls": [
+            "accelerate",
+            "steer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e148",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A spider climbs through the belfry.",
+      "checklist": [
+        {
+          "item": "spider",
+          "slot": "any",
+          "match": [
+            "spider"
+          ]
+        },
+        {
+          "item": "belfry",
+          "slot": "setting",
+          "match": [
+            "belfry"
+          ]
+        },
+        {
+          "item": "climb",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "climb"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e149",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A duck paddles through the flooded street.",
+      "checklist": [
+        {
+          "item": "duck",
+          "slot": "any",
+          "match": [
+            "duck"
+          ]
+        },
+        {
+          "item": "flooded street",
+          "slot": "setting",
+          "match": [
+            "flooded street"
+          ]
+        },
+        {
+          "item": "paddle",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "swim"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e150",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A racecar brakes at the speedway.",
+      "checklist": [
+        {
+          "item": "racecar",
+          "slot": "any",
+          "match": [
+            "racecar"
+          ]
+        },
+        {
+          "item": "speedway",
+          "slot": "setting",
+          "match": [
+            "speedway"
+          ]
+        },
+        {
+          "item": "brake",
+          "slot": "verb",
+          "controls": [
+            "brake",
+            "steer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e151",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A gymnast balances on the beam.",
+      "checklist": [
+        {
+          "item": "gymnast",
+          "slot": "any",
+          "match": [
+            "gymnast"
+          ]
+        },
+        {
+          "item": "beam",
+          "slot": "setting",
+          "match": [
+            "beam"
+          ]
+        },
+        {
+          "item": "balance",
+          "slot": "verb",
+          "controls": [
+            "tilt",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e152",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A hamster hops through the playroom.",
+      "checklist": [
+        {
+          "item": "hamster",
+          "slot": "any",
+          "match": [
+            "hamster"
+          ]
+        },
+        {
+          "item": "playroom",
+          "slot": "setting",
+          "match": [
+            "playroom"
+          ]
+        },
+        {
+          "item": "hop",
+          "slot": "verb",
+          "controls": [
+            "jump",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e153",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A delivery van reverses into the depot.",
+      "checklist": [
+        {
+          "item": "delivery van",
+          "slot": "any",
+          "match": [
+            "delivery van"
+          ]
+        },
+        {
+          "item": "depot",
+          "slot": "setting",
+          "match": [
+            "depot"
+          ]
+        },
+        {
+          "item": "reverse",
+          "slot": "verb",
+          "controls": [
+            "reverse",
+            "steer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e154",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A puppy crawls beneath the veranda.",
+      "checklist": [
+        {
+          "item": "puppy",
+          "slot": "any",
+          "match": [
+            "puppy"
+          ]
+        },
+        {
+          "item": "veranda",
+          "slot": "setting",
+          "match": [
+            "veranda"
+          ]
+        },
+        {
+          "item": "crawl",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "crouch"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e155",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A seal dives through the kelp forest.",
+      "checklist": [
+        {
+          "item": "seal",
+          "slot": "any",
+          "match": [
+            "seal"
+          ]
+        },
+        {
+          "item": "kelp forest",
+          "slot": "setting",
+          "match": [
+            "kelp forest"
+          ]
+        },
+        {
+          "item": "dive",
+          "slot": "verb",
+          "controls": [
+            "vertical",
+            "swim"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e156",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A boulder tumbles down the escarpment.",
+      "checklist": [
+        {
+          "item": "boulder",
+          "slot": "any",
+          "match": [
+            "boulder"
+          ]
+        },
+        {
+          "item": "escarpment",
+          "slot": "setting",
+          "match": [
+            "escarpment"
+          ]
+        },
+        {
+          "item": "tumble",
+          "slot": "verb",
+          "controls": [
+            "rotation",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e157",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A robot dashes across the foundry.",
+      "checklist": [
+        {
+          "item": "robot",
+          "slot": "any",
+          "match": [
+            "robot"
+          ]
+        },
+        {
+          "item": "foundry",
+          "slot": "setting",
+          "match": [
+            "foundry"
+          ]
+        },
+        {
+          "item": "dash",
+          "slot": "verb",
+          "controls": [
+            "dash",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e158",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A tortoise turns around inside the gazebo.",
+      "checklist": [
+        {
+          "item": "tortoise",
+          "slot": "any",
+          "match": [
+            "tortoise"
+          ]
+        },
+        {
+          "item": "gazebo",
+          "slot": "setting",
+          "match": [
+            "gazebo"
+          ]
+        },
+        {
+          "item": "turn",
+          "slot": "verb",
+          "controls": [
+            "rotation",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e159",
+      "source": "sealed-p44e",
+      "group": "physical-motion",
+      "tags": [],
+      "text": "A paper plane glides across the auditorium.",
+      "checklist": [
+        {
+          "item": "paper plane",
+          "slot": "any",
+          "match": [
+            "paper plane"
+          ]
+        },
+        {
+          "item": "auditorium",
+          "slot": "setting",
+          "match": [
+            "auditorium"
+          ]
+        },
+        {
+          "item": "glide",
+          "slot": "verb",
+          "controls": [
+            "steer",
+            "vertical"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e160",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A dragon flies above a crystal citadel.",
+      "checklist": [
+        {
+          "item": "dragon",
+          "slot": "any",
+          "match": [
+            "dragon"
+          ]
+        },
+        {
+          "item": "crystal citadel",
+          "slot": "setting",
+          "match": [
+            "crystal citadel"
+          ]
+        },
+        {
+          "item": "fly",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "vertical"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e161",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A goblin jumps through an enchanted orchard.",
+      "checklist": [
+        {
+          "item": "goblin",
+          "slot": "any",
+          "match": [
+            "goblin"
+          ]
+        },
+        {
+          "item": "enchanted orchard",
+          "slot": "setting",
+          "match": [
+            "enchanted orchard"
+          ]
+        },
+        {
+          "item": "jump",
+          "slot": "verb",
+          "controls": [
+            "jump",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e162",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A unicorn gallops across a floating meadow.",
+      "checklist": [
+        {
+          "item": "unicorn",
+          "slot": "any",
+          "match": [
+            "unicorn"
+          ]
+        },
+        {
+          "item": "floating meadow",
+          "slot": "setting",
+          "match": [
+            "floating meadow"
+          ]
+        },
+        {
+          "item": "gallop",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "sprint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e163",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A mermaid swims through a sunken palace.",
+      "checklist": [
+        {
+          "item": "mermaid",
+          "slot": "any",
+          "match": [
+            "mermaid"
+          ]
+        },
+        {
+          "item": "sunken palace",
+          "slot": "setting",
+          "match": [
+            "sunken palace"
+          ]
+        },
+        {
+          "item": "swim",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "swim"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e164",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A phoenix rises from a moonlit crater.",
+      "checklist": [
+        {
+          "item": "phoenix",
+          "slot": "any",
+          "match": [
+            "phoenix"
+          ]
+        },
+        {
+          "item": "moonlit crater",
+          "slot": "setting",
+          "match": [
+            "moonlit crater"
+          ]
+        },
+        {
+          "item": "rise",
+          "slot": "verb",
+          "controls": [
+            "vertical",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e165",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A wizard teleports across a haunted bridge.",
+      "checklist": [
+        {
+          "item": "wizard",
+          "slot": "any",
+          "match": [
+            "wizard"
+          ]
+        },
+        {
+          "item": "haunted bridge",
+          "slot": "setting",
+          "match": [
+            "haunted bridge"
+          ]
+        },
+        {
+          "item": "teleport",
+          "slot": "verb",
+          "controls": [
+            "aim",
+            "teleport"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e166",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A griffin dives toward an ancient sky temple.",
+      "checklist": [
+        {
+          "item": "griffin",
+          "slot": "any",
+          "match": [
+            "griffin"
+          ]
+        },
+        {
+          "item": "sky temple",
+          "slot": "setting",
+          "match": [
+            "sky temple"
+          ]
+        },
+        {
+          "item": "dive",
+          "slot": "verb",
+          "controls": [
+            "vertical",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e167",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A dwarf digs beneath a singing mountain.",
+      "checklist": [
+        {
+          "item": "dwarf",
+          "slot": "any",
+          "match": [
+            "dwarf"
+          ]
+        },
+        {
+          "item": "singing mountain",
+          "slot": "setting",
+          "match": [
+            "singing mountain"
+          ]
+        },
+        {
+          "item": "dig",
+          "slot": "verb",
+          "controls": [
+            "aim",
+            "interact"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e168",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A fairy darts through a giant mushroom forest.",
+      "checklist": [
+        {
+          "item": "fairy",
+          "slot": "any",
+          "match": [
+            "fairy"
+          ]
+        },
+        {
+          "item": "mushroom forest",
+          "slot": "setting",
+          "match": [
+            "mushroom forest"
+          ]
+        },
+        {
+          "item": "dash",
+          "slot": "verb",
+          "controls": [
+            "dash",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e169",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A troll smashes through a cursed gatehouse.",
+      "checklist": [
+        {
+          "item": "troll",
+          "slot": "any",
+          "match": [
+            "troll"
+          ]
+        },
+        {
+          "item": "cursed gatehouse",
+          "slot": "setting",
+          "match": [
+            "cursed gatehouse"
+          ]
+        },
+        {
+          "item": "smash",
+          "slot": "verb",
+          "controls": [
+            "attack",
+            "aim"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e170",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A spectral knight charges across a ruined keep.",
+      "checklist": [
+        {
+          "item": "spectral knight",
+          "slot": "any",
+          "match": [
+            "spectral knight"
+          ]
+        },
+        {
+          "item": "ruined keep",
+          "slot": "setting",
+          "match": [
+            "ruined keep"
+          ]
+        },
+        {
+          "item": "charge",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "sprint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e171",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A centaur races through an endless autumn valley.",
+      "checklist": [
+        {
+          "item": "centaur",
+          "slot": "any",
+          "match": [
+            "centaur"
+          ]
+        },
+        {
+          "item": "autumn valley",
+          "slot": "setting",
+          "match": [
+            "autumn valley"
+          ]
+        },
+        {
+          "item": "race",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "sprint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e172",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "An elf climbs a living tower.",
+      "checklist": [
+        {
+          "item": "elf",
+          "slot": "any",
+          "match": [
+            "elf"
+          ]
+        },
+        {
+          "item": "living tower",
+          "slot": "setting",
+          "match": [
+            "living tower"
+          ]
+        },
+        {
+          "item": "climb",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "climb"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e173",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A slime bounces across a forgotten dungeon.",
+      "checklist": [
+        {
+          "item": "slime",
+          "slot": "any",
+          "match": [
+            "slime"
+          ]
+        },
+        {
+          "item": "forgotten dungeon",
+          "slot": "setting",
+          "match": [
+            "forgotten dungeon"
+          ]
+        },
+        {
+          "item": "bounce",
+          "slot": "verb",
+          "controls": [
+            "jump",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e174",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A witch steers through a violet thunderstorm.",
+      "checklist": [
+        {
+          "item": "witch",
+          "slot": "any",
+          "match": [
+            "witch"
+          ]
+        },
+        {
+          "item": "violet thunderstorm",
+          "slot": "setting",
+          "match": [
+            "violet thunderstorm"
+          ]
+        },
+        {
+          "item": "steer",
+          "slot": "verb",
+          "controls": [
+            "steer",
+            "vertical"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e175",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A gargoyle glides above a sleeping necropolis.",
+      "checklist": [
+        {
+          "item": "gargoyle",
+          "slot": "any",
+          "match": [
+            "gargoyle"
+          ]
+        },
+        {
+          "item": "sleeping necropolis",
+          "slot": "setting",
+          "match": [
+            "sleeping necropolis"
+          ]
+        },
+        {
+          "item": "glide",
+          "slot": "verb",
+          "controls": [
+            "steer",
+            "vertical"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e176",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A kelpie dives beneath a silver lake.",
+      "checklist": [
+        {
+          "item": "kelpie",
+          "slot": "any",
+          "match": [
+            "kelpie"
+          ]
+        },
+        {
+          "item": "silver lake",
+          "slot": "setting",
+          "match": [
+            "silver lake"
+          ]
+        },
+        {
+          "item": "dive",
+          "slot": "verb",
+          "controls": [
+            "vertical",
+            "swim"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e177",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A sprite hides inside a hollow moon.",
+      "checklist": [
+        {
+          "item": "sprite",
+          "slot": "any",
+          "match": [
+            "sprite"
+          ]
+        },
+        {
+          "item": "hollow moon",
+          "slot": "setting",
+          "match": [
+            "hollow moon"
+          ]
+        },
+        {
+          "item": "hide",
+          "slot": "verb",
+          "controls": [
+            "crouch",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e178",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A stone golem rolls through a shattered labyrinth.",
+      "checklist": [
+        {
+          "item": "stone golem",
+          "slot": "any",
+          "match": [
+            "stone golem"
+          ]
+        },
+        {
+          "item": "shattered labyrinth",
+          "slot": "setting",
+          "match": [
+            "shattered labyrinth"
+          ]
+        },
+        {
+          "item": "roll",
+          "slot": "verb",
+          "controls": [
+            "rotation",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e179",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A basilisk slithers across a glass desert.",
+      "checklist": [
+        {
+          "item": "basilisk",
+          "slot": "any",
+          "match": [
+            "basilisk"
+          ]
+        },
+        {
+          "item": "glass desert",
+          "slot": "setting",
+          "match": [
+            "glass desert"
+          ]
+        },
+        {
+          "item": "slither",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "steer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e180",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A frost giant stomps over a frozen kingdom.",
+      "checklist": [
+        {
+          "item": "frost giant",
+          "slot": "any",
+          "match": [
+            "frost giant"
+          ]
+        },
+        {
+          "item": "frozen kingdom",
+          "slot": "setting",
+          "match": [
+            "frozen kingdom"
+          ]
+        },
+        {
+          "item": "stomp",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "attack"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e181",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A vampire leaps between the balconies of a bloodred castle.",
+      "checklist": [
+        {
+          "item": "vampire",
+          "slot": "any",
+          "match": [
+            "vampire"
+          ]
+        },
+        {
+          "item": "bloodred castle",
+          "slot": "setting",
+          "match": [
+            "bloodred castle"
+          ]
+        },
+        {
+          "item": "leap",
+          "slot": "verb",
+          "controls": [
+            "jump",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e182",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A shapeshifter sneaks through a mirrored sanctuary.",
+      "checklist": [
+        {
+          "item": "shapeshifter",
+          "slot": "any",
+          "match": [
+            "shapeshifter"
+          ]
+        },
+        {
+          "item": "mirrored sanctuary",
+          "slot": "setting",
+          "match": [
+            "mirrored sanctuary"
+          ]
+        },
+        {
+          "item": "sneak",
+          "slot": "verb",
+          "controls": [
+            "crouch",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e183",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A thunderbird circles a stormbound spire.",
+      "checklist": [
+        {
+          "item": "thunderbird",
+          "slot": "any",
+          "match": [
+            "thunderbird"
+          ]
+        },
+        {
+          "item": "stormbound spire",
+          "slot": "setting",
+          "match": [
+            "stormbound spire"
+          ]
+        },
+        {
+          "item": "circle",
+          "slot": "verb",
+          "controls": [
+            "steer",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e184",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A dryad climbs through an upside-down grove.",
+      "checklist": [
+        {
+          "item": "dryad",
+          "slot": "any",
+          "match": [
+            "dryad"
+          ]
+        },
+        {
+          "item": "upside-down grove",
+          "slot": "setting",
+          "match": [
+            "upside-down grove"
+          ]
+        },
+        {
+          "item": "climb",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "climb"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e185",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A sea serpent coils around a drowned cathedral.",
+      "checklist": [
+        {
+          "item": "sea serpent",
+          "slot": "any",
+          "match": [
+            "sea serpent"
+          ]
+        },
+        {
+          "item": "drowned cathedral",
+          "slot": "setting",
+          "match": [
+            "drowned cathedral"
+          ]
+        },
+        {
+          "item": "coil",
+          "slot": "verb",
+          "controls": [
+            "rotation",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e186",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "An imp dodges through a blazing ballroom.",
+      "checklist": [
+        {
+          "item": "imp",
+          "slot": "any",
+          "match": [
+            "imp"
+          ]
+        },
+        {
+          "item": "blazing ballroom",
+          "slot": "setting",
+          "match": [
+            "blazing ballroom"
+          ]
+        },
+        {
+          "item": "dodge",
+          "slot": "verb",
+          "controls": [
+            "dodge",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e187",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A necromancer marches across an obsidian wasteland.",
+      "checklist": [
+        {
+          "item": "necromancer",
+          "slot": "any",
+          "match": [
+            "necromancer"
+          ]
+        },
+        {
+          "item": "obsidian wasteland",
+          "slot": "setting",
+          "match": [
+            "obsidian wasteland"
+          ]
+        },
+        {
+          "item": "march",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "timing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e188",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A wyvern swoops through a broken rainbow.",
+      "checklist": [
+        {
+          "item": "wyvern",
+          "slot": "any",
+          "match": [
+            "wyvern"
+          ]
+        },
+        {
+          "item": "broken rainbow",
+          "slot": "setting",
+          "match": [
+            "broken rainbow"
+          ]
+        },
+        {
+          "item": "swoop",
+          "slot": "verb",
+          "controls": [
+            "vertical",
+            "steer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e189",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A kraken swims beneath an abandoned cloud harbor.",
+      "checklist": [
+        {
+          "item": "kraken",
+          "slot": "any",
+          "match": [
+            "kraken"
+          ]
+        },
+        {
+          "item": "cloud harbor",
+          "slot": "setting",
+          "match": [
+            "cloud harbor"
+          ]
+        },
+        {
+          "item": "swim",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "swim"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e190",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A minotaur charges through an amber maze.",
+      "checklist": [
+        {
+          "item": "minotaur",
+          "slot": "any",
+          "match": [
+            "minotaur"
+          ]
+        },
+        {
+          "item": "amber maze",
+          "slot": "setting",
+          "match": [
+            "amber maze"
+          ]
+        },
+        {
+          "item": "charge",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "sprint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e191",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A pixie skates across a frozen wishing well.",
+      "checklist": [
+        {
+          "item": "pixie",
+          "slot": "any",
+          "match": [
+            "pixie"
+          ]
+        },
+        {
+          "item": "wishing well",
+          "slot": "setting",
+          "match": [
+            "wishing well"
+          ]
+        },
+        {
+          "item": "skate",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "steer"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e192",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A dragon hatchling scrambles up a volcanic altar.",
+      "checklist": [
+        {
+          "item": "dragon hatchling",
+          "slot": "any",
+          "match": [
+            "dragon hatchling"
+          ]
+        },
+        {
+          "item": "volcanic altar",
+          "slot": "setting",
+          "match": [
+            "volcanic altar"
+          ]
+        },
+        {
+          "item": "climb",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "climb"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e193",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A ghost drifts through a locked dream library.",
+      "checklist": [
+        {
+          "item": "ghost",
+          "slot": "any",
+          "match": [
+            "ghost"
+          ]
+        },
+        {
+          "item": "dream library",
+          "slot": "setting",
+          "match": [
+            "dream library"
+          ]
+        },
+        {
+          "item": "drift",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "vertical"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e194",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A satyr dances across a twilight glade.",
+      "checklist": [
+        {
+          "item": "satyr",
+          "slot": "any",
+          "match": [
+            "satyr"
+          ]
+        },
+        {
+          "item": "twilight glade",
+          "slot": "setting",
+          "match": [
+            "twilight glade"
+          ]
+        },
+        {
+          "item": "dance",
+          "slot": "verb",
+          "controls": [
+            "rhythm",
+            "movement"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e195",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A living statue pushes through a petrified garden.",
+      "checklist": [
+        {
+          "item": "living statue",
+          "slot": "any",
+          "match": [
+            "living statue"
+          ]
+        },
+        {
+          "item": "petrified garden",
+          "slot": "setting",
+          "match": [
+            "petrified garden"
+          ]
+        },
+        {
+          "item": "push",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "interact"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e196",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A cyclops hurls stones inside a hollow mountain.",
+      "checklist": [
+        {
+          "item": "cyclops",
+          "slot": "any",
+          "match": [
+            "cyclops"
+          ]
+        },
+        {
+          "item": "hollow mountain",
+          "slot": "setting",
+          "match": [
+            "hollow mountain"
+          ]
+        },
+        {
+          "item": "throw",
+          "slot": "verb",
+          "controls": [
+            "aim",
+            "throw"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e197",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "An enchanted broom sweeps across a starlit attic.",
+      "checklist": [
+        {
+          "item": "enchanted broom",
+          "slot": "any",
+          "match": [
+            "enchanted broom"
+          ]
+        },
+        {
+          "item": "starlit attic",
+          "slot": "setting",
+          "match": [
+            "starlit attic"
+          ]
+        },
+        {
+          "item": "sweep",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "interact"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e198",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A werewolf sprints through a whispering forest.",
+      "checklist": [
+        {
+          "item": "werewolf",
+          "slot": "any",
+          "match": [
+            "werewolf"
+          ]
+        },
+        {
+          "item": "whispering forest",
+          "slot": "setting",
+          "match": [
+            "whispering forest"
+          ]
+        },
+        {
+          "item": "sprint",
+          "slot": "verb",
+          "controls": [
+            "movement",
+            "sprint"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e199",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A leviathan dives beneath a world of floating islands.",
+      "checklist": [
+        {
+          "item": "leviathan",
+          "slot": "any",
+          "match": [
+            "leviathan"
+          ]
+        },
+        {
+          "item": "floating islands",
+          "slot": "setting",
+          "match": [
+            "floating islands"
+          ]
+        },
+        {
+          "item": "dive",
+          "slot": "verb",
+          "controls": [
+            "vertical",
+            "swim"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e200",
+      "source": "sealed-p44e",
+      "group": "fantastical-journeys",
+      "tags": [
+        "fantasy"
+      ],
+      "text": "A winged sphinx lands on a golden pyramid.",
+      "checklist": [
+        {
+          "item": "winged sphinx",
+          "slot": "any",
+          "match": [
+            "winged sphinx"
+          ]
+        },
+        {
+          "item": "golden pyramid",
+          "slot": "setting",
+          "match": [
+            "golden pyramid"
+          ]
+        },
+        {
+          "item": "land",
+          "slot": "verb",
+          "controls": [
+            "vertical",
+            "brake"
+          ]
+        }
+      ]
+    }
+  ]
+}
