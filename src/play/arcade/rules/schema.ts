@@ -163,21 +163,12 @@ export type Rule = z.infer<typeof ruleSchema>;
 export const rulesSchema = z.array(ruleSchema).max(RULES_MAX);
 
 /**
- * Pravidla, jak je smí psát model (`director/compact.ts`, `answer-schema.ts`).
- * `interact` je zpět od `p32-modules` (B-R8, pravidlo P32G T1 hraje); jeho meze
- * – jedno na hru, ne s `+shoot`/`+chaser` – hlídá `ruleIssues`.
+ * Pravidla, jak je smí psát model (`director/compact.ts`, `answer-schema.ts`) – od P45B T10
+ * i s kostkami logiky. `interact` je zpět od `p32-modules` (B-R8, pravidlo P32G T1 hraje);
+ * jeho meze – jedno na hru, ne s `+shoot`/`+chaser` – hlídá `ruleIssues`.
  */
 export const modelWhenSchema = ruleWhenSchema;
 export const modelRulesSchema = z.array(ruleSchema.extend({ when: modelWhenSchema })).max(RULES_MAX);
-
-/**
- * Gramatika pravidel odpovědi režiséra (`director/answer-schema.ts`): bez kostek logiky (P45B).
- * Blok `logic` do odpovědi přidá až T10 – do té doby by kostka bez něj vždy propadla a změna
- * schématu by zbytečně zneplatnila cache odpovědí (`DIRECTOR_PROMPT_VERSION`).
- */
-export const directorRulesSchema = z
-  .array(ruleSchema.extend({ when: z.union([...liveWhens, interactWhen(roleRef)]), if: z.array(z.union(liveIfs)).max(4).optional(), do: z.array(z.union(liveDos)).min(1).max(6) }))
-  .max(RULES_MAX);
 
 /**
  * Doplněk role pro pravidla: `start: 'hidden'` = tělo ve hře je, ale ukáže se
@@ -233,6 +224,14 @@ function logicRefsOf(rule: Rule): { kind: LogicKind; path: string; name: string;
     if ('emit' in effect) refs.push({ kind: 'event', path: `do/${i}/emit`, name: effect.emit, use: 'write' });
   });
   return refs;
+}
+
+/** Čte nebo mění pravidlo jméno z bloku `logic`? Bez takového pravidla hra blok nepotřebuje (vlna ho nechce). */
+export const readsLogic = (rule: Rule): boolean => logicRefsOf(rule).length > 0;
+
+/** Pravidla, která sahají na kostku logiky `kind`/`id` z nálezu ověření; vlnu nese pravidlo s tím `id`. */
+export function rulesTouching(rules: readonly Rule[], kind: LogicKind | 'wave', id: string): number[] {
+  return rules.flatMap((rule, index) => (kind === 'wave' ? rule.id === id : logicRefsOf(rule).some((ref) => ref.kind === kind && ref.name === id)) ? [index] : []);
 }
 
 /** Jména deklarovaná blokem `logic` podle druhu, s cestou deklarace. */

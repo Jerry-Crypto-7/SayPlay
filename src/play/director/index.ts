@@ -22,6 +22,7 @@ import type { GenerationBranch } from '@/server/pipeline';
 
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
 import { loadRapier } from '../arcade/physics/world';
+import { readsLogic } from '../arcade/rules/schema';
 import { verifyArcade } from '../arcade/verify';
 import { matchesWitness } from '../arcade/witness';
 import { assemblyOfCell, liveCells } from '../compose/allowed';
@@ -443,8 +444,10 @@ function withoutRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rul
   const rules = spec.rules ?? [];
   const kept = rules.filter((rule) => !drop(rule));
   if (kept.length === rules.length && rules.length > 0) return null;
-  const { rules: _rules, things, ...rest } = spec;
-  if (kept.length > 0) return { ...rest, rules: kept, ...(things === undefined ? {} : { things }) };
+  // Blok `logic` (P45B T10) jde pryč s posledním pravidlem, které ho čte – mrtvou deklaraci `readGameSpec` odmítne.
+  const { rules: _rules, things, logic, ...rest } = spec;
+  const withLogic = logic !== undefined && kept.some(readsLogic) ? { logic } : {};
+  if (kept.length > 0) return { ...rest, ...withLogic, rules: kept, ...(things === undefined ? {} : { things }) };
   return rest;
 }
 

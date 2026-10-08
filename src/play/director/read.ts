@@ -236,7 +236,8 @@ export function answerRules(body: unknown): readonly unknown[] | null {
  */
 export function withoutAnswerRules(body: unknown): unknown {
   if (!isRecord(body)) return body;
-  const { rules: _rules, things: _things, ...rest } = answerSpec(body);
+  // Blok `logic` (P45B T10) bez pravidel by byl mrtvá deklarace – jde pryč s nimi.
+  const { rules: _rules, things: _things, logic: _logic, ...rest } = answerSpec(body);
   return answerSpec(body) === body ? rest : { ...body, spec: rest };
 }
 
