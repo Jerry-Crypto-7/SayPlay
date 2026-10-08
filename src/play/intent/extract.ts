@@ -214,7 +214,7 @@ const ROWS: readonly Row[] = [
   // Cíl. „a race car“ je auto, ne závod; „race against X“ jmenuje soupeře.
   row(/\brac(?:e|es|ing|er|ers)\b(?! cars?\b)|^race(?= cars?\b)|(?<=and )race(?= cars?\b)|\bgrand prix\b|\blaps?\b|\bfinish (?:line|first)\b|\bfirst place\b/, [goal('race'), threat('rival', 'versus')]),
   row(
-    /\breach(?:es|ing)? (?=(?:the|a|an|its|his|her|their|your)\b)|\bget(?:s|ting)? (?:back )?to (?=(?:the|a|an|its|his|her|their|your)\b)|\bmak(?:e|es|ing) it (?:to|home|out)\b|\bfind(?:s|ing)? (?=(?:the |a |an |your |their )?(?:exit|door|portal|path)\b)|\bfind(?:s|ing)? (?:the |a |your |their )?way (?:out|home|back)\b|\bget(?:s|ting)? (?:home|out)\b|\bgo(?:es)? home\b|\bto the (?:top|end|exit|finish|goal)\b/,
+    /\breach(?:es|ing)? (?=(?:the|a|an|its|his|her|their|your)\b)|(?<=\bto )reach\b(?=\s*(?:[,.;!?]|$))|\bget(?:s|ting)? (?:back )?to (?=(?:the|a|an|its|his|her|their|your)\b)|\bmak(?:e|es|ing) it (?:to|home|out)\b|\bfind(?:s|ing)? (?=(?:the |a |an |your |their )?(?:exit|door|portal|path)\b)|\bfind(?:s|ing)? (?:the |a |your |their )?way (?:out|home|back)\b|\bget(?:s|ting)? (?:home|out)\b|\bgo(?:es)? home\b|\bto the (?:top|end|exit|finish|goal)\b/,
     [goal('reach')],
     { keepPlace: true },
   ),
@@ -438,6 +438,8 @@ interface Hit {
 }
 
 const isNounRow = (entry: Row): boolean => entry.emits.every((emit) => emit.who === 'noun');
+/** Slovesa s předmětem, která berou jméno před „to“ jako předmět („with moths to catch“). */
+const RELATIVE_OBJECT_VERBS = new Set(['collect', 'catch', 'throw', 'deliver', 'reach']);
 const unknownRow = (verb: string): Row => row(/$^/, [{ axis: 'unknown', id: verb, who: 'doer', fallback: false }]);
 
 function hitsOf(text: string): Hit[] {
@@ -619,8 +621,9 @@ export function extractIntent(sentence: string): Intent {
     const next = hit.row.emits.some(emit => emit.axis === 'unknown') ? text.length : verbHits.find((other) => other.at >= hit.end && !(hit.row.emits.some(emit => emit.id === 'avoid') && other.row.before === 'modifier'))?.at ?? text.length;
     let after = thingIn(text, hit.end, next, hit.row.lead, tools, hit.row.emits.some(emit => emit.id === 'throw' || emit.id === 'shoot'));
     // Reduced relative infinitives attach to the noun before them: coins to
-    // collect / a basket of berries to gather. The noun is not a new actor.
-    const relativeObject = hit.row.emits.some(emit => emit.id === 'collect')
+    // collect / a basket of berries to gather / moths to catch / parcels to
+    // deliver. The noun is not a new actor.
+    const relativeObject = hit.row.emits.some(emit => RELATIVE_OBJECT_VERBS.has(emit.id))
       ? /\bwith\s+([^,.;!?]*?)\s+to\s*$/.exec(text.slice(0, hit.at)) : null;
     if (after === null && relativeObject) {
       const phrase = phraseIn(relativeObject[1]);
@@ -645,7 +648,10 @@ export function extractIntent(sentence: string): Intent {
     } else if (hit.row.before === 'modifier' && (bareBefore || TOOL_HEADS.has(headOf(hit.said)) && /\bwith\s+(?:a|an|the)\s+[a-z -]*$/.test(segment))) {
       readings.push({ hit, actor: null, thing: after });
     } else {
-      let actor = relativeObject ? null : actorIn(segment);
+      // The relative noun is the object; the doer is a named subject before „with“
+      // („a hedgehog scurries … with a tower to reach“), never an imperative („put me …“).
+      const subject = relativeObject ? text.slice(from, relativeObject.index) : segment;
+      let actor = relativeObject && !/^\s*(?:a|an|the)\s/.test(subject) ? null : actorIn(subject);
       // „a knight who shoots“: vztažné zájmeno odkazuje na jméno před sebou.
       if (actor === null && boundary !== undefined && /^(?:who|that|which)$/.test(boundary.word) && boundary.end >= reached) {
         const owner = /([a-z-]+)\s*$/.exec(text.slice(0, boundary.at))?.[1];
