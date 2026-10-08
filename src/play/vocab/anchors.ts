@@ -52,7 +52,8 @@ export const ANCHORS = {
   'action:throw': { verbs: ['throw', 'toss', 'fling', 'hurl', 'lob'], synsets: ['oewn-01511000-v', 'oewn-01509775-v'] },
   'action:fight': {
     verbs: ['fight', 'battle', 'wrestle', 'punch', 'attack', 'stomp', 'slash', 'brawl', 'spar', 'squash'],
-    synsets: ['oewn-01092746-v', 'oewn-01121587-v', 'oewn-01122487-v', 'oewn-01412877-v', 'oewn-00069650-v'],
+    // Ne „strike“ (oewn-01412877-v): pod ním je i „tap“ a „rap“ – úder do věci, ne rvačka.
+    synsets: ['oewn-01092746-v', 'oewn-01121587-v', 'oewn-01122487-v', 'oewn-00069650-v'],
     // Proti jednomu soupeři je to v ruční tabulce souboj (`duel`), proti více rvačka.
     frame: 'you {verb} the goblins',
   },
@@ -80,7 +81,8 @@ export const ANCHORS = {
   'objective:race': { verbs: ['race'], synsets: ['oewn-01088514-v'] },
   'objective:reach': { verbs: ['reach'], synsets: ['oewn-02024442-v'] },
   'objective:collect': { verbs: ['collect', 'gather', 'grab', 'steal', 'eat'], synsets: ['oewn-01387093-v'], frame: 'you {verb} all the coins' },
-  'objective:survive': { verbs: ['survive', 'outlast', 'defend', 'protect'], synsets: ['oewn-02624202-v'] },
+  // Odolat a vydržet nápor („withstand“, „weather“) je přežít, ne se bít.
+  'objective:survive': { verbs: ['survive', 'outlast', 'defend', 'protect'], synsets: ['oewn-02624202-v', 'oewn-01119003-v', 'oewn-01118334-v'] },
   'objective:escape': { verbs: ['escape', 'flee', 'outrun'], synsets: ['oewn-02078906-v', 'oewn-02079709-v', 'oewn-01931561-v'] },
   'objective:defeat': {
     verbs: ['defeat', 'kill', 'slay', 'destroy', 'eliminate', 'conquer', 'vanquish'],
