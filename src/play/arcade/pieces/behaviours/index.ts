@@ -16,12 +16,15 @@
  *
  * Zásah jde jen z pravidla `pacing`: role těla chování proto nesmí být role,
  * na kterou má žánr vlastní pravidlo kontaktu (`hit` s `hazard` u skákačky…).
+ * Totéž platí pro výstřel chování (`shot`): má vlastní předlohu a podpis,
+ * zásah i úklid za hranou plochy dělá pravidlo `pacing` (`behaviourEffects`).
  */
 
 import { z } from 'zod';
 
-import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, ROLE, bodyBase } from '../../contract';
+import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase } from '../../contract';
 import { flanker } from './flanker';
+import { sniper } from './sniper';
 
 /** Nejkratší varování před úderem: 0,5 s. */
 export const TELEGRAPH_MIN = 30;
@@ -40,8 +43,8 @@ export const BEHAVIOUR_SPACE: Readonly<Record<string, BehaviourSpace>> = {
   runner: 'track', platform: 'track', flap: 'track', steer: 'track', glide: 'track',
 };
 
-/** Jak scéna varování kreslí: čára výpadu, přejezd do pruhu… */
-export type TelegraphKind = 'dash' | 'lane';
+/** Jak scéna varování kreslí: čára výpadu, přejezd do pruhu, zamčená přímka výstřelu… */
+export type TelegraphKind = 'dash' | 'lane' | 'line';
 
 export interface PhaseTicks {
   /** Aspoň `TELEGRAPH_MIN`. */
@@ -77,6 +80,8 @@ export interface Behaviour {
   readonly ticks: Readonly<Record<BehaviourSpace, PhaseTicks>>;
   /** Výchozí předloha těla; její role, model a rozměry jsou podpis. */
   readonly body: BodyInit;
+  /** Předloha výstřelu (role `hazard`, jiný podpis než tělo); `effects` ho vydá jako `spawn` předlohy `ref.shot`. */
+  readonly shot?: BodyInit;
   /** V `idle`: je čas varovat? */
   ready(view: BehaviourStep): boolean;
   /** Na začátku `telegraph`: kam úder půjde. */
@@ -86,18 +91,18 @@ export interface Behaviour {
   /** Rychlost těla v této fázi (`vx/vy/vz`); integruje jádro. */
   move(view: BehaviourStep): void;
   /** Pravidlo `pacing`: efekty těla v tomto tiku; bez metody `strike`. */
-  effects?(view: BehaviourView): readonly ArcadeEffect[];
+  effects?(view: BehaviourView, ref: BehaviourRef): readonly ArcadeEffect[];
   /** Robot: jak uhnout. `control` = základní ovládání, `recent` = stisky, které ve stavu ještě nejsou. */
   botStep(view: BehaviourView, input: ArcadeInput, control: string, recent: readonly ArcadeInput[]): ArcadeInput;
 }
 
 /** Kód chování = pořadí + 1. Je součást hashe: nové jen na konec, nepřečíslovat. */
-export const BEHAVIOUR_IDS = ['flanker'] as const;
+export const BEHAVIOUR_IDS = ['flanker', 'sniper'] as const;
 export type BehaviourId = (typeof BEHAVIOUR_IDS)[number];
-export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker };
+export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper };
 
-/** Chování ve světě: id a index předlohy, ze které se čte podpis. */
-export const behaviourRefSchema = z.object({ id: z.enum(BEHAVIOUR_IDS), template: z.int().min(1) }).strict();
+/** Chování ve světě: id a index předlohy, ze které se čte podpis; `shot` = předloha výstřelu. */
+export const behaviourRefSchema = z.object({ id: z.enum(BEHAVIOUR_IDS), template: z.int().min(1), shot: z.int().min(1).optional() }).strict();
 export type BehaviourRef = z.infer<typeof behaviourRefSchema>;
 
 // ---------------------------------------------------------------------------
@@ -164,18 +169,28 @@ function matches(state: ArcadeState, body: number, template: number): boolean {
   return SIGNATURE.every((slot) => state[a + slot] === state[b + slot]);
 }
 
-/** Živá těla chování `[tělo, chování, kód]` ve vzestupném pořadí těl; hráč a předlohy ne. */
-function* actors(state: ArcadeState, player: number, refs: readonly BehaviourRef[]): Generator<readonly [number, Behaviour, number]> {
+/** Živá těla chování `[tělo, chování, kód, odkaz]` ve vzestupném pořadí těl; hráč a předlohy ne. */
+function* actors(state: ArcadeState, player: number, refs: readonly BehaviourRef[]): Generator<readonly [number, Behaviour, number, BehaviourRef]> {
   const bodies = state[HEADER.bodyCount] as number;
   for (let body = 0; body < bodies; body += 1) {
     if (body === player || !alive(state, body)) continue;
     const ref = refs.find((candidate) => matches(state, body, candidate.template));
-    if (ref !== undefined) yield [body, BEHAVIOURS[ref.id], BEHAVIOUR_IDS.indexOf(ref.id) + 1];
+    if (ref !== undefined) yield [body, BEHAVIOURS[ref.id], BEHAVIOUR_IDS.indexOf(ref.id) + 1, ref];
   }
 }
 
 /** Indexy živých těl chování (pro scénu a testy). */
 export const behaviourBodies = (state: ArcadeState, player: number, refs: readonly BehaviourRef[]): number[] => [...actors(state, player, refs)].map(([body]) => body);
+
+/** Indexy živých výstřelů chování: těla s podpisem některé předlohy `shot`, každé jednou. */
+export function shotBodies(state: ArcadeState, player: number, refs: readonly BehaviourRef[]): number[] {
+  const shots = refs.flatMap((ref) => (ref.shot === undefined ? [] : [ref.shot]));
+  const found: number[] = [];
+  if (shots.length === 0) return found;
+  const bodies = state[HEADER.bodyCount] as number;
+  for (let body = 0; body < bodies; body += 1) if (body !== player && alive(state, body) && shots.some((shot) => matches(state, body, shot))) found.push(body);
+  return found;
+}
 
 /** Překrývají se kvádry těl `a` a `b` (střed spodní stěny, celé rozměry)? */
 export function overlaps(state: ArcadeState, a: number, b: number): boolean {
@@ -223,12 +238,35 @@ export function stepBehaviours(state: ArcadeState, player: number, refs: readonl
 export const strike = (view: BehaviourView): readonly ArcadeEffect[] =>
   view.phase === 'act' && overlaps(view.state, view.body, view.player) ? [{ kind: 'damage', amount: 1, grace: HIT_GRACE }] : [];
 
-/** Pravidlo `pacing`: efekty všech těl chování v tomto tiku. */
-export function behaviourEffects(state: ArcadeState, player: number, refs: readonly BehaviourRef[]): ArcadeEffect[] {
+/** Výstřel bez známé plochy zmizí, když letí od hráče a je od něj dál než tohle. */
+const SHOT_PASSED = 3 * UNIT;
+
+/** Výstřel opustil hru: za hranou plochy `half`, bez ní minul hráče a letí pryč. */
+function shotGone(state: ArcadeState, shot: number, player: number, half: number | undefined): boolean {
+  const s = bodyBase(shot);
+  const x = state[s + BODY.x] as number;
+  const z = state[s + BODY.z] as number;
+  if (half !== undefined) return Math.abs(x) > half || Math.abs(z) > half;
+  const p = bodyBase(player);
+  const rx = x - (state[p + BODY.x] as number);
+  const rz = z - (state[p + BODY.z] as number);
+  return rx * (state[s + BODY.vx] as number) + rz * (state[s + BODY.vz] as number) > 0 && rx * rx + rz * rz > SHOT_PASSED * SHOT_PASSED;
+}
+
+/**
+ * Pravidlo `pacing`: efekty všech těl chování v tomto tiku, pak výstřely –
+ * dotek hráče ubere život s milostí a výstřel zmizí, výstřel mimo hru
+ * (`shotGone`, `half` = polovina strany plochy, když ji hra zná) zmizí.
+ */
+export function behaviourEffects(state: ArcadeState, player: number, refs: readonly BehaviourRef[], half?: number): ArcadeEffect[] {
   const effects: ArcadeEffect[] = [];
-  for (const [body, behaviour] of actors(state, player, refs)) {
+  for (const [body, behaviour, , ref] of actors(state, player, refs)) {
     const view = viewOf(state, body, player);
-    effects.push(...(behaviour.effects ?? strike)(view));
+    effects.push(...(behaviour.effects === undefined ? strike(view) : behaviour.effects(view, ref)));
+  }
+  for (const shot of shotBodies(state, player, refs)) {
+    if (overlaps(state, shot, player)) effects.push({ kind: 'damage', amount: 1, grace: HIT_GRACE }, { kind: 'despawn', body: shot });
+    else if (shotGone(state, shot, player, half)) effects.push({ kind: 'despawn', body: shot });
   }
   return effects;
 }

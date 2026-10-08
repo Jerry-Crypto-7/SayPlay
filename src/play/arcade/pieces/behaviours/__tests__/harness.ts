@@ -5,12 +5,12 @@
  */
 
 import type { ArcadeParts } from '../../../addons';
-import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeState, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT } from '../../../contract';
+import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeState, type ArcadeWorld, BODY, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase } from '../../../contract';
 import { buildWorld, instantiate, loadProgram, step } from '../../../kernel';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from '../../../library';
 import { withPacing } from '../../pacing';
 import { RUNNER, runnerTrack } from '../../runner';
-import { BEHAVIOURS, type BehaviourId, type BehaviourPhase, type BehaviourRef, type BehaviourSpace, TELEGRAPH_MIN, behaviourBodies, behaviourPhaseOf, overlaps } from '../index';
+import { BEHAVIOURS, type BehaviourId, type BehaviourPhase, type BehaviourRef, type BehaviourSpace, TELEGRAPH_MIN, behaviourBodies, behaviourPhaseOf, overlaps, shotBodies } from '../index';
 
 export const HEALTH = 3;
 
@@ -73,16 +73,33 @@ export function play(world: ArcadeWorld, inputs: readonly InputEvent[], onTick: 
   return state;
 }
 
+/** Výstřel: kdo ho vystřelil a v kterém tiku. */
+export interface Shot {
+  readonly body: number;
+  readonly shooter: number;
+  readonly fired: number;
+}
+
 /**
  * Invariant telegrafu: každé tělo chování, které se v tiku zásahu (`damage`)
  * dotýká hráče, bylo v posledních 3 s aspoň `TELEGRAPH_MIN` tiků ve fázi
- * `telegraph`. Vrátí počet zásahů a popis porušení.
+ * `telegraph`; u výstřelu platí totéž pro střelce v 3 s před výstřelem
+ * (střelec = nejbližší tělo chování ve fázi `act` v tiku, kdy výstřel vznikl).
+ * Vrátí počet zásahů, výstřely a popis porušení.
  */
-export function telegraphCheck(world: ArcadeWorld, inputs: readonly InputEvent[]): { hits: number; violations: string[] } {
+export function telegraphCheck(world: ArcadeWorld, inputs: readonly InputEvent[]): { hits: number; shots: Shot[]; violations: string[] } {
   const refs = refsOf(world);
   const phases = new Map<number, BehaviourPhase[]>();
   const violations: string[] = [];
+  const shots: Shot[] = [];
+  const flying = new Map<number, Shot>();
   let hits = 0;
+  const warnedBefore = (body: number, tick: number): number => {
+    const seen = phases.get(body) ?? [];
+    let warned = 0;
+    for (let t = Math.max(0, tick - 180); t < tick; t += 1) if (seen[t] === 'telegraph') warned += 1;
+    return warned;
+  };
   play(world, inputs, (state, tick, effects) => {
     const player = state[HEADER.player] as number;
     const bodies = behaviourBodies(state, player, refs);
@@ -91,18 +108,37 @@ export function telegraphCheck(world: ArcadeWorld, inputs: readonly InputEvent[]
       seen[tick] = behaviourPhaseOf(state, body);
       phases.set(body, seen);
     }
-    if (!effects.some((effect) => effect.kind === 'damage')) return;
-    hits += 1;
+    const live = shotBodies(state, player, refs);
+    for (const body of live) {
+      if (flying.has(body)) continue;
+      const distance = (other: number): number => Math.abs(read(state, other, 'x') - read(state, body, 'x')) + Math.abs(read(state, other, 'z') - read(state, body, 'z'));
+      const shooter = bodies.filter((other) => behaviourPhaseOf(state, other) === 'act').sort((a, b) => distance(a) - distance(b))[0];
+      if (shooter === undefined) violations.push(`tick ${String(tick)}: shot ${String(body)} has no shooter in act`);
+      const shot = { body, shooter: shooter ?? -1, fired: tick };
+      shots.push(shot);
+      flying.set(body, shot);
+    }
+    const struck = effects.some((effect) => effect.kind === 'damage');
+    if (struck) hits += 1;
+    for (const effect of effects) {
+      const shot = effect.kind === 'despawn' ? flying.get(effect.body) : undefined;
+      if (shot === undefined) continue;
+      flying.delete(shot.body);
+      if (!struck || !overlaps(state, shot.body, player)) continue;
+      const warned = warnedBefore(shot.shooter, shot.fired);
+      if (warned < TELEGRAPH_MIN) violations.push(`tick ${String(tick)}: shot ${String(shot.body)} fired after ${String(warned)} telegraph ticks`);
+    }
+    if (!struck) return;
     for (const body of bodies) {
       if (!overlaps(state, body, player)) continue;
-      const seen = phases.get(body) ?? [];
-      let warned = 0;
-      for (let t = Math.max(0, tick - 180); t < tick; t += 1) if (seen[t] === 'telegraph') warned += 1;
+      const warned = warnedBefore(body, tick);
       if (warned < TELEGRAPH_MIN) violations.push(`tick ${String(tick)}: body ${String(body)} struck after ${String(warned)} telegraph ticks`);
     }
   });
-  return { hits, violations };
+  return { hits, shots, violations };
 }
+
+export const read = (state: ArcadeState, body: number, slot: keyof typeof BODY): number => state[bodyBase(body) + BODY[slot]] as number;
 
 /** Životy na konci záznamu. */
 export const healthAfter = (world: ArcadeWorld, inputs: readonly InputEvent[]): number => play(world, inputs, () => undefined)[HEADER.counters + COUNTER.health] as number;

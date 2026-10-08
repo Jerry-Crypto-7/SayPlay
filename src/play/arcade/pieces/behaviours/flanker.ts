@@ -8,10 +8,12 @@
  * neuhne.
  */
 
-import { type ArcadeState, BODY, BUTTON, UNIT, bodyBase } from '../../contract';
+import { type ArcadeInput, type ArcadeState, BODY, BUTTON, UNIT, bodyBase } from '../../contract';
 import { arenaAxis } from '../arena';
 import { RUNNER } from '../runner';
 import type { Behaviour, BehaviourStep, BehaviourView } from './index';
+
+type Point = { readonly x: number; readonly z: number };
 
 export const FLANKER = {
   plane: {
@@ -34,26 +36,26 @@ export const FLANKER = {
   },
 } as const;
 
-const read = (state: ArcadeState, body: number, slot: keyof typeof BODY): number => state[bodyBase(body) + BODY[slot]] as number;
-const set = (state: ArcadeState, body: number, vx: number, vz: number): void => {
+export const read = (state: ArcadeState, body: number, slot: keyof typeof BODY): number => state[bodyBase(body) + BODY[slot]] as number;
+export const set = (state: ArcadeState, body: number, vx: number, vz: number): void => {
   const base = bodyBase(body);
   state[base + BODY.vx] = vx;
   state[base + BODY.vy] = 0;
   state[base + BODY.vz] = vz;
 };
 /** Celočíselná délka vektoru (`Math.sqrt` je v IEEE 754 přesně zaokrouhlená). */
-const length = (dx: number, dz: number): number => Math.floor(Math.sqrt(dx * dx + dz * dz));
-const clampTo = (value: number, limit: number): number => Math.max(-limit, Math.min(limit, value));
+export const length = (dx: number, dz: number): number => Math.floor(Math.sqrt(dx * dx + dz * dz));
+export const clampTo = (value: number, limit: number): number => Math.max(-limit, Math.min(limit, value));
 
 /** Bod uvnitř plochy, když ji ovládání zná. */
-function inside(view: BehaviourStep, x: number, z: number): { x: number; z: number } {
+export function inside(view: BehaviourStep, x: number, z: number): { x: number; z: number } {
   if (view.half === undefined) return { x, z };
   const limit = view.half - Math.ceil(read(view.state, view.body, 'w') / 2);
   return { x: clampTo(x, limit), z: clampTo(z, limit) };
 }
 
 /** Rychlost `speed` k bodu; blíž než krok = dojet přesně. */
-function headTo(view: BehaviourStep, x: number, z: number, speed: number): void {
+export function headTo(view: BehaviourStep, x: number, z: number, speed: number): void {
   const dx = x - read(view.state, view.body, 'x');
   const dz = z - read(view.state, view.body, 'z');
   const gap = length(dx, dz);
@@ -80,7 +82,7 @@ function flankPoint(view: BehaviourStep): { x: number; z: number } {
   return inside(view, ax + Math.trunc((-pvz * flip * side) / speed), az + Math.trunc((pvx * flip * side) / speed));
 }
 
-const laneOf = (x: number): number => Math.max(-1, Math.min(1, Math.round(x / RUNNER.laneWidth)));
+export const laneOf = (x: number): number => Math.max(-1, Math.min(1, Math.round(x / RUNNER.laneWidth)));
 
 /** Vedlejší pruh hráče na straně, kde flanker je (u kraje ten druhý). */
 function sideLaneX(view: BehaviourView): number {
@@ -89,7 +91,7 @@ function sideLaneX(view: BehaviourView): number {
   return (Math.abs(lane + side) <= 1 ? lane + side : lane - side) * RUNNER.laneWidth;
 }
 
-const toward = (from: number, to: number, step: number): number => clampTo(to - from, step);
+export const toward = (from: number, to: number, step: number): number => clampTo(to - from, step);
 
 /** Varování = `TELEGRAPH_MIN`; na trati výpad trvá, než ho hráč dojede (nejvýš 2 s – varování zůstane v posledních 3 s). */
 const TICKS = { plane: { telegraph: 30, act: 30, recover: 60 }, track: { telegraph: 30, act: 120, recover: 90 } } as const;
@@ -145,41 +147,50 @@ export const flanker: Behaviour = {
   botStep(view, input, control, recent) {
     if (view.phase !== 'telegraph' && view.phase !== 'act') return input;
     const { state, body, player, aim } = view;
-    const bx = read(state, body, 'x');
-    const bz = read(state, body, 'z');
-    const px = read(state, player, 'x');
-    const pz = read(state, player, 'z');
-    if (view.space === 'plane') {
-      // Vzdálenost od úsečky výpadu; hráč, kterého k ní nese rychlost do konce varování, ustoupí kolmo na svou stranu.
-      const ux = aim.x - bx;
-      const uz = aim.z - bz;
-      const rx = px - bx;
-      const rz = pz - bz;
-      const span = ux * ux + uz * uz;
-      const gap = (x: number, z: number): number => {
-        const t = span === 0 ? 0 : Math.max(0, Math.min(1, ((x - bx) * ux + (z - bz) * uz) / span));
-        return length(x - Math.round(bx + ux * t), z - Math.round(bz + uz * t));
-      };
-      const pvx = read(state, player, 'vx');
-      const pvz = read(state, player, 'vz');
-      const horizon = (view.phase === 'telegraph' ? view.ticksLeft : 0) + 20;
-      let near = false;
-      for (let k = 0; k <= horizon && !near; k += 5) near = gap(px + pvx * k, pz + pvz * k) <= FLANKER.plane.clearance;
-      if (!near) return input;
-      if (span === 0) return { buttons: input.buttons, axis: arenaAxis(rx, rz) };
-      const flip = -uz * rx + ux * rz < 0 ? -1 : 1;
-      return { buttons: input.buttons, axis: arenaAxis(-uz * flip, ux * flip) };
-    }
-    if (control !== 'runner' || bz + read(state, body, 'd') < pz - read(state, player, 'd')) return input;
-    // Pruh, kam hráč míří, i se stisky, které robot ještě nevidí.
-    const shift = (lane: number, buttons: number): number => Math.max(-1, Math.min(1, lane - ((buttons & BUTTON.LEFT) !== 0 ? 1 : 0) + ((buttons & BUTTON.RIGHT) !== 0 ? 1 : 0)));
-    const lane = recent.reduce((at, pressed) => shift(at, pressed.buttons), read(state, player, 'aux0'));
-    const aimLane = laneOf(aim.x);
-    if (shift(lane, input.buttons) !== aimLane) return input;
-    const steer = input.buttons & ~(BUTTON.LEFT | BUTTON.RIGHT);
-    // Už mimo pruh výpadu: jen do něj nevjet. V něm: pryč, ke kraji nebo na stranu, odkud flanker přijel.
-    if (lane !== aimLane) return { buttons: steer, axis: input.axis };
-    const away = aimLane !== 0 ? -aimLane : bx >= px ? 1 : -1;
-    return { buttons: steer | (away < 0 ? BUTTON.LEFT : BUTTON.RIGHT), axis: input.axis };
+    const from = { x: read(state, body, 'x'), z: read(state, body, 'z') };
+    if (view.space === 'plane') return dodgeLine(view, input, from, aim, FLANKER.plane.clearance, (view.phase === 'telegraph' ? view.ticksLeft : 0) + 20);
+    if (control !== 'runner' || from.z + read(state, body, 'd') < read(state, player, 'z') - read(state, player, 'd')) return input;
+    return dodgeLane(view, input, recent, laneOf(aim.x));
   },
 };
+
+/**
+ * Robot v rovině: hráč, kterého jeho rychlost během `horizon` tiků přiblíží
+ * k úsečce `from → to` na `clearance`, ustoupí kolmo na svou stranu (sdílí
+ * flanker a ostřelovač).
+ */
+export function dodgeLine(view: BehaviourView, input: ArcadeInput, from: Point, to: Point, clearance: number, horizon: number): ArcadeInput {
+  const { state, player } = view;
+  const px = read(state, player, 'x');
+  const pz = read(state, player, 'z');
+  const ux = to.x - from.x;
+  const uz = to.z - from.z;
+  const rx = px - from.x;
+  const rz = pz - from.z;
+  const span = ux * ux + uz * uz;
+  const gap = (x: number, z: number): number => {
+    const t = span === 0 ? 0 : Math.max(0, Math.min(1, ((x - from.x) * ux + (z - from.z) * uz) / span));
+    return length(x - Math.round(from.x + ux * t), z - Math.round(from.z + uz * t));
+  };
+  const pvx = read(state, player, 'vx');
+  const pvz = read(state, player, 'vz');
+  let near = false;
+  for (let k = 0; k <= horizon && !near; k += 5) near = gap(px + pvx * k, pz + pvz * k) <= clearance;
+  if (!near) return input;
+  if (span === 0) return { buttons: input.buttons, axis: arenaAxis(rx, rz) };
+  const flip = -uz * rx + ux * rz < 0 ? -1 : 1;
+  return { buttons: input.buttons, axis: arenaAxis(-uz * flip, ux * flip) };
+}
+
+/** Robot běžce: z pruhu `aimLane` pryč (ke kraji, nebo na stranu, odkud tělo přijelo), mimo něj do něj nevjet. */
+export function dodgeLane(view: BehaviourView, input: ArcadeInput, recent: readonly ArcadeInput[], aimLane: number): ArcadeInput {
+  const { state, body, player } = view;
+  // Pruh, kam hráč míří, i se stisky, které robot ještě nevidí.
+  const shift = (lane: number, buttons: number): number => Math.max(-1, Math.min(1, lane - ((buttons & BUTTON.LEFT) !== 0 ? 1 : 0) + ((buttons & BUTTON.RIGHT) !== 0 ? 1 : 0)));
+  const lane = recent.reduce((at, pressed) => shift(at, pressed.buttons), read(state, player, 'aux0'));
+  if (shift(lane, input.buttons) !== aimLane) return input;
+  const steer = input.buttons & ~(BUTTON.LEFT | BUTTON.RIGHT);
+  if (lane !== aimLane) return { buttons: steer, axis: input.axis };
+  const away = aimLane !== 0 ? -aimLane : read(state, body, 'x') >= read(state, player, 'x') ? 1 : -1;
+  return { buttons: steer | (away < 0 ? BUTTON.LEFT : BUTTON.RIGHT), axis: input.axis };
+}
