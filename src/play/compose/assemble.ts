@@ -28,13 +28,17 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
   // The sentence reading stands when its own recipe plays the requested action:
   // lighting candles in a haunted house stays the spatial quest the reading chose.
   const read = PRESETS[`${fallback.genre}.${fallback.mode}`]!;
-  const plays = (recipe: Recipe) => action.every(verb => recipe.actions.includes(verb));
   const first = action[0];
   const preferred = explicit === undefined && implied === undefined && objective !== 'escape' && first !== undefined && !read.actions.includes(first) ? actionDefaults[first] : undefined;
   const selected = { ...fallback, ...preferred } as GenreSpec;
   const base = PRESETS[`${selected.genre}.${selected.mode}`]!;
   // A race keeps a movement that can race (the reading drives a cart); otherwise it runs.
   const move = explicit ?? implied ?? (objective === 'escape' ? 'run' : objective === 'race' ? (['drive', 'glide'].includes(base.move) ? base.move : 'run') : base.move);
+  // Unsaid actions: defeating on foot is fighting, whatever action the reading guessed ("destroy" is no quest);
+  // a catch is a whole game, so the read genre's own action (collecting) was never asked for.
+  const unsaid = objective === 'defeat' && move === 'roam' ? ['fight' as const] : move === base.move && objective !== 'catch' ? base.actions : [];
+  const asked = action.length ? action : unsaid;
+  const plays = (recipe: Recipe) => asked.every(verb => recipe.actions.includes(verb));
   const threats = items.filter(item => item.axis === 'threat').map(item => item.verb) as Recipe['threats'];
   const defaults: Partial<Record<Recipe['move'], Pick<GenreSpec, 'genre' | 'mode'>>> = {
     run: { genre: 'runner', mode: 'default' }, jump: { genre: 'platformer', mode: 'default' },
@@ -42,17 +46,19 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
     glide: { genre: 'voyage', mode: 'race' }, walk: { genre: 'quest', mode: 'spatial' },
     ball: { genre: 'throw', mode: 'default' },
     // Only the escape arena has someone on the field: a pursuer, guard or thing to dodge plays there.
-    roam: { genre: 'arena', mode: action.includes('fight') && !action.some(verb => ['collect', 'deliver', 'interact'].includes(verb)) ? 'fight'
+    // Defeating targets is the arena fight even when the sentence says no fight verb ("knock out five scarecrows").
+    roam: { genre: 'arena', mode: (action.includes('fight') || objective === 'defeat') && !action.some(verb => ['collect', 'deliver', 'interact'].includes(verb)) ? 'fight'
       : objective === 'survive' || objective === 'escape' || threats.some(threat => ['chaser', 'guard', 'obstacle'].includes(threat) && !intent.negated.includes(threat)) || intent.negated.includes('collect') ? 'escape' : 'collect' },
   };
   // The movement's genre replaces a reading of another genre on the same movement
   // only when that reading cannot play every requested action (a quest is no arena).
   const moved = defaults[move];
   const keepsReading = moved !== undefined && moved.genre !== selected.genre && move === base.move && plays(base);
-  const preset = { ...selected, ...(items.some(item => item.axis !== 'unknown') && !keepsReading ? moved : {}) } as GenreSpec;
+  // An unnamed chase still needs someone to chase: the setting's default foe plays the prey, as in the `roam.catch` cell.
+  const unnamedPrey = move === 'roam' && objective === 'catch' && !items.some(item => item.verb === 'catch' && item.object !== null);
+  const preset = { ...selected, ...(items.some(item => item.axis !== 'unknown') && !keepsReading ? moved : {}), ...(unnamedPrey ? { cast: [{ label: 'cat', does: 'fight' }] } : {}) } as GenreSpec;
   const assembled = PRESETS[`${preset.genre}.${preset.mode}`]!;
-  // A catch is a whole game: the read genre's own action (collecting) was never asked for.
-  const recipe: Recipe = { move, actions: [...new Set(action.length ? action : move === base.move && objective !== 'catch' ? base.actions : [])].filter(verb => !intent.negated.includes(verb)),
+  const recipe: Recipe = { move, actions: [...new Set(asked)].filter(verb => !intent.negated.includes(verb)),
     objective: objective ?? (move === 'ball' ? 'score' : move === 'drive' || move === 'glide' || move === 'walk' ? 'reach' : assembled.objective),
     threats: [...new Set(threats)].filter(verb => !intent.negated.includes(verb)) };
   return { id: `assembled.${move}`, recipe, preset, assembly: 'native' };

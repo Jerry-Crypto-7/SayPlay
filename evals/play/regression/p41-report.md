@@ -1,8 +1,8 @@
 # P41 - historical 40 current-draft report
 
 Valid 40/40; compiled 40/40; eligible 40/40.
-Genre hits 15/32; historical target 26 (diagnostic only).
-Preservation failures 17/40; explicit admission is not preservation.
+Genre hits 18/32; historical target 26 (diagnostic only).
+Preservation failures 13/40; explicit admission is not preservation.
 Extracted essential triples plus survival duration; not full manual sentence preservation.
 
 | id | cell | eligible | missing triples | requested/actual seconds | preservation failure |
@@ -35,13 +35,13 @@ Extracted essential triples plus survival duration; not full manual sentence pre
 | hazard_crossing-2 | assembled.jump | true | [{"actor":"hero","verb":"cross","object":"field"},{"actor":"hero","verb":"linger","object":null}] | -/- | true |
 | hazard_crossing-3 | assembled.run | true | [{"actor":"hero","verb":"cross","object":"lake"},{"actor":"ice","verb":"crack","object":null},{"actor":"ice","verb":"every","object":null}] | -/- | true |
 | hazard_crossing-4 | assembled.jump | true | [{"actor":"hero","verb":"reach","object":"door"}] | -/- | true |
-| combat_lite-1 | assembled.roam | true | [{"actor":"hero","verb":"defeat","object":"target"}] | -/- | true |
-| combat_lite-2 | assembled.roam | true | [{"actor":"hero","verb":"defeat","object":"dummy"}] | -/- | true |
-| combat_lite-3 | assembled.roam | true | [{"actor":"hero","verb":"defeat","object":"robot"}] | -/- | true |
+| combat_lite-1 | assembled.roam | true | [] | -/- | false |
+| combat_lite-2 | assembled.roam | true | [] | -/- | false |
+| combat_lite-3 | assembled.roam | true | [] | -/- | false |
 | combat_lite-4 | assembled.roam | true | [{"actor":"hero","verb":"hit","object":"nest"}] | -/- | true |
 | ambiguity-1 | assembled.roam | true | [] | -/- | false |
 | contradiction-1 | assembled.roam | true | [] | -/- | false |
-| scale-1 | assembled.jump | true | [{"actor":"hero","verb":"catch","object":null}] | -/- | true |
+| scale-1 | assembled.roam | true | [] | -/- | false |
 | remix-1 | assembled.roam | true | [] | -/- | false |
 | remix-2 | assembled.roam | true | [] | -/- | false |
 | remix-3 | assembled.roam | true | [] | -/- | false |
