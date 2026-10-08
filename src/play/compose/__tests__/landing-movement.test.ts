@@ -21,6 +21,13 @@ it('the gravity-and-thrust lander is airborne movement and preserves the actual 
     expect(made.witnesses.some(w => w.verb === 'drive')).toBe(false);
   }
 });
+it('a lander with attached parts still flies, not drives', () => {
+  const made = compose(extractIntent('a spaceship flies and lands on the moon while rocks fall'), 1);
+  expect(made.recipe).toMatchObject({ move: 'glide', objective: 'land' });
+  expect(made.recipe.parts?.length).toBeGreaterThan(0);
+  expect(made.witnesses.some(w => w.verb === 'glide')).toBe(true);
+  expect(made.witnesses.some(w => w.verb === 'drive')).toBe(false);
+});
 it('correcting the recipe movement leaves the legacy landing simulation unchanged', () => {
   const cell = ALLOWED.find(cell => cell.id === 'voyage.land')!;
   const assembly = assemblyOfCell(cell);

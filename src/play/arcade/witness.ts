@@ -250,7 +250,7 @@ export class WitnessRecorder {
       this.control === 'glide' && this.world.rules.some(rule => rule.id === 'glide_finish' && rule.params.race === true);
     this.stack = this.control === 'timing' && baseControlOf(this.world.control).params.mode === 'stack';
     const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk' };
-    this.movementVerb = this.control === 'steer' && this.world.control.params.land !== undefined ? 'glide' : movement[this.control];
+    this.movementVerb = this.control === 'steer' && baseControlOf(this.world.control).params.land !== undefined ? 'glide' : movement[this.control];
     this.start = world.initial;
     for (const binding of this.bindings.values()) {
       const code = roleAt(this.start, binding.body);
