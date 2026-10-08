@@ -6,7 +6,7 @@
 Seznam všeho, co projekt používá a nenapsal si sám, podle `RULES.md` §2:
 zdroj, autor nebo poskytovatel, licence a povinné notices.
 
-## Knihovny (242)
+## Knihovny (240)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -46,7 +46,6 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @img/sharp-win32-x64@0.35.3 | https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.35.3.tgz | Lovell Fuller | Apache-2.0 AND LGPL-3.0-or-later | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn; právo příjemce knihovnu nahradit nebo přelinkovat; dostupnost zdrojů knihovny | "Licensor" shall mean the copyright owner or entity authorized by the copyright |
 | @jridgewell/sourcemap-codec@1.5.5 | https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz | Justin Ridgewell | MIT | copyright notice; plné znění licence | Copyright 2024 Justin Ridgewell <justin@ridgewell.name> |
 | @mediapipe/tasks-vision@0.10.17 | https://registry.npmjs.org/@mediapipe/tasks-vision/-/tasks-vision-0.10.17.tgz | mediapipe@google.com | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | držitelé práv k @mediapipe/tasks-vision, viz https://registry.npmjs.org/@mediapipe/tasks-vision/-/tasks-vision-0.10.17.tgz |
-| @mlc-ai/web-llm@0.2.84 | https://registry.npmjs.org/@mlc-ai/web-llm/-/web-llm-0.2.84.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | @monogrid/gainmap-js@3.4.0 | https://registry.npmjs.org/@monogrid/gainmap-js/-/gainmap-js-3.4.0.tgz | MONOGRID | MIT | copyright notice; plné znění licence | Copyright (c) 2023 MONOGRID |
 | @next/bundle-analyzer@16.3.1 | https://registry.npmjs.org/@next/bundle-analyzer/-/bundle-analyzer-16.3.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @next/bundle-analyzer, viz https://registry.npmjs.org/@next/bundle-analyzer/-/bundle-analyzer-16.3.1.tgz |
 | @next/env@16.3.0 | https://registry.npmjs.org/@next/env/-/env-16.3.0.tgz | Next.js Team | MIT | copyright notice; plné znění licence | držitelé práv k @next/env, viz https://registry.npmjs.org/@next/env/-/env-16.3.0.tgz |
@@ -166,7 +165,6 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | lightningcss-win32-arm64-msvc@1.33.0 | https://registry.npmjs.org/lightningcss-win32-arm64-msvc/-/lightningcss-win32-arm64-msvc-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | držitelé práv k lightningcss-win32-arm64-msvc, viz https://registry.npmjs.org/lightningcss-win32-arm64-msvc/-/lightningcss-win32-arm64-msvc-1.33.0.tgz |
 | lightningcss-win32-x64-msvc@1.33.0 | https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | applicable copyright doctrines of fair use, fair dealing, or other |
 | lightningcss@1.33.0 | https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | applicable copyright doctrines of fair use, fair dealing, or other |
-| loglevel@1.9.2 | https://registry.npmjs.org/loglevel/-/loglevel-1.9.2.tgz | Tim Perry | MIT | copyright notice; plné znění licence | držitelé práv k loglevel, viz https://registry.npmjs.org/loglevel/-/loglevel-1.9.2.tgz |
 | maath@0.10.8 | https://registry.npmjs.org/maath/-/maath-0.10.8.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k maath, viz https://registry.npmjs.org/maath/-/maath-0.10.8.tgz |
 | magic-string@0.30.21 | https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz | Rich Harris | MIT | copyright notice; plné znění licence | Copyright 2018 Rich Harris |
 | meshline@3.3.1 | https://registry.npmjs.org/meshline/-/meshline-3.3.1.tgz | Jaume Sanchez (https://www.clicktorelease.com) | MIT | copyright notice; plné znění licence | Copyright (c) 2016 Jaume Sanchez |
@@ -294,7 +292,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 - **transformers@5.17.0** (Apache-2.0): Text encoder runtime of FLUX.2 klein 4B in ops/env. Python dependency in ops/env/uv.lock, not in package-lock.json; accelerate 1.15.0 (Apache-2.0) and pillow 12.3.0 (MIT-CMU) come with it.
 - **zzfx (vendored)** (MIT): Generates the five game sounds (jump, pickup, hit, win, lose) and the rhythm beeps in the browser (P28C T2); ported to TypeScript with the MIT notice kept in the file header. Vendored, so invisible to package-lock.json.
 
-### Knihovny — bez deklarovaného autora (111)
+### Knihovny — bez deklarovaného autora (110)
 
 Tyhle balíčky autora ve svém `package.json` neuvádějí. Atribuce se proto opírá
 o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
@@ -325,7 +323,6 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - @img/sharp-webcontainers-wasm32@0.35.3
 - @img/sharp-win32-arm64@0.35.3
 - @img/sharp-win32-ia32@0.35.3
-- @mlc-ai/web-llm@0.2.84
 - @next/bundle-analyzer@16.3.1
 - @next/swc-darwin-arm64@16.3.0
 - @next/swc-darwin-x64@16.3.0
@@ -2804,7 +2801,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **Kokoro-82M** (Apache-2.0): Reads each game's goal line aloud in the local voice service ops/audio/server.py (voice af_heart, 24 kHz). Model card read via HF API and kokoro/misaki via PyPI 2026-09-26: all Apache-2.0. misaki[en] pulls espeak-ng (GPL-3.0) as a local phonemizer fallback; it runs only on the local machine and never ships. Only generated audio reaches players.
 - **meshy-6** (Meshy Terms of Use; service model, no weights redistributed): Pinned identifier in the prepared T12 adapter. No live generation or model weights used. See Meshy API entry; mocked lifecycle tests do not establish output quality or rights.
 - **MOSS-SoundEffect** (Apache-2.0): Generates the per-look sound effects offline (8B, loaded 4-bit nf4 on the shared RTX 3090). Model cards of MOSS-SoundEffect and MOSS-Audio-Tokenizer read via HF API 2026-09-26: both apache-2.0. Only generated audio ships.
-- **Qwen3-1.7B-q4f16_1-MLC** (Apache-2.0): Váhy modelu emisní cesty, které si prohlížeč stáhne za běhu (src/model/local/**, WebLLM). Nejsou v repozitáři ani v bundlu, proto to není položka kind: asset. Kvantizace q4f16_1, 979 MB. Sync je nechává být — z package-lock.json se váhy odvodit nedají.
+- **Qwen3-1.7B-q4f16_1-MLC** (Apache-2.0): Váhy dřívější lokální emisní cesty, kterou si prohlížeč stahoval za běhu přes WebLLM. Ta cesta je od října 2026 z kódu odstraněná a @mlc-ai/web-llm už mezi závislostmi není, takže dnešní hra model nestahuje. Položka zůstává, protože model v projektu během hackathonu běžel (měření z 26. 8. 2026 v src/model/local/rejection-prompt.ts, důvod přechodu na cloud v src/server/upstream.ts). Váhy nikdy nebyly v repozitáři ani v bundlu, proto to není položka kind: asset. Kvantizace q4f16_1, 979 MB. Sync je nechává být — z package-lock.json se váhy odvodit nedají.
 - **Qwen3-4B (text encoder)** (Apache-2.0): Text encoder shared by FLUX.2-klein-4B and Z-Image-Turbo (same sha256), shipped in the Apache-2.0 Z-Image repack. Local only, not in the repository.
 - **Qwen3-4B-Instruct-2507** (Apache-2.0): P29B local sentence reader (src/play/read, ops/llm/start.ps1 -Role reader). Off by default after the T3 measurement (evals/play/read/README.md). Local only, not in the repository or the bundle. License read 2026-09-26.
 - **Qwen3.6-35B-A3B** (Apache-2.0): P29B fallback director candidate measured in T9 (evals/play/local-director.json) and not chosen; selectable with ops/llm/start.ps1 -Fallback qwen3.6-35b-a3b. Local only. License read 2026-09-26.
