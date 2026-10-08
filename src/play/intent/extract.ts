@@ -87,6 +87,8 @@ const INTERACT = new RegExp(
     String.raw`\blight(?:s|ing)?(?: up)?(?= (?:the |a |an |all |every |each |some |\d+ )?(?:[a-z]+ )?(?:lanterns?|candles?|torches?|lamps?|beacons?|fireworks?|bonfires?|campfires?|fires?)\b)`,
     String.raw`\bignit(?:e|es|ing)\b|\bkindl(?:e|es|ing)\b|\bextinguish(?:es|ing)?\b|\bput(?:s|ting)? out\b|\bdous(?:e|es|ing)\b`,
     String.raw`\brescu(?:e|es|ing)\b|\bsav(?:e|es|ing)\b(?! (?:money|time|up|for|points?|the day|game)\b)|\b(?:free|frees|freeing|releas(?:e|es|ing)) (?=(?:the|a|an|all|every|each|some|\d+)\b)`,
+    // „frees caged birds“, „liberates prisoners“: osvobodit bez členu je pořád sloveso; holé „free“ jen za „to“.
+    String.raw`\b(?:frees|freeing|releas(?:es|ing)|liberat(?:e|es|ing)|uncag(?:e|es|ing)|unchain(?:s|ing)?)\b(?= [a-z])|(?<=\bto )(?:free|release)\b(?= [a-z])`,
     String.raw`\b(?:press(?:es|ing)?|push(?:es|ing)?|toggl(?:e|es|ing)|flip(?:s|ping)?|pull(?:s|ing)?|hit(?:s|ting)?)(?= (?:[a-z]+ ){0,3}?(?:switch(?:es)?|levers?|buttons?)\b)`,
     String.raw`\bactivat(?:e|es|ing)\b|\bturn(?:s|ing)? on\b|\bunlock(?:s|ing)?\b|\bopen(?:s|ing)?(?= (?:the |a |an |all |every |some )?(?:[a-z]+ )?(?:doors?|chests?|gates?|presents?|locks?|boxes|safes?)\b)`,
     String.raw`\bwak(?:e|es|ing) up\b|\bpop(?:s|ping)?\b(?! (?:music|songs?|stars?)\b)|\bsmash(?:es|ing)?\b|\bwreck(?:s)?\b|\bwrecking\b(?! balls?\b)|\bbreak(?:s|ing)? (?=(?:the|a|an|all|every|some|\d+)\b)`,
@@ -199,6 +201,9 @@ const ROWS: readonly Row[] = [
   row(new RegExp(String.raw`\b(?:(?:collect|gather|find|grab|eat|steal)(?:s|ing)?|pick(?:s|ing)? up) (?=(?:all|every|each|${NUMBER})\b)`), [goal('collect')]),
   // Dojít k věci a něco s ní udělat: rozsvítit, osvobodit, zmáčknout, uhasit, prasknout.
   row(INTERACT, [act('interact'), goal('each')]),
+  // Hlídkovat je hlídat: „wolves patrol“, „wolves who patrol the canyon“, „a lynx patrols the canyon“.
+  // Sloveso patří podmětu; „a guard patrol“ / „border patrol“ zůstává jménem hrozby.
+  row(/(?<=\b(?!(?:his|its|this|is|was|has|does|as|us)\b)[a-z-]+s (?:(?:who|that|which) )?)patrol\b|(?<=\b(?:a|an|the) [a-z-]+ )patrols\b|\bpatroll(?:ing|ed)\b/, [{ axis: 'unknown', id: 'guard', who: 'doer', fallback: false }]),
   row(/\bcarr(?:y|ies|ying)\b|\bdeliver(?:s|ing)?\b|\bbring(?:s|ing)?\b|\bescort(?:s|ing)?\b|\bserv(?:e|es|ing)\b|\bfetch(?:es|ing)?\b/, [act('deliver'), goal('each')]),
   row(/\bstack(?:s|ing)?\b/, [act('stack'), goal('build')]),
   row(/\bbuild(?:s)?\b|\bbuilding (?=(?:a|an|the|games?|towers?|houses?|bridges?|castles?)\b)|\bconstruct(?:s|ing)?\b/, [goal('build'), act('stack', true)]),
@@ -865,7 +870,8 @@ export function extractIntent(sentence: string): Intent {
     // patrol. Keep bare patrols and other explicitly named groups distinct.
     if (item.axis === 'threat' && item.verb === 'guard' && item.actor === 'patrol' &&
         readings.some(reading => reading.hit.at === item.at && reading.thing !== null && /\bguards? patrols?\b/.test(text.slice(reading.thing.at, reading.thing.end)))) item = { ...item, actor: 'guard' };
-    if (item.verb === 'guard' && item.axis === 'unknown') item = { ...item, axis: 'threat', object: heroName };
+    // Kdo hlídá, je hrozba pro hrdinu; hrdina, který sám hlídá, hrozbou pro sebe není.
+    if (item.verb === 'guard' && item.axis === 'unknown' && item.actor !== heroName) item = { ...item, axis: 'threat', object: heroName };
     if (item.verb === 'throw') {
       const defendedFrom = /\b(?:defend|protect)(?:s|ing)? .+? from (?:a |an |the )?([a-z -]+?) by throw/.exec(text);
       const opponent = defendedFrom === null ? null : phraseIn(defendedFrom[1]);
