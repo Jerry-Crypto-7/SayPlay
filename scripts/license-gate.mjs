@@ -291,7 +291,11 @@ function loadRegistry() {
   try {
     const parsed = readJson(REGISTRY_FILE);
     if (!Array.isArray(parsed.entries)) return { error: `${REGISTRY_FILE} nemá pole "entries"` };
-    return { entries: parsed.entries };
+    const aiGenerated = parsed.aiGenerated ?? [];
+    if (!Array.isArray(aiGenerated) || !aiGenerated.every((text) => typeof text === 'string' && text.trim() !== '')) {
+      return { error: `${REGISTRY_FILE}: "aiGenerated" musí být pole neprázdných odstavců` };
+    }
+    return { entries: parsed.entries, aiGenerated };
   } catch (error) {
     return { error: `${REGISTRY_FILE} se nedá přečíst: ${error.message}` };
   }
@@ -928,7 +932,12 @@ function cell(value) {
   return text.replace(/\|/g, '\\|').replace(/\n/g, ' ');
 }
 
-export function renderDisclosure(entries) {
+/**
+ * `aiGenerated` je ruční odstavec registru: T&C chtějí uvést „AI-generated code
+ * or assets“ a to do tabulek položek nepatří — kód psaný AI asistentem není
+ * nic, co projekt „používá“, a generované assety jsou první strana.
+ */
+export function renderDisclosure(entries, aiGenerated = []) {
   const lines = [
     '# Disclosure',
     '',
@@ -939,6 +948,11 @@ export function renderDisclosure(entries) {
     'zdroj, autor nebo poskytovatel, licence a povinné notices.',
     '',
   ];
+
+  if (aiGenerated.length > 0) {
+    lines.push('## AI-generated code and assets', '');
+    for (const paragraph of aiGenerated) lines.push(paragraph, '');
+  }
 
   const ours = entries.filter((entry) => isFirstParty(entry));
 
@@ -1231,7 +1245,7 @@ check(6, 'DISCLOSURE.md odpovídá registru', ({ registry }) => {
       : `${RENDERED_FILE} chybí — spusť \`--sync\``;
   }
   const committed = readTracked(RENDERED_FILE);
-  const expected = renderDisclosure(registry.entries);
+  const expected = renderDisclosure(registry.entries, registry.aiGenerated);
   if (committed === expected) return null;
   return `${RENDERED_FILE} se rozešel s registrem — byl editovaný ručně, nebo se stagenul jen jeden ze dvou souborů? Spusť \`--sync\` a stagene obojí`;
 });
@@ -1306,12 +1320,16 @@ function sync() {
     );
   }
 
+  // Ruční jako asset a model: ze stromu odvodit nejde, takže sync ho jen přenese.
+  const aiGenerated = previous.aiGenerated ?? [];
+
   writeFileSync(
     join(REPO, REGISTRY_FILE),
     `${JSON.stringify(
       {
         $comment:
-          'Generováno `node scripts/license-gate.mjs --sync`. library se odvozuje z lockfilu; asset, model, dataset a api se píšou ručně a sync je nechává být.',
+          'Generováno `node scripts/license-gate.mjs --sync`. library se odvozuje z lockfilu; asset, model, dataset a api se píšou ručně a sync je nechává být. aiGenerated je ruční oddíl DISCLOSURE.md o kódu a assetech od AI.',
+        aiGenerated,
         entries,
       },
       null,
@@ -1319,7 +1337,7 @@ function sync() {
     )}\n`,
     'utf8',
   );
-  writeFileSync(join(REPO, RENDERED_FILE), renderDisclosure(entries), 'utf8');
+  writeFileSync(join(REPO, RENDERED_FILE), renderDisclosure(entries, aiGenerated), 'utf8');
   console.log(`sync: ${derived.length} odvozených položek, ${manual.length} ručních → ${REGISTRY_FILE}, ${RENDERED_FILE}\n`);
 }
 
