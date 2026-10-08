@@ -23,8 +23,17 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'quest.station': { move: 'stationary', actions: ['interact'], objective: 'interact', threats: [] },
 };
 
+/**
+ * What the sentence asked for, passed by `assemble` (P45B T9): its words and the requested
+ * actions the recipe cannot play. Only an assembly carrying it gets a rule template.
+ */
+export interface RecipeIntent {
+  readonly words: readonly string[];
+  readonly unplayed: readonly string[];
+}
+
 /** Content retains cast/parameter order, including the frozen legacy addon order. */
-export type RecipeAssembly = Recipe & { readonly preset: string; readonly content: GenreSpec; readonly parts?: readonly (AssemblyPart & { readonly label: string })[] };
+export type RecipeAssembly = Recipe & { readonly preset: string; readonly content: GenreSpec; readonly parts?: readonly (AssemblyPart & { readonly label: string })[]; readonly intent?: RecipeIntent };
 
 /** Native tracks have distinct names; the legacy voyage recipes stay frozen. */
 export const DRIVE_PRESETS: Readonly<Record<string, Recipe>> = { ...Object.fromEntries(

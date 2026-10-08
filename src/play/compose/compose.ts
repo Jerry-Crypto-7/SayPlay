@@ -11,7 +11,8 @@ import { essentialTriples, type Intent, type IntentTriple } from '../intent/cont
 import type { GameSpecV1 } from '../spec';
 import type { Reading } from '../read/schema';
 import { assemble, sourceFor, unplayed, type AssemblySource } from './assemble';
-import { compileRecipe, withoutPartNames } from './compile';
+import type { TemplateName } from '../arcade/rules/templates';
+import { compileTemplated, withoutPartNames } from './compile';
 import { namedProjectiles } from './projectiles';
 import { type RecipeAssembly } from './presets';
 
@@ -22,6 +23,8 @@ export interface Composition {
   readonly unmet: readonly IntentTriple[];
   readonly witnesses: readonly ActionWitness[];
   readonly issues: readonly string[];
+  /** Šablona pravidel, se kterou hra prošla (P45B T9); `null` = hraje bez ní. */
+  readonly template: TemplateName | null;
 }
 
 // Repeated publication of the same sentence must not replay identical worlds
@@ -202,23 +205,29 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
     for (let count = requested.parts?.length ?? 0; count >= 0; count--) {
       // A dropped part's thing does not come back as a base-genre role (a tossed pancake is no throw target).
       const recipe = { ...requested, parts: requested.parts?.slice(0, count), content: withoutPartNames(requested.content, requested.parts?.slice(count) ?? []) };
-      try {
-        const spec = compileRecipe(recipe);
-        const key = JSON.stringify(spec);
-        if (attempted.has(key)) continue;
-        attempted.add(key);
-        const made = arcadeWorldOf(spec, seed);
-        if (!made.ok) { issues.push(`${source.id}: ${made.issues.join('; ')}`); continue; }
-        const verdict = verifyArcade(made.world, undefined, made.roleBindings);
-        if (!verdict.publishEligible) { issues.push(`${source.id}: ${verdict.failures.join('; ')}`); continue; }
-        const witnesses = verdict.witnesses;
-        const unmet = essentialTriples(intent).filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
-        const composition = { cellId: source.id, recipe, spec, unmet, witnesses, issues };
-        if (compositions.size >= 64) compositions.delete(compositions.keys().next().value!);
-        compositions.set(cacheKey, structuredClone(composition));
-        return composition;
-      } catch (error) {
-        issues.push(`${source.id}: ${error instanceof Error ? error.message : String(error)}`);
+      // Šablona pravidel (P45B T9) jde první; neprojde-li, tentýž recept bez ní – teprve potom méně dílů.
+      const { intent: _intent, ...untemplated } = recipe;
+      for (const attempt of [recipe, untemplated]) {
+        try {
+          const { spec, template } = compileTemplated(attempt);
+          const key = JSON.stringify(spec);
+          if (attempted.has(key)) continue;
+          attempted.add(key);
+          const label = template === null ? source.id : `${source.id} + template ${template}`;
+          const made = arcadeWorldOf(spec, seed);
+          if (!made.ok) { issues.push(`${label}: ${made.issues.join('; ')}`); continue; }
+          const verdict = verifyArcade(made.world, undefined, made.roleBindings);
+          if (!verdict.publishEligible) { issues.push(`${label}: ${verdict.failures.join('; ')}`); continue; }
+          const witnesses = verdict.witnesses;
+          const unmet = essentialTriples(intent).filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
+          // Bez šablony recept záměr nenese: `compileRecipe(composition.recipe)` (rychlý návrh) postaví tutéž hru.
+          const composition = { cellId: source.id, recipe: template === null ? untemplated : attempt, spec, unmet, witnesses, issues, template };
+          if (compositions.size >= 64) compositions.delete(compositions.keys().next().value!);
+          compositions.set(cacheKey, structuredClone(composition));
+          return composition;
+        } catch (error) {
+          issues.push(`${source.id}: ${error instanceof Error ? error.message : String(error)}`);
+        }
       }
     }
   }

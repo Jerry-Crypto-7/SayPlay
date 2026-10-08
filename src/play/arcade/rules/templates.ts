@@ -292,6 +292,53 @@ export const RULE_TEMPLATES = {
       { id: 'surge', verb: 'surge', when: { phase: 'final' }, do: [{ wave: { role: S('enemy'), count: 4, at: 'edge' } }] },
     ],
   },
+
+  // -------------------------------------------------------------------------
+  // Průběh pro nejčastější buňky okamžitého návrhu (P45B T9, změřeno nad `p30/dev` + `p37a/dev-150`).
+  // První slovo je vlastní (šablona je k nalezení `templateFor`) a v korpusu poptávky není; další
+  // má šablona výš – pokrytí sloves (`evals/play/rules/coverage-p41.json`) se tím nemění.
+
+  /** Zlatá horečka: po 5 s klidu se po okraji podlahy vysypou tři sbírané věci, za 8 s je zase klid. Jen aréna a úkol. */
+  treasure_rush: {
+    verbs: ['scavenge', 'collect', 'gather'],
+    axes: ['objective:collect', 'action:collect'],
+    kind: 'overlay',
+    budget: 3,
+    slots: ['item'],
+    logic: { timers: [{ id: 'rush' }], phases: [{ id: 'calm' }, { id: 'rush' }] },
+    rules: [
+      { id: 'herald', verb: 'herald', when: { every: 300 }, if: [{ inPhase: 'calm' }], do: [{ goPhase: 'rush' }, { startTimer: { timer: 'rush', ticks: 480 } }] },
+      { id: 'shower', verb: 'shower', when: { phase: 'rush' }, do: [{ wave: { role: S('item'), count: 3, at: 'edge' } }] },
+      { id: 'settle', verb: 'settle', when: { timer: 'rush' }, do: [{ goPhase: 'calm' }] },
+    ],
+  },
+  /** Posily: po 10 s klidu zazní poplach a po okraji podlahy přijde další hlídka. Jen aréna a úkol. */
+  reinforcements: {
+    verbs: ['infiltrate', 'rescue', 'save'],
+    axes: ['action:interact'],
+    kind: 'overlay',
+    budget: 2,
+    slots: ['enemy'],
+    logic: { phases: [{ id: 'calm' }, { id: 'alarm' }] },
+    rules: [
+      { id: 'sound', verb: 'sound', when: { every: 600 }, if: [{ inPhase: 'calm' }], do: [{ goPhase: 'alarm' }] },
+      { id: 'muster', verb: 'muster', when: { phase: 'alarm' }, do: [{ wave: { role: S('enemy'), count: 1, at: 'edge' } }] },
+    ],
+  },
+  /** Spršky na trati: po 5 s se kolem hráče vysypou tři sbírané věci, za 8 s znovu klid. Hraje i bez podlahy. */
+  coin_shower: {
+    verbs: ['sprint', 'race', 'escape'],
+    axes: ['objective:reach', 'objective:race', 'objective:escape'],
+    kind: 'overlay',
+    budget: 3,
+    slots: ['item'],
+    logic: { timers: [{ id: 'rush' }], phases: [{ id: 'calm' }, { id: 'rush' }] },
+    rules: [
+      { id: 'herald', verb: 'herald', when: { every: 300 }, if: [{ inPhase: 'calm' }], do: [{ goPhase: 'rush' }, { startTimer: { timer: 'rush', ticks: 480 } }] },
+      { id: 'shower', verb: 'shower', when: { phase: 'rush' }, do: [{ wave: { role: S('item'), count: 3, at: 'player' } }] },
+      { id: 'settle', verb: 'settle', when: { timer: 'rush' }, do: [{ goPhase: 'calm' }] },
+    ],
+  },
 } as const satisfies Readonly<Record<string, RuleTemplate>>;
 
 export type TemplateName = keyof typeof RULE_TEMPLATES;
@@ -319,11 +366,15 @@ export function expandTemplate(name: TemplateName, roles: Readonly<Partial<Recor
   return templateParts(name, roles)?.rules ?? null;
 }
 
+/** Říkají slova věty (malá písmena) sloveso šablony v běžném tvaru (`toss`, `tosses`, `tossing`, `tossed`)? */
+export function says(words: readonly string[], verb: string): boolean {
+  return words.some((word) => word === verb || word === `${verb}s` || word === `${verb}es` || word === `${verb}ing` || word === `${verb.replace(/e$/, '')}ing` || word === `${verb}ed`);
+}
+
 /** Šablona, jejíž sloveso věta obsahuje (první podle pořadí `RULE_TEMPLATES`), jinak `null`. */
 export function templateFor(sentence: string): TemplateName | null {
   const words = sentence.toLowerCase().match(/[a-z]+/g) ?? [];
-  const has = (verb: string): boolean => words.some((word) => word === verb || word === `${verb}s` || word === `${verb}es` || word === `${verb}ing` || word === `${verb.replace(/e$/, '')}ing` || word === `${verb}ed`);
-  return TEMPLATE_NAMES.find((name) => RULE_TEMPLATES[name].verbs.some(has)) ?? null;
+  return TEMPLATE_NAMES.find((name) => RULE_TEMPLATES[name].verbs.some((verb) => says(words, verb))) ?? null;
 }
 
 /** Šablony s aspoň jednou z os `axes`, které se vejdou do `budget` pravidel – v pořadí `RULE_TEMPLATES`. */

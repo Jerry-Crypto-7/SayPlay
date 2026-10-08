@@ -63,6 +63,9 @@ const REFERENCE: Readonly<Record<TemplateName, { readonly host: 'yard' | 'arena'
   catch_count: { host: 'yard' },
   chores_rush: { host: 'yard', roles: { target: { count: 2 } } },
   waves_survive: { host: 'arena', roles: { enemy: { kind: 'hazard' } } },
+  treasure_rush: { host: 'arena', roles: { item: { kind: 'collectible' } } },
+  reinforcements: { host: 'arena' },
+  coin_shower: { host: 'arena', roles: { item: { kind: 'collectible' } } },
 };
 
 const ROLES: Readonly<Record<TemplateSlot, string>> = Object.fromEntries(Object.keys(SLOT_ROLE).map((slot) => [slot, slot])) as Record<TemplateSlot, string>;
@@ -226,11 +229,11 @@ describe('vocabulary axes', () => {
 
   it('templatesFor picks by any axis within the rule budget, in table order', () => {
     expect(templatesFor(['objective:survive'], ARCADE_LIMITS.maxRules)).toEqual(['defend_base', 'waves_survive']);
-    expect(templatesFor(['objective:escape', 'action:deliver'], ARCADE_LIMITS.maxRules)).toEqual(['carry', 'give', 'escape_countdown', 'rescue_then_flee']);
+    expect(templatesFor(['objective:escape', 'action:deliver'], ARCADE_LIMITS.maxRules)).toEqual(['carry', 'give', 'escape_countdown', 'rescue_then_flee', 'coin_shower']);
     expect(templatesFor(['action:deliver', 'objective:escape'], ARCADE_LIMITS.maxRules)).toEqual(templatesFor(['objective:escape', 'action:deliver'], ARCADE_LIMITS.maxRules));
-    // Rozpočet: šablona o čtyřech pravidlech se do tří nevejde.
-    expect(templatesFor(['objective:survive', 'objective:escape'], 3)).toEqual([]);
-    expect(templatesFor(['objective:collect'], 3)).toEqual(['collect_unlock']);
+    // Rozpočet: šablona o čtyřech pravidlech se do tří nevejde, ta o třech ano.
+    expect(templatesFor(['objective:survive', 'objective:escape'], 3)).toEqual(['coin_shower']);
+    expect(templatesFor(['objective:collect'], 3)).toEqual(['collect_unlock', 'treasure_rush']);
     expect(templatesFor([], ARCADE_LIMITS.maxRules)).toEqual([]);
     expect(templatesFor(['move:run'], ARCADE_LIMITS.maxRules)).toEqual([]);
   });
