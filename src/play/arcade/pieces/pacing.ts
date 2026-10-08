@@ -12,9 +12,13 @@
 
 import { z } from 'zod';
 
-import type { CompileRng } from '@/play/compile/rng';
+import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_LIMITS, BODY, COUNTER, FLAG, HEADER, bodyBase } from '../contract';
+import type { ArcadeParts } from '../addons';
+import { ARCADE_LIMITS, type ArcadeEffect, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, type RulePiece, bodyBase } from '../contract';
+import { ESCAPE } from './arena';
+import { FIGHT } from './fight';
+import { spotsAway } from './waves';
 
 export const PACING = {
   /** Konce segmentů v promile postupu: úvod 0–200, stupňování 200–650, vrchol 650–850, finále 850–1000. */
@@ -128,4 +132,186 @@ export function scheduleOf(rng: CompileRng, curve: TensionCurve, budget: number,
     count: intensityAt(atPermille, curve) >= PACING.intensity.peak ? 2 : 1,
     entry: rng.int(0, 3),
   }));
+}
+
+// ---------------------------------------------------------------------------
+// Kusy: obal ovládání, pravidlo, obal robota
+
+/**
+ * Knoflíky žánru, které intenzita škáluje (vzor `phase_control`): klíč
+ * parametru základního ovládání (tečka = vnořený), `up` = větší je těžší
+ * (hodnota × intenzita), jinak menší je těžší (hodnota / intenzita), a meze,
+ * přes které škálování nikdy nejde. Žánr bez řádku jen nese křivku.
+ */
+export const PACING_KNOBS: Readonly<Record<string, readonly { readonly key: string; readonly up: boolean; readonly min: number; readonly max: number }[]>> = {
+  move_free: [{ key: 'chase.speed', up: true, min: ESCAPE.chaserSpeed.min, max: ESCAPE.chaserSpeed.max }],
+  fight: [{ key: 'enemySpeed', up: true, min: FIGHT.enemySpeed.min, max: FIGHT.enemySpeed.max }],
+  walker: [{ key: 'chaseSpeed', up: true, min: 0, max: 70 }],
+};
+
+/**
+ * Tělo-počítadlo (vzor `comboKeeper`): mrtvá předloha za tělesy úrovně, nic ho
+ * nekreslí ani nesrazí. `aux0` = nejvyšší dosažený postup v promile, `aux1` =
+ * tentýž postup tik předtím – pravidlo `pacing` z nich pozná, které kroky
+ * rozvrhu tento tik přešly. Zapisuje je jen `pacing_control`.
+ */
+export const pacingKeeper = (kind: string): BodyInit => ({ role: 'obstacle', kind, x: 0, y: -100 * 1000, z: 0, w: 1, h: 1, d: 1, solid: false, template: true });
+
+export const reachedOf = (state: Int32Array, keeper: number): number => state[bodyBase(keeper) + BODY.aux0] as number;
+
+const refSchema = z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) });
+
+const controlParams = z.object({ base: refSchema, goal: pacingGoalSchema, keeper: z.int().min(1) }).strict();
+const botParams = z.object({ base: refSchema, control: z.string(), keeper: z.int().min(1) }).strict();
+
+const parsed = new WeakMap<object, unknown>();
+/** Parametry základního kusu přečtené schématem jednou (výchozí hodnoty doplní zod). */
+function parseOnce(piece: { readonly params: { parse(input: unknown): unknown } }, raw: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
+  if (!parsed.has(raw)) parsed.set(raw, piece.params.parse(raw));
+  return parsed.get(raw) as Readonly<Record<string, unknown>>;
+}
+
+/** Parametry `params` s knoflíky ovládání `control` škálovanými intenzitou; klíč, který parametry nemají, se přeskočí. */
+export function scaledParams(control: string, params: Readonly<Record<string, unknown>>, intensity: number): Readonly<Record<string, unknown>> {
+  const knobs = PACING_KNOBS[control];
+  if (knobs === undefined) return params;
+  let out = params;
+  for (const knob of knobs) {
+    const path = knob.key.split('.');
+    const leaf = path.pop() as string;
+    const holder = path.reduce<Readonly<Record<string, unknown>> | undefined>((at, key) => at?.[key] as Readonly<Record<string, unknown>> | undefined, out);
+    const value = holder?.[leaf];
+    if (typeof value !== 'number') continue;
+    const scaled = knob.up ? Math.floor((value * intensity) / 1000) : Math.floor((value * 1000) / intensity);
+    const bounded = Math.max(knob.min, Math.min(knob.max, scaled));
+    const set = (at: Readonly<Record<string, unknown>>, depth: number): Readonly<Record<string, unknown>> =>
+      depth === path.length ? { ...at, [leaf]: bounded } : { ...at, [path[depth] as string]: set(at[path[depth] as string] as Readonly<Record<string, unknown>>, depth + 1) };
+    out = set(out, 0);
+  }
+  return out;
+}
+
+/** Intenzita podle nejvyššího dosaženého postupu v počítadle. */
+const intensityOf = (state: Int32Array, keeper: number): number => intensityAt(reachedOf(state, keeper), TENSION_CURVE);
+
+/**
+ * `pacing_control`: posune počítadlo postupu, pak krok základního ovládání se
+ * škálovanými knoflíky žánru (`PACING_KNOBS`).
+ */
+export function makePacingControl(controls: Readonly<Record<string, ControlPiece>>): ControlPiece<z.infer<typeof controlParams>> {
+  return {
+    id: 'pacing_control', params: controlParams, roles: ['player'], cost: () => ({ bodies: 1, rules: 0 }),
+    step(state, player, input, params) {
+      const native = controls[params.base.id];
+      if (native === undefined) throw new Error(`arcade: unknown paced control ${params.base.id}`);
+      const keeper = bodyBase(params.keeper);
+      const reached = state[keeper + BODY.aux0] as number;
+      state[keeper + BODY.aux1] = reached;
+      state[keeper + BODY.aux0] = Math.max(reached, progressOf(state, params.goal));
+      native.step(state, player, input, scaledParams(params.base.id, parseOnce(native, params.base.params), intensityOf(state, params.keeper)));
+    },
+  };
+}
+
+/** `pacing_bot`: základní robot rozhoduje se stejně škálovanými parametry, jaké vidí ovládání. */
+export function makePacingBot(bots: Readonly<Record<string, BotPiece>>): BotPiece<z.infer<typeof botParams>> {
+  return {
+    id: 'pacing_bot', params: botParams, roles: ['player'], reactionTicks: 8, cost: () => ({ bodies: 0, rules: 0 }),
+    decide(observation, params) {
+      const native = bots[params.base.id];
+      if (native === undefined) throw new Error(`arcade: unknown paced bot ${params.base.id}`);
+      return native.decide(observation, scaledParams(params.control, parseOnce(native, params.base.params), intensityOf(observation.state, params.keeper)));
+    },
+  };
+}
+
+export const FINALES = ['boss', 'wave', 'sprint', 'round', 'escape'] as const;
+
+const ruleParams = z
+  .object({
+    keeper: z.int().min(1),
+    /** Kroky rozvrhu s už vybranou předlohou chování (index těla). */
+    schedule: z.array(z.object({ atPermille: z.int().min(1).max(1000), template: z.int().min(1), count: z.int().min(1).max(PACING.maxActors), entry: z.int().min(0).max(3) }).strict()).max(32),
+    /** Místa vstupu `[x, z]` po dvojicích; `track` = `z` je odstup před hráčem. */
+    spots: z.array(z.int()).min(2).max(16),
+    space: z.enum(['plane', 'track']),
+    maxActors: z.int().min(1).max(PACING.maxActors),
+    finale: z.enum(FINALES).optional(),
+  })
+  .strict();
+export type PacingRuleParams = z.infer<typeof ruleParams>;
+
+/** Živá těla chování: kopie některé z předloh rozvrhu (týž model) od prvního slotu spawnu. */
+function actorsAlive(state: Int32Array, templates: ReadonlySet<number>): number {
+  const kinds = new Set([...templates].map((template) => state[bodyBase(template) + BODY.kind] as number));
+  let alive = 0;
+  for (let body = state[HEADER.spawnBase] as number; body < (state[HEADER.bodyCount] as number); body += 1) {
+    const base = bodyBase(body);
+    if (((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && kinds.has(state[base + BODY.kind] as number)) alive += 1;
+  }
+  return alive;
+}
+
+/**
+ * Pravidlo `pacing` (spouštěč `tick`): kroky rozvrhu, které postup v tomto
+ * tiku přešel, vydají `spawn` předloh – v rovině na místech nejdál od hráče
+ * (vzor `enter` ve `waves.ts`), na trati před hráčem v pruhu kroku. Nikdy víc
+ * živých těl chování než `maxActors`; co se nevejde, nepřijde.
+ */
+export const pacingRule: RulePiece<PacingRuleParams> = {
+  id: 'pacing', trigger: 'tick', params: ruleParams, roles: [], cost: () => ({ bodies: 0, rules: 1 }),
+  fire({ state, player }, params) {
+    const keeper = bodyBase(params.keeper);
+    const before = state[keeper + BODY.aux1] as number;
+    const reached = state[keeper + BODY.aux0] as number;
+    const due = params.schedule.filter((entry) => entry.atPermille > before && entry.atPermille <= reached);
+    if (due.length === 0) return [];
+    let room = params.maxActors - actorsAlive(state, new Set(params.schedule.map((entry) => entry.template)));
+    const spots = params.spots.length >> 1;
+    const order = params.space === 'plane' ? spotsAway(state, player, params.spots) : [];
+    const p = bodyBase(player);
+    const effects: ArcadeEffect[] = [];
+    for (const entry of due) for (let k = 0; k < entry.count && room > 0; k += 1, room -= 1) {
+      const at = params.space === 'plane' ? (order[k % spots] as number) : (entry.entry + k) % spots;
+      const x = params.spots[2 * at] as number;
+      const z = (params.spots[2 * at + 1] as number) + (params.space === 'track' ? (state[p + BODY.z] as number) : 0);
+      effects.push({ kind: 'spawn', template: entry.template, x, y: 0, z, vx: 0, vy: 0, vz: 0 });
+    }
+    return effects;
+  },
+};
+
+/** Co `withPacing` přidá: jak hra měří postup, kde se vstupuje, předlohy chování a kolik spawnů. */
+export interface PacingSetup {
+  readonly seed: number;
+  readonly goal: PacingGoal;
+  readonly space: 'plane' | 'track';
+  readonly spots: readonly number[];
+  /** Předlohy chování (`template: true`); prázdné = jen křivka bez spawnů. */
+  readonly behaviours: readonly BodyInit[];
+  readonly budget: number;
+  readonly finale?: (typeof FINALES)[number];
+}
+
+/**
+ * Části hry s průběhem: obalí ovládání a robota, za tělesa úrovně přidá
+ * předlohy chování a počítadlo, rezervu spawnů a pravidlo `pacing` s rozvrhem
+ * z `createCompileRng(seed, 'pacing')`. Bez předloh (a bez finále) pravidlo nepřidá.
+ */
+export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts {
+  const first = parts.level.bodies.length;
+  const keeper = first + setup.behaviours.length;
+  const bodies = [...parts.level.bodies, ...setup.behaviours.map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
+  const schedule = setup.behaviours.length === 0 ? [] : scheduleOf(createCompileRng(setup.seed, 'pacing'), TENSION_CURVE, setup.budget, setup.behaviours.length)
+    .map((entry) => ({ atPermille: Math.max(1, entry.atPermille), template: first + entry.behaviour, count: entry.count, entry: entry.entry }));
+  const rule: PieceRef | null = schedule.length === 0 && setup.finale === undefined ? null : {
+    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...(setup.finale === undefined ? {} : { finale: setup.finale }) },
+  };
+  return {
+    ...parts,
+    control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper } },
+    bot: { id: 'pacing_bot', params: { base: parts.bot, control: parts.control.id, keeper } },
+    level: { ...parts.level, bodies, spawnSlots: (parts.level.spawnSlots ?? 0) + (schedule.length === 0 ? 0 : PACING.maxActors) },
+    rules: rule === null ? parts.rules : [...parts.rules, rule],
+  };
 }

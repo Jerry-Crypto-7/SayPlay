@@ -70,7 +70,7 @@ export interface ArcadeParts {
  * poznat běžce a scéna podle něj volí kameru a vstup.
  */
 export const baseControlOf = (control: PieceRef): PieceRef =>
-  control.id === 'addon_control' || control.id === 'phase_control' || control.id === 'assembly_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
+  control.id === 'addon_control' || control.id === 'phase_control' || control.id === 'pacing_control' || control.id === 'assembly_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
 const baseControl = (parts: ArcadeParts): PieceRef => baseControlOf(parts.control);
 
 export { mapUnderlying, underlyingRule } from './contract';

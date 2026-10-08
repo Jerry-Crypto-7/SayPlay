@@ -7,7 +7,8 @@ import { assemblyPart, assemblyFinish, assemblyGateRules, makeAssemblyControl, m
  */
 
 import { ADDON_RULES, makeAddonBot, makeAddonControl } from './addons';
-import type { BotPiece, ControlPiece, ModeGeneratorPiece } from './contract';
+import type { BotPiece, ControlPiece, ModeGeneratorPiece, RulePiece } from './contract';
+import { makePacingBot, makePacingControl, pacingRule } from './pieces/pacing';
 import type { ArcadeLibrary } from './kernel';
 import { arenaCollect, arenaEat, arenaEscape, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
 import { arenaCatch, arenaCatchContact } from './pieces/arena-catch';
@@ -100,11 +101,14 @@ const BASE_CONTROLS = {
   duel: duelControl,
 } as const;
 
-const PROGRESSION_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
-const PROGRESSION_BOTS = { ...BASE_BOTS, objective_walker_bot: objectiveWalkerBot, phase_bot: makePacedBot(BASE_BOTS) };
+const PHASE_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
+const PHASE_BOTS = { ...BASE_BOTS, objective_walker_bot: objectiveWalkerBot, phase_bot: makePacedBot(BASE_BOTS) };
+// Průběh hry (P45C) obalí základní ovládání i souboj; doplňky obalí jeho.
+const PROGRESSION_CONTROLS = { ...PHASE_CONTROLS, pacing_control: makePacingControl({ ...PHASE_CONTROLS, fight: fightControl as ControlPiece }) as ControlPiece };
+const PROGRESSION_BOTS = { ...PHASE_BOTS, pacing_bot: makePacingBot(PHASE_BOTS) as BotPiece };
 const NATIVE_LIBRARY: ArcadeLibrary = {
   controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
+  rules: { pacing: pacingRule as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,
