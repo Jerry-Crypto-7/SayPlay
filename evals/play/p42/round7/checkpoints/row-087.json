@@ -1,0 +1,254 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-018",
+    "sentence": "A kid dribbles a soccer ball through the schoolyard and scores past the goalkeeper.",
+    "seed": 2,
+    "milliseconds": 284.77270000000135,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "ball",
+      "controlParams": {
+        "team": true,
+        "goal": "goal",
+        "shotRecoveryTicks": 178,
+        "shotRecoveryRiseTicks": 4,
+        "paceSeconds": 16,
+        "keeper": true,
+        "difficulty": "normal",
+        "targets": 5,
+        "generator": "ball_pitch"
+      },
+      "addons": [],
+      "title": "kid score",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "schoolyard",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Score in every goal.",
+        "count": 5,
+        "role": "goal"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "kid",
+          "count": 1
+        },
+        {
+          "id": "physics_ball",
+          "kind": "item",
+          "label": "football",
+          "count": 1
+        },
+        {
+          "id": "goal",
+          "kind": "target",
+          "label": "goal",
+          "count": 5
+        },
+        {
+          "id": "goalkeeper",
+          "kind": "patrol",
+          "label": "goalkeeper",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Score in every goal.",
+        "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "ba3c37c8",
+    "worldHash": "2861bedd23d94175ef882664def3416f2ae32f9a7c9d65c2f822458dc87a6797",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kid",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 46,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kid",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "ball",
+        "object": null,
+        "tick": 46,
+        "evidence": "physical-ball-scored",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kid",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": {
+          "body": 2,
+          "roleId": "goal",
+          "label": "goal",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 46,
+        "evidence": "physical-ball-in-goal",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kid",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "kick",
+        "object": {
+          "body": 12,
+          "roleId": "physics_ball",
+          "label": "football",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 46,
+        "evidence": "physical-ball-kicked-into-goal",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kid",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 7,
+          "roleId": "goalkeeper",
+          "label": "goalkeeper",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 944,
+        "evidence": "survived-threat:probe:goalkeeper",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 7,
+          "roleId": "goalkeeper",
+          "label": "goalkeeper",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kid",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 20,
+        "evidence": "keeper-deflected-physical-ball",
+        "run": "probe",
+        "runId": "probe:goalkeeper"
+      },
+      {
+        "actor": {
+          "body": 8,
+          "roleId": "goalkeeper",
+          "label": "goalkeeper",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kid",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 65,
+        "evidence": "opponent-physical-goal",
+        "run": "probe",
+        "runId": "probe:goalkeeper"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "kid",
+          "verb": "score",
+          "object": "goalkeeper"
+        }
+      ],
+      "closest": "a ball game",
+      "reason": "Score isn't here yet – here's a ball game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 944,
+      "hash": "1b3d7418",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -226,6 +226,9 @@ describe('GET /api/play/games/:id/og', () => {
     const survive: GameSpecV1 = { ...spec, objective: { kind: 'survive', description: 'Last it.', seconds: 60 } };
     expect(dareScoreBadge(survive, { score: 0, ticks: 3600 })).toEqual({ time: '60s', word: 'Survive!' });
     expect(dareScoreBadge(survive, { score: 12450, ticks: 3600 })).toEqual({ time: '12,450', word: 'to beat' });
+    // P44B T7: s autorem nese odznak nad skóre jeho jméno; bez autora dnešní text.
+    expect(dareScoreBadge(spec, { score: 2450, ticks: 1860 }, 'Ada')).toEqual({ time: '2,450', word: 'to beat', lead: 'Ada dares you' });
+    expect(dareScoreBadge(survive, { score: 0, ticks: 3600 }, 'Bo')).toEqual({ time: '60s', word: 'Survive!', lead: 'Bo dares you' });
   });
 
   it("draws a dare link's card from its dare; a foreign, unknown or malformed dare gets the plain card for an hour (P36B T8)", async () => {
@@ -252,6 +255,41 @@ describe('GET /api/play/games/:id/og', () => {
       expect(response.headers.get('cache-control'), value).toBe('public, max-age=0, s-maxage=3600');
       expect(Buffer.from(await response.arrayBuffer()).equals(plain), value).toBe(true);
     }
+  });
+
+  it("draws the dare author's own validated name, for an hour – never another player's (P44B T7)", async () => {
+    const game = await publishSpec('Canyon Dash');
+    const versions = versionStoreFromEnv(process.env);
+    const [ada, bo, rude] = ['A', 'B', 'C'].map((letter) => letter.repeat(22)) as [string, string, string];
+    await versions.putPlayer(ada, { nickname: 'Ada' });
+    await versions.putPlayer(bo, { nickname: 'Bo' });
+    const dare =(dareId: string, by?: string): DareRecord => ({ dareId, versionId: game, score: 2450, ticks: 1860, hash: 'f'.repeat(8), liveChanges: 0, createdAt: new Date().toISOString(), ...(by === undefined ? {} : { by }) });
+    const ids = { anon: '1'.repeat(32), ada: '2'.repeat(32), ada2: '3'.repeat(32), bo: '4'.repeat(32), rude: '5'.repeat(32), rude2: '6'.repeat(32) };
+    await versions.putDare(dare(ids.anon));
+    await versions.putDare(dare(ids.ada, ada));
+    await versions.putDare(dare(ids.ada2, ada));
+    await versions.putDare(dare(ids.bo, bo));
+    await versions.putDare(dare(ids.rude, rude));
+    await versions.putDare(dare(ids.rude2, rude));
+    const card =async (dareId: string): Promise<{ cache: string | null; png: Buffer }> => {
+      const response = await ogImage(new Request(`http://play.test/api/play/games/${game}/og?dare=${dareId}`, { headers: CALLER }), params(game));
+      expect(response.status).toBe(200);
+      return { cache: response.headers.get('cache-control'), png: Buffer.from(await response.arrayBuffer()) };
+    };
+
+    const anon = await card(ids.anon);
+    const byAda = await card(ids.ada);
+    expect(anon.cache).toBe('public, max-age=31536000, immutable');
+    // Jméno se smí změnit: karta se jménem žije hodinu, ne rok.
+    expect(byAda.cache).toBe('public, max-age=0, s-maxage=3600');
+    expect(byAda.png.equals(anon.png)).toBe(false);
+    expect((await card(ids.ada2)).png.equals(byAda.png)).toBe(true);
+    expect((await card(ids.bo)).png.equals(byAda.png)).toBe(false);
+    // Uložené jméno, které dnes neprojde, se nekreslí: karta je táž jako s výchozím jménem téhož hráče.
+    const rudeDefault = await card(ids.rude2);
+    await versions.putPlayer(rude, { nickname: 'kurva' });
+    expect((await card(ids.rude)).png.equals(rudeDefault.png)).toBe(true);
+    expect(rudeDefault.png.equals(byAda.png)).toBe(false);
   });
 
   it('fetches a hero thumbnail only from a configured origin, never from the request host', () => {

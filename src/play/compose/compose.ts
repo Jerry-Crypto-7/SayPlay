@@ -3,16 +3,17 @@ import { verifyArcade } from '../arcade/verify';
 import { timeOfDayFor } from '../arcade/look';
 import { matchesWitness, type ActionWitness } from '../arcade/witness';
 import { draftChoiceOrder, draftGenreFor } from '../draft/draft';
-import { nounPhrase, singular, toolsOf } from '../draft/lexicon';
+import { nounPhrase, singular } from '../draft/lexicon';
 import { classifyGenre } from '../genre/classify';
 import type { CastItem, GenreSpec } from '../genre/contract';
-import { DEFAULT_LABELS, defaultCollectible, defaultFoe, heroClass } from '../genre/roles';
+import { BALL_PLAYER, DEFAULT_LABELS, defaultCollectible, defaultFoe } from '../genre/roles';
 import { essentialTriples, type Intent, type IntentTriple } from '../intent/contract';
 import type { GameSpecV1 } from '../spec';
 import type { Reading } from '../read/schema';
-import { assemblyOfCell, liveCells, type LiveCell } from './allowed';
-import { compileRecipe } from './compile';
-import { PRESETS, type RecipeAssembly } from './presets';
+import { assemble, sourceFor, unplayed, type AssemblySource } from './assemble';
+import { compileRecipe, withoutPartNames } from './compile';
+import { namedProjectiles } from './projectiles';
+import { type RecipeAssembly } from './presets';
 
 export interface Composition {
   readonly cellId: string;
@@ -27,27 +28,23 @@ export interface Composition {
 // on every request. Bounded and keyed by every input; callers get owned copies.
 const compositions = new Map<string, Composition>();
 
-/** Requested capabilities precede preferences for an unspecified movement. */
-function distance(intent: Intent, cell: LiveCell, defaultMove: string | undefined): number[] {
-  const explicitMove = intent.items.some(item => item.essential && item.axis === 'move');
-  const implicitMove = !explicitMove && intent.hero !== null && ['vehicle', 'boat'].includes(heroClass(intent.hero) ?? '') ? 'drive' : undefined;
-  const unaskedVehicle = !explicitMove && implicitMove === undefined && defaultMove !== 'drive' && !intent.items.some(item => item.essential && item.verb === 'race');
-  const supported = {
-    move: [cell.recipe.move], objective: [cell.recipe.objective],
-    action: cell.recipe.objective === 'collect' ? [...cell.recipe.actions, 'collect'] : cell.recipe.actions,
-    threat: cell.recipe.actions.includes('duel') ? [...cell.recipe.threats, 'rival'] : cell.recipe.threats,
-  };
-  return [...['move', 'objective', 'action', 'threat'].map(axis => axis === 'move' && implicitMove !== undefined ? Number(cell.recipe.move !== implicitMove) : axis === 'move' && unaskedVehicle && intent.hero !== null && cell.recipe.move === 'drive' ? 1 : intent.items.filter(item =>
-    item.essential && item.axis === axis && !(supported[axis as keyof typeof supported] as readonly string[]).includes(item.verb)).length), Number(unaskedVehicle && cell.recipe.move === 'drive')];
-}
-
-function contentOf(intent: Intent, cell: LiveCell, reading: Reading | null): GenreSpec {
+function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null): GenreSpec {
   const draft = draftGenreFor(intent.sentence, cell.preset.genre, cell.preset.mode, { reading }) ?? cell.preset;
   const words = (intent.sentence.toLowerCase().match(/[a-z][a-z-]*/g) ?? []).map(singular);
-  const namedSetting = (draft.setting.toLowerCase().match(/[a-z][a-z-]*/g) ?? []).some(word => word.length > 2 && words.includes(singular(word)));
-  const place = intent.setting !== null && !draft.setting.includes(intent.setting) && !namedSetting ? intent.setting : draft.setting;
+  // A setting category selects the scenery, but must not rename an explicitly
+  // supplied place (a laboratory is not a factory; a snowy mountain is not snow).
+  const text = intent.sentence.toLowerCase();
+  const namedPlace = draft.setting.toLowerCase();
+  const explicitlyNamed = new RegExp(`\\b${namedPlace.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(text);
+  const placeHead = (place: string) => singular(place.replace(/\s+at\s+(?:night|dawn|dusk|noon|sunset|sunrise)$/, '')).split(' ').at(-1);
+  // Preserve descriptive modifiers only for the same place. A draft phrase
+  // elsewhere in the sentence must not override the parsed locative argument.
+  const samePlace = intent.setting !== null && placeHead(namedPlace) === placeHead(intent.setting);
+  // A scenery category the sentence never says (classroom → school) is no parsed place.
+  const categoryOnly = intent.setting !== null && !words.includes(singular(intent.setting));
+  const place = intent.setting === null || explicitlyNamed && (samePlace || categoryOnly) ? draft.setting : text.includes(`burning ${intent.setting}`) ? `burning ${intent.setting}` : intent.setting;
   const time = timeOfDayFor(intent.sentence);
-  const setting = time !== null && timeOfDayFor(place) === null ? `${place} at ${time}` : place;
+  const setting = time !== null && place !== time && timeOfDayFor(place) === null ? `${place} at ${time}` : place;
   const cast: CastItem[] = (draft.cast ?? []).map(item => {
     if (setting === draft.setting || !DEFAULT_LABELS.has(item.label) || words.includes(singular(item.label.split(' ').at(-1)!))) return item;
     if (item.does === 'collect') return { ...item, label: defaultCollectible(setting) };
@@ -57,6 +54,20 @@ function contentOf(intent: Intent, cell: LiveCell, reading: Reading | null): Gen
   const spoken: string[] = [];
   const sentenceHeads = (intent.sentence.toLowerCase().match(/[a-z][a-z-]*/g) ?? []).map(singular);
   const head = (label: string): string => singular(label.toLowerCase()).split(' ').at(-1) ?? label;
+  const projectiles = namedProjectiles(intent.sentence).filter(projectile => intent.items.some(item =>
+    item.essential && item.verb === 'shoot' && (item.actor === intent.hero || item.actor === 'hero') &&
+    (item.object === null || head(item.object) === head(projectile.target ?? projectile.label))));
+  const firedWithoutTarget = (label: string) => projectiles.some(projectile => projectile.target === null && head(projectile.label) === head(label));
+  const ammoWithoutTargetRequest = (label: string) => projectiles.some(projectile => head(projectile.label) === head(label)) &&
+    (firedWithoutTarget(label) || !intent.items.some(item => item.essential && item.verb === 'shoot' && item.object !== null && head(item.object) === head(label)));
+  // Ammo is an item carried by the actual projectile, never an enemy renamed
+  // after a rocket. Older genre drafting conflates these two argument roles.
+  // „fires fireballs at ogres“ čte návrh i jako sbírání koulí; bez slovesa sbírání je to jen munice.
+  const collectRequested = (label: string) => intent.items.some(item => item.verb === 'collect' && item.object !== null && head(item.object) === head(label));
+  for (let index = cast.length - 1; index >= 0; index--) {
+    const { does, label } = cast[index];
+    if ((does === 'shoot_at' || (does === 'collect' && !collectRequested(label))) && ammoWithoutTargetRequest(label)) cast.splice(index, 1);
+  }
   for (const fallback of cell.preset.cast ?? []) {
     const roles = draft.genre === 'arena' && fallback.does === 'chase_me'
       ? ['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'] : [fallback.does];
@@ -82,18 +93,19 @@ function contentOf(intent: Intent, cell: LiveCell, reading: Reading | null): Gen
       // Keep the setting's existing cast; unmatched identities stay unmet.
       if (!sentenceHeads.includes(head(item.actor))) continue;
       if (item.verb === 'chaser' || item.verb === 'guard') put(item.actor, 'chase_me');
-      else if (item.verb === 'rival' && (cell.assembly === 'native' || cell.assembly === 'drive')) put(item.actor, 'fight');
+      else if (item.verb === 'rival') put(item.actor, 'fight');
       else put(item.actor, 'avoid');
     } else if (item.object !== null && (item.actor === intent.hero || item.actor === 'hero')) {
       // The cargo remains visible as a destination when this recipe cannot
       // carry it. That never certifies delivery: its triple still needs a witness.
-      const roles: Partial<Record<string, CastItem['does']>> = { shoot: 'shoot_at', throw: 'throw_at', collect: 'collect', fight: 'fight', duel: 'fight', ...(cell.id === 'roam.catch' ? { catch: 'fight' as const } : {}), reach: 'reach', land: 'reach', interact: 'reach', deliver: 'reach' };
+      const roles: Partial<Record<string, CastItem['does']>> = { shoot: 'shoot_at', throw: 'throw_at', collect: 'collect', fight: 'fight', duel: 'fight', catch: 'fight', reach: 'reach', land: 'reach', interact: 'reach', deliver: 'reach' };
       if (item.verb === 'throw' && item.object === 'ball' && sentenceHeads.includes('basketball')) {
         // A sports ball is the thrown object, never the thing thrown at.
         if (!cast.some(member => member.label === 'basketball')) cast.push({ label: 'basketball', does: 'scenery', verb: 'throw' });
         continue;
       }
       const does = roles[item.verb];
+      if (item.verb === 'shoot' && firedWithoutTarget(item.object)) continue;
       if (does !== undefined) put(item.object, does);
       else if (item.axis === 'unknown' && /^(?:sweep|mop)$/.test(item.verb) && draft.genre === 'arena' && draft.mode === 'collect' && draft.heroAction === 'sweep') {
         // Retain the surface named by a cleaning request in its established
@@ -102,6 +114,15 @@ function contentOf(intent: Intent, cell: LiveCell, reading: Reading | null): Gen
         const phrase = at < 0 ? null : nounPhrase(intent.sentence.slice(at + item.said.length));
         put(phrase !== null && head(phrase) === item.object ? singular(phrase) : item.object, 'collect');
       }
+    }
+  }
+  if (projectiles.length > 0) {
+    // The moving controls' shooting addon needs a target even when the request
+    // only names ammunition. That default target keeps its own identity.
+    if (!cast.some(member => member.does === 'shoot_at')) cast.push({ label: defaultFoe(setting, draft.genre).label, does: 'shoot_at' });
+    for (const projectile of projectiles) {
+      cast.push({ label: projectile.label, does: 'scenery', verb: 'shoot' });
+      spoken.push(projectile.label);
     }
   }
   const thrown = /\bthrow(?:s|ing)? (?:a |an |the |some )?([a-z][a-z -]*)/i.exec(intent.sentence);
@@ -117,20 +138,31 @@ function contentOf(intent: Intent, cell: LiveCell, reading: Reading | null): Gen
     const basketball = /\b(?:basketball|hoops?)\b/.test(intent.sentence.toLowerCase());
     const golf = /\b(?:golf|putt(?:ing)?)\b/.test(intent.sentence.toLowerCase());
     const racket = /\b(?:table tennis|tennis|ping[ -]?pong)\b/.test(intent.sentence.toLowerCase());
+    // A named hero that rolls („a hedgehog rolling down a hill“) reads as the ball
+    // movement. With no ball, sport or goal in the sentence the hero is the rolled
+    // body: no football and no goal. The target is a thing the sentence names, else
+    // the contract's neutral „target“ (the pitch needs one to score into).
+    const roller = basketball || golf || racket || /\b(?:balls?|football|soccer|goals?|penalty kicks?)\b/.test(intent.sentence.toLowerCase()) ? undefined
+      : intent.items.find(item => item.essential && item.verb === 'ball' && /^roll/.test(item.said) && item.actor === intent.hero);
+    const namedTarget = roller === undefined ? undefined
+      : cast.find(member => member.does === 'scenery' && head(member.label) !== roller.actor && sentenceHeads.includes(head(member.label)))?.label;
     // Legacy throw content has environmental scenery/targets (e.g. bees in a
     // park). Those cannot replace a sports ball and its physical goal.
     for (let index = cast.length - 1; index >= 0; index--) {
       const member = cast[index];
+      if (member.does === 'scenery' && !/\b(?:ball|football|basketball)\b/.test(member.label)) { cast.splice(index, 1); continue; }
       if (['scenery', 'throw_at', 'fight'].includes(member.does) && !spoken.includes(member.label) && !sentenceHeads.includes(head(member.label))) cast.splice(index, 1);
     }
-    if (!cast.some(member => member.does === 'scenery')) cast.push({ label: racket ? 'ball' : basketball ? 'basketball' : golf ? 'golf ball' : 'football', does: 'scenery', verb: 'throw' });
-    if (!cast.some(member => member.does === 'throw_at')) cast.push({ label: cell.recipe.objective === 'defeat' ? 'pin' : racket ? 'target' : basketball ? 'hoop' : golf ? 'hole' : 'goal', does: 'throw_at' });
+    if (roller !== undefined) cast.push({ label: roller.actor, does: 'scenery', verb: 'throw' });
+    else if (!cast.some(member => member.does === 'scenery' && /(?:ball|football|basketball)$/.test(member.label))) cast.push({ label: racket ? 'ball' : basketball ? 'basketball' : golf ? 'golf ball' : 'football', does: 'scenery', verb: 'throw' });
+    if (!cast.some(member => member.does === 'throw_at')) cast.push({ label: cell.recipe.objective === 'defeat' ? 'pin' : roller !== undefined ? namedTarget ?? 'target' : racket ? 'target' : basketball ? 'hoop' : golf ? 'hole' : 'goal', does: 'throw_at' });
     if (cell.recipe.threats.includes('rival') && !cast.some(member => member.does === 'fight')) cast.push({ label: 'goalkeeper', does: 'fight' });
   }
   const removed = new Set(intent.negated);
   const track = draft.genre === 'runner' || draft.genre === 'platformer';
   const allowedCast = cast.filter(item =>
     !/^(?:top-down|side-scrolling|first-person|third-person|twin-stick)$/.test(item.label) &&
+    !(item.does === 'collect' && removed.has('collect')) &&
     !(item.does === 'shoot_at' && (removed.has('shoot') || track && !cell.recipe.actions.includes('shoot'))) &&
     !(item.does === 'chase_me' && (removed.has('chaser') || track && !cell.recipe.threats.includes('chaser'))));
   allowedCast.sort((a, b) => Number(spoken.includes(b.label)) - Number(spoken.includes(a.label)));
@@ -141,8 +173,8 @@ function contentOf(intent: Intent, cell: LiveCell, reading: Reading | null): Gen
   const explicitPlayer = /\b(?:as|you are|you're|i am|i'm|you control) (?:a |an |the )?/.test(intent.sentence.toLowerCase());
   const keepNamedHero = !explicitPlayer && draftedAt >= 0 && intendedAt > draftedAt &&
     intent.items.some(item => item.essential && item.axis !== 'threat' && item.actor === head(draft.hero));
-  const hero = intent.hero !== null && head(draft.hero) !== intent.hero && !keepNamedHero ? intent.hero : draft.hero;
-  const landingTarget = cell.id === 'voyage.land' && intent.items.some(item => item.essential && item.verb === 'land' && item.object !== null);
+  const hero = cell.recipe.move === 'ball' && intent.hero === null ? BALL_PLAYER : intent.hero !== null && head(draft.hero) !== intent.hero && !keepNamedHero ? intent.hero : draft.hero;
+  const landingTarget = cell.recipe.objective === 'land' && intent.items.some(item => item.essential && item.verb === 'land' && item.object !== null);
   return { ...draft, hero, setting, cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
 }
 
@@ -155,35 +187,40 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
   // known essential mechanic to prioritize. Unknown requests remain unmet.
   const hasKnownAction = intent.items.some(item => item.essential && item.axis !== 'unknown');
   const ranking = hasKnownAction ? classified.ranked : draftChoiceOrder(intent.sentence, classified, reading);
-  const order = new Map(ranking.map((choice, index) => [`${choice.genre}.${choice.mode}`, index]));
-  // A newly available rival or escape goal must not silently put a pedestrian
-  // in a car. Other unrequested movement must not outrank an explicit action.
-  const first = ranking[0];
-  const defaultMove = first === undefined ? undefined : PRESETS[`${first.genre}.${first.mode}`]?.move;
-  const cells = [...liveCells()].sort((a, b) => {
-    const da = distance(intent, a, defaultMove), db = distance(intent, b, defaultMove);
-    for (let axis = 0; axis < da.length; axis++) if (da[axis] !== db[axis]) return da[axis] - db[axis];
-    return (order.get(`${a.preset.genre}.${a.preset.mode}`) ?? 999) - (order.get(`${b.preset.genre}.${b.preset.mode}`) ?? 999) || Number(a.assembly !== undefined) - Number(b.assembly !== undefined);
-  });
   const issues: string[] = [];
-  for (const cell of cells) {
-    // Catching a thrown tool is not chasing fleeing prey. Keep that unsupported
-    // conjunction explicit instead of turning the player's projectile into a foe.
-    if (cell.id === 'roam.catch' && intent.items.some(item => item.verb === 'throw') && toolsOf(intent.sentence).length > 0) continue;
-    // Explicitly forbidden mechanics must not be selected as the main action.
-    if ([...cell.recipe.actions, ...cell.recipe.threats, cell.recipe.move].some(verb => intent.negated.includes(verb))) continue;
-    const recipe = assemblyOfCell(cell, contentOf(intent, cell, reading));
-    const spec = compileRecipe(recipe);
-    const made = arcadeWorldOf(spec, seed);
-    if (!made.ok) { issues.push(`${cell.id}: ${made.issues.join('; ')}`); continue; }
-    const verdict = verifyArcade(made.world, undefined, made.roleBindings);
-    if (verdict.bot.outcome !== 'won' || !verdict.replayEqual) { issues.push(`${cell.id}: ${verdict.failures.join('; ')}`); continue; }
-    const witnesses = verdict.witnesses;
-    const unmet = essentialTriples(intent).filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
-    const composition = { cellId: cell.id, recipe, spec, unmet, witnesses, issues };
-    if (compositions.size >= 64) compositions.delete(compositions.keys().next().value!);
-    compositions.set(cacheKey, structuredClone(composition));
-    return composition;
+  const attempted = new Set<string>();
+  // A reading whose movement cannot play a requested action yields to a later reading
+  // that can ("collect and shoot" is no shooting gallery); ties keep the rank.
+  const sources = ranking.map((choice, rank) => {
+    const source = sourceFor(intent, { genre: choice.genre, mode: choice.mode, hero: intent.hero ?? 'fox', setting: intent.setting ?? 'forest' } as GenreSpec);
+    return { source, rank, missing: unplayed(source) };
+  }).sort((a, b) => a.missing - b.missing || a.rank - b.rank);
+  for (const { source } of sources) {
+    const requested = assemble(intent, source, contentOf(intent, source, reading));
+    // A failed combination is reduced one independent part at a time. Every
+    // removed/unproved triple is still included in the public admission.
+    for (let count = requested.parts?.length ?? 0; count >= 0; count--) {
+      // A dropped part's thing does not come back as a base-genre role (a tossed pancake is no throw target).
+      const recipe = { ...requested, parts: requested.parts?.slice(0, count), content: withoutPartNames(requested.content, requested.parts?.slice(count) ?? []) };
+      try {
+        const spec = compileRecipe(recipe);
+        const key = JSON.stringify(spec);
+        if (attempted.has(key)) continue;
+        attempted.add(key);
+        const made = arcadeWorldOf(spec, seed);
+        if (!made.ok) { issues.push(`${source.id}: ${made.issues.join('; ')}`); continue; }
+        const verdict = verifyArcade(made.world, undefined, made.roleBindings);
+        if (!verdict.publishEligible) { issues.push(`${source.id}: ${verdict.failures.join('; ')}`); continue; }
+        const witnesses = verdict.witnesses;
+        const unmet = essentialTriples(intent).filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
+        const composition = { cellId: source.id, recipe, spec, unmet, witnesses, issues };
+        if (compositions.size >= 64) compositions.delete(compositions.keys().next().value!);
+        compositions.set(cacheKey, structuredClone(composition));
+        return composition;
+      } catch (error) {
+        issues.push(`${source.id}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
   }
-  throw new Error(`No playable live recipe: ${issues.join('; ')}`);
+  throw new Error(`No playable assembly: ${issues.join('; ')}`);
 }

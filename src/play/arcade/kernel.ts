@@ -54,6 +54,7 @@ import {
   setTargetState,
   stateSize,
   targetStateOf,
+  underlyingRule,
 } from './contract';
 import { releasePhysics, stepPhysics } from './physics/step';
 
@@ -96,8 +97,8 @@ export function loadProgram(world: ArcadeWorld, library: ArcadeLibrary): ArcadeP
     control: bind(library.controls, world.control, 'control'),
     rules,
     physics: worldHasPhysics(world),
-    // Bonus na konci počítá jádro: po výhře už žádné pravidlo nevystřelí.
-    bonus: (rules.find((rule) => rule.piece.id === 'score_bonus')?.params as ScoreBonusParams | undefined) ?? null,
+    // Bonus na konci počítá jádro: po výhře už žádné pravidlo nevystřelí. Složená hra (P42) má bonus v obalu.
+    bonus: (world.rules.map(underlyingRule).find((ref) => ref.id === 'score_bonus')?.params as ScoreBonusParams | undefined) ?? null,
   };
 }
 

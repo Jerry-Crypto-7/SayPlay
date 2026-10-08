@@ -22,7 +22,8 @@ import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 import { remixChips } from '@/play/version/remix-diff';
 
-import { useInfoPart } from './ui/InfoContext';
+import { RemixChain } from './RemixChain';
+import { useInInfoSheet, useInfoPart } from './ui/InfoContext';
 
 /** Delší řetěz předků se zkrátí: kořen, „…“ a tolik posledních. */
 const CHAIN_TAIL = 2;
@@ -58,7 +59,10 @@ function useRemixChips(parentId: string | null, childId: string): readonly strin
 export function Lineage({ lineage, remixes, aiVersion = false }: { readonly lineage: readonly GameVersion[]; readonly remixes: number; readonly aiVersion?: boolean }) {
   const parent = lineage.length >= 2 ? lineage[lineage.length - 2]! : null;
   // Vylepšení od AI není remix hráče – rozdíl proti návrhu by vyjmenoval detaily, ne změnu.
-  const chips = useRemixChips(aiVersion || parent === null ? null : parent.versionId, lineage.at(-1)?.versionId ?? '');
+  const self = lineage.at(-1)?.versionId ?? '';
+  const chips = useRemixChips(aiVersion || parent === null ? null : parent.versionId, self);
+  // Řetěz remixů (P44B T11) jen v listu „About this game“: ve feedu je rodokmen skrytý a nic navíc nečte.
+  const remixChain = useInInfoSheet() && remixes > 0 && self !== '';
   const line = useMemo(
     () => (
       <p className="play-lineage" data-testid="play-lineage">
@@ -85,9 +89,10 @@ export function Lineage({ lineage, remixes, aiVersion = false }: { readonly line
             ))}
           </span>
         )}
+        {remixChain && <RemixChain versionId={self} />}
       </p>
     ),
-    [parent, lineage, remixes, aiVersion, chips],
+    [parent, lineage, remixes, aiVersion, chips, remixChain, self],
   );
   return useInfoPart('lineage', line) ? null : line;
 }

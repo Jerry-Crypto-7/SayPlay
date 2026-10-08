@@ -51,6 +51,7 @@ import type { LiveEntry } from '@/play/arcade/live';
 import { packInputs } from '@/play/score/dare';
 import { gameName, type ShareRun, shareText } from '@/play/score/share-text';
 
+import { dareResultOf, rememberDare } from './board-client';
 import { loopEvent, SHARE_MARK } from './loop-client';
 import { COPY_LINK, DARE_SHORT, LINK_COPIED, SAVE_VIDEO, SHARE_TITLE, VIDEO_AFTER_RUN } from './starters';
 import { Button, type ButtonVariant, Icon, Sheet } from './ui';
@@ -108,15 +109,21 @@ export type LivePublish =
 /** Výzva Dare vítězného běhu: `pending` = server přehrává, `ready` = ověřená, `failed` = sdílí se obyčejný odkaz. */
 export type DarePublish = { readonly state: 'pending' } | { readonly state: 'ready'; readonly dareId: string } | { readonly state: 'failed' };
 
-/** Vstupy a živé změny vítězného běhu → id výzvy, kterou server ověřil přehráním (`POST …/dare`, P36B T5). */
+/**
+ * Vstupy a živé změny vítězného běhu → id výzvy, kterou server ověřil přehráním (`POST …/dare`, P36B T5).
+ * Hra otevřená z odkazu výzvy pošle i `against` z `?dare=` (P44B T9); co server o běhu řekl
+ * (`{ board, beat }`), zůstane v `board-client` pod id výzvy pro `PostRun`.
+ */
 export async function publishDare(versionId: string, inputs: readonly InputEvent[], patches: readonly LiveEntry[]): Promise<string> {
+  const against = new URLSearchParams(window.location.search).get('dare');
   const response = await fetch(`/api/play/games/${versionId}/dare`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ inputs: packInputs(inputs), patches }),
+    body: JSON.stringify({ inputs: packInputs(inputs), patches, ...(against === null ? {} : { against }) }),
   });
-  const body = (await response.json()) as { dareId?: unknown };
+  const body = (await response.json()) as { dareId?: unknown; board?: unknown; beat?: unknown };
   if (!response.ok || typeof body.dareId !== 'string') throw new Error(`dare refused: ${String(response.status)}`);
+  rememberDare(body.dareId, dareResultOf(body));
   return body.dareId;
 }
 

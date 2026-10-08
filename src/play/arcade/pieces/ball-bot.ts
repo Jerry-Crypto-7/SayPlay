@@ -46,6 +46,7 @@ export const ballBot: BotPiece<z.infer<typeof paramsSchema>> = {
     for (let i = 0; i < state[HEADER.bodyCount]!; i++) {
       const b = bodyBase(i);
       if (!(state[b + BODY.flags]! & FLAG.alive) || state[b + BODY.role] !== ROLE.enemy) continue;
+      if (state[b + BODY.z]! > target.z + target.d / 2) continue;
       const time = Math.max(0, Math.round((state[b + BODY.z]! - BALL.launchZ) / ballSpeed(plan.charge)));
       const flight = ballFlight(params.goal, plan.charge, time);
       if (flight.y > state[b + BODY.y]! + state[b + BODY.h]! + BALL.size / 2) continue;

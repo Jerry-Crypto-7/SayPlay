@@ -32,10 +32,10 @@ describe('P41 composition preserves named content and fallback intent', () => {
     expect(draft.spec.theme.setting).toBe('beach');
   });
 
-  it('keeps named cargo visible without claiming that reaching it is delivery', () => {
+  it('keeps named cargo visible and proves its actual delivery', () => {
     const draft = draftGameSpecWithMeta('A pizza delivery scooter races through traffic to deliver before the pizza gets cold', 1);
     expect(draft.spec.roles).toContainEqual(expect.objectContaining({ label: 'pizza' }));
-    expect(draft.composition?.unmet).toContainEqual({ actor: 'scooter', verb: 'deliver', object: 'pizza' });
+    expect(draft.composition?.witnesses).toContainEqual(expect.objectContaining({ verb: 'deliver', object: expect.objectContaining({ label: 'pizza' }), evidence: 'carried-to-destination' }));
   });
 
   it('keeps an explicit throwing target separate from basketball ammunition', () => {

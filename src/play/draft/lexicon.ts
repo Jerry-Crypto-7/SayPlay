@@ -246,8 +246,19 @@ const PHRASE_STOP = new Set([
   'into',
   'through',
   'across',
+  'against',
+  'vs',
+  'versus',
   'over',
   'under',
+  'inside',
+  'outside',
+  'along',
+  'above',
+  'below',
+  'beneath',
+  'beyond',
+  'beside',
   'behind',
   'before',
   'after',
@@ -293,7 +304,7 @@ export function nounPhrase(text: string, max = 3): string | null {
   for (const raw of rest.split(/\s+/)) {
     const word = raw.replace(/[^a-z-]/g, '');
     const punctuated = /[.,;:!?]$/.test(raw);
-    if (word === '' || PHRASE_STOP.has(word) || NUMBER_WORDS[word] !== undefined || (words.length > 0 && isVerbIng(word))) break;
+    if (word === '' || PHRASE_STOP.has(word) || NUMBER_WORDS[word] !== undefined || (words.length > 0 && (isVerbIng(word) || /ly$/.test(word) && !/^(?:butterfly|firefly|dragonfly|lily|family)$/.test(word)))) break;
     words.push(word);
     if (punctuated || words.length === max) break;
   }
@@ -331,10 +342,12 @@ function singularWord(word: string): string {
   if (IRREGULAR[word] !== undefined) return IRREGULAR[word];
   if (word.endsWith('us') || SINGULAR_S.has(word) || /^[A-Z]/.test(word)) return word;
   if (IE_NOUNS.has(word)) return word.slice(0, -1);
+  // These nouns already end in -oe; unlike torpedo/mosquito, only -s is plural.
+  if (/^(?:shoes|toes|foes|does|hoes|oboes|canoes|woes|roes)$/.test(word)) return word.slice(0, -1);
   if (word.endsWith('ies')) return `${word.slice(0, -3)}y`;
   // -es ztratí: jednotné číslo na -s („atlases“, „irises“), -us po čemkoli než o/a („bonuses“, „geniuses“;
   // „houses“, „causes“ ne) a sykavka, kterou -s samo nenese („glasses“, „boxes“, „torches“, „buzzes“).
-  if ((word.endsWith('es') && SINGULAR_S.has(word.slice(0, -2))) || /(?:[^ao]uses|sses|xes|ches|shes|zzes)$/.test(word)) return word.slice(0, -2);
+  if ((word.endsWith('es') && SINGULAR_S.has(word.slice(0, -2))) || /(?:[^ao]uses|sses|xes|ches|shes|zzes|[^aeiou]oes)$/.test(word)) return word.slice(0, -2);
   // „horses“, „houses“, „roses“ ztratí jen -s.
   return word.endsWith('s') && !word.endsWith('ss') ? word.slice(0, -1) : word;
 }

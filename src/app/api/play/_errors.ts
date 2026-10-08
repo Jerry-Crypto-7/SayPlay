@@ -31,7 +31,10 @@ export type PlayErrorCode =
   | 'DARE_REJECTED'
   | 'DARE_QUOTA'
   | 'SERVER_AT_CAPACITY'
-  | 'STORE_UNAVAILABLE';
+  | 'STORE_UNAVAILABLE'
+  | 'IDENTITY_UNAVAILABLE'
+  | 'NEW_PLAYER_QUOTA'
+  | 'PLAYER_REQUIRED';
 
 export function fail(
   status: number,

@@ -1,0 +1,324 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-006",
+    "sentence": "Let a squirrel jump across the treetops and grab acorns while an owl hunts it.",
+    "seed": 3,
+    "milliseconds": 202.56719999999768,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "platform",
+      "controlParams": {
+        "checkpoints": true,
+        "tuning": {
+          "feel": 2,
+          "sections": 3,
+          "collectAll": true,
+          "coinCount": 5
+        }
+      },
+      "addons": [
+        "chaser"
+      ],
+      "genre": {
+        "id": "platformer",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Squirrel Jump",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "treetops",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Collect 5 acorns and reach the flag.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "squirrel",
+          "count": 1
+        },
+        {
+          "id": "spikes",
+          "kind": "hazard",
+          "label": "spikes",
+          "count": 5
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "acorn",
+          "count": 5
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "flag",
+          "count": 1
+        },
+        {
+          "id": "chaser",
+          "kind": "chaser",
+          "label": "owl",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Collect 5 acorns and reach the flag.",
+        "controlsHint": "Arrows or A/D to move, Space or tap to jump."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "e46f1158",
+    "worldHash": "837cbefcf622c4078c122d0d778f3954a6e3b03ccefc6c57933d827a738013ad",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 56,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 228,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 32,
+          "roleId": "coin",
+          "label": "acorn",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 228,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 37,
+          "roleId": "finish",
+          "label": "flag",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2460,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 21,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2461,
+        "evidence": "survived-threat:probe:spikes",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "escape",
+        "object": {
+          "body": 38,
+          "roleId": "chaser",
+          "label": "owl",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 2461,
+        "evidence": "survived-threat:probe:chaser",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 38,
+          "roleId": "chaser",
+          "label": "owl",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 2461,
+        "evidence": "survived-threat:probe:chaser",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 21,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 538,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      },
+      {
+        "actor": {
+          "body": 21,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 538,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      },
+      {
+        "actor": {
+          "body": 38,
+          "roleId": "chaser",
+          "label": "owl",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "verb": "chaser",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 204,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:chaser"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2461,
+      "hash": "db21b450",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -1,5 +1,6 @@
 import type { GenreSpec } from '../genre/contract';
 import { recipeKey, type Recipe } from './recipe';
+import type { AssemblyPart } from './parts';
 
 export const PRESETS: Readonly<Record<string, Recipe>> = {
   'runner.default': { move: 'run', actions: [], objective: 'reach', threats: [] },
@@ -23,7 +24,7 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
 };
 
 /** Content retains cast/parameter order, including the frozen legacy addon order. */
-export type RecipeAssembly = Recipe & { readonly preset: string; readonly content: GenreSpec };
+export type RecipeAssembly = Recipe & { readonly preset: string; readonly content: GenreSpec; readonly parts?: readonly (AssemblyPart & { readonly label: string })[] };
 
 /** Native tracks have distinct names; the legacy voyage recipes stay frozen. */
 export const DRIVE_PRESETS: Readonly<Record<string, Recipe>> = { ...Object.fromEntries(

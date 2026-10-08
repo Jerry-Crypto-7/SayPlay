@@ -13,8 +13,8 @@
 
 import { useEffect, useRef } from 'react';
 
-import { baseControlOf } from '@/play/arcade/addons';
-import { type ArcadeWorld, BUTTON } from '@/play/arcade/contract';
+import { baseControlOf, underlyingRule } from '@/play/arcade/addons';
+import { type ArcadeWorld, BUTTON, nativeRule } from '@/play/arcade/contract';
 import { FIGHT_RULES } from '@/play/arcade/pieces/fight';
 
 import { isTyping } from './input';
@@ -30,8 +30,10 @@ const ACTIONS: Readonly<Record<ArcadeAction, { readonly bit: number; readonly ke
 
 /** Akce, které svět čte: úder v souboji, použití s pravidlem `interact`. */
 export function actionsOf(world: ArcadeWorld): readonly ArcadeAction[] {
-  const fights = baseControlOf(world.control).id === 'fight' || world.rules.some((rule) => Object.hasOwn(FIGHT_RULES, rule.id));
-  const uses = world.rules.some((rule) => rule.id === 'interact');
+  const rules = world.rules.map(underlyingRule);
+  const attached = rules.filter(rule => rule.id === 'assembly_part').map(rule => (rule.params.part as { kind: string }).kind);
+  const fights = baseControlOf(world.control).id === 'fight' || rules.some((rule) => Object.hasOwn(FIGHT_RULES, rule.id)) || attached.some(kind => kind === 'fight' || kind === 'duel');
+  const uses = nativeRule(rules, 'interact') !== undefined;
   return [...(fights ? (['attack'] as const) : []), ...(uses ? (['use'] as const) : [])];
 }
 

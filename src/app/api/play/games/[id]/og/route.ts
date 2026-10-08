@@ -13,9 +13,11 @@
  * Odkaz výzvy (`?dare=`, P36B T8) dostane na odznak výsledek kamaráda – jen
  * výzvy téhle hry. Parametr `dare`, který nevyšel (cizí, prošlá, neplatná
  * výzva, i výpadek úložiště – `getDare` vrací `null`), dostane obyčejnou
- * kartu s hodinovou cache: výzva se může objevit až po výpadku.
+ * kartu s hodinovou cache: výzva se může objevit až po výpadku. Výzva s autorem
+ * (P44B T7) nese nad odznakem „Ada dares you“ a také jen hodinovou cache.
  */
 
+import { shownNickname } from '@/play/player/nickname';
 import { DARE_ID_PATTERN } from '@/play/version';
 
 import { notFound, VERSION_ID_PATTERN } from '../../../_errors';
@@ -37,8 +39,10 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const dareId = new URL(request.url).searchParams.get('dare');
   const record = dareId !== null && DARE_ID_PATTERN.test(dareId) ? await store().getDare(dareId) : null;
   const dare = record !== null && record.versionId === id ? record : null;
+  // Jméno autora výzvy (P44B T7) jen přes `shownNickname` – žádný jiný text z úložiště na kartu.
+  const by = dare?.by === undefined ? undefined : shownNickname(dare.by, (await store().getPlayer(dare.by))?.nickname);
 
-  const preview = await gamePreviewPng(id, game.spec, assetOriginFrom(process.env), dare);
+  const preview = await gamePreviewPng(id, game.spec, assetOriginFrom(process.env), dare, by);
   const png = preview?.png ?? ogPngFor(game.spec.theme.mood);
   const SHORT = 'public, max-age=0, s-maxage=3600';
   return new Response(png, {
@@ -50,7 +54,8 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
         : !preview.complete
           ? // Chybí hrdina nebo písmo: ukázat, co je, ale za hodinu to zkusit znovu (nález revize T6-1).
             { 'cache-control': SHORT, 'x-og-partial': '1' }
-          : dareId !== null && dare === null
+          : // Výzva, která nevyšla, i karta se jménem autora (přezdívku smí změnit) žijí hodinu.
+            dareId !== null && (dare === null || by !== undefined)
             ? { 'cache-control': SHORT }
             : { 'cache-control': 'public, max-age=31536000, immutable' }),
     },

@@ -1,0 +1,522 @@
+{
+  "summary": {
+    "planned": 320,
+    "measured": 320,
+    "preservedSentences": 39,
+    "preservedSentenceAllSeedsRate": 0.609375,
+    "preservedRunRate": 0.621875,
+    "buildRate": 1,
+    "heroRate": 0.875,
+    "heroApplicable": 320,
+    "environmentRate": 0.875,
+    "environmentApplicable": 320,
+    "silentTriples": 140,
+    "p95ms": 3313.830900000001,
+    "golden": true
+  },
+  "slowest": [
+    {
+      "id": "p42-r4-ho-003",
+      "sentence": "Drive a truck across the desert, racing jeeps and shooting rockets.",
+      "control": "steer",
+      "parts": [],
+      "times": [
+        2653.2782000000007,
+        4583.452700000009,
+        8672.437099999996,
+        3013.4627999999793,
+        3884.723100000003
+      ],
+      "ticks": [
+        2083,
+        2109,
+        2147,
+        2160,
+        2062
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 4561.470779999998,
+      "max": 8672.437099999996
+    },
+    {
+      "id": "p42-r4-ho-036",
+      "sentence": "A knight walks through the village and must not stop collecting coins.",
+      "control": "walker",
+      "parts": [],
+      "times": [
+        1361.981899999897,
+        4757.515400000033,
+        7487.149199999985,
+        4254.387199999997,
+        4310.686999999918
+      ],
+      "ticks": [
+        715,
+        572,
+        861,
+        715,
+        571
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 4434.3441399999665,
+      "max": 7487.149199999985
+    },
+    {
+      "id": "p42-r4-ho-020",
+      "sentence": "A kangaroo jumps through the canyon, catches butterflies and avoids boulders.",
+      "control": "platform",
+      "parts": [
+        "catch"
+      ],
+      "times": [
+        1642.775100000028,
+        1006.2247000000207,
+        4701.777100000007,
+        7340.783600000024,
+        3091.4531000000425
+      ],
+      "ticks": [
+        2430,
+        2356,
+        2461,
+        3109,
+        2860
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 3556.6027200000244,
+      "max": 7340.783600000024
+    },
+    {
+      "id": "p42-r4-ho-011",
+      "sentence": "A car races buses through the city while bombs drop from above.",
+      "control": "steer",
+      "parts": [
+        "hazard"
+      ],
+      "times": [
+        1722.1240999999864,
+        7363.119500000001,
+        3014.3592000000062,
+        2047.8444000000018,
+        2830.5959999999614
+      ],
+      "ticks": [
+        2124,
+        2150,
+        2178,
+        2201,
+        2093
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 3395.6086399999913,
+      "max": 7363.119500000001
+    },
+    {
+      "id": "p42-r4-ho-039",
+      "sentence": "A pirate runs along the beach, does not throw bombs, and picks up shells.",
+      "control": "runner",
+      "parts": [
+        "hazard"
+      ],
+      "times": [
+        3728.2646000000022,
+        1744.1177000000025,
+        2462.8796,
+        2485.5576999999903,
+        3590.859700000001
+      ],
+      "ticks": [
+        2897,
+        2177,
+        2689,
+        2883,
+        2609
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 2802.3358599999992,
+      "max": 3728.2646000000022
+    },
+    {
+      "id": "p42-r4-ho-023",
+      "sentence": "Make a race across the field with a horse trying to outrun zebras.",
+      "control": "runner",
+      "parts": [],
+      "times": [
+        1295.9813000000431,
+        1203.0471000000252,
+        1382.781100000022,
+        4937.458500000008,
+        4046.6382999999914
+      ],
+      "ticks": [
+        2897,
+        2177,
+        2689,
+        2883,
+        2609
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 2573.181260000018,
+      "max": 4937.458500000008
+    },
+    {
+      "id": "p42-r4-ho-033",
+      "sentence": "A car races trucks on the track, but no missiles or shooting.",
+      "control": "steer",
+      "parts": [],
+      "times": [
+        2332.6700999999885,
+        2026.8096000000369,
+        1742.2243000000017,
+        1549.78330000001,
+        3861.4864000000525
+      ],
+      "ticks": [
+        2124,
+        2150,
+        2178,
+        2201,
+        2093
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 2302.5947400000177,
+      "max": 3861.4864000000525
+    },
+    {
+      "id": "p42-r4-ho-001",
+      "sentence": "A rabbit runs through the garden collecting carrots while foxes chase it.",
+      "control": "runner",
+      "parts": [],
+      "times": [
+        2345.602500000001,
+        3238.2598,
+        2398.6229999999996,
+        1463.7773000000016,
+        1530.556099999987
+      ],
+      "ticks": [
+        2897,
+        2177,
+        2689,
+        2883,
+        2609
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 2195.363739999998,
+      "max": 3238.2598
+    },
+    {
+      "id": "p42-r4-ho-051",
+      "sentence": "A kangaroo jumps across the quiet desert.",
+      "control": "platform",
+      "parts": [],
+      "times": [
+        1144.349199999997,
+        1132.5840000000026,
+        2845.9158999999927,
+        2708.0787000000128,
+        2150.405300000013
+      ],
+      "ticks": [
+        2430,
+        2356,
+        2461,
+        3109,
+        2860
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 1996.2666200000035,
+      "max": 2845.9158999999927
+    },
+    {
+      "id": "p42-r4-ho-018",
+      "sentence": "A helicopter flies down the valley shooting missiles while planes race it to the finish.",
+      "control": "glide",
+      "parts": [],
+      "times": [
+        711.7477000000072,
+        797.8421000000089,
+        3142.831200000015,
+        3313.830900000001,
+        1187.0579000000143
+      ],
+      "ticks": [
+        907,
+        907,
+        907,
+        907,
+        907
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 1830.6619600000092,
+      "max": 3313.830900000001
+    },
+    {
+      "id": "p42-r4-ho-052",
+      "sentence": "Make a game about a goat jumping on a snowy mountain.",
+      "control": "platform",
+      "parts": [],
+      "times": [
+        1651.6728000000003,
+        977.077099999995,
+        1435.9034000000102,
+        2241.305400000012,
+        1156.9795000000158
+      ],
+      "ticks": [
+        2430,
+        2356,
+        2461,
+        3109,
+        2860
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 1492.5876400000066,
+      "max": 2241.305400000012
+    },
+    {
+      "id": "p42-r4-ho-029",
+      "sentence": "Have a monkey hop through the jungle after a runaway chicken.",
+      "control": "platform",
+      "parts": [],
+      "times": [
+        1005.6007999998983,
+        838.826699999976,
+        2240.5969999999506,
+        1517.0887000000803,
+        1785.3846999999369
+      ],
+      "ticks": [
+        2430,
+        2356,
+        2461,
+        3109,
+        2860
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 1477.4995799999683,
+      "max": 2240.5969999999506
+    },
+    {
+      "id": "p42-r4-ho-022",
+      "sentence": "A samurai walks through the temple, fights goblins and then runs to the gate.",
+      "control": "walker",
+      "parts": [
+        "fight"
+      ],
+      "times": [
+        834.0083999999915,
+        951.329299999983,
+        2412.790100000042,
+        1933.3006000000169,
+        1178.2845000000088
+      ],
+      "ticks": [
+        752,
+        604,
+        963,
+        767,
+        603
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 1461.9425800000085,
+      "max": 2412.790100000042
+    },
+    {
+      "id": "p42-r4-ho-009",
+      "sentence": "A fox runs through the village delivering letters and avoiding carts.",
+      "control": "runner",
+      "parts": [
+        "deliver"
+      ],
+      "times": [
+        4208.008299999987,
+        779.9709999999905,
+        745.7148999999918,
+        534.8991999999853,
+        675.0377000000153
+      ],
+      "ticks": [
+        2897,
+        2177,
+        2689,
+        2883,
+        2609
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 1388.7262199999939,
+      "max": 4208.008299999987
+    },
+    {
+      "id": "p42-r4-ho-006",
+      "sentence": "A knight walks through the castle, collects keys and fights skeletons.",
+      "control": "walker",
+      "parts": [
+        "fight"
+      ],
+      "times": [
+        2488.385899999994,
+        1836.6865000000107,
+        775.6334000000206,
+        1092.4043999999994,
+        687.532200000016
+      ],
+      "ticks": [
+        752,
+        604,
+        963,
+        767,
+        603
+      ],
+      "built": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "mean": 1376.128480000008,
+      "max": 2488.385899999994
+    }
+  ],
+  "byControl": [
+    {
+      "control": "steer",
+      "n": 30,
+      "mean": 2217.0390533333352,
+      "p95": 7363.119500000001
+    },
+    {
+      "control": "walker",
+      "n": 35,
+      "mean": 1599.6760685714253,
+      "p95": 4757.515400000033
+    },
+    {
+      "control": "platform",
+      "n": 35,
+      "mean": 1523.2318171428624,
+      "p95": 4701.777100000007
+    },
+    {
+      "control": "runner",
+      "n": 40,
+      "mean": 1529.376447500001,
+      "p95": 4046.6382999999914
+    },
+    {
+      "control": "glide",
+      "n": 75,
+      "mean": 411.794156000003,
+      "p95": 1422.8291000000027
+    },
+    {
+      "control": "ball",
+      "n": 30,
+      "mean": 602.938466666659,
+      "p95": 1669.8856000000087
+    },
+    {
+      "control": "move_free",
+      "n": 60,
+      "mean": 478.9994616666678,
+      "p95": 1254.892099999939
+    },
+    {
+      "control": "shooter",
+      "n": 5,
+      "mean": 847.4324599999934,
+      "p95": 1136.626200000057
+    },
+    {
+      "control": "rhythm",
+      "n": 10,
+      "mean": 217.27824000000254,
+      "p95": 389.1105000000098
+    }
+  ]
+}

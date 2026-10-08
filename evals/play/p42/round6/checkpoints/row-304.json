@@ -1,0 +1,203 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-061",
+    "sentence": "Let a robot stack barrels in the warehouse.",
+    "seed": 4,
+    "milliseconds": 37.14770000000135,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "timing",
+      "controlParams": {
+        "mode": "stack",
+        "speed": "slow",
+        "rounds": 36,
+        "rise": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "timing",
+        "mode": "stack",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Robot Stack",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "warehouse",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Stack 36 robots. Each one swings faster.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "robot",
+          "count": 1
+        },
+        {
+          "id": "block",
+          "kind": "collectible",
+          "label": "robot",
+          "count": 36
+        },
+        {
+          "id": "miss",
+          "kind": "hazard",
+          "label": "missed drop",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "of the tower",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Stack 36 robots. Each one swings faster.",
+        "controlsHint": "Tap or Space to drop the block."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "390082c4",
+    "worldHash": "8c77d9ef220fc993a619ff6c624ab9365200cdb0acbe9af483503be700ca1fc5",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "robot",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 75,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "robot",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "stack",
+        "object": null,
+        "tick": 75,
+        "evidence": "successful-timing",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "robot",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "stack",
+        "object": {
+          "body": 3,
+          "roleId": "block",
+          "label": "robot",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 75,
+        "evidence": "block-placed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "robot",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "build",
+        "object": null,
+        "tick": 1891,
+        "evidence": "stack-completed",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "robot",
+          "verb": "stack",
+          "object": "barrel"
+        },
+        {
+          "actor": "robot",
+          "verb": "build",
+          "object": "barrel"
+        }
+      ],
+      "closest": "a timing game",
+      "reason": "Stack and build aren't here yet – here's a timing game."
+    },
+    "score": {
+      "preserved": false,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "robot",
+          "verb": "stack",
+          "object": "barrel"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 1892,
+      "hash": "7aafb236",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

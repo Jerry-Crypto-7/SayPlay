@@ -8,7 +8,7 @@
  */
 
 import { color as brand } from '@/brand/tokens';
-import type { ArcadeWorld } from '@/play/arcade/contract';
+import { type ArcadeWorld, nativeRule } from '@/play/arcade/contract';
 import type { CompiledInteract } from '@/play/arcade/rules/interact';
 import { type VerbKind, verbKindOf } from '@/play/genre/quest';
 
@@ -163,7 +163,7 @@ export interface QuestVerb {
 
 /** Sloveso a počet stavů z pravidla `interact` světa; svět bez něj úkol není. */
 export function questVerbOf(world: Pick<ArcadeWorld, 'rules'>): QuestVerb | null {
-  const rule = world.rules.find((one) => one.id === 'interact');
+  const rule = nativeRule(world.rules, 'interact');
   if (rule === undefined) return null;
   const { verb, when } = rule.params as { readonly verb: string; readonly when: { readonly interact: CompiledInteract } };
   return { kind: verbKindOf(verb), states: when.interact.states, interact: when.interact };

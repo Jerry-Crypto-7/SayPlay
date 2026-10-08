@@ -132,3 +132,38 @@ export function keeperBlockEvidence(world: ArcadeWorld, before: State, after: St
   }
   return { keeper, ball, player: launch.player, tick: after[HEADER.tick]!, launchTick: launch.tick, beforeForward: vz, afterForward: nextVz };
 }
+
+/** P42 opponent evidence is tied to a spawned physical sphere and actual goal entry. */
+export interface OpponentBallEvidence {
+  readonly opponent: number;
+  readonly ball: number;
+  readonly tick: number;
+  readonly event: 'shot' | 'goal';
+}
+export function opponentBallEvidence(observation: BallEffectObservation): readonly OpponentBallEvidence[] {
+  const { world, rule, before, after, effects } = observation;
+  const ref = world.rules[rule];
+  if (ref?.id !== 'ball_launch' && ref?.id !== 'ball_score') return [];
+  const team = ref.params.team as { template: number; forward: number; goal: number } | undefined;
+  if (!team || !alive(before, team.forward) || at(before, team.forward, BODY.role) !== ROLE.enemy || !physicsBall(before, team.template)) return [];
+  const found: OpponentBallEvidence[] = [];
+  if (ref.id === 'ball_launch') {
+    for (const effect of effects) {
+      if (effect.kind !== 'spawn' || effect.template !== team.template || effect.vz >= 0) continue;
+      if (effect.x !== at(before, team.forward, BODY.x) || effect.z !== at(before, team.forward, BODY.z)) continue;
+      for (let ball = 0; ball < after[HEADER.bodyCount]!; ball++) {
+        if (alive(before, ball) || !alive(after, ball) || !physicsBall(after, ball) || at(after, ball, BODY.kind) !== at(before, team.template, BODY.kind)) continue;
+        if (at(after, ball, BODY.x) !== effect.x || at(after, ball, BODY.y) !== effect.y || at(after, ball, BODY.z) !== effect.z || at(after, ball, BODY.vz) !== effect.vz) continue;
+        found.push({ opponent: team.forward, ball, tick: before[HEADER.tick]!, event: 'shot' });
+      }
+    }
+  } else if (after[HEADER.counters + COUNTER.reserve]! === before[HEADER.counters + COUNTER.reserve]! + 1) {
+    for (const effect of effects) {
+      if (effect.kind !== 'despawn' || !alive(before, effect.body) || alive(after, effect.body) || !physicsBall(before, effect.body) || at(before, effect.body, BODY.kind) !== at(before, team.template, BODY.kind)) continue;
+      const b = position(before, effect.body), g = position(before, team.goal), centerY = b.y + at(before, effect.body, BODY.h) / 2;
+      if (Math.abs(b.x - g.x) >= at(before, team.goal, BODY.w) / 2 || Math.abs(b.z - g.z) >= at(before, team.goal, BODY.d) / 2 || centerY < g.y || centerY > g.y + at(before, team.goal, BODY.h)) continue;
+      found.push({ opponent: team.forward, ball: effect.body, tick: before[HEADER.tick]!, event: 'goal' });
+    }
+  }
+  return found;
+}

@@ -1,0 +1,1303 @@
+{
+  "version": 1,
+  "about": "Independently authored P42 round4 held-out; authored and sealed before any extraction, drafting or scoring.",
+  "groups": {
+    "held-out": [
+      {
+        "id": "p42-r4-ho-001",
+        "kind": "multi-action",
+        "sentence": "A rabbit runs through the garden collecting carrots while foxes chase it.",
+        "hero": "rabbit",
+        "setting": "garden",
+        "essential": [
+          {
+            "actor": "rabbit",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "rabbit",
+            "verb": "collect",
+            "object": "carrot"
+          },
+          {
+            "actor": "fox",
+            "verb": "chaser",
+            "object": "rabbit"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-002",
+        "kind": "multi-action",
+        "sentence": "An owl flies through the forest, catches mice and dodges falling branches.",
+        "hero": "owl",
+        "setting": "forest",
+        "essential": [
+          {
+            "actor": "owl",
+            "verb": "flap",
+            "object": null
+          },
+          {
+            "actor": "owl",
+            "verb": "catch",
+            "object": "mouse"
+          },
+          {
+            "actor": "branch",
+            "verb": "hazard",
+            "object": "owl"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-003",
+        "kind": "multi-action",
+        "sentence": "Drive a truck across the desert, racing jeeps and shooting rockets.",
+        "hero": "truck",
+        "setting": "desert",
+        "essential": [
+          {
+            "actor": "truck",
+            "verb": "drive",
+            "object": null
+          },
+          {
+            "actor": "truck",
+            "verb": "race",
+            "object": null
+          },
+          {
+            "actor": "jeep",
+            "verb": "rival",
+            "object": "truck"
+          },
+          {
+            "actor": "truck",
+            "verb": "shoot",
+            "object": "rocket"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-004",
+        "kind": "multi-action",
+        "sentence": "A frog jumps across the swamp gathering pearls as stones fall around it.",
+        "hero": "frog",
+        "setting": "swamp",
+        "essential": [
+          {
+            "actor": "frog",
+            "verb": "jump",
+            "object": null
+          },
+          {
+            "actor": "frog",
+            "verb": "collect",
+            "object": "pearl"
+          },
+          {
+            "actor": "stone",
+            "verb": "hazard",
+            "object": "frog"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-005",
+        "kind": "multi-action",
+        "sentence": "A seal swims in the ocean to catch squid while a shark chases it.",
+        "hero": "seal",
+        "setting": "ocean",
+        "essential": [
+          {
+            "actor": "seal",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "seal",
+            "verb": "catch",
+            "object": "squid"
+          },
+          {
+            "actor": "shark",
+            "verb": "chaser",
+            "object": "seal"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-006",
+        "kind": "multi-action",
+        "sentence": "A knight walks through the castle, collects keys and fights skeletons.",
+        "hero": "knight",
+        "setting": "castle",
+        "essential": [
+          {
+            "actor": "knight",
+            "verb": "walk",
+            "object": null
+          },
+          {
+            "actor": "knight",
+            "verb": "collect",
+            "object": "key"
+          },
+          {
+            "actor": "knight",
+            "verb": "fight",
+            "object": "skeleton"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-007",
+        "kind": "multi-action",
+        "sentence": "A robot roams the station shooting drones and collecting batteries.",
+        "hero": "robot",
+        "setting": "station",
+        "essential": [
+          {
+            "actor": "robot",
+            "verb": "roam",
+            "object": null
+          },
+          {
+            "actor": "robot",
+            "verb": "shoot",
+            "object": "drone"
+          },
+          {
+            "actor": "robot",
+            "verb": "collect",
+            "object": "battery"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-008",
+        "kind": "multi-action",
+        "sentence": "A bear plays soccer in the stadium against wolves and kicks the ball into the goal.",
+        "hero": "bear",
+        "setting": "stadium",
+        "essential": [
+          {
+            "actor": "bear",
+            "verb": "ball",
+            "object": null
+          },
+          {
+            "actor": "wolf",
+            "verb": "rival",
+            "object": "bear"
+          },
+          {
+            "actor": "bear",
+            "verb": "kick",
+            "object": "ball"
+          },
+          {
+            "actor": "bear",
+            "verb": "score",
+            "object": "goal"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-009",
+        "kind": "multi-action",
+        "sentence": "A fox runs through the village delivering letters and avoiding carts.",
+        "hero": "fox",
+        "setting": "village",
+        "essential": [
+          {
+            "actor": "fox",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "fox",
+            "verb": "deliver",
+            "object": "letter"
+          },
+          {
+            "actor": "cart",
+            "verb": "obstacle",
+            "object": "fox"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-010",
+        "kind": "multi-action",
+        "sentence": "A dragon flies over the mountain, throws fireballs and catches ravens.",
+        "hero": "dragon",
+        "setting": "mountain",
+        "essential": [
+          {
+            "actor": "dragon",
+            "verb": "flap",
+            "object": null
+          },
+          {
+            "actor": "dragon",
+            "verb": "throw",
+            "object": "fireball"
+          },
+          {
+            "actor": "dragon",
+            "verb": "catch",
+            "object": "raven"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-011",
+        "kind": "multi-action",
+        "sentence": "A car races buses through the city while bombs drop from above.",
+        "hero": "car",
+        "setting": "city",
+        "essential": [
+          {
+            "actor": "car",
+            "verb": "drive",
+            "object": null
+          },
+          {
+            "actor": "car",
+            "verb": "race",
+            "object": null
+          },
+          {
+            "actor": "bus",
+            "verb": "rival",
+            "object": "car"
+          },
+          {
+            "actor": "bomb",
+            "verb": "hazard",
+            "object": "car"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-012",
+        "kind": "multi-action",
+        "sentence": "A goat jumps up the cliff to collect flags while an eagle pursues it.",
+        "hero": "goat",
+        "setting": "cliff",
+        "essential": [
+          {
+            "actor": "goat",
+            "verb": "jump",
+            "object": null
+          },
+          {
+            "actor": "goat",
+            "verb": "collect",
+            "object": "flag"
+          },
+          {
+            "actor": "eagle",
+            "verb": "chaser",
+            "object": "goat"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-013",
+        "kind": "multi-action",
+        "sentence": "A penguin swims across the lake, gathers fish and dodges falling ice.",
+        "hero": "penguin",
+        "setting": "lake",
+        "essential": [
+          {
+            "actor": "penguin",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "penguin",
+            "verb": "collect",
+            "object": "fish"
+          },
+          {
+            "actor": "ice",
+            "verb": "hazard",
+            "object": "penguin"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-014",
+        "kind": "multi-action",
+        "sentence": "A pirate walks around the island, duels a crab and then escapes.",
+        "hero": "pirate",
+        "setting": "island",
+        "essential": [
+          {
+            "actor": "pirate",
+            "verb": "walk",
+            "object": null
+          },
+          {
+            "actor": "pirate",
+            "verb": "duel",
+            "object": "crab"
+          },
+          {
+            "actor": "pirate",
+            "verb": "escape",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-015",
+        "kind": "multi-action",
+        "sentence": "A cat roams the warehouse, chases rats and collects stars.",
+        "hero": "cat",
+        "setting": "warehouse",
+        "essential": [
+          {
+            "actor": "cat",
+            "verb": "roam",
+            "object": null
+          },
+          {
+            "actor": "cat",
+            "verb": "catch",
+            "object": "rat"
+          },
+          {
+            "actor": "cat",
+            "verb": "collect",
+            "object": "star"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-016",
+        "kind": "multi-action",
+        "sentence": "A dog plays football against cats in the park while apples fall onto the field.",
+        "hero": "dog",
+        "setting": "park",
+        "essential": [
+          {
+            "actor": "dog",
+            "verb": "ball",
+            "object": null
+          },
+          {
+            "actor": "cat",
+            "verb": "rival",
+            "object": "dog"
+          },
+          {
+            "actor": "apple",
+            "verb": "hazard",
+            "object": "dog"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-017",
+        "kind": "multi-action",
+        "sentence": "A mouse runs through the tunnel, picks up cheese and reaches the exit.",
+        "hero": "mouse",
+        "setting": "tunnel",
+        "essential": [
+          {
+            "actor": "mouse",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "mouse",
+            "verb": "collect",
+            "object": "cheese"
+          },
+          {
+            "actor": "mouse",
+            "verb": "reach",
+            "object": "exit"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-018",
+        "kind": "multi-action",
+        "sentence": "A helicopter flies down the valley shooting missiles while planes race it to the finish.",
+        "hero": "helicopter",
+        "setting": "valley",
+        "essential": [
+          {
+            "actor": "helicopter",
+            "verb": "flap",
+            "object": null
+          },
+          {
+            "actor": "helicopter",
+            "verb": "shoot",
+            "object": "missile"
+          },
+          {
+            "actor": "helicopter",
+            "verb": "race",
+            "object": null
+          },
+          {
+            "actor": "plane",
+            "verb": "rival",
+            "object": "helicopter"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-019",
+        "kind": "multi-action",
+        "sentence": "A bus drives along the road, collects coins and delivers parcels.",
+        "hero": "bus",
+        "setting": "road",
+        "essential": [
+          {
+            "actor": "bus",
+            "verb": "drive",
+            "object": null
+          },
+          {
+            "actor": "bus",
+            "verb": "collect",
+            "object": "coin"
+          },
+          {
+            "actor": "bus",
+            "verb": "deliver",
+            "object": "parcel"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-020",
+        "kind": "multi-action",
+        "sentence": "A kangaroo jumps through the canyon, catches butterflies and avoids boulders.",
+        "hero": "kangaroo",
+        "setting": "canyon",
+        "essential": [
+          {
+            "actor": "kangaroo",
+            "verb": "jump",
+            "object": null
+          },
+          {
+            "actor": "kangaroo",
+            "verb": "catch",
+            "object": "butterfly"
+          },
+          {
+            "actor": "boulder",
+            "verb": "obstacle",
+            "object": "kangaroo"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-021",
+        "kind": "multi-action",
+        "sentence": "A turtle swims along the reef collecting shells and rescuing fish.",
+        "hero": "turtle",
+        "setting": "reef",
+        "essential": [
+          {
+            "actor": "turtle",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "turtle",
+            "verb": "collect",
+            "object": "shell"
+          },
+          {
+            "actor": "turtle",
+            "verb": "interact",
+            "object": "fish"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-022",
+        "kind": "multi-action",
+        "sentence": "A samurai walks through the temple, fights goblins and then runs to the gate.",
+        "hero": "samurai",
+        "setting": "temple",
+        "essential": [
+          {
+            "actor": "samurai",
+            "verb": "walk",
+            "object": null
+          },
+          {
+            "actor": "samurai",
+            "verb": "fight",
+            "object": "goblin"
+          },
+          {
+            "actor": "samurai",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "samurai",
+            "verb": "reach",
+            "object": "gate"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-023",
+        "kind": "paraphrase",
+        "sentence": "Make a race across the field with a horse trying to outrun zebras.",
+        "hero": "horse",
+        "setting": "field",
+        "essential": [
+          {
+            "actor": "horse",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "horse",
+            "verb": "race",
+            "object": null
+          },
+          {
+            "actor": "zebra",
+            "verb": "rival",
+            "object": "horse"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-024",
+        "kind": "paraphrase",
+        "sentence": "I want a cave flight with a bat scooping up gems.",
+        "hero": "bat",
+        "setting": "cave",
+        "essential": [
+          {
+            "actor": "bat",
+            "verb": "flap",
+            "object": null
+          },
+          {
+            "actor": "bat",
+            "verb": "collect",
+            "object": "gem"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-025",
+        "kind": "paraphrase",
+        "sentence": "Put me behind the wheel of a van on the highway with coins to pick up.",
+        "hero": "van",
+        "setting": "highway",
+        "essential": [
+          {
+            "actor": "van",
+            "verb": "drive",
+            "object": null
+          },
+          {
+            "actor": "van",
+            "verb": "collect",
+            "object": "coin"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-026",
+        "kind": "paraphrase",
+        "sentence": "Send a fox on a forest stroll, with a basket of berries to gather.",
+        "hero": "fox",
+        "setting": "forest",
+        "essential": [
+          {
+            "actor": "fox",
+            "verb": "walk",
+            "object": null
+          },
+          {
+            "actor": "fox",
+            "verb": "collect",
+            "object": "berry"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-027",
+        "kind": "paraphrase",
+        "sentence": "Give me an underwater swim down the river as a fish escaping a crocodile.",
+        "hero": "fish",
+        "setting": "river",
+        "essential": [
+          {
+            "actor": "fish",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "fish",
+            "verb": "escape",
+            "object": null
+          },
+          {
+            "actor": "crocodile",
+            "verb": "chaser",
+            "object": "fish"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-028",
+        "kind": "paraphrase",
+        "sentence": "Let me move freely around the arena as a robot and fire at turrets.",
+        "hero": "robot",
+        "setting": "arena",
+        "essential": [
+          {
+            "actor": "robot",
+            "verb": "roam",
+            "object": null
+          },
+          {
+            "actor": "robot",
+            "verb": "shoot",
+            "object": "turret"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-029",
+        "kind": "paraphrase",
+        "sentence": "Have a monkey hop through the jungle after a runaway chicken.",
+        "hero": "monkey",
+        "setting": "jungle",
+        "essential": [
+          {
+            "actor": "monkey",
+            "verb": "jump",
+            "object": null
+          },
+          {
+            "actor": "monkey",
+            "verb": "catch",
+            "object": "chicken"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-030",
+        "kind": "paraphrase",
+        "sentence": "Let a rabbit have a soccer match in the stadium versus pigs.",
+        "hero": "rabbit",
+        "setting": "stadium",
+        "essential": [
+          {
+            "actor": "rabbit",
+            "verb": "ball",
+            "object": null
+          },
+          {
+            "actor": "pig",
+            "verb": "rival",
+            "object": "rabbit"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-031",
+        "kind": "negation",
+        "sentence": "A wolf runs through the forest collecting bones, but do not add shooting.",
+        "hero": "wolf",
+        "setting": "forest",
+        "essential": [
+          {
+            "actor": "wolf",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "wolf",
+            "verb": "collect",
+            "object": "bone"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-032",
+        "kind": "negation",
+        "sentence": "An eagle flies over the mountain without collecting anything.",
+        "hero": "eagle",
+        "setting": "mountain",
+        "essential": [
+          {
+            "actor": "eagle",
+            "verb": "flap",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-033",
+        "kind": "negation",
+        "sentence": "A car races trucks on the track, but no missiles or shooting.",
+        "hero": "car",
+        "setting": "track",
+        "essential": [
+          {
+            "actor": "car",
+            "verb": "drive",
+            "object": null
+          },
+          {
+            "actor": "car",
+            "verb": "race",
+            "object": null
+          },
+          {
+            "actor": "truck",
+            "verb": "rival",
+            "object": "car"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-034",
+        "kind": "negation",
+        "sentence": "A frog jumps around the pond; do not make it fight.",
+        "hero": "frog",
+        "setting": "pond",
+        "essential": [
+          {
+            "actor": "frog",
+            "verb": "jump",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-035",
+        "kind": "negation",
+        "sentence": "A dolphin swims through the ocean catching fish, with no chasing sharks.",
+        "hero": "dolphin",
+        "setting": "ocean",
+        "essential": [
+          {
+            "actor": "dolphin",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "dolphin",
+            "verb": "catch",
+            "object": "fish"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-036",
+        "kind": "negation",
+        "sentence": "A knight walks through the village and must not stop collecting coins.",
+        "hero": "knight",
+        "setting": "village",
+        "essential": [
+          {
+            "actor": "knight",
+            "verb": "walk",
+            "object": null
+          },
+          {
+            "actor": "knight",
+            "verb": "collect",
+            "object": "coin"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-037",
+        "kind": "negation",
+        "sentence": "A robot roams the factory; keep shooting drones, but never collect batteries.",
+        "hero": "robot",
+        "setting": "factory",
+        "essential": [
+          {
+            "actor": "robot",
+            "verb": "roam",
+            "object": null
+          },
+          {
+            "actor": "robot",
+            "verb": "shoot",
+            "object": "drone"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-038",
+        "kind": "negation",
+        "sentence": "A cat plays soccer in the stadium without rival teams.",
+        "hero": "cat",
+        "setting": "stadium",
+        "essential": [
+          {
+            "actor": "cat",
+            "verb": "ball",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-039",
+        "kind": "negation",
+        "sentence": "A pirate runs along the beach, does not throw bombs, and picks up shells.",
+        "hero": "pirate",
+        "setting": "beach",
+        "essential": [
+          {
+            "actor": "pirate",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "pirate",
+            "verb": "collect",
+            "object": "shell"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-040",
+        "kind": "negation",
+        "sentence": "A dragon flies through the valley; do not stop shooting fireballs.",
+        "hero": "dragon",
+        "setting": "valley",
+        "essential": [
+          {
+            "actor": "dragon",
+            "verb": "flap",
+            "object": null
+          },
+          {
+            "actor": "dragon",
+            "verb": "shoot",
+            "object": "fireball"
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-041",
+        "kind": "unsupported",
+        "sentence": "A rabbit bakes muffins in the kitchen.",
+        "hero": "rabbit",
+        "setting": "kitchen",
+        "essential": [
+          {
+            "actor": "rabbit",
+            "verb": "bake",
+            "object": "muffin"
+          }
+        ],
+        "unsupported": true
+      },
+      {
+        "id": "p42-r4-ho-042",
+        "kind": "unsupported",
+        "sentence": "A bear knits scarves inside a cabin.",
+        "hero": "bear",
+        "setting": "cabin",
+        "essential": [
+          {
+            "actor": "bear",
+            "verb": "knit",
+            "object": "scarf"
+          }
+        ],
+        "unsupported": true
+      },
+      {
+        "id": "p42-r4-ho-043",
+        "kind": "unsupported",
+        "sentence": "An owl translates poems in a library.",
+        "hero": "owl",
+        "setting": "library",
+        "essential": [
+          {
+            "actor": "owl",
+            "verb": "translate",
+            "object": "poem"
+          }
+        ],
+        "unsupported": true
+      },
+      {
+        "id": "p42-r4-ho-044",
+        "kind": "unsupported",
+        "sentence": "A fox paints portraits in a studio.",
+        "hero": "fox",
+        "setting": "studio",
+        "essential": [
+          {
+            "actor": "fox",
+            "verb": "paint",
+            "object": "portrait"
+          }
+        ],
+        "unsupported": true
+      },
+      {
+        "id": "p42-r4-ho-045",
+        "kind": "unsupported",
+        "sentence": "A robot teaches arithmetic at a school.",
+        "hero": "robot",
+        "setting": "school",
+        "essential": [
+          {
+            "actor": "robot",
+            "verb": "teach",
+            "object": "arithmetic"
+          }
+        ],
+        "unsupported": true
+      },
+      {
+        "id": "p42-r4-ho-046",
+        "kind": "unsupported",
+        "sentence": "A penguin sings lullabies in a theater.",
+        "hero": "penguin",
+        "setting": "theater",
+        "essential": [
+          {
+            "actor": "penguin",
+            "verb": "sing",
+            "object": "lullaby"
+          }
+        ],
+        "unsupported": true
+      },
+      {
+        "id": "p42-r4-ho-047",
+        "kind": "unsupported",
+        "sentence": "A cat sews curtains in a house.",
+        "hero": "cat",
+        "setting": "house",
+        "essential": [
+          {
+            "actor": "cat",
+            "verb": "sew",
+            "object": "curtain"
+          }
+        ],
+        "unsupported": true
+      },
+      {
+        "id": "p42-r4-ho-048",
+        "kind": "unsupported",
+        "sentence": "A dog repairs clocks in a shop.",
+        "hero": "dog",
+        "setting": "shop",
+        "essential": [
+          {
+            "actor": "dog",
+            "verb": "repair",
+            "object": "clock"
+          }
+        ],
+        "unsupported": true
+      },
+      {
+        "id": "p42-r4-ho-049",
+        "kind": "single",
+        "sentence": "A cheetah runs across the savanna at sunrise.",
+        "hero": "cheetah",
+        "setting": "savanna",
+        "essential": [
+          {
+            "actor": "cheetah",
+            "verb": "run",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-050",
+        "kind": "single",
+        "sentence": "I want to be a deer running through a misty forest.",
+        "hero": "deer",
+        "setting": "forest",
+        "essential": [
+          {
+            "actor": "deer",
+            "verb": "run",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-051",
+        "kind": "single",
+        "sentence": "A kangaroo jumps across the quiet desert.",
+        "hero": "kangaroo",
+        "setting": "desert",
+        "essential": [
+          {
+            "actor": "kangaroo",
+            "verb": "jump",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-052",
+        "kind": "single",
+        "sentence": "Make a game about a goat jumping on a snowy mountain.",
+        "hero": "goat",
+        "setting": "mountain",
+        "essential": [
+          {
+            "actor": "goat",
+            "verb": "jump",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-053",
+        "kind": "single",
+        "sentence": "A parrot flies through the jungle canopy.",
+        "hero": "parrot",
+        "setting": "jungle",
+        "essential": [
+          {
+            "actor": "parrot",
+            "verb": "flap",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-054",
+        "kind": "single",
+        "sentence": "Let me fly a plane across the evening sky.",
+        "hero": "plane",
+        "setting": "sky",
+        "essential": [
+          {
+            "actor": "plane",
+            "verb": "flap",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-055",
+        "kind": "single",
+        "sentence": "Drive a tractor around a sunny farm.",
+        "hero": "tractor",
+        "setting": "farm",
+        "essential": [
+          {
+            "actor": "tractor",
+            "verb": "drive",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-056",
+        "kind": "single",
+        "sentence": "I want to drive a motorcycle through the city at night.",
+        "hero": "motorcycle",
+        "setting": "city",
+        "essential": [
+          {
+            "actor": "motorcycle",
+            "verb": "drive",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-057",
+        "kind": "single",
+        "sentence": "A robot roams an empty hangar.",
+        "hero": "robot",
+        "setting": "hangar",
+        "essential": [
+          {
+            "actor": "robot",
+            "verb": "roam",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-058",
+        "kind": "single",
+        "sentence": "A crab moves freely around the beach.",
+        "hero": "crab",
+        "setting": "beach",
+        "essential": [
+          {
+            "actor": "crab",
+            "verb": "roam",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-059",
+        "kind": "single",
+        "sentence": "A whale swims through the deep ocean.",
+        "hero": "whale",
+        "setting": "ocean",
+        "essential": [
+          {
+            "actor": "whale",
+            "verb": "glide",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-060",
+        "kind": "single",
+        "sentence": "Let an otter swim along the river.",
+        "hero": "otter",
+        "setting": "river",
+        "essential": [
+          {
+            "actor": "otter",
+            "verb": "glide",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-061",
+        "kind": "single",
+        "sentence": "A wizard walks around a peaceful village.",
+        "hero": "wizard",
+        "setting": "village",
+        "essential": [
+          {
+            "actor": "wizard",
+            "verb": "walk",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-062",
+        "kind": "single",
+        "sentence": "Play as a tiger walking through an ancient temple.",
+        "hero": "tiger",
+        "setting": "temple",
+        "essential": [
+          {
+            "actor": "tiger",
+            "verb": "walk",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-063",
+        "kind": "single",
+        "sentence": "A panda plays soccer in a park.",
+        "hero": "panda",
+        "setting": "park",
+        "essential": [
+          {
+            "actor": "panda",
+            "verb": "ball",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      },
+      {
+        "id": "p42-r4-ho-064",
+        "kind": "single",
+        "sentence": "Make a football game with a fox in a stadium.",
+        "hero": "fox",
+        "setting": "stadium",
+        "essential": [
+          {
+            "actor": "fox",
+            "verb": "ball",
+            "object": null
+          }
+        ],
+        "unsupported": false
+      }
+    ]
+  }
+}

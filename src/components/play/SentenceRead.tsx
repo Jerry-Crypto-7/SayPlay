@@ -77,6 +77,7 @@ export function SentenceRead({ read, open, onClose }: { readonly read: ReadFacts
         </section>
       )}
       {parts.lineage}
+      {parts.board}
     </Sheet>
   );
 }

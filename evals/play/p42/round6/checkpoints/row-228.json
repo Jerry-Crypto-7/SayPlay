@@ -1,0 +1,237 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-046",
+    "sentence": "A gardener waters roses in the greenhouse.",
+    "seed": 3,
+    "milliseconds": 184.19630000001052,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_spatial",
+        "tuning": {
+          "count": 5,
+          "states": 3,
+          "verb": "water",
+          "rounds": 2,
+          "chasers": 1
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "spatial",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Gardener Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "greenhouse",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Water all 5 rose in each of 2 rounds before the spider catches you.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 88,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "gardener",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "rose",
+          "count": 5
+        },
+        {
+          "id": "hunter",
+          "kind": "chaser",
+          "label": "spider",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Water all 5 rose, 2 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use next to a target."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "water"
+    },
+    "specHash": "91ccef05",
+    "worldHash": "0f15f0516d3de7829d28edc103660d630c78f26df8f2a145f0d025a362e316fa",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gardener",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 8,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gardener",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "rose",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 93,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gardener",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "escape",
+        "object": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "spider",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 3641,
+        "evidence": "survived-threat:probe:hunter",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gardener",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "spider",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 3641,
+        "evidence": "survived-threat:probe:hunter",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "spider",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "verb": "chaser",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gardener",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 233,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:hunter"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "gardener",
+          "verb": "water",
+          "object": "rose"
+        }
+      ],
+      "closest": "a quest",
+      "reason": "Water isn't here yet – here's a quest."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "gardener",
+          "verb": "water",
+          "object": "rose"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 3641,
+      "hash": "cbf304ef",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

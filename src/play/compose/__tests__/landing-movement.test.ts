@@ -14,12 +14,28 @@ beforeAll(loadRapier);
 it('the gravity-and-thrust lander is airborne movement and preserves the actual landing target', () => {
   for (const seed of [1, 2, 3, 4, 5]) {
     const made = compose(extractIntent('land a helicopter on a ship'), seed);
-    expect(made.cellId).toBe('voyage.land');
+    expect(made.recipe).toMatchObject({ move: 'glide', objective: 'land' });
     expect(made.recipe.move).toBe('glide');
     expect(made.witnesses.some(w => matchesWitness({ actor: 'helicopter', verb: 'land', object: 'ship' }, w))).toBe(true);
     expect(made.witnesses.some(w => w.verb === 'glide')).toBe(true);
     expect(made.witnesses.some(w => w.verb === 'drive')).toBe(false);
   }
+});
+it('a lander with attached parts still flies, not drives', () => {
+  const made = compose(extractIntent('a spaceship flies and lands on the moon while rocks fall'), 1);
+  expect(made.recipe).toMatchObject({ move: 'glide', objective: 'land' });
+  expect(made.recipe.parts?.length).toBeGreaterThan(0);
+  expect(made.witnesses.some(w => w.verb === 'glide')).toBe(true);
+  expect(made.witnesses.some(w => w.verb === 'drive')).toBe(false);
+});
+it('a composed tutorial keeps the native goal next to the attached parts', () => {
+  const { recipe } = compose(extractIntent('a spaceship flies and lands on the moon while rocks fall'), 1);
+  const native = compileRecipe({ ...recipe, parts: [] }).tutorial.goalLine;
+  const goal = compileRecipe(recipe).tutorial.goalLine;
+  expect(native.length).toBeGreaterThan(0);
+  expect(goal).toContain(native);
+  expect(goal).toMatch(/^Dodge the /);
+  expect(goal.length).toBeLessThanOrEqual(80);
 });
 it('correcting the recipe movement leaves the legacy landing simulation unchanged', () => {
   const cell = ALLOWED.find(cell => cell.id === 'voyage.land')!;

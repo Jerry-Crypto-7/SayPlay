@@ -1,5 +1,6 @@
 import { makePacedControl, makePacedBot } from './pieces/phase-pieces';
 import { objectiveOrder, objectiveWalkerBot } from './pieces/objective-order';
+import { assemblyPart, assemblyFinish, assemblyGateRules, makeAssemblyControl, makeAssemblyBot } from './pieces/assembly-parts';
 /**
  * Knihovna arkádových kusů (P25A): id → kus. Svět odkazuje na kusy jménem
  * (`PieceRef`), jádro i ověření je hledají tady. Co tu není, neexistuje.
@@ -101,7 +102,7 @@ const BASE_CONTROLS = {
 
 const PROGRESSION_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
 const PROGRESSION_BOTS = { ...BASE_BOTS, objective_walker_bot: objectiveWalkerBot, phase_bot: makePacedBot(BASE_BOTS) };
-export const ARCADE_LIBRARY: ArcadeLibrary = {
+const NATIVE_LIBRARY: ArcadeLibrary = {
   controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
   rules: { arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
@@ -118,4 +119,11 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
     ...MODE_GENERATORS,
   },
   bots: { ...PROGRESSION_BOTS, addon_bot: makeAddonBot(PROGRESSION_BOTS) as BotPiece },
+};
+
+export const ARCADE_LIBRARY: ArcadeLibrary = {
+  ...NATIVE_LIBRARY,
+  controls: { ...NATIVE_LIBRARY.controls, assembly_control: makeAssemblyControl(NATIVE_LIBRARY.controls) },
+  bots: { ...NATIVE_LIBRARY.bots, assembly_bot: makeAssemblyBot(NATIVE_LIBRARY.bots) },
+  rules: { ...NATIVE_LIBRARY.rules, assembly_part: assemblyPart, assembly_finish: assemblyFinish, ...assemblyGateRules(NATIVE_LIBRARY.rules) },
 };

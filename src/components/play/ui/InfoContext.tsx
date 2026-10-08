@@ -15,7 +15,8 @@
 
 import { createContext, type ReactNode, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 
-export type InfoPart = 'how' | 'lineage';
+/** `board` = žebříček hry (P44B T9), zapisuje ho `BoardInfoPart` z `PlayShell`. */
+export type InfoPart = 'how' | 'lineage' | 'board';
 type Parts = Readonly<Partial<Record<InfoPart, ReactNode>>>;
 
 interface InfoStore {
@@ -60,6 +61,11 @@ export function useInfoPart(part: InfoPart, node: ReactNode): boolean {
     return () => store.set(part, undefined);
   }, [store, part, node]);
   return store !== null;
+}
+
+/** Je nad volajícím list „About this game“? Ve feedu ne – tam se nic navíc nenačítá. */
+export function useInInfoSheet(): boolean {
+  return useContext(InfoContext) !== null;
 }
 
 const NO_PARTS: Parts = {};

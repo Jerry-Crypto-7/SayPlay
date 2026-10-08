@@ -1,0 +1,153 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-044",
+    "sentence": "A mechanic repairs bicycles in the garage.",
+    "seed": 2,
+    "milliseconds": 53.04240000000573,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_station",
+        "tuning": {
+          "count": 2,
+          "states": 2,
+          "verb": "repair",
+          "rounds": 16,
+          "hold": 60
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "station",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Mechanic Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "garage",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Repair all 2 bicycle in each of 16 rounds within 73 seconds.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 73,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "mechanic",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "bicycle",
+          "count": 2
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Repair all 2 bicycle, 16 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use when it is ready. Stall and it boils over."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "fix"
+    },
+    "specHash": "7c214ddc",
+    "worldHash": "af7747fc85f58a29b1eba3bbaef41fe3a60b635889172c02fc5465b4504cf18d",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mechanic",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "bicycle",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 59,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "mechanic",
+          "verb": "repair",
+          "object": "bicycle"
+        }
+      ],
+      "closest": "a quest",
+      "reason": "Repair isn't here yet – here's a quest."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "mechanic",
+          "verb": "repair",
+          "object": "bicycle"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 1920,
+      "hash": "558ef338",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -7,6 +7,8 @@ import { ballParams, ballPitch } from '@/play/arcade/pieces/ball';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { releasePhysics } from '@/play/arcade/physics/step';
 import { createArcadeSession } from '../../session';
+import { compileRecipe } from '@/play/compose/compile';
+import { arcadeWorldOf } from '@/play/arcade/compile';
 import { ballInput } from '../ball-input';
 import { placeBall } from '../camera';
 
@@ -85,4 +87,55 @@ it.each([390 / 844, 16 / 9])('ball camera frames shooting origin and far hoop on
     const projected = point.project(camera);
     expect(Math.abs(projected.x)).toBeLessThan(0.95); expect(Math.abs(projected.y)).toBeLessThan(0.95);
   }
+});
+
+function composedGame() {
+ const spec=compileRecipe({preset:'assembled',move:'ball',actions:[],objective:'score',threats:[],content:{genre:'throw',mode:'default',hero:'robot',setting:'football field'},parts:[{kind:'catch',role:'part_0',label:'fish',phase:0,motion:'fall'}]});
+ const made=arcadeWorldOf(spec,1);
+ if(!made.ok)throw new Error(made.issues.join('; '));
+ return createArcadeSession(made.world);
+}
+it('assembled ball arrow/WASD keys dribble in both axes, key-up stops, and inputs replay',()=>{
+ const session=composedGame(),input=ballInput(session),p=bodyBase(session.state()[HEADER.player]!);
+ try {
+  input.key('arrowup',true);input.key('d',true);
+  for(let i=0;i<5;i++)session.stepOnce();
+  expect(session.state()[p+BODY.z]).toBeGreaterThan(0);
+  expect(session.state()[p+BODY.x]).toBeGreaterThan(0);
+  input.key('arrowup',false);input.key('d',false);session.stepOnce();
+  expect(session.state()[p+BODY.vx]).toBe(0);expect(session.state()[p+BODY.vz]).toBe(0);
+  input.key('s',true);input.key('a',true);session.stepOnce();
+  expect(session.state()[p+BODY.vx]).toBeLessThan(0);expect(session.state()[p+BODY.vz]).toBeLessThan(0);
+  input.cancel();session.stepOnce();session.stepOnce();
+  expect(session.state()[p+BODY.vx]).toBe(0);expect(session.state()[p+BODY.vz]).toBe(0);
+  expect(replay(session.world,session.inputs(),ARCADE_LIBRARY,session.snapshot().tick).hash).toBe(hashArcade(session.state()));
+ }finally{input.dispose();releasePhysics(session.state());}
+});
+it('composed pitch: a cancelled charge is dropped, so the next short drag shoots with its own strength',()=>{
+ const session=composedGame(),input=ballInput(session),p=bodyBase(session.state()[HEADER.player]!);
+ try {
+  input.down(1,200,100);input.move(1,200,160);
+  for(let i=0;i<15;i++)session.stepOnce();
+  expect(session.state()[p+BODY.aux1]).toBeGreaterThan(5);
+  input.cancel(1);session.stepOnce();
+  expect(session.state()[p+BODY.aux1]).toBe(0);
+  expect(session.state()[p+BODY.vz]).toBe(0);
+  input.down(2,200,100);input.move(2,200,103);session.stepOnce();
+  expect(session.state()[p+BODY.aux1]).toBe(1);
+ }finally{input.dispose();releasePhysics(session.state());}
+});
+it('composed touch dribble and aiming use independent fingers; releasing movement cannot fire',()=>{
+ const session=composedGame(),input=ballInput(session),p=bodyBase(session.state()[HEADER.player]!);
+ try {
+  input.down(1,0,100,true);input.move(1,30,40);
+  input.down(2,200,100);input.move(2,225,160);
+  for(let i=0;i<8;i++)session.stepOnce();
+  expect(session.state()[p+BODY.x]).toBeGreaterThan(0);expect(session.state()[p+BODY.z]).toBeGreaterThan(0);
+  expect(session.state()[p+BODY.aux1]).toBe(8);
+  input.up(1);session.stepOnce();
+  expect(session.state()[p+BODY.vx]).toBe(0);expect(session.state()[p+BODY.vz]).toBe(0);
+  expect(session.inputs().some(i=>i.buttons&BUTTON.TAP)).toBe(false);
+  input.up(2);session.stepOnce();
+  expect(session.inputs().some(i=>i.buttons&BUTTON.TAP)).toBe(true);
+ }finally{input.dispose();releasePhysics(session.state());}
 });

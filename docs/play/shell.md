@@ -88,7 +88,30 @@ výchozí 150) se neuloží – výzva platí, jen ducha nemá. Týž běh odesl
 `dareId` = prvních 32 hex SHA-256 z (hra, výsledek přehrání – hash konce, tik, skóre – a změny před koncem běhu
 seřazené i uvnitř tiku), ne z poslaných vstupů: týž běh podruhé – i s no-op vstupem, se vstupem po konci nebo
 s přeházenými změnami – je **200** s týmž id a denní strop neubírá, nová výzva **201**; obě
-`{ dareId, score, ticks }`, `cache-control: no-store`.
+`{ dareId, score, ticks, board, beat }`, `cache-control: no-store`.
+
+**Žebříček (P44B T5)** píšou jen tyhle dveře. Hráč je z podepsané cookie `sp_player`; bez cookie se vydá nová
+(`set-cookie`, strop nových identit z `GET /api/play/me`). **Jediná cookie s neplatným podpisem dostane novou taky (T5b)**
+– cookie se starým tajemstvím (restart procesu bez zapisovatelného adresáře, rotace `PLAY_IDENTITY_SECRET`) je od padělku
+k nerozeznání a jinak by prohlížeč 400 dní tiše zůstal mimo žebříček; padělek tím nezíská nic víc než smazaná cookie (týž
+strop, nové id, nikdy to cizí). Tím se rozhodnutí debaty T1 „nová identita se nevydá místo padělané“ mění jen pro jedinou
+cookie: **zdvojená** cookie novou nevydá dál, stejně jako vypnutá identita (Vercel bez `PLAY_IDENTITY_SECRET`) – výzva pak
+platí bez autora jako dřív. Uložená výzva nese `by` = hráč, který ji
+zapsal první; ven ji nepustí žádná odpověď. Do žebříčku (`putBoardEntry`, skóre a tiky z přehrání) jde jen výhra bez
+živých změn a jen když běh patří tomuto hráči: výzva je nová (`201`), nebo už ležela s `by` = on. Duch je veřejný, takže
+kopie cizího běhu je táž výzva (`200`) a žebříčkem nepohne. **Posunutá kopie ducha (T5b)** – vstupy cizího běhu o pár tiků
+později – dá novou výzvu se stejným skóre; ta platí, ale do žebříčku nejde, když v něm jiný hráč má řádek téže hry se
+stejným skóre a tiky ± 30 (`NEAR_COPY_TICKS`) a **změny vstupu** obou běhů (stisk, jiná osa – ne každý tik držení) se po
+posunu o nejvýš 30 tiků shodují aspoň v 90 % a aspoň v 5 změnách (tlačítka stejná, osa ± 50). Shoda skóre a tiků sama
+nestačí: hry se skóre po krocích a pevným koncem ji dávají i poctivým hráčům (přežití 60 s – každý vítěz 250 bodů v tiku
+3 600); držené tiky by zase z kopie udělaly každého, kdo drží totéž o chvíli později, a běh z pár změn (jedno držení)
+zahraje každý stejně (revize T5b-1). Porovnají se všechny takové řádky z 20 nejlepších – v remíze mají všechny vzdálenost
+0 – souběžně, jedno čtení výzvy každý; kopie s tiky rozházenými po jednom, se změněným skóre nebo ducha mimo prvních 20
+projde (`simplified:` v routě). `board: { place, of }` = místo hráče a kolik hráčů žebříček
+drží; `null` = běh se nezapsal (bez hráče, se změnami, cizí, kopie ducha, nad denním stropem 30 zápisů hráče, mimo 50
+nejlepších, nebo výpadek úložiště – ten výzvu neshodí). Nepovinné `against` (id výzvy) → `beat: true`, když `bestRank` běhu přebije
+uloženou výzvu téže hry, `false`, když ne; `null`, když není s čím srovnat (chybí, vadné id, cizí hra, neznámá výzva,
+nebo jeden z běhů měnil hru živými změnami). Testy: `src/app/api/play/__tests__/dare-board.test.ts`.
 
 | Krok | Kód | Stav |
 |---|---|---|
@@ -110,6 +133,27 @@ Bez Upstash žije výzva v paměti procesu jako hry (`x-play-store: memory` v pr
 rozbalí `replay.inputs` (`unpackInputs`) a `replayLive(hra, vstupy, replay.patches)` dojde k `hash`. Brána jako čtení hry:
 páka `snapshots`, identita, strop frekvence dveří `play` (429 + `retry-after`); id bez tvaru, neznámá výzva nebo výzva
 jiné hry → 404 `NOT_FOUND`.
+
+### `GET|PUT /api/play/me` – hráč a jeho přezdívka (P44B T3)
+
+Anonymní identita zařízení: cookie `sp_player=<id>.<HMAC-SHA256>` (`HttpOnly; SameSite=Lax; Path=/`, 400 dní, `Secure`
+na https), tajemství `PLAY_IDENTITY_SECRET` (`src/server/player-identity.ts`, rozhodnutí `.claude/debate/2026-10-07-p44b-device-identity.md`).
+`GET` → `200 { nickname }` (`no-store`); bez platné cookie vydá novou v `set-cookie` a výchozí jméno z `sha256(id)`
+(„Swift Otter“). `PUT { nickname }` s `content-type: application/json` → `200 { nickname }`. **Tělo nikdy nenese id hráče
+ani cookie.** Obojí za `admit` (páka `sessions`, identita, okno `play`).
+
+| Krok | Kód | Stav |
+|---|---|---|
+| identita vypnutá (Vercel nebo sdílené úložiště bez `PLAY_IDENTITY_SECRET`, tajemství kratší než 32 znaků) | `IDENTITY_UNAVAILABLE` | 503 |
+| `GET`: 21. nová identita za hodinu nebo 61. za den (UTC) z jedné důvěryhodné adresy (`NEW_PLAYERS_PER_HOUR`, `NEW_PLAYERS_PER_DAY`); mimo Vercel, kde `x-forwarded-for` píše volající, sdílejí všichni jeden koš se 101. identitou za hodinu a bez denního stropu (`NEW_PLAYERS_PER_HOUR_SHARED`, T3b – jeden cizinec místnost nezavře) | `NEW_PLAYER_QUOTA` | 429 + `retry-after: 3600` |
+| `PUT` bez platné cookie (cookie nevydá) | `PLAYER_REQUIRED` | 403 |
+| `PUT` jiný `content-type` než JSON | `BAD_REQUEST` | 415 |
+| `PUT` vlastní okno `play/me` | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
+| jméno po ořezu mimo 2–20 znaků `[\p{L}\p{N} ._-]` | `BAD_REQUEST` „Use 2–20 letters or numbers.“ | 400 |
+| jméno neprošlo `PLAY_MODERATION` | `CONTENT_REJECTED` „We can't use that name. Try another one.“ | 422 |
+| úložiště neodpovídá | `STORE_UNAVAILABLE` | 503 |
+
+Testy: `src/app/api/play/__tests__/me.test.ts`, `src/play/player/__tests__/nickname.test.ts`.
 
 ### `POST /api/play/events` – událost smyčky (P27D T4)
 
@@ -133,6 +177,15 @@ nejdou. `VersionStore` (`store.ts`): paměť procesu, nebo Upstash REST z tého�
 kniha stropu (`sharedStoreFromEnv`, klíče `<prefix>:play:v:<id>`, `<prefix>:play:children:<parentId>`,
 `<prefix>:play:lineage:<id>`),
 `SET … NX` = zapiš jednou; čtení nikdy nevyhazuje, zápis při výpadku `VersionStoreUnavailable`.
+
+**Žebříček hry (P44B T4).** `putBoardEntry(versionId, { playerId, dareId, score, ticks })` píše do seřazené množiny
+`<prefix>:play:board:<versionId>` (člen = id hráče, hodnocení = `bestRank`) jednou transakcí `ZADD GT CH` →
+`ZREMRANGEBYRANK 0 -51` → `EXPIRE` → `ZREVRANK` → `ZCARD`: na hráče jen nejlepší běh, nejvýš 50 hráčů, žije jako hra od
+posledního zápisu. Běh k hodnocení leží vedle (`…:board-run:<versionId>:<playerId>` = `{ dareId, rank }`) a `board`
+ho přizná, jen když hodnocení sedí. Nejvýš 30 zápisů hráče za den (`…:board-quota:<den>:<playerId>`, nad ním `quota`).
+`board(versionId, limit ≤ 20)` vrátí `{ playerId, dareId, score, ticks, place }` od prvního místa; výpadek při zápisu
+i čtení je `VersionStoreUnavailable` – prázdný žebříček by lhal. Paměťové a souborové úložiště dělají totéž nad
+`sets` (`raiseRank` v `memoryRaw`). Jeden zápis = 3–4 požadavky (`INCR`, transakce, `SET` běhu, poprvé za den `EXPIRE`).
 
 ## Testy
 

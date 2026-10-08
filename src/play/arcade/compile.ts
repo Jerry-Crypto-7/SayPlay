@@ -13,7 +13,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
-import { type ArcadeParts, addonControlParams, addonLives, applyAddons } from './addons';
+import { type ArcadeParts, addonControlParams, addonLives, applyAddons, mapUnderlying, underlyingRule } from './addons';
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
@@ -35,6 +35,7 @@ import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHas
 import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { progressionParts } from './pieces/progression-parts';
+import { assemblyGate, assemblyParts } from './pieces/assembly-parts';
 import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
 import { ballPitch } from './pieces/ball';
@@ -213,7 +214,7 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   // Pahýl módu vrací prázdnou úroveň s issue; doplňky by z ní četly tělo hráče (revize T4 kolo 2).
   if (own.issues !== undefined && own.issues.length > 0) return { ok: false, issues: own.issues };
   const lives = 'health' in own ? own.health : health;
-  const { control, bot, level: baseLevel, rules, issues } = applyAddons(own, { spec, seed, health: lives });
+  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(applyAddons(own, { spec, seed, health: lives }), spec, ARCADE_LIBRARY.rules);
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
   // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění.
   const ruled = compileRules(spec, baseLevel, seed);
@@ -224,9 +225,11 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   if (builtIn + ruled.rules.length > ARCADE_LIMITS.maxRules) {
     return { ok: false, issues: [`rules: this ${spec.control} game already uses ${builtIn} built-in rules, so the spec may add at most ${ARCADE_LIMITS.maxRules - builtIn} (it has ${ruled.rules.length}) – merge or drop rules`] };
   }
-  rules.push(...ruled.rules);
+  // Složená hra (P42): výhra pravidla specu i cílového skóre počká v obalu, až budou hotové díly.
+  const gate = assemblyGate(rules, ARCADE_LIBRARY.rules);
+  rules.push(...ruled.rules.map(gate));
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: limitSeconds(timer.seconds) } });
-  const scored = spec.scoring === undefined ? { level, rules } : withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0);
+  const scored = spec.scoring === undefined ? { level, rules } : withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0, gate);
   if (scored.rules.length > ARCADE_LIMITS.maxRules) {
     return { ok: false, issues: [`rules: this ${spec.control} game with scoring uses ${scored.rules.length} rules, over the ${ARCADE_LIMITS.maxRules} limit – merge or drop rules`] };
   }
@@ -243,18 +246,19 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
  * skóre. Limit bonusu za čas = časový limit hry, jinak horizont jádra.
  * Aréna sbírá přes `arena_eat` a skóre v ní je velikost hrdiny a postup
  * k cíli (`grow_to`) – kombo by cíl zkrátilo, takže tam jen bonus na konci.
+ * `gate` obalí `score_bonus` složené hry (P42), ať dosažený cíl nevyhraje před díly.
  */
-function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: number, target: number): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
+function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: number, target: number, gate: (ref: PieceRef) => PieceRef): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
   const keeper = level.bodies.length;
   const hero = level.bodies[0] as BodyInit;
   const counter: BodyInit = { role: 'thing', kind: hero.kind, x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true };
-  const clock = rules.find((ref) => ref.id === 'time_limit' || ref.id === 'survive_time')?.params as { readonly seconds: number } | undefined;
+  const clock = rules.map(underlyingRule).find((ref) => ref.id === 'time_limit' || ref.id === 'survive_time')?.params as { readonly seconds: number } | undefined;
   const limit = clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock.seconds * ARCADE_HZ);
   return {
     level: { ...level, bodies: [...level.bodies, counter] },
     rules: [
-      ...rules.map((ref) => (ref.id === 'pickup' || ref.id === 'shot_hit' ? { id: ref.id, params: { ...ref.params, combo: keeper } } : ref)),
-      { id: 'score_bonus', params: { lives, limit, target } },
+      ...rules.map((ref) => mapUnderlying(ref, (native) => (native.id === 'pickup' || native.id === 'shot_hit' ? { id: native.id, params: { ...native.params, combo: keeper } } : native))),
+      gate({ id: 'score_bonus', params: { lives, limit, target } }),
     ],
   };
 }

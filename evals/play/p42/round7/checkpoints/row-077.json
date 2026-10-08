@@ -1,0 +1,142 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-016",
+    "sentence": "A paper airplane glides through the office, then lands on the boss's desk.",
+    "seed": 2,
+    "milliseconds": 12.767399999996996,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "steer",
+      "controlParams": {
+        "difficulty": "normal",
+        "generator": "voyage_land",
+        "tuning": {
+          "gravity": 1000,
+          "touchdownSpeed": 19,
+          "gravityRisePct": 1
+        }
+      },
+      "genre": {
+        "id": "voyage",
+        "mode": "land",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Paper Airplane Landing",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 45,
+      "theme": {
+        "setting": "office",
+        "mood": "tense",
+        "look": "living_room"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Touch down slowly and level on the desk.",
+        "role": "pad"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 1
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "paper airplane",
+          "count": 1
+        },
+        {
+          "id": "pad",
+          "kind": "exit",
+          "label": "desk",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Land softly and level on the desk.",
+        "controlsHint": "Arrows or drag to tilt. Up, Space or a second finger fires the engine."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "4c650d66",
+    "worldHash": "c1227950f2a7f8e3bce7db48542dc0276e3bf16a65c886b886d1b3f36b2239ae",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "paper airplane",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "glide",
+        "object": null,
+        "tick": 44,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "paper airplane",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "land",
+        "object": {
+          "body": 1,
+          "roleId": "pad",
+          "label": "desk",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 882,
+        "evidence": "safe-landing",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 2,
+      "proved": 2,
+      "missing": [],
+      "silent": []
+    },
+    "hero": false,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 883,
+      "hash": "74bdf676",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

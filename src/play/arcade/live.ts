@@ -34,11 +34,13 @@ import {
   HEADER_SIZE,
   type InputEvent,
   NO_INPUT,
+  type PieceRef,
   ROLE,
   type RulePiece,
   UNIT,
   bodyBase,
 } from './contract';
+import { underlyingRule } from './addons';
 import { type ArcadeLibrary, type ArcadeProgram, type ReplayResult, hashArcade, instantiate, loadProgram, outcomeOf, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import type { GameSpecV1 } from '../spec';
@@ -100,10 +102,12 @@ export function patchProblem(world: ArcadeWorld, state: ArcadeState, patch: Live
     return null;
   }
   if (!Number.isInteger(patch.amount) || patch.amount < 1 || patch.amount > LIMITS[patch.counter]) return `Add 1 to ${LIMITS[patch.counter]} at a time.`;
-  if (patch.counter === 'health' && !world.rules.some((rule) => rule.id === 'out_of_health')) return 'This game has no lives.';
-  if (patch.counter === 'time' && !world.rules.some((rule) => rule.id === 'time_limit')) return 'This game has no clock.';
+  // Složená hra (P42) má nativní pravidla v obalu `assembly_gate_*`.
+  const has = (id: string): boolean => world.rules.some((rule) => underlyingRule(rule).id === id);
+  if (patch.counter === 'health' && !has('out_of_health')) return 'This game has no lives.';
+  if (patch.counter === 'time' && !has('time_limit')) return 'This game has no clock.';
   // Ve světě s vlnami arény (P36A T4) je čítač nábojů číslo vlny – náboje tam nejsou.
-  const waves = world.rules.some((rule) => rule.id === 'arena_waves');
+  const waves = has('arena_waves');
   if (patch.counter === 'ammo' && (waves || (state[HEADER.counters + COUNTER.ammo] as number) + (state[HEADER.counters + COUNTER.reserve] as number) <= 0)) return 'This game has no ammo.';
   return null;
 }
@@ -175,7 +179,13 @@ function burst(effects: readonly ArcadeEffect[]): ArcadeProgram['rules'][number]
 function longer(program: ArcadeProgram, seconds: number): ArcadeProgram {
   return {
     ...program,
-    rules: program.rules.map((rule) => (rule.piece.id === 'time_limit' ? { ...rule, params: { ...(rule.params as { seconds: number }), seconds: (rule.params as { seconds: number }).seconds + seconds } } : rule)),
+    rules: program.rules.map((rule) => {
+      const native = underlyingRule({ id: rule.piece.id, params: rule.params as PieceRef['params'] });
+      if (native.id !== 'time_limit') return rule;
+      // Zabalený `time_limit` složené hry (P42) poběží dál jako nativní pravidlo: obal mění jen výhru,
+      // prohru času pustí beze změny, ale nativní parametry znovu ověřuje – a prodloužení nad strop 90 s by shodilo jádro.
+      return { ...rule, piece: native.id === rule.piece.id ? rule.piece : (ARCADE_LIBRARY.rules.time_limit as RulePiece), params: { ...native.params, seconds: (native.params as { seconds: number }).seconds + seconds } };
+    }),
   };
 }
 

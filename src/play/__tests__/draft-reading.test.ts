@@ -89,12 +89,13 @@ describe('draft from the local reading', () => {
 
   // B-R4 (T5b): `GenreSpec.counts` nese počty čtení i do nové hry – generátor, role i cíl; běžec počty nečte (`COUNT_PARAMS`).
   it('the counts of the reading land in a new genre game', () => {
+    // P42 skládá hrozby z věty, ne ze čtení: psi, které věta neřekne, do hry nepřijdou; počet ryb ano.
     const meta = draftGameSpecWithMeta('a cat collects fish in a kitchen', 1, {
       reading: reading({ control: 'move_free', hero: 'cat', roles: [{ noun: 'fish', kind: 'collectible', count: 12 }, { noun: 'dogs', kind: 'chaser', count: 3 }] }),
     });
-    expect(meta.genre).toMatchObject({ genre: 'arena', mode: 'escape', counts: { enemy: 3, collectible: 12 } });
-    expect(meta.spec.controlParams).toMatchObject({ generator: 'arena_escape', tuning: { chasers: 3, items: 12 } });
-    expect([count(meta.spec, 'hunter'), count(meta.spec, 'item'), meta.spec.objective.count]).toEqual([3, 12, 12]);
+    expect(meta.genre).toMatchObject({ genre: 'arena', mode: 'collect', counts: { collectible: 12 } });
+    expect(meta.spec.controlParams).toMatchObject({ generator: 'arena_collect', tuning: { items: 12 } });
+    expect([count(meta.spec, 'hunter'), count(meta.spec, 'item'), meta.spec.objective.count]).toEqual([undefined, 12, 12]);
   });
 
   it('seconds of the reading set the round length', () => {

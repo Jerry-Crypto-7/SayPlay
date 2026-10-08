@@ -1,0 +1,4557 @@
+{
+  "runs": [
+    {
+      "round": 0,
+      "move": "drive",
+      "ms": 5771.5993999999955,
+      "tick": 2124,
+      "hash": "9746a60f",
+      "publishEligible": true
+    },
+    {
+      "round": 0,
+      "move": "run",
+      "ms": 4562.477300000006,
+      "tick": 2897,
+      "hash": "28f920be",
+      "publishEligible": true
+    },
+    {
+      "round": 1,
+      "move": "drive",
+      "ms": 5013.932000000001,
+      "tick": 2124,
+      "hash": "9746a60f",
+      "publishEligible": true
+    },
+    {
+      "round": 1,
+      "move": "run",
+      "ms": 4624.9403999999995,
+      "tick": 2897,
+      "hash": "28f920be",
+      "publishEligible": true
+    },
+    {
+      "round": 2,
+      "move": "drive",
+      "ms": 5007.9793999999965,
+      "tick": 2124,
+      "hash": "9746a60f",
+      "publishEligible": true
+    },
+    {
+      "round": 2,
+      "move": "run",
+      "ms": 3989.513500000001,
+      "tick": 2897,
+      "hash": "28f920be",
+      "publishEligible": true
+    }
+  ],
+  "hotspots": [
+    {
+      "name": "afterTick",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 559,
+      "samples": 129
+    },
+    {
+      "name": "hasMoved",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 551,
+      "samples": 68
+    },
+    {
+      "name": "runBot",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/verify.ts",
+      "line": 154,
+      "samples": 60
+    },
+    {
+      "name": "verifyArcade",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/verify.ts",
+      "line": 310,
+      "samples": 28
+    },
+    {
+      "name": "binding",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 328,
+      "samples": 27
+    },
+    {
+      "name": "(garbage collector)",
+      "file": "",
+      "line": 0,
+      "samples": 25
+    },
+    {
+      "name": "roleAt",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 24,
+      "samples": 24
+    },
+    {
+      "name": "integrate",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 191,
+      "samples": 17
+    },
+    {
+      "name": "decide",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/runner-bot.ts",
+      "line": 91,
+      "samples": 15
+    },
+    {
+      "name": "steerRivals",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+      "line": 441,
+      "samples": 14
+    },
+    {
+      "name": "kindAt",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 26,
+      "samples": 14
+    },
+    {
+      "name": "nextRow",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/runner-bot.ts",
+      "line": 37,
+      "samples": 14
+    },
+    {
+      "name": "live",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 25,
+      "samples": 13
+    },
+    {
+      "name": "steerRivals",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+      "line": 441,
+      "samples": 12
+    },
+    {
+      "name": "collide",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 288,
+      "samples": 11
+    },
+    {
+      "name": "collide",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 288,
+      "samples": 11
+    },
+    {
+      "name": "step",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+      "line": 464,
+      "samples": 9
+    },
+    {
+      "name": "aimX",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer-bot.ts",
+      "line": 61,
+      "samples": 9
+    },
+    {
+      "name": "settle",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 237,
+      "samples": 9
+    },
+    {
+      "name": "step",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 644,
+      "samples": 8
+    },
+    {
+      "name": "step",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 90,
+      "samples": 8
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 13,
+      "samples": 5
+    },
+    {
+      "name": "add",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 342,
+      "samples": 5
+    },
+    {
+      "name": "decide",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 301,
+      "samples": 5
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 15,
+      "samples": 5
+    },
+    {
+      "name": "carry",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 264,
+      "samples": 5
+    },
+    {
+      "name": "step",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 644,
+      "samples": 4
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 10,
+      "samples": 4
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 2,
+      "samples": 4
+    },
+    {
+      "name": "read",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/runner-bot.ts",
+      "line": 35,
+      "samples": 4
+    },
+    {
+      "name": "fireRules",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 635,
+      "samples": 4
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 13,
+      "samples": 3
+    },
+    {
+      "name": "step",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+      "line": 464,
+      "samples": 3
+    },
+    {
+      "name": "step",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/runner.ts",
+      "line": 151,
+      "samples": 3
+    },
+    {
+      "name": "dispatch",
+      "file": "",
+      "line": 0,
+      "samples": 2
+    },
+    {
+      "name": "fire",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 304,
+      "samples": 2
+    },
+    {
+      "name": "step",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 90,
+      "samples": 2
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 15,
+      "samples": 2
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 48,
+      "samples": 2
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 48,
+      "samples": 2
+    },
+    {
+      "name": "decide",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer-bot.ts",
+      "line": 245,
+      "samples": 2
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 48,
+      "samples": 2
+    },
+    {
+      "name": "predict",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer-bot.ts",
+      "line": 39,
+      "samples": 2
+    },
+    {
+      "name": "threatProbeInput",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 69,
+      "samples": 2
+    },
+    {
+      "name": "live",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 25,
+      "samples": 2
+    },
+    {
+      "name": "outcomeOf",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 718,
+      "samples": 2
+    },
+    {
+      "name": "inst._zod.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 1424,
+      "samples": 2
+    },
+    {
+      "name": "",
+      "file": "",
+      "line": 1,
+      "samples": 2
+    },
+    {
+      "name": "projectiles",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 358,
+      "samples": 2
+    },
+    {
+      "name": "inst._zod.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 1424,
+      "samples": 2
+    },
+    {
+      "name": "post",
+      "file": "node:inspector",
+      "line": 115,
+      "samples": 1
+    },
+    {
+      "name": "fireRules",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 635,
+      "samples": 1
+    },
+    {
+      "name": "fire",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 279,
+      "samples": 1
+    },
+    {
+      "name": "paramsOf",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 76,
+      "samples": 1
+    },
+    {
+      "name": "fire",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 174,
+      "samples": 1
+    },
+    {
+      "name": "step",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/runner.ts",
+      "line": 151,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 13,
+      "samples": 1
+    },
+    {
+      "name": "alive",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 54,
+      "samples": 1
+    },
+    {
+      "name": "add",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 342,
+      "samples": 1
+    },
+    {
+      "name": "settle",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 237,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 4,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 48,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 13,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/verify.ts",
+      "line": 164,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 15,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+      "line": 8,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+      "line": 2,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 49,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "",
+      "line": 1,
+      "samples": 1
+    },
+    {
+      "name": "required",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 57,
+      "samples": 1
+    },
+    {
+      "name": "decide",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer-bot.ts",
+      "line": 245,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 48,
+      "samples": 1
+    },
+    {
+      "name": "live",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 25,
+      "samples": 1
+    },
+    {
+      "name": "hashHex",
+      "file": "file:///D:/claude/Hackaton/src/sim/hash.ts",
+      "line": 23,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "",
+      "line": 1,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 13,
+      "samples": 1
+    },
+    {
+      "name": "fire",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 279,
+      "samples": 1
+    },
+    {
+      "name": "fire",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/rules.ts",
+      "line": 102,
+      "samples": 1
+    },
+    {
+      "name": "fire",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/rules.ts",
+      "line": 177,
+      "samples": 1
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+      "line": 43,
+      "samples": 1
+    },
+    {
+      "name": "fire",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 174,
+      "samples": 1
+    },
+    {
+      "name": "apply",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 548,
+      "samples": 1
+    },
+    {
+      "name": "(root)",
+      "file": "",
+      "line": 0,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/evals/play/p42/profile-verify.measure.ts",
+      "line": 15,
+      "samples": 0
+    },
+    {
+      "name": "post",
+      "file": "file:///D:/claude/Hackaton/evals/play/p42/profile-verify.measure.ts",
+      "line": 19,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/evals/play/p42/profile-verify.measure.ts",
+      "line": 19,
+      "samples": 0
+    },
+    {
+      "name": "apply",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 548,
+      "samples": 0
+    },
+    {
+      "name": "trace",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/verify.ts",
+      "line": 193,
+      "samples": 0
+    },
+    {
+      "name": "effect",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 357,
+      "samples": 0
+    },
+    {
+      "name": "paramsOf",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 76,
+      "samples": 0
+    },
+    {
+      "name": "inst.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/classic/schemas.js",
+      "line": 73,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/parse.js",
+      "line": 4,
+      "samples": 0
+    },
+    {
+      "name": "inst._zod.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 975,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 966,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 329,
+      "samples": 0
+    },
+    {
+      "name": "roleAt",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+      "line": 24,
+      "samples": 0
+    },
+    {
+      "name": "hashArcade",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 715,
+      "samples": 0
+    },
+    {
+      "name": "loadProgram",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 37,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 38,
+      "samples": 0
+    },
+    {
+      "name": "bind",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 29,
+      "samples": 0
+    },
+    {
+      "name": "inst.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/classic/schemas.js",
+      "line": 73,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/parse.js",
+      "line": 4,
+      "samples": 0
+    },
+    {
+      "name": "inst._zod.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 975,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 966,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "",
+      "line": 1,
+      "samples": 0
+    },
+    {
+      "name": "inst._zod.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 975,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 966,
+      "samples": 0
+    },
+    {
+      "name": "paramsOf",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+      "line": 76,
+      "samples": 0
+    },
+    {
+      "name": "inst.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/classic/schemas.js",
+      "line": 73,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/parse.js",
+      "line": 4,
+      "samples": 0
+    },
+    {
+      "name": "inst._zod.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 975,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 966,
+      "samples": 0
+    },
+    {
+      "name": "fire",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/pieces/rules.ts",
+      "line": 189,
+      "samples": 0
+    },
+    {
+      "name": "replay",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 726,
+      "samples": 0
+    },
+    {
+      "name": "loadProgram",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 37,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 38,
+      "samples": 0
+    },
+    {
+      "name": "bind",
+      "file": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+      "line": 29,
+      "samples": 0
+    },
+    {
+      "name": "inst.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/classic/schemas.js",
+      "line": 73,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/parse.js",
+      "line": 4,
+      "samples": 0
+    },
+    {
+      "name": "inst._zod.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 975,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 966,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "",
+      "line": 1,
+      "samples": 0
+    },
+    {
+      "name": "inst._zod.parse",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 975,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+      "line": 966,
+      "samples": 0
+    },
+    {
+      "name": "",
+      "file": "",
+      "line": 1,
+      "samples": 0
+    },
+    {
+      "name": "(program)",
+      "file": "",
+      "line": 0,
+      "samples": 0
+    }
+  ],
+  "profile": {
+    "nodes": [
+      {
+        "id": 1,
+        "callFrame": {
+          "functionName": "(root)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        "hitCount": 0,
+        "children": [
+          2,
+          22,
+          30
+        ]
+      },
+      {
+        "id": 2,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "223",
+          "url": "file:///D:/claude/Hackaton/evals/play/p42/profile-verify.measure.ts",
+          "lineNumber": 14,
+          "columnNumber": 90
+        },
+        "hitCount": 0,
+        "children": [
+          3,
+          6
+        ]
+      },
+      {
+        "id": 3,
+        "callFrame": {
+          "functionName": "post",
+          "scriptId": "223",
+          "url": "file:///D:/claude/Hackaton/evals/play/p42/profile-verify.measure.ts",
+          "lineNumber": 18,
+          "columnNumber": 14
+        },
+        "hitCount": 0,
+        "children": [
+          4
+        ]
+      },
+      {
+        "id": 4,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "223",
+          "url": "file:///D:/claude/Hackaton/evals/play/p42/profile-verify.measure.ts",
+          "lineNumber": 18,
+          "columnNumber": 38
+        },
+        "hitCount": 0,
+        "children": [
+          5
+        ]
+      },
+      {
+        "id": 5,
+        "callFrame": {
+          "functionName": "post",
+          "scriptId": "224",
+          "url": "node:inspector",
+          "lineNumber": 114,
+          "columnNumber": 6
+        },
+        "hitCount": 0,
+        "children": [
+          126
+        ]
+      },
+      {
+        "id": 126,
+        "callFrame": {
+          "functionName": "dispatch",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 139,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "callFrame": {
+          "functionName": "verifyArcade",
+          "scriptId": "419",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/verify.ts",
+          "lineNumber": 309,
+          "columnNumber": 21
+        },
+        "hitCount": 10,
+        "children": [
+          7,
+          31,
+          57,
+          124
+        ],
+        "positionTicks": [
+          {
+            "line": 324,
+            "ticks": 7
+          },
+          {
+            "line": 331,
+            "ticks": 1
+          },
+          {
+            "line": 335,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "callFrame": {
+          "functionName": "runBot",
+          "scriptId": "419",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/verify.ts",
+          "lineNumber": 153,
+          "columnNumber": 15
+        },
+        "hitCount": 58,
+        "children": [
+          8,
+          11,
+          12,
+          17,
+          38,
+          42,
+          44,
+          81,
+          106
+        ],
+        "positionTicks": [
+          {
+            "line": 231,
+            "ticks": 2
+          },
+          {
+            "line": 239,
+            "ticks": 47
+          },
+          {
+            "line": 238,
+            "ticks": 3
+          },
+          {
+            "line": 208,
+            "ticks": 3
+          },
+          {
+            "line": 232,
+            "ticks": 1
+          },
+          {
+            "line": 233,
+            "ticks": 1
+          },
+          {
+            "line": 164,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "callFrame": {
+          "functionName": "step",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 643,
+          "columnNumber": 13
+        },
+        "hitCount": 4,
+        "children": [
+          9,
+          10,
+          43,
+          50,
+          90
+        ],
+        "positionTicks": [
+          {
+            "line": 639,
+            "ticks": 1
+          },
+          {
+            "line": 687,
+            "ticks": 1
+          },
+          {
+            "line": 677,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "callFrame": {
+          "functionName": "fireRules",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 634,
+          "columnNumber": 18
+        },
+        "hitCount": 0,
+        "children": [
+          37
+        ]
+      },
+      {
+        "id": 37,
+        "callFrame": {
+          "functionName": "fire",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 303,
+          "columnNumber": 10
+        },
+        "hitCount": 2,
+        "children": [
+          54,
+          121
+        ],
+        "positionTicks": [
+          {
+            "line": 310,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 54,
+        "callFrame": {
+          "functionName": "fire",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 278,
+          "columnNumber": 7
+        },
+        "hitCount": 1,
+        "children": [
+          93
+        ],
+        "positionTicks": [
+          {
+            "line": 280,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 93,
+        "callFrame": {
+          "functionName": "paramsOf",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 75,
+          "columnNumber": 17
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 77,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 121,
+        "callFrame": {
+          "functionName": "fire",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 173,
+          "columnNumber": 5
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 174,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "callFrame": {
+          "functionName": "step",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 89,
+          "columnNumber": 6
+        },
+        "hitCount": 2,
+        "children": [
+          24,
+          47,
+          120
+        ],
+        "positionTicks": [
+          {
+            "line": 92,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 24,
+        "callFrame": {
+          "functionName": "step",
+          "scriptId": "357",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+          "lineNumber": 463,
+          "columnNumber": 7
+        },
+        "hitCount": 9,
+        "children": [
+          25
+        ],
+        "positionTicks": [
+          {
+            "line": 485,
+            "ticks": 1
+          },
+          {
+            "line": 482,
+            "ticks": 4
+          },
+          {
+            "line": 447,
+            "ticks": 4
+          }
+        ]
+      },
+      {
+        "id": 25,
+        "callFrame": {
+          "functionName": "steerRivals",
+          "scriptId": "357",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+          "lineNumber": 440,
+          "columnNumber": 20
+        },
+        "hitCount": 14,
+        "positionTicks": [
+          {
+            "line": 447,
+            "ticks": 8
+          },
+          {
+            "line": 445,
+            "ticks": 2
+          },
+          {
+            "line": 446,
+            "ticks": 4
+          }
+        ]
+      },
+      {
+        "id": 47,
+        "callFrame": {
+          "functionName": "step",
+          "scriptId": "348",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/runner.ts",
+          "lineNumber": 150,
+          "columnNumber": 7
+        },
+        "hitCount": 1,
+        "children": [
+          48
+        ],
+        "positionTicks": [
+          {
+            "line": 186,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 48,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 12,
+          "columnNumber": 32
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 13,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 120,
+        "callFrame": {
+          "functionName": "alive",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 53,
+          "columnNumber": 14
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 54,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 43,
+        "callFrame": {
+          "functionName": "collide",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 287,
+          "columnNumber": 16
+        },
+        "hitCount": 11,
+        "positionTicks": [
+          {
+            "line": 297,
+            "ticks": 4
+          },
+          {
+            "line": 186,
+            "ticks": 6
+          },
+          {
+            "line": 293,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 50,
+        "callFrame": {
+          "functionName": "apply",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 547,
+          "columnNumber": 14
+        },
+        "hitCount": 0,
+        "children": [
+          51
+        ]
+      },
+      {
+        "id": 51,
+        "callFrame": {
+          "functionName": "trace",
+          "scriptId": "419",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/verify.ts",
+          "lineNumber": 192,
+          "columnNumber": 15
+        },
+        "hitCount": 0,
+        "children": [
+          52
+        ]
+      },
+      {
+        "id": 52,
+        "callFrame": {
+          "functionName": "effect",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 356,
+          "columnNumber": 7
+        },
+        "hitCount": 0,
+        "children": [
+          53
+        ]
+      },
+      {
+        "id": 53,
+        "callFrame": {
+          "functionName": "add",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 341,
+          "columnNumber": 4
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 347,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 90,
+        "callFrame": {
+          "functionName": "settle",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 236,
+          "columnNumber": 15
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 241,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 3,
+          "columnNumber": 41
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 4,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "callFrame": {
+          "functionName": "afterTick",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 558,
+          "columnNumber": 10
+        },
+        "hitCount": 129,
+        "children": [
+          13,
+          14,
+          23,
+          29
+        ],
+        "positionTicks": [
+          {
+            "line": 332,
+            "ticks": 9
+          },
+          {
+            "line": 557,
+            "ticks": 11
+          },
+          {
+            "line": 25,
+            "ticks": 8
+          },
+          {
+            "line": 583,
+            "ticks": 26
+          },
+          {
+            "line": 590,
+            "ticks": 10
+          },
+          {
+            "line": 24,
+            "ticks": 4
+          },
+          {
+            "line": 586,
+            "ticks": 2
+          },
+          {
+            "line": 335,
+            "ticks": 7
+          },
+          {
+            "line": 554,
+            "ticks": 18
+          },
+          {
+            "line": 556,
+            "ticks": 1
+          },
+          {
+            "line": 26,
+            "ticks": 6
+          },
+          {
+            "line": 580,
+            "ticks": 9
+          },
+          {
+            "line": 333,
+            "ticks": 3
+          },
+          {
+            "line": 328,
+            "ticks": 1
+          },
+          {
+            "line": 331,
+            "ticks": 1
+          },
+          {
+            "line": 624,
+            "ticks": 2
+          },
+          {
+            "line": 329,
+            "ticks": 2
+          },
+          {
+            "line": 623,
+            "ticks": 1
+          },
+          {
+            "line": 330,
+            "ticks": 2
+          },
+          {
+            "line": 553,
+            "ticks": 2
+          },
+          {
+            "line": 555,
+            "ticks": 4
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "callFrame": {
+          "functionName": "live",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 24,
+          "columnNumber": 13
+        },
+        "hitCount": 13,
+        "children": [
+          96,
+          122
+        ],
+        "positionTicks": [
+          {
+            "line": 25,
+            "ticks": 13
+          }
+        ]
+      },
+      {
+        "id": 96,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 14,
+          "columnNumber": 32
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 15,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 122,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 47,
+          "columnNumber": 36
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 48,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "callFrame": {
+          "functionName": "binding",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 327,
+          "columnNumber": 8
+        },
+        "hitCount": 27,
+        "children": [
+          15,
+          16,
+          21
+        ],
+        "positionTicks": [
+          {
+            "line": 329,
+            "ticks": 4
+          },
+          {
+            "line": 335,
+            "ticks": 23
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 9,
+          "columnNumber": 34
+        },
+        "hitCount": 4,
+        "positionTicks": [
+          {
+            "line": 10,
+            "ticks": 4
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "callFrame": {
+          "functionName": "roleAt",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 23,
+          "columnNumber": 15
+        },
+        "hitCount": 24,
+        "children": [
+          45,
+          55
+        ],
+        "positionTicks": [
+          {
+            "line": 24,
+            "ticks": 24
+          }
+        ]
+      },
+      {
+        "id": 45,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 47,
+          "columnNumber": 36
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 48,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 55,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 12,
+          "columnNumber": 32
+        },
+        "hitCount": 5,
+        "positionTicks": [
+          {
+            "line": 13,
+            "ticks": 5
+          }
+        ]
+      },
+      {
+        "id": 21,
+        "callFrame": {
+          "functionName": "kindAt",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 25,
+          "columnNumber": 15
+        },
+        "hitCount": 14,
+        "children": [
+          26,
+          49
+        ],
+        "positionTicks": [
+          {
+            "line": 26,
+            "ticks": 14
+          }
+        ]
+      },
+      {
+        "id": 26,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 12,
+          "columnNumber": 32
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 13,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 49,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 47,
+          "columnNumber": 36
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 48,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 23,
+        "callFrame": {
+          "functionName": "hasMoved",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 550,
+          "columnNumber": 9
+        },
+        "hitCount": 68,
+        "children": [
+          28,
+          119
+        ],
+        "positionTicks": [
+          {
+            "line": 553,
+            "ticks": 29
+          },
+          {
+            "line": 557,
+            "ticks": 32
+          },
+          {
+            "line": 552,
+            "ticks": 2
+          },
+          {
+            "line": 556,
+            "ticks": 5
+          }
+        ]
+      },
+      {
+        "id": 28,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 1,
+          "columnNumber": 32
+        },
+        "hitCount": 4,
+        "positionTicks": [
+          {
+            "line": 2,
+            "ticks": 4
+          }
+        ]
+      },
+      {
+        "id": 119,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 12,
+          "columnNumber": 32
+        },
+        "hitCount": 3,
+        "positionTicks": [
+          {
+            "line": 13,
+            "ticks": 3
+          }
+        ]
+      },
+      {
+        "id": 29,
+        "callFrame": {
+          "functionName": "add",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 341,
+          "columnNumber": 4
+        },
+        "hitCount": 5,
+        "positionTicks": [
+          {
+            "line": 347,
+            "ticks": 5
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "419",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/verify.ts",
+          "lineNumber": 163,
+          "columnNumber": 58
+        },
+        "hitCount": 1,
+        "children": [
+          18,
+          98
+        ],
+        "positionTicks": [
+          {
+            "line": 164,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "callFrame": {
+          "functionName": "decide",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 300,
+          "columnNumber": 8
+        },
+        "hitCount": 5,
+        "children": [
+          19,
+          39,
+          83,
+          91
+        ],
+        "positionTicks": [
+          {
+            "line": 330,
+            "ticks": 1
+          },
+          {
+            "line": 303,
+            "ticks": 1
+          },
+          {
+            "line": 343,
+            "ticks": 1
+          },
+          {
+            "line": 395,
+            "ticks": 1
+          },
+          {
+            "line": 393,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "callFrame": {
+          "functionName": "decide",
+          "scriptId": "410",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer-bot.ts",
+          "lineNumber": 244,
+          "columnNumber": 9
+        },
+        "hitCount": 2,
+        "children": [
+          20,
+          89
+        ],
+        "positionTicks": [
+          {
+            "line": 258,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "callFrame": {
+          "functionName": "aimX",
+          "scriptId": "410",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer-bot.ts",
+          "lineNumber": 60,
+          "columnNumber": 13
+        },
+        "hitCount": 9,
+        "children": [
+          27,
+          80,
+          97
+        ],
+        "positionTicks": [
+          {
+            "line": 70,
+            "ticks": 8
+          },
+          {
+            "line": 62,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 27,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 47,
+          "columnNumber": 36
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 48,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 80,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 14,
+          "columnNumber": 32
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 15,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 97,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "357",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+          "lineNumber": 7,
+          "columnNumber": 36
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 8,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 89,
+        "callFrame": {
+          "functionName": "predict",
+          "scriptId": "410",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer-bot.ts",
+          "lineNumber": 38,
+          "columnNumber": 16
+        },
+        "hitCount": 2,
+        "children": [
+          99
+        ],
+        "positionTicks": [
+          {
+            "line": 47,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 99,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "357",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+          "lineNumber": 1,
+          "columnNumber": 33
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 2,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 39,
+        "callFrame": {
+          "functionName": "decide",
+          "scriptId": "396",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/runner-bot.ts",
+          "lineNumber": 90,
+          "columnNumber": 9
+        },
+        "hitCount": 15,
+        "children": [
+          40,
+          46
+        ],
+        "positionTicks": [
+          {
+            "line": 93,
+            "ticks": 10
+          },
+          {
+            "line": 102,
+            "ticks": 3
+          },
+          {
+            "line": 107,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 40,
+        "callFrame": {
+          "functionName": "nextRow",
+          "scriptId": "396",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/runner-bot.ts",
+          "lineNumber": 36,
+          "columnNumber": 16
+        },
+        "hitCount": 14,
+        "children": [
+          41
+        ],
+        "positionTicks": [
+          {
+            "line": 44,
+            "ticks": 3
+          },
+          {
+            "line": 35,
+            "ticks": 7
+          },
+          {
+            "line": 46,
+            "ticks": 1
+          },
+          {
+            "line": 57,
+            "ticks": 3
+          }
+        ]
+      },
+      {
+        "id": 41,
+        "callFrame": {
+          "functionName": "read",
+          "scriptId": "396",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/runner-bot.ts",
+          "lineNumber": 34,
+          "columnNumber": 13
+        },
+        "hitCount": 4,
+        "positionTicks": [
+          {
+            "line": 35,
+            "ticks": 4
+          }
+        ]
+      },
+      {
+        "id": 46,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 48,
+          "columnNumber": 34
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 49,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 83,
+        "callFrame": {
+          "functionName": "paramsOf",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 75,
+          "columnNumber": 17
+        },
+        "hitCount": 0,
+        "children": [
+          84
+        ]
+      },
+      {
+        "id": 84,
+        "callFrame": {
+          "functionName": "inst.parse",
+          "scriptId": "239",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/classic/schemas.js",
+          "lineNumber": 72,
+          "columnNumber": 17
+        },
+        "hitCount": 0,
+        "children": [
+          85
+        ]
+      },
+      {
+        "id": 85,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "251",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/parse.js",
+          "lineNumber": 3,
+          "columnNumber": 32
+        },
+        "hitCount": 0,
+        "children": [
+          86
+        ]
+      },
+      {
+        "id": 86,
+        "callFrame": {
+          "functionName": "inst._zod.parse",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 974,
+          "columnNumber": 22
+        },
+        "hitCount": 0,
+        "children": [
+          87
+        ]
+      },
+      {
+        "id": 87,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 965,
+          "columnNumber": 15
+        },
+        "hitCount": 0,
+        "children": [
+          88
+        ]
+      },
+      {
+        "id": 88,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "463",
+          "url": "",
+          "lineNumber": 0,
+          "columnNumber": 19
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 77,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 91,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 328,
+          "columnNumber": 36
+        },
+        "hitCount": 0,
+        "children": [
+          92
+        ]
+      },
+      {
+        "id": 92,
+        "callFrame": {
+          "functionName": "required",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 56,
+          "columnNumber": 17
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 57,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 98,
+        "callFrame": {
+          "functionName": "decide",
+          "scriptId": "410",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer-bot.ts",
+          "lineNumber": 244,
+          "columnNumber": 9
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 245,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 38,
+        "callFrame": {
+          "functionName": "threatProbeInput",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 68,
+          "columnNumber": 25
+        },
+        "hitCount": 1,
+        "children": [
+          78,
+          118
+        ],
+        "positionTicks": [
+          {
+            "line": 98,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 78,
+        "callFrame": {
+          "functionName": "roleAt",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 23,
+          "columnNumber": 15
+        },
+        "hitCount": 0,
+        "children": [
+          79
+        ]
+      },
+      {
+        "id": 79,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 47,
+          "columnNumber": 36
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 48,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 118,
+        "callFrame": {
+          "functionName": "live",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 24,
+          "columnNumber": 13
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 25,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 42,
+        "callFrame": {
+          "functionName": "live",
+          "scriptId": "421",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/witness.ts",
+          "lineNumber": 24,
+          "columnNumber": 13
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 25,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 44,
+        "callFrame": {
+          "functionName": "outcomeOf",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 717,
+          "columnNumber": 18
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 720,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 81,
+        "callFrame": {
+          "functionName": "hashArcade",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 714,
+          "columnNumber": 19
+        },
+        "hitCount": 0,
+        "children": [
+          82
+        ]
+      },
+      {
+        "id": 82,
+        "callFrame": {
+          "functionName": "hashHex",
+          "scriptId": "335",
+          "url": "file:///D:/claude/Hackaton/src/sim/hash.ts",
+          "lineNumber": 22,
+          "columnNumber": 16
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 24,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 106,
+        "callFrame": {
+          "functionName": "loadProgram",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 36,
+          "columnNumber": 20
+        },
+        "hitCount": 0,
+        "children": [
+          107
+        ]
+      },
+      {
+        "id": 107,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 37,
+          "columnNumber": 31
+        },
+        "hitCount": 0,
+        "children": [
+          108
+        ]
+      },
+      {
+        "id": 108,
+        "callFrame": {
+          "functionName": "bind",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 28,
+          "columnNumber": 13
+        },
+        "hitCount": 0,
+        "children": [
+          109
+        ]
+      },
+      {
+        "id": 109,
+        "callFrame": {
+          "functionName": "inst.parse",
+          "scriptId": "239",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/classic/schemas.js",
+          "lineNumber": 72,
+          "columnNumber": 17
+        },
+        "hitCount": 0,
+        "children": [
+          110
+        ]
+      },
+      {
+        "id": 110,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "251",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/parse.js",
+          "lineNumber": 3,
+          "columnNumber": 32
+        },
+        "hitCount": 0,
+        "children": [
+          111
+        ]
+      },
+      {
+        "id": 111,
+        "callFrame": {
+          "functionName": "inst._zod.parse",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 974,
+          "columnNumber": 22
+        },
+        "hitCount": 0,
+        "children": [
+          112
+        ]
+      },
+      {
+        "id": 112,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 965,
+          "columnNumber": 15
+        },
+        "hitCount": 0,
+        "children": [
+          113
+        ]
+      },
+      {
+        "id": 113,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "455",
+          "url": "",
+          "lineNumber": 0,
+          "columnNumber": 19
+        },
+        "hitCount": 0,
+        "children": [
+          114
+        ]
+      },
+      {
+        "id": 114,
+        "callFrame": {
+          "functionName": "inst._zod.parse",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 974,
+          "columnNumber": 22
+        },
+        "hitCount": 0,
+        "children": [
+          115
+        ]
+      },
+      {
+        "id": 115,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 965,
+          "columnNumber": 15
+        },
+        "hitCount": 0,
+        "children": [
+          116
+        ]
+      },
+      {
+        "id": 116,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "458",
+          "url": "",
+          "lineNumber": 0,
+          "columnNumber": 19
+        },
+        "hitCount": 1,
+        "children": [
+          117
+        ],
+        "positionTicks": [
+          {
+            "line": 29,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 117,
+        "callFrame": {
+          "functionName": "inst._zod.parse",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 1423,
+          "columnNumber": 22
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 1436,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 31,
+        "callFrame": {
+          "functionName": "step",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 643,
+          "columnNumber": 13
+        },
+        "hitCount": 8,
+        "children": [
+          32,
+          33,
+          34,
+          56,
+          94,
+          101,
+          105
+        ],
+        "positionTicks": [
+          {
+            "line": 658,
+            "ticks": 2
+          },
+          {
+            "line": 678,
+            "ticks": 1
+          },
+          {
+            "line": 638,
+            "ticks": 3
+          },
+          {
+            "line": 639,
+            "ticks": 1
+          },
+          {
+            "line": 656,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 32,
+        "callFrame": {
+          "functionName": "integrate",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 190,
+          "columnNumber": 18
+        },
+        "hitCount": 17,
+        "positionTicks": [
+          {
+            "line": 205,
+            "ticks": 4
+          },
+          {
+            "line": 183,
+            "ticks": 5
+          },
+          {
+            "line": 199,
+            "ticks": 5
+          },
+          {
+            "line": 219,
+            "ticks": 1
+          },
+          {
+            "line": 206,
+            "ticks": 1
+          },
+          {
+            "line": 194,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 33,
+        "callFrame": {
+          "functionName": "settle",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 236,
+          "columnNumber": 15
+        },
+        "hitCount": 9,
+        "positionTicks": [
+          {
+            "line": 237,
+            "ticks": 1
+          },
+          {
+            "line": 241,
+            "ticks": 5
+          },
+          {
+            "line": 373,
+            "ticks": 2
+          },
+          {
+            "line": 239,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 34,
+        "callFrame": {
+          "functionName": "step",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 89,
+          "columnNumber": 6
+        },
+        "hitCount": 8,
+        "children": [
+          35,
+          123
+        ],
+        "positionTicks": [
+          {
+            "line": 92,
+            "ticks": 3
+          },
+          {
+            "line": 54,
+            "ticks": 1
+          },
+          {
+            "line": 94,
+            "ticks": 1
+          },
+          {
+            "line": 135,
+            "ticks": 2
+          },
+          {
+            "line": 139,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 35,
+        "callFrame": {
+          "functionName": "step",
+          "scriptId": "357",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+          "lineNumber": 463,
+          "columnNumber": 7
+        },
+        "hitCount": 3,
+        "children": [
+          36
+        ],
+        "positionTicks": [
+          {
+            "line": 446,
+            "ticks": 1
+          },
+          {
+            "line": 443,
+            "ticks": 1
+          },
+          {
+            "line": 445,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 36,
+        "callFrame": {
+          "functionName": "steerRivals",
+          "scriptId": "357",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/steer.ts",
+          "lineNumber": 440,
+          "columnNumber": 20
+        },
+        "hitCount": 12,
+        "children": [
+          100
+        ],
+        "positionTicks": [
+          {
+            "line": 445,
+            "ticks": 3
+          },
+          {
+            "line": 447,
+            "ticks": 8
+          },
+          {
+            "line": 446,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 100,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 14,
+          "columnNumber": 32
+        },
+        "hitCount": 5,
+        "positionTicks": [
+          {
+            "line": 15,
+            "ticks": 5
+          }
+        ]
+      },
+      {
+        "id": 123,
+        "callFrame": {
+          "functionName": "step",
+          "scriptId": "348",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/runner.ts",
+          "lineNumber": 150,
+          "columnNumber": 7
+        },
+        "hitCount": 3,
+        "children": [
+          125
+        ],
+        "positionTicks": [
+          {
+            "line": 373,
+            "ticks": 1
+          },
+          {
+            "line": 155,
+            "ticks": 1
+          },
+          {
+            "line": 164,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 125,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 12,
+          "columnNumber": 32
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 13,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 56,
+        "callFrame": {
+          "functionName": "fireRules",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 634,
+          "columnNumber": 18
+        },
+        "hitCount": 4,
+        "children": [
+          70,
+          77
+        ],
+        "positionTicks": [
+          {
+            "line": 639,
+            "ticks": 3
+          },
+          {
+            "line": 640,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 70,
+        "callFrame": {
+          "functionName": "fire",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 278,
+          "columnNumber": 7
+        },
+        "hitCount": 1,
+        "children": [
+          71,
+          95,
+          102,
+          103
+        ],
+        "positionTicks": [
+          {
+            "line": 280,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 71,
+        "callFrame": {
+          "functionName": "paramsOf",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 75,
+          "columnNumber": 17
+        },
+        "hitCount": 0,
+        "children": [
+          72
+        ]
+      },
+      {
+        "id": 72,
+        "callFrame": {
+          "functionName": "inst.parse",
+          "scriptId": "239",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/classic/schemas.js",
+          "lineNumber": 72,
+          "columnNumber": 17
+        },
+        "hitCount": 0,
+        "children": [
+          73
+        ]
+      },
+      {
+        "id": 73,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "251",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/parse.js",
+          "lineNumber": 3,
+          "columnNumber": 32
+        },
+        "hitCount": 0,
+        "children": [
+          74
+        ]
+      },
+      {
+        "id": 74,
+        "callFrame": {
+          "functionName": "inst._zod.parse",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 974,
+          "columnNumber": 22
+        },
+        "hitCount": 0,
+        "children": [
+          75
+        ]
+      },
+      {
+        "id": 75,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 965,
+          "columnNumber": 15
+        },
+        "hitCount": 0,
+        "children": [
+          76
+        ]
+      },
+      {
+        "id": 76,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "470",
+          "url": "",
+          "lineNumber": 0,
+          "columnNumber": 19
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 92,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 95,
+        "callFrame": {
+          "functionName": "fire",
+          "scriptId": "354",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/rules.ts",
+          "lineNumber": 101,
+          "columnNumber": 7
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 103,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 102,
+        "callFrame": {
+          "functionName": "fire",
+          "scriptId": "354",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/rules.ts",
+          "lineNumber": 176,
+          "columnNumber": 7
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 177,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 103,
+        "callFrame": {
+          "functionName": "fire",
+          "scriptId": "354",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/rules.ts",
+          "lineNumber": 188,
+          "columnNumber": 7
+        },
+        "hitCount": 0,
+        "children": [
+          104
+        ]
+      },
+      {
+        "id": 104,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "232",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/contract.ts",
+          "lineNumber": 42,
+          "columnNumber": 35
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 43,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 77,
+        "callFrame": {
+          "functionName": "fire",
+          "scriptId": "400",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/pieces/assembly-parts.ts",
+          "lineNumber": 173,
+          "columnNumber": 5
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 209,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 94,
+        "callFrame": {
+          "functionName": "collide",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 287,
+          "columnNumber": 16
+        },
+        "hitCount": 11,
+        "positionTicks": [
+          {
+            "line": 297,
+            "ticks": 3
+          },
+          {
+            "line": 186,
+            "ticks": 6
+          },
+          {
+            "line": 183,
+            "ticks": 1
+          },
+          {
+            "line": 294,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 101,
+        "callFrame": {
+          "functionName": "carry",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 263,
+          "columnNumber": 14
+        },
+        "hitCount": 5,
+        "positionTicks": [
+          {
+            "line": 271,
+            "ticks": 1
+          },
+          {
+            "line": 268,
+            "ticks": 2
+          },
+          {
+            "line": 373,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 105,
+        "callFrame": {
+          "functionName": "projectiles",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 357,
+          "columnNumber": 20
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 360,
+            "ticks": 1
+          },
+          {
+            "line": 362,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 57,
+        "callFrame": {
+          "functionName": "replay",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 725,
+          "columnNumber": 15
+        },
+        "hitCount": 0,
+        "children": [
+          58
+        ]
+      },
+      {
+        "id": 58,
+        "callFrame": {
+          "functionName": "loadProgram",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 36,
+          "columnNumber": 20
+        },
+        "hitCount": 0,
+        "children": [
+          59
+        ]
+      },
+      {
+        "id": 59,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 37,
+          "columnNumber": 31
+        },
+        "hitCount": 0,
+        "children": [
+          60
+        ]
+      },
+      {
+        "id": 60,
+        "callFrame": {
+          "functionName": "bind",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 28,
+          "columnNumber": 13
+        },
+        "hitCount": 0,
+        "children": [
+          61
+        ]
+      },
+      {
+        "id": 61,
+        "callFrame": {
+          "functionName": "inst.parse",
+          "scriptId": "239",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/classic/schemas.js",
+          "lineNumber": 72,
+          "columnNumber": 17
+        },
+        "hitCount": 0,
+        "children": [
+          62
+        ]
+      },
+      {
+        "id": 62,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "251",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/parse.js",
+          "lineNumber": 3,
+          "columnNumber": 32
+        },
+        "hitCount": 0,
+        "children": [
+          63
+        ]
+      },
+      {
+        "id": 63,
+        "callFrame": {
+          "functionName": "inst._zod.parse",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 974,
+          "columnNumber": 22
+        },
+        "hitCount": 0,
+        "children": [
+          64
+        ]
+      },
+      {
+        "id": 64,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 965,
+          "columnNumber": 15
+        },
+        "hitCount": 0,
+        "children": [
+          65
+        ]
+      },
+      {
+        "id": 65,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "455",
+          "url": "",
+          "lineNumber": 0,
+          "columnNumber": 19
+        },
+        "hitCount": 0,
+        "children": [
+          66
+        ]
+      },
+      {
+        "id": 66,
+        "callFrame": {
+          "functionName": "inst._zod.parse",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 974,
+          "columnNumber": 22
+        },
+        "hitCount": 0,
+        "children": [
+          67
+        ]
+      },
+      {
+        "id": 67,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 965,
+          "columnNumber": 15
+        },
+        "hitCount": 0,
+        "children": [
+          68
+        ]
+      },
+      {
+        "id": 68,
+        "callFrame": {
+          "functionName": "",
+          "scriptId": "458",
+          "url": "",
+          "lineNumber": 0,
+          "columnNumber": 19
+        },
+        "hitCount": 0,
+        "children": [
+          69
+        ]
+      },
+      {
+        "id": 69,
+        "callFrame": {
+          "functionName": "inst._zod.parse",
+          "scriptId": "258",
+          "url": "file:///D:/claude/Hackaton/node_modules/zod/v4/core/schemas.js",
+          "lineNumber": 1423,
+          "columnNumber": 22
+        },
+        "hitCount": 2,
+        "positionTicks": [
+          {
+            "line": 1495,
+            "ticks": 2
+          }
+        ]
+      },
+      {
+        "id": 124,
+        "callFrame": {
+          "functionName": "apply",
+          "scriptId": "334",
+          "url": "file:///D:/claude/Hackaton/src/play/arcade/kernel.ts",
+          "lineNumber": 547,
+          "columnNumber": 14
+        },
+        "hitCount": 1,
+        "positionTicks": [
+          {
+            "line": 548,
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "id": 22,
+        "callFrame": {
+          "functionName": "(garbage collector)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        "hitCount": 25
+      },
+      {
+        "id": 30,
+        "callFrame": {
+          "functionName": "(program)",
+          "scriptId": "0",
+          "url": "",
+          "lineNumber": -1,
+          "columnNumber": -1
+        },
+        "hitCount": 14
+      }
+    ],
+    "startTime": 706014083669,
+    "endTime": 706044087092,
+    "samples": [
+      5,
+      9,
+      7,
+      7,
+      7,
+      10,
+      11,
+      12,
+      13,
+      13,
+      13,
+      15,
+      15,
+      16,
+      16,
+      20,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      21,
+      21,
+      7,
+      20,
+      21,
+      21,
+      22,
+      12,
+      8,
+      13,
+      23,
+      23,
+      16,
+      16,
+      25,
+      25,
+      12,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      16,
+      7,
+      7,
+      23,
+      7,
+      7,
+      26,
+      14,
+      27,
+      21,
+      22,
+      12,
+      16,
+      16,
+      12,
+      19,
+      19,
+      28,
+      28,
+      12,
+      29,
+      29,
+      29,
+      12,
+      12,
+      10,
+      20,
+      20,
+      20,
+      20,
+      24,
+      13,
+      13,
+      7,
+      7,
+      7,
+      7,
+      12,
+      12,
+      12,
+      25,
+      32,
+      33,
+      31,
+      33,
+      32,
+      32,
+      6,
+      34,
+      32,
+      36,
+      6,
+      6,
+      37,
+      14,
+      17,
+      7,
+      38,
+      14,
+      41,
+      12,
+      42,
+      7,
+      21,
+      38,
+      7,
+      29,
+      7,
+      7,
+      7,
+      7,
+      6,
+      40,
+      40,
+      40,
+      16,
+      16,
+      15,
+      15,
+      7,
+      43,
+      21,
+      21,
+      29,
+      23,
+      12,
+      12,
+      12,
+      12,
+      44,
+      12,
+      23,
+      13,
+      12,
+      12,
+      45,
+      45,
+      23,
+      28,
+      28,
+      8,
+      8,
+      23,
+      23,
+      23,
+      23,
+      23,
+      23,
+      23,
+      23,
+      46,
+      48,
+      12,
+      13,
+      40,
+      16,
+      12,
+      37,
+      23,
+      49,
+      53,
+      12,
+      12,
+      40,
+      7,
+      54,
+      7,
+      22,
+      40,
+      14,
+      23,
+      12,
+      7,
+      40,
+      40,
+      23,
+      23,
+      23,
+      12,
+      12,
+      55,
+      56,
+      56,
+      56,
+      31,
+      31,
+      31,
+      32,
+      33,
+      6,
+      6,
+      69,
+      69,
+      76,
+      76,
+      77,
+      34,
+      6,
+      32,
+      32,
+      6,
+      24,
+      24,
+      24,
+      24,
+      18,
+      12,
+      12,
+      12,
+      12,
+      14,
+      14,
+      16,
+      16,
+      16,
+      12,
+      12,
+      12,
+      79,
+      14,
+      14,
+      23,
+      12,
+      12,
+      25,
+      8,
+      80,
+      12,
+      7,
+      82,
+      12,
+      12,
+      12,
+      7,
+      7,
+      12,
+      16,
+      12,
+      12,
+      12,
+      13,
+      25,
+      12,
+      88,
+      14,
+      25,
+      7,
+      7,
+      16,
+      16,
+      16,
+      20,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      23,
+      23,
+      23,
+      23,
+      23,
+      23,
+      12,
+      89,
+      89,
+      20,
+      22,
+      22,
+      22,
+      22,
+      7,
+      23,
+      23,
+      12,
+      12,
+      90,
+      49,
+      24,
+      12,
+      12,
+      23,
+      23,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      23,
+      23,
+      23,
+      12,
+      7,
+      7,
+      12,
+      43,
+      16,
+      23,
+      7,
+      6,
+      6,
+      6,
+      12,
+      7,
+      13,
+      39,
+      7,
+      14,
+      14,
+      12,
+      12,
+      12,
+      39,
+      39,
+      39,
+      39,
+      7,
+      23,
+      23,
+      12,
+      23,
+      40,
+      12,
+      16,
+      7,
+      41,
+      23,
+      12,
+      12,
+      14,
+      14,
+      43,
+      12,
+      12,
+      39,
+      39,
+      14,
+      7,
+      23,
+      23,
+      23,
+      23,
+      23,
+      13,
+      13,
+      23,
+      23,
+      23,
+      39,
+      39,
+      39,
+      92,
+      14,
+      40,
+      12,
+      12,
+      41,
+      18,
+      21,
+      12,
+      23,
+      14,
+      7,
+      12,
+      12,
+      39,
+      39,
+      12,
+      12,
+      12,
+      12,
+      22,
+      12,
+      14,
+      7,
+      7,
+      7,
+      12,
+      12,
+      12,
+      12,
+      7,
+      93,
+      13,
+      12,
+      12,
+      23,
+      23,
+      23,
+      94,
+      94,
+      32,
+      32,
+      32,
+      6,
+      94,
+      95,
+      6,
+      6,
+      96,
+      96,
+      97,
+      16,
+      16,
+      27,
+      24,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      23,
+      14,
+      7,
+      12,
+      12,
+      7,
+      25,
+      25,
+      44,
+      7,
+      12,
+      12,
+      7,
+      21,
+      23,
+      12,
+      12,
+      7,
+      25,
+      12,
+      12,
+      12,
+      25,
+      25,
+      25,
+      55,
+      12,
+      12,
+      22,
+      24,
+      24,
+      21,
+      98,
+      99,
+      12,
+      12,
+      23,
+      23,
+      12,
+      12,
+      25,
+      25,
+      20,
+      7,
+      36,
+      36,
+      36,
+      36,
+      35,
+      94,
+      94,
+      32,
+      100,
+      34,
+      101,
+      36,
+      34,
+      36,
+      33,
+      31,
+      36,
+      31,
+      101,
+      34,
+      32,
+      94,
+      35,
+      100,
+      34,
+      94,
+      34,
+      102,
+      6,
+      32,
+      35,
+      56,
+      36,
+      104,
+      105,
+      36,
+      100,
+      36,
+      100,
+      101,
+      100,
+      36,
+      31,
+      33,
+      6,
+      6,
+      117,
+      117,
+      14,
+      14,
+      14,
+      22,
+      47,
+      7,
+      40,
+      23,
+      12,
+      12,
+      23,
+      118,
+      118,
+      21,
+      18,
+      116,
+      43,
+      43,
+      18,
+      40,
+      40,
+      119,
+      119,
+      7,
+      120,
+      14,
+      43,
+      7,
+      12,
+      12,
+      12,
+      23,
+      7,
+      43,
+      12,
+      7,
+      23,
+      12,
+      18,
+      16,
+      39,
+      7,
+      21,
+      12,
+      23,
+      7,
+      7,
+      23,
+      12,
+      12,
+      12,
+      41,
+      16,
+      14,
+      14,
+      39,
+      12,
+      12,
+      43,
+      43,
+      43,
+      121,
+      55,
+      119,
+      23,
+      23,
+      21,
+      12,
+      12,
+      43,
+      12,
+      40,
+      23,
+      12,
+      23,
+      23,
+      7,
+      55,
+      55,
+      7,
+      12,
+      12,
+      16,
+      12,
+      12,
+      12,
+      23,
+      23,
+      23,
+      39,
+      14,
+      14,
+      122,
+      7,
+      14,
+      7,
+      32,
+      32,
+      105,
+      123,
+      22,
+      6,
+      101,
+      94,
+      94,
+      33,
+      31,
+      124,
+      6,
+      33,
+      32,
+      123,
+      33,
+      125,
+      94,
+      94,
+      70,
+      101,
+      34,
+      33,
+      6,
+      123,
+      32,
+      6,
+      126,
+      126
+    ],
+    "timeDeltas": [
+      742652,
+      289728,
+      196147,
+      31374,
+      15049,
+      1448,
+      4568,
+      3744,
+      2532,
+      89701,
+      44240,
+      80707,
+      108703,
+      16738,
+      128439,
+      25336,
+      2807,
+      100996,
+      25522,
+      259634,
+      184516,
+      143554,
+      122578,
+      3701,
+      19038,
+      13392,
+      21176,
+      157605,
+      147831,
+      24853,
+      181844,
+      1166,
+      1546,
+      1691,
+      51764,
+      50669,
+      140034,
+      13824,
+      153269,
+      20545,
+      233521,
+      110295,
+      38967,
+      119006,
+      112834,
+      114849,
+      72062,
+      41236,
+      96534,
+      43179,
+      96917,
+      74123,
+      68973,
+      6780,
+      34139,
+      35040,
+      1308,
+      65267,
+      35063,
+      98661,
+      46396,
+      19229,
+      41943,
+      35660,
+      67252,
+      84325,
+      38489,
+      21561,
+      131770,
+      33088,
+      46836,
+      121824,
+      78270,
+      13911,
+      35328,
+      73871,
+      34922,
+      99263,
+      1743,
+      64827,
+      1206,
+      24940,
+      59994,
+      34766,
+      21828,
+      18845,
+      57245,
+      44151,
+      55650,
+      3544,
+      3470,
+      72208,
+      5022,
+      35813,
+      18035,
+      4811,
+      26007,
+      89884,
+      3188,
+      7689,
+      28619,
+      109941,
+      14587,
+      41525,
+      8965,
+      2546,
+      2103,
+      46111,
+      1373,
+      1669,
+      1441,
+      47445,
+      24448,
+      49348,
+      2124,
+      34836,
+      65220,
+      36306,
+      55219,
+      11387,
+      92602,
+      108787,
+      3908,
+      73644,
+      35435,
+      13947,
+      42210,
+      3080,
+      58756,
+      22768,
+      28711,
+      3543,
+      23442,
+      28801,
+      13059,
+      20975,
+      1241,
+      1357,
+      54735,
+      71111,
+      73578,
+      55806,
+      28676,
+      12276,
+      21888,
+      30800,
+      14984,
+      1145,
+      20148,
+      1230,
+      44478,
+      1458,
+      25604,
+      57003,
+      171410,
+      162250,
+      135728,
+      5362,
+      66736,
+      53627,
+      154968,
+      127547,
+      8136,
+      1065,
+      1534,
+      127898,
+      108255,
+      23831,
+      19931,
+      323592,
+      61141,
+      26345,
+      1538,
+      1384,
+      11004,
+      1538,
+      1562,
+      2163,
+      1502,
+      43315,
+      24717,
+      105496,
+      19141,
+      87338,
+      29141,
+      1472,
+      63235,
+      46786,
+      103924,
+      43139,
+      35547,
+      1597,
+      50865,
+      18724,
+      4138,
+      79827,
+      13263,
+      63,
+      1921,
+      49323,
+      5072,
+      152512,
+      43305,
+      199975,
+      9956,
+      15423,
+      33789,
+      3050,
+      92123,
+      89021,
+      38691,
+      13496,
+      8289,
+      1398,
+      81488,
+      75756,
+      76527,
+      28543,
+      125786,
+      64100,
+      72579,
+      45579,
+      8562,
+      35818,
+      66637,
+      21226,
+      1175,
+      67853,
+      1089,
+      95544,
+      2594,
+      1293,
+      1139,
+      1189,
+      1518,
+      1504,
+      1526,
+      1566,
+      1578,
+      1662,
+      1548,
+      1491,
+      1513,
+      1582,
+      1559,
+      1583,
+      1559,
+      1510,
+      1522,
+      1765,
+      1438,
+      1523,
+      31020,
+      74487,
+      58747,
+      84217,
+      52741,
+      23739,
+      22579,
+      29754,
+      46353,
+      93337,
+      79628,
+      64048,
+      58017,
+      42253,
+      46017,
+      6379,
+      11188,
+      88697,
+      53095,
+      44782,
+      33895,
+      39987,
+      25646,
+      107373,
+      55132,
+      8161,
+      104500,
+      133069,
+      40838,
+      3967,
+      2305,
+      49052,
+      15580,
+      35318,
+      28648,
+      22871,
+      53207,
+      71419,
+      7030,
+      1623,
+      160240,
+      48186,
+      2192,
+      32816,
+      157343,
+      80788,
+      123826,
+      140234,
+      1534,
+      139134,
+      1840,
+      3057,
+      1432,
+      176517,
+      477600,
+      10591,
+      251760,
+      28966,
+      78277,
+      47125,
+      45659,
+      8749,
+      302890,
+      86702,
+      14722,
+      27443,
+      168458,
+      4190,
+      6265,
+      12622,
+      211838,
+      4550,
+      1278,
+      1437,
+      105200,
+      33947,
+      1095,
+      1531,
+      4970,
+      13254,
+      8233,
+      1427,
+      1710,
+      1488,
+      1160,
+      1651,
+      1429,
+      290394,
+      3929,
+      70138,
+      1544,
+      1257,
+      1529,
+      1682,
+      1533,
+      102626,
+      1105,
+      1522,
+      1573,
+      142944,
+      122004,
+      1387,
+      128774,
+      21160,
+      141705,
+      22495,
+      95195,
+      62561,
+      54875,
+      47994,
+      55141,
+      6691,
+      1114,
+      1574,
+      23582,
+      4711,
+      2278,
+      1237,
+      1561,
+      1716,
+      43635,
+      1139,
+      1839,
+      1220,
+      9770,
+      1448,
+      92380,
+      1535,
+      73488,
+      107284,
+      38360,
+      33546,
+      30491,
+      31463,
+      78728,
+      16770,
+      117277,
+      182541,
+      1495,
+      2277,
+      126597,
+      72710,
+      1619,
+      1714,
+      1597,
+      94684,
+      3295,
+      128004,
+      140400,
+      12527,
+      136226,
+      11890,
+      167881,
+      123915,
+      4954,
+      157682,
+      117830,
+      9694,
+      6039,
+      88879,
+      137138,
+      1263,
+      1901,
+      1880,
+      1199,
+      9077,
+      34657,
+      175997,
+      184835,
+      179887,
+      46610,
+      196669,
+      179650,
+      117619,
+      90992,
+      14725,
+      42387,
+      330564,
+      20836,
+      1430,
+      4733,
+      1264,
+      23059,
+      1380,
+      1514,
+      1505,
+      1522,
+      1730,
+      231128,
+      1337,
+      11838,
+      91283,
+      57573,
+      58488,
+      118720,
+      29366,
+      148061,
+      115204,
+      19595,
+      29608,
+      33535,
+      66938,
+      19746,
+      109240,
+      16821,
+      40312,
+      12697,
+      31127,
+      25180,
+      58850,
+      20002,
+      28075,
+      170322,
+      18590,
+      236066,
+      11222,
+      252655,
+      144151,
+      200520,
+      79821,
+      156562,
+      20547,
+      1282,
+      154472,
+      1118,
+      1569,
+      9957,
+      1376,
+      1563,
+      1535,
+      1222,
+      1211,
+      1596,
+      1606,
+      1570,
+      1599,
+      1518,
+      1564,
+      1148,
+      1527,
+      17901,
+      1106,
+      2984,
+      1587,
+      1462,
+      107,
+      1211,
+      1517,
+      1525,
+      1532,
+      21387,
+      1500,
+      1503,
+      164133,
+      1186,
+      1631,
+      1594,
+      1542,
+      3064,
+      1602,
+      1589,
+      6257,
+      22360,
+      1821,
+      10212,
+      210413,
+      74295,
+      87736,
+      167758,
+      8847,
+      54298,
+      1755,
+      1881,
+      1431,
+      1547,
+      2191,
+      24418,
+      185674,
+      26729,
+      22873,
+      21463,
+      131799,
+      85531,
+      18853,
+      70587,
+      26516,
+      1525,
+      127789,
+      1419,
+      1507,
+      1595,
+      1514,
+      1571,
+      1564,
+      1519,
+      1588,
+      1615,
+      1790,
+      1528,
+      1092,
+      1552,
+      1569,
+      1566,
+      1577,
+      1542,
+      1532,
+      1579,
+      1732,
+      1482,
+      1523,
+      37186,
+      121396,
+      1310,
+      1587,
+      16945,
+      63969,
+      259226,
+      12861,
+      148972,
+      1746,
+      1207,
+      1590,
+      156616,
+      7078,
+      98982,
+      93187,
+      10502,
+      36899,
+      29468,
+      41970,
+      15188,
+      51694,
+      62900,
+      94952,
+      2646,
+      127706,
+      25269,
+      1592,
+      39812,
+      196314,
+      57710,
+      42324,
+      209819,
+      20614,
+      14227,
+      2756,
+      83121,
+      1230,
+      1602,
+      37533,
+      41191,
+      8861,
+      29171,
+      16517,
+      23386,
+      129709,
+      55730,
+      1599,
+      1290,
+      1548,
+      1602,
+      1866,
+      1579,
+      1528,
+      1535,
+      2239,
+      3307,
+      1530,
+      1561,
+      1545,
+      1553,
+      1521,
+      1548,
+      347,
+      1274,
+      1594,
+      1955,
+      1090,
+      2057,
+      1879,
+      1265,
+      1658,
+      1591,
+      3096,
+      2339,
+      224,
+      876,
+      1587,
+      1364,
+      210,
+      1596
+    ]
+  }
+}

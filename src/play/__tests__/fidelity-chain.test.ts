@@ -73,7 +73,8 @@ describe('fidelityChain', () => {
       ['dog', true, true, true, 'ok'],
     ]);
     // B-R9: soupeř souboje (`rival`) a věc sběru (`item`) berou model z vlastního popisku – klokan je klokan, sýr sýr.
-    const fight = draftGameSpec('boxing a kangaroo in the australian outback');
+    // Jednoho soupeře hraje od P42 souboj (žánr Souboj), rvačku arény skupina.
+    const fight = draftGameSpec('boxing kangaroos in the australian outback');
     expect(fight.controlParams).toMatchObject({ generator: 'fight' });
     expect(stages(fidelityChain(fight, [{ item: 'kangaroo', slot: 'role', match: ['kangaroo'] }]))).toEqual([['kangaroo', true, true, true, 'ok']]);
     const robot: GameSpecV1 = { ...fight, roles: fight.roles.map((role) => (role.id === 'rival' ? { ...role, label: 'robot' } : role)) };

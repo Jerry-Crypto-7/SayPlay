@@ -12,6 +12,7 @@ import { PlayShell } from '@/components/play/PlayShell';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import type { GameVersion } from '@/play/contracts';
 import { type Honesty, sentenceOf, honestyOf } from '@/play/draft/unsupported';
+import { shownNickname } from '@/play/player/nickname';
 import { DARE_ID_PATTERN, type PublishedGame, versionStoreFromEnv } from '@/play/version';
 
 type Params = { params: Promise<{ id: string }> };
@@ -20,13 +21,17 @@ type PageProps = Params & { searchParams: Promise<{ [key: string]: string | stri
 /**
  * Výzva kamaráda z odkazu `?dare=` (P36B T7): výsledek, který server ověřil
  * přehráním. Jen výzva téhle hry; neplatné, cizí nebo prošlé id (i výpadek
- * úložiště – `getDare` vrací `null`) = obyčejná hra, žádná chyba.
+ * úložiště – `getDare` vrací `null`) = obyčejná hra, žádná chyba. Výzva s autorem
+ * nese jeho přezdívku (P44B T7) přes `shownNickname`; id hráče do props nejde.
  */
 async function challengeOf(id: string, dare: string | string[] | undefined): Promise<Dare | null> {
   if (typeof dare !== 'string' || !DARE_ID_PATTERN.test(dare)) return null;
-  const record = await versionStoreFromEnv(process.env).getDare(dare);
+  const versions = versionStoreFromEnv(process.env);
+  const record = await versions.getDare(dare);
   if (record === null || record.versionId !== id) return null;
-  return { score: record.score, ticks: record.ticks, liveChanges: record.liveChanges };
+  const challenge = { score: record.score, ticks: record.ticks, liveChanges: record.liveChanges };
+  if (record.by === undefined) return challenge;
+  return { ...challenge, by: shownNickname(record.by, (await versions.getPlayer(record.by))?.nickname) };
 }
 
 /**

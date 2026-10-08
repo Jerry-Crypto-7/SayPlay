@@ -1,0 +1,34 @@
+{
+  "sha256": "2694b9c0355a00db18cd7300e8b1e06cef3d8ad5be31c0ce0503f6b39b827bd9",
+  "count": 64,
+  "distribution": {
+    "multi-action": 22,
+    "paraphrase": 8,
+    "negation": 10,
+    "unsupported": 8,
+    "single": 16
+  },
+  "normalizedOverlap": {
+    "p30/test-200.json": {
+      "referenceUniqueSentences": 862,
+      "normalizedOverlap": 0
+    },
+    "p41/sentences.json": {
+      "referenceUniqueSentences": 253,
+      "normalizedOverlap": 0
+    },
+    "p42/sentences.json": {
+      "referenceUniqueSentences": 317,
+      "normalizedOverlap": 0
+    },
+    "p42/round2/sentences.json": {
+      "referenceUniqueSentences": 381,
+      "normalizedOverlap": 0
+    },
+    "p42/round3/sentences.json": {
+      "referenceUniqueSentences": 445,
+      "normalizedOverlap": 0
+    }
+  },
+  "preparation": "No extraction, drafting, scoring, API calls, implementation inspection or prior-result inspection. Prior sentences loaded only programmatically for schema and overlap."
+}

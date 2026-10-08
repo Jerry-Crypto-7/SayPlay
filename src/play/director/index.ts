@@ -25,7 +25,7 @@ import { loadRapier } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
 import { matchesWitness } from '../arcade/witness';
 import { assemblyOfCell, liveCells } from '../compose/allowed';
-import { compileRecipe } from '../compose/compile';
+import { assemblyFactory, compileRecipe } from '../compose/compile';
 import { compose } from '../compose/compose';
 import { recipeKey } from '../compose/recipe';
 import { presetOf } from '../compose/presets';
@@ -147,8 +147,16 @@ function readComposedAnswer(body: unknown, intent: Intent, seed: number, reading
       }
     }
     const { genre: _genre, mode: _mode, params, ...content } = repaired;
+    const merged = { ...assembled.recipe.content, ...content, ...(_genre === assembled.recipe.content.genre && _mode === assembled.recipe.content.mode ? { params } : {}) };
+    if (assembled.recipe.preset === 'assembled') {
+      // P42 složení není živá buňka: pohyb a díly už vybral skladatel, odpověď dodá jen obsah.
+      const read = readLegacyRecipeContent({ recipe: assembled.recipe, assembly: assemblyFactory(assembled.recipe), preset: assembled.recipe.content }, merged);
+      if (!read.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: read.issues.join('; ') };
+      const game = readModelSpec(compileRecipe({ ...assembled.recipe, content: read.value }));
+      return game.ok ? { ...game, declared: [] } : game;
+    }
     const cell = liveCells().find(candidate => candidate.id === assembled.cellId)!;
-    const checked = readLegacyRecipeContent({ ...cell, preset: assembled.recipe.content }, { ...assembled.recipe.content, ...content, ...(_genre === assembled.recipe.content.genre && _mode === assembled.recipe.content.mode ? { params } : {}) });
+    const checked = readLegacyRecipeContent({ ...cell, preset: assembled.recipe.content }, merged);
     if (!checked.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: checked.issues.join('; ') };
     // A legacy cast can add an existing addon (e.g. shooting to jumping).
     // Resolve that actual assembly to a live cell; never bypass assertPreset.

@@ -1,0 +1,169 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-046",
+    "sentence": "Make a game where a monkey folds laundry in a hotel.",
+    "seed": 1,
+    "milliseconds": 75.09910000002128,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "rhythm",
+      "controlParams": {
+        "bpm": 120,
+        "beats": 66,
+        "ramp": true,
+        "lanes": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "rhythm",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Monkey Beat",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "hotel",
+        "mood": "energetic"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Hit each tile in its lane on the beat and play the song to the end.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "monkey",
+          "count": 1
+        },
+        {
+          "id": "note",
+          "kind": "collectible",
+          "label": "tile",
+          "count": 12
+        },
+        {
+          "id": "miss",
+          "kind": "hazard",
+          "label": "missed beat",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "last beat",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Tap each lane as its note hits the line. The song gets busier.",
+        "controlsHint": "Tap the lane, or D F J K, on the beat. M toggles sound."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "knit"
+    },
+    "specHash": "425a7aba",
+    "worldHash": "1b073252fbd39f77cd21a48f01d5de9e08d8f644e0d615d0844cb6ff886ea0a4",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "monkey",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 180,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "monkey",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "beat",
+        "object": {
+          "body": 1,
+          "roleId": "note",
+          "label": "tile",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 180,
+        "evidence": "successful-timing",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "monkey",
+          "verb": "fold",
+          "object": "laundry"
+        }
+      ],
+      "closest": "a rhythm game",
+      "reason": "Fold isn't here yet – here's a rhythm game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "monkey",
+          "verb": "fold",
+          "object": "laundry"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2131,
+      "hash": "7674c6a7",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

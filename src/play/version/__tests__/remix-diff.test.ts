@@ -54,7 +54,8 @@ describe('remixChips', () => {
   });
 
   it('4. the swap-enemy chip names the new obstacle and the one it replaced', () => {
-    const parent = draftGameSpec('dodge the falling rocks');
+    // Padající kameny jsou od P42 vlastní díl vedle překážek trati – výměna jednoho z nich „no rocks“ říct nesmí.
+    const parent = draftGameSpec('dodge the boulders');
     const child = chip(parent, 'swap_enemy');
     const fresh = child.roles.find((role) => role.kind !== 'player' && !parent.roles.some((old) => old.label === role.label))!;
     const gone = parent.roles.find((role) => role.kind !== 'player' && !child.roles.some((now) => now.label === role.label))!;

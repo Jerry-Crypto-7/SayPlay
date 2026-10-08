@@ -1,0 +1,142 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-63",
+    "sentence": "A paladin duels a skeleton in a crypt.",
+    "seed": 2,
+    "milliseconds": 17.083999999973457,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "duel",
+      "controlParams": {
+        "difficulty": "normal",
+        "rounds": 9
+      },
+      "genre": {
+        "id": "duel",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Paladin Duel",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "crypt",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Beat 9 skeletons in a row. Each one attacks faster.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "paladin",
+          "count": 1
+        },
+        {
+          "id": "rival",
+          "kind": "hazard",
+          "label": "skeleton",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "knockout",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Dodge the wind-up, strike in the opening. Beat 9 skeletons.",
+        "controlsHint": "Tap right or Space to strike, tap left or Down to dodge."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "0d66aed3",
+    "worldHash": "e84d46c3b378eb672cfe4194320123d233d216566b7a3b559cea1525f610adf0",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "paladin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 133,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "paladin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "duel",
+        "object": {
+          "body": 1,
+          "roleId": "rival",
+          "label": "skeleton",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 133,
+        "evidence": "successful-timing",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2079,
+      "hash": "169e36a9",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -2095,6 +2095,100 @@ button.play-version-switch__item:not(:disabled) {
   color: var(--sp-text-secondary);
 }
 
+/* Žebříček hry (P44B T9): po výhře a v listu „About this game“; vlastní řádek slunečný. */
+.play-board {
+  margin-top: var(--sp-space-4);
+}
+
+.play-board-standing,
+.play-board-empty {
+  margin: var(--sp-space-1) 0 0;
+  color: var(--sp-text-secondary);
+}
+
+.play-board-rows {
+  margin: var(--sp-space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-board-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-space-2);
+  padding: var(--sp-space-1) var(--sp-space-2);
+  border-radius: var(--sp-radius-sm);
+}
+
+.play-board-row--you {
+  background: var(--sp-secondary);
+}
+
+.play-board-place {
+  min-width: 2.5em;
+  font-weight: 700;
+}
+
+.play-board-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.play-board-you {
+  font-size: var(--sp-text-body-s-size);
+}
+
+.play-board-value {
+  font-weight: 700;
+}
+
+/* Přezdívka pod žebříčkem (P44B T10): papírový řádek, „Change“ jako odkaz – rajčatová akce zůstává Dare. */
+.play-playing-as {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-space-1);
+  margin-top: var(--sp-space-2);
+  color: var(--sp-text-secondary);
+}
+
+.play-playing-as-name {
+  color: var(--sp-text);
+}
+
+.play-name-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-space-4);
+}
+
+.play-name-form .sp-field-error {
+  margin-top: 0;
+}
+
+.play-name-prompt .sp-prompt__field {
+  min-height: 44px;
+}
+
+/* Proužek výzvy (P44B T8): kdo vyzývá a co porazit, slunečná linka jako odměna; bez tlačítka. */
+.play-dare-strip {
+  flex: 0 0 auto;
+  padding: var(--sp-space-3) var(--sp-space-4);
+  background: var(--sp-surface);
+  border-bottom: var(--sp-border-thick) solid var(--sp-secondary);
+  font-size: var(--sp-text-body-size);
+  line-height: 1.4;
+}
+
+.play-dare-strip-text {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .play-honest-close {
   flex: 0 0 auto;
   min-height: var(--sp-size-touch-min);
@@ -2169,6 +2263,30 @@ button.play-version-switch__item:not(:disabled) {
 }
 
 .play-lineage-count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Řetěz remixů (P44B T11) pod rodokmenem v listu „About this game“: řádek na remix. */
+.play-remix-chain {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-space-2);
+}
+
+.play-remix-chain-title {
+  color: var(--sp-text);
+  font-weight: 700;
+}
+
+.play-remix-chain-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-space-2);
+}
+
+.play-remix-chain-top {
   font-variant-numeric: tabular-nums;
 }
 
@@ -2778,4 +2896,35 @@ button.play-feed-card {
   .play-weather {
     animation: none;
   }
+}
+
+/* Interní trychtýř smyčky `/play/stats` (P44B T13): papírová tabulka kitu, čísla v zarovnaných sloupcích. */
+.play-stats {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--sp-space-8) var(--_side);
+}
+
+.play-stats-window {
+  margin-top: var(--sp-space-6);
+}
+
+.play-stats-table {
+  width: 100%;
+  margin-top: var(--sp-space-3);
+  border-collapse: collapse;
+  background: var(--sp-surface);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  font-variant-numeric: tabular-nums;
+}
+
+.play-stats-table th,
+.play-stats-table td {
+  padding: var(--sp-space-2) var(--sp-space-3);
+  border-bottom: var(--sp-border-thin) solid var(--sp-outline);
+  text-align: left;
+}
+
+.play-stats-table td:last-child {
+  color: var(--sp-text-secondary);
 }

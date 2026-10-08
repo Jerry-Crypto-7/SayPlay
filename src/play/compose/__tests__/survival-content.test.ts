@@ -7,7 +7,7 @@ import { assemblyOfCell, liveCells } from '../allowed';
 it('keeps an explicit sixty-second survival objective playable instead of falling back to collection', () => {
   for (const seed of [1, 2, 3, 4, 5]) {
     const draft = draftGameSpecWithMeta('Survive 60 seconds while red floor tiles pulse dangerously.', seed);
-    expect(draft.composition?.cellId).toBe('arena.escape');
+    expect(draft.composition?.recipe.objective).toBe('survive');
     expect(draft.spec.objective).toMatchObject({ kind: 'survive', seconds: 60 });
     const made = arcadeWorldOf(draft.spec, seed);
     if (!made.ok) throw new Error(made.issues.join('; '));

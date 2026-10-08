@@ -122,7 +122,8 @@ interface ArenaWorldProps {
  */
 export function ArenaWorld(props: ArenaWorldProps) {
   const control = baseControlOf(props.session.world.control);
-  return control.id === 'fight' || control.params.size !== undefined ? <StyledWorld {...props} /> : <AgarWorld {...props} />;
+  const assembled = props.session.world.kinds?.some(kind => kind.startsWith('thing:part_'));
+  return control.id === 'fight' || control.params.size !== undefined || assembled ? <StyledWorld {...props} /> : <AgarWorld {...props} />;
 }
 
 function AgarWorld({ session, half, surface, look: scene, targets, ghost }: ArenaWorldProps) {
@@ -705,12 +706,13 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
         if (part === 'block') {
           // Věc pravidel nebo plot: kvádr jako v agaru.
           const thing = thingOf(view.kind);
+          const namedModel = thing === null ? undefined : cast.things?.[thing];
           return (
             <group key={view.index} ref={register} userData={{ frame: thing === null ? undefined : 'target' }}>
-              <mesh position={[0, view.h / 2, 0]}>
+              {namedModel !== undefined ? <FittedModel id={namedModel} w={view.w} h={view.h} d={view.d} fallback={thingColor(thing!)} character={view.h >= Math.max(view.w, view.d)} /> : <mesh position={[0, view.h / 2, 0]}>
                 <boxGeometry args={[view.w, view.h, view.d]} />
                 <meshStandardMaterial color={thing === null ? FENCE_COLOR : thingColor(thing)} roughness={0.6} />
-              </mesh>
+              </mesh>}
             </group>
           );
         }

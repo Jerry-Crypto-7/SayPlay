@@ -1,0 +1,337 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-003",
+    "sentence": "A courier pigeon flaps over the rooftops to deliver letters before the hawk catches it.",
+    "seed": 4,
+    "milliseconds": 362.7283000000007,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "deliver",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        },
+        {
+          "kind": "chaser",
+          "role": "part_1",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "flap",
+      "controlParams": {
+        "lengthM": 220,
+        "rise": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "flap",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Courier Pigeon Flight",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "rooftops",
+        "mood": "cheerful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Flap through the gaps between the pipes to the finish.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "courier pigeon",
+          "count": 1
+        },
+        {
+          "id": "pipe",
+          "kind": "hazard",
+          "label": "pipe",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "coin",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "item",
+          "label": "letter",
+          "count": 1
+        },
+        {
+          "id": "part_1",
+          "kind": "chaser",
+          "label": "hawk",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Deliver the letter. Escape the hawk.",
+        "controlsHint": "Tap or Space to flap."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "d879abb3",
+    "worldHash": "00f38e3bd6a16052641c9b243742802dd2a2233511c0f8dd82c508f0c88463f9",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier pigeon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "flap",
+        "object": null,
+        "tick": 11,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier pigeon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 161,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier pigeon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 4,
+          "roleId": "coin",
+          "label": "coin",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 161,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier pigeon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 162,
+          "roleId": "part_0",
+          "label": "letter",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 280,
+        "evidence": "grabbed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier pigeon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "deliver",
+        "object": {
+          "body": 162,
+          "roleId": "part_0",
+          "label": "letter",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 2217,
+        "evidence": "carried-to-destination",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier pigeon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 2,
+          "roleId": "pipe",
+          "label": "pipe",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2230,
+        "evidence": "survived-threat:probe:pipe",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier pigeon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "escape",
+        "object": {
+          "body": 163,
+          "roleId": "part_1",
+          "label": "hawk",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 2230,
+        "evidence": "survived-threat:probe:part_1",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier pigeon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 163,
+          "roleId": "part_1",
+          "label": "hawk",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 2230,
+        "evidence": "survived-threat:probe:part_1",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "pipe",
+          "label": "pipe",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier pigeon",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 155,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:pipe"
+      },
+      {
+        "actor": {
+          "body": 163,
+          "roleId": "part_1",
+          "label": "hawk",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "verb": "chaser",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier pigeon",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 56,
+        "evidence": "moving-threat-contact",
+        "run": "probe",
+        "runId": "probe:part_1"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": false,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2230,
+      "hash": "9417fb5e",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

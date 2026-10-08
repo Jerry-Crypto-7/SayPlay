@@ -14,7 +14,7 @@ beforeAll(loadRapier);
 it.each(['deliver pizzas on a bike', 'ride a bike around the city delivering pizza', 'pizza delivery by bike', 'use a bike to bring pizzas to hungry people', 'drive around the city without racing, just deliver pizzas', 'deliver mail to every house'])('selects actual delivery for %s', sentence => {
   const intent = extractIntent(sentence);
   const made = compose(intent, 1);
-  expect(made.cellId).toBe('drive.reach+deliver');
+  expect(made.recipe.actions).toContain('deliver');
   for (const item of intent.items.filter(item => item.essential)) {
     expect(made.witnesses.some(witness => matchesWitness(item, witness)), JSON.stringify(item)).toBe(true);
   }

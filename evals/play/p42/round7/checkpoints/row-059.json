@@ -1,0 +1,250 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-012",
+    "sentence": "Make a game where a dragon flaps over the village and lands on the castle tower.",
+    "seed": 4,
+    "milliseconds": 165.49149999999645,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "flap",
+      "controlParams": {
+        "lengthM": 220,
+        "rise": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "flap",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Dragon Flight",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "village",
+        "mood": "cheerful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Flap through the gaps between the pipes to the finish.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "dragon",
+          "count": 1
+        },
+        {
+          "id": "pipe",
+          "kind": "hazard",
+          "label": "pipe",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "coin",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Fly through the gaps to the finish. They get tighter.",
+        "controlsHint": "Tap or Space to flap."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "6388aa0b",
+    "worldHash": "85b1962956334fc51db277852a53036fe2c6a43f960ede3ab32fe741162131f7",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "dragon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "flap",
+        "object": null,
+        "tick": 11,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "dragon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 161,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "dragon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 4,
+          "roleId": "coin",
+          "label": "coin",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 161,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "dragon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 161,
+          "roleId": "finish",
+          "label": "finish line",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2229,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "dragon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 2,
+          "roleId": "pipe",
+          "label": "pipe",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2230,
+        "evidence": "survived-threat:probe:pipe",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "pipe",
+          "label": "pipe",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "dragon",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 155,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:pipe"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "dragon",
+          "verb": "land",
+          "object": "castle"
+        }
+      ],
+      "closest": "a flappy game",
+      "reason": "Land isn't here yet – here's a flappy game."
+    },
+    "score": {
+      "preserved": false,
+      "total": 2,
+      "proved": 1,
+      "missing": [
+        {
+          "actor": "dragon",
+          "verb": "land",
+          "object": "tower"
+        }
+      ],
+      "silent": [
+        {
+          "actor": "dragon",
+          "verb": "land",
+          "object": "tower"
+        }
+      ]
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2230,
+      "hash": "88bcf7d2",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

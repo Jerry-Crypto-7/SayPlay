@@ -1,0 +1,238 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-045",
+    "sentence": "A sculptor carves a giant statue out of ice.",
+    "seed": 5,
+    "milliseconds": 254.43660000001546,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_spatial",
+        "tuning": {
+          "count": 5,
+          "states": 2,
+          "verb": "carve",
+          "rounds": 3,
+          "chasers": 1
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "spatial",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Sculptor Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "village",
+        "mood": "tense",
+        "look": "snow"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Carve all 5 giant statue in each of 3 rounds before the ice catches you.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 88,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "sculptor",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "giant statue",
+          "count": 5
+        },
+        {
+          "id": "hunter",
+          "kind": "chaser",
+          "label": "ice",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Carve all 5 giant statue, 3 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use next to a target."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "chop"
+    },
+    "specHash": "d45763e9",
+    "worldHash": "cbca26917c46d1733b864dce81d70167e3cf55e0b38e5a2e4c71711ec5aa726c",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sculptor",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 8,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sculptor",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "giant statue",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 65,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sculptor",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "escape",
+        "object": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "ice",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 3826,
+        "evidence": "survived-threat:probe:hunter",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sculptor",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "ice",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 3826,
+        "evidence": "survived-threat:probe:hunter",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "ice",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "verb": "chaser",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sculptor",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 220,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:hunter"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "sculptor",
+          "verb": "carve",
+          "object": "statue"
+        }
+      ],
+      "closest": "a quest",
+      "reason": "Carve isn't here yet – here's a quest."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "sculptor",
+          "verb": "carve",
+          "object": "statue"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": null,
+    "verification": {
+      "outcome": "won",
+      "tick": 3826,
+      "hash": "ca7fd48a",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

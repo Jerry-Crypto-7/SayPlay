@@ -41,7 +41,7 @@ describe('T26 public recipe to actual progression simulation', () => {
   });
   it('accepts bounds in the recipe answer and rejects cycles before simulation', () => {
     const recipe = {...compose(extractIntent(sentences.drive)).recipe, phases, dependsOn:graph};
-    const {preset:_,content,...plain}=recipe;
+    const {preset:_,content,parts:_parts,...plain}=recipe;
     expect(recipeSchema.safeParse(plain).success).toBe(true);
     const {genre:_genre,mode:_mode,...answerContent}=content;
     expect(recipeAnswerSchema.safeParse({...answerContent,recipe:plain,unmet:[]}).success).toBe(true);

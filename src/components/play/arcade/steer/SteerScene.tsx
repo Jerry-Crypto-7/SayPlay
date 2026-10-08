@@ -18,7 +18,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 
 import { color } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, BODY, FLAG, HEADER, UNIT, bodyBase, rampedSpeed } from '@/play/arcade/contract';
+import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, UNIT, bodyBase, nativeRule, rampedSpeed } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { STEER, type SteerCourse } from '@/play/arcade/pieces/steer';
 import type { HeroAction } from '@/play/spec';
@@ -33,7 +33,7 @@ import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { FittedModel } from '../World';
 import { keySteer } from './key-steer';
-import { driveInput } from './drive-input';
+import { type DriveInputMode, driveInput } from './drive-input';
 import { VoyageHero } from './VoyageHero';
 import { type VoyageLayout, centerOf, nearShotsInView, voyageLayoutOf } from './voyageLayout';
 
@@ -619,6 +619,12 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard, namedPad }
   );
 }
 
+/** Režim vstupu jízdy. Přistávač (P32F T4): osa klopí, tah drží šipka nahoru/W/mezerník nebo druhý prst místo brzdy. */
+export function driveModeOf(world: Pick<ArcadeWorld, 'control' | 'rules'>): DriveInputMode {
+  if ((baseControlOf(world.control).params as { land?: unknown }).land !== undefined) return 'land';
+  return nativeRule(world.rules, 'blaster') !== undefined ? 'shoot' : 'drive';
+}
+
 /**
  * Šipky/A-D = zatáčení (osa s náběhem ~0,25 s, `key-steer.ts`), šipka dolů/S = brzda. Dotyk: první prst táhne
  * do strany (osa podle vzdálenosti od místa stisku, plná po `DRAG_PX`),
@@ -638,10 +644,7 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
   useEffect(() => {
     const element = target.current;
     if (!active || element === null) return;
-    // Přistávač (P32F T4): osa klopí, tah drží šipka nahoru/W/mezerník nebo druhý prst místo brzdy.
-    const lands = (baseControlOf(session.world.control).params as { land?: unknown }).land !== undefined;
-    const shoots = session.world.rules.some(rule => rule.id === 'blaster');
-    const input = driveInput(lands ? 'land' : shoots ? 'shoot' : 'drive');
+    const input = driveInput(driveModeOf(session.world));
     const sync = (): void => {
       // Šipky točí volantem plynule (P36C T3); dojíždějící rejd po puštění má přednost před prstem jen do středu.
       const held = input.snapshot(wheel.axis());

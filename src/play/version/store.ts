@@ -20,7 +20,11 @@
  *   „duch nejlepšího“ hry (P37C T2) je schodiště v seřazené množině `<prefix>:play:best:<versionId>`
  *   (nejvýš `BEST_KEPT`) s časy zápisu v `<prefix>:play:best:<versionId>:at`,
  * - `<prefix>:play:loop:<finish|dare|skip|start|clear>:<versionId>` – čítače událostí smyčky pro řazení
- *   feedu (P36B T9) a „clear rate“ (P37C T5), hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den.
+ *   feedu (P36B T9) a „clear rate“ (P37C T5), hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den,
+ * - `<prefix>:play:player:<id hráče>` – JSON `PlayerRecord` (P44B T3), nově vydané identity
+ *   `<prefix>:play:new-player:<hodina UTC>:<hash volajícího>` a `<prefix>:play:new-player-day:<den UTC>:<hash volajícího>` (T3b).
+ * - `<prefix>:play:funnel:<den UTC>:<stupeň>` – denní čítač trychtýře (P44B T12), započtené
+ *   `<prefix>:play:funnel-seen:<den>:<stupeň>:<hra>:<relace>` (`SET NX`, dva dny).
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -42,6 +46,7 @@ import { join } from 'node:path';
 
 import { canonical } from '@/ir/worlddoc';
 import type { LiveEntry } from '@/play/arcade/live';
+import { FUNNEL_MAX_DAYS, FUNNEL_STAGES, funnelDayOf, type FunnelDay, type FunnelStage, publishStageOf } from '@/play/funnel';
 import { LOOP_COUNTERS, type LoopCounter } from '@/play/loop-events';
 import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 
@@ -124,7 +129,69 @@ export interface VersionStore {
   countLoop(versionId: string, counters: readonly LoopCounter[], voter: string): Promise<void>;
   /** Čítače smyčky a počty remixů her jedním čtením; nedostupné úložiště = prázdná mapa (feed od nejnovější). */
   loopHeat(versionIds: readonly string[]): Promise<Map<string, LoopHeat>>;
+  /** Hráč (P44B T3) podle id z podepsané cookie; `null` = bez uložené přezdívky, i při výpadku úložiště. */
+  getPlayer(playerId: string): Promise<PlayerRecord | null>;
+  /** Uloží hráče na dobu života hry. Výpadek je `VersionStoreUnavailable`. */
+  putPlayer(playerId: string, player: PlayerRecord): Promise<void>;
+  /**
+   * Započte volajícímu (`voter`) jednu nově vydanou identitu v této hodině a v tomto dni (UTC);
+   * `false` = byla by nad `perHour` nebo `perDay` (sybil, debata P44B T1; `perDay: null` = bez
+   * denního stropu, T3b). Výpadek úložiště je `VersionStoreUnavailable`.
+   */
+  countNewPlayer(voter: string, perHour: number, perDay: number | null): Promise<boolean>;
+  /**
+   * Ověřený běh hráče do žebříčku hry (P44B T4): na hráče jen nejlepší podle `bestRank`, nejvýš
+   * `BOARD_KEPT` hráčů (nejslabší vypadne), žije jako hra od posledního zápisu. Nad
+   * `BOARD_DAILY_CAP_PER_PLAYER` zápisů hráče za den `quota` a žebříček beze změny. Výpadek je `VersionStoreUnavailable`.
+   */
+  putBoardEntry(versionId: string, entry: BoardEntry): Promise<BoardWrite>;
+  /** Nejvýš `min(limit, BOARD_READ_MAX)` nejlepších hráčů hry od prvního místa. Výpadek je `VersionStoreUnavailable` – prázdný žebříček by lhal. */
+  board(versionId: string, limit: number): Promise<BoardRow[]>;
+  /**
+   * Stupeň trychtýře (P44B T12) pro relaci a hru, nejvýš jednou za den (UTC); `session` je relace klienta,
+   * u výzvy hráč nebo hash volajícího. Výpadek spolkne – trychtýř hru ani událost nezdrží.
+   */
+  countFunnel(stage: FunnelStage, versionId: string, session: string): Promise<void>;
+  /** Trychtýř za posledních `min(days, FUNNEL_MAX_DAYS)` dní od nejstaršího po dnešek. Výpadek je `VersionStoreUnavailable`. */
+  funnel(days: number): Promise<FunnelDay[]>;
 }
+
+/** Jak dlouho žije denní čítač trychtýře: celé okno `funnel` a den rezervy. */
+const FUNNEL_TTL_SECONDS = (FUNNEL_MAX_DAYS + 1) * 24 * 3600;
+
+/** Hráč žebříčku (P44B T3): jen přezdívka, kterou si sám zvolil. Id je klíč, do záznamu nejde. */
+export interface PlayerRecord {
+  readonly nickname: string;
+}
+
+/** Běh hráče pro žebříček (P44B T4); skóre a tiky spočítal server přehráním, nikdy klient. */
+export interface BoardEntry {
+  readonly playerId: string;
+  readonly dareId: string;
+  readonly score: number;
+  readonly ticks: number;
+}
+
+/** Řádek žebříčku; `dareId` je `null`, když běh k hodnocení hráče v úložišti neleží. */
+export interface BoardRow {
+  readonly playerId: string;
+  readonly dareId: string | null;
+  readonly score: number;
+  readonly ticks: number;
+  readonly place: number;
+}
+
+/** `raised` = tenhle zápis dal běh do žebříčku; `place` = místo hráče od 1 (`null` = mimo), `of` = kolik hráčů žebříček drží. */
+export type BoardWrite = 'quota' | { readonly raised: boolean; readonly place: number | null; readonly of: number };
+
+/** Kolik hráčů žebříček hry drží (P44B T4); nad stropem vypadne nejslabší. */
+export const BOARD_KEPT = 50;
+
+/** Kolik zápisů do žebříčků smí jeden hráč za den (P44B T4) – opakované odesílání úložiště nezahltí. */
+export const BOARD_DAILY_CAP_PER_PLAYER = 30;
+
+/** Nejvíc řádků, které vrátí `board`. */
+export const BOARD_READ_MAX = 20;
 
 /**
  * Výzva Dare (P36B T5): výsledek, který server sám spočítal přehráním vstupů
@@ -143,6 +210,11 @@ export interface DareRecord {
    */
   readonly liveChanges: number;
   readonly createdAt: string;
+  /**
+   * Hráč, který výzvu zapsal první (P44B T5, debata T1) – jen jemu patří běh v žebříčku. Chybí u výzev
+   * bez identity. Je to id z cookie: ven ho nesmí pustit žádná odpověď.
+   */
+  readonly by?: string;
   /**
    * Běh pro přehrání ducha (P37C T1). Chybí u výzev zapsaných před ním, u běhu
    * nad `MAX_GHOST_BYTES`, nad stropy duchů a po `GHOST_TTL_SECONDS` – taková
@@ -305,8 +377,8 @@ function parsedOrNull(text: string | null): unknown {
 
 /** Výzva bez běhu – tak se zapisuje; běh leží pod vlastním klíčem. */
 function withoutReplay(dare: DareRecord): DareRecord {
-  const { dareId, versionId, score, ticks, hash, liveChanges, createdAt } = dare;
-  return { dareId, versionId, score, ticks, hash, liveChanges, createdAt };
+  const { dareId, versionId, score, ticks, hash, liveChanges, createdAt, by } = dare;
+  return { dareId, versionId, score, ticks, hash, liveChanges, createdAt, ...(typeof by === 'string' ? { by } : {}) };
 }
 
 /** Den v UTC pro klíč počítadla. */
@@ -358,6 +430,13 @@ interface RawStore {
   staircase(key: string): Promise<{ readonly member: string; readonly rank: number; readonly at: number }[]>;
   /** Jedním atomickým krokem odebere `drop` z obou množin schodiště a přidá člena s hodnocením `rank` a časem zápisu `at`. */
   reviseBest(key: string, drop: readonly string[], member: string, rank: number, at: number, ttlSeconds: number): Promise<void>;
+  /**
+   * Žebříček (P44B T4), jedním atomickým krokem: člen dostane hodnocení `rank`, jen když ho nemá
+   * nebo má nižší (`ZADD GT`), nad `keep` členů odejdou nejníž hodnocení a expirace běží od teď.
+   * Vrací, jestli se člen přidal nebo zlepšil, jeho místo od nejvyššího (1 = první, `null` = v množině
+   * není) a počet členů.
+   */
+  raiseRank(key: string, member: string, rank: number, keep: number, ttlSeconds: number): Promise<{ readonly raised: boolean; readonly place: number | null; readonly of: number }>;
 }
 
 /** Ve kterém řádu hodnocení nejlepší výzvy leží skóre; tiky (≤ 5 400) se vejdou pod něj. */
@@ -379,6 +458,12 @@ export const BEST_KEPT = 8;
  */
 export function bestRank(score: number, ticks: number): number {
   return score * BEST_TICK_SPAN + (BEST_TICK_SPAN - 1 - ticks);
+}
+
+/** Skóre a tiky zpět z `bestRank`. */
+function runOfRank(rank: number): { readonly score: number; readonly ticks: number } {
+  const score = Math.floor(rank / BEST_TICK_SPAN);
+  return { score, ticks: BEST_TICK_SPAN - 1 - (rank - score * BEST_TICK_SPAN) };
 }
 
 /** Nejlepší ověřená výzva hry s duchem (P37C T2). */
@@ -453,6 +538,12 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   };
   const loopKey = (counter: LoopCounter, versionId: string): string => `${prefix}:play:loop:${counter}:${versionId}`;
   const voteKey = (vote: string): string => `${prefix}:play:loop-vote:${vote}`;
+  const playerKey = (playerId: string): string => `${prefix}:play:player:${playerId}`;
+  const boardKey = (versionId: string): string => `${prefix}:play:board:${versionId}`;
+  const boardRunKey = (versionId: string, playerId: string): string => `${prefix}:play:board-run:${versionId}:${playerId}`;
+  const boardQuotaKey = (playerId: string): string => `${prefix}:play:board-quota:${quotaDay(now())}:${playerId}`;
+  const funnelKey = (day: string, stage: FunnelStage): string => `${prefix}:play:funnel:${day}:${stage}`;
+  const funnelSeenKey = (day: string, stage: FunnelStage, versionId: string, session: string): string => `${prefix}:play:funnel-seen:${day}:${stage}:${versionId}:${session}`;
 
   const store: VersionStore = {
     id,
@@ -503,6 +594,9 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }
+      // Trychtýř (P44B T12): hra je nová právě jednou (`SET NX` výš); výpadek čítače publikaci neshodí.
+      const stage = BUILTIN_IDS.has(game.version.versionId) ? null : publishStageOf({ parentId: game.version.parentId, relation: game.relation });
+      if (stage !== null) await raw.incr(funnelKey(funnelDayOf(now()), stage), FUNNEL_TTL_SECONDS).catch(() => undefined);
       // Do feedu jen autorská verze od režiséra (nález revize T4-1): titul
       // ručního specu, remixu i návrhu ze slov píše volající, a feed by ho
       // zdarma ukázal každému návštěvníkovi `/play`. Autorská verze stojí
@@ -652,8 +746,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         // Od nejvyššího první, jehož běh ještě leží: obvykle hned první, tedy jeden příkaz navíc.
         for (const { member, rank } of await raw.top(bestKey(versionId), BEST_KEPT)) {
           if (!DARE_ID_PATTERN.test(member) || !Number.isSafeInteger(rank) || !(await raw.exists(ghostKey(member)))) continue;
-          const score = Math.floor(rank / BEST_TICK_SPAN);
-          return { dareId: member, score, ticks: BEST_TICK_SPAN - 1 - (rank - score * BEST_TICK_SPAN) };
+          return { dareId: member, ...runOfRank(rank) };
         }
       } catch {
         // Nedostupné úložiště = žádný duch nejlepšího.
@@ -734,6 +827,92 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       } catch {
         return new Map();
       }
+    },
+    async getPlayer(playerId) {
+      let parsed: unknown;
+      try {
+        parsed = parsedOrNull(await raw.get(playerKey(playerId)));
+      } catch {
+        return null;
+      }
+      const nickname = (parsed as { nickname?: unknown } | null)?.nickname;
+      return typeof nickname === 'string' ? { nickname } : null;
+    },
+    async putPlayer(playerId, player) {
+      try {
+        await raw.set(playerKey(playerId), JSON.stringify({ nickname: player.nickname }), limits.ttlSeconds);
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async countNewPlayer(voter, perHour, perDay) {
+      try {
+        const at = new Date(now()).toISOString();
+        // Hodina v UTC (`2026-10-07T21`); klíč vyprší po dvou.
+        if ((await raw.incr(`${prefix}:play:new-player:${at.slice(0, 13)}:${voter}`, 2 * 3600)) > perHour) return false;
+        // Den v UTC (T3b) jen pod hodinovým stropem: odmítnutý pokus den nespotřebuje.
+        return perDay === null || (await raw.incr(`${prefix}:play:new-player-day:${at.slice(0, 10)}:${voter}`, 2 * 24 * 3600)) <= perDay;
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async putBoardEntry(versionId, entry) {
+      const rank = bestRank(entry.score, entry.ticks);
+      try {
+        if ((await raw.incr(boardQuotaKey(entry.playerId), 2 * 24 * 3600)) > BOARD_DAILY_CAP_PER_PLAYER) return 'quota';
+        const { raised, place, of } = await raw.raiseRank(boardKey(versionId), entry.playerId, rank, BOARD_KEPT, limits.ttlSeconds);
+        const kept = raised && place !== null;
+        // Běh až po hodnocení, bez zámku: dva souběžné lepší běhy téhož hráče ho můžou zapsat v opačném
+        // pořadí. Běh proto nese své hodnocení a `board` přizná jen ten, jehož hodnocení sedí.
+        if (kept) await raw.set(boardRunKey(versionId, entry.playerId), JSON.stringify({ dareId: entry.dareId, rank }), limits.ttlSeconds);
+        return { raised: kept, place, of };
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async board(versionId, limit) {
+      const count = Math.min(Math.trunc(limit), BOARD_READ_MAX);
+      if (count <= 0) return [];
+      try {
+        const top = (await raw.top(boardKey(versionId), count)).filter(({ rank }) => Number.isSafeInteger(rank));
+        if (top.length === 0) return [];
+        const runs = await raw.getMany(top.map(({ member }) => boardRunKey(versionId, member)));
+        return top.map(({ member, rank }, index) => {
+          const run = parsedOrNull(runs[index] ?? null) as { dareId?: unknown; rank?: unknown } | null;
+          const dareId = run?.rank === rank && typeof run.dareId === 'string' && DARE_ID_PATTERN.test(run.dareId) ? run.dareId : null;
+          return { playerId: member, dareId, ...runOfRank(rank), place: index + 1 };
+        });
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async countFunnel(stage, versionId, session) {
+      const day = funnelDayOf(now());
+      try {
+        // simplified: id hry se neověřuje (o příkaz méně na událost); vymyšlená id nafouknou čísla jen v okně frekvence volajícího.
+        if (await raw.setNx(funnelSeenKey(day, stage, versionId, session), '1', 2 * 24 * 3600)) await raw.incr(funnelKey(day, stage), FUNNEL_TTL_SECONDS);
+      } catch {
+        // Trychtýř je statistika: nezapočtená událost hru nezdrží.
+      }
+    },
+    async funnel(days) {
+      const count = Math.max(0, Math.min(Math.trunc(days), FUNNEL_MAX_DAYS));
+      const dayList = Array.from({ length: count }, (_, back) => funnelDayOf(now() - (count - 1 - back) * 24 * 3600 * 1000));
+      let texts: (string | null)[];
+      try {
+        texts = count === 0 ? [] : await raw.getMany(dayList.flatMap((day) => FUNNEL_STAGES.map((stage) => funnelKey(day, stage))));
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+      return dayList.map((day, index) => ({
+        day,
+        counts: Object.fromEntries(
+          FUNNEL_STAGES.map((stage, at) => {
+            const value = Number(texts[index * FUNNEL_STAGES.length + at] ?? 0);
+            return [stage, Number.isSafeInteger(value) && value > 0 ? value : 0];
+          }),
+        ) as Record<FunnelStage, number>,
+      }));
     },
   };
   return store;
@@ -888,6 +1067,21 @@ function memoryRaw(
       });
       return Promise.resolve();
     },
+    raiseRank: (key, member, rank, keep, ttlSeconds) => {
+      const current = [...(liveSet(key) ?? [])];
+      const before = current.find(([other]) => other === member)?.[1].rank;
+      const raised = before === undefined || rank > before;
+      const ranked = raised ? [...current.filter(([other]) => other !== member), [member, { rank, at: now() }] as const] : current;
+      // Pořadí Redisu jako u `keepBest`; nad `keep` odejdou nejníž hodnocení – `ZREMRANGEBYRANK key 0 -(keep + 1)`.
+      ranked.sort(([am, a], [bm, b]) => a.rank - b.rank || (am < bm ? -1 : am > bm ? 1 : 0));
+      const kept = ranked.slice(-keep);
+      commit(key, () => {
+        sets.set(key, new Map(kept));
+        expiresAt.set(key, now() + ttlSeconds * 1000);
+      });
+      const index = kept.findIndex(([other]) => other === member);
+      return Promise.resolve({ raised, place: index === -1 ? null : kept.length - index, of: kept.length });
+    },
   };
 }
 
@@ -921,9 +1115,9 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
   /**
    * Příkazy jedním požadavkem transakce (`/multi-exec`): úložiště je provede
    * všechny bez proložení cizími, nebo žádný. Chyba jednoho další nezastaví
-   * (dokumentace Upstash REST, „Transactions“) – proto končí `EXPIRE`.
+   * (dokumentace Upstash REST, „Transactions“) – proto končí `EXPIRE`. Vrací výsledky příkazů v pořadí.
    */
-  const transaction = async (commands: readonly (readonly string[])[]): Promise<void> => {
+  const transaction = async (commands: readonly (readonly string[])[]): Promise<unknown[]> => {
     const response = await fetchImpl(`${config.url}/multi-exec`, {
       method: 'POST',
       headers,
@@ -934,6 +1128,7 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
     const results = (await response.json()) as unknown;
     if (!Array.isArray(results) || results.length !== commands.length || results.some((item) => typeof item !== 'object' || item === null || 'error' in item))
       throw new Error('version store refused part of a transaction');
+    return (results as { result?: unknown }[]).map(({ result }) => result);
   };
 
   const raw: RawStore = {
@@ -1013,6 +1208,18 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
         ['EXPIRE', key, String(ttlSeconds)],
         ['EXPIRE', written, String(ttlSeconds)],
       ]);
+    },
+    async raiseRank(key, member, rank, keep, ttlSeconds) {
+      const [changed, , , place, of] = await transaction([
+        ['ZADD', key, 'GT', 'CH', String(rank), member],
+        ['ZREMRANGEBYRANK', key, '0', String(-(keep + 1))],
+        ['EXPIRE', key, String(ttlSeconds)],
+        ['ZREVRANK', key, member],
+        ['ZCARD', key],
+      ]);
+      if (typeof changed !== 'number' || (place !== null && typeof place !== 'number') || typeof of !== 'number')
+        throw new Error('version store answered a shape this server cannot read');
+      return { raised: changed === 1, place: place === null ? null : place + 1, of };
     },
   };
   /** Členové seřazené množiny od indexu `from` do konce, od nejníž hodnoceného, se skóre. */

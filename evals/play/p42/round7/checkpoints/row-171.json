@@ -1,0 +1,218 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-035",
+    "sentence": "A samurai crosses the bamboo forest, no fighting, just sneaking past the guards.",
+    "seed": 1,
+    "milliseconds": 55.3747000000003,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "generator": "walker_stealth"
+      },
+      "addons": [],
+      "title": "samurai reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "forest",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Sneak past the guard and reach the exit.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "samurai",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "star",
+          "count": 1
+        },
+        {
+          "id": "guard",
+          "kind": "patrol",
+          "label": "guard",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Sneak past the guard and reach the exit.",
+        "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "d57c1a65",
+    "worldHash": "24cb8d28de191c4b7bf1c2b219a28cf32ed892c6487b70ed9ce3c89770b56291",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "samurai",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "samurai",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 72,
+          "roleId": "finish",
+          "label": "star",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 714,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "samurai",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "escape",
+        "object": {
+          "body": 73,
+          "roleId": "guard",
+          "label": "guard",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 715,
+        "evidence": "survived-threat:probe:guard",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "samurai",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 73,
+          "roleId": "guard",
+          "label": "guard",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 715,
+        "evidence": "survived-threat:probe:guard",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 73,
+          "roleId": "guard",
+          "label": "guard",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "verb": "guard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "samurai",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 24,
+        "evidence": "caught-in-patrol-sight",
+        "run": "probe",
+        "runId": "probe:guard"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "samurai",
+          "verb": "cross",
+          "object": "forest"
+        }
+      ],
+      "closest": "a maze game",
+      "reason": "Cross isn't here yet – here's a maze game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 2,
+      "proved": 2,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 715,
+      "hash": "751b30fa",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

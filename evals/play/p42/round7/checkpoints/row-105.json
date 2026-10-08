@@ -1,0 +1,165 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-021",
+    "sentence": "A delivery drone flies over the city to drop off pizzas, then lands on a rooftop.",
+    "seed": 5,
+    "milliseconds": 79.43269999999029,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "steer",
+      "controlParams": {
+        "difficulty": "normal",
+        "generator": "voyage_land",
+        "tuning": {
+          "gravity": 1000,
+          "touchdownSpeed": 19,
+          "gravityRisePct": 1
+        }
+      },
+      "genre": {
+        "id": "voyage",
+        "mode": "land",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Delivery Drone Landing",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 45,
+      "theme": {
+        "setting": "city",
+        "mood": "tense",
+        "look": "city"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Touch down slowly and level on the rooftop.",
+        "role": "pad"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 1
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "delivery drone",
+          "count": 1
+        },
+        {
+          "id": "pad",
+          "kind": "exit",
+          "label": "rooftop",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Land softly and level on the rooftop.",
+        "controlsHint": "Arrows or drag to tilt. Up, Space or a second finger fires the engine."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "335ee37b",
+    "worldHash": "027f3c392e7bb30070a2bb064593c5b11de5c69f18935c0323b5baf0ede58c7f",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "delivery drone",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "glide",
+        "object": null,
+        "tick": 44,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "delivery drone",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "land",
+        "object": {
+          "body": 1,
+          "roleId": "pad",
+          "label": "rooftop",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 834,
+        "evidence": "safe-landing",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "hero",
+          "verb": "deliver",
+          "object": "drone"
+        }
+      ],
+      "closest": "a driving game",
+      "reason": "Delivery isn't here yet – here's a driving game."
+    },
+    "score": {
+      "preserved": false,
+      "total": 3,
+      "proved": 2,
+      "missing": [
+        {
+          "actor": "drone",
+          "verb": "deliver",
+          "object": "pizza"
+        }
+      ],
+      "silent": [
+        {
+          "actor": "drone",
+          "verb": "deliver",
+          "object": "pizza"
+        }
+      ]
+    },
+    "hero": false,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 835,
+      "hash": "4d4d3d79",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}
