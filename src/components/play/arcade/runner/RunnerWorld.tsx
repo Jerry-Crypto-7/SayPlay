@@ -6,23 +6,25 @@ import { renderHeld } from '../effects/render-feel';
  * Svět běžce (P32-0 T5, vlastní P32A). Obal nad sdíleným `World` s pevným
  * ovládáním `runner`: kamera za hráčem a těla jsou společná, podklad je vlastní –
  * údolí s ledovou (písečnou, silniční…) dráhou a kulisy na jeho svazích (T3).
- * Hrdina se navíc hýbe jako postava – náklon do úhybu, odraz, póza jízdy – a stojí
- * na kontaktním stínu (T5, `heroMotion.ts`).
+ * Hrdina se navíc hýbe jako postava – náklon do úhybu, póza jízdy, krok a skok podle
+ * třídy těla (P45D T8) – a stojí na kontaktním stínu (T5, `heroMotion.ts`).
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { type RefObject, useEffect, useMemo, useRef } from 'react';
-import { Box3, DataTexture, type Group, LinearFilter, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type Object3D, Raycaster, Vector3 } from 'three';
+import { Box3, DataTexture, LinearFilter, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type Object3D, Raycaster, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
-import { UNIT } from '@/play/arcade/contract';
+import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 
 import { GhostSlot } from '../GhostSlot';
 import { buildValley, PLAYABLE_HALF } from '../look/rig/terrain/valley';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
-import { World, type WorldProps } from '../World';
+import { type ToyTarget, applyToy, toyMotionOn } from '../toy/applyToy';
+import { bodyClassOf } from '../toy/body-class';
+import { World, type WorldProps, toyTargetOf } from '../World';
 import { type Ride, blinksOnHit, createHeroMotion, rideOf } from './heroMotion';
 
 /** Údolí začíná za kamerou úvodního záběru a končí za koncem mlhy po cíli. */
@@ -118,7 +120,7 @@ function GroundProbe({ terrain }: { readonly terrain: RefObject<Mesh | null> }) 
 export interface HeroReport {
   /** Náklon do úhybu (°): + = na obrazovce doprava. */
   readonly roll: number;
-  /** Předklon obalu hrdiny (°) – póza jízdy; předklon běhu z `poseOf` je na vnitřní skupině. */
+  /** Předklon obalu hrdiny (°) – póza jízdy; předklon kroku z hračkové pózy je na vnitřní skupině. */
   readonly pitch: number;
   readonly ride: Ride;
   /** Krytí kontaktního stínu (0 = žádný). */
@@ -166,6 +168,20 @@ function heroIn(scene: Object3D): Object3D | null {
 }
 
 /**
+ * Vnitřní skupina pózy hrdiny, které `World` (P45D T7) dává hračkovou pózu: jen v ní
+ * leží model, který se hýbe – `toyTargetOf` mu zná díly. Riggovaná postava, primitiv
+ * a model, který se ještě načítá, ji nemají.
+ */
+function posedIn(root: Object3D): ToyTarget | null {
+  let found: ToyTarget | null = null;
+  root.traverse((node) => {
+    const target = toyTargetOf(node);
+    if (found === null && target.parts !== undefined) found = target;
+  });
+  return found;
+}
+
+/**
  * Pohyb hrdiny nad `World` (T5). Jeho snímek běží po snímku `World` (stejná priorita,
  * přihlášený později – `World` je dřív mezi sourozenci), takže poloha, přikrčení skluzu
  * a viditelnost, které `World` každý snímek zapíše znovu, tu už jsou; pohyb je jen
@@ -175,7 +191,12 @@ function HeroPose({ session, hero, rides }: { readonly session: ArcadeSession; r
   const scene = useThree((three) => three.scene);
   const ride = useMemo(() => rideOf(hero, rides), [hero, rides]);
   const blinks = useMemo(() => blinksOnHit(hero), [hero]);
-  const motion = useMemo(() => createHeroMotion(session, ride), [session, ride]);
+  const motion = useMemo(() => createHeroMotion(session, ride, bodyClassOf(hero)), [session, ride, hero]);
+  // Výška těla hrdiny (m) jako u `World` (`bodiesOf` při montáži): poskok a výpad hračkové pózy jsou v jejích podílech.
+  const h = useMemo(() => {
+    const state = session.state();
+    return (state[bodyBase(state[HEADER.player] as number) + BODY.h] as number) / UNIT;
+  }, [session]);
   const found = useRef<Object3D | null>(null);
   const shadow = useRef<Mesh>(null);
   const box = useMemo(() => new Box3(), []);
@@ -194,17 +215,20 @@ function HeroPose({ session, hero, rides }: { readonly session: ArcadeSession; r
     const group = found.current;
     const blob = shadow.current;
     if (group === null || blob === null) return;
-    const pose = motion.sample();
+    const pose = motion.sample(!toyMotionOn());
     blob.visible = group.visible;
     // Úhyb kolem směru běhu (osa z), až po předklonu jízdy: pořadí ZYX.
     group.rotation.set(pose.pitch, 0, pose.roll, 'ZYX');
-    const wide = 1 + pose.squash / 2;
-    group.scale.set(wide, group.scale.y * (1 - pose.squash), wide);
     if (blinks && pose.flash > 0 && Math.floor(pose.flash * 6) % 2 === 1) group.visible = false;
-    // Jízda neběží: poskok kroků, který `World` (`applyPose`) píše vnitřní skupině statického modelu, pryč.
-    // Riggovaná postava má vnitřní skupinou scénu GLB na nule, primitiv rovnou sítě.
-    const inner = group.children[0] as Group | undefined;
-    if (ride !== null && inner?.isGroup === true) inner.position.y = 0;
+    // Krok a skok podle třídy těla (P45D T8). `World` téže skupině v tomhle snímku zapsal hračkovou
+    // pózu sám; `applyToy` píše polohu, natočení i měřítko celé, takže póza hrdiny tu jeho nahradí,
+    // nesečte se s ní. Bliknutí po zásahu, které `World` zapsal po své póze, zůstává.
+    const posed = posedIn(group);
+    if (posed !== null) {
+      const shown = posed.group.visible;
+      applyToy(posed, pose.toy, h);
+      posed.group.visible = shown;
+    }
 
     // Náklon a předklon otáčí tělo kolem paty: nejnižší roh by se zabořil. Tělo se
     // zvedne o tolik, aby stálo na hraně, na kterou se naklání.
