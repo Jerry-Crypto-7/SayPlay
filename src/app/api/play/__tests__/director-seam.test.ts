@@ -21,7 +21,7 @@ import { resetRateWindows } from '@/server/rate-limit';
 import { upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
 import { resetProcessSpendCap } from '@/server/spend-cap';
 
-import { acquireSlot, resetConcurrency } from '../../worldstream/sessions/route';
+import { acquireSlot, resetConcurrency } from '@/server/paid-slots';
 import { DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS } from '../_director';
 import { POST as createGame } from '../games/route';
 import { GET as readUpgrade } from '../games/[id]/upgrade/route';

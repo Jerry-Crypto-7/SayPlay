@@ -7,9 +7,9 @@
  * chybějící beat. Všechny čtyři by prošly kontrolou, která jen sečte čísla —
  * a všechny čtyři vyrobí video jiné délky, než scénář tvrdí.
  *
- * Poslední blok míří na skutečný `docs/video-script.md`. Tvrdí o něm dvě věci,
- * které jinak nedrží nic: že je pod **2:50** (rezerva na střih, ne tvrdý limit)
- * a že v něm jsou všechny čtyři povinné beaty.
+ * Poslední blok míří na skutečný `docs/video-script.md`. Tvrdí o něm tři věci,
+ * které jinak nedrží nic: že je pod **2:50** (rezerva na střih, ne tvrdý limit),
+ * že v něm jsou všechny povinné scény a že prvních 15 s je věta → hraná hra.
  */
 
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -45,14 +45,19 @@ function table(rows: Array<[end: string, beat: string]>): string {
   return [...HEADER, ...lines].join('\n');
 }
 
-/** Scénář se všemi čtyřmi beaty, kde poslední úsek končí v `end`. */
+/** `m:ss` ze sekund, pro vzorky. */
+function at(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+/** Scénář ze scén po 15 s, kde poslední úsek končí v `end`. */
+function script(beats: readonly string[], end: string): string {
+  return table(beats.map((beat, index) => [index === beats.length - 1 ? end : at(15 * (index + 1)), beat]));
+}
+
+/** Scénář se všemi povinnými scénami, kde poslední úsek končí v `end`. */
 function fullScript(end: string): string {
-  return table([
-    ['0:20', 'world-builds'],
-    ['0:50', 'rule-rewind'],
-    ['1:10', 'offline'],
-    [end, 'winning-path'],
-  ]);
+  return script(REQUIRED_BEATS, end);
 }
 
 let dir: string;
@@ -159,26 +164,19 @@ describe('contiguityError: součet musí být skutečná stopáž', () => {
 });
 
 describe('missingBeats', () => {
-  it('scénář bez jednoho beatu neprojde, i když je krátký', () => {
-    const withoutOffline = table([
-      ['0:20', 'world-builds'],
-      ['0:50', 'rule-rewind'],
-      ['1:10', 'winning-path'],
-    ]);
-    expect(missingBeats(parseSegments(withoutOffline))).toEqual(['offline']);
-    expect(run('bez-offline', withoutOffline)).toBe(1);
+  it('scénář bez jedné scény neprojde, i když je krátký', () => {
+    const withoutLeaderboard = script(
+      REQUIRED_BEATS.filter((beat) => beat !== 'leaderboard'),
+      '1:40',
+    );
+    expect(missingBeats(parseSegments(withoutLeaderboard))).toEqual(['leaderboard']);
+    expect(run('bez-zebricku', withoutLeaderboard)).toBe(1);
   });
 
-  it('beat navíc nevadí, chybí-li nic', () => {
-    const withExtra = table([
-      ['0:20', 'world-builds'],
-      ['0:40', 'rule-rewind'],
-      ['1:00', 'offline'],
-      ['1:20', 'winning-path'],
-      ['1:40', 'zaver'],
-    ]);
+  it('scéna navíc nevadí, chybí-li nic', () => {
+    const withExtra = script([...REQUIRED_BEATS, 'close'], '2:00');
     expect(missingBeats(parseSegments(withExtra))).toEqual([]);
-    expect(run('beat-navic', withExtra)).toBe(0);
+    expect(run('scena-navic', withExtra)).toBe(0);
   });
 });
 
@@ -203,26 +201,32 @@ describe('argument a nečitelný soubor', () => {
 });
 
 describe('skutečný docs/video-script.md', () => {
-  const script = join(process.cwd(), 'docs', 'video-script.md');
+  const scriptFile = join(process.cwd(), 'docs', 'video-script.md');
 
   it('projde bránou', () => {
     const silent = vi.spyOn(console, 'log').mockImplementation(() => {});
     try {
-      expect(main([script])).toBe(0);
+      expect(main([scriptFile])).toBe(0);
     } finally {
       silent.mockRestore();
     }
   });
 
   it('je pod 2:50, ne jen pod tvrdým limitem 3:00', () => {
-    const segments = parseSegments(readFileSync(script, 'utf-8'));
+    const segments = parseSegments(readFileSync(scriptFile, 'utf-8'));
     expect(totalSeconds(segments)).toBeLessThan(SCRIPT_TARGET_SECONDS);
     expect(SCRIPT_TARGET_SECONDS).toBeLessThan(LIMIT_SECONDS);
   });
 
-  it('nese všechny čtyři povinné beaty', () => {
-    const segments = parseSegments(readFileSync(script, 'utf-8'));
+  it('nese všechny povinné scény', () => {
+    const segments = parseSegments(readFileSync(scriptFile, 'utf-8'));
     expect(missingBeats(segments)).toEqual([]);
-    expect(REQUIRED_BEATS).toHaveLength(4);
+    expect(REQUIRED_BEATS).toHaveLength(6);
+  });
+
+  it('prvních 15 s je věta → hraná hra', () => {
+    const [first] = parseSegments(readFileSync(scriptFile, 'utf-8'));
+    expect(first.beat).toBe('say-to-play');
+    expect(first.end).toBeLessThanOrEqual(15);
   });
 });

@@ -647,7 +647,7 @@ export const COMPARE_MODELS = {
   astra: { source: 'fallback', expect: /astra/i },
 };
 
-/** Kolik režií pustí dveře `play` na jedné instanci (`DOOR_CEILING.play` v `src/app/api/worldstream/sessions/route.ts`, test drží shodu). */
+/** Kolik režií pustí dveře `play` na jedné instanci (`DOOR_CEILING.play` v `src/server/paid-slots.ts`, test drží shodu). */
 export const PLAY_DOOR_SLOTS = 2;
 
 /** Proměnná primáru a její dvojče u zálohy. */

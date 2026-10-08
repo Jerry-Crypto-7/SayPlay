@@ -18,7 +18,7 @@ import { __resetProcessVersionStore, DEFAULT_WRITE_LIMITS, memoryVersionStore } 
 import { resetRateWindows } from '@/server/rate-limit';
 import { resetProcessSpendCap } from '@/server/spend-cap';
 
-import { resetConcurrency } from '../../worldstream/sessions/route';
+import { resetConcurrency } from '@/server/paid-slots';
 import { directorCallerOf, store } from '../_publish';
 import { __rememberedRemixes, __resetRemixes, MAX_REMEMBERED_REMIXES, remixJobId, startRemix } from '../_remix-jobs';
 import { GET as readGame } from '../games/[id]/route';

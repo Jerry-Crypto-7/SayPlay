@@ -16,9 +16,10 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 
 import { moodTone } from './Feed';
+import { FirstVisitHint, isFirstVisit, markVisited } from './FirstVisitHint';
 import { appendSpoken, MicButton } from './MicButton';
 import { BUILD_FAILED, COUNTER_WARN, IDEAS, NOT_SENT, OFFLINE, PLACEHOLDER, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, TOO_VAGUE } from './starters';
 import { BuildingScreen, Button, Icon, TabBar } from './ui';
@@ -50,6 +51,12 @@ export function CreateGame() {
   const [formSeen, setFormSeen] = useState(true);
   // „Make it!“ je aktivní i nad prázdným polem (reference kitu); prázdné odeslání řekne, co napsat.
   const [vague, setVague] = useState(false);
+  // Nápověda první návštěvy (P44D T12) je už v HTML ze serveru, aby pole pod ní neposkočilo (T18). Vracejícímu
+  // se hráči ji do hydratace schová `HIDE_FOR_RETURNING` a pak ji odebere layout efekt, ještě před dalším snímkem.
+  const [firstVisit, setFirstVisit] = useState(true);
+  useLayoutEffect(() => {
+    if (!isFirstVisit()) setFirstVisit(false);
+  }, []);
 
   const trimmed = sentence.trim();
   const over = sentence.length > SENTENCE_LIMIT;
@@ -85,6 +92,7 @@ export function CreateGame() {
       return;
     }
     setPhase({ kind: 'busy', step: 1 });
+    markVisited();
     router.push(body.url);
   }
 
@@ -112,6 +120,17 @@ export function CreateGame() {
 
   return (
     <>
+      {firstVisit && (
+        <FirstVisitHint
+          disabled={busy}
+          onPick={fill}
+          onTryOwn={() => fill(sentence)}
+          onClose={() => {
+            markVisited();
+            setFirstVisit(false);
+          }}
+        />
+      )}
       <form
         ref={form}
         className="play-form"

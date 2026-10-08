@@ -50,12 +50,13 @@ describe('deployedTarget', () => {
 describe('o adrese rozhoduje jedno místo', () => {
   // Tenhle test nejdřív ověří, že vůbec čte soubory: nula přečtených souborů
   // je selhání, ne čistý výsledek.
-  const readers = ['playwright.config.ts', 'e2e/worldstream-session.spec.ts'];
+  // Spec `worldstream-session` odešel se starým studiem (P44D T3); config zůstal.
+  const readers = ['playwright.config.ts'];
 
   it('config ani spec nečtou proměnnou přímo', () => {
     const sources = readers.map((path) => ({ path, text: readFileSync(join(ROOT, path), 'utf8') }));
 
-    expect(sources).toHaveLength(2);
+    expect(sources).toHaveLength(1);
     for (const source of sources) {
       expect(source.text.length).toBeGreaterThan(0);
       expect(source.path + ': ' + String(source.text.includes('process.env.FALLBACK_SMOKE_URL'))).toBe(

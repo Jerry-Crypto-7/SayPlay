@@ -24,6 +24,7 @@ const CLEANROOM = join(process.cwd(), 'scripts', 'cleanroom-check.mjs');
 const created: string[] = [];
 
 interface Registry {
+  aiGenerated?: unknown[];
   entries: Record<string, unknown>[];
 }
 
@@ -655,6 +656,59 @@ describe('license-gate: první strana není třetí strana (kontrola 1)', () => 
     expect(ownSection).toContain('nikdo třetí ho nevlastní');
     // Třetí strana zůstává tam, kde ji porotce hledá.
     expect(rendered.slice(rendered.indexOf('## Knihovny'))).toContain('cizí knihovna');
+  });
+});
+
+/**
+ * Oddíl o kódu a assetech od AI chtějí T&C a ze stromu odvodit nejde. Kdyby ho
+ * `--sync` při regeneraci zahodil, zmizí z veřejného výpisu potichu — registr i
+ * DISCLOSURE.md by spolu dál souhlasily a brána by byla zelená.
+ */
+describe('license-gate: oddíl AI-generated', () => {
+  const PARAGRAPH = 'The code was written with AI coding assistants.';
+
+  function repoWithAiSection(): string {
+    const dir = makeGreenRepo();
+    const registry = readRegistry(dir);
+    registry.aiGenerated = [PARAGRAPH];
+    writeRegistry(dir, registry);
+    run(LICENSE_GATE, dir, ['--sync']);
+    return dir;
+  }
+
+  it('--sync ho přenese do registru i nad tabulky DISCLOSURE.md a brána projde', () => {
+    const dir = repoWithAiSection();
+    run(LICENSE_GATE, dir, ['--sync']);
+
+    expect(readRegistry(dir).aiGenerated).toEqual([PARAGRAPH]);
+    const rendered = readFileSync(join(dir, 'DISCLOSURE.md'), 'utf8');
+    const section = rendered.indexOf('## AI-generated code and assets');
+    expect(section).toBeGreaterThan(-1);
+    expect(rendered.indexOf(PARAGRAPH)).toBeGreaterThan(section);
+    expect(rendered.indexOf(PARAGRAPH)).toBeLessThan(rendered.indexOf('## Knihovny'));
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([]);
+  });
+
+  it('DISCLOSURE.md bez oddílu, který registr má, shodí kontrolu 6 a nic jiného', () => {
+    const dir = repoWithAiSection();
+    const path = join(dir, 'DISCLOSURE.md');
+    const section = `## AI-generated code and assets\n\n${PARAGRAPH}\n\n`;
+    const rendered = readFileSync(path, 'utf8');
+    expect(rendered).toContain(section);
+    writeFileSync(path, rendered.replace(section, ''), 'utf8');
+
+    expect(failedChecks(run(LICENSE_GATE, dir).out)).toEqual([6]);
+  });
+
+  it('prázdný odstavec je vada tvaru registru, ne prázdný řádek ve výpisu', () => {
+    const dir = repoWithAiSection();
+    const registry = readRegistry(dir);
+    registry.aiGenerated = [PARAGRAPH, ' '];
+    writeRegistry(dir, registry);
+
+    const { out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toContain(1);
+    expect(out).toContain('"aiGenerated" musí být pole neprázdných odstavců');
   });
 });
 

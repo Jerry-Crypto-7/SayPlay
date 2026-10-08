@@ -1,7 +1,0 @@
-﻿# Accepted CLI proxy endpoint worker adapter
-
-Adds exactly trustedCliProxyEndpoint:{address,socket,networkNamespace,listenerClosed:true} to the existing four-FIFO authored HOME marker. The address is fixed loopback plus the actual owned port; socket identifies the accepted endpoint, not a listener or synthetic ingress socket. Base raw marker and HOME/proc/FD checks remain preserved through a private source-bound adapter. Worker namespace must differ from the trusted endpoint namespace; its three standard descriptors and any successful fixed proc FD opens must not alias the accepted socket. No socket/connect operation or body read occurs, and no connection denial is invented.
-
-adapt(private_base) returns a strict wrapper validator. collect(private_base) collects actual base probe and self network-namespace metadata. Output kind FIXED_TRUSTED_CLI_ENDPOINT_WORKER retains the original baseReport without rewriting raw stdout into the old schema. The fixed Linux no-argument main loads only the readonly regular /usr/bin/trusted-control-boundary-probe.py, then collects this wrapper; the external source inventory binds its exact bytes. The reviewed literal trampoline hook selects this fixed probe under the original control policy.
-
-Same fixed marker path, no arbitrary path/PID/environment. Unknown inherited descriptors fail through the base report. This is credential-free endpoint noninheritance, not authenticated-store or exclusive endpoint-author proof. Capsule integration and actual execution remain separate prerequisites.

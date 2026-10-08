@@ -16,7 +16,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { billedLine, getDirector } from '@/app/api/play/_director';
 import { type DraftFinalReason, upgradeAttemptLine, upgradeEndedLine } from '@/app/api/play/_upgrade';
-import { acquireSlot, DOOR_CEILING, resetConcurrency } from '@/app/api/worldstream/sessions/route';
+import { acquireSlot, DOOR_CEILING, resetConcurrency } from '@/server/paid-slots';
 import { draftGameSpec } from '@/play/draft';
 import { __resetProcessVersionStore } from '@/play/version';
 import { resetProcessSpendCap } from '@/server/spend-cap';
