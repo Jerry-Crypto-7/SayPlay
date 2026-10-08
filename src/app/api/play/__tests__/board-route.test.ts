@@ -139,6 +139,21 @@ describe.each(['memory', 'file'])('GET /api/play/games/:id/board over the %s sto
   });
 });
 
+describe('GET /api/play/games/:id/board while player identity is off (phase 2 review)', () => {
+  it.each([
+    ['Vercel', { VERCEL: '1' }],
+    ['a shared store', { KV_REST_API_URL: 'https://kv.invalid', KV_REST_API_TOKEN: 'FIXTURE_ONLY_TOKEN' }],
+  ])('on %s without PLAY_IDENTITY_SECRET → 503 IDENTITY_UNAVAILABLE, not an empty board', async (_where, env) => {
+    const { id } = await publishedGame();
+    vi.stubEnv('PLAY_IDENTITY_SECRET', '');
+    for (const [name, value] of Object.entries(env)) vi.stubEnv(name, value);
+    const off = await read(id);
+    expect(off.status).toBe(503);
+    expect(off.text).toContain('IDENTITY_UNAVAILABLE');
+    expect(off.text).not.toContain('"rows"');
+  });
+});
+
 describe('GET /api/play/games/:id/board when the shared store is down (P44B T6, phase 1 review)', () => {
   it('nedostupný Upstash → 503, ne 404 ani prázdný žebříček', async () => {
     vi.stubEnv('KV_REST_API_URL', 'https://kv.invalid');

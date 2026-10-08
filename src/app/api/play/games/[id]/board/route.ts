@@ -6,14 +6,17 @@
  * z platně podepsané cookie. Id hráče ani cookie do těla nejdou.
  *
  * Táž brána jako čtení hry (páka `snapshots`). Odpověď se liší podle cookie, proto `no-store`.
- * Výpadek úložiště je `503` – prázdný žebříček by lhal.
+ * Výpadek úložiště je `503` – prázdný žebříček by lhal. Stejně tak vypnutá identita (hostované
+ * nasazení bez `PLAY_IDENTITY_SECRET`): dveře výzvy pak žádný řádek nezapíší a „No scores yet“
+ * by u každé výhry lhalo navždy (nález revize hranice fáze 2) – `503` žebříček v UI skryje.
  */
 
 import { shownNickname } from '@/play/player/nickname';
 import { VersionStoreUnavailable } from '@/play/version';
-import { playerOf } from '@/server/player-identity';
+import { identitySecret, playerOf } from '@/server/player-identity';
 
 import { fail, notFound, VERSION_ID_PATTERN } from '../../../_errors';
+import { identityUnavailable } from '../../../_player';
 import { admit, markVolatileStore, store } from '../../../_publish';
 
 /** Kolik řádků žebříček ukáže. */
@@ -22,6 +25,7 @@ export const BOARD_SHOWN = 10;
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }): Promise<Response> {
   const refused = await admit(request, 'snapshots');
   if (refused !== null) return refused;
+  if (identitySecret() === null) return identityUnavailable();
 
   const { id } = await context.params;
   if (!VERSION_ID_PATTERN.test(id)) return markVolatileStore(notFound());
