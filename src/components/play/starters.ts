@@ -135,3 +135,5 @@ export const VIDEO_AFTER_RUN = 'Your video is ready when the run ends.';
  */
 export const CAN_YOU_BEAT_IT = 'Can you beat it?';
 export const DARE_BADGE = { survive: 'Survive!', hurry: 'Hurry!', none: 'Your turn!', dare: 'to beat' } as const;
+/** Kdo vyzývá (P44B T7): „Ada dares you“ nad výsledkem na kartě i v proužku výzvy. */
+export const daresYou = (name: string): string => `${name} dares you`;
