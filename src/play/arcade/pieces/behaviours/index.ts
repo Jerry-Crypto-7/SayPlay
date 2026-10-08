@@ -23,6 +23,7 @@
 import { z } from 'zod';
 
 import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase } from '../../contract';
+import { ambusher } from './ambusher';
 import { flanker } from './flanker';
 import { sniper } from './sniper';
 
@@ -43,8 +44,8 @@ export const BEHAVIOUR_SPACE: Readonly<Record<string, BehaviourSpace>> = {
   runner: 'track', platform: 'track', flap: 'track', steer: 'track', glide: 'track',
 };
 
-/** Jak scéna varování kreslí: čára výpadu, přejezd do pruhu, zamčená přímka výstřelu… */
-export type TelegraphKind = 'dash' | 'lane' | 'line';
+/** Jak scéna varování kreslí: čára výpadu, přejezd do pruhu, zamčená přímka výstřelu, chvění… */
+export type TelegraphKind = 'dash' | 'lane' | 'line' | 'shake';
 
 export interface PhaseTicks {
   /** Aspoň `TELEGRAPH_MIN`. */
@@ -97,9 +98,9 @@ export interface Behaviour {
 }
 
 /** Kód chování = pořadí + 1. Je součást hashe: nové jen na konec, nepřečíslovat. */
-export const BEHAVIOUR_IDS = ['flanker', 'sniper'] as const;
+export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher'] as const;
 export type BehaviourId = (typeof BEHAVIOUR_IDS)[number];
-export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper };
+export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher };
 
 /** Chování ve světě: id a index předlohy, ze které se čte podpis; `shot` = předloha výstřelu. */
 export const behaviourRefSchema = z.object({ id: z.enum(BEHAVIOUR_IDS), template: z.int().min(1), shot: z.int().min(1).optional() }).strict();
