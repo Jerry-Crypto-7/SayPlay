@@ -249,6 +249,22 @@ describe.each(['memory', 'file'])('POST …/dare feeds the leaderboard over the 
     expect(malformed.body.beat).toBeNull();
   });
 
+  it('beat: null, když živou změnu nese nový běh nebo uložená výzva; trychtýř beat nepočítá', async () => {
+    const { id, runs } = await publishedGame();
+    const [ada, bo] = [player(), player()];
+    const weaker = await send(id, { inputs: packInputs(runs.worse.inputs) }, ada.cookie);
+    const patched = await send(
+      id,
+      { inputs: packInputs(runs.better.inputs), patches: [{ tick: 0, patch: { kind: 'visual', weather: 'rain' } }], against: weaker.body.dareId },
+      bo.cookie,
+    );
+    expect(patched.body.beat).toBeNull();
+    const changedRival = { ...(await versions().getDare(weaker.body.dareId))!, dareId: 'c'.repeat(32), liveChanges: 1, score: 0, ticks: 1 };
+    expect(await versions().putDare(changedRival)).toBe('stored');
+    expect((await send(id, { inputs: packInputs(runs.better.inputs), against: changedRival.dareId }, bo.cookie)).body.beat).toBeNull();
+    expect((await versions().funnel(1))[0]?.counts.beat ?? 0).toBe(0);
+  });
+
   it('výpadek úložiště při zápisu žebříčku výzvu neshodí: board null', async () => {
     const { id, runs } = await publishedGame();
     vi.spyOn(versions(), 'putBoardEntry').mockRejectedValueOnce(new VersionStoreUnavailable('connect ECONNREFUSED'));
