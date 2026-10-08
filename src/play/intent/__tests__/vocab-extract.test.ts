@@ -22,6 +22,12 @@ describe('unknown verbs through the vocab table', () => {
     expect(intent.items).toContainEqual(expect.objectContaining({ axis: 'action', verb: 'fight', said: 'stabbing', mapped: true }));
   });
 
+  it('reads a gerund that dropped its e from the said word, not the stem', () => {
+    // gerundBase dá „straf“ – tabulka zná jen „strafe“; vyhledání tvaru umí -ing samo.
+    const intent = extractIntent('a strafing game');
+    expect(intent.items).toContainEqual(expect.objectContaining({ axis: 'action', verb: 'fight', said: 'strafing', mapped: true }));
+  });
+
   it('leaves a verb that is no game action unknown', () => {
     const intent = extractIntent('explain how volcanoes erupt');
     expect(intent.items.some((item) => item.mapped === true)).toBe(false);

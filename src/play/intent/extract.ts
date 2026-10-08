@@ -452,9 +452,10 @@ const RELATIVE_OBJECT_VERBS = new Set(['collect', 'catch', 'throw', 'deliver', '
 /**
  * Sloveso mimo tabulku: na osu, kam ho přiblíží tabulka P44C, jinak osa `unknown`.
  * Sloveso ruční rodiny („lassos“ → pastevectví) zůstává `unknown` – rodinu čte žánr z téhle osy.
+ * Tabulka čte napřed slovo z věty: tvary umí sama, kdežto `gerundBase` „strafing“ zkrátí na „straf“.
  */
-function unknownRow(verb: string): Row {
-  const vocab = familyOf(verb) === null ? vocabVerb(verb) : null;
+function unknownRow(verb: string, said: string): Row {
+  const vocab = familyOf(verb) === null ? (vocabVerb(said) ?? vocabVerb(verb)) : null;
   if (vocab?.axis != null && vocab.id !== null) return row(/$^/, [{ axis: vocab.axis, id: vocab.id, who: 'doer', fallback: false, mapped: true }]);
   return row(/$^/, [{ axis: 'unknown', id: verb, who: 'doer', fallback: false }]);
 }
@@ -580,7 +581,7 @@ function unknownHits(text: string, clauses: readonly (readonly [number, number])
       seen.add(at);
       return true;
     })
-    .map(({ at, said, verb }) => ({ row: unknownRow(verb), at, end: at + said.length, said }));
+    .map(({ at, said, verb }) => ({ row: unknownRow(verb, said), at, end: at + said.length, said }));
 }
 
 /** Hráč věty: „play as a fox“, „you are a knight“, „drive a car through…“ (lexikon `readRoles`). */
