@@ -32,9 +32,14 @@ const close = (state: Int32Array, a: number, b: number, extra = 0): boolean => {
     && state[p + BODY.y]! < state[q + BODY.y]! + state[q + BODY.h]! + extra
     && state[q + BODY.y]! < state[p + BODY.y]! + state[p + BODY.h]! + extra;
 };
+/**
+ * Délka vektoru na hashované cestě: `Math.sqrt` je podle IEEE 754 přesně zaokrouhlená
+ * v každém enginu, `Math.hypot` ne (tvar jako `length` v `arena.ts`, bez `floor`, ať se rychlosti nepohnou).
+ */
+const distance = (dx: number, dz: number, dy = 0): number => Math.sqrt(dx * dx + dy * dy + dz * dz);
 const moved = (state: Int32Array, part: Part) => {
   const b = bodyBase(part.body);
-  return Math.hypot(state[b + BODY.x]! - part.startX, state[b + BODY.y]! - part.startY, state[b + BODY.z]! - part.startZ) >= UNIT;
+  return distance(state[b + BODY.x]! - part.startX, state[b + BODY.z]! - part.startZ, state[b + BODY.y]! - part.startY) >= UNIT;
 };
 const pointAt = (path: Shared['path'], z: number) => {
   const after = path.find(p => p.z >= z) ?? path.at(-1)!;
@@ -78,7 +83,7 @@ export function makeAssemblyControl(controls: Readonly<Record<string, ControlPie
             }
           } else if (part.kind === 'rival' && params.length === 0) {
             const dx = part.goalX - state[b + BODY.x]!, dz = part.goalZ - state[b + BODY.z]!;
-            const span = Math.max(1, Math.hypot(dx, dz));
+            const span = Math.max(1, distance(dx, dz));
             vx = Math.round(dx / span * part.speed); vz = Math.round(dz / span * part.speed);
           } else if (params.length > 0) {
             vz = part.speed;
@@ -88,14 +93,14 @@ export function makeAssemblyControl(controls: Readonly<Record<string, ControlPie
           } else {
             // Prey flees in the arena; at the boundary it turns back into play.
             const dx = state[b + BODY.x]! - state[p + BODY.x]!, dz = state[b + BODY.z]! - state[p + BODY.z]!;
-            const span = Math.max(1, Math.hypot(dx, dz));
+            const span = Math.max(1, distance(dx, dz));
             vx = Math.round(dx / span * part.speed); vz = Math.round(dz / span * part.speed);
             if (Math.abs(state[b + BODY.x]!) > 7000) vx = -Math.sign(state[b + BODY.x]!) * part.speed;
             if (Math.abs(state[b + BODY.z]!) > 7000) vz = -Math.sign(state[b + BODY.z]!) * part.speed;
           }
         } else if (part.kind === 'chaser') {
           const dx = state[p + BODY.x]! - state[b + BODY.x]!, dz = state[p + BODY.z]! - state[b + BODY.z]!;
-          const span = Math.max(1, Math.hypot(dx, dz));
+          const span = Math.max(1, distance(dx, dz));
           vx = Math.round(dx / span * part.speed); vz = Math.round(dz / span * part.speed);
           vy = Math.max(-80, Math.min(80, state[p + BODY.y]! - state[b + BODY.y]!));
         } else if (part.kind === 'hazard') {
@@ -138,14 +143,14 @@ export const assemblyPart: RulePiece<z.infer<typeof partParams>> = {
     }
     if (part.kind === 'deliver' || part.kind === 'interact') {
       if (state[HEADER.held] === part.body + 1) {
-        const reached = Math.hypot(state[p + BODY.x]! - part.goalX, state[p + BODY.z]! - part.goalZ) < 1800;
+        const reached = distance(state[p + BODY.x]! - part.goalX, state[p + BODY.z]! - part.goalZ) < 1800;
         return reached ? [...finish, { kind: 'release' }, { kind: 'despawn', body: part.body }] : [];
       }
       return close(state, player, part.body, 300) && state[HEADER.held] === 0 ? [{ kind: 'grab', body: part.body }, { kind: 'stateChange', body: part.body, state: 1 }] : [];
     }
     if (part.kind === 'rival') {
       if (maze || length === 0) {
-        const arrived = (body: number) => Math.hypot(state[bodyBase(body) + BODY.x]! - part.goalX, state[bodyBase(body) + BODY.z]! - part.goalZ) < 1000;
+        const arrived = (body: number) => distance(state[bodyBase(body) + BODY.x]! - part.goalX, state[bodyBase(body) + BODY.z]! - part.goalZ) < 1000;
         if (arrived(part.body) && !arrived(player)) return [{ kind: 'lose' }];
         return arrived(player) && !arrived(part.body) ? finish : [];
       }
@@ -204,7 +209,7 @@ export function makeAssemblyBot(bots: Readonly<Record<string, BotPiece>>): BotPi
         ballPosition.z += ((recent.buttons & BUTTON.UP ? 1 : 0) - (recent.buttons & BUTTON.DOWN ? 1 : 0)) * 150;
       }
       const pursuer = params.parts.find(part => part.kind === 'chaser' && alive(state, part.body) && phaseReady(state, part, params.parts)
-        && Math.hypot(state[bodyBase(part.body) + BODY.x]! - state[p + BODY.x]!, state[bodyBase(part.body) + BODY.z]! - state[p + BODY.z]!) < 4500);
+        && distance(state[bodyBase(part.body) + BODY.x]! - state[p + BODY.x]!, state[bodyBase(part.body) + BODY.z]! - state[p + BODY.z]!) < 4500);
       if (pursuer) {
         const q = bodyBase(pursuer.body), dx = state[q + BODY.x]! - state[p + BODY.x]!, dz = state[q + BODY.z]! - state[p + BODY.z]!;
         if (params.control === 'ball') return { ...input, buttons: input.buttons | (dx > 0 ? BUTTON.LEFT : BUTTON.RIGHT) };
