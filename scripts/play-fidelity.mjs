@@ -591,16 +591,17 @@ export function paceTicks(endTick) {
 /**
  * Robot hraje jako v `clip` (ruční hodiny sondy) a klip fotí celý jeho běh podle
  * `paceTicks`. Hra bez sondy arkády se fotí ve skutečném čase a nese `robot: false`.
+ * `idle` (kalibrace soudce, T11): robot se nespustí, ruční hodiny tikají bez vstupu.
  */
-async function paceClip(page, base, id, path) {
+async function paceClip(page, base, id, path, idle = false) {
   await page.goto(`${base}/play/${id}`);
   await page.locator('canvas').first().waitFor({ timeout: 30_000 });
   const robot = await page.waitForFunction(() => typeof window.__playShell?.byHand === 'function', undefined, { timeout: 30_000 }).then(
     () => true,
     () => false,
   );
-  if (robot) {
-    await page.evaluate(() => window.__playShell.byHand(true));
+  if (robot) await page.evaluate(() => window.__playShell.byHand(true));
+  if (robot && !idle) {
     await page.getByTestId('play-pause').click();
     await page.getByTestId('play-demo-start').click({ timeout: 30_000 });
   }
@@ -630,10 +631,10 @@ async function paceClip(page, base, id, path) {
     frames.push(basename(frame));
     if (endedAtTick !== null) break;
   }
-  return { robot, frames, endedAtTick };
+  return { robot, idle, frames, endedAtTick };
 }
 
-async function runOne(sentence, base, runDir, page, { clip: withClip = false, pace = false, draftOnly = false } = {}) {
+async function runOne(sentence, base, runDir, page, { clip: withClip = false, pace = false, idle = false, draftOnly = false } = {}) {
   const started = Date.now();
   const response = await fetch(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence: sentence.text }) });
   const created = await response.json();
@@ -670,7 +671,7 @@ async function runOne(sentence, base, runDir, page, { clip: withClip = false, pa
   };
   result.draft.env = await shoot(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
   if (withClip) result.draft.clip = await clip(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
-  if (pace) result.pace = await paceClip(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
+  if (pace) result.pace = await paceClip(page, base, created.versionId, join(runDir, `${sentence.id}-draft`), idle);
   if (ai) result.ai.env = await shoot(page, base, upgrade.versionId, join(runDir, `${sentence.id}-ai`));
   if (ai && withClip) result.ai.clip = await clip(page, base, upgrade.versionId, join(runDir, `${sentence.id}-ai`));
   return result;
@@ -700,7 +701,7 @@ async function runSentences(sentences, options) {
     for (const sentence of sentences) {
       const path = join(runDir, `${sentence.id}.json`);
       if (existsSync(path)) continue;
-      const result = await runOne(sentence, base, runDir, page, { clip: options.clip === true, pace: options['pace-clip'] === true, draftOnly: options['draft-only'] === true });
+      const result = await runOne(sentence, base, runDir, page, { clip: options.clip === true, pace: options['pace-clip'] === true, idle: options.idle === true, draftOnly: options['draft-only'] === true });
       writeJson(path, result);
       const robot = result.draft.clip ? ` robot ${result.draft.clip.robot ? 'yes' : 'no'}` : '';
       console.log(`${sentence.id} ${result.ai ? 'ai' : `draft (${result.upgrade.reason ?? result.upgrade.status})`} ${Math.round(result.upgrade.ms / 1000)} s env ${result.ai?.env ?? result.draft.env}${robot}`);
@@ -1531,7 +1532,7 @@ if (isMain) {
   else {
     console.error('usage: node scripts/play-fidelity.mjs fun --set p45-panel|p45-sealed --base-a <url main> --base-b <url HEAD> --run <id> [--open-sealed-once] [--seed 45045] [--target-b 0.55] [--commit-a 0714a352] [--gpu]');
     console.error('usage: node scripts/play-fidelity.mjs pairwise --a <runId> --b <runId> --out <file> [--seed 45045] [--a-commit <sha>] [--b-commit <sha>] [--only <ids>] [--concurrency 2]');
-    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--pace-clip] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
+    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--pace-clip [--idle]] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
     process.exit(2);
   }
 }
