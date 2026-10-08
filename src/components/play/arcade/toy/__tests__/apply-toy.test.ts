@@ -129,14 +129,14 @@ describe('applyToy – hračková póza na skupinu modelu', () => {
     expect([deform.toyFlap.value, deform.toySway.value, deform.toyStride.value]).toEqual([0.7, -0.4, 0.3]);
   });
 
-  it('?toy=off nechá skupinu, díly i deformaci beze změny', () => {
+  it('?toy=off nechá skupinu, díly i deformaci beze změny, jen natočení scény platí', () => {
     stubPage('?toy=off', false);
     const group = new Group();
     group.position.set(1, 2, 3);
-    group.rotation.set(0.1, 0.2, 0.3);
+    group.rotation.set(0.1, 0.5, 0.3);
     const door = { pivot: new Group(), role: 'door', side: 1 };
     const deform: ToyDeform = { toyFlap: { value: 0 }, toySway: { value: 0 }, toyStride: { value: 0 } };
-    applyToy({ group, parts: [door], deform }, { ...REST, hop: 0.2, open: 1, flap: 1, flash: 0.5 }, 2);
+    applyToy({ group, parts: [door], deform }, { ...REST, hop: 0.2, open: 1, flap: 1, flash: 0.5, yaw: 1 }, 2, 0.2);
     expect(group.position.toArray()).toEqual([1, 2, 3]);
     expect([group.rotation.x, group.rotation.y, group.rotation.z]).toEqual([0.1, 0.2, 0.3]);
     expect(group.visible).toBe(true);

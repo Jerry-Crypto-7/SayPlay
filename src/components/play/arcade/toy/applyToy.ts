@@ -58,14 +58,19 @@ function posePart({ pivot, role, side }: ToyPart, pose: ToyPose): void {
   else if (role === 'tail' || role === 'fin') pivot.rotation.y = TAIL * (pose.sway + pose.stride);
 }
 
-/** Póza na model výšky `h` (m); s `?toy=off` nechá všechno, jak je. */
-export function applyToy(target: ToyTarget, pose: ToyPose, h: number): void {
-  if (toyOff()) return;
+/**
+ * Póza na model výšky `h` (m) natočený o `heading` (rad kolem y, směr chůze ze scény);
+ * natočení platí vždy, s `?toy=off` nic dalšího. Pořadí YXZ: předklon a úklon jsou
+ * v těle otočeném po směru, výpad jde po jeho lokálním +z.
+ */
+export function applyToy(target: ToyTarget, pose: ToyPose, h: number, heading = 0): void {
   const { group } = target;
-  group.position.y = (pose.hop + CHEER_HOP * pose.cheer) * h;
-  group.position.z = pose.lunge * h;
+  group.rotation.order = 'YXZ';
+  group.rotation.y = heading;
+  if (toyOff()) return;
+  group.position.set(Math.sin(heading) * pose.lunge * h, (pose.hop + CHEER_HOP * pose.cheer) * h, Math.cos(heading) * pose.lunge * h);
   tiltTo(group, pose.pitch, pose.recoil, pose.wobble, pose.fall, pose.roll);
-  group.rotation.y = pose.yaw;
+  group.rotation.y = heading + pose.yaw;
   squashPose(group, pose.squash);
   group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
   for (const part of target.parts ?? []) posePart(part, pose);

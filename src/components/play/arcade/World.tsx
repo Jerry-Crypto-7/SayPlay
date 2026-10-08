@@ -33,15 +33,17 @@ import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
+import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
 import { type BodyView, bodiesOf, bodiesStale, drawsNothing } from './bodies';
-import { deadFor, fallOf, headingOf, squashPose, tiltPose, turnToward } from './characterMotion';
+import { headingOf, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
 import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
-import { loadBodyModel } from './look/load';
+import { loadBodyModel, toyPartsOf } from './look/load';
+import { deformBody } from './look/toy-deform';
 import { HeroActionBody } from './hero-action/HeroActionBody';
 import { type Ink, InkOutline } from './look/rig/InkOutline';
 import { Scenery } from './look/Scenery';
@@ -54,6 +56,8 @@ import { WalkerBackdrop, WALKER_SCENE_KINDS, placeWalker } from './walker/Walker
 import { BallBackdrop, BALL_SCENE_KINDS, placeBall } from './ball/BallScene';
 import { SteerBackdrop, placeChase } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
+import { type ToyTarget, applyToy, toyMotionOn } from './toy/applyToy';
+import { bodyClassOf, motionOf } from './toy/body-class';
 import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
 
 /** Barva náhradního kvádru podle id těla; nic fialového. */
@@ -147,34 +151,60 @@ function ModelColumn({ id, w, h, d, fallback }: { readonly id: string; readonly 
  * Model je slitý do jedné sítě (`loadBodyModel`) a jeho matice jsou zmrazené: hýbe se
  * jen skupina těla a póza nad ním, přepočet vnitřku modelu každý snímek by byl zbytečný.
  */
-export function FittedModel({ id, w, h, d, fallback, character = false, fill = false }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string; readonly character?: boolean; readonly fill?: boolean }) {
+interface Fit {
+  readonly id: string;
+  readonly w: number;
+  readonly h: number;
+  readonly d: number;
+  readonly character?: boolean;
+  readonly fill?: boolean;
+  /** Role, která se hýbe (P45D T7): díly a deformace z `catalog-motion.json` pro `applyToy`. */
+  readonly posed?: boolean;
+}
+
+/** Díly a deformace vepsaného modelu, který se hýbe – smyčka `World` je najde pod vnitřní skupinou pózy. */
+const toyBits = new WeakMap<Object3D, Pick<ToyTarget, 'parts' | 'deform'>>();
+
+/** Hračkový cíl vnitřní skupiny pózy: skupina a díly a deformace modelu, který v ní leží. */
+export function toyTargetOf(inner: Object3D): ToyTarget {
+  const model = inner.children[0];
+  return { group: inner, ...(model === undefined ? undefined : toyBits.get(model)) };
+}
+
+/** Klon modelu vepsaný do kvádru těla; tělo, které se hýbe, dostane vlastní deformaci a pivoty s živou maticí. */
+export function fitModel(model: Object3D, { id, w, h, d, character = false, fill = false, posed = false }: Fit): Object3D {
+  const copy = model.clone(true);
+  const box = new Box3().setFromObject(copy);
+  const size = box.getSize(new Vector3());
+  const along = (length: number): number => Math.max(length, 1e-3);
+  const uniform = fitScale(size, { x: w, y: h, z: d }, character);
+  const scale = fill ? new Vector3(w / along(size.x), h / along(size.y), d / along(size.z)) : new Vector3(uniform, uniform, uniform);
+  copy.scale.copy(scale);
+  const center = box.getCenter(new Vector3());
+  copy.position.set(-center.x * scale.x, -box.min.y * scale.y, -center.z * scale.z);
+  if (posed) toyBits.set(copy, { parts: toyPartsOf(copy), deform: deformBody(copy, motionOf(id)?.regions) });
+  copy.traverse((node) => {
+    node.updateMatrix();
+    node.matrixAutoUpdate = node.userData.toyPart !== undefined;
+  });
+  return copy;
+}
+
+export function FittedModel({ id, w, h, d, fallback, character = false, fill = false, posed = false }: Fit & { readonly fallback: string }) {
   const [model, setModel] = useState<Object3D | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
-    void loadBodyModel(id).then((loaded) => {
+    void loadBodyModel(id, { posed }).then((loaded) => {
       if (live) setModel(loaded);
     });
     return () => {
       live = false;
     };
-  }, [id]);
-  const fitted = useMemo(() => {
-    if (model === null || model === undefined) return null;
-    const copy = model.clone(true);
-    const box = new Box3().setFromObject(copy);
-    const size = box.getSize(new Vector3());
-    const along = (length: number): number => Math.max(length, 1e-3);
-    const uniform = fitScale(size, { x: w, y: h, z: d }, character);
-    const scale = fill ? new Vector3(w / along(size.x), h / along(size.y), d / along(size.z)) : new Vector3(uniform, uniform, uniform);
-    copy.scale.copy(scale);
-    const center = box.getCenter(new Vector3());
-    copy.position.set(-center.x * scale.x, -box.min.y * scale.y, -center.z * scale.z);
-    copy.traverse((node) => {
-      node.updateMatrix();
-      node.matrixAutoUpdate = false;
-    });
-    return copy;
-  }, [model, w, h, d, character, fill]);
+  }, [id, posed]);
+  const fitted = useMemo(
+    () => (model === null || model === undefined ? null : fitModel(model, { id, w, h, d, character, fill, posed })),
+    [model, id, w, h, d, character, fill, posed],
+  );
   if (fitted !== null) return <primitive object={fitted} />;
   return (
     <mesh position={[0, h / 2, 0]}>
@@ -315,17 +345,6 @@ const TURN_MIN_MPS = 0.5;
 /** Jak rychle se postava dotočí po směru (1/s). */
 const TURN_RATE = 12;
 
-/**
- * Póza na vnitřní skupinu modelu: poskok, předklon, zmáčknutí (objem drží), bliknutí
- * a zakymácení po zásahu, pád po smrti (`dead` = sekundy od ní, P36C T8).
- */
-function applyPose(group: Group, pose: Pose, dead: number): void {
-  group.position.y = pose.bob;
-  tiltPose(group, pose.flash > 0 ? 1 - pose.flash : 1, fallOf(dead), pose.lean);
-  squashPose(group, pose.squash);
-  group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
-}
-
 export function World({ session, control, cast: baseCast, surface, scene, enabled, backdrop, heroAction, ghost }: WorldProps) {
   const cast = useMemo(() => {
     const objectives: Record<number, string> = {};
@@ -365,9 +384,10 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
   const drawClock = useRef(0);
   const hurtAt = useRef(-Infinity);
   const lastTick = useRef(0);
-  // Pohyb postav (P36C T8): natočení po směru (rad, po indexu těla) a tik smrti pro pád.
+  // Pohyb postav (P36C T8): natočení po směru (rad, po indexu těla); hračková póza (P45D T7) s pamětí minulého snímku.
   const yaws = useRef<(number | undefined)[]>([]);
-  const deaths = useRef(new Map<number, number>());
+  const toyPoses = useRef<(ToyPose | undefined)[]>([]);
+  const bodyClasses = useMemo(() => views.map((view) => bodyClassOf(modelIdOf(view, cast))), [views, cast]);
   useEffect(
     () =>
       session.onEvents((events) => {
@@ -390,6 +410,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
     if ((state[HEADER.tick] as number) < lastTick.current) {
       hurtAt.current = -Infinity;
       yaws.current = [];
+      toyPoses.current = [];
     }
     lastTick.current = state[HEADER.tick] as number;
     // Hit-stop (P36C T7, jako `FightFx` v aréně): jádro odtikalo, kresba i kamera 60 ms stojí.
@@ -398,6 +419,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
     // Póza jen čte stav; tik s podílem rozběhnutého kroku, ať poskok neskáče po 1/60 s.
     const tick = (state[HEADER.tick] as number) + alpha;
     posesOf(state, prev, poses.current, tick);
+    const reduced = !toyMotionOn();
     const turn = 1 - Math.exp(-delta * TURN_RATE);
     // Poloha těla ve scéně (m), x zrcadlené jako níž u `group.position`.
     const spotAt = (index: number): Spot => {
@@ -412,7 +434,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
     for (const view of views) {
       const inner = posed.current[view.index];
       const pose = poses.current[view.index];
-      const moving = POSED_ROLES.has(view.role) ? viewOf(state, prev, view.index) : null;
+      const moving = POSED_ROLES.has(view.role) ? toyViewOf(state, prev, view.index) : null;
       // P39 T16: pronásledovatel z věty v záběru – běžci v patách, plošinovce na kraji obrazu (`track-camera.ts`).
       // Útočí-li běžci zepředu, otočí se k hrdinovi čelem; jinak běží po trati jako on.
       const drawn = view.role === ROLE.chaser ? chaserSpot(control, spotAt(state[HEADER.player] as number), spotAt(view.index), camera.far, camera.aspect) : null;
@@ -421,9 +443,11 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       if ((control === 'platform' || control === 'walker') && moving !== null && (Math.hypot(moving.vx, moving.vz) * ARCADE_HZ) / UNIT > TURN_MIN_MPS) {
         yaws.current[view.index] = turnToward(yaws.current[view.index], headingOf(moving.vx, moving.vz), turn);
       }
-      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) {
-        applyPose(inner, pose, moving === null ? 0 : deadFor(deaths.current, view.index, moving.alive, tick, ARCADE_HZ));
-        inner.rotation.y = yaws.current[view.index] ?? 0;
+      // Hračková póza (P45D T7) podle stavu a třídy těla; mrtvý se převrhne, zásah blikne, výhra slaví.
+      if (inner !== null && inner !== undefined && moving !== null) {
+        const toy = toyPoseOf(moving, bodyClasses[view.index] ?? 'prop', toyPoses.current[view.index] ?? null, tick, reduced);
+        toyPoses.current[view.index] = toy;
+        applyToy(toyTargetOf(inner), toy, view.h, yaws.current[view.index] ?? 0);
       }
       // Po zásahu hrdina bliká (zhasíná vnitřek, ne skupinu – sondy záběru ji dál vidí).
       if (inner !== null && inner !== undefined && view.role === ROLE.player) inner.visible = !blinkHidden(sinceHurt);
@@ -548,6 +572,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                   d={view.kind === 'target' || ((view.kind === 'finish' || view.kind === 'goal') && cast.props.finish !== undefined) ? Math.max(view.d, view.w) : view.d}
                   fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
                   character={POSED_ROLES.has(view.role) && view.h >= Math.max(view.w, view.d)}
+                  posed={POSED_ROLES.has(view.role)}
                 />
               </group>
             )}
