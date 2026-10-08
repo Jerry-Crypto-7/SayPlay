@@ -23,7 +23,7 @@ Každý řádek nese i `intent` z `extractIntent` – proti němu T7 porovná `P
 12 `control`), napsaná dřív, než existuje kód P44C. Podagent napsal 115; `s44c-089` se po normalizaci shodovala
 s větou otevřené sady, a tak byla vyřazená podle id, bez čtení textu. SHA-256 nad LF bajty:
 `1113be1ad14359e07febd1d397e6a8aa3131e01e05f3ebfe4a0ef23f57a39e4a` (`dataset-seal.json`).
-Čte ji jen `open-sealed.ts` s `--open-sealed-once`, jednou (T14).
+Čte ji jen `open-sealed.ts` s `--open-sealed-once`, jednou (T14) – otevřeno 8. 10. 2026, výsledek v `result.md`.
 
 ## Kotvy a zlatá sada (T3)
 
