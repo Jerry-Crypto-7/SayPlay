@@ -153,6 +153,18 @@ describe('director answer schema (strict mode)', () => {
     }
   });
 
+  it('offers the model no logic construct until the answer can declare a logic block (P45B T10)', () => {
+    // Kostka bez bloku `logic` vždy propadne čtením; schéma s ní by navíc zneplatnilo cache odpovědí.
+    const logicKeys = new Set(['logic', 'timer', 'phase', 'phaseExit', 'var', 'event', 'inPhase', 'timerRunning', 'timerStopped', 'set', 'add', 'goPhase', 'startTimer', 'stopTimer', 'emit', 'wave']);
+    const offered: string[] = [];
+    walk(GENRE_ANSWER_SCHEMA as Json, (_node, path) => {
+      const key = /\/properties\/([^/]+)$/.exec(path)?.[1];
+      // `recipe.phases` je prostorové tempo trati (`compose/progression.ts`), ne logika.
+      if (key !== undefined && logicKeys.has(key) && (key === 'logic' || path.includes('/properties/rules/'))) offered.push(path);
+    });
+    expect(offered).toEqual([]);
+  });
+
   it('codex gets the schema file only when the request carries one', () => {
     // Za `exec`, ne před ním: `codex --output-schema … exec` končí „unexpected argument“.
     expect(codexArgs('m', 'high', 'C:/tmp/x', true).join(' ')).toMatch(/^exec .*--output-schema \S*answer-schema\.json/);

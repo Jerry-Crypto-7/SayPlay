@@ -88,7 +88,7 @@ export type RuleWhen = z.infer<typeof ruleWhenSchema>;
  * efekt s `other`, když spouštěč žádné tělo nemá (`press`, `every`, `counter`).
  * `within` je v celých metrech.
  */
-export const ruleIfSchema = z.union([
+const liveIfs = [
   z.object({ holding: roleRef }).strict(),
   z.object({ notHolding: z.literal(true) }).strict(),
   z
@@ -97,6 +97,9 @@ export const ruleIfSchema = z.union([
     })
     .strict(),
   z.object({ near: z.object({ role: roleRef, within: z.int().min(1).max(20) }).strict() }).strict(),
+] as const;
+export const ruleIfSchema = z.union([
+  ...liveIfs,
   // Logika (P45B): proměnná v mezi, hra ve fázi, časovač běží / stojí.
   z.object({ var: varBound }).strict(),
   z.object({ inPhase: logicId }).strict(),
@@ -115,7 +118,7 @@ const bodyRef = z.enum(['other', 'self', 'held']);
  * ho před sebe), `push` (strčí do těla, to po zemi dojede), `toggle` (tělesa
  * role se jednou přepnou – dveře zmizí, skrytý most se objeví).
  */
-export const ruleDoSchema = z.union([
+const liveDos = [
   z.object({ score: z.int().min(-100).max(100) }).strict(),
   z.object({ damage: z.int().min(1).max(10) }).strict(),
   z.object({ win: z.literal(true) }).strict(),
@@ -130,6 +133,9 @@ export const ruleDoSchema = z.union([
   z.object({ throwHeld: z.literal(true) }).strict(),
   z.object({ push: z.enum(['other', 'self']) }).strict(),
   z.object({ toggle: roleRef }).strict(),
+] as const;
+export const ruleDoSchema = z.union([
+  ...liveDos,
   // Logika (P45B): nastav / přičti proměnnou, přepni fázi, spusť / zastav časovač, vyšli
   // událost; `wave` pustí `count` těl role najednou – po obvodu (`edge`), kolem hráče
   // (`player`) nebo kolem těla, kterého se spouštěč týká (`other`).
@@ -163,6 +169,15 @@ export const rulesSchema = z.array(ruleSchema).max(RULES_MAX);
  */
 export const modelWhenSchema = ruleWhenSchema;
 export const modelRulesSchema = z.array(ruleSchema.extend({ when: modelWhenSchema })).max(RULES_MAX);
+
+/**
+ * Gramatika pravidel odpovědi režiséra (`director/answer-schema.ts`): bez kostek logiky (P45B).
+ * Blok `logic` do odpovědi přidá až T10 – do té doby by kostka bez něj vždy propadla a změna
+ * schématu by zbytečně zneplatnila cache odpovědí (`DIRECTOR_PROMPT_VERSION`).
+ */
+export const directorRulesSchema = z
+  .array(ruleSchema.extend({ when: z.union([...liveWhens, interactWhen(roleRef)]), if: z.array(z.union(liveIfs)).max(4).optional(), do: z.array(z.union(liveDos)).min(1).max(6) }))
+  .max(RULES_MAX);
 
 /**
  * Doplněk role pro pravidla: `start: 'hidden'` = tělo ve hře je, ale ukáže se

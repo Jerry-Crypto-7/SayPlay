@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 
-import { THINGS_MAX, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
+import { THINGS_MAX, directorRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { COUNT_PARAMS, COUNT_ROLES, type CountRole, type GenreModule, genreSpecSchema, ruleRoleSchema } from '../genre/contract';
 import { GENRE_MODULES, paramBoundsOf } from '../genre/index';
 import { ROLE_KINDS } from '../spec';
@@ -97,7 +97,7 @@ const RULE_ROLE_KINDS = ROLE_KINDS.filter((kind) => kind !== 'player') as [strin
 const RULE_DEFS: Readonly<Record<'ruleRoles' | 'things' | 'rules', Json>> = {
   ruleRoles: strictSchema(toJson(z.array(ruleRoleSchema.extend({ kind: z.enum(RULE_ROLE_KINDS) })).max(THINGS_MAX))),
   things: strictSchema(toJson(thingsSchema)),
-  rules: strictSchema(toJson(modelRulesSchema)),
+  rules: strictSchema(toJson(directorRulesSchema)),
 };
 
 /**
@@ -146,7 +146,8 @@ for (const schema of Object.values(nativeRecipeParams)) {
   }
 }
 export const recipeParamsSchema = z.object(Object.fromEntries(Object.entries(recipeParamBounds).map(([key, range]) => [key, z.int().min(range.min).max(range.max).optional()]))).strict();
-const contentShape = genreSpecSchema.options[0].omit({ genre: true, mode: true, params: true });
+// Blok `logic` (P45B) a jeho kostky přidá odpovědi až T10; do té doby pravidla jako před P45B.
+const contentShape = genreSpecSchema.options[0].omit({ genre: true, mode: true, params: true, logic: true }).extend({ rules: directorRulesSchema.optional() });
 export const recipeAnswerSchema = contentShape.extend({
   recipe: recipeSchema,
   params: recipeParamsSchema.optional(),
