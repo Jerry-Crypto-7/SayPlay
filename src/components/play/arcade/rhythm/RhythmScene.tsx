@@ -21,6 +21,7 @@ import { Vector3 } from 'three';
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
+import type { ToyPose } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 import { playTone } from '@/play/audio';
 
@@ -28,7 +29,8 @@ import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
-import { type BodyModel, initialBody } from '../timing/TimingScene';
+import { type BodyModel, beatPoseOf, initialBody } from '../timing/TimingScene';
+import { applyToy, toyMotionOn } from '../toy/applyToy';
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 
@@ -74,6 +76,9 @@ export function RhythmScene({
   const groups = useRef<(Group | null)[]>([]);
   const barMaterial = useRef<MeshStandardMaterial | null>(null);
   const flash = useRef<{ tick: number; hit: boolean } | null>(null);
+  // Hračková póza hrdiny (P45D T11): vnitřní skupina modelu a póza minulého snímku.
+  const heroPose = useRef<Group | null>(null);
+  const toyPose = useRef<ToyPose | null>(null);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(0, 0, 9), []);
   const edge = useMemo(() => new Vector3(), []);
@@ -112,6 +117,13 @@ export function RhythmScene({
       material.color.set(recent !== null ? (recent.hit ? '#22c55e' : '#dc2626') : near ? '#fde047' : '#e2e8f0');
       material.emissive.set(recent !== null || near ? material.color : '#000000');
       material.emissiveIntensity = recent !== null ? 0.8 : near ? 0.4 : 0;
+    }
+    // Trefa = poskok se zmáčknutím, minutí = zakymácení, výhra = oslava; do taktu se hrdina sám nehýbe.
+    const hero = heroPose.current;
+    if (hero !== null) {
+      const pose = beatPoseOf(state, prev, toyPose.current, tick + alpha, !toyMotionOn());
+      toyPose.current = pose;
+      applyToy({ group: hero }, pose, HERO_M.h);
     }
     // Na výšku (mobil) kamera ustoupí a zvedne se, ať jsou vidět všechny čtyři pruhy u lišty.
     const tan = Math.tan((camera.fov * Math.PI) / 360);
@@ -153,7 +165,7 @@ export function RhythmScene({
       </mesh>
       {heroModel !== undefined && (
         <group position={[-(bar.w / 2 + HERO_GAP_M), 0, HERO_Z_M]} rotation={[0, Math.PI, 0]}>
-          {heroModel(HERO_M.w, HERO_M.h, HERO_M.d)}
+          <group ref={heroPose}>{heroModel(HERO_M.w, HERO_M.h, HERO_M.d)}</group>
         </group>
       )}
       {/* Slot ducha (P37-0 T3) vedle lišty. */}
