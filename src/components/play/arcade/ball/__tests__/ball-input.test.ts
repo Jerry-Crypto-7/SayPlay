@@ -111,6 +111,19 @@ it('assembled ball arrow/WASD keys dribble in both axes, key-up stops, and input
   expect(replay(session.world,session.inputs(),ARCADE_LIBRARY,session.snapshot().tick).hash).toBe(hashArcade(session.state()));
  }finally{input.dispose();releasePhysics(session.state());}
 });
+it('composed pitch: a cancelled charge is dropped, so the next short drag shoots with its own strength',()=>{
+ const session=composedGame(),input=ballInput(session),p=bodyBase(session.state()[HEADER.player]!);
+ try {
+  input.down(1,200,100);input.move(1,200,160);
+  for(let i=0;i<15;i++)session.stepOnce();
+  expect(session.state()[p+BODY.aux1]).toBeGreaterThan(5);
+  input.cancel(1);session.stepOnce();
+  expect(session.state()[p+BODY.aux1]).toBe(0);
+  expect(session.state()[p+BODY.vz]).toBe(0);
+  input.down(2,200,100);input.move(2,200,103);session.stepOnce();
+  expect(session.state()[p+BODY.aux1]).toBe(1);
+ }finally{input.dispose();releasePhysics(session.state());}
+});
 it('composed touch dribble and aiming use independent fingers; releasing movement cannot fire',()=>{
  const session=composedGame(),input=ballInput(session),p=bodyBase(session.state()[HEADER.player]!);
  try {

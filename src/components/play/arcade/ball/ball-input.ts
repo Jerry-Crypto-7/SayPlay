@@ -21,7 +21,8 @@ export function ballInput(session: ArcadeSession) {
   };
   const cancel = () => {
     pointer = null; movement = null; keys.clear(); charging = false; keyboard = false; axis = 0;
-    session.hold(0); session.holdButtons(0); session.press(BUTTON.DOWN);
+    // On a composed pitch DOWN alone dribbles; DOWN+UP is the charge reset there.
+    session.hold(0); session.holdButtons(0); session.press(dribbles ? BUTTON.DOWN | BUTTON.UP : BUTTON.DOWN);
   };
   const release = () => {
     if (!charging) return;

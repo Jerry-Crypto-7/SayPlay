@@ -59,8 +59,9 @@ export function makeAssemblyControl(controls: Readonly<Record<string, ControlPie
     step(state, player, input, params) {
       const native = controls[params.base.id]!;
       // DOWN dribbles back on a composed pitch, so the native ball control must
-      // not read it as "drop the charge".
-      const nativeInput = params.control === 'ball' ? { ...input, buttons: input.buttons & ~BUTTON.DOWN } : input;
+      // not read it as "drop the charge"; the input layer signals that reset as DOWN+UP.
+      const resetCharge = (input.buttons & (BUTTON.DOWN | BUTTON.UP)) === (BUTTON.DOWN | BUTTON.UP);
+      const nativeInput = params.control === 'ball' && !resetCharge ? { ...input, buttons: input.buttons & ~BUTTON.DOWN } : input;
       native.step(state, player, nativeInput, paramsOf(native, params.base));
       const p = bodyBase(player);
       if (['runner', 'flap'].includes(params.control) && params.parts.some(part => part.kind === 'rival') && (input.buttons & BUTTON.DOWN)) state[p + BODY.vz] = Math.round(state[p + BODY.vz]! * 0.15);
