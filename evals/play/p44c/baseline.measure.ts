@@ -50,12 +50,13 @@ it('records per-sentence baseline on the open dev sets', async () => {
         intent: extractIntent(label.sentence) });
     }
     const open = (path: string) => {
-      const sentences = (readJson(path) as { sentences: Open[] }).sentences;
-      const chain = new Map(offlineChain(sentences).sentences.map((row: { id: string; items: { slot: string; why: string }[] }) => [row.id, row]));
+      const sentences = (readJson(path) as { sentences: (Open & Parameters<typeof offlineChain>[0][number])[] }).sentences;
+      const chain = new Map(offlineChain(sentences).sentences.map((row) => [row.id, row]));
       return sentences.map((sentence) => {
-        const why = chain.get(sentence.id)!.items.find((item) => item.slot === 'verb')?.why ?? null;
+        // Offline řetěz dá u slovesa `ok` nebo důvod ztráty; `not-recognized` vzniká jen se soudcem klipu.
+        const why: string | null = chain.get(sentence.id)!.items.find((item) => item.slot === 'verb')?.why ?? null;
         return { id: sentence.id, sentence: sentence.text, group: sentence.group ?? null, tags: sentence.tags ?? [],
-          verbWhy: why, verbRead: why === 'ok' || why === 'not-recognized', intent: extractIntent(sentence.text) };
+          verbWhy: why, verbRead: why === 'ok', intent: extractIntent(sentence.text) };
       });
     };
     const p37a = open('evals/play/p37a/dev-150.json');
