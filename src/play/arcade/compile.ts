@@ -13,7 +13,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
-import { type ArcadeParts, addonControlParams, addonLives, applyAddons } from './addons';
+import { type ArcadeParts, addonControlParams, addonLives, applyAddons, mapUnderlying, underlyingRule } from './addons';
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
@@ -249,12 +249,12 @@ function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: numb
   const keeper = level.bodies.length;
   const hero = level.bodies[0] as BodyInit;
   const counter: BodyInit = { role: 'thing', kind: hero.kind, x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true };
-  const clock = rules.find((ref) => ref.id === 'time_limit' || ref.id === 'survive_time')?.params as { readonly seconds: number } | undefined;
+  const clock = rules.map(underlyingRule).find((ref) => ref.id === 'time_limit' || ref.id === 'survive_time')?.params as { readonly seconds: number } | undefined;
   const limit = clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock.seconds * ARCADE_HZ);
   return {
     level: { ...level, bodies: [...level.bodies, counter] },
     rules: [
-      ...rules.map((ref) => (ref.id === 'pickup' || ref.id === 'shot_hit' ? { id: ref.id, params: { ...ref.params, combo: keeper } } : ref)),
+      ...rules.map((ref) => mapUnderlying(ref, (native) => (native.id === 'pickup' || native.id === 'shot_hit' ? { id: native.id, params: { ...native.params, combo: keeper } } : native))),
       { id: 'score_bonus', params: { lives, limit, target } },
     ],
   };

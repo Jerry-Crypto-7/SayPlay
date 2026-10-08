@@ -80,6 +80,10 @@ const baseControl = (parts: ArcadeParts): PieceRef => baseControlOf(parts.contro
 export const underlyingRule = (ref: PieceRef): PieceRef =>
   ref.id.startsWith('assembly_gate_') ? underlyingRule((ref.params as { base: PieceRef }).base) : ref;
 
+/** Pravidlo s upraveným nativním jádrem; obaly `assembly_gate_*` kolem něj zůstanou. */
+export const mapUnderlying = (ref: PieceRef, edit: (native: PieceRef) => PieceRef): PieceRef =>
+  ref.id.startsWith('assembly_gate_') ? { ...ref, params: { ...ref.params, base: mapUnderlying((ref.params as { base: PieceRef }).base, edit) } } : edit(ref);
+
 export interface AddonContext {
   readonly spec: GameSpecV1;
   readonly seed: number;
