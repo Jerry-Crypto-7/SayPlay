@@ -7,7 +7,9 @@
  * v `useFrame`, mimo hashovaný stav; klip volí scéna funkcí `clipOf` ze stavu
  * těla a tady se jen prolne. Klipy mapuje manifest (P32C T2); stav, na který
  * postava klip nemá (`procedural`, hit u Kenney), hraje nejbližší náhradu
- * a pohyb stavu (poskok, zásah, pád) k ní dopočítá `proceduralPose`.
+ * a pohyb stavu (poskok, zásah, pád) k ní dopočítá `proceduralPose`. Scéna,
+ * která předá pohled těla po tiku (`toy`), dostane místo něj hračkový pohyb
+ * (P45D T13): výpad, oslavu výhry, nesení a chůzi tam, kde klip chybí.
  */
 
 import { useFrame } from '@react-three/fiber';
@@ -16,11 +18,14 @@ import { type AnimationAction, AnimationMixer, type Group, LoopOnce, type Object
 import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
-import { PROCEDURAL_CLIP, type RiggedCharacter } from '@/play/arcade/models';
+import { PROCEDURAL_CLIP, RIGGED_PREFIX, type RiggedCharacter } from '@/play/arcade/models';
 import type { ClipState } from '@/play/arcade/motion';
+import { type ToyPose, type ToyView, toyPoseOf } from '@/play/arcade/toy-motion';
 
 import { HIT_S, fallOf, jumpStretchOf, landSquashOf, squashPose, tiltPose } from './characterMotion';
 import { mergeRig } from './look/load';
+import { applyToy, toyMotionOn } from './toy/applyToy';
+import { bodyClassOf } from './toy/body-class';
 
 /** Výška postavy v GLB – `scripts/assets/rigged/build.mjs` ji tak normalizuje. */
 const RIGGED_HEIGHT_M = 1.8;
@@ -72,6 +77,33 @@ export function poseTick(group: Group | null, held: HeldState | null, now: ClipS
   return next;
 }
 
+/** Pohled těla po tiku a tik s podílem (`tick + alpha`) – co scéna předá hračkovému pohybu postavy. */
+export interface ToyFrame {
+  readonly view: ToyView;
+  readonly tick: number;
+}
+
+/**
+ * Pohled bez toho, co postava hraje klipem (P45D T13): klip má přednost a hračka by ho
+ * zdvojila – poskok navrch klipu běhu. Klip kryje, z čeho ho volí `clipOf`: běh chůzi,
+ * skok vzlet i dopad, střelba výstřel hráče (úder nepřítele klip nemá), zásah zásah,
+ * smrt pád i zásah, kterým tělo zaniklo. Výhra a nesení klip nemají nikdy.
+ */
+export function unclippedView(view: ToyView, hasClip: (state: ClipState) => boolean): ToyView {
+  const still = hasClip('run');
+  const dieClip = !view.alive && hasClip('die');
+  return {
+    ...view,
+    vx: still ? 0 : view.vx,
+    vy: still ? 0 : view.vy,
+    vz: still ? 0 : view.vz,
+    grounded: view.grounded || hasClip('jump'),
+    alive: view.alive || dieClip,
+    hit: view.hit && !hasClip('hit') && !dieClip,
+    attack: view.attack && !(view.shot && hasClip('shoot')),
+  };
+}
+
 const cache = new Map<string, Promise<GLTF | null>>();
 
 function loadRigged(path: string): Promise<GLTF | null> {
@@ -103,6 +135,7 @@ export function RiggedModel({
   onClip,
   fallback,
   yaw,
+  toy,
 }: {
   readonly character: RiggedCharacter;
   /** Výška těla (m); postava se do ní vepíše. */
@@ -114,6 +147,11 @@ export function RiggedModel({
   readonly fallback: string;
   /** Natočení po směru pohybu (rad kolem y) – kde ho scéna nedrží sama nad modelem. */
   readonly yaw?: () => number;
+  /**
+   * Pohled těla po tiku (P45D T13): stavy bez klipu pak hraje `toyPoseOf` podle třídy
+   * postavy z manifestu; bez něj dnešní `poseTick`.
+   */
+  readonly toy?: () => ToyFrame;
 }) {
   const [gltf, setGltf] = useState<GLTF | null | undefined>(undefined);
   useEffect(() => {
@@ -159,12 +197,24 @@ export function RiggedModel({
   const holder = useRef<Group>(null);
   /** Stav těla a jak dlouho v něm je – pro pohyb stavu, na který postava klip nemá. */
   const held = useRef<HeldState | null>(null);
+  /** Hračková póza minulého snímku (P45D T13) a třída těla postavy podle manifestu (T5). */
+  const toyPose = useRef<ToyPose | null>(null);
+  const bodyClass = useMemo(() => bodyClassOf(`${RIGGED_PREFIX}${character.id}`), [character.id]);
   useFrame((_, delta) => {
     if (rig === null) return;
     const now = clip();
     const step = Math.min(delta, MAX_MIXER_STEP_S);
-    held.current = poseTick(holder.current, held.current, now, (state) => rig.actions.has(state), step, h);
-    if (yaw !== undefined && holder.current !== null) holder.current.rotation.y = yaw();
+    const hasClip = (state: ClipState): boolean => rig.actions.has(state);
+    const frame = toy?.();
+    if (frame === undefined) {
+      held.current = poseTick(holder.current, held.current, now, hasClip, step, h);
+      if (yaw !== undefined && holder.current !== null) holder.current.rotation.y = yaw();
+    } else if (holder.current !== null) {
+      // Póza čte jen pohled a tik; tik, který jde zpátky (restart), zahodí paměť minulého snímku.
+      const previous = toyPose.current !== null && frame.tick >= toyPose.current.at ? toyPose.current : null;
+      toyPose.current = toyPoseOf(unclippedView(frame.view, hasClip), bodyClass, previous, frame.tick, !toyMotionOn());
+      applyToy({ group: holder.current }, toyPose.current, h, yaw?.() ?? 0);
+    }
     const wanted = FALLBACK[now].find((candidate) => rig.actions.has(candidate)) ?? 'idle';
     if (wanted !== playing.current) {
       const next = rig.actions.get(wanted);
