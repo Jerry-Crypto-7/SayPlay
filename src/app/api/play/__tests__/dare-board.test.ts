@@ -11,17 +11,66 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ArcadeWorld, InputEvent } from '@/play/arcade/contract';
 import { packInputs } from '@/play/score/dare';
+import { scoredReplay } from '@/play/score/replay';
 import { __resetProcessVersionStore, versionStoreFromEnv, VersionStoreUnavailable } from '@/play/version';
-import { PLAYER_COOKIE } from '@/server/player-identity';
+import { issuePlayer, PLAYER_COOKIE } from '@/server/player-identity';
 import { resetRateWindows } from '@/server/rate-limit';
 
 import { NEW_PLAYERS_PER_HOUR_SHARED } from '../_player';
+import { NEAR_COPY_TICKS } from '../games/[id]/dare/route';
 import { GET as readDareRoute } from '../games/[id]/dare/[dareId]/route';
 import { GET as me } from '../me/route';
-import { freshCaller, player, publishedGame, SECRET, send } from './dare-fixtures';
+import { freshCaller, player, publishedGame, type Runs, SECRET, send } from './dare-fixtures';
 
 const versions = () => versionStoreFromEnv(process.env);
+
+/** Id hráče z hlavičky `set-cookie`. */
+const issuedId = (setCookie: string | null): string => (setCookie as string).split(';')[0]?.slice(PLAYER_COOKIE.length + 1).split('.')[0] as string;
+
+const shifted = (inputs: readonly InputEvent[], by: number): InputEvent[] => inputs.map((event) => ({ ...event, tick: event.tick + by }));
+
+/** Vstupy seřazené podle tiku, v jednom tiku jen první – jak je chce `scoredReplay`. */
+const ordered = (inputs: readonly InputEvent[]): InputEvent[] =>
+  [...inputs].sort((a, b) => a.tick - b.tick).filter((event, index, all) => index === 0 || all[index - 1]?.tick !== event.tick);
+
+/** Hash konce, když je `inputs` vítězný běh s týmž skóre a tiky ± `NEAR_COPY_TICKS` jako `original` a jiným koncem než `taken` (nová výzva), jinak `null`. */
+function sameScoreNewDare(world: ArcadeWorld, original: Runs['better'], inputs: readonly InputEvent[], taken: readonly string[] = []): string | null {
+  const run = scoredReplay(world, inputs, []);
+  const fits = run.outcome === 'won' && run.score === original.run.score && Math.abs(run.tick - original.run.tick) <= NEAR_COPY_TICKS;
+  return fits && ![original.run.hash, ...taken].includes(run.hash) ? run.hash : null;
+}
+
+/**
+ * Duch posunutý o nejmenší počet tiků, který dá novou výzvu se stejným skóre. Ve hrách, kde posun skončí týmž
+ * koncem (křeček s pár klepnutími), je kopie táž výzva a drží ji pravidlo prvního zapisovatele – `null`.
+ */
+function ghostCopy(world: ArcadeWorld, original: Runs['better'], taken: readonly string[] = []): { inputs: InputEvent[]; hash: string } | null {
+  for (let by = 1; by <= NEAR_COPY_TICKS; by += 1) {
+    const inputs = shifted(original.inputs, by);
+    const hash = sameScoreNewDare(world, original, inputs, taken);
+    if (hash !== null) return { inputs, hash };
+  }
+  return null;
+}
+
+/**
+ * Druhý poctivý hráč: vítězný běh s týmž skóre a tiky ± `NEAR_COPY_TICKS` jako `original`, ale s vlastní rukou –
+ * každý druhý stisk o pár tiků jinak, nebo slabší osa. Hry se skóre po krocích a pevným koncem takové běhy dávají
+ * běžně (měření T5b: přežití 60 s končí u všech vítězů 250 body v tiku 3 600).
+ */
+function lookAlike(world: ArcadeWorld, original: Runs['better']): InputEvent[] | null {
+  const hands: ((event: InputEvent, index: number) => InputEvent)[] = [3, -3, 5, -5, 8, -8, 12, -12].map(
+    (by) => (event, index) => (index % 2 === 0 ? event : { ...event, tick: Math.max(0, event.tick + by) }),
+  );
+  hands.push((event) => ({ ...event, axis: Math.trunc(event.axis * 0.6) }));
+  for (const hand of hands) {
+    const inputs = ordered(original.inputs.map(hand));
+    if (sameScoreNewDare(world, original, inputs) !== null) return inputs;
+  }
+  return null;
+}
 
 const dirs: string[] = [];
 
@@ -70,25 +119,61 @@ describe.each(['memory', 'file'])('POST …/dare feeds the leaderboard over the 
     const sent = await send(id, { inputs: packInputs(runs.better.inputs) });
     expect(sent.status).toBe(201);
     expect(sent.setCookie).toContain('HttpOnly');
-    const issued = (sent.setCookie as string).split(';')[0]?.slice(PLAYER_COOKIE.length + 1).split('.')[0] as string;
+    const issued = issuedId(sent.setCookie);
     expect(sent.text).not.toContain(issued);
     expect(sent.body.board).toEqual({ place: 1, of: 1 });
     expect((await versions().board(id, 10)).map(({ playerId }) => playerId)).toEqual([issued]);
   });
 
-  it('padělaná nebo zdvojená cookie: výzva 201 jako dnes, žebříček beze změny, žádná nová cookie', async () => {
+  it('jediná cookie se starým podpisem (restart, rotace) i padělaná dostane novou identitu a zápis; zdvojená dál nic (T5b)', async () => {
     const { id, runs } = await publishedGame();
+    const old = issuePlayer('STALE_FIXTURE_ONLY_NOT_A_REAL_SECRET_000');
+    const stale = await send(id, { inputs: packInputs(runs.better.inputs) }, `${PLAYER_COOKIE}=${old.value}`);
+    expect(stale.status).toBe(201);
+    expect(stale.setCookie).toContain('HttpOnly');
+    const renewed = issuedId(stale.setCookie);
+    expect(renewed).not.toBe(old.id);
+    expect(stale.body.board).toEqual({ place: 1, of: 1 });
+    // Padělek s cizím id vydá taky novou identitu – nikdy tu cizí.
     const ada = player();
-    const forged = `${PLAYER_COOKIE}=${ada.id}.${'A'.repeat(43)}`;
-    const sent = await send(id, { inputs: packInputs(runs.better.inputs) }, forged);
-    expect(sent.status).toBe(201);
-    expect(sent.setCookie).toBeNull();
-    expect(sent.body.board).toBeNull();
+    const forged = await send(id, { inputs: packInputs(runs.worse.inputs) }, `${PLAYER_COOKIE}=${ada.id}.${'A'.repeat(43)}`);
+    expect(forged.status).toBe(201);
+    const fresh = issuedId(forged.setCookie);
+    expect([old.id, ada.id, renewed]).not.toContain(fresh);
     const doubled = await send(id, { inputs: packInputs(runs.worse.inputs) }, `${ada.cookie}; ${player().cookie}`);
-    expect(doubled.status).toBe(201);
+    expect(doubled.status).toBe(200);
     expect(doubled.setCookie).toBeNull();
     expect(doubled.body.board).toBeNull();
-    expect(await versions().board(id, 10)).toEqual([]);
+    expect((await versions().board(id, 10)).map(({ playerId }) => playerId)).toEqual([renewed, fresh]);
+  });
+
+  it('téměř-kopie ducha: cizí běh posunutý o pár tiků žebříček nezmění ani podruhé, výzva platí; vlastní posun ano (T5b)', async () => {
+    const { id, world, runs } = await publishedGame((game, both) => ghostCopy(game, both.better) !== null);
+    const [ada, bo] = [player(), player()];
+    const copied = ghostCopy(world, runs.better) as NonNullable<ReturnType<typeof ghostCopy>>;
+    const first = await send(id, { inputs: packInputs(runs.better.inputs) }, ada.cookie);
+    expect(first.body.board).toEqual({ place: 1, of: 1 });
+    const copy = await send(id, { inputs: packInputs(copied.inputs) }, bo.cookie);
+    expect(copy.status).toBe(201);
+    expect(copy.body.dareId).not.toBe(first.body.dareId);
+    expect(copy.body.score).toBe(first.body.score);
+    expect(copy.body.board).toBeNull();
+    // Týž běh znovu – výzva už leží s autorem Bo – žebříčkem nepohne taky.
+    expect((await send(id, { inputs: packInputs(copied.inputs) }, bo.cookie)).body.board).toBeNull();
+    expect((await versions().board(id, 10)).map(({ playerId }) => playerId)).toEqual([ada.id]);
+    // Vlastní posunutý běh je pořád Adin.
+    const own = ghostCopy(world, runs.better, [copied.hash]);
+    expect(own).not.toBeNull();
+    expect((await send(id, { inputs: packInputs(own?.inputs ?? []) }, ada.cookie)).body.board).toEqual({ place: 1, of: 1 });
+  });
+
+  it('dva poctiví hráči se stejným skóre a blízkými tiky jsou v žebříčku oba (T5b)', async () => {
+    const { id, world, runs } = await publishedGame((game, both) => lookAlike(game, both.better) !== null);
+    const [ada, bo] = [player(), player()];
+    const other = lookAlike(world, runs.better) as InputEvent[];
+    expect((await send(id, { inputs: packInputs(runs.better.inputs) }, ada.cookie)).body.board).toEqual({ place: 1, of: 1 });
+    expect((await send(id, { inputs: packInputs(other) }, bo.cookie)).body.board).toEqual({ place: expect.any(Number), of: 2 });
+    expect((await versions().board(id, 10)).map(({ playerId }) => playerId).sort()).toEqual([ada.id, bo.id].sort());
   });
 
   it('běh se živou změnou je výzva, ale do žebříčku nejde', async () => {

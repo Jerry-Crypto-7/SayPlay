@@ -91,13 +91,23 @@ s přeházenými změnami – je **200** s týmž id a denní strop neubírá, n
 `{ dareId, score, ticks, board, beat }`, `cache-control: no-store`.
 
 **Žebříček (P44B T5)** píšou jen tyhle dveře. Hráč je z podepsané cookie `sp_player`; bez cookie se vydá nová
-(`set-cookie`, strop nových identit z `GET /api/play/me`), padělaná nebo zdvojená cookie novou nevydá a vypnutá identita
-(Vercel bez `PLAY_IDENTITY_SECRET`) taky ne – výzva pak platí bez autora jako dřív. Uložená výzva nese `by` = hráč, který ji
+(`set-cookie`, strop nových identit z `GET /api/play/me`). **Jediná cookie s neplatným podpisem dostane novou taky (T5b)**
+– cookie se starým tajemstvím (restart procesu bez zapisovatelného adresáře, rotace `PLAY_IDENTITY_SECRET`) je od padělku
+k nerozeznání a jinak by prohlížeč 400 dní tiše zůstal mimo žebříček; padělek tím nezíská nic víc než smazaná cookie (týž
+strop, nové id, nikdy to cizí). Tím se rozhodnutí debaty T1 „nová identita se nevydá místo padělané“ mění jen pro jedinou
+cookie: **zdvojená** cookie novou nevydá dál, stejně jako vypnutá identita (Vercel bez `PLAY_IDENTITY_SECRET`) – výzva pak
+platí bez autora jako dřív. Uložená výzva nese `by` = hráč, který ji
 zapsal první; ven ji nepustí žádná odpověď. Do žebříčku (`putBoardEntry`, skóre a tiky z přehrání) jde jen výhra bez
 živých změn a jen když běh patří tomuto hráči: výzva je nová (`201`), nebo už ležela s `by` = on. Duch je veřejný, takže
-kopie cizího běhu je táž výzva (`200`) a žebříčkem nepohne. `board: { place, of }` = místo hráče a kolik hráčů žebříček
-drží; `null` = běh se nezapsal (bez hráče, se změnami, cizí, nad denním stropem 30 zápisů hráče, mimo 50 nejlepších,
-nebo výpadek úložiště – ten výzvu neshodí). Nepovinné `against` (id výzvy) → `beat: true`, když `bestRank` běhu přebije
+kopie cizího běhu je táž výzva (`200`) a žebříčkem nepohne. **Posunutá kopie ducha (T5b)** – vstupy cizího běhu o pár tiků
+později – dá novou výzvu se stejným skóre; ta platí, ale do žebříčku nejde, když v něm jiný hráč má řádek téže hry se
+stejným skóre a tiky ± 30 (`NEAR_COPY_TICKS`) a vstupy obou běhů se po posunu o nejvýš 30 tiků shodují aspoň v 90 %
+tiků se vstupem (tlačítka stejná, osa ± 50). Shoda skóre a tiků sama nestačí: hry se skóre po krocích a pevným koncem ji
+dávají i poctivým hráčům (přežití 60 s – každý vítěz 250 bodů v tiku 3 600). Porovná se nejvýš 5 nejbližších řádků z 20
+nejlepších (jedno čtení výzvy každý); kopie s tiky rozházenými po jednom nebo se změněným skóre projde (`simplified:`
+v routě). `board: { place, of }` = místo hráče a kolik hráčů žebříček
+drží; `null` = běh se nezapsal (bez hráče, se změnami, cizí, kopie ducha, nad denním stropem 30 zápisů hráče, mimo 50
+nejlepších, nebo výpadek úložiště – ten výzvu neshodí). Nepovinné `against` (id výzvy) → `beat: true`, když `bestRank` běhu přebije
 uloženou výzvu téže hry, `false`, když ne; `null`, když není s čím srovnat (chybí, vadné id, cizí hra, neznámá výzva,
 nebo jeden z běhů měnil hru živými změnami). Testy: `src/app/api/play/__tests__/dare-board.test.ts`.
 

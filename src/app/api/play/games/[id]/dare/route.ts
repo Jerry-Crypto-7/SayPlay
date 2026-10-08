@@ -11,8 +11,9 @@
  * ducha; čte ho `GET …/dare/:dareId`.
  *
  * Žebříček (P44B T5) píšou jen tyhle dveře: ověřená výhra bez živých změn pod
- * hráčem z podepsané cookie (bez cookie se vydá nová), jen když běh patří jemu –
- * zapsal ho první (`by`). `board: { place, of } | null`; `beat` = porazil běh
+ * hráčem z podepsané cookie (bez cookie nebo s jedinou neplatnou se vydá nová),
+ * jen když běh patří jemu – zapsal ho první (`by`) a není to posunutá kopie ducha
+ * jiného hráče z žebříčku (T5b). `board: { place, of } | null`; `beat` = porazil běh
  * výzvu `against` téže hry (`null` = není s čím srovnat). Id hráče jde ven jen
  * v `set-cookie`.
  */
@@ -21,14 +22,14 @@ import { createHash } from 'node:crypto';
 
 import { z } from 'zod';
 
-import { ARCADE_LIMITS } from '@/play/arcade/contract';
+import { ARCADE_LIMITS, type InputEvent } from '@/play/arcade/contract';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import { type LiveEntry, TIMES_OF_DAY, WEATHERS } from '@/play/arcade/live';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { packInputs, unpackInputs } from '@/play/score/dare';
 import { scoredReplay } from '@/play/score/replay';
-import { bestRank, DARE_ID_PATTERN, type DareRecord, type DareReplay, type VersionStore, VersionStoreUnavailable } from '@/play/version';
-import { hasPlayerCookie, identitySecret, playerOf } from '@/server/player-identity';
+import { BOARD_READ_MAX, type BoardRow, bestRank, DARE_ID_PATTERN, type DareRecord, type DareReplay, type VersionStore, VersionStoreUnavailable } from '@/play/version';
+import { identitySecret, playerCookieCount, playerOf } from '@/server/player-identity';
 
 import { fail, notFound, readJsonBody, VERSION_ID_PATTERN } from '../../../_errors';
 import { rateLimitCode, spendDareWindow, takeRateSlot } from '@/server/rate-limit';
@@ -38,6 +39,55 @@ import { admit, callerOf, markVolatileStore, store, voterOf } from '../../../_pu
 
 /** Živých změn za jeden běh – hráč jich v okénku udělá pár; strop drží cenu přehrání. */
 export const MAX_DARE_PATCHES = 32;
+
+/** O kolik tiků smí běh cizího hráče se stejným skóre ležet od řádku žebříčku, aby se porovnaly vstupy (T5b). */
+export const NEAR_COPY_TICKS = 30;
+/** Kolik takových řádků se porovná vstup po vstupu; každý stojí jedno čtení výzvy z úložiště. */
+const NEAR_COPY_ROWS = 5;
+/** Podíl tiků se vstupem (z obou běhů), ve kterých se běh po posunu shoduje s cizím; od něj je to kopie ducha. */
+const NEAR_COPY_SHARE = 0.9;
+/** Rozdíl osy (z ±1000), který ještě počítá jako tentýž vstup. */
+const NEAR_COPY_AXIS = 50;
+
+/** Tiky s nenulovým vstupem. */
+function pressesOf(inputs: readonly InputEvent[]): Map<number, InputEvent> {
+  return new Map(inputs.filter((event) => event.buttons !== 0 || event.axis !== 0).map((event) => [event.tick, event]));
+}
+
+/** Shoduje se `mine` s `theirs` posunutým o nejvýš `NEAR_COPY_TICKS` tiků aspoň v `NEAR_COPY_SHARE` tiků se vstupem? */
+function copiesRun(mine: ReadonlyMap<number, InputEvent>, theirs: ReadonlyMap<number, InputEvent>): boolean {
+  for (let shift = -NEAR_COPY_TICKS; shift <= NEAR_COPY_TICKS; shift += 1) {
+    let same = 0;
+    for (const [tick, event] of mine) {
+      const other = theirs.get(tick - shift);
+      if (other !== undefined && other.buttons === event.buttons && Math.abs(other.axis - event.axis) <= NEAR_COPY_AXIS) same += 1;
+    }
+    if (same >= NEAR_COPY_SHARE * (mine.size + theirs.size - same)) return true;
+  }
+  return false;
+}
+
+/**
+ * Je běh téměř-kopie ducha jiného hráče v žebříčku téže hry (revize T5-1, T5b)? Duch je veřejný (`GET …/dare/:dareId`),
+ * takže jeho vstupy posunuté o tik dají novou výzvu se stejným skóre. Shoda skóre a tiků sama nestačí: hry se skóre
+ * po krocích a pevným koncem ji dávají i poctivým hráčům (přežití 60 s: každý vítěz 250 bodů v tiku 3 600) – proto
+ * rozhodují vstupy.
+ * simplified: celý běh posunutý najednou a jen `NEAR_COPY_ROWS` nejbližších řádků z `BOARD_READ_MAX`; kopie
+ * s rozházenými tiky po jednom nebo se změněným skóre projde. Upgrade, až se kopie objeví: duch jako dráha místo vstupů.
+ */
+async function nearCopyOf(versions: VersionStore, versionId: string, playerId: string, run: { readonly score: number; readonly tick: number }, inputs: readonly InputEvent[]): Promise<boolean> {
+  const rows = (await versions.board(versionId, BOARD_READ_MAX))
+    .filter((row): row is BoardRow & { readonly dareId: string } => row.playerId !== playerId && row.dareId !== null && row.score === run.score && Math.abs(row.ticks - run.tick) <= NEAR_COPY_TICKS)
+    .sort((a, b) => Math.abs(a.ticks - run.tick) - Math.abs(b.ticks - run.tick))
+    .slice(0, NEAR_COPY_ROWS);
+  const mine = pressesOf(inputs);
+  for (const row of rows) {
+    const replay = (await versions.getDare(row.dareId))?.replay;
+    const theirs = replay === undefined ? null : unpackInputs(replay.inputs);
+    if (Array.isArray(theirs) && copiesRun(mine, pressesOf(theirs))) return true;
+  }
+  return false;
+}
 
 const patchSchema = z.discriminatedUnion('kind', [
   // Roli kontroluje `patchProblem` při přehrání (jen role, které jde přidat a hra je má).
@@ -112,14 +162,16 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     .slice(0, 32);
   // Běh pro ducha (P37C T1): jen vstupy a změny, které přehrání opravdu spotřebovalo, znovu zhuštěné –
   // přehraje se k týmž bajtům hashe a vstupy po konci neberou místo v úložišti.
-  const replay: DareReplay = { v: 1, inputs: packInputs(inputs.filter((event) => event.tick < run.tick)), patches: played };
+  const consumed = inputs.filter((event) => event.tick < run.tick);
+  const replay: DareReplay = { v: 1, inputs: packInputs(consumed), patches: played };
 
-  // Hráč (P44B T5) z platné cookie; bez cookie dostane novou pod stropem T3. Padělaná nebo zdvojená cookie
-  // ani vypnutá identita novou nevydají a výzva platí bez autora – jako před P44B.
+  // Hráč (P44B T5) z platné cookie; bez cookie nebo s jedinou neplatnou (staré tajemství po restartu či rotaci –
+  // od padělku k nerozeznání, T5b) dostane novou pod stropem T3. Zdvojená cookie ani vypnutá identita novou
+  // nevydají a výzva platí bez autora – jako před P44B.
   const secret = identitySecret();
   let playerId = secret === null ? null : playerOf(request);
   let issued: Record<string, string> = {};
-  if (secret !== null && playerId === null && !hasPlayerCookie(request)) {
+  if (secret !== null && playerId === null && playerCookieCount(request) <= 1) {
     const minted = await mintPlayer(request, versions, secret);
     if (minted.ok) {
       playerId = minted.id;
@@ -150,12 +202,12 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (outcome === 'stored') await versions.countLoop(id, ['dare'], voterOf(request));
 
   // Do žebříčku jen výhra beze změn hry a jen hráči, kterému běh patří: zapsal ho první (debata T1).
-  // Duch je veřejný a jeho kopie je táž výzva (`exists`) – cizímu hráči žebříček nepohne.
+  // Duch je veřejný: jeho kopie je táž výzva (`exists`), posunutá kopie nová výzva bez žebříčku (T5b) – cizímu hráči nepohne.
   let board: { place: number; of: number } | null = null;
   if (playerId !== null && played.length === 0 && (outcome === 'stored' || (await versions.getDare(dareId))?.by === playerId)) {
     try {
-      const written = await versions.putBoardEntry(id, { playerId, dareId, score: run.score, ticks: run.tick });
-      if (written !== 'quota' && written.place !== null) board = { place: written.place, of: written.of };
+      const written = (await nearCopyOf(versions, id, playerId, run, consumed)) ? null : await versions.putBoardEntry(id, { playerId, dareId, score: run.score, ticks: run.tick });
+      if (written !== null && written !== 'quota' && written.place !== null) board = { place: written.place, of: written.of };
     } catch (thrown) {
       // Žebříček je navíc: výzva je uložená a odkaz na ni platí.
       if (!(thrown instanceof VersionStoreUnavailable)) throw thrown;

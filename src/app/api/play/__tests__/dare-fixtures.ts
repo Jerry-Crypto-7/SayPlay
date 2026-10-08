@@ -14,7 +14,7 @@ import { issuePlayer, PLAYER_COOKIE } from '@/server/player-identity';
 
 import { POST as createGame } from '../games/route';
 import { GET as readGame } from '../games/[id]/route';
-import { POST as dare } from '../games/[id]/dare/route';
+import { POST as dare, NEAR_COPY_TICKS } from '../games/[id]/dare/route';
 
 export const SECRET = 'FIXTURE_ONLY_NOT_A_REAL_SECRET_0000000000';
 export const CALLER = { 'x-forwarded-for': '203.0.113.9' };
@@ -56,7 +56,10 @@ export interface Runs {
   readonly worse: { readonly inputs: InputEvent[]; readonly run: ScoredRun };
 }
 
-/** Dva vítězné běhy téže hry s různým hodnocením: robot a robot, který začne o chvíli později. */
+/**
+ * Dva vítězné běhy téže hry s různým hodnocením: robot a robot, který začne o chvíli později. Horší se od lepšího
+ * liší skóre nebo víc než `NEAR_COPY_TICKS` tiky – jinak by ho dveře výzvy u jiného hráče braly jako kopii ducha (T5b).
+ */
 function twoRuns(world: ArcadeWorld): Runs | null {
   const bot = runBot(world).inputs;
   const won = [0, 10, 20, 40, 60, 90]
@@ -64,18 +67,25 @@ function twoRuns(world: ArcadeWorld): Runs | null {
     .filter(({ run }) => run.outcome === 'won' && run.refusedPatch === null)
     .sort((a, b) => bestRank(b.run.score, b.run.tick) - bestRank(a.run.score, a.run.tick));
   const [better, ...rest] = won;
-  const worse = rest.find(({ run }) => better !== undefined && bestRank(run.score, run.tick) < bestRank(better.run.score, better.run.tick));
+  const worse = rest.find(
+    ({ run }) =>
+      better !== undefined &&
+      bestRank(run.score, run.tick) < bestRank(better.run.score, better.run.tick) &&
+      (run.score !== better.run.score || Math.abs(run.tick - better.run.tick) > NEAR_COPY_TICKS),
+  );
   return better === undefined || worse === undefined ? null : { better, worse };
 }
 
-export async function publishedGame(): Promise<{ id: string; runs: Runs }> {
+/** První úvodní hra se dvěma vítěznými běhy, která navíc splní `fits`. */
+export async function publishedGame(fits: (world: ArcadeWorld, runs: Runs) => boolean = () => true): Promise<{ id: string; world: ArcadeWorld; runs: Runs }> {
   for (const { sentence } of STARTERS) {
     const created = await createGame(post('/api/play/games', { sentence }, CALLER));
     const { versionId } = (await created.json()) as { versionId: string };
     const read = await readGame(new Request(`http://play.test/api/play/games/${versionId}`, { headers: CALLER }), params(versionId));
     const world = ((await read.json()) as { arcade?: ArcadeWorld }).arcade;
-    const runs = world === undefined ? null : twoRuns(world);
-    if (runs !== null) return { id: versionId, runs };
+    if (world === undefined) continue;
+    const runs = twoRuns(world);
+    if (runs !== null && fits(world, runs)) return { id: versionId, world, runs };
   }
   throw new Error('no starter game has two winning runs of different rank');
 }
