@@ -172,7 +172,8 @@ describe('the thing the player uses is never a role', () => {
     // Od P36A T10 Střílečka: goblini jdou ve vlnách jako nepřítel, šíp není role.
     const elf = draftOf('An elf shoots arrows at goblins in a forest');
     expect(elf.genre).toMatchObject({ genre: 'shooter', cast: expect.arrayContaining([{ label: 'goblin', does: 'shoot_at' }]) });
-    expect(elf.spec.roles.map((role) => role.label)).not.toContain('arrow');
+    // P42: pojmenovaný náboj je munice (role `ammunition`, druh item) – šíp je čím hráč střílí, nikdy nepřítel.
+    expect(elf.spec.roles.filter((role) => role.label === 'arrow')).toEqual([expect.objectContaining({ id: 'ammunition', kind: 'item' })]);
   });
 });
 
@@ -191,12 +192,13 @@ describe('the AI version adds what the sentence says and the quick version misse
 
   // P36A T3: rychlá verze honiče už nemine – výchozí pronásledovatel úkolu nese nepřítele z věty (psa).
   // Odpověď, která psa nechá, se hraje jako autorská a psa nese dál. Do P36A T10 to byla věta SNOW; hod je teď
-  // vlastní žánr bez honiče, takže prostorový úkol nese praskání balónků.
+  // vlastní žánr bez honiče, takže prostorový úkol nese praskání balónků. P42 větu skládá jako běh s honičem
+  // a balónky jako díl; odpověď je rychlá verze, jak je – `chasers` má jen úkol, běžec ho odmítne (i na main).
   it('plays the chaser the sentence names – the quick version already has it as the default quest chaser', async () => {
     const CHASED = 'A kid pops balloons at a fair while a dog chases him';
     const quick = draftOf(CHASED);
     expect(quick.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog' }));
-    const game = await directed(CHASED, { ...quick.genre!, params: { chasers: 1 } });
+    const game = await directed(CHASED, quick.genre!);
     expect(game.source).toBe('authored');
     expect(game.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog' }));
     expect(game.unmet).toEqual(missingActions(extractIntent(CHASED), await actionEvidence(game.spec, 1)));

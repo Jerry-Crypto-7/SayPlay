@@ -42,10 +42,12 @@ function compiled(answer = genreAnswer(), sentence?: string): GameSpecV1 {
   const read = readGenreAnswer(counted, undefined, sentence);
   if (!read.ok) throw new Error(`${read.reason}: ${read.detail}`);
   if (sentence !== undefined || !answer.spec.cast?.some(item => item.does === 'collect')) return read.spec;
-  const selected=draftGameSpecWithMeta(SENTENCE).composition?.cellId;
-  const cell=liveCells().find(cell=>cell.id===selected);
-  if(cell===undefined)throw new Error('Expected a live legacy fixture');
-  return compileRecipe(assemblyOfCell(cell,{...read.genre,genre:cell.preset.genre,mode:cell.preset.mode} as GenreSpec));
+  const composition = draftGameSpecWithMeta(SENTENCE).composition;
+  // P42: věta se skládá z dílů (`assembled.<pohyb>`), ne z živé buňky žánru – režisér složení zkompiluje s obsahem odpovědi.
+  if (composition?.recipe.preset === 'assembled') return compileRecipe({ ...composition.recipe, content: { ...read.genre, genre: composition.recipe.content.genre, mode: composition.recipe.content.mode } as GenreSpec });
+  const cell = liveCells().find(cell => cell.id === composition?.cellId);
+  if (cell === undefined) throw new Error('Expected a live legacy fixture');
+  return compileRecipe(assemblyOfCell(cell, { ...read.genre, genre: cell.preset.genre, mode: cell.preset.mode } as GenreSpec));
 }
 
 const KEYPOINT: RepairIssue = { code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: 'keypoint winnable failed: the robot never won', repairHint: 'fix the game or the claim' };
