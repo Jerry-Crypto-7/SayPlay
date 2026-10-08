@@ -62,9 +62,9 @@ const BODY_OF_CLASS = {
 };
 
 /** Zvířata a příšery, které plavou; složeniny na „-fish“ se počítají jako „fish“. */
-export const SWIMMERS = new Set(['fish', 'shark', 'whale', 'octopus', 'squid', 'eel', 'snake', 'dolphin', 'narwhal', 'ray', 'seahorse', 'piranha', 'puffer', 'koi', 'betta', 'tetra', 'tuna', 'turbot', 'snapper', 'tang', 'humphead', 'worm']);
+export const SWIMMERS = new Set(['fish', 'shark', 'whale', 'orca', 'octopus', 'squid', 'eel', 'snake', 'dolphin', 'narwhal', 'ray', 'seahorse', 'piranha', 'puffer', 'koi', 'betta', 'tetra', 'tuna', 'turbot', 'snapper', 'tang', 'humphead', 'worm']);
 /** Zvířata a příšery, které létají. */
-export const FLYERS = new Set(['bat', 'bee', 'wasp', 'butterfly', 'dragon', 'dragonfly', 'housefly', 'mosquito', 'griffin', 'flying']);
+export const FLYERS = new Set(['bat', 'bee', 'wasp', 'butterfly', 'dragon', 'dragonfly', 'firefly', 'housefly', 'mosquito', 'griffin', 'flying']);
 /** Třída těla, kterou slovo id určí lépe než manifest (robotický vysavač nemá nohy). */
 const BODY_OF_WORD = { roomba: 'vehicle' };
 
@@ -109,6 +109,24 @@ export function roleOf(name, catalog = false) {
 
 const idWords = (assetId) => assetId.replace(/^(?:cc0|gen3d)-/, '').split('-');
 
+/** Plave nebo létá podle slov jména (výjimky zvířat a příšer); `null` = nic z toho. */
+const exceptionOf = (words) => {
+  if (words.some((word) => SWIMMERS.has(word.replace(/^.+fish$/, 'fish')))) return 'swimmer';
+  if (words.some((word) => FLYERS.has(word))) return 'flyer';
+  return null;
+};
+
+/** Třída těla podstatného jména bez modelu (P45D T16, šablona zadání generátoru); `null` = slova třídu neznají. */
+export function bodyOfNoun(noun) {
+  const words = noun.toLowerCase().split(/[\s-]+/);
+  const kind = heroClass(noun);
+  if (kind === null || kind === 'animal' || kind === 'monster') {
+    const exception = exceptionOf(words);
+    if (exception !== null) return exception;
+  }
+  return kind === null ? null : BODY_OF_CLASS[kind] ?? null;
+}
+
 /** Třída těla modelu (viz hlavička souboru). */
 export function bodyClassOf(asset, manifestClass, hasMechanism) {
   if (hasMechanism) return 'prop';
@@ -118,8 +136,8 @@ export function bodyClassOf(asset, manifestClass, hasMechanism) {
   // Víceslovné id mimo manifest je kulisa, kterou P32 vyřadil („hot-dog“, „fish-tank“).
   const kind = manifestClass ?? (words.length === 1 ? heroClass(words[0]) : null);
   if (kind === 'animal' || kind === 'monster') {
-    if (words.some((word) => SWIMMERS.has(word.replace(/^.+fish$/, 'fish')))) return 'swimmer';
-    if (words.some((word) => FLYERS.has(word))) return 'flyer';
+    const exception = exceptionOf(words);
+    if (exception !== null) return exception;
   }
   if (kind !== null && kind !== undefined && BODY_OF_CLASS[kind] !== undefined) return BODY_OF_CLASS[kind];
   const [width, height, depth] = asset.bounds.max.map((max, axis) => max - asset.bounds.min[axis]);
