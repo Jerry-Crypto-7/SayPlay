@@ -17,6 +17,7 @@ import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 import type { ArcadeParts } from '../addons';
 import { ARCADE_LIMITS, type ArcadeEffect, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, type RulePiece, bodyBase } from '../contract';
 import { ESCAPE } from './arena';
+import { type BehaviourId, type BehaviourSpace, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, stepBehaviours } from './behaviours';
 import { FIGHT } from './fight';
 import { spotsAway } from './waves';
 
@@ -161,8 +162,10 @@ export const reachedOf = (state: Int32Array, keeper: number): number => state[bo
 
 const refSchema = z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) });
 
-const controlParams = z.object({ base: refSchema, goal: pacingGoalSchema, keeper: z.int().min(1) }).strict();
-const botParams = z.object({ base: refSchema, control: z.string(), keeper: z.int().min(1) }).strict();
+/** Chování nepřátel ve hře (P45C T4): předlohy, podle jejichž podpisu se těla poznají. */
+const behaviourRefs = z.array(behaviourRefSchema).min(1).max(8);
+const controlParams = z.object({ base: refSchema, goal: pacingGoalSchema, keeper: z.int().min(1), behaviours: behaviourRefs.optional(), space: z.enum(['plane', 'track']).optional() }).strict();
+const botParams = z.object({ base: refSchema, control: z.string(), keeper: z.int().min(1), behaviours: behaviourRefs.optional() }).strict();
 
 const parsed = new WeakMap<object, unknown>();
 /** Parametry základního kusu přečtené schématem jednou (výchozí hodnoty doplní zod). */
@@ -196,7 +199,7 @@ const intensityOf = (state: Int32Array, keeper: number): number => intensityAt(r
 
 /**
  * `pacing_control`: posune počítadlo postupu, pak krok základního ovládání se
- * škálovanými knoflíky žánru (`PACING_KNOBS`).
+ * škálovanými knoflíky žánru (`PACING_KNOBS`) a krok těl chování.
  */
 export function makePacingControl(controls: Readonly<Record<string, ControlPiece>>): ControlPiece<z.infer<typeof controlParams>> {
   return {
@@ -208,19 +211,23 @@ export function makePacingControl(controls: Readonly<Record<string, ControlPiece
       const reached = state[keeper + BODY.aux0] as number;
       state[keeper + BODY.aux1] = reached;
       state[keeper + BODY.aux0] = Math.max(reached, progressOf(state, params.goal));
-      native.step(state, player, input, scaledParams(params.base.id, parseOnce(native, params.base.params), intensityOf(state, params.keeper)));
+      const own = parseOnce(native, params.base.params);
+      const intensity = intensityOf(state, params.keeper);
+      native.step(state, player, input, scaledParams(params.base.id, own, intensity));
+      if (params.behaviours !== undefined) stepBehaviours(state, player, params.behaviours, params.space ?? 'plane', intensity, typeof own.half === 'number' ? own.half : undefined);
     },
   };
 }
 
-/** `pacing_bot`: základní robot rozhoduje se stejně škálovanými parametry, jaké vidí ovládání. */
+/** `pacing_bot`: základní robot rozhoduje se stejně škálovanými parametry, jaké vidí ovládání; před těly chování uhne. */
 export function makePacingBot(bots: Readonly<Record<string, BotPiece>>): BotPiece<z.infer<typeof botParams>> {
   return {
     id: 'pacing_bot', params: botParams, roles: ['player'], reactionTicks: 8, cost: () => ({ bodies: 0, rules: 0 }),
     decide(observation, params) {
       const native = bots[params.base.id];
       if (native === undefined) throw new Error(`arcade: unknown paced bot ${params.base.id}`);
-      return native.decide(observation, scaledParams(params.control, parseOnce(native, params.base.params), intensityOf(observation.state, params.keeper)));
+      const input = native.decide(observation, scaledParams(params.control, parseOnce(native, params.base.params), intensityOf(observation.state, params.keeper)));
+      return params.behaviours === undefined ? input : dodge(observation, params.behaviours, params.control, input);
     },
   };
 }
@@ -237,6 +244,8 @@ const ruleParams = z
     space: z.enum(['plane', 'track']),
     maxActors: z.int().min(1).max(PACING.maxActors),
     finale: z.enum(FINALES).optional(),
+    /** Těla chování, která pravidlo nechá udeřit (`behaviourEffects`). */
+    behaviours: behaviourRefs.optional(),
   })
   .strict();
 export type PacingRuleParams = z.infer<typeof ruleParams>;
@@ -256,7 +265,8 @@ function actorsAlive(state: Int32Array, templates: ReadonlySet<number>): number 
  * Pravidlo `pacing` (spouštěč `tick`): kroky rozvrhu, které postup v tomto
  * tiku přešel, vydají `spawn` předloh – v rovině na místech nejdál od hráče
  * (vzor `enter` ve `waves.ts`), na trati před hráčem v pruhu kroku. Nikdy víc
- * živých těl chování než `maxActors`; co se nevejde, nepřijde.
+ * živých těl chování než `maxActors`; co se nevejde, nepřijde. Předtím údery
+ * těl chování (`behaviourEffects`) – zranit smí jen tudy.
  */
 export const pacingRule: RulePiece<PacingRuleParams> = {
   id: 'pacing', trigger: 'tick', params: ruleParams, roles: [], cost: () => ({ bodies: 0, rules: 1 }),
@@ -264,13 +274,13 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
     const keeper = bodyBase(params.keeper);
     const before = state[keeper + BODY.aux1] as number;
     const reached = state[keeper + BODY.aux0] as number;
+    const effects: ArcadeEffect[] = params.behaviours === undefined ? [] : behaviourEffects(state, player, params.behaviours);
     const due = params.schedule.filter((entry) => entry.atPermille > before && entry.atPermille <= reached);
-    if (due.length === 0) return [];
+    if (due.length === 0) return effects;
     let room = params.maxActors - actorsAlive(state, new Set(params.schedule.map((entry) => entry.template)));
     const spots = params.spots.length >> 1;
     const order = params.space === 'plane' ? spotsAway(state, player, params.spots) : [];
     const p = bodyBase(player);
-    const effects: ArcadeEffect[] = [];
     for (const entry of due) for (let k = 0; k < entry.count && room > 0; k += 1, room -= 1) {
       const at = params.space === 'plane' ? (order[k % spots] as number) : (entry.entry + k) % spots;
       const x = params.spots[2 * at] as number;
@@ -281,14 +291,20 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
   },
 };
 
+/** Předloha spawnu; s `behaviour` ji hýbe a nechá udeřit rámec chování (`behaviours/index.ts`). */
+export interface PacingActor {
+  readonly body: BodyInit;
+  readonly behaviour?: BehaviourId;
+}
+
 /** Co `withPacing` přidá: jak hra měří postup, kde se vstupuje, předlohy chování a kolik spawnů. */
 export interface PacingSetup {
   readonly seed: number;
   readonly goal: PacingGoal;
-  readonly space: 'plane' | 'track';
+  readonly space: BehaviourSpace;
   readonly spots: readonly number[];
-  /** Předlohy chování (`template: true`); prázdné = jen křivka bez spawnů. */
-  readonly behaviours: readonly BodyInit[];
+  /** Předlohy spawnů (`template: true`); prázdné = jen křivka bez spawnů. */
+  readonly behaviours: readonly PacingActor[];
   readonly budget: number;
   readonly finale?: (typeof FINALES)[number];
 }
@@ -296,21 +312,27 @@ export interface PacingSetup {
 /**
  * Části hry s průběhem: obalí ovládání a robota, za tělesa úrovně přidá
  * předlohy chování a počítadlo, rezervu spawnů a pravidlo `pacing` s rozvrhem
- * z `createCompileRng(seed, 'pacing')`. Bez předloh (a bez finále) pravidlo nepřidá.
+ * z `createCompileRng(seed, 'pacing')`. Bez předloh (a bez finále) pravidlo
+ * nepřidá; s chováním ano i bez rozvrhu (těla chování může nést úroveň).
+ * Dvě předlohy se stejným podpisem (role, model, rozměry) = `issues`.
  */
 export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts {
   const first = parts.level.bodies.length;
   const keeper = first + setup.behaviours.length;
-  const bodies = [...parts.level.bodies, ...setup.behaviours.map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
-  const schedule = setup.behaviours.length === 0 ? [] : scheduleOf(createCompileRng(setup.seed, 'pacing'), TENSION_CURVE, setup.budget, setup.behaviours.length)
+  const duplicate = duplicateSignature(setup.behaviours.map((actor) => actor.body));
+  if (duplicate !== null) return { ...parts, issues: [...(parts.issues ?? []), `pacing: two spawn templates share the signature ${duplicate} (role:kind:w:h:d)`] };
+  const refs = setup.behaviours.flatMap((actor, index) => (actor.behaviour === undefined ? [] : [{ id: actor.behaviour, template: first + index }]));
+  const moved = refs.length === 0 ? {} : { behaviours: refs };
+  const bodies = [...parts.level.bodies, ...setup.behaviours.map((actor) => ({ ...actor.body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
+  const schedule = setup.behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(createCompileRng(setup.seed, 'pacing'), TENSION_CURVE, setup.budget, setup.behaviours.length)
     .map((entry) => ({ atPermille: Math.max(1, entry.atPermille), template: first + entry.behaviour, count: entry.count, entry: entry.entry }));
-  const rule: PieceRef | null = schedule.length === 0 && setup.finale === undefined ? null : {
-    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...(setup.finale === undefined ? {} : { finale: setup.finale }) },
+  const rule: PieceRef | null = schedule.length === 0 && setup.finale === undefined && refs.length === 0 ? null : {
+    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved },
   };
   return {
     ...parts,
-    control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper } },
-    bot: { id: 'pacing_bot', params: { base: parts.bot, control: parts.control.id, keeper } },
+    control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper, ...moved, ...(refs.length === 0 ? {} : { space: setup.space }) } },
+    bot: { id: 'pacing_bot', params: { base: parts.bot, control: parts.control.id, keeper, ...moved } },
     level: { ...parts.level, bodies, spawnSlots: (parts.level.spawnSlots ?? 0) + (schedule.length === 0 ? 0 : PACING.maxActors) },
     rules: rule === null ? parts.rules : [...parts.rules, rule],
   };

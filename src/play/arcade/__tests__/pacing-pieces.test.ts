@@ -18,7 +18,7 @@ const chaserTemplate: BodyInit = { role: 'chaser', kind: 'chaser', x: 0, y: 0, z
 
 describe('pacing pieces', () => {
   it('(a) replays a paced world to the same hash, twice in one process', () => {
-    const parts = withPacing(partsOf('arena_escape', 3), { seed: 3, goal: { by: 'time', need: 3600, limit: 3600 }, space: 'plane', spots: [-15_000, -15_000, 15_000, -15_000, 15_000, 15_000, -15_000, 15_000], behaviours: [chaserTemplate], budget: 6 });
+    const parts = withPacing(partsOf('arena_escape', 3), { seed: 3, goal: { by: 'time', need: 3600, limit: 3600 }, space: 'plane', spots: [-15_000, -15_000, 15_000, -15_000, 15_000, 15_000, -15_000, 15_000], behaviours: [{ body: chaserTemplate }], budget: 6 });
     const made = buildWorld({ seed: 3, ...parts, health: 3 }, ARCADE_LIBRARY);
     if (!made.ok) throw new Error(made.issues.join('; '));
     const run = runBot(made.world);
@@ -49,7 +49,7 @@ describe('pacing pieces', () => {
 
     it('(c) spawns in schedule order and never keeps more than maxActors alive', () => {
       const base: ArcadeParts = { control: { id: 'still', params: {} }, bot: { id: 'idle', params: {} }, level: { bodies: [player], length: 0, spawnSlots: 40 }, rules: [] };
-      const parts = withPacing(base, { seed: 5, goal: { by: 'time', need: 1200, limit: 1200 }, space: 'plane', spots: [-9000, 0, 9000, 0, 0, 9000, 0, -9000], behaviours: [foe('a'), foe('b')], budget: 14 });
+      const parts = withPacing(base, { seed: 5, goal: { by: 'time', need: 1200, limit: 1200 }, space: 'plane', spots: [-9000, 0, 9000, 0, 0, 9000, 0, -9000], behaviours: [{ body: foe('a') }, { body: foe('b') }], budget: 14 });
       const made = buildWorld({ seed: 5, ...parts }, library);
       if (!made.ok) throw new Error(made.issues.join('; '));
       const schedule = (parts.rules.at(-1)?.params as { schedule: { atPermille: number; template: number; count: number }[] }).schedule;
