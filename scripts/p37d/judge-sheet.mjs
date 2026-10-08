@@ -5,7 +5,10 @@
  *
  *   node scripts/p37d/judge-sheet.mjs --record <batch.json> --out <adresář> [--concurrency 3]
  *     [--aliases <aliases.json>] [--batch-out <catalog-batch.json> [--viewed <pilot.json>]]
+ *   node scripts/p37d/judge-sheet.mjs --precheck <image.png> --noun <jméno> --out <adresář>
  *
+ * `--precheck` (P45E T2) se zeptá na jeden 2D obrázek před TRELLIS stejnou cestou a shodou;
+ * volá ho `ops/gen3d/precheck.py`.
  * `--aliases` je `{ "jméno": ["synonymum", …] }` (`evals/play/p37d/aliases.json`): odpověď
  * se porovná se všemi jmény záznamu a synonyma jdou v dávce do `nouns`.
  * `--batch-out` zapíše dávku `catalog-batch.v1` (`src/play/assets/batch.ts`) pro
@@ -24,7 +27,7 @@
  * zároveň vidí neporušený (`intact`).
  */
 import { spawn, spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -42,6 +45,10 @@ const { assertNotTrainingDir } = await import('../assets/qa-astra.mjs');
 
 export const QUESTION =
   'The attached image is a contact sheet of ONE 3D game model seen from four angles (front, side, top, and 3/4 next to a 1 m cube). Which single object does it depict? Reply only with the JSON the schema asks for: name = the most likely common English noun (1-3 words), alternatives = up to 3 other plausible names, recognizable = false when no object can be made out, intact = false only for SEVERE damage: the object falls apart into torn shreds or loose fragments, has large holes through it, or is a melted blob nobody could use in a game. Rough low-poly faceting, crumpled or noisy shading and small dents still count as intact.';
+
+/** Předkontrola obrázku před TRELLIS (P45E T2): scéna, víc věcí nebo useknutá věc se do sítě nehodí. */
+export const IMAGE_QUESTION =
+  'The attached image is a picture meant to be turned into ONE 3D game model. Which single object does it depict? Reply only with the JSON the schema asks for: name = the most likely common English noun (1-3 words), alternatives = up to 3 other plausible names, recognizable = false when no object can be made out, intact = false when the picture shows a scene or several separate objects instead of one, or the object is cut off by the image edge.';
 
 export const ANSWER_SCHEMA = {
   type: 'object',
@@ -170,6 +177,27 @@ export function ask(sheet, schemaFile, answerFile, question = QUESTION) {
   });
 }
 
+/**
+ * Jeden obrázek, jedna slepá otázka (`ops/gen3d/precheck.py`); odpověď a verdikt jdou do
+ * `<out>/precheck.jsonl` a jako poslední řádek na výstup. Bez odpovědi `unavailable`.
+ */
+async function precheck(image, noun, out, names) {
+  const schemaFile = path.join(out, 'answer-schema.json');
+  writeFileSync(schemaFile, JSON.stringify(ANSWER_SCHEMA));
+  mkdirSync(path.join(out, 'answers'), { recursive: true });
+  const answerFile = path.join(out, 'answers', `${slug(noun)}-${Date.now()}.json`);
+  const run = await ask(image, schemaFile, answerFile, IMAGE_QUESTION);
+  let line;
+  try {
+    const answer = JSON.parse(readFileSync(answerFile, 'utf8'));
+    line = { noun, verdict: verdictOf(names, answer), answer, seconds: run.seconds };
+  } catch {
+    line = { noun, verdict: 'unavailable', error: `codex exit ${run.code}: ${run.stderr}`, seconds: run.seconds };
+  }
+  appendFileSync(path.join(out, 'precheck.jsonl'), `${JSON.stringify(line)}\n`);
+  console.log(JSON.stringify(line));
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const flag = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -177,6 +205,15 @@ async function main() {
   const concurrency = Number(flag('--concurrency', '3'));
   assertNotTrainingDir(out);
   mkdirSync(path.join(out, 'answers'), { recursive: true });
+  const aliasFile = flag('--aliases');
+  const aliases = aliasFile ? JSON.parse(readFileSync(path.resolve(aliasFile), 'utf8')) : {};
+  const namesOf = (noun) => [noun, ...(aliases[noun] ?? [])];
+
+  const image = flag('--precheck');
+  if (image) {
+    await precheck(path.resolve(image), flag('--noun'), out, namesOf(flag('--noun')));
+    return;
+  }
 
   const { records } = JSON.parse(readFileSync(path.resolve(flag('--record')), 'utf8'));
   const models = records.filter((record) => record.verdict === 'passed' && existsSync(record.glb));
@@ -189,9 +226,6 @@ async function main() {
   writeFileSync(schemaFile, JSON.stringify(ANSWER_SCHEMA));
   const resultFile = path.join(out, 'judge.json');
   const results = existsSync(resultFile) ? JSON.parse(readFileSync(resultFile, 'utf8')) : {};
-  const aliasFile = flag('--aliases');
-  const aliases = aliasFile ? JSON.parse(readFileSync(path.resolve(aliasFile), 'utf8')) : {};
-  const namesOf = (noun) => [noun, ...(aliases[noun] ?? [])];
   // Hotová odpověď se nepřeptává, ale verdikt se přepočte – synonyma mohla přibýt.
   for (const [noun, result] of Object.entries(results)) if (result.answer) result.verdict = verdictOf(namesOf(noun), result.answer);
   const queue = models.filter((record) => existsSync(path.join(sheets, `${slug(record.noun)}.png`)) && results[record.noun]?.answer === undefined);
