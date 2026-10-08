@@ -114,8 +114,8 @@ export const survives = (world: ArcadeWorld): boolean => nativeRule(world.rules,
 export const countsAmmo = (world: ArcadeWorld): boolean => nativeRule(world.rules, 'blaster') !== undefined;
 
 /** Kolik předmětů doplňku `+collect` hra chce (`finish_collected`); `null` = cíl bez sbírání. */
-function collectNeed(world: ArcadeWorld): number | null {
-  const need = Number(world.rules.find((rule) => rule.id === 'finish_collected')?.params.need);
+export function collectNeed(world: ArcadeWorld): number | null {
+  const need = Number(nativeRule(world.rules, 'finish_collected')?.params.need);
   return Number.isFinite(need) && need > 0 ? need : null;
 }
 

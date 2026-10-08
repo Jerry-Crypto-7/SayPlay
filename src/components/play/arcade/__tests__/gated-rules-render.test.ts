@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ArcadeWorld, PieceRef } from '@/play/arcade/contract';
 import { actionsOf } from '../ActionButton';
-import { countsAmmo, limitOf, survives } from '../ArcadePlay';
+import { collectNeed, countsAmmo, limitOf, survives } from '../ArcadePlay';
 import { glideShoots } from '../glide/glide-input';
 import { enterOpensLiveBox } from '../LiveBox';
 import { questVerbOf } from '../quest/verbFx';
@@ -29,6 +29,10 @@ describe('render and HUD see gated native rules', () => {
     expect(limitOf(composed)).toBe(45);
     expect(countsAmmo(composed)).toBe(true);
     expect(survives(world([gate({ id: 'survive_time', params: { seconds: 30 } })]))).toBe(true);
+  });
+
+  it('the HUD keeps the collect goal of a composed game with +collect', () => {
+    expect(collectNeed(world([gate({ id: 'finish_collected', params: { need: 4 } })]))).toBe(4);
   });
 
   it('space fires in a composed flight and drive, and does not open the live box', () => {
