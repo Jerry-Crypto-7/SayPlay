@@ -38,6 +38,7 @@ import { draftGameSpecWithMeta } from '../draft';
 import type { GenreModules } from '../genre/classify';
 import { readBeforeDraft, readerEnabled } from '../read/client';
 import type { GameSpecV1 } from '../spec';
+import { vocabVersion } from '../vocab';
 
 import type { DirectorCache } from './cache';
 import { directorKey } from './cache';
@@ -209,9 +210,13 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   const compact = deps.compact === true;
   const examples = compact && deps.examples === true;
   const startingRequest = compact ? buildCompactRequest(sentence, drafted.genre, examples) : buildDirectorRequest(sentence, drafted.genre);
-  const request = deps.modules === undefined ? { ...startingRequest, user: `${startingRequest.user}\n\nFULL INTENT:\n${JSON.stringify({ sentence, essential: essentialTriples(intent), negated: intent.negated })}` } : startingRequest;
-  // Hra psaná s příklady má vlastní klíč cache: měření s nimi a bez nich si hry nepůjčí.
-  const promptVersion = compact ? (examples ? `${COMPACT_PROMPT_VERSION}+examples:${EXAMPLES_VERSION}` : COMPACT_PROMPT_VERSION) : DIRECTOR_PROMPT_VERSION;
+  // Slovesa, která tabulka P44C přiblížila („stabs“ → fight), režisér vidí jmenovitě – stejně jako je návrh přizná.
+  const approximations = intent.items.filter((item) => item.mapped === true).map((item) => ({ said: item.said, as: item.verb }));
+  const fullIntent = { sentence, essential: essentialTriples(intent), negated: intent.negated, ...(approximations.length > 0 ? { approximations } : {}) };
+  const request = deps.modules === undefined ? { ...startingRequest, user: `${startingRequest.user}\n\nFULL INTENT:\n${JSON.stringify(fullIntent)}` } : startingRequest;
+  // Hra psaná s příklady má vlastní klíč cache: měření s nimi a bez nich si hry nepůjčí. Totéž jiná tabulka sloves.
+  const vocab = vocabVersion();
+  const promptVersion = `${compact ? (examples ? `${COMPACT_PROMPT_VERSION}+examples:${EXAMPLES_VERSION}` : COMPACT_PROMPT_VERSION) : DIRECTOR_PROMPT_VERSION}${vocab === null ? '' : `+vocab:${vocab}`}`;
   const key = directorKey({ sentence, promptVersion, model: request.model, endpoint: deps.branch.id });
   const cached = deps.cache === undefined ? null : await deps.cache.read(key);
   // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.

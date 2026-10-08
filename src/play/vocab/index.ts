@@ -1,1 +1,1 @@
-export { vocabVerb, type VocabAxis, type VocabVerb } from './lookup';
+export { vocabVerb, vocabVersion, type VocabAxis, type VocabVerb } from './lookup';

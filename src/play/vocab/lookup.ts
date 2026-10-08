@@ -7,6 +7,7 @@
  */
 import type { HeroAction } from '../hero-action';
 import type { ActionId, MoveId, ObjectiveId } from '../intent/contract';
+import manifest from './manifest.json';
 import table from './verbs.json';
 
 export type VocabAxis = 'move' | 'action' | 'objective';
@@ -41,6 +42,11 @@ function lemmas(word: string): string[] {
     if (stem.length >= 3 && stem.at(-1) === stem.at(-2)) out.push(stem.slice(0, -1));
   }
   return out;
+}
+
+/** Verze tabulky pro klíče cache (prvních 12 znaků SHA `verbs.json` z manifestu); `null` = tabulka vypnutá. */
+export function vocabVersion(): string | null {
+  return process.env.PLAY_VOCAB === 'off' ? null : manifest.outputs.verbs.sha256.slice(0, 12);
 }
 
 export function vocabVerb(word: string): VocabVerb | null {
