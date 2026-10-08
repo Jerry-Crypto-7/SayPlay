@@ -15,7 +15,7 @@ import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 import { __resetProcessVersionStore } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 
-import { resetConcurrency } from '../../worldstream/sessions/route';
+import { resetConcurrency } from '@/server/paid-slots';
 import { GET as readGame } from '../games/[id]/route';
 import { POST as remix } from '../games/[id]/remix/route';
 import { POST as createGame } from '../games/route';

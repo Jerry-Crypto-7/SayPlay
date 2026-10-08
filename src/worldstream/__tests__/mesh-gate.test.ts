@@ -1,5 +1,5 @@
 /**
- * **Brána před připojením meshe a normalizér** (P15 T19).
+ * **Brána před připojením meshe** (P15 T19).
  *
  * Devět negativních fixtur proti jedné platné. Brána je poslední místo, kde se
  * dá zastavit ošklivý svět, takže **všechny její zajímavé cesty jsou failure
@@ -28,7 +28,6 @@ import {
   verifyAttached,
   type GateOrder,
 } from '../mesh-gate';
-import { normalizeToBounds } from '../normalize';
 
 /* ------------------------------------------------------------------ *
  * Platná fixtura.
@@ -251,54 +250,5 @@ describe('verifyAttached', () => {
 
   it('kotva navíc nevadí, chybějící ano', () => {
     expect(verifyAttached(EXPECTED, readBack({ anchors: ['base', 'top', 'mouth'] })).ok).toBe(true);
-  });
-});
-
-/* ------------------------------------------------------------------ *
- * Normalizér.
- * ------------------------------------------------------------------ */
-
-describe('normalizeToBounds', () => {
-  it('vrací **tatáž typová pole**, ne kopie — data meshe se nesahá', () => {
-    const result = cube();
-    const normalized = normalizeToBounds(result, { min: [0, 0, 0], max: [4, 6, 8] });
-
-    // Reference, ne hodnoty: kdyby někdo vrcholy přepočítal, hash artefaktu
-    // by přestal odpovídat programu a kontrolní přečtení by ztratilo smysl.
-    expect(normalized.positions).toBe(result.positions);
-    expect(normalized.normals).toBe(result.normals);
-    expect(normalized.indices).toBe(result.indices);
-  });
-
-  it('transformace posadí naměřený kvádr přesně do cílového', () => {
-    const target: Bounds3 = { min: [3, 0, -2], max: [7, 6, 2] };
-    const normalized = normalizeToBounds(cube(), target);
-
-    expect(normalized.worldBounds.min[0]).toBeCloseTo(target.min[0], 10);
-    expect(normalized.worldBounds.max[1]).toBeCloseTo(target.max[1], 10);
-    expect(normalized.worldBounds.max[2]).toBeCloseTo(target.max[2], 10);
-  });
-
-  it('zarovnává středy, takže rezerva workeru objekt neposune', () => {
-    // Worker přidá jednu buňku rezervy, takže naměřený kvádr je symetricky
-    // větší než objednaný. Střed musí zůstat na svém.
-    const padded = broken({ bounds: { min: [-1.1, -1.1, -1.1], max: [1.1, 1.1, 1.1] } });
-    const target: Bounds3 = { min: [0, 0, 0], max: [2, 2, 2] };
-
-    const normalized = normalizeToBounds(padded, target);
-    const center = [
-      (normalized.worldBounds.min[0] + normalized.worldBounds.max[0]) / 2,
-      (normalized.worldBounds.min[1] + normalized.worldBounds.max[1]) / 2,
-      (normalized.worldBounds.min[2] + normalized.worldBounds.max[2]) / 2,
-    ];
-    expect(center).toEqual([1, 1, 1]);
-  });
-
-  it('zploštělá osa nedá ani nulu, ani nekonečno', () => {
-    const flat = broken({ bounds: { min: [-1, 0, -1], max: [1, 0, 1] } });
-    const normalized = normalizeToBounds(flat, { min: [0, 0, 0], max: [2, 2, 2] });
-
-    for (const value of normalized.transform.scale) expect(Number.isFinite(value)).toBe(true);
-    expect(normalized.transform.scale[1]).toBe(1);
   });
 });

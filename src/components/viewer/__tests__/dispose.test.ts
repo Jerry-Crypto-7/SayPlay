@@ -1,5 +1,5 @@
 /**
- * Úklid podstromu a hranice vieweru.
+ * Úklid podstromu. (Hranice vieweru vůči starému fallbacku odešla s ním, P44D.)
  *
  * **Oracle padesáti přepnutí je `renderer.info.memory` v prohlížeči** a leží
  * v `e2e/viewer-sse.spec.ts`; bez WebGL kontextu se na ten údaj zeptat nedá.
@@ -9,9 +9,6 @@
  * v žádném seznamu three ani našem není — a právě to je vlastnost, na které
  * `disposeSubtree` stojí.
  */
-
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 import {
   BoxGeometry,
@@ -26,7 +23,6 @@ import {
 } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 
-import { buildImportGraph, isUnder, listFiles } from '../../../../scripts/prove-fallback-isolation.mjs';
 import { disposeSubtree } from '../dispose';
 
 function texture(): DataTexture {
@@ -140,32 +136,5 @@ describe('disposeSubtree', () => {
 
   it('prázdný podstrom nic neodloží a nespadne', () => {
     expect(disposeSubtree(new Group())).toEqual({ geometries: 0, materials: 0, textures: 0 });
-  });
-});
-
-describe('hranice vieweru', () => {
-  it('nesahá na src/fallback ani nepřímo', () => {
-    const universe = new Set(listFiles(''));
-    const sources = [...universe].filter((file) => /\.(ts|tsx|mts)$/.test(file) && file.startsWith('src/'));
-    const graph = buildImportGraph(sources, universe, (file: string) =>
-      readFileSync(join('.', file), 'utf-8'),
-    );
-
-    // Dopředný obal: co viewer importuje, ne kdo importuje viewer. `coreReachSet`
-    // ve sdíleném skriptu jde druhým směrem, proto se prochází tady.
-    const seed = sources.filter((file) => file.startsWith('src/components/viewer/'));
-    expect(seed.length).toBeGreaterThan(0);
-
-    const reached = new Set<string>();
-    const queue = [...seed];
-    while (queue.length > 0) {
-      const file = queue.pop()!;
-      if (reached.has(file)) continue;
-      reached.add(file);
-      queue.push(...(graph.get(file) ?? []));
-    }
-
-    const leaked = [...reached].filter((file) => isUnder(file, ['src/fallback', 'src/app/fallback']));
-    expect(leaked, 'viewer sahá na fallback').toEqual([]);
   });
 });

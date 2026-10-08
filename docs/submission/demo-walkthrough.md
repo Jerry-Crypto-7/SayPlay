@@ -1,24 +1,26 @@
-# Demo walkthrough – WORLDSTREAM PLAY
+# Demo walkthrough – Sayplay
 
-Stav 29. 9. 2026. Průchod pro porotce i pro natáčení videa. Veřejná adresa je `demoUrl` v [submission.json](submission.json); provoz běží aspoň do 31. 12. 2026. Ověření na telefonu s vypnutým autorovým počítačem (P31 T4) se sem zapíše s datem, až proběhne.
+State on 8 October 2026. One path through the demo, for judges and for recording the video. The public address is `demoUrl` in [submission.json](submission.json); the demo and its backend stay online until at least 31 December 2026.
 
-## Průchod na veřejné adrese
+## On the public address
 
-1. Otevři `/play` (kořen `/` sem přesměruje). Napiš vlastní anglickou větu, nebo vyber jednu z osmi startovních karet, a stiskni **Play it**.
-2. Za 1–2 s stojí hratelná hra: slovní draft složený ze slov věty, přeložený kompilátorem a ověřený robotem (vyhraje a přehraje se na stejný hash stavu). Adresa se změní na `/play/<id>`.
-3. Zahraj si ji. Mřížka se ovládá klepnutím na cíl, arkádové hry šipkami nebo dotykem podle ovládání (runner, platform, flap, steer, arena, shooter, throw, timing, rhythm, duel).
-4. Na pozadí zatím AI režisér (gpt-oss u hostovaného poskytovatele, záloha gpt-6-astra přes OpenAI API) zvolí ovládání, doplňky, vzhled, prostředí, role a cíl. Když je hotovo, stránka nabídne AI verzi („The AI version is ready – play it“) jako novou hru s odkazem na draft. Když AI není dostupná, hra zůstane draftem a stránka to napíše.
-5. Po výhře nebo prohře: znovu, remixový čip („Make it harder“, „Swap the enemy“, …) nebo vlastní remixová věta. Remix je nová hra s odkazem na rodiče; původní hra se nemění.
-6. **Share** zkopíruje odkaz s náhledovým obrázkem; odkaz otevřený v anonymním okně nebo na telefonu hraje totéž bez účtu.
-7. Feed ukazuje AI verze her po jedné na obrazovku; posun prstem nebo kolečkem.
+1. Open `/play` (the root `/` redirects there). Type a sentence of your own in English, or let an idea card or **Surprise me** fill one in, and press **Make it!**.
+2. Within 1–2 s the quick version is playable: a word draft built from the words of the sentence, compiled and won by a robot player that also replays it to an equal state hash. The address changes to `/play/<id>`.
+3. Play it. Arcade games use arrow keys or touch, depending on the controls (runner, platform, flap, steer, arena, shooter, throw, timing, rhythm, duel); grid games move where you tap. **Show me how** in the pause menu replays the robot's winning run.
+4. The hero acts out the verb of the sentence, its target reacts, and the verb appears as a short caption the first time it happens. <!-- verify-before-submit -->
+5. In the background the AI director (gpt-oss-20b on a hosted provider, a larger model through the OpenAI API as a backup) picks the controls, add-ons, look, setting, roles and goal. When it is done, the page says "Full-detail version ready" with a **Play it** button; the full-detail version is a new game linked to the quick one. When the AI is unavailable, the game stays the word draft and the page says so.
+6. After a win, **Dare a friend to beat it** shares or copies the link. Opened in a private window or on a phone, the link plays the same game without an account, against a ghost of the winning run, and ends with "You beat it!" or "So close." and **Dare back**.
+7. The leaderboard after a win and under **About this game** lists the best verified runs of that game. <!-- verify-before-submit -->
+8. After a win or a loss: play again, tap a remix chip ("Make it harder", "Swap the enemy", …) or type a remix sentence. A remix is a new game with a link back to its parent; the original never changes.
+9. The feed shows games one per screen; swipe or scroll to move on.
 
-## Co porotce uvidí, když něco chybí
+## What the judge sees when something is missing
 
-- **AI nedostupná nebo strop útraty vyčerpaný:** každá hra zůstane slovním draftem, stránka to přizná. Nic se nezastaví.
-- **Sloveso, které draft nezná:** bez AI verze z věty vznikne sběrná hra s výchozími předměty.
-- **Neznámá věc:** scéna použije nejbližší model z knihovny nebo náhradu (balónek → míč); měření ji počítá jako nenakreslenou.
+- **AI unavailable or the spend cap reached:** every game stays the word draft and the page says so. Nothing stops.
+- **A verb the quick version does not know:** without the full-detail version the sentence becomes the nearest game it can build, most often collecting things.
+- **A thing the library does not have:** the scene uses the closest catalogue model or a stand-in (a balloon becomes a ball).
 
-## Místní spuštění
+## Run it locally
 
 ```powershell
 npm ci
@@ -26,6 +28,6 @@ npm run build
 node node_modules/next/dist/bin/next start
 ```
 
-Otevři `http://localhost:3000/play`. Bez konfigurace modelu je každá hra draft. AI verze potřebuje serverové proměnné z `.env.example` (`WORLDSMITH_BRANCH=live`, `WORLDSMITH_MODEL_ENDPOINT`, `WORLDSMITH_MODEL_KEY`, `WORLDSMITH_MODEL`, `WORLDSMITH_SPEND_CAP_USD`). Stavěj přes webpack (`npm run build`), ne Turbopack – pod ním má stránka hry a API každá vlastní úložiště.
+Open `http://localhost:3000/play`. Without model configuration every game is the word draft. The full-detail version needs the server variables from `.env.example` (`WORLDSMITH_BRANCH=live`, `WORLDSMITH_MODEL_ENDPOINT`, `WORLDSMITH_MODEL_KEY`, `WORLDSMITH_MODEL`, `WORLDSMITH_SPEND_CAP_USD`). Build with webpack (`npm run build`), not Turbopack: under Turbopack the game page and the API each get their own store.
 
-Podrobnosti: [README](../../README.md), [režisér](../play/director.md), [arkáda](../play/ARCADE.md), [feed](../play/feed.md).
+More detail: [README](../../README.md), [director](../play/director.md), [arcade](../play/ARCADE.md), [feed](../play/feed.md).

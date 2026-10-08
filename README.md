@@ -1,4 +1,4 @@
-# WORLDSTREAM PLAY – Imagine a game. Play it.
+# Sayplay – Say it. Play it.
 
 Write one sentence and get a short 3D game you can play in the browser within about two seconds. An AI-directed version of the same idea follows in the background. Games have their own links, appear in a vertical feed, and can be remixed with a sentence of your own – no account, no install.
 
@@ -6,7 +6,7 @@ Write one sentence and get a short 3D game you can play in the browser within ab
 
 ## What you can do
 
-1. **Open `/play`** (the root `/` redirects there). Type a sentence or pick one of eight starters.
+1. **Open `/play`** (the root `/` redirects there). Type a sentence, or let an idea card or **Surprise me** fill one in.
 2. **Play the instant version.** A deterministic draft built from the words of the sentence is compiled, checked by a robot player and published in 0.2 s on the server; the page shows the game in 1–2 s.
 3. **Get the AI version.** In the background a model picks the control, add-ons, look, setting, roles and goal (`PLAY_DIRECTOR_MODE=compact`, the default). The same compiler and robot check run on it before it is published as a child of the draft.
 4. **Win or lose, then change one thing.** Replay, a one-tap remix chip ("Make it harder", "Swap the enemy", …) or a remix sentence of your own; every remix is a new game with a link back to its parent.
@@ -27,7 +27,7 @@ sentence ─► word draft ─► GameSpec ─► compiler ─► world ─► r
 - **Sound.** Every game plays generated music and sound effects chosen by its look; an optional voice reads the objective.
 - **Deterministic runtime.** Arcade games step at a fixed 60 Hz with `pure-rand` streams; the grid runtime steps at 20 Hz. Real time, particles, camera and sound stay outside the hashed state.
 - **Versions never change.** The id is a hash of spec, world, seed and component versions; a remix is a new version. Stored in Upstash Redis for 180 days (`PLAY_VERSION_TTL_SECONDS`); without Upstash the server keeps games in memory and says so (`x-play-store: memory`).
-- **Assets.** 783 catalogue models: 363 CC0 models (Kenney, Quaternius, KayKit), 56 built by code in Blender, 32 built by code in three.js and 332 generated offline by `ops/gen3d` (FLUX.2-klein-4B image → TRELLIS.2-4B mesh → Blender finishing; each model's pipeline is recorded in its catalogue entry), plus 15 rigged CC0 characters. Generated models are used at runtime like any other catalogue model. Provenance: `public/assets/worldstream/PROVENANCE.md` and one `PROVENANCE.md` per model set beside it, licences: [DISCLOSURE.md](DISCLOSURE.md).
+- **Assets.** 783 catalogue models: 363 CC0 models (Kenney, Quaternius, KayKit), 56 built by code in Blender, 32 built by code in three.js and 332 generated offline by `ops/gen3d` (FLUX.2-klein-4B image → TRELLIS.2-4B mesh → Blender finishing; each model's pipeline is recorded in its catalogue entry), plus 15 rigged CC0 characters. Generated models are used at runtime like any other catalogue model. Provenance: a `PROVENANCE.md` for the catalogue and one per model set under `public/assets/`, licences: [DISCLOSURE.md](DISCLOSURE.md).
 
 More detail: [docs/play/director.md](docs/play/director.md), [docs/play/ARCADE.md](docs/play/ARCADE.md), [docs/play/feed.md](docs/play/feed.md), [docs/play/CONTRACT.md](docs/play/CONTRACT.md).
 
@@ -76,6 +76,6 @@ npm run gate:license
 
 The full unit suite (`npm run test`) and the end-to-end suite rewrite a few committed measurement files with new timings; check `git status` afterwards. Third-party materials, models and APIs are listed in [DISCLOSURE.md](DISCLOSURE.md), generated from `disclosure.json`.
 
-## Under the hood – the WORLDSTREAM world compiler
+## Origin
 
-PLAY grew out of an earlier world compiler that still lives in this repository at `/studio`: describe a place in one sentence, act inside the world it compiles to, rewind, change one of its rules in words and compare two synchronized futures. It shares the deterministic runtime, the verifier (`src/verify`), the rule engine (`src/sim`, `src/ir`) and the asset catalogue with PLAY. Its measurements and limits are documented in `docs/demo/` and `evals/worldstream/`; it is not the submitted product.
+Sayplay grew out of an earlier world compiler built in this repository (describe a place, act in it, rewind, change one rule in words and compare two futures); its app has been removed and remains in the git history, while the grid game still runs on its rule engine (`src/ir`, `src/sim`), its verifier (`src/verify`) and its asset catalogue.

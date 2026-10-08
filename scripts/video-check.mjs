@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Brána nad scénářem videa: vejde se stopáž do tvrdého limitu a jsou v ní
- * všechny čtyři povinné beaty?
+ * všechny povinné scény?
  *
  * `RULES.md` §2 dává demo videu **tvrdý limit 3:00**. Přetažené video se
  * nedoodevzdá — přijde se na to až u střihu, kdy je natočeno a scénář se
@@ -19,18 +19,19 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { basename } from 'node:path';
 
 /** Tvrdý limit z `RULES.md` §2. Nad ním se video nedá odevzdat. */
 export const LIMIT_SECONDS = 180;
 
 /**
- * Beaty, které scénář musí obsáhnout. Jsou to čtyři vlastnosti, které porotce
- * jinak nemá jak uvidět — ne kapitoly. Identifikátor se hledá ve sloupci
- * `Beat`, ne v próze: hledat českou větu znamená, že přeformulování titulku
- * tiše vypne kontrolu.
+ * Scény, které scénář Sayplay musí obsáhnout: smyčka věta → hra → AI verze →
+ * výzva → žebříček → remix a věta porotce mimo kategorii (`RULES.md` §3).
+ * Identifikátor se hledá ve druhém sloupci tabulky, ne v próze: hledat českou
+ * větu znamená, že přeformulování titulku tiše vypne kontrolu. Je to zároveň
+ * jméno klipu, který natočí `e2e/demo-capture.spec.ts`.
  */
-export const REQUIRED_BEATS = ['world-builds', 'rule-rewind', 'offline', 'winning-path'];
+export const REQUIRED_BEATS = ['say-to-play', 'ai-version', 'dare-friend', 'leaderboard', 'remix', 'off-category'];
 
 const TIME = String.raw`(\d{1,2}):([0-5]\d)`;
 const ROW = new RegExp(String.raw`^\|\s*${TIME}\s*[–-]\s*${TIME}\s*\|\s*\x60([a-z-]+)\x60\s*\|`);
@@ -134,13 +135,13 @@ export function main(argv) {
 
   console.log(
     `PASS  ${file}: ${segments.length} úseků, stopáž ${formatTime(total)}, ` +
-      `rezerva ${LIMIT_SECONDS - total} s pod limitem, všechny čtyři beaty přítomné.`,
+      `rezerva ${LIMIT_SECONDS - total} s pod limitem, všechny povinné scény přítomné.`,
   );
   return 0;
 }
 
-// `pathToFileURL`, ne ruční `file://` — na Windows je `process.argv[1]` cesta
-// s `D:\`, kterou by ruční složení URL zakódovalo jinak než `import.meta.url`.
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// Jméno souboru, ne `import.meta.url`: scény čte i `e2e/demo-capture.spec.ts` a Playwright
+// tenhle soubor překládá do CommonJS, kde `import.meta` neexistuje.
+if (process.argv[1] !== undefined && basename(process.argv[1]) === 'video-check.mjs') {
   process.exit(main(process.argv.slice(2)));
 }

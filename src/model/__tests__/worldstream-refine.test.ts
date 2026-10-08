@@ -19,10 +19,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { GEOM_VERSION } from '@/geom/program';
-import { planIncrement } from '@/model/incremental-planner';
 import { SHAPE_NODE_GROUPS } from '@/shape/schema';
-import { authoredWorldById } from '@/worldstream/authored';
-import { blueprintSchema, MAX_HERO_SHAPES, semanticObjectSchema, type SemanticObject, type WorldstreamBlueprint } from '@/worldstream/schema';
+import { blueprintSchema, MAX_HERO_SHAPES, type WorldstreamBlueprint } from '@/worldstream/schema';
 
 import type { UpstreamRequest } from '../prompt';
 import {
@@ -227,94 +225,6 @@ describe('grounding druhé věty', () => {
     const grounding = ground('make the water darker', 'ghostBridge');
     expect(grounding.ok).toBe(false);
     if (!grounding.ok) expect(grounding.reason).toBe('UNKNOWN_ID');
-  });
-});
-
-/* ------------------------------------------------------------------ *
- * Věta o umístění je přidání s kotvou (P22 T13).
- * ------------------------------------------------------------------ */
-
-/**
- * Objekty světa `c09` („a giant fallen tree hollowed into a village"), nad
- * kterým běží `evals/worldstream/conversation.measure.ts`. Plánovač je píše
- * bez `source` a kvádru; grounding čte jen jména, tak se dosadí zástupné.
- */
-const HOLLOW_TREE_OBJECTS: readonly SemanticObject[] = (
-  authoredWorldById('c09')!.planner as { objects: readonly Record<string, unknown>[] }
-).objects.map((object) =>
-  semanticObjectSchema.parse({ ...object, source: { kind: 'geom', node: 0 }, targetBounds: { min: [-1, 0, -1], max: [1, 2, 1] } }),
-);
-
-describe('věta o umístění je přidání s kotvou', () => {
-  /** Táž cesta jako v routě a v měření: první kus z `planIncrement`, pak grounding. */
-  const classify = (sentence: string): Grounding => {
-    const increment = planIncrement(sentence);
-    if (!increment.ok) throw new Error(`${sentence}: ${increment.reason}`);
-    return groundTarget(increment.pieces[0].text, HOLLOW_TREE_OBJECTS, undefined);
-  };
-  const anchorOf = (grounding: Grounding): string | null | Grounding =>
-    grounding.ok && grounding.kind === 'addition' ? (grounding.anchor?.stableId ?? null) : grounding;
-
-  /**
-   * Deset vět z `conversation.measure.ts` nad `c09`. Živý běh 19. 9. 2026
-   * poslal lavičku jako úpravu stromu a model správně odpověděl, že úprava
-   * nový objekt založit neumí (`conversation-answers/s03.json`). Ostatních
-   * devět nejmenuje nic, co v tom světě stojí — jsou to přidání bez kotvy,
-   * a to i „make the well deeper": studna tam není.
-   */
-  it.each([
-    ['add a lantern at the far edge', null],
-    ['Put a small brass bell by the gate.', null],
-    ['There is a well in the middle of the courtyard.', null],
-    ['A wooden bench under the tree', 'hollowFallenTree'],
-    ['place another crate next to the first one', null],
-    ['When the lever is pulled, the gate opens.', null],
-    ['the bell should ring every time someone walks past the well', null],
-    ['If the lantern is lit the door unlocks', null],
-    ['make the well deeper', null],
-    ['Paint the gate rust red.', null],
-  ])('„%s" je přidání s kotvou %s', (sentence, anchor) => {
-    expect(anchorOf(classify(sentence))).toBe(anchor);
-  });
-
-  it.each([
-    ['make the tree taller', 'hollowFallenTree'],
-    ['widen the shared passage', 'sharedPassage'],
-    // Předložka sama nestačí: objekt stojí PŘED ní, takže se mění, ne staví.
-    ['make the tree darker on the outside', 'hollowFallenTree'],
-  ])('úprava bez nového podstatného jména („%s") zůstává edit', (sentence, target) => {
-    expect(editTarget(classify(sentence))).toBe(target);
-  });
-
-  it('kotva, která ve světě není, je přidání bez kotvy, ne odmítnutí', () => {
-    expect(anchorOf(classify('a stone bench under the gate'))).toBe(null);
-  });
-
-  it('kotva se hledá nejdelším jménem za předložkou, jako cíl úpravy', () => {
-    expect(anchorOf(classify('put a lantern in front of the village commons'))).toBe('villageCommons');
-    expect(anchorOf(classify('hang a bell beside the trunk'))).toBe('hollowFallenTree');
-  });
-
-  it('zadání pro přidání jmenuje kotvu a její kvádr, bez kotvy nic', () => {
-    const tree = HOLLOW_TREE_OBJECTS[0];
-    const anchored = buildAdditionRequest('A wooden bench under the tree', BLUEPRINT, tree);
-    expect(anchored.user).toContain('next to this object: hollowFallenTree (the hollow fallen tree)');
-    expect(anchored.user).toContain(JSON.stringify(tree.targetBounds));
-    expect(buildAdditionRequest('add a signpost', BLUEPRINT, null).user).not.toContain('next to this object');
-  });
-
-  it('planChange s kotvou jde na přidání a kotva je v zadání', async () => {
-    const asked: UpstreamRequest[] = [];
-    const outcome = await planChange({
-      prompt: 'A wooden bench under the tree',
-      blueprint: BLUEPRINT,
-      target: null,
-      anchor: HOLLOW_TREE_OBJECTS[0],
-      emit: async (request) => { asked.push(request); return addition(); },
-    });
-    expect(outcome.kind).toBe('planned');
-    expect(asked[0].user).toContain('hollowFallenTree');
-    expect(asked[0].system).toContain('ONE new object');
   });
 });
 

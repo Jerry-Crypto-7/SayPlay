@@ -1,4 +1,4 @@
-import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -7,7 +7,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { frozenGrammar, frozenPrompts } from '../../model/client';
 import { buildEmissionRequest, type Grammar } from '../../model/prompt';
 import { moderatePrompt, type DeniedTopic } from '../moderation';
-import { mockBranch } from '../mock';
 import { runPipeline, type GenerationBranch, type GenerationFailureReason } from '../pipeline';
 import { SpendCap } from '../spend-cap';
 import { upstreamBranch, type UpstreamConfig } from '../upstream';
@@ -168,16 +167,11 @@ interface Fixture {
 }
 
 /**
- * Obě větve, jedna sada tvrzení. Rozdíl je **jen** ve fixture — jakmile by se
- * lišilo tvrzení, přestala by to být záruka, že jsou obě větve zaměnitelné.
+ * Větve, jedna sada tvrzení. Rozdíl je **jen** ve fixture — jakmile by se
+ * lišilo tvrzení, přestala by to být záruka, že jsou větve zaměnitelné.
+ * (Offline větev nad zmrazeným korpusem odešla se starým studiem, P44D T7.)
  */
 const FIXTURES: readonly Fixture[] = [
-  {
-    name: 'offline větev nad zmrazeným korpusem',
-    branch: () => mockBranch(),
-    okPrompt: FROZEN_CREATE.prompt,
-    failureReason: 'NO_SOURCE',
-  },
   {
     name: 'živá větev přes HTTP',
     branch: () => upstreamBranch(LIVE_CONFIG, stubFetch()),
@@ -341,27 +335,6 @@ describe('co se účtuje, když se volání nepovede', () => {
     expect(result.reason).toBe('MALFORMED_RESPONSE');
     expect(result.costUsd).toBeCloseTo((10 * 3 + 20 * 15) / 1_000_000, 12);
     expect(result.costUsd).toBeLessThan(worstCase);
-  });
-
-  it('rozbitý korpus je výpadek zdroje, ne chybějící odpověď', async () => {
-    // Rozdíl rozhoduje o stavovém kódu nad tímhle: `NO_SOURCE` je naměřený
-    // výsledek, výpadek je rozbité prostředí, o kterém se nesmí nic skórovat.
-    // Testuje se nad KOPIÍ korpusu — `evals/frozen/` je zamčený.
-    const root = mkdtempSync(join(tmpdir(), 'worldsmith-frozen-'));
-    temporary.push(root);
-    cpSync(join(process.cwd(), 'evals', 'frozen'), join(root, 'evals', 'frozen'), { recursive: true });
-    writeFileSync(join(root, 'evals', 'frozen', 'prompts.v1.jsonl'), '{"id":"podvrh"}\n', 'utf8');
-
-    vi.spyOn(process, 'cwd').mockReturnValue(root);
-    vi.resetModules();
-    const { mockBranch: branchAtRoot } = await import('../mock');
-
-    const cap = new SpendCap({ enabled: true, capUsd: 100 });
-    const result = await runPipeline(FROZEN_CREATE.prompt, { branch: branchAtRoot(), cap, grammar: GRAMMAR });
-
-    if (result.outcome !== 'FAILED') throw new Error('expected a failure');
-    expect(result.reason).toBe('UPSTREAM_UNAVAILABLE');
-    expect(result.detail).toContain('MANIFEST_MISMATCH');
   });
 
   it('nenakonfigurovaná živá větev neúčtuje nic a nikam nevolá', async () => {

@@ -1,23 +1,21 @@
 {
-    "$comment": "Manifest odevzdání WORLDSTREAM PLAY (/play), stav 29. 9. 2026 (P31 T1). Režisér gpt-oss u hostovaného poskytovatele a záloha gpt-6-astra přes OpenAI API nastupují sloučením P30A; do té doby veřejné demo AI verzi neslibuje. Video vzniká v P31 (HALT), čísla v popisu nahradí jeden běh po P30A (P31 T3). TODO: zachovává fail-closed konvenci submission brány. Provoz aspoň do 31. 12. 2026.",
+    "$comment": "Submission manifest for Sayplay (/play), state on 8 October 2026. The AI director (gpt-oss-20b on a hosted provider, a larger model through the OpenAI API as backup) goes live with the deployment; until then the public demo promises only the quick version. The video is cut from docs/video-script.md. A value starting with TODO: is a placeholder that the submission check treats as missing. The demo and its backend stay online until at least 31 December 2026.",
     "repositoryUrl": "https://github.com/Jerry-Crypto-7/Hackathon",
     "demoUrl": "https://worldstream-sigma.vercel.app",
     "backendUrl": "https://worldstream-sigma.vercel.app/api/health",
-    "videoPath": "TODO: PLAY video pod 3:00 podle docs/video-script.md (P31 HALT)",
+    "videoPath": "TODO: Sayplay video under 3:00 cut from docs/video-script.md",
     "descriptionPath": "docs/submission/description.md",
     "walkthroughPath": "docs/submission/demo-walkthrough.md",
+    "focusCategory": "Browser-native creative tools",
     "modelTablePaths": [
-        "src/model/prompt.ts",
-        "evals/harness/preflight.ts"
+        "src/model/prompt.ts"
     ],
     "monitoringPath": "ops/monitoring/uptime.json",
     "dataDirs": [
-        "evals/frozen",
-        "evals/contracts/gold",
-        "evals/reality-compiler/holdout-v1"
+        "evals/frozen"
     ],
     "measurementReports": [
-        "evals/play/p30b/losses.md",
-        "evals/play/p30b/losses.json"
+        "evals/play/p37/o8.md",
+        "evals/play/p37/o8.json"
     ]
 }

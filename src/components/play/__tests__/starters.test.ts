@@ -24,6 +24,7 @@ import {
   HERO,
   IDEA_LIMIT,
   IDEAS,
+  JUDGE_PICKS,
   LINK_COPIED,
   NOT_SENT,
   OFFLINE,
@@ -119,6 +120,51 @@ describe('karty nápadů (P34 T3)', () => {
         expect(proof || meta.composition!.unmet.some(item => item.actor === triple.actor && item.verb === triple.verb && item.object === triple.object), JSON.stringify(triple)).toBe(true);
       }
     }
+  });
+});
+
+/**
+ * Věta, která v nápovědě vypadá lákavě, ale ve hře akci neukáže, lže porotci
+ * na první obrazovce – a pohledem do kódu se to poznat nedá. Proto se každá
+ * z pěti vět drží měření: návrh ze slov nad dev sadami (`evals/play/p37/o8.json`).
+ */
+describe('nápověda první návštěvy (P44D T12)', () => {
+  interface MeasuredRow {
+    set: string;
+    id: string;
+    genre: string;
+    playable: boolean;
+    verbRecognized: boolean;
+    items: { role: string; recognized: boolean }[];
+  }
+  const readJson = (file: string): unknown => JSON.parse(readFileSync(join(ROOT, file), 'utf-8'));
+  const measured = (readJson('evals/play/p37/o8.json') as { rows: { dev: MeasuredRow[] } }).rows.dev;
+  const textsOf = (file: string) => new Map((readJson(file) as { sentences: { id: string; text: string }[] }).sentences.map((row) => [row.id, row.text]));
+  const DEV_SETS = { p37a: textsOf('evals/play/p37a/dev-150.json'), p30dev: textsOf('evals/play/p30/dev.json') };
+  const sealed = new Set(textsOf('evals/play/p30/test-200.json').values());
+
+  it('je jich pět, každá doslova z dev sady a žádná ze zapečetěného testu', () => {
+    expect(JUDGE_PICKS).toHaveLength(5);
+    for (const pick of JUDGE_PICKS) {
+      expect(DEV_SETS[pick.set].get(pick.id), `${pick.set}/${pick.id}`).toBe(pick.sentence);
+      expect(sealed.has(pick.sentence), pick.sentence).toBe(false);
+      expect(pick.sentence.length).toBeLessThanOrEqual(SENTENCE_LIMIT);
+    }
+  });
+
+  it('každá dala v měření hratelnou hru, sloveso poznané v klipu a poznaného hrdinu', () => {
+    for (const pick of JUDGE_PICKS) {
+      const row = measured.find((candidate) => candidate.set === pick.set && candidate.id === pick.id);
+      expect(row, `${pick.set}/${pick.id} chybí v měření`).toBeDefined();
+      expect(row!.playable, pick.sentence).toBe(true);
+      expect(row!.verbRecognized, pick.sentence).toBe(true);
+      expect(row!.items.some((item) => item.role === 'hero' && item.recognized), pick.sentence).toBe(true);
+    }
+  });
+
+  it('pokrývá aspoň čtyři různé žánry', () => {
+    const genres = JUDGE_PICKS.map((pick) => measured.find((row) => row.set === pick.set && row.id === pick.id)!.genre.split('.')[0]);
+    expect(new Set(genres).size).toBeGreaterThanOrEqual(4);
   });
 });
 

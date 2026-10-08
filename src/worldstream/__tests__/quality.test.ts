@@ -31,7 +31,6 @@ import {
   isQualityTier,
   spentBetween,
 } from '../quality';
-import { createSession, restoreSession } from '../session';
 
 /* ------------------------------------------------------------------ *
  * Rozpočty proti svému zdroji.
@@ -303,21 +302,6 @@ describe('úroveň před meshing fan-outem', () => {
 
     expect(world.quality).toBe('full');
     expect(mesh).toHaveBeenCalledTimes(3);
-  });
-});
-
-describe('úroveň ve snapshotu relace', () => {
-  it('snapshot ji nese a reconnect ji vrátí beze změny', () => {
-    const session = createSession({ sessionId: 's1', sessionSeed: 3, quality: 'safe' });
-    expect(session.snapshot().quality).toBe('safe');
-
-    // Kdyby ji reconnect ztratil, objednal by klient tytéž tvary v jiné mřížce,
-    // tedy pod jinými `contentHash` — cache by je minula a §13.3 by je odmítla.
-    expect(restoreSession(session.snapshot()).snapshot().quality).toBe('safe');
-  });
-
-  it('relace bez uvedené úrovně dostane plnou', () => {
-    expect(createSession({ sessionId: 's2', sessionSeed: 4 }).snapshot().quality).toBe('full');
   });
 });
 

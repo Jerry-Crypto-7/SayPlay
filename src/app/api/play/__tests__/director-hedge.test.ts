@@ -14,7 +14,7 @@ import type { GenerationOutcome } from '@/server/pipeline';
 import { resetRateWindows } from '@/server/rate-limit';
 import { processSpendCap, resetProcessSpendCap } from '@/server/spend-cap';
 
-import { resetConcurrency } from '../../worldstream/sessions/route';
+import { resetConcurrency } from '@/server/paid-slots';
 import { DEFAULT_HEDGE_MS, getDirector, hedged } from '../_director';
 
 const SENTENCE = 'a penguin jumps';

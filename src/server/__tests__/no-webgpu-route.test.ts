@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { detectRuntime } from '../../model/local/capability';
 import { frozenGrammar } from '../../model/client';
 import { EMISSION_MODEL } from '../../model/prompt';
 import type { Grammar } from '../../model/prompt';
@@ -49,9 +48,6 @@ const CONFIGURED_ENV = {
   WORLDSMITH_MAX_OUTPUT_TOKENS: '1000',
 } as const;
 
-/** Stroj bez WebGPU. Jediné, čím se ty dva případy liší, je nakonfigurovaný cloud. */
-const NO_WEBGPU = { hasWebGpu: false, deviceMemoryGb: undefined } as const;
-
 const PROMPT = 'a puzzle room where I have to find three keys to open the exit door';
 
 /** Odpověď poskytovatele v jeho tvaru. Spotřeba je skutečná, ne odhad. */
@@ -81,10 +77,6 @@ describe('bez klíče se cloudová cesta vůbec nenabídne', () => {
     // Přítomný klíč sám o sobě nesmí nic zapnout — jinak by proměnná zděděná
     // z jiného projektu tiše přepnula produkt na placenou cestu.
     expect(cloudBranchAvailable({ ...CONFIGURED_ENV, WORLDSMITH_BRANCH: 'offline' })).toBe(false);
-  });
-
-  it('stroj bez WebGPU a bez cloudu jede na deterministických tvarech', () => {
-    expect(detectRuntime({ ...NO_WEBGPU, cloudConfigured: cloudBranchAvailable({}) })).toBe('none');
   });
 
   it('bez ceny výstupu se cloud nenabídne, protože strop by nedržel nic', () => {
@@ -171,12 +163,6 @@ describe('bez klíče se cloudová cesta vůbec nenabídne', () => {
 });
 
 describe('s klíčem jde emise přes server a strop ji vidí', () => {
-  it('stroj bez WebGPU s nakonfigurovaným cloudem dostane cloudovou větev', () => {
-    expect(detectRuntime({ ...NO_WEBGPU, cloudConfigured: cloudBranchAvailable(CONFIGURED_ENV) })).toBe(
-      'cloud',
-    );
-  });
-
   it('volání odejde právě jednou, klíč jde v hlavičce a zůstatek klesne přesně o cenu', async () => {
     const fetchImpl = vi.fn<typeof fetch>(async () => providerAnswer(1_000, 200));
     const config = upstreamConfigFromEnv(CONFIGURED_ENV);

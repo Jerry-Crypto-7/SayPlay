@@ -113,18 +113,12 @@ function heroCenter(world: ProxyWorld): { x: number; y: number; z: number } | nu
 /**
  * Kolik hran plátna kryje rozhraní, v podílu jeho rozměru.
  *
- * Skořápka je mřížka přes celý viewport (`theme.css` `.ws-shell`), ne panel
- * vedle scény: dolní řádek patří doku, krajní sloupce ovládání a zásuvce
- * Inspect. Rámovat do celého okna tedy znamená postavit hrdinu pod dok.
+ * Na `/play` kryje plátno jen pás karet cílů mřížkové hry (P28C T4) u dolní
+ * hrany: cíl pod ním by nešel klepnout. Boční panely měla jen skořápka starého
+ * studia, která odešla 7. 10. 2026.
  *
- * **Měří se z DOM za běhu**, protože napsat ta čísla natvrdo nejde: sloupce
- * mění šířku podle `data-controls` a `data-inspecting` (`minmax(0, 1fr)` proti
- * `minmax(16rem, 20rem)`), pod 760 px se mřížka překlápí do jediného sloupce a
- * dok roste s délkou stavové věty.
- *
- * Boční sloupec se počítá, jen když sahá **nad** dok. Ovládání i přepínač
- * Inspect jinak stojí v dolním pruhu, který je odečtený už jednou, a odečíst
- * ho podruhé by scénu bezdůvodně odtlačilo do dálky.
+ * **Měří se z DOM za běhu**, protože pás roste s počtem cílů a pod 760 px se
+ * zalamuje.
  */
 function measureSafeArea(canvas: HTMLCanvasElement): SafeArea {
   const box = (selector: string): DOMRect | null =>
@@ -134,10 +128,9 @@ function measureSafeArea(canvas: HTMLCanvasElement): SafeArea {
   // 16. 9. 2026, přestal platit ve chvíli, kdy T2 zmenšila samo plátno — celý
   // ten příběh je u `safeAreaFromRects()`.
   return safeAreaFromRects(canvas.getBoundingClientRect(), {
-    // Pás karet cílů mřížkové hry na `/play` (P28C T4) je dok téže role: cíl pod ním by nešel klepnout.
-    bottom: box('.ws-dock') ?? box('.play-targets'),
-    left: box('.ws-controls'),
-    right: box('.ws-inspect-panels'),
+    bottom: box('.play-targets'),
+    left: null,
+    right: null,
   });
 }
 

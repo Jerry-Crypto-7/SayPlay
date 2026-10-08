@@ -3,7 +3,7 @@
  *
  * ## Proč to vzniklo
  *
- * Brána K0 nad kontaktním listem (28. 8. 2026, `docs/worldstream-art-direction.md`)
+ * Brána K0 nad kontaktním listem (28. 8. 2026, art direction starého studia, tag `legacy-worldstream`)
  * našla jednu společnou příčinu obou extrémů: **kamera mířila do podlahy**.
  * Statický pohled seděl na `[7, 7, 9]` a mířil do počátku, tedy 31,5° pod
  * vodorovnou při svislém poloúhlu 22,5°. Horizont tím vyjel nad horní hranu

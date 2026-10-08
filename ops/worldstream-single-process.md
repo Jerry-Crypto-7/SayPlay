@@ -37,10 +37,10 @@ Pokud bude zvolena veřejná inference, před startem doložit její oprávněn�
 | PID a procesový exit | Životnost konkrétního serverového procesu | Zapsat restart; neprezentovat staré sessions jako obnovené. |
 | `GET /api/health` | Zápis, readback a cleanup v dočasném adresáři, 200/503; krátká interní cache sondy | Při 503 stáhnout provoz a prověřit třídu chyby. Není to ověření přihlášení, kvóty ani provider latence. |
 | `GET /api/build-id` | Identita obsluhujícího buildu | Po aktualizaci porovnat se zaznamenaným artefaktem. |
-| `ops/watchdog/worldstream.mjs` bez `--allow-generation` | Health a případně stažení explicitního existujícího shared snapshotu | Uchovat JSONL i neúspěšné sondy; není to GPU render test. |
+| `ops/watchdog/worldstream.mjs` | Health a případně stažení existující publikované hry (`--game`) | Uchovat JSONL i neúspěšné sondy; není to GPU render test. |
 | Produkční browserové smoke testy | Skutečný canvas, runtime vstup, porovnání a odmítnutí | Spustit nad přesným cílem po autorizovaném nasazení; scripted provider nesmí být vydáván za live. |
 
-Příklad read-only lokální sondy: `node ops/watchdog/worldstream.mjs --target http://127.0.0.1:3116 --log scratch/worldstream-watchdog.jsonl`. Pro ověření sdíleného snapshotu přidat `--shared` s existujícím ověřeným hashem. Výchozí sonda negeneruje žádný nový svět. Veřejný interval a archivaci logů je nutné přizpůsobit zvolenému hostingu; jejich běh zatím není doložen.
+Příklad read-only lokální sondy: `node ops/watchdog/worldstream.mjs --target http://127.0.0.1:3116 --log scratch/worldstream-watchdog.jsonl`. Pro ověření dat hry přidat `--game` s id existující publikované hry (`/api/play/games/<id>`). Sonda nikdy netvoří novou hru. Veřejný interval a archivaci logů je nutné přizpůsobit zvolenému hostingu; jejich běh zatím není doložen.
 
 Serverové logy `worldstream.server-timing` oddělují requesty pomocí request ID a jednotlivé fáze. Vnořené a inkluzivní úseky se nesčítají do modelové latence. HTTP 202 neznamená dokončenou generaci. Lokální browserový journal zachovává samostatně lidské čekání, frame a interakci; ukončení `gl.render` není GPU scanout.
 

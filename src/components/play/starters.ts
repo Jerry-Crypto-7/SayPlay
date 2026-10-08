@@ -62,6 +62,24 @@ export const IDEAS: readonly { readonly archetype: ArchetypeId; readonly sentenc
   { archetype: 'survival_timer', sentence: 'The floor is lava, for 60 seconds' },
 ];
 
+/**
+ * Nápověda první návštěvy (P44D T12): pět vět, u kterých měření
+ * `evals/play/p37/o8.json` (návrh ze slov, dev sady) naměřilo hratelnou hru,
+ * sloveso poznané v klipu a poznaného hrdinu – v pěti různých žánrech. Text je
+ * doslova ten měřený, i s malým písmenem na začátku: jiný zápis už měřený není.
+ * `set` a `id` drží `__tests__/starters.test.ts` u měření.
+ */
+export const JUDGE_PICKS: readonly { readonly set: 'p37a' | 'p30dev'; readonly id: string; readonly sentence: string }[] = [
+  { set: 'p37a', id: 'f22', sentence: 'A knight fights a three-headed hydra at the castle gates.' },
+  { set: 'p30dev', id: 's037', sentence: 'A space marine shoots alien bugs in a mining colony' },
+  { set: 'p30dev', id: 'h10', sentence: 'a penguin that slides down a glacier, jumps over seals and catches fish' },
+  { set: 'p37a', id: 'm16', sentence: 'a kangaroo jumps over cars then collects coins on the highway' },
+  { set: 'p37a', id: 'f08', sentence: 'a unicorn gallops across a rainbow to reach a castle in the clouds' },
+];
+export const FIRST_VISIT_TITLE = 'New here? Tap one, then Make it!';
+export const TRY_YOUR_OWN = 'Try your own';
+export const NOT_NOW = 'Not now';
+
 export interface Starter {
   readonly archetype: ArchetypeId;
   readonly label: string;

@@ -350,15 +350,13 @@ describe('oddělení od části vzhledu', () => {
    *   přitom jen klíče `modules`, tedy `stableId`. Má vlastní test níž.
    * - `worlddoc.ts` — popisuje dvoudílný dokument. Bez pojmenování obou částí by
    *   nešlo zapsat, že hash se počítá jen z jedné z nich.
-   * - `revision.ts` — commituje patche do obou částí a drží jejich nezávislé
-   *   revize. §13.1.1 je celý o tom, že se ty dvě části nesmí míchat; napsat to
-   *   bez jejich jmen nelze.
+   * (`revision.ts` sem patřil, než odešel se starým studiem – P44D T7.)
    *
    * Zákaz tím neztrácí zuby: cesta snížení je pořád `IR_PATH_MODULES`, pořád
    * nesmí to slovo napsat, a nově se ověřuje i to, že se k němu nedostane
    * **importem** — viz test hned pod inventurou.
    */
-  const SURFACE_MODULES = ['references.ts', 'worlddoc.ts', 'revision.ts'];
+  const SURFACE_MODULES = ['references.ts', 'worlddoc.ts'];
 
   /**
    * Adresáře, které smí část vzhledu jmenovat, protože bez pojmenování zákazu

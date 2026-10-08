@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 
 import { CreateGame } from '@/components/play/CreateGame';
 import { FeaturedGame, FeedPager } from '@/components/play/FeedPager';
+import { HIDE_FOR_RETURNING } from '@/components/play/FirstVisitHint';
 import { HERO, SUBHEAD } from '@/components/play/starters';
 import { PendingUpgradeCards } from '@/components/play/UpgradeBanner';
 
@@ -30,6 +31,7 @@ export default function PlayPage() {
             <span className="sp-highlight">{HERO.slice(HERO_CUT)}</span>
           </h1>
           <p className="play-subhead">{SUBHEAD}</p>
+          <script dangerouslySetInnerHTML={{ __html: HIDE_FOR_RETURNING }} />
           <CreateGame />
           <PendingUpgradeCards />
         </div>

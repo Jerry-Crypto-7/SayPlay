@@ -1,10 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import sim from '../../../../evals/reality-compiler/museum.sim.json';
-import { sealSimHash } from '../../../ir/worlddoc';
-import { sourceProxy } from '../../../worldstream/source-view';
+import { buildRuntimeWorld } from '../../../ir/build';
+import { sealSimHash, type WorldDoc } from '../../../ir/worlddoc';
+import { createRuntime, entityPlacements } from '../../../sim/interpreter';
+import type { ProxyWorld } from '../../../worldstream/proxy';
 import { PALETTES } from '../../../kit';
 import { buildStage } from '../WorldstreamStage';
 import { socketName } from '../representation';
+
+/** Schematický svět z rozmístění entit (dřív `worldstream/source-view.ts`, smazaný s tvorbou světů v P44D T6). */
+function sourceProxy(doc: WorldDoc, title: string): ProxyWorld {
+  const built = buildRuntimeWorld(doc.sim);
+  if (!built.ok) throw new Error('The source scenario cannot run.');
+  const entities = entityPlacements(createRuntime({ ...built.world, trace: [] }));
+  return { kind: 'built', title, sessionSeed: 1, resolution: 16, quality: 'full', scenery: [],
+    slots: entities.map(entity => ({
+      slot: { stableId: entity.stableId, label: entity.stableId, role: 'prop', importance: 1,
+        source: { kind: 'geom', node: 0 }, anchors: [],
+        localBounds: { min: [-0.3, 0, -0.3], max: [0.3, 0.7, 0.3] },
+        worldBounds: { min: [entity.x - 0.3, 0, entity.y - 0.3], max: [entity.x + 0.3, 0.7, entity.y + 0.3] },
+        transform: { scale: [1, 1, 1], translation: [entity.x, 0, entity.y] } },
+      form: { kind: 'clay', rung: 'semantic-clay', drawn: true, reason: 'Schematic source scenario; appearance is not sourced.' },
+    })) };
+}
 
 function fixture() {
   const world = sourceProxy(sealSimHash({ irVersion: 'v1', simRevision: 0, lookRevision: 0, sim,
