@@ -344,12 +344,15 @@ check(3, 'committed content mentions neither the organiser nor the real author',
   // ne snímek: jméno vyškrtnuté v posledním commitu drží jeho rodič dál a
   // `git log -p` ho ukáže komukoli. Kontrola 4 vedle chodí přes `--all` ze
   // stejného důvodu.
-  const output = grepHistory(config.publicTokens, [
-    '.',
-    ':(exclude)SECURITY-FINDINGS.md',
-    ':(exclude)scripts/blind-check.mjs',
-    ':(exclude)scripts/__tests__/blind-check.test.ts',
-  ]);
+  // Výjimky na řádek (`identityExceptions`, literál + důvod) platí i tady:
+  // naměřeno 8. 10. 2026 – náhodný kus base64 v uložených přehráních nesl jméno
+  // organizátora jako podřetězec a zablokoval každý push, protože kontrola
+  // čte i cizí lokální větve.
+  const output = grepHistory(
+    config.publicTokens,
+    ['.', ':(exclude)SECURITY-FINDINGS.md', ':(exclude)scripts/blind-check.mjs', ':(exclude)scripts/__tests__/blind-check.test.ts'],
+    { unless: config.identityExceptions ?? [] },
+  );
 
   /**
    * **Jméno autora se hledá tady, ne jen v identitě commitu.** Kontrola 1 kryje

@@ -717,6 +717,26 @@ describe('kontrola 3 hledá i skutečné jméno autora, ne jen jméno organizát
     expect(failedChecks(result.out)).toEqual([]);
   });
 
+  it('[3] výjimka s důvodem pustí jméno organizátora schované v base64', () => {
+    const dir = makeRepo({
+      identityExceptions: [{ literal: 'q7AcMeCoRp9x', reason: 'náhodný kus base64 v přehrání' }],
+      extraFile: { name: 'replays.json', body: '{ "inputs": "Zx4q7AcMeCoRp9xWb" }\n' },
+    });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(0);
+    expect(failedChecks(result.out)).toEqual([]);
+  });
+
+  it('[3] výjimka nekryje jméno organizátora mimo literál', () => {
+    const dir = makeRepo({
+      identityExceptions: [{ literal: 'q7AcMeCoRp9x', reason: 'náhodný kus base64 v přehrání' }],
+      extraFile: { name: 'replays.json', body: '{ "inputs": "Zx4q7AcMeCoRp9xWb" }\n// pro AcmeCorp\n' },
+    });
+    const result = blindCheck(dir);
+    expect(result.code).toBe(1);
+    expect(failedChecks(result.out)).toEqual([3]);
+  });
+
   it('[3] výjimka bez důvodu se nebere', () => {
     const dir = makeRepo({
       identityTokens: ['zqxvw'],
