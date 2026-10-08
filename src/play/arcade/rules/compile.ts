@@ -448,18 +448,22 @@ function compileRule(rule: Rule, codes: ReadonlyMap<string, number>, templates: 
     const { role, radius, ...rest } = rule.when.interact;
     when = { interact: { role: c(role), radius: radius * UNIT, ...rest } };
     id = 'interact';
-  } else {
+  } else if ('hit' in rule.when) {
     when = { hit: c(rule.when.hit) };
     id = 'rule_hit';
-  }
+  } else throw new Error(`rule ${rule.id}: logic is not lowered yet`);
   const conditions: CompiledIf[] = (rule.if ?? []).map((cond) => {
     if ('holding' in cond) return { holding: c(cond.holding) };
     if ('near' in cond) return { near: { role: c(cond.near.role), within: cond.near.within * UNIT } };
-    return cond;
+    if ('counter' in cond || 'notHolding' in cond) return cond;
+    throw new Error(`rule ${rule.id}: logic is not lowered yet`);
   });
   const effects: CompiledDo[] = rule.do.map((effect) => {
     if ('spawn' in effect) return { spawn: { template: templates.get(effect.spawn.role) as number, at: effect.spawn.at } };
     if ('toggle' in effect) return { toggle: c(effect.toggle) };
+    if ('set' in effect || 'add' in effect || 'goPhase' in effect || 'startTimer' in effect || 'stopTimer' in effect || 'emit' in effect || 'wave' in effect) {
+      throw new Error(`rule ${rule.id}: logic is not lowered yet`);
+    }
     return effect;
   });
   const params: CompiledRule = { id: rule.id, verb: rule.verb, when, if: conditions, do: effects };
@@ -473,6 +477,8 @@ function compileRule(rule: Rule, codes: ReadonlyMap<string, number>, templates: 
 export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number): RulesCompiled {
   const rules = spec.rules ?? [];
   if (rules.length === 0 && (spec.things ?? []).length === 0) return { rules: [], level, issues: [] };
+  // `ruleIssues` pustí logiku jen s deklarací, takže stačí hlídat blok.
+  if (spec.logic !== undefined) return { rules: [], level, issues: ['logic: vars, timers, phases and events do not compile into a world yet'] };
   const codes = roleCodes(spec, level);
   const yard = rulesOwnGoal(spec);
   const hidden = new Set((spec.things ?? []).filter((thing) => thing.start === 'hidden').map((thing) => thing.role));

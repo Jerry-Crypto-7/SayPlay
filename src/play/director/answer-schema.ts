@@ -75,7 +75,8 @@ export const readyModes = (module: GenreModule): string[] => module.modes.filter
 function genreVariant(module: GenreModule): Json | null {
   const modes = readyModes(module);
   if (modes.length === 0) return null;
-  const base = genreSpecSchema.options.find((option) => option.shape.genre.value === module.id)!;
+  // `logic` (P45B) přidává odpovědi až RULE_DEFS (T10); do té doby ho model nepíše.
+  const base = genreSpecSchema.options.find((option) => option.shape.genre.value === module.id)!.omit({ logic: true });
   // Parametry modulu a hloubky (P36A T8: životy, cílové skóre, časový limit).
   const bounds = Object.entries(paramBoundsOf(module));
   const params = z.object(Object.fromEntries(bounds.map(([key, range]) => [key, z.int().min(range.min).max(range.max).optional()]))).strict();

@@ -32,7 +32,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 
 import { ADDONS, type AddonId } from './arcade/contract';
 import { LOOK_IDS, TIMES_OF_DAY, WEATHERS } from './arcade/look';
-import { ruleIssues, rulesSchema, thingsSchema } from './arcade/rules/schema';
+import { logicSchema, ruleIssues, rulesSchema, thingsSchema } from './arcade/rules/schema';
 import { CAPABILITIES } from './capabilities';
 import { ALL_GENRE_MODES, GENRES, GENRE_MODES, isGenreMode } from './genre/contract';
 import { heroActionSchema } from './hero-action';
@@ -535,6 +535,12 @@ export const gameSpecSchema = z
     /** Doplňky rolí pro pravidla (skryté na startu). */
     things: thingsSchema.optional(),
     /**
+     * Stav hry pro pravidla (P45B): proměnné, časovače, fáze a události – jen spolu
+     * s pravidly, která ho čtou a mění. Bez výchozí hodnoty: uložený spec bez pole
+     * staví tentýž svět.
+     */
+    logic: logicSchema.optional(),
+    /**
      * Skóre, které rozhoduje (P36A T5, `arcade/compile.ts` `withScoring`):
      * kombo za sebrání v řadě a bonus na konci výhry; `target` = výhra až po
      * dosažení cílového skóre. Jen arkáda; bez výchozí hodnoty, jako `control` –
@@ -690,6 +696,9 @@ export function readGameSpec(input: unknown): GameSpecResult {
   });
   if (issues.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues };
 
+  if (spec.logic !== undefined && (spec.rules ?? []).length === 0) {
+    return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/logic: a logic block needs rules that read and change it'] };
+  }
   if (spec.rules !== undefined || spec.things !== undefined) {
     if (spec.control === undefined || spec.control === 'tap_go') {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/rules: only an arcade game (any control but tap_go) takes rules'] };
@@ -697,7 +706,7 @@ export function readGameSpec(input: unknown): GameSpecResult {
     // Vyhrává-li pravidlo na volném pohybu, hraje robot pravidel na dvorku. Generátor se počítá,
     // dokud ho spec nese: svět ho postaví. Zahodí ho jen `rulesYard` a ten běží před čtením (B-R10).
     const yard = spec.control === 'move_free' && (spec.rules ?? []).some((rule) => rule.do.some((effect) => 'win' in effect));
-    const ruleProblems = ruleIssues(spec.rules ?? [], spec.things ?? [], roleIds, { addons: spec.addons, generator: spec.controlParams?.generator, yard });
+    const ruleProblems = ruleIssues(spec.rules ?? [], spec.things ?? [], roleIds, { addons: spec.addons, generator: spec.controlParams?.generator, yard, ...(spec.logic === undefined ? {} : { logic: spec.logic }) });
     if (ruleProblems.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues: ruleProblems };
   }
 

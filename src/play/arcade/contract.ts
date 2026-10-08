@@ -34,6 +34,27 @@ export const ARCADE_LIMITS = {
   maxCounters: 8,
 } as const;
 
+/**
+ * Meze bloku `logic` (P45B): proměnné, časovače, fáze a události hry. Stav logiky
+ * žije v hashovaném stavu jádra, takže strop je strop jeho slotů, ne jen jazyka.
+ */
+export const LOGIC_LIMITS = {
+  maxVars: 8,
+  maxTimers: 4,
+  /** První fáze je počáteční; jediná fáze by žádný průběh nedala. */
+  minPhases: 2,
+  maxPhases: 4,
+  maxEvents: 8,
+  /** Počáteční hodnota, `set` a mez podmínky – celá čísla v ±tolika. */
+  varLiteral: 1000,
+  /** `add` za jeden výstřel. */
+  maxAdd: 100,
+  /** Hodnota proměnné v jádře se drží v ±tolika (sčítání saturuje). */
+  varSaturation: 100_000,
+  /** Nejvýš tolik těl jedné vlny. */
+  maxWave: 8,
+} as const;
+
 /** Životnost projektilu v ticích, když ji úroveň neuvede: 3 s. Mez je `maxTicks`. */
 export const PROJECTILE_LIFETIME = 3 * ARCADE_HZ;
 /** Plný odraz projektilu od země; 0 = zánik při dopadu. */
