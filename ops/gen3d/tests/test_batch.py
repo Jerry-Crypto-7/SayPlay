@@ -4,10 +4,9 @@ slovo (v cache i v záznamu) už nesmí generovat."""
 import json
 from pathlib import Path
 
-import pytest
-
 import batch
 import cache
+import pytest
 
 
 def fake_result(out_dir: Path) -> dict:
@@ -81,6 +80,14 @@ def test_cached_noun_is_recorded_without_the_gpu(tmp_path):
     records = run(tmp_path, ["teapots", "sock"], make_generate(calls))
     assert calls == ["sock"]
     assert records[0]["noun"] == "teapot" and records[0]["verdict"] == "passed"
+
+
+def test_cached_noun_keeps_the_seed_it_was_generated_with(tmp_path):
+    # Povýšení (`promote-batch.mjs`) chce `source.seed`; model z mezipaměti ho dřív ztratil.
+    run(tmp_path, ["sock"], make_generate([]))
+    (tmp_path / "batch.json").unlink()
+    records = run(tmp_path, ["sock"], make_generate([]))
+    assert records[0]["cached"] is True and records[0]["seed"] == 0
 
 
 def test_failed_noun_is_recorded_with_reason_and_not_retried(tmp_path):

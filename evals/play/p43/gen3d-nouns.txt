@@ -1,0 +1,73 @@
+# P43 T12: podstatná jména bez modelu z evals/play/p43/missing.json (všechny vývojové sady, nikdy zapečetěné).
+# Pořadí podle počtu vět. Vynechaná abstraktní nebo nekreslitelná: fire, mar, rain, song, owner, pollen, ash,
+# wind, tide, spark, story, poem, movie, opera, karaoke, sudoku, northern light, extra work, finance team,
+# quarterly budget, expense report, electricity bill, mortgage paper, defender, board, rail, vine, pin, paper.
+scarf  # 3
+rope  # 2
+paper ball  # 2
+robber  # 2
+sweater  # 2
+hippo  # 1
+lizard  # 1
+cyclops  # 1
+spy  # 1
+mailman  # 1
+fire truck  # 1
+spaghetti  # 1
+sign  # 1
+frisbee  # 1
+seashell  # 1
+coffin  # 1
+sleigh  # 1
+net  # 1
+towel  # 1
+receipt  # 1
+mahjong tile  # 1
+puddle  # 1
+ramp  # 1
+ammo  # 1
+boxer  # 1
+firefly  # 1
+chimney  # 1
+icicle  # 1
+mole  # 1
+orca  # 1
+passport  # 1
+poacher  # 1
+portrait  # 1
+pyramid  # 1
+searchlight  # 1
+snowmobile  # 1
+stick  # 1
+stone golem  # 1
+crater  # 1
+wolf  # 0
+spellbook  # 0
+rhino  # 0
+peacock  # 0
+centaur  # 0
+genie  # 0
+caveman  # 0
+orange  # 0
+marshmallow  # 0
+pie  # 0
+suitcase  # 0
+mask  # 0
+cape  # 0
+statue  # 0
+playing card  # 0
+golf ball  # 0
+snowboard  # 0
+jack o lantern  # 0
+broomstick  # 0
+firework  # 0
+pinata  # 0
+pinecone  # 0
+dynamite  # 0
+torpedo  # 0
+crossbow  # 0
+boomerang  # 0
+microwave  # 0
+dishwasher  # 0
+jetpack  # 0
+moon rover  # 0

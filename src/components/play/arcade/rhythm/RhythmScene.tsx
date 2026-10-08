@@ -37,6 +37,9 @@ const LANE_COLORS = ['#ef4444', '#f59e0b', '#22c55e', '#0ea5e9'];
 const LANE_OF = (x: number): number => Math.round(x / RHYTHM.laneW + (RHYTHM.lanes - 1) / 2);
 const FLASH_TICKS = 12;
 const TRACK_M = 60;
+const HERO_M = { w: 0.8, h: 1.5, d: 0.6 };
+const HERO_GAP_M = 0.7;
+const HERO_Z_M = 0.6;
 
 /** Hranice mezi pruhy (0|1, 1|2, 2|3) v `x` noty, jednotky jádra; kreslí se zrcadlově (`-x`). */
 const LANE_EDGES = Array.from({ length: RHYTHM.lanes - 1 }, (_, i) => (i + 1 - RHYTHM.lanes / 2) * RHYTHM.laneW);
@@ -48,12 +51,15 @@ const LANE_EDGES = Array.from({ length: RHYTHM.lanes - 1 }, (_, i) => (i + 1 - R
 export function RhythmScene({
   session,
   look: scene,
+  heroModel,
   noteModel,
   surface,
   ghost,
 }: {
   readonly session: ArcadeSession;
   readonly look: Look;
+  /** P43 T14b: hrdina z popisku („grandma“) stojí vedle pruhů naproti duchovi, čelem ke kameře; noty nezakryje. */
+  readonly heroModel?: BodyModel;
   readonly noteModel?: BodyModel;
   readonly surface?: React.RefObject<HTMLDivElement | null>;
   readonly heroAction: HeroAction;
@@ -145,6 +151,11 @@ export function RhythmScene({
         <boxGeometry args={[bar.w, bar.h, bar.d]} />
         <meshStandardMaterial ref={barMaterial} color="#e2e8f0" />
       </mesh>
+      {heroModel !== undefined && (
+        <group position={[-(bar.w / 2 + HERO_GAP_M), 0, HERO_Z_M]} rotation={[0, Math.PI, 0]}>
+          {heroModel(HERO_M.w, HERO_M.h, HERO_M.d)}
+        </group>
+      )}
       {/* Slot ducha (P37-0 T3) vedle lišty. */}
       <GhostSlot ghost={ghost} session={session} place={ghostSpot} />
       {notes.map((note, i) => {

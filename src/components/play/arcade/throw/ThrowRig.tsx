@@ -20,6 +20,7 @@ import { GRAVITY } from '@/play/arcade/kernel';
 import { THROW, launchVelocity } from '@/play/arcade/pieces/throw';
 import type { HeroAction } from '@/play/spec';
 
+import { ShootThrowFx } from '../action-cue/ShootThrowFx';
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import type { ArcadeSession } from '../session';
@@ -180,6 +181,8 @@ export function ThrowRig({
       ))}
       {/* Slot ducha (P37-0 T3). */}
       <GhostSlot ghost={ghost} session={session} />
+      {/* Hod vidět (P43 T5): záblesk u ruky a stopa míčku. */}
+      <ShootThrowFx session={session} verb="throw" />
     </>
   );
 }

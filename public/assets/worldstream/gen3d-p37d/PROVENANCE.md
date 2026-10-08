@@ -11,15 +11,15 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | Model | Tags | Triangles LOD0/LOD1 |
 |---|---|---|
 | `gen3d-frog` | frog | 4242 / 2008 |
-| `gen3d-squirrel` | squirrel | 4276 / 2087 |
+| `gen3d-squirrel` | squirrel, seen:copper ore, seen:crystal cluster, seen:copper nugget, seen:rock formation | 4276 / 2087 |
 | `gen3d-submarine` | submarine | 4748 / 2370 |
-| `gen3d-bug` | bug | 4746 / 2370 |
+| `gen3d-bug` | bug, seen:beetle, seen:firebug, seen:insect | 4746 / 2370 |
 | `gen3d-monster-truck` | monster truck | 4344 / 2073 |
 | `gen3d-water-gun` | water gun | 4742 / 2337 |
 | `gen3d-washing-machine` | washing machine | 4559 / 2227 |
 | `gen3d-conveyor-belt` | conveyor belt | 4526 / 2220 |
 | `gen3d-sumo` | sumo | 4721 / 2317 |
-| `gen3d-investor` | investor | 4716 / 2265 |
+| `gen3d-investor` | investor, seen:businessman, seen:man, seen:office worker | 4716 / 2265 |
 | `gen3d-police-officer` | police officer | 4548 / 2210 |
 | `gen3d-sun` | sun | 4748 / 2374 |
 | `gen3d-fireball` | fireball | 4648 / 2320 |
@@ -28,10 +28,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-seagull` | seagull, gull | 4582 / 2284 |
 | `gen3d-shrimp` | shrimp, prawn | 4714 / 2320 |
 | `gen3d-minotaur` | minotaur | 4719 / 2344 |
-| `gen3d-kraken` | kraken | 4359 / 2086 |
+| `gen3d-kraken` | kraken, seen:octopus, seen:squid, seen:tentacle monster | 4359 / 2086 |
 | `gen3d-angel` | angel | 4613 / 2210 |
 | `gen3d-gnome` | gnome | 4634 / 2278 |
-| `gen3d-cashier` | cashier, clerk | 4464 / 2163 |
+| `gen3d-cashier` | cashier, clerk, seen:receptionist desk, seen:office desk, seen:reception counter | 4464 / 2163 |
 | `gen3d-athlete` | athlete, runner, sprinter | 4659 / 2328 |
 | `gen3d-fisherman` | fisherman, angler | 4681 / 2260 |
 | `gen3d-police-car` | police car | 4377 / 2021 |
@@ -69,7 +69,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wrench` | wrench, spanner | 4748 / 2372 |
 | `gen3d-broom` | broom | 4734 / 2300 |
 | `gen3d-street-lamp` | street lamp, streetlight | 4748 / 2374 |
-| `gen3d-slot-machine` | slot machine | 4161 / 1945 |
+| `gen3d-slot-machine` | slot machine, seen:treasure chest, seen:storage chest, seen:jewelry box | 4161 / 1945 |
 | `gen3d-arcade-machine` | arcade machine | 4391 / 2192 |
 | `gen3d-puzzle-piece` | puzzle piece | 4747 / 2373 |
 | `gen3d-baseball` | baseball | 4687 / 2162 |
@@ -95,19 +95,19 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-mace` | mace | 4748 / 2374 |
 | `gen3d-trident` | trident | 4748 / 2374 |
 | `gen3d-paintball-gun` | paintball gun | 4366 / 2098 |
-| `gen3d-soap` | soap | 4748 / 2374 |
+| `gen3d-soap` | soap, seen:sponge, seen:foam block, seen:rectangular block | 4748 / 2374 |
 | `gen3d-toothbrush` | toothbrush | 4748 / 2374 |
 | `gen3d-lamp-post` | lamp post | 4748 / 2374 |
 | `gen3d-kettle` | kettle | 4561 / 2216 |
 | `gen3d-smartwatch` | smartwatch | 4531 / 2233 |
 | `gen3d-game-controller` | game controller, gamepad | 4369 / 2139 |
-| `gen3d-cassette` | cassette | 4454 / 2161 |
+| `gen3d-cassette` | cassette, seen:metal panel, seen:metal crate, seen:wall panel, seen:vent cover | 4454 / 2161 |
 | `gen3d-briefcase` | briefcase | 4678 / 2311 |
 | `gen3d-wallet` | wallet | 4692 / 2327 |
 | `gen3d-credit-card` | credit card | 4723 / 2343 |
 | `gen3d-shopping-bag` | shopping bag | 4713 / 2348 |
 | `gen3d-medal` | medal | 4748 / 2374 |
-| `gen3d-ribbon` | ribbon | 4748 / 2374 |
+| `gen3d-ribbon` | ribbon, seen:banner, seen:pennant, seen:hanging flag | 4748 / 2374 |
 | `gen3d-bow-tie` | bow tie, bowtie | 4748 / 2374 |
 | `gen3d-bracelet` | bracelet | 4724 / 2323 |
 | `gen3d-lipstick` | lipstick | 4750 / 2374 |
@@ -116,7 +116,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-scissor` | scissor | 4748 / 2374 |
 | `gen3d-paintbrush` | paintbrush | 4746 / 2372 |
 | `gen3d-paint-can` | paint can | 4675 / 2271 |
-| `gen3d-easel` | easel | 4710 / 2347 |
+| `gen3d-easel` | easel, seen:prayer wheel, seen:rotating sign, seen:display stand | 4710 / 2347 |
 | `gen3d-crayon` | crayon | 4748 / 2374 |
 | `gen3d-eraser` | eraser | 4748 / 2374 |
 | `gen3d-calculator` | calculator | 4496 / 2211 |
@@ -133,8 +133,25 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-birdhouse` | birdhouse | 4465 / 2170 |
 | `gen3d-doghouse` | doghouse, kennel | 4309 / 2509 |
 | `gen3d-cat-tree` | cat tree | 4749 / 2352 |
-| `gen3d-fish-tank` | fish tank | 4460 / 2142 |
+| `gen3d-fish-tank` | fish tank, seen:dumpster, seen:storage container, seen:cooler, seen:storage box | 4460 / 2142 |
 | `gen3d-hamster-wheel` | hamster wheel | 4613 / 2286 |
 | `gen3d-wedding-cake` | wedding cake | 4417 / 2124 |
 | `gen3d-bacon` | bacon | 4738 / 2364 |
 | `gen3d-fried-egg` | fried egg | 4748 / 2374 |
+| `gen3d-pyramid` | pyramid | 4742 / 2371 |
+| `gen3d-stick` | stick | 4748 / 2374 |
+| `gen3d-spellbook` | spellbook, grimoire | 4734 / 2335 |
+| `gen3d-caveman` | caveman, neanderthal | 4573 / 2131 |
+| `gen3d-suitcase` | suitcase, luggage | 4398 / 2124 |
+| `gen3d-mask` | mask | 4518 / 2228 |
+| `gen3d-jack-o-lantern` | jack o lantern | 4678 / 2334 |
+| `gen3d-microwave` | microwave | 4750 / 2374 |
+| `gen3d-scarf` | scarf | 4730 / 2352 |
+| `gen3d-rope` | rope | 4746 / 2368 |
+| `gen3d-sweater` | sweater | 4635 / 2279 |
+| `gen3d-mailman` | mailman, postman | 4750 / 2374 |
+| `gen3d-fire-truck` | fire truck | 4315 / 2081 |
+| `gen3d-sign` | sign, signpost | 4635 / 2316 |
+| `gen3d-sleigh` | sleigh | 4746 / 2373 |
+| `gen3d-boxer` | boxer | 4750 / 2370 |
+| `gen3d-icicle` | icicle | 4748 / 2374 |

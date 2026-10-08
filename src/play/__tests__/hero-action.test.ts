@@ -48,4 +48,12 @@ describe('heroAction (P37-0 T1)', () => {
     expect(sim.length).toBeGreaterThan(10);
     expect(sim.filter((path) => readFileSync(path, 'utf8').includes('heroAction'))).toEqual([]);
   });
+
+  it('no simulation file imports the render-only action cues (P43 T4)', () => {
+    const files = (path: string): string[] =>
+      statSync(path).isDirectory() ? readdirSync(path).flatMap((name) => files(join(path, name))) : [path];
+    const sim = files(join(process.cwd(), 'src/play')).filter((path) => /\.tsx?$/.test(path) && !path.includes('__tests__'));
+    expect(sim.length).toBeGreaterThan(50);
+    expect(sim.filter((path) => readFileSync(path, 'utf8').includes('action-cue'))).toEqual([]);
+  });
 });
