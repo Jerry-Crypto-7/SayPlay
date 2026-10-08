@@ -78,6 +78,21 @@ describe('P44C sealed open-vocabulary set', () => {
     expect(rows.filter((_, i) => earlier.has(own[i]!)).map((row) => row.id)).toEqual([]);
   });
 
+  it('is read by the T14 measure only through openSealedOnce', () => {
+    // Měřidlo, které by sadu četlo samo, by obešlo pečeť a mohlo běžet znovu – číslo by vzniklo víckrát.
+    const measure = readFileSync('evals/play/p44c/sealed.measure.ts', 'utf8');
+    expect(measure).toContain('openSealedOnce(argv)');
+    expect(measure).not.toMatch(/sealed-110|\bSEALED\b|readFileSync/);
+  });
+
+  it('records the same LF hash as the seal when opened', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'p44c-seal-'));
+    const paths = { sealed: join(dir, 'set.json'), opened: join(dir, 'opened.json') };
+    writeFileSync(paths.sealed, bytes.toString('utf8').replace(/\r?\n/g, '\r\n'));
+    openSealedOnce(['--open-sealed-once'], paths);
+    expect((JSON.parse(readFileSync(paths.opened, 'utf8')) as { sha256: string }).sha256).toBe(seal.sha256);
+  });
+
   it('opens only with --open-sealed-once, and only once', () => {
     const dir = mkdtempSync(join(tmpdir(), 'p44c-seal-'));
     const paths = { sealed: join(dir, 'set.json'), opened: join(dir, 'opened.json') };

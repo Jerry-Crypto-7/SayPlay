@@ -17,7 +17,8 @@ export function openSealedOnce(argv: readonly string[], paths = { sealed: SEALED
   const record = {
     openedAtUtc: new Date().toISOString(),
     commit: execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim(),
-    sha256: createHash('sha256').update(bytes).digest('hex'),
+    // Nad LF bajty jako pečeť (`dataset-seal.json`) – jinak by CRLF checkout zapsal hash, který se s ní nepotká.
+    sha256: createHash('sha256').update(bytes.toString('utf8').replace(/\r\n/g, '\n')).digest('hex'),
   };
   writeFileSync(paths.opened, JSON.stringify(record, null, 2) + '\n', { flag: 'wx' });
   return JSON.parse(bytes.toString('utf8'));
