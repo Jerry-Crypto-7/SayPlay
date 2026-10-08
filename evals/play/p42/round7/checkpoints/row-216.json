@@ -1,0 +1,174 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-044",
+    "sentence": "A janitor sweeps the floors of the empty museum at night.",
+    "seed": 1,
+    "milliseconds": 234.50820000001113,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "arena_collect",
+        "tuning": {
+          "items": 10,
+          "waves": 3
+        }
+      },
+      "genre": {
+        "id": "arena",
+        "mode": "collect",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Janitor Hunt",
+      "archetype": "collect_exit",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "museum at night",
+        "mood": "playful",
+        "timeOfDay": "night"
+      },
+      "objective": {
+        "kind": "collect",
+        "description": "Collect 10 floors in each of 3 waves before time runs out.",
+        "count": 10,
+        "role": "item"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "janitor",
+          "count": 1
+        },
+        {
+          "id": "item",
+          "kind": "collectible",
+          "label": "floor",
+          "count": 10
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Collect 10 floors per wave, 3 waves.",
+        "controlsHint": "Drag or arrows to move."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "sweep"
+    },
+    "specHash": "1c499043",
+    "worldHash": "298b86581602610363966ee134620201805c64b4299dabf32a5a40a8e0929790",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "janitor",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "janitor",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 43,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "janitor",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 2,
+          "roleId": "item",
+          "label": "floor",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 43,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "janitor",
+          "verb": "sweep",
+          "object": "floor"
+        }
+      ],
+      "closest": "a collecting game",
+      "reason": "Sweep isn't here yet – here's a collecting game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "janitor",
+          "verb": "sweep",
+          "object": "floor"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 3787,
+      "hash": "fddb0dbe",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

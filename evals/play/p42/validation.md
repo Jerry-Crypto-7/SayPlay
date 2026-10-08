@@ -1,6 +1,19 @@
 ﻿# P42 — implementace a stav přejímky
 
-Implementace je na větvi `features/p42-composable-pieces`. **P42 není dokončené:** poslední nezávislá sada (round6) nesplnila dva ze šesti automatických limitů – celé věty o jednu větu a nulové ticho. Zelené regresní testy ani potvrzené lidské zahrání čtyř scénářů tento výsledek nenahrazují.
+Implementace je na větvi `features/p42-composable-pieces`. **P42 není dokončené:** poslední nezávislá sada (round7) nesplnila tři ze šesti automatických limitů – celé věty, nulové ticho a hrdinu. Zelené regresní testy ani potvrzené lidské zahrání čtyř scénářů tento výsledek nenahrazují.
+
+## Round7 – zapečetěná sada, jediné měření (P44A T14, 8. 10. 2026)
+
+**FAIL**, změřeno jednou nad `94763e8d` (pečeť `4c000a74…` ověřená na LF bajtech, 64 vět × 5 seedů, 0 volání modelu): celé věty 41/64 (64 %, limit 80 %), tiché trojice 85 (limit 0), hrdina 87,5 % (limit 90 %); prostředí 91,7 %, p95 469 ms, golden a build 100 % prošly. Detail a všichni svědci: [round7/final.json](round7/final.json), [round7/final.md](round7/final.md). Limity se nepřepisují a druhý běh nad stejnou sadou nebude – věty round7 jsou od teď otevřená data.
+
+Zbylé třídy (tiché trojice podle slovesa, počet běhů a příklady id):
+- **chaser 25** (`r7-ho-010`, `-022`, `-024`, `-025`) – pronásledovatel z věty se ve hře nezahraje ani neohlásí; největší třída.
+- **glide 10, land 10** (`r7-ho-007`, `-012`, `-037`) – let a přistání v souvětí.
+- **deliver 10** (`r7-ho-021`, `-028`) – doručení jako druhá akce.
+- po 5: hazard (`-004`), reach (`-033`), fight (`-038`), flap (`-051`), roam (`-053`), build (`-063`).
+- Hrdina chybí v 8 větách: `r7-ho-003`, `-007`, `-016`, `-021`, `-022`, `-037`, `-051`, `-062`.
+
+Opravy T12 (vazba „with X to <sloveso>“) a T13 (free/patrol) třídy round6 zavřely; round7 ukazuje jiné – hlavně pronásledovatele a pohyb v souvětí. Podle P44A výsledek sloučení nebrzdí, je to poctivý stav P42 pro P44C/P44E.
 
 ## Regrese proti `main` uzavřené (P44A T3–T5, 8. 10. 2026)
 

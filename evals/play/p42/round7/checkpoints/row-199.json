@@ -1,0 +1,221 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-040",
+    "sentence": "A school bus drives through the countryside picking up kids, and it is not a race.",
+    "seed": 4,
+    "milliseconds": 216.37590000001364,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "steer",
+      "controlParams": {
+        "difficulty": "normal",
+        "lengthM": 700,
+        "rivals": false,
+        "roadWidth": 3600,
+        "roadEntryWidth": 10000,
+        "crashBudget": 3,
+        "centerCollectibles": true,
+        "turbo": true,
+        "drift": false
+      },
+      "addons": [],
+      "title": "bus drive",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "countryside",
+        "mood": "fast"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Reach the finish line.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "bus",
+          "count": 1
+        },
+        {
+          "id": "barrier",
+          "kind": "hazard",
+          "label": "bee",
+          "count": 1
+        },
+        {
+          "id": "turbo",
+          "kind": "collectible",
+          "label": "kid",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Reach the finish line.",
+        "controlsHint": "Drag/arrows steer. Down or second finger brakes. Avoid barriers."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "8b9423bc",
+    "worldHash": "99bbc4bc6be091d4a74594bcfc7142d2608a4c4ad7c0dea4b82f761dd45a0335",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bus",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "drive",
+        "object": null,
+        "tick": 21,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bus",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 529,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bus",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 107,
+          "roleId": "turbo",
+          "label": "kid",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 529,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bus",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 112,
+          "roleId": "finish",
+          "label": "finish line",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2134,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bus",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "barrier",
+          "label": "bee",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2135,
+        "evidence": "survived-threat:probe:barrier",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 10,
+          "roleId": "barrier",
+          "label": "bee",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bus",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 267,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:barrier"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 2,
+      "proved": 2,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2135,
+      "hash": "552a4bae",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

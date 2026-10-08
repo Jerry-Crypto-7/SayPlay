@@ -1,0 +1,303 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-007",
+    "sentence": "A pirate ship sails the stormy sea and fires cannons at navy frigates.",
+    "seed": 2,
+    "milliseconds": 290.6746999999996,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "steer",
+      "controlParams": {
+        "difficulty": "normal",
+        "lengthM": 700,
+        "rivals": false,
+        "roadWidth": 3600,
+        "roadEntryWidth": 10000,
+        "crashBudget": 3,
+        "turbo": true,
+        "drift": false
+      },
+      "addons": [
+        "shoot"
+      ],
+      "title": "pirate ship drive",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "sea",
+        "mood": "fast"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Reach the finish line.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "pirate ship",
+          "count": 1
+        },
+        {
+          "id": "barrier",
+          "kind": "hazard",
+          "label": "tire barrier",
+          "count": 1
+        },
+        {
+          "id": "turbo",
+          "kind": "collectible",
+          "label": "turbo",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "enemy",
+          "kind": "hazard",
+          "label": "navy frigate",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Reach the finish line.",
+        "controlsHint": "Drag/arrows steer. Second finger/Space fires. Down/S brakes. Avoid barriers."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "24681992",
+    "worldHash": "2e5a1e4a3a73d2127ce002b6c6087ad027e54f4f6eb4359c0ae0d92f0c117ea8",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate ship",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "drive",
+        "object": null,
+        "tick": 21,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate ship",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 59,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate ship",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 115,
+          "roleId": "enemy",
+          "label": "navy frigate",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 59,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate ship",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 115,
+          "roleId": "enemy",
+          "label": "navy frigate",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 59,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate ship",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 109,
+          "roleId": "turbo",
+          "label": "turbo",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 507,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate ship",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 114,
+          "roleId": "finish",
+          "label": "finish line",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2108,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate ship",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "barrier",
+          "label": "tire barrier",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2109,
+        "evidence": "survived-threat:probe:barrier",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 10,
+          "roleId": "barrier",
+          "label": "tire barrier",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate ship",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 267,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:barrier"
+      },
+      {
+        "actor": {
+          "body": 115,
+          "roleId": "enemy",
+          "label": "navy frigate",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate ship",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 116,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:enemy"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": false,
+      "total": 2,
+      "proved": 1,
+      "missing": [
+        {
+          "actor": "ship",
+          "verb": "glide",
+          "object": null
+        }
+      ],
+      "silent": [
+        {
+          "actor": "ship",
+          "verb": "glide",
+          "object": null
+        }
+      ]
+    },
+    "hero": false,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2109,
+      "hash": "ab365023",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

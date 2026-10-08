@@ -1,0 +1,260 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-036",
+    "sentence": "Don't stop running: a cheetah chases gazelles across the savanna.",
+    "seed": 3,
+    "milliseconds": 471.6342000000004,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "catch",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "runner",
+      "controlParams": {
+        "obstacles": [
+          "hurdle",
+          "cone",
+          "crate"
+        ],
+        "feel": 2,
+        "sections": 3
+      },
+      "genre": {
+        "id": "runner",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Cheetah Run",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "savanna",
+        "mood": "energetic"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Run to the finish without hitting a rock.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "cheetah",
+          "count": 1
+        },
+        {
+          "id": "obstacle",
+          "kind": "hazard",
+          "label": "rock",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "coin",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "patrol",
+          "label": "gazelle",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Catch the gazelle.",
+        "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "6b02005e",
+    "worldHash": "64134b5b22b20116648408d5bc31a7523f28361b8dba2f5e5bd5871eae6725fa",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cheetah",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "run",
+        "object": null,
+        "tick": 3,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cheetah",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 212,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cheetah",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 55,
+          "roleId": "coin",
+          "label": "coin",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 212,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cheetah",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "catch",
+        "object": {
+          "body": 116,
+          "roleId": "part_0",
+          "label": "gazelle",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 584,
+        "evidence": "moving-prey-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cheetah",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 1880,
+        "evidence": "runner-takeoff",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cheetah",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "obstacle",
+          "label": "rock",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2689,
+        "evidence": "survived-threat:probe:obstacle",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 1,
+          "roleId": "obstacle",
+          "label": "rock",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cheetah",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 163,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:obstacle"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 2,
+      "proved": 2,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2689,
+      "hash": "e892773c",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-042",
+    "sentence": "Make a game where a grandma bakes cookies in her cozy kitchen.",
+    "seed": 4,
+    "milliseconds": 73.45060000001104,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_station",
+        "tuning": {
+          "count": 2,
+          "states": 3,
+          "verb": "cook",
+          "rounds": 10
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "station",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Grandma Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "her cozy kitchen",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Cook all 2 cookie in each of 10 rounds within 81 seconds.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 81,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "grandma",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "cookie",
+          "count": 2
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Cook all 2 cookie, 10 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use when it is ready. Stall and it boils over."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "stir"
+    },
+    "specHash": "4ead8bb4",
+    "worldHash": "a1ceffba33f937c756fc9cc19f2171a24f979340c964bcce05d4c2715acadc3a",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "grandma",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "cookie",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 29,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "grandma",
+          "verb": "bake",
+          "object": "cookie"
+        }
+      ],
+      "closest": "a quest",
+      "reason": "Bake isn't here yet – here's a quest."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "grandma",
+          "verb": "bake",
+          "object": "cookie"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2400,
+      "hash": "0d1cbad8",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

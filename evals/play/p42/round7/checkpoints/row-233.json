@@ -1,0 +1,195 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-047",
+    "sentence": "A farmer shears fluffy sheep on a windy hillside.",
+    "seed": 3,
+    "milliseconds": 196.3793000000005,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_spatial",
+        "tuning": {
+          "count": 5,
+          "states": 2,
+          "verb": "shear",
+          "rounds": 3,
+          "chasers": 1
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "spatial",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Farmer Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "windy hillside",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Shear all 5 fluffy sheep in each of 3 rounds before the bee catches you.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 88,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "farmer",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "fluffy sheep",
+          "count": 5
+        },
+        {
+          "id": "hunter",
+          "kind": "chaser",
+          "label": "bee",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Shear all 5 fluffy sheep, 3 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use next to a target."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "chop"
+    },
+    "specHash": "1ebc2c12",
+    "worldHash": "1be44b408fa6dc1c94854e060c0cd0df0f13fb5270ed8d90ebfdd86c0427a5bc",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "farmer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 8,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "farmer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "fluffy sheep",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 93,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "bee",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "verb": "chaser",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "farmer",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 246,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:hunter"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "farmer",
+          "verb": "shear",
+          "object": "sheep"
+        }
+      ],
+      "closest": "a quest",
+      "reason": "Shear isn't here yet – here's a quest."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "farmer",
+          "verb": "shear",
+          "object": "sheep"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 3475,
+      "hash": "6879ecce",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

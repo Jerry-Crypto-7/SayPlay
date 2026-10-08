@@ -1,0 +1,273 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-010",
+    "sentence": "Let a frog hop across the pond to reach the far bank before a heron grabs it.",
+    "seed": 4,
+    "milliseconds": 205.049500000001,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "platform",
+      "controlParams": {
+        "checkpoints": true,
+        "tuning": {
+          "feel": 2,
+          "sections": 3
+        }
+      },
+      "genre": {
+        "id": "platformer",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Frog Jump",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "pond",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Reach the far bank.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "frog",
+          "count": 1
+        },
+        {
+          "id": "spikes",
+          "kind": "hazard",
+          "label": "spikes",
+          "count": 5
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "flower",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "far bank",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Reach the far bank.",
+        "controlsHint": "Arrows or A/D to move, Space or tap to jump."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "736d095e",
+    "worldHash": "c902a0ab9e548ef9f51f8b2d1b144726ac9c15596c3ee2dc9129eb7e40b4a47e",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "frog",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 56,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "frog",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 118,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "frog",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 37,
+          "roleId": "coin",
+          "label": "flower",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 118,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "frog",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 80,
+          "roleId": "finish",
+          "label": "far bank",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 3108,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "frog",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 3109,
+        "evidence": "survived-threat:probe:spikes",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "frog",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 538,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      },
+      {
+        "actor": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "frog",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 538,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "heron",
+          "verb": "collect",
+          "object": "frog"
+        }
+      ],
+      "closest": "a platformer",
+      "reason": "Collecting isn't here yet – here's a platformer."
+    },
+    "score": {
+      "preserved": false,
+      "total": 3,
+      "proved": 2,
+      "missing": [
+        {
+          "actor": "heron",
+          "verb": "chaser",
+          "object": "frog"
+        }
+      ],
+      "silent": [
+        {
+          "actor": "heron",
+          "verb": "chaser",
+          "object": "frog"
+        }
+      ]
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 3109,
+      "hash": "a544fb6a",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

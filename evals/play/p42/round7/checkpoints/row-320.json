@@ -1,0 +1,289 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-064",
+    "sentence": "A greyhound races around the stadium track.",
+    "seed": 5,
+    "milliseconds": 589.5761999999813,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "steer",
+      "controlParams": {
+        "difficulty": "normal",
+        "lengthM": 700,
+        "rivals": true,
+        "roadWidth": 3600,
+        "roadEntryWidth": 10000,
+        "crashBudget": 3,
+        "turbo": true,
+        "drift": false
+      },
+      "addons": [],
+      "title": "greyhound race",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "stadium",
+        "mood": "fast"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Beat the rival vehicles to the finish.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "greyhound",
+          "count": 1
+        },
+        {
+          "id": "barrier",
+          "kind": "hazard",
+          "label": "rock",
+          "count": 1
+        },
+        {
+          "id": "turbo",
+          "kind": "collectible",
+          "label": "turbo",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "rival",
+          "kind": "patrol",
+          "label": "rival car",
+          "count": 3
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Beat the rival vehicles to the finish.",
+        "controlsHint": "Drag/arrows steer. Down or second finger brakes. Avoid barriers."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "7b88fd64",
+    "worldHash": "e5ec7fb8bcec400f9ccce3f065dc2255c3de221ef2449495b63d8f9b634a3ee8",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "greyhound",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "drive",
+        "object": null,
+        "tick": 21,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "greyhound",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "race",
+        "object": {
+          "body": 1,
+          "roleId": "rival",
+          "label": "rival car",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 158,
+        "evidence": "overtake",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "greyhound",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 529,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "greyhound",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 110,
+          "roleId": "turbo",
+          "label": "turbo",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 529,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "greyhound",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 115,
+          "roleId": "finish",
+          "label": "finish line",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2092,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "greyhound",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "rival",
+          "label": "rival car",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 2093,
+        "evidence": "survived-threat:probe:rival",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "greyhound",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 4,
+          "roleId": "barrier",
+          "label": "rock",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2093,
+        "evidence": "survived-threat:probe:barrier",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 3,
+          "roleId": "rival",
+          "label": "rival car",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "greyhound",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 3557,
+        "evidence": "rival-finished-first",
+        "run": "probe",
+        "runId": "probe:rival"
+      },
+      {
+        "actor": {
+          "body": 13,
+          "roleId": "barrier",
+          "label": "rock",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "greyhound",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 304,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:barrier"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": false,
+    "verification": {
+      "outcome": "won",
+      "tick": 2093,
+      "hash": "acee5f15",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

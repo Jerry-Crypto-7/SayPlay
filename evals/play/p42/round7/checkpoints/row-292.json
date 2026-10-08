@@ -1,0 +1,138 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-059",
+    "sentence": "A clown walks a tightrope across the circus tent.",
+    "seed": 2,
+    "milliseconds": 240.85529999999562,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "generator": "walker_labyrinth"
+      },
+      "addons": [],
+      "title": "clown reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "circus",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Find a path through the maze to the exit.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "clown",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "tightrope",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Find a path through the maze to the exit.",
+        "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "2839ac34",
+    "worldHash": "c909c9bf7fb7a7f60b3c68477101842e9c54f79225d4f0bbd879e27a105e918f",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "clown",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "clown",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 72,
+          "roleId": "finish",
+          "label": "tightrope",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 571,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": false,
+    "verification": {
+      "outcome": "won",
+      "tick": 572,
+      "hash": "476ce33d",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

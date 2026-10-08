@@ -1,0 +1,263 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-002",
+    "sentence": "A penguin swims across the frozen bay, then catches silver fish.",
+    "seed": 2,
+    "milliseconds": 131.10210000000006,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "glide",
+      "controlParams": {
+        "clearancePermille": 275,
+        "clearanceRisePermille": 10,
+        "mode": "reach",
+        "difficulty": "normal",
+        "lengthM": 160,
+        "topSpeed": 180,
+        "generator": "glide_course"
+      },
+      "addons": [],
+      "title": "penguin reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "frozen bay",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Pass every ring and reach the finish.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "penguin",
+          "count": 1
+        },
+        {
+          "id": "glide_ring",
+          "kind": "collectible",
+          "label": "ring",
+          "count": 7
+        },
+        {
+          "id": "glide_reef",
+          "kind": "hazard",
+          "label": "polar bear",
+          "count": 1
+        },
+        {
+          "id": "glide_current",
+          "kind": "zone",
+          "label": "current",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Pass every ring and reach the finish.",
+        "controlsHint": "Drag in two directions, or use arrows to swim. Shift or a second finger brakes."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "ef53fbca",
+    "worldHash": "e4a6dac44cd39283d1926aeee8a303378e56c544af5dda9ebf2c41f33533c43d",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "glide",
+        "object": null,
+        "tick": 11,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 129,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 1,
+          "roleId": "glide_ring",
+          "label": "ring",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 129,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 43,
+          "roleId": "finish",
+          "label": "finish",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 906,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "polar bear",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 907,
+        "evidence": "survived-threat:probe:glide_reef",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "polar bear",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 128,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:glide_reef"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "polar bear",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 128,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:glide_reef"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "penguin",
+          "verb": "catch",
+          "object": "fish"
+        }
+      ],
+      "closest": "a swimming or flying game",
+      "reason": "Catch isn't here yet – here's a swimming or flying game."
+    },
+    "score": {
+      "preserved": false,
+      "total": 2,
+      "proved": 1,
+      "missing": [
+        {
+          "actor": "penguin",
+          "verb": "catch",
+          "object": "fish"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 907,
+      "hash": "b2c8eff6",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

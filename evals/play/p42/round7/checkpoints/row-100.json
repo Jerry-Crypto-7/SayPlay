@@ -1,0 +1,271 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-020",
+    "sentence": "A wizard shoots fireballs at goblins to survive until dawn in the ruins.",
+    "seed": 5,
+    "milliseconds": 131.6582999999955,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "shooter",
+      "controlParams": {
+        "waves": 6,
+        "rise": 4
+      },
+      "genre": {
+        "id": "shooter",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Wizard Shootout",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "ruin",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Stop 6 waves of goblins before they reach you.",
+        "count": 6,
+        "role": "enemy"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "wizard",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "target",
+          "count": 1
+        },
+        {
+          "id": "enemy",
+          "kind": "hazard",
+          "label": "goblin",
+          "count": 1
+        },
+        {
+          "id": "ammunition",
+          "kind": "item",
+          "label": "fireball",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Stop 6 waves of goblins. Each wave is faster.",
+        "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "6c9838e7",
+    "worldHash": "62779afe6b0bb8040e339731059f4e90b0d2bd5389f28f60d86a5d995d2e4b60",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 25,
+          "roleId": "ammunition",
+          "label": "fireball",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 3,
+        "evidence": "launched-projectile-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 36,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "target",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 36,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "target",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 36,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 7,
+          "roleId": "enemy",
+          "label": "goblin",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 122,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 7,
+          "roleId": "enemy",
+          "label": "goblin",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 122,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 6,
+          "roleId": "enemy",
+          "label": "goblin",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 1056,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:enemy"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "wizard",
+          "verb": "survive",
+          "object": null
+        }
+      ],
+      "closest": "a shooting game",
+      "reason": "Survive isn't here yet – here's a shooting game."
+    },
+    "score": {
+      "preserved": false,
+      "total": 2,
+      "proved": 1,
+      "missing": [
+        {
+          "actor": "wizard",
+          "verb": "survive",
+          "object": null
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2696,
+      "hash": "94f15a5e",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

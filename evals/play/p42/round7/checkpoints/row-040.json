@@ -1,0 +1,261 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-008",
+    "sentence": "Make a game where a chef dashes across the kitchen catching eggs that fall from the shelves.",
+    "seed": 5,
+    "milliseconds": 399.9904999999999,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "catch",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "runner",
+      "controlParams": {
+        "obstacles": [
+          "hurdle",
+          "cone",
+          "crate"
+        ],
+        "feel": 2,
+        "sections": 3
+      },
+      "genre": {
+        "id": "runner",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Chef Run",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "kitchen",
+        "mood": "energetic",
+        "look": "supermarket"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Run to the finish without hitting a cat.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "chef",
+          "count": 1
+        },
+        {
+          "id": "obstacle",
+          "kind": "hazard",
+          "label": "cat",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "coin",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "patrol",
+          "label": "egg",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Catch the egg.",
+        "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "2d2b3528",
+    "worldHash": "91489191a96f1838c351a9be9f2aee574deee8fd1484ae6b1f96b2be40f0e935",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "chef",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "run",
+        "object": null,
+        "tick": 3,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "chef",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "catch",
+        "object": {
+          "body": 111,
+          "roleId": "part_0",
+          "label": "egg",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 566,
+        "evidence": "moving-prey-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "chef",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 1289,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "chef",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 71,
+          "roleId": "coin",
+          "label": "coin",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 1289,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "chef",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 1844,
+        "evidence": "runner-takeoff",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "chef",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "obstacle",
+          "label": "cat",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2609,
+        "evidence": "survived-threat:probe:obstacle",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 1,
+          "roleId": "obstacle",
+          "label": "cat",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "chef",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 164,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:obstacle"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 2,
+      "proved": 2,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2609,
+      "hash": "2b61b0ff",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

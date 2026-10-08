@@ -1,0 +1,288 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-024",
+    "sentence": "Make a game where a sea turtle glides around a coral reef picking up pearls as sharks pursue it.",
+    "seed": 4,
+    "milliseconds": 53.858500000002095,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "catch",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "glide",
+      "controlParams": {
+        "clearancePermille": 275,
+        "clearanceRisePermille": 10,
+        "mode": "reach",
+        "difficulty": "normal",
+        "lengthM": 160,
+        "topSpeed": 180,
+        "generator": "glide_course"
+      },
+      "addons": [],
+      "title": "turtle reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "coral reef",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Pass every ring and reach the finish.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "turtle",
+          "count": 1
+        },
+        {
+          "id": "glide_ring",
+          "kind": "collectible",
+          "label": "pearls a",
+          "count": 7
+        },
+        {
+          "id": "glide_reef",
+          "kind": "hazard",
+          "label": "shark",
+          "count": 1
+        },
+        {
+          "id": "glide_current",
+          "kind": "zone",
+          "label": "current",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "patrol",
+          "label": "pearl",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Catch the pearl.",
+        "controlsHint": "Drag in two directions, or use arrows to swim. Shift or a second finger brakes."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "e0ad3fa2",
+    "worldHash": "171884a27db2fac07507d79807252209a15c6f19e9e4fa0c5a350b1f435508d1",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "turtle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "glide",
+        "object": null,
+        "tick": 11,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "turtle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 129,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "turtle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 1,
+          "roleId": "glide_ring",
+          "label": "pearls a",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 129,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "turtle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "catch",
+        "object": {
+          "body": 44,
+          "roleId": "part_0",
+          "label": "pearl",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 195,
+        "evidence": "moving-prey-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "turtle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "shark",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 907,
+        "evidence": "survived-threat:probe:glide_reef",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "shark",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "turtle",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 128,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:glide_reef"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "shark",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "turtle",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 128,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:glide_reef"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "turtle",
+          "verb": "collect",
+          "object": "pearl"
+        }
+      ],
+      "closest": "a swimming or flying game",
+      "reason": "Collecting isn't here yet – here's a swimming or flying game."
+    },
+    "score": {
+      "preserved": false,
+      "total": 3,
+      "proved": 1,
+      "missing": [
+        {
+          "actor": "turtle",
+          "verb": "collect",
+          "object": "pearl"
+        },
+        {
+          "actor": "shark",
+          "verb": "chaser",
+          "object": "turtle"
+        }
+      ],
+      "silent": [
+        {
+          "actor": "shark",
+          "verb": "chaser",
+          "object": "turtle"
+        }
+      ]
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 907,
+      "hash": "aa0a5353",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}
