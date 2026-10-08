@@ -9,7 +9,7 @@
  * je vlastní – sběrnice patří scéně a jádro na scénu nesahá.
  */
 
-import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, NO_INPUT, ROLE, RUN_STATE, bodyBase, bodyHp, targetStateOf } from './contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, NO_INPUT, ROLE, RUN_STATE, bodyBase, bodyHp, targetStateOf } from './contract';
 import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
@@ -151,4 +151,54 @@ export function traceRun(world: ArcadeWorld, inputs: readonly InputEvent[], libr
   // Jako `replay`: běh, který dojel na horizont, uvolní svět Rapieru tady.
   releasePhysics(state);
   return { ticks: state[HEADER.tick] as number, outcome: outcomeOf(state), hash: hashArcade(state), player: state[HEADER.player] as number, events, samples };
+}
+
+// ---------------------------------------------------------------------------
+// Čísla zábavy (P45A T4–T6)
+
+export interface FunMetrics {
+  /** Herní události za sekundu běhu (60 Hz). */
+  readonly eventsPerS: number;
+  /** Nejdelší a mediánová mezera mezi herními událostmi v sekundách, počítaje začátek a konec běhu. */
+  readonly longestGapS: number;
+  readonly medianGapS: number;
+  /** Událostí v poslední třetině běhu / v první; `null` = první třetina bez události. */
+  readonly intensityRatio: number | null;
+  /** Poslední třetina má víc událostí než první (prázdná první a neprázdná poslední = stoupá). */
+  readonly rising: boolean;
+}
+
+const round2 = (value: number): number => Math.round(value * 100) / 100;
+
+function median(values: readonly number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? (sorted[mid] as number) : ((sorted[mid - 1] as number) + (sorted[mid] as number)) / 2;
+}
+
+/**
+ * Tiky herních událostí, seřazené. Konec běhu (`win`/`lose`) je hrana poslední
+ * mezery, ne událost; skóre v tiku jiné události je její následek, ne druhá
+ * událost (sebrání + skóre = jedna); samotné skóre (rytmus, souboj) se počítá.
+ */
+function gameEventTicks(trace: RunTrace): number[] {
+  const busy = new Set(trace.events.filter((e) => e.kind !== 'score' && e.kind !== 'win' && e.kind !== 'lose').map((e) => e.tick));
+  return trace.events.filter((e) => e.kind !== 'win' && e.kind !== 'lose' && !(e.kind === 'score' && busy.has(e.tick))).map((e) => e.tick).sort((a, b) => a - b);
+}
+
+export function funMetrics(trace: RunTrace): FunMetrics {
+  const ticks = gameEventTicks(trace);
+  const seconds = trace.ticks / ARCADE_HZ;
+  const edges = [0, ...ticks, trace.ticks];
+  const gaps = edges.slice(1).map((tick, i) => (tick - (edges[i] as number)) / ARCADE_HZ);
+  // Třetiny délky tohohle běhu, ne horizontu ověření: hra vyhraná za 30 s má třetiny po 10 s.
+  const first = ticks.filter((tick) => tick < trace.ticks / 3).length;
+  const last = ticks.filter((tick) => tick >= (2 * trace.ticks) / 3).length;
+  return {
+    eventsPerS: seconds === 0 ? 0 : round2(ticks.length / seconds),
+    longestGapS: round2(Math.max(...gaps)),
+    medianGapS: round2(median(gaps)),
+    intensityRatio: first === 0 ? null : round2(last / first),
+    rising: last > first,
+  };
 }
