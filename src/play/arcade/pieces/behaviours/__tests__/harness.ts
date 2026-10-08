@@ -5,7 +5,7 @@
  */
 
 import type { ArcadeParts } from '../../../addons';
-import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeState, type ArcadeWorld, BODY, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase } from '../../../contract';
+import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeState, type ArcadeWorld, BODY, type BodyInit, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase } from '../../../contract';
 import { buildWorld, instantiate, loadProgram, step } from '../../../kernel';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from '../../../library';
 import { withPacing } from '../../pacing';
@@ -37,14 +37,14 @@ function baseParts(space: BehaviourSpace, seed: number): ArcadeParts {
   };
 }
 
-/** Svět `space` s jedním tělem chování `behaviour`: v aréně v rohu, na trati za hráčem ve vedlejším pruhu. */
-export function behaviourHarness(space: BehaviourSpace, behaviour: BehaviourId, seed: number): Harness {
+/** Svět `space` s jedním tělem chování `behaviour`: kde určí `place`, jinak v aréně v rohu, na trati za hráčem ve vedlejším pruhu. */
+export function behaviourHarness(space: BehaviourSpace, behaviour: BehaviourId, seed: number, place?: (bodies: readonly BodyInit[]) => { x: number; z: number }): Harness {
   const base = baseParts(space, seed);
   const template = BEHAVIOURS[behaviour].body;
   const player = base.level.bodies[0];
   if (player === undefined) throw new Error('no player');
   const side = seed % 2 === 0 ? 1 : -1;
-  const at = space === 'plane' ? { x: side * 12 * UNIT, z: (seed % 4 < 2 ? 1 : -1) * 12 * UNIT } : { x: side * RUNNER.laneWidth, z: player.z - 5 * UNIT };
+  const at = place !== undefined ? place(base.level.bodies) : space === 'plane' ? { x: side * 12 * UNIT, z: (seed % 4 < 2 ? 1 : -1) * 12 * UNIT } : { x: side * RUNNER.laneWidth, z: player.z - 5 * UNIT };
   const body = base.level.bodies.length;
   const parts = withPacing(
     { ...base, level: { ...base.level, bodies: [...base.level.bodies, { ...template, ...at }] } },

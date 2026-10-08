@@ -9,7 +9,8 @@
  * a cíl úderu se zamkne na jeho začátku – uhnout jde vždy.
  *
  * Stav nese tělo samo (vzor `FIGHT_PHASE`): `aux0` = fáze (4 bity) | kód
- * chování (4 bity) | prostor (1 bit) | odpočet fáze, `aux1` = zamčený cíl.
+ * chování (4 bity) | prostor (1 bit) | odpočet fáze (11 bitů) | paměť chování
+ * (11 bitů, přežije fáze), `aux1` = zamčený cíl.
  * Tělo chování proto nesmí být `kinematic` – jádro by `aux1` četlo jako
  * periodu kyvadla. Hýbe s ním `pacing_control`, zraní pravidlo `pacing`,
  * uhýbá `pacing_bot`; kdo ho kreslí, čte `telegraphOf`.
@@ -25,6 +26,7 @@ import { z } from 'zod';
 import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase } from '../../contract';
 import { ambusher } from './ambusher';
 import { flanker } from './flanker';
+import { guardian } from './guardian';
 import { sniper } from './sniper';
 
 /** Nejkratší varování před úderem: 0,5 s. */
@@ -44,8 +46,8 @@ export const BEHAVIOUR_SPACE: Readonly<Record<string, BehaviourSpace>> = {
   runner: 'track', platform: 'track', flap: 'track', steer: 'track', glide: 'track',
 };
 
-/** Jak scéna varování kreslí: čára výpadu, přejezd do pruhu, zamčená přímka výstřelu, chvění… */
-export type TelegraphKind = 'dash' | 'lane' | 'line' | 'shake';
+/** Jak scéna varování kreslí: čára výpadu, přejezd do pruhu, zamčená přímka výstřelu, chvění, kruh dosahu… */
+export type TelegraphKind = 'dash' | 'lane' | 'line' | 'shake' | 'ring';
 
 export interface PhaseTicks {
   /** Aspoň `TELEGRAPH_MIN`. */
@@ -65,6 +67,8 @@ export interface BehaviourView {
   readonly ticksLeft: number;
   /** Cíl zamčený na začátku `telegraph`. */
   readonly aim: { readonly x: number; readonly z: number };
+  /** Paměť chování přes všechny fáze (0–`MEMO_MASK`); strážce v ní drží hlídanou věc. */
+  readonly memo: number;
 }
 
 /** Krok ovládání: navíc intenzita průběhu a hrana plochy. */
@@ -73,6 +77,8 @@ export interface BehaviourStep extends BehaviourView {
   readonly intensity: number;
   /** Polovina strany plochy (`plane`), když ji základní ovládání zná. */
   readonly half?: number;
+  /** Zapíše paměť chování (`memo` od dalšího tiku). */
+  remember(memo: number): void;
 }
 
 export interface Behaviour {
@@ -98,9 +104,9 @@ export interface Behaviour {
 }
 
 /** Kód chování = pořadí + 1. Je součást hashe: nové jen na konec, nepřečíslovat. */
-export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher'] as const;
+export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian'] as const;
 export type BehaviourId = (typeof BEHAVIOUR_IDS)[number];
-export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher };
+export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian };
 
 /** Chování ve světě: id a index předlohy, ze které se čte podpis; `shot` = předloha výstřelu. */
 export const behaviourRefSchema = z.object({ id: z.enum(BEHAVIOUR_IDS), template: z.int().min(1), shot: z.int().min(1).optional() }).strict();
@@ -114,6 +120,11 @@ const CODE_SHIFT = 4;
 const CODE_MASK = 0xf;
 const TRACK_BIT = 1 << 8;
 const LEFT_SHIFT = 9;
+/** Odpočet fáze: 11 bitů (nejvýš 2047 tiků). */
+const LEFT_MASK = 0x7ff;
+/** Paměť chování: 11 bitů nad odpočtem (index těla + 1; `maxBodies` je 256). */
+const MEMO_SHIFT = 20;
+const MEMO_MASK = 0x7ff;
 /** Cíl v `aux1`: `x / 16` v horních, `z / 64` v dolních 16 bitech (±524 m, ±2 km – trať 90 s se vejde). */
 const AIM_X = 16;
 const AIM_Z = 64;
@@ -123,15 +134,26 @@ const aimOf = (packed: number): { x: number; z: number } => ({ x: (packed >> 16)
 
 export const behaviourPhaseOf = (state: ArcadeState, body: number): BehaviourPhase => PHASES[(state[bodyBase(body) + BODY.aux0] as number) & PHASE_MASK] as BehaviourPhase;
 const codeOf = (aux0: number): number => (aux0 >> CODE_SHIFT) & CODE_MASK;
+const memoOf = (aux0: number): number => (aux0 >> MEMO_SHIFT) & MEMO_MASK;
+
+/** Paměť chování těla (pro testy a scénu). */
+export const behaviourMemoOf = (state: ArcadeState, body: number): number => memoOf(state[bodyBase(body) + BODY.aux0] as number);
 
 function viewOf(state: ArcadeState, body: number, player: number): BehaviourView {
   const base = bodyBase(body);
   const aux0 = state[base + BODY.aux0] as number;
-  return { state, body, player, space: (aux0 & TRACK_BIT) !== 0 ? 'track' : 'plane', phase: PHASES[aux0 & PHASE_MASK] as BehaviourPhase, ticksLeft: aux0 >> LEFT_SHIFT, aim: aimOf(state[base + BODY.aux1] as number) };
+  return { state, body, player, space: (aux0 & TRACK_BIT) !== 0 ? 'track' : 'plane', phase: PHASES[aux0 & PHASE_MASK] as BehaviourPhase, ticksLeft: (aux0 >> LEFT_SHIFT) & LEFT_MASK, aim: aimOf(state[base + BODY.aux1] as number), memo: memoOf(aux0) };
 }
 
+/** Fáze, kód, prostor a odpočet; paměť zůstane. */
 function write(state: ArcadeState, body: number, code: number, space: BehaviourSpace, phase: BehaviourPhase, ticksLeft: number): void {
-  state[bodyBase(body) + BODY.aux0] = BEHAVIOUR_PHASE[phase] | (code << CODE_SHIFT) | (space === 'track' ? TRACK_BIT : 0) | (ticksLeft << LEFT_SHIFT);
+  const at = bodyBase(body) + BODY.aux0;
+  state[at] = BEHAVIOUR_PHASE[phase] | (code << CODE_SHIFT) | (space === 'track' ? TRACK_BIT : 0) | (ticksLeft << LEFT_SHIFT) | (memoOf(state[at] as number) << MEMO_SHIFT);
+}
+
+function remember(state: ArcadeState, body: number, memo: number): void {
+  const at = bodyBase(body) + BODY.aux0;
+  state[at] = ((state[at] as number) & ~(MEMO_MASK << MEMO_SHIFT)) | ((memo & MEMO_MASK) << MEMO_SHIFT);
 }
 
 /** Varování pro scénu: jen ve fázi `telegraph`, jinak `null`. */
@@ -216,7 +238,7 @@ export function stepBehaviours(state: ArcadeState, player: number, refs: readonl
   for (const [body, behaviour, code] of actors(state, player, refs)) {
     const ticks = behaviour.ticks[space];
     const before = viewOf(state, body, player);
-    const step = (phase: BehaviourPhase, ticksLeft: number, aim = before.aim): BehaviourStep => ({ ...before, space, phase, ticksLeft, aim, intensity, ...(half === undefined ? {} : { half }) });
+    const step = (phase: BehaviourPhase, ticksLeft: number, aim = before.aim): BehaviourStep => ({ ...before, space, phase, ticksLeft, aim, intensity, ...(half === undefined ? {} : { half }), remember: (memo) => remember(state, body, memo) });
     let view = step(before.phase, before.ticksLeft);
     if (view.phase === 'idle') {
       if (behaviour.ready(view)) {
