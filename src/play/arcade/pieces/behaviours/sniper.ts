@@ -13,7 +13,7 @@ import { type ArcadeEffect, type ArcadeInput, type BodyInit, UNIT } from '../../
 import { ARENA, DIRECTIONS, arenaAxis, directionOfAxis } from '../arena';
 import { RUNNER } from '../runner';
 import { clampTo, dodgeLane, headTo, inside, laneOf, length, read, set, toward } from './flanker';
-import type { Behaviour, BehaviourSpace, BehaviourView } from './index';
+import type { Behaviour, BehaviourRef, BehaviourSpace, BehaviourView } from './index';
 
 export const SNIPER = {
   plane: {
@@ -45,7 +45,7 @@ export const SNIPER = {
   shotY: 500,
 } as const;
 
-const SHOT: BodyInit = { role: 'hazard', kind: 'sniper_shot', x: 0, y: SNIPER.shotY, z: 0, w: 400, h: 400, d: 400, solid: false };
+export const SHOT: BodyInit = { role: 'hazard', kind: 'sniper_shot', x: 0, y: SNIPER.shotY, z: 0, w: 400, h: 400, d: 400, solid: false };
 
 /** Výstřel je ve vzduchu celý `act` – ostřelovač zatím stojí a přímka platí. */
 const TICKS = { plane: { telegraph: 48, act: 120, recover: 60 }, track: { telegraph: 48, act: 90, recover: 60 } } as const;
@@ -67,13 +67,21 @@ function flown(view: BehaviourView, space: BehaviourSpace): number {
   return view.phase === 'recover' ? ticks.act + ticks.recover - view.ticksLeft : 0;
 }
 
+/** Výstřel po zamčené přímce jako `spawn` předlohy `ref.shot` (sdílí salva bosse). */
+export function fireShot(view: BehaviourView, ref: BehaviourRef): readonly ArcadeEffect[] {
+  if (ref.shot === undefined) return [];
+  const { vx, vz } = shotVelocity(view);
+  const x = view.space === 'track' ? view.aim.x : read(view.state, view.body, 'x');
+  return [{ kind: 'spawn', template: ref.shot, x, y: SNIPER.shotY, z: read(view.state, view.body, 'z'), vx, vy: 0, vz }];
+}
+
 /**
  * Robot v rovině: kde hráč je teď (zpožděný pohled + stisky `recent`, které
  * ve stavu ještě nejsou, pohybem `move_free`) a kam ho donese brzdná dráha,
- * vůči dráze výstřelu – v pásmu `clear` vystoupit kolmo na svou stranu, do
- * `hold` stát, dokud výstřel nepřeletí.
+ * vůči dráze výstřelu, který letí `k` tiků (i se stisky `recent`) – v pásmu
+ * `clear` vystoupit kolmo na svou stranu, do `hold` stát, dokud výstřel nepřeletí.
  */
-function dodgeShot(view: BehaviourView, input: ArcadeInput, recent: readonly ArcadeInput[]): ArcadeInput {
+export function dodgeShot(view: BehaviourView, input: ArcadeInput, recent: readonly ArcadeInput[], k: number): ArcadeInput {
   const { state, body, player } = view;
   let px = read(state, player, 'x');
   let pz = read(state, player, 'z');
@@ -90,8 +98,6 @@ function dodgeShot(view: BehaviourView, input: ArcadeInput, recent: readonly Arc
   }
   const { vx, vz } = shotVelocity(view);
   const speed = Math.max(1, length(vx, vz));
-  // Výstřel je o `recent` tiků dál; během varování vyletí až po jeho konci.
-  const k = view.phase === 'telegraph' ? Math.max(0, recent.length - view.ticksLeft) : flown(view, 'plane') + recent.length;
   const { brake, margin } = SNIPER.plane;
   const clear = Math.floor(((read(state, player, 'w') + SHOT.w) * 707) / 1000) + margin;
   const hold = clear + SNIPER.plane.hold;
@@ -160,15 +166,13 @@ export const sniper: Behaviour = {
   },
 
   effects(view, ref): readonly ArcadeEffect[] {
-    if (view.phase !== 'act' || view.ticksLeft !== TICKS[view.space].act || ref.shot === undefined) return [];
-    const { vx, vz } = shotVelocity(view);
-    const x = view.space === 'track' ? view.aim.x : read(view.state, view.body, 'x');
-    return [{ kind: 'spawn', template: ref.shot, x, y: SNIPER.shotY, z: read(view.state, view.body, 'z'), vx, vy: 0, vz }];
+    return view.phase === 'act' && view.ticksLeft === TICKS[view.space].act ? fireShot(view, ref) : [];
   },
 
   botStep(view, input, control, recent) {
     const { state, body, player } = view;
-    if (view.space === 'plane') return view.phase === 'idle' ? input : dodgeShot(view, input, recent);
+    // Výstřel je o `recent` tiků dál; během varování vyletí až po jeho konci.
+    if (view.space === 'plane') return view.phase === 'idle' ? input : dodgeShot(view, input, recent, view.phase === 'telegraph' ? Math.max(0, recent.length - view.ticksLeft) : flown(view, 'plane') + recent.length);
     if (control !== 'runner' || (view.phase !== 'telegraph' && view.phase !== 'act')) return input;
     const k = flown(view, view.space);
     // Ostřelovač jede tempem hráče, výstřel proti němu: za `k` tiků je o `k × (tempo + výstřel)` blíž.

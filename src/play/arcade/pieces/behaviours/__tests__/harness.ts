@@ -44,6 +44,8 @@ export interface HarnessOptions {
   readonly budget?: number;
   readonly spots?: readonly number[];
   readonly ticks?: number;
+  /** Úprava hotových částí s průběhem (boss: pravidlo `boss_beat`, poslední věci jako předloha). */
+  readonly extra?: (parts: ArcadeParts) => ArcadeParts;
 }
 
 /** Svět `space` s tělem chování `behaviour` (`body` = první položené). */
@@ -56,10 +58,11 @@ export function behaviourHarness(space: BehaviourSpace, behaviour: BehaviourId, 
   const at = options.place !== undefined ? options.place(base.level.bodies) : [space === 'plane' ? { x: side * 12 * UNIT, z: (seed % 4 < 2 ? 1 : -1) * 12 * UNIT } : { x: side * RUNNER.laneWidth, z: player.z - 5 * UNIT }];
   const body = base.level.bodies.length;
   const ticks = options.ticks ?? ARCADE_LIMITS.maxTicks;
-  const parts = withPacing(
+  const paced = withPacing(
     { ...base, level: { ...base.level, bodies: [...base.level.bodies, ...at.map((point) => ({ ...template, ...point }))] } },
     { seed, goal: { by: 'time', need: ticks, limit: ticks }, space, spots: options.spots ?? [0, 0], behaviours: [{ body: template, behaviour }], budget: options.budget ?? 0 },
   );
+  const parts = options.extra === undefined ? paced : options.extra(paced);
   if (parts.issues !== undefined && parts.issues.length > 0) throw new Error(parts.issues.join('; '));
   const made = buildWorld({ seed, ...parts, health: HEALTH }, ARCADE_LIBRARY);
   if (!made.ok) throw new Error(made.issues.join('; '));

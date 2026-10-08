@@ -25,6 +25,7 @@ import { z } from 'zod';
 
 import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase } from '../../contract';
 import { ambusher } from './ambusher';
+import { boss } from './boss';
 import { flanker, overlaps } from './flanker';
 import { guardian } from './guardian';
 import { sniper } from './sniper';
@@ -94,6 +95,10 @@ export interface Behaviour {
   readonly shot?: BodyInit;
   /** Hejno: kolik těl přijde jedním spawnem rozvrhu, na jednom místě po `spacing` od sebe. */
   readonly group?: { readonly size: number; readonly spacing: number };
+  /** Délka tohoto varování (boss ji zkracuje zásahy); bez metody `ticks.telegraph`, nikdy pod `TELEGRAPH_MIN`. */
+  warnTicks?(view: BehaviourStep): number;
+  /** Druh varování podle útoku, který přijde; bez metody `telegraph[space]`. */
+  kindOf?(view: BehaviourView): TelegraphKind;
   /** V `idle`: je čas varovat? */
   ready(view: BehaviourStep): boolean;
   /** Na začátku `telegraph`: kam úder půjde. */
@@ -109,9 +114,9 @@ export interface Behaviour {
 }
 
 /** Kód chování = pořadí + 1. Je součást hashe: nové jen na konec, nepřečíslovat. */
-export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian', 'swarm'] as const;
+export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian', 'swarm', 'boss'] as const;
 export type BehaviourId = (typeof BEHAVIOUR_IDS)[number];
-export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian, swarm };
+export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian, swarm, boss };
 
 /** Chování ve světě: id a index předlohy, ze které se čte podpis; `shot` = předloha výstřelu. */
 export const behaviourRefSchema = z.object({ id: z.enum(BEHAVIOUR_IDS), template: z.int().min(1), shot: z.int().min(1).optional() }).strict();
@@ -166,7 +171,8 @@ export function telegraphOf(state: ArcadeState, body: number): { readonly kind: 
   const id = BEHAVIOUR_IDS[codeOf(state[bodyBase(body) + BODY.aux0] as number) - 1];
   if (id === undefined) return null;
   const view = viewOf(state, body, state[HEADER.player] as number);
-  return view.phase === 'telegraph' ? { kind: BEHAVIOURS[id].telegraph[view.space], ticksLeft: view.ticksLeft, aim: view.aim } : null;
+  const behaviour = BEHAVIOURS[id];
+  return view.phase === 'telegraph' ? { kind: behaviour.kindOf?.(view) ?? behaviour.telegraph[view.space], ticksLeft: view.ticksLeft, aim: view.aim } : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -191,7 +197,7 @@ export function duplicateSignature(bodies: readonly BodyInit[]): string | null {
 const alive = (state: ArcadeState, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
 
 /** Živé tělo se stejným podpisem jako předloha `template`. */
-function matches(state: ArcadeState, body: number, template: number): boolean {
+export function matches(state: ArcadeState, body: number, template: number): boolean {
   const a = bodyBase(body);
   const b = bodyBase(template);
   return SIGNATURE.every((slot) => state[a + slot] === state[b + slot]);
@@ -238,7 +244,7 @@ export function stepBehaviours(state: ArcadeState, player: number, refs: readonl
       if (behaviour.ready(view)) {
         const aim = behaviour.aim(view);
         state[bodyBase(body) + BODY.aux1] = packAim(aim.x, aim.z);
-        view = step('telegraph', Math.max(TELEGRAPH_MIN, ticks.telegraph), aimOf(state[bodyBase(body) + BODY.aux1] as number));
+        view = step('telegraph', Math.max(TELEGRAPH_MIN, behaviour.warnTicks?.(view) ?? ticks.telegraph), aimOf(state[bodyBase(body) + BODY.aux1] as number));
       }
     } else {
       const left = view.ticksLeft - 1;
