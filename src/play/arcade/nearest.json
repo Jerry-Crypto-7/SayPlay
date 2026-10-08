@@ -1,7 +1,7 @@
 {
  "about": "P37A T6: nearest catalog model for a noun the catalog lacks, [assetId, cosine] from all-MiniLM-L6-v2 text embeddings. Written by scripts/p37a/nearest.mjs; models.ts applies its own threshold. P44C T10 adds concrete nouns from Open English WordNet 2024 (CC-BY-4.0) scoring at least 0.5.",
  "model": "sentence-transformers/all-MiniLM-L6-v2",
- "catalog": 912,
+ "catalog": 928,
  "abstractCeiling": 0.6221,
  "words": {
   "accordion": [
@@ -113,8 +113,8 @@
    0.6496
   ],
   "amulet": [
-   "gen3d-gold-necklace",
-   0.5329
+   "gen3d-amulet",
+   0.8393
   ],
   "ancestor": [
    "gen3d-grandpa",
@@ -133,8 +133,8 @@
    0.5804
   ],
   "angel": [
-   "cat",
-   0.3624
+   "gen3d-angel",
+   0.7079
   ],
   "angelfish": [
    "gen3d-angel",
@@ -241,8 +241,8 @@
    0.7784
   ],
   "arcade machine": [
-   "gen3d-arcade-cabinet",
-   0.637
+   "gen3d-arcade-machine",
+   0.8983
   ],
   "archerfish": [
    "gen3d-fisherman",
@@ -297,8 +297,8 @@
    1
   ],
   "athlete": [
-   "gen3d-sumo-wrestler",
-   0.4887
+   "gen3d-athlete",
+   0.8265
   ],
   "attire": [
    "gen3d-outfit",
@@ -349,8 +349,8 @@
    0.5657
   ],
   "bacon": [
-   "egg",
-   0.4738
+   "gen3d-bacon",
+   0.7747
   ],
   "bag": [
    "gen3d-shopping-bag",
@@ -449,8 +449,8 @@
    0.5599
   ],
   "barrel": [
-   "cc0-machine-barrel",
-   0.6417
+   "gen3d-oil-barrel",
+   0.6837
   ],
   "barrelfish": [
    "gen3d-fish-tank",
@@ -465,8 +465,8 @@
    0.6161
   ],
   "baseball": [
-   "gen3d-baseball-bat",
-   0.6497
+   "gen3d-baseball",
+   0.7953
   ],
   "baseball bat": [
    "gen3d-baseball-bat",
@@ -773,8 +773,8 @@
    0.516
   ],
   "binocular": [
-   "ball",
-   0.3868
+   "gen3d-binocular",
+   0.8492
   ],
   "binoculars": [
    "gen3d-telescope",
@@ -805,8 +805,8 @@
    0.5765
   ],
   "birdhouse": [
-   "bird-nest",
-   0.7029
+   "gen3d-birdhouse",
+   0.8034
   ],
   "birdnest": [
    "bird-nest",
@@ -871,6 +871,10 @@
   "blastula": [
    "cc0-blaster",
    0.5455
+  ],
+  "blazer": [
+   "gen3d-fire-truck",
+   0.5528
   ],
   "blender": [
    "gen3d-blender",
@@ -1065,8 +1069,8 @@
    0.4146
   ],
   "boot": [
-   "stepping-stone",
-   0.3435
+   "gen3d-boot",
+   0.7531
   ],
   "bootee": [
    "gen3d-boot",
@@ -1117,12 +1121,12 @@
    0.6061
   ],
   "bow": [
-   "cc0-bow-wooden",
-   0.568
+   "gen3d-bow-tie",
+   0.6591
   ],
   "bow tie": [
-   "cc0-bow-wooden",
-   0.5348
+   "gen3d-bow-tie",
+   0.8407
   ],
   "bower": [
    "gen3d-bow-tie",
@@ -1145,8 +1149,8 @@
    0.6297
   ],
   "bowling ball": [
-   "gen3d-bowling",
-   0.7383
+   "gen3d-bowling-ball",
+   0.8207
   ],
   "bowling pin": [
    "gen3d-bowling",
@@ -1177,12 +1181,12 @@
    0.582
   ],
   "boxers": [
-   "gen3d-boxing-glove",
-   0.5738
+   "gen3d-boxer",
+   0.6634
   ],
   "boxershorts": [
-   "gen3d-boxing-glove",
-   0.551
+   "gen3d-boxer",
+   0.6229
   ],
   "boxfish": [
    "gen3d-pufferfish",
@@ -1193,8 +1197,8 @@
    0.7326
   ],
   "bracelet": [
-   "gen3d-gold-necklace",
-   0.5362
+   "gen3d-bracelet",
+   0.8048
   ],
   "brainchild": [
    "kid",
@@ -1285,8 +1289,8 @@
    0.541
   ],
   "briefcase": [
-   "crate",
-   0.4828
+   "gen3d-briefcase",
+   0.8525
   ],
   "broadbill": [
    "oak-tree",
@@ -1317,16 +1321,16 @@
    0.589
   ],
   "broom": [
-   "gen3d-wand",
-   0.3879
+   "gen3d-broom",
+   0.8223
   ],
   "broomcorn": [
    "gen3d-broom",
    0.6068
   ],
   "broomstick": [
-   "gen3d-wooden-magic-staff",
-   0.4822
+   "gen3d-broom",
+   0.6766
   ],
   "broomweed": [
    "gen3d-broom",
@@ -1453,8 +1457,8 @@
    0.594
   ],
   "burrito": [
-   "pizza",
-   0.4184
+   "gen3d-burrito",
+   0.8321
   ],
   "burro": [
    "gen3d-burrito",
@@ -1541,8 +1545,8 @@
    0.7447
   ],
   "calculator": [
-   "gen3d-golf",
-   0.3457
+   "gen3d-calculator",
+   0.7758
   ],
   "calycle": [
    "gen3d-unicycle",
@@ -1633,12 +1637,12 @@
    0.653
   ],
   "candy": [
-   "gen3d-wrapped-candy",
-   0.6662
+   "gen3d-candy-cane",
+   0.6865
   ],
   "candy cane": [
-   "gen3d-wrapped-candy",
-   0.5874
+   "gen3d-candy-cane",
+   0.8681
   ],
   "candyfloss": [
    "gen3d-candy-cane",
@@ -1712,6 +1716,10 @@
    "gen3d-fishmonger",
    0.5258
   ],
+  "cargo": [
+   "gen3d-suitcase",
+   0.6015
+  ],
   "carnivore": [
    "cat",
    0.5188
@@ -1769,16 +1777,16 @@
    0.5315
   ],
   "cashier": [
-   "gen3d-cash-register",
-   0.4929
+   "gen3d-cashier",
+   0.8535
   ],
   "casserole": [
    "cc0-dinner",
    0.511
   ],
   "cassette": [
-   "cc0-radio",
-   0.4294
+   "gen3d-cassette",
+   0.8351
   ],
   "castle": [
    "gen3d-sandcastle",
@@ -1789,8 +1797,8 @@
    1
   ],
   "cat tree": [
-   "cat",
-   0.7423
+   "gen3d-cat-tree",
+   0.8258
   ],
   "catacomb": [
    "cat",
@@ -1957,8 +1965,12 @@
    0.5442
   ],
   "cavetto": [
-   "gen3d-cave-entrance",
-   0.5149
+   "gen3d-caveman",
+   0.5882
+  ],
+  "cavewoman": [
+   "gen3d-caveman",
+   0.6378
   ],
   "cedar": [
    "oak-tree",
@@ -2045,8 +2057,8 @@
    0.5249
   ],
   "chainsaw": [
-   "wood-block",
-   0.4779
+   "gen3d-chainsaw",
+   0.8646
   ],
   "chair": [
    "lounge-chair",
@@ -2221,8 +2233,8 @@
    0.5136
   ],
   "chocolate": [
-   "gen3d-chocolate-chip-cookie",
-   0.5052
+   "gen3d-chocolate",
+   0.778
   ],
   "chopstick": [
    "cc0-chopsticks",
@@ -2233,12 +2245,12 @@
    0.6543
   ],
   "christma tree": [
-   "gen3d-treehouse",
-   0.5938
+   "gen3d-christmas-tree",
+   0.6299
   ],
   "christmas tree": [
-   "gen3d-treehouse",
-   0.5646
+   "gen3d-christmas-tree",
+   0.8518
   ],
   "chrysomelid": [
    "cc0-caterpillar",
@@ -2749,8 +2761,8 @@
    0.5584
   ],
   "crayon": [
-   "classroom",
-   0.4344
+   "gen3d-crayon",
+   0.8329
   ],
   "crazyweed": [
    "gen3d-seaweed",
@@ -2761,8 +2773,8 @@
    0.5803
   ],
   "credit card": [
-   "shopping-cart",
-   0.4367
+   "gen3d-credit-card",
+   0.7523
   ],
   "crewman": [
    "astronaut",
@@ -2793,8 +2805,8 @@
    0.5013
   ],
   "crossbow": [
-   "cc0-bow-wooden",
-   0.4844
+   "gen3d-bow-tie",
+   0.5033
   ],
   "crow": [
    "gen3d-black-crow",
@@ -2837,8 +2849,8 @@
    0.7548
   ],
   "crystal ball": [
-   "crystal",
-   0.5613
+   "gen3d-crystal-ball",
+   0.7432
   ],
   "crystallite": [
    "crystal",
@@ -2899,6 +2911,10 @@
   "customhouse": [
    "gen3d-doghouse",
    0.5662
+  ],
+  "cuticle": [
+   "gen3d-icicle",
+   0.5053
   ],
   "cutlass": [
    "gen3d-sunglass",
@@ -3013,8 +3029,8 @@
    0.5425
   ],
   "deliveryman": [
-   "cc0-delivery",
-   0.5279
+   "gen3d-mailman",
+   0.536
   ],
   "demister": [
    "hamster",
@@ -3129,8 +3145,8 @@
    0.5139
   ],
   "doghouse": [
-   "gen3d-robot-dog",
-   0.4607
+   "gen3d-doghouse",
+   0.8002
   ],
   "dogie": [
    "cat",
@@ -3353,8 +3369,8 @@
    0.576
   ],
   "dynamite": [
-   "kid",
-   0.3762
+   "gen3d-fireball",
+   0.4067
   ],
   "eagle": [
    "gen3d-bald-eagle",
@@ -3373,8 +3389,8 @@
    0.5266
   ],
   "earring": [
-   "gen3d-tuba",
-   0.3951
+   "gen3d-headphone",
+   0.4785
   ],
   "earthball": [
    "gen3d-fireball",
@@ -3385,12 +3401,12 @@
    0.5309
   ],
   "easel": [
-   "gen3d-medical-stretcher",
-   0.3081
+   "gen3d-easel",
+   0.8049
   ],
   "easter egg": [
-   "egg",
-   0.6853
+   "gen3d-easter-egg",
+   0.7451
   ],
   "edaphosaurus": [
    "gen3d-dinosaur",
@@ -3481,8 +3497,8 @@
    0.5732
   ],
   "energy drink": [
-   "gen3d-coffee",
-   0.4888
+   "gen3d-energy-drink",
+   0.8771
   ],
   "engine": [
    "gen3d-race-car",
@@ -3513,16 +3529,16 @@
    0.5564
   ],
   "eraser": [
-   "cc0-washer",
-   0.3743
+   "gen3d-eraser",
+   0.8125
   ],
   "espresso": [
    "gen3d-espresso-machine",
    0.7554
   ],
   "excavator": [
-   "roomba",
-   0.4266
+   "gen3d-excavator",
+   0.8662
   ],
   "exoplanet": [
    "gen3d-planet",
@@ -3653,8 +3669,8 @@
    0.5991
   ],
   "fireball": [
-   "hoop",
-   0.612
+   "gen3d-fireball",
+   0.7706
   ],
   "firebird": [
    "gen3d-fire-phoenix-bird",
@@ -3665,8 +3681,12 @@
    0.6323
   ],
   "firebrick": [
-   "cc0-campfire-bricks",
-   0.5133
+   "gen3d-fire-truck",
+   0.5484
+  ],
+  "firedog": [
+   "gen3d-fire-truck",
+   0.5
   ],
   "firedrake": [
    "gen3d-kraken",
@@ -3701,12 +3721,12 @@
    0.6634
   ],
   "fish tank": [
-   "aquarium",
-   0.7313
+   "gen3d-fish-tank",
+   0.8118
   ],
   "fisherman": [
-   "gen3d-fishing",
-   0.6264
+   "gen3d-fisherman",
+   0.8411
   ],
   "fishgig": [
    "gen3d-fishmonger",
@@ -3913,12 +3933,12 @@
    0.6032
   ],
   "fork": [
-   "cc0-fork",
-   0.5367
+   "gen3d-forklift",
+   0.5953
   ],
   "forklift": [
-   "cc0-car-taxi",
-   0.3754
+   "gen3d-forklift",
+   0.8432
   ],
   "formalwear": [
    "gen3d-dress",
@@ -3985,8 +4005,8 @@
    0.61
   ],
   "fried egg": [
-   "egg",
-   0.799
+   "gen3d-fried-egg",
+   0.8418
   ],
   "friedcake": [
    "cc0-pancake",
@@ -4057,8 +4077,8 @@
    0.5664
   ],
   "frying pan": [
-   "gen3d-cooking",
-   0.4412
+   "gen3d-frying-pan",
+   0.9099
   ],
   "frypan": [
    "gen3d-frying-pan",
@@ -4071,6 +4091,10 @@
   "fungus": [
    "mushroom",
    0.6264
+  ],
+  "funicle": [
+   "gen3d-icicle",
+   0.5379
   ],
   "furniture": [
    "cc0-chair-wood",
@@ -4093,8 +4117,8 @@
    0.5466
   ],
   "game controller": [
-   "gen3d-hockey-stick",
-   0.3954
+   "gen3d-game-controller",
+   0.8245
   ],
   "gamebag": [
    "gen3d-shopping-bag",
@@ -4133,8 +4157,8 @@
    0.5619
   ],
   "garden gnome": [
-   "gen3d-garden",
-   0.5545
+   "gen3d-garden-gnome",
+   0.8863
   ],
   "gardenia": [
    "gen3d-garden",
@@ -4237,8 +4261,8 @@
    0.6702
   ],
   "gingerbread man": [
-   "gen3d-chocolate-chip-cookie",
-   0.4149
+   "gen3d-gingerbread-man",
+   0.8141
   ],
   "giraffe": [
    "cc0-giraffe",
@@ -4277,8 +4301,8 @@
    0.5803
   ],
   "glove": [
-   "gen3d-boxing-glove",
-   0.6719
+   "gen3d-glove",
+   0.7938
   ],
   "glowstick": [
    "star",
@@ -4293,8 +4317,8 @@
    0.4354
   ],
   "gnome": [
-   "goblin",
-   0.474
+   "gen3d-gnome",
+   0.7763
   ],
   "goal": [
    "gen3d-soccer-goal",
@@ -4369,8 +4393,8 @@
    0.4506
   ],
   "golf ball": [
-   "ball",
-   0.6253
+   "gen3d-tennis-ball",
+   0.647
   ],
   "golf club": [
    "lounge-chair",
@@ -4385,8 +4409,8 @@
    0.5783
   ],
   "goose": [
-   "penguin",
-   0.5586
+   "gen3d-goose",
+   0.7713
   ],
   "gooseberry": [
    "gen3d-goose",
@@ -4577,8 +4601,8 @@
    0.5792
   ],
   "gun": [
-   "gen3d-water-gun",
-   0.5048
+   "gen3d-paintball-gun",
+   0.5462
   ],
   "gunboat": [
    "gen3d-motorboat",
@@ -4605,8 +4629,8 @@
    0.6049
   ],
   "hair dryer": [
-   "cc0-dryer",
-   0.6226
+   "gen3d-hair-dryer",
+   0.863
   ],
   "hairbrush": [
    "gen3d-toothbrush",
@@ -4657,8 +4681,8 @@
    1
   ],
   "hamster wheel": [
-   "hamster",
-   0.7843
+   "gen3d-hamster-wheel",
+   0.9246
   ],
   "handbag": [
    "gen3d-shopping-bag",
@@ -4737,8 +4761,8 @@
    0.5913
   ],
   "hat": [
-   "gen3d-hard-hat",
-   0.5845
+   "gen3d-hat",
+   0.7053
   ],
   "hatband": [
    "gen3d-hat",
@@ -4821,12 +4845,12 @@
    0.5016
   ],
   "headphone": [
-   "gen3d-microphone",
-   0.3879
+   "gen3d-headphone",
+   0.7889
   ],
   "headphones": [
-   "gen3d-microphone",
-   0.3349
+   "gen3d-headphone",
+   0.7317
   ],
   "headrest": [
    "cc0-armchair-pillows",
@@ -4905,8 +4929,8 @@
    0.3677
   ],
   "hockey puck": [
-   "gen3d-hockey-stick",
-   0.6924
+   "gen3d-hockey-puck",
+   0.8499
   ],
   "hogfish": [
    "gen3d-jellyfish",
@@ -5240,6 +5264,10 @@
    "gen3d-sledgehammer",
    0.5571
   ],
+  "jacklight": [
+   "gen3d-jack-o-lantern",
+   0.555
+  ],
   "jaguar": [
    "fox",
    0.5226
@@ -5309,8 +5337,8 @@
    0.5302
   ],
   "joystick": [
-   "plane",
-   0.4404
+   "gen3d-game-controller",
+   0.5714
   ],
   "juice": [
    "acid-pool",
@@ -5345,8 +5373,8 @@
    0.6468
   ],
   "kayak": [
-   "cc0-canoe-paddle",
-   0.631
+   "gen3d-kayak",
+   0.8052
   ],
   "kebab": [
    "cc0-bottle-ketchup",
@@ -5385,8 +5413,8 @@
    0.7437
   ],
   "kettle": [
-   "gen3d-teapot",
-   0.5155
+   "gen3d-kettle",
+   0.82
   ],
   "kettledrum": [
    "gen3d-kettle",
@@ -5496,6 +5524,22 @@
    "knight",
    0.719
   ],
+  "knit": [
+   "gen3d-sweater",
+   0.5982
+  ],
+  "knitting": [
+   "gen3d-sweater",
+   0.5782
+  ],
+  "knitwear": [
+   "gen3d-sweater",
+   0.6055
+  ],
+  "knitwork": [
+   "gen3d-sweater",
+   0.6005
+  ],
   "knotgrass": [
    "cc0-grass-patch",
    0.511
@@ -5521,8 +5565,8 @@
    0.515
   ],
   "kraken": [
-   "cc0-elephant",
-   0.3956
+   "gen3d-kraken",
+   0.8146
   ],
   "kurakkan": [
    "gen3d-kraken",
@@ -5573,12 +5617,12 @@
    0.5168
   ],
   "lamp": [
-   "cc0-lamp-standing",
-   0.6512
+   "gen3d-street-lamp",
+   0.7093
   ],
   "lamp post": [
-   "cc0-lamp-standing",
-   0.618
+   "gen3d-lamp-post",
+   0.8606
   ],
   "lamphouse": [
    "gen3d-street-lamp",
@@ -5661,8 +5705,8 @@
    0.5472
   ],
   "lawn mower": [
-   "cc0-tractor",
-   0.4734
+   "gen3d-lawn-mower",
+   0.8624
   ],
   "leaf": [
    "cc0-grass-leafs",
@@ -5709,8 +5753,8 @@
    0.6642
   ],
   "lemon": [
-   "penguin",
-   0.4123
+   "gen3d-lemon",
+   0.7964
   ],
   "lemonade": [
    "gen3d-lemon",
@@ -5785,8 +5829,8 @@
    0.5316
   ],
   "lipstick": [
-   "seal",
-   0.4298
+   "gen3d-lipstick",
+   0.8164
   ],
   "liverleaf": [
    "potted-plant",
@@ -5869,8 +5913,8 @@
    0.5924
   ],
   "luggage": [
-   "gen3d-shopping-bag",
-   0.5139
+   "gen3d-suitcase",
+   0.6029
   ],
   "lumber": [
    "wood-block",
@@ -5897,8 +5941,8 @@
    0.5876
   ],
   "mace": [
-   "cc0-weapon-ballista",
-   0.4971
+   "gen3d-mace",
+   0.8354
   ],
   "macedoine": [
    "gen3d-mace",
@@ -5921,8 +5965,8 @@
    0.8263
   ],
   "magician": [
-   "gen3d-stage-magician",
-   0.722
+   "gen3d-fairy",
+   0.4486
   ],
   "magnet": [
    "gen3d-magnet",
@@ -5969,16 +6013,20 @@
    0.5396
   ],
   "maillot": [
-   "gen3d-street-mailbox",
-   0.5062
+   "gen3d-mailman",
+   0.5616
   ],
   "mailman": [
    "gen3d-street-mailbox",
    0.4691
   ],
   "mailsorter": [
-   "gen3d-street-mailbox",
-   0.5023
+   "gen3d-mailman",
+   0.6022
+  ],
+  "mailwoman": [
+   "gen3d-mailman",
+   0.6312
   ],
   "mainframe": [
    "cc0-pictureframe",
@@ -6157,8 +6205,8 @@
    0.5702
   ],
   "medal": [
-   "gen3d-gold-trophy",
-   0.546
+   "gen3d-medal",
+   0.8221
   ],
   "medfly": [
    "gen3d-housefly",
@@ -6253,8 +6301,8 @@
    0.5359
   ],
   "minotaur": [
-   "rocket",
-   0.3872
+   "gen3d-minotaur",
+   0.7767
   ],
   "minster": [
    "gen3d-minotaur",
@@ -6373,8 +6421,8 @@
    0.5378
   ],
   "moose": [
-   "gen3d-deer",
-   0.4988
+   "gen3d-moose",
+   0.7955
   ],
   "mopboard": [
    "gen3d-surfboard",
@@ -6457,8 +6505,8 @@
    0.5577
   ],
   "muffin": [
-   "cc0-pancake",
-   0.4431
+   "gen3d-muffin",
+   0.8091
   ],
   "muffle": [
    "gen3d-muffin",
@@ -6689,8 +6737,8 @@
    0.5015
   ],
   "oil barrel": [
-   "cc0-machine-barrel",
-   0.6036
+   "gen3d-oil-barrel",
+   0.8449
   ],
   "oilbird": [
    "bird-nest",
@@ -6737,8 +6785,8 @@
    0.5061
   ],
   "onion": [
-   "seal",
-   0.411
+   "gen3d-onion",
+   0.7987
   ],
   "orange": [
    "egg",
@@ -6833,24 +6881,24 @@
    0.6824
   ],
   "paint can": [
-   "gen3d-soda-can",
-   0.5017
+   "gen3d-paint-can",
+   0.9016
   ],
   "paintball": [
    "gen3d-paintball-gun",
    0.7987
   ],
   "paintball gun": [
-   "gen3d-iron-cannonball",
-   0.6089
+   "gen3d-paintball-gun",
+   0.8991
   ],
   "paintbox": [
    "gen3d-paintbrush",
    0.5761
   ],
   "paintbrush": [
-   "gen3d-paint-bucket",
-   0.4838
+   "gen3d-paintbrush",
+   0.8653
   ],
   "painting": [
    "gen3d-paint-can",
@@ -6917,8 +6965,8 @@
    0.5445
   ],
   "parachute": [
-   "gen3d-jump-pad",
-   0.4691
+   "gen3d-parachute",
+   0.8691
   ],
   "parakeet": [
    "bird-nest",
@@ -6965,8 +7013,8 @@
    0.6921
   ],
   "party hat": [
-   "gen3d-hard-hat",
-   0.5235
+   "gen3d-party-hat",
+   0.8539
   ],
   "passageway": [
    "gen3d-stair",
@@ -7005,8 +7053,8 @@
    0.5027
   ],
   "peach": [
-   "gen3d-fruit-stand",
-   0.4475
+   "gen3d-peach",
+   0.7716
   ],
   "peachick": [
    "gen3d-peach",
@@ -7021,8 +7069,8 @@
    0.569
   ],
   "pear": [
-   "cc0-fruit",
-   0.5023
+   "gen3d-pear",
+   0.8065
   ],
   "pearl": [
    "gen3d-pearl",
@@ -7045,8 +7093,8 @@
    0.5294
   ],
   "pencil": [
-   "classroom",
-   0.3798
+   "gen3d-pencil",
+   0.79
   ],
   "pendant": [
    "gen3d-bracelet",
@@ -7081,8 +7129,8 @@
    0.5434
   ],
   "perfume": [
-   "slime",
-   0.4229
+   "gen3d-perfume",
+   0.7973
   ],
   "perfumery": [
    "gen3d-perfume",
@@ -7321,12 +7369,12 @@
    0.5647
   ],
   "pitch": [
-   "gen3d-baseball-bat",
-   0.4923
+   "gen3d-baseball",
+   0.5324
   ],
   "pitchfork": [
-   "cc0-torch",
-   0.3855
+   "gen3d-pitchfork",
+   0.8693
   ],
   "pithouse": [
    "gen3d-doghouse",
@@ -7401,8 +7449,8 @@
    0.4106
   ],
   "playing card": [
-   "stepping-stone",
-   0.3238
+   "gen3d-credit-card",
+   0.4549
   ],
   "plecopteran": [
    "gen3d-stag-beetle",
@@ -7445,12 +7493,12 @@
    0.523
   ],
   "police car": [
-   "cc0-car-police",
-   0.6381
+   "gen3d-police-car",
+   0.8502
   ],
   "police officer": [
-   "cc0-police",
-   0.5659
+   "gen3d-police-officer",
+   0.8157
   ],
   "policeman": [
    "gen3d-police-officer",
@@ -7497,8 +7545,8 @@
    0.6298
   ],
   "popcorn": [
-   "egg",
-   0.429
+   "gen3d-popcorn",
+   0.7884
   ],
   "popsicle": [
    "slime",
@@ -7528,13 +7576,17 @@
    "gen3d-street-mailbox",
    0.6034
   ],
+  "postman": [
+   "gen3d-mailman",
+   0.6185
+  ],
   "pot": [
    "cc0-pot-filled",
    0.4909
   ],
   "potato": [
-   "egg",
-   0.4672
+   "gen3d-potato",
+   0.7532
   ],
   "potion": [
    "cc0-potion",
@@ -7557,8 +7609,8 @@
    0.5095
   ],
   "pretzel": [
-   "cc0-sausage",
-   0.3575
+   "gen3d-pretzel",
+   0.8511
   ],
   "prince": [
    "gen3d-young-prince",
@@ -7621,8 +7673,8 @@
    0.7601
   ],
   "puddle": [
-   "lava-pool",
-   0.4558
+   "gen3d-raindrop",
+   0.4594
   ],
   "puffball": [
    "gen3d-pufferfish",
@@ -7673,8 +7725,8 @@
    0.5338
   ],
   "puzzle piece": [
-   "egg",
-   0.4501
+   "gen3d-puzzle-piece",
+   0.7643
   ],
   "quackgrass": [
    "cc0-grass",
@@ -7873,8 +7925,8 @@
    0.7928
   ],
   "raindrop": [
-   "sprinkler",
-   0.4229
+   "gen3d-raindrop",
+   0.8711
   ],
   "rainfly": [
    "gen3d-housefly",
@@ -7901,12 +7953,12 @@
    0.5214
   ],
   "ray gun": [
-   "gen3d-manta-ray",
-   0.4627
+   "gen3d-ray-gun",
+   0.8454
   ],
   "receipt": [
-   "cc0-delivery",
-   0.3924
+   "gen3d-cashier",
+   0.396
   ],
   "redberry": [
    "gen3d-strawberry",
@@ -7969,8 +8021,8 @@
    0.611
   ],
   "reindeer": [
-   "gen3d-deer",
-   0.4985
+   "gen3d-reindeer",
+   0.8368
   ],
   "reproducer": [
    "gen3d-baby",
@@ -8001,8 +8053,8 @@
    0.5068
   ],
   "ribbon": [
-   "gen3d-crown",
-   0.4005
+   "gen3d-ribbon",
+   0.7743
   ],
   "ribbonfish": [
    "gen3d-ribbon",
@@ -8069,8 +8121,8 @@
    0.6946
   ],
   "robot arm": [
-   "robot",
-   0.5733
+   "gen3d-robot-arm",
+   0.8707
   ],
   "robot vacuum": [
    "roomba",
@@ -8097,8 +8149,8 @@
    0.5962
   ],
   "roller skate": [
-   "gen3d-skateboard",
-   0.5885
+   "gen3d-roller-skate",
+   0.8638
   ],
   "roof": [
    "log-cabin",
@@ -8123,6 +8175,14 @@
   "rope": [
    "hurdle",
    0.4902
+  ],
+  "ropebark": [
+   "gen3d-rope",
+   0.605
+  ],
+  "ropeway": [
+   "gen3d-rope",
+   0.598
   ],
   "rose": [
    "gen3d-rose",
@@ -8221,8 +8281,8 @@
    0.7142
   ],
   "salad": [
-   "slime",
-   0.4844
+   "gen3d-salad",
+   0.7744
   ],
   "salade": [
    "gen3d-salad",
@@ -8285,12 +8345,12 @@
    0.4741
   ],
   "santa": [
-   "cat",
-   0.4327
+   "gen3d-santa",
+   0.783
   ],
   "satellite": [
-   "gen3d-satellite-radar-dish",
-   0.5935
+   "gen3d-satellite",
+   0.7965
   ],
   "sauceboat": [
    "gen3d-motorboat",
@@ -8345,8 +8405,12 @@
    0.4602
   ],
   "scarf": [
-   "cat",
-   0.3783
+   "gen3d-bow-tie",
+   0.4013
+  ],
+  "scarfpin": [
+   "gen3d-scarf",
+   0.569
   ],
   "schoolbag": [
    "gen3d-shopping-bag",
@@ -8389,12 +8453,12 @@
    0.517
   ],
   "scissor": [
-   "slime",
-   0.425
+   "gen3d-scissor",
+   0.8461
   ],
   "scissors": [
-   "cc0-utensil-knife",
-   0.384
+   "gen3d-scissor",
+   0.5599
   ],
   "scissortail": [
    "gen3d-scissor",
@@ -8461,8 +8525,8 @@
    0.5862
   ],
   "seagull": [
-   "gen3d-seahorse",
-   0.4379
+   "gen3d-seagull",
+   0.8399
   ],
   "seahorse": [
    "gen3d-seahorse",
@@ -8489,8 +8553,8 @@
    0.519
   ],
   "seaweed": [
-   "turtle",
-   0.4254
+   "gen3d-seaweed",
+   0.8486
   ],
   "sedan": [
    "cc0-car-sedan",
@@ -8501,8 +8565,8 @@
    0.5825
   ],
   "seesaw": [
-   "goblin",
-   0.421
+   "gen3d-seesaw",
+   0.8195
   ],
   "serpent": [
    "gen3d-snake",
@@ -8577,8 +8641,8 @@
    0.5595
   ],
   "shoe": [
-   "cc0-sock",
-   0.3987
+   "gen3d-shoe",
+   0.7545
   ],
   "shoebill": [
    "gen3d-shoe",
@@ -8609,8 +8673,8 @@
    0.656
   ],
   "shopping bag": [
-   "shopping-cart",
-   0.6071
+   "gen3d-shopping-bag",
+   0.8575
   ],
   "shopping cart": [
    "shopping-cart",
@@ -8653,8 +8717,8 @@
    0.6347
   ],
   "shrimp": [
-   "gen3d-lobster",
-   0.5445
+   "gen3d-shrimp",
+   0.7778
   ],
   "shrimper": [
    "gen3d-shrimp",
@@ -8687,6 +8751,10 @@
   "sign": [
    "gen3d-road-sign",
    0.5745
+  ],
+  "signet": [
+   "gen3d-sign",
+   0.5291
   ],
   "silkweed": [
    "gen3d-seaweed",
@@ -8821,8 +8889,8 @@
    0.5075
   ],
   "slating": [
-   "cc0-sled",
-   0.5211
+   "gen3d-sleigh",
+   0.5457
   ],
   "slaw": [
    "gen3d-seesaw",
@@ -8872,21 +8940,37 @@
    "gen3d-motorboat",
    0.5819
   ],
+  "slop": [
+   "gen3d-sleigh",
+   0.5328
+  ],
+  "slops": [
+   "gen3d-sleigh",
+   0.5108
+  ],
+  "slopshop": [
+   "gen3d-sleigh",
+   0.5329
+  ],
   "slot machine": [
-   "gen3d-sloth",
-   0.61
+   "gen3d-slot-machine",
+   0.8893
   ],
   "sloth": [
    "gen3d-sloth",
    0.8196
+  ],
+  "sluice": [
+   "gen3d-sleigh",
+   0.5181
   ],
   "smartphone": [
    "gen3d-smartphone",
    0.7877
   ],
   "smartwatch": [
-   "gen3d-smartphone",
-   0.3852
+   "gen3d-smartwatch",
+   0.829
   ],
   "smokehouse": [
    "cc0-smoke",
@@ -8981,8 +9065,8 @@
    0.5599
   ],
   "snowflake": [
-   "gen3d-white-snowball",
-   0.5244
+   "gen3d-snowflake",
+   0.803
   ],
   "snowman": [
    "gen3d-snowman-with-hat",
@@ -9005,8 +9089,8 @@
    0.5486
   ],
   "soap": [
-   "gen3d-washing-machine",
-   0.3566
+   "gen3d-soap",
+   0.7921
   ],
   "soapberry": [
    "gen3d-soap",
@@ -9069,8 +9153,8 @@
    0.7722
   ],
   "soup": [
-   "slime",
-   0.4407
+   "gen3d-soup",
+   0.7594
   ],
   "soupfin": [
    "gen3d-soup",
@@ -9093,8 +9177,8 @@
    0.6159
   ],
   "space suit": [
-   "astronaut",
-   0.5965
+   "gen3d-space-suit",
+   0.8346
   ],
   "spacecraft": [
    "astronaut",
@@ -9337,8 +9421,8 @@
    0.5538
   ],
   "startup": [
-   "gen3d-launch",
-   0.4674
+   "gen3d-boot",
+   0.5372
   ],
   "starwort": [
    "star",
@@ -9401,12 +9485,16 @@
    0.5563
   ],
   "stick": [
-   "gen3d-hockey-stick",
-   0.519
+   "gen3d-stick",
+   0.7036
   ],
   "stickman": [
    "rubber-duck",
    0.4054
+  ],
+  "stickpin": [
+   "gen3d-stick",
+   0.5545
   ],
   "sticktight": [
    "seal",
@@ -9541,8 +9629,8 @@
    0.5204
   ],
   "street lamp": [
-   "cc0-lamp-standing",
-   0.5969
+   "gen3d-street-lamp",
+   0.8892
   ],
   "streetlight": [
    "gen3d-street-lamp",
@@ -9577,8 +9665,8 @@
    0.6431
   ],
   "stunt": [
-   "gen3d-ski",
-   0.4331
+   "gen3d-parachute",
+   0.5012
   ],
   "styracosaurus": [
    "gen3d-dinosaur",
@@ -9613,8 +9701,8 @@
    0.5924
   ],
   "suitcase": [
-   "crate",
-   0.4507
+   "gen3d-briefcase",
+   0.5002
   ],
   "sumo": [
    "gen3d-sumo",
@@ -9625,8 +9713,8 @@
    0.8928
   ],
   "sun": [
-   "star",
-   0.5675
+   "gen3d-sun",
+   0.7398
   ],
   "sunberry": [
    "gen3d-sunflower",
@@ -9681,8 +9769,8 @@
    0.8204
   ],
   "sunglass": [
-   "cc0-pallet-decorated",
-   0.3787
+   "gen3d-sunglass",
+   0.8293
   ],
   "sunglasses": [
    "gen3d-magnifying-glass",
@@ -9705,8 +9793,8 @@
    0.5385
   ],
   "sunset": [
-   "star",
-   0.4664
+   "gen3d-sun",
+   0.521
   ],
   "sunshade": [
    "gen3d-sun",
@@ -9768,6 +9856,14 @@
    "gen3d-white-swan",
    0.558
   ],
+  "sweater": [
+   "gen3d-sweater",
+   0.8033
+  ],
+  "sweatshirt": [
+   "gen3d-sweater",
+   0.5387
+  ],
   "swine": [
    "hamster",
    0.5186
@@ -9825,8 +9921,8 @@
    0.5267
   ],
   "taco": [
-   "pizza",
-   0.3932
+   "gen3d-taco",
+   0.8111
   ],
   "tadpole": [
    "turtle",
@@ -9869,16 +9965,16 @@
    0.5487
   ],
   "tank": [
-   "aquarium",
-   0.5409
+   "gen3d-fish-tank",
+   0.6638
   ],
   "tanker": [
    "gen3d-motorboat",
    0.5309
   ],
   "tape": [
-   "hurdle",
-   0.377
+   "gen3d-cassette",
+   0.4783
   ],
   "tarantula": [
    "gen3d-spider",
@@ -9997,12 +10093,12 @@
    0.6711
   ],
   "tennis ball": [
-   "gen3d-tennis",
-   0.6784
+   "gen3d-tennis-ball",
+   0.8306
   ],
   "tennis racket": [
-   "gen3d-tennis",
-   0.7132
+   "gen3d-tennis-ball",
+   0.7176
   ],
   "tent": [
    "gen3d-circus-tent",
@@ -10023,6 +10119,10 @@
   "textbook": [
    "gen3d-book",
    0.6001
+  ],
+  "textile": [
+   "gen3d-sweater",
+   0.5272
   ],
   "theca": [
    "gen3d-maraca",
@@ -10161,8 +10261,8 @@
    0.5871
   ],
   "toolbox": [
-   "cc0-tool-hammer",
-   0.5485
+   "gen3d-toolbox",
+   0.8048
   ],
   "toolhouse": [
    "cc0-tool-hammer",
@@ -10173,8 +10273,8 @@
    0.5553
   ],
   "toothbrush": [
-   "cc0-shower",
-   0.3383
+   "gen3d-toothbrush",
+   0.8117
   ],
   "toothpick": [
    "gen3d-toothbrush",
@@ -10345,8 +10445,8 @@
    0.5637
   ],
   "trident": [
-   "cc0-sword-shield",
-   0.4261
+   "gen3d-trident",
+   0.7921
   ],
   "triggerfish": [
    "gen3d-pufferfish",
@@ -10441,8 +10541,8 @@
    0.5074
   ],
   "tulip": [
-   "turtle",
-   0.4102
+   "gen3d-tulip",
+   0.7893
   ],
   "tuna": [
    "cc0-tuna",
@@ -10553,8 +10653,8 @@
    0.7676
   ],
   "unicycle": [
-   "hoop",
-   0.3681
+   "gen3d-unicycle",
+   0.8375
   ],
   "utensil": [
    "cc0-utensil-knife",
@@ -10681,8 +10781,8 @@
    0.5865
   ],
   "wagon": [
-   "shopping-cart",
-   0.435
+   "gen3d-wagon",
+   0.8194
   ],
   "waistcloth": [
    "gen3d-dress",
@@ -10709,8 +10809,8 @@
    0.5502
   ],
   "wallet": [
-   "gen3d-money-bag",
-   0.4766
+   "gen3d-wallet",
+   0.6546
   ],
   "wallflower": [
    "gen3d-sunflower",
@@ -10829,8 +10929,8 @@
    0.6165
   ],
   "watering can": [
-   "gen3d-soda-can",
-   0.523
+   "gen3d-watering-can",
+   0.9228
   ],
   "waterleaf": [
    "potted-plant",
@@ -10877,8 +10977,8 @@
    0.53
   ],
   "wedding cake": [
-   "cake",
-   0.7248
+   "gen3d-wedding-cake",
+   0.876
   ],
   "weka": [
    "gen3d-suika",
@@ -10925,8 +11025,8 @@
    0.8705
   ],
   "wheelchair": [
-   "cc0-chair-stool",
-   0.5203
+   "gen3d-wheelchair",
+   0.8598
   ],
   "wheelhouse": [
    "cc0-wheel",
@@ -11073,8 +11173,8 @@
    0.4179
   ],
   "wordbook": [
-   "gen3d-book",
-   0.5583
+   "gen3d-spellbook",
+   0.6361
   ],
   "workbag": [
    "gen3d-shopping-bag",
@@ -11117,8 +11217,8 @@
    0.6606
   ],
   "wrench": [
-   "cc0-tool-hammer",
-   0.5145
+   "gen3d-wrench",
+   0.8196
   ],
   "wristband": [
    "gen3d-bracelet",
@@ -11137,8 +11237,8 @@
    0.9059
   ],
   "yacht": [
-   "gen3d-motorboat",
-   0.688
+   "gen3d-yacht",
+   0.846
   ],
   "yachtsman": [
    "gen3d-yacht",

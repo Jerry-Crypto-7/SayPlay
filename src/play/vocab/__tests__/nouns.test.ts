@@ -14,8 +14,8 @@ import { modelOf, NEAREST_MIN, sceneModelOf } from '@/play/arcade/models';
 const NEAREST = 'src/play/arcade/nearest.json';
 const raw = readFileSync(NEAREST, 'utf8').replace(/\r\n/g, '\n');
 const table = JSON.parse(raw) as { abstractCeiling: number; words: Record<string, [string, number]> };
-/** Tabulka před P44C (P37A, 667 slov) – revize, ze které větev vyšla. */
-const before = JSON.parse(execFileSync('git', ['show', 'b4350a4f:src/play/arcade/nearest.json'], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 })) as typeof table;
+/** Tabulka před P44C (667 slov, přepočítaná P43 proti katalogu bez nepoznatelných modelů) – `main` po PR #28. */
+const before = JSON.parse(execFileSync('git', ['show', 'ef0bcdea:src/play/arcade/nearest.json'], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 })) as typeof table;
 const manifest = JSON.parse(readFileSync('src/play/vocab/manifest.json', 'utf8')) as { outputs: { nearest?: { sha256: string } } };
 
 describe('OEWN nouns in nearest.json', () => {

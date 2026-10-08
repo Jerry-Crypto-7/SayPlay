@@ -8,6 +8,7 @@
  * node scripts/assets/qa-sheets.mjs --only a,b         jen vybrané assetId
  * node scripts/assets/qa-sheets.mjs --out <adresář>    jinam než D:/caches/p30d/sheets
  * node scripts/assets/qa-sheets.mjs --glb-list <json>  modely mimo katalog: [{ "id", "glb" }] (P37D)
+ * node scripts/assets/qa-sheets.mjs --grid 3 --out D:/caches/p43/grids   mřížky 3×3 pro slepý soud (P43)
  * ```
  *
  * Rozvržení listu: vlevo nahoře zepředu, vpravo nahoře z boku, vlevo dole
@@ -24,6 +25,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { gridPlan } from './qa-grid.mjs';
+
 const require = createRequire(import.meta.url);
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const args = process.argv.slice(2);
@@ -33,6 +36,7 @@ const flag = (name) => {
 };
 const outDir = flag('--out') ?? 'D:/caches/p30d/sheets';
 const only = flag('--only')?.split(',');
+const gridSize = flag('--grid') === null ? null : Number(flag('--grid'));
 
 // Modely z cache výroby (P37D) leží mimo `public/`; každý dostane vlastní adresu `/ext/<pořadí>.glb`.
 const external = flag('--glb-list') ? JSON.parse(readFileSync(flag('--glb-list'), 'utf8')) : null;
@@ -110,6 +114,42 @@ window.renderSheet = async (url) => {
   ctx.fillText(size.x.toFixed(2) + ' x ' + size.y.toFixed(2) + ' x ' + size.z.toFixed(2) + ' m (w x h x d)', SIZE + 10, SIZE * 2 - 14);
   return sheet.toDataURL('image/png');
 };
+
+// P43 T10: mřížka n×n, v buňce ¾ pohled, číslo buňky a rozměry; žádné jméno.
+window.renderGrid = async (urls, n) => {
+  const CELL = 340;
+  const grid = document.createElement('canvas');
+  grid.width = grid.height = CELL * n;
+  const g = grid.getContext('2d');
+  g.fillStyle = '#b9bdc3'; g.fillRect(0, 0, grid.width, grid.height);
+  const failed = [];
+  for (let cell = 0; cell < urls.length; cell++) {
+    const x = (cell % n) * CELL, y = Math.floor(cell / n) * CELL;
+    try {
+      const gltf = await loader.loadAsync(urls[cell]);
+      const scene = stage();
+      scene.add(gltf.scene);
+      scene.updateMatrixWorld(true);
+      const box = new T.Box3().setFromObject(gltf.scene);
+      if (box.isEmpty()) throw new Error('empty bounds');
+      const size = box.getSize(new T.Vector3());
+      shoot(scene, box, new T.Vector3(1.2, 0.8, 1.6));
+      g.drawImage(renderer.domElement, x, y, CELL, CELL);
+      g.font = '16px sans-serif'; g.fillStyle = '#111';
+      g.fillText(size.x.toFixed(1) + ' x ' + size.y.toFixed(1) + ' x ' + size.z.toFixed(1) + ' m', x + 8, y + CELL - 10);
+    } catch (error) {
+      failed.push(cell);
+    }
+    g.fillStyle = '#111'; g.fillRect(x, y, 44, 40);
+    g.font = 'bold 28px sans-serif'; g.fillStyle = '#fff';
+    g.fillText(String(cell + 1), x + 12, y + 30);
+  }
+  g.strokeStyle = '#333'; g.lineWidth = 3;
+  for (let i = 1; i < n; i++) {
+    g.beginPath(); g.moveTo(i * CELL, 0); g.lineTo(i * CELL, grid.height); g.moveTo(0, i * CELL); g.lineTo(grid.width, i * CELL); g.stroke();
+  }
+  return { data: grid.toDataURL('image/png'), failed };
+};
 window.ready = true;
 </script></body></html>`;
 
@@ -141,6 +181,31 @@ const failuresFile = join(outDir, 'failures.json');
 const failures = existsSync(failuresFile) ? JSON.parse(readFileSync(failuresFile, 'utf8')) : {};
 let page = null;
 let done = 0;
+const lod0Of = (asset) => asset.lods?.find((lod) => lod.level === 0) ?? asset.lods?.[0];
+
+if (gridSize !== null) {
+  // Mřížkové listy (P43 T10): `grid-index.json` je jediná cesta z buňky zpět na model.
+  const byId = new Map(catalog.map((asset) => [asset.assetId, asset]));
+  const plan = gridPlan(catalog, gridSize);
+  writeFileSync(join(outDir, 'grid-index.json'), `${JSON.stringify({ size: gridSize, sheets: plan }, null, 1)}\n`);
+  page = await browser.newPage();
+  await page.goto(base);
+  await page.waitForFunction(() => window.ready === true);
+  for (const { sheet, cells } of plan) {
+    if (existsSync(join(outDir, `${sheet}.png`))) continue;
+    const urls = cells.map((id) => lod0Of(byId.get(id))?.path ?? '/missing.glb');
+    const { data, failed } = await page.evaluate(([list, n]) => window.renderGrid(list, n), [urls, gridSize]);
+    writeFileSync(join(outDir, `${sheet}.png`), Buffer.from(data.split(',')[1], 'base64'));
+    for (const cell of failed) failures[cells[cell]] = `${sheet} cell ${cell + 1}: render failed`;
+    done += 1;
+    if (done % 10 === 0) console.log(`${done}/${plan.length}`);
+  }
+  writeFileSync(failuresFile, `${JSON.stringify(failures, null, 2)}\n`);
+  await browser.close();
+  server.close();
+  console.log(`grids ${plan.length}, failures ${Object.keys(failures).length} (${failuresFile})`);
+  process.exit(Object.keys(failures).length ? 1 : 0);
+}
 
 for (const asset of todo) {
   const lod0 = asset.lods?.find((lod) => lod.level === 0) ?? asset.lods?.[0];

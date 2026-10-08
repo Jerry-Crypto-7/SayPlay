@@ -129,7 +129,8 @@ export function checkCatalog({ catalog, disclosure, root = ROOT, budget = BUDGET
       else if (record.license !== license) problems.push(`${asset.assetId}: disclosure says ${record.license} for ${name}, catalog says ${license}`);
     }
     if (!records.has(licenseEvidence)) problems.push(`${asset.assetId}: ${licenseEvidence} has no disclosure record`);
-    for (const tag of asset.tags) if (own.has(tag)) problems.push(`${asset.assetId}: tag ${tag} belongs to a project model`);
+    // `seen:` je jméno ze slepého soudu P43 – nikdy nepřebije vlastní tag (`tagIndex` v models.ts), nekrade ho.
+    for (const tag of asset.tags) if (!tag.startsWith('seen:') && own.has(tag)) problems.push(`${asset.assetId}: tag ${tag} belongs to a project model`);
     const bytes = asset.lods.reduce((sum, lod) => sum + lod.bytes, 0);
     if (bytes > budget.modelBytes) problems.push(`${asset.assetId}: ${bytes} B of LODs, over ${budget.modelBytes} B per model`);
   }

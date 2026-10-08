@@ -41,6 +41,7 @@ import { HEADER } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { playSfx } from '@/play/audio';
 
+import { HeroCueFx } from '../action-cue/HeroCueFx';
 import { type QualityTier, QUALITY_TIERS } from '../look/rig/quality';
 import type { ArcadeSession } from '../session';
 import { type EffectsBus, type VisualEventKind, createEffectsBus } from './bus';
@@ -236,5 +237,6 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     camera.updateMatrixWorld();
   });
 
-  return <><primitive object={batch} /><FeelCues session={session} /></>;
+  // Sebrání a doručení vidět u hrdiny v každé scéně (P43 T6).
+  return <><primitive object={batch} /><FeelCues session={session} /><HeroCueFx session={session} /></>;
 }

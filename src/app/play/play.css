@@ -1695,6 +1695,18 @@ button.play-version-switch__item:not(:disabled) {
   }
 }
 
+/* Řádek se slovesem (P43 T7): štítek kitu nad hrdinou ve třetině výšky, první tři vteřiny; nezachytává dotyky. */
+.play-verb-line {
+  top: 32%;
+  left: 50%;
+  z-index: 2;
+  margin: 0;
+  max-width: calc(100% - var(--sp-space-8));
+  box-shadow: var(--sp-shadow-sm);
+  pointer-events: none;
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop);
+}
+
 /* Arkáda (P35 T6): výzva uprostřed zakrývala hrdinu arény a úkolu. Plátno ví, kde
  * hrdina v obraze stojí (`PromptSpot` v `ArcadeStage.tsx`), a výzva sedne nad něj,
  * nebo pod něj – kde je víc místa. Bez hrdiny v záběru zůstává uprostřed.

@@ -33,9 +33,9 @@
     },
     "nearest": {
       "path": "src/play/arcade/nearest.json",
-      "sha256": "12a290d178f91d9d14a28f5eafb9f61a575e4f3b4be94e44cc5f46ca3a6609ce",
-      "entries": 2795,
-      "bytes": 139252
+      "sha256": "405f9c176419c0d6377ea9dda7429b72a9858ab82145019200bcfe848f804a96",
+      "entries": 2820,
+      "bytes": 140825
     }
   }
 }

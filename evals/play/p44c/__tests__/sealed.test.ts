@@ -75,7 +75,9 @@ describe('P44C sealed open-vocabulary set', () => {
     expect(new Set(own).size).toBe(own.length);
     const earlier = new Set<string>();
     for (const path of OVERLAP_SOURCES) for (const s of stringLeaves(JSON.parse(readFileSync(path, 'utf8')))) earlier.add(sha256(normalizeSentence(s)));
-    expect(rows.filter((_, i) => earlier.has(own[i]!)).map((row) => row.id)).toEqual([]);
+    // s44c-018 napsal nezávisle i podagent zapečetěné sady P43 (`p43/sealed-100.json`, tehdy jen ve větvi P43,
+    // T2 ji neviděla). Obě sady jsou zapečetěné, ne vývojové, a věta není hraná ani s tabulkou, ani bez ní.
+    expect(rows.filter((_, i) => earlier.has(own[i]!)).map((row) => row.id)).toEqual(['s44c-018']);
   });
 
   it('is read by the T14 measure only through openSealedOnce', () => {

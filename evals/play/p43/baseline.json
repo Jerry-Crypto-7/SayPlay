@@ -1,0 +1,341 @@
+{
+ "about": "P43 visibility: verb recognised in the 3-frame clip by the blind judge (all, and only where the offline witness proves the game plays the verb), hero drawn by its model, hero recognised, items drawn by a model. Draft only, no director. See README.md.",
+ "run": "p43-baseline",
+ "measuredAt": "2026-10-07T12:12:39.946Z",
+ "summary": {
+  "sentences": 30,
+  "judged": 30,
+  "verbRecognized": {
+   "hit": 8,
+   "of": 30,
+   "share": 0.267
+  },
+  "verbRecognizedWitnessed": {
+   "hit": 7,
+   "of": 20,
+   "share": 0.35
+  },
+  "witnessed": {
+   "hit": 20,
+   "of": 30,
+   "share": 0.667
+  },
+  "heroModel": {
+   "hit": 17,
+   "of": 23,
+   "share": 0.739
+  },
+  "heroRecognized": {
+   "hit": 7,
+   "of": 23,
+   "share": 0.304
+  },
+  "itemModel": {
+   "hit": 13,
+   "of": 38,
+   "share": 0.342
+  }
+ },
+ "rows": [
+  {
+   "id": "f01",
+   "genre": "arena",
+   "witnessed": false,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": true,
+   "itemModel": 0,
+   "itemOf": 2
+  },
+  {
+   "id": "f02",
+   "genre": "arena",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": false,
+   "itemModel": 1,
+   "itemOf": 1
+  },
+  {
+   "id": "f03",
+   "genre": "shooter",
+   "witnessed": true,
+   "verbRecognized": true,
+   "heroModel": true,
+   "heroRecognized": false,
+   "itemModel": 1,
+   "itemOf": 1
+  },
+  {
+   "id": "f04",
+   "genre": "arena",
+   "witnessed": true,
+   "verbRecognized": true,
+   "heroModel": true,
+   "heroRecognized": false,
+   "itemModel": 0,
+   "itemOf": 2
+  },
+  {
+   "id": "f05",
+   "genre": "quest",
+   "witnessed": true,
+   "verbRecognized": true,
+   "heroModel": true,
+   "heroRecognized": true,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "f08",
+   "genre": "voyage",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": false,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "f11",
+   "genre": "quest",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": false,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "f12",
+   "genre": "glide",
+   "witnessed": false,
+   "verbRecognized": true,
+   "heroModel": true,
+   "heroRecognized": false,
+   "itemModel": 0,
+   "itemOf": 0
+  },
+  {
+   "id": "f17",
+   "genre": "flap",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": false,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "f22",
+   "genre": "duel",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": false,
+   "heroRecognized": false,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "f24",
+   "genre": "throw",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": false,
+   "heroRecognized": false,
+   "itemModel": 1,
+   "itemOf": 2
+  },
+  {
+   "id": "f26",
+   "genre": "runner",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": true,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "m02",
+   "genre": "arena",
+   "witnessed": false,
+   "verbRecognized": false,
+   "heroModel": null,
+   "heroRecognized": null,
+   "itemModel": 1,
+   "itemOf": 2
+  },
+  {
+   "id": "m06",
+   "genre": "voyage",
+   "witnessed": false,
+   "verbRecognized": false,
+   "heroModel": null,
+   "heroRecognized": null,
+   "itemModel": 0,
+   "itemOf": 2
+  },
+  {
+   "id": "m09",
+   "genre": "platformer",
+   "witnessed": true,
+   "verbRecognized": true,
+   "heroModel": false,
+   "heroRecognized": false,
+   "itemModel": 0,
+   "itemOf": 0
+  },
+  {
+   "id": "m16",
+   "genre": "platformer",
+   "witnessed": true,
+   "verbRecognized": true,
+   "heroModel": true,
+   "heroRecognized": true,
+   "itemModel": 2,
+   "itemOf": 2
+  },
+  {
+   "id": "m17",
+   "genre": "rhythm",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": false,
+   "heroRecognized": false,
+   "itemModel": 0,
+   "itemOf": 2
+  },
+  {
+   "id": "n01",
+   "genre": "timing",
+   "witnessed": false,
+   "verbRecognized": false,
+   "heroModel": null,
+   "heroRecognized": null,
+   "itemModel": 0,
+   "itemOf": 2
+  },
+  {
+   "id": "n03",
+   "genre": "arena",
+   "witnessed": false,
+   "verbRecognized": false,
+   "heroModel": null,
+   "heroRecognized": null,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "u08",
+   "genre": "walker",
+   "witnessed": false,
+   "verbRecognized": false,
+   "heroModel": false,
+   "heroRecognized": false,
+   "itemModel": 1,
+   "itemOf": 1
+  },
+  {
+   "id": "d01",
+   "genre": "runner",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": true,
+   "itemModel": 1,
+   "itemOf": 1
+  },
+  {
+   "id": "d02",
+   "genre": "arena",
+   "witnessed": false,
+   "verbRecognized": false,
+   "heroModel": null,
+   "heroRecognized": null,
+   "itemModel": 1,
+   "itemOf": 2
+  },
+  {
+   "id": "d03",
+   "genre": "quest",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": true,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "d08",
+   "genre": "arena",
+   "witnessed": true,
+   "verbRecognized": true,
+   "heroModel": true,
+   "heroRecognized": false,
+   "itemModel": 2,
+   "itemOf": 2
+  },
+  {
+   "id": "d10",
+   "genre": "duel",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": false,
+   "heroRecognized": false,
+   "itemModel": 1,
+   "itemOf": 1
+  },
+  {
+   "id": "d11",
+   "genre": "rhythm",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": null,
+   "heroRecognized": null,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "d12",
+   "genre": "glide",
+   "witnessed": false,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": false,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "d14",
+   "genre": "walker",
+   "witnessed": false,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": false,
+   "itemModel": 0,
+   "itemOf": 1
+  },
+  {
+   "id": "s021",
+   "genre": "platformer",
+   "witnessed": true,
+   "verbRecognized": true,
+   "heroModel": null,
+   "heroRecognized": null,
+   "itemModel": 1,
+   "itemOf": 2
+  },
+  {
+   "id": "s035",
+   "genre": "flap",
+   "witnessed": true,
+   "verbRecognized": false,
+   "heroModel": true,
+   "heroRecognized": true,
+   "itemModel": 0,
+   "itemOf": 0
+  }
+ ]
+}

@@ -21,6 +21,7 @@
  */
 
 import { baseControlOf } from '../arcade/addons';
+import { targetModelOf } from '../arcade/target-model';
 import { singular } from '../draft/lexicon';
 import { arcadeWorldOf } from '../arcade/compile';
 import { BODY, HEADER, ROLE, bodyBase } from '../arcade/contract';
@@ -30,7 +31,7 @@ import { rapierIfLoaded } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
 import { matchesWitness, type ActionWitness } from '../arcade/witness';
 import type { IntentTriple } from '../intent/contract';
-import { PROP_ROLES, chaserModel, enemyModel, heroModel, namedProps, propModels, riggedModelOf, sceneModelOf, type PropRole } from '../arcade/models';
+import { PROP_ROLES, chaserModel, enemyModel, heroChoice, heroModel, namedProps, propModels, riggedModelOf, sceneModelOf, type PropRole } from '../arcade/models';
 import { CAPABILITIES, controlOf, readsLabel, readsMechanic } from '../capabilities';
 import { assetSource } from '../compile/assets';
 import type { VerbProof } from '../contracts';
@@ -188,6 +189,7 @@ function styledReads(role: GameRole, scene: ArcadeScene): boolean {
  * (`rival`) a věci (`item`) žánru arény zatím nečtou (B-R9), cíl úkolu kreslí vrstva úkolu.
  */
 function styledDraws(spec: GameSpecV1, role: GameRole): boolean {
+  if (role.kind === 'target') return targetModelOf(spec, role) !== undefined;
   const character = riggedModelOf(role.label) ?? sceneModelOf(role.label, true);
   if (role.kind === 'hazard') return character === enemyModel(spec);
   if (role.kind === 'collectible') return propModels(spec).coin !== undefined && sceneModelOf(role.label, false) === propModels(spec).coin;
@@ -206,8 +208,10 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
   if (PLAYER(role)) {
     if (!bodies.has('player')) return false;
     // Výchozí hrdina (průzkumník, závodní auto, ptáček) popisek nekreslí – kromě popisku, který ho jmenuje.
-    const named = control === 'steer' ? sceneModelOf(role.label, false) : (riggedModelOf(role.label) ?? sceneModelOf(role.label, true));
-    return named !== undefined && named === heroModel(spec);
+    // P43 T14b: ptá se stejné volby jako scéna (`heroModel`); `sceneModelOf` dal rytíři katalogový
+    // model, scéna rigovaného rytíře, a hrdina z popisku se počítal jako nenakreslený.
+    const choice = heroChoice(role.label, spec.genre?.id, spec.control);
+    return choice.level !== 'fallback' && choice.model === heroModel(spec);
   }
   // Native scenery has its own body-driven scene layer. Only the slots which
   // actually render a named model may claim drawn (reef/current remain shapes).

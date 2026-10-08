@@ -17,6 +17,7 @@ import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUN
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels, sceneModelOf } from '@/play/arcade/models';
+import { targetModelOf } from '@/play/arcade/target-model';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setMusicTension, setSoundLook, vibrateFor } from '@/play/audio';
 import { musicFor, narrationUrl, tenseMusicFor } from '@/play/audio/library';
@@ -48,6 +49,9 @@ import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
 import { type LoadedGhost, loadGhost } from './GhostSlot';
 import { isTyping } from './input';
+import { heroActionOf } from './action-cue/cues';
+import { verbLine, verbLineShown } from './action-cue/verb-line';
+import { VerbLine } from './action-cue/VerbLine';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { holdUntilTouch, wakesGame } from './ready-gate';
 import { ZONE_HINTS } from './touch-zones';
@@ -381,13 +385,21 @@ function ArcadePlayGame({
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
   // Nápověda dotyku, kterou text hry neřekne (zóny plošinovky, P36C T2).
   const zoneHint = ZONE_HINTS[baseControlOf(arcade.control).id];
-  const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec),
+  const cast = useMemo(() => {
+    const props = propModels(spec);
+    if (spec.controlParams?.generator === 'quest_spatial' || spec.controlParams?.generator === 'quest_station') {
+      delete props.target;
+      const target = targetModelOf(spec);
+      if (target !== undefined) props.target = target;
+    }
+    return { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props,
     things: Object.fromEntries(spec.roles.flatMap(role => {
       if (role.id === 'pad' && role.label === 'landing pad') return [];
       const model = sceneModelOf(role.label, false);
       return model === undefined ? [] : [[role.id, model]];
     })),
-  }), [spec]);
+    };
+  }, [spec]);
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
@@ -604,6 +616,7 @@ function ArcadePlayGame({
     if (!offline && record === null) setBest(readBest(versionId));
   }, [offline, record, versionId]);
   const survive = survives(arcade);
+  const verb = useMemo(() => verbLine(spec), [spec]);
   const goal = useMemo(() => (challenge === null ? bestGoal(best, ARCADE_HZ, survive) : dareGoal(challenge, ARCADE_HZ, survive)), [best, challenge, survive]);
   const goalLabel = challenge === null ? 'best' : 'dare';
   const beaten = goal !== null && goal.score !== null && snapshot.score > goal.score;
@@ -846,7 +859,7 @@ function ArcadePlayGame({
         lookId={lookOf(spec.theme)}
         look={scene}
         enabled={active && running}
-        heroAction={spec.heroAction ?? 'none'}
+        heroAction={heroActionOf(spec)}
         // Ukázka robota není závod: duch jen v běhu hráče.
         ghost={demo === null && ghost !== null ? ghost : undefined}
         overlay={
@@ -860,6 +873,8 @@ function ArcadePlayGame({
                 dare={challenge === null ? null : { goal: dareStart(challenge, ARCADE_HZ, survive), changed: challenge.liveChanges > 0 }}
               />
             )}
+            {/* Sloveso, které hra hraje (P43 T7), první tři vteřiny po prvním tahu. Cílovou větu doplňuje, nenahrazuje. */}
+            {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null) && <VerbLine line={verb} />}
           </>
         }
       />
