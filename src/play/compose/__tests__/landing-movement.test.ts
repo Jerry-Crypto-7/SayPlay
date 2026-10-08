@@ -28,6 +28,15 @@ it('a lander with attached parts still flies, not drives', () => {
   expect(made.witnesses.some(w => w.verb === 'glide')).toBe(true);
   expect(made.witnesses.some(w => w.verb === 'drive')).toBe(false);
 });
+it('a composed tutorial keeps the native goal next to the attached parts', () => {
+  const { recipe } = compose(extractIntent('a spaceship flies and lands on the moon while rocks fall'), 1);
+  const native = compileRecipe({ ...recipe, parts: [] }).tutorial.goalLine;
+  const goal = compileRecipe(recipe).tutorial.goalLine;
+  expect(native.length).toBeGreaterThan(0);
+  expect(goal).toContain(native);
+  expect(goal).toMatch(/^Dodge the /);
+  expect(goal.length).toBeLessThanOrEqual(80);
+});
 it('correcting the recipe movement leaves the legacy landing simulation unchanged', () => {
   const cell = ALLOWED.find(cell => cell.id === 'voyage.land')!;
   const assembly = assemblyOfCell(cell);

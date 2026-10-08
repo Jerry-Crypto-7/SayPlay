@@ -135,12 +135,15 @@ function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
   const verbs: Record<string, string> = { catch: 'Catch', duel: 'Defeat', fight: 'Fight', deliver: 'Deliver', interact: 'Rescue', escape: 'Escape', hazard: 'Dodge', chaser: 'Escape', rival: 'Beat' };
   const steps = parts.map(part => `${verbs[part.kind]} the ${part.label}`);
   const sequential = parts.some(part => part.phase === 1);
-  const goalLine = steps.map((step, index) => sequential && index > 0 ? step.charAt(0).toLowerCase() + step.slice(1) : step).join(sequential ? ', then ' : '. ');
+  const partsLine = steps.map((step, index) => sequential && index > 0 ? step.charAt(0).toLowerCase() + step.slice(1) : step).join(sequential ? ', then ' : '. ');
+  // `assembly_finish` still waits for the native win, so the tutorial keeps its goal too.
+  const nativeGoal = base.tutorial?.goalLine ?? '';
+  const goalLine = [`${partsLine}. ${nativeGoal}`, `Complete the named goals. ${nativeGoal}`].map(line => line.trim()).find(line => line.length <= 80) ?? 'Complete the named goals and reach the finish.';
   const combat = parts.some(part => part.kind === 'duel' || part.kind === 'fight');
   const dribble = move === 'ball' && parts.some(part => ['catch', 'deliver', 'interact', 'duel', 'fight'].includes(part.kind));
   const travelHint = move === 'flap' ? 'Space flaps.' : move === 'jump' ? 'Arrows move. Space jumps.' : move === 'run' ? 'Arrows dodge. Space jumps.' : 'Arrows move.';
   return { ...base, roles, ...(parts.length ? { assemblyParts: parts.map(({ label: _label, ...part }) => part),
-    tutorial: { ...base.tutorial, goalLine: goalLine.length <= 79 ? `${goalLine}.` : 'Complete the named goals and reach the finish.',
+    tutorial: { ...base.tutorial, goalLine,
       ...(combat ? { controlsHint: `${travelHint} J or Attack strikes nearby opponents.` } : dribble ? { controlsHint: 'Arrows move. Drag to aim; hold and release to shoot.' } : {}) } } : {}) };
 }
 export const DEPTH_PARAM_BOUNDS = {
