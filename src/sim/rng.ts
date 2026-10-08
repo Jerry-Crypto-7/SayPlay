@@ -11,7 +11,8 @@ import type { JumpableRandomGenerator } from 'pure-rand/types/JumpableRandomGene
  * Jméno té zakázané funkce se tu záměrně nepíše: AC úlohy T5 je doslovný grep nad
  * `src/`, a poznámka o zákazu by ho shodila stejně jako porušení.
  */
-export const SUBSYSTEMS = ['spawn', 'ai', 'effect', 'layout'] as const;
+// `pacing` (P45C) je rozvrh průběhu hry; připsaný na konec, takže dřívější streamy losují totéž.
+export const SUBSYSTEMS = ['spawn', 'ai', 'effect', 'layout', 'pacing'] as const;
 
 export type Subsystem = (typeof SUBSYSTEMS)[number];
 
