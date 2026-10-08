@@ -50,7 +50,7 @@ import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
 import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
 import { throwBudgetIn, throwField, throwParts } from './pieces/throw';
 import { timingParts } from './pieces/timing';
-import { compileRules, logicNames, rulesOwnGoal, yardParts } from './rules/compile';
+import { type CompiledRule, compileRules, logicNames, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
 import { bindRoles, type RoleBinding } from './witness';
 
@@ -232,7 +232,17 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   }
   // Složená hra (P42): výhra pravidla specu i cílového skóre počká v obalu, až budou hotové díly.
   const gate = assemblyGate(rules, ARCADE_LIBRARY.rules);
-  rules.push(...ruled.rules.map(gate));
+  // Časovač, fáze a událost obal nemají (P45B R1): pravidlo bez výhry hraje vedle dílů beze změny,
+  // výhru by obal nepodržel – složená hra ji odmítne.
+  const triggerOf = (ref: PieceRef): string => ARCADE_LIBRARY.rules[ref.id]!.trigger;
+  const ungated = (ref: PieceRef): boolean => !(`assembly_gate_${triggerOf(ref)}` in ARCADE_LIBRARY.rules);
+  if (rules.some((ref) => ref.id === 'assembly_finish')) {
+    const early = ruled.rules.filter((ref) => ungated(ref) && (ref.params as CompiledRule).do.some((effect) => 'win' in effect));
+    if (early.length > 0) {
+      return { ok: false, issues: early.map((ref) => `rules: rule "${(ref.params as CompiledRule).id}" wins on a ${triggerOf(ref)} trigger, but a composed game holds every win until its parts are done and only contact, tick, counter, hit or press rules can wait – win from one of those`) };
+    }
+  }
+  rules.push(...ruled.rules.map((ref) => (ungated(ref) ? ref : gate(ref))));
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: limitSeconds(timer.seconds) } });
   const scored = spec.scoring === undefined ? { level, rules } : withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0, gate);
   if (scored.rules.length > ARCADE_LIMITS.maxRules) {
