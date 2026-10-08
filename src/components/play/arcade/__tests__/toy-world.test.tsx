@@ -59,8 +59,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+/** Náhrada okna nese i `performance`: Rapier v kroku míče čte hodiny přes `window.performance` a bez nich spadne na „unreachable“. */
 function stubPage(search: string): void {
-  vi.stubGlobal('window', { location: { search }, matchMedia: () => ({ matches: false }), addEventListener: () => undefined, removeEventListener: () => undefined });
+  vi.stubGlobal('window', { location: { search }, matchMedia: () => ({ matches: false }), addEventListener: () => undefined, removeEventListener: () => undefined, performance });
 }
 
 function fixtureWorld(name: string): ArcadeWorld {
@@ -84,7 +85,7 @@ const WORLDS: Readonly<Record<string, () => ArcadeWorld>> = {
   flap: () => fixtureWorld('flap'),
   glide: () => cellWorld('glide'),
   walker: () => cellWorld('walker'),
-  // TODO(T7): míč – Rapier v téhle náhradě hlásí „RuntimeError: unreachable“, zatím mimo.
+  ball: () => cellWorld('ball'),
   steer: () => fixtureWorld('steer'),
   shooter: () => fixtureWorld('shooter'),
   throw: () => fixtureWorld('throw'),
