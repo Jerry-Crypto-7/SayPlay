@@ -1,3 +1,4 @@
+import { CATCH_TUNING } from './catch';
 import { LEGACY_DIFFICULTY } from './legacy-difficulty';
 import { withCounts, type GenreSpec } from '../genre/contract';
 import type { Recipe } from './recipe';
@@ -13,7 +14,7 @@ export type AllowedCell = Cell & ({ readonly status: 'live'; readonly preset: Ge
 export type LiveCell = Extract<AllowedCell, { status: 'live' }>;
 
 const BASE_ALLOWED: readonly AllowedCell[] = [
-  { id: 'roam.catch', assembly: 'catch', status: 'live', recipe: CATCH_PRESETS['roam.catch']!, preset: { genre: 'arena', mode: 'collect', hero: 'dog', setting: 'park', params: { half: 40000, preySpeed: 250, seconds: 11 }, cast: [{ label: 'cat', does: 'fight' }] } },
+  { id: 'roam.catch', assembly: 'catch', status: 'live', recipe: CATCH_PRESETS['roam.catch']!, preset: { genre: 'arena', mode: 'collect', hero: 'dog', setting: 'park', params: { ...CATCH_TUNING }, cast: [{ label: 'cat', does: 'fight' }] } },
   ...Object.entries(TRACK_GOAL_PRESETS).map(([id, recipe]): LiveCell => ({
     id, recipe, assembly: 'track-goal', status: 'live',
     preset: { genre: recipe.move === 'run' ? 'runner' : recipe.move === 'jump' ? 'platformer' : 'flap', mode: 'default', hero: recipe.move === 'flap' ? 'bird' : 'fox', setting: 'forest',

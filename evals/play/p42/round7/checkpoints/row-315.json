@@ -1,0 +1,157 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-063",
+    "sentence": "Make a game where a pharaoh builds a pyramid in the desert.",
+    "seed": 5,
+    "milliseconds": 44.788200000009965,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_station",
+        "tuning": {
+          "count": 2,
+          "states": 3,
+          "verb": "make",
+          "rounds": 10
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "station",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Pharaoh Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "desert",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Make all 2 pyramid in each of 10 rounds within 81 seconds.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 81,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "pharaoh",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "pyramid",
+          "count": 2
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Make all 2 pyramid, 10 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use when it is ready. Stall and it boils over."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "10ea10e3",
+    "worldHash": "ab944a0aef174e14f3d391f2129e9b09485519a302bf0bdcc1c1e91eef779959",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pharaoh",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "pyramid",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 29,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "pharaoh",
+          "verb": "build",
+          "object": null
+        }
+      ],
+      "closest": "a quest",
+      "reason": "Build isn't here yet – here's a quest."
+    },
+    "score": {
+      "preserved": false,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "pharaoh",
+          "verb": "build",
+          "object": "pyramid"
+        }
+      ],
+      "silent": [
+        {
+          "actor": "pharaoh",
+          "verb": "build",
+          "object": "pyramid"
+        }
+      ]
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2400,
+      "hash": "0d1cbad8",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

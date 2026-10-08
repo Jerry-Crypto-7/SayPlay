@@ -1,0 +1,356 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-022",
+    "sentence": "A mouse grabs cheese from the pantry before escaping through a hole as the cat chases it.",
+    "seed": 4,
+    "milliseconds": 518.9254999999976,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "runner",
+      "controlParams": {
+        "obstacles": [
+          "hurdle",
+          "cone",
+          "crate"
+        ],
+        "feel": 2,
+        "sections": 3
+      },
+      "addons": [
+        "chaser"
+      ],
+      "genre": {
+        "id": "runner",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Cat Chases Run",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "hole",
+        "mood": "energetic"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Run to the finish without hitting a rock.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "cat chases",
+          "count": 1
+        },
+        {
+          "id": "obstacle",
+          "kind": "hazard",
+          "label": "rock",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "cheese",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "chaser",
+          "kind": "chaser",
+          "label": "mouse",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Reach the finish line. Jump, slide and switch lanes.",
+        "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "da87353b",
+    "worldHash": "3a143a55aa1a9a7cc748770aa918e41c9ddc5fb556a8bf7ac48e95d44e3676ca",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat chases",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "run",
+        "object": null,
+        "tick": 3,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat chases",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 213,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat chases",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 52,
+          "roleId": "coin",
+          "label": "cheese",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 213,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat chases",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 2086,
+        "evidence": "runner-takeoff",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat chases",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 112,
+          "roleId": "finish",
+          "label": "finish line",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2882,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat chases",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "obstacle",
+          "label": "rock",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2883,
+        "evidence": "survived-threat:probe:obstacle",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat chases",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "escape",
+        "object": {
+          "body": 113,
+          "roleId": "chaser",
+          "label": "mouse",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 2883,
+        "evidence": "survived-threat:probe:chaser",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat chases",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 113,
+          "roleId": "chaser",
+          "label": "mouse",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 2883,
+        "evidence": "survived-threat:probe:chaser",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 1,
+          "roleId": "obstacle",
+          "label": "rock",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat chases",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 163,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:obstacle"
+      },
+      {
+        "actor": {
+          "body": 113,
+          "roleId": "chaser",
+          "label": "mouse",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "verb": "chaser",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat chases",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 1252,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:chaser"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "mouse",
+          "verb": "collect",
+          "object": "cheese"
+        },
+        {
+          "actor": "mouse",
+          "verb": "escape",
+          "object": null
+        }
+      ],
+      "closest": "an endless runner",
+      "reason": "Collecting and escaping aren't here yet – here's an endless runner."
+    },
+    "score": {
+      "preserved": false,
+      "total": 3,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "mouse",
+          "verb": "collect",
+          "object": "cheese"
+        },
+        {
+          "actor": "mouse",
+          "verb": "escape",
+          "object": null
+        },
+        {
+          "actor": "cat",
+          "verb": "chaser",
+          "object": "mouse"
+        }
+      ],
+      "silent": [
+        {
+          "actor": "cat",
+          "verb": "chaser",
+          "object": "mouse"
+        }
+      ]
+    },
+    "hero": false,
+    "environment": false,
+    "verification": {
+      "outcome": "won",
+      "tick": 2883,
+      "hash": "47fa5ffc",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

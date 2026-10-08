@@ -4,11 +4,12 @@ import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/modules';
 import { DRIVE_PRESETS, NATIVE_PRESETS, TRACK_GOAL_PRESETS, assertPreset, type RecipeAssembly } from './presets';
-import { catchSpec } from './catch';
+import { CATCH_TUNING, catchSpec } from './catch';
 import { driveSpec } from './drive';
 import { nativeSpec } from './native';
 import { timeOfDayFor } from '../arcade/look';
 import { BALL_DIFFICULTY } from './ball-difficulty';
+import { singular } from '../draft/lexicon';
 
 /** Recipes select an assembly; existing piece builders retain their frozen output. */
 export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
@@ -16,6 +17,10 @@ export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
   const time = timeOfDayFor(assembly.content.setting);
   const game = time === null ? base : { ...base, theme: { ...base.theme, timeOfDay: time } };
   const roles = [...game.roles];
+  // One native bullet template is one ammunition identity. Additional named
+  // kinds require additional physical templates and therefore stay unmet.
+  const ammunition = assembly.content.cast?.find(item => item.does === 'scenery' && item.verb === 'shoot');
+  if (ammunition !== undefined && !roles.some(role => role.id === 'ammunition')) roles.push({ id: 'ammunition', kind: 'item', label: ammunition.label, count: 1 });
   for (const node of assembly.dependsOn ?? []) if (!roles.some(role => role.id === node.goal)) {
     if (node.action === undefined) throw new Error('New dependency goals require an explicit action: ' + node.goal);
     roles.push({ ...game.roles[0]!, id: node.goal, label: node.label ?? node.goal, kind: node.action === 'open' ? 'door' : node.action === 'collect' ? 'key' : 'checkpoint' });
@@ -37,6 +42,7 @@ export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
   return { ...game, roles, ...(steps.length === 0 ? {} : { tutorial: { ...game.tutorial, goalLine } }), ...(assembly.phases === undefined ? {} : { phases: assembly.phases }), ...(assembly.dependsOn === undefined ? {} : { dependsOn: assembly.dependsOn }) };
 }
 function compileRecipeBase(assembly: RecipeAssembly): GameSpecV1 {
+  if (assembly.preset === 'assembled') return compileAssembly(assembly);
   assertPreset(assembly);
   if (assembly.preset === 'roam.catch') return catchSpec(assembly, assembly.content);
   if (DRIVE_PRESETS[assembly.preset] !== undefined) {
@@ -71,6 +77,74 @@ function compileRecipeBase(assembly: RecipeAssembly): GameSpecV1 {
       tutorial: { ...compiled.tutorial, goalLine: `Collect every ${item}, then reach the finish.` } };
   }
   return compileWith(GENRE_MODULES[assembly.content.genre] as GenreModule, assembly.content);
+}
+
+/** Compile a movement, then attach independently named gameplay parts. */
+/** A separately attached rival turns a non-ball race into reaching the finish. */
+const assembledObjective = (assembly: RecipeAssembly) =>
+  (assembly.parts ?? []).some(part => part.kind === 'rival') && assembly.move !== 'ball' ? 'reach' as const : assembly.objective;
+
+/**
+ * Factory a composed movement compiles through: `drive` and `native` (glide, walk, ball)
+ * read native params, anything else a legacy genre – the director validates answer content by it.
+ */
+export function assemblyFactory(assembly: RecipeAssembly): 'drive' | 'native' | undefined {
+  if (assembly.move === 'drive') return 'drive';
+  if (assembly.move === 'glide' && assembledObjective(assembly) === 'land') return undefined;
+  return ['glide', 'walk', 'ball'].includes(assembly.move) ? 'native' : undefined;
+}
+
+/** Names belong to parts: the content without the things the parts play; a named projectile stays the ammunition. */
+export function withoutPartNames(content: GenreSpec, parts: readonly { readonly label: string }[]): GenreSpec {
+  const head = (label: string) => singular(label.toLowerCase()).split(' ').at(-1);
+  return { ...content, cast: content.cast?.filter(member => member.does === 'scenery' && member.verb === 'shoot' || !parts.some(part => head(part.label) === head(member.label))) };
+}
+
+function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
+  const { move } = assembly;
+  const parts = assembly.parts ?? [];
+  // Whoever wrote the content – the composer or the director – the base genre never plays a part's thing (no second shark).
+  const content = withoutPartNames(assembly.content, parts);
+  const separate = new Set<string>(parts.map(part => part.kind));
+  const recipe = { move, objective: assembledObjective(assembly), actions: assembly.actions.filter(action => !separate.has(action)), threats: assembly.threats.filter(threat => !separate.has(threat)) };
+  let base: GameSpecV1;
+  // A catch with nothing else to do is the native catch game, not an arena that also collects.
+  if (move === 'roam' && recipe.objective === 'catch' && recipe.actions.length === 0 && recipe.threats.length === 0 && parts.length === 0) {
+    return catchSpec(recipe, { ...content, params: { ...CATCH_TUNING, ...content.params } });
+  }
+  if (move === 'drive') {
+    base = driveSpec({ ...recipe, objective: ['race', 'escape'].includes(recipe.objective) ? recipe.objective : 'reach',
+      actions: recipe.actions.filter(action => ['shoot', 'collect', 'deliver'].includes(action)),
+      threats: recipe.threats.filter(threat => ['rival', 'chaser', 'obstacle'].includes(threat)) },
+    { ...content, params: { lengthM: 700, roadWidth: 3600, roadEntryWidth: 10000, crashBudget: 3, ...content.params } });
+  } else if (move === 'glide' && recipe.objective === 'land') {
+    base = compileWith(GENRE_MODULES.voyage as GenreModule, { ...content, genre: 'voyage', mode: 'land', params: { touchdownSpeed: 19, gravityRisePct: 1, lives: 1, ...content.params } });
+  } else if (['glide', 'walk', 'ball'].includes(move)) {
+    const objective = move === 'ball' ? recipe.objective === 'defeat' ? 'defeat' : 'score' : ['collect', 'race', 'escape'].includes(recipe.objective) ? recipe.objective : 'reach';
+    const sport = /\b(?:basketball|hoop|golf|hole)\b/.test([content.setting, ...(content.cast ?? []).map(item => item.label)].join(' '));
+    base = nativeSpec({ ...recipe, objective,
+      actions: recipe.actions.filter(action => move === 'ball' ? ['kick', 'throw'].includes(action) : move === 'walk' ? action === 'collect' : ['shoot', 'collect'].includes(action)),
+      threats: recipe.threats.filter(threat => move === 'ball' ? threat === 'rival' : move === 'walk' ? ['guard', 'chaser', 'obstacle'].includes(threat) : ['rival', 'chaser', 'obstacle'].includes(threat)) },
+    { ...content, params: { ...(move === 'glide' ? { clearancePermille: 275, clearanceRisePermille: 10 } : move === 'ball' && !sport ? BALL_DIFFICULTY[`ball.${objective}${recipe.threats.includes('rival') ? '+rival' : ''}`] : {}), ...content.params } });
+  } else {
+    base = compileWith(GENRE_MODULES[content.genre] as GenreModule, content);
+  }
+  if (move === 'ball' && recipe.threats.includes('rival')) base = { ...base, controlParams: { ...base.controlParams, team: true } };
+  const roles = [...base.roles, ...parts.map(part => ({ id: part.role, label: part.label, count: 1,
+    kind: (part.kind === 'escape' ? 'zone' : part.kind === 'hazard' ? 'hazard' : part.kind === 'chaser' ? 'chaser' : ['deliver', 'interact'].includes(part.kind) ? 'item' : 'patrol') as GameSpecV1['roles'][number]['kind'] }))];
+  const verbs: Record<string, string> = { catch: 'Catch', duel: 'Defeat', fight: 'Fight', deliver: 'Deliver', interact: 'Rescue', escape: 'Escape', hazard: 'Dodge', chaser: 'Escape', rival: 'Beat' };
+  const steps = parts.map(part => `${verbs[part.kind]} the ${part.label}`);
+  const sequential = parts.some(part => part.phase === 1);
+  const partsLine = steps.map((step, index) => sequential && index > 0 ? step.charAt(0).toLowerCase() + step.slice(1) : step).join(sequential ? ', then ' : '. ');
+  // `assembly_finish` still waits for the native win, so the tutorial keeps its goal too.
+  const nativeGoal = base.tutorial?.goalLine ?? '';
+  const goalLine = [`${partsLine}. ${nativeGoal}`, `Complete the named goals. ${nativeGoal}`].map(line => line.trim()).find(line => line.length <= 80) ?? 'Complete the named goals and reach the finish.';
+  const combat = parts.some(part => part.kind === 'duel' || part.kind === 'fight');
+  const dribble = move === 'ball' && parts.some(part => ['catch', 'deliver', 'interact', 'duel', 'fight'].includes(part.kind));
+  const travelHint = move === 'flap' ? 'Space flaps.' : move === 'jump' ? 'Arrows move. Space jumps.' : move === 'run' ? 'Arrows dodge. Space jumps.' : 'Arrows move.';
+  return { ...base, roles, ...(parts.length ? { assemblyParts: parts.map(({ label: _label, ...part }) => part),
+    tutorial: { ...base.tutorial, goalLine,
+      ...(combat ? { controlsHint: `${travelHint} J or Attack strikes nearby opponents.` } : dribble ? { controlsHint: 'Arrows move. Drag to aim; hold and release to shoot.' } : {}) } } : {}) };
 }
 export const DEPTH_PARAM_BOUNDS = {
   lives: { min: 1, max: 9 },

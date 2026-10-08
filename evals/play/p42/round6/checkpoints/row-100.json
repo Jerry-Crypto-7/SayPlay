@@ -1,0 +1,334 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-020",
+    "sentence": "A submarine cruises through the ocean, fires torpedoes at robots, and collects gems.",
+    "seed": 5,
+    "milliseconds": 398.02709999999206,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "glide",
+      "controlParams": {
+        "clearancePermille": 275,
+        "clearanceRisePermille": 10,
+        "mode": "reach",
+        "difficulty": "normal",
+        "lengthM": 160,
+        "topSpeed": 180,
+        "generator": "glide_course"
+      },
+      "addons": [
+        "shoot"
+      ],
+      "title": "submarine reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "ocean",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Pass every ring and reach the finish.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "submarine",
+          "count": 1
+        },
+        {
+          "id": "glide_ring",
+          "kind": "collectible",
+          "label": "gem",
+          "count": 7
+        },
+        {
+          "id": "glide_reef",
+          "kind": "hazard",
+          "label": "reef",
+          "count": 1
+        },
+        {
+          "id": "glide_current",
+          "kind": "zone",
+          "label": "current",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish",
+          "count": 1
+        },
+        {
+          "id": "enemy",
+          "kind": "hazard",
+          "label": "robot",
+          "count": 1
+        },
+        {
+          "id": "ammunition",
+          "kind": "item",
+          "label": "torpedo",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Pass every ring and reach the finish.",
+        "controlsHint": "Drag in two directions to swim. Second finger or Space fires. Shift brakes."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "69938209",
+    "worldHash": "e71471133cc2c95e764a74757499065775b0ff91ec8914060361c8e6b107bd61",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "submarine",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "glide",
+        "object": null,
+        "tick": 11,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "submarine",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 49,
+          "roleId": "ammunition",
+          "label": "torpedo",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 29,
+        "evidence": "launched-projectile-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "submarine",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 61,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "submarine",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 44,
+          "roleId": "enemy",
+          "label": "robot",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 61,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "submarine",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 44,
+          "roleId": "enemy",
+          "label": "robot",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 61,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "submarine",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 1,
+          "roleId": "glide_ring",
+          "label": "gem",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 129,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "submarine",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 43,
+          "roleId": "finish",
+          "label": "finish",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 906,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "submarine",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "reef",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 907,
+        "evidence": "survived-threat:probe:glide_reef",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "reef",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "submarine",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 128,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:glide_reef"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "reef",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "submarine",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 128,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:glide_reef"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "submarine",
+          "verb": "cruise",
+          "object": null
+        }
+      ],
+      "closest": "a swimming or flying game",
+      "reason": "Cruise isn't here yet – here's a swimming or flying game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 907,
+      "hash": "999926f5",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

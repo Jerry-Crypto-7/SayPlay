@@ -1,0 +1,198 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-43",
+    "sentence": "A librarian translates manuscripts in a tower.",
+    "seed": 5,
+    "milliseconds": 49.84000000002561,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "timing",
+      "controlParams": {
+        "mode": "stack",
+        "speed": "slow",
+        "rounds": 36,
+        "rise": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "timing",
+        "mode": "stack",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Librarian Stack",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "tower",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Stack 36 blocks. Each one swings faster.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "librarian",
+          "count": 1
+        },
+        {
+          "id": "block",
+          "kind": "collectible",
+          "label": "block",
+          "count": 36
+        },
+        {
+          "id": "miss",
+          "kind": "hazard",
+          "label": "missed drop",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "of the tower",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Stack 36 blocks. Each one swings faster.",
+        "controlsHint": "Tap or Space to drop the block."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "d9afb25f",
+    "worldHash": "6d3fb8a3141c9e1014098c397422a685e5bc8e1e01c75f6aab9e0256305fc6d3",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "librarian",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 75,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "librarian",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "stack",
+        "object": null,
+        "tick": 75,
+        "evidence": "successful-timing",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "librarian",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "stack",
+        "object": {
+          "body": 3,
+          "roleId": "block",
+          "label": "block",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 75,
+        "evidence": "block-placed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "librarian",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "build",
+        "object": null,
+        "tick": 1891,
+        "evidence": "stack-completed",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "librarian",
+          "verb": "translate",
+          "object": "manuscript"
+        }
+      ],
+      "closest": "a timing game",
+      "reason": "Translate isn't here yet – here's a timing game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "librarian",
+          "verb": "translate",
+          "object": "manuscript"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 1892,
+      "hash": "7aafb236",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

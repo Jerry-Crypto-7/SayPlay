@@ -13,6 +13,7 @@ import { createStreams, nextInt } from '@/sim/rng';
 
 import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase, bodyHp, targetStateOf } from './contract';
 import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from './kernel';
+import { underlyingRule } from './addons';
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
 import { avoidingLosses, lossPlanner, losingVerbs, rulesPlanner } from './rules/bot';
@@ -192,9 +193,9 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
   // Robot světa obchází tělesa pravidel prohry (P36A F2); do nich jde jen běh „na prohru“.
   const bot = planner ?? { reactionTicks: piece.reactionTicks, decide: avoidingLosses(world, (observation: ArcadeObservation) => piece.decide(observation, params)) };
   // Slovesa pravidel: stav na začátku tiku, ať jde změnu po efektu změřit (P30B T2).
-  const verbOf = world.rules.map((ref) => (typeof ref.params.verb === 'string' ? ref.params.verb : null));
+  const verbOf = world.rules.map(underlyingRule).map((ref) => (typeof ref.params.verb === 'string' ? ref.params.verb : null));
   // `interact` si rozdělanou práci píše do čítače každý tik držení: sloveso úkolu dokáže jen posun stavu cíle (P32G T3).
-  const stateOnly = world.rules.map((ref) => ref.id === 'interact');
+  const stateOnly = world.rules.map((ref) => underlyingRule(ref).id === 'interact');
   const measuring = verbOf.some((verb) => verb !== null);
   const isProbe = options.probeBody !== undefined || options.seek !== undefined;
   const witness = options.roleBindings === undefined ? null : new WitnessRecorder(world, options.roleBindings, isProbe ? 'probe' : 'winner', options.runId ?? (isProbe ? 'probe' : 'winner'));
@@ -293,7 +294,7 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
 function verbsOf(world: ArcadeWorld, firstFired: readonly number[], changes: ReadonlyMap<string, string>): VerbProof[] {
   const proofs = new Map<string, number>();
   world.rules.forEach((ref, index) => {
-    const verb = ref.params.verb;
+    const verb = underlyingRule(ref).params.verb;
     if (typeof verb !== 'string') return;
     const tick = firstFired[index] ?? -1;
     const known = proofs.get(verb) ?? -1;

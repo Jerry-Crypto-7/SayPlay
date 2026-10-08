@@ -1,0 +1,257 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-09",
+    "sentence": "A rabbit plays basketball against hedgehogs in a stadium and collects medals.",
+    "seed": 2,
+    "milliseconds": 237.5561000000016,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "ball",
+      "controlParams": {
+        "team": true,
+        "goal": "hoop",
+        "keeper": true,
+        "difficulty": "normal",
+        "targets": 1,
+        "generator": "ball_pitch"
+      },
+      "addons": [],
+      "title": "rabbit score",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "stadium",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Score in every hoop.",
+        "count": 1,
+        "role": "hoop"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "rabbit",
+          "count": 1
+        },
+        {
+          "id": "physics_ball",
+          "kind": "item",
+          "label": "basketball",
+          "count": 1
+        },
+        {
+          "id": "hoop",
+          "kind": "target",
+          "label": "hoop",
+          "count": 1
+        },
+        {
+          "id": "goalkeeper",
+          "kind": "patrol",
+          "label": "hedgehog",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Score in every hoop.",
+        "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "7ab2debd",
+    "worldHash": "3ea0d9fc8b1c625ed3388f818640bf6c8842baae57406ee9498c6cbb99007b9c",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "rabbit",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "throw",
+        "object": {
+          "body": 8,
+          "roleId": "physics_ball",
+          "label": "basketball",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 32,
+        "evidence": "thrown-body-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "rabbit",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 94,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "rabbit",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "ball",
+        "object": null,
+        "tick": 94,
+        "evidence": "physical-ball-scored",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "rabbit",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": {
+          "body": 2,
+          "roleId": "hoop",
+          "label": "hoop",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 94,
+        "evidence": "physical-ball-in-goal",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "rabbit",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 3,
+          "roleId": "goalkeeper",
+          "label": "hedgehog",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 95,
+        "evidence": "survived-threat:probe:goalkeeper",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 4,
+          "roleId": "goalkeeper",
+          "label": "hedgehog",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "rabbit",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 65,
+        "evidence": "opponent-physical-goal",
+        "run": "probe",
+        "runId": "probe:goalkeeper"
+      },
+      {
+        "actor": {
+          "body": 3,
+          "roleId": "goalkeeper",
+          "label": "hedgehog",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "rabbit",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 77,
+        "evidence": "keeper-deflected-physical-ball",
+        "run": "probe",
+        "runId": "probe:goalkeeper"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "rabbit",
+          "verb": "collect",
+          "object": "medal"
+        }
+      ],
+      "closest": "a ball game",
+      "reason": "Collecting isn't here yet – here's a ball game."
+    },
+    "score": {
+      "preserved": false,
+      "total": 3,
+      "proved": 2,
+      "missing": [
+        {
+          "actor": "rabbit",
+          "verb": "collect",
+          "object": "medal"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 95,
+      "hash": "97542d5a",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

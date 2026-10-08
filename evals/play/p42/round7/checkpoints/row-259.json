@@ -1,0 +1,246 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-052",
+    "sentence": "Make a game where a goldfish swims around its bowl.",
+    "seed": 4,
+    "milliseconds": 53.646999999997206,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "glide",
+      "controlParams": {
+        "clearancePermille": 275,
+        "clearanceRisePermille": 10,
+        "mode": "reach",
+        "difficulty": "normal",
+        "lengthM": 160,
+        "topSpeed": 180,
+        "generator": "glide_course"
+      },
+      "addons": [],
+      "title": "goldfish reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "bowl",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Pass every ring and reach the finish.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "goldfish",
+          "count": 1
+        },
+        {
+          "id": "glide_ring",
+          "kind": "collectible",
+          "label": "ring",
+          "count": 7
+        },
+        {
+          "id": "glide_reef",
+          "kind": "hazard",
+          "label": "rock",
+          "count": 1
+        },
+        {
+          "id": "glide_current",
+          "kind": "zone",
+          "label": "current",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Pass every ring and reach the finish.",
+        "controlsHint": "Drag in two directions, or use arrows to swim. Shift or a second finger brakes."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "01cd4345",
+    "worldHash": "d1453a5f99731ffe8d00e9b987e2c5662f59985f89384364061a032410cb8221",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "goldfish",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "glide",
+        "object": null,
+        "tick": 11,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "goldfish",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 129,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "goldfish",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 1,
+          "roleId": "glide_ring",
+          "label": "ring",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 129,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "goldfish",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 43,
+          "roleId": "finish",
+          "label": "finish",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 906,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "goldfish",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "rock",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 907,
+        "evidence": "survived-threat:probe:glide_reef",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "rock",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "goldfish",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 128,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:glide_reef"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "rock",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "goldfish",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 128,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:glide_reef"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 907,
+      "hash": "e3058d94",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

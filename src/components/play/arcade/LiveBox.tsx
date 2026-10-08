@@ -17,7 +17,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import type { ArcadeWorld } from '@/play/arcade/contract';
+import { type ArcadeWorld, nativeRule } from '@/play/arcade/contract';
 import { REMIX_MESSAGE, liveIntentOf, resolveWish } from '@/play/director/live-intent';
 import type { GameSpecV1 } from '@/play/spec';
 import { liveLabel } from '@/play/version/remix-diff';
@@ -34,7 +34,7 @@ const ENTER_ACTS = new Set(['timing', 'duel']);
 
 /** Smí Enter otevřít pole? Ne tam, kde Enter hraje – úder by padl a pole by hráči sebralo klávesy. */
 export function enterOpensLiveBox(world: ArcadeWorld): boolean {
-  return !ENTER_ACTS.has(baseControlOf(world.control).id) && !world.rules.some((rule) => rule.id === 'blaster');
+  return !ENTER_ACTS.has(baseControlOf(world.control).id) && nativeRule(world.rules, 'blaster') === undefined;
 }
 
 /** `changed` = štítek změn, které hra opravdu přijala (i při částečném přijetí). */

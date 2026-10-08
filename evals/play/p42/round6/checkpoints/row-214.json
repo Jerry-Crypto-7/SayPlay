@@ -1,0 +1,169 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-043",
+    "sentence": "Let a badger knit scarves in a cottage.",
+    "seed": 4,
+    "milliseconds": 65.62359999999171,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "rhythm",
+      "controlParams": {
+        "bpm": 120,
+        "beats": 66,
+        "ramp": true,
+        "lanes": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "rhythm",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Badger Beat",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "cottage",
+        "mood": "energetic"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Hit each tile in its lane on the beat and play the song to the end.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "badger",
+          "count": 1
+        },
+        {
+          "id": "note",
+          "kind": "collectible",
+          "label": "tile",
+          "count": 12
+        },
+        {
+          "id": "miss",
+          "kind": "hazard",
+          "label": "missed beat",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "last beat",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Tap each lane as its note hits the line. The song gets busier.",
+        "controlsHint": "Tap the lane, or D F J K, on the beat. M toggles sound."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "knit"
+    },
+    "specHash": "8db90f47",
+    "worldHash": "edbda7e8d2039157aa31b918a4fc8a4c6fdcadd8e3ac33cca995940f3237b542",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "badger",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 180,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "badger",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "beat",
+        "object": {
+          "body": 1,
+          "roleId": "note",
+          "label": "tile",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 180,
+        "evidence": "successful-timing",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "badger",
+          "verb": "knit",
+          "object": "scarf"
+        }
+      ],
+      "closest": "a rhythm game",
+      "reason": "Knit isn't here yet – here's a rhythm game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "badger",
+          "verb": "knit",
+          "object": "scarf"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2131,
+      "hash": "12d6ce6b",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -1,0 +1,290 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-08",
+    "sentence": "A scooter drives through a city, racing vans and collecting batteries.",
+    "seed": 3,
+    "milliseconds": 993.9853000000003,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "steer",
+      "controlParams": {
+        "difficulty": "normal",
+        "lengthM": 700,
+        "rivals": true,
+        "roadWidth": 3600,
+        "roadEntryWidth": 10000,
+        "crashBudget": 3,
+        "centerCollectibles": true,
+        "turbo": true,
+        "drift": false
+      },
+      "addons": [],
+      "title": "scooter race",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "city",
+        "mood": "fast"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Beat the rival vehicles to the finish.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "scooter",
+          "count": 1
+        },
+        {
+          "id": "barrier",
+          "kind": "hazard",
+          "label": "car",
+          "count": 1
+        },
+        {
+          "id": "turbo",
+          "kind": "collectible",
+          "label": "battery",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "rival",
+          "kind": "patrol",
+          "label": "van",
+          "count": 3
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Beat the rival vehicles to the finish.",
+        "controlsHint": "Drag/arrows steer. Down or second finger brakes. Avoid barriers."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "4217cc83",
+    "worldHash": "992e77e6331bbcbb9b7fcbf88bd3f2b8ae682d1f04eef533878def0a302dc9c4",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "scooter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "drive",
+        "object": null,
+        "tick": 21,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "scooter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "race",
+        "object": {
+          "body": 1,
+          "roleId": "rival",
+          "label": "van",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 158,
+        "evidence": "overtake",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "scooter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 514,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "scooter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 112,
+          "roleId": "turbo",
+          "label": "battery",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 514,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "scooter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 117,
+          "roleId": "finish",
+          "label": "finish line",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2130,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "scooter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "rival",
+          "label": "van",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 2131,
+        "evidence": "survived-threat:probe:rival",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "scooter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 4,
+          "roleId": "barrier",
+          "label": "car",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2131,
+        "evidence": "survived-threat:probe:barrier",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 3,
+          "roleId": "rival",
+          "label": "van",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "scooter",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 3646,
+        "evidence": "rival-finished-first",
+        "run": "probe",
+        "runId": "probe:rival"
+      },
+      {
+        "actor": {
+          "body": 13,
+          "roleId": "barrier",
+          "label": "car",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "scooter",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 304,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:barrier"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 4,
+      "proved": 4,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2131,
+      "hash": "f5c7a83b",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

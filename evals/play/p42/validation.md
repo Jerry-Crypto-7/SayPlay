@@ -1,0 +1,133 @@
+﻿# P42 — implementace a stav přejímky
+
+Implementace je na větvi `features/p42-composable-pieces`. **P42 není dokončené:** poslední nezávislá sada (round7) nesplnila tři ze šesti automatických limitů – celé věty, nulové ticho a hrdinu. Zelené regresní testy ani potvrzené lidské zahrání čtyř scénářů tento výsledek nenahrazují.
+
+## Round7 – zapečetěná sada, jediné měření (P44A T14, 8. 10. 2026)
+
+**FAIL**, změřeno jednou nad `94763e8d` (pečeť `4c000a74…` ověřená na LF bajtech, 64 vět × 5 seedů, 0 volání modelu): celé věty 41/64 (64 %, limit 80 %), tiché trojice 85 (limit 0), hrdina 87,5 % (limit 90 %); prostředí 91,7 %, p95 469 ms, golden a build 100 % prošly. Detail a všichni svědci: [round7/final.json](round7/final.json), [round7/final.md](round7/final.md). Limity se nepřepisují a druhý běh nad stejnou sadou nebude – věty round7 jsou od teď otevřená data.
+
+Zbylé třídy (tiché trojice podle slovesa, počet běhů a příklady id):
+- **chaser 25** (`r7-ho-010`, `-022`, `-024`, `-025`) – pronásledovatel z věty se ve hře nezahraje ani neohlásí; největší třída.
+- **glide 10, land 10** (`r7-ho-007`, `-012`, `-037`) – let a přistání v souvětí.
+- **deliver 10** (`r7-ho-021`, `-028`) – doručení jako druhá akce.
+- po 5: hazard (`-004`), reach (`-033`), fight (`-038`), flap (`-051`), roam (`-053`), build (`-063`).
+- Hrdina chybí v 8 větách: `r7-ho-003`, `-007`, `-016`, `-021`, `-022`, `-037`, `-051`, `-062`.
+
+Opravy T12 (vazba „with X to <sloveso>“) a T13 (free/patrol) třídy round6 zavřely; round7 ukazuje jiné – hlavně pronásledovatele a pohyb v souvětí. Podle P44A výsledek sloučení nebrzdí, je to poctivý stav P42 pro P44C/P44E.
+
+## Regrese proti `main` uzavřené (P44A T3–T5, 8. 10. 2026)
+
+Všech 34 souborů, které 7. 10. padaly jen na P42 (120 testů), samo prochází na `a6b238a6`: 22 opravil T3 (`3e0c1d07..d0cb0922`), 3 soubory režiséra T4 (`beaa8da3..93514fd3`), 9 T5 (`a6b238a6`). Rozpis po souborech je v [p44a-red-baseline.json](p44a-red-baseline.json) (`resolvedBy` / `leftAs`).
+
+Opravy u zdroje v T5: loď z věty „seven lives“ má zase sedm životů; kontrola věrnosti počítá díl složené hry (pizza, ryba, šíp) jako nakreslený, když scéna má model z popisku; pokrytí sloves přeměřeno (84 → 87 vět s dílkem, žádná neztracená). Pět testů následuje záměrnou změnu P42 – důvod je u každého v commitu `a6b238a6`: rozvoz pizzy se hraje jako díl, útěk před pronásledovatelem bez řečeného pohybu je běžec, hrozby se berou z věty, ne ze čtení modelem, a obsazení drží jednotné číslo.
+
+### Červené už na main
+
+Žádné nezbyly. Oba soubory, které T1 vedl jako předexistující (`hero-motion`, `scenery-carve`), 8. 10. samy procházejí na P42 i na `main` (`ce5145d0`); padají jen na časový limit pod zátěží celé sady, stejně jako dalších šest souborů vedených jako šum (`load-noise`). Při běhu všech 40 souborů najednou padá 1–7 z nich na `STACK_TRACE_ERROR` (časový limit) a „návrh pod 3 s“ v `upgrade.test.ts` (3,3–5 s); samotné jsou zelené.
+
+**Zjištění:** P42 skládá návrh věty „A hamster escapes a supermarket while a giant Roomba hunts it.“ o ~0,3–0,7 s pomaleji než `main` (studený běh 1,07 s vs. 0,78 s návrh, 0,40 s vs. 0,35 s kompilace). Limit 3 s drží, rezerva je menší.
+
+## Celá sada před sloučením (P44A T15–T16, 8. 10. 2026)
+
+- **Celá sada 8. 10.: 14 750/14 757** (4 červené, 3 přeskočené) nad `0fb8a03e`, puštěná sama. Zbylých pět červených souborů je časový limit pod zátěží – `hero-motion`, `scenery-carve` a `submission-check-gate` z baseline a k nim `codex-shim` (ukončení stromu procesů, 20 s) a „návrh pod 3 s“ v `upgrade.test.ts`. Puštěné samy procházejí všechny (6, 2, 59, 22 a 30 testů) – šum, ne regrese.
+- **E2E** nad `next start` (webpack build): `play-p42` 20/20 a `interface-language` 6/6, dvakrát po sobě. První dva běhy padly na 429: 16 her po sobě z jedné adresy přeteklo strop 50 požadavků za 10 s na volajícího. Každý test teď posílá vlastní `x-forwarded-for` (`0fb8a03e`), strop beze změny.
+- `npm run typecheck` čistý, `npm run gate:license` 7/7 PASS.
+- **Historických 40 vět P41 nad P42** ([p41-report.md](../regression/p41-report.md), přeměřeno a commitnuto vědomě): zásahy žánru 15/32 (`main` 18/32, jen diagnostika), nezachované věty 17/40 (`main` 16/40). Nově zachované: chase_escape-1 až 3 a delivery-3. Nově nezachované: combat_lite-1 až 3 („defeat X“ se na `main` hrálo jako souboj, P42 z něj dělá sbírání nebo hádanku), hazard_crossing-4 („reach the door“) a scale-1 („catch“). Všech pět P42 hráči přizná, žádné není tiché. Oprava je v plánu jako navazující úloha.
+- **Oprava (P44A T18):** „porazit N cílů“ bez řečeného pohybu se zase hraje jako souboj v aréně a honička bez jmenované kořisti jako chytání (kořist dá prostředí). Přeměřeno: nezachovaných **13/40** (`main` 16), zásahy žánru 18/32 (`main` 18). combat_lite-1 až 3 a scale-1 jsou zachované, čtyři dřívější opravy drží. 
+- **Oprava (P44A T19):** hazard_crossing-4 – robot k východu doskákal, jen svědek dotek s cílem neviděl. Brána složené hry zamkne nativní výhru do keeperu a závěrečná výhra přijde bez doteku. Svědek teď zámek čte jako nativní výhru. Přeměřeno: nezachovaných **12/40** (`main` 16).
+
+## Pokračování po round4 — rozpracovaná přejímka
+
+Obecné opravy určování hrdiny, infinitivních předmětů, lokativních frází, padajících hrozeb a zájmen závodníků prošly **453/453 intent/draft testy**. Skladatel zachovává hlavní jméno prostředí a zákaz sbírání nevynucuje sběratelský režim. Fyzický kop má svědka založeného na skutečném vypuštění, pohybu a skórování míče; basketbal ani golf tento důkaz nedostanou.
+
+Profil odhalil opakované hledání vazeb a alokace v každém tiku svědeckého pozorování. Indexování vazeb a přesun statických výpočtů zachovaly **6/6 kompletních verdiktů podle SHA**, včetně vstupů, svědků, replay hashů a způsobilosti k publikaci. **39/39 cílených regresí PASS**. Lokální časy se zlepšily, ale nejsou závěrečným latency důkazem; metodika a omezení jsou v [profilu](profile-verify-notes.md).
+
+Otevřený diagnostický běh nad původními štítky round4: 64/64 publikovatelných her, 52/64 zachovaných vět, 64/64 hrdinů, 63/64 prostředí, osm tichých trojic. Všech osm je konflikt `fly`/`flap`: P41 a všechny první tři P42 sady konzistentně označují `fly`/`flying`/`flight` jako `glide`, round4 je označilo jako `flap`. Produkční kontrakt, historické testy ani skórování se kvůli tomu nepřepisovaly. Původní round4 výsledek FAIL zůstává zachovaný. Po diagnostice byly opraveny ještě `snowy mountain`, falešný aktér `dodge` a soupeř `it`; těchto šest regresních případů je součástí uvedených 453 testů.
+
+Poslední produkční build včetně typů prošel, browserové ověření je rozšířené na **16/16 PASS** (3,1 minuty). Nezávislý autor připravil novou sadu round5 podle původního významového kontraktu, uzavřenou SHA256 `521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24`; obsah sady zatím implementace ani hlavní agent neotevřeli. Úspěšná přejímka se dosud netvrdí.
+
+## Poslední dokončené nezávislé měření (round6, 7. 10. 2026)
+
+Jednorázový nepřerušený běh nad commitem `20b54739` (všech 320 pozorování, offline, 0 volání modelu): **FAIL**. **51/64 vět (79,69 %, limit 80 % – chybí jedna věta), 20 tichých trojic (limit 0)**, hrdina 100 %, prostředí 100 %, p95 456 ms, golden PASS, publikovatelné 320/320. Hrdina, prostředí a latence jsou nejlepší ze všech kol. [Úplný výsledek](round6/final.json), [souhrn](round6/final.md).
+
+Pečeť `6326987d…` je hash souboru s konci řádků CRLF, jak ležel na disku při zapečetění; commitnutý blob je normalizovaný na LF (`.gitattributes eol=lf`) a má jiný hash. Čerstvý checkout proto pečeť neprojde, dokud se soubor nepřevede na CRLF.
+
+Nezachované věty (13; „tichá“ = hra akci nemá a ani ji nepřizná):
+
+- chybějící druhá akce ve složené větě: `gathering apples as wasps chase` (collect), `fight…, then escape` (escape), `duel a ghost… and then catch a rat` (catch), `throws acorns` (throw), `reaches the lighthouse` (reach), `…and then lands` (land), `delivers pearls` (deliver, 1 z 5 semen);
+- `stack crates` / `stack barrels` – sloveso stack se nerealizuje;
+- tiché: `frees trapped birds`, `frees prisoners` (interact), `cats patrol` (guard), `with moths to catch` (catch).
+
+## Předchozí nezávislé měření (round5)
+
+Jednorázový nepřerušený běh dokončil všech 320 pozorování s neměnnými checkpointy: **50/64 vět (78,125 %), 55 tichých trojic, hrdina 92,1875 %, prostředí 98,4375 %, p95 1243,93 ms, golden 20/20 PASS**. Všechny hry jsou publikovatelné. Nesplněné zůstávají zachování celé věty a nulové ticho. [Úplný výsledek](round5/final.json), [souhrn](round5/final.md).
+
+Další práce pokračuje na nyní otevřených datech: meta/causative úvody `Give me…`, `Keep…`, `Make…`, `Let…`, pseudo-cleft slovosled, obecné rozpoznání neznámých finitních sloves, plurál `-oes` a hranice příslovcí. Samostatně se prověřuje fyzická identita pojmenované munice, aby důkaz střelby rozlišoval vystřelený projektil od zasaženého cíle. Původní report a štítky se nemění.
+
+Po třech regresích nalezených v celé compose sadě (856/859) prošly jejich opravy **39/39 cílenými integračními testy**, **340/340 cílenými parser testy**, novým buildem a **5/5 browserovými testy** nad posledním buildem (čtyři oracle + machine gun). Předchozí běh browserové sady byl 16/16 PASS. Úspěch celého P42 se nadále netvrdí.
+
+## Historické měření round4
+
+| Kritérium | Výsledek | Limit |
+|---|---:|---:|
+| Celá věta na všech pěti semenech | 39/64 — 60,94 % | ≥80 % |
+| Tichá vynechání | 140 | 0 |
+| Prostředí | 280/320 — 87,5 % | ≥90 % |
+| Hrdina | 280/320 — 87,5 % | ≥90 % |
+| Latence p95 | 3313,83 ms | ≤2000 ms |
+| Publikovatelné hry | 320/320 | — |
+| Golden replay | 20/20 PASS | PASS |
+
+Podrobnosti, výsledné hry, svědci, přiznání a otisky jsou v [round4/final-resumed.json](round4/final-resumed.json), souhrn v [round4/final-resumed.md](round4/final-resumed.md). Návratový kód 1 odpovídá nesplněným limitům.
+
+Sadu vytvořil samostatný agent bez přístupu k předchozím větám, výsledkům a implementaci. Před spuštěním byla uzavřena SHA256 `2694b9c0355a00db18cd7300e8b1e06cef3d8ad5be31c0ce0503f6b39b827bd9`; mechanicky ověřen nulový průnik s dosavadními sadami. Skórování ani limity nebyly mezi iteracemi zmírněny. Po otevření round4 se produkční kód neměnil.
+
+Původní běh přerušila chyba `UNKNOWN` při zápisu po 187 uložených pozorováních. Příčina I/O chyby není prokázaná; report během tohoto běhu nebyl čten. [Původní final.json](round4/final.json) zůstal zachovaný. Recovery ověřilo původní fingerprint kódu, sadu a přesný prefix 187 výsledků včetně časů; dopočítalo pouze zbytek a ukládalo jednotlivé neměnné checkpointy. Případný neuložený pokus o pozorování 188 není znám. Jde o obnovené měření, nikoli nepřerušený jednorázový běh; restart omezuje srovnatelnost latence. Naměřený p95 přesto zůstává FAIL bez korekcí.
+
+## Konkrétní zbývající mezery
+
+- Hrdina ve volných formulacích: `Make a game about a goat…`, `Let an otter swim…`, `Put me behind the wheel of a van…` nebo `…with a horse trying to outrun zebras` vede k výchozím či nesprávným rolím. Chyba následně ovlivní také porovnání akcí.
+- Pohyb a parafráze: explicitní let je realizovaný jako `glide`, zatímco nová sada očekává `flap`; toto není přiznané. Nerozpoznávají se některé formulace volného pohybu, sběru a pronásledování. Výsledky ani štítky nebyly dodatečně přepsány.
+- Vedlejší aktéři a cíle: `apples fall`, `planes race it to the finish` a `then runs to the gate` nemají všechny očekávané trojice realizované nebo přesně přiznané.
+- Prostředí: například station/hangar končí jako meadow, warehouse jako factory a cliff jako mountain; některá rozšířená pojmenování také nesouhlasí s očekávaným prostředím.
+- Nepodporované akce: přiznání existuje, ale předmět je chybný — `knits scarves inside…` přiznává `knit inside`, `repairs clocks` přiznává `repair` bez předmětu. Podle nezměněného protokolu tedy nejde o přesné přiznání očekávané trojice.
+- Latence překročila limit. Není doloženo, jakou část tvoří zatížení prostředí a jakou implementace; bez důkazu se výsledek neomlouvá zatížením.
+
+Další konkrétní práce je sjednotit určování aktéra, pohybu a předmětu napříč rozborem a veřejným přiznáním, zachovat jména prostředí mimo známý slovník a profilovat ověřování složených her. Round4 je po otevření vývojová sada a nesmí se znovu vydávat za nový held-out důkaz.
+
+## Zachovaná historie měření
+
+| Sada | Celé věty | Ticho | Prostředí | Hrdina | p95 ms | Golden |
+|---|---:|---:|---:|---:|---:|---|
+| [První](final.md) | 55/64 | 20 | 93,33 % | 100 % | 896,97 | PASS |
+| [Round2](round2/final-resumed.md) | 51/64 | 20 | 80 % | 97,83 % | 1562,38 | PASS |
+| [Round3](round3/final.md) | 55/64 | 20 | 91,67 % | 95,56 % | 1818,70 | PASS |
+| [Round4](round4/final-resumed.md) | 39/64 | 140 | 87,5 % | 87,5 % | 3313,83 | PASS |
+| [Round5](round5/final.md) | 50/64 | 55 | 98,44 % | 92,19 % | 1243,93 | PASS |
+| [Round6](round6/final.md) | 51/64 | 20 | 100 % | 100 % | 456,00 | PASS |
+
+Po každém otevření výsledků přešla daná sada mezi vývojová data; další sada byla vytvořena a uzavřena před spuštěním. Původní výsledky se nepřepisovaly. Round2 také vyžadovalo provozní pokračování po chybě zápisu se zachováním 47 původních pozorování. Výsledky různých sad nejsou měřením časového trendu na stejné distribuci.
+
+## Implementace a ověření
+
+Rychlá větev skládá pohyb a samostatné díly catch/rival/hazard/chaser/fight/duel/deliver/interact, včetně následné fáze útěku. Přibyli skuteční závodní soupeři, míčový tým s fyzickou střelbou, jmenované hrozby a botové/svědecké ověření dílů. Nehratelné kombinace se redukují s přiznáním rozpoznaných chybějících akcí. Další iterace opravily koordinované akce, argumenty střelby a soubojů, část prostředí, partitivní předměty a plurály vozidel. Výše uvedené mezery rozboru však zůstávají.
+
+- Aktuální intent/draft: **408/408 PASS**.
+- Aktuální integrační kontroly: **30/30 PASS**, včetně 16 scénářů veřejných přiznání na pěti semenech, osmi prostředí, dvou kombinací akcí a čtyř oracle scénářů. Artefakt: `round4-integration.json`.
+- Kompletní compose sada před posledními opravami lexikonu: **842/842 PASS**; po těchto opravách proběhly výše uvedené cílené integrační testy.
+- Runtime matice dílů: **110/110 PASS** po opravách walker rival a glide delivery/interact. Historický `regression-final.json` zachovává původní výsledek 1300/1303 před těmito opravami.
+- UI input/render: 31 cílených testů PASS. Samurajův skutečný souboj a následný útěk trvá na pěti semenech 30–90 sekund.
+- Poslední produkční webpack build včetně typové kontroly: **PASS**.
+- Browserové `e2e/play-p42.spec.ts` nad posledním `next start`: **12/12 PASS** (3,2 minuty). Čtyři oracle scénáře ověřují formulář, render, botové dohrání a přesný browserový replay; osm dalších veřejná přiznání.
+- Závěrečný golden replay: **20/20 PASS**. `git diff --check`: PASS.
+
+## Lidská přejímka
+
+Uživatel 7. 10. 2026 potvrdil „je to ok“ po předání těchto scénářů pro zahrání na `http://localhost:3000/play`:
+
+1. `a monster truck racing other trucks and firing missiles`
+2. `a seal swimming under the ice, catching fish and avoiding orcas`
+3. `a goat jumping up a mountain while rocks fall`
+4. `a samurai duels a bear and then escapes the burning village`
+
+Produkční server s posledním buildem zůstává na portu 3000. Potvrzení lidské přejímky nemění nesplněné automatické limity. Žádná placená API, nové modely, commit ani publikace nebyly provedeny. Nesouvisející soubor `[k` zůstal zachován.

@@ -1,0 +1,153 @@
+{
+  "rowIndex": 203,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-041",
+    "sentence": "A rabbit bakes muffins in the kitchen.",
+    "seed": 3,
+    "milliseconds": 310.35579999999027,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_station",
+        "tuning": {
+          "count": 2,
+          "states": 3,
+          "verb": "cook",
+          "rounds": 10
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "station",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Rabbit Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "kitchen",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Cook all 2 muffin in each of 10 rounds within 81 seconds.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 81,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "rabbit",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "muffin",
+          "count": 2
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Cook all 2 muffin, 10 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use when it is ready. Stall and it boils over."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "stir"
+    },
+    "specHash": "173d6a37",
+    "worldHash": "9bbf266196559b693d93571f3bf672ed514a5de7ae00ed9ac7b0598c7a34c42b",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "rabbit",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "muffin",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 29,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "rabbit",
+          "verb": "bake",
+          "object": "muffin"
+        }
+      ],
+      "closest": "a quest",
+      "reason": "Bake isn't here yet – here's a quest."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "rabbit",
+          "verb": "bake",
+          "object": "muffin"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2400,
+      "hash": "0d1cbad8",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

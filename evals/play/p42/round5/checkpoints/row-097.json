@@ -1,0 +1,238 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-20",
+    "sentence": "A wizard walks through a library and collects scrolls before dueling a goblin.",
+    "seed": 2,
+    "milliseconds": 665.4715999999898,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "duel",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "collect": true,
+        "generator": "walker_labyrinth"
+      },
+      "addons": [],
+      "title": "wizard reach",
+      "archetype": "collect_exit",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "library",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "collect",
+        "description": "Collect the scroll and reach the exit.",
+        "count": 1,
+        "role": "coin"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "wizard",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "exit",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "scroll",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "patrol",
+          "label": "goblin",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Defeat the goblin.",
+        "controlsHint": "Arrows move. J or Attack strikes nearby opponents."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "8c9c0582",
+    "worldHash": "97858b86042a7d6ab46a6ead65b3f3dfd686433b9b4028b6e162b1ef21a5219b",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "fight",
+        "object": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "goblin",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 60,
+        "evidence": "hit-points",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "goblin",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 100,
+        "evidence": "target-knocked-out",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "duel",
+        "object": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "goblin",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 101,
+        "evidence": "opponent-knocked-out",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 589,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 73,
+          "roleId": "coin",
+          "label": "scroll",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 589,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 624,
+      "hash": "47fd5d6f",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

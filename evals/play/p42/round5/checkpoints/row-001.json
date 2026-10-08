@@ -1,0 +1,260 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-01",
+    "sentence": "A heron flies over a marsh, catching dragonflies and collecting feathers.",
+    "seed": 1,
+    "milliseconds": 650.2299000000021,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "catch",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "glide",
+      "controlParams": {
+        "clearancePermille": 275,
+        "clearanceRisePermille": 10,
+        "mode": "reach",
+        "difficulty": "normal",
+        "lengthM": 160,
+        "topSpeed": 180,
+        "generator": "glide_course"
+      },
+      "addons": [],
+      "title": "heron reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "marsh",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Pass every ring and reach the finish.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "heron",
+          "count": 1
+        },
+        {
+          "id": "glide_ring",
+          "kind": "collectible",
+          "label": "feather",
+          "count": 7
+        },
+        {
+          "id": "glide_reef",
+          "kind": "hazard",
+          "label": "asteroid",
+          "count": 1
+        },
+        {
+          "id": "glide_current",
+          "kind": "zone",
+          "label": "current",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "patrol",
+          "label": "dragonfly",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Catch the dragonfly.",
+        "controlsHint": "Drag in two directions, or use arrows to swim. Shift or a second finger brakes."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "3701a351",
+    "worldHash": "93e6e7cd9892207ab74d284d3347cb8748e0aa2b506add15664ddb45387ebe8b",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "heron",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "glide",
+        "object": null,
+        "tick": 11,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "heron",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 129,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "heron",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 1,
+          "roleId": "glide_ring",
+          "label": "feather",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 129,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "heron",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "catch",
+        "object": {
+          "body": 44,
+          "roleId": "part_0",
+          "label": "dragonfly",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 194,
+        "evidence": "moving-prey-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "heron",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "asteroid",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 907,
+        "evidence": "survived-threat:probe:glide_reef",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "asteroid",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "heron",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 128,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:glide_reef"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "glide_reef",
+          "label": "asteroid",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "heron",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 128,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:glide_reef"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 907,
+      "hash": "0b0a61c4",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

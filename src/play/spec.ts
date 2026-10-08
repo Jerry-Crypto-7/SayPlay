@@ -25,6 +25,7 @@
 
 import { z } from 'zod';
 import { phasesSchema, dependsOnSchema } from './compose/progression';
+import { assemblyPartsSchema } from './compose/parts';
 
 import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
@@ -424,6 +425,7 @@ export const walkerSpecParamsSchema = z.object({
   collect: z.boolean().optional(),
 }).strict();
 export const ballSpecParamsSchema = z.object({
+  team: z.boolean().optional(),
   goal: z.enum(['goal', 'hoop', 'hole']).optional(),
   knockdown: z.boolean().optional(),
   shotRecoveryTicks: z.int().min(120).max(240).optional(),
@@ -483,6 +485,7 @@ export const gameSpecSchema = z
   .object({
     schema: z.literal(GAME_SPEC_SCHEMA),
     phases: phasesSchema.optional(),
+    assemblyParts: assemblyPartsSchema.optional(),
     dependsOn: dependsOnSchema.optional(),
     control: z.enum(CONTROLS).optional(),
     controlParams: z
@@ -673,6 +676,13 @@ export function readGameSpec(input: unknown): GameSpecResult {
 
   if (roleIds.size !== spec.roles.length) issues.push('/roles: duplicate role id');
   if (spec.roles.filter((role) => role.kind === 'player').length !== 1) issues.push('/roles: exactly one role of kind player');
+  const partRoles = new Set<string>();
+  for (const [index, part] of (spec.assemblyParts ?? []).entries()) {
+    if (!roleIds.has(part.role) || spec.roles.find(role => role.id === part.role)?.kind === 'player') issues.push(`/assemblyParts/${index}/role: expected a named non-player role`);
+    if (partRoles.has(part.role)) issues.push(`/assemblyParts/${index}/role: each part owns a distinct role`);
+    partRoles.add(part.role);
+  }
+  if (spec.assemblyParts?.length && (!spec.control || spec.control === 'tap_go')) issues.push('/assemblyParts: an arcade movement is required');
   const mechanicIds = new Set<string>();
   spec.mechanics.forEach((mechanic, index) => {
     if (mechanicIds.has(mechanic.id)) issues.push(`/mechanics/${index}: mechanic ${mechanic.id} declared twice`);

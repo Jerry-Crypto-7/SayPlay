@@ -1,0 +1,170 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-056",
+    "sentence": "A giraffe plays basketball on the court.",
+    "seed": 3,
+    "milliseconds": 106.9997999999905,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "ball",
+      "controlParams": {
+        "goal": "hoop",
+        "keeper": false,
+        "difficulty": "normal",
+        "targets": 1,
+        "generator": "ball_pitch"
+      },
+      "addons": [],
+      "title": "giraffe score",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "court",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Score in every hoop.",
+        "count": 1,
+        "role": "hoop"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "giraffe",
+          "count": 1
+        },
+        {
+          "id": "physics_ball",
+          "kind": "item",
+          "label": "basketball",
+          "count": 1
+        },
+        {
+          "id": "hoop",
+          "kind": "target",
+          "label": "hoop",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Score in every hoop.",
+        "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "6a9ccbe6",
+    "worldHash": "d9747d08d7e39041c2d67ca494a6023a0885caf8172337076eecd753b75e8ba0",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "giraffe",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "throw",
+        "object": {
+          "body": 3,
+          "roleId": "physics_ball",
+          "label": "basketball",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 33,
+        "evidence": "thrown-body-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "giraffe",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 95,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "giraffe",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "ball",
+        "object": null,
+        "tick": 95,
+        "evidence": "physical-ball-scored",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "giraffe",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": {
+          "body": 2,
+          "roleId": "hoop",
+          "label": "hoop",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 95,
+        "evidence": "physical-ball-in-goal",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 96,
+      "hash": "b81da5b1",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

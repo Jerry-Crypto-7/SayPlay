@@ -1,0 +1,221 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-031",
+    "sentence": "A tank drives across the battlefield collecting fuel cans, without shooting anything.",
+    "seed": 3,
+    "milliseconds": 246.87979999999516,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "steer",
+      "controlParams": {
+        "difficulty": "normal",
+        "lengthM": 700,
+        "rivals": false,
+        "roadWidth": 3600,
+        "roadEntryWidth": 10000,
+        "crashBudget": 3,
+        "centerCollectibles": true,
+        "turbo": true,
+        "drift": false
+      },
+      "addons": [],
+      "title": "tank drive",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "battlefield",
+        "mood": "fast"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Reach the finish line.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "tank",
+          "count": 1
+        },
+        {
+          "id": "barrier",
+          "kind": "hazard",
+          "label": "bee",
+          "count": 1
+        },
+        {
+          "id": "turbo",
+          "kind": "collectible",
+          "label": "fuel can",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Reach the finish line.",
+        "controlsHint": "Drag/arrows steer. Down or second finger brakes. Avoid barriers."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "e5d70997",
+    "worldHash": "a0a5099436dae737e1af6b757e52a5f393d6585184bdb1d6636f41f6d33a087e",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "tank",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "drive",
+        "object": null,
+        "tick": 21,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "tank",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 514,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "tank",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 109,
+          "roleId": "turbo",
+          "label": "fuel can",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 514,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "tank",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 114,
+          "roleId": "finish",
+          "label": "finish line",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2130,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "tank",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "barrier",
+          "label": "bee",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2131,
+        "evidence": "survived-threat:probe:barrier",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 10,
+          "roleId": "barrier",
+          "label": "bee",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "tank",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 267,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:barrier"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 2,
+      "proved": 2,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2131,
+      "hash": "29893708",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "rowIndex": 260,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-052",
+    "sentence": "Make a game about a goat jumping on a snowy mountain.",
+    "seed": 5,
+    "milliseconds": 1156.9795000000158,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "platform",
+      "controlParams": {
+        "checkpoints": true,
+        "tuning": {
+          "feel": 2,
+          "sections": 3
+        }
+      },
+      "genre": {
+        "id": "platformer",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Penguin Jump",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "snowy mountain",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Jump across the platforms to the flag without touching a spike.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "penguin",
+          "count": 1
+        },
+        {
+          "id": "spikes",
+          "kind": "hazard",
+          "label": "spikes",
+          "count": 5
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "snowflake",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "flag",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Reach the flag. Jump over gaps and hazards.",
+        "controlsHint": "Arrows or A/D to move, Space or tap to jump."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "668e5dc7",
+    "worldHash": "69db2cc0fe5602f58809502ad9685bb07782688ff74606be9fd6c41d4ef2181c",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 56,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 112,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 37,
+          "roleId": "coin",
+          "label": "snowflake",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 112,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 80,
+          "roleId": "finish",
+          "label": "flag",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2859,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2860,
+        "evidence": "survived-threat:probe:spikes",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 542,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      },
+      {
+        "actor": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 542,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": false,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "goat",
+          "verb": "jump",
+          "object": null
+        }
+      ],
+      "silent": [
+        {
+          "actor": "goat",
+          "verb": "jump",
+          "object": null
+        }
+      ]
+    },
+    "hero": false,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2860,
+      "hash": "90667ea1",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

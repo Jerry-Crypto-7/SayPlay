@@ -1,0 +1,324 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-008",
+    "sentence": "A courier rides a scooter through the town, delivering letters and racing taxis.",
+    "seed": 2,
+    "milliseconds": 742.158199999998,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "deliver",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "steer",
+      "controlParams": {
+        "difficulty": "normal",
+        "lengthM": 700,
+        "rivals": true,
+        "roadWidth": 3600,
+        "roadEntryWidth": 10000,
+        "crashBudget": 3,
+        "turbo": true,
+        "drift": false
+      },
+      "addons": [],
+      "title": "courier race",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "town",
+        "mood": "fast"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Beat the rival vehicles to the finish.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "courier",
+          "count": 1
+        },
+        {
+          "id": "barrier",
+          "kind": "hazard",
+          "label": "car",
+          "count": 1
+        },
+        {
+          "id": "turbo",
+          "kind": "collectible",
+          "label": "turbo",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "rival",
+          "kind": "patrol",
+          "label": "taxi",
+          "count": 3
+        },
+        {
+          "id": "part_0",
+          "kind": "item",
+          "label": "letter",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Deliver the letter.",
+        "controlsHint": "Drag/arrows steer. Down or second finger brakes. Avoid barriers."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "8653a53c",
+    "worldHash": "ce649cfe808751efd172437fe83be107624580ad5bacf67ed080d3759c11a0fd",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "drive",
+        "object": null,
+        "tick": 21,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "race",
+        "object": {
+          "body": 1,
+          "roleId": "rival",
+          "label": "taxi",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 158,
+        "evidence": "overtake",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 118,
+          "roleId": "part_0",
+          "label": "letter",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 317,
+        "evidence": "grabbed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 527,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 112,
+          "roleId": "turbo",
+          "label": "turbo",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 527,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "deliver",
+        "object": {
+          "body": 118,
+          "roleId": "part_0",
+          "label": "letter",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 2147,
+        "evidence": "carried-to-destination",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "rival",
+          "label": "taxi",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 2150,
+        "evidence": "survived-threat:probe:rival",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 4,
+          "roleId": "barrier",
+          "label": "car",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2150,
+        "evidence": "survived-threat:probe:barrier",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 3,
+          "roleId": "rival",
+          "label": "taxi",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 3634,
+        "evidence": "rival-finished-first",
+        "run": "probe",
+        "runId": "probe:rival"
+      },
+      {
+        "actor": {
+          "body": 13,
+          "roleId": "barrier",
+          "label": "car",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "courier",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 304,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:barrier"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 4,
+      "proved": 4,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2150,
+      "hash": "f2ee39bf",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

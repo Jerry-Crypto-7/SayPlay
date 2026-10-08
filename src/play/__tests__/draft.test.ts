@@ -65,11 +65,11 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
       const meta = draftGameSpecWithMeta(sentence, 1);
       expect(meta.fellBack, sentence).toBe(false);
       expect(meta.genre, sentence).not.toBeNull();
-      if (meta.composition?.cellId.startsWith('drive.')) {
+      if (meta.composition?.recipe.move === 'drive') {
         expect(meta.spec.control, sentence).toBe('steer');
         expect(meta.spec.controlParams, sentence).not.toHaveProperty('generator');
         expect(meta.spec.genre, sentence).toBeUndefined();
-      } else if (meta.composition?.cellId === 'roam.catch') {
+      } else if (meta.composition?.recipe.move === 'roam' && meta.composition.recipe.objective === 'catch' && !meta.composition.recipe.parts?.length) {
         expect(meta.spec.genre, sentence).toBeUndefined();
         expect(meta.spec.control, sentence).toBe('move_free');
         expect(meta.spec.controlParams, sentence).toMatchObject({ generator: 'arena_catch' });

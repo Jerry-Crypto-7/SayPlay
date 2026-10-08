@@ -61,11 +61,14 @@ describe('roles of a new game', () => {
       expect(meta.intent?.items).toContainEqual(expect.objectContaining({ axis: 'move', verb: movement, essential: true }));
       expect(meta.composition?.recipe.move).toBe(movement);
     }
-    const expected = entry.id === 'firefighter' ? 'platformer.default' : entry.id === 'wizard' ? 'voyage.race' : entry.genre;
+    // P42 chooses movement once: an escape the sentence gives no movement for runs the course
+    // with its pursuer and pickups – the walker was only main's cell-list tie-break.
+    if (entry.id === 'cat') expect(meta.composition?.recipe).toMatchObject({ move: 'run', objective: 'escape', actions: ['collect'], threats: ['chaser'] });
+    const expected = entry.id === 'firefighter' ? 'platformer.default' : entry.id === 'wizard' ? 'voyage.race' : entry.id === 'cat' ? 'runner.default' : entry.genre;
     const [id, mode] = expected.split('.');
-    const nativeMove = entry.id === 'cat' || entry.id === 'dog' ? 'walk' : null;
+    const nativeMove = entry.id === 'dog' ? 'walk' : null;
     if (entry.id === 'rocket') {
-      expect(meta.composition?.cellId).toBe('voyage.land');
+      expect(meta.composition?.recipe.objective).toBe('land');
       expect(meta.composition?.recipe.move).toBe('glide');
       expect(meta.spec.control).toBe('steer');
       expect(meta.composition?.witnesses).toContainEqual(expect.objectContaining({ verb: 'land', object: expect.objectContaining({ label: 'mars' }) }));

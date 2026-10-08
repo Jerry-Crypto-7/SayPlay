@@ -33,7 +33,10 @@ export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
   if (chase) roles.push({ id: 'chaser', kind: 'chaser', label: label('chase_me', 'police car'), count: 1 });
   if (delivery) roles.push({ id: 'cargo', kind: 'item', label: cargo, count: 1 });
   const goal = delivery ? `Pick up the ${cargo} and carry it to the delivery point.` : race ? 'Beat the rival vehicles to the finish.' : chase ? 'Reach the finish without being caught.' : `Reach the ${destination}.`;
-  const params = content.params ?? {};
+  // Lives the sentence asks for are the track's crash budget – the steer world's health
+  // (`arcade/compile.ts`) – and the spec says so, as the walker and the voyage course do.
+  const { lives, ...rest } = content.params ?? {};
+  const params = lives === undefined ? rest : { ...rest, crashBudget: lives };
   const game = withAuthoredContent({
     schema: 'gamespec.v1',
     control: 'steer',
@@ -58,7 +61,7 @@ export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
     // The low-level goal is finish contact. Rivals can win first; the pursuer
     // can catch the player. Neither recipe is certified by this label alone.
     objective: { kind: 'reach', description: goal, role: 'finish' },
-    mechanics: [],
+    mechanics: lives === undefined ? [] : [{ id: 'health', params: { max: lives } }],
     roles,
     addons: [...(shoot ? ['shoot' as const] : []), ...(chase ? ['chaser' as const] : [])],
     tutorial: { goalLine: goal, controlsHint: params.crashBudget === undefined ? (shoot ? 'Drag or arrows steer. Second finger or Space shoots. Down/S brakes.' : 'Drag or arrows to steer. Down or a second finger brakes.') : (shoot ? 'Drag/arrows steer. Second finger/Space fires. Down/S brakes. Avoid barriers.' : 'Drag/arrows steer. Down or second finger brakes. Avoid barriers.') },

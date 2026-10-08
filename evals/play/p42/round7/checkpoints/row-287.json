@@ -1,0 +1,219 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-058",
+    "sentence": "A lamplighter lights every lantern in the foggy alley.",
+    "seed": 2,
+    "milliseconds": 169.75220000001718,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_spatial",
+        "tuning": {
+          "count": 5,
+          "states": 2,
+          "verb": "light",
+          "rounds": 3,
+          "chasers": 1
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "spatial",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Lamplighter Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "foggy alley",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Light all 5 lantern in each of 3 rounds before the shadow catches you.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 88,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "lamplighter",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "lantern",
+          "count": 5
+        },
+        {
+          "id": "hunter",
+          "kind": "chaser",
+          "label": "shadow",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Light all 5 lantern, 3 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use next to a target."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "5ea82bbc",
+    "worldHash": "37be560a94acbd7b36c5eafc3a41eef82fc321459eab208719187f8f5afd3d5a",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "lamplighter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 8,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "lamplighter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 5,
+          "roleId": "target",
+          "label": "lantern",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 64,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "lamplighter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "escape",
+        "object": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "shadow",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 2862,
+        "evidence": "survived-threat:probe:hunter",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "lamplighter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "shadow",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 2862,
+        "evidence": "survived-threat:probe:hunter",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "shadow",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "verb": "chaser",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "lamplighter",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 171,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:hunter"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2862,
+      "hash": "baac5320",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

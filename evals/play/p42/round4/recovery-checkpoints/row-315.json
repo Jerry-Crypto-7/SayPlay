@@ -1,0 +1,153 @@
+{
+  "rowIndex": 315,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-063",
+    "sentence": "A panda plays soccer in a park.",
+    "seed": 5,
+    "milliseconds": 273.17090000002645,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "ball",
+      "controlParams": {
+        "goal": "goal",
+        "shotRecoveryTicks": 168,
+        "shotRecoveryRiseTicks": 4,
+        "paceSeconds": 15,
+        "keeper": false,
+        "difficulty": "normal",
+        "targets": 5,
+        "generator": "ball_pitch"
+      },
+      "addons": [],
+      "title": "panda score",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "park",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Score in every goal.",
+        "count": 5,
+        "role": "goal"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "panda",
+          "count": 1
+        },
+        {
+          "id": "physics_ball",
+          "kind": "item",
+          "label": "football",
+          "count": 1
+        },
+        {
+          "id": "goal",
+          "kind": "target",
+          "label": "goal",
+          "count": 5
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Score in every goal.",
+        "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "35f633dd",
+    "worldHash": "49c44f04319e85bd79e8bb90e4da956a0b96bd907f71da552893f9e1e422a5c3",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "panda",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 53,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "panda",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "ball",
+        "object": null,
+        "tick": 53,
+        "evidence": "physical-ball-scored",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "panda",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": {
+          "body": 3,
+          "roleId": "goal",
+          "label": "goal",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 53,
+        "evidence": "physical-ball-in-goal",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 874,
+      "hash": "1d00eb54",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

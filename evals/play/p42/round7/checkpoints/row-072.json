@@ -1,0 +1,194 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-015",
+    "sentence": "A cowboy walks into the dusty town and duels the outlaw at high noon.",
+    "seed": 2,
+    "milliseconds": 364.12100000000646,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "duel",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "generator": "walker_labyrinth"
+      },
+      "addons": [],
+      "title": "cowboy reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "dusty town",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Find a path through the maze to the exit.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "cowboy",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "exit",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "patrol",
+          "label": "outlaw",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Defeat the outlaw.",
+        "controlsHint": "Arrows move. J or Attack strikes nearby opponents."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "95cbd337",
+    "worldHash": "9b84b1cf78dcc305d343287c588be4bd008eb315edc162d35396c478d5113560",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cowboy",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cowboy",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "fight",
+        "object": {
+          "body": 73,
+          "roleId": "part_0",
+          "label": "outlaw",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 60,
+        "evidence": "hit-points",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cowboy",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 73,
+          "roleId": "part_0",
+          "label": "outlaw",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 100,
+        "evidence": "target-knocked-out",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cowboy",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "duel",
+        "object": {
+          "body": 73,
+          "roleId": "part_0",
+          "label": "outlaw",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 101,
+        "evidence": "opponent-knocked-out",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 2,
+      "proved": 2,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 624,
+      "hash": "f834973e",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

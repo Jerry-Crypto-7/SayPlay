@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "dataset": "evals/play/p42/round7/sentences.json",
+  "sha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "bytes": 25587,
+  "lineEndings": "LF",
+  "sealedAtUtc": "2026-10-07T20:12:27.216Z",
+  "count": 64,
+  "groups": [
+    "held-out"
+  ],
+  "kindCounts": {
+    "multi-action": 22,
+    "paraphrase": 8,
+    "negation": 10,
+    "unsupported": 8,
+    "single": 16
+  },
+  "paraphraseFamilies": [
+    {
+      "ids": [
+        "r7-ho-023",
+        "r7-ho-024",
+        "r7-ho-025",
+        "r7-ho-026"
+      ],
+      "variants": 4
+    },
+    {
+      "ids": [
+        "r7-ho-027",
+        "r7-ho-028",
+        "r7-ho-029",
+        "r7-ho-030"
+      ],
+      "variants": 4
+    }
+  ],
+  "internalNormalizedDuplicateCount": 0,
+  "normalizedOverlapCount": 0,
+  "normalization": "Unicode NFKC, lowercase, every run of non-letter/non-digit characters to one space, trim; compared as sha256 against all string leaves of every source without displaying their contents.",
+  "overlapSources": [
+    {
+      "path": "evals/play/p30/dev.json",
+      "sha256": "d56844ac0828cdc64fe03799251152a1bb891803f055800361f2be06d5575499",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p30/test-200.json",
+      "sha256": "7222b9b9d9020af2294f84ca0187f3f33c6ad79806f11b0381e4064e72c629a8",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p41/sentences.json",
+      "sha256": "41a7aaf402aecfacf9ed9d81b4b1b40a9b282b88ceb681d79cddb0b10359537c",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/sentences.json",
+      "sha256": "248e96600222a792f41f2f84118558f41fd9ff3ed2bd8a5124c8881aca65c13a",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/development.json",
+      "sha256": "c101e4ef22b63f5b9048d3dc89222794881752f51e900ee5dff511151c274368",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/round2/sentences.json",
+      "sha256": "83498413a57911aa4df658c060776cf1a92a38b11c290520a9bfca995a69cf8a",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/round3/sentences.json",
+      "sha256": "b07e5d08d0259dd149a6f7b8cceae3990151a90c92d94e36a93799203851aecb",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/round4/sentences.json",
+      "sha256": "2694b9c0355a00db18cd7300e8b1e06cef3d8ad5be31c0ce0503f6b39b827bd9",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/round5/sentences.json",
+      "sha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/round6/sentences.json",
+      "sha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+      "normalizedOverlapCount": 0
+    }
+  ],
+  "authoring": "Written by an independent subagent that had no access to src/, evals/ or earlier round results; it received only the row schema, the intent vocabulary and the kind ratios of round6. Sealed before any P44A fix landed."
+}

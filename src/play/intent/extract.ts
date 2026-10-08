@@ -74,7 +74,7 @@ const NUMBER = `(?:\\d+|${Object.keys(NUMBER_WORDS).join('|')})`;
 const THREAT_NOUNS: readonly (readonly [ThreatId, RegExp])[] = [
   [
     'hazard',
-    /\b(?:arrows?|icicles?|mines?|sparks?|storms?|wind|tide|lava|magma|acid|spikes?|pits?|traps?|lasers?(?! (?:guns?|swords?|pointers?)\b)|laser beams?|poison(?:ous)?|quicksand|thorns?|(?:buzz ?)?saws?|flames?|fireballs?|fires?(?! (?:at|trucks?|fighters?|engines?|stations?|works|ants?)\b)|bombs?|explosions?|landmines?|thin ice|electric (?:floors?|fences?)|toxic (?:waste|sludge))\b/,
+    /\b(?:arrows?|icicles?|mines?|sparks?|(?:(?:hail|snow|thunder|sand|rain|dust) ?)?storms?|blizzards?|tornadoes?|hurricanes?|wind|tide|lava|magma|acid|spikes?|pits?|traps?|lasers?(?! (?:guns?|swords?|pointers?)\b)|laser beams?|poison(?:ous)?|quicksand|thorns?|(?:buzz ?)?saws?|flames?|fireballs?|fires?(?! (?:at|trucks?|fighters?|engines?|stations?|works|ants?)\b)|bombs?|explosions?|landmines?|thin ice|electric (?:floors?|fences?)|toxic (?:waste|sludge))\b/,
   ],
   // „guards the castle“ je sloveso (hlídá), „the guards“ stráže.
   ['guard', /\b(?:guards?(?! (?:its|the|his|her|their|our|my|a|an)\b)|sentr(?:y|ies)|patrols?|watch(?:man|men)|security (?:guards?|cameras?)|searchlights?)\b/],
@@ -87,6 +87,8 @@ const INTERACT = new RegExp(
     String.raw`\blight(?:s|ing)?(?: up)?(?= (?:the |a |an |all |every |each |some |\d+ )?(?:[a-z]+ )?(?:lanterns?|candles?|torches?|lamps?|beacons?|fireworks?|bonfires?|campfires?|fires?)\b)`,
     String.raw`\bignit(?:e|es|ing)\b|\bkindl(?:e|es|ing)\b|\bextinguish(?:es|ing)?\b|\bput(?:s|ting)? out\b|\bdous(?:e|es|ing)\b`,
     String.raw`\brescu(?:e|es|ing)\b|\bsav(?:e|es|ing)\b(?! (?:money|time|up|for|points?|the day|game)\b)|\b(?:free|frees|freeing|releas(?:e|es|ing)) (?=(?:the|a|an|all|every|each|some|\d+)\b)`,
+    // „frees caged birds“, „liberates prisoners“: osvobodit bez členu je pořád sloveso; holé „free“ jen za „to“.
+    String.raw`\b(?:frees|freeing|releas(?:es|ing)|liberat(?:e|es|ing)|uncag(?:e|es|ing)|unchain(?:s|ing)?)\b(?= [a-z])|(?<=\bto )(?:free|release)\b(?= [a-z])`,
     String.raw`\b(?:press(?:es|ing)?|push(?:es|ing)?|toggl(?:e|es|ing)|flip(?:s|ping)?|pull(?:s|ing)?|hit(?:s|ting)?)(?= (?:[a-z]+ ){0,3}?(?:switch(?:es)?|levers?|buttons?)\b)`,
     String.raw`\bactivat(?:e|es|ing)\b|\bturn(?:s|ing)? on\b|\bunlock(?:s|ing)?\b|\bopen(?:s|ing)?(?= (?:the |a |an |all |every |some )?(?:[a-z]+ )?(?:doors?|chests?|gates?|presents?|locks?|boxes|safes?)\b)`,
     String.raw`\bwak(?:e|es|ing) up\b|\bpop(?:s|ping)?\b(?! (?:music|songs?|stars?)\b)|\bsmash(?:es|ing)?\b|\bwreck(?:s)?\b|\bwrecking\b(?! balls?\b)|\bbreak(?:s|ing)? (?=(?:the|a|an|all|every|some|\d+)\b)`,
@@ -96,6 +98,10 @@ const INTERACT = new RegExp(
 /** „run a restaurant“ je vedení podniku, ne běh. */
 const RUN_A_PLACE = '(?! (?:a|an|the|my|your|his|her|their) (?:[a-z]+ )?(?:restaurant|shop|store|business|caf[eé]|bakery|farm|hotel|zoo|company|kitchen|supermarket|empire|factory|bar|club)\\b)';
 
+// Bare fire is ambiguous. The hit is accepted only in command/coordination
+// position below, so "avoid lava and fire" still names a hazard.
+const BARE_FIRE = row(/\bfir(?:e|es|ing)\b(?=$|[,.!?;]|\s+(?:and|but|while|then)\b)/, [act('shoot')]);
+
 /**
  * Slovo věty → kusy os. Pořadí řádků rozhoduje jen u položek na stejném místě věty.
  * Slovesa a vzory sdílí s `VERBS` v `genre/classify.ts`; tady se ale nevybírá – každý zásah platí.
@@ -104,19 +110,19 @@ const ROWS: readonly Row[] = [
   // Recognized language need not be a supported mechanic. Preserve these requests
   // on the unknown axis so composition can explicitly report their absence.
   ...([
-    ['knit', /\bknit(?:s|ting)?\b/], ['cook', /\bcook(?:s|ing)?\b/],
+    ['bake', /\bbak(?:e|es|ing)\b/], ['knit', /\bknit(?:s|ting)?\b/], ['cook', /\bcook(?:s|ing)?\b/],
     ['write', /\bwrit(?:e|es|ing)\b/], ['read', /\bread(?:s|ing)?\b/],
     ['fold', /\bfold(?:s|ing)?\b/], ['paint', /\bpaint(?:s|ing)?\b/],
     ['repair', /\brepair(?:s|ing)?\b/],
     ['defend', /\bdefend(?:s|ing)?\b/], ['protect', /\bprotect(?:s|ing)?\b/],
     ['dig', /\bdig(?:s|ging)?\b/], ['mop', /\bmop(?:s|ping)?\b/], ['sweep', /\bsweep(?:s|ing)?\b/],
-    ['sing', /\bsing(?:s|ing)?\b/],
+    ['sing', /\bsing(?:s|ing)?\b/], ['solve', /\bsolv(?:e|es|ing)\b/],
     ['play', /\bplay(?:s|ing)? (?=(?:the |a |an )?(?:chess|piano|guitar|violin|drums?)\b)/],
     ['film', /\bshoot(?:s|ing)? (?=(?:the |a |an )?(?:movies?|films?)\b)/],
     ['finish', /\bfinish(?:es|ing)? (?=(?:the |my |your |a )?(?:homework|assignment|essay|chores?)\b)/],
     ['meditate', /\bmeditat(?:e|es|ing)\b/],
     ['grow', /\bgrow(?:s|ing)? (?=(?:the |a |an )?(?:tomatoes|vegetables|flowers|plants|crops)\b)/],
-  ] as const).map(([id, pattern]) => row(pattern, [{ axis: 'unknown', id, who: 'doer', fallback: false }])),
+  ] as const).map(([id, pattern]) => row(pattern, [{ axis: 'unknown', id, who: 'doer', fallback: false }], id === 'sing' ? { lead: 'to' } : {})),
   row(/\bburn(?:s|ing)? (?=(?:the |a |an )?[a-z]+(?: with fire)\b)|\bbreath(?:e|es|ing) fire at\b/, [act('shoot')], { keepPlace: true }),
   row(/\bdelivery\b/, [act('deliver')], { before: 'target' }),
   row(/\barguments?\b/, [act('duel')]),
@@ -128,10 +134,11 @@ const ROWS: readonly Row[] = [
   ),
   // „a fly“, „eats flies“ ani „floating islands“ let nejsou.
   row(
-    /(?<!\b(?:a|an|the|eat|eats|eating|catch|catches|catching|fruit|dragon|fire|house) )\bfl(?:y|ies)\b(?! away\b)|\bflying\b|\bflew\b|\bglid(?:e|es|ing)\b|\bsoar(?:s|ing)?\b|\bswim(?:s|ming)?\b|\bswam\b|\bdiv(?:e|es|ing)\b|\bhover(?:s|ing)?\b|\bfloat(?:s|ing)? (?=(?:in|through|around|across|over|up|away|down)\b)|\bpiloting\b|\bpilots? (?=(?:a|an|the)\b)/,
+    /(?<!\b(?:a|an|the|eat|eats|eating|catch|catches|catching|fruit|dragon|fire|house) )\bfl(?:y|ies)\b(?! away\b)|(?<=\bdragon )flies\b|\bflying\b|\bflew\b|\bglid(?:e|es|ing)\b|\bsoar(?:s|ing)?\b|\bswim(?:s|ming)?\b|\bswam\b|\bdiv(?:e|es|ing)\b|\bhover(?:s|ing)?\b|\bfloat(?:s|ing)? (?=(?:in|through|around|across|over|up|away|down)\b)|\bpiloting\b|\bpilots? (?=(?:a|an|the)\b)/,
     [move('glide')],
   ),
   row(/\bflap(?:s|ping)?\b|\bflutter(?:s|ing)?\b|\bflapp?y\b/, [move('flap')]),
+  row(/\bflight\b(?! (?:of )?(?:stairs|steps)\b)/, [move('glide')]),
   // „runs from“ zachovává běh i útěk; „runs out“ samo běh nepožaduje.
   row(
     new RegExp(
@@ -154,7 +161,7 @@ const ROWS: readonly Row[] = [
   // Červená–zelená (lexikon `RED_LIGHT`): hýbat se smíš, jen když se hlídač nedívá.
   row(RED_LIGHT, [move('walk'), threat('guard', 'noun')], { noun: 'watcher' }),
   // Agar a had: volně po aréně, roste, kdo jí menší („eat smaller fish and grow“).
-  row(/\beat(?:s|ing)? (?:the )?(?:smaller|tiny|little|weaker)\b|\bgrow(?:s|ing)? (?:bigger|larger|huge)\b|\bagar(?:\.io)?\b|\bslither(?:\.io)?\b|\b[a-z]+\.io\b|\bsnake game\b|\bpac-?man\b|\broam(?:s|ing)?\b|\bopen world\b|\bwaddl(?:e|es|ing)\b/, [move('roam')]),
+  row(/\beat(?:s|ing)? (?:the )?(?:smaller|tiny|little|weaker)\b|\bgrow(?:s|ing)? (?:bigger|larger|huge)\b|\bagar(?:\.io)?\b|\bslither(?:\.io)?\b|\b[a-z]+\.io\b|\bsnake game\b|\bpac-?man\b|\broam(?:s|ing)?\b|\bmov(?:e|es|ing) freely\b|\bopen world\b|\bwaddl(?:e|es|ing)\b/, [move('roam')]),
   // Míč: pohyb s míčem a výhra gólem; kdo hraje proti, je soupeř („football against a walrus“).
   row(
     /\b(?:football|soccer|basketball|golf|mini ?golf|hockey|table tennis|tennis|volleyball|baseball|rugby|handball|ping ?pong|penalt(?:y|ies))\b/,
@@ -165,9 +172,10 @@ const ROWS: readonly Row[] = [
   row(/\broll(?:s|ing)? in (?:a|the) ball\b|\bkick(?:s|ing)? (?:a |the |his |her |their )?(?:[a-z]+ )?balls?\b|\bdribbl(?:e|es|ing)\b/, [move('ball'), goal('score', 'bare')]),
 
   // Akce. „shooting stars“ střelba nejsou, „auto shooting wand“ střílí sám.
+  BARE_FIRE,
   row(/(?<!auto[ -])\bshoot(?:s|ing)?\b(?! (?:stars?|hoops|games?|gallery|range)\b)|\bfir(?:e|es|ing) at\b|\bfir(?:e|es|ing)(?= (?:the |a |an |some |\d+ )?(?:[a-z]+ )?(?:cannons?|cannonballs?|missiles?|rockets?|lasers?|arrows?|bullets?|guns?|torpedo(?:es)?|fireballs?)\b)|\bblast(?:s|ing)?\b|\baim(?:s|ing)? at\b|\bsnip(?:e|es|ing)\b|\barchery\b|\bcast(?:s|ing)?(?= (?:[a-z]+ ){0,2}spells?\b)|\bzap(?:s|ping)?\b/, [act('shoot')]),
   row(/\bshooters?\b|\bshooting (?:games?|gallery|range)\b|\bfps\b/, [act('shoot')], { before: 'target' }),
-  row(/\bguns?\b|\bblasters?\b|\brifles?\b|\bpistols?\b|\bweapons?\b|\bbullets?\b|\bsnipers?\b/, [act('shoot')], { before: 'modifier' }),
+  row(/\bguns?\b|\bcannons?\b|\bblasters?\b|\brifles?\b|\bpistols?\b|\bweapons?\b|\bbullets?\b|\bsnipers?\b/, [act('shoot')], { before: 'modifier' }),
   row(
     /\bthrow(?:s|ing|n)?\b(?! (?:a )?punch)|\bthrew\b|\btoss(?:es|ing)?\b|\bfling(?:s|ing)?\b|\bhurl(?:s|ing)?\b|\blob(?:s|bing)?\b|\blaunch(?:es|ing)? (?=(?:a|an|the|some)\b)|\bbowling\b|\bslingshots?\b|\bcatapults?\b|\bangry birds\b/,
     [act('throw')],
@@ -181,18 +189,21 @@ const ROWS: readonly Row[] = [
   ),
   // Porazit je cíl; rvačka jen domyšlená – „shoot and defeat the aliens“ je střelba.
   row(
-    /\bdefeat(?:s|ing|ed)?\b|\bkill(?:s|ing)?\b|\bslay(?:s|ing)?\b|\bdestroy(?:s|ing)?\b|\beliminat(?:e|es|ing)\b|\bconquer(?:s|ing)?\b|\bvanquish(?:es|ing)?\b|\bknock(?:s|ing)? out\b|\bbeat(?:s|ing)? up\b|\btak(?:e|es|ing) down\b|\bget(?:s|ting)? rid of\b|\bbeat(?:s|ing)? (?=(?:the|a|an|all|every|each) (?!(?:beat|music|rhythm|clock|record|game|level|high score)\b))/,
+    /\bdefeat(?:s|ing|ed)?\b|\bkill(?:s|ing)?\b|\bslay(?:s|ing)?\b|\bdestroy(?:s|ing)?\b|\beliminat(?:e|es|ing)\b|\bconquer(?:s|ing)?\b|\bvanquish(?:es|ing)?\b|\bknock(?:s|ing)? (?:(?:it|him|her|them) )?out\b|\bbeat(?:s|ing)? (?:(?:it|him|her|them) )?up\b|\btak(?:e|es|ing) (?:(?:it|him|her|them) )?down\b|\bget(?:s|ting)? rid of\b|\bbeat(?:s|ing)? (?=(?:the|a|an|all|every|each) (?!(?:beat|music|rhythm|clock|record|game|level|high score)\b))/,
     [goal('defeat'), act('fight', true)],
   ),
   row(/\bkick(?:s|ing)?\b/, [act('kick')]),
   row(
-    /\bmunch(?:es|ing)?\b|\btak(?:e|es|ing) (?=(?:the |a |an )?(?:treasure|coins?|gems?|keys?)\b)|\bcollect(?:s|ing|ed)?\b|\bgather(?:s|ing)?\b|\bfind(?:s|ing)?\b(?! (?:the |a |an |your |their )?(?:exit|way|door|portal|path)\b)|\bpick(?:s|ing)? up\b|\bgrab(?:s|bing)?\b|\bsteal(?:s|ing)?\b|\bstole\b|\beat(?:s|ing)?\b|\bhoard(?:s|ing)?\b|\bloot(?:s|ing)?\b|\bsearch(?:es|ing)?\b|\b(?:hunt(?:s|ing)?|look(?:s|ing)?) for\b|\b(?:treasure|scavenger|egg) hunts?\b|\bpick(?:s|ing)?(?= (?:[a-z]+ ){0,2}(?:herbs?|flowers?|berries|apples?|fruits?|mushrooms?|cherries|grapes)\b)/,
+    /\bmunch(?:es|ing)?\b|\btak(?:e|es|ing) (?=(?:the |a |an )?(?:treasure|coins?|gems?|keys?)\b)|\bcollect(?:s|ing|ed)?\b|\bgather(?:s|ing)?\b|\bfind(?:s|ing)?\b(?! (?:the |a |an |your |their )?(?:exit|way|door|portal|path)\b)|\b(?:pick(?:s|ing)?|scoop(?:s|ing)?) up\b|\bgrab(?:s|bing)?\b|\bsteal(?:s|ing)?\b|\bstole\b|\beat(?:s|ing)?\b|\bhoard(?:s|ing)?\b|\bloot(?:s|ing)?\b|\bsearch(?:es|ing)?\b|\b(?:hunt(?:s|ing)?|look(?:s|ing)?) for\b|\b(?:treasure|scavenger|egg) hunts?\b|\bpick(?:s|ing)?(?= (?:[a-z]+ ){0,2}(?:herbs?|flowers?|berries|apples?|fruits?|mushrooms?|cherries|grapes)\b)/,
     [act('collect')],
   ),
   // „collect all the coins“, „find 5 keys“: sebrat všechno je cíl, ne jen akce.
   row(new RegExp(String.raw`\b(?:(?:collect|gather|find|grab|eat|steal)(?:s|ing)?|pick(?:s|ing)? up) (?=(?:all|every|each|${NUMBER})\b)`), [goal('collect')]),
   // Dojít k věci a něco s ní udělat: rozsvítit, osvobodit, zmáčknout, uhasit, prasknout.
   row(INTERACT, [act('interact'), goal('each')]),
+  // Hlídkovat je hlídat: „wolves patrol“, „wolves who patrol the canyon“, „a lynx patrols the canyon“.
+  // Sloveso patří podmětu; „a guard patrol“ / „border patrol“ zůstává jménem hrozby.
+  row(/(?<=\b(?!(?:his|its|this|is|was|has|does|as|us)\b)[a-z-]+s (?:(?:who|that|which) )?)patrol\b|(?<=\b(?:a|an|the) [a-z-]+ )patrols\b|\bpatroll(?:ing|ed)\b/, [{ axis: 'unknown', id: 'guard', who: 'doer', fallback: false }]),
   row(/\bcarr(?:y|ies|ying)\b|\bdeliver(?:s|ing)?\b|\bbring(?:s|ing)?\b|\bescort(?:s|ing)?\b|\bserv(?:e|es|ing)\b|\bfetch(?:es|ing)?\b/, [act('deliver'), goal('each')]),
   row(/\bstack(?:s|ing)?\b/, [act('stack'), goal('build')]),
   row(/\bbuild(?:s)?\b|\bbuilding (?=(?:a|an|the|games?|towers?|houses?|bridges?|castles?)\b)|\bconstruct(?:s|ing)?\b/, [goal('build'), act('stack', true)]),
@@ -208,7 +219,7 @@ const ROWS: readonly Row[] = [
   // Cíl. „a race car“ je auto, ne závod; „race against X“ jmenuje soupeře.
   row(/\brac(?:e|es|ing|er|ers)\b(?! cars?\b)|^race(?= cars?\b)|(?<=and )race(?= cars?\b)|\bgrand prix\b|\blaps?\b|\bfinish (?:line|first)\b|\bfirst place\b/, [goal('race'), threat('rival', 'versus')]),
   row(
-    /\breach(?:es|ing)? (?=(?:the|a|an|its|his|her|their|your)\b)|\bget(?:s|ting)? (?:back )?to (?=(?:the|a|an|its|his|her|their|your)\b)|\bmak(?:e|es|ing) it (?:to|home|out)\b|\bfind(?:s|ing)? (?=(?:the |a |an |your |their )?(?:exit|door|portal|path)\b)|\bfind(?:s|ing)? (?:the |a |your |their )?way (?:out|home|back)\b|\bget(?:s|ting)? (?:home|out)\b|\bgo(?:es)? home\b|\bto the (?:top|end|exit|finish|goal)\b/,
+    /\breach(?:es|ing)? (?=(?:the|a|an|its|his|her|their|your)\b)|(?<=\bto )reach\b(?=\s*(?:[,.;!?]|$))|\bget(?:s|ting)? (?:back )?to (?=(?:the|a|an|its|his|her|their|your)\b)|\bmak(?:e|es|ing) it (?:to|home|out)\b|\bfind(?:s|ing)? (?=(?:the |a |an |your |their )?(?:exit|door|portal|path)\b)|\bfind(?:s|ing)? (?:the |a |your |their )?way (?:out|home|back)\b|\bget(?:s|ting)? (?:home|out)\b|\bgo(?:es)? home\b|\bto the (?:top|end|exit|finish|goal)\b/,
     [goal('reach')],
     { keepPlace: true },
   ),
@@ -246,7 +257,8 @@ const ROWS: readonly Row[] = [
 const DRIVEN = ['car', 'truck', 'bike', 'bicycle', 'motorcycle', 'motorbike', 'kart', 'go-kart', 'boat', 'ship', 'yacht', 'speedboat', 'sailboat', 'jetski', 'canoe', 'kayak', 'raft', 'bus', 'taxi', 'van', 'tractor', 'tank', 'train', 'tram', 'jeep', 'buggy', 'scooter', 'ambulance', 'firetruck', 'limo', 'racecar', 'hovercraft', 'snowmobile'];
 const FLOWN = ['plane', 'airplane', 'aeroplane', 'jet', 'helicopter', 'rocket', 'spaceship', 'spacecraft', 'ufo', 'drone', 'glider', 'blimp', 'submarine'];
 const VEHICLE_MOVE: ReadonlyMap<string, MoveId> = new Map([...DRIVEN.map((word) => [word, 'drive'] as const), ...FLOWN.map((word) => [word, 'glide'] as const)]);
-const VEHICLE = new RegExp(`\\b(${[...VEHICLE_MOVE.keys()].join('|')})(?:e?s)?\\b`, 'g');
+const TOOL_HEADS = new Set(['gun', 'cannon', 'blaster', 'rifle', 'pistol', 'weapon', 'sword', 'bow', 'slingshot', 'catapult', 'launcher']);
+const VEHICLE = new RegExp(`\\b(${[...VEHICLE_MOVE.keys()].map(word => word.endsWith('y') ? `${word.slice(0, -1)}(?:y|ies)` : `${word}(?:e?s)?`).join('|')})\\b`, 'g');
 
 /** Prostředí věty; vyhrává to, které věta řekne dřív, při shodě dřívější řádek. Noc jen tehdy, když místo chybí. */
 const SETTINGS: readonly (readonly [string, RegExp])[] = [
@@ -257,7 +269,7 @@ const SETTINGS: readonly (readonly [string, RegExp])[] = [
   ['forest', /\bforests?\b|\bwoods\b|\bwoodlands?\b/],
   ['jungle', /\bjungles?\b|\brainforests?\b/],
   ['desert', /\bdeserts?\b|\bdunes?\b|\bsahara\b/],
-  ['snow', /\bsnowy?\b|\barctic\b|\bglaciers?\b|\bfrozen\b|\bwinter\b|\bpolar\b|\btundra\b|\bnorth pole\b/],
+  ['snow', /\bsnowy?\b|\barctic\b|\bglaciers?\b|\bfrozen\b|\bwinter\b|\bpolar\b|\btundra\b|\bnorth pole\b|\bunder (?:the )?ice\b/],
   ['castle', /\bcastles?\b|\bkingdoms?\b|\bdungeons?\b|\bfortress(?:es)?\b|\bmedieval\b/],
   ['volcano', /\bvolcan(?:o|oes|ic)\b/],
   ['cave', /\bcaves?\b|\bcaverns?\b|\bunderground\b/],
@@ -283,10 +295,10 @@ const SETTINGS: readonly (readonly [string, RegExp])[] = [
 ];
 const NIGHT = /\bnight(?:time)?\b|\bmidnight\b/;
 /** Místa, která prostředí neurčí, ale předmětem slovesa nejsou („runs through the maze“, „to the finish“). */
-const OTHER_PLACES = /^(?:maze|labyrinth|room|track|road|level|world|map|area|arena|field|course|top|end|exit|finish|floor|ground|place|park|home|garden|backyard|yard|stadium|carnival|circus|zoo|library|airport|station|subway|hotel)$/;
+const OTHER_PLACES = /^(?:maze|labyrinth|room|track|road|level|world|map|area|arena|field|course|top|end|exit|finish|floor|ground|place|park|home|garden|backyard|yard|stadium|carnival|circus|zoo|library|airport|station|subway|hotel|hangar|valley|canyon|tunnel|cabin|studio|theater|savanna|gate)$/;
 
 const inSetting = (word: string): boolean => SETTINGS.some(([, pattern]) => pattern.test(word));
-const isPlace = (word: string): boolean => OTHER_PLACES.test(word) || NIGHT.test(word) || inSetting(word);
+const isPlace = (word: string): boolean => OTHER_PLACES.test(word) || /^(?:ruin|bunker|fort|compound|courtyard)$/.test(word) || NIGHT.test(word) || inSetting(word);
 
 /** Hráč sám („you“, „the player“): hrdina věty, nebo `HERO`, když ho věta nejmenuje. */
 const PLAYER_WORDS = new Set(['you', 'u', 'i', 'we', 'me', 'us', 'player', 'yourself']);
@@ -322,7 +334,7 @@ const LIGHT_VERBS = new Set([
   'says', 'say', 'sees', 'see', 'knows', 'know', 'thinks', 'think', 'feels', 'feel', 'means', 'mean', 'stays', 'stay', 'uses', 'use', 'gonna',
 ]);
 /** Slovo, které hru zadává nebo ovládá, ne popisuje („make a game where…“, „tap to jump“). */
-const META_VERBS = new Set(['make', 'create', 'design', 'generate', 'give', 'show', 'write', 'explain', 'imagine', 'play', 'want', 'need', 'let', 'please', 'add', 'do', 'i', 'we', 'you', 'tap', 'click', 'hold', 'swipe', 'touch', 'drag']);
+const META_VERBS = new Set(['make', 'create', 'design', 'generate', 'give', 'show', 'write', 'explain', 'imagine', 'play', 'want', 'need', 'let', 'please', 'add', 'do', 'i', 'we', 'you', 'tap', 'click', 'hold', 'swipe', 'touch', 'drag', 'keep', 'continue']);
 
 const headOf = (phrase: string): string => {
   const head = phrase.split(' ').at(-1) ?? phrase;
@@ -332,6 +344,14 @@ const headOf = (phrase: string): string => {
 /** Jmenná fráze z lexikonu, uťatá před členem nebo předložkou uvnitř („a sled down a hill“ → sled). */
 const CUT = new Set([...ARTICLE_WORDS, ...PARTICLES, 'against', 'vs', 'versus', 'like', 'than', 'about', 'during', 'near', 'past', 'instead', 'till']);
 function phraseIn(text: string): string | null {
+  // A partitive names its contents, unlike a physical object's ownership
+  // ("a loaf of bread" versus "the door of a castle").
+  const contents = /^\s*(?:(?:a|an|the|some|each|every|two|three|four|\d+)\s+)?(?:loaf|loaves|slice|slices|piece|pieces|cup|cups|bowl|bowls|bottle|bottles|bag|bags|box|boxes|basket|baskets|handful|handfuls|spoonful|spoonfuls|pound|pounds|kilo|kilos)\s+of\s+(.+)/.exec(text);
+  if (contents) return phraseIn(contents[1]);
+  // A determiner and material/condition modifiers distinguish the container
+  // noun from modal "can" in "a robot can jump".
+  const container = /^\s*(?:a|an|the|some|every|each)\s+((?:(?:tin|metal|steel|aluminium|aluminum|empty|full|rusty|crushed)\s+){0,2}can)\b/.exec(text);
+  if (container) return container[1];
   const words = nounPhrase(text, 3)?.split(' ') ?? [];
   const cut = words.findIndex((word, index) => index > 0 && CUT.has(word));
   const kept = cut === -1 ? words : words.slice(0, cut);
@@ -342,15 +362,18 @@ function phraseIn(text: string): string | null {
  * Aktér z textu mezi začátkem klauze a slovesem: jednotné číslo hlavy jmenné fráze,
  * `HERO` pro hráče („you“, „the player“), `null`, když tam nikdo není („and shoots“, „he“, rozkaz).
  */
+const ACTOR_FRAME = /^(?:(?:make|create|build|give me|i want) (?:a|an|the) (?:game|story|adventure) (?:about|with|featuring) |(?:let|have|send|make|keep|give me) )(?=(?:a|an|the)\s)/;
+
 function actorIn(segment: string): string | null {
   // „with zombies chasing u“: honí zombie; „with swords cutting fruit to music“ ale meče k hudbě netančí.
-  const trimmed = segment.trim();
+  const trimmed = segment.trim().replace(ACTOR_FRAME, '');
   if (/^with\s/.test(trimmed) && /\b[a-z]{2,}ing\b/.test(trimmed)) return null;
   const bare = trimmed.replace(/^with\s+/, '').replace(/^(?:(?:a|an|the|my|your|our|this|that|some|one)(?:\s+|$))+/, '');
   const first = bare.split(' ')[0];
   if (PLAYER_WORDS.has(first)) return HERO;
   // „play chess with…“: rozkaz na začátku věty podmět nemá.
-  if (first === '' || OTHER_PRONOUNS.has(first) || META_VERBS.has(first) || LIGHT_VERBS.has(first)) return null;
+  // „where there is shooting…“: existenciální „there“ podmět nemá.
+  if (first === '' || first === 'there' || OTHER_PRONOUNS.has(first) || META_VERBS.has(first) || LIGHT_VERBS.has(first)) return null;
   const words = nounPhrase(bare, 4)?.split(' ') ?? [];
   // „pull the pins to…“, „knock down towers…“: člen nebo částice uvnitř = sloveso a jeho předmět, ne podmět.
   if (words.some((word, index) => index > 0 && (ARTICLE_WORDS.has(word) || PARTICLES.has(word)))) return null;
@@ -358,7 +381,7 @@ function actorIn(segment: string): string | null {
   const kept: string[] = [];
   for (const word of words) {
     const previous = kept.at(-1);
-    if (AUXILIARIES.has(word) || (previous !== undefined && /[^s]s$/.test(word) && !previous.endsWith('s'))) break;
+    if (AUXILIARIES.has(word) || LIGHT_VERBS.has(word) || (previous !== undefined && /[^s]s$/.test(word) && !previous.endsWith('s'))) break;
     kept.push(word);
   }
   const head = kept.at(-1);
@@ -383,11 +406,11 @@ interface Thing {
 /** Předložky, za kterými stojí předmět slovesa („shoot at“, „jump over“, „escape from“); cesta a místo („through“, „in“) ne. */
 const PREPOSITIONS = 'at|over|past|against|vs|versus|from|onto|into|on|after|for';
 /** „a horde of zombies“: předmětem jsou zombie, ne horda. */
-const COLLECTIVE = /^(?:(?:a|an|the|huge|giant|big|endless|whole) )*(?:waves?|hordes?|packs?|swarms?|arm(?:y|ies)|bunch(?:es)?|herds?|flocks?|lots?|tons?|piles?|groups?|crowds?|gangs?|fleets?|schools?|stacks?) of /;
+const COLLECTIVE = /^(?:(?:a|an|the|huge|giant|big|endless|whole) )*(?:waves?|hordes?|packs?|swarms?|arm(?:y|ies)|bunch(?:es)?|herds?|flocks?|lots?|tons?|piles?|groups?|crowds?|gangs?|teams?|fleets?|schools?|stacks?) of /;
 const QUANTIFIED = new RegExp(`^(?:all|every|each|many|lots of|${NUMBER})\\b`);
 const ONLY_DETERMINERS = /^ ?(?:a|an|the|all|every|each|some|my|your|his|her|their|its|our)(?: (?:a|an|the|all|every|each|some|my|your|his|her|their|its|our))* ?$/;
 
-function thingIn(text: string, from: number, limit: number, lead: string | undefined, tools: readonly string[]): Thing | null {
+function thingIn(text: string, from: number, limit: number, lead: string | undefined, tools: readonly string[], projectile = false): Thing | null {
   const opener = new RegExp(`^ ?(?:(?:up|down|out|away|off|back) )?(?:(${lead === undefined ? PREPOSITIONS : `${PREPOSITIONS}|${lead}`}) )?`).exec(text.slice(from, limit));
   const via = opener?.[1] ?? null;
   let start = from + (opener?.[0].length ?? 0);
@@ -401,7 +424,7 @@ function thingIn(text: string, from: number, limit: number, lead: string | undef
   if (phrase === null) return null;
   const at = start;
   // „shoots arrows at goblins“: šíp je nástroj (`toolsOf`), předmětem je terč za „at“.
-  const aimed = tools.includes(singular(phrase)) || /^(?:cannon|star|snowball|arrow|rocket|missile|bullet|fireball)s?$/.test(headOf(phrase)) ? / (?:at|into|onto|toward|towards) /.exec(text.slice(start, to)) : null;
+  const aimed = projectile || tools.includes(singular(phrase)) || /^(?:cannon|star|snowball|arrow|rocket|missile|bullet|fireball)s?$/.test(headOf(phrase)) ? / (?:at|into|onto|toward|towards) /.exec(text.slice(start, to)) : null;
   if (aimed !== null) {
     start += aimed.index + aimed[0].length;
     const target = text.slice(start, to);
@@ -420,14 +443,23 @@ interface Hit {
 }
 
 const isNounRow = (entry: Row): boolean => entry.emits.every((emit) => emit.who === 'noun');
+/** Slovesa s předmětem, která berou jméno před „to“ jako předmět („with moths to catch“). */
+const RELATIVE_OBJECT_VERBS = new Set(['collect', 'catch', 'throw', 'deliver', 'reach']);
 const unknownRow = (verb: string): Row => row(/$^/, [{ axis: 'unknown', id: verb, who: 'doer', fallback: false }]);
 
 function hitsOf(text: string): Hit[] {
-  return ROWS.flatMap((entry) =>
+  const hits = ROWS.flatMap((entry) =>
     [...text.matchAll(new RegExp(entry.pattern.source, 'g'))].map((match) => ({ row: entry, at: match.index, end: match.index + match[0].length, said: match[0].trim() })),
   ).filter(hit => !(hit.row.emits.some(emit => emit.id === 'ball')
     && /\b(?:before|after) (?:the |a |an )?$/.test(text.slice(0, hit.at))
     && /^ (?:game|match)\b/.test(text.slice(hit.end))));
+  return hits.filter(hit => {
+    if (hit.row !== BARE_FIRE) return true;
+    const prefix = text.slice(0, hit.at);
+    if (!/(?:^|\b(?:and|then|but)\s+|[,;]\s*)(?:(?:do not|don'?t|never|not)\s+)?$/.test(prefix)) return false;
+    const prior = hits.filter(other => other.end <= hit.at && !isNounRow(other.row)).sort((a, b) => a.at - b.at).at(-1);
+    return !prior?.row.emits.some(emit => emit.id === 'avoid');
+  });
 }
 
 /** Hranice klauze: interpunkce a spojky. „who / that / which“ navíc říkají, že podmět stojí před nimi. */
@@ -486,7 +518,9 @@ function gerundBase(word: string): string {
 function unknownHits(text: string, clauses: readonly (readonly [number, number])[], taken: readonly Hit[]): Hit[] {
   const covered = (at: number, end: number): boolean => taken.some((hit) => at < hit.end && hit.at < end);
   const found: { at: number; said: string; verb: string; meta: boolean }[] = [];
-  for (const [from, to] of clauses) {
+  for (const [clauseFrom, to] of clauses) {
+    const frame = ACTOR_FRAME.exec(text.slice(clauseFrom, to));
+    const from = clauseFrom + (frame?.[0].length ?? 0);
     const words = [...text.slice(from, to).matchAll(/[a-z][a-z'-]*/g)].map((match) => ({ word: match[0], at: from + match.index }));
     const lead = words.length > 0 && ARTICLE_WORDS.has(words[0].word) ? 1 : 0;
     const subjectless = words.length === 0 || PLAYER_WORDS.has(words[lead]?.word ?? '') || OTHER_PRONOUNS.has(words[lead]?.word ?? '');
@@ -495,7 +529,11 @@ function unknownHits(text: string, clauses: readonly (readonly [number, number])
       const previous = words[index - 1];
       // Podmět je jméno: ne předložka, člen, pomocné sloveso ani slovo, které tabulka už čte („shoot balloons with“).
       if (PHRASE_BREAK.has(word) || PHRASE_BREAK.has(previous.word) || LIGHT_VERBS.has(word) || ARTICLE_WORDS.has(previous.word) || covered(previous.at, previous.at + previous.word.length)) break;
-      if (/[^s]s$/.test(word) && !previous.word.endsWith('s')) {
+      if (frame !== null && index === lead + 1 && words[index + 1] !== undefined && !PHRASE_BREAK.has(words[index + 1].word) && !NOT_AN_ACTOR.has(word)) {
+        found.push({ at, said: word, verb: word.endsWith('ing') ? gerundBase(word) : word, meta: false });
+        break;
+      }
+      if (/[^s]s$/.test(word) && (!previous.word.endsWith('s') || singular(previous.word) === previous.word)) {
         // Bez členu („motorbike stunts on ramps“) je to spíš množné číslo; sloveso pozná až člen za ním („grandma knits a scarf“).
         const next = words[index + 1]?.word;
         if (lead === 1 || (next !== undefined && DETERMINER.test(next))) found.push({ at, said: word, verb: presentBase(word), meta: false });
@@ -545,6 +583,14 @@ interface Draft extends IntentAction {
 
 export function extractIntent(sentence: string): Intent {
   const text = withoutPossessor(sentence.toLowerCase().replace(/[’‘]/g, "'").replace(/\bthru\b/g, 'through').replace(/\bfootbal\b/g, 'football').replace(/\bn\b/g, 'and').replace(/\s+/g, ' ').trim());
+  // A pseudo-cleft fronts the object: "pearls are what the swimming seal
+  // must collect". Normalize that syntax, then reuse ordinary clause parsing.
+  const cleft = /^(?:(in|at|inside|near) ([^,]+),\s*)?([a-z][a-z -]*?) (?:is|are) what (?:a|an|the) (?:(swimming|running|jumping|flying|walking|flapping|roaming|gliding) )?([a-z][a-z-]*) (?:(?:must|should|can|will) )?([a-z][a-z-]*)([.!?]?)$/.exec(text);
+  if (cleft !== null) {
+    const [, preposition, place, object, movement, actor, verb] = cleft;
+    const normalized = `${place ? `${preposition} ${place}, ` : ''}a ${actor} ${movement ? `${movement} and ` : ''}${verb} ${object}`;
+    return { ...extractIntent(normalized), sentence };
+  }
   const tools = toolsOf(text);
   const scopes = negationScopes(text);
   const inScope = (at: number): boolean => scopes.some(([from, to]) => at >= from && at < to);
@@ -578,17 +624,39 @@ export function extractIntent(sentence: string): Intent {
     const from = Math.max(boundary?.end ?? 0, Math.min(reached, hit.at));
     const segment = text.slice(from, hit.at);
     const next = hit.row.emits.some(emit => emit.axis === 'unknown') ? text.length : verbHits.find((other) => other.at >= hit.end && !(hit.row.emits.some(emit => emit.id === 'avoid') && other.row.before === 'modifier'))?.at ?? text.length;
-    const after = thingIn(text, hit.end, next, hit.row.lead, tools);
+    let after = thingIn(text, hit.end, next, hit.row.lead, tools, hit.row.emits.some(emit => emit.id === 'throw' || emit.id === 'shoot'));
+    // Reduced relative infinitives attach to the noun before them: coins to
+    // collect / a basket of berries to gather / moths to catch / parcels to
+    // deliver. The noun is not a new actor.
+    const relativeObject = hit.row.emits.some(emit => RELATIVE_OBJECT_VERBS.has(emit.id))
+      ? /\bwith\s+([^,.;!?]*?)\s+to\s*$/.exec(text.slice(0, hit.at)) : null;
+    if (after === null && relativeObject) {
+      const phrase = phraseIn(relativeObject[1]);
+      if (phrase) after = { head: headOf(phrase), many: singular(phrase) !== phrase, at: relativeObject.index + relativeObject[0].indexOf(relativeObject[1]), end: hit.at, via: null };
+    }
+    // Separable phrasal verbs carry their object inside the matched verb span.
+    const internal = hit.row.emits.some(emit => emit.id === 'defeat') ? /\b(it|him|her|them)\b/.exec(hit.said) : null;
+    if (internal) after = { head: internal[1], many: internal[1] === 'them', at: hit.at + internal.index, end: hit.at + internal.index + internal[0].length, via: null };
+    if (hit.row.emits.some(emit => emit.who === 'versus')) {
+      // A place modifier may intervene between the sport/race and its opponent.
+      // Do not cross a clause boundary or another verb to borrow its target.
+      const end = Math.min(next, boundaries.find(candidate => candidate.at >= hit.end)?.at ?? text.length);
+      const against = /\b(?:against|vs|versus)\s+/.exec(text.slice(hit.end, end));
+      if (against) after = thingIn(text, hit.end + against.index, end, hit.row.lead, tools);
+    }
     // Holé jméno těsně před slovem („water gun“, „sword fighting“), ne podmět ve 3. osobě („dog fights“).
     const bareBefore = (/^[a-z-]+ $/.test(segment) || /^(?:a|an|the) (?:snowball|sword|fist|knife|gun) $/.test(segment)) && !segment.trim().endsWith('s') && !/[^s]s$/.test(hit.said);
     if (hit.row.before === 'target') {
       const before = phraseIn(segment);
       const target = before === null ? null : { head: headOf(before), many: singular(before) !== before, at: from, end: hit.at, via: null };
       readings.push({ hit, actor: null, thing: target ?? after });
-    } else if (hit.row.before === 'modifier' && bareBefore) {
+    } else if (hit.row.before === 'modifier' && (bareBefore || TOOL_HEADS.has(headOf(hit.said)) && /\bwith\s+(?:a|an|the)\s+[a-z -]*$/.test(segment))) {
       readings.push({ hit, actor: null, thing: after });
     } else {
-      let actor = actorIn(segment);
+      // The relative noun is the object; the doer is a named subject before „with“
+      // („a hedgehog scurries … with a tower to reach“), never an imperative („put me …“).
+      const subject = relativeObject ? text.slice(from, relativeObject.index) : segment;
+      let actor = relativeObject && !/^\s*(?:a|an|the)\s/.test(subject) ? null : actorIn(subject);
       // „a knight who shoots“: vztažné zájmeno odkazuje na jméno před sebou.
       if (actor === null && boundary !== undefined && /^(?:who|that|which)$/.test(boundary.word) && boundary.end >= reached) {
         const owner = /([a-z-]+)\s*$/.exec(text.slice(0, boundary.at))?.[1];
@@ -603,7 +671,7 @@ export function extractIntent(sentence: string): Intent {
   const said = PLAYER_SAID.exec(text);
   const namedPhrase = said === null ? null : phraseIn(said[1] ?? said[2]);
   const named = namedPhrase === null ? null : headOf(namedPhrase);
-  const first = readings.find((reading) => reading.actor !== null && !(readings[0]?.actor === null && readings[0].hit.at === 0 && reading.hit.at > (boundaries[0]?.at ?? text.length)) && !(reading.thing !== null && PLAYER_WORDS.has(reading.thing.head)));
+  const first = readings.find((reading) => reading.actor !== null && !(readings[0]?.actor === null && (readings[0].hit.at === 0 || /^(?:keep|continue)\s+$/.test(text.slice(0, readings[0].hit.at))) && reading.hit.at > (boundaries[0]?.at ?? text.length)) && !(reading.thing !== null && PLAYER_WORDS.has(reading.thing.head)));
   const objectSpans = readings.filter((reading) => reading.thing !== null && !reading.hit.row.emits.some((emit) => emit.axis === 'move' || emit.id === 'race' || emit.id === 'land'));
   const vehicle = [...text.matchAll(VEHICLE)].find(
     (match) => !inScope(match.index)
@@ -611,11 +679,11 @@ export function extractIntent(sentence: string): Intent {
       // later while/before clause cannot become an implicitly piloted hero.
       // A vehicle driven by the same player in a coordinated clause still can.
       && !(readings[0]?.actor === null && readings[0].hit.at === 0 && readings.some(reading => reading.actor === headOf(match[1]) && reading.hit.at > (boundaries[0]?.at ?? text.length)))
-      && !readings.some(reading => reading.actor === match[1] && reading.thing !== null && PLAYER_WORDS.has(reading.thing.head) && reading.hit.row.emits.some(emit => emit.id === 'catch'))
+      && !readings.some(reading => reading.actor === headOf(match[1]) && reading.thing !== null && PLAYER_WORDS.has(reading.thing.head) && reading.hit.row.emits.some(emit => emit.id === 'catch'))
       && !objectSpans.some(({ thing }) => thing !== null && match.index >= thing.at && match.index < thing.end),
   );
   // „where I build my house, drive cars“: kdo mluví sám za sebe, není auto – stroj v množném čísle hrdinou nebude.
-  const ridden = vehicle !== undefined && !(readings[0]?.hit.at === 0 && readings[0].hit.row.emits.some(emit => emit.axis === 'unknown')) && (first?.actor !== HERO || vehicle[0] === vehicle[1]) ? vehicle[1] : null;
+  const ridden = vehicle !== undefined && !(readings[0]?.hit.at === 0 && readings[0].hit.row.emits.some(emit => emit.axis === 'unknown')) && (first?.actor !== HERO || vehicle[0] === headOf(vehicle[1])) ? headOf(vehicle[1]) : null;
   const gameSubject = /\b(?:a |an |the )?([a-z]+) game\b/.exec(text)?.[1];
   const gameHero = gameSubject === undefined || NOT_AN_ACTOR.has(gameSubject) || tools.includes(gameSubject) || /^(?:mini|sword)$|ing$/.test(gameSubject) || tableHits.some(hit => hit.at <= text.indexOf(gameSubject) && hit.end > text.indexOf(gameSubject)) ? null : actorIn(gameSubject);
   // A nominal relation has participants even without an ordinary subject/verb:
@@ -633,11 +701,18 @@ export function extractIntent(sentence: string): Intent {
   const relationObject = relation === null ? null : actorIn(relation[2]);
   const pluralPhrase = pluralArgument === null ? null : phraseIn(pluralArgument[1]);
   const pluralActor = pluralPhrase === null ? null : headOf(pluralPhrase);
-  const caused = /\bmake (?:a|an|the) ([a-z]+) (?=flap|jump|run|swim|fly|walk)/.exec(text)?.[1] ?? null;
+  const introduced = /^(?:(?:make|create|build|give me|i want) (?:a|an|the) (?:game|story|adventure) (?:about|with|featuring) |(?:let|have|send|make|keep|give me) )((?:a|an|the) [a-z][a-z -]*)/.exec(text);
+  const companion = /\b(?:game|race|flight|stroll)\b[^.;!?]*?\bwith ((?:a|an|the) [a-z][a-z -]*)/.exec(text);
+  const introducedStart = introduced === null ? 0 : introduced.index + introduced[0].indexOf(introduced[1]);
+  const introducedEnd = verbHits.find(hit => hit.at >= introducedStart)?.at ?? text.length;
+  const introducedActor = introduced === null ? null : actorIn(text.slice(introducedStart, introducedEnd));
+  const companionActor = companion === null ? null : actorIn(companion[1]);
+  const caused = introducedActor ?? (companionActor !== null && (TOOL_HEADS.has(companionActor) || tools.some(tool => headOf(tool) === companionActor)) ? null : companionActor)
+    ?? /\bmake (?:a|an|the) ([a-z]+) (?=flap|jump|run|swim|fly|walk)/.exec(text)?.[1] ?? null;
   const described = /^(?:a|an|the) (?:dancing|singing|karate|boxing) ([a-z]+)\b/.exec(text)?.[1] ?? null;
   const chased = readings.find(reading => reading.hit.row.emits.some(emit => emit.id === 'catch') && reading.thing !== null);
   const fleeingObject = chased !== undefined && /\b(?:swim|run|fly) away\b.*\bescape\b/.test(text) ? chased.thing?.head ?? null : null;
-  const hero = (named !== HERO ? named : null) ?? relationActor ?? pluralActor ?? caused ?? described ?? fleeingObject ?? (first !== undefined && first.actor !== HERO ? first.actor : null) ?? gameHero ?? ridden;
+  const hero = (named !== HERO ? named : null) ?? relationActor ?? pluralActor ?? (caused === HERO ? null : caused) ?? described ?? fleeingObject ?? (first !== undefined && first.actor !== HERO ? first.actor : null) ?? gameHero ?? ridden;
   const heroName = hero ?? HERO;
 
   const drafts: Draft[] = [];
@@ -654,7 +729,7 @@ export function extractIntent(sentence: string): Intent {
     // being worked on ("sweep the floor", "paint the room"). A game/genre noun
     // in "a knitting game" remains metadata rather than the knitted object.
     if (thing !== null && thing.via === null && hit.row.emits.some(emit => emit.axis === 'unknown')
-      && !NOT_A_THING.has(thing.head) && !PLAYER_WORDS.has(thing.head) && !OTHER_PRONOUNS.has(thing.head)) object = thing.head;
+      && (!NOT_A_THING.has(thing.head) || /^(?:clock|time|score)$/.test(thing.head)) && !PLAYER_WORDS.has(thing.head) && !OTHER_PRONOUNS.has(thing.head)) object = thing.head;
     if (thing !== null && OTHER_PRONOUNS.has(thing.head) && actor === heroName) {
       // Resolve an explicit target pronoun to the last named other participant.
       const antecedent = readings.filter(reading => reading.hit.at < hit.at && reading.thing !== null && !OTHER_PRONOUNS.has(reading.thing.head) && !PLAYER_WORDS.has(reading.thing.head) && reading.thing.head !== heroName).at(-1)?.thing;
@@ -707,6 +782,73 @@ export function extractIntent(sentence: string): Intent {
   const push = (axis: IntentAxis, verb: string, actor: string, object: string | null, said: string): void => {
     drafts.push({ axis, verb, actor, object, said, essential: true, at: Math.max(0, text.indexOf(said)), fallback: false, negated: false });
   };
+  // A subordinate falling/flying subject is a moving hazard, not scenery.
+  // Separate scans keep an action before "falling branches" from becoming
+  // the falling subject and consuming the adjective-noun match.
+  const incoming = [
+    /\b([a-z-]+)\s+(?:are\s+)?(?:fall(?:s|ing)?|drop(?:s|ping)?|rain(?:s|ing)?)\b/g,
+    /\bfalling\s+([a-z-]+)\b/g,
+    /\bflying\s+(rocks?|stones?|boulders?|bombs?|arrows?|lasers?|missiles?)\b/g,
+    /\b(rocks?|stones?|boulders?|bombs?|arrows?|lasers?|missiles?)\s+(?:are\s+)?(?:fly|flies|flying)\b/g,
+  ];
+  for (const match of incoming.flatMap(pattern => [...text.matchAll(pattern)])) {
+    if (verbHits.some(hit => hit.at === match.index)) continue;
+    const actor = headOf(match[1]);
+    if (phraseIn(actor) === null || /^(?:asleep|apart|behind|down|off|over)$/.test(actor) || actor === heroName || PLAYER_WORDS.has(actor) || NOT_A_THING.has(actor) || inScope(match.index)) continue;
+    for (let i = drafts.length - 1; i >= 0; i--) if (drafts[i].axis === 'threat' && drafts[i].actor === actor) drafts.splice(i, 1);
+    push('threat', 'hazard', actor, heroName, match[0]);
+  }
+  for (const reading of readings) {
+    if (inScope(reading.hit.at)) continue;
+    if (reading.hit.row.emits.some(e => e.id === 'race') && reading.actor !== null && reading.actor !== heroName && reading.thing !== null && OTHER_PRONOUNS.has(reading.thing.head)) {
+      push('threat', 'rival', reading.actor, heroName, reading.hit.said);
+      push('objective', 'race', heroName, null, reading.hit.said);
+    }
+  }
+  const runaway = /\bafter\s+(?:a |an |the )?runaway\s+([a-z-]+)/.exec(text);
+  if (runaway && drafts.some(item => item.axis === 'move') && !inScope(runaway.index)) push('objective', 'catch', heroName, headOf(runaway[1]), runaway[0]);
+  if (companion !== null && drafts.some(item => item.verb === 'race') && !drafts.some(item => item.axis === 'move') && /^(?:horse|pony|zebra|dog|rabbit|cheetah)$/.test(heroName)) push('move', 'run', heroName, null, heroName);
+  const racers = /\brac(?:e|es|ing)\s+(?:against\s+)?(?:other\s+|the other\s+)([a-z-]+(?:\s+[a-z-]+)?)/.exec(text);
+  if (racers !== null) {
+    const phrase = phraseIn(racers[1]);
+    if (phrase !== null) push('threat', 'rival', headOf(phrase), heroName, racers[0]);
+  }
+  if (drafts.some(item => item.verb === 'ball')) {
+    const team = /\b(?:against|versus|vs)\s+(?:a |an |the )?(?:([a-z-]+)\s+team\b|team of\s+([a-z-]+))/.exec(text);
+    if (team !== null) {
+      const name = headOf(team[1] ?? team[2]);
+      for (let i = drafts.length - 1; i >= 0; i--) if (drafts[i].verb === 'rival' && /^(?:a|team)$/.test(drafts[i].actor)) drafts.splice(i, 1);
+      push('threat', 'rival', name, heroName, team[0]);
+    }
+  }
+  // Direct race opponents ("a train races a plane") differ from a vehicle
+  // being driven by the player ("race a car").
+  for (const reading of readings) {
+    if (inScope(reading.hit.at)) continue;
+    const thing = reading.thing;
+    if (reading.hit.row.emits.some(e => e.id === 'race') && thing !== null && thing.head !== heroName && !isPlace(thing.head) && !NOT_A_THING.has(thing.head) && !OTHER_PRONOUNS.has(thing.head) && !PLAYER_WORDS.has(thing.head) && thing.via === null) {
+      push('threat', 'rival', thing.head, heroName, reading.hit.said);
+    }
+    // A movement directed to a named destination also requests reaching it.
+    if (reading.hit.row.emits.some(e => e.axis === 'move')) {
+      const destination = /^\s+to\s+(?:a |an |the )?([a-z-]+(?:\s+[a-z-]+)?)/.exec(text.slice(reading.hit.end));
+      const phrase = destination === null ? null : phraseIn(destination[1]);
+      if (phrase !== null && isPlace(headOf(phrase))) push('objective', 'reach', heroName, headOf(phrase), reading.hit.said);
+    }
+    // Coordinated objects share the avoidance verb, not a new implicit action.
+    if (thing !== null && reading.hit.row.emits.some(e => e.id === 'avoid')) {
+      const tail = text.slice(thing.end).split(/[,;.]|\b(?:while|but|then)\b/)[0]!;
+      const following = /^\s+and\s+(?:a |an |the )?((?:[a-z-]+\s+)?[a-z-]+)/.exec(tail);
+      const phrase = following === null ? null : phraseIn(following[1]);
+      if (phrase !== null && !verbHits.some(h => h.at >= thing.end && h.at < thing.end + following![0].length)) push('threat', threatOf(headOf(phrase)), headOf(phrase), heroName, reading.hit.said);
+    }
+  }
+  const eliminated = /\buntil\s+(?:every|all(?: the)?)\s+([a-z-]+)\s+(?:is|are)\s+(?:gone|defeated|dead|destroyed|eliminated)\b/.exec(text);
+  if (eliminated !== null && drafts.some(item => item.verb === 'shoot' && !item.negated)) {
+    const target = headOf(eliminated[1]);
+    for (let i = 0; i < drafts.length; i++) if (drafts[i].verb === 'shoot' && drafts[i].object === null && !drafts[i].negated) drafts[i] = { ...drafts[i], object: target };
+    push('objective', 'defeat', heroName, target, eliminated[0]);
+  }
   if (/\bcombat\b/.test(text) && /\brockets?\b/.test(text)) push('action', 'shoot', heroName, null, 'rockets');
   const obstacleAlias = /\b([a-z]+) as obstacles?\b/.exec(text);
   if (obstacleAlias !== null) {
@@ -728,12 +870,34 @@ export function extractIntent(sentence: string): Intent {
     // patrol. Keep bare patrols and other explicitly named groups distinct.
     if (item.axis === 'threat' && item.verb === 'guard' && item.actor === 'patrol' &&
         readings.some(reading => reading.hit.at === item.at && reading.thing !== null && /\bguards? patrols?\b/.test(text.slice(reading.thing.at, reading.thing.end)))) item = { ...item, actor: 'guard' };
-    if (item.verb === 'guard' && item.axis === 'unknown') item = { ...item, axis: 'threat', object: heroName };
+    // Kdo hlídá, je hrozba pro hrdinu; hrdina, který sám hlídá, hrozbou pro sebe není.
+    if (item.verb === 'guard' && item.axis === 'unknown' && item.actor !== heroName) item = { ...item, axis: 'threat', object: heroName };
     if (item.verb === 'throw') {
       const defendedFrom = /\b(?:defend|protect)(?:s|ing)? .+? from (?:a |an |the )?([a-z -]+?) by throw/.exec(text);
       const opponent = defendedFrom === null ? null : phraseIn(defendedFrom[1]);
       if (opponent !== null) item = { ...item, object: headOf(opponent) };
     }
+    if (item.verb === 'rival' && /^(?:rival|opponent|competitor)$/.test(item.actor)) {
+      const modifier = /^(?:rivals?|opponents?|competitors?)\s+([a-z-]+)/.exec(text.slice(item.at));
+      if (modifier !== null && !CUT.has(modifier[1]) && !/^(?:and|but|or|while|where|when|then|who|which|until)$/.test(modifier[1]) && !verbHits.some(h => h.at === item.at + modifier[0].indexOf(modifier[1]))) item = { ...item, actor: headOf(modifier[1]) };
+    }
+    if (item.verb === 'plant' && item.object === 'flag') item = { ...item, axis: 'action', verb: 'interact' };
+    if (item.verb === 'walk' && /^explor/.test(item.said) && !/\b(?:maze|labyrinth|cave)s?\b/.test(text)) item = { ...item, verb: 'roam' };
+    if (item.verb === 'run' && /^roll/.test(item.said) && ride === undefined) item = { ...item, verb: 'ball' };
+    if (item.verb === 'build' && /^stack/.test(item.said)) {
+      const result = /\binto\s+(?:a |an |the )?([a-z-]+)/.exec(text.slice(item.at));
+      if (result !== null) item = { ...item, object: headOf(result[1]) };
+    }
+    if (item.verb === 'fight' && !item.fallback && item.object === null) {
+      // Combat and its coordinated result share a target: "attacks and
+      // defeats a dragon". A different actor or negated result cannot supply it.
+      const result = readings.find(r => r.hit.at > item.at && r.hit.row.emits.some(emit => emit.id === 'defeat')
+        && r.thing !== null && !inScope(r.hit.at)
+        && (r.actor === null || r.actor === item.actor || r.actor === HERO && item.actor === heroName)
+        && !/\b(?:while|whilst|before|after|because|if|unless)\b|[.;!?]/.test(text.slice(item.at, r.hit.at)));
+      if (result?.thing) item = { ...item, verb: result.thing.many ? 'fight' : 'duel', object: result.thing.head };
+    }
+    if (/^outrun/.test(item.said) && drafts.some(candidate => candidate.verb === 'race')) item = item.axis === 'threat' ? { ...item, verb: 'rival' } : { ...item, verb: 'race', object: null };
     if (item.verb === 'drive') item = { ...item, object: null };
     if (item.verb === 'time' && /^(?:jump|throw|shot|kick)$/.test(item.object ?? '')) item = { ...item, object: null };
     if (item.verb === 'survive') item = { ...item, object: null, ...(/^(?:defend|protect)/.test(item.said) ? { essential: false, fallback: true } : {}) };
@@ -741,7 +905,7 @@ export function extractIntent(sentence: string): Intent {
       const landing = /\bland(?:s|ing)?\b(?:[^,.;]*?)\b(?:on|at) (?:a |an |the )?(?:moving |safe |small )?([a-z]+)/.exec(text);
       if (landing !== null) item = { ...item, object: headOf(landing[1]) };
     }
-    if (item.verb === 'fight' && /^fight(?:s|ing)?$/.test(item.said)) {
+    if (item.verb === 'fight' && !item.fallback) {
       const reading = readings.find(reading => reading.hit.at === item.at);
       // An explicit single opponent is a one-on-one duel. Plurals, hordes and
       // quantifiers retain the crowd-fighting mechanic.
@@ -832,6 +996,29 @@ function unique(items: readonly Draft[]): Draft[] {
 }
 
 function settingOf(text: string): string | null {
+  // Direct escape arguments name places too; preserve their noun rather than
+  // the rendering category (island -> beach, laboratory -> factory).
+  const escaped = /\bescap(?:e|es|ed|ing)\s+((?:a|an|the)\s+[a-z][a-z -]*)/.exec(text);
+  const escapedPlace = escaped === null ? null : phraseIn(escaped[1]);
+  if (escapedPlace !== null && (isPlace(headOf(escapedPlace)) || inSetting(escapedPlace))) return headOf(escapedPlace);
+  const traversed = /\b(?:roam(?:s|ing)?|explor(?:e|es|ing))\s+((?:a|an|the)\s+[a-z][a-z -]*)/.exec(text);
+  const traversedPlace = traversed === null ? null : phraseIn(traversed[1]);
+  if (traversedPlace !== null) return headOf(traversedPlace);
+  // Explicit locative noun phrases preserve named places rather than reducing
+  // them to a visual category. Bare nouns still use the established lexicon.
+  for (const match of text.matchAll(/\b(?:in|inside|outside|through|across|along|around|above|below|on|over|down|up|at)\s+((?:a|an|the)\s+[a-z][a-z -]*)/g)) {
+    const phrase = phraseIn(match[1]);
+    if (!phrase) continue;
+    const words = phrase.split(' ');
+    const location = words.find(word => isPlace(headOf(word)) && !/^(?:snowy|frozen|icy|arctic|polar|tropical|medieval|neon|sunken)$/.test(word));
+    if (location && !/^(?:finish|end|exit|gate|top|ground|floor|place|level|world|map|area)$/.test(location)) return headOf(location);
+    // Articles make an unknown bounded noun phrase a location candidate;
+    // goals, weapons and amounts are not inferred as scenery.
+    const head = headOf(phrase);
+    if (!location && !NOT_A_THING.has(head) && !NOT_AN_ACTOR.has(head) && !toolsOf(text).includes(head)
+      && !/\b(?:right|perfect|exact|same)\b/.test(phrase) && !/ing$/.test(head)
+      && !/^(?:horse|car|boat|bike|plane|bus|truck|coin|gem|key|ball|enemy|robot|dragon)$/.test(head)) return head;
+  }
   let best: { readonly at: number; readonly id: string } | null = null;
   for (const [id, pattern] of SETTINGS) {
     const at = pattern.exec(text)?.index;

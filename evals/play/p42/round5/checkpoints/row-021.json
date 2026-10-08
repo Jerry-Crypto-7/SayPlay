@@ -1,0 +1,262 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-05",
+    "sentence": "Let a puffin flap through a cavern while stones fall toward it and it gathers pearls.",
+    "seed": 1,
+    "milliseconds": 765.5292000000045,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "hazard",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "flap",
+      "controlParams": {
+        "lengthM": 220,
+        "rise": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "flap",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Puffin Flight",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "cavern",
+        "mood": "cheerful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Flap through the gaps between the pipes to the finish.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "puffin",
+          "count": 1
+        },
+        {
+          "id": "pipe",
+          "kind": "hazard",
+          "label": "pipe",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "pearl",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "hazard",
+          "label": "stone",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Dodge the stone.",
+        "controlsHint": "Tap or Space to flap."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "901c01e6",
+    "worldHash": "9d42906121b56af9c31ca257643433d8a5a279c31f8123105c66d831925f8697",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "puffin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "flap",
+        "object": null,
+        "tick": 11,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "puffin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 161,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "puffin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 4,
+          "roleId": "coin",
+          "label": "pearl",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 161,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "puffin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 2,
+          "roleId": "pipe",
+          "label": "pipe",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2230,
+        "evidence": "survived-threat:probe:pipe",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "puffin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 162,
+          "roleId": "part_0",
+          "label": "stone",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2230,
+        "evidence": "survived-threat:probe:part_0",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "pipe",
+          "label": "pipe",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "puffin",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 155,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:pipe"
+      },
+      {
+        "actor": {
+          "body": 162,
+          "roleId": "part_0",
+          "label": "stone",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "puffin",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 283,
+        "evidence": "moving-threat-contact",
+        "run": "probe",
+        "runId": "probe:part_0"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2230,
+      "hash": "b4c8e44e",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -13,7 +13,7 @@ import dynamic from 'next/dynamic';
 import { type CSSProperties, memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels, sceneModelOf } from '@/play/arcade/models';
@@ -102,14 +102,20 @@ const TAP_TO_START = new Set(['flap', 'shooter', 'timing', 'rhythm', 'duel']);
 const CAUGHT_MS = 200;
 
 /** Sekundy časového limitu (`time_limit`) nebo přežití (`survive_time`) světa; `null` = hra čas neměří. */
-function limitOf(world: ArcadeWorld): number | null {
-  const seconds = world.rules.find((rule) => rule.id === 'time_limit' || rule.id === 'survive_time')?.params.seconds;
+export function limitOf(world: ArcadeWorld): number | null {
+  const seconds = nativeRule(world.rules, 'time_limit', 'survive_time')?.params.seconds;
   return typeof seconds === 'number' ? seconds : null;
 }
 
+/** Hra na přežití (`survive_time`): cíl a výsledek se měří časem. */
+export const survives = (world: ArcadeWorld): boolean => nativeRule(world.rules, 'survive_time') !== undefined;
+
+/** Střelba s municí (`blaster`): HUD ukáže počítadlo nábojů. */
+export const countsAmmo = (world: ArcadeWorld): boolean => nativeRule(world.rules, 'blaster') !== undefined;
+
 /** Kolik předmětů doplňku `+collect` hra chce (`finish_collected`); `null` = cíl bez sbírání. */
-function collectNeed(world: ArcadeWorld): number | null {
-  const need = Number(world.rules.find((rule) => rule.id === 'finish_collected')?.params.need);
+export function collectNeed(world: ArcadeWorld): number | null {
+  const need = Number(nativeRule(world.rules, 'finish_collected')?.params.need);
   return Number.isFinite(need) && need > 0 ? need : null;
 }
 
@@ -132,7 +138,7 @@ function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnaps
     won: snapshot.runState === 'won',
     tick: snapshot.tick,
     hz: ARCADE_HZ,
-    survive: world.rules.some((rule) => rule.id === 'survive_time'),
+    survive: survives(world),
     goal: need === null ? null : { count: snapshot.items, need, label: 'collected' },
     extra,
     score: scoring ? { value: snapshot.score, unit: scoreUnit(spec) } : null,
@@ -188,7 +194,7 @@ function ArcadeHud({
   const need = collectNeed(world);
   const counters: HudCounter[] = [];
   if (aiming(spec)) counters.push({ label: 'shots', count: snapshot.shots, text: `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left` });
-  if (world.rules.some((rule) => rule.id === 'blaster')) counters.push({ label: 'ammo', count: snapshot.shots, text: `${snapshot.shots} ammo` });
+  if (countsAmmo(world)) counters.push({ label: 'ammo', count: snapshot.shots, text: `${snapshot.shots} ammo` });
   if (hasLives(spec)) counters.push({ label: 'lives', count: snapshot.health, text: String(snapshot.health), icon: 'heart' });
   if (target !== null) counters.push(target);
   const limit = limitOf(world);
@@ -597,7 +603,7 @@ function ArcadePlayGame({
   useEffect(() => {
     if (!offline && record === null) setBest(readBest(versionId));
   }, [offline, record, versionId]);
-  const survive = arcade.rules.some((rule) => rule.id === 'survive_time');
+  const survive = survives(arcade);
   const goal = useMemo(() => (challenge === null ? bestGoal(best, ARCADE_HZ, survive) : dareGoal(challenge, ARCADE_HZ, survive)), [best, challenge, survive]);
   const goalLabel = challenge === null ? 'best' : 'dare';
   const beaten = goal !== null && goal.score !== null && snapshot.score > goal.score;

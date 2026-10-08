@@ -1,0 +1,152 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-041",
+    "sentence": "A baker kneads dough in the bakery.",
+    "seed": 2,
+    "milliseconds": 63.861599999974715,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_station",
+        "tuning": {
+          "count": 2,
+          "states": 3,
+          "verb": "knead",
+          "rounds": 10
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "station",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Baker Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "bakery",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Knead all 2 dough in each of 10 rounds within 81 seconds.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 81,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "baker",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "dough",
+          "count": 2
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Knead all 2 dough, 10 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use when it is ready. Stall and it boils over."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "stir"
+    },
+    "specHash": "a16647d4",
+    "worldHash": "b833c7a17aff8fbfeff6ac59f1f6b813fe676baa543bb029df459c0957e91307",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "baker",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "dough",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 29,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "baker",
+          "verb": "knead",
+          "object": "dough"
+        }
+      ],
+      "closest": "a quest",
+      "reason": "Knead isn't here yet – here's a quest."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "baker",
+          "verb": "knead",
+          "object": "dough"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2400,
+      "hash": "0d1cbad8",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

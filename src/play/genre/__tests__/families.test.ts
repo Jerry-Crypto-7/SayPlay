@@ -79,9 +79,10 @@ describe.each(Object.entries(FAMILY_SENTENCES))('family %s on dev-150', (_family
 
 // P41: digging and searching are separate actions. The live collect recipe can
 // play the carrots; a quest stand-in must not claim to have dug tunnels.
+// P42 takes an unstated movement from the reading (roaming), the walker only from a stated walk.
 it('u08 collects the named carrots and admits the missing digging action', () => {
   const meta = draftGameSpecWithMeta(textOf('u08'), 1);
-  expect(meta.composition?.recipe).toMatchObject({ move: 'walk', objective: 'collect' });
+  expect(meta.composition?.recipe).toMatchObject({ move: 'roam', objective: 'collect' });
   expect(castFor(meta.genre!, 'collect')?.label).toBe('carrot');
   expect(meta.spec.heroAction).toBe('dig');
   expect(meta.composition?.unmet).toContainEqual({ actor: 'mole', verb: 'dig', object: 'tunnel' });

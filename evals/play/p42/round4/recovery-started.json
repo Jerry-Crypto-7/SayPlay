@@ -1,0 +1,29 @@
+{
+  "startedAt": "2026-10-07T11:56:34.385Z",
+  "commit": "14048dcd2e4a7ecb8044b21bbebd75a62bf9f74b",
+  "datasetSha256": "2694b9c0355a00db18cd7300e8b1e06cef3d8ad5be31c0ce0503f6b39b827bd9",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "lane": "quick",
+  "calls": 0,
+  "resumed": true,
+  "resumedAt": "2026-10-07T12:19:16.170Z",
+  "resumedCommit": "14048dcd2e4a7ecb8044b21bbebd75a62bf9f74b",
+  "recoveryRunnerSha256": "b0e1dc921509573bffd27352f93be252f8a143b7030f789b128648fb8f4ccf00",
+  "originalResult": "evals/play/p42/round4/final.json",
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "originalSourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "completedBeforeInterruption": 187,
+  "preservedPrefixSha256": "5937d3231014a61503b44c34df915993291ba6e514233c54f48f0e94205333a8",
+  "unpersistedAttempts": "Unknown; the 188th observation may have been attempted before checkpoint failure.",
+  "interruption": "Original runner aborted in checkpoint save with errno UNKNOWN: unknown error opening final.json. No concurrent progress reads occurred. The I/O cause is unknown; file locking is not established.",
+  "protocolLimitation": "Resumed measurement, not a complete uninterrupted one-shot run. The first 187 observations and their original latency values are preserved; unpersisted attempts and process restart may affect timing comparability.",
+  "state": "in-progress",
+  "checkpointDirectory": "recovery-checkpoints"
+}

@@ -1,0 +1,176 @@
+{
+  "rowIndex": 208,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-042",
+    "sentence": "A bear knits scarves inside a cabin.",
+    "seed": 3,
+    "milliseconds": 187.0048000000097,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "rhythm",
+      "controlParams": {
+        "bpm": 120,
+        "beats": 66,
+        "ramp": true,
+        "lanes": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "rhythm",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Bear Beat",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "cabin",
+        "mood": "energetic"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Hit each tile in its lane on the beat and play the song to the end.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "bear",
+          "count": 1
+        },
+        {
+          "id": "note",
+          "kind": "collectible",
+          "label": "tile",
+          "count": 12
+        },
+        {
+          "id": "miss",
+          "kind": "hazard",
+          "label": "missed beat",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "last beat",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Tap each lane as its note hits the line. The song gets busier.",
+        "controlsHint": "Tap the lane, or D F J K, on the beat. M toggles sound."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "knit"
+    },
+    "specHash": "c2b3335f",
+    "worldHash": "f7af6c8c528f8499b0799551fe8e1a931c18c678b87ea8ca733946de4da0f619",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bear",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 180,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bear",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "beat",
+        "object": {
+          "body": 1,
+          "roleId": "note",
+          "label": "tile",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 180,
+        "evidence": "successful-timing",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "bear",
+          "verb": "knit",
+          "object": "inside"
+        }
+      ],
+      "closest": "a rhythm game",
+      "reason": "Knit isn't here yet – here's a rhythm game."
+    },
+    "score": {
+      "preserved": false,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "bear",
+          "verb": "knit",
+          "object": "scarf"
+        }
+      ],
+      "silent": [
+        {
+          "actor": "bear",
+          "verb": "knit",
+          "object": "scarf"
+        }
+      ]
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2131,
+      "hash": "11650b12",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-59",
+    "sentence": "A soldier shoots arrows in a fort.",
+    "seed": 5,
+    "milliseconds": 412.7202999999863,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "shooter",
+      "controlParams": {
+        "waves": 6,
+        "rise": 4
+      },
+      "genre": {
+        "id": "shooter",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Soldier Shootout",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "fort",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Stop 6 waves of arrows before they reach you.",
+        "count": 6,
+        "role": "enemy"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "soldier",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "target",
+          "count": 1
+        },
+        {
+          "id": "enemy",
+          "kind": "hazard",
+          "label": "arrow",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Stop 6 waves of arrows. Each wave is faster.",
+        "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "ee7ebd26",
+    "worldHash": "62779afe6b0bb8040e339731059f4e90b0d2bd5389f28f60d86a5d995d2e4b60",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "soldier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 36,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "soldier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "target",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 36,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "soldier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "target",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 36,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "soldier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 7,
+          "roleId": "enemy",
+          "label": "arrow",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 122,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "soldier",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 7,
+          "roleId": "enemy",
+          "label": "arrow",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 122,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 6,
+          "roleId": "enemy",
+          "label": "arrow",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "soldier",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 1056,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:enemy"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2696,
+      "hash": "94f15a5e",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

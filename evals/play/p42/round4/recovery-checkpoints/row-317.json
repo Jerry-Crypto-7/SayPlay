@@ -1,0 +1,165 @@
+{
+  "rowIndex": 317,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-064",
+    "sentence": "Make a football game with a fox in a stadium.",
+    "seed": 2,
+    "milliseconds": 718.125699999975,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "ball",
+      "controlParams": {
+        "goal": "goal",
+        "shotRecoveryTicks": 168,
+        "shotRecoveryRiseTicks": 4,
+        "paceSeconds": 15,
+        "keeper": false,
+        "difficulty": "normal",
+        "targets": 5,
+        "generator": "ball_pitch"
+      },
+      "addons": [],
+      "title": "player score",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "stadium",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Score in every goal.",
+        "count": 5,
+        "role": "goal"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "player",
+          "count": 1
+        },
+        {
+          "id": "physics_ball",
+          "kind": "item",
+          "label": "football",
+          "count": 1
+        },
+        {
+          "id": "goal",
+          "kind": "target",
+          "label": "goal",
+          "count": 5
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Score in every goal.",
+        "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "a94dc7e6",
+    "worldHash": "b63ec0b6b22d77301b4b2199ae473176cc64c1e0dc79631c70f3e5e698aa9980",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "player",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 46,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "player",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "ball",
+        "object": null,
+        "tick": 46,
+        "evidence": "physical-ball-scored",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "player",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": {
+          "body": 2,
+          "roleId": "goal",
+          "label": "goal",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 46,
+        "evidence": "physical-ball-in-goal",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": false,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "fox",
+          "verb": "ball",
+          "object": null
+        }
+      ],
+      "silent": [
+        {
+          "actor": "fox",
+          "verb": "ball",
+          "object": null
+        }
+      ]
+    },
+    "hero": false,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 877,
+      "hash": "d06d7172",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

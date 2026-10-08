@@ -1,0 +1,227 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-054",
+    "sentence": "Let a robot shoot down incoming meteors.",
+    "seed": 3,
+    "milliseconds": 169.55299999998533,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "shooter",
+      "controlParams": {
+        "waves": 6,
+        "rise": 4
+      },
+      "genre": {
+        "id": "shooter",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Robot Shootout",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "desert outpost",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Stop 6 waves of incoming meteors before they reach you.",
+        "count": 6,
+        "role": "enemy"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "robot",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "target",
+          "count": 1
+        },
+        {
+          "id": "enemy",
+          "kind": "hazard",
+          "label": "incoming meteor",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Stop 6 waves of incoming meteors. Each wave is faster.",
+        "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "e9585f9d",
+    "worldHash": "68e7b187baafd8f7592974acdf01c1a68f75bdf039085369547024d8b72b7cff",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "robot",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 33,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "robot",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "target",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 33,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "robot",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "target",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 33,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "robot",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 6,
+          "roleId": "enemy",
+          "label": "incoming meteor",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 111,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "robot",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 6,
+          "roleId": "enemy",
+          "label": "incoming meteor",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 111,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 6,
+          "roleId": "enemy",
+          "label": "incoming meteor",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "robot",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 1056,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:enemy"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": null,
+    "verification": {
+      "outcome": "won",
+      "tick": 2648,
+      "hash": "c3482bf4",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

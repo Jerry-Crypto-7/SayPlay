@@ -6,14 +6,20 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import type { Group, Mesh } from 'three';
 import { color } from '@/brand/tokens';
-import { BODY, BODY_STRIDE, COUNTER, FLAG, HEADER, HEADER_SIZE, PHYSICS_SUBSTEPS, UNIT, bodyBase, unpackRotation } from '@/play/arcade/contract';
+import { underlyingRule } from '@/play/arcade/addons';
+import { BODY, BODY_STRIDE, COUNTER, FLAG, HEADER, HEADER_SIZE, PHYSICS_SUBSTEPS, UNIT, bodyBase, unpackRotation, type PieceRef } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import type { ArcadeSession } from '../session';
 
 export { placeBall } from './camera';
 export { useBallInput } from './ball-input';
 /** Named player/goalkeeper actors stay in World; these are native sports props. */
-export const BALL_SCENE_KINDS: ReadonlySet<string> = new Set(['physics-ball', 'goal', 'hoop', 'hole', 'pin']);
+export const BALL_SCENE_KINDS: ReadonlySet<string> = new Set(['physics-ball', 'opponent-ball', 'goal', 'home-goal', 'hoop', 'hole', 'pin']);
+
+/** Assembly gates preserve the native launch recipe used by the aiming preview. */
+export function ballLaunchRule(rules: readonly PieceRef[]): PieceRef | undefined {
+  return rules.map(underlyingRule).find(rule => rule.id === 'ball_launch');
+}
 
 export function BallScene({ session, look }: { readonly session: ArcadeSession; readonly look: Look }) {
   const groups = useRef(new Map<number, Group>());
@@ -22,7 +28,7 @@ export function BallScene({ session, look }: { readonly session: ArcadeSession; 
   const ready = useRef<Mesh>(null);
   const { props, slots, launch, goal } = useMemo(() => {
     const state = session.world.initial;
-    const launch = session.world.rules.find(rule => rule.id === 'ball_launch');
+    const launch = ballLaunchRule(session.world.rules);
     const template = bodyBase(Number(launch?.params.template ?? 1));
     return {
       launch: { y: state[template + BODY.y]!, z: state[template + BODY.z]!, size: state[template + BODY.w]! },
@@ -31,7 +37,7 @@ export function BallScene({ session, look }: { readonly session: ArcadeSession; 
       props: Array.from({ length: state[HEADER.bodyCount]! }, (_, index) => {
         const b = bodyBase(index);
         return { index, kind: session.world.kinds[state[b + BODY.kind]!]!, w: state[b + BODY.w]! / UNIT, h: state[b + BODY.h]! / UNIT, d: state[b + BODY.d]! / UNIT };
-      }).filter(body => ['goal', 'hoop', 'hole', 'pin'].includes(body.kind)),
+      }).filter(body => ['goal', 'home-goal', 'hoop', 'hole', 'pin'].includes(body.kind)),
     };
   }, [session]);
   useFrame(() => {

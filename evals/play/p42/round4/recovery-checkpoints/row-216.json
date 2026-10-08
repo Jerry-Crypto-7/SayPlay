@@ -1,0 +1,196 @@
+{
+  "rowIndex": 216,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-044",
+    "sentence": "A fox paints portraits in a studio.",
+    "seed": 1,
+    "milliseconds": 693.1600999999937,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_spatial",
+        "tuning": {
+          "count": 5,
+          "states": 2,
+          "verb": "paint",
+          "rounds": 3,
+          "chasers": 1
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "spatial",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Fox Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "studio",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Paint all 5 star in each of 3 rounds before the shadow catches you.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 88,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "fox",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "star",
+          "count": 5
+        },
+        {
+          "id": "hunter",
+          "kind": "chaser",
+          "label": "shadow",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Paint all 5 star, 3 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use next to a target."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "paint"
+    },
+    "specHash": "310703f5",
+    "worldHash": "af25e81529aa16b0be5db1e696369b729f837141a3fb695a66177a89fadb50af",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "fox",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 8,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "fox",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 1,
+          "roleId": "target",
+          "label": "star",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 60,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "shadow",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "verb": "chaser",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "fox",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 226,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:hunter"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "fox",
+          "verb": "paint",
+          "object": "portrait"
+        }
+      ],
+      "closest": "a quest",
+      "reason": "Paint isn't here yet – here's a quest."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "fox",
+          "verb": "paint",
+          "object": "portrait"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 4192,
+      "hash": "1aa9f839",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

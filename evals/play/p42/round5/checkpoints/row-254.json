@@ -1,0 +1,227 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-51",
+    "sentence": "A sparrow flaps through an attic.",
+    "seed": 4,
+    "milliseconds": 380.0199999999604,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "flap",
+      "controlParams": {
+        "lengthM": 220,
+        "rise": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "flap",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Sparrow Flight",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "attic",
+        "mood": "cheerful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Flap through the gaps between the pipes to the finish.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "sparrow",
+          "count": 1
+        },
+        {
+          "id": "pipe",
+          "kind": "hazard",
+          "label": "pipe",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "coin",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Fly through the gaps to the finish. They get tighter.",
+        "controlsHint": "Tap or Space to flap."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "7d9eb96c",
+    "worldHash": "85b1962956334fc51db277852a53036fe2c6a43f960ede3ab32fe741162131f7",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sparrow",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "flap",
+        "object": null,
+        "tick": 11,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sparrow",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 161,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sparrow",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 4,
+          "roleId": "coin",
+          "label": "coin",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 161,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sparrow",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 161,
+          "roleId": "finish",
+          "label": "finish line",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2229,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sparrow",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 2,
+          "roleId": "pipe",
+          "label": "pipe",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2230,
+        "evidence": "survived-threat:probe:pipe",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 2,
+          "roleId": "pipe",
+          "label": "pipe",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "sparrow",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 155,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:pipe"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2230,
+      "hash": "88bcf7d2",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

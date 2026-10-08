@@ -30,6 +30,7 @@ import {
   ROLE,
   bodyBase,
   targetStateOf,
+  underlyingRule,
 } from '../contract';
 import { ARENA, DIRECTIONS, arenaAxis, axisOfDirection, directionOfAxis } from '../pieces/arena';
 import { predict } from '../pieces/arena-bot';
@@ -426,7 +427,8 @@ export function rulesPlanner(world: ArcadeWorld): RulesPlanner | null {
   return plannerFor(rules, rules.filter((rule) => has(rule, 'win')));
 }
 
-const specRules = (world: ArcadeWorld): CompiledRule[] => world.rules.filter((ref) => ref.id in SPEC_RULES).map((ref) => compiledRuleSchema.parse(ref.params));
+// Složená hra (P42) má pravidla specu v obalu `assembly_gate_*`.
+const specRules = (world: ArcadeWorld): CompiledRule[] => world.rules.map(underlyingRule).filter((ref) => ref.id in SPEC_RULES).map((ref) => compiledRuleSchema.parse(ref.params));
 
 /** Plánovač, který jde po prvním z `goals`, jehož cestu zná; žádný cíl = null. */
 function plannerFor(rules: readonly CompiledRule[], goals: readonly CompiledRule[]): RulesPlanner | null {

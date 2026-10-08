@@ -1,0 +1,317 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-029",
+    "sentence": "City taxi game: drive around and deliver every passenger.",
+    "seed": 5,
+    "milliseconds": 243.32099999999627,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "steer",
+      "controlParams": {
+        "difficulty": "normal",
+        "lengthM": 700,
+        "rivals": false,
+        "roadWidth": 3600,
+        "roadEntryWidth": 10000,
+        "crashBudget": 3,
+        "delivery": true,
+        "turbo": true,
+        "drift": false
+      },
+      "addons": [],
+      "title": "taxi drive",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "city",
+        "mood": "fast"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Pick up the passenger and carry it to the delivery point.",
+        "role": "finish"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "taxi",
+          "count": 1
+        },
+        {
+          "id": "barrier",
+          "kind": "hazard",
+          "label": "tire barrier",
+          "count": 1
+        },
+        {
+          "id": "turbo",
+          "kind": "collectible",
+          "label": "turbo",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "delivery point",
+          "count": 1
+        },
+        {
+          "id": "cargo",
+          "kind": "item",
+          "label": "passenger",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Pick up the passenger and carry it to the delivery point.",
+        "controlsHint": "Drag/arrows steer. Down or second finger brakes. Avoid barriers."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "rules": [
+        {
+          "id": "p41_take",
+          "verb": "carry",
+          "when": {
+            "contact": [
+              "player",
+              "cargo"
+            ]
+          },
+          "if": [
+            {
+              "notHolding": true
+            }
+          ],
+          "do": [
+            {
+              "grab": "other"
+            }
+          ]
+        },
+        {
+          "id": "p41_deliver",
+          "verb": "deliver",
+          "when": {
+            "contact": [
+              "player",
+              "finish"
+            ]
+          },
+          "if": [
+            {
+              "holding": "cargo"
+            }
+          ],
+          "do": [
+            {
+              "despawn": "held"
+            },
+            {
+              "score": 1
+            },
+            {
+              "win": true
+            }
+          ]
+        }
+      ]
+    },
+    "specHash": "4f2a4d9b",
+    "worldHash": "125a86f9ee8f46cb1deb97bcb2f09514d36d3aee54f9db9998061a3f5521d7ae",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "taxi",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "drive",
+        "object": null,
+        "tick": 21,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "taxi",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 113,
+          "roleId": "cargo",
+          "label": "passenger",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 57,
+        "evidence": "grabbed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "taxi",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 529,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "taxi",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 107,
+          "roleId": "turbo",
+          "label": "turbo",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 529,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "taxi",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "deliver",
+        "object": {
+          "body": 113,
+          "roleId": "cargo",
+          "label": "passenger",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 2092,
+        "evidence": "carried-to-destination",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "taxi",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 112,
+          "roleId": "finish",
+          "label": "delivery point",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2092,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "taxi",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "barrier",
+          "label": "tire barrier",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2093,
+        "evidence": "survived-threat:probe:barrier",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 10,
+          "roleId": "barrier",
+          "label": "tire barrier",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "taxi",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 267,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:barrier"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 2,
+      "proved": 2,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2093,
+      "hash": "b65ffd9b",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

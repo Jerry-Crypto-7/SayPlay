@@ -18,7 +18,7 @@ import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExte
 import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { AXIS_MAX, BUTTON } from '@/play/arcade/contract';
+import { AXIS_MAX, BUTTON, type PieceRef, nativeRule } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
 import { CAPABILITIES } from '@/play/capabilities';
@@ -48,6 +48,11 @@ import { TouchStick, TouchZones } from './TouchControls';
 import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
 import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
+
+/** Fire remains available when independent parts wrap the native weapon rule. */
+export function hasBlaster(rules: readonly PieceRef[]): boolean {
+  return nativeRule(rules, 'blaster') !== undefined;
+}
 
 /**
  * Sonda záběru (P27A T6): `window.__playFrame()` promítne hrdinu a nejbližší
@@ -712,7 +717,7 @@ export default function ArcadeStage({
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
   const control = baseControlOf(session.world.control).id;
   const input = stageOf(control)?.input;
-  const fires = session.world.rules.some((rule) => rule.id === 'blaster');
+  const fires = hasBlaster(session.world.rules);
   // Úder a použití (P32-0 T5) jen ve světě, který je čte.
   const actions = useMemo(() => actionsOf(session.world), [session]);
   const look = scene ?? LOOKS[lookId];
@@ -750,6 +755,11 @@ export default function ArcadeStage({
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
       {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} />}
       {enabled && (control === 'move_free' || control === 'fight') && <TouchStick surface={surface} />}
+      {enabled && control === 'ball' && session.world.control.id === 'assembly_control' && <div
+        className="play-pause-hint" data-testid="ball-dribble-hint"
+        style={{ position: 'absolute', left: 12, top: 12, maxWidth: '65%', pointerEvents: 'none' }}>
+        Left side: drag to move. Right side: aim and release to shoot. Keyboard: arrows move, Q/E aim, Space shoots.
+      </div>}
       {fires && enabled && <FireButton session={session} />}
       {enabled && actions.map((action) => <ActionButton key={action} session={session} action={action} />)}
     </div>

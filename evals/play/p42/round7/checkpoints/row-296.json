@@ -1,0 +1,187 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-060",
+    "sentence": "A bowler throws heavy balls at the pins.",
+    "seed": 1,
+    "milliseconds": 143.3241000000271,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "throw",
+      "controlParams": {
+        "goal": "tower",
+        "budget": 48
+      },
+      "genre": {
+        "id": "throw",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Bowler Throw",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "pin",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Hit every pin in 87 seconds before you run out of throws.",
+        "count": 3,
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 87,
+            "onEnd": "lose"
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "bowler",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "pin",
+          "count": 3
+        },
+        {
+          "id": "ball",
+          "kind": "item",
+          "label": "heavy ball",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Hit every pin in 87 seconds.",
+        "controlsHint": "Hold to power up, drag up or down to aim, let go to throw."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "733fe025",
+    "worldHash": "3241d1dc9489b6f6d510f96183d0669eea2b7e429ff61043e35cb9c4c0cd1233",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bowler",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "throw",
+        "object": {
+          "body": 13,
+          "roleId": "ball",
+          "label": "heavy ball",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 47,
+        "evidence": "thrown-body-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bowler",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 66,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bowler",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "throw",
+        "object": {
+          "body": 10,
+          "roleId": "target",
+          "label": "pin",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 66,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "bowler",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 10,
+          "roleId": "target",
+          "label": "pin",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 66,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": null,
+    "verification": {
+      "outcome": "won",
+      "tick": 2791,
+      "hash": "0922152f",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

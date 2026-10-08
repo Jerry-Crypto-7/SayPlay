@@ -2,6 +2,9 @@ import type { GenreSpec } from '../genre/contract';
 import type { GameSpecV1 } from '../spec';
 import type { Recipe } from './recipe';
 
+/** Reference prey pace and field the catch game is calibrated for (the `roam.catch` cell). */
+export const CATCH_TUNING: Readonly<Record<string, number>> = { half: 40000, preySpeed: 250, seconds: 11 };
+
 export function catchSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
   if (recipe.move !== 'roam' || recipe.objective !== 'catch' || recipe.actions.length || recipe.threats.length) throw new Error('Unsupported catch recipe');
   const prey = content.cast?.find(item => item.does === 'fight')?.label;

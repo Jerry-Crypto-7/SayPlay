@@ -1,0 +1,242 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-060",
+    "sentence": "A princess frees prisoners in the dungeon.",
+    "seed": 2,
+    "milliseconds": 180.15850000001956,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "quest_spatial",
+        "tuning": {
+          "count": 5,
+          "states": 2,
+          "verb": "use",
+          "rounds": 3,
+          "chasers": 1
+        }
+      },
+      "genre": {
+        "id": "quest",
+        "mode": "spatial",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Princess Quest",
+      "archetype": "switch_puzzle",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "dungeon",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "puzzle",
+        "description": "Use all 5 star in each of 3 rounds before the ghost catches you.",
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 88,
+            "onEnd": "lose"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "princess",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "star",
+          "count": 5
+        },
+        {
+          "id": "hunter",
+          "kind": "chaser",
+          "label": "ghost",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Use all 5 star, 3 rounds.",
+        "controlsHint": "Drag or arrows to move, hold Use next to a target."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "1e0d216a",
+    "worldHash": "877e19a8204902d39d7e5edf57d6dcbd8c7727808ebd096f775694cc888399ea",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "princess",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 8,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "princess",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 5,
+          "roleId": "target",
+          "label": "star",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 64,
+        "evidence": "target-state",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "princess",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "escape",
+        "object": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "ghost",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 2862,
+        "evidence": "survived-threat:probe:hunter",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "princess",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "ghost",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "tick": 2862,
+        "evidence": "survived-threat:probe:hunter",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 9,
+          "roleId": "hunter",
+          "label": "ghost",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "verb": "chaser",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "princess",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 171,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:hunter"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "princess",
+          "verb": "free",
+          "object": "prisoner"
+        }
+      ],
+      "closest": "a quest",
+      "reason": "Free isn't here yet – here's a quest."
+    },
+    "score": {
+      "preserved": false,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "princess",
+          "verb": "interact",
+          "object": "prisoner"
+        }
+      ],
+      "silent": [
+        {
+          "actor": "princess",
+          "verb": "interact",
+          "object": "prisoner"
+        }
+      ]
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2862,
+      "hash": "baac5320",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

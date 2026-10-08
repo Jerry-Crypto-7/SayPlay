@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "dataset": "evals/play/p42/round5/sentences.json",
+  "sha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "sealedAt": "2026-10-07T12:54:57.012133+00:00",
+  "count": 64,
+  "categoryCounts": {
+    "multi-action": 22,
+    "paraphrase": 8,
+    "negation": 10,
+    "unsupported": 8,
+    "single": 16
+  },
+  "normalizedOverlapCounts": {
+    "evals/play/p30/test-200.json": 0,
+    "evals/play/p41/sentences.json": 0,
+    "evals/play/p42/sentences.json": 0,
+    "evals/play/p42/round2/sentences.json": 0,
+    "evals/play/p42/round3/sentences.json": 0,
+    "evals/play/p42/round4/sentences.json": 0
+  },
+  "internalNormalizedDuplicates": 0,
+  "labelSource": "Manual semantic annotation using spec and intent contract only; no implementation execution or prior sentence content viewed.",
+  "review": "Manual grammar and label review completed before seal. Normal actions use hero noun; threats use threat noun as actor and hero noun as object; noun heads singular; settings retain actual main place.",
+  "normalization": "lowercase, non-ASCII-alphanumeric runs replaced with one space, trim"
+}

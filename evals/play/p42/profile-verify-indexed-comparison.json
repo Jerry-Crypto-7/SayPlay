@@ -1,0 +1,25 @@
+{
+  "equalCompleteVerdicts": 6,
+  "means": [
+    {
+      "move": "drive",
+      "beforeMs": 3347.7848333333336,
+      "indexedMs": 1149.9653666666661
+    },
+    {
+      "move": "run",
+      "beforeMs": 2227.0074999999983,
+      "indexedMs": 1494.2015666666666
+    }
+  ],
+  "samples": [
+    {
+      "total": 609,
+      "witness": 230
+    },
+    {
+      "total": 263,
+      "witness": 79
+    }
+  ]
+}

@@ -1,0 +1,174 @@
+{
+  "sourceFingerprint": "9023622f82334903610691a188c0affe39b5e156c68543c8e29bfd8f39c60be4",
+  "datasetSha256": "4c000a74a7acb11eed19491f70910c06b12b76f3303005c8548a6e5c467a2fe5",
+  "row": {
+    "id": "r7-ho-057",
+    "sentence": "Make a game where a night watchman survives until morning in a haunted mall.",
+    "seed": 2,
+    "milliseconds": 135.85939999998664,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "seconds": 40,
+        "generator": "arena_escape",
+        "tuning": {
+          "items": 0,
+          "waves": 3
+        }
+      },
+      "genre": {
+        "id": "arena",
+        "mode": "escape",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Watchman Escape",
+      "archetype": "survival_timer",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "haunted mall",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "survive",
+        "description": "Stay away from the watchman for 40 seconds.",
+        "seconds": 40
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 40,
+            "onEnd": "win"
+          }
+        },
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "watchman",
+          "count": 1
+        },
+        {
+          "id": "hunter",
+          "kind": "chaser",
+          "label": "watchman",
+          "count": 2
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Survive 40 seconds.",
+        "controlsHint": "Drag or arrows to move."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "3b3061c6",
+    "worldHash": "af9fd47a32b0122f63854cf8796a5548747be5c2ea2d95d4b09fcb3fae15f927",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "watchman",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 155,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "watchman",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": null,
+        "tick": 2399,
+        "evidence": "survival-timer",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 5,
+          "roleId": "hunter",
+          "label": "watchman",
+          "roleKind": "chaser",
+          "player": false
+        },
+        "verb": "chaser",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "watchman",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 199,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:hunter"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "watchman",
+          "verb": "guard",
+          "object": "watchman"
+        }
+      ],
+      "closest": "a chase game",
+      "reason": "The guards isn't here yet – here's a chase game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2400,
+      "hash": "ed3f533f",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}
