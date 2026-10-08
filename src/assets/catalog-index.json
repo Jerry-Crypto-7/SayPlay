@@ -19516,6 +19516,45 @@
           0.31625
         ]
       }
+    },
+    {
+      "assetId": "gen3d-fuel-can",
+      "tags": [
+        "fuel can",
+        "jerrycan"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fuel-can-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32922,
+          0,
+          -0.32923
+        ],
+        "max": [
+          0.32922,
+          1.00001,
+          0.32923
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-juice",
+      "tags": [
+        "juice"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-juice-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23364,
+          0,
+          -0.2337
+        ],
+        "max": [
+          0.23364,
+          0.99964,
+          0.2337
+        ]
+      }
     }
   ]
 }

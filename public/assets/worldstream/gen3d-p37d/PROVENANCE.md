@@ -173,3 +173,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-crossbow` | crossbow | 4746 / 2359 |
 | `gen3d-dishwasher` | dishwasher | 4150 / 2001 |
 | `gen3d-jetpack` | jetpack | 4373 / 2169 |
+| `gen3d-fuel-can` | fuel can, jerrycan | 4746 / 2370 |
+| `gen3d-juice` | juice | 4742 / 2364 |

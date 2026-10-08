@@ -51,9 +51,16 @@ Po třídách (soud): prop 11/19, flat 3/13, biped 2/9, quadruped 2/3, flyer 0/2
 | Dávka | Jmen | Předkontrola a brána | Soud | Povýšeno |
 |---|---|---|---|---|
 | 1 (22:06–22:21) | 10 | 3 | 1 | 0 |
+| 2 (22:53–23:10) | 10 | 6 | 2 | 2 |
 
 **Dávka 1:**
 - Přijatý, nepovýšený: **demon** (top1). S modelem by manifest P32 (`src/play/assets/entries/catalog.json`) získal záznam třídy monster a `src/play/assets/__tests__/catalog-entries.test.ts:29` drží počet 261 → vyřazeno `--drop` jako lizard. Model leží v `D:/claude/_gen3d-cache-p45e/demon/`; povýšit jde, až linie P45D / P44C zvedne počet v testu.
 - Soudce poznal něco jiného: coral: fire pit · drill: spark plug.
 - Předkontrola odmítla všechny tři obrázky: anthill: rock · blanket: monolith / stone pillar / hedge · canvas: monolith / pillar / pants · captain: military officer / police officer · centaur: horse · comet: plumb bob / ore rock / crystal pendant · dumpling: rock / potato.
 - „canvas“ dávka zkrátí na „canva“ – stejná chyba množného čísla jako „cyclop“ (`ops/gen3d/cache.py`, `IRREGULAR`).
+
+**Dávka 2:**
+- Povýšeno (2): top3 fuel can („metal canister“), juice („drink cup“).
+- Soudce poznal něco jiného: golem: goblin · chicken leg: torch · keyboard: forge · joystick: chess pawn.
+- Předkontrola odmítla všechny tři obrázky: earring: tree / gravestone / sign · glue: square nut / rock / cylinder · magazine: tombstone / block tower / hard drive · flower pot: potted plant (2×, vizuálně správně – synonymum by ho pustilo; třetí pokus neprošel bránou kvality).
+- Zjištění pro P45D: `scripts/p45d/motion-class.mjs:155` dá vysoký předmět bez slova třídy do biped (poměr výšky) – fuel can a juice dostaly nohy, stejně jako z T4 searchlight, statue, snowboard a playing card.
