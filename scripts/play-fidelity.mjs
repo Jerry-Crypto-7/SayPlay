@@ -63,8 +63,9 @@ const DIR = join(ROOT, 'evals', 'play', 'fidelity');
 const P30 = join(ROOT, 'evals', 'play', 'p30');
 const P44E = join(ROOT, 'evals', 'play', 'p44e');
 const P43 = join(ROOT, 'evals', 'play', 'p43');
+const P45 = join(ROOT, 'evals', 'play', 'p45');
 /** Zapečetěné sady podle `source` věty: kam se zapíše jejich jediné otevření. */
-const SEALS = { test: { dir: P30, file: 'test-opened.json' }, 'sealed-p43': { dir: P43, file: 'sealed-opened.json' }, 'sealed-p44e': { dir: P44E, file: 'sealed-opened.json' } };
+const SEALS = { test: { dir: P30, file: 'test-opened.json' }, 'sealed-p43': { dir: P43, file: 'sealed-opened.json' }, 'sealed-p44e': { dir: P44E, file: 'sealed-opened.json' }, 'sealed-p45': { dir: P45, file: 'sealed-opened.json' } };
 
 export const SLOTS = ['hero', 'role', 'any', 'setting', 'verb'];
 
@@ -470,7 +471,7 @@ function breakSeal(file, { openTestOnce, runId, sealDir, sealFile }) {
  * Sada podle `--set`: `dev` a `test` jsou sady P30A v `evals/play/p30/`, jiný
  * název je soubor ve `fidelity/` (`judge-10.json`), bez názvu korpus.
  */
-const setFile = (name) => (name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : name === 'p43-sealed' ? join(P43, 'sealed-100.json') : name === 'p44e-sealed' ? join(P44E, 'sealed-200.json') : resolve(DIR, name ?? 'corpus.json'));
+const setFile = (name) => (name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : name === 'p43-sealed' ? join(P43, 'sealed-100.json') : name === 'p44e-sealed' ? join(P44E, 'sealed-200.json') : name === 'p45-sealed' ? join(P45, 'sealed-100.json') : resolve(DIR, name ?? 'corpus.json'));
 const picked = (sentences, only) => {
   const ids = typeof only === 'string' ? new Set(only.split(',')) : null;
   return sentences.filter((sentence) => ids === null || ids.has(sentence.id));

@@ -12,4 +12,15 @@ Vybraný jednou 8. 10. 2026 nad `main` `0714a352` dřív, než se P45 dotkl kód
 - Pokrytí: 18 žánrů, 18 vět s nepřítelem. `genre` a `enemy` jsou zapsané u každé věty v době výběru – pozdější změna hry je nepřepisuje.
 - Žádná věta se po normalizaci neshoduje s `p30/test-200.json` ani se zapečetěnými sadami P43, P44C a P44E. Výběr drží `__tests__/panel.test.ts` (změna = červený).
 
-Ids: `f01` `f02` `f03` `f05` `f10` `f12` `f17` `f18` `m01` `m02` `m03` `m04` `m06` `m07` `m08` `m09` `m11` `m16` `n01` `n02` `n04` `u01` `u02` `u03` `u06` (dev-150) · `d01` `d03` `d04` `d09` `h02` `h03` `h05` `j01` `j04` `j05` `j08` `s002` `s003` `s021` `s035` (p30 dev).
+## `sealed-100.json` – zapečetěná sada zábavy, 100 vět
+
+Napsaná 8. 10. 2026 nezávislým autorem (subagent bez přístupu ke kódu, plánům, specům i ke všem ostatním sadám v `evals/play/**`; dostal jen pravidla seznamu z `fidelity/corpus.json`, tvar jednoho záznamu a rozložení skupin) s pokynem psát věty jako porotce, který chce hru, u které se pobaví. Skupiny: `threat` 40 (nepřítel, souboj, útěk), `everyday` 25 (neznámé sloveso), `fantasy` 20, `non-game` 15; pár vět nese štítek `typo`, `short` nebo `two-verbs`. Na sadě se neladí a její věty nikdo z P45A nečetl – test ji ověřuje jen přes otisky.
+
+SHA-256 (konce řádků LF): `1b6d2eb9c11f58cbef5a9f9bff7a1b69aa380c69d804c44225dd5cc0f9fa7a2c`, hlídá ho `__tests__/sealed.test.ts`.
+
+- Žádná věta se po normalizaci (`normalizeSentence`) neshoduje s `p30/test-200.json`, `p30/dev.json`, `p37a/dev-150.json`, `fidelity/corpus.json`, `fidelity/judge-10.json`, `demand/corpus.json`, `p41/sentences.json`, `p43/panel.json`, `p43/sealed-100.json`, `p44c/sealed-110.json`, `p44e/sealed-200.json` ani s panelem P45.
+- Pečeť rozhoduje obsah (`source: "sealed-p45"`), ne cesta: `loadSet` bez `--open-sealed-once` odmítne, s ním zapíše `sealed-opened.json` (čas, běh, commit, SHA-256 nad LF bajty) dřív, než odejde první věta, a každé další otevření odmítne.
+
+### Panel – ids
+
+`f01` `f02` `f03` `f05` `f10` `f12` `f17` `f18` `m01` `m02` `m03` `m04` `m06` `m07` `m08` `m09` `m11` `m16` `n01` `n02` `n04` `u01` `u02` `u03` `u06` (dev-150) · `d01` `d03` `d04` `d09` `h02` `h03` `h05` `j01` `j04` `j05` `j08` `s002` `s003` `s021` `s035` (p30 dev).
