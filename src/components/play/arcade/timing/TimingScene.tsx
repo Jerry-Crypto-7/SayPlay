@@ -21,7 +21,7 @@ import { ARCADE_HZ, BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/ar
 import type { Look } from '@/play/arcade/look';
 import { RHYTHM, rhythmLaneAxis } from '@/play/arcade/pieces/rhythm';
 import { TIMING, TIMING_SLOTS } from '@/play/arcade/pieces/timing';
-import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
+import { type ToyPose, toyEventsLive, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
 import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
@@ -29,7 +29,7 @@ import { isTyping } from '../input';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
-import { applyToy, toyMotionOn } from '../toy/applyToy';
+import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 
 const TAP_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
 /** Klávesy drah rytmu zleva doprava (P36A T11). */
@@ -114,8 +114,9 @@ export function beatPoseOf(state: Int32Array, prev: Int32Array, previous: ToyPos
   // Póza z pozdějšího tiku patří běhu před restartem.
   const memory = previous !== null && tick >= previous.at ? previous : null;
   const player = state[HEADER.player] as number;
-  const result = state[bodyBase(player) + BODY.aux0] as number;
   const view = toyViewOf(state, prev, player);
+  // Po konci běhu stojí stav s výsledkem posledního ťuku – ten platí jen v tiku konce.
+  const result = toyEventsLive(view, memory, tick) ? (state[bodyBase(player) + BODY.aux0] as number) : 0;
   // Stav je už po tiku trefy, ten se počítá celý – poskok je vidět hned v prvním snímku.
   const sinceHop = (at: number): number => (tick + 1 - at) / ARCADE_HZ;
   // Nová trefa začne nový poskok, i když minulý ještě nedopadl.
@@ -194,7 +195,7 @@ export function TimingScene({
       mesh.position.set(-(state[m + BODY.x] as number) / UNIT, (state[m + BODY.y] as number) / UNIT + TIMING.blockH / UNIT / 2, 0);
     });
     // Trefa = jezdec i právě položený díl poskočí, minutí = zakymácejí se, výhra = vrchní díl slaví (jezdec už je schovaný).
-    const pose = beatPoseOf(state, prev, toyPose.current, (state[HEADER.tick] as number) + alpha, !toyMotionOn());
+    const pose = beatPoseOf(state, prev, toyPose.current, toyTickOf(session), !toyMotionOn());
     toyPose.current = pose;
     const pieceH = TIMING.blockH / UNIT;
     if (sliderPose.current !== null) applyToy({ group: sliderPose.current }, pose, pieceH);

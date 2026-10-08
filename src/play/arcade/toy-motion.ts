@@ -31,6 +31,8 @@ export interface ToyView extends MotionView {
   readonly turn: number;
   /** Cíl posunul svůj stav (dveře, víko) – díl se otevře. */
   readonly opened: boolean;
+  /** Běh skončil (výhra, prohra): stav stojí a tik kresby běží dál (`toyTickOf`, P45D T22). Chybí = běží. */
+  readonly ended?: boolean;
 }
 
 /**
@@ -65,6 +67,8 @@ export interface ToyPose {
   readonly diedAt: number;
   readonly wonAt: number;
   readonly openedAt: number;
+  /** Tik, kdy póza poprvé viděla konec běhu. */
+  readonly endedAt: number;
   /** Ujetá dráha (m) – fáze kroku, mávnutí a kol. */
   readonly travel: number;
   /** Tik posledního snímku (i s podílem). */
@@ -106,7 +110,7 @@ const AT_REST = {
 } as const;
 const REST: ToyPose = {
   ...AT_REST, grounded: true, airAt: NEVER, landedAt: NEVER, hitAt: NEVER, attackAt: NEVER,
-  diedAt: NEVER, wonAt: NEVER, openedAt: NEVER, travel: 0, at: 0,
+  diedAt: NEVER, wonAt: NEVER, openedAt: NEVER, endedAt: NEVER, travel: 0, at: 0,
 };
 
 const HOSTILE: ReadonlySet<number> = new Set([ROLE.enemy, ROLE.chaser]);
@@ -164,6 +168,7 @@ export function toyViewOf(state: Int32Array, prev: Int32Array, index: number): T
     attack: player ? view.shot : HOSTILE.has(role) && view.alive && strikerOf(state, prev) === index,
     turn: turnOf(state, prev, base),
     opened: role === ROLE.target && targetStateOf(state, index) > 0,
+    ended: (state[HEADER.runState] as number) !== RUN_STATE.running,
   };
 }
 
@@ -189,6 +194,14 @@ function gaitOf(body: BodyClass, view: ToyView, travel: number, gait: number) {
 }
 
 /**
+ * Platí události a rychlost stavu v tiku `tick`? Po konci běhu stav stojí a tik kresby běží
+ * dál (`toyTickOf`): zásah, útok a rychlost posledního tiku platí jen v tiku konce – jinak by
+ * se zásah spouštěl každý další tik a tělo kráčelo na místě (P45D T22).
+ */
+export const toyEventsLive = (view: ToyView, previous: ToyPose | null, tick: number): boolean =>
+  !view.ended || previous === null || previous.endedAt === NEVER || Math.floor(tick) === previous.endedAt;
+
+/**
  * Póza těla pro tik `tick` (smí mít podíl). `previous` je póza minulého snímku
  * téhož těla; `reduced` = `prefers-reduced-motion`: žádná amplituda, stav se
  * ukáže okamžitě – mrtvý leží, otevřený díl je otevřený, zásah jen blikne.
@@ -198,18 +211,20 @@ export function toyPoseOf(view: ToyView, body: BodyClass, previous: ToyPose | nu
   // Událost patří celému tiku: další snímek téhož tiku ji nezačne znovu.
   const now = Math.floor(tick);
   const since = (at: number): number => (tick - at) / ARCADE_HZ;
+  const endedAt = !view.ended ? NEVER : before.endedAt === NEVER ? now : before.endedAt;
+  const live = toyEventsLive(view, before, tick);
   const airAt = !view.grounded && before.grounded ? now : before.airAt;
   const landedAt = view.grounded && !before.grounded ? now : before.landedAt;
-  const hitAt = view.hit ? now : before.hitAt;
-  const attackAt = view.attack ? now : before.attackAt;
+  const hitAt = view.hit && live ? now : before.hitAt;
+  const attackAt = view.attack && live ? now : before.attackAt;
   const diedAt = view.alive ? NEVER : before.diedAt === NEVER ? now : before.diedAt;
   const wonAt = !view.won ? NEVER : before.wonAt === NEVER ? now : before.wonAt;
   const openedAt = !view.opened ? NEVER : before.openedAt === NEVER ? now : before.openedAt;
 
   const free = body === 'flyer' || body === 'swimmer';
-  const speed = Math.hypot(metresPerSecond(view.vx), free ? metresPerSecond(view.vy) : 0, metresPerSecond(view.vz));
+  const speed = live ? Math.hypot(metresPerSecond(view.vx), free ? metresPerSecond(view.vy) : 0, metresPerSecond(view.vz)) : 0;
   const travel = before.travel + speed * (Math.max(0, tick - before.at) / ARCADE_HZ);
-  const memory = { grounded: view.grounded, airAt, landedAt, hitAt, attackAt, diedAt, wonAt, openedAt, travel, at: tick };
+  const memory = { grounded: view.grounded, airAt, landedAt, hitAt, attackAt, diedAt, wonAt, openedAt, endedAt, travel, at: tick };
 
   const hit = since(hitAt) / HIT_S;
   const flash = hit < 1 ? 1 - hit : 0;

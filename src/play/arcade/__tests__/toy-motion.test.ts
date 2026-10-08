@@ -250,3 +250,25 @@ describe('toyViewOf – co hračkový pohyb čte ze stavu jádra', () => {
     expect(state).toEqual(before);
   });
 });
+
+describe('toyPoseOf po konci běhu (P45D T22)', () => {
+  it('oslava a pád dohrají časem kresby; zásah a krok posledního tiku se neopakují', () => {
+    // Poslední tik 100: výhra se zásahem a rychlostí; pak stav stojí a tik kresby běží 2 s po třetinách tiku.
+    const end = view({ won: true, hit: true, vz: perTick(4), ended: true });
+    let pose = toyPoseOf(view({ vz: perTick(4) }), 'biped', null, 99, false);
+    const after: ToyPose[] = [];
+    for (let frame = 0; frame <= seconds(2) * 3; frame += 1) {
+      pose = toyPoseOf(end, 'biped', pose, 100 + frame / 3, false);
+      after.push(pose);
+    }
+    expect(max(after, 'cheer')).toBeGreaterThan(0.9);
+    expect(after.at(-1)!.cheer).toBe(0);
+    expect(new Set(after.map((p) => p.hitAt))).toEqual(new Set([100]));
+    expect(new Set(after.filter((p) => p.at >= 101).map((p) => p.travel)).size).toBe(1);
+    expect(max(after.filter((p) => p.at >= seconds(2) + 100), 'hop')).toBe(0);
+
+    let fallen = toyPoseOf(view(), 'biped', null, 99, false);
+    for (let frame = 0; frame <= seconds(2); frame += 1) fallen = toyPoseOf(view({ alive: false, ended: true }), 'biped', fallen, 100 + frame, false);
+    expect(fallen.fall).toBe(1);
+  });
+});

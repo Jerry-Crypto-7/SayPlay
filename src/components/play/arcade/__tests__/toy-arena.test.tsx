@@ -116,7 +116,7 @@ function mount(world: ArcadeWorld) {
     state: () => state,
     prev: () => prev,
     advance: () => alpha,
-    alpha: () => alpha,
+    alpha: () => alpha, endedFor: () => 0,
     paused: () => false,
     humanRun: () => true,
     snapshot: () => ({ tick: 0, runState: 'running' }),

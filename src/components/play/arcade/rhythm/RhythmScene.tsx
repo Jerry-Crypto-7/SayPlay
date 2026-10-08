@@ -30,7 +30,7 @@ import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { type BodyModel, beatPoseOf, initialBody } from '../timing/TimingScene';
-import { applyToy, toyMotionOn } from '../toy/applyToy';
+import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 
@@ -121,7 +121,7 @@ export function RhythmScene({
     // Trefa = poskok se zmáčknutím, minutí = zakymácení, výhra = oslava; do taktu se hrdina sám nehýbe.
     const hero = heroPose.current;
     if (hero !== null) {
-      const pose = beatPoseOf(state, prev, toyPose.current, tick + alpha, !toyMotionOn());
+      const pose = beatPoseOf(state, prev, toyPose.current, toyTickOf(session), !toyMotionOn());
       toyPose.current = pose;
       applyToy({ group: hero }, pose, HERO_M.h);
     }

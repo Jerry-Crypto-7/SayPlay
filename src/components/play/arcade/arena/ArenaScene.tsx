@@ -59,7 +59,7 @@ import { RiggedModel, type ToyFrame } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
 import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
-import { applyToy, toyMotionOn } from '../toy/applyToy';
+import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 import { bodyClassOf } from '../toy/body-class';
 import { type Cast, FittedModel, toyTargetOf } from '../World';
 import { ArenaFloor } from './ArenaFloor';
@@ -539,6 +539,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
     }
     posesOf(state, prev, poses.current, tick + alpha);
     const reduced = !toyMotionOn();
+    const toyTick = toyTickOf(session);
     const player = state[HEADER.player] as number;
     const pb = bodyBase(player);
     const grace = graceLeft(state);
@@ -598,12 +599,12 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
         const moving = fighter ? { ...seen, attack: false, alive: true, hit: seen.hit || bodyHp(state, view.index) < bodyHp(prev, view.index) } : { ...seen, attack: false };
         // Riggovaná postava hraje tenhle pohled jen ve stavech bez klipu (`RiggedModel`, T13); začátek úderu
         // jí posunout nejde a nápřah by v tiku zásahu ucukl od hrdiny, sek proto zůstává klipu.
-        toyFrames.current[view.index] = { view: moving, tick: tick + alpha };
+        toyFrames.current[view.index] = { view: moving, tick: toyTick };
         if (inner !== null && inner !== undefined) {
           const blow = blowOf(state, view.index, part!, fighter, seen.attack);
           const before = toyPoses.current[view.index] ?? null;
           const memory = blow === null || before === null || before.attackAt === blow - BLOW_PEAK_TICKS ? before : { ...before, attackAt: blow - BLOW_PEAK_TICKS };
-          const toy = toyPoseOf(moving, bodyClasses[view.index]!, memory, tick + alpha, reduced);
+          const toy = toyPoseOf(moving, bodyClasses[view.index]!, memory, toyTick, reduced);
           toyPoses.current[view.index] = toy;
           applyToy(toyTargetOf(inner), toy, drawn[view.index]!.h);
           // Zásah bojovníka ukáže záblesk barvy (`drawFighter`); model by blikáním záblesk schoval.
@@ -783,7 +784,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
                         clip={() => clips.current[view.index] ?? 'idle'}
                         fallback={FALLBACK[part]}
                         onClip={onClip}
-                        toy={() => toyFrames.current[view.index] ?? { view: { ...toyViewOf(session.state(), session.prev(), view.index), attack: false }, tick: (session.state()[HEADER.tick] as number) + session.alpha() }}
+                        toy={() => toyFrames.current[view.index] ?? { view: { ...toyViewOf(session.state(), session.prev(), view.index), attack: false }, tick: toyTickOf(session) }}
                       />
                     ) : (
                       <group ref={(group) => { posed.current[view.index] = group; }}>

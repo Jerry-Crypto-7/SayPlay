@@ -80,7 +80,7 @@ function sessionOf(world: ArcadeWorld, state: Int32Array, prev: Int32Array, alph
     state: () => state,
     prev: () => prev,
     advance: () => alpha.value,
-    alpha: () => alpha.value,
+    alpha: () => alpha.value, endedFor: () => 0,
     snapshot: () => ({ tick: 0, runState: 'running' }),
     subscribe: () => () => undefined,
     onEvents: () => () => undefined,

@@ -49,6 +49,8 @@ export interface ArcadeSession {
   advance(ms: number): number;
   /** Podíl rozběhnutého tiku z posledního `advance` – duch (P37C T3) interpoluje stejně jako hráč. */
   alpha(): number;
+  /** Čas kresby (ms) od konce běhu, za běhu 0 – hračková póza po konci dohraje oslavu a pád (P45D T22); jen obraz, nic se nehashuje. */
+  endedFor(): number;
   stepOnce(): void;
   inputs(): readonly InputEvent[];
   snapshot(): ArcadeSnapshot;
@@ -128,6 +130,7 @@ export function createArcadeSession(
   let started = !waitForInput;
   let accumulator = 0;
   let fraction = 0;
+  let ended = 0;
   let halted = false;
   let cached: ArcadeSnapshot | null = null;
   // Ukázka: záznam robota, kurzor v něm a konec, proti kterému se ověří.
@@ -194,7 +197,10 @@ export function createArcadeSession(
 
   /** Hodiny: odtiká celé kroky z akumulátoru; vrací podíl rozběhnutého tiku 0..1. */
   const clockAdvance = (ms: number): number => {
-    if (outcomeOf(state) !== 'running') return 1;
+    if (outcomeOf(state) !== 'running') {
+      ended += Math.min(Math.max(ms, 0), MAX_FRAME_MS);
+      return 1;
+    }
     if (!started) return 0;
     // Pauza drží rozběhnutý podíl, ať stojící snímek necukne o tik zpět.
     if (halted) return Math.min(1, accumulator / TICK_MS);
@@ -241,6 +247,7 @@ export function createArcadeSession(
       return fraction;
     },
     alpha: () => fraction,
+    endedFor: () => ended,
     stepOnce: () => {
       flush();
       notify();
@@ -282,6 +289,7 @@ export function createArcadeSession(
       started = !waitForInput;
       accumulator = 0;
       fraction = 0;
+      ended = 0;
       script = null;
       cursor = 0;
       demoView = null;

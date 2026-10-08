@@ -123,7 +123,7 @@ function play(
   const state = instantiate(world);
   const prev = state.slice();
   let alpha = 0;
-  const session = { world, state: () => state, prev: () => prev, advance: () => alpha, alpha: () => alpha } as unknown as ArcadeSession;
+  const session = { world, state: () => state, prev: () => prev, advance: () => alpha, alpha: () => alpha, endedFor: () => 0 } as unknown as ArcadeSession;
   hooks.frame = undefined;
   const root = new Group();
   wire(scene(session), root);

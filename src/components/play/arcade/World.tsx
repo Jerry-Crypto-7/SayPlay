@@ -56,7 +56,7 @@ import { WalkerBackdrop, WALKER_SCENE_KINDS, placeWalker } from './walker/Walker
 import { BallBackdrop, BALL_SCENE_KINDS, placeBall } from './ball/BallScene';
 import { SteerBackdrop, placeChase } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
-import { type ToyTarget, applyToy, toyMotionOn } from './toy/applyToy';
+import { type ToyTarget, applyToy, toyMotionOn, toyTickOf } from './toy/applyToy';
 import { bodyClassOf, motionOf } from './toy/body-class';
 import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
 
@@ -420,6 +420,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
     const tick = (state[HEADER.tick] as number) + alpha;
     posesOf(state, prev, poses.current, tick);
     const reduced = !toyMotionOn();
+    const toyTick = toyTickOf(session);
     const turn = 1 - Math.exp(-delta * TURN_RATE);
     // Poloha těla ve scéně (m), x zrcadlené jako níž u `group.position`.
     const spotAt = (index: number): Spot => {
@@ -445,7 +446,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       }
       // Hračková póza (P45D T7) podle stavu a třídy těla; mrtvý se převrhne, zásah blikne, výhra slaví.
       if (inner !== null && inner !== undefined && moving !== null) {
-        const toy = toyPoseOf(moving, bodyClasses[view.index] ?? 'prop', toyPoses.current[view.index] ?? null, tick, reduced);
+        const toy = toyPoseOf(moving, bodyClasses[view.index] ?? 'prop', toyPoses.current[view.index] ?? null, toyTick, reduced);
         toyPoses.current[view.index] = toy;
         applyToy(toyTargetOf(inner), toy, view.h, yaws.current[view.index] ?? 0);
       }
@@ -558,7 +559,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                 onClip={view.role === ROLE.player ? (state) => { if (surface.current !== null) surface.current.dataset.animClip = state; } : undefined}
                 yaw={control === 'platform' || control === 'walker' || view.role === ROLE.chaser ? () => yaws.current[view.index] ?? 0 : undefined}
                 // Stavy bez klipu (výhra, nesení, výpad) dohraje hračkový pohyb (P45D T13).
-                toy={POSED_ROLES.has(view.role) ? () => ({ view: toyViewOf(session.state(), session.prev(), view.index), tick: (session.state()[HEADER.tick] as number) + session.alpha() }) : undefined}
+                toy={POSED_ROLES.has(view.role) ? () => ({ view: toyViewOf(session.state(), session.prev(), view.index), tick: toyTickOf(session) }) : undefined}
               />
             ) : view.kind === 'pipe' ? (
               <ModelColumn id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />

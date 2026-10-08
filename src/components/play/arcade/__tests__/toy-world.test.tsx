@@ -133,7 +133,7 @@ function play(world: ArcadeWorld, { mount, ticks = 120 }: { readonly mount: bool
     state: () => state,
     prev: () => prev,
     advance: () => alpha,
-    alpha: () => alpha,
+    alpha: () => alpha, endedFor: () => 0,
     snapshot: () => ({ tick: 0, runState: 'running' }),
     subscribe: () => () => undefined,
     onEvents: () => () => undefined,
@@ -204,7 +204,7 @@ describe('rigged bodies in the shared world (P45D T13)', () => {
     const world = WORLDS.runner!();
     const state = instantiate(world);
     try {
-      const session = { world, state: () => state, prev: () => state, advance: () => 0, alpha: () => 0.5, snapshot: () => ({ tick: 0, runState: 'running' }), subscribe: () => () => undefined, onEvents: () => () => undefined, paused: () => false } as unknown as ArcadeSession;
+      const session = { world, state: () => state, prev: () => state, advance: () => 0, alpha: () => 0.5, endedFor: () => 0, snapshot: () => ({ tick: 0, runState: 'running' }), subscribe: () => () => undefined, onEvents: () => () => undefined, paused: () => false } as unknown as ArcadeSession;
       const tree = World({ session, control: 'runner', cast: { player: 'rigged:boy-a', enemy: 'rigged:knight', chaser: '', props: {} }, surface: { current: null }, scene: { block: undefined } as never, enabled: true, heroAction: 'none' });
       const rigged = elementsOf(tree).filter((element) => element.type === RiggedModel);
       expect(rigged.length).toBeGreaterThan(0);

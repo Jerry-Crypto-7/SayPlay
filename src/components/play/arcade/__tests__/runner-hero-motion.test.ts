@@ -96,7 +96,7 @@ function playByHand(session: ArcadeSession, inputs: readonly InputEvent[], each:
 function running(ticks: number, ride: Ride = null, body: BodyClass = 'biped') {
   const session = createArcadeSession(world);
   const clock = { alpha: 0 };
-  const motion = createHeroMotion({ state: () => session.state(), prev: () => session.prev(), alpha: () => clock.alpha }, ride, body);
+  const motion = createHeroMotion({ state: () => session.state(), prev: () => session.prev(), alpha: () => clock.alpha, endedFor: () => 0 }, ride, body);
   for (let i = 0; i < ticks; i += 1) {
     session.stepOnce();
     motion.sample();
@@ -337,7 +337,7 @@ function drawn(player: string, heroPose: boolean, ticks = 240): Drawn[] {
     state: () => state,
     prev: () => prev,
     advance: () => alpha,
-    alpha: () => alpha,
+    alpha: () => alpha, endedFor: () => 0,
     snapshot: () => ({ tick: 0, runState: 'running' }),
     subscribe: () => () => undefined,
     onEvents: () => () => undefined,

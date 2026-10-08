@@ -8,10 +8,12 @@
 
 import type { Object3D } from 'three';
 
+import { ARCADE_HZ, HEADER } from '@/play/arcade/contract';
 import type { ToyPose } from '@/play/arcade/toy-motion';
 
 import { squashPose, tiltTo } from '../characterMotion';
 import { reducedMotion } from '../effects/feel';
+import type { ArcadeSession } from '../session';
 
 /** Pohyblivý díl modelu: skupina v pivotu, role z `catalog-motion.json`, strana podle x pivotu (−1, 1). */
 export interface ToyPart {
@@ -47,6 +49,13 @@ const toyOff = (): boolean => typeof window !== 'undefined' && new URLSearchPara
 
 /** Jediný vypínač hračkového pohybu: bez `prefers-reduced-motion` a bez `?toy=off`. */
 export const toyMotionOn = (): boolean => typeof window !== 'undefined' && !toyOff() && !reducedMotion();
+
+/**
+ * Tik hračkové pózy z relace: za běhu tik s podílem, po konci běhu dál časem kresby –
+ * relace po výhře netiká a oslava i pád by zamrzly v prvním snímku (P45D T22).
+ */
+export const toyTickOf = (session: Pick<ArcadeSession, 'state' | 'alpha' | 'endedFor'>): number =>
+  (session.state()[HEADER.tick] as number) + session.alpha() + (session.endedFor() * ARCADE_HZ) / 1000;
 
 function posePart({ pivot, role, side }: ToyPart, pose: ToyPose): void {
   pivot.rotation.set(0, 0, 0);

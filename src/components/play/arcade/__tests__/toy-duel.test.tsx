@@ -116,7 +116,7 @@ function play(world: ArcadeWorld, models: boolean): { readonly samples: Sample[]
   const state = instantiate(world);
   const prev = state.slice();
   let alpha = 0;
-  const session = { world, state: () => state, prev: () => prev, advance: () => alpha } as unknown as ArcadeSession;
+  const session = { world, state: () => state, prev: () => prev, advance: () => alpha, alpha: () => alpha, endedFor: () => 0 } as unknown as ArcadeSession;
   const model = () => createElement('mesh');
   hooks.frame = undefined;
   const rigs: Record<string, Rig> = {};

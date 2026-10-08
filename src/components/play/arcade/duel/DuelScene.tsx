@@ -35,7 +35,7 @@ import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { DUEL_ZONES, zoneAt } from '../touch-zones';
 import { initialBody } from '../timing/TimingScene';
-import { applyToy, toyMotionOn } from '../toy/applyToy';
+import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 
 const STRIKE_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
 const DODGE_KEYS = new Set(['arrowdown', 's']);
@@ -197,7 +197,7 @@ export function DuelScene({
     const timer = state[p + BODY.aux1] as number;
     const stagger = timer < -DUEL.cooldown ? STAGGER_LEAN : 0;
     // Póza jen čte stav a tik s podílem; pod `prefers-reduced-motion` ukáže stav okamžitě.
-    const toyTick = tick + alpha;
+    const toyTick = toyTickOf(session);
     const reduced = !toyMotionOn();
     const runState = state[HEADER.runState] as number;
 

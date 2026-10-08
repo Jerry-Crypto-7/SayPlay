@@ -17,6 +17,7 @@ import { type AssetEntry, heroFor } from '@/play/assets/manifest';
 import { RIDE_WORDS } from '@/play/genre/runner';
 
 import type { ArcadeSession } from '../session';
+import { toyTickOf } from '../toy/applyToy';
 
 export const HERO_MOTION = {
   /** Největší náklon do úhybu (rad, ~15°) při plné boční rychlosti změny pruhu. */
@@ -101,7 +102,7 @@ export interface HeroMotionDriver {
 }
 
 /** Co pohyb z relace smí: jen číst stav. Stisknout, posunout hodiny ani restartovat nemůže. */
-export type HeroMotionSource = Pick<ArcadeSession, 'state' | 'prev' | 'alpha'>;
+export type HeroMotionSource = Pick<ArcadeSession, 'state' | 'prev' | 'alpha' | 'endedFor'>;
 
 /** Pohyb hrdiny třídy těla `body` nad relací; `sample(reduced)` – `reduced` = `!toyMotionOn()`. */
 export function createHeroMotion(source: HeroMotionSource, ride: Ride, body: BodyClass): HeroMotionDriver {
@@ -109,7 +110,7 @@ export function createHeroMotion(source: HeroMotionSource, ride: Ride, body: Bod
   return {
     sample: (reduced = false) => {
       const state = source.state();
-      const tick = (state[HEADER.tick] as number) + source.alpha();
+      const tick = toyTickOf(source);
       if (motion === null || motion.toy.at !== tick) {
         const player = state[HEADER.player] as number;
         const view = { ...toyViewOf(state, source.prev(), player), x: state[bodyBase(player) + BODY.x] as number };

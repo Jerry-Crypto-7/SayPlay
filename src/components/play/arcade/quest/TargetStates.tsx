@@ -53,7 +53,7 @@ import type { VerbKind } from '@/play/genre/quest';
 import type { TargetBody, TargetLayer } from '../arena/TargetsMount';
 import { type Burst, createParticleDirector } from '../effects/particles';
 import type { ArcadeSession } from '../session';
-import { applyToy, toyMotionOn } from '../toy/applyToy';
+import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 import { bodyClassOf, motionOf } from '../toy/body-class';
 import { FittedModel, toyTargetOf } from '../World';
 import { type Stage, StationScene, type StationSetup } from './StationScene';
@@ -91,7 +91,7 @@ function OpeningModel({ session, index, id, w, h, d, fallback }: { readonly sess
     const group = inner.current;
     if (group === null) return;
     const state = session.state();
-    const tick = (state[HEADER.tick] as number) + session.alpha();
+    const tick = toyTickOf(session);
     // Restart: tik zpět – paměť pózy (tik otevření) patří minulé hře.
     if (pose.current !== null && tick < pose.current.at) pose.current = null;
     pose.current = toyPoseOf(toyViewOf(state, session.prev(), index), body, pose.current, tick, !toyMotionOn());

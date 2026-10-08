@@ -7,9 +7,15 @@
 import { Group } from 'three';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import fixture from '@/play/arcade/__fixtures__/runner.json';
+import { arcadeWorldOf } from '@/play/arcade/compile';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, HEADER } from '@/play/arcade/contract';
 import { type ToyPose, type ToyView, toyPoseOf } from '@/play/arcade/toy-motion';
+import { runBot } from '@/play/arcade/verify';
+import { readGameSpec } from '@/play/spec';
 
-import { type ToyDeform, type ToyPart, applyToy, toyMotionOn } from '../applyToy';
+import { createArcadeSession } from '../../session';
+import { type ToyDeform, type ToyPart, applyToy, toyMotionOn, toyTickOf } from '../applyToy';
 import { bodyClassOf } from '../body-class';
 
 const view = (over: Partial<ToyView> = {}): ToyView => ({
@@ -167,5 +173,35 @@ describe('bodyClassOf – třída těla modelu scény', () => {
     expect(bodyClassOf('rigged:pet-penguin')).toBe('flyer');
     expect(bodyClassOf('bird')).toBe('flyer');
     expect(bodyClassOf('no-such-model')).toBe('prop');
+  });
+});
+
+describe('toyTickOf – tik pózy i po konci běhu (P45D T22)', () => {
+  function runnerWorld(): ArcadeWorld {
+    const spec = readGameSpec(fixture);
+    if (!spec.ok) throw new Error(spec.issues.join('; '));
+    const made = arcadeWorldOf(spec.value, 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    return made.world;
+  }
+
+  it('za běhu je tik s podílem; po konci běží dál časem kresby a restart ho vrátí', () => {
+    const world = runnerWorld();
+    const session = createArcadeSession(world);
+    session.advance(2.5 * (1000 / ARCADE_HZ));
+    expect(session.endedFor()).toBe(0);
+    expect(toyTickOf(session)).toBe((session.state()[HEADER.tick] as number) + session.alpha());
+
+    session.playInputs(runBot(world).inputs, ARCADE_LIMITS.maxTicks);
+    expect(session.snapshot().runState).not.toBe('running');
+    const end = session.state()[HEADER.tick] as number;
+    session.advance(100);
+    // Dlouhý snímek se ořízne jako v hodinách (`MAX_FRAME_MS`), ať návrat z karty v pozadí nepřeskočí celou oslavu.
+    session.advance(10_000);
+    expect(session.endedFor()).toBe(350);
+    expect(toyTickOf(session)).toBeCloseTo(end + 1 + (350 * ARCADE_HZ) / 1000, 9);
+
+    session.restart();
+    expect(session.endedFor()).toBe(0);
   });
 });
