@@ -27,6 +27,13 @@ Opravy u zdroje v T5: loď z věty „seven lives“ má zase sedm životů; kon
 
 **Zjištění:** P42 skládá návrh věty „A hamster escapes a supermarket while a giant Roomba hunts it.“ o ~0,3–0,7 s pomaleji než `main` (studený běh 1,07 s vs. 0,78 s návrh, 0,40 s vs. 0,35 s kompilace). Limit 3 s drží, rezerva je menší.
 
+## Celá sada před sloučením (P44A T15–T16, 8. 10. 2026)
+
+- **Celá sada 8. 10.: 14 750/14 757** (4 červené, 3 přeskočené) nad `0fb8a03e`, puštěná sama. Zbylých pět červených souborů je časový limit pod zátěží – `hero-motion`, `scenery-carve` a `submission-check-gate` z baseline a k nim `codex-shim` (ukončení stromu procesů, 20 s) a „návrh pod 3 s“ v `upgrade.test.ts`. Puštěné samy procházejí všechny (6, 2, 59, 22 a 30 testů) – šum, ne regrese.
+- **E2E** nad `next start` (webpack build): `play-p42` 20/20 a `interface-language` 6/6, dvakrát po sobě. První dva běhy padly na 429: 16 her po sobě z jedné adresy přeteklo strop 50 požadavků za 10 s na volajícího. Každý test teď posílá vlastní `x-forwarded-for` (`0fb8a03e`), strop beze změny.
+- `npm run typecheck` čistý, `npm run gate:license` 7/7 PASS.
+- **Historických 40 vět P41 nad P42** ([p41-report.md](../regression/p41-report.md), přeměřeno a commitnuto vědomě): zásahy žánru 15/32 (`main` 18/32, jen diagnostika), nezachované věty 17/40 (`main` 16/40). Nově zachované: chase_escape-1 až 3 a delivery-3. Nově nezachované: combat_lite-1 až 3 („defeat X“ se na `main` hrálo jako souboj, P42 z něj dělá sbírání nebo hádanku), hazard_crossing-4 („reach the door“) a scale-1 („catch“). Všech pět P42 hráči přizná, žádné není tiché. Oprava je v plánu jako navazující úloha.
+
 ## Pokračování po round4 — rozpracovaná přejímka
 
 Obecné opravy určování hrdiny, infinitivních předmětů, lokativních frází, padajících hrozeb a zájmen závodníků prošly **453/453 intent/draft testy**. Skladatel zachovává hlavní jméno prostředí a zákaz sbírání nevynucuje sběratelský režim. Fyzický kop má svědka založeného na skutečném vypuštění, pohybu a skórování míče; basketbal ani golf tento důkaz nedostanou.
