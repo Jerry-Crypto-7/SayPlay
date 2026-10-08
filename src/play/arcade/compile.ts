@@ -13,7 +13,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
-import { type ArcadeParts, addonControlParams, addonLives, applyAddons, mapUnderlying, underlyingRule } from './addons';
+import { type ArcadeParts, addonControlParams, addonLives, applyAddons, baseControlOf, mapUnderlying, underlyingRule } from './addons';
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
@@ -40,7 +40,7 @@ import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
 import { ballPitch } from './pieces/ball';
 import { rapierIfLoaded } from './physics/world';
-import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
+import { ARENA, arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
 import { platformControlRef, platformLevel, platformRules, platformSeconds } from './pieces/platform';
 import { runnerTrack } from './pieces/runner';
@@ -218,8 +218,11 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   const lives = 'health' in own ? own.health : health;
   const { control, bot, level: baseLevel, rules, issues } = assemblyParts(applyAddons(own, { spec, seed, health: lives }), spec, ARCADE_LIBRARY.rules);
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
-  // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění.
-  const ruled = compileRules(spec, baseLevel, seed);
+  // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění. Volný pohyb má
+  // čtvercovou podlahu (dvorek, aréna) – její okraj je místo vlny `edge` (P45B).
+  const moving = baseControlOf(control);
+  const floor = moving.id === 'move_free' ? ((moving.params as { readonly half?: number }).half ?? ARENA.half) : undefined;
+  const ruled = compileRules(spec, baseLevel, seed, floor);
   if (ruled.issues.length > 0) return { ok: false, issues: ruled.issues };
   const level = ruled.level;
   const builtIn = rules.length + (timer?.onEnd === 'lose' ? 1 : 0);
@@ -236,7 +239,11 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
     return { ok: false, issues: [`rules: this ${spec.control} game with scoring uses ${scored.rules.length} rules, over the ${ARCADE_LIMITS.maxRules} limit – merge or drop rules`] };
   }
 
-  const built = buildWorld({ seed, control, rules: scored.rules, bot, level: scored.level, ...(lives === undefined ? {} : { health: lives }) }, ARCADE_LIBRARY);
+  // Logika (P45B) jen ze specu s blokem `logic`: jen takový svět dostane logická těla a `arcade-v3`.
+  const built = buildWorld(
+    { seed, control, rules: scored.rules, bot, level: scored.level, ...(lives === undefined ? {} : { health: lives }), ...(ruled.logic === undefined ? {} : { logic: ruled.logic }) },
+    ARCADE_LIBRARY,
+  );
   return built.ok ? { ok: true, world: built.world, roleBindings: bindRoles(spec, built.world) } : built;
 }
 

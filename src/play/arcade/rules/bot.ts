@@ -316,6 +316,8 @@ function achieve(view: View, rule: CompiledRule, depth: number, seen: ReadonlySe
       }
       return null;
     }
+    // Podmínky logiky (P45B) plánovač zatím nesplní – naučí ho to T6.
+    if (!('near' in cond)) return null;
     const near = nearestOf(view, cond.near.role);
     if (near === null) return null;
     if (Math.max(Math.abs(near.x - view.me.x) - (near.w + playerSize(view).w) / 2, Math.abs(near.z - view.me.z) - (near.d + playerSize(view).d) / 2) > cond.near.within) {
@@ -342,6 +344,8 @@ function achieve(view: View, rule: CompiledRule, depth: number, seen: ReadonlySe
     }
     return null;
   }
+  // Spouštěče logiky (P45B) plánovač zatím nesplní – naučí ho to T6.
+  if (!('contact' in when)) return null;
   const [a, b] = when.contact;
   if (a === ROLE.player) return reach(view, b, depth, path);
   return bring(view, a, b, heldRole, depth, path) ?? bring(view, b, a, heldRole, depth, path);
