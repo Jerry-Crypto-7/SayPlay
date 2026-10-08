@@ -1,4 +1,4 @@
-import { baseControlOf } from './addons';
+import { baseControlOf, underlyingRule } from './addons';
 /** P41: důkazy měřené při hraní, nikdy odvozené jen z názvu slovesa či výhry. */
 import { singular } from '@/play/draft/lexicon';
 import type { IntentTriple } from '@/play/intent/contract';
@@ -36,7 +36,6 @@ export interface ActionWitness {
 const roleAt = (state: ArrayLike<number>, body: number): number => state[bodyBase(body) + BODY.role]!;
 const live = (state: ArrayLike<number>, body: number): boolean => (state[bodyBase(body) + BODY.flags]! & FLAG.alive) !== 0;
 const kindAt = (world: ArcadeWorld, state: ArrayLike<number>, body: number): string => world.kinds[state[bodyBase(body) + BODY.kind]!] ?? '';
-const underlyingRule = (ref: PieceRef): PieceRef => ref.id.startsWith('assembly_gate_') ? underlyingRule(ref.params.base as PieceRef) : ref;
 
 /** Bez hádání mezi více kandidáty. Neobsazené tělo nemůže dokazovat jméno z věty. */
 export function bindRoles(spec: GameSpecV1, world: ArcadeWorld): readonly RoleBinding[] {

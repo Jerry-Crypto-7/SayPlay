@@ -73,6 +73,13 @@ export const baseControlOf = (control: PieceRef): PieceRef =>
   control.id === 'addon_control' || control.id === 'phase_control' || control.id === 'assembly_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
 const baseControl = (parts: ArcadeParts): PieceRef => baseControlOf(parts.control);
 
+/**
+ * Nativní pravidlo pod obalem `assembly_gate_<trigger>` (P42, `assembly-parts.ts`) – hledání
+ * pravidla podle id (`blaster`, `time_limit`, `interact`) ho musí najít i ve složené hře.
+ */
+export const underlyingRule = (ref: PieceRef): PieceRef =>
+  ref.id.startsWith('assembly_gate_') ? underlyingRule((ref.params as { base: PieceRef }).base) : ref;
+
 export interface AddonContext {
   readonly spec: GameSpecV1;
   readonly seed: number;

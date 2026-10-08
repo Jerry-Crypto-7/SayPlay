@@ -13,7 +13,7 @@
 
 import { useEffect, useRef } from 'react';
 
-import { baseControlOf } from '@/play/arcade/addons';
+import { baseControlOf, underlyingRule } from '@/play/arcade/addons';
 import { type ArcadeWorld, BUTTON } from '@/play/arcade/contract';
 import { FIGHT_RULES } from '@/play/arcade/pieces/fight';
 
@@ -30,7 +30,7 @@ const ACTIONS: Readonly<Record<ArcadeAction, { readonly bit: number; readonly ke
 
 /** Akce, které svět čte: úder v souboji, použití s pravidlem `interact`. */
 export function actionsOf(world: ArcadeWorld): readonly ArcadeAction[] {
-  const rules = world.rules.map(rule => rule.id.startsWith('assembly_gate_') ? rule.params.base as typeof rule : rule);
+  const rules = world.rules.map(underlyingRule);
   const attached = rules.filter(rule => rule.id === 'assembly_part').map(rule => (rule.params.part as { kind: string }).kind);
   const fights = baseControlOf(world.control).id === 'fight' || rules.some((rule) => Object.hasOwn(FIGHT_RULES, rule.id)) || attached.some(kind => kind === 'fight' || kind === 'duel');
   const uses = rules.some((rule) => rule.id === 'interact');

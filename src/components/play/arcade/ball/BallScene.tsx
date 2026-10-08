@@ -6,6 +6,7 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import type { Group, Mesh } from 'three';
 import { color } from '@/brand/tokens';
+import { underlyingRule } from '@/play/arcade/addons';
 import { BODY, BODY_STRIDE, COUNTER, FLAG, HEADER, HEADER_SIZE, PHYSICS_SUBSTEPS, UNIT, bodyBase, unpackRotation, type PieceRef } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import type { ArcadeSession } from '../session';
@@ -17,8 +18,7 @@ export const BALL_SCENE_KINDS: ReadonlySet<string> = new Set(['physics-ball', 'o
 
 /** Assembly gates preserve the native launch recipe used by the aiming preview. */
 export function ballLaunchRule(rules: readonly PieceRef[]): PieceRef | undefined {
-  const underlying = (rule: PieceRef): PieceRef => rule.id.startsWith('assembly_gate_') ? underlying(rule.params.base as PieceRef) : rule;
-  return rules.map(underlying).find(rule => rule.id === 'ball_launch');
+  return rules.map(underlyingRule).find(rule => rule.id === 'ball_launch');
 }
 
 export function BallScene({ session, look }: { readonly session: ArcadeSession; readonly look: Look }) {
