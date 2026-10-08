@@ -504,7 +504,8 @@ describe('compileRules lays out logic, templates and spawn slots', () => {
     expect(world.runtimeVersion).toBe(ARCADE_RUNTIME_VERSION);
     const state = instantiate(world);
     const levelBodies = (state[HEADER.spawnBase] as number) - LOGIC_BODIES;
-    expect(world.logic).toEqual({ bodies: [levelBodies, levelBodies + 1] });
+    // Jména deklarace jdou se světem pro ověření (T7).
+    expect(world.logic).toEqual({ bodies: [levelBodies, levelBodies + 1], names: { var: ['a', 'lives'], timer: [], phase: ['calm', 'rush'], event: [] } });
     expect(vars(state)).toEqual([-4, 3, 0, 0, 0, 0, 0, 0]);
     expect(phaseOf(state, logicBase(state))).toBe(0);
     // Počáteční fáze čeká na vstup v tiku 0.

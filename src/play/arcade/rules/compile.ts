@@ -41,6 +41,7 @@ import {
   LOGIC_BODIES,
   LOGIC_LIMITS,
   LOGIC_SLOTS,
+  type LogicNames,
   type PieceRef,
   ROLE,
   type RuleContext,
@@ -593,15 +594,8 @@ export interface RulesCompiled {
 /** Jméno role jádra ke kódu pod `THING_ROLE_BASE`. */
 const builtinRole = (code: number): ArcadeRole => (Object.keys(ROLE) as ArcadeRole[]).find((name) => ROLE[name] === code) as ArcadeRole;
 
-/** Jména bloku `logic` podle druhu v pořadí deklarace – index jména je jeho index v jádře. */
-interface LogicNames {
-  readonly var: readonly string[];
-  readonly timer: readonly string[];
-  readonly phase: readonly string[];
-  readonly event: readonly string[];
-}
-
-const logicNames = (logic: Logic | undefined): LogicNames => ({
+/** Jména bloku `logic` v pořadí deklarace; svět je nese i ověření (T7). */
+export const logicNames = (logic: Logic | undefined): LogicNames => ({
   var: (logic?.vars ?? []).map((entry) => entry.id),
   timer: (logic?.timers ?? []).map((entry) => entry.id),
   phase: (logic?.phases ?? []).map((entry) => entry.id),

@@ -411,6 +411,14 @@ export const LOGIC_VAR_SLOTS = [BODY.x, BODY.y, BODY.z, BODY.vx, BODY.vy, BODY.v
 
 export const FIRED = { timer: 0, phaseEnter: 4, phaseExit: 8, event: 12, freshTimer: 20 } as const;
 
+/** Jména bloku `logic` podle druhu v pořadí deklarace – index jména je jeho index v jádře. */
+export interface LogicNames {
+  readonly var: readonly string[];
+  readonly timer: readonly string[];
+  readonly phase: readonly string[];
+  readonly event: readonly string[];
+}
+
 /** První slot prvního logického těla; jen ve světě s logikou. */
 export const logicBase = (state: ArcadeState): number => bodyBase((state[HEADER.spawnBase] as number) - LOGIC_BODIES);
 const timerSlot = (timer: number): number => (timer < 2 ? LOGIC_SLOTS.timers01 : LOGIC_SLOTS.timers23);
@@ -730,8 +738,11 @@ export const mapUnderlying = (ref: PieceRef, edit: (native: PieceRef) => PieceRe
  */
 export interface ArcadeWorld {
   readonly runtimeVersion: ArcadeRuntimeVersion;
-  /** Logická těla (P45B), jen ve světě s blokem `logic` (`arcade-v3`). */
-  readonly logic?: { readonly bodies: readonly number[] };
+  /**
+   * Logická těla (P45B), jen ve světě s blokem `logic` (`arcade-v3`). `names` = jména deklarace
+   * ze specu (T7): ověření jimi pojmenuje kostku, kterou robot nedokázal; svět postavený bez specu je nemá.
+   */
+  readonly logic?: { readonly bodies: readonly number[]; readonly names?: LogicNames };
   readonly seed: number;
   readonly control: PieceRef;
   readonly rules: readonly PieceRef[];

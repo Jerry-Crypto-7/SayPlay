@@ -50,7 +50,7 @@ import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
 import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
 import { throwBudgetIn, throwField, throwParts } from './pieces/throw';
 import { timingParts } from './pieces/timing';
-import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
+import { compileRules, logicNames, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
 import { bindRoles, type RoleBinding } from './witness';
 
@@ -244,7 +244,10 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
     { seed, control, rules: scored.rules, bot, level: scored.level, ...(lives === undefined ? {} : { health: lives }), ...(ruled.logic === undefined ? {} : { logic: ruled.logic }) },
     ARCADE_LIBRARY,
   );
-  return built.ok ? { ok: true, world: built.world, roleBindings: bindRoles(spec, built.world) } : built;
+  if (!built.ok) return built;
+  // Jména deklarace logiky jdou se světem (T7): ověření jimi pojmenuje kostku, kterou robot nedokázal.
+  const world = built.world.logic === undefined ? built.world : { ...built.world, logic: { ...built.world.logic, names: logicNames(spec.logic) } };
+  return { ok: true, world, roleBindings: bindRoles(spec, world) };
 }
 
 /**
