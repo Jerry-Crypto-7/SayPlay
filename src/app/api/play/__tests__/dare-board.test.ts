@@ -11,7 +11,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ArcadeWorld, InputEvent } from '@/play/arcade/contract';
+import { type ArcadeWorld, BUTTON, type InputEvent } from '@/play/arcade/contract';
 import { packInputs } from '@/play/score/dare';
 import { scoredReplay } from '@/play/score/replay';
 import { __resetProcessVersionStore, versionStoreFromEnv, VersionStoreUnavailable } from '@/play/version';
@@ -19,7 +19,7 @@ import { issuePlayer, PLAYER_COOKIE } from '@/server/player-identity';
 import { resetRateWindows } from '@/server/rate-limit';
 
 import { NEW_PLAYERS_PER_HOUR_SHARED } from '../_player';
-import { NEAR_COPY_TICKS } from '../games/[id]/dare/route';
+import { changesOf, copiesRun, NEAR_COPY_TICKS } from '../games/[id]/dare/route';
 import { GET as readDareRoute } from '../games/[id]/dare/[dareId]/route';
 import { GET as me } from '../me/route';
 import { freshCaller, player, publishedGame, type Runs, SECRET, send } from './dare-fixtures';
@@ -167,13 +167,22 @@ describe.each(['memory', 'file'])('POST …/dare feeds the leaderboard over the 
     expect((await send(id, { inputs: packInputs(own?.inputs ?? []) }, ada.cookie)).body.board).toEqual({ place: 1, of: 1 });
   });
 
-  it('dva poctiví hráči se stejným skóre a blízkými tiky jsou v žebříčku oba (T5b)', async () => {
-    const { id, world, runs } = await publishedGame((game, both) => lookAlike(game, both.better) !== null);
-    const [ada, bo] = [player(), player()];
+  it('dva poctiví hráči se stejným skóre a blízkými tiky jsou v žebříčku oba; kopie toho níž ne (T5b, revize T5b-1)', async () => {
+    const { id, world, runs } = await publishedGame((game, both) => lookAlike(game, both.better) !== null && ghostCopy(game, both.better) !== null);
+    const [ada, bo, cy] = [player(), player(), player()];
     const other = lookAlike(world, runs.better) as InputEvent[];
     expect((await send(id, { inputs: packInputs(runs.better.inputs) }, ada.cookie)).body.board).toEqual({ place: 1, of: 1 });
     expect((await send(id, { inputs: packInputs(other) }, bo.cookie)).body.board).toEqual({ place: expect.any(Number), of: 2 });
-    expect((await versions().board(id, 10)).map(({ playerId }) => playerId).sort()).toEqual([ada.id, bo.id].sort());
+    const rows = await versions().board(id, 10);
+    expect(rows.map(({ playerId }) => playerId).sort()).toEqual([ada.id, bo.id].sort());
+    // Kopie ducha druhého řádku: porovnávají se všechny řádky se stejným skóre, ne jen ten první.
+    const boRun = { inputs: other, run: scoredReplay(world, other, []) };
+    const lower = rows[1]?.playerId === bo.id ? boRun : runs.better;
+    const copied = ghostCopy(world, lower, [runs.better.run.hash, boRun.run.hash]);
+    expect(copied).not.toBeNull();
+    const copy = await send(id, { inputs: packInputs(copied?.inputs ?? []) }, cy.cookie);
+    expect(copy.status).toBe(201);
+    expect(copy.body.board).toBeNull();
   });
 
   it('běh se živou změnou je výzva, ale do žebříčku nejde', async () => {
@@ -260,6 +269,22 @@ describe.each(['memory', 'file'])('POST …/dare feeds the leaderboard over the 
     expect(sent.setCookie).toBeNull();
     expect(sent.body.board).toBeNull();
     expect(await versions().board(id, 10)).toEqual([]);
+  });
+});
+
+describe('kopie ducha se pozná podle změn vstupu, ne podle držených tiků (T5b, revize T5b-1)', () => {
+  /** Držení doprava od `from` do `to` se skoky v tikách `jumps`. */
+  const hold = (from: number, to: number, jumps: readonly number[]): InputEvent[] =>
+    Array.from({ length: to - from + 1 }, (_, k) => from + k).map((tick) => ({ tick, buttons: jumps.includes(tick) ? BUTTON.RIGHT | BUTTON.UP : BUTTON.RIGHT, axis: 0 }));
+
+  it('stejné držení o chvíli později s vlastními skoky kopie není; posunutý duch ano', () => {
+    const ada = hold(10, 3590, [500, 1200, 2000, 2700, 3100]);
+    expect(copiesRun(changesOf(hold(25, 3605, [700, 1500, 2600, 2900, 3300])), changesOf(ada))).toBe(false);
+    expect(copiesRun(changesOf(shifted(ada, 7)), changesOf(ada))).toBe(true);
+  });
+
+  it('běh z pár změn (jedno držení) nikomu nepatří', () => {
+    expect(copiesRun(changesOf(hold(25, 3605, [])), changesOf(hold(10, 3590, [])))).toBe(false);
   });
 });
 

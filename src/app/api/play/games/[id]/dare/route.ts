@@ -42,27 +42,37 @@ export const MAX_DARE_PATCHES = 32;
 
 /** O kolik tiků smí běh cizího hráče se stejným skóre ležet od řádku žebříčku, aby se porovnaly vstupy (T5b). */
 export const NEAR_COPY_TICKS = 30;
-/** Kolik takových řádků se porovná vstup po vstupu; každý stojí jedno čtení výzvy z úložiště. */
-const NEAR_COPY_ROWS = 5;
-/** Podíl tiků se vstupem (z obou běhů), ve kterých se běh po posunu shoduje s cizím; od něj je to kopie ducha. */
+/** Podíl změn vstupu (z obou běhů), ve kterých se běh po posunu shoduje s cizím; od něj je to kopie ducha. */
 const NEAR_COPY_SHARE = 0.9;
+/** Nejméně shodných změn: běh z pár změn (jedno držení) zahraje každý stejně, takový nikomu nepatří. */
+const NEAR_COPY_MIN_CHANGES = 5;
 /** Rozdíl osy (z ±1000), který ještě počítá jako tentýž vstup. */
 const NEAR_COPY_AXIS = 50;
 
-/** Tiky s nenulovým vstupem. */
-function pressesOf(inputs: readonly InputEvent[]): Map<number, InputEvent> {
-  return new Map(inputs.filter((event) => event.buttons !== 0 || event.axis !== 0).map((event) => [event.tick, event]));
+/**
+ * Tiky, ve kterých se vstup změnil (stisk, jiná osa, konec pauzy) – ne každý tik držení: dlouhé držení „doprava“
+ * by jinak udělalo kopii z každého, kdo drží totéž o chvíli později (revize T5b-1).
+ */
+export function changesOf(inputs: readonly InputEvent[]): Map<number, InputEvent> {
+  const changes = new Map<number, InputEvent>();
+  let previous: InputEvent | undefined;
+  for (const event of inputs) {
+    const held = previous !== undefined && previous.tick === event.tick - 1 && previous.buttons === event.buttons && previous.axis === event.axis;
+    if (!held && (event.buttons !== 0 || event.axis !== 0)) changes.set(event.tick, event);
+    previous = event;
+  }
+  return changes;
 }
 
-/** Shoduje se `mine` s `theirs` posunutým o nejvýš `NEAR_COPY_TICKS` tiků aspoň v `NEAR_COPY_SHARE` tiků se vstupem? */
-function copiesRun(mine: ReadonlyMap<number, InputEvent>, theirs: ReadonlyMap<number, InputEvent>): boolean {
+/** Shodují se změny `mine` se změnami `theirs` posunutými o nejvýš `NEAR_COPY_TICKS` tiků aspoň v `NEAR_COPY_SHARE` z nich? */
+export function copiesRun(mine: ReadonlyMap<number, InputEvent>, theirs: ReadonlyMap<number, InputEvent>): boolean {
   for (let shift = -NEAR_COPY_TICKS; shift <= NEAR_COPY_TICKS; shift += 1) {
     let same = 0;
     for (const [tick, event] of mine) {
       const other = theirs.get(tick - shift);
       if (other !== undefined && other.buttons === event.buttons && Math.abs(other.axis - event.axis) <= NEAR_COPY_AXIS) same += 1;
     }
-    if (same >= NEAR_COPY_SHARE * (mine.size + theirs.size - same)) return true;
+    if (same >= NEAR_COPY_MIN_CHANGES && same >= NEAR_COPY_SHARE * (mine.size + theirs.size - same)) return true;
   }
   return false;
 }
@@ -71,22 +81,22 @@ function copiesRun(mine: ReadonlyMap<number, InputEvent>, theirs: ReadonlyMap<nu
  * Je běh téměř-kopie ducha jiného hráče v žebříčku téže hry (revize T5-1, T5b)? Duch je veřejný (`GET …/dare/:dareId`),
  * takže jeho vstupy posunuté o tik dají novou výzvu se stejným skóre. Shoda skóre a tiků sama nestačí: hry se skóre
  * po krocích a pevným koncem ji dávají i poctivým hráčům (přežití 60 s: každý vítěz 250 bodů v tiku 3 600) – proto
- * rozhodují vstupy.
- * simplified: celý běh posunutý najednou a jen `NEAR_COPY_ROWS` nejbližších řádků z `BOARD_READ_MAX`; kopie
- * s rozházenými tiky po jednom nebo se změněným skóre projde. Upgrade, až se kopie objeví: duch jako dráha místo vstupů.
+ * rozhodují změny vstupu. Porovnají se všechny takové řádky z `BOARD_READ_MAX` čtených, ne jen nejbližší – v remíze
+ * mají všechny vzdálenost 0 (revize T5b-1); čtení výzev běží souběžně, každé jeden příkaz úložiště.
+ * simplified: celý běh posunutý najednou a jen řádky z prvních `BOARD_READ_MAX`; kopie s tiky rozházenými po jednom,
+ * se změněným skóre, nebo ducha mimo prvních 20 projde. Upgrade, až se kopie objeví: duch jako dráha místo vstupů.
  */
 async function nearCopyOf(versions: VersionStore, versionId: string, playerId: string, run: { readonly score: number; readonly tick: number }, inputs: readonly InputEvent[]): Promise<boolean> {
-  const rows = (await versions.board(versionId, BOARD_READ_MAX))
-    .filter((row): row is BoardRow & { readonly dareId: string } => row.playerId !== playerId && row.dareId !== null && row.score === run.score && Math.abs(row.ticks - run.tick) <= NEAR_COPY_TICKS)
-    .sort((a, b) => Math.abs(a.ticks - run.tick) - Math.abs(b.ticks - run.tick))
-    .slice(0, NEAR_COPY_ROWS);
-  const mine = pressesOf(inputs);
-  for (const row of rows) {
-    const replay = (await versions.getDare(row.dareId))?.replay;
-    const theirs = replay === undefined ? null : unpackInputs(replay.inputs);
-    if (Array.isArray(theirs) && copiesRun(mine, pressesOf(theirs))) return true;
-  }
-  return false;
+  const rows = (await versions.board(versionId, BOARD_READ_MAX)).filter(
+    (row): row is BoardRow & { readonly dareId: string } => row.playerId !== playerId && row.dareId !== null && row.score === run.score && Math.abs(row.ticks - run.tick) <= NEAR_COPY_TICKS,
+  );
+  if (rows.length === 0) return false;
+  const mine = changesOf(inputs);
+  const rivals = await Promise.all(rows.map((row) => versions.getDare(row.dareId)));
+  return rivals.some((rival) => {
+    const theirs = rival?.replay === undefined ? null : unpackInputs(rival.replay.inputs);
+    return Array.isArray(theirs) && copiesRun(mine, changesOf(theirs));
+  });
 }
 
 const patchSchema = z.discriminatedUnion('kind', [

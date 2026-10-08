@@ -101,11 +101,13 @@ zapsal první; ven ji nepustí žádná odpověď. Do žebříčku (`putBoardEnt
 živých změn a jen když běh patří tomuto hráči: výzva je nová (`201`), nebo už ležela s `by` = on. Duch je veřejný, takže
 kopie cizího běhu je táž výzva (`200`) a žebříčkem nepohne. **Posunutá kopie ducha (T5b)** – vstupy cizího běhu o pár tiků
 později – dá novou výzvu se stejným skóre; ta platí, ale do žebříčku nejde, když v něm jiný hráč má řádek téže hry se
-stejným skóre a tiky ± 30 (`NEAR_COPY_TICKS`) a vstupy obou běhů se po posunu o nejvýš 30 tiků shodují aspoň v 90 %
-tiků se vstupem (tlačítka stejná, osa ± 50). Shoda skóre a tiků sama nestačí: hry se skóre po krocích a pevným koncem ji
-dávají i poctivým hráčům (přežití 60 s – každý vítěz 250 bodů v tiku 3 600). Porovná se nejvýš 5 nejbližších řádků z 20
-nejlepších (jedno čtení výzvy každý); kopie s tiky rozházenými po jednom nebo se změněným skóre projde (`simplified:`
-v routě). `board: { place, of }` = místo hráče a kolik hráčů žebříček
+stejným skóre a tiky ± 30 (`NEAR_COPY_TICKS`) a **změny vstupu** obou běhů (stisk, jiná osa – ne každý tik držení) se po
+posunu o nejvýš 30 tiků shodují aspoň v 90 % a aspoň v 5 změnách (tlačítka stejná, osa ± 50). Shoda skóre a tiků sama
+nestačí: hry se skóre po krocích a pevným koncem ji dávají i poctivým hráčům (přežití 60 s – každý vítěz 250 bodů v tiku
+3 600); držené tiky by zase z kopie udělaly každého, kdo drží totéž o chvíli později, a běh z pár změn (jedno držení)
+zahraje každý stejně (revize T5b-1). Porovnají se všechny takové řádky z 20 nejlepších – v remíze mají všechny vzdálenost
+0 – souběžně, jedno čtení výzvy každý; kopie s tiky rozházenými po jednom, se změněným skóre nebo ducha mimo prvních 20
+projde (`simplified:` v routě). `board: { place, of }` = místo hráče a kolik hráčů žebříček
 drží; `null` = běh se nezapsal (bez hráče, se změnami, cizí, kopie ducha, nad denním stropem 30 zápisů hráče, mimo 50
 nejlepších, nebo výpadek úložiště – ten výzvu neshodí). Nepovinné `against` (id výzvy) → `beat: true`, když `bestRank` běhu přebije
 uloženou výzvu téže hry, `false`, když ne; `null`, když není s čím srovnat (chybí, vadné id, cizí hra, neznámá výzva,
