@@ -19,6 +19,9 @@ const { NicknameSheet } = await import('../NicknameSheet');
 const { PostRun } = await import('../PostRun');
 
 const reply = (status: number, body: unknown = {}) => vi.fn(async () => Response.json(body, { status }));
+/** Jména vypnutá na serveru; jiná `503` (výpadek úložiště) jsou přechodná. */
+const namesOff = () => reply(503, { error: { code: 'IDENTITY_UNAVAILABLE', message: 'player names are switched off on this server' } });
+const storeDown = () => reply(503, { error: { code: 'STORE_UNAVAILABLE', message: 'player names are unavailable right now' } });
 const offline = vi.fn(async () => {
   throw new TypeError('offline');
 });
@@ -27,17 +30,16 @@ const initOf = (fetcher: ReturnType<typeof vi.fn>): RequestInit => (fetcher.mock
 const text = (html: string): string => html.replace(/<!-- -->/g, '').replace(/<[^>]+>/g, '');
 
 describe('fetchMe', () => {
-  it('reads the nickname fresh; names switched off (503) are remembered, a passing failure is not', async () => {
+  it('reads the nickname fresh; names switched off are remembered, a passing failure is not', async () => {
     const ok = reply(200, { nickname: 'Swift Otter' });
     expect(await fetchMe(asFetch(ok))).toBe('Swift Otter');
     expect(ok).toHaveBeenCalledWith('/api/play/me', expect.objectContaining({ cache: 'no-store' }));
     expect(knownName()).toBe('Swift Otter');
 
-    expect(await fetchMe(asFetch(reply(429)))).toBeNull();
-    expect(await fetchMe(asFetch(offline))).toBeNull();
+    for (const passing of [reply(429), storeDown(), offline]) expect(await fetchMe(asFetch(passing))).toBeNull();
     expect(knownName()).toBe('Swift Otter');
 
-    expect(await fetchMe(asFetch(reply(503)))).toBeNull();
+    expect(await fetchMe(asFetch(namesOff()))).toBeNull();
     expect(knownName()).toBeNull();
   });
 });
@@ -53,13 +55,13 @@ describe('saveNickname', () => {
     expect(knownName()).toBe('Ada');
   });
 
-  it('says what to fix in voice copy; 503 hides the line instead of an error', async () => {
+  it('says what to fix in voice copy; names switched off hide the line, a store outage says it was not saved', async () => {
     expect(await saveNickname('A', asFetch(reply(400)))).toEqual({ ok: false, error: NAME_RULE });
     expect(NAME_RULE).toBe('Use 2–20 letters or numbers.');
     expect(await saveNickname('Admin', asFetch(reply(422)))).toEqual({ ok: false, error: NAME_REFUSED });
     expect(NAME_REFUSED).toBe("We can't use that name. Try another one.");
-    expect(await saveNickname('Ada', asFetch(reply(503)))).toEqual({ ok: false, error: null });
-    for (const failed of [reply(429), reply(403), offline, reply(200, { nope: 1 })]) {
+    expect(await saveNickname('Ada', asFetch(namesOff()))).toEqual({ ok: false, error: null });
+    for (const failed of [storeDown(), reply(429), reply(403), offline, reply(200, { nope: 1 })]) {
       const saved = await saveNickname('Ada', asFetch(failed));
       expect(saved.ok).toBe(false);
       expect(saved.ok === false && saved.error).toMatch(/^We couldn't save your name\./);
@@ -108,7 +110,7 @@ describe('PostRun names who is playing', () => {
     expect(card({ ...won, won: false })).not.toContain('Playing as');
     expect(card(won, { offline: true })).not.toContain('Playing as');
     expect(card(won, { dare: { state: 'pending' } })).not.toContain('Playing as');
-    await fetchMe(asFetch(reply(503)));
+    await fetchMe(asFetch(namesOff()));
     expect(card(won)).not.toContain('Playing as');
   });
 });

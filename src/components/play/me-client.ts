@@ -1,7 +1,7 @@
 /**
  * Kdo hraje, z obrazovky výsledku (P44B T10): `GET /api/play/me` vrátí přezdívku (hráči bez cookie
  * ji rovnou vydá), `PUT` ji změní. Poslední jisté jméno žije po dobu stránky, takže další výsledek
- * ho ukáže hned; jména vypnutá na serveru (`503`) si stránka pamatuje taky, přechodnou chybu ne.
+ * ho ukáže hned; jména vypnutá na serveru (`503 IDENTITY_UNAVAILABLE`) si stránka pamatuje taky, přechodnou chybu ne.
  */
 
 /** Znění z kitu (`docs/brand/docs/11-voice-copy.md`), stejné jako v odpovědi routy. */
@@ -14,11 +14,18 @@ let known: string | null | undefined;
 
 export const knownName = (): string | null | undefined => known;
 
+/** Jména vypnutá na serveru (`identityUnavailable`); jiná `503` – výpadek úložiště, vypínač – přejdou (nález revize fáze 2). */
+async function namesOff(response: Response): Promise<boolean> {
+  if (response.status !== 503) return false;
+  const body = (await response.json().catch(() => null)) as { error?: { code?: unknown } } | null;
+  return body?.error?.code === 'IDENTITY_UNAVAILABLE';
+}
+
 /** Přezdívka hráče; `null` = jména vypnutá nebo čtení selhalo – řádek „Playing as“ se nekreslí. */
 export async function fetchMe(fetcher: typeof fetch = fetch, signal?: AbortSignal): Promise<string | null> {
   try {
     const response = await fetcher('/api/play/me', { cache: 'no-store', signal });
-    if (response.status === 503) return (known = null);
+    if (await namesOff(response)) return (known = null);
     if (!response.ok) return null;
     const { nickname } = (await response.json()) as { nickname?: unknown };
     return typeof nickname === 'string' ? (known = nickname) : null;
@@ -27,7 +34,7 @@ export async function fetchMe(fetcher: typeof fetch = fetch, signal?: AbortSigna
   }
 }
 
-/** Výsledek uložení: `error: null` = jména vypnutá (`503`), řádek se skryje místo hlášky. */
+/** Výsledek uložení: `error: null` = jména vypnutá, řádek se skryje místo hlášky. */
 export type NameSave = { readonly ok: true; readonly nickname: string } | { readonly ok: false; readonly error: string | null };
 
 /** Pošle jméno tak, jak ho hráč napsal – ořez a pravidla jsou na serveru (`readNickname`). */
@@ -38,7 +45,7 @@ export async function saveNickname(nickname: string, fetcher: typeof fetch = fet
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ nickname }),
     });
-    if (response.status === 503) return { ok: false, error: null };
+    if (await namesOff(response)) return { ok: false, error: null };
     if (response.status === 400) return { ok: false, error: NAME_RULE };
     if (response.status === 422) return { ok: false, error: NAME_REFUSED };
     if (!response.ok) return { ok: false, error: NAME_NOT_SAVED };
