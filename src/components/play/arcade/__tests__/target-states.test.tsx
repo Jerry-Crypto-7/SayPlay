@@ -12,6 +12,8 @@ import { buildWorld } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { questSpatial, questStation } from '@/play/arcade/pieces/quest';
 import { KIND_STATES, type VerbKind } from '@/play/genre/quest';
+import { compileGenre } from '@/play/genre';
+import { targetModelOf } from '@/play/arcade/target-model';
 
 import type { TargetBody } from '../arena/TargetsMount';
 import { questTargets, targetParts } from '../quest/TargetStates';
@@ -45,6 +47,22 @@ function spatialWorld(verb: string, states: 2 | 3): ArcadeWorld {
 }
 
 describe('quest target states (P32G T5)', () => {
+  it('renders the selected named target through the quest layer, with distinct states and no false unknown model', () => {
+    for (const kind of [null, 'fire', 'cook', 'repair', 'free', 'grow'] as const) {
+      const spec = compileGenre({ genre: 'quest', mode: 'spatial', hero: 'robot', setting: 'forest', cast: [{ label: 'lantern', does: 'reach', verb: 'paint', states: 2 }] });
+      const model = targetModelOf(spec)!;
+      expect(model).toBeDefined();
+      const layer = questTargets(spatialWorld('paint', 2), undefined, model)!;
+      const mounted = layer([target(1, 0)]) as ReactElement<{ model: string }>;
+      expect(mounted.props.model).toBe(model);
+      const before = JSON.stringify(structureOf(targetParts(target(1, 0), kind, 2, true, mounted.props.model)));
+      const after = JSON.stringify(structureOf(targetParts(target(1, 1), kind, 2, true, mounted.props.model)));
+      expect(before).toContain(`"id":"${model}"`);
+      expect(after).toContain(`"id":"${model}"`);
+      expect(after).not.toBe(before);
+    }
+    expect(shape(null, 0, 2)).not.toContain('FittedModel');
+  });
   it('draws every verb kind in every state as a different object tree', () => {
     const shapes = new Map<string, string>();
     for (const kind of KINDS) for (let state = 0; state < KIND_STATES[kind]; state += 1) shapes.set(`${kind}:${String(state)}`, shape(kind, state, KIND_STATES[kind]));

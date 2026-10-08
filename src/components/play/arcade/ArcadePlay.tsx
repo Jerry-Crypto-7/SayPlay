@@ -17,6 +17,7 @@ import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUN
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels, sceneModelOf } from '@/play/arcade/models';
+import { targetModelOf } from '@/play/arcade/target-model';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setMusicTension, setSoundLook, vibrateFor } from '@/play/audio';
 import { musicFor, narrationUrl, tenseMusicFor } from '@/play/audio/library';
@@ -384,13 +385,21 @@ function ArcadePlayGame({
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
   // Nápověda dotyku, kterou text hry neřekne (zóny plošinovky, P36C T2).
   const zoneHint = ZONE_HINTS[baseControlOf(arcade.control).id];
-  const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec),
+  const cast = useMemo(() => {
+    const props = propModels(spec);
+    if (spec.controlParams?.generator === 'quest_spatial' || spec.controlParams?.generator === 'quest_station') {
+      delete props.target;
+      const target = targetModelOf(spec);
+      if (target !== undefined) props.target = target;
+    }
+    return { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props,
     things: Object.fromEntries(spec.roles.flatMap(role => {
       if (role.id === 'pad' && role.label === 'landing pad') return [];
       const model = sceneModelOf(role.label, false);
       return model === undefined ? [] : [[role.id, model]];
     })),
-  }), [spec]);
+    };
+  }, [spec]);
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);

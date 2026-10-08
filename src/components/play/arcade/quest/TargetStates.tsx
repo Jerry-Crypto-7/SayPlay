@@ -58,12 +58,12 @@ import { EMITTERS, type EmitterKind, type EmitterPreset, KIND_BODY, MAX_LIGHTS, 
  * vrstvu. Stanoviště (`order`) s relací a sadou (`stage`) dostane i pult,
  * okno připravenosti a blízkou kameru (`StationScene`).
  */
-export function questTargets(world: Pick<ArcadeWorld, 'rules'>, stage?: Stage): TargetLayer | undefined {
+export function questTargets(world: Pick<ArcadeWorld, 'rules'>, stage?: Stage, model?: string): TargetLayer | undefined {
   const verb = questVerbOf(world);
   if (verb === null) return undefined;
   const { kind, states, interact } = verb;
   const station = interact.order === true && stage !== undefined ? { ...stage, interact } : undefined;
-  return (targets) => <TargetStates targets={targets} kind={kind} states={states} station={station} />;
+  return (targets) => <TargetStates targets={targets} kind={kind} states={states} station={station} model={model} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -260,15 +260,25 @@ function reachOf(kind: VerbKind | null, target: TargetBody): number {
 }
 
 /** Jeden cíl ve svém stavu: tvar, zdroje částic a kroužek, dokud není hotový (`ring`; stanoviště kreslí vlastní na desce). */
-export function targetParts(target: TargetBody, kind: VerbKind | null, states: number, ring = true): ReactElement {
+export function targetParts(target: TargetBody, kind: VerbKind | null, states: number, ring = true, model?: string): ReactElement {
   const state = Math.min(target.state, states - 1);
   const done = state === states - 1;
-  const r = reachOf(kind, target) + 0.15;
+  // Preserve bespoke tree/candle/machine/cage and pancake/dog animations when
+  // they already depict the named object. Other labels keep their own model.
+  const ownModel = kind !== null && kind !== 'grow' ? KIND_BODY[kind].model : undefined;
+  const named = model !== undefined && model !== ownModel && !(kind === 'cook' && model === 'cc0-pancake') && !(kind === 'free' && model === 'dog');
+  const r = (named ? Math.max(target.w, target.d) / 2 : reachOf(kind, target)) + 0.15;
   return (
     <group key={target.index} position={[target.x, target.y, target.z]} userData={{ frame: 'target' }}>
-      {partsOf(kind, state, done, target)}
+      {named ? [
+        <FittedModel key="named-model" id={model} w={target.w} h={target.h} d={target.d} fallback={done ? PLAIN[2] : PLAIN[Math.min(state, 1)]} />,
+        <mesh key="status" position={[0, target.h + 0.12, 0]} userData={NO_SHADOW}>
+          <sphereGeometry args={[0.09, 12, 8]} />
+          <meshBasicMaterial color={done ? PLAIN[2] : PLAIN[Math.min(state, 1)]} />
+        </mesh>,
+      ] : partsOf(kind, state, done, target)}
       {fxOf(kind, state).emitters.map((emitter) => (
-        <TargetEmitter key={`${emitter.kind}@${String(emitter.y)}`} kind={emitter.kind} y={emitter.y} />
+        <TargetEmitter key={`${emitter.kind}@${String(emitter.y)}`} kind={emitter.kind} y={named ? target.h : emitter.y} />
       ))}
       {ring && !done && (
         <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} userData={{ rigShadow: 'receive' }}>
@@ -373,11 +383,13 @@ export function TargetStates({
   kind,
   states,
   station,
+  model,
 }: {
   readonly targets: readonly TargetBody[];
   readonly kind: VerbKind | null;
   readonly states: number;
   readonly station?: StationSetup | undefined;
+  readonly model?: string | undefined;
 }) {
   const camera = useThree((three) => three.camera);
   const scene = useThree((three) => three.scene);
@@ -456,7 +468,7 @@ export function TargetStates({
           decay={2}
         />
       ))}
-      {targets.map((target) => targetParts(target, kind, states, station === undefined))}
+      {targets.map((target) => targetParts(target, kind, states, station === undefined, model))}
       {station !== undefined && <StationScene {...station} targets={targets} kind={kind} states={states} burst={burst} />}
     </FxContext.Provider>
   );

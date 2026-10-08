@@ -21,6 +21,7 @@
  */
 
 import { baseControlOf } from '../arcade/addons';
+import { targetModelOf } from '../arcade/target-model';
 import { singular } from '../draft/lexicon';
 import { arcadeWorldOf } from '../arcade/compile';
 import { BODY, HEADER, ROLE, bodyBase } from '../arcade/contract';
@@ -188,6 +189,7 @@ function styledReads(role: GameRole, scene: ArcadeScene): boolean {
  * (`rival`) a věci (`item`) žánru arény zatím nečtou (B-R9), cíl úkolu kreslí vrstva úkolu.
  */
 function styledDraws(spec: GameSpecV1, role: GameRole): boolean {
+  if (role.kind === 'target') return targetModelOf(spec, role) !== undefined;
   const character = riggedModelOf(role.label) ?? sceneModelOf(role.label, true);
   if (role.kind === 'hazard') return character === enemyModel(spec);
   if (role.kind === 'collectible') return propModels(spec).coin !== undefined && sceneModelOf(role.label, false) === propModels(spec).coin;
