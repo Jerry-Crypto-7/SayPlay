@@ -21,8 +21,11 @@ import type { Reading } from '../read/schema';
 import { HERO_ACTIONS } from '../hero-action';
 import type { ControlId, GameRole, GameSpecV1 } from '../spec';
 
-/** Verze překladu `GenreSpec → GameSpecV1`; zapisuje se do `spec.genre`. */
-export const GENRE_COMPILER_VERSION = 'genre.v1';
+/**
+ * Verze překladu `GenreSpec → GameSpecV1`; zapisuje se do `spec.genre`.
+ * `genre.v2` (P45C T11): hra dostane průběh (`pacingParts`); uložené `genre.v1` hrají jako dřív.
+ */
+export const GENRE_COMPILER_VERSION = 'genre.v2';
 
 /**
  * Životy hry žánru (P36A T2): mechanika `health` se třemi životy. Čte ji

@@ -6,6 +6,7 @@
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { GENRE_COMPILER_VERSION } from '@/play/genre/contract';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import arenaFixture from '../__fixtures__/arena.json';
@@ -17,7 +18,7 @@ import { bossBody } from '../pieces/behaviours/boss';
 import { GENRE_PACING, type GenrePacing, pacingProbeBodies } from '../pieces/pacing-parts';
 import { verifyArcade } from '../verify';
 
-const GENRE = { id: 'arena', mode: 'collect', compilerVersion: 'genre.v1' };
+const GENRE = { id: 'arena', mode: 'collect', compilerVersion: GENRE_COMPILER_VERSION };
 
 function read(extra: Record<string, unknown>): GameSpecV1 {
   const spec = readGameSpec({ ...arenaFixture, ...extra });
@@ -65,6 +66,14 @@ describe('pacingParts', () => {
     const before = built(read({})).world;
     GENRE_PACING.arena = arena(true);
     expect(built(read({})).world).toEqual(before);
+  });
+
+  it('leaves a genre game stored before pacing (genre.v1) exactly as it was, even with a genre entry', () => {
+    const stored = { ...GENRE, compilerVersion: 'genre.v1' };
+    const before = built(read({ genre: stored })).world;
+    GENRE_PACING.arena = arena(true);
+    expect(built(read({ genre: stored })).world).toEqual(before);
+    expect(ids(built(read({ genre: GENRE })).world)).toContain('pacing');
   });
 
   it('leaves a genre the table does not pace exactly as it was', () => {

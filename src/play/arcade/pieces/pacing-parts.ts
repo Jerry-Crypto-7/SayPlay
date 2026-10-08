@@ -4,8 +4,9 @@
  * předlohy chování a bosse, pravidlo `pacing` a pravidlo `boss_beat` podle
  * tabulky žánrů `GENRE_PACING`.
  *
- * Jen nové hry: spec bez `genre` (hry uložené před žánry, fixtury přehrání)
- * i generátor bez záznamu v tabulce staví tentýž svět jako dřív.
+ * Jen nové hry: spec bez `genre` (hry uložené před žánry, fixtury přehrání),
+ * spec žánru uložený před průběhem (`genre.v1`) i generátor bez záznamu
+ * v tabulce staví tentýž svět jako dřív.
  */
 
 import type { GameSpecV1 } from '../../spec';
@@ -29,6 +30,9 @@ export type GenrePacing = (parts: ArcadeParts, spec: GameSpecV1) => GenrePacingS
 /** Průběh podle generátoru světa (`generatorOf`); žánry plní T11–T14. Generátor bez záznamu hraje beze změny. */
 export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {};
 
+/** Verze překladu žánru před průběhem (`GENRE_COMPILER_VERSION` v `genre/contract.ts`): uložené hry s ní průběh nedostanou. */
+export const UNPACED_GENRE_VERSION = 'genre.v1';
+
 /** Nejvýš tolik pravidel ze stropu jádra si průběh vezme: `pacing` a `boss_beat`. */
 export const PACING_RULES = 2;
 
@@ -49,7 +53,8 @@ function rulesBesides(parts: ArcadeParts, spec: GameSpecV1): number {
  * křivka (`pacing_control`) zůstane vždy – hra kvůli průběhu nikdy neselže.
  */
 export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, generator: string): ArcadeParts {
-  const entry = spec.genre === undefined || (parts.issues?.length ?? 0) > 0 ? undefined : GENRE_PACING[generator];
+  const unpaced = spec.genre === undefined || spec.genre.compilerVersion === UNPACED_GENRE_VERSION;
+  const entry = unpaced || (parts.issues?.length ?? 0) > 0 ? undefined : GENRE_PACING[generator];
   const setup = entry?.(parts, spec) ?? null;
   if (setup === null) return parts;
   const room = ARCADE_LIMITS.maxRules - rulesBesides(parts, spec);
