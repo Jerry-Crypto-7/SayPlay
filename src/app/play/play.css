@@ -2057,6 +2057,21 @@ button.play-version-switch__item:not(:disabled) {
   color: var(--sp-text-secondary);
 }
 
+/* Proužek výzvy (P44B T8): kdo vyzývá a co porazit, slunečná linka jako odměna; bez tlačítka. */
+.play-dare-strip {
+  flex: 0 0 auto;
+  padding: var(--sp-space-3) var(--sp-space-4);
+  background: var(--sp-surface);
+  border-bottom: var(--sp-border-thick) solid var(--sp-secondary);
+  font-size: var(--sp-text-body-size);
+  line-height: 1.4;
+}
+
+.play-dare-strip-text {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .play-honest-close {
   flex: 0 0 auto;
   min-height: var(--sp-size-touch-min);

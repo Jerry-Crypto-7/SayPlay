@@ -24,6 +24,7 @@ import type { WorldstreamBlueprint } from '@/worldstream/schema';
 import { ArcadePlay } from './arcade/ArcadePlay';
 import type { Dare } from './best';
 import { WithPlayEnv } from './arcade/look/play-env';
+import { DareStrip } from './DareStrip';
 import { HonestyStrip } from './HonestyStrip';
 import type { LabFacts, ReadFacts } from './lab';
 import { InfoSheetProvider } from './ui/InfoContext';
@@ -51,7 +52,8 @@ export interface PlayShellProps {
 
 /**
  * Arkádová hra (P25A) jde do `ArcadePlay`, mřížková beze změny. Poctivá hláška
- * (P25E) leží nad oběma, proto ji kreslí rozcestník, ne shell.
+ * (P25E) leží nad oběma, proto ji kreslí rozcestník, ne shell; proužek výzvy
+ * (P44B T8) taky – `ArcadePlay` se kvůli němu nemění.
  */
 export function PlayShell({
   blueprint,
@@ -67,11 +69,13 @@ export function PlayShell({
       <InfoSheetProvider>{game}</InfoSheetProvider>
     </WithPlayEnv>
   );
-  if (honesty === null) return shell;
-  // Proužek hru odsune, nepřekryje: HUD s cílem hry musí zůstat vidět.
+  const dare = arcade !== undefined && rest.challenge ? rest.challenge : null;
+  if (honesty === null && dare === null) return shell;
+  // Proužky hru odsunou, nepřekryjí: HUD s cílem hry musí zůstat vidět.
   return (
     <div className="play-honest-frame">
-      <HonestyStrip honesty={honesty} />
+      {honesty !== null && <HonestyStrip honesty={honesty} />}
+      {dare !== null && arcade !== undefined && <DareStrip challenge={dare} arcade={arcade} />}
       {shell}
     </div>
   );
