@@ -601,6 +601,18 @@ export interface PieceRef {
 }
 
 /**
+ * Nativní pravidlo pod obalem `assembly_gate_<trigger>` (P42, `assembly-parts.ts`) – hledání
+ * pravidla podle id (`blaster`, `time_limit`, `interact`) ho musí najít i ve složené hře.
+ * Žije tady, ne v `addons.ts`: čte ho i jádro (`kernel.ts`), které `addons.ts` samo importuje.
+ */
+export const underlyingRule = (ref: PieceRef): PieceRef =>
+  ref.id.startsWith('assembly_gate_') ? underlyingRule((ref.params as { base: PieceRef }).base) : ref;
+
+/** Pravidlo s upraveným nativním jádrem; obaly `assembly_gate_*` kolem něj zůstanou. */
+export const mapUnderlying = (ref: PieceRef, edit: (native: PieceRef) => PieceRef): PieceRef =>
+  ref.id.startsWith('assembly_gate_') ? { ...ref, params: { ...ref.params, base: mapUnderlying((ref.params as { base: PieceRef }).base, edit) } } : edit(ref);
+
+/**
  * Hratelná instance: vše, z čeho jádro spočítá každý tik. `initial` je stav
  * v tiku 0; `kinds` převádí `BODY.kind` na id modelu z katalogu.
  */

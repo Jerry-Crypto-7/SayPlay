@@ -33,7 +33,7 @@ describe('gated native rules on the sim side', () => {
   it('the score bonus and live patches find a wrapped clock, lives and waves', () => {
     const world = composed('a knight grabs coins in a castle and rescues a princess before time runs out');
     const seconds = underlyingRule(gated(world, 'time_limit')).params.seconds as number;
-    const bonus = world.rules.find((rule) => rule.id === 'score_bonus')!;
+    const bonus = world.rules.map(underlyingRule).find((rule) => rule.id === 'score_bonus')!;
     expect(bonus.params.limit).toBe(Math.min(ARCADE_LIMITS.maxTicks, seconds * ARCADE_HZ));
     expect(bonus.params.limit).toBeLessThan(ARCADE_LIMITS.maxTicks);
 

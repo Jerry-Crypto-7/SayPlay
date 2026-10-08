@@ -166,6 +166,19 @@ export const assemblyFinish: RulePiece<Shared> = {
   },
 };
 
+/** Wrap one native rule in `assembly_gate_<trigger>`: it still plays, its win waits in the keeper. */
+const gateRule = (ref: PieceRef, shared: Readonly<Record<string, unknown>>, ruleLibrary: Readonly<Record<string, RulePiece>>): PieceRef =>
+  ({ id: `assembly_gate_${ruleLibrary[ref.id]!.trigger}`, params: { ...shared, base: ref } });
+
+/**
+ * Gate for rules added after assembly (spec rules, `score_bonus`): a composed
+ * game wraps them like its native rules; a game without parts keeps them as is.
+ */
+export function assemblyGate(rules: readonly PieceRef[], ruleLibrary: Readonly<Record<string, RulePiece>>): (ref: PieceRef) => PieceRef {
+  const shared = rules.find(ref => ref.id === 'assembly_finish')?.params;
+  return shared === undefined ? ref => ref : ref => gateRule(ref, shared, ruleLibrary);
+}
+
 /** Preserve native goals; latch a premature win until the composed work is done. */
 export function assemblyGateRules(rules: Readonly<Record<string, RulePiece>>): Record<string, RulePiece> {
   return Object.fromEntries((['contact', 'tick', 'counter', 'hit', 'press'] as RuleTrigger[]).map(trigger => {
@@ -304,7 +317,7 @@ export function assemblyParts(parts: ArcadeParts, spec: GameSpecV1, ruleLibrary:
     control: { id: 'assembly_control', params: { ...shared, base: parts.control } },
     bot: { id: 'assembly_bot', params: { ...shared, base: parts.bot } },
     rules: [
-      ...parts.rules.map(ref => ({ id: `assembly_gate_${ruleLibrary[ref.id]!.trigger}`, params: { ...shared, base: ref.id === 'time_limit' ? { ...ref, params: { ...ref.params, seconds: Math.max(35, Number(ref.params.seconds)) } } : ref } })),
+      ...parts.rules.map(ref => gateRule(ref.id === 'time_limit' ? { ...ref, params: { ...ref.params, seconds: Math.max(35, Number(ref.params.seconds)) } } : ref, shared, ruleLibrary)),
       ...runtime.map(part => ({ id: 'assembly_part', params: { ...shared, part } })),
       { id: 'assembly_finish', params: shared },
     ],

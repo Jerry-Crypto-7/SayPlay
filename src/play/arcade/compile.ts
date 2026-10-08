@@ -35,7 +35,7 @@ import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHas
 import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { progressionParts } from './pieces/progression-parts';
-import { assemblyParts } from './pieces/assembly-parts';
+import { assemblyGate, assemblyParts } from './pieces/assembly-parts';
 import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
 import { ballPitch } from './pieces/ball';
@@ -225,9 +225,11 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   if (builtIn + ruled.rules.length > ARCADE_LIMITS.maxRules) {
     return { ok: false, issues: [`rules: this ${spec.control} game already uses ${builtIn} built-in rules, so the spec may add at most ${ARCADE_LIMITS.maxRules - builtIn} (it has ${ruled.rules.length}) – merge or drop rules`] };
   }
-  rules.push(...ruled.rules);
+  // Složená hra (P42): výhra pravidla specu i cílového skóre počká v obalu, až budou hotové díly.
+  const gate = assemblyGate(rules, ARCADE_LIBRARY.rules);
+  rules.push(...ruled.rules.map(gate));
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: limitSeconds(timer.seconds) } });
-  const scored = spec.scoring === undefined ? { level, rules } : withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0);
+  const scored = spec.scoring === undefined ? { level, rules } : withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0, gate);
   if (scored.rules.length > ARCADE_LIMITS.maxRules) {
     return { ok: false, issues: [`rules: this ${spec.control} game with scoring uses ${scored.rules.length} rules, over the ${ARCADE_LIMITS.maxRules} limit – merge or drop rules`] };
   }
@@ -244,8 +246,9 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
  * skóre. Limit bonusu za čas = časový limit hry, jinak horizont jádra.
  * Aréna sbírá přes `arena_eat` a skóre v ní je velikost hrdiny a postup
  * k cíli (`grow_to`) – kombo by cíl zkrátilo, takže tam jen bonus na konci.
+ * `gate` obalí `score_bonus` složené hry (P42), ať dosažený cíl nevyhraje před díly.
  */
-function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: number, target: number): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
+function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: number, target: number, gate: (ref: PieceRef) => PieceRef): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
   const keeper = level.bodies.length;
   const hero = level.bodies[0] as BodyInit;
   const counter: BodyInit = { role: 'thing', kind: hero.kind, x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true };
@@ -255,7 +258,7 @@ function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: numb
     level: { ...level, bodies: [...level.bodies, counter] },
     rules: [
       ...rules.map((ref) => mapUnderlying(ref, (native) => (native.id === 'pickup' || native.id === 'shot_hit' ? { id: native.id, params: { ...native.params, combo: keeper } } : native))),
-      { id: 'score_bonus', params: { lives, limit, target } },
+      gate({ id: 'score_bonus', params: { lives, limit, target } }),
     ],
   };
 }
