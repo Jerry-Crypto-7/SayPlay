@@ -43,11 +43,11 @@ import type { Look } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { DIRECTIONS, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
-import { FIGHT_PHASE, facingOf, phaseOf, strikeDirectionOf } from '@/play/arcade/pieces/fight';
+import { FIGHT, FIGHT_PHASE, attackCooldownOf, facingOf, phaseOf, phaseTicksLeft, strikeDirectionOf } from '@/play/arcade/pieces/fight';
+import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
 import { type BodyView, bodiesOf, bodiesStale } from '../bodies';
-import { deadFor, fallOf, squashPose, tiltPose } from '../characterMotion';
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import { glowingCopy } from '../look/load';
@@ -55,11 +55,13 @@ import { UNDER_PANORAMA } from '../look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
 import { Scenery } from '../look/Scenery';
 import { questTargets } from '../quest/TargetStates';
-import { RiggedModel } from '../RiggedModel';
+import { RiggedModel, type ToyFrame } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
 import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
-import { type Cast, FittedModel } from '../World';
+import { applyToy, toyMotionOn } from '../toy/applyToy';
+import { bodyClassOf } from '../toy/body-class';
+import { type Cast, FittedModel, toyTargetOf } from '../World';
 import { ArenaFloor } from './ArenaFloor';
 import { type TargetLayer, TargetsMount } from './TargetsMount';
 import { useThreatEdge } from './ThreatEdge';
@@ -367,14 +369,24 @@ function reachOf(qx: number, qy: number, qz: number, r: number, tan: number, asp
 }
 
 /**
- * Póza statického modelu: poskok, zmáčknutí, bliknutí a zakymácení po zásahu, pád
- * po prohře (`dead` = sekundy od ní, P36C T8). Předklon ne – směr drží otočení skupiny.
+ * Hračkový úder (`toyPoseOf`) začne nápřahem dozadu a výpad vrcholí až tolik tiků po začátku.
+ * V aréně je nápřahem přiblížení (v souboji telegraf) a rána dopadá v tiku zásahu, takže se
+ * začátek posune o tolik tiků zpět: tik zásahu je vrchol výpadu k zasaženému, ne nápřah od něj.
  */
-function applyPose(group: Group, pose: Pose, dead: number): void {
-  group.position.y = pose.bob;
-  tiltPose(group, pose.flash > 0 ? 1 - pose.flash : 1, fallOf(dead));
-  squashPose(group, pose.squash);
-  group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
+const BLOW_PEAK_TICKS = 16;
+
+/**
+ * Tik stavu, kdy tělo udeřilo: hrdina souboje švihem, soupeř souboje svým úderem (oba dopadnou
+ * v tiku, kdy začaly), jinak událost `attack` hračkového pohledu; `null` = neudeřilo.
+ */
+function blowOf(state: Int32Array, index: number, part: Part, fighter: boolean, attack: boolean): number | null {
+  const tick = state[HEADER.tick] as number;
+  if (fighter && part === 'hero') {
+    const left = attackCooldownOf(state, index);
+    return left > 0 ? tick - (FIGHT.attackCooldown - left) : null;
+  }
+  if (fighter) return phaseOf(state, index) === FIGHT_PHASE.strike ? tick - (FIGHT.strike - phaseTicksLeft(state, index)) : null;
+  return attack ? tick : null;
 }
 
 /** Zářící kopie materiálu modelu věci – jedna na zdrojový materiál, sdílená všemi věcmi. */
@@ -432,8 +444,11 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
   const poses = useRef<(Pose | null)[]>([]);
   const clips = useRef<ClipState[]>([]);
   const yaws = useRef<(number | undefined)[]>([]);
-  /** Tik prohry statického hrdiny pro pád (P36C T8). */
-  const deaths = useRef(new Map<number, number>());
+  /** Hračková póza (P45D T9) s pamětí minulého snímku a třída těla modelu role. */
+  const toyPoses = useRef<(ToyPose | undefined)[]>([]);
+  /** Pohled a tik, ze kterých hraje hračku riggovaná postava (T13) – v hit-stopu stojí jako póza modelu. */
+  const toyFrames = useRef<(ToyFrame | undefined)[]>([]);
+  const bodyClasses = useMemo(() => parts.map((part) => bodyClassOf(modelOf(part, cast) ?? '')), [parts, cast]);
   /** Tik, kdy se probuzený pronásledovatel (kopie od `spawnBase`) poprvé ukázal. */
   const woke = useRef(new Map<number, number>());
   const glows = useMemo(() => new Map<Material, Material>(), []);
@@ -518,8 +533,12 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
     const prev = session.prev();
     const tick = state[HEADER.tick] as number;
     const restarted = follow.current !== null && tick < follow.current.tick;
-    if (restarted) woke.current.clear();
+    if (restarted) {
+      woke.current.clear();
+      toyPoses.current = [];
+    }
     posesOf(state, prev, poses.current, tick + alpha);
+    const reduced = !toyMotionOn();
     const player = state[HEADER.player] as number;
     const pb = bodyBase(player);
     const grace = graceLeft(state);
@@ -571,8 +590,26 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
       }
       const pose = poses.current[view.index];
       const inner = posed.current[view.index];
-      // Bojovník padá v `drawFighter` (skupina `leans`); tady jen hrdina, kterého chytili nebo zasáhli naposled.
-      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose, fighter ? 0 : deadFor(deaths.current, view.index, viewOf(state, prev, view.index).alive, tick + alpha, ARCADE_HZ));
+      // Hračková póza (P45D T9) podle stavu a třídy těla. Hit-stop drží pózu z chvíle zásahu: snímek, který
+      // zásah zachytil, ji ještě spočítá, další stojí, dokud hit-stop nepovolí.
+      if (!(fighter && hold === 1 && !capture)) {
+        const seen = toyViewOf(state, prev, view.index);
+        // Bojovníka zasáhne úbytek HP; KO kreslí `drawFighter` na hodinách kresby (poslední úder zastaví tiky), hračka ho nechá stát.
+        const moving = fighter ? { ...seen, attack: false, alive: true, hit: seen.hit || bodyHp(state, view.index) < bodyHp(prev, view.index) } : { ...seen, attack: false };
+        // Riggovaná postava hraje tenhle pohled jen ve stavech bez klipu (`RiggedModel`, T13); začátek úderu
+        // jí posunout nejde a nápřah by v tiku zásahu ucukl od hrdiny, sek proto zůstává klipu.
+        toyFrames.current[view.index] = { view: moving, tick: tick + alpha };
+        if (inner !== null && inner !== undefined) {
+          const blow = blowOf(state, view.index, part!, fighter, seen.attack);
+          const before = toyPoses.current[view.index] ?? null;
+          const memory = blow === null || before === null || before.attackAt === blow - BLOW_PEAK_TICKS ? before : { ...before, attackAt: blow - BLOW_PEAK_TICKS };
+          const toy = toyPoseOf(moving, bodyClasses[view.index]!, memory, tick + alpha, reduced);
+          toyPoses.current[view.index] = toy;
+          applyToy(toyTargetOf(inner), toy, drawn[view.index]!.h);
+          // Zásah bojovníka ukáže záblesk barvy (`drawFighter`); model by blikáním záblesk schoval.
+          if (fighter) inner.visible = true;
+        }
+      }
       if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) {
         const moving = clipOf(viewOf(state, prev, view.index), pose, tick + alpha);
         clips.current[view.index] = fighter ? fightClipOf(state, view.index, part === 'hero', watch, now, moving) : moving;
@@ -733,17 +770,24 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
               {part === 'item' ? (
                 model === undefined ? <Gem size={size.h} /> : <FittedModel id={model} w={size.w} h={size.h} d={size.d} fallback={FALLBACK.item} />
               ) : (
-                // Náklon nápřahu, výpad a pád bojovníka (`drawFighter`); mimo souboj stojí rovně.
+                // Nápřah a pád bojovníka (`drawFighter`); výpad, úder a zásah hraje hračková póza vnitřní skupiny.
                 <group ref={(group) => { leans.current[view.index] = group; }}>
                   {/* Obrys (P36C T6) jen na modelu – kruh, ukazatel zdraví a výstraha jsou mimo tuhle skupinu. */}
                   <InkOutline ink={part === 'hero' ? 'hero' : 'foe'} />
                   {/* Činnost hrdiny (P37B T2): soupeři a `none` dostanou model beze změny stromu. */}
                   <HeroActionBody action={part === 'hero' ? heroAction : 'none'} session={session} h={size.h}>
                     {character !== undefined ? (
-                      <RiggedModel character={character} h={size.h} clip={() => clips.current[view.index] ?? 'idle'} fallback={FALLBACK[part]} onClip={onClip} />
+                      <RiggedModel
+                        character={character}
+                        h={size.h}
+                        clip={() => clips.current[view.index] ?? 'idle'}
+                        fallback={FALLBACK[part]}
+                        onClip={onClip}
+                        toy={() => toyFrames.current[view.index] ?? { view: { ...toyViewOf(session.state(), session.prev(), view.index), attack: false }, tick: (session.state()[HEADER.tick] as number) + session.alpha() }}
+                      />
                     ) : (
                       <group ref={(group) => { posed.current[view.index] = group; }}>
-                        <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} />
+                        <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} posed />
                       </group>
                     )}
                   </HeroActionBody>
