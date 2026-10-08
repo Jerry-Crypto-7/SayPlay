@@ -57,6 +57,8 @@ const { specFidelity } = await import('../src/play/fidelity/score.ts');
 const { draftForControl, draftGameSpec } = await import('../src/play/draft/index.ts');
 const { compileGame } = await import('../src/play/compile/index.ts');
 const { readSentence } = await import('../src/play/read/client.ts');
+const { xoroshiro128plus } = await import('pure-rand/generator/xoroshiro128plus');
+const { uniformInt } = await import('pure-rand/distribution/uniformInt');
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'evals', 'play', 'fidelity');
@@ -703,6 +705,127 @@ async function run(options) {
   console.log(`run ${runId} -> ${runDir}`);
 }
 
+// ---------------------------------------------------------------- slepý párový soud zábavy (P45A T9)
+
+export const PAIR_SEED = 45045;
+
+export const PAIR_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['winner', 'why'],
+  properties: { winner: { type: 'string', enum: ['A', 'B', 'tie'] }, why: { type: 'string' } },
+};
+
+export const PAIR_QUESTION = `The attached image shows two small 3D video games side by side, each played by the same robot player. Game A is the left column, game B the right column. Rows go down in time: the first row is 1.5 seconds after the start, then one row every 6 seconds of play; a grey cell means that game had already ended. Page text is hidden, so judge only what the 3D scenes show. Which game would be more fun to play: its pace (something keeps happening), danger (threats close to the player), what goes on in the scene, and whether it builds up towards the end? Answer "tie" only when neither would be more fun. Reply only with the JSON the schema asks for: winner = "A", "B" or "tie"; why = one or two sentences naming what you see in each game.`;
+
+/** Kdo je vlevo (A) v každém páru: jeden stream `pure-rand` ze seedu, losuje se v pořadí id (vzor `sides` v `play-p39-blind.mjs`). */
+export function pairSides(seed, count) {
+  const rng = xoroshiro128plus(seed);
+  return Array.from({ length: count }, () => (uniformInt(rng, 0, 1) === 0 ? 'a' : 'b'));
+}
+
+/** Odpověď soudce (A = levý sloupec) přeložená na stranu běhu. */
+function pairWinner(answer, left) {
+  if (answer === 'tie') return 'tie';
+  return answer === 'A' ? left : left === 'a' ? 'b' : 'a';
+}
+
+const round3 = (value) => Math.round(value * 1000) / 1000;
+
+/** `bShare` = (výhry b + remízy / 2) / n; `leftWinShare` stejně pro levý sloupec – poziční zkreslení soudce. */
+function pairSummary(pairs) {
+  const n = pairs.length;
+  const count = (winner) => pairs.filter((pair) => pair.winner === winner).length;
+  const ties = count('tie');
+  const leftWins = pairs.filter((pair) => pair.winner === pair.left).length;
+  return { n, aWins: count('a'), bWins: count('b'), ties, bShare: n === 0 ? null : round3((count('b') + ties / 2) / n), leftWinShare: n === 0 ? null : round3((leftWins + ties / 2) / n) };
+}
+
+/** List pro soudce: sloupec A vlevo, B vpravo, řádky jsou snímky klipu průběhu v čase; šedá buňka = hra už skončila. */
+async function pairSheet(page, left, right, path) {
+  const rows = Math.max(left.length, right.length);
+  const cell = (file) => (file === undefined ? '<div class="over">ended</div>' : `<img src="data:image/png;base64,${readFileSync(file).toString('base64')}">`);
+  const seconds = (row) => Math.round(((PACE.leadTicks + row * PACE.gapTicks) / CLIP.hz) * 10) / 10;
+  const body = Array.from({ length: rows }, (_, row) => `<tr><td class="t">${seconds(row)} s</td><td>${cell(left[row])}</td><td>${cell(right[row])}</td></tr>`).join('');
+  await page.setContent(`<!doctype html><html><body style="margin:0;background:#fff;font:600 28px Arial,sans-serif;color:#111">
+<table style="border-spacing:16px 8px"><tr><td></td><th>Game A</th><th>Game B</th></tr>${body}</table>
+<style>img,.over{width:480px;height:300px;display:block;border:2px solid #111}.over{background:#9a9a9a;color:#444;text-align:center;line-height:300px}.t{font-size:18px;width:70px}</style></body></html>`);
+  await page.screenshot({ path, fullPage: true });
+}
+
+/**
+ * Slepý párový soud (P45A T9): pro každé id s klipem průběhu v běhu A i B složí
+ * list, stranu vlevo losuje `pairSides` ze seedu a soudce (`ask` ze
+ * `p37d/judge-sheet.mjs`, prázdný adresář jen se `sheet.png` a schématem) řekne,
+ * která hra by ho víc bavila. Hotová odpověď se při opakování nepřeptává.
+ * `ask` a `compose` jdou vstříknout (test bez Codexu a bez prohlížeče).
+ */
+export async function pairwise(options, { ask, compose } = {}) {
+  if (typeof options.a !== 'string' || typeof options.b !== 'string' || typeof options.out !== 'string') throw new Error('pairwise: --a <runId> --b <runId> --out <file> are required');
+  const runsDir = options.runsDir ?? join(DIR, 'runs');
+  const seed = options.seed === undefined ? PAIR_SEED : Number(options.seed);
+  const paceOf = (run, id) => {
+    const file = join(runsDir, run, `${id}.json`);
+    return existsSync(file) ? (readJson(file).pace?.frames ?? []).map((frame) => join(runsDir, run, frame)) : [];
+  };
+  const wanted = typeof options.only === 'string' ? new Set(options.only.split(',')) : null;
+  const ids = readdirSync(join(runsDir, options.a))
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => file.slice(0, -'.json'.length))
+    .filter((id) => (wanted === null || wanted.has(id)) && paceOf(options.a, id).length > 0 && paceOf(options.b, id).length > 0)
+    .sort();
+  const left = pairSides(seed, ids.length);
+  const pairDir = join(runsDir, `pair-${options.a}--${options.b}-${seed}`);
+  mkdirSync(pairDir, { recursive: true });
+  const schemaFile = join(pairDir, 'pair-schema.json');
+  writeJson(schemaFile, PAIR_SCHEMA);
+  const judgeOf = ask ?? (await import('./p37d/judge-sheet.mjs')).ask;
+  let browser = null;
+  const composeOf = compose ?? (async (l, r, path) => {
+    if (browser === null) browser = await createRequire(import.meta.url)('@playwright/test').chromium.launch();
+    const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
+    await pairSheet(page, l, r, path);
+    await page.close();
+  });
+  const pairs = new Array(ids.length);
+  const queue = ids.map((id, index) => ({ id, index }));
+  const worker = async () => {
+    for (let job = queue.shift(); job !== undefined; job = queue.shift()) {
+      const { id, index } = job;
+      const side = left[index];
+      const answerFile = join(pairDir, `${id}.answer.json`);
+      if (!existsSync(answerFile)) {
+        const sheet = join(pairDir, `${id}-sheet.png`);
+        const [l, r] = side === 'a' ? [paceOf(options.a, id), paceOf(options.b, id)] : [paceOf(options.b, id), paceOf(options.a, id)];
+        await composeOf(l, r, sheet);
+        const asked = await judgeOf(sheet, schemaFile, answerFile, PAIR_QUESTION);
+        // Ztráta přihlášení nebo vyčerpaný limit: zastavit, ne počítat díru jako remízu.
+        if (!existsSync(answerFile)) throw new Error(`pairwise ${id}: the judge gave no answer (exit ${asked?.code}) ${asked?.stderr ?? ''}`);
+      }
+      const answer = readJson(answerFile);
+      pairs[index] = { id, left: side, winner: pairWinner(answer.winner, side), why: answer.why };
+      console.log(`${id}: left ${side} -> ${pairs[index].winner}`);
+    }
+  };
+  try {
+    await Promise.all(Array.from({ length: Math.max(1, Number(options.concurrency ?? 2)) }, worker));
+  } finally {
+    if (browser !== null) await browser.close();
+  }
+  const verdict = {
+    schema: 'pairwise.v1',
+    a: { run: options.a, commit: options['a-commit'] ?? null },
+    b: { run: options.b, commit: options['b-commit'] ?? null },
+    seed,
+    order: `pure-rand xoroshiro128plus(${seed}), uniformInt(0, 1) per pair in id order: 0 = a on the left (column A), 1 = b`,
+    pairs,
+    summary: pairSummary(pairs),
+  };
+  writeJson(options.out, verdict);
+  console.log(`pairwise ${options.a} vs ${options.b}: bShare ${verdict.summary.bShare} leftWinShare ${verdict.summary.leftWinShare} n ${verdict.summary.n} -> ${options.out}`);
+  return verdict;
+}
+
 // ---------------------------------------------------------------- férové srovnání modelů (P30A T7)
 
 /**
@@ -1339,11 +1462,13 @@ if (isMain) {
   else if (options.offline) offline(options);
   else if (typeof options.models === 'string') process.exitCode = await compare(options);
   else if (step === 'run') await run(options);
+  else if (step === 'pairwise') await pairwise(options);
   else if (step === 'judge') judge(options);
   else if (step === 'report') report(options);
   else if (step === 'summary') summary(options);
   else if (step === 'roles') roles(options);
   else {
+    console.error('usage: node scripts/play-fidelity.mjs pairwise --a <runId> --b <runId> --out <file> [--seed 45045] [--a-commit <sha>] [--b-commit <sha>] [--only <ids>] [--concurrency 2]');
     console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--pace-clip] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
     process.exit(2);
   }
