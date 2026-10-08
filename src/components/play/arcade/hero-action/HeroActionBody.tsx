@@ -4,8 +4,7 @@
  * Hrdina dělá sloveso věty (P37B T2): obalí model hrdiny skupinou, která ho
  * pohne podle `heroAction`, a přidá rekvizitu v ruce s odletem (kapky,
  * třísky, prach, jiskry). Klidová smyčka běží pořád, nápřah spustí efekt
- * jádra, kterým hrdina něco udělal (`BURST_KINDS` z `session.onEvents` –
- * jen hra člověka, ukázka posluchače nevolá), a bez události pracovní takt
+ * jádra nebo pozorovaná změna stavu (i robotí ukázka/přehrání), a bez ní pracovní takt
  * `WORK_BEAT_S`.
  *
  * `none` vrátí model beze změny stromu: běžec bere první dítě skupiny jako
@@ -21,12 +20,12 @@ import { type ReactNode, useEffect, useRef } from 'react';
 import type { Group } from 'three';
 
 import { colorHex } from '@/brand/tokens';
-import { ARCADE_HZ } from '@/play/arcade/contract';
+import { ARCADE_HZ, HEADER } from '@/play/arcade/contract';
 import { playHeroActionSfx } from '@/play/audio';
 import type { HeroAction } from '@/play/spec';
 
 import type { ArcadeSession } from '../session';
-import { BURST_KINDS, BURST_S, type PropKind, type Spill, WORK_BEAT_S, motionOf } from './actions';
+import { BURST_KINDS, BURST_S, type PropKind, type Spill, WORK_BEAT_S, actionAdvanced, motionOf } from './actions';
 
 /** Ruka vpravo před tělem (podíl výšky): kamera za zády i z boku ji vidí. */
 const HAND_X = 0.3;
@@ -229,7 +228,7 @@ export function HeroActionBody({
   children,
 }: {
   readonly action: HeroAction;
-  readonly session: Pick<ArcadeSession, 'onEvents'>;
+  readonly session: Pick<ArcadeSession, 'onEvents' | 'state'>;
   /** Výška hrdiny (m). */
   readonly h: number;
   readonly children: ReactNode;
@@ -239,6 +238,12 @@ export function HeroActionBody({
   const prop = useRef<Group>(null);
   const bits = useRef<(Group | null)[]>([]);
   const clock = useRef({ t: 0, burstAt: -Infinity, pending: false, swingTick: -Infinity });
+  const observed = useRef<Int32Array | null>(null);
+
+  useEffect(() => {
+    observed.current = motion === null ? null : Int32Array.from(session.state());
+    clock.current = { t: 0, burstAt: -Infinity, pending: false, swingTick: -Infinity };
+  }, [session, motion]);
 
   useEffect(() => {
     if (motion === null) return undefined;
@@ -259,6 +264,21 @@ export function HeroActionBody({
   useFrame((_, delta) => {
     if (motion === null || body.current === null || prop.current === null) return;
     const now = clock.current;
+    const state = session.state();
+    const before = observed.current;
+    const tick = state[HEADER.tick];
+    if (before !== null && tick < before[HEADER.tick]) {
+      now.swingTick = -Infinity;
+      now.pending = false;
+      now.burstAt = -Infinity;
+    }
+    if (before !== null && actionAdvanced(before, state) && tick - now.swingTick >= SWING_TICKS) {
+      now.swingTick = tick;
+      now.pending = true;
+    }
+    // Own the copy: the kernel mutates its state in place; rendering never writes it.
+    if (before === null || before.length !== state.length) observed.current = Int32Array.from(state);
+    else before.set(state);
     now.t += Math.min(delta, MAX_STEP_S);
     if (now.pending || now.t - now.burstAt >= WORK_BEAT_S) {
       now.burstAt = now.t;
