@@ -105,7 +105,7 @@ export type PaidDoor = 'world' | 'generate' | 'refine' | 'play';
  * ⚠ **Ten invariant se poruší tiše.** Zvednout kterýkoli strop o jedna
  * vypadá jako uvolnění, a přitom to jiným dveřím sebere rezervu, o kterou tu
  * celou dobu jde. Pinuje ho vlastnostní test nad těmihle konstantami
- * (`changes.test.ts`, „invariant rezervy"), ne komentář.
+ * (`src/server/__tests__/paid-slots.test.ts`, „invariant rezervy"), ne komentář.
  *
  * ⚠ **Součet stropů je NAD dnem (7 proti 6), takže brána na součet doopravdy
  * rozhoduje** — a je to tak správně: je to jediné, co drží celkový počet
