@@ -29,7 +29,7 @@ Extracted essential triples plus survival duration; not full manual sentence pre
 | delivery-4 | assembled.roam | true | [] | -/- | false |
 | switch_puzzle-1 | assembled.roam | true | [] | -/- | false |
 | switch_puzzle-2 | assembled.roam | true | [] | -/- | false |
-| switch_puzzle-3 | assembled.roam | true | [{"actor":"door","verb":"open","object":null}] | -/- | true |
+| switch_puzzle-3 | assembled.roam | true | [{"actor":"door","verb":"interact","object":null}] | -/- | true |
 | switch_puzzle-4 | assembled.roam | true | [{"actor":"door","verb":"interact","object":null}] | -/- | true |
 | hazard_crossing-1 | assembled.jump | true | [] | -/- | false |
 | hazard_crossing-2 | assembled.jump | true | [{"actor":"hero","verb":"cross","object":"field"},{"actor":"hero","verb":"linger","object":null}] | -/- | true |

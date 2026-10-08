@@ -67,9 +67,23 @@ it('records per-sentence baseline on the open dev sets', async () => {
       p37a: { sentences: p37a.length, verbRead: p37a.filter((row) => row.verbRead).length },
       p30dev: { sentences: p30dev.length, verbRead: p30dev.filter((row) => row.verbRead).length },
     };
+    // T13: přechody k horšímu proti baseline – oba seznamy musí být prázdné; skupiny dev-150 vedle sebe.
+    let comparison: unknown = undefined;
+    if (after) {
+      const base = (readJson('evals/play/p44c/baseline.json') as { sets: { p42: { id: string; preserved: boolean }[]; p37a: { id: string; verbRead: boolean; group: string | null }[]; p30dev: { id: string; verbRead: boolean }[] } }).sets;
+      const was = <T extends { id: string }>(rows: T[]) => new Map(rows.map((row) => [row.id, row]));
+      const p42Before = was(base.p42);
+      const readBefore = was([...base.p37a, ...base.p30dev]);
+      const groups = (rows: { group: string | null; verbRead: boolean }[]) => Object.fromEntries(['unknown-verb', 'fantasy'].map((group) => [group, rows.filter((row) => row.group === group && row.verbRead).length]));
+      comparison = {
+        lostPreserved: p42.filter((row) => p42Before.get(row.id)?.preserved === true && !row.preserved).map((row) => row.id),
+        lostVerbRead: [...p37a, ...p30dev].filter((row) => readBefore.get(row.id)?.verbRead === true && !row.verbRead).map((row) => row.id),
+        dev150VerbRead: { before: groups(base.p37a), after: groups(p37a) },
+      };
+    }
     const output = after ? 'evals/play/p44c/after-dev.json' : 'evals/play/p44c/baseline.json';
-    writeFileSync(output, JSON.stringify({ commit, vocab: process.env.PLAY_VOCAB ?? 'default', summary, sets: { p42, p37a, p30dev } }, null, 2) + '\n');
-    console.log(JSON.stringify({ output, summary }));
+    writeFileSync(output, JSON.stringify({ commit, vocab: process.env.PLAY_VOCAB ?? 'default', summary, comparison, sets: { p42, p37a, p30dev } }, null, 2) + '\n');
+    console.log(JSON.stringify({ output, summary, comparison }));
     expect(p42).toHaveLength(64);
     expect(p37a).toHaveLength(150);
     expect(p30dev).toHaveLength(60);

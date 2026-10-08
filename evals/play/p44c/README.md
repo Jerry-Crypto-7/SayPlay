@@ -58,3 +58,28 @@ metoda dá `action:collect` – cíl „sebrat všechno“ dává až slovo „a
 je ve WordNetu pod „attack“, takže rvačka místo střelby), `harpoon` (chytání místo střelby), `darn` (oprava
 místo pletení), `outpace` (porazit místo závodu), `raft` (doprava místo jízdy), `shovel` (zlatá sada chce
 kopání, ruční tabulka rodin hry ho bere jako úklid – kotva drží ruční tabulku).
+
+## Podstatná jména a rozpočty (T10, T12)
+
+`scripts/p37a/nearest.mjs` přidá do `src/play/arcade/nearest.json` konkrétní podstatná jména OEWN (`build.mjs --nouns`,
+12 802 jmen pod kořeny v `config.json`), jen se skóre ≥ 0,5: +2128 slov, 136 KB raw / 29 KB gzip (strop 200 / 48 KB).
+Katalog od P37A narostl 794 → 912 modelů a čistý běh by přepsal 145 ze 667 starých slov (všechna k lepšímu modelu);
+skript proto zapsané záznamy drží a přepočítá je jen s `--refresh` – vědomě a s novým měřením. „wyvern“ s žádným
+modelem nedosáhne 0,5; griffin a kraken kreslí katalog přímo. `node scripts/vocab/check-bundle.mjs` po buildu hlídá,
+že tabulka sloves je jen v `.next/server` – hledá i první řádek tabulky, protože webpack nečtené pole `sentinel` vyhodí.
+
+## Bez regresí na vývojových sadách (T13)
+
+`after-dev.json` (`P44C_AFTER=1`, stejné měřidlo jako T1): **žádná** věta P42 nepřešla ze „zachováno“ na „ne“
+a žádná věta dev-150 / P30 dev neztratila přečtené sloveso (`comparison.lostPreserved` i `lostVerbRead` prázdné).
+Čísla se nepohnula ani nahoru: P42 59/64, dev-150 104/150 (`unknown-verb` 54/60, `fantasy` 24/30), P30 dev 44/60 –
+`verbRead` z `offlineChain` čte ruční ovládání slovesa, tabulka P44C ho nemění; co tabulka přidá, měří T14 svědkem.
+
+Celá sada `npx vitest run` sama: 20 pádů pod souběžnými sezeními ostatních worktree (15× časový limit, ms rozpočty,
+2× chybějící gitignorované `plans/`); 15 souborů znovu po jednom → zelené kromě jednoho skutečného posunu:
+`evals/play/rules/coverage-p41.json` – věta s089 „flip a bottle so it lands standing“ navrhne `move_free` místo `steer`,
+protože „flip“ je kotevní sloveso interakce (třída pokrytí `template/open` beze změny); artefakt přepsán
+(`npx tsx evals/play/rules/coverage.ts --write-p41`). `evals/play/regression/p41-report.*`: u `switch_puzzle-3` je
+místo neznámého „open“ kanonické „interact“, u `checkpoint_race-4` zmizela zdvojená trojice „run“; zachování beze změny.
+E2E nad buildem (webpack, `next start`, `FALLBACK_SMOKE_URL`): `interface-language` 2/2. `e2e/offline-chain.spec.ts`
+z plánu už neexistuje – odstranil ho P44D (`5c2044b0`).
