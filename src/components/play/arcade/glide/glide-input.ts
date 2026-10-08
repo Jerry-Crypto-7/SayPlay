@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, type RefObject } from 'react';
-import { AXIS_MAX, BUTTON } from '@/play/arcade/contract';
+import { AXIS_MAX, type ArcadeWorld, BUTTON, nativeRule } from '@/play/arcade/contract';
 import { isTyping } from '../input';
 import type { ArcadeSession } from '../session';
 
@@ -43,11 +43,14 @@ export function glideInput(shoot: boolean) {
   };
 }
 
+/** Střílí let (`blaster`, i pod obalem složené hry)? Pak mezerník a druhý prst pálí. */
+export const glideShoots = (world: Pick<ArcadeWorld, 'rules'>): boolean => nativeRule(world.rules, 'blaster') !== undefined;
+
 export function useGlideInput(session: ArcadeSession, target: RefObject<HTMLDivElement | null>, active: boolean): void {
   useEffect(() => {
     const element = target.current;
     if (!active || element === null) return;
-    const input = glideInput(session.world.rules.some(rule => rule.id === 'blaster'));
+    const input = glideInput(glideShoots(session.world));
     const sync = () => {
       const held = input.snapshot();
       session.hold(held.axis); session.holdButtons(held.buttons);

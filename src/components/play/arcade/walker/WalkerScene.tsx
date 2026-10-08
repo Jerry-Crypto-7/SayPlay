@@ -6,7 +6,7 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { BufferAttribute, BufferGeometry, DoubleSide, Matrix4, type InstancedMesh } from 'three';
 import { color } from '@/brand/tokens';
-import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+import { type ArcadeWorld, BODY, FLAG, HEADER, UNIT, bodyBase, nativeRules } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { walkerMapSchema, WALKER_CELL } from '@/play/arcade/pieces/walker';
 import { baseControlOf } from '@/play/arcade/addons';
@@ -37,13 +37,16 @@ function GuardCone({ session, body, range }: { readonly session: ArcadeSession; 
   </mesh>;
 }
 
+/** Kužely strážných z pravidel `walker_caught` (i pod obalem složené hry): tělo strážného a dosah. */
+export const walkerCones = (world: Pick<ArcadeWorld, 'rules'>): { body: number; range: number }[] =>
+  nativeRules(world.rules, 'walker_caught').map(rule => ({ body: Number(rule.params.body), range: Number(rule.params.range ?? 5000) }));
+
 export function WalkerBackdrop({ session, look }: { readonly session: ArcadeSession; readonly look: Look }) {
   const mesh = useRef<InstancedMesh>(null);
   const data = useMemo(() => {
     const state = session.world.initial, control = baseControlOf(session.world.control);
     const walls = Array.from({ length: state[HEADER.bodyCount]! }, (_, body) => body).filter(body => session.world.kinds[state[bodyBase(body) + BODY.kind]!] === 'wall');
-    const cones = session.world.rules.filter(rule => rule.id === 'walker_caught').map(rule => ({ body: Number(rule.params.body), range: Number(rule.params.range ?? 5000) }));
-    return { walls, cones, size: Number(control.params.size) };
+    return { walls, cones: walkerCones(session.world), size: Number(control.params.size) };
   }, [session]);
   useLayoutEffect(() => {
     if (mesh.current === null) return;

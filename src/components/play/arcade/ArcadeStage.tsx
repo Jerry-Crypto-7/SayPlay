@@ -17,8 +17,8 @@ import { Canvas, addAfterEffect, useThree } from '@react-three/fiber';
 import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
-import { baseControlOf, underlyingRule } from '@/play/arcade/addons';
-import { AXIS_MAX, BUTTON, type PieceRef } from '@/play/arcade/contract';
+import { baseControlOf } from '@/play/arcade/addons';
+import { AXIS_MAX, BUTTON, type PieceRef, nativeRule } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
 import { CAPABILITIES } from '@/play/capabilities';
@@ -51,7 +51,7 @@ import { type Cast, FittedModel, World } from './World';
 
 /** Fire remains available when independent parts wrap the native weapon rule. */
 export function hasBlaster(rules: readonly PieceRef[]): boolean {
-  return rules.some(rule => underlyingRule(rule).id === 'blaster');
+  return nativeRule(rules, 'blaster') !== undefined;
 }
 
 /**

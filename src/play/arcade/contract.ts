@@ -608,6 +608,12 @@ export interface PieceRef {
 export const underlyingRule = (ref: PieceRef): PieceRef =>
   ref.id.startsWith('assembly_gate_') ? underlyingRule((ref.params as { base: PieceRef }).base) : ref;
 
+/** Nativní pravidla s některým z `ids`, i pod obalem složené hry, v pořadí pravidel světa. */
+export const nativeRules = (rules: readonly PieceRef[], ...ids: readonly string[]): PieceRef[] => rules.map(underlyingRule).filter((ref) => ids.includes(ref.id));
+
+/** První nativní pravidlo s některým z `ids` (`blaster`, `time_limit`, `interact`) – render i HUD hledají jen tudy. */
+export const nativeRule = (rules: readonly PieceRef[], ...ids: readonly string[]): PieceRef | undefined => nativeRules(rules, ...ids)[0];
+
 /** Pravidlo s upraveným nativním jádrem; obaly `assembly_gate_*` kolem něj zůstanou. */
 export const mapUnderlying = (ref: PieceRef, edit: (native: PieceRef) => PieceRef): PieceRef =>
   ref.id.startsWith('assembly_gate_') ? { ...ref, params: { ...ref.params, base: mapUnderlying((ref.params as { base: PieceRef }).base, edit) } } : edit(ref);
