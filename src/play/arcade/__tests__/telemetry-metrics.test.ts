@@ -157,3 +157,115 @@ describe('funMetrics – danger', () => {
     expect(funMetrics(withSamples(s)).playerDied).toBe(false);
   });
 });
+
+/** Tělo s dráhou v metrech `[x, z]` po vzorcích (null = ve vzorku chybí); hráč stojí v počátku. */
+type Path = { body: number; role?: number; born?: number; hp?: readonly number[]; v?: readonly [number, number]; at: readonly ([number, number] | null)[] };
+
+function paths(bodies: readonly Path[]): TraceSample[] {
+  const length = Math.max(...bodies.map((b) => b.at.length));
+  return Array.from({ length }, (_, i) => ({
+    tick: i * SAMPLE_TICKS,
+    player: { x: 0, y: 0, z: 0, h: UNIT },
+    bodies: bodies.flatMap((b): TraceBody[] => {
+      const p = b.at[i];
+      if (p === null || p === undefined) return [];
+      return [{ body: b.body, role: b.role ?? ROLE.chaser, born: b.born ?? 0, x: Math.round(p[0] * UNIT), y: 0, z: Math.round(p[1] * UNIT), h: UNIT, vx: (b.v?.[0] ?? 0) * UNIT, vz: (b.v?.[1] ?? 0) * UNIT, hp: b.hp?.[i] ?? 0 }];
+    }),
+  }));
+}
+
+/** Přímá dráha z `from` do `to` po `n` vzorcích. */
+const line = (from: [number, number], to: [number, number], n: number): [number, number][] =>
+  Array.from({ length: n }, (_, i) => [from[0] + ((to[0] - from[0]) * i) / (n - 1), from[1] + ((to[1] - from[1]) * i) / (n - 1)]);
+
+function run(s: TraceSample[], events: readonly TraceEvent[] = [], outcome: RunTrace['outcome'] = 'won', ticks = (s.length - 1) * SAMPLE_TICKS): RunTrace {
+  return { ticks, outcome, hash: 'test', player: PLAYER, events, samples: s };
+}
+
+const hitOn = (body: number, tick: number, role: number = ROLE.enemy): TraceEvent => ({ tick, kind: 'hit', body, role });
+
+describe('funMetrics – behaviours', () => {
+  it('gives two chasers of the same role one behaviour', () => {
+    const s = paths([{ body: 1, at: line([10, 0], [2, 0], 9) }, { body: 2, at: line([0, 10], [0, 2], 9) }]);
+    const m = funMetrics(run(s));
+    expect(m.behaviours).toEqual(['chaser:chase']);
+    expect(m.behaviourCount).toBe(1);
+  });
+
+  it('tells a static, a roaming and a chasing body apart', () => {
+    const s = paths([
+      { body: 1, role: ROLE.hazard, at: line([5, 5], [5.2, 5], 9) },
+      { body: 2, role: ROLE.enemy, at: line([5, -5], [5, 5], 9) },
+      { body: 3, role: ROLE.enemy, at: line([-8, 0], [-2, 0], 9) },
+    ]);
+    const m = funMetrics(run(s));
+    expect(m.behaviours).toEqual(['enemy:chase', 'enemy:roam', 'hazard:static']);
+    expect(m.behaviourCount).toBe(3);
+  });
+
+  it('marks a body born after the start as spawned', () => {
+    const s = paths([{ body: 1, at: line([10, 0], [2, 0], 9) }, { body: 4, born: 12, at: [null, null, ...line([10, 0], [4, 0], 7)] }]);
+    expect(funMetrics(run(s)).behaviours).toEqual(['chaser:chase', 'chaser:chase+spawned']);
+  });
+
+  it("counts an enemy projectile as a shot and leaves the player's own shot out", () => {
+    // Nepřátelská střela přiletí z dálky k hráči; vlastní vznikne u hráče a letí od něj.
+    const enemyShot = { body: 5, role: ROLE.projectile, born: 6, v: [-0.5, 0] as [number, number], at: [null, ...line([12, 0], [4, 0], 5)] };
+    const ownShot = { body: 6, role: ROLE.projectile, born: 6, v: [0, 0.5] as [number, number], at: [null, ...line([0, 1], [0, 9], 5)] };
+    expect(funMetrics(run(paths([ownShot]))).behaviours).toEqual([]);
+    expect(funMetrics(run(paths([enemyShot, ownShot]))).behaviours).toEqual(['projectile:shot+spawned']);
+  });
+});
+
+describe('funMetrics – finale', () => {
+  const boss = (hits: number, end: 'kill' | 'hp0' | 'gone' | 'alive'): RunTrace => {
+    const n = 20;
+    const hp = Array.from({ length: n }, () => 3);
+    if (end === 'hp0') hp[n - 1] = 0;
+    const at = Array.from({ length: n }, (): [number, number] | null => [3, 0]);
+    if (end === 'gone' || end === 'kill') at[n - 1] = null;
+    const events: TraceEvent[] = Array.from({ length: hits }, (_, i) => hitOn(1, 10 + i * 6));
+    if (end === 'kill') events.push({ tick: (n - 1) * SAMPLE_TICKS - 1, kind: 'kill', body: 1, role: ROLE.enemy });
+    return run(paths([{ body: 1, role: ROLE.enemy, hp, at }]), events, 'lost');
+  };
+
+  it('finds a boss: a threat hit three times that is gone by the end', () => {
+    expect(funMetrics(boss(3, 'kill')).finale).toEqual({ present: true, why: 'boss' });
+    expect(funMetrics(boss(3, 'gone')).finale).toEqual({ present: true, why: 'boss' });
+    // Souboj v aréně: poražený zůstane ve hře s HP 0.
+    expect(funMetrics(boss(3, 'hp0')).finale).toEqual({ present: true, why: 'boss' });
+  });
+
+  it('does not take a threat hit twice, or one still standing, for a boss', () => {
+    expect(funMetrics(boss(2, 'kill')).finale).toEqual({ present: false, why: null });
+    expect(funMetrics(boss(5, 'alive')).finale).toEqual({ present: false, why: null });
+  });
+
+  it('does not add up hits on two bodies that shared a slot', () => {
+    // Slot 1: první tělo dostane 2 zásahy a zmizí, nové (zrozené v tiku 30) 1 zásah a zmizí.
+    const s = paths([{ body: 1, at: [[3, 0], [3, 0], [3, 0], [3, 0], null, null, null, null] }]);
+    const reborn = paths([{ body: 1, born: 30, at: [null, null, null, null, null, [3, 0], [3, 0], null] }]);
+    const merged = s.map((sample, i) => ({ ...sample, bodies: [...sample.bodies, ...(reborn[i]?.bodies ?? [])] }));
+    const events = [hitOn(1, 2, ROLE.chaser), hitOn(1, 8, ROLE.chaser), hitOn(1, 32, ROLE.chaser)];
+    expect(funMetrics(run(merged, events, 'won')).finale.why).not.toBe('boss');
+  });
+
+  /** Běh `seconds` s se zásahy po celou dobu jednou za 2 s a v posledních 10 s navíc `burst` sebrání. */
+  const paced = (seconds: number, burst: number, outcome: RunTrace['outcome']): RunTrace => {
+    const steady = Array.from({ length: Math.floor(seconds / 2) }, (_, i) => [i * 2 * HZ + 1, 'pickup'] as [number, TraceEventKind]);
+    const late = Array.from({ length: burst }, (_, i) => [(seconds - 10) * HZ + 7 + i * 20, 'pickup'] as [number, TraceEventKind]);
+    return trace(seconds * HZ, [...steady, ...late], outcome);
+  };
+
+  it('finds a climax in a won run whose last 10 s are 1.5x denser than the run', () => {
+    // 60 s: 30 + 12 událostí, průměr 0,7/s; posledních 10 s: 5 + 12 = 1,7/s ≥ 1,05.
+    expect(funMetrics(paced(60, 12, 'won')).finale).toEqual({ present: true, why: 'climax' });
+    // Bez nárůstu: posledních 10 s 0,5/s proti průměru 0,5/s.
+    expect(funMetrics(paced(60, 0, 'won')).finale.present).toBe(false);
+  });
+
+  it('gives a lost run no climax, and a run of 10 s or less none', () => {
+    expect(funMetrics(paced(60, 12, 'lost')).finale.present).toBe(false);
+    expect(funMetrics(paced(10, 12, 'won')).finale.present).toBe(false);
+  });
+});

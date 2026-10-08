@@ -179,6 +179,16 @@ export interface FunMetrics {
   readonly playerDied: boolean;
   /** Počet událostí `kill`. */
   readonly kills: number;
+  /** Seřazené různé podpisy `<role>:<motion>` hrozeb (`+spawned` = tělo vzniklo po startu); vlastní střely hráče nevstupují. */
+  readonly behaviours: readonly string[];
+  readonly behaviourCount: number;
+  readonly finale: Finale;
+}
+
+/** `boss` = hrozba dostala ≥ `BOSS_HITS` zásahů a do konce zmizela; `climax` = vyhraný běh zhoustl na konci. */
+export interface Finale {
+  readonly present: boolean;
+  readonly why: 'boss' | 'climax' | null;
 }
 
 /** Poloměr blízkého minutí v jednotkách jádra: 1,5 m. */
@@ -238,6 +248,105 @@ function gameEventTicks(trace: RunTrace): number[] {
   return trace.events.filter((e) => e.kind !== 'win' && e.kind !== 'lose' && !(e.kind === 'score' && busy.has(e.tick))).map((e) => e.tick).sort((a, b) => a - b);
 }
 
+/** Tělo, které za běh ujede méně, stojí: 0,5 m. */
+export const STATIC_PATH = 0.5 * UNIT;
+/** Projektil poprvé viděný blíž k hráči a letící od něj je hráčova vlastní střela: 3 m. */
+export const OWN_SHOT_RADIUS = 3 * UNIT;
+/** Honí = průměrný kosinus posunu k hráči nad tímhle prahem. */
+export const CHASE_COSINE = 0.5;
+export const BOSS_HITS = 3;
+/** Finále stupňováním: posledních 10 s vyhraného běhu je aspoň 1,5× hustší než celý běh. */
+export const CLIMAX_TICKS = 10 * ARCADE_HZ;
+export const CLIMAX_FACTOR = 1.5;
+const BOSS_ROLES: readonly number[] = [ROLE.chaser, ROLE.enemy, ROLE.hazard];
+const ROLE_NAME = new Map<number, string>(Object.entries(ROLE).map(([name, code]) => [code, name]));
+
+/** Jedno tělo (slot, tik vzniku) napříč vzorky, s polohou hráče v každém. */
+interface Track {
+  readonly body: number;
+  readonly role: number;
+  readonly born: number;
+  readonly points: { readonly at: TraceBody; readonly player: TraceSample['player'] }[];
+}
+
+function tracksOf(trace: RunTrace): Track[] {
+  const tracks = new Map<string, Track>();
+  for (const sample of trace.samples) {
+    for (const body of sample.bodies) {
+      const key = `${String(body.body)}@${String(body.born)}`;
+      const track = tracks.get(key) ?? { body: body.body, role: body.role, born: body.born, points: [] };
+      track.points.push({ at: body, player: sample.player });
+      tracks.set(key, track);
+    }
+  }
+  return [...tracks.values()];
+}
+
+/** Hráčova střela: poprvé viděná do `OWN_SHOT_RADIUS` od hráče a letí od něj. */
+function ownShot(track: Track): boolean {
+  if (track.role !== ROLE.projectile) return false;
+  const { at, player } = track.points[0] as Track['points'][number];
+  const dx = at.x - player.x;
+  const dz = at.z - player.z;
+  return dx * dx + dz * dz < OWN_SHOT_RADIUS ** 2 && at.vx * dx + at.vz * dz > 0;
+}
+
+/** `static` podle dráhy, `chase` podle průměrného kosinu posunu mezi vzorky k hráči (vodorovně), jinak `roam`. */
+function motionOf(track: Track): 'shot' | 'static' | 'chase' | 'roam' {
+  if (track.role === ROLE.projectile) return 'shot';
+  let path = 0;
+  let cosines = 0;
+  let moves = 0;
+  for (let i = 1; i < track.points.length; i += 1) {
+    const { at: from, player } = track.points[i - 1] as Track['points'][number];
+    const to = (track.points[i] as Track['points'][number]).at;
+    const dx = to.x - from.x;
+    const dz = to.z - from.z;
+    path += Math.hypot(dx, to.y - from.y, dz);
+    const step = Math.hypot(dx, dz);
+    const towards = Math.hypot(player.x - from.x, player.z - from.z);
+    if (step === 0 || towards === 0) continue;
+    cosines += (dx * (player.x - from.x) + dz * (player.z - from.z)) / (step * towards);
+    moves += 1;
+  }
+  if (path < STATIC_PATH) return 'static';
+  return moves > 0 && cosines / moves > CHASE_COSINE ? 'chase' : 'roam';
+}
+
+function behavioursOf(tracks: readonly Track[]): string[] {
+  const signatures = new Set(tracks.filter((t) => !ownShot(t)).map((t) => `${ROLE_NAME.get(t.role) ?? String(t.role)}:${motionOf(t)}${t.born > 0 ? '+spawned' : ''}`));
+  return [...signatures].sort();
+}
+
+/**
+ * Boss: hrozba (slot, tik vzniku) s ≥ `BOSS_HITS` zásahy, která do konce zmizela –
+ * `kill`, chybí v posledním vzorku, nebo tam má HP 0 (poražený v souboji v aréně
+ * zůstává ve hře). Událost patří tělu slotu s nejpozdějším vznikem ≤ jejímu tiku.
+ */
+function hasBoss(trace: RunTrace, tracks: readonly Track[]): boolean {
+  const owner = (event: TraceEvent): Track | undefined =>
+    tracks.filter((t) => t.body === event.body && t.born <= event.tick).reduce<Track | undefined>((best, t) => (best === undefined || t.born > best.born ? t : best), undefined);
+  const hits = new Map<Track, number>();
+  const killed = new Set<Track>();
+  for (const event of trace.events) {
+    if (event.kind !== 'hit' && event.kind !== 'kill') continue;
+    const track = owner(event);
+    if (track === undefined) continue;
+    if (event.kind === 'kill') killed.add(track);
+    else hits.set(track, (hits.get(track) ?? 0) + 1);
+  }
+  const last = trace.samples[trace.samples.length - 1]?.bodies ?? [];
+  const goneAtEnd = (t: Track): boolean => !last.some((b) => b.body === t.body && b.born === t.born && b.hp > 0);
+  return tracks.some((t) => BOSS_ROLES.includes(t.role) && (hits.get(t) ?? 0) >= BOSS_HITS && (killed.has(t) || goneAtEnd(t)));
+}
+
+/** Climax: vyhraný běh delší než `CLIMAX_TICKS`, jehož posledních `CLIMAX_TICKS` je ≥ `CLIMAX_FACTOR` × hustota běhu. */
+function hasClimax(trace: RunTrace, ticks: readonly number[]): boolean {
+  if (trace.outcome !== 'won' || trace.ticks <= CLIMAX_TICKS) return false;
+  const late = ticks.filter((tick) => tick >= trace.ticks - CLIMAX_TICKS).length;
+  return late > 0 && late / CLIMAX_TICKS >= (CLIMAX_FACTOR * ticks.length) / trace.ticks;
+}
+
 export function funMetrics(trace: RunTrace): FunMetrics {
   const ticks = gameEventTicks(trace);
   const seconds = trace.ticks / ARCADE_HZ;
@@ -246,6 +355,9 @@ export function funMetrics(trace: RunTrace): FunMetrics {
   // Třetiny délky tohohle běhu, ne horizontu ověření: hra vyhraná za 30 s má třetiny po 10 s.
   const first = ticks.filter((tick) => tick < trace.ticks / 3).length;
   const last = ticks.filter((tick) => tick >= (2 * trace.ticks) / 3).length;
+  const tracks = tracksOf(trace);
+  const behaviours = behavioursOf(tracks);
+  const why = hasBoss(trace, tracks) ? 'boss' : hasClimax(trace, ticks) ? 'climax' : null;
   return {
     eventsPerS: seconds === 0 ? 0 : round2(ticks.length / seconds),
     longestGapS: round2(Math.max(...gaps)),
@@ -256,5 +368,8 @@ export function funMetrics(trace: RunTrace): FunMetrics {
     livesLost: trace.events.filter((e) => e.kind === 'damage').length,
     playerDied: trace.outcome === 'lost',
     kills: trace.events.filter((e) => e.kind === 'kill').length,
+    behaviours,
+    behaviourCount: behaviours.length,
+    finale: { present: why !== null, why },
   };
 }
