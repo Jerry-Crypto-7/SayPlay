@@ -40,7 +40,7 @@ import {
   UNIT,
   bodyBase,
 } from './contract';
-import { mapUnderlying, underlyingRule } from './addons';
+import { underlyingRule } from './addons';
 import { type ArcadeLibrary, type ArcadeProgram, type ReplayResult, hashArcade, instantiate, loadProgram, outcomeOf, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import type { GameSpecV1 } from '../spec';
@@ -177,13 +177,14 @@ function burst(effects: readonly ArcadeEffect[]): ArcadeProgram['rules'][number]
 
 /** Program s časovým limitem delším o `seconds` (parametr `time_limit` od tohoto tiku dál). */
 function longer(program: ArcadeProgram, seconds: number): ArcadeProgram {
-  const extend = (ref: PieceRef): PieceRef => (ref.id === 'time_limit' ? { ...ref, params: { ...ref.params, seconds: (ref.params as { seconds: number }).seconds + seconds } } : ref);
   return {
     ...program,
     rules: program.rules.map((rule) => {
-      // Zabalený `time_limit` složené hry (P42) se prodlouží uvnitř obalu.
-      const ref = { id: rule.piece.id, params: rule.params as PieceRef['params'] };
-      return underlyingRule(ref).id === 'time_limit' ? { ...rule, params: mapUnderlying(ref, extend).params } : rule;
+      const native = underlyingRule({ id: rule.piece.id, params: rule.params as PieceRef['params'] });
+      if (native.id !== 'time_limit') return rule;
+      // Zabalený `time_limit` složené hry (P42) poběží dál jako nativní pravidlo: obal mění jen výhru,
+      // prohru času pustí beze změny, ale nativní parametry znovu ověřuje – a prodloužení nad strop 90 s by shodilo jádro.
+      return { ...rule, piece: native.id === rule.piece.id ? rule.piece : (ARCADE_LIBRARY.rules.time_limit as RulePiece), params: { ...native.params, seconds: (native.params as { seconds: number }).seconds + seconds } };
     }),
   };
 }

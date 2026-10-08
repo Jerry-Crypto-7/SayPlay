@@ -294,7 +294,7 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
 function verbsOf(world: ArcadeWorld, firstFired: readonly number[], changes: ReadonlyMap<string, string>): VerbProof[] {
   const proofs = new Map<string, number>();
   world.rules.forEach((ref, index) => {
-    const verb = ref.params.verb;
+    const verb = underlyingRule(ref).params.verb;
     if (typeof verb !== 'string') return;
     const tick = firstFired[index] ?? -1;
     const known = proofs.get(verb) ?? -1;
