@@ -25,7 +25,9 @@ import { type Spot, chaserSpot, placePlatform, placeRunner } from '../track-came
 const GAMES = [
   ['runner', "temple run but you're a banana running from a monkey"],
   ['runner', 'a dog runs through a city chased by a dogcatcher grabbing bones'],
-  ['platform', 'run from zombies and jump over cars in a city'],
+  // P42 reads running from a chaser and jumping over things as the runner, not the platformer.
+  ['runner', 'run from zombies and jump over cars in a city'],
+  ['platform', 'a ninja jumps across rooftops in a city chased by a giant robot'],
 ] as const;
 
 /** Snímek soudu (1280 × 800) a telefon na výšku. */

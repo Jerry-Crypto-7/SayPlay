@@ -129,6 +129,8 @@ interface ArcadeScene {
   readonly styled: boolean;
   /** IDs actually bound to generated native bodies, not merely declared roles. */
   readonly nativeRoles: ReadonlySet<string>;
+  /** Role dílů složené hry (P42), pro které svět postavil tělo `thing:<role>`. */
+  readonly parts: ReadonlySet<string>;
 }
 
 /**
@@ -140,17 +142,20 @@ const STYLED_PART: Partial<Record<GameRole['kind'], DrawnBody>> = { player: 'pla
 /** Stejné rozhodnutí jako `modelIdOf` v `ArcadeStage.tsx`: které tělo nese model z popisku které role. */
 function arcadeScene(spec: GameSpecV1): ArcadeScene {
   const bodies = new Set<DrawnBody>();
+  const parts = new Set<string>();
   const made = arcadeWorldOf(spec, 1);
-  if (!made.ok) return { bodies, styled: false, nativeRoles: new Set() };
+  if (!made.ok) return { bodies, styled: false, nativeRoles: new Set(), parts };
   const control = baseControlOf(made.world.control);
   const styled = control.id === 'fight' || (control.id === 'move_free' && (control.params as { readonly size?: unknown }).size !== undefined);
+  const partRoles = new Set((spec.assemblyParts ?? []).map((part) => part.role));
   const state = made.world.initial;
   const count = state[HEADER.bodyCount] as number;
   for (let index = 0; index < count; index += 1) {
     const base = bodyBase(index);
     const role = state[base + BODY.role] as number;
     const kind = made.world.kinds[state[base + BODY.kind] as number] ?? '';
-    if (role === ROLE.player) bodies.add('player');
+    if (kind.startsWith('thing:') && partRoles.has(kind.slice(6))) parts.add(kind.slice(6));
+    else if (role === ROLE.player) bodies.add('player');
     else if (kind === 'enemy') bodies.add('enemy');
     else if (kind === 'rival-car' || kind === 'foe') bodies.add('rival');
     else if (kind === 'finish' || kind === 'goal') bodies.add('finish');
@@ -168,7 +173,7 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
     else if (kind === 'spikes' || kind === 'pipe') bodies.add(kind);
     else if (role === ROLE.hazard && (kind === 'snag' || kind === 'shot')) bodies.add('hazard');
   }
-  return { bodies, styled, nativeRoles: ['glide', 'walker', 'ball'].includes(control.id) ? new Set(made.roleBindings.map(binding => binding.roleId)) : new Set() };
+  return { bodies, styled, nativeRoles: ['glide', 'walker', 'ball'].includes(control.id) ? new Set(made.roleBindings.map(binding => binding.roleId)) : new Set(), parts };
 }
 
 /** Čte stylizovaná aréna popisek role? Ano, když z role postavila tělo, které kreslí modelem z popisku. */
@@ -195,6 +200,8 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
   if (control === 'tap_go') return assetSource(role.id, role.label, role.kind) !== null;
   const built = scene();
   const { bodies } = built;
+  // Díl složené hry kreslí `thing:<role>` modelem z popisku (`cast.things` v `ArcadePlay.tsx`), jinak náhradním tvarem.
+  if (built.parts.has(role.id)) return sceneModelOf(role.label, false) !== undefined;
   if (built.styled && (role.kind === 'hazard' || role.kind === 'collectible' || role.kind === 'target')) return styledReads(role, built) && styledDraws(spec, role);
   if (PLAYER(role)) {
     if (!bodies.has('player')) return false;
@@ -248,7 +255,7 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
   let built: ArcadeScene | undefined;
   const scene = (): ArcadeScene => (built ??= arcadeScene(spec));
   // Generátor stylizované arény čte roli, ze které postavil tělo – `move_free` sám popisky nečte (agar).
-  const readsRole = (role: GameRole): boolean => ['glide', 'walker', 'ball'].includes(control) ? scene().nativeRoles.has(role.id) : readsLabel(control, role) || addonRole(role, addons) || (control === 'move_free' && scene().styled && styledReads(role, scene()));
+  const readsRole = (role: GameRole): boolean => scene().parts.has(role.id) || (['glide', 'walker', 'ball'].includes(control) ? scene().nativeRoles.has(role.id) : readsLabel(control, role) || addonRole(role, addons) || (control === 'move_free' && scene().styled && styledReads(role, scene())));
   let proofs = verbs;
   // Dokázané je sloveso, po kterém se hra změnila (`VerbProof.changed`, P30B R2), ne jen vystřelené pravidlo.
   const proved = (verb: string): boolean => (proofs ??= robotVerbs(spec)).some((proof) => proof.verb === verb && proof.changed);

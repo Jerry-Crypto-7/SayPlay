@@ -45,7 +45,8 @@ describe('sentenceChecklist', () => {
 
   it('cuts the word the draft left after the noun, so the match is the noun', () => {
     const { checklist } = sentenceChecklist('a fairy lights lanterns along a moonlit forest path');
-    expect(checklist).toContainEqual({ item: 'lanterns', slot: 'role', match: ['lantern'] });
+    // P42 drží obsazení v jednotném čísle; vlastnost testu je shoda na podstatném jménu bez „along“.
+    expect(checklist).toContainEqual({ item: 'lantern', slot: 'role', match: ['lantern'] });
     expect(checklist.flatMap((entry) => entry.match ?? [])).not.toContain('along');
   });
 

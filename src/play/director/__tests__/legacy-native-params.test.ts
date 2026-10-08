@@ -11,7 +11,8 @@ const cell = () => liveCells().find(item => item.recipe.move === 'walk' && item.
 
 describe('validated legacy content migrates to native parameters', () => {
   it('keeps the named dog in an authored native chase and truthfully reports every missing action', async () => {
-    const sentence = 'A kid pops balloons at a fair while a dog chases him';
+    // P42 runs from a chaser unless the sentence says how the hero moves; the walking chase is said.
+    const sentence = 'A kid walks through a fair popping balloons while a dog chases him';
     const quick = draftGameSpecWithMeta(sentence);
     expect(quick.genre?.params).toMatchObject({ chasers: 1 });
     const game = await direct(sentence, { branch: fakeBranch([answered({ plan: 'Keep the named chase.', spec: { ...quick.genre, params: { chasers: 1 } } })]), now: () => 0, maxRepairRounds: 0 });

@@ -78,7 +78,7 @@ describe('P42 round7 sealed sentence set', () => {
   });
 
   it('matches its seal as the blob git stores', () => {
-    const blob = execFileSync('git', ['show', `:${ROUND7}`], { maxBuffer: 1 << 24 });
+    const blob = execFileSync('git', ['--no-replace-objects', 'show', `:${ROUND7}`], { maxBuffer: 1 << 24 });
     expect(sha256(blob)).toBe(seal.sha256);
   });
 
