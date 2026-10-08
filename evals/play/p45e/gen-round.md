@@ -51,7 +51,8 @@ Po třídách (soud): prop 11/19, flat 3/13, biped 2/9, quadruped 2/3, flyer 0/2
 | Dávka | Jmen | Předkontrola a brána | Soud | Povýšeno |
 |---|---|---|---|---|
 | 1 (22:06–22:21) | 10 | 3 | 1 | 0 |
-| 2 (22:53–23:10) | 10 | 6 | 2 | 2 |
+| 2 (22:53–23:08) | 10 | 6 | 2 | 2 |
+| 3 (23:09–23:30) | 10 | 6 | 3 | 3 |
 
 **Dávka 1:**
 - Přijatý, nepovýšený: **demon** (top1). S modelem by manifest P32 (`src/play/assets/entries/catalog.json`) získal záznam třídy monster a `src/play/assets/__tests__/catalog-entries.test.ts:29` drží počet 261 → vyřazeno `--drop` jako lizard. Model leží v `D:/claude/_gen3d-cache-p45e/demon/`; povýšit jde, až linie P45D / P44C zvedne počet v testu.
@@ -64,3 +65,9 @@ Po třídách (soud): prop 11/19, flat 3/13, biped 2/9, quadruped 2/3, flyer 0/2
 - Soudce poznal něco jiného: golem: goblin · chicken leg: torch · keyboard: forge · joystick: chess pawn.
 - Předkontrola odmítla všechny tři obrázky: earring: tree / gravestone / sign · glue: square nut / rock / cylinder · magazine: tombstone / block tower / hard drive · flower pot: potted plant (2×, vizuálně správně – synonymum by ho pustilo; třetí pokus neprošel bránou kvality).
 - Zjištění pro P45D: `scripts/p45d/motion-class.mjs:155` dá vysoký předmět bez slova třídy do biped (poměr výšky) – fuel can a juice dostaly nohy, stejně jako z T4 searchlight, statue, snowboard a playing card.
+
+**Dávka 3:**
+- Povýšeno (3): top1 printer; top3 noodle („churro“, nudle i v pořadí), orb („ball“). noodle dostal z `motion-class.mjs` taky biped.
+- Soudce poznal něco jiného: newspaper: signboard · moon rover: dune buggy · notebook: book (vizuálně blízko).
+- Předkontrola odmítla všechny tři obrázky: milk: jar / rock · pebble: standing stone / gravestone · pinecone: hop cone / pine tree.
+- peacock: třikrát neprošel bránou kvality (`inconsistent face winding`) – stejný páv jako v P37D, TRELLIS na vějíři ocasu.

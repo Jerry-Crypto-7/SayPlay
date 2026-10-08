@@ -175,3 +175,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-jetpack` | jetpack | 4373 / 2169 |
 | `gen3d-fuel-can` | fuel can, jerrycan | 4746 / 2370 |
 | `gen3d-juice` | juice | 4742 / 2364 |
+| `gen3d-noodle` | noodle, ramen | 4701 / 2261 |
+| `gen3d-orb` | orb | 4703 / 2317 |
+| `gen3d-printer` | printer | 4693 / 2286 |

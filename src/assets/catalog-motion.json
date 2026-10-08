@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "55e0a2a4d43665ffa3f6a5b65ec8cd8f04ca1e91058d2bf2313f5226ecc7ca7f",
+ "catalogHash": "cde95217e7e8f7f547261549b763112ff17f11be0e74fd50c565c3cf88182d90",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -950,6 +950,9 @@
   "gen3d-dishwasher": {"class":"prop"},
   "gen3d-jetpack": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-fuel-can": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-juice": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-juice": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-noodle": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-orb": {"class":"prop"},
+  "gen3d-printer": {"class":"prop"}
  }
 }

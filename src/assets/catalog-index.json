@@ -19555,6 +19555,64 @@
           0.2337
         ]
       }
+    },
+    {
+      "assetId": "gen3d-noodle",
+      "tags": [
+        "noodle",
+        "ramen"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-noodle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12761,
+          0,
+          -0.12988
+        ],
+        "max": [
+          0.12761,
+          0.99804,
+          0.12988
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-orb",
+      "tags": [
+        "orb"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-orb-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50593,
+          0,
+          -0.50446
+        ],
+        "max": [
+          0.50593,
+          0.99159,
+          0.50446
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-printer",
+      "tags": [
+        "printer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-printer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.69374,
+          0,
+          -0.27298
+        ],
+        "max": [
+          0.69374,
+          0.99979,
+          0.27298
+        ]
+      }
     }
   ]
 }
