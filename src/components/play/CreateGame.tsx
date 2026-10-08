@@ -19,6 +19,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { moodTone } from './Feed';
+import { FirstVisitHint, isFirstVisit, markVisited } from './FirstVisitHint';
 import { appendSpoken, MicButton } from './MicButton';
 import { BUILD_FAILED, COUNTER_WARN, IDEAS, NOT_SENT, OFFLINE, PLACEHOLDER, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, TOO_VAGUE } from './starters';
 import { BuildingScreen, Button, Icon, TabBar } from './ui';
@@ -50,6 +51,9 @@ export function CreateGame() {
   const [formSeen, setFormSeen] = useState(true);
   // „Make it!“ je aktivní i nad prázdným polem (reference kitu); prázdné odeslání řekne, co napsat.
   const [vague, setVague] = useState(false);
+  // Nápověda první návštěvy (P44D T12) až po načtení: server úložiště nezná a jiné první vykreslení by rozbilo hydrataci.
+  const [firstVisit, setFirstVisit] = useState(false);
+  useEffect(() => setFirstVisit(isFirstVisit()), []);
 
   const trimmed = sentence.trim();
   const over = sentence.length > SENTENCE_LIMIT;
@@ -85,6 +89,7 @@ export function CreateGame() {
       return;
     }
     setPhase({ kind: 'busy', step: 1 });
+    markVisited();
     router.push(body.url);
   }
 
@@ -112,6 +117,17 @@ export function CreateGame() {
 
   return (
     <>
+      {firstVisit && (
+        <FirstVisitHint
+          disabled={busy}
+          onPick={fill}
+          onTryOwn={() => fill(sentence)}
+          onClose={() => {
+            markVisited();
+            setFirstVisit(false);
+          }}
+        />
+      )}
       <form
         ref={form}
         className="play-form"

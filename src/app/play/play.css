@@ -1328,6 +1328,43 @@ button.play-version-switch__item:not(:disabled) {
   color: var(--sp-danger);
 }
 
+/* Nápověda první návštěvy (P44D T12): karta kitu nad bublinou, pět vět pod sebou. */
+.play-first-visit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-space-3);
+  margin-top: var(--sp-space-6);
+}
+
+.play-first-visit + .play-form {
+  margin-top: var(--sp-space-4);
+}
+
+.play-first-visit-picks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Měřená věta má až 71 znaků a na telefonu se zalomí: rádius karty, ne pilulka. */
+.play-first-visit-pick {
+  width: 100%;
+  padding-block: var(--sp-space-2);
+  border-radius: var(--sp-radius-md);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.play-first-visit-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-space-3);
+}
+
 .play-ideas {
   margin-top: 26px;
 }
