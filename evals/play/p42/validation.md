@@ -2,6 +2,18 @@
 
 Implementace je na větvi `features/p42-composable-pieces`. **P42 není dokončené:** poslední nezávislá sada (round6) nesplnila dva ze šesti automatických limitů – celé věty o jednu větu a nulové ticho. Zelené regresní testy ani potvrzené lidské zahrání čtyř scénářů tento výsledek nenahrazují.
 
+## Regrese proti `main` uzavřené (P44A T3–T5, 8. 10. 2026)
+
+Všech 34 souborů, které 7. 10. padaly jen na P42 (120 testů), samo prochází na `a6b238a6`: 22 opravil T3 (`3e0c1d07..d0cb0922`), 3 soubory režiséra T4 (`beaa8da3..93514fd3`), 9 T5 (`a6b238a6`). Rozpis po souborech je v [p44a-red-baseline.json](p44a-red-baseline.json) (`resolvedBy` / `leftAs`).
+
+Opravy u zdroje v T5: loď z věty „seven lives“ má zase sedm životů; kontrola věrnosti počítá díl složené hry (pizza, ryba, šíp) jako nakreslený, když scéna má model z popisku; pokrytí sloves přeměřeno (84 → 87 vět s dílkem, žádná neztracená). Pět testů následuje záměrnou změnu P42 – důvod je u každého v commitu `a6b238a6`: rozvoz pizzy se hraje jako díl, útěk před pronásledovatelem bez řečeného pohybu je běžec, hrozby se berou z věty, ne ze čtení modelem, a obsazení drží jednotné číslo.
+
+### Červené už na main
+
+Žádné nezbyly. Oba soubory, které T1 vedl jako předexistující (`hero-motion`, `scenery-carve`), 8. 10. samy procházejí na P42 i na `main` (`ce5145d0`); padají jen na časový limit pod zátěží celé sady, stejně jako dalších šest souborů vedených jako šum (`load-noise`). Při běhu všech 40 souborů najednou padá 1–7 z nich na `STACK_TRACE_ERROR` (časový limit) a „návrh pod 3 s“ v `upgrade.test.ts` (3,3–5 s); samotné jsou zelené.
+
+**Zjištění:** P42 skládá návrh věty „A hamster escapes a supermarket while a giant Roomba hunts it.“ o ~0,3–0,7 s pomaleji než `main` (studený běh 1,07 s vs. 0,78 s návrh, 0,40 s vs. 0,35 s kompilace). Limit 3 s drží, rezerva je menší.
+
 ## Pokračování po round4 — rozpracovaná přejímka
 
 Obecné opravy určování hrdiny, infinitivních předmětů, lokativních frází, padajících hrozeb a zájmen závodníků prošly **453/453 intent/draft testy**. Skladatel zachovává hlavní jméno prostředí a zákaz sbírání nevynucuje sběratelský režim. Fyzický kop má svědka založeného na skutečném vypuštění, pohybu a skórování míče; basketbal ani golf tento důkaz nedostanou.

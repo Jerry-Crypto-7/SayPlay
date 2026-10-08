@@ -15,6 +15,19 @@
     "p42-only-file": "the file does not exist on main",
     "worktree-env": "fails on main only because the worktree lacks gitignored plans/** (ENOENT)"
   },
+  "resolution": {
+    "about": "P44A T3-T5 (8. 10. 2026): every row carries resolvedBy (the commit or range after which the file passes alone) or leftAs (why it still may fail).",
+    "method": [
+      "all 40 files alone on a6b238a6 -> the only reds are timeouts (STACK_TRACE_ERROR) and upgrade 'under 3 s'; each passes when rerun alone",
+      "the 25 regression files not touched by T4/T5 alone on d0cb0922 (end of T3) -> green except the director trio and timeouts -> resolvedBy the T3 range",
+      "hero-motion and scenery-carve alone on a6b238a6 and on main ce5145d0 -> 8/8 green on both: timeouts under load, not a red on main"
+    ],
+    "ranges": {
+      "T3": "3e0c1d07..d0cb0922",
+      "T4": "beaa8da3..93514fd3",
+      "T5": "a6b238a6"
+    }
+  },
   "totals": {
     "fullSuite": {
       "total": 14587,
@@ -35,6 +48,8 @@
   "files": [
     {
       "file": "evals/gates/__tests__/divergence-lock.test.ts",
+      "resolvedBy": "a6b238a6",
+      "note": "the git call without --no-replace-objects was T2's round7-seal test, written while T1 measured",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -45,6 +60,7 @@
     },
     {
       "file": "evals/play/compiled/compile-report.test.ts",
+      "leftAs": "load-noise",
       "failedOnP42": 1,
       "failedOnP42Alone": 0,
       "failedOnMain": 0,
@@ -52,6 +68,8 @@
     },
     {
       "file": "evals/play/rules/coverage.test.ts",
+      "resolvedBy": "a6b238a6",
+      "note": "stale artifact re-measured: 84 -> 87 sentences covered by a piece, none lost",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -62,6 +80,7 @@
     },
     {
       "file": "scripts/__tests__/p32-fidelity-b.test.ts",
+      "resolvedBy": "a6b238a6",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -72,6 +91,7 @@
     },
     {
       "file": "scripts/__tests__/submission-check-gate.test.ts",
+      "leftAs": "load-noise",
       "failedOnP42": 1,
       "failedOnP42Alone": 0,
       "failedOnMain": 0,
@@ -79,6 +99,7 @@
     },
     {
       "file": "scripts/assets/cc0/__tests__/promote.test.ts",
+      "leftAs": "load-noise",
       "failedOnP42": 1,
       "failedOnP42Alone": 0,
       "failedOnMain": 0,
@@ -86,6 +107,7 @@
     },
     {
       "file": "src/app/api/play/__tests__/api-profile.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 2,
       "failedOnP42Alone": 2,
       "failedOnMain": 0,
@@ -97,6 +119,7 @@
     },
     {
       "file": "src/app/api/play/__tests__/director-hedge.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 2,
       "failedOnP42Alone": 2,
       "failedOnMain": 0,
@@ -108,6 +131,7 @@
     },
     {
       "file": "src/app/api/play/__tests__/director-route.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 9,
       "failedOnP42Alone": 9,
       "failedOnMain": 0,
@@ -126,6 +150,7 @@
     },
     {
       "file": "src/app/api/play/__tests__/publish-moderation.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 2,
       "failedOnP42Alone": 2,
       "failedOnMain": 0,
@@ -137,6 +162,8 @@
     },
     {
       "file": "src/app/api/play/__tests__/routes.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
+      "note": "one 429-window test still times out under load; green alone",
       "failedOnP42": 3,
       "failedOnP42Alone": 1,
       "failedOnMain": 2,
@@ -147,6 +174,8 @@
     },
     {
       "file": "src/app/api/play/__tests__/upgrade.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
+      "note": "'draft under 3 s' still trips at 3.3-5 s under load (also at d0cb0922); 3/3 green alone on P42 and on main. P42 drafts the hamster sentence ~0.3-0.7 s slower than main",
       "failedOnP42": 18,
       "failedOnP42Alone": 18,
       "failedOnMain": 1,
@@ -176,6 +205,8 @@
     },
     {
       "file": "src/components/play/arcade/__tests__/hero-motion.test.ts",
+      "leftAs": "load-noise",
+      "note": "8. 10.: passes alone on a6b238a6 and on main ce5145d0; the red is a timeout under load on both",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 1,
@@ -186,6 +217,7 @@
     },
     {
       "file": "src/components/play/arcade/__tests__/chaser-in-frame.test.ts",
+      "resolvedBy": "a6b238a6",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -196,6 +228,7 @@
     },
     {
       "file": "src/components/play/arcade/__tests__/named-goal.test.ts",
+      "resolvedBy": "a6b238a6",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -206,6 +239,7 @@
     },
     {
       "file": "src/play/__tests__/director-answer-roles.test.ts",
+      "resolvedBy": "beaa8da3..93514fd3",
       "failedOnP42": 8,
       "failedOnP42Alone": 8,
       "failedOnMain": 0,
@@ -223,6 +257,7 @@
     },
     {
       "file": "src/play/__tests__/director-authored-by.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 4,
       "failedOnP42Alone": 4,
       "failedOnMain": 0,
@@ -236,6 +271,7 @@
     },
     {
       "file": "src/play/__tests__/director-compact.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -246,6 +282,7 @@
     },
     {
       "file": "src/play/__tests__/director-critic.test.ts",
+      "resolvedBy": "beaa8da3..93514fd3",
       "failedOnP42": 8,
       "failedOnP42Alone": 8,
       "failedOnMain": 0,
@@ -263,6 +300,7 @@
     },
     {
       "file": "src/play/__tests__/director.test.ts",
+      "resolvedBy": "beaa8da3..93514fd3",
       "failedOnP42": 13,
       "failedOnP42Alone": 13,
       "failedOnMain": 0,
@@ -285,6 +323,7 @@
     },
     {
       "file": "src/play/__tests__/draft-nearest.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -295,6 +334,7 @@
     },
     {
       "file": "src/play/__tests__/draft-reading.test.ts",
+      "resolvedBy": "a6b238a6",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -305,6 +345,7 @@
     },
     {
       "file": "src/play/__tests__/draft-unsupported.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -315,6 +356,7 @@
     },
     {
       "file": "src/play/__tests__/draft.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 17,
       "failedOnP42Alone": 17,
       "failedOnMain": 0,
@@ -341,6 +383,7 @@
     },
     {
       "file": "src/play/__tests__/fidelity-chain.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 3,
       "failedOnP42Alone": 3,
       "failedOnMain": 0,
@@ -353,6 +396,7 @@
     },
     {
       "file": "src/play/__tests__/fidelity-offline.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -363,6 +407,7 @@
     },
     {
       "file": "src/play/__tests__/hero-drawn.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -371,6 +416,7 @@
     },
     {
       "file": "src/play/__tests__/items-drawn.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -379,6 +425,7 @@
     },
     {
       "file": "src/play/arcade/__tests__/quest.test.ts",
+      "leftAs": "load-noise",
       "failedOnP42": 1,
       "failedOnP42Alone": 0,
       "failedOnMain": 0,
@@ -386,6 +433,8 @@
     },
     {
       "file": "src/play/compile/__tests__/scenery-carve.test.ts",
+      "leftAs": "load-noise",
+      "note": "8. 10.: passes alone on a6b238a6 and on main ce5145d0; the red is a timeout under load on both",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 1,
@@ -396,6 +445,7 @@
     },
     {
       "file": "src/play/director/__tests__/composed-content.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 2,
       "failedOnP42Alone": 2,
       "failedOnMain": 0,
@@ -407,6 +457,7 @@
     },
     {
       "file": "src/play/director/__tests__/legacy-native-params.test.ts",
+      "resolvedBy": "a6b238a6",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -417,6 +468,7 @@
     },
     {
       "file": "src/play/director/__tests__/recipe-end-to-end.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -427,6 +479,7 @@
     },
     {
       "file": "src/play/director/__tests__/retrieval.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -437,6 +490,7 @@
     },
     {
       "file": "src/play/fidelity/__tests__/checklist.test.ts",
+      "resolvedBy": "a6b238a6",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -447,6 +501,7 @@
     },
     {
       "file": "src/play/genre/__tests__/families.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 2,
       "failedOnP42Alone": 2,
       "failedOnMain": 0,
@@ -458,6 +513,7 @@
     },
     {
       "file": "src/play/genre/__tests__/lives.test.ts",
+      "resolvedBy": "a6b238a6",
       "failedOnP42": 1,
       "failedOnP42Alone": 1,
       "failedOnMain": 0,
@@ -468,6 +524,7 @@
     },
     {
       "file": "src/play/genre/__tests__/roles.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 8,
       "failedOnP42Alone": 8,
       "failedOnMain": 0,
@@ -485,6 +542,7 @@
     },
     {
       "file": "src/play/version/__tests__/remix-diff.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 2,
       "failedOnP42Alone": 2,
       "failedOnMain": 0,
@@ -496,6 +554,7 @@
     },
     {
       "file": "src/server/__tests__/upstream-hosted.test.ts",
+      "resolvedBy": "3e0c1d07..d0cb0922",
       "failedOnP42": 3,
       "failedOnP42Alone": 3,
       "failedOnMain": 0,
