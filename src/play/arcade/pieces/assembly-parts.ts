@@ -58,7 +58,10 @@ export function makeAssemblyControl(controls: Readonly<Record<string, ControlPie
   return { id: 'assembly_control', params: wrappedSchema, roles: ['player', 'thing'], cost: () => ({ bodies: 0, rules: 0 }),
     step(state, player, input, params) {
       const native = controls[params.base.id]!;
-      native.step(state, player, input, paramsOf(native, params.base));
+      // DOWN dribbles back on a composed pitch, so the native ball control must
+      // not read it as "drop the charge".
+      const nativeInput = params.control === 'ball' ? { ...input, buttons: input.buttons & ~BUTTON.DOWN } : input;
+      native.step(state, player, nativeInput, paramsOf(native, params.base));
       const p = bodyBase(player);
       if (['runner', 'flap'].includes(params.control) && params.parts.some(part => part.kind === 'rival') && (input.buttons & BUTTON.DOWN)) state[p + BODY.vz] = Math.round(state[p + BODY.vz]! * 0.15);
       if (params.control === 'ball') {

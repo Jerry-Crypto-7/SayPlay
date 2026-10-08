@@ -39,21 +39,24 @@ export const ballLaunch: RulePiece<z.infer<typeof launchParams>> = {
   fire({ state, player }, params) {
     // Opposing forwards launch the same dynamic sphere as the player. A missed
     // shot cannot score; only the opposing goal's volume ends a possession.
+    // The kickoff no longer swallows a shot released on the same tick; it still
+    // holds the cooldown for that tick, as recorded replays expect.
+    const kickoff: ArcadeEffect[] = [];
     if (params.team && state[HEADER.tick]! % 240 === 1) {
       const t = bodyBase(params.team.template), f = bodyBase(params.team.forward);
       const active = Array.from({ length: state[HEADER.bodyCount]! }, (_, i) => bodyBase(i)).some(b => (state[b + BODY.flags]! & FLAG.alive) && state[b + BODY.kind] === state[t + BODY.kind]);
-      if (!active) return [{ kind: 'spawn', template: params.team.template, x: state[f + BODY.x]!, y: BALL.launchY, z: state[f + BODY.z]!, vx: 0, vy: 300, vz: -200 }];
+      if (!active) kickoff.push({ kind: 'spawn', template: params.team.template, x: state[f + BODY.x]!, y: BALL.launchY, z: state[f + BODY.z]!, vx: 0, vy: 300, vz: -200 });
     }
     const cooldown = state[HEADER.counters + COUNTER.cooldown]!;
-    if (cooldown > 0) return [{ kind: 'count', counter: 'cooldown', amount: -1 }];
+    if (cooldown > 0) return kickoff.length > 0 ? kickoff : [{ kind: 'count', counter: 'cooldown', amount: -1 }];
     const p = bodyBase(player), charge = -state[p + BODY.aux1]!;
-    if (charge <= 0 || state[HEADER.counters + COUNTER.ammo]! <= 0) return [];
+    if (charge <= 0 || state[HEADER.counters + COUNTER.ammo]! <= 0) return kickoff;
     for (let i = 0; i < state[HEADER.bodyCount]!; i++) {
       const b = bodyBase(i);
-      if ((state[b + BODY.flags]! & (FLAG.alive | FLAG.physics | FLAG.ball)) === (FLAG.alive | FLAG.physics | FLAG.ball) && state[b + BODY.kind] === state[bodyBase(params.template) + BODY.kind]) return [];
+      if ((state[b + BODY.flags]! & (FLAG.alive | FLAG.physics | FLAG.ball)) === (FLAG.alive | FLAG.physics | FLAG.ball) && state[b + BODY.kind] === state[bodyBase(params.template) + BODY.kind]) return kickoff;
     }
     const recovery = (params.shotRecoveryTicks ?? BALL.flightTicks) + Math.min(4, state[HEADER.counters + COUNTER.score]!) * (params.shotRecoveryRiseTicks ?? 0);
-    return [{ kind: 'count', counter: 'ammo', amount: -1 }, { kind: 'count', counter: 'cooldown', amount: recovery }, { kind: 'spawn', template: params.template, x: 0, y: BALL.launchY, z: BALL.launchZ, ...ballVelocity(params.goal, state[p + BODY.aux0]!, charge) }];
+    return [...kickoff, { kind: 'count', counter: 'ammo', amount: -1 }, { kind: 'count', counter: 'cooldown', amount: recovery }, { kind: 'spawn', template: params.template, x: 0, y: BALL.launchY, z: BALL.launchZ, ...ballVelocity(params.goal, state[p + BODY.aux0]!, charge) }];
   },
 };
 
@@ -74,7 +77,10 @@ export const ballScore: RulePiece<z.infer<typeof scoreParams>> = {
         const g = bodyBase(params.team.goal);
         const inside = Math.abs(state[b + BODY.x]! - state[g + BODY.x]!) < state[g + BODY.w]! / 2 && Math.abs(state[b + BODY.z]! - state[g + BODY.z]!) < state[g + BODY.d]! / 2 && state[b + BODY.y]! + BALL.size / 2 >= state[g + BODY.y]! && state[b + BODY.y]! + BALL.size / 2 <= state[g + BODY.y]! + state[g + BODY.h]!;
         if (inside) return [{ kind: 'count', counter: 'reserve', amount: 1 }, { kind: 'despawn', body: ball }, ...(state[HEADER.counters + COUNTER.reserve]! + 1 >= params.team.goalsToLose ? [{ kind: 'lose' as const }] : [])];
-        if (state[b + BODY.z]! < -2000) return [{ kind: 'despawn', body: ball }];
+        // A missed shot that stops or rolls off the pitch ends the possession too;
+        // a resting ball would otherwise hold an empty quiver open until the timeout.
+        const resting = Math.abs(state[b + BODY.vx]!) + Math.abs(state[b + BODY.vy]!) + Math.abs(state[b + BODY.vz]!) <= 2;
+        if (state[b + BODY.z]! < -2000 || resting || Math.abs(state[b + BODY.x]!) > 20000 || state[b + BODY.z]! > 30000) return [{ kind: 'despawn', body: ball }];
         continue;
       }
       for (const target of targets) {
