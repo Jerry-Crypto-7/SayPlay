@@ -2822,12 +2822,12 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
-| OpenAI Codex 0.145.0 — derived fixed text model catalog | https://github.com/openai/codex/blob/25af12f7e61572b0bc18ddb1008be543b91519b0/codex-rs/models-manager/models.json | OpenAI | Apache-2.0 | přiložené plné znění licence; zachovaný upstream NOTICE; označení dvou změněných policy hodnot | OpenAI Codex contributors; scripts/vendor/codex-model-catalog.LICENSE, scripts/vendor/codex-model-catalog.NOTICE a scripts/subscription-text-model-catalog.md |
+| OpenAI Codex 0.145.0 — derived fixed text model catalog | https://github.com/openai/codex/blob/25af12f7e61572b0bc18ddb1008be543b91519b0/codex-rs/models-manager/models.json | OpenAI | Apache-2.0 | přiložené plné znění licence; zachovaný upstream NOTICE; označení dvou změněných policy hodnot | OpenAI Codex contributors; scripts/vendor/codex-model-catalog.LICENSE a scripts/vendor/codex-model-catalog.NOTICE |
 | zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl) | vlastní tvorba v tomhle repozitáři, zmrazená tagem evals-frozen-v2 | worldsmith | MIT | copyright notice; plné znění licence | worldsmith, tenhle repozitář |
 
 ### Datasety — licence posouzené jednotlivě
 
-- **OpenAI Codex 0.145.0 — derived fixed text model catalog** (Apache-2.0): Veřejná konfigurační metadata a instrukční texty jediného modelu gpt-5.6-sol. Pinned raw SHA-256 497d7653bb22358baa29ebd4a70be55ce990b73a64896848a59179485b37db9d; odvozený katalog 59d22b4ae6532d4f869d776e56faaf2ae169f36038375597f4f1e581459b8791. Zachovány všechny ostatní hodnoty, změněny pouze tool_mode=direct a multi_agent_version=disabled. Není to nový benchmark, nezávislý holdout ani modelový výstup. Samotný katalog neprokazuje autentizaci, inference nebo produkční připravenost.
+- **OpenAI Codex 0.145.0 — derived fixed text model catalog** (Apache-2.0): Veřejná konfigurační metadata a instrukční texty jediného modelu gpt-5.6-sol. Pinned raw SHA-256 497d7653bb22358baa29ebd4a70be55ce990b73a64896848a59179485b37db9d; odvozený katalog 59d22b4ae6532d4f869d776e56faaf2ae169f36038375597f4f1e581459b8791. Zachovány všechny ostatní hodnoty, změněny pouze tool_mode=direct a multi_agent_version=disabled. Není to nový benchmark, nezávislý holdout ani modelový výstup. Samotný katalog neprokazuje autentizaci, inference nebo produkční připravenost. Katalog a jeho popis odešly z repozitáře 7. 10. 2026 se starým produktem (P44D, historie v tagu legacy-worldstream); zůstávají přiložená licence a NOTICE, protože se katalog během hackathonu používal.
 - **zmrazený korpus promptů a kontraktů (evals/frozen, evals/gold.jsonl)** (MIT): Vlastní data, žádný externí zdroj. Uvedeno proto, že RULES.md §2 žádá disclosure datasetů bez ohledu na to, kdo je autor.
 
 ## Externí služby (9)

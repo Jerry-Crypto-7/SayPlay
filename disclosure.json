@@ -51700,11 +51700,8 @@
         "zachovaný upstream NOTICE",
         "označení dvou změněných policy hodnot"
       ],
-      "attribution": "OpenAI Codex contributors; scripts/vendor/codex-model-catalog.LICENSE, scripts/vendor/codex-model-catalog.NOTICE a scripts/subscription-text-model-catalog.md",
-      "reviewNote": "Veřejná konfigurační metadata a instrukční texty jediného modelu gpt-5.6-sol. Pinned raw SHA-256 497d7653bb22358baa29ebd4a70be55ce990b73a64896848a59179485b37db9d; odvozený katalog 59d22b4ae6532d4f869d776e56faaf2ae169f36038375597f4f1e581459b8791. Zachovány všechny ostatní hodnoty, změněny pouze tool_mode=direct a multi_agent_version=disabled. Není to nový benchmark, nezávislý holdout ani modelový výstup. Samotný katalog neprokazuje autentizaci, inference nebo produkční připravenost.",
-      "paths": [
-        "scripts/subscription-text-model-catalog.json"
-      ]
+      "attribution": "OpenAI Codex contributors; scripts/vendor/codex-model-catalog.LICENSE a scripts/vendor/codex-model-catalog.NOTICE",
+      "reviewNote": "Veřejná konfigurační metadata a instrukční texty jediného modelu gpt-5.6-sol. Pinned raw SHA-256 497d7653bb22358baa29ebd4a70be55ce990b73a64896848a59179485b37db9d; odvozený katalog 59d22b4ae6532d4f869d776e56faaf2ae169f36038375597f4f1e581459b8791. Zachovány všechny ostatní hodnoty, změněny pouze tool_mode=direct a multi_agent_version=disabled. Není to nový benchmark, nezávislý holdout ani modelový výstup. Samotný katalog neprokazuje autentizaci, inference nebo produkční připravenost. Katalog a jeho popis odešly z repozitáře 7. 10. 2026 se starým produktem (P44D, historie v tagu legacy-worldstream); zůstávají přiložená licence a NOTICE, protože se katalog během hackathonu používal."
     },
     {
       "name": "Reality Compiler pilot sources",
@@ -51714,8 +51711,7 @@
       "paths": [
         "evals/reality-compiler/museum-source.txt",
         "evals/reality-compiler/subscription-demo-source.txt",
-        "evals/reality-compiler/museum.sim.json",
-        "evals/reality-compiler/holdout-v1"
+        "evals/reality-compiler/museum.sim.json"
       ]
     },
     {
@@ -51724,11 +51720,6 @@
       "firstParty": true,
       "reason": "Vlastní testovací scénáře, implementační konstanty a prompty tohoto projektu; inventura T13 8. 9. 2026 ověřila hlavičky a vazbu na projektové moduly. Registrace kvůli prahu literálů ve stávající submission bráně, nikoli externí dataset.",
       "paths": [
-        "evals/gates/bench/transition.ts",
-        "evals/worldstream/__tests__/measure-create.test.ts",
-        "src/app/api/generate/__tests__/route.test.ts",
-        "src/app/api/worldstream/__tests__/changes.test.ts",
-        "src/app/api/worldstream/__tests__/sessions.test.ts",
         "src/geom/__tests__/compile.test.ts",
         "src/geom/__tests__/program.test.ts",
         "src/model/__tests__/repair.test.ts",
@@ -51745,10 +51736,7 @@
         "src/shape/__tests__/field.test.ts",
         "src/shape/__tests__/mesh.test.ts",
         "src/shape/__tests__/schema.test.ts",
-        "src/worldstream/__tests__/authored.test.ts",
-        "src/worldstream/__tests__/look-repair.test.ts",
-        "src/worldstream/__tests__/proxy.test.ts",
-        "src/worldstream/__tests__/sessions.test.ts"
+        "src/worldstream/__tests__/proxy.test.ts"
       ]
     },
     {
@@ -51757,41 +51745,20 @@
       "firstParty": true,
       "reason": "Testy, fixtury, prompty, texty rozhraní a samotné skripty brány, které nesou víc než 4 096 B literálů. Napsané v tomhle repozitáři, nikdo třetí je nevlastní. V registru jsou proto, že `submission-check` kontrola 6 (d) žádá položku pro každý soubor nad prahem — váha literálů neumí odlišit první stranu od třetí, a to je vlastnost prahu, ne vada zápisu.",
       "paths": [
-        "e2e/reality-compiler-branch.spec.ts",
-        "e2e/reality-compiler-evidence.spec.ts",
-        "evals/contracts/__tests__/gold-frozen.test.ts",
-        "evals/gates/__tests__/divergence-lock.test.ts",
-        "evals/gates/run/kill-gate.ts",
-        "evals/harness/__tests__/live.test.ts",
-        "evals/scorer/__tests__/mutations.ts",
-        "evals/scorer/semantic.ts",
         "scripts/__tests__/blind-check.test.ts",
         "scripts/__tests__/codex-subscription.test.ts",
         "scripts/__tests__/license-gate.test.ts",
         "scripts/__tests__/submission-check-gate.test.ts",
-        "scripts/__tests__/subscription-appserver-fixture-transport.test.ts",
-        "scripts/__tests__/subscription-appserver-generation.test.ts",
-        "scripts/__tests__/subscription-appserver-metadata-transport.test.ts",
-        "scripts/__tests__/subscription-cli-probe-transport.test.ts",
-        "scripts/effort-sheet.mjs",
         "scripts/license-gate.mjs",
         "scripts/submission-check.mjs",
-        "scripts/subscription-appserver-fixture-transport.ts",
-        "src/app/api/edit/__tests__/route.test.ts",
         "src/app/page.tsx",
-        "src/fallback/__tests__/isolation.test.ts",
         "src/ir/__tests__/two-revisions.test.ts",
         "src/model/prompt.ts",
         "src/model/worldstream-intent.ts",
         "src/model/worldstream-refine.ts",
-        "src/patch/__tests__/repair.test.ts",
-        "src/patch/__tests__/router.test.ts",
-        "src/patch/__tests__/transaction.test.ts",
         "src/server/__tests__/admission.test.ts",
-        "src/server/__tests__/answer-archive.test.ts",
         "src/server/__tests__/upstream.test.ts",
-        "src/sim/__tests__/totality.test.ts",
-        "src/worldstream/__tests__/client.test.ts"
+        "src/sim/__tests__/totality.test.ts"
       ]
     },
     {
@@ -51808,8 +51775,7 @@
       "reviewNote": "Vlastní data, žádný externí zdroj. Uvedeno proto, že RULES.md §2 žádá disclosure datasetů bez ohledu na to, kdo je autor.",
       "paths": [
         "evals/frozen",
-        "evals/gold.jsonl",
-        "evals/contracts/gold"
+        "evals/gold.jsonl"
       ]
     },
     {
