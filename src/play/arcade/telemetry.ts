@@ -9,7 +9,7 @@
  * je vlastní – sběrnice patří scéně a jádro na scénu nesahá.
  */
 
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, NO_INPUT, ROLE, RUN_STATE, bodyBase, bodyHp, targetStateOf } from './contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, NO_INPUT, ROLE, RUN_STATE, UNIT, bodyBase, bodyHp, targetStateOf } from './contract';
 import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
@@ -44,6 +44,8 @@ export interface TraceBody {
   readonly x: number;
   readonly y: number;
   readonly z: number;
+  /** Výška těla; `y` je spodní stěna, střed je o `h / 2` výš. */
+  readonly h: number;
   readonly vx: number;
   readonly vz: number;
 }
@@ -51,7 +53,7 @@ export interface TraceBody {
 export interface TraceSample {
   /** `HEADER.tick` stavu, ze kterého je vzorek (0 = start, pak každých `SAMPLE_TICKS`). */
   readonly tick: number;
-  readonly player: { readonly x: number; readonly y: number; readonly z: number };
+  readonly player: { readonly x: number; readonly y: number; readonly z: number; readonly h: number };
   /** Živá těla rolí `THREAT_ROLES`. */
   readonly bodies: readonly TraceBody[];
 }
@@ -121,9 +123,9 @@ function sampleOf(state: Int32Array, born: readonly number[]): TraceSample {
   for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
     const base = bodyBase(body);
     if (!aliveIn(state, body) || !THREAT_ROLES.includes(state[base + BODY.role] as number)) continue;
-    bodies.push({ body, role: state[base + BODY.role] as number, born: born[body] as number, x: state[base + BODY.x] as number, y: state[base + BODY.y] as number, z: state[base + BODY.z] as number, vx: state[base + BODY.vx] as number, vz: state[base + BODY.vz] as number });
+    bodies.push({ body, role: state[base + BODY.role] as number, born: born[body] as number, x: state[base + BODY.x] as number, y: state[base + BODY.y] as number, z: state[base + BODY.z] as number, h: state[base + BODY.h] as number, vx: state[base + BODY.vx] as number, vz: state[base + BODY.vz] as number });
   }
-  return { tick: state[HEADER.tick] as number, player: { x: state[p + BODY.x] as number, y: state[p + BODY.y] as number, z: state[p + BODY.z] as number }, bodies };
+  return { tick: state[HEADER.tick] as number, player: { x: state[p + BODY.x] as number, y: state[p + BODY.y] as number, z: state[p + BODY.z] as number, h: state[p + BODY.h] as number }, bodies };
 }
 
 /**
@@ -166,6 +168,52 @@ export interface FunMetrics {
   readonly intensityRatio: number | null;
   /** Poslední třetina má víc událostí než první (prázdná první a neprázdná poslední = stoupá). */
   readonly rising: boolean;
+  /** Hrozba vešla do `NEAR_MISS_RADIUS` od středu hráče a vyšla ven, aniž hráč mezitím přišel o život. */
+  readonly nearMisses: number;
+  /** Počet událostí `damage`. */
+  readonly livesLost: number;
+  readonly playerDied: boolean;
+  /** Počet událostí `kill`. */
+  readonly kills: number;
+}
+
+/** Poloměr blízkého minutí v jednotkách jádra: 1,5 m. */
+export const NEAR_MISS_RADIUS = 1.5 * UNIT;
+
+type Centred = { readonly x: number; readonly y: number; readonly z: number; readonly h: number };
+const centreDistanceSq = (a: Centred, b: Centred): number => (a.x - b.x) ** 2 + (a.y + a.h / 2 - b.y - b.h / 2) ** 2 + (a.z - b.z) ** 2;
+
+/**
+ * Epizody blízkého minutí ze vzorků poloh. Tělo je (slot, tik vzniku): slot
+ * znovu použitý spawnem je nová hrozba. Vstup = vzorek uvnitř po vzorku venku –
+ * tělo zrozené uvnitř (vlastní střela hráče) nevstoupilo. Epizoda končí prvním
+ * vzorkem venku; tělo, které zmizelo uvnitř, ven nevyšlo. Zásah hráče od
+ * posledního vzorku venku do konce epizody ji zruší.
+ */
+function nearMissesOf(trace: RunTrace): number {
+  // `damage` v tiku t je ve stavu s `HEADER.tick` = t + 1 – stejná osa jako vzorky.
+  const hits = trace.events.filter((e) => e.kind === 'damage').map((e) => e.tick + 1);
+  const outsideAt = new Map<string, number>();
+  const open = new Map<string, number>();
+  let count = 0;
+  for (const sample of trace.samples) {
+    const present = new Set<string>();
+    for (const body of sample.bodies) {
+      const key = `${String(body.body)}@${String(body.born)}`;
+      present.add(key);
+      if (centreDistanceSq(body, sample.player) < NEAR_MISS_RADIUS ** 2) {
+        const from = outsideAt.get(key);
+        if (!open.has(key) && from !== undefined) open.set(key, from);
+        continue;
+      }
+      const from = open.get(key);
+      if (from !== undefined && !hits.some((tick) => tick > from && tick <= sample.tick)) count += 1;
+      open.delete(key);
+      outsideAt.set(key, sample.tick);
+    }
+    for (const key of [...open.keys()]) if (!present.has(key)) open.delete(key);
+  }
+  return count;
 }
 
 const round2 = (value: number): number => Math.round(value * 100) / 100;
@@ -200,5 +248,9 @@ export function funMetrics(trace: RunTrace): FunMetrics {
     medianGapS: round2(median(gaps)),
     intensityRatio: first === 0 ? null : round2(last / first),
     rising: last > first,
+    nearMisses: nearMissesOf(trace),
+    livesLost: trace.events.filter((e) => e.kind === 'damage').length,
+    playerDied: trace.outcome === 'lost',
+    kills: trace.events.filter((e) => e.kind === 'kill').length,
   };
 }

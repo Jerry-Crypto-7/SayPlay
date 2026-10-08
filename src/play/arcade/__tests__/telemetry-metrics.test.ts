@@ -6,10 +6,35 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { ROLE } from '@/play/arcade/contract';
-import { type RunTrace, type TraceEvent, type TraceEventKind, funMetrics } from '@/play/arcade/telemetry';
+import { ROLE, UNIT } from '@/play/arcade/contract';
+import { type RunTrace, SAMPLE_TICKS, type TraceBody, type TraceEvent, type TraceEventKind, type TraceSample, funMetrics } from '@/play/arcade/telemetry';
 
 const HZ = 60;
+const PLAYER = 0;
+
+/** Hráč stojí v počátku; každá hrozba jde po ose x přes vzdálenosti v metrech, jeden vzorek po `SAMPLE_TICKS`. */
+function samples(threats: readonly { body: number; role?: number; born?: number; metres: readonly (number | null)[] }[]): TraceSample[] {
+  const length = Math.max(...threats.map((t) => t.metres.length));
+  return Array.from({ length }, (_, i) => ({
+    tick: i * SAMPLE_TICKS,
+    player: { x: 0, y: 0, z: 0, h: UNIT },
+    bodies: threats.flatMap((t): TraceBody[] => {
+      const m = t.metres[i];
+      return m === null || m === undefined ? [] : [{ body: t.body, role: t.role ?? ROLE.chaser, born: t.born ?? 0, x: Math.round(m * UNIT), y: 0, z: 0, h: UNIT, vx: 0, vz: 0 }];
+    }),
+  }));
+}
+
+function withSamples(s: TraceSample[], events: readonly [tick: number, kind: TraceEventKind][] = [], outcome: RunTrace['outcome'] = 'won'): RunTrace {
+  return {
+    ticks: (s.length - 1) * SAMPLE_TICKS,
+    outcome,
+    hash: 'test',
+    player: PLAYER,
+    events: events.map(([tick, kind]): TraceEvent => ({ tick, kind, body: kind === 'kill' ? 1 : PLAYER, role: kind === 'kill' ? ROLE.enemy : ROLE.player })),
+    samples: s,
+  };
+}
 
 function trace(ticks: number, events: readonly [tick: number, kind: TraceEventKind][], outcome: RunTrace['outcome'] = 'won'): RunTrace {
   return {
@@ -85,5 +110,50 @@ describe('funMetrics – pacing', () => {
     expect(falling.intensityRatio).toBe(0.5);
     expect(falling.rising).toBe(false);
     expect(funMetrics(trace(30 * HZ, [])).rising).toBe(false);
+  });
+});
+
+describe('funMetrics – danger', () => {
+  it('counts a threat that comes within 1.5 m and leaves without a hit as one near miss', () => {
+    expect(funMetrics(withSamples(samples([{ body: 1, metres: [4, 3, 1, 3, 4] }]))).nearMisses).toBe(1);
+  });
+
+  it('does not count an episode in which the player is hit', () => {
+    // Hrozba je uvnitř ve vzorku 2 (tik 12), ven ve vzorku 3 (tik 18); zásah v tiku 14.
+    expect(funMetrics(withSamples(samples([{ body: 1, metres: [4, 3, 1, 3, 4] }]), [[14, 'damage']])).nearMisses).toBe(0);
+  });
+
+  it('counts a threat that stays inside for a second once, and once again for a second entry', () => {
+    const stays = [4, ...Array.from({ length: 10 }, () => 1), 4];
+    expect(funMetrics(withSamples(samples([{ body: 1, metres: stays }]))).nearMisses).toBe(1);
+    expect(funMetrics(withSamples(samples([{ body: 1, metres: [4, 1, 4, 1, 4] }]))).nearMisses).toBe(2);
+  });
+
+  it('measures the radius in kernel units: 1.2 m is close, 2 m is not', () => {
+    expect(funMetrics(withSamples(samples([{ body: 1, metres: [4, 1.2, 4] }]))).nearMisses).toBe(1);
+    expect(funMetrics(withSamples(samples([{ body: 1, metres: [4, 2, 4] }]))).nearMisses).toBe(0);
+  });
+
+  it('does not count a body born inside the radius or one that vanished inside it', () => {
+    // Vlastní střela hráče vznikne u něj a odletí; nepřítel zabitý v dosahu ven nevyšel.
+    const s = samples([{ body: 2, role: ROLE.projectile, born: 6, metres: [null, 0.5, 3, 6] }, { body: 1, metres: [4, 1, null, null] }]);
+    expect(funMetrics(withSamples(s)).nearMisses).toBe(0);
+  });
+
+  it('tells two bodies in one reused slot apart', () => {
+    // Slot 1: první tělo vejde a zmizí uvnitř, nové tělo (zrozené v tiku 18) vejde a vyjde.
+    const s = samples([{ body: 1, metres: [4, 1, null, null, null, null] }]);
+    const reborn = samples([{ body: 1, born: 18, metres: [null, null, null, 4, 1, 4] }]);
+    const merged = s.map((sample, i) => ({ ...sample, bodies: [...sample.bodies, ...(reborn[i]?.bodies ?? [])] }));
+    expect(funMetrics(withSamples(merged)).nearMisses).toBe(1);
+  });
+
+  it('counts lives lost, kills and whether the player died', () => {
+    const s = samples([{ body: 1, metres: [4, 4, 4, 4] }]);
+    const m = funMetrics(withSamples(s, [[3, 'damage'], [9, 'damage'], [10, 'kill'], [12, 'kill'], [15, 'kill']], 'lost'));
+    expect(m.livesLost).toBe(2);
+    expect(m.kills).toBe(3);
+    expect(m.playerDied).toBe(true);
+    expect(funMetrics(withSamples(s)).playerDied).toBe(false);
   });
 });
