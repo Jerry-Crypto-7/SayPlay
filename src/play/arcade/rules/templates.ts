@@ -275,6 +275,23 @@ export const RULE_TEMPLATES = {
     ],
   },
   /**
+   * Posily (P45B T9): po 10 s klidu zazní poplach a po okraji podlahy přijde další hlídka. Jen aréna
+   * a úkol. Stojí před `waves_survive`: útěková aréna s lovci po vlnách „přežij“ padala 9× z 20 a
+   * návrh se pak ověřoval dvakrát; jedna hlídka navíc projde (`evals/play/p45b/README.md`).
+   */
+  reinforcements: {
+    verbs: ['infiltrate', 'rescue', 'save'],
+    axes: ['action:interact', 'objective:survive'],
+    kind: 'overlay',
+    budget: 2,
+    slots: ['enemy'],
+    logic: { phases: [{ id: 'calm' }, { id: 'alarm' }] },
+    rules: [
+      { id: 'sound', verb: 'sound', when: { every: 600 }, if: [{ inPhase: 'calm' }], do: [{ goPhase: 'alarm' }] },
+      { id: 'muster', verb: 'muster', when: { phase: 'alarm' }, do: [{ wave: { role: S('enemy'), count: 1, at: 'edge' } }] },
+    ],
+  },
+  /**
    * Průběh přežití: klid → vlna → finále. Klid končí po 4 s, vlna trvá 8 s, každá fáze pustí
    * nepřátele po okraji podlahy – jen hra volného pohybu (aréna, úkol), jinde okraj není.
    */
@@ -310,19 +327,6 @@ export const RULE_TEMPLATES = {
       { id: 'herald', verb: 'herald', when: { every: 300 }, if: [{ inPhase: 'calm' }], do: [{ goPhase: 'rush' }, { startTimer: { timer: 'rush', ticks: 480 } }] },
       { id: 'shower', verb: 'shower', when: { phase: 'rush' }, do: [{ wave: { role: S('item'), count: 3, at: 'edge' } }] },
       { id: 'settle', verb: 'settle', when: { timer: 'rush' }, do: [{ goPhase: 'calm' }] },
-    ],
-  },
-  /** Posily: po 10 s klidu zazní poplach a po okraji podlahy přijde další hlídka. Jen aréna a úkol. */
-  reinforcements: {
-    verbs: ['infiltrate', 'rescue', 'save'],
-    axes: ['action:interact'],
-    kind: 'overlay',
-    budget: 2,
-    slots: ['enemy'],
-    logic: { phases: [{ id: 'calm' }, { id: 'alarm' }] },
-    rules: [
-      { id: 'sound', verb: 'sound', when: { every: 600 }, if: [{ inPhase: 'calm' }], do: [{ goPhase: 'alarm' }] },
-      { id: 'muster', verb: 'muster', when: { phase: 'alarm' }, do: [{ wave: { role: S('enemy'), count: 1, at: 'edge' } }] },
     ],
   },
   /** Spršky na trati: po 5 s se kolem hráče vysypou tři sbírané věci, za 8 s znovu klid. Hraje i bez podlahy. */

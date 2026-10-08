@@ -59,6 +59,12 @@ describe('the instant draft composes a rule template by the recipe axes', () => 
     expect(made.spec.rules?.some((rule) => rule.do.some((effect) => 'win' in effect))).toBe(false);
   });
 
+  it('an escape arena with hunters gets one reinforcement patrol, not the survive waves that lose it', () => {
+    const made = compose(extractIntent('a cat stealing fish from a market while dodging the fishmonger'));
+    expect(made.template).toBe('reinforcements');
+    expect(made.issues.filter((issue) => issue.includes('+ template'))).toEqual([]);
+  });
+
   it('a game without a role for any slot plays without a template and records no attempt', () => {
     const made = compose(extractIntent('candy crush but with gems in a cave'));
     expect(made.template).toBeNull();
@@ -67,11 +73,11 @@ describe('the instant draft composes a rule template by the recipe axes', () => 
   });
 
   it('a template that loses the game is retried as the same recipe without it before any part is dropped', () => {
-    // Útěková aréna s lovci: vlny „přežij“ robota dorazí – hra jde bez šablony, ale se všemi díly.
-    const sentence = 'a cat stealing fish from a market while dodging the fishmonger';
+    // Let nad městem: spršky mincí u hráče robota shodí – hra jde bez šablony, ale se všemi díly.
+    const sentence = 'a baby dragon learns to fly over a medieval town';
     const made = compose(extractIntent(sentence));
     expect(made.template).toBeNull();
-    const failed = made.issues.findIndex((issue) => /\+ template waves_survive: .*bot_wins/.test(issue));
+    const failed = made.issues.findIndex((issue) => /\+ template coin_shower: .*bot_wins/.test(issue));
     expect(failed).toBeGreaterThanOrEqual(0);
     // Hned po šabloně uspěl tentýž recept bez ní: žádný jiný pokus mezi tím, díly beze změny.
     expect(made.issues.slice(failed + 1)).toEqual([]);

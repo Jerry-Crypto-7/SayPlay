@@ -49,13 +49,14 @@ describe('P45B logic-share gauge', () => {
   describe('on a real instant draft', () => {
     beforeAll(async () => { await loadRapier(); });
 
-    it('measures a sentence: playable, timed, and today without logic', () => {
+    it('measures a sentence: playable, timed, and with the logic of its rule template (T9)', () => {
       const row = measureSentence('t', 'a cat collects fish in the garden');
       expect(row.playable).toBe(true);
       expect(row.ms).toBeGreaterThanOrEqual(0);
-      expect(row.usesLogic).toBe(false);
+      expect(row.usesLogic).toBe(true);
+      expect(row.template).not.toBeNull();
       const summary = summarize([row]);
-      expect(summary).toMatchObject({ sentences: 1, playable: 1, usesLogic: 0, logicSharePct: 0 });
+      expect(summary).toMatchObject({ sentences: 1, playable: 1, usesLogic: 1, logicSharePct: 100 });
     });
   });
 });

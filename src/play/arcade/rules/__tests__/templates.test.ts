@@ -228,11 +228,11 @@ describe('vocabulary axes', () => {
   });
 
   it('templatesFor picks by any axis within the rule budget, in table order', () => {
-    expect(templatesFor(['objective:survive'], ARCADE_LIMITS.maxRules)).toEqual(['defend_base', 'waves_survive']);
+    expect(templatesFor(['objective:survive'], ARCADE_LIMITS.maxRules)).toEqual(['defend_base', 'reinforcements', 'waves_survive']);
     expect(templatesFor(['objective:escape', 'action:deliver'], ARCADE_LIMITS.maxRules)).toEqual(['carry', 'give', 'escape_countdown', 'rescue_then_flee', 'coin_shower']);
     expect(templatesFor(['action:deliver', 'objective:escape'], ARCADE_LIMITS.maxRules)).toEqual(templatesFor(['objective:escape', 'action:deliver'], ARCADE_LIMITS.maxRules));
     // Rozpočet: šablona o čtyřech pravidlech se do tří nevejde, ta o třech ano.
-    expect(templatesFor(['objective:survive', 'objective:escape'], 3)).toEqual(['coin_shower']);
+    expect(templatesFor(['objective:survive', 'objective:escape'], 3)).toEqual(['reinforcements', 'coin_shower']);
     expect(templatesFor(['objective:collect'], 3)).toEqual(['collect_unlock', 'treasure_rush']);
     expect(templatesFor([], ARCADE_LIMITS.maxRules)).toEqual([]);
     expect(templatesFor(['move:run'], ARCADE_LIMITS.maxRules)).toEqual([]);
