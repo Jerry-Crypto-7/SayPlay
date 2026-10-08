@@ -49,6 +49,24 @@ Unicorn (f08) a ninja cat (m09) knihovna kreslí (`covered`), hrdina modelem př
 
 Třídu těla dává `bodyOfNoun` (`scripts/p45d/motion-class.mjs`); tvory, které `heroClass` nezná (mole, hippo, cyclops, robber …), doplňuje tabulka slov tamtéž, jinak by dostali šablonu předmětu.
 
+## Reduced motion a telefon – `e2e/p45d-toy-motion.spec.ts`, `e2e/p35-perf.spec.ts`
+
+9. 10. 2026, profil Pixel 7 se 4× pomalejším CPU, robot hraje „rukou“ tik na snímek, sonda `__playFrame().heroToy` čte, co `applyToy` hrdinovi nastavil (předklon, úklon, měřítko, poskok, výpad, díly, deformace). Pevné hry:
+
+| id | hra | rozehrání (tiky) | bez emulace: největší rozptyl | `reduce`: snímků se změnou |
+|---|---|---|---|---|
+| `runner-zombie` | fixture `runner`, hrdina „zombie“ | 100 | 1,995 (nohy) | 0 |
+| `platform-fox` | fixture `platform`, hrdina „fox“ | 100 | 1,972 (nohy) | 0 |
+| `arena-turtle` | věta P32 `cat`, hrdina „turtle“ | 100 | 1,968 (nohy) | 0 |
+| `duel-monkey` | fixture `duel`, hrdina „monkey“ | 100 | 0,444 (přikrčení) | 2 |
+| `rhythm-bee` | fixture `rhythm`, hrdina „bee“ | 210 | 0,379 (zmáčknutí) | 0 |
+| `quest-elephant` | věta P32 `firefighter`, hrdina „elephant“ | 10 | 1,949 (nohy) | 0 |
+
+- **Hrdinové jsou modely katalogu.** Pes, kočka, tučňák a robot jsou riggované postavy s klipem běhu (`rigged*.json`) a hračka jim chůzi záměrně nezdvojí (T13) – s nimi by test měřil klip, ne hračku.
+- **Pod `reduce` test hlídá přechody, ne každou změnu.** Přikrčení v souboji je výška těla v jádře (stav hry, jako poloha): skočí v jednom snímku a drží. Kit pod `reduce` okamžitou pózu stavu dovoluje; přechod nebo smyčka by pózu měnily snímek za snímkem. Práh: nejvýš 2 snímky se změnou z 30.
+- **Výkon:** střelnice s 20 nepřáteli „kangaroo“ (model s díly ocas a noha; pes díly má taky, ale slovo „dog“ dostane riggovaného psa): najednou se kreslí 15 těl, díly přidají 2 sítě na tělo a ke každé obal obrysu – **4 sítě na tělo, ne 2**. Celá scéna 148 sítí, pod stropem kočičí arény 200. Kočičí aréna 109 sítí.
+- **Běžec nepřátele nemá** (jen překážky, které se nehýbou), 20 nepřátel proto drží střelnice.
+
 ## Třídy těl – `src/assets/catalog-motion.json`
 
 `node scripts/p45d/motion-class.mjs` nad 929 modely: prop 412, biped 346, quadruped 56, vehicle 50, flyer 34, swimmer 31; pohyblivý díl s rolí má 14 modelů. Třídu dává nejdřív manifest hrdinů P32, pak `heroClass` nad jednoslovným id, pak poměr rozměrů; model s dveřmi je vždy prop.

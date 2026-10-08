@@ -57,6 +57,10 @@ export const toyMotionOn = (): boolean => typeof window !== 'undefined' && !toyO
 export const toyTickOf = (session: Pick<ArcadeSession, 'state' | 'alpha' | 'endedFor'>): number =>
   (session.state()[HEADER.tick] as number) + session.alpha() + (session.endedFor() * ARCADE_HZ) / 1000;
 
+/** Cíl poslední pózy podle skupiny – sonda záběru (`heroToy`, P45D T14) z něj čte díly a deformaci. */
+const applied = new WeakMap<Object3D, ToyTarget>();
+export const appliedToyOf = (group: Object3D): ToyTarget | undefined => applied.get(group);
+
 function posePart({ pivot, role, side }: ToyPart, pose: ToyPose): void {
   pivot.rotation.set(0, 0, 0);
   if (role === 'door') pivot.rotation.y = -side * DOOR_OPEN * pose.open;
@@ -74,6 +78,7 @@ function posePart({ pivot, role, side }: ToyPart, pose: ToyPose): void {
  */
 export function applyToy(target: ToyTarget, pose: ToyPose, h: number, heading = 0): void {
   const { group } = target;
+  applied.set(group, target);
   group.rotation.order = 'YXZ';
   group.rotation.y = heading;
   if (toyOff()) return;

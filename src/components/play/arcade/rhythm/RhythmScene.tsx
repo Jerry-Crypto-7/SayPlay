@@ -165,7 +165,8 @@ export function RhythmScene({
       </mesh>
       {heroModel !== undefined && (
         <group position={[-(bar.w / 2 + HERO_GAP_M), 0, HERO_Z_M]} rotation={[0, Math.PI, 0]}>
-          <group ref={heroPose}>{heroModel(HERO_M.w, HERO_M.h, HERO_M.d)}</group>
+          {/* Hrdinou sondy je lišta; hračkovou pózu postavy čte `heroToy` sondy (P45D T14). */}
+          <group ref={heroPose} userData={{ toyHero: true }}>{heroModel(HERO_M.w, HERO_M.h, HERO_M.d)}</group>
         </group>
       )}
       {/* Slot ducha (P37-0 T3) vedle lišty. */}
