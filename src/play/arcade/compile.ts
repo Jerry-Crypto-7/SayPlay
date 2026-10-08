@@ -35,6 +35,7 @@ import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHas
 import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { progressionParts } from './pieces/progression-parts';
+import { pacingParts } from './pieces/pacing-parts';
 import { assemblyGate, assemblyParts } from './pieces/assembly-parts';
 import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
@@ -210,7 +211,7 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   const base = { ...plain, controlParams: addonControlParams(plain) } as GameSpecV1;
   // Pravidla, která sama vyhrávají, hrají na dvorku místo arény (P29A, `rules/compile.ts`).
   const generated = mode !== undefined ? mode.parts(seed, params?.data, health) : rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
-  const own = progressionParts(generated, spec);
+  const own = pacingParts(progressionParts(generated, spec), spec, seed, generator);
   // Pahýl módu vrací prázdnou úroveň s issue; doplňky by z ní četly tělo hráče (revize T4 kolo 2).
   if (own.issues !== undefined && own.issues.length > 0) return { ok: false, issues: own.issues };
   const lives = 'health' in own ? own.health : health;

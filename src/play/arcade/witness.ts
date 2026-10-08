@@ -455,6 +455,11 @@ export class WitnessRecorder {
         if (effect.kind === 'lose') this.pendingLosses.push({ body: other, evidence: 'harmful-contact' });
         else this.harm(other, player, tick, 'harmful-contact', state);
       }
+      // Tělo chování (P45C) udeří z pravidla `pacing` (spouštěč `tick`, bez `other`): sonda úder připíše nejbližšímu sondovanému tělu.
+      if (ref.id === 'pacing' && this.run === 'probe') {
+        const striker = this.nearestPaced(state, player);
+        if (striker >= 0) this.harm(striker, player, tick, 'behaviour-strike', state);
+      }
       if (ref.id === 'rival_finish' && typeof ref.params.atZ === 'number') {
         for (const b of this.bindings.values()) {
           const base = bodyBase(b.body);
@@ -466,6 +471,20 @@ export class WitnessRecorder {
         if (live(state, rival) && state[bodyBase(rival) + BODY.z]! >= ref.params.atZ) this.pendingLosses.push({ body: rival, evidence: 'rival-finished-first' });
       }
     }
+  }
+
+  /** Nejbližší živé tělo s vazbou sondy průběhu (`pacing:*`) k hráči, nebo −1. */
+  private nearestPaced(state: ArcadeState, player: number): number {
+    const p = bodyBase(player);
+    let nearest = -1;
+    let distance = Number.POSITIVE_INFINITY;
+    for (let body = 0; body < state[HEADER.bodyCount]!; body += 1) {
+      if (!live(state, body) || this.binding(body, state)?.roleId.startsWith('pacing:') !== true) continue;
+      const b = bodyBase(body);
+      const squared = (state[b + BODY.x]! - state[p + BODY.x]!) ** 2 + (state[b + BODY.z]! - state[p + BODY.z]!) ** 2;
+      if (squared < distance) { nearest = body; distance = squared; }
+    }
+    return nearest;
   }
 
   private harm(body: number, player: number, tick: number, evidence: string, state: ArcadeState): void {

@@ -321,6 +321,8 @@ export interface PacingSetup {
   readonly behaviours: readonly PacingActor[];
   readonly budget: number;
   readonly finale?: (typeof FINALES)[number];
+  /** Boss: tělo a postup v promile, na kterém přijde – jeden spawn mimo los rozvrhu, předloha za předlohami `behaviours`. */
+  readonly boss?: { readonly body: BodyInit; readonly at: number };
 }
 
 /**
@@ -334,22 +336,25 @@ export interface PacingSetup {
  */
 export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts {
   const first = parts.level.bodies.length;
-  const shooters = [...new Set(setup.behaviours.flatMap((actor) => (actor.behaviour !== undefined && BEHAVIOURS[actor.behaviour].shot !== undefined ? [actor.behaviour] : [])))];
+  // Boss je poslední předloha chování; los rozvrhu ho nevybírá.
+  const actors: readonly PacingActor[] = setup.boss === undefined ? setup.behaviours : [...setup.behaviours, { body: setup.boss.body, behaviour: 'boss' }];
+  const shooters = [...new Set(actors.flatMap((actor) => (actor.behaviour !== undefined && BEHAVIOURS[actor.behaviour].shot !== undefined ? [actor.behaviour] : [])))];
   const shotBodies = shooters.map((id) => BEHAVIOURS[id].shot as BodyInit);
-  const keeper = first + setup.behaviours.length + shooters.length;
-  const duplicate = duplicateSignature([...setup.behaviours.map((actor) => actor.body), ...shotBodies]);
+  const keeper = first + actors.length + shooters.length;
+  const duplicate = duplicateSignature([...actors.map((actor) => actor.body), ...shotBodies]);
   if (duplicate !== null) return { ...parts, issues: [...(parts.issues ?? []), `pacing: two spawn templates share the signature ${duplicate} (role:kind:w:h:d)`] };
-  const shotOf = (id: BehaviourId): { shot?: number } => (shooters.includes(id) ? { shot: first + setup.behaviours.length + shooters.indexOf(id) } : {});
-  const refs = setup.behaviours.flatMap((actor, index) => (actor.behaviour === undefined ? [] : [{ id: actor.behaviour, template: first + index, ...shotOf(actor.behaviour) }]));
+  const shotOf = (id: BehaviourId): { shot?: number } => (shooters.includes(id) ? { shot: first + actors.length + shooters.indexOf(id) } : {});
+  const refs = actors.flatMap((actor, index) => (actor.behaviour === undefined ? [] : [{ id: actor.behaviour, template: first + index, ...shotOf(actor.behaviour) }]));
   const moved = refs.length === 0 ? {} : { behaviours: refs };
-  const bodies = [...parts.level.bodies, ...[...setup.behaviours.map((actor) => actor.body), ...shotBodies].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
-  const schedule = setup.behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(createCompileRng(setup.seed, 'pacing'), TENSION_CURVE, setup.budget, setup.behaviours.length)
+  const bodies = [...parts.level.bodies, ...[...actors.map((actor) => actor.body), ...shotBodies].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
+  const drawn = setup.behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(createCompileRng(setup.seed, 'pacing'), TENSION_CURVE, setup.budget, setup.behaviours.length)
     .map((entry) => {
       const actor = setup.behaviours[entry.behaviour]?.behaviour;
       // Hejno je jeden spawn celé, i ve vrcholu (dvě hejna naráz by přetekla `maxActors`).
       const group = actor === undefined ? undefined : BEHAVIOURS[actor].group;
       return { atPermille: Math.max(1, entry.atPermille), template: first + entry.behaviour, count: group?.size ?? entry.count, entry: entry.entry };
     });
+  const schedule = setup.boss === undefined ? drawn : [...drawn, { atPermille: Math.max(1, setup.boss.at), template: first + setup.behaviours.length, count: 1, entry: 0 }];
   const half = parts.control.params.half;
   const edge = setup.space === 'plane' && shooters.length > 0 && typeof half === 'number' ? { half } : {};
   const rule: PieceRef | null = schedule.length === 0 && setup.finale === undefined && refs.length === 0 ? null : {
