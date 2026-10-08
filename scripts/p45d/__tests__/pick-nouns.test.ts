@@ -3,7 +3,6 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { loadInputs, missingNouns } from '../../p37d/missing-nouns.mjs';
 import { confusedOf, FLAT, MAX_NOUNS, panelHeroesWithoutModel, parseList, pickNouns, pickFromRepo } from '../pick-nouns.mjs';
 
 const ROOT = path.resolve(__dirname, '../../..');
@@ -55,7 +54,10 @@ describe('pick-nouns (P45D T16)', () => {
   });
 
   it('picks from the real repo nothing the catalog already covers', () => {
-    const covered = new Set(missingNouns(loadInputs()).covered.map((entry) => entry.noun));
+    // Pokrytí ze snímku, ze kterého se vybíralo – živý katalog už vybraná jména
+    // kreslí, protože je P45E vygeneroval a povýšil.
+    const snapshot = JSON.parse(readFileSync(path.join(ROOT, 'evals/play/p45d/missing.json'), 'utf8'));
+    const covered = new Set(snapshot.covered.map((entry: { noun: string }) => entry.noun));
     const picked = pickFromRepo();
     expect(picked.length).toBeGreaterThan(20);
     expect(picked.length).toBeLessThanOrEqual(MAX_NOUNS);
