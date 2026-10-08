@@ -36,7 +36,7 @@ describe('CC0 catalog entries', () => {
 
   it('never take a tag that a project model already carries', () => {
     const own = new Set(catalog.assets.filter((asset: Asset) => !isCc0(asset)).flatMap((asset: Asset) => [asset.assetId, ...asset.tags]));
-    for (const asset of cc0 as Asset[]) for (const tag of asset.tags) expect(own.has(tag), `${asset.assetId}: ${tag}`).toBe(false);
+    for (const asset of cc0 as Asset[]) for (const tag of asset.tags.filter((tag) => !tag.startsWith('seen:'))) expect(own.has(tag), `${asset.assetId}: ${tag}`).toBe(false);
   });
 
   it('carry no purple vertex colour in any committed LOD', async () => {

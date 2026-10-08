@@ -128,7 +128,8 @@ const forms = (word) => [word, word.replace(/ies$/, 'y'), word.replace(/es$/, ''
 /** Třída podle slov tagů a id; `undefined` = model hrdinou není. */
 function classOf(asset) {
   if (asset.assetId in CLASS_OF_MODEL) return CLASS_OF_MODEL[asset.assetId] ?? undefined;
-  const words = [...asset.tags, asset.assetId.replace(/^(cc0|gen3d)-/, '')].flatMap((tag) => tag.toLowerCase().split(/[\s-]+/));
+  // Jména ze slepého soudu P43 (`seen:hot dog`) třídu neurčují – párek by byl pes.
+  const words = [...asset.tags.filter((tag) => !tag.includes(':')), asset.assetId.replace(/^(cc0|gen3d)-/, '')].flatMap((tag) => tag.toLowerCase().split(/[\s-]+/));
   const found = new Set(words.flatMap(forms).map((form) => LOOKUP.get(form)));
   return CLASS_ORDER.find((kind) => found.has(kind));
 }
@@ -148,7 +149,8 @@ export function catalogEntries({ catalog, rigged, disclosure, forward }) {
   const entries = [];
   for (const asset of catalog.assets) {
     const kind = classOf(asset);
-    if (kind === undefined || described.has(asset.assetId)) continue;
+    // P43 T13: model, který slepý soud nepoznal, hrdinu ani nepřítele nehraje.
+    if (kind === undefined || described.has(asset.assetId) || asset.tags.includes('qa:unrecognisable')) continue;
     const license = licenses.get(`public${asset.path}`);
     if (license === undefined) throw new Error(`${asset.assetId}: ${asset.path} nemá záznam v disclosure.json`);
     const identity = [...new Set(asset.tags.map((tag) => tag.toLowerCase().trim().replace(/\s+/g, '-')))].filter((tag) => /^[a-z][a-z-]*$/.test(tag));

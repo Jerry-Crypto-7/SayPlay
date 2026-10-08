@@ -20,6 +20,7 @@ import { BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import { SHOOTER, aimAt, aimVelocity } from '@/play/arcade/pieces/shooter';
 import type { HeroAction } from '@/play/spec';
 
+import { ShootThrowFx } from '../action-cue/ShootThrowFx';
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import type { ArcadeSession } from '../session';
@@ -161,6 +162,8 @@ export function ShooterRig({
     <>
       {/* Slot ducha (P37-0 T3) vedle zaměřovače, ne v něm – skupina zaměřovače se hýbe s mířením. */}
       <GhostSlot ghost={ghost} session={session} />
+      {/* Výstřel vidět (P43 T5): záblesk u hlavně a stopa střely. */}
+      <ShootThrowFx session={session} verb="shoot" />
       <group ref={reticle}>
         <mesh position={[0, 0, RETICLE_M / 2]} userData={AID}>
           <boxGeometry args={[0.03, 0.03, RETICLE_M]} />

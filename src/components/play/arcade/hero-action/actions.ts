@@ -12,6 +12,26 @@
  */
 
 import type { HeroAction } from '@/play/spec';
+import { BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, targetStateOf } from '@/play/arcade/contract';
+
+/** Read-only visual evidence, including demo/replay frames which emit no human events. */
+export function actionAdvanced(before: Int32Array, after: Int32Array): boolean {
+  if (after[HEADER.tick] <= before[HEADER.tick]) return false;
+  for (const counter of [COUNTER.score, COUNTER.items]) {
+    if (after[HEADER.counters + counter] > before[HEADER.counters + counter]) return true;
+  }
+  const count = Math.min(before[HEADER.bodyCount], after[HEADER.bodyCount]);
+  for (let index = 0; index < count; index++) {
+    const base = bodyBase(index);
+    const role = after[base + BODY.role];
+    if (role !== before[base + BODY.role]) continue;
+    if (role === ROLE.target && targetStateOf(after, index) > targetStateOf(before, index)) return true;
+    if ((role === ROLE.target || role === ROLE.enemy || role === ROLE.collectible)
+      && (before[base + BODY.flags] & FLAG.alive) !== 0
+      && (after[base + BODY.flags] & FLAG.alive) === 0) return true;
+  }
+  return false;
+}
 
 /** Jak dlouho trvá nápřah po události (s). */
 export const BURST_S = 0.5;

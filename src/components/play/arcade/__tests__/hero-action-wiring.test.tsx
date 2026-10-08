@@ -100,7 +100,8 @@ describe('heroAction wiring (P37-0 T2)', () => {
   it('the play shell hands the spec field to the stage', () => {
     const source = readFileSync(join(__dirname, '..', 'ArcadePlay.tsx'), 'utf8');
     const stage = /<ArcadeStage\b[\s\S]*?\n\s*overlay=/.exec(source)?.[0] ?? '';
-    expect(stage).toMatch(/^\s*heroAction=\{spec\.heroAction \?\? 'none'\}$/m);
+    // P43 T5: `heroActionOf` vrací pole specu, jen hra hodu bez činnosti dostane `throw` (test v `action-cue`).
+    expect(stage).toMatch(/^\s*heroAction=\{heroActionOf\(spec\)\}$/m);
   });
 
   it.each([

@@ -52,6 +52,7 @@ vi.mock('@/play/audio', async (importOriginal) => ({
 function mountHero(action: Parameters<typeof HeroActionBody>[0]['action']): ArcadeEventListener | null {
   let listener: ArcadeEventListener | null = null;
   const session = {
+    state: () => new Int32Array(16),
     onEvents: (next: ArcadeEventListener) => {
       listener = next;
       return () => undefined;

@@ -30,7 +30,8 @@ const common = Object.values(readJson('../../evals/play/p37d/common-nouns.json')
 const nounOf = (entry) => (typeof entry === 'string' ? entry : entry.noun).toLowerCase();
 const words = [...new Set([...missing.missing, ...missing.undrawable, ...common].map(nounOf))].sort();
 const abstract = new Set(missing.undrawable.map((entry) => entry.noun.toLowerCase()));
-const assets = index.assets.map((asset) => ({ id: asset.assetId, text: labels.get(asset.assetId) ?? asset.tags.join(' ') }));
+// P43 T13: nepoznatelný model nebude nejbližším ničeho.
+const assets = index.assets.filter((asset) => !asset.tags.includes('qa:unrecognisable')).map((asset) => ({ id: asset.assetId, text: labels.get(asset.assetId) ?? asset.tags.join(' ') }));
 
 const run = spawnSync(PYTHON, [here('./embed.py')], {
   input: JSON.stringify({ words, assets }),

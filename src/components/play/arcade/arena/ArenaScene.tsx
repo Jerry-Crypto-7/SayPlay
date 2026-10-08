@@ -769,7 +769,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
           </group>
         );
       })}
-      <TargetsMount session={session} views={views} layer={targets ?? questTargets(session.world, { session, look: scene, heroAction })} />
+      <TargetsMount session={session} views={views} layer={targets ?? questTargets(session.world, { session, look: scene, heroAction }, cast.props?.target)} />
       {/* Slot ducha (P37-0 T3) – i pro úkol: stanoviště hrdinu nekreslí, druhý slot by ducha zdvojil. */}
       <GhostSlot ghost={ghost} session={session} />
     </>
