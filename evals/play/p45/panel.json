@@ -1,0 +1,1756 @@
+{
+ "about": "P45 T1 dev panel: 40 sentences frozen once on 2026-10-08 over main 0714a352 before any P45 change – 25 from evals/play/p37a/dev-150.json and 15 from evals/play/p30/dev.json, groups interleaved and by id within a per-genre share of the fast draft (grid fallbacks left out: no arcade run to measure). `genre` and `enemy` (a chaser or enemy body in the world) are recorded at selection time. Never contains test-200 or any sealed set. Tune on this panel only.",
+ "sentences": [
+  {
+   "id": "f01",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "a dragon guards its gold hoard from greedy knights inside a volcano",
+   "checklist": [
+    {
+     "item": "dragon",
+     "slot": "hero",
+     "match": [
+      "dragon"
+     ]
+    },
+    {
+     "item": "gold hoard",
+     "slot": "role",
+     "match": [
+      "gold",
+      "coin",
+      "treasure"
+     ]
+    },
+    {
+     "item": "knights",
+     "slot": "role",
+     "match": [
+      "knight",
+      "soldier",
+      "armor"
+     ]
+    },
+    {
+     "item": "volcano",
+     "slot": "setting",
+     "match": [
+      "volcano",
+      "lava",
+      "cave"
+     ]
+    },
+    {
+     "item": "guard",
+     "slot": "verb",
+     "controls": [
+      "shooter",
+      "duel"
+     ],
+     "mechanics": [
+      "spawn_wave"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "arena.collect",
+   "enemy": true
+  },
+  {
+   "id": "f02",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "an ogre arm wrestles a frost giant in a smoky mountain tavern",
+   "checklist": [
+    {
+     "item": "ogre",
+     "slot": "hero",
+     "match": [
+      "ogre",
+      "troll"
+     ]
+    },
+    {
+     "item": "frost giant",
+     "slot": "role",
+     "match": [
+      "giant",
+      "yeti",
+      "ice"
+     ]
+    },
+    {
+     "item": "tavern",
+     "slot": "setting",
+     "match": [
+      "tavern",
+      "inn",
+      "pub"
+     ]
+    },
+    {
+     "item": "wrestle",
+     "slot": "verb",
+     "controls": [
+      "duel",
+      "timing"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "duel",
+   "enemy": true
+  },
+  {
+   "id": "f03",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "An elf archer shoots goblins from the treetops.",
+   "checklist": [
+    {
+     "item": "elf archer",
+     "slot": "hero",
+     "match": [
+      "elf",
+      "archer",
+      "bow"
+     ]
+    },
+    {
+     "item": "goblins",
+     "slot": "role",
+     "match": [
+      "goblin"
+     ]
+    },
+    {
+     "item": "treetops",
+     "slot": "setting",
+     "match": [
+      "tree",
+      "treetop",
+      "forest"
+     ]
+    },
+    {
+     "item": "shoot",
+     "slot": "verb",
+     "controls": [
+      "shooter"
+     ],
+     "mechanics": [
+      "defeat"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "shooter",
+   "enemy": true
+  },
+  {
+   "id": "f05",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "a fairy lights lanterns along a moonlit forest path",
+   "checklist": [
+    {
+     "item": "fairy",
+     "slot": "hero",
+     "match": [
+      "fairy",
+      "pixie"
+     ]
+    },
+    {
+     "item": "lanterns",
+     "slot": "role",
+     "match": [
+      "lantern",
+      "lamp",
+      "light"
+     ]
+    },
+    {
+     "item": "forest path",
+     "slot": "setting",
+     "match": [
+      "forest",
+      "path",
+      "tree",
+      "night"
+     ]
+    },
+    {
+     "item": "light",
+     "slot": "verb",
+     "controls": [
+      "move_free",
+      "flap"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "quest.spatial",
+   "enemy": true
+  },
+  {
+   "id": "f10",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "a stone golem crushes grave robbers in an ancient desert temple",
+   "checklist": [
+    {
+     "item": "stone golem",
+     "slot": "hero",
+     "match": [
+      "golem",
+      "stone giant",
+      "statue",
+      "rock monster"
+     ]
+    },
+    {
+     "item": "grave robbers",
+     "slot": "role",
+     "match": [
+      "robber",
+      "thief",
+      "bandit",
+      "explorer"
+     ]
+    },
+    {
+     "item": "desert temple",
+     "slot": "setting",
+     "match": [
+      "temple",
+      "desert",
+      "pyramid",
+      "ruin"
+     ]
+    },
+    {
+     "item": "crush",
+     "slot": "verb",
+     "controls": [
+      "move_free",
+      "duel"
+     ],
+     "mechanics": [
+      "defeat"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "arena.fight",
+   "enemy": true
+  },
+  {
+   "id": "f12",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "a baby dragon learns to fly over a medieval town",
+   "checklist": [
+    {
+     "item": "baby dragon",
+     "slot": "hero",
+     "match": [
+      "dragon",
+      "baby dragon"
+     ]
+    },
+    {
+     "item": "medieval town",
+     "slot": "setting",
+     "match": [
+      "town",
+      "village",
+      "castle",
+      "houses"
+     ]
+    },
+    {
+     "item": "fly",
+     "slot": "verb",
+     "controls": [
+      "flap"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "control:glide",
+   "enemy": false
+  },
+  {
+   "id": "f17",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "a phoenix rises from the ashes over a burning desert",
+   "checklist": [
+    {
+     "item": "phoenix",
+     "slot": "hero",
+     "match": [
+      "phoenix",
+      "firebird",
+      "bird"
+     ]
+    },
+    {
+     "item": "ashes",
+     "slot": "role",
+     "match": [
+      "ash",
+      "fire",
+      "flame"
+     ]
+    },
+    {
+     "item": "desert",
+     "slot": "setting",
+     "match": [
+      "desert",
+      "sand",
+      "dune"
+     ]
+    },
+    {
+     "item": "rise",
+     "slot": "verb",
+     "controls": [
+      "flap"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "flap",
+   "enemy": false
+  },
+  {
+   "id": "f18",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "a halfling sneaks past a sleeping dragon into its treasure cave",
+   "checklist": [
+    {
+     "item": "halfling",
+     "slot": "hero",
+     "match": [
+      "halfling",
+      "hobbit",
+      "thief",
+      "little man"
+     ]
+    },
+    {
+     "item": "dragon",
+     "slot": "role",
+     "match": [
+      "dragon"
+     ]
+    },
+    {
+     "item": "treasure cave",
+     "slot": "setting",
+     "match": [
+      "cave",
+      "treasure",
+      "gold"
+     ]
+    },
+    {
+     "item": "sneak",
+     "slot": "verb",
+     "controls": [
+      "move_free"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "control:walker",
+   "enemy": false
+  },
+  {
+   "id": "m01",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "unknown-verb",
+    "short"
+   ],
+   "text": "toaster tornado",
+   "checklist": [
+    {
+     "item": "toaster",
+     "slot": "any",
+     "match": [
+      "toaster",
+      "toast",
+      "bread"
+     ]
+    },
+    {
+     "item": "tornado",
+     "slot": "role",
+     "match": [
+      "tornado",
+      "twister",
+      "storm",
+      "wind"
+     ]
+    },
+    {
+     "item": "dodge",
+     "slot": "verb",
+     "controls": [
+      "move_free",
+      "runner"
+     ],
+     "mechanics": [
+      "hazard_zone"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "arena.escape",
+   "enemy": true
+  },
+  {
+   "id": "m02",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "unknown-verb",
+    "short"
+   ],
+   "text": "cat lasers",
+   "checklist": [
+    {
+     "item": "cat",
+     "slot": "any",
+     "match": [
+      "cat",
+      "kitten"
+     ]
+    },
+    {
+     "item": "lasers",
+     "slot": "role",
+     "match": [
+      "laser",
+      "beam",
+      "light"
+     ]
+    },
+    {
+     "item": "shoot",
+     "slot": "verb",
+     "controls": [
+      "shooter"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "arena.collect",
+   "enemy": true
+  },
+  {
+   "id": "m03",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "short"
+   ],
+   "text": "Grandma kart",
+   "checklist": [
+    {
+     "item": "grandma",
+     "slot": "any",
+     "match": [
+      "grandma",
+      "grandmother",
+      "old woman"
+     ]
+    },
+    {
+     "item": "kart",
+     "slot": "any",
+     "match": [
+      "kart",
+      "go-kart",
+      "car"
+     ]
+    },
+    {
+     "item": "race",
+     "slot": "verb",
+     "controls": [
+      "steer"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "control:steer",
+   "enemy": false
+  },
+  {
+   "id": "m04",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "unknown-verb",
+    "short"
+   ],
+   "text": "bake cookies",
+   "checklist": [
+    {
+     "item": "cookies",
+     "slot": "any",
+     "match": [
+      "cookie",
+      "biscuit"
+     ]
+    },
+    {
+     "item": "kitchen",
+     "slot": "setting",
+     "match": [
+      "kitchen",
+      "oven",
+      "bakery"
+     ]
+    },
+    {
+     "item": "bake",
+     "slot": "verb",
+     "controls": [
+      "timing"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "quest.station",
+   "enemy": false
+  },
+  {
+   "id": "m06",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "fantasy",
+    "short"
+   ],
+   "text": "dragon taxi",
+   "checklist": [
+    {
+     "item": "dragon",
+     "slot": "any",
+     "match": [
+      "dragon"
+     ]
+    },
+    {
+     "item": "passengers",
+     "slot": "role",
+     "match": [
+      "passenger",
+      "people",
+      "villager",
+      "rider"
+     ]
+    },
+    {
+     "item": "ferry",
+     "slot": "verb",
+     "controls": [
+      "flap",
+      "move_free"
+     ],
+     "mechanics": [
+      "carry",
+      "delivery"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "control:steer",
+   "enemy": false
+  },
+  {
+   "id": "m07",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "unknown-verb",
+    "short"
+   ],
+   "text": "walk the dog",
+   "checklist": [
+    {
+     "item": "dog",
+     "slot": "role",
+     "match": [
+      "dog",
+      "puppy",
+      "leash"
+     ]
+    },
+    {
+     "item": "park",
+     "slot": "setting",
+     "match": [
+      "park",
+      "street",
+      "sidewalk"
+     ]
+    },
+    {
+     "item": "walk",
+     "slot": "verb",
+     "controls": [
+      "runner",
+      "move_free"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "control:walker",
+   "enemy": false
+  },
+  {
+   "id": "m08",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "unknown-verb",
+    "typo"
+   ],
+   "text": "a pengiun tht slides down a mountin",
+   "checklist": [
+    {
+     "item": "penguin",
+     "slot": "hero",
+     "match": [
+      "penguin"
+     ]
+    },
+    {
+     "item": "mountain",
+     "slot": "setting",
+     "match": [
+      "mountain",
+      "snow",
+      "slope",
+      "hill"
+     ]
+    },
+    {
+     "item": "slide",
+     "slot": "verb",
+     "controls": [
+      "runner",
+      "steer"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "runner",
+   "enemy": false
+  },
+  {
+   "id": "m09",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "typo"
+   ],
+   "text": "ninja cat jumpin on rooftops plz",
+   "checklist": [
+    {
+     "item": "ninja cat",
+     "slot": "hero",
+     "match": [
+      "cat",
+      "ninja",
+      "kitten"
+     ]
+    },
+    {
+     "item": "rooftops",
+     "slot": "setting",
+     "match": [
+      "rooftop",
+      "roof",
+      "city",
+      "building"
+     ]
+    },
+    {
+     "item": "jump",
+     "slot": "verb",
+     "controls": [
+      "platform",
+      "runner"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "platformer",
+   "enemy": false
+  },
+  {
+   "id": "m11",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "typo"
+   ],
+   "text": "my dog chasing the mailman,around the backyard lol",
+   "checklist": [
+    {
+     "item": "dog",
+     "slot": "hero",
+     "match": [
+      "dog",
+      "puppy"
+     ]
+    },
+    {
+     "item": "mailman",
+     "slot": "role",
+     "match": [
+      "mailman",
+      "postman"
+     ]
+    },
+    {
+     "item": "backyard",
+     "slot": "setting",
+     "match": [
+      "backyard",
+      "yard",
+      "garden"
+     ]
+    },
+    {
+     "item": "chase",
+     "slot": "verb",
+     "controls": [
+      "move_free",
+      "runner"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "control:move_free",
+   "enemy": true
+  },
+  {
+   "id": "m16",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "two-verbs"
+   ],
+   "text": "a kangaroo jumps over cars then collects coins on the highway",
+   "checklist": [
+    {
+     "item": "kangaroo",
+     "slot": "hero",
+     "match": [
+      "kangaroo"
+     ]
+    },
+    {
+     "item": "cars",
+     "slot": "role",
+     "match": [
+      "car",
+      "vehicle"
+     ]
+    },
+    {
+     "item": "coins",
+     "slot": "role",
+     "match": [
+      "coin",
+      "gold"
+     ]
+    },
+    {
+     "item": "highway",
+     "slot": "setting",
+     "match": [
+      "highway",
+      "road"
+     ]
+    },
+    {
+     "item": "jump",
+     "slot": "verb",
+     "controls": [
+      "platform",
+      "runner"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "platformer",
+   "enemy": false
+  },
+  {
+   "id": "n01",
+   "source": "p37a-dev",
+   "group": "non-game",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "text": "file my expense report with a pile of crumpled receipts",
+   "checklist": [
+    {
+     "item": "expense report",
+     "slot": "any",
+     "match": [
+      "report",
+      "document",
+      "paper",
+      "form"
+     ]
+    },
+    {
+     "item": "receipts",
+     "slot": "any",
+     "match": [
+      "receipt",
+      "paper",
+      "bill"
+     ]
+    },
+    {
+     "item": "file",
+     "slot": "verb",
+     "controls": []
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "timing.stack",
+   "enemy": false
+  },
+  {
+   "id": "n02",
+   "source": "p37a-dev",
+   "group": "non-game",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "text": "me trying to fall asleep in bed the night before a big exam",
+   "checklist": [
+    {
+     "item": "me",
+     "slot": "hero",
+     "match": [
+      "person",
+      "student",
+      "kid",
+      "sleeper"
+     ]
+    },
+    {
+     "item": "bed",
+     "slot": "setting",
+     "match": [
+      "bed",
+      "bedroom",
+      "pillow"
+     ]
+    },
+    {
+     "item": "exam",
+     "slot": "role",
+     "match": [
+      "exam",
+      "test",
+      "book",
+      "paper"
+     ]
+    },
+    {
+     "item": "fall asleep",
+     "slot": "verb",
+     "controls": []
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "arena.escape",
+   "enemy": true
+  },
+  {
+   "id": "n04",
+   "source": "p37a-dev",
+   "group": "non-game",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "text": "Renew my passport at city hall.",
+   "checklist": [
+    {
+     "item": "passport",
+     "slot": "any",
+     "match": [
+      "passport",
+      "document",
+      "booklet",
+      "id"
+     ]
+    },
+    {
+     "item": "city hall",
+     "slot": "setting",
+     "match": [
+      "city hall",
+      "office",
+      "counter",
+      "building"
+     ]
+    },
+    {
+     "item": "renew",
+     "slot": "verb",
+     "controls": []
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "timing.stack",
+   "enemy": false
+  },
+  {
+   "id": "u01",
+   "source": "p37a-dev",
+   "group": "unknown-verb",
+   "tags": [
+    "unknown-verb"
+   ],
+   "text": "a grandma cat knits a giant scarf by the fireplace",
+   "checklist": [
+    {
+     "item": "grandma cat",
+     "slot": "hero",
+     "match": [
+      "cat",
+      "kitten",
+      "grandma"
+     ]
+    },
+    {
+     "item": "scarf",
+     "slot": "role",
+     "match": [
+      "scarf",
+      "yarn",
+      "wool"
+     ]
+    },
+    {
+     "item": "fireplace",
+     "slot": "setting",
+     "match": [
+      "fireplace",
+      "fire",
+      "living room"
+     ]
+    },
+    {
+     "item": "knit",
+     "slot": "verb",
+     "controls": [
+      "rhythm",
+      "timing"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "rhythm",
+   "enemy": false
+  },
+  {
+   "id": "u02",
+   "source": "p37a-dev",
+   "group": "unknown-verb",
+   "tags": [
+    "unknown-verb"
+   ],
+   "text": "A tailor mouse sews buttons onto tiny coats before the royal parade.",
+   "checklist": [
+    {
+     "item": "tailor mouse",
+     "slot": "hero",
+     "match": [
+      "mouse",
+      "rat"
+     ]
+    },
+    {
+     "item": "buttons",
+     "slot": "role",
+     "match": [
+      "button"
+     ]
+    },
+    {
+     "item": "coats",
+     "slot": "role",
+     "match": [
+      "coat",
+      "jacket",
+      "clothes"
+     ]
+    },
+    {
+     "item": "sew",
+     "slot": "verb",
+     "controls": [
+      "timing",
+      "rhythm"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "rhythm",
+   "enemy": false
+  },
+  {
+   "id": "u03",
+   "source": "p37a-dev",
+   "group": "unknown-verb",
+   "tags": [
+    "unknown-verb"
+   ],
+   "text": "a penguin chef stirs a huge pot of fish soup on an iceberg",
+   "checklist": [
+    {
+     "item": "penguin",
+     "slot": "hero",
+     "match": [
+      "penguin",
+      "chef"
+     ]
+    },
+    {
+     "item": "soup pot",
+     "slot": "role",
+     "match": [
+      "pot",
+      "soup",
+      "cauldron"
+     ]
+    },
+    {
+     "item": "iceberg",
+     "slot": "setting",
+     "match": [
+      "iceberg",
+      "ice",
+      "snow"
+     ]
+    },
+    {
+     "item": "stir",
+     "slot": "verb",
+     "controls": [
+      "timing"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "quest.station",
+   "enemy": false
+  },
+  {
+   "id": "u06",
+   "source": "p37a-dev",
+   "group": "unknown-verb",
+   "tags": [
+    "unknown-verb"
+   ],
+   "text": "a gardener waters thirsty sunflowers on a rooftop garden",
+   "checklist": [
+    {
+     "item": "gardener",
+     "slot": "hero",
+     "match": [
+      "gardener",
+      "farmer",
+      "watering can"
+     ]
+    },
+    {
+     "item": "sunflowers",
+     "slot": "role",
+     "match": [
+      "sunflower",
+      "flower",
+      "plant"
+     ]
+    },
+    {
+     "item": "rooftop garden",
+     "slot": "setting",
+     "match": [
+      "garden",
+      "rooftop",
+      "roof"
+     ]
+    },
+    {
+     "item": "water",
+     "slot": "verb",
+     "controls": [
+      "move_free"
+     ]
+    }
+   ],
+   "from": "p37a/dev-150.json",
+   "genre": "quest.spatial",
+   "enemy": true
+  },
+  {
+   "id": "d01",
+   "source": "dev",
+   "tags": [],
+   "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+   "checklist": [
+    {
+     "item": "hedgehog",
+     "slot": "hero",
+     "match": [
+      "hedgehog"
+     ]
+    },
+    {
+     "item": "fox",
+     "slot": "role",
+     "match": [
+      "fox"
+     ],
+     "does": "avoid"
+    },
+    {
+     "item": "mushroom hill",
+     "slot": "setting",
+     "match": [
+      "mushroom",
+      "hill",
+      "forest"
+     ]
+    },
+    {
+     "item": "roll",
+     "slot": "verb",
+     "controls": [
+      "steer",
+      "runner"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "control:ball",
+   "enemy": false
+  },
+  {
+   "id": "d03",
+   "source": "dev",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "a witch brews potions in a crooked tower during a thunderstorm",
+   "checklist": [
+    {
+     "item": "witch",
+     "slot": "hero",
+     "match": [
+      "witch"
+     ]
+    },
+    {
+     "item": "potion",
+     "slot": "any",
+     "match": [
+      "potion",
+      "cauldron",
+      "flask",
+      "bottle"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "crooked tower",
+     "slot": "setting",
+     "match": [
+      "tower"
+     ]
+    },
+    {
+     "item": "brew",
+     "slot": "verb",
+     "controls": [
+      "timing"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "quest.station",
+   "enemy": false
+  },
+  {
+   "id": "d04",
+   "source": "dev",
+   "tags": [],
+   "text": "shoot down paper planes over a school playground",
+   "checklist": [
+    {
+     "item": "paper plane",
+     "slot": "role",
+     "match": [
+      "plane",
+      "airplane",
+      "paper"
+     ],
+     "does": "shoot_at"
+    },
+    {
+     "item": "playground",
+     "slot": "setting",
+     "match": [
+      "playground",
+      "school",
+      "yard"
+     ]
+    },
+    {
+     "item": "shoot",
+     "slot": "verb",
+     "controls": [
+      "shooter"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "shooter",
+   "enemy": true
+  },
+  {
+   "id": "d09",
+   "source": "dev",
+   "tags": [],
+   "text": "stack cheese wheels into a wobbly tower at a farm market",
+   "checklist": [
+    {
+     "item": "cheese wheel",
+     "slot": "any",
+     "match": [
+      "cheese"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "farm market",
+     "slot": "setting",
+     "match": [
+      "market",
+      "farm"
+     ]
+    },
+    {
+     "item": "stack",
+     "slot": "verb",
+     "controls": [
+      "timing"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "timing.stack",
+   "enemy": false
+  },
+  {
+   "id": "h02",
+   "source": "hostile",
+   "text": "shopping cart race in a supermarket",
+   "checklist": [
+    {
+     "item": "shopping cart",
+     "slot": "hero",
+     "match": [
+      "cart",
+      "trolley"
+     ]
+    },
+    {
+     "item": "supermarket",
+     "slot": "setting",
+     "match": [
+      "supermarket",
+      "grocery",
+      "store"
+     ]
+    },
+    {
+     "item": "race",
+     "slot": "verb",
+     "controls": [
+      "steer"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "control:steer",
+   "enemy": true
+  },
+  {
+   "id": "h03",
+   "source": "hostile",
+   "text": "defend a castle from dragons by throwing snowballs",
+   "checklist": [
+    {
+     "item": "castle",
+     "slot": "setting",
+     "match": [
+      "castle",
+      "fortress",
+      "wall"
+     ]
+    },
+    {
+     "item": "dragon",
+     "slot": "role",
+     "match": [
+      "dragon",
+      "wyvern"
+     ],
+     "does": "throw_at"
+    },
+    {
+     "item": "snowball",
+     "slot": "any",
+     "match": [
+      "snowball"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "throw",
+     "slot": "verb",
+     "controls": [
+      "throw",
+      "shooter"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "throw",
+   "enemy": false
+  },
+  {
+   "id": "h05",
+   "source": "hostile",
+   "text": "boxing a kangaroo in the australian outback",
+   "checklist": [
+    {
+     "item": "kangaroo",
+     "slot": "role",
+     "match": [
+      "kangaroo",
+      "roo"
+     ],
+     "does": "fight"
+    },
+    {
+     "item": "outback",
+     "slot": "setting",
+     "match": [
+      "outback",
+      "desert",
+      "australia",
+      "bush"
+     ]
+    },
+    {
+     "item": "box",
+     "slot": "verb",
+     "controls": [
+      "duel"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "duel",
+   "enemy": true
+  },
+  {
+   "id": "j01",
+   "source": "judge",
+   "text": "Explain quantum physics to my grandma.",
+   "checklist": [
+    {
+     "item": "grandma",
+     "slot": "any",
+     "match": [
+      "grandma",
+      "granny",
+      "grandmother",
+      "old woman"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "quantum physics",
+     "slot": "any",
+     "match": [
+      "atom",
+      "quantum",
+      "particle",
+      "electron"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "explain",
+     "slot": "verb",
+     "controls": []
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "arena.collect",
+   "enemy": true
+  },
+  {
+   "id": "j04",
+   "source": "judge",
+   "text": "walk my dog along the beach while eating an ice cream",
+   "checklist": [
+    {
+     "item": "dog",
+     "slot": "any",
+     "match": [
+      "dog",
+      "puppy"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "ice cream",
+     "slot": "any",
+     "match": [
+      "ice cream",
+      "icecream",
+      "cone"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "beach",
+     "slot": "setting",
+     "match": [
+      "beach",
+      "sea",
+      "shore"
+     ]
+    },
+    {
+     "item": "walk",
+     "slot": "verb",
+     "controls": [
+      "runner",
+      "move_free"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "control:walker",
+   "enemy": false
+  },
+  {
+   "id": "j05",
+   "source": "judge",
+   "text": "pop ten balloons at a birthday party",
+   "checklist": [
+    {
+     "item": "balloon",
+     "slot": "any",
+     "match": [
+      "balloon"
+     ],
+     "does": "shoot_at"
+    },
+    {
+     "item": "birthday party",
+     "slot": "setting",
+     "match": [
+      "party",
+      "birthday"
+     ]
+    },
+    {
+     "item": "pop",
+     "slot": "verb",
+     "controls": [
+      "shooter",
+      "throw"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "quest.spatial",
+   "enemy": true
+  },
+  {
+   "id": "j08",
+   "source": "judge",
+   "text": "a wizard defends a crystal tower from flying skeletons",
+   "checklist": [
+    {
+     "item": "wizard",
+     "slot": "hero",
+     "match": [
+      "wizard",
+      "mage",
+      "sorcerer"
+     ]
+    },
+    {
+     "item": "skeleton",
+     "slot": "role",
+     "match": [
+      "skeleton",
+      "undead"
+     ],
+     "does": "fight"
+    },
+    {
+     "item": "tower",
+     "slot": "setting",
+     "match": [
+      "tower",
+      "crystal"
+     ]
+    },
+    {
+     "item": "defend",
+     "slot": "verb",
+     "controls": [
+      "shooter"
+     ],
+     "mechanics": [
+      "spawn_wave",
+      "defeat"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "arena.fight",
+   "enemy": true
+  },
+  {
+   "id": "s002",
+   "source": "corpus",
+   "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "checklist": [
+    {
+     "item": "knight",
+     "slot": "hero",
+     "match": [
+      "knight"
+     ]
+    },
+    {
+     "item": "key",
+     "slot": "role",
+     "match": [
+      "key"
+     ],
+     "does": "collect"
+    },
+    {
+     "item": "ghost",
+     "slot": "role",
+     "match": [
+      "ghost",
+      "spirit",
+      "phantom"
+     ],
+     "does": "avoid"
+    },
+    {
+     "item": "haunted castle",
+     "slot": "setting",
+     "match": [
+      "castle"
+     ]
+    },
+    {
+     "item": "collect",
+     "slot": "verb",
+     "controls": [],
+     "mechanics": [
+      "collectible",
+      "lock_key"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "arena.escape",
+   "enemy": true
+  },
+  {
+   "id": "s003",
+   "source": "corpus",
+   "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "checklist": [
+    {
+     "item": "hamster",
+     "slot": "hero",
+     "match": [
+      "hamster"
+     ]
+    },
+    {
+     "item": "roomba",
+     "slot": "role",
+     "match": [
+      "roomba",
+      "vacuum",
+      "robot"
+     ],
+     "does": "chase_me"
+    },
+    {
+     "item": "supermarket",
+     "slot": "setting",
+     "match": [
+      "supermarket",
+      "grocery",
+      "store"
+     ]
+    },
+    {
+     "item": "escape",
+     "slot": "verb",
+     "controls": [
+      "runner"
+     ],
+     "mechanics": [
+      "chaser"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "runner",
+   "enemy": true
+  },
+  {
+   "id": "s021",
+   "source": "corpus",
+   "text": "obby game with lava and spinning bars",
+   "checklist": [
+    {
+     "item": "lava",
+     "slot": "role",
+     "match": [
+      "lava",
+      "magma"
+     ],
+     "does": "avoid"
+    },
+    {
+     "item": "spinning bar",
+     "slot": "role",
+     "match": [
+      "bar",
+      "spinner",
+      "beam"
+     ],
+     "does": "avoid"
+    },
+    {
+     "item": "jump",
+     "slot": "verb",
+     "controls": [
+      "platform"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "platformer",
+   "enemy": false
+  },
+  {
+   "id": "s035",
+   "source": "corpus",
+   "text": "like flappy bird but underwater",
+   "checklist": [
+    {
+     "item": "bird",
+     "slot": "hero",
+     "match": [
+      "bird",
+      "fish"
+     ]
+    },
+    {
+     "item": "underwater",
+     "slot": "setting",
+     "match": [
+      "underwater",
+      "sea",
+      "ocean",
+      "reef",
+      "deep"
+     ]
+    },
+    {
+     "item": "flap",
+     "slot": "verb",
+     "controls": [
+      "flap"
+     ]
+    }
+   ],
+   "from": "p30/dev.json",
+   "genre": "flap",
+   "enemy": false
+  }
+ ]
+}
