@@ -53,6 +53,19 @@ Po třídách (soud): prop 11/19, flat 3/13, biped 2/9, quadruped 2/3, flyer 0/2
 | 1 (22:06–22:21) | 10 | 3 | 1 | 0 |
 | 2 (22:53–23:08) | 10 | 6 | 2 | 2 |
 | 3 (23:09–23:30) | 10 | 6 | 3 | 3 |
+| 4 (23:30–23:51) | 9 | 5 | 1 | 0 |
+| **T5 celkem** | **39** | **20** | **7 (18 %)** | **5 (13 %)** |
+
+**Úspěšnost T5:** soud 7/39 = 18 %, povýšeno 5/39 = 13 % – pod T4 (42 %). Zbytek je z 31/39 předměty (10 plochých), T4 32/48 (13 plochých). Ruční rozlišovací znak v `features.toml` má jen 1 z 39 (wolf – prošel top1), v T4 ho měla jména, která pilot odmítl. Odhad, neměřeno: předmět bez znaku FLUX nakreslí jako obecný kámen či sloup (anthill, dumpling, pebble, tape: „rock“, „gravestone“), takže další kolo začít znaky pro odmítnutá jména, ne dalším semínkem. **Celé P45E (T4 + T5):** soud 27/87 = 31 %, povýšeno 23/87 = 26 % (P43 25 %).
+
+**Nezpracovaná jména: žádná** – seznam došel 8. 10. v 23:51, dlouho před koncem okna (9. 10. 07:30); limit Codexu nedošel (celé P45E ~266 volání: 191 předkontrol + 75 soudů, strop 400); bránu T3 prošly všechny třídy.
+
+**Přijaté soudem, nepovýšené kvůli testům v `src/play` (P45E tam nesmí) – pro linii P45D / P44C:**
+- lizard (T4) – `src/play/arcade/__tests__/hero-choice.test.ts:90,93`.
+- demon (dávka 1) – `src/play/assets/__tests__/catalog-entries.test.ts:29` (počet 261).
+- wolf (dávka 4) – `hero-choice.test.ts:88,90` („grey wolf“ / „lizard wolf“ → pes) a tentýž počet 261.
+
+Modely leží v `D:/claude/_gen3d-cache-p45e/<jméno>/`; povýšení po úpravě testů: `node scripts/p37d/promote-batch.mjs --batch D:/caches/p45e/<b1|b4|round>/catalog-batch.json`.
 
 **Dávka 1:**
 - Přijatý, nepovýšený: **demon** (top1). S modelem by manifest P32 (`src/play/assets/entries/catalog.json`) získal záznam třídy monster a `src/play/assets/__tests__/catalog-entries.test.ts:29` drží počet 261 → vyřazeno `--drop` jako lizard. Model leží v `D:/claude/_gen3d-cache-p45e/demon/`; povýšit jde, až linie P45D / P44C zvedne počet v testu.
@@ -71,3 +84,8 @@ Po třídách (soud): prop 11/19, flat 3/13, biped 2/9, quadruped 2/3, flyer 0/2
 - Soudce poznal něco jiného: newspaper: signboard · moon rover: dune buggy · notebook: book (vizuálně blízko).
 - Předkontrola odmítla všechny tři obrázky: milk: jar / rock · pebble: standing stone / gravestone · pinecone: hop cone / pine tree.
 - peacock: třikrát neprošel bránou kvality (`inconsistent face winding`) – stejný páv jako v P37D, TRELLIS na vějíři ocasu.
+
+**Dávka 4:**
+- Přijatý, nepovýšený: **wolf** (top1) – viz seznam výše.
+- Soudce poznal něco jiného: tablet: computer monitor · space station: mine · tea: mug (vizuálně správně – čaj bez hrnku nejde) · rhino: wild boar, označený jako rozbitý model.
+- Předkontrola odmítla všechny tři obrázky: singer: woman / businessman / person (role lidí jako v T4) · swing: squat rack / guillotine / railing · tape: gravestone / pillar · torpedo: drill chuck / grenade (jeden pokus neprošel bránou).
