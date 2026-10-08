@@ -100,6 +100,20 @@ describe('applyToy – hračková póza na skupinu modelu', () => {
     for (const { pivot } of parts) expect([pivot.rotation.x, pivot.rotation.y, pivot.rotation.z].map((value) => value + 0)).toEqual([0, 0, 0]);
   });
 
+  it('dveře a víko otevře jen otevření cíle, mávnutí ne', () => {
+    stubPage('', false);
+    const parts: ToyPart[] = [
+      { pivot: new Group(), role: 'door', side: 1 },
+      { pivot: new Group(), role: 'lid', side: 1 },
+    ];
+    const [door, lid] = parts.map((part) => part.pivot);
+    applyToy({ group: new Group(), parts }, { ...REST, open: 1, flap: 0 }, 1);
+    expect(Math.abs(door!.rotation.y)).toBeGreaterThan(1);
+    expect(Math.abs(lid!.rotation.x)).toBeGreaterThan(1);
+    applyToy({ group: new Group(), parts }, { ...REST, open: 0, flap: 1 }, 1);
+    expect([door!.rotation.y + 0, lid!.rotation.x + 0]).toEqual([0, 0]);
+  });
+
   it('křídla na opačných stranách mávají zrcadlově', () => {
     stubPage('', false);
     const left = { pivot: new Group(), role: 'wing', side: -1 };

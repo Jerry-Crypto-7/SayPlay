@@ -83,6 +83,25 @@ describe('toyPoseOf – hračkový pohyb z pohledu těla a třídy těla', () =>
     expect(max(swimmer, 'sway')).toBeGreaterThan(0.5);
   });
 
+  it('kola se točí podle ujeté dráhy, ne podle času: stejná dráha za různý počet tiků = stejný úhel', () => {
+    const slow = run(walking(seconds(2) + 1, 3), 'vehicle').at(-1)!;
+    const fast = run(walking(seconds(1) + 1, 6), 'vehicle').at(-1)!;
+    expect(fast.travel).toBeCloseTo(slow.travel, 9);
+    expect(slow.wheel).toBeGreaterThan(0.1);
+    expect(fast.wheel).toBeCloseTo(slow.wheel, 9);
+    // Zastavené auto má kola tam, kde dojelo – netočí se dál ani neskočí na nulu.
+    const stopped = run([...walking(seconds(1) + 1, 6), ...repeat(seconds(1), view())], 'vehicle');
+    expect(stopped.at(-1)!.wheel).toBeGreaterThan(0.1);
+    expect(stopped.at(-1)!.wheel).toBeCloseTo(stopped[seconds(1)]!.wheel, 9);
+  });
+
+  it('létavec mává pomalu slabě a rychle naplno', () => {
+    const slow = max(run(walking(seconds(2), 1), 'flyer'), 'flap');
+    const fast = max(run(walking(seconds(2), 5), 'flyer'), 'flap');
+    expect(slow).toBeGreaterThan(0);
+    expect(slow).toBeLessThan(fast / 2);
+  });
+
   it('skok natáhne, dopad zmáčkne', () => {
     const poses = run([view({ grounded: false, vy: perTick(6) }), ...repeat(5, view({ grounded: false, vy: perTick(3) })), view(), view()], 'biped');
     expect(poses[3]!.squash).toBeLessThan(0);
@@ -183,6 +202,12 @@ describe('toyViewOf – co hračkový pohyb čte ze stavu jádra', () => {
     state[HEADER.held] = 4;
     expect(toyViewOf(state, prev, 0)).toMatchObject({ won: true, carrying: true });
     expect(toyViewOf(state, prev, 1)).toMatchObject({ won: false, carrying: false });
+  });
+
+  it('hráč s prázdnýma rukama nenese', () => {
+    const { state, prev } = world();
+    state[HEADER.held] = 0;
+    expect(toyViewOf(state, prev, 0).carrying).toBe(false);
   });
 
   it('útočí nejbližší nepřítel v tiku, kdy hráči ubyl život, a hráč při výstřelu', () => {
