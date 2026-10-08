@@ -473,7 +473,7 @@ function breakSeal(file, { openTestOnce, runId, sealDir, sealFile }) {
  * Sada podle `--set`: `dev` a `test` jsou sady P30A v `evals/play/p30/`, jiný
  * název je soubor ve `fidelity/` (`judge-10.json`), bez názvu korpus.
  */
-const setFile = (name) => (name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : name === 'p43-sealed' ? join(P43, 'sealed-100.json') : name === 'p44e-sealed' ? join(P44E, 'sealed-200.json') : name === 'p45-sealed' ? join(P45, 'sealed-100.json') : resolve(DIR, name ?? 'corpus.json'));
+const setFile = (name) => (name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : name === 'p43-sealed' ? join(P43, 'sealed-100.json') : name === 'p44e-sealed' ? join(P44E, 'sealed-200.json') : name === 'p45-sealed' ? join(P45, 'sealed-100.json') : name === 'p45-panel' ? join(P45, 'panel.json') : resolve(DIR, name ?? 'corpus.json'));
 const picked = (sentences, only) => {
   const ids = typeof only === 'string' ? new Set(only.split(',')) : null;
   return sentences.filter((sentence) => ids === null || ids.has(sentence.id));
@@ -677,11 +677,17 @@ async function runOne(sentence, base, runDir, page, { clip: withClip = false, pa
 }
 
 async function run(options) {
-  const base = options.base ?? 'http://127.0.0.1:3100';
   const runId = options.run ?? `${new Date().toISOString().slice(0, 10)}-${commit()}`;
   // Sada před složkou a prohlížečem: odmítnutá pečeť nesmí nechat stopu běhu.
   // `--set judge-10.json` / `dev` / `test` se vykazují ve vlastním `--run`.
   const sentences = loadSet(typeof options.set === 'string' ? options.set : undefined, { only: options.only, openTestOnce: options['open-test-once'] === true || options['open-sealed-once'] === true, runId });
+  await runSentences(sentences, { ...options, run: runId });
+}
+
+/** `run` nad už načtenými větami: `fun` načte sadu jednou a pustí ji proti dvěma serverům. */
+async function runSentences(sentences, options) {
+  const base = options.base ?? 'http://127.0.0.1:3100';
+  const runId = options.run;
   const runDir = join(DIR, 'runs', runId);
   mkdirSync(runDir, { recursive: true });
   const require = createRequire(import.meta.url);
@@ -824,6 +830,60 @@ export async function pairwise(options, { ask, compose } = {}) {
   writeJson(options.out, verdict);
   console.log(`pairwise ${options.a} vs ${options.b}: bShare ${verdict.summary.bShare} leftWinShare ${verdict.summary.leftWinShare} n ${verdict.summary.n} -> ${options.out}`);
   return verdict;
+}
+
+// ---------------------------------------------------------------- konečné měření zábavy (P45A T10)
+
+/** Strana A konečného měření: `main` 8. 10. 2026, proti kterému se P45B/C/D porovnávají. */
+export const P45_BASE_COMMIT = '0714a352';
+/** Cíl párového soudu: 0,55 pro jeden plán, 0,65 pro P45C + D (`--target-b 0.65`). */
+export const PAIR_TARGET_B = 0.55;
+
+/** `fun.measure.ts` nad HEAD; souhrn z jeho výstupu. */
+async function measureFun(set, open, out) {
+  const env = { ...process.env, P45_SET: set, P45_OUT: out };
+  if (open) env.P45_OPEN_SEALED_ONCE = '1';
+  else delete env.P45_OPEN_SEALED_ONCE;
+  const measured = spawnSync('npx', ['vitest', 'run', '--config', 'vitest.measure.mts', 'evals/play/p45/fun.measure.ts'], { cwd: ROOT, env, stdio: 'inherit', shell: process.platform === 'win32' });
+  if (measured.status !== 0) throw new Error(`fun.measure.ts failed (exit ${measured.status})`);
+  return readJson(out).summary;
+}
+
+/**
+ * Konečné měření zábavy (P45A T10): sadu načte **jednou** (jedna pečeť pro obě
+ * strany), pustí klip průběhu proti A (`main`) do `<run>-a` a proti B (HEAD) do
+ * `<run>-b`, pak slepý párový soud a telemetrii nad HEAD, a zapíše
+ * `evals/play/p45/result-<run>.json`. Kroky jdou vstříknout (test bez serverů).
+ */
+export async function funCommand(options, steps = {}) {
+  const { loadSet: load = loadSet, runSentences: play = runSentences, pairwise: judgePairs = pairwise, measure = measureFun } = steps;
+  const set = options.set;
+  if (set !== 'p45-panel' && set !== 'p45-sealed') throw new Error('fun: --set p45-panel|p45-sealed');
+  for (const flag of ['base-a', 'base-b', 'run']) if (typeof options[flag] !== 'string') throw new Error(`fun: --${flag} is required`);
+  const open = options['open-sealed-once'] === true;
+  const runId = options.run;
+  const seed = options.seed === undefined ? PAIR_SEED : Number(options.seed);
+  const target = options['target-b'] === undefined ? PAIR_TARGET_B : Number(options['target-b']);
+  const outDir = options.outDir ?? P45;
+  const sides = {
+    a: { base: options['base-a'], run: `${runId}-a`, commit: options['commit-a'] ?? P45_BASE_COMMIT },
+    b: { base: options['base-b'], run: `${runId}-b`, commit: commit() },
+  };
+  // Jedno otevření pro obě strany: druhé `loadSet` na zapečetěné sadě by odmítlo.
+  const sentences = load(set, { openTestOnce: open, runId });
+  for (const side of [sides.a, sides.b]) await play(sentences, { base: side.base, run: side.run, 'pace-clip': true, 'draft-only': true, gpu: options.gpu });
+  const verdict = await judgePairs({ a: sides.a.run, b: sides.b.run, seed, out: join(DIR, 'runs', `${runId}-pairwise.json`), 'a-commit': sides.a.commit, 'b-commit': sides.b.commit, concurrency: options.concurrency });
+  const fun = await measure(set === 'p45-sealed' ? 'sealed' : 'panel', open, join(DIR, 'runs', `${runId}-fun.json`));
+  const bShare = verdict.summary.bShare;
+  const targets = {
+    pairwiseB: { goal: `>= ${target}`, value: bShare, met: bShare !== null && bShare >= target },
+    ...Object.fromEntries((fun.targets ?? []).map(({ metric, goal, value, met }) => [metric, { goal, value, met }])),
+  };
+  const result = { schema: 'p45-result.v1', set, seed, a: sides.a, b: sides.b, pairwise: verdict.summary, fun, targets, met: targets.pairwiseB.met && fun.met === true };
+  const out = join(outDir, `result-${runId}.json`);
+  writeJson(out, result);
+  console.log(`fun ${runId}: bShare ${bShare} (target ${target}) fun ${fun.met ? 'met' : 'missed'} -> ${out}`);
+  return result;
 }
 
 // ---------------------------------------------------------------- férové srovnání modelů (P30A T7)
@@ -1463,11 +1523,13 @@ if (isMain) {
   else if (typeof options.models === 'string') process.exitCode = await compare(options);
   else if (step === 'run') await run(options);
   else if (step === 'pairwise') await pairwise(options);
+  else if (step === 'fun') await funCommand(options);
   else if (step === 'judge') judge(options);
   else if (step === 'report') report(options);
   else if (step === 'summary') summary(options);
   else if (step === 'roles') roles(options);
   else {
+    console.error('usage: node scripts/play-fidelity.mjs fun --set p45-panel|p45-sealed --base-a <url main> --base-b <url HEAD> --run <id> [--open-sealed-once] [--seed 45045] [--target-b 0.55] [--commit-a 0714a352] [--gpu]');
     console.error('usage: node scripts/play-fidelity.mjs pairwise --a <runId> --b <runId> --out <file> [--seed 45045] [--a-commit <sha>] [--b-commit <sha>] [--only <ids>] [--concurrency 2]');
     console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--pace-clip] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
     process.exit(2);
