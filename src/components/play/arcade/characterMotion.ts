@@ -65,8 +65,17 @@ export function fallOf(since: number): number {
  * a pád (`fall` z `fallOf`). Kolem paty – skupina má počátek u nohou.
  */
 export function tiltPose(group: Object3D, hit: number, fall: number, lean = 0): void {
-  group.rotation.x = lean - recoilOf(hit) - (Math.PI / 2) * fall;
-  group.rotation.z = wobbleOf(hit) + FALL_SIDE_RAD * fall;
+  tiltTo(group, lean, recoilOf(hit), wobbleOf(hit), fall);
+}
+
+/**
+ * Náklon z hotových úhlů (P45D T5): předklon, cuknutí dozadu, zakymácení, pád
+ * (0..1) a úklon do strany. Hračkový pohyb ho volá s cuknutím a kymácením,
+ * které při omezeném pohybu vynuloval.
+ */
+export function tiltTo(group: Object3D, lean: number, recoil: number, wobble: number, fall: number, roll = 0): void {
+  group.rotation.x = lean - recoil - (Math.PI / 2) * fall;
+  group.rotation.z = roll + wobble + FALL_SIDE_RAD * fall;
 }
 
 /** Zmáčknutí na skupinu se zachovaným objemem (kladné = nižší a širší). */
