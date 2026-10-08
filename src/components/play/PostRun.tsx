@@ -47,6 +47,7 @@ import { type BestOutcome, type Dare, dareVerdict } from './best';
 import { dareResult } from './board-client';
 import { beatText } from './Feed';
 import { Leaderboard } from './Leaderboard';
+import { PlayingAs } from './NicknameSheet';
 import { RemixBox, type RemixJob } from './RemixBox';
 import { type DarePublish, type LivePublish, ShareButton } from './ShareButton';
 import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_BACK, DARE_SHORT, NEW_BEST, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_BEAT_IT, YOU_DID_IT } from './starters';
@@ -286,6 +287,8 @@ export function PostRun({
     };
   }, [versionId, offline]);
   const [changing, setChanging] = useState(false);
+  // Nové jméno (P44B T10) žebříček znovu připojí, a tím ho načte znovu.
+  const [boardRound, setBoardRound] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   // Replay obrazovku odpojí: rozběhnutý čip pak hráče uprostřed hry nepřesměruje (P28B T7).
@@ -354,6 +357,8 @@ export function PostRun({
   const { won } = facts;
   // Co server o tomhle běhu řekl po přehrání (P44B T9); `null`, dokud výzva není `ready`.
   const verified = won && dare?.state === 'ready' ? dareResult(dare.dareId) : null;
+  // Žebříček až po ověření běhu: dřív by ukázal stav před tímhle zápisem.
+  const showBoard = won && !offline && dare !== undefined && dare.state !== 'pending';
   // Hlavní akce: po výhře Dare, po prohře (a v ukázce domova) znovu hrát.
   const replayMain = offline || !won;
   const replay = (
@@ -429,8 +434,12 @@ export function PostRun({
             ))}
           </ul>
         )}
-        {/* Žebříček až po ověření běhu: dřív by ukázal stav před tímhle zápisem. */}
-        {won && !offline && dare !== undefined && dare.state !== 'pending' && <Leaderboard versionId={versionId} limit={5} standing={verified?.board ?? null} />}
+        {showBoard && (
+          <>
+            <Leaderboard key={boardRound} versionId={versionId} limit={5} standing={verified?.board ?? null} />
+            <PlayingAs onSaved={() => setBoardRound((round) => round + 1)} />
+          </>
+        )}
         <div className="play-result-actions">
           {offline ? (
             replay

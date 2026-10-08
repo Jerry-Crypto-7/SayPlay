@@ -2108,6 +2108,34 @@ button.play-version-switch__item:not(:disabled) {
   font-weight: 700;
 }
 
+/* Přezdívka pod žebříčkem (P44B T10): papírový řádek, „Change“ jako odkaz – rajčatová akce zůstává Dare. */
+.play-playing-as {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-space-1);
+  margin-top: var(--sp-space-2);
+  color: var(--sp-text-secondary);
+}
+
+.play-playing-as-name {
+  color: var(--sp-text);
+}
+
+.play-name-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-space-4);
+}
+
+.play-name-form .sp-field-error {
+  margin-top: 0;
+}
+
+.play-name-prompt .sp-prompt__field {
+  min-height: 44px;
+}
+
 /* Proužek výzvy (P44B T8): kdo vyzývá a co porazit, slunečná linka jako odměna; bez tlačítka. */
 .play-dare-strip {
   flex: 0 0 auto;

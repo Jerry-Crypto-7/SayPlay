@@ -41,10 +41,10 @@ export function dareResult(dareId: string): DareResult | null {
   return results.get(dareId) ?? null;
 }
 
-/** Řádky `GET /api/play/games/:id/board`; `null` = čtení selhalo a žebříček se neukáže. */
+/** Řádky `GET /api/play/games/:id/board`; `null` = čtení selhalo a žebříček se neukáže. Nikdy z cache – po změně jména (T10) by ukázal staré. */
 export async function fetchBoard(versionId: string, fetcher: typeof fetch = fetch, signal?: AbortSignal): Promise<BoardRow[] | null> {
   try {
-    const response = await fetcher(`/api/play/games/${versionId}/board`, { signal });
+    const response = await fetcher(`/api/play/games/${versionId}/board`, { cache: 'no-store', signal });
     if (!response.ok) return null;
     const body = (await response.json()) as { rows?: unknown };
     return Array.isArray(body.rows) ? (body.rows as BoardRow[]) : null;
