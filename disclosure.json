@@ -51689,6 +51689,24 @@
       "reviewNote": "Alternative text-to-image step (config.toml image_model = \"zimage\"), measured in T2 and not the default. License read from the model card, 2026-09-24."
     },
     {
+      "name": "Open English WordNet 2024",
+      "kind": "dataset",
+      "scope": "prod",
+      "source": "https://github.com/globalwordnet/english-wordnet/releases/download/2024-edition/english-wordnet-2024.xml.gz (SHA-256 e1f633b0a93758cae34ea27c44c4dad310a8af2467b155f99dd6673af697e875)",
+      "authorOrProvider": "Global WordNet Association (Open English WordNet), derived from Princeton WordNet 3.0",
+      "license": "CC-BY-4.0",
+      "requiredNotices": [
+        "atribuce autora",
+        "odkaz na licenci",
+        "označení změn"
+      ],
+      "attribution": "Open English WordNet 2024 © Global WordNet Association, CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0); based on Princeton WordNet 3.0 © Princeton University. Changed: only verb lemmas whose hypernym path reaches a game anchor are kept, reduced to a target index and score.",
+      "reviewNote": "P44C T5: scripts/vocab/build.mjs walks OEWN verb hypernyms offline to the anchors in src/play/vocab/anchors.ts and writes src/play/vocab/verbs.json (lemma → intent axis / hero pose index and score), read only on the server. The XML itself is not redistributed. License read from the <Lexicon license=…> attribute of the pinned release (the release zip carries no LICENSE file), 2026-10-07.",
+      "paths": [
+        "src/play/vocab/verbs.json"
+      ]
+    },
+    {
       "name": "OpenAI Codex 0.145.0 — derived fixed text model catalog",
       "kind": "dataset",
       "scope": "dev",

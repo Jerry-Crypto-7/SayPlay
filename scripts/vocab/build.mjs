@@ -2,6 +2,8 @@
 /**
  * Otevřený slovník P44C: sloveso → kus hry z Open English WordNet 2024 a kotev (`src/play/vocab/anchors.ts`).
  *
+ *   node scripts/vocab/build.mjs              postaví src/play/vocab/verbs.json + manifest.json vybranou metodou
+ *   node scripts/vocab/build.mjs --check      postaví do dočasné složky; 0 jen při shodě bajtů s repem
  *   node scripts/vocab/build.mjs --evaluate   změří tři metody na zlaté sadě → evals/play/p44c/method.json,
  *                                             vybranou variantu a práh zapíše do config.json
  *
@@ -13,7 +15,9 @@
  */
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gunzipSync } from 'node:zlib';
 
@@ -243,8 +247,77 @@ function evaluate() {
   if (process.env.VOCAB_DEBUG) for (const error of runs.find((run) => label(run) === process.env.VOCAB_DEBUG).errors) console.log(JSON.stringify(error));
 }
 
+// ---------------------------------------------------------------------------------------------
+// stavba tabulky (výchozí) a --check
+
+const TABLE_FILES = { verbs: 'src/play/vocab/verbs.json', manifest: 'src/play/vocab/manifest.json' };
+const lfSha = (text) => createHash('sha256').update(text.replace(/\r\n/g, '\n')).digest('hex');
+const lfShaOf = (url) => lfSha(readFileSync(url, 'utf8'));
+
+/**
+ * Všechna jednoslovná slovesa OEWN vybranou metodou → `{ verbs, manifest }` jako text.
+ * Záznam `[osa, póza, skóre×1000]`, index do `targets` nebo -1; skóre osy, chybí-li osa, pak pózy.
+ * Jen slovesa, která mapují; jedno na řádek, abecedně – diff přestavby je čitelný.
+ */
+function buildTable() {
+  const oewn = loadOewn();
+  const method = config.method;
+  const lemmas = [...oewn.verbs.keys()].sort();
+  const embeddings = method.variant === 'A' ? {} : embedAll(lemmas);
+  const ctx = { oewn, embeddings, indexes: { axis: anchorIndex(GROUPS.axis), hero: anchorIndex(GROUPS.hero) } };
+  const targets = Object.keys(ANCHORS);
+  const rows = [];
+  for (const lemma of lemmas) {
+    const axis = predict(method, lemma, ctx, 'axis');
+    const hero = predict(method, lemma, ctx, 'hero');
+    if (axis === null && hero === null) continue;
+    const row = [axis === null ? -1 : targets.indexOf(axis[0]), hero === null ? -1 : targets.indexOf(hero[0]), Math.round((axis ?? hero)[1] * 1000)];
+    rows.push(`${JSON.stringify(lemma)}:${JSON.stringify(row)}`);
+  }
+  const verbs = `{"sentinel":"p44c-vocab-verbs","targets":${JSON.stringify(targets)},"verbs":{\n${rows.join(',\n')}\n}}\n`;
+  const manifest = {
+    about: 'P44C: inputs and output of src/play/vocab/verbs.json. Written by node scripts/vocab/build.mjs; SHA-256 over LF bytes.',
+    method,
+    inputs: {
+      oewn: { url: config.oewn.url, sha256: oewn.sha },
+      anchors: { path: 'src/play/vocab/anchors.ts', sha256: lfShaOf(here('../../src/play/vocab/anchors.ts')) },
+      config: { path: 'scripts/vocab/config.json', sha256: lfShaOf(CONFIG_URL) },
+      embed: config.embed,
+    },
+    outputs: { verbs: { path: TABLE_FILES.verbs, sha256: lfSha(verbs), entries: rows.length, bytes: Buffer.byteLength(verbs) } },
+  };
+  return { verbs, manifest: `${JSON.stringify(manifest, null, 2)}\n` };
+}
+
+function build() {
+  const built = buildTable();
+  for (const [name, path] of Object.entries(TABLE_FILES)) writeFileSync(here(`../../${path}`), built[name]);
+  const { entries, bytes } = JSON.parse(built.manifest).outputs.verbs;
+  console.log(`verbs.json: ${entries} verbs, ${bytes} B`);
+}
+
+/** Postaví znovu do dočasné složky a porovná bajty s tím, co je v repu; nesoulad → kód 1. */
+function check() {
+  const built = buildTable();
+  const dir = mkdtempSync(join(tmpdir(), 'p44c-vocab-'));
+  const stale = [];
+  for (const [name, path] of Object.entries(TABLE_FILES)) {
+    writeFileSync(join(dir, name), built[name]);
+    const committed = readFileSync(here(`../../${path}`), 'utf8').replace(/\r\n/g, '\n');
+    if (committed !== readFileSync(join(dir, name), 'utf8')) stale.push(path);
+  }
+  rmSync(dir, { recursive: true });
+  if (stale.length > 0) {
+    console.error(`stale: ${stale.join(', ')} – run node scripts/vocab/build.mjs`);
+    process.exit(1);
+  }
+  console.log('verbs.json and manifest.json match a fresh build');
+}
+
 if (process.argv.includes('--evaluate')) evaluate();
+else if (process.argv.includes('--check')) check();
+else if (process.argv.length === 2) build();
 else {
-  console.error('usage: node scripts/vocab/build.mjs --evaluate');
+  console.error('usage: node scripts/vocab/build.mjs [--check | --evaluate]');
   process.exit(2);
 }

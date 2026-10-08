@@ -1,0 +1,35 @@
+{
+  "about": "P44C: inputs and output of src/play/vocab/verbs.json. Written by node scripts/vocab/build.mjs; SHA-256 over LF bytes.",
+  "method": {
+    "variant": "A",
+    "wordnet": 0.4,
+    "embed": null,
+    "passesGate": true
+  },
+  "inputs": {
+    "oewn": {
+      "url": "https://github.com/globalwordnet/english-wordnet/releases/download/2024-edition/english-wordnet-2024.xml.gz",
+      "sha256": "e1f633b0a93758cae34ea27c44c4dad310a8af2467b155f99dd6673af697e875"
+    },
+    "anchors": {
+      "path": "src/play/vocab/anchors.ts",
+      "sha256": "0e6512709043b72be189700e3ff76e72893f0bd5db6165bf53d15f9eac32803c"
+    },
+    "config": {
+      "path": "scripts/vocab/config.json",
+      "sha256": "93ad070c2d4b4300029ef6eee0167574a0174534990e6229a03b78cb288d1a68"
+    },
+    "embed": {
+      "model": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+    }
+  },
+  "outputs": {
+    "verbs": {
+      "path": "src/play/vocab/verbs.json",
+      "sha256": "44ffc5a22ccc8b5ba427b7b08eae4cb92a68c775a03b6301bea3fa442798d56a",
+      "entries": 702,
+      "bytes": 16331
+    }
+  }
+}
