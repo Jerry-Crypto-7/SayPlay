@@ -11,6 +11,7 @@
  */
 
 import type { HeroAction } from '../spec';
+import { vocabVerb } from '../vocab';
 
 import type { GenreId, GenreMode } from './contract';
 
@@ -248,8 +249,9 @@ export function familyOf(verb: string | null): VerbFamily | null {
   return verb === null ? null : (BY_VERB.get(verb) ?? null);
 }
 
-/** Činnost hrdiny pro hlavní sloveso: vlastní u členu, jinak rodiny; `null` mimo rodiny. */
+/** Činnost hrdiny pro hlavní sloveso: vlastní u členu, jinak rodiny, mimo rodiny póza z tabulky P44C; jinak `null`. */
 export function heroActionOf(verb: string | null): HeroAction | null {
+  if (verb === null) return null;
   const family = familyOf(verb);
-  return family === null ? null : (MEMBER.get(verb!)?.heroAction ?? family.heroAction);
+  return family === null ? (vocabVerb(verb)?.hero ?? null) : (MEMBER.get(verb)?.heroAction ?? family.heroAction);
 }

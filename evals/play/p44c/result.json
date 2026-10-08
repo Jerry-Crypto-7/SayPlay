@@ -1,0 +1,4903 @@
+{
+  "targets": {
+    "U": 0.48,
+    "F1": 0.5,
+    "F2": 0.5,
+    "N": 1,
+    "H": 1
+  },
+  "met": {
+    "U": false,
+    "F1": true,
+    "F2": false,
+    "N": true,
+    "H": false
+  },
+  "controlChanged": [],
+  "off": {
+    "U": {
+      "hit": 9,
+      "of": 55,
+      "share": 0.164
+    },
+    "F1": {
+      "hit": 19,
+      "of": 32,
+      "share": 0.594
+    },
+    "F2": {
+      "hit": 27,
+      "of": 62,
+      "share": 0.435
+    },
+    "N": {
+      "hit": 15,
+      "of": 15,
+      "share": 1
+    },
+    "H": {
+      "hit": 0,
+      "of": 0,
+      "share": null
+    },
+    "controlPreserved": 8
+  },
+  "on": {
+    "U": {
+      "hit": 11,
+      "of": 55,
+      "share": 0.2
+    },
+    "F1": {
+      "hit": 19,
+      "of": 32,
+      "share": 0.594
+    },
+    "F2": {
+      "hit": 27,
+      "of": 62,
+      "share": 0.435
+    },
+    "N": {
+      "hit": 15,
+      "of": 15,
+      "share": 1
+    },
+    "H": {
+      "hit": 9,
+      "of": 10,
+      "share": 0.9
+    },
+    "controlPreserved": 8
+  },
+  "sentences": {
+    "off": [
+      {
+        "id": "s44c-001",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "lumberjack",
+            "verb": "fight",
+            "object": "stump",
+            "said": "chop"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Chop isn't here yet – here's a quest."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-002",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "penguin",
+            "verb": "walk",
+            "object": null,
+            "said": "waddle"
+          },
+          {
+            "actor": "penguin",
+            "verb": "reach",
+            "object": "nest"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about waddles. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-003",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "squirrel",
+            "verb": "collect",
+            "object": "acorn",
+            "said": "hoard"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about squirrel. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-004",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "pirate",
+            "verb": "collect",
+            "object": "gold",
+            "said": "plunder"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about shipwrecks. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-005",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "chef",
+            "verb": "deliver",
+            "object": "burger",
+            "said": "serve"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Delivery isn't here yet – here's a quest."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-006",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "mailman",
+            "verb": "deliver",
+            "object": "parcel",
+            "said": "bike"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Bike isn't here yet – here's a driving game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-007",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "goat",
+            "verb": "fight",
+            "object": "troll",
+            "said": "headbutt"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Headbutt isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-008",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "cowboy",
+            "verb": "catch",
+            "object": "cattle",
+            "said": "lasso"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about lassoes. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-009",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "boxer",
+            "verb": "fight",
+            "object": "robot",
+            "said": "jab"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Jab isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-010",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "kid",
+            "verb": "shoot",
+            "object": "crow",
+            "said": "slingshot"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-011",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Pluck isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-012",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "bear",
+            "verb": "fight",
+            "object": "bee",
+            "said": "swat"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Swat isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-013",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "drummer",
+            "verb": "beat",
+            "object": "drum",
+            "said": "pound"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Beat isn't here yet – here's a rhythm game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-014",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "skier",
+            "verb": "glide",
+            "object": null,
+            "said": "zigzag"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Zigzag isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-015",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "farmer",
+            "verb": "deliver",
+            "object": "sheep",
+            "said": "herd"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Herd isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-016",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "otter",
+            "verb": "time",
+            "object": "shell",
+            "said": "juggle"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Juggle isn't here yet – here's a rhythm game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-017",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-018",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "wrestler",
+            "verb": "duel",
+            "object": "rival",
+            "said": "shove"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "The rivals isn't here yet – here's a duel."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-019",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-020",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "gymnast",
+            "verb": "jump",
+            "object": "hurdle",
+            "said": "somersault"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "The obstacles isn't here yet – here's a chase game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-021",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Nibble and sleep aren't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-022",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "firefighter",
+            "verb": "shoot",
+            "object": "flame",
+            "said": "douse"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-023",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "librarian",
+            "verb": "stack",
+            "object": "book",
+            "said": "shelve"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Shelve isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-024",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-025",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "thief",
+            "verb": "collect",
+            "object": "jewel",
+            "said": "pilfer"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Pilfer and the guards aren't here yet – here's a chase game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-026",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about backyard. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-027",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "chameleon",
+            "verb": "catch",
+            "object": "beetle",
+            "said": "slurp"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Slurp isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-028",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "ninja",
+            "verb": "jump",
+            "object": "rooftop",
+            "said": "vault"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Vault isn't here yet – here's a duel."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-029",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-030",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "crab",
+            "verb": "escape",
+            "object": "seagull"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Scuttle isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-031",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "trucker",
+            "verb": "drive",
+            "object": null,
+            "said": "barrel"
+          },
+          {
+            "actor": "trucker",
+            "verb": "escape",
+            "object": "cop"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Barrel isn't here yet – here's a chase game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-032",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "archer",
+            "verb": "shoot",
+            "object": "orc",
+            "said": "pelt"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Pelt isn't here yet – here's a timing game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-033",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "toddler",
+            "verb": "stack",
+            "object": "block",
+            "said": "pile"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Pile isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-034",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "beekeeper",
+            "verb": "fight",
+            "object": "hornet",
+            "said": "shoo"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Shoo isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-035",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "striker",
+            "verb": "kick",
+            "object": "ball",
+            "said": "volley"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Volley isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-036",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Bowl isn't here yet – here's a throwing game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-037",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "surfer",
+            "verb": "glide",
+            "object": "wave",
+            "said": "carve"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Carve isn't here yet – here's a quest."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-038",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "spy",
+            "verb": "reach",
+            "object": "vault"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "The hazards isn't here yet – here's a maze game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-039",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "pelican",
+            "verb": "catch",
+            "object": "fish",
+            "said": "scoop"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Scoop isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-040",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "mole",
+            "verb": "collect",
+            "object": "carrot",
+            "said": "snatch"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Burrow isn't here yet – here's a quest."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-041",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "drone",
+            "verb": "deliver",
+            "object": "pizza",
+            "said": "drop"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-042",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "kid",
+            "verb": "time",
+            "object": "board",
+            "said": "split"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-043",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "sheepdog",
+            "verb": "deliver",
+            "object": "lamb",
+            "said": "nudge"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Nudge isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-044",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Salvage isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-045",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "player",
+            "verb": "shoot",
+            "object": "puck",
+            "said": "slap"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-046",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "raccoon",
+            "verb": "collect",
+            "object": "snack",
+            "said": "rummage"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Rummage isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-047",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "sailor",
+            "verb": "drive",
+            "object": null,
+            "said": "row"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Row and the hazards aren't here yet – here's a quest."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-048",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "samurai",
+            "verb": "fight",
+            "object": "dummy",
+            "said": "slice"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Slice isn't here yet – here's a duel."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-049",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "waiter",
+            "verb": "deliver",
+            "object": "tray",
+            "said": "balance"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Balance isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-050",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "skateboarder",
+            "verb": "glide",
+            "object": "rail",
+            "said": "grind"
+          },
+          {
+            "actor": "skateboarder",
+            "verb": "jump",
+            "object": "bench",
+            "said": "ollie"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is an endless runner about benches. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-051",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "fox",
+            "verb": "collect",
+            "object": "egg",
+            "said": "swipe"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Swipe and the guards aren't here yet – here's a chase game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-052",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "pilot",
+            "verb": "shoot",
+            "object": "jet",
+            "said": "dogfight"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Dogfight isn't here yet – here's a driving game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-053",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "boy",
+            "verb": "throw",
+            "object": "stone",
+            "said": "skip"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Skip isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-054",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "fisherman",
+            "verb": "catch",
+            "object": "salmon",
+            "said": "hook"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Hook isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-055",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "robot",
+            "verb": "collect",
+            "object": "crumb",
+            "said": "hoover"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Hoover isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-056",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "wyvern",
+            "verb": "shoot",
+            "object": "village",
+            "said": "torch"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "wyvern",
+            "why": "not-in-spec"
+          },
+          {
+            "noun": "village",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-057",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "kraken",
+            "verb": "fight",
+            "object": "ship",
+            "said": "drag"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Drag isn't here yet – here's a collecting game."
+        },
+        "nouns": [
+          {
+            "noun": "kraken",
+            "why": "ok"
+          },
+          {
+            "noun": "ship",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-058",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "moon-goblin",
+            "verb": "collect",
+            "object": "stardust"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "moon-goblin",
+            "why": "not-in-spec"
+          },
+          {
+            "noun": "stardust",
+            "why": "no-model"
+          }
+        ]
+      },
+      {
+        "id": "s44c-059",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "golem",
+            "verb": "stack",
+            "object": "runestone"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Stack and build aren't here yet – here's a timing game."
+        },
+        "nouns": [
+          {
+            "noun": "golem",
+            "why": "not-read-by-control"
+          },
+          {
+            "noun": "runestone",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-060",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "phoenix",
+            "why": "ok"
+          },
+          {
+            "noun": "volcano",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-061",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "griffin",
+            "why": "no-model"
+          },
+          {
+            "noun": "harpy",
+            "why": "no-model"
+          }
+        ]
+      },
+      {
+        "id": "s44c-062",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "troll",
+            "why": "ok"
+          },
+          {
+            "noun": "gnome",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-063",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "unicorn",
+            "verb": "jump",
+            "object": "puddle"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "unicorn",
+            "why": "ok"
+          },
+          {
+            "noun": "puddle",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-064",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "serpent",
+            "verb": "catch",
+            "object": "boat",
+            "said": "swallow"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Swallow isn't here yet – here's a driving game."
+        },
+        "nouns": [
+          {
+            "noun": "serpent",
+            "why": "no-model"
+          },
+          {
+            "noun": "boat",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-065",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "gargoyle",
+            "why": "no-model"
+          },
+          {
+            "noun": "lightning",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-066",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "centaur",
+            "verb": "shoot",
+            "object": "minotaur"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Shooting isn't here yet – here's a maze game."
+        },
+        "nouns": [
+          {
+            "noun": "centaur",
+            "why": "no-model"
+          },
+          {
+            "noun": "minotaur",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-067",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "imp",
+            "why": "ok"
+          },
+          {
+            "noun": "letter",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-068",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "giant",
+            "verb": "build",
+            "object": "wall"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Build isn't here yet – here's a quest."
+        },
+        "nouns": [
+          {
+            "noun": "giant",
+            "why": "ok"
+          },
+          {
+            "noun": "wall",
+            "why": "no-model"
+          }
+        ]
+      },
+      {
+        "id": "s44c-069",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "pixie",
+            "why": "no-model"
+          },
+          {
+            "noun": "star",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-070",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Defend isn't here yet – here's a duel."
+        },
+        "nouns": [
+          {
+            "noun": "cyclops",
+            "why": "no-model"
+          },
+          {
+            "noun": "whale",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-071",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "mummy",
+            "why": "ok"
+          },
+          {
+            "noun": "pyramid",
+            "why": "no-model"
+          }
+        ]
+      },
+      {
+        "id": "s44c-072",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "basilisk",
+            "why": "no-model"
+          },
+          {
+            "noun": "adventurer",
+            "why": "not-read-by-control"
+          }
+        ]
+      },
+      {
+        "id": "s44c-073",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "dragon",
+            "why": "ok"
+          },
+          {
+            "noun": "gem",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-074",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "elf",
+            "why": "not-read-by-control"
+          },
+          {
+            "noun": "knight",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-075",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "werewolf",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-076",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "king",
+            "why": "ok"
+          },
+          {
+            "noun": "ball",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-077",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "hydra",
+            "why": "no-model"
+          },
+          {
+            "noun": "knight",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-078",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "mermaid",
+            "why": "ok"
+          },
+          {
+            "noun": "pearl",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-079",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "goblin",
+            "verb": "drive",
+            "object": "kart"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "goblin",
+            "why": "no-model"
+          },
+          {
+            "noun": "kart",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-080",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "djinn",
+            "verb": "glide",
+            "object": "carpet",
+            "said": "fly"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "djinn",
+            "why": "no-model"
+          },
+          {
+            "noun": "carpet",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-081",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "kitsune",
+            "why": "no-model"
+          },
+          {
+            "noun": "lantern",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-082",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "ship",
+            "why": "ok"
+          },
+          {
+            "noun": "skeleton",
+            "why": "no-model"
+          }
+        ]
+      },
+      {
+        "id": "s44c-083",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "lich",
+            "verb": "defeat",
+            "object": "hero"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Defeat isn't here yet – here's a duel."
+        },
+        "nouns": [
+          {
+            "noun": "lich",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-084",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "pegasus",
+            "verb": "land",
+            "object": "island"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "pegasus",
+            "why": "no-model"
+          },
+          {
+            "noun": "island",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-085",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "golem",
+            "why": "ok"
+          },
+          {
+            "noun": "ruins",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-086",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "banshee",
+            "verb": "interact",
+            "object": "mirror",
+            "said": "shatter"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "banshee",
+            "why": "no-model"
+          },
+          {
+            "noun": "mirror",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-087",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "manticore",
+            "why": "no-model"
+          },
+          {
+            "noun": "thief",
+            "why": "not-read-by-control"
+          }
+        ]
+      },
+      {
+        "id": "s44c-088",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about tides. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-090",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about spanish. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-091",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Summarize isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-092",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Describe isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-093",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Worry isn't here yet – here's an endless runner."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-094",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-095",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about paragraph. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-096",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Believe isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-097",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Own isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-098",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about android. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-099",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-100",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Calculate isn't here yet – here's a chase game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-101",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about birthday. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-102",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "List isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-103",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about photosynthesis. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-104",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-105",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "duck",
+            "verb": "jump",
+            "object": "log"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-106",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-107",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-108",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "soldier",
+            "verb": "survive",
+            "object": "zombie"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-109",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-110",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-111",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "crane",
+            "verb": "stack",
+            "object": "container"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Stack and build aren't here yet – here's a timing game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-112",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "parachuter",
+            "verb": "land",
+            "object": "island"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-113",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-114",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-115",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      }
+    ],
+    "on": [
+      {
+        "id": "s44c-001",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "lumberjack",
+            "verb": "fight",
+            "object": "stump",
+            "said": "chop"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Chop isn't here yet – here's a quest."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-002",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "penguin",
+            "verb": "walk",
+            "object": null,
+            "said": "waddle"
+          },
+          {
+            "actor": "penguin",
+            "verb": "reach",
+            "object": "nest"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about waddles. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-003",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "squirrel",
+            "verb": "collect",
+            "object": "acorn",
+            "said": "hoard"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about squirrel. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-004",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "pirate",
+            "verb": "collect",
+            "object": "gold",
+            "said": "plunder"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about shipwrecks. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-005",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "chef",
+            "verb": "deliver",
+            "object": "burger",
+            "said": "serve"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Delivery isn't here yet – here's a quest."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-006",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "mailman",
+            "verb": "deliver",
+            "object": "parcel",
+            "said": "bike"
+          }
+        ],
+        "mapped": [
+          "bikes"
+        ],
+        "honesty": {
+          "kind": "played_as",
+          "reason": "Bike plays as driving."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-007",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "goat",
+            "verb": "fight",
+            "object": "troll",
+            "said": "headbutt"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Headbutt isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-008",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "cowboy",
+            "verb": "catch",
+            "object": "cattle",
+            "said": "lasso"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about lassoes. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-009",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "boxer",
+            "verb": "fight",
+            "object": "robot",
+            "said": "jab"
+          }
+        ],
+        "mapped": [
+          "jabs"
+        ],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Jabbing isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-010",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "kid",
+            "verb": "shoot",
+            "object": "crow",
+            "said": "slingshot"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-011",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Pluck isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-012",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "bear",
+            "verb": "fight",
+            "object": "bee",
+            "said": "swat"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Swat isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-013",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "drummer",
+            "verb": "beat",
+            "object": "drum",
+            "said": "pound"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Beat isn't here yet – here's a rhythm game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-014",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "skier",
+            "verb": "glide",
+            "object": null,
+            "said": "zigzag"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Zigzag isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-015",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "farmer",
+            "verb": "deliver",
+            "object": "sheep",
+            "said": "herd"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Herd isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-016",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "otter",
+            "verb": "time",
+            "object": "shell",
+            "said": "juggle"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Juggle isn't here yet – here's a rhythm game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-017",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-018",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "wrestler",
+            "verb": "duel",
+            "object": "rival",
+            "said": "shove"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "The rivals isn't here yet – here's a duel."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-019",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-020",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "gymnast",
+            "verb": "jump",
+            "object": "hurdle",
+            "said": "somersault"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "The obstacles isn't here yet – here's a chase game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-021",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Nibble and sleep aren't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-022",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "firefighter",
+            "verb": "shoot",
+            "object": "flame",
+            "said": "douse"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-023",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "librarian",
+            "verb": "stack",
+            "object": "book",
+            "said": "shelve"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Shelve isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-024",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-025",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [
+          "pilfers"
+        ],
+        "honesty": {
+          "kind": "actions",
+          "reason": "The guards isn't here yet – here's a chase game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-026",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about backyard. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-027",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "chameleon",
+            "verb": "catch",
+            "object": "beetle",
+            "said": "slurp"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Slurp isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-028",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "ninja",
+            "verb": "jump",
+            "object": "rooftop",
+            "said": "vault"
+          }
+        ],
+        "mapped": [
+          "vaults"
+        ],
+        "honesty": {
+          "kind": "played_as",
+          "reason": "Vault plays as jumping."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-029",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-030",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "crab",
+            "verb": "roam",
+            "object": null,
+            "said": "scuttle"
+          },
+          {
+            "actor": "crab",
+            "verb": "escape",
+            "object": "seagull"
+          }
+        ],
+        "mapped": [
+          "scuttles"
+        ],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is an endless runner about seagulls. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-031",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "trucker",
+            "verb": "drive",
+            "object": null,
+            "said": "barrel"
+          },
+          {
+            "actor": "trucker",
+            "verb": "escape",
+            "object": "cop"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Barrel isn't here yet – here's a chase game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-032",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "archer",
+            "verb": "shoot",
+            "object": "orc",
+            "said": "pelt"
+          }
+        ],
+        "mapped": [
+          "pelts"
+        ],
+        "honesty": {
+          "kind": "actions",
+          "reason": "The hazards isn't here yet – here's a throwing game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-033",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [
+          "piles"
+        ],
+        "honesty": {
+          "kind": "played_as",
+          "reason": "Pile plays as stack."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-034",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "beekeeper",
+            "verb": "fight",
+            "object": "hornet",
+            "said": "shoo"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Shoo isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-035",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "striker",
+            "verb": "kick",
+            "object": "ball",
+            "said": "volley"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Volley isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-036",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Bowl isn't here yet – here's a throwing game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-037",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "surfer",
+            "verb": "glide",
+            "object": "wave",
+            "said": "carve"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Carve isn't here yet – here's a quest."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-038",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "spy",
+            "verb": "reach",
+            "object": "vault"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "The hazards isn't here yet – here's a maze game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-039",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "pelican",
+            "verb": "catch",
+            "object": "fish",
+            "said": "scoop"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Scoop isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-040",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "mole",
+            "verb": "collect",
+            "object": "carrot",
+            "said": "snatch"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Burrow isn't here yet – here's a quest."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-041",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "drone",
+            "verb": "deliver",
+            "object": "pizza",
+            "said": "drop"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-042",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "kid",
+            "verb": "time",
+            "object": "board",
+            "said": "split"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-043",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "sheepdog",
+            "verb": "deliver",
+            "object": "lamb",
+            "said": "nudge"
+          }
+        ],
+        "mapped": [
+          "nudges"
+        ],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Nudging isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-044",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "diver",
+            "verb": "collect",
+            "object": "treasure",
+            "said": "salvage"
+          }
+        ],
+        "mapped": [
+          "salvages"
+        ],
+        "honesty": {
+          "kind": "played_as",
+          "reason": "Salvage plays as interaction."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-045",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "player",
+            "verb": "shoot",
+            "object": "puck",
+            "said": "slap"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-046",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "raccoon",
+            "verb": "collect",
+            "object": "snack",
+            "said": "rummage"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Rummage isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-047",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [
+          "rows"
+        ],
+        "honesty": {
+          "kind": "played_as",
+          "reason": "Row plays as driving."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-048",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "samurai",
+            "verb": "fight",
+            "object": "dummy",
+            "said": "slice"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Slice isn't here yet – here's a duel."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-049",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "waiter",
+            "verb": "deliver",
+            "object": "tray",
+            "said": "balance"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Balance isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-050",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "skateboarder",
+            "verb": "glide",
+            "object": "rail",
+            "said": "grind"
+          },
+          {
+            "actor": "skateboarder",
+            "verb": "jump",
+            "object": "bench",
+            "said": "ollie"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is an endless runner about benches. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-051",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "fox",
+            "verb": "collect",
+            "object": "egg",
+            "said": "swipe"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Swipe and the guards aren't here yet – here's a chase game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-052",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "pilot",
+            "verb": "shoot",
+            "object": "jet",
+            "said": "dogfight"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Dogfight isn't here yet – here's a driving game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-053",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "boy",
+            "verb": "throw",
+            "object": "stone",
+            "said": "skip"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Skip isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-054",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "fisherman",
+            "verb": "catch",
+            "object": "salmon",
+            "said": "hook"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Hook isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-055",
+        "tags": [
+          "unknown-verb"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "robot",
+            "verb": "collect",
+            "object": "crumb",
+            "said": "hoover"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Hoover isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-056",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "wyvern",
+            "verb": "shoot",
+            "object": "village",
+            "said": "torch"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "wyvern",
+            "why": "not-in-spec"
+          },
+          {
+            "noun": "village",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-057",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "kraken",
+            "verb": "fight",
+            "object": "ship",
+            "said": "drag"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Drag isn't here yet – here's a collecting game."
+        },
+        "nouns": [
+          {
+            "noun": "kraken",
+            "why": "ok"
+          },
+          {
+            "noun": "ship",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-058",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "moon-goblin",
+            "verb": "collect",
+            "object": "stardust"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "moon-goblin",
+            "why": "not-in-spec"
+          },
+          {
+            "noun": "stardust",
+            "why": "no-model"
+          }
+        ]
+      },
+      {
+        "id": "s44c-059",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "golem",
+            "verb": "stack",
+            "object": "runestone"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Stack and build aren't here yet – here's a timing game."
+        },
+        "nouns": [
+          {
+            "noun": "golem",
+            "why": "not-read-by-control"
+          },
+          {
+            "noun": "runestone",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-060",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "phoenix",
+            "why": "ok"
+          },
+          {
+            "noun": "volcano",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-061",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "griffin",
+            "why": "no-model"
+          },
+          {
+            "noun": "harpy",
+            "why": "no-model"
+          }
+        ]
+      },
+      {
+        "id": "s44c-062",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "troll",
+            "why": "ok"
+          },
+          {
+            "noun": "gnome",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-063",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "unicorn",
+            "verb": "jump",
+            "object": "puddle"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "unicorn",
+            "why": "ok"
+          },
+          {
+            "noun": "puddle",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-064",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "serpent",
+            "verb": "catch",
+            "object": "boat",
+            "said": "swallow"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Swallow isn't here yet – here's a driving game."
+        },
+        "nouns": [
+          {
+            "noun": "serpent",
+            "why": "no-model"
+          },
+          {
+            "noun": "boat",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-065",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "gargoyle",
+            "why": "no-model"
+          },
+          {
+            "noun": "lightning",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-066",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "centaur",
+            "verb": "shoot",
+            "object": "minotaur"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Shooting isn't here yet – here's a maze game."
+        },
+        "nouns": [
+          {
+            "noun": "centaur",
+            "why": "no-model"
+          },
+          {
+            "noun": "minotaur",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-067",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "imp",
+            "why": "ok"
+          },
+          {
+            "noun": "letter",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-068",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "giant",
+            "verb": "build",
+            "object": "wall"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Build isn't here yet – here's a quest."
+        },
+        "nouns": [
+          {
+            "noun": "giant",
+            "why": "ok"
+          },
+          {
+            "noun": "wall",
+            "why": "no-model"
+          }
+        ]
+      },
+      {
+        "id": "s44c-069",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "pixie",
+            "why": "no-model"
+          },
+          {
+            "noun": "star",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-070",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Defend isn't here yet – here's a duel."
+        },
+        "nouns": [
+          {
+            "noun": "cyclops",
+            "why": "no-model"
+          },
+          {
+            "noun": "whale",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-071",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "mummy",
+            "why": "ok"
+          },
+          {
+            "noun": "pyramid",
+            "why": "no-model"
+          }
+        ]
+      },
+      {
+        "id": "s44c-072",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "basilisk",
+            "why": "no-model"
+          },
+          {
+            "noun": "adventurer",
+            "why": "not-read-by-control"
+          }
+        ]
+      },
+      {
+        "id": "s44c-073",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "dragon",
+            "why": "ok"
+          },
+          {
+            "noun": "gem",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-074",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "elf",
+            "why": "not-read-by-control"
+          },
+          {
+            "noun": "knight",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-075",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "werewolf",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-076",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "king",
+            "why": "ok"
+          },
+          {
+            "noun": "ball",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-077",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "hydra",
+            "why": "no-model"
+          },
+          {
+            "noun": "knight",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-078",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "mermaid",
+            "why": "ok"
+          },
+          {
+            "noun": "pearl",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-079",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "goblin",
+            "verb": "drive",
+            "object": "kart"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "goblin",
+            "why": "no-model"
+          },
+          {
+            "noun": "kart",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-080",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "djinn",
+            "verb": "glide",
+            "object": "carpet",
+            "said": "fly"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "djinn",
+            "why": "no-model"
+          },
+          {
+            "noun": "carpet",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-081",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "kitsune",
+            "why": "no-model"
+          },
+          {
+            "noun": "lantern",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-082",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "ship",
+            "why": "ok"
+          },
+          {
+            "noun": "skeleton",
+            "why": "no-model"
+          }
+        ]
+      },
+      {
+        "id": "s44c-083",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "lich",
+            "verb": "defeat",
+            "object": "hero"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Defeat isn't here yet – here's a duel."
+        },
+        "nouns": [
+          {
+            "noun": "lich",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-084",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "pegasus",
+            "verb": "land",
+            "object": "island"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "pegasus",
+            "why": "no-model"
+          },
+          {
+            "noun": "island",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-085",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "golem",
+            "why": "ok"
+          },
+          {
+            "noun": "ruins",
+            "why": "not-in-spec"
+          }
+        ]
+      },
+      {
+        "id": "s44c-086",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "banshee",
+            "verb": "interact",
+            "object": "mirror",
+            "said": "shatter"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "banshee",
+            "why": "no-model"
+          },
+          {
+            "noun": "mirror",
+            "why": "ok"
+          }
+        ]
+      },
+      {
+        "id": "s44c-087",
+        "tags": [
+          "fantasy"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": [
+          {
+            "noun": "manticore",
+            "why": "no-model"
+          },
+          {
+            "noun": "thief",
+            "why": "not-read-by-control"
+          }
+        ]
+      },
+      {
+        "id": "s44c-088",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about tides. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-090",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about spanish. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-091",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Summarize isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-092",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Describe isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-093",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Worry isn't here yet – here's an endless runner."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-094",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-095",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about paragraph. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-096",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Believe isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-097",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Own isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-098",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about android. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-099",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-100",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Calculate isn't here yet – here's a chase game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-101",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about birthday. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-102",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "List isn't here yet – here's a collecting game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-103",
+        "tags": [
+          "non-game"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": {
+          "kind": "no_verb",
+          "reason": "No game verb found – here is a collecting game about photosynthesis. Try: ‘Dodge …’, ‘Collect …’"
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-104",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-105",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "duck",
+            "verb": "jump",
+            "object": "log"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-106",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-107",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-108",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "soldier",
+            "verb": "survive",
+            "object": "zombie"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-109",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-110",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-111",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "crane",
+            "verb": "stack",
+            "object": "container"
+          }
+        ],
+        "mapped": [],
+        "honesty": {
+          "kind": "actions",
+          "reason": "Stack and build aren't here yet – here's a timing game."
+        },
+        "nouns": []
+      },
+      {
+        "id": "s44c-112",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": false,
+        "preserved": false,
+        "missing": [
+          {
+            "actor": "parachuter",
+            "verb": "land",
+            "object": "island"
+          }
+        ],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-113",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-114",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      },
+      {
+        "id": "s44c-115",
+        "tags": [
+          "control"
+        ],
+        "compiled": true,
+        "played": true,
+        "preserved": true,
+        "missing": [],
+        "mapped": [],
+        "honesty": null,
+        "nouns": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "about": "P44C: inputs and the chosen mapping method for scripts/vocab/build.mjs. `method` is written by `build.mjs --evaluate` from the dev gold set.",
+  "oewn": {
+    "url": "https://github.com/globalwordnet/english-wordnet/releases/download/2024-edition/english-wordnet-2024.xml.gz",
+    "file": "D:/caches/oewn/english-wordnet-2024.xml.gz",
+    "sha256": "e1f633b0a93758cae34ea27c44c4dad310a8af2467b155f99dd6673af697e875",
+    "license": "https://creativecommons.org/licenses/by/4.0"
+  },
+  "embed": {
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+  },
+  "wordnet": {
+    "maxDepth": 4,
+    "decay": 0.8,
+    "filterLexfiles": [
+      "verb.communication",
+      "verb.cognition",
+      "verb.emotion",
+      "verb.possession",
+      "verb.stative"
+    ]
+  },
+  "nouns": {
+    "about": "Roots of concrete nouns for --nouns: organism, natural_object, food/nutrient, artifact, solid food, imaginary_being, mythical_being.",
+    "roots": [
+      "oewn-00004475-n",
+      "oewn-00019308-n",
+      "oewn-00021445-n",
+      "oewn-00022119-n",
+      "oewn-07571428-n",
+      "oewn-09506868-n",
+      "oewn-09507794-n"
+    ]
+  },
+  "probes": [
+    "stab",
+    "sprint",
+    "lug",
+    "explain"
+  ],
+  "method": {
+    "variant": "A",
+    "wordnet": 0.4,
+    "embed": null,
+    "passesGate": true
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "dataset": "evals/play/p44c/sealed-110.json",
+  "sha256": "1113be1ad14359e07febd1d397e6a8aa3131e01e05f3ebfe4a0ef23f57a39e4a",
+  "lineEndings": "LF (CRLF normalized before hashing)",
+  "sealedAtUtc": "2026-10-08T09:56:46.258Z",
+  "count": 114,
+  "tagCounts": {
+    "unknown-verb": 55,
+    "fantasy": 32,
+    "non-game": 15,
+    "control": 12
+  }
+}

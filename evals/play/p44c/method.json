@@ -1,0 +1,2071 @@
+{
+ "about": "P44C T4: three verb-mapping methods on the dev gold set (src/play/vocab/__fixtures__/gold-verbs.json). Written by scripts/vocab/build.mjs --evaluate.",
+ "oewnSha256": "e1f633b0a93758cae34ea27c44c4dad310a8af2467b155f99dd6673af697e875",
+ "gold": {
+  "pairs": 266,
+  "positives": 196,
+  "negatives": 70
+ },
+ "gate": {
+  "precision": 0.9,
+  "falseMapped": 2
+ },
+ "bestPerVariant": {
+  "A": {
+   "variant": "A",
+   "wordnet": 0.4,
+   "embed": null,
+   "precision": 0.902,
+   "coverage": 0.378,
+   "correct": 74,
+   "predicted": 82,
+   "falseMapped": 0,
+   "passesGate": true
+  },
+  "B": {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.75,
+   "precision": 0.927,
+   "coverage": 0.194,
+   "correct": 38,
+   "predicted": 41,
+   "falseMapped": 0,
+   "passesGate": true
+  },
+  "C": {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.8,
+   "precision": 0.902,
+   "coverage": 0.378,
+   "correct": 74,
+   "predicted": 82,
+   "falseMapped": 0,
+   "passesGate": true
+  }
+ },
+ "selected": {
+  "variant": "A",
+  "wordnet": 0.4,
+  "embed": null,
+  "precision": 0.902,
+  "coverage": 0.378,
+  "correct": 74,
+  "predicted": 82,
+  "falseMapped": 0,
+  "passesGate": true
+ },
+ "selectedErrors": [
+  {
+   "verb": "accumulate",
+   "gold": "objective:collect",
+   "got": "action:collect"
+  },
+  {
+   "verb": "darn",
+   "gold": "hero:knit",
+   "got": "hero:fix"
+  },
+  {
+   "verb": "harpoon",
+   "gold": "action:shoot",
+   "got": "objective:catch"
+  },
+  {
+   "verb": "outpace",
+   "gold": "objective:race",
+   "got": "objective:defeat"
+  },
+  {
+   "verb": "raft",
+   "gold": "move:drive",
+   "got": "action:deliver"
+  },
+  {
+   "verb": "shovel",
+   "gold": "hero:dig",
+   "got": "hero:sweep"
+  },
+  {
+   "verb": "strafe",
+   "gold": "action:shoot",
+   "got": "action:fight"
+  },
+  {
+   "verb": "torpedo",
+   "gold": "action:shoot",
+   "got": "action:fight"
+  }
+ ],
+ "probes": {
+  "stab": {
+   "axis": "action:fight",
+   "hero": null
+  },
+  "sprint": {
+   "axis": "move:run",
+   "hero": null
+  },
+  "lug": {
+   "axis": "action:deliver",
+   "hero": "hero:carry"
+  },
+  "explain": {
+   "axis": null,
+   "hero": null
+  }
+ },
+ "variants": [
+  {
+   "variant": "A",
+   "wordnet": 0,
+   "embed": null,
+   "precision": 0.852,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 108,
+   "falseMapped": 1
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.05,
+   "embed": null,
+   "precision": 0.86,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 107,
+   "falseMapped": 1
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.1,
+   "embed": null,
+   "precision": 0.874,
+   "coverage": 0.459,
+   "correct": 90,
+   "predicted": 103,
+   "falseMapped": 0
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.15,
+   "embed": null,
+   "precision": 0.876,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 97,
+   "falseMapped": 0
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.2,
+   "embed": null,
+   "precision": 0.895,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 95,
+   "falseMapped": 0
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.25,
+   "embed": null,
+   "precision": 0.892,
+   "coverage": 0.423,
+   "correct": 83,
+   "predicted": 93,
+   "falseMapped": 0
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.3,
+   "embed": null,
+   "precision": 0.888,
+   "coverage": 0.403,
+   "correct": 79,
+   "predicted": 89,
+   "falseMapped": 0
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.35,
+   "embed": null,
+   "precision": 0.895,
+   "coverage": 0.393,
+   "correct": 77,
+   "predicted": 86,
+   "falseMapped": 0
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.4,
+   "embed": null,
+   "precision": 0.902,
+   "coverage": 0.378,
+   "correct": 74,
+   "predicted": 82,
+   "falseMapped": 0
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.45,
+   "embed": null,
+   "precision": 0.905,
+   "coverage": 0.342,
+   "correct": 67,
+   "predicted": 74,
+   "falseMapped": 0
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.5,
+   "embed": null,
+   "precision": 0.905,
+   "coverage": 0.342,
+   "correct": 67,
+   "predicted": 74,
+   "falseMapped": 0
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.55,
+   "embed": null,
+   "precision": 0.899,
+   "coverage": 0.316,
+   "correct": 62,
+   "predicted": 69,
+   "falseMapped": 0
+  },
+  {
+   "variant": "A",
+   "wordnet": 0.6,
+   "embed": null,
+   "precision": 0.897,
+   "coverage": 0.311,
+   "correct": 61,
+   "predicted": 68,
+   "falseMapped": 0
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.3,
+   "precision": 0.494,
+   "coverage": 0.444,
+   "correct": 87,
+   "predicted": 176,
+   "falseMapped": 6
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.35,
+   "precision": 0.494,
+   "coverage": 0.444,
+   "correct": 87,
+   "predicted": 176,
+   "falseMapped": 6
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.4,
+   "precision": 0.494,
+   "coverage": 0.444,
+   "correct": 87,
+   "predicted": 176,
+   "falseMapped": 6
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.45,
+   "precision": 0.497,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 171,
+   "falseMapped": 6
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.5,
+   "precision": 0.519,
+   "coverage": 0.429,
+   "correct": 84,
+   "predicted": 162,
+   "falseMapped": 5
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.55,
+   "precision": 0.597,
+   "coverage": 0.408,
+   "correct": 80,
+   "predicted": 134,
+   "falseMapped": 3
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.6,
+   "precision": 0.682,
+   "coverage": 0.372,
+   "correct": 73,
+   "predicted": 107,
+   "falseMapped": 1
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.65,
+   "precision": 0.769,
+   "coverage": 0.306,
+   "correct": 60,
+   "predicted": 78,
+   "falseMapped": 1
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.7,
+   "precision": 0.864,
+   "coverage": 0.26,
+   "correct": 51,
+   "predicted": 59,
+   "falseMapped": 0
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.75,
+   "precision": 0.927,
+   "coverage": 0.194,
+   "correct": 38,
+   "predicted": 41,
+   "falseMapped": 0
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.8,
+   "precision": 0.972,
+   "coverage": 0.179,
+   "correct": 35,
+   "predicted": 36,
+   "falseMapped": 0
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.85,
+   "precision": 0.972,
+   "coverage": 0.179,
+   "correct": 35,
+   "predicted": 36,
+   "falseMapped": 0
+  },
+  {
+   "variant": "B",
+   "wordnet": null,
+   "embed": 0.9,
+   "precision": 0.972,
+   "coverage": 0.179,
+   "correct": 35,
+   "predicted": 36,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.3,
+   "precision": 0.663,
+   "coverage": 0.612,
+   "correct": 120,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.35,
+   "precision": 0.663,
+   "coverage": 0.612,
+   "correct": 120,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.4,
+   "precision": 0.663,
+   "coverage": 0.612,
+   "correct": 120,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.45,
+   "precision": 0.667,
+   "coverage": 0.602,
+   "correct": 118,
+   "predicted": 177,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.5,
+   "precision": 0.692,
+   "coverage": 0.597,
+   "correct": 117,
+   "predicted": 169,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.55,
+   "precision": 0.734,
+   "coverage": 0.577,
+   "correct": 113,
+   "predicted": 154,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.6,
+   "precision": 0.775,
+   "coverage": 0.561,
+   "correct": 110,
+   "predicted": 142,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.65,
+   "precision": 0.808,
+   "coverage": 0.536,
+   "correct": 105,
+   "predicted": 130,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.7,
+   "precision": 0.843,
+   "coverage": 0.52,
+   "correct": 102,
+   "predicted": 121,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.75,
+   "precision": 0.839,
+   "coverage": 0.48,
+   "correct": 94,
+   "predicted": 112,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.8,
+   "precision": 0.852,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 108,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.85,
+   "precision": 0.852,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 108,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0,
+   "embed": 0.9,
+   "precision": 0.852,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 108,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.3,
+   "precision": 0.663,
+   "coverage": 0.612,
+   "correct": 120,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.35,
+   "precision": 0.663,
+   "coverage": 0.612,
+   "correct": 120,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.4,
+   "precision": 0.663,
+   "coverage": 0.612,
+   "correct": 120,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.45,
+   "precision": 0.667,
+   "coverage": 0.602,
+   "correct": 118,
+   "predicted": 177,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.5,
+   "precision": 0.692,
+   "coverage": 0.597,
+   "correct": 117,
+   "predicted": 169,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.55,
+   "precision": 0.734,
+   "coverage": 0.577,
+   "correct": 113,
+   "predicted": 154,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.6,
+   "precision": 0.78,
+   "coverage": 0.561,
+   "correct": 110,
+   "predicted": 141,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.65,
+   "precision": 0.814,
+   "coverage": 0.536,
+   "correct": 105,
+   "predicted": 129,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.7,
+   "precision": 0.85,
+   "coverage": 0.52,
+   "correct": 102,
+   "predicted": 120,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.75,
+   "precision": 0.847,
+   "coverage": 0.48,
+   "correct": 94,
+   "predicted": 111,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.8,
+   "precision": 0.86,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 107,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.85,
+   "precision": 0.86,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 107,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.05,
+   "embed": 0.9,
+   "precision": 0.86,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 107,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.3,
+   "precision": 0.657,
+   "coverage": 0.607,
+   "correct": 119,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.35,
+   "precision": 0.657,
+   "coverage": 0.607,
+   "correct": 119,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.4,
+   "precision": 0.657,
+   "coverage": 0.607,
+   "correct": 119,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.45,
+   "precision": 0.661,
+   "coverage": 0.597,
+   "correct": 117,
+   "predicted": 177,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.5,
+   "precision": 0.686,
+   "coverage": 0.592,
+   "correct": 116,
+   "predicted": 169,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.55,
+   "precision": 0.732,
+   "coverage": 0.571,
+   "correct": 112,
+   "predicted": 153,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.6,
+   "precision": 0.784,
+   "coverage": 0.556,
+   "correct": 109,
+   "predicted": 139,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.65,
+   "precision": 0.824,
+   "coverage": 0.526,
+   "correct": 103,
+   "predicted": 125,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.7,
+   "precision": 0.862,
+   "coverage": 0.51,
+   "correct": 100,
+   "predicted": 116,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.75,
+   "precision": 0.86,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 107,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.8,
+   "precision": 0.874,
+   "coverage": 0.459,
+   "correct": 90,
+   "predicted": 103,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.85,
+   "precision": 0.874,
+   "coverage": 0.459,
+   "correct": 90,
+   "predicted": 103,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.1,
+   "embed": 0.9,
+   "precision": 0.874,
+   "coverage": 0.459,
+   "correct": 90,
+   "predicted": 103,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.3,
+   "precision": 0.635,
+   "coverage": 0.587,
+   "correct": 115,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.35,
+   "precision": 0.635,
+   "coverage": 0.587,
+   "correct": 115,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.4,
+   "precision": 0.635,
+   "coverage": 0.587,
+   "correct": 115,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.45,
+   "precision": 0.638,
+   "coverage": 0.577,
+   "correct": 113,
+   "predicted": 177,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.5,
+   "precision": 0.667,
+   "coverage": 0.571,
+   "correct": 112,
+   "predicted": 168,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.55,
+   "precision": 0.72,
+   "coverage": 0.551,
+   "correct": 108,
+   "predicted": 150,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.6,
+   "precision": 0.772,
+   "coverage": 0.536,
+   "correct": 105,
+   "predicted": 136,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.65,
+   "precision": 0.818,
+   "coverage": 0.505,
+   "correct": 99,
+   "predicted": 121,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.7,
+   "precision": 0.856,
+   "coverage": 0.485,
+   "correct": 95,
+   "predicted": 111,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.75,
+   "precision": 0.861,
+   "coverage": 0.444,
+   "correct": 87,
+   "predicted": 101,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.8,
+   "precision": 0.876,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 97,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.85,
+   "precision": 0.876,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 97,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.15,
+   "embed": 0.9,
+   "precision": 0.876,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 97,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.3,
+   "precision": 0.635,
+   "coverage": 0.587,
+   "correct": 115,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.35,
+   "precision": 0.635,
+   "coverage": 0.587,
+   "correct": 115,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.4,
+   "precision": 0.635,
+   "coverage": 0.587,
+   "correct": 115,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.45,
+   "precision": 0.638,
+   "coverage": 0.577,
+   "correct": 113,
+   "predicted": 177,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.5,
+   "precision": 0.667,
+   "coverage": 0.571,
+   "correct": 112,
+   "predicted": 168,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.55,
+   "precision": 0.72,
+   "coverage": 0.551,
+   "correct": 108,
+   "predicted": 150,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.6,
+   "precision": 0.772,
+   "coverage": 0.536,
+   "correct": 105,
+   "predicted": 136,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.65,
+   "precision": 0.825,
+   "coverage": 0.505,
+   "correct": 99,
+   "predicted": 120,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.7,
+   "precision": 0.872,
+   "coverage": 0.485,
+   "correct": 95,
+   "predicted": 109,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.75,
+   "precision": 0.879,
+   "coverage": 0.444,
+   "correct": 87,
+   "predicted": 99,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.8,
+   "precision": 0.895,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 95,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.85,
+   "precision": 0.895,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 95,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.2,
+   "embed": 0.9,
+   "precision": 0.895,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 95,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.3,
+   "precision": 0.635,
+   "coverage": 0.587,
+   "correct": 115,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.35,
+   "precision": 0.635,
+   "coverage": 0.587,
+   "correct": 115,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.4,
+   "precision": 0.635,
+   "coverage": 0.587,
+   "correct": 115,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.45,
+   "precision": 0.638,
+   "coverage": 0.577,
+   "correct": 113,
+   "predicted": 177,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.5,
+   "precision": 0.667,
+   "coverage": 0.571,
+   "correct": 112,
+   "predicted": 168,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.55,
+   "precision": 0.72,
+   "coverage": 0.551,
+   "correct": 108,
+   "predicted": 150,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.6,
+   "precision": 0.772,
+   "coverage": 0.536,
+   "correct": 105,
+   "predicted": 136,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.65,
+   "precision": 0.824,
+   "coverage": 0.5,
+   "correct": 98,
+   "predicted": 119,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.7,
+   "precision": 0.869,
+   "coverage": 0.474,
+   "correct": 93,
+   "predicted": 107,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.75,
+   "precision": 0.876,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 97,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.8,
+   "precision": 0.892,
+   "coverage": 0.423,
+   "correct": 83,
+   "predicted": 93,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.85,
+   "precision": 0.892,
+   "coverage": 0.423,
+   "correct": 83,
+   "predicted": 93,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.25,
+   "embed": 0.9,
+   "precision": 0.892,
+   "coverage": 0.423,
+   "correct": 83,
+   "predicted": 93,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.3,
+   "precision": 0.624,
+   "coverage": 0.577,
+   "correct": 113,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.35,
+   "precision": 0.624,
+   "coverage": 0.577,
+   "correct": 113,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.4,
+   "precision": 0.624,
+   "coverage": 0.577,
+   "correct": 113,
+   "predicted": 181,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.45,
+   "precision": 0.627,
+   "coverage": 0.566,
+   "correct": 111,
+   "predicted": 177,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.5,
+   "precision": 0.655,
+   "coverage": 0.561,
+   "correct": 110,
+   "predicted": 168,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.55,
+   "precision": 0.707,
+   "coverage": 0.541,
+   "correct": 106,
+   "predicted": 150,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.6,
+   "precision": 0.763,
+   "coverage": 0.526,
+   "correct": 103,
+   "predicted": 135,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.65,
+   "precision": 0.812,
+   "coverage": 0.485,
+   "correct": 95,
+   "predicted": 117,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.7,
+   "precision": 0.857,
+   "coverage": 0.459,
+   "correct": 90,
+   "predicted": 105,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.75,
+   "precision": 0.871,
+   "coverage": 0.413,
+   "correct": 81,
+   "predicted": 93,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.8,
+   "precision": 0.888,
+   "coverage": 0.403,
+   "correct": 79,
+   "predicted": 89,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.85,
+   "precision": 0.888,
+   "coverage": 0.403,
+   "correct": 79,
+   "predicted": 89,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.3,
+   "embed": 0.9,
+   "precision": 0.888,
+   "coverage": 0.403,
+   "correct": 79,
+   "predicted": 89,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.3,
+   "precision": 0.622,
+   "coverage": 0.571,
+   "correct": 112,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.35,
+   "precision": 0.622,
+   "coverage": 0.571,
+   "correct": 112,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.4,
+   "precision": 0.622,
+   "coverage": 0.571,
+   "correct": 112,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.45,
+   "precision": 0.625,
+   "coverage": 0.561,
+   "correct": 110,
+   "predicted": 176,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.5,
+   "precision": 0.653,
+   "coverage": 0.556,
+   "correct": 109,
+   "predicted": 167,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.55,
+   "precision": 0.705,
+   "coverage": 0.536,
+   "correct": 105,
+   "predicted": 149,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.6,
+   "precision": 0.767,
+   "coverage": 0.52,
+   "correct": 102,
+   "predicted": 133,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.65,
+   "precision": 0.816,
+   "coverage": 0.474,
+   "correct": 93,
+   "predicted": 114,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.7,
+   "precision": 0.863,
+   "coverage": 0.449,
+   "correct": 88,
+   "predicted": 102,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.75,
+   "precision": 0.878,
+   "coverage": 0.403,
+   "correct": 79,
+   "predicted": 90,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.8,
+   "precision": 0.895,
+   "coverage": 0.393,
+   "correct": 77,
+   "predicted": 86,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.85,
+   "precision": 0.895,
+   "coverage": 0.393,
+   "correct": 77,
+   "predicted": 86,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.35,
+   "embed": 0.9,
+   "precision": 0.895,
+   "coverage": 0.393,
+   "correct": 77,
+   "predicted": 86,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.3,
+   "precision": 0.617,
+   "coverage": 0.566,
+   "correct": 111,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.35,
+   "precision": 0.617,
+   "coverage": 0.566,
+   "correct": 111,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.4,
+   "precision": 0.617,
+   "coverage": 0.566,
+   "correct": 111,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.45,
+   "precision": 0.619,
+   "coverage": 0.556,
+   "correct": 109,
+   "predicted": 176,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.5,
+   "precision": 0.647,
+   "coverage": 0.551,
+   "correct": 108,
+   "predicted": 167,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.55,
+   "precision": 0.698,
+   "coverage": 0.531,
+   "correct": 104,
+   "predicted": 149,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.6,
+   "precision": 0.765,
+   "coverage": 0.515,
+   "correct": 101,
+   "predicted": 132,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.65,
+   "precision": 0.821,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 112,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.7,
+   "precision": 0.867,
+   "coverage": 0.434,
+   "correct": 85,
+   "predicted": 98,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.75,
+   "precision": 0.884,
+   "coverage": 0.388,
+   "correct": 76,
+   "predicted": 86,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.8,
+   "precision": 0.902,
+   "coverage": 0.378,
+   "correct": 74,
+   "predicted": 82,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.85,
+   "precision": 0.902,
+   "coverage": 0.378,
+   "correct": 74,
+   "predicted": 82,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.4,
+   "embed": 0.9,
+   "precision": 0.902,
+   "coverage": 0.378,
+   "correct": 74,
+   "predicted": 82,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.3,
+   "precision": 0.6,
+   "coverage": 0.551,
+   "correct": 108,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.35,
+   "precision": 0.6,
+   "coverage": 0.551,
+   "correct": 108,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.4,
+   "precision": 0.6,
+   "coverage": 0.551,
+   "correct": 108,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.45,
+   "precision": 0.602,
+   "coverage": 0.541,
+   "correct": 106,
+   "predicted": 176,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.5,
+   "precision": 0.629,
+   "coverage": 0.536,
+   "correct": 105,
+   "predicted": 167,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.55,
+   "precision": 0.687,
+   "coverage": 0.515,
+   "correct": 101,
+   "predicted": 147,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.6,
+   "precision": 0.756,
+   "coverage": 0.49,
+   "correct": 96,
+   "predicted": 127,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.65,
+   "precision": 0.811,
+   "coverage": 0.439,
+   "correct": 86,
+   "predicted": 106,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.7,
+   "precision": 0.859,
+   "coverage": 0.403,
+   "correct": 79,
+   "predicted": 92,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.75,
+   "precision": 0.885,
+   "coverage": 0.352,
+   "correct": 69,
+   "predicted": 78,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.8,
+   "precision": 0.905,
+   "coverage": 0.342,
+   "correct": 67,
+   "predicted": 74,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.85,
+   "precision": 0.905,
+   "coverage": 0.342,
+   "correct": 67,
+   "predicted": 74,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.45,
+   "embed": 0.9,
+   "precision": 0.905,
+   "coverage": 0.342,
+   "correct": 67,
+   "predicted": 74,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.3,
+   "precision": 0.6,
+   "coverage": 0.551,
+   "correct": 108,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.35,
+   "precision": 0.6,
+   "coverage": 0.551,
+   "correct": 108,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.4,
+   "precision": 0.6,
+   "coverage": 0.551,
+   "correct": 108,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.45,
+   "precision": 0.602,
+   "coverage": 0.541,
+   "correct": 106,
+   "predicted": 176,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.5,
+   "precision": 0.629,
+   "coverage": 0.536,
+   "correct": 105,
+   "predicted": 167,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.55,
+   "precision": 0.687,
+   "coverage": 0.515,
+   "correct": 101,
+   "predicted": 147,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.6,
+   "precision": 0.756,
+   "coverage": 0.49,
+   "correct": 96,
+   "predicted": 127,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.65,
+   "precision": 0.811,
+   "coverage": 0.439,
+   "correct": 86,
+   "predicted": 106,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.7,
+   "precision": 0.859,
+   "coverage": 0.403,
+   "correct": 79,
+   "predicted": 92,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.75,
+   "precision": 0.885,
+   "coverage": 0.352,
+   "correct": 69,
+   "predicted": 78,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.8,
+   "precision": 0.905,
+   "coverage": 0.342,
+   "correct": 67,
+   "predicted": 74,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.85,
+   "precision": 0.905,
+   "coverage": 0.342,
+   "correct": 67,
+   "predicted": 74,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.5,
+   "embed": 0.9,
+   "precision": 0.905,
+   "coverage": 0.342,
+   "correct": 67,
+   "predicted": 74,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.3,
+   "precision": 0.578,
+   "coverage": 0.531,
+   "correct": 104,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.35,
+   "precision": 0.578,
+   "coverage": 0.531,
+   "correct": 104,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.4,
+   "precision": 0.578,
+   "coverage": 0.531,
+   "correct": 104,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.45,
+   "precision": 0.58,
+   "coverage": 0.52,
+   "correct": 102,
+   "predicted": 176,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.5,
+   "precision": 0.605,
+   "coverage": 0.515,
+   "correct": 101,
+   "predicted": 167,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.55,
+   "precision": 0.66,
+   "coverage": 0.495,
+   "correct": 97,
+   "predicted": 147,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.6,
+   "precision": 0.73,
+   "coverage": 0.469,
+   "correct": 92,
+   "predicted": 126,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.65,
+   "precision": 0.788,
+   "coverage": 0.418,
+   "correct": 82,
+   "predicted": 104,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.7,
+   "precision": 0.843,
+   "coverage": 0.383,
+   "correct": 75,
+   "predicted": 89,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.75,
+   "precision": 0.877,
+   "coverage": 0.327,
+   "correct": 64,
+   "predicted": 73,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.8,
+   "precision": 0.899,
+   "coverage": 0.316,
+   "correct": 62,
+   "predicted": 69,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.85,
+   "precision": 0.899,
+   "coverage": 0.316,
+   "correct": 62,
+   "predicted": 69,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.55,
+   "embed": 0.9,
+   "precision": 0.899,
+   "coverage": 0.316,
+   "correct": 62,
+   "predicted": 69,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.3,
+   "precision": 0.572,
+   "coverage": 0.526,
+   "correct": 103,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.35,
+   "precision": 0.572,
+   "coverage": 0.526,
+   "correct": 103,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.4,
+   "precision": 0.572,
+   "coverage": 0.526,
+   "correct": 103,
+   "predicted": 180,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.45,
+   "precision": 0.574,
+   "coverage": 0.515,
+   "correct": 101,
+   "predicted": 176,
+   "falseMapped": 6
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.5,
+   "precision": 0.599,
+   "coverage": 0.51,
+   "correct": 100,
+   "predicted": 167,
+   "falseMapped": 5
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.55,
+   "precision": 0.658,
+   "coverage": 0.49,
+   "correct": 96,
+   "predicted": 146,
+   "falseMapped": 3
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.6,
+   "precision": 0.728,
+   "coverage": 0.464,
+   "correct": 91,
+   "predicted": 125,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.65,
+   "precision": 0.786,
+   "coverage": 0.413,
+   "correct": 81,
+   "predicted": 103,
+   "falseMapped": 1
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.7,
+   "precision": 0.841,
+   "coverage": 0.378,
+   "correct": 74,
+   "predicted": 88,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.75,
+   "precision": 0.875,
+   "coverage": 0.321,
+   "correct": 63,
+   "predicted": 72,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.8,
+   "precision": 0.897,
+   "coverage": 0.311,
+   "correct": 61,
+   "predicted": 68,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.85,
+   "precision": 0.897,
+   "coverage": 0.311,
+   "correct": 61,
+   "predicted": 68,
+   "falseMapped": 0
+  },
+  {
+   "variant": "C",
+   "wordnet": 0.6,
+   "embed": 0.9,
+   "precision": 0.897,
+   "coverage": 0.311,
+   "correct": 61,
+   "predicted": 68,
+   "falseMapped": 0
+  }
+ ]
+}

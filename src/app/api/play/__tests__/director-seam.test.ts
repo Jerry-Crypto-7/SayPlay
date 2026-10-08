@@ -16,6 +16,7 @@ import { buildDirectorRequest, DIRECTOR_PROMPT_VERSION, directorCache, directorK
 import { draftGameSpecWithMeta } from '@/play/draft';
 import type { GameSpecV1 } from '@/play/spec';
 import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
+import { vocabVersion } from '@/play/vocab';
 import { type AnswerStore, memoryAnswerStore } from '@/server/answer-cache';
 import { resetRateWindows } from '@/server/rate-limit';
 import { upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
@@ -187,7 +188,8 @@ describe('getDirector – kvóty a cache (R8)', () => {
     stubEnv(LIVE);
     const request = buildDirectorRequest(cachedSentence, draftGameSpecWithMeta(cachedSentence).genre);
     const branchId = upstreamBranch(upstreamConfigFromEnv(process.env)).id;
-    const key = directorKey({ sentence: cachedSentence, promptVersion: DIRECTOR_PROMPT_VERSION, model: request.model, endpoint: branchId });
+    // Klíč nese i verzi tabulky sloves P44C (jiná tabulka = jiná hra).
+    const key = directorKey({ sentence: cachedSentence, promptVersion: `${DIRECTOR_PROMPT_VERSION}+vocab:${vocabVersion()}`, model: request.model, endpoint: branchId });
     await directorCache(answers.store ?? memoryAnswerStore()).write(key, draftGameSpecWithMeta(cachedSentence).spec);
     expect(acquireSlot('play')).toBe(true);
     expect(acquireSlot('play')).toBe(true);

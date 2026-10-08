@@ -19,6 +19,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 
 import type { GenreModule, GenreSpec } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
+import { extractIntent } from '../intent/extract';
 
 import { readyModes } from './answer-schema';
 import EXAMPLES from './examples.json';
@@ -98,9 +99,14 @@ export function nearestExamples(sentence: string, genre: string | null, pool: re
   const frequency = new Map<string, number>();
   for (const set of words) for (const word of set) frequency.set(word, (frequency.get(word) ?? 0) + 1);
   const query = new Set(sentenceWords(sentence));
+  // P44C: sloveso přiblížené tabulkou („stabs“ → fight) potká příklad, který tu činnost hraje (režim nebo role obsazení).
+  // Vypnutá tabulka nic nepřibližuje, takže skóre je bajtově jako dřív.
+  const mapped = new Set(extractIntent(sentence).items.filter((item) => item.mapped === true).map((item) => item.verb));
+  const plays = pool.map((example) => new Set<string>([exampleSpec(example).mode, ...(exampleSpec(example).cast ?? []).map((item) => item.does)]));
   const scored = pool.map((example, at) => {
     let score = exampleSpec(example).genre === genre ? 0.5 : 0;
     for (const word of words[at]!) if (query.has(word)) score += Math.log(1 + pool.length / frequency.get(word)!);
+    for (const verb of mapped) if (plays[at]!.has(verb)) score += Math.log(1 + pool.length / plays.filter((set) => set.has(verb)).length);
     return { example, score };
   });
   scored.sort((a, b) => b.score - a.score || a.example.id.localeCompare(b.example.id));

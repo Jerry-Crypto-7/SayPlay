@@ -4,11 +4,12 @@
  * rodin – vypnutá rodina tak test shodí, místo aby ho vyprázdnila.
  */
 
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { loadRapier } from '@/play/arcade/physics/world';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { castFor } from '@/play/genre/contract';
+import { heroActionOf } from '@/play/genre/families';
 import type { HeroAction } from '@/play/spec';
 
 import dev from '../../../../evals/play/p37a/dev-150.json';
@@ -88,6 +89,35 @@ it('u08 collects the named carrots and admits the missing digging action', () =>
   expect(meta.composition?.unmet).toContainEqual({ actor: 'mole', verb: 'dig', object: 'tunnel' });
   const row = measureSentence({ set: 'dev', id: 'u08', text: textOf('u08') });
   expect([row.bot.end, row.idle.end]).toEqual(['won', 'lost']);
+});
+
+describe('hero action from the vocab table (P44C T8)', () => {
+  // „sprinkle“ a „hack“ z AC tabulka nemapuje: póza je u nich jen vedlejší význam (metoda A @ 0,4, method.json);
+  // kotva pro „sprinkle“ by byla ladění na zlatou sadu a „hack“ je hlavně programování.
+  it.each([
+    ['whisk', 'stir'],
+    ['churn', 'stir'],
+    ['darn', 'fix'],
+    ['burrow', 'dig'],
+  ] as const)('%s plays as %s', (verb, pose) => {
+    expect(heroActionOf(verb)).toBe(pose);
+  });
+
+  it('keeps the family pose and null outside both', () => {
+    expect(heroActionOf('lasso')).toBe('throw');
+    expect(heroActionOf('explain')).toBeNull();
+    expect(heroActionOf(null)).toBeNull();
+  });
+
+  it('is off with PLAY_VOCAB=off', () => {
+    vi.stubEnv('PLAY_VOCAB', 'off');
+    expect(heroActionOf('churn')).toBeNull();
+    vi.unstubAllEnvs();
+  });
+
+  it('puts the pose into the drafted spec', () => {
+    expect(draftGameSpecWithMeta('a chef whisks eggs', 1).spec.heroAction).toBe('stir');
+  });
 });
 
 describe('outside the families', () => {

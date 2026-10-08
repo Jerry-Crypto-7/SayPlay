@@ -15,7 +15,7 @@ export function HonestyStrip({ honesty }: { readonly honesty: Honesty }) {
   if (!open) return null;
   return (
     <aside className="play-honest" data-testid="play-honest" role="status">
-      {honesty.kind === 'no_verb' || honesty.kind === 'actions' ? (
+      {honesty.kind === 'no_verb' || honesty.kind === 'actions' || honesty.kind === 'played_as' ? (
         // P28D T4: věta hru nechtěla – hláška řekne, co se hraje a jak větu napsat příště.
         <p className="play-honest-text">
           <strong data-testid="play-honest-reason">{honesty.reason}</strong>
