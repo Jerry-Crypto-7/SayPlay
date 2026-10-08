@@ -16,7 +16,12 @@ const examples = [
   'a samurai duels a bear and then escapes the burning village',
 ];
 test.beforeAll(async () => { await loadRapier(); });
-for (const sentence of examples) test(`P42 publishes, renders and replays: ${sentence}`, async ({ page, request }, info) => {
+/**
+ * Každý test je jiný „člověk“ z vlastní adresy: strop je 50 požadavků za pevných 10 s na volajícího,
+ * jeden test jich pošle ~12 a za ~2,5 s skončí, takže 16 testů z jedné adresy strop přeteče (429).
+ */
+const person = (n: number) => ({ extraHTTPHeaders: { 'x-forwarded-for': `198.51.100.${String(n)}` } });
+for (const [n, sentence] of examples.entries()) test.describe(() => { test.use(person(n + 1)); test(`P42 publishes, renders and replays: ${sentence}`, async ({ page, request }, info) => {
   test.setTimeout(120000);
   const composition = compose(extractIntent(sentence), 1);
   expect(composition.unmet).toEqual([]);
@@ -33,9 +38,9 @@ for (const sentence of examples) test(`P42 publishes, renders and replays: ${sen
   expect(end.runState).toBe('won');
   await replayState(world, await capture(page));
   expect(errors).toEqual([]);
-});
+}); });
 
-for (const [sentence, actor, verb, object] of [
+for (const [n, [sentence, actor, verb, object]] of ([
   ['hockey on a frozen lake against robots', 'robot', 'rival', 'hero'],
   ['a boxer punches to the beat and defeats a robot', 'boxer', 'duel', 'robot'],
   ['drive a boat, race and fire', 'boat', 'shoot', null],
@@ -52,7 +57,7 @@ for (const [sentence, actor, verb, object] of [
   ['make a game about a jeep driving through a canyon while firing rockets at drones', 'jeep', 'shoot', 'rocket'],
   ['in the bay, shrimp are what the swimming seahorse must catch', 'seahorse', 'catch', 'shrimp'],
   ['let a mechanic lubricate gears in a garage', 'mechanic', 'lubricate', 'gear'],
-] as const) test(`P42 admits unplayed ${verb} in the published UI: ${sentence}`, async ({ page, request }) => {
+] as const).entries()) test.describe(() => { test.use(person(examples.length + n + 1)); test(`P42 admits unplayed ${verb} in the published UI: ${sentence}`, async ({ page, request }) => {
   test.setTimeout(120000);
   await page.goto('/play');
   await page.getByLabel('Say it in one sentence').fill(sentence);
@@ -68,4 +73,4 @@ for (const [sentence, actor, verb, object] of [
   expect(scoreTriples([{ actor, verb, object }], verdict.witnesses, honesty?.unmet ?? []).silent).toEqual([]);
   if (honesty) await expect(page.getByTestId('play-honest-reason')).toContainText(honesty.reason);
   await expect(page.getByTestId('arcade-stage').locator('canvas')).toBeVisible();
-});
+}); });
