@@ -2,8 +2,7 @@
  * Vyhledání v tabulce sloves P44C (T6). Špatně odtržená koncovka vrátí `null` a hra vypadá jako
  * před P44C – chyba je neviditelná, proto test pinuje tvary i cíle.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { vocabVerb } from '../index';
 
@@ -48,14 +47,12 @@ describe('vocabVerb', () => {
   });
 
   it('keeps the table on the server: only lookup.ts imports verbs.json, components never import vocab', () => {
-    const files = (dir: string): string[] =>
-      readdirSync(dir).flatMap((name) => {
-        const path = join(dir, name);
-        return statSync(path).isDirectory() ? files(path) : /\.(ts|tsx)$/.test(name) ? [path.replace(/\\/g, '/')] : [];
-      });
-    const importers = files('src').filter((path) => /verbs\.json['"]/.test(readFileSync(path, 'utf8')) && !path.includes('__tests__'));
-    expect(importers).toEqual(['src/play/vocab/lookup.ts']);
-    const clients = files('src/components').filter((path) => /from ['"][^'"]*vocab/.test(readFileSync(path, 'utf8')));
-    expect(clients).toEqual([]);
+    // git grep: procházet celé `src/` přes fs pod souběžnou sadou trvá desítky sekund.
+    const grep = (pattern: string, path: string): string[] => {
+      const run = spawnSync('git', ['grep', '-lE', pattern, '--', `${path}/*.ts`, `${path}/*.tsx`], { encoding: 'utf8' });
+      return run.stdout.split('\n').filter((line) => line !== '' && !line.includes('__tests__'));
+    };
+    expect(grep(String.raw`verbs\.json['"]`, 'src')).toEqual(['src/play/vocab/lookup.ts']);
+    expect(grep(`from ['"][^'"]*vocab`, 'src/components')).toEqual([]);
   });
 });
