@@ -134,8 +134,9 @@ describe('logic block and rule constructs v2', () => {
       const parsed = modelRulesSchema.safeParse(rules);
       expect(parsed.success ? parsed.data : parsed.error.issues, file).toEqual(rules);
     }
-    expect(TEMPLATE_NAMES).toHaveLength(6);
-    for (const name of TEMPLATE_NAMES) {
+    // Šest šablon P29A je první v tabulce; ty s logikou (T8) hlídá `templates.test.ts`.
+    expect(TEMPLATE_NAMES.slice(0, 6)).toEqual(['carry', 'throw', 'push', 'open', 'give', 'stack']);
+    for (const name of TEMPLATE_NAMES.slice(0, 6)) {
       const rules = expandTemplate(name, { item: 'gem', goal: 'bat', target: 'bat', lever: 'gem', door: 'bat' })!;
       const parsed = modelRulesSchema.safeParse(rules);
       expect(parsed.success ? parsed.data : parsed.error.issues, name).toEqual(rules);
