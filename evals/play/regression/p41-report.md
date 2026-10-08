@@ -2,7 +2,7 @@
 
 Valid 40/40; compiled 40/40; eligible 40/40.
 Genre hits 18/32; historical target 26 (diagnostic only).
-Preservation failures 13/40; explicit admission is not preservation.
+Preservation failures 12/40; explicit admission is not preservation.
 Extracted essential triples plus survival duration; not full manual sentence preservation.
 
 | id | cell | eligible | missing triples | requested/actual seconds | preservation failure |
@@ -34,7 +34,7 @@ Extracted essential triples plus survival duration; not full manual sentence pre
 | hazard_crossing-1 | assembled.jump | true | [] | -/- | false |
 | hazard_crossing-2 | assembled.jump | true | [{"actor":"hero","verb":"cross","object":"field"},{"actor":"hero","verb":"linger","object":null}] | -/- | true |
 | hazard_crossing-3 | assembled.run | true | [{"actor":"hero","verb":"cross","object":"lake"},{"actor":"ice","verb":"crack","object":null},{"actor":"ice","verb":"every","object":null}] | -/- | true |
-| hazard_crossing-4 | assembled.jump | true | [{"actor":"hero","verb":"reach","object":"door"}] | -/- | true |
+| hazard_crossing-4 | assembled.jump | true | [] | -/- | false |
 | combat_lite-1 | assembled.roam | true | [] | -/- | false |
 | combat_lite-2 | assembled.roam | true | [] | -/- | false |
 | combat_lite-3 | assembled.roam | true | [] | -/- | false |

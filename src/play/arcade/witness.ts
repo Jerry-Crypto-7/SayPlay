@@ -225,6 +225,8 @@ export class WitnessRecorder {
   private readonly movementVerb: string | undefined;
   private readonly positions = new Map<number, { roleId: string; x: number; y: number; z: number }>();
   private readonly hurt = new Set<string>();
+  /** Keepers of a composed game: `assembly_gate_*` latches a native win there as `stateChange` 1 until the parts are done. */
+  private readonly latches: ReadonlySet<number>;
   private readonly start: readonly number[];
   private readonly thrown: { body: number; x: number; y: number; z: number; tick: number }[] = [];
   private readonly pendingLosses: { body: number; evidence: string }[] = [];
@@ -236,6 +238,7 @@ export class WitnessRecorder {
 
   constructor(world: ArcadeWorld, bindings: readonly RoleBinding[], run: 'winner' | 'probe', runId: string) {
     this.world = { ...world, rules: world.rules.map(underlyingRule) };
+    this.latches = new Set(world.rules.filter(rule => rule.id.startsWith('assembly_gate_')).map(rule => rule.params.keeper as number));
     this.run = run;
     this.runId = runId;
     this.bindings = new Map(bindings.map(b => [b.body, b]));
@@ -428,7 +431,8 @@ export class WitnessRecorder {
         this.add(verb, player, target?.body ?? null, tick, 'successful-timing', state);
       }
     }
-    if (effect.kind === 'win') {
+    // The gate's latch is the native win (the exit was touched); the later `assembly_finish` win has no contact.
+    if (effect.kind === 'win' || effect.kind === 'stateChange' && effect.state === 1 && this.latches.has(effect.body)) {
       if ((ref.id === 'finish' || ref.id === 'finish_collected' || ref.id === 'rule_contact') && (code === ROLE.goal || ['exit', 'destination'].includes(this.binding(other, state)?.roleKind ?? ''))) this.add('reach', player, other, tick, 'finish-contact', state);
       if (ref.id === 'survive_time') this.add('survive', player, null, tick, 'survival-timer', state);
       if (ref.id === 'judge' && this.control === 'timing' && this.world.control.params.mode === 'stack' && [...this.found.values()].some(w => w.verb === 'stack')) this.add('build', player, null, tick, 'stack-completed', state);
