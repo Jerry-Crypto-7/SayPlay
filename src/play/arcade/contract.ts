@@ -17,8 +17,14 @@ import type { z } from 'zod';
 export const ARCADE_HZ = 60;
 /** Jednotek na metr – pozice, rozměry i rychlosti (za tik) jsou celá čísla. */
 export const UNIT = 1000;
-/** Zvednout, když stejný svět a stejné vstupy dají jiný hash. */
-export const ARCADE_RUNTIME_VERSION = 'arcade-v2';
+/**
+ * Zvednout, když stejný svět a stejné vstupy dají jiný hash. `arcade-v3` (P45B) nese jen
+ * svět se stavem logiky; svět bez logiky dál razítkuje `ARCADE_RUNTIME_V2` a hraje bajt po
+ * bajtu jako dřív – uložené hry i jejich hashe se nepohnou.
+ */
+export const ARCADE_RUNTIME_VERSION = 'arcade-v3';
+export const ARCADE_RUNTIME_V2 = 'arcade-v2';
+export type ArcadeRuntimeVersion = 'arcade-v1' | typeof ARCADE_RUNTIME_V2 | typeof ARCADE_RUNTIME_VERSION;
 
 /** Meze, které drží smyčky jádra konečné a svět malý. */
 export const ARCADE_LIMITS = {
@@ -318,6 +324,8 @@ export const ROLE = {
    * tělo patří pravidlům.
    */
   thing: 12,
+  /** Logické tělo (P45B): mrtvé, nulového rozměru, nese stav logiky (`LOGIC_SLOTS`). */
+  logic: 13,
 } as const;
 export type ArcadeRole = keyof typeof ROLE;
 export type ArcadeRoleCode = (typeof ROLE)[ArcadeRole];
@@ -361,6 +369,63 @@ export type ArcadeState = Int32Array;
 
 export const stateSize = (bodies: number): number => HEADER_SIZE + bodies * BODY_STRIDE;
 export const bodyBase = (index: number): number => HEADER_SIZE + index * BODY_STRIDE;
+
+// ---------------------------------------------------------------------------
+// Stav logiky (P45B)
+
+/**
+ * Logických těl ve světě s blokem `logic`. Leží těsně pod `HEADER.spawnBase`, takže je spawn
+ * nikdy nepřepíše, a nemění hlavičku ani výpočet kapacity – svět bez logiky je nemá vůbec.
+ */
+export const LOGIC_BODIES = 2;
+
+/**
+ * Sloty stavu logiky jako posun od prvního slotu prvního logického těla. Logické tělo je mrtvé
+ * a nulového rozměru; logika bere jen polohu, rychlost a `aux`, které jádro u mrtvého těla
+ * nečte – příznaky, rozměr, roli a model nechává jádru.
+ */
+export const LOGIC_SLOTS = {
+  /** Index aktuální fáze (0 = počáteční). */
+  phase: BODY.x,
+  /** Čekající vstupy (bity 0–3) a výstupy (bity 4–7) fází pro průchod fází. */
+  phasePending: BODY.y,
+  /** Tik posledního vstupu do fáze. */
+  phaseTick: BODY.z,
+  /** Čekající události, bit na událost. */
+  eventPending: BODY.vx,
+  /**
+   * Co vystřelilo v právě běžícím průchodu logiky: časovače bity 0–3, vstupy fází 4–7, výstupy
+   * 8–11, události 12–19; bity 20–23 = časovač spuštěný v tomto tiku (průchod časovačů ho
+   * ještě neodečte). Po průchodech logiky je 0.
+   */
+  fired: BODY.vy,
+  /** Západky překročení mezí proměnných, bit na pravidlo (`latch`). */
+  varLatch: BODY.vz,
+  /** Zbylé tiky časovačů 0–1 a 2–3 (dolních a horních 16 bitů); 0 = stojí. */
+  timers01: BODY.aux0,
+  timers23: BODY.aux1,
+} as const;
+
+/** Proměnné 0–7 ve druhém logickém těle. */
+export const LOGIC_VAR_SLOTS = [BODY.x, BODY.y, BODY.z, BODY.vx, BODY.vy, BODY.vz, BODY.aux0, BODY.aux1].map((slot) => BODY_STRIDE + slot);
+
+export const FIRED = { timer: 0, phaseEnter: 4, phaseExit: 8, event: 12, freshTimer: 20 } as const;
+
+/** První slot prvního logického těla; jen ve světě s logikou. */
+export const logicBase = (state: ArcadeState): number => bodyBase((state[HEADER.spawnBase] as number) - LOGIC_BODIES);
+const timerSlot = (timer: number): number => (timer < 2 ? LOGIC_SLOTS.timers01 : LOGIC_SLOTS.timers23);
+const timerShift = (timer: number): number => (timer % 2) * 16;
+/** Zbylé tiky časovače; 0 = stojí. */
+export const timerLeft = (state: ArcadeState, base: number, timer: number): number => ((state[base + timerSlot(timer)] as number) >>> timerShift(timer)) & 0xffff;
+export function setTimerLeft(state: ArcadeState, base: number, timer: number, ticks: number): void {
+  const slot = base + timerSlot(timer);
+  const shift = timerShift(timer);
+  state[slot] = ((state[slot] as number) & ~(0xffff << shift)) | (ticks << shift);
+}
+export const varValue = (state: ArcadeState, base: number, index: number): number => state[base + (LOGIC_VAR_SLOTS[index] as number)] as number;
+export const phaseOf = (state: ArcadeState, base: number): number => state[base + LOGIC_SLOTS.phase] as number;
+/** Vystřelil v tomto průchodu logiky bit `FIRED.<druh> + index`? */
+export const firedBit = (state: ArcadeState, base: number, bit: number): boolean => (((state[base + LOGIC_SLOTS.fired] as number) >>> bit) & 1) === 1;
 
 // ---------------------------------------------------------------------------
 // Vstup
@@ -482,7 +547,21 @@ export type ArcadeEffect =
    * Sebrání v kombu (P36A T5): počítadlo `body` (`COMBO`) si zapíše násobič,
    * tik a životy. Zároveň je to zpráva pro efekty scény (P36C) – „×3“.
    */
-  | { readonly kind: 'combo'; readonly body: number; readonly multiplier: number };
+  | { readonly kind: 'combo'; readonly body: number; readonly multiplier: number }
+  /**
+   * Logika (P45B), indexy z deklarace `logic`: proměnná na hodnotu / o kolik (saturuje na
+   * ±`LOGIC_LIMITS.varSaturation`), přechod do fáze, spuštění / zastavení časovače, vyslání
+   * události. Stopu ohlásí jen skutečná změna – nastavení na tutéž hodnotu, vstup do fáze, ve
+   * které hra už je, start běžícího časovače na týž zbytek ani vyslání čekající události ne.
+   */
+  | { readonly kind: 'setVar'; readonly var: number; readonly value: number }
+  | { readonly kind: 'addVar'; readonly var: number; readonly amount: number }
+  | { readonly kind: 'goPhase'; readonly phase: number }
+  | { readonly kind: 'startTimer'; readonly timer: number; readonly ticks: number }
+  | { readonly kind: 'stopTimer'; readonly timer: number }
+  | { readonly kind: 'emit'; readonly event: number }
+  /** Západka překročení meze proměnné (bit `bit` v `varLatch`); účetnictví spouštěče, stopu nehlásí. */
+  | { readonly kind: 'latch'; readonly bit: number; readonly on: boolean };
 
 /**
  * `hit` = projektil skončil: zasáhl terč, nepřítele nebo pevné tělo (`other`),
@@ -491,7 +570,13 @@ export type ArcadeEffect =
  * `press` (P29A) = hned po ovládání, s vstupem tiku: pravidlo samo pozná, zda
  * hráč stiskl, co ho zajímá.
  */
-export type RuleTrigger = 'contact' | 'tick' | 'counter' | 'hit' | 'press';
+export type RuleTrigger = 'contact' | 'tick' | 'counter' | 'hit' | 'press' | LogicTrigger;
+/**
+ * Průchody logiky (P45B) za průchodem čítačů, jen ve světě s logikou: `timer` = některý časovač
+ * doběhl, `phase` = hra vstoupila do fáze nebo z ní odešla, `event` = čekající události. Co
+ * přesně vystřelilo, nese `LOGIC_SLOTS.fired` (`firedBit`).
+ */
+export type LogicTrigger = 'timer' | 'phase' | 'event';
 
 /** Co pravidlo vidí: stav jen ke čtení, hráč a u `contact` těl, se kterým se dotkl. */
 export interface RuleContext {
@@ -644,7 +729,9 @@ export const mapUnderlying = (ref: PieceRef, edit: (native: PieceRef) => PieceRe
  * v tiku 0; `kinds` převádí `BODY.kind` na id modelu z katalogu.
  */
 export interface ArcadeWorld {
-  readonly runtimeVersion: typeof ARCADE_RUNTIME_VERSION;
+  readonly runtimeVersion: ArcadeRuntimeVersion;
+  /** Logická těla (P45B), jen ve světě s blokem `logic` (`arcade-v3`). */
+  readonly logic?: { readonly bodies: readonly number[] };
   readonly seed: number;
   readonly control: PieceRef;
   readonly rules: readonly PieceRef[];

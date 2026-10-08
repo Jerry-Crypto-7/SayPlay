@@ -17,7 +17,7 @@ import { type ArcadeParts, addonControlParams, addonLives, applyAddons, mapUnder
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
-  ARCADE_RUNTIME_VERSION,
+  ARCADE_RUNTIME_V2,
   type ArcadeLevel,
   type ArcadeWorld,
   type BodyInit,
@@ -54,8 +54,10 @@ import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
 import { bindRoles, type RoleBinding } from './witness';
 
-/** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra. */
-export const ARCADE_COMPILER_VERSION = `${GAME_COMPILER_VERSION}/${ARCADE_RUNTIME_VERSION}`;
+/** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra, kterou svět nese (P45B: jen svět s logikou je `arcade-v3`). */
+export const arcadeCompilerVersion = (world: Pick<ArcadeWorld, 'runtimeVersion'>): string => `${GAME_COMPILER_VERSION}/${world.runtimeVersion}`;
+/** Verze hry bez logiky – všech her před P45B. */
+export const ARCADE_COMPILER_VERSION = arcadeCompilerVersion({ runtimeVersion: ARCADE_RUNTIME_V2 });
 
 export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld; readonly roleBindings: readonly RoleBinding[] } | { readonly ok: false; readonly issues: readonly string[] };
 
@@ -329,7 +331,7 @@ export function compileArcade(spec: GameSpecV1, seed: number): CompileGameResult
       spec,
       specHash: canonicalHash(spec),
       seed,
-      compilerVersion: ARCADE_COMPILER_VERSION,
+      compilerVersion: arcadeCompilerVersion(world),
       blueprint: null,
       arcade: world,
       worldHash: canonicalHash(world),

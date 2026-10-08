@@ -127,6 +127,15 @@ function changeOf(effect: ArcadeEffect, after: ArcadeState, tick: number): strin
       return `body ${String(effect.body)} hit, hp now ${String(bodyHp(after, effect.body))} ${at}`;
     case 'stateChange':
       return `body ${String(effect.body)} now in state ${String(targetStateOf(after, effect.body))} ${at}`;
+    // Logika (P45B): svědky změn dopíše T7; do té doby žádný svět logiku nemá.
+    case 'setVar':
+    case 'addVar':
+    case 'goPhase':
+    case 'startTimer':
+    case 'stopTimer':
+    case 'emit':
+    case 'latch':
+      return null;
   }
 }
 
