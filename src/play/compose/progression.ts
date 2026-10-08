@@ -30,6 +30,20 @@ export const dependsOnSchema = z.array(z.object({ goal: id, action: z.enum(['col
 });
 export type Dependency = z.infer<typeof dependsOnSchema>[number];
 
+/** Rychlost úseků křivky napětí (P45C): úvod, stupňování, vrchol, finále. */
+export const CURVE_SPEEDS = [90, 100, 115, 125] as const;
+
+/**
+ * Fáze z křivky napětí `[postup ‰, intenzita ‰][]` (`TENSION_CURVE`): úsek začíná
+ * na každém postupu, kde křivka má bod, poslední bod (1000) úsek nezačíná.
+ * Rychlost podle pořadí úseku z `CURVE_SPEEDS`; křivka s jiným počtem úseků je chyba.
+ */
+export function phasesFromCurve(curve: readonly (readonly [number, number])[]): Phase[] {
+  const starts = [...new Set(curve.map(([at]) => at))].filter((at) => at < 1000);
+  if (starts.length !== CURVE_SPEEDS.length) throw new Error(`Tension curve needs ${CURVE_SPEEDS.length} sections, has ${starts.length}`);
+  return starts.map((start, index) => ({ start, speedPercent: CURVE_SPEEDS[index] as number }));
+}
+
 export function phaseSpeed(base: number, position: number, length: number, phases?: readonly Phase[]): number {
   if (phases === undefined) return base;
   if (length <= 0) throw new Error('Pacing needs a real positive course length');
