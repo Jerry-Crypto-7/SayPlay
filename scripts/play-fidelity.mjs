@@ -787,10 +787,11 @@ export async function pairwise(options, { ask, compose } = {}) {
   const schemaFile = join(pairDir, 'pair-schema.json');
   writeJson(schemaFile, PAIR_SCHEMA);
   const judgeOf = ask ?? (await import('./p37d/judge-sheet.mjs')).ask;
+  // Slib, ne prohlížeč: dvě vlákna by jinak oba viděla `null` a jeden prohlížeč by nikdo nezavřel.
   let browser = null;
   const composeOf = compose ?? (async (l, r, path) => {
-    if (browser === null) browser = await createRequire(import.meta.url)('@playwright/test').chromium.launch();
-    const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
+    browser ??= createRequire(import.meta.url)('@playwright/test').chromium.launch();
+    const page = await (await browser).newPage({ viewport: { width: 1100, height: 800 } });
     await pairSheet(page, l, r, path);
     await page.close();
   });
@@ -817,7 +818,7 @@ export async function pairwise(options, { ask, compose } = {}) {
   try {
     await Promise.all(Array.from({ length: Math.max(1, Number(options.concurrency ?? 2)) }, worker));
   } finally {
-    if (browser !== null) await browser.close();
+    if (browser !== null) await (await browser).close();
   }
   const verdict = {
     schema: 'pairwise.v1',
