@@ -19,7 +19,8 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   test: {
-    include: ['evals/**/*.measure.ts'],
+    // Generátory zmrazených fixtur u testů (P45B T2) jedou stejnou cestou.
+    include: ['evals/**/*.measure.ts', 'src/**/__fixtures__/*.measure.ts'],
     exclude: ['node_modules/**', 'e2e/**', '.next/**'],
     // Měření běží v jednom procesu a po jedné větě: paralelní soubory by si
     // sáhly na týž strop utrácení a na týž report.
