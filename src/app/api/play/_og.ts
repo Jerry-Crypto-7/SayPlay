@@ -23,7 +23,7 @@ import { createElement as h } from 'react';
 
 import catalog from '@/assets/catalog.json';
 import { color } from '@/brand/tokens';
-import { CAN_YOU_BEAT_IT, DARE_BADGE } from '@/components/play/starters';
+import { CAN_YOU_BEAT_IT, DARE_BADGE, daresYou } from '@/components/play/starters';
 import { clockText } from '@/components/play/ui/GameHud';
 import { canonicalHash } from '@/ir/worlddoc';
 import { ARCADE_HZ } from '@/play/arcade/contract';
@@ -112,6 +112,8 @@ const FONT_FILES = [
 export interface DareBadge {
   readonly time: string | null;
   readonly word: string;
+  /** Výzva s autorem (P44B T7): „Ada dares you“ nad odznakem. */
+  readonly lead?: string;
 }
 
 /**
@@ -143,12 +145,14 @@ export function dareBadge(spec: GameSpecV1): DareBadge {
  * Odznak odkazu výzvy (P36B T8): výsledek kamaráda, který server ověřil
  * přehráním (`DareRecord`) – body („2,450 to beat“), bez bodů jeho čas
  * („31.0s to beat“), stejně jako cíl výzvy v HUD. Výhra hry na přežití trvá
- * vždy celý limit, takže bez bodů zůstane její odznak „Survive!“.
+ * vždy celý limit, takže bez bodů zůstane její odznak „Survive!“. `by` = přezdívka
+ * autora, která už prošla `shownNickname` (P44B T7) – jiný text z úložiště na kartu nejde.
  */
-export function dareScoreBadge(spec: GameSpecV1, dare: Pick<DareRecord, 'score' | 'ticks'>): DareBadge {
-  if (dare.score > 0) return { time: dare.score.toLocaleString('en-US'), word: DARE_BADGE.dare };
+export function dareScoreBadge(spec: GameSpecV1, dare: Pick<DareRecord, 'score' | 'ticks'>, by?: string): DareBadge {
+  const lead = by === undefined ? {} : { lead: daresYou(by) };
+  if (dare.score > 0) return { time: dare.score.toLocaleString('en-US'), word: DARE_BADGE.dare, ...lead };
   const own = dareBadge(spec);
-  return own.word === DARE_BADGE.survive ? own : { time: clockText(dare.ticks / ARCADE_HZ), word: DARE_BADGE.dare };
+  return own.word === DARE_BADGE.survive ? { ...own, ...lead } : { time: clockText(dare.ticks / ARCADE_HZ), word: DARE_BADGE.dare, ...lead };
 }
 
 /**
@@ -308,10 +312,16 @@ function dareCard(spec: GameSpecV1, hero: string | null, logo: string | null, su
       h('div', { style: { fontSize: long ? 56 : 72, fontWeight: 900, lineHeight: 1.05, letterSpacing: long ? -1.7 : -2.2 } }, spec.title),
       h(
         'div',
-        { style: { display: 'flex', alignItems: 'center', gap: 36 } },
-        badge(sun),
-        // Šířka láme otázku na „Can you / beat it?“, ne „Can you beat / it?“.
-        h('div', { style: { width: 240, fontSize: 54, fontWeight: 900, lineHeight: 1.02, letterSpacing: -1.6 } }, CAN_YOU_BEAT_IT),
+        { style: { display: 'flex', flexDirection: 'column', gap: 20 } },
+        // Kdo vyzývá (P44B T7) stojí nad odznakem s jeho výsledkem.
+        sun.lead === undefined ? null : h('div', { style: { fontSize: 40, fontWeight: 900, lineHeight: 1.05, letterSpacing: -1.2 } }, sun.lead),
+        h(
+          'div',
+          { style: { display: 'flex', alignItems: 'center', gap: 36 } },
+          badge(sun),
+          // Šířka láme otázku na „Can you / beat it?“, ne „Can you beat / it?“.
+          h('div', { style: { width: 240, fontSize: 54, fontWeight: 900, lineHeight: 1.02, letterSpacing: -1.6 } }, CAN_YOU_BEAT_IT),
+        ),
       ),
       h('div', { style: { display: 'flex', justifyContent: 'flex-end' } }, logo === null ? null : h('img', { src: logo, width: Math.round(60 * LOGO_RATIO), height: 60 })),
     ),
@@ -348,19 +358,20 @@ export interface GamePreview {
 /**
  * PNG náhled konkrétní verze, s výzvou (P36B T8) její výsledek na odznaku.
  * Verze ani výzva se nemění, takže klíč `versionId` (s výzvou
- * `versionId:dareId`) stačí a úplný render se platí jednou na kartu a proces.
+ * `versionId:dareId`, s autorem i jeho přezdívka `by` – ta se měnit smí) stačí a úplný
+ * render se platí jednou na kartu a proces.
  * Selhání vrátí `null` a nezapamatuje se – další požadavek zkusí kreslit znovu.
  */
-export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin: string | null, dare: DareRecord | null = null): Promise<GamePreview | null> {
-  const key = dare === null ? versionId : `${versionId}:${dare.dareId}`;
+export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin: string | null, dare: DareRecord | null = null, by?: string): Promise<GamePreview | null> {
+  const key = dare === null ? versionId : `${versionId}:${dare.dareId}${by === undefined ? '' : `:${by}`}`;
   const ready = PREVIEWS.get(key);
   if (ready !== undefined) return { png: ready, complete: true };
   try {
     const model = heroModel(spec);
     const [hero, fonts, logo] = await Promise.all([heroImage(model, origin), dareFonts(origin), logoLockup(origin)]);
-    const complete = (hero !== null || !THUMBNAILS.has(model)) && fonts !== null && logo !== null && fontCovers(spec.title);
     // Bez Roboto kreslí `next/og` svým výchozím písmem – náhled je pak jen dočasný (`complete: false`).
-    const sun = dare === null ? dareBadge(spec) : dareScoreBadge(spec, dare);
+    const sun = dare === null ? dareBadge(spec) : dareScoreBadge(spec, dare, by);
+    const complete = (hero !== null || !THUMBNAILS.has(model)) && fonts !== null && logo !== null && fontCovers(spec.title) && fontCovers(sun.lead ?? '');
     const response = new ImageResponse(dareCard(spec, hero, logo, sun), { width: OG_WIDTH, height: OG_HEIGHT, ...(fonts === null ? {} : { fonts: [...fonts] }) });
     const png = new Uint8Array(await response.arrayBuffer());
     if (complete) {

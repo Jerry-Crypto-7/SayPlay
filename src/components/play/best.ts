@@ -84,6 +84,8 @@ export interface Dare {
   readonly ticks: number;
   /** Kamarád hrál se živými změnami – jeho výsledek patří změněné hře. */
   readonly liveChanges: number;
+  /** Přezdívka autora výzvy (P44B T7), už prošlá `shownNickname`; chybí u výzvy bez identity. */
+  readonly by?: string;
 }
 
 const points = (value: number): string => value.toLocaleString('en-US');

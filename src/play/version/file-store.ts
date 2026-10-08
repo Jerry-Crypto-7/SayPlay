@@ -160,5 +160,25 @@ export function saveMemoryKey(dir: string, state: MemoryState, key: string): voi
   };
   const temporary = `${path}.${String(process.pid)}.tmp`;
   writeFileSync(temporary, JSON.stringify(record));
-  renameSync(temporary, path);
+  renameOver(temporary, path);
+}
+
+const pause = new Int32Array(new SharedArrayBuffer(4));
+const BUSY = new Set(['EPERM', 'EBUSY', 'EACCES']);
+
+/**
+ * `rename` přes existující soubor na Windows občas narazí na cizí otevřený handle (antivir,
+ * indexer): naměřeno 7. 10. 2026, 44 z 2 000 rychlých přepisů téhož klíče skončilo `EPERM`,
+ * s opakováním po 1–2 ms žádný (P44B T3). Bez opakování z toho bylo 503 u hry či přezdívky.
+ */
+function renameOver(from: string, to: string): void {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      renameSync(from, to);
+      return;
+    } catch (thrown) {
+      if (attempt >= 6 || !BUSY.has((thrown as NodeJS.ErrnoException).code ?? '')) throw thrown;
+      Atomics.wait(pause, 0, 0, 2 ** attempt);
+    }
+  }
 }
