@@ -1,0 +1,328 @@
+{
+ "about": "P45D T3 alive meter: 6 frames 150 ms apart of the robot playing the draft game, cropped around the hero into one 3 x 2 sheet; one blind Codex call per sentence (sheet.png only) answers what the character is (likeNoun = matches the sentence hero) and whether its body moves the way such a thing would (alive). toy = the ?toy=off switch. See scripts/p45d/alive-clip.mjs and evals/play/p45d/README.md.",
+ "run": "p45d-alive-baseline",
+ "set": "evals/play/p43/panel.json",
+ "toy": "on",
+ "measuredAt": "2026-10-08T17:59:43.235Z",
+ "calls": 23,
+ "summary": {
+  "sentences": 23,
+  "judged": 23,
+  "alive": {
+   "hit": 17,
+   "of": 23,
+   "share": 0.739
+  },
+  "likeNoun": {
+   "hit": 9,
+   "of": 23,
+   "share": 0.391
+  },
+  "moving": {
+   "hit": 21,
+   "of": 23,
+   "share": 0.913
+  }
+ },
+ "rows": [
+  {
+   "id": "f01",
+   "noun": "dragon",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "demon",
+    "doing": "Flapping its wings and turning",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "f02",
+   "noun": "ogre",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "golem",
+    "doing": "rising from a crouch",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "f03",
+   "noun": "elf archer",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "archer",
+    "doing": "Shooting arrows, then lowering its bow",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": true
+  },
+  {
+   "id": "f04",
+   "noun": "troll",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "tree monster",
+    "doing": "Walking across the grass",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "f05",
+   "noun": "fairy",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "Lizard",
+    "doing": "Walking",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "f08",
+   "noun": "unicorn",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "car",
+    "doing": "Driving forward",
+    "alive": false
+   },
+   "alive": false,
+   "likeNoun": false
+  },
+  {
+   "id": "f11",
+   "noun": "necromancer",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "wizard",
+    "doing": "Fighting a small armored opponent",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": true
+  },
+  {
+   "id": "f12",
+   "noun": "baby dragon",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "bat",
+    "doing": "Hovering with wings outstretched",
+    "alive": false
+   },
+   "alive": false,
+   "likeNoun": false
+  },
+  {
+   "id": "f17",
+   "noun": "phoenix",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "butterfly",
+    "doing": "Flying past green pipes",
+    "alive": false
+   },
+   "alive": false,
+   "likeNoun": false
+  },
+  {
+   "id": "f22",
+   "noun": "knight",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "knight",
+    "doing": "rising from a crouch while holding a sword",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": true
+  },
+  {
+   "id": "f24",
+   "noun": "cyclops",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "farmer",
+    "doing": "Throwing a ball",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "f26",
+   "noun": "broom",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "broom",
+    "doing": "standing upright on a path",
+    "alive": false
+   },
+   "alive": false,
+   "likeNoun": true
+  },
+  {
+   "id": "m09",
+   "noun": "ninja cat",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "boy",
+    "doing": "jumping across gaps between platforms",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "m16",
+   "noun": "kangaroo",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "kangaroo",
+    "doing": "hopping across platforms",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": true
+  },
+  {
+   "id": "m17",
+   "noun": "grandma",
+   "moving": false,
+   "frames": 6,
+   "answer": {
+    "character": "elderly woman",
+    "doing": "standing still",
+    "alive": false
+   },
+   "alive": false,
+   "likeNoun": true
+  },
+  {
+   "id": "u08",
+   "noun": "mole",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "farmer",
+    "doing": "walking across the grass",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "d01",
+   "noun": "hedgehog",
+   "moving": false,
+   "frames": 6,
+   "answer": {
+    "character": "hedgehog",
+    "doing": "standing still",
+    "alive": false
+   },
+   "alive": false,
+   "likeNoun": true
+  },
+  {
+   "id": "d03",
+   "noun": "witch",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "turret",
+    "doing": "Turning and firing projectiles",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "d08",
+   "noun": "mermaid",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "snake",
+    "doing": "Swaying among glowing orbs",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "d10",
+   "noun": "pirate",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "warrior",
+    "doing": "Rising from a crouch and raising a weapon",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "d12",
+   "noun": "goldfish",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "fish",
+    "doing": "swimming",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": true
+  },
+  {
+   "id": "d14",
+   "noun": "bear",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "spider",
+    "doing": "Crawling along the ground",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": false
+  },
+  {
+   "id": "s035",
+   "noun": "bird",
+   "moving": true,
+   "frames": 6,
+   "answer": {
+    "character": "bird",
+    "doing": "Hopping up and down",
+    "alive": true
+   },
+   "alive": true,
+   "likeNoun": true
+  }
+ ]
+}
