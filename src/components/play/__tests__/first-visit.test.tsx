@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CreateGame } from '../CreateGame';
-import { FIRST_VISIT_KEY, FirstVisitHint, isFirstVisit, markVisited } from '../FirstVisitHint';
+import { FIRST_VISIT_KEY, FirstVisitHint, HIDE_FOR_RETURNING, isFirstVisit, markVisited } from '../FirstVisitHint';
 import { JUDGE_PICKS, NOT_NOW, TRY_YOUR_OWN } from '../starters';
 
 /**
@@ -58,8 +58,39 @@ describe('FirstVisitHint', () => {
     expect(markup).toMatch(new RegExp(`data-testid="play-first-visit-close"[^>]*>${NOT_NOW}</button>`));
   });
 
-  // Server úložiště nezná: kdyby nápovědu vykreslil, vracející se hráč by ji viděl problesknout a hydratace by nesouhlasila.
-  it('stránka ze serveru ji nevykreslí, ukáže se až v prohlížeči', () => {
-    expect(renderToStaticMarkup(createElement(CreateGame))).not.toContain('play-first-visit');
+  // Vložená až po načtení by pole posunula dolů pod prstem (T18): proto je v HTML ze serveru pro každého.
+  it('stránka ze serveru ji vykreslí nad polem', () => {
+    const page = renderToStaticMarkup(createElement(CreateGame));
+    expect(page.indexOf('data-testid="play-first-visit"')).toBeGreaterThan(-1);
+    expect(page.indexOf('data-testid="play-first-visit"')).toBeLessThan(page.indexOf('class="play-form"'));
+  });
+});
+
+describe('HIDE_FOR_RETURNING', () => {
+  /** Spustit skript stránky nad daným úložištěm; vrátí styly, které vložil do `<head>`. */
+  function run(storage: () => Pick<Storage, 'getItem'>): string[] {
+    const head: string[] = [];
+    const style = { textContent: '' };
+    const document = { createElement: () => style, head: { appendChild: () => void head.push(style.textContent) } };
+    const window = {};
+    Object.defineProperty(window, 'localStorage', { get: storage });
+    new Function('window', 'document', `with (window) { ${HIDE_FOR_RETURNING} }`)(window, document);
+    return head;
+  }
+
+  it('vracejícímu se hráči nápovědu schová a poli nechá odsazení bez ní', () => {
+    const storage = memoryStorage();
+    storage.setItem(FIRST_VISIT_KEY, '1');
+    expect(HIDE_FOR_RETURNING).toContain(JSON.stringify(FIRST_VISIT_KEY));
+    expect(run(() => storage)).toEqual(['.play-first-visit{display:none}.play-first-visit+.play-form{margin-top:var(--sp-space-6)}']);
+  });
+
+  it('první návštěvě ani prohlížeči bez úložiště nic neschová a nic nehodí', () => {
+    expect(run(() => memoryStorage())).toEqual([]);
+    expect(
+      run(() => {
+        throw new DOMException('The operation is insecure.', 'SecurityError');
+      }),
+    ).toEqual([]);
   });
 });

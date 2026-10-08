@@ -14,6 +14,17 @@ import { Button, Chip } from './ui';
 
 export const FIRST_VISIT_KEY = 'sp-first-visit';
 
+/**
+ * Inline skript pro `src/app/play/page.tsx` (P44D T18), parsuje se před
+ * nápovědou: server ji vykreslí každému, a vracejícímu se hráči ji tenhle
+ * skript schová stylem v `<head>` dřív, než ji prohlížeč poprvé namaluje.
+ * `CreateGame` ji po hydrataci odebere z DOM. Druhé pravidlo vrací poli
+ * odsazení, které mu bere `.play-first-visit + .play-form` v `play.css` –
+ * sourozenec se počítá i schovaný, a bez něj by pole poskočilo při odebrání.
+ * Styl, ne atribut na `<html>`: ten by hydratace nahlásila jako neshodu.
+ */
+export const HIDE_FOR_RETURNING = `try{if(localStorage.getItem(${JSON.stringify(FIRST_VISIT_KEY)})!==null){var s=document.createElement('style');s.textContent='.play-first-visit{display:none}.play-first-visit+.play-form{margin-top:var(--sp-space-6)}';document.head.appendChild(s)}}catch(e){}`;
+
 type KeyStore = Pick<Storage, 'getItem' | 'setItem'>;
 
 const browserStorage = (): KeyStore => window.localStorage;

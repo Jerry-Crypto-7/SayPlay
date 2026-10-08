@@ -26,6 +26,47 @@ async function openHint(page: Page): Promise<void> {
   await expect(page.getByTestId('play-first-visit')).toBeVisible();
 }
 
+type Frame = { y: number; hint: boolean; hydrated: boolean };
+
+/**
+ * Otevře `/play` a vrátí namalované snímky (`requestAnimationFrame`) od
+ * prvního, na kterém je pole věty, do deseti snímků po hydrataci: kde pole
+ * stálo a jestli byla vidět nápověda (P44D T18). Hydratovaný uzel nese klíč
+ * `__reactFiber…`. Skripty Next dorazí o 500 ms později jako na pomalém
+ * telefonu, kde je poskočení vidět: bez toho stihne studený server hydratovat
+ * dřív, než prohlížeč HTML poprvé namaluje, a nebylo by co měřit.
+ */
+async function framesUntilHydrated(page: Page): Promise<Frame[]> {
+  await page.route('**/_next/static/chunks/**', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.continue();
+  });
+  await page.addInitScript(() => {
+    const frames: Frame[] = [];
+    Object.assign(window, { __frames: frames });
+    const tick = (): void => {
+      const field = document.querySelector('[data-testid="play-sentence"]');
+      if (field !== null) {
+        const hint = document.querySelector<HTMLElement>('[data-testid="play-first-visit"]');
+        const hydrated = Object.keys(field).some((key) => key.startsWith('__reactFiber'));
+        frames.push({ y: field.getBoundingClientRect().y, hint: hint !== null && hint.offsetHeight > 0, hydrated });
+      }
+      if (frames.filter((frame) => frame.hydrated).length < 10) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  await page.goto('/play', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => (window as unknown as { __frames: Frame[] }).__frames.filter((frame) => frame.hydrated).length >= 10);
+  const frames = await page.evaluate(() => (window as unknown as { __frames: Frame[] }).__frames);
+  expect(frames[0]!.hydrated, 'the first painted frame is the server HTML').toBe(false);
+  return frames;
+}
+
+function spread(frames: Frame[]): number {
+  const ys = frames.map((frame) => frame.y);
+  return Math.max(...ys) - Math.min(...ys);
+}
+
 test.describe('/play – first visit hint', () => {
   // Vlastní adresa: hry odsud neubírají strop dveří (50 za 10 s na adresu) specům, které běží hned po tomhle.
   test.use({ extraHTTPHeaders: { 'x-forwarded-for': '198.51.100.30' } });
@@ -48,6 +89,22 @@ test.describe('/play – first visit hint', () => {
     await expect(field).toBeFocused();
     await page.waitForTimeout(300);
     expect(posted).toBe(0);
+  });
+
+  test('a first visit paints the hint from the first frame and the prompt never moves', async ({ page }) => {
+    await page.setViewportSize(PHONE);
+    const frames = await framesUntilHydrated(page);
+    expect(frames.every((frame) => frame.hint)).toBe(true);
+    expect(spread(frames)).toBeLessThanOrEqual(1);
+  });
+
+  test('a returning player never sees the hint and the prompt never moves', async ({ page }) => {
+    await page.setViewportSize(PHONE);
+    await page.addInitScript(() => window.localStorage.setItem('sp-first-visit', '1'));
+    const frames = await framesUntilHydrated(page);
+    expect(frames.some((frame) => frame.hint)).toBe(false);
+    expect(spread(frames)).toBeLessThanOrEqual(1);
+    await expect(page.getByTestId('play-first-visit')).toHaveCount(0);
   });
 
   test('Try your own focuses the empty prompt', async ({ page }) => {

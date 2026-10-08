@@ -1336,6 +1336,7 @@ button.play-version-switch__item:not(:disabled) {
   margin-top: var(--sp-space-6);
 }
 
+/* Schovaná karta je dál sourozenec: `HIDE_FOR_RETURNING` (FirstVisitHint.tsx) vrací poli `--sp-space-6` sám. */
 .play-first-visit + .play-form {
   margin-top: var(--sp-space-4);
 }
