@@ -21,6 +21,18 @@
       "verb.stative"
     ]
   },
+  "nouns": {
+    "about": "Roots of concrete nouns for --nouns: organism, natural_object, food/nutrient, artifact, solid food, imaginary_being, mythical_being.",
+    "roots": [
+      "oewn-00004475-n",
+      "oewn-00019308-n",
+      "oewn-00021445-n",
+      "oewn-00022119-n",
+      "oewn-07571428-n",
+      "oewn-09506868-n",
+      "oewn-09507794-n"
+    ]
+  },
   "probes": [
     "stab",
     "sprint",

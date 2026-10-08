@@ -4,6 +4,7 @@
  *
  *   node scripts/vocab/build.mjs              postaví src/play/vocab/verbs.json + manifest.json vybranou metodou
  *   node scripts/vocab/build.mjs --check      postaví do dočasné složky; 0 jen při shodě bajtů s repem
+ *   node scripts/vocab/build.mjs --nouns      vypíše konkrétní podstatná jména OEWN pro scripts/p37a/nearest.mjs
  *   node scripts/vocab/build.mjs --evaluate   změří tři metody na zlaté sadě → evals/play/p44c/method.json,
  *                                             vybranou variantu a práh zapíše do config.json
  *
@@ -251,6 +252,7 @@ function evaluate() {
 // stavba tabulky (výchozí) a --check
 
 const TABLE_FILES = { verbs: 'src/play/vocab/verbs.json', manifest: 'src/play/vocab/manifest.json' };
+const NEAREST = 'src/play/arcade/nearest.json';
 const lfSha = (text) => createHash('sha256').update(text.replace(/\r\n/g, '\n')).digest('hex');
 const lfShaOf = (url) => lfSha(readFileSync(url, 'utf8'));
 
@@ -274,6 +276,7 @@ function buildTable() {
     const row = [axis === null ? -1 : targets.indexOf(axis[0]), hero === null ? -1 : targets.indexOf(hero[0]), Math.round((axis ?? hero)[1] * 1000)];
     rows.push(`${JSON.stringify(lemma)}:${JSON.stringify(row)}`);
   }
+  const nearest = readFileSync(here(`../../${NEAREST}`), 'utf8').replace(/\r\n/g, '\n');
   const verbs = `{"sentinel":"p44c-vocab-verbs","targets":${JSON.stringify(targets)},"verbs":{\n${rows.join(',\n')}\n}}\n`;
   const manifest = {
     about: 'P44C: inputs and output of src/play/vocab/verbs.json. Written by node scripts/vocab/build.mjs; SHA-256 over LF bytes.',
@@ -284,7 +287,11 @@ function buildTable() {
       config: { path: 'scripts/vocab/config.json', sha256: lfShaOf(CONFIG_URL) },
       embed: config.embed,
     },
-    outputs: { verbs: { path: TABLE_FILES.verbs, sha256: lfSha(verbs), entries: rows.length, bytes: Buffer.byteLength(verbs) } },
+    outputs: {
+      verbs: { path: TABLE_FILES.verbs, sha256: lfSha(verbs), entries: rows.length, bytes: Buffer.byteLength(verbs) },
+      // Píše ho scripts/p37a/nearest.mjs (embeddingy, ~4 min) – tady se jen pinuje, ať ruční úpravu chytí --check.
+      nearest: { path: NEAREST, sha256: lfSha(nearest), entries: Object.keys(JSON.parse(nearest).words).length, bytes: Buffer.byteLength(nearest) },
+    },
   };
   return { verbs, manifest: `${JSON.stringify(manifest, null, 2)}\n` };
 }
@@ -314,10 +321,43 @@ function check() {
   console.log('verbs.json and manifest.json match a fresh build');
 }
 
+// ---------------------------------------------------------------------------------------------
+// --nouns: konkrétní podstatná jména pro scripts/p37a/nearest.mjs
+
+/**
+ * Jednoslovná podstatná jména OEWN, jejichž hlavní (první) význam leží pod kořeny `config.nouns.roots`
+ * (organismus, přírodní objekt, jídlo, výrobek, bájná bytost) – věci, které jde nakreslit.
+ * Hlavní význam drží „bank“ mimo, když je to hlavně banka. Abecedně, na stdout jako JSON pole.
+ */
+function nouns() {
+  const bytes = readFileSync(config.oewn.file);
+  if (createHash('sha256').update(bytes).digest('hex') !== config.oewn.sha256) throw new Error('OEWN SHA-256 mismatch – run scripts/vocab/fetch-oewn.mjs');
+  const xml = gunzipSync(bytes).toString('utf8');
+  const children = new Map();
+  for (const [, attrs, body] of xml.matchAll(/<Synset ([^>]*partOfSpeech="n"[^>]*)>([\s\S]*?)<\/Synset>/g)) {
+    const id = attrs.match(/id="([^"]+)"/)[1];
+    for (const [, a, b] of body.matchAll(/<SynsetRelation (?:relType="hypernym" target="([^"]+)"|target="([^"]+)" relType="hypernym")/g)) {
+      const parent = a ?? b;
+      children.set(parent, [...(children.get(parent) ?? []), id]);
+    }
+  }
+  const concrete = new Set(config.nouns.roots);
+  for (const id of concrete) for (const child of children.get(id) ?? []) concrete.add(child);
+  const words = [];
+  for (const [, body] of xml.matchAll(/<LexicalEntry [^>]*>([\s\S]*?)<\/LexicalEntry>/g)) {
+    const lemma = body.match(/<Lemma writtenForm="([^"]+)" partOfSpeech="n"/)?.[1];
+    if (lemma === undefined || !/^[a-z]+$/.test(lemma)) continue;
+    const first = body.match(/<Sense [^>]*synset="([^"]+)"/)?.[1];
+    if (first !== undefined && concrete.has(first)) words.push(lemma);
+  }
+  process.stdout.write(`${JSON.stringify([...new Set(words)].sort())}\n`);
+}
+
 if (process.argv.includes('--evaluate')) evaluate();
+else if (process.argv.includes('--nouns')) nouns();
 else if (process.argv.includes('--check')) check();
 else if (process.argv.length === 2) build();
 else {
-  console.error('usage: node scripts/vocab/build.mjs [--check | --evaluate]');
+  console.error('usage: node scripts/vocab/build.mjs [--check | --evaluate | --nouns]');
   process.exit(2);
 }

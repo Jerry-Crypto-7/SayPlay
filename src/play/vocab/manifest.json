@@ -17,7 +17,7 @@
     },
     "config": {
       "path": "scripts/vocab/config.json",
-      "sha256": "93ad070c2d4b4300029ef6eee0167574a0174534990e6229a03b78cb288d1a68"
+      "sha256": "54458027774542b83462021db8887fe94542858bd03c3677cabbfca1d21ce6c8"
     },
     "embed": {
       "model": "sentence-transformers/all-MiniLM-L6-v2",
@@ -30,6 +30,12 @@
       "sha256": "44ffc5a22ccc8b5ba427b7b08eae4cb92a68c775a03b6301bea3fa442798d56a",
       "entries": 702,
       "bytes": 16331
+    },
+    "nearest": {
+      "path": "src/play/arcade/nearest.json",
+      "sha256": "12a290d178f91d9d14a28f5eafb9f61a575e4f3b4be94e44cc5f46ca3a6609ce",
+      "entries": 2795,
+      "bytes": 139252
     }
   }
 }
