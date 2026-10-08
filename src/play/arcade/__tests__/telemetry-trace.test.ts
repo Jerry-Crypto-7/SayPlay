@@ -75,11 +75,12 @@ describe('traceRun', () => {
     }
   });
 
-  it('samples the player and the live threats every six ticks', () => {
+  it('samples the player and the live threats every six ticks and at the end of the run', () => {
     const { world, bot } = game('duel');
     const trace = traceRun(world, bot.inputs);
     expect(trace.samples[0]?.tick).toBe(0);
-    expect(trace.samples.map((s) => s.tick)).toEqual(Array.from({ length: Math.floor(trace.ticks / SAMPLE_TICKS) + 1 }, (_, i) => i * SAMPLE_TICKS));
+    const regular = Array.from({ length: Math.floor(trace.ticks / SAMPLE_TICKS) + 1 }, (_, i) => i * SAMPLE_TICKS);
+    expect(trace.samples.map((s) => s.tick)).toEqual(trace.ticks % SAMPLE_TICKS === 0 ? regular : [...regular, trace.ticks]);
     const bodies = trace.samples.flatMap((s) => s.bodies);
     expect(bodies.length).toBeGreaterThan(0);
     expect(bodies.every((b) => THREAT_ROLES.includes(b.role) && b.born >= 0)).toBe(true);

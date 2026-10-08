@@ -48,10 +48,12 @@ export interface TraceBody {
   readonly h: number;
   readonly vx: number;
   readonly vz: number;
+  /** HP těla (`bodyHp`); 0 = tělo HP nemá nebo je na nule. */
+  readonly hp: number;
 }
 
 export interface TraceSample {
-  /** `HEADER.tick` stavu, ze kterého je vzorek (0 = start, pak každých `SAMPLE_TICKS`). */
+  /** `HEADER.tick` stavu, ze kterého je vzorek (0 = start, pak každých `SAMPLE_TICKS`, poslední = konec běhu). */
   readonly tick: number;
   readonly player: { readonly x: number; readonly y: number; readonly z: number; readonly h: number };
   /** Živá těla rolí `THREAT_ROLES`. */
@@ -123,7 +125,7 @@ function sampleOf(state: Int32Array, born: readonly number[]): TraceSample {
   for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
     const base = bodyBase(body);
     if (!aliveIn(state, body) || !THREAT_ROLES.includes(state[base + BODY.role] as number)) continue;
-    bodies.push({ body, role: state[base + BODY.role] as number, born: born[body] as number, x: state[base + BODY.x] as number, y: state[base + BODY.y] as number, z: state[base + BODY.z] as number, h: state[base + BODY.h] as number, vx: state[base + BODY.vx] as number, vz: state[base + BODY.vz] as number });
+    bodies.push({ body, role: state[base + BODY.role] as number, born: born[body] as number, x: state[base + BODY.x] as number, y: state[base + BODY.y] as number, z: state[base + BODY.z] as number, h: state[base + BODY.h] as number, vx: state[base + BODY.vx] as number, vz: state[base + BODY.vz] as number, hp: bodyHp(state, body) });
   }
   return { tick: state[HEADER.tick] as number, player: { x: state[p + BODY.x] as number, y: state[p + BODY.y] as number, z: state[p + BODY.z] as number, h: state[p + BODY.h] as number }, bodies };
 }
@@ -150,6 +152,8 @@ export function traceRun(world: ArcadeWorld, inputs: readonly InputEvent[], libr
     events.push(...eventsOf(effects, tick, prev, state));
     if ((state[HEADER.tick] as number) % SAMPLE_TICKS === 0) samples.push(sampleOf(state, born));
   }
+  // Poslední vzorek je vždy konec běhu: zabití v tiku výhry mezi vzorky jinak nikdo neuvidí.
+  if ((samples[samples.length - 1] as TraceSample).tick !== state[HEADER.tick]) samples.push(sampleOf(state, born));
   // Jako `replay`: běh, který dojel na horizont, uvolní svět Rapieru tady.
   releasePhysics(state);
   return { ticks: state[HEADER.tick] as number, outcome: outcomeOf(state), hash: hashArcade(state), player: state[HEADER.player] as number, events, samples };

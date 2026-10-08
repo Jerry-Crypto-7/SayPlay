@@ -20,7 +20,7 @@ function samples(threats: readonly { body: number; role?: number; born?: number;
     player: { x: 0, y: 0, z: 0, h: UNIT },
     bodies: threats.flatMap((t): TraceBody[] => {
       const m = t.metres[i];
-      return m === null || m === undefined ? [] : [{ body: t.body, role: t.role ?? ROLE.chaser, born: t.born ?? 0, x: Math.round(m * UNIT), y: 0, z: 0, h: UNIT, vx: 0, vz: 0 }];
+      return m === null || m === undefined ? [] : [{ body: t.body, role: t.role ?? ROLE.chaser, born: t.born ?? 0, x: Math.round(m * UNIT), y: 0, z: 0, h: UNIT, vx: 0, vz: 0, hp: 0 }];
     }),
   }));
 }
