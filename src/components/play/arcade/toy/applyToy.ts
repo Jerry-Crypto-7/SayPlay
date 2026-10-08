@@ -35,12 +35,12 @@ export interface ToyTarget {
 
 /** Oslava zvedne tělo o tolik výšek na vrcholu poskoku. */
 const CHEER_HOP = 0.25;
-/** Úhly dílů (rad) při plné hodnotě pózy. */
+/** Úhly dílů (rad) při plné hodnotě pózy; křídla, nohy a ocas stejně i deformace (`look/toy-deform.ts`). */
 const DOOR_OPEN = 0.45 * Math.PI;
 const LID_OPEN = 0.4 * Math.PI;
-const WING = 0.6;
-const LEG = 0.5;
-const TAIL = 0.5;
+export const WING = 0.6;
+export const LEG = 0.5;
+export const TAIL = 0.5;
 
 /** Měřidlo a srovnání vypnou hračkový pohyb adresou `?toy=off` (P45D T3, T15). */
 const toyOff = (): boolean => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('toy') === 'off';
