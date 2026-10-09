@@ -71,6 +71,9 @@ export interface ArcadeParts {
  */
 export const baseControlOf = (control: PieceRef): PieceRef =>
   control.id === 'addon_control' || control.id === 'phase_control' || control.id === 'pacing_control' || control.id === 'assembly_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
+/** Základní robot pod obaly doplňků, fází, průběhu a skládání – scéna z něj čte trať (`course`). */
+export const baseBotOf = (bot: PieceRef): PieceRef =>
+  bot.id === 'addon_bot' || bot.id === 'phase_bot' || bot.id === 'pacing_bot' || bot.id === 'assembly_bot' ? baseBotOf((bot.params as { base: PieceRef }).base) : bot;
 const baseControl = (parts: ArcadeParts): PieceRef => baseControlOf(parts.control);
 
 export { mapUnderlying, underlyingRule } from './contract';

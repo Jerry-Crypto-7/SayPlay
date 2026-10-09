@@ -14,7 +14,9 @@ import { describe, expect, it } from 'vitest';
 
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
 import { compileArcade } from '@/play/arcade/compile';
-import { ARCADE_HZ, type ArcadeRole, type ArcadeWorld, BODY, HEADER, ROLE, bodyBase, rampedSpeed } from '@/play/arcade/contract';
+import { baseControlOf } from '@/play/arcade/addons';
+import { ARCADE_HZ, type ArcadeRole, type ArcadeWorld, BODY, HEADER, type PieceRef, ROLE, bodyBase } from '@/play/arcade/contract';
+import { type Phase, phaseSpeed } from '@/play/compose/progression';
 import { replay } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { PLATFORM_DIFFICULTIES, checkPlatformLevel, platformLevel } from '@/play/arcade/pieces/platform';
@@ -87,16 +89,19 @@ describe('runner sections (P36A T4)', () => {
 
   it('the third section is faster and denser than the first', () => {
     const { world } = publish('run and dodge 45 cars');
-    const ramp = world.control.params.ramp as readonly [number, number];
-    const speed = SPEED[world.control.params.speed as keyof typeof SPEED];
-    const sectionOf = (z: number): number => (z >= ramp[1] ? 2 : z >= ramp[0] ? 1 : 0);
-    expect(rampedSpeed(speed, ramp[1], ramp)).toBeGreaterThan(rampedSpeed(speed, 0, ramp));
+    // Nová hra (P45C T11): rychlost dává křivka průběhu (`phase_control` pod `pacing_control`) místo rampy; úseky jsou třetiny trati.
+    const phaseOf = (ref: PieceRef): PieceRef => (ref.id === 'phase_control' ? ref : phaseOf(ref.params.base as PieceRef));
+    const { phases, length } = phaseOf(world.control).params as { phases: Phase[]; length: number };
+    const speed = SPEED[baseControlOf(world.control).params.speed as keyof typeof SPEED];
+    const speedAt = (z: number): number => phaseSpeed(speed, z, length, phases);
+    const sectionOf = (z: number): number => Math.min(2, Math.floor((3 * z) / length));
+    expect(speedAt(length - 1)).toBeGreaterThan(speedAt(0));
 
     const rows = new Map<number, number>();
     for (const body of bodies(world)) if (body.role === 'obstacle') rows.set(body.z, (rows.get(body.z) ?? 0) + 1);
     const zs = [...rows.keys()].sort((a, b) => a - b);
     // Odstup řady od předchozí v ticích běhu rychlostí jejího úseku a obsazené pruhy.
-    const ticks = (section: number): number[] => zs.flatMap((z, i) => (i > 0 && sectionOf(z) === section && sectionOf(zs[i - 1]!) === section ? [(z - zs[i - 1]!) / rampedSpeed(speed, z, ramp)] : []));
+    const ticks = (section: number): number[] => zs.flatMap((z, i) => (i > 0 && sectionOf(z) === section && sectionOf(zs[i - 1]!) === section ? [(z - zs[i - 1]!) / speedAt(z)] : []));
     const lanes = (section: number): number[] => zs.filter((z) => sectionOf(z) === section).map((z) => rows.get(z)!);
     expect(ticks(0).length).toBeGreaterThan(2);
     expect(ticks(2).length).toBeGreaterThan(2);
@@ -141,7 +146,9 @@ describe('a game stored before T4 (no `sections`) builds the world it had', () =
     const { scoring: _scoring, ...unscored } = spec;
     const { sections: _sections, tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly sections?: number; readonly tuning?: Record<string, unknown> };
     const { sections: _inTuning, ...rest } = tuning ?? {};
-    return { ...unscored, controlParams: { ...own, ...(tuning === undefined ? {} : { tuning: rest }) } } as GameSpecV1;
+    // Uložené hry nesou překlad žánru před průběhem P45C (`genre.v1`).
+    const genre = unscored.genre === undefined ? {} : { genre: { ...unscored.genre, compilerVersion: 'genre.v1' } };
+    return { ...unscored, ...genre, controlParams: { ...own, ...(tuning === undefined ? {} : { tuning: rest }) } } as GameSpecV1;
   }
 
   // Čísla z `evals/play/regression/report.json` před T4 (semínko 1): běžec 1522 tiků a 73 těl, skákačka 1701 tiků, 55 těl, 6 pravidel.

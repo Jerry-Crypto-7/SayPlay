@@ -50,8 +50,8 @@ export const FLAP_RISE = (() => {
   return peak;
 })();
 
-/** Značky rampy (`rampMarks`); bez nich stálá rychlost. Čte je ovládání i robot. */
-export const flapRampParams = z.object({ ramp: z.tuple([z.int(), z.int()]).optional() }).strict();
+/** Značky rampy (`rampMarks`); bez nich stálá rychlost. `speed` = základ místo `FLAP.speed` (fáze průběhu, P45C). Čte je ovládání i robot. */
+export const flapRampParams = z.object({ ramp: z.tuple([z.int(), z.int()]).optional(), speed: z.int().min(1).optional() }).strict();
 
 /**
  * Ovládání: rampa a s `feel: 2` (P37A T7) odpuštění pozdního vzletu – dotek
@@ -68,7 +68,7 @@ export const flapControl: ControlPiece<z.infer<typeof flapControlParams>> = {
   cost: () => ({ bodies: 1, rules: 0 }),
   step: (state, player, input, params) => {
     const base = bodyBase(player);
-    state[base + BODY.vz] = rampedSpeed(FLAP.speed, state[base + BODY.z] as number, params.ramp);
+    state[base + BODY.vz] = rampedSpeed(params.speed ?? FLAP.speed, state[base + BODY.z] as number, params.ramp);
     state[base + BODY.vx] = 0;
     if (params.feel === 2) state[base + BODY.aux0] = ((state[base + BODY.flags] as number) & FLAG.grounded) === 0 ? 0 : (state[base + BODY.aux0] as number) + 1;
     if ((input.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0) state[base + BODY.vy] = FLAP.flapVy;

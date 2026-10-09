@@ -78,7 +78,7 @@ export const flapBot: BotPiece<z.infer<typeof flapRampParams>> = {
       y += vy;
     }
     const z0 = state[p + S.z] as number;
-    const pz = z0 + rampedSpeed(FLAP.speed, z0, params.ramp) * recent.length;
+    const pz = z0 + rampedSpeed(params.speed ?? FLAP.speed, z0, params.ramp) * recent.length;
     // Za poslední trubkou drž výšku startu.
     const target = targetOf(gapsAhead(state, player, pz));
     // Ťuk o tik dřív, než by klesl pod práh: po dlouhém pádu jinak přestřelí.

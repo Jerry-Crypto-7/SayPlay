@@ -2,9 +2,10 @@
 import type { GameSpecV1 } from '../../spec';
 import type { ArcadeParts } from '../addons';
 import type { BodyInit } from '../contract';
-import { addPhaseBodies, type Dependency } from '../../compose/progression';
+import { addPhaseBodies, type Dependency, phaseSpeed } from '../../compose/progression';
 import { centerAt, courseOf, checkSteerLevel } from './steer';
 import { GLIDE, glidePathOf, checkGlideLevel } from './glide';
+import { FLAP } from './flap';
 import { walkerMapSchema, walkerPath, WALKER_CELL } from './walker';
 import type { ObjectiveNode } from './objective-order';
 
@@ -18,26 +19,42 @@ function ordered(graph: readonly Dependency[]): Dependency[] {
   return result;
 }
 
-export function progressionParts(parts: ArcadeParts, spec: Pick<GameSpecV1, 'phases' | 'dependsOn' | 'roles' | 'rules'>): ArcadeParts {
+/** `builtForPercent`: rychlost, pro kterou generátor trať postavil (průběh P45C ji předá za odebranou rampu žánru). */
+export function progressionParts(parts: ArcadeParts, spec: Pick<GameSpecV1, 'phases' | 'dependsOn' | 'roles' | 'rules'>, builtForPercent = 100): ArcadeParts {
   if (spec.phases === undefined && spec.dependsOn === undefined) return parts;
   if (spec.dependsOn && spec.rules?.some(rule => rule.do.some(effect => 'win' in effect))) return { ...parts, issues: ['A custom win rule would bypass objective dependencies'] };
   const control = parts.control.id;
-  if (!['steer', 'glide', 'runner', 'walker'].includes(control)) return { ...parts, issues: [`Progression is not implemented for ${control}`] };
+  // Plošinovka ne: robot (`platform-bot.ts`) plánuje skoky a hroty na plný běh `PLATFORM.maxRun` – s fázemi 90–125 % vyhrál 4/8 (P45C T11).
+  if (!['steer', 'glide', 'runner', 'walker', 'flap'].includes(control)) return { ...parts, issues: [`Progression is not implemented for ${control}`] };
   if (parts.control.params.land !== undefined) return { ...parts, issues: ['Pacing is not implemented for landing'] };
+  // Poletování nemá bezpečný pruh vedle cesty: fáze mu mění jen rychlost.
+  if (control === 'flap' && spec.phases?.some(phase => phase.add !== undefined)) return { ...parts, issues: ['Phase bodies are not implemented for flap'] };
   try {
+    // Fáze škálují poletování základ rychlosti `speed` (P45C T11); robot ho čte taky.
+    if (spec.phases !== undefined && control === 'flap') {
+      parts = { ...parts, control: { ...parts.control, params: { ...parts.control.params, speed: FLAP.speed } }, bot: { ...parts.bot, params: { ...parts.bot.params, speed: FLAP.speed } } };
+    }
     // Reserve longitudinal reaction/steering distance before adding faster phases.
-    const scale = Math.max(100, ...(spec.phases?.map(phase => phase.speedPercent) ?? [])) / 100;
+    // Let drží kontrola úrovně (`checkGlideLevel`) na nejrychlejší fázi v každém bodě: natahuje se celý.
+    // Řízení po odebrané rampě kontroluje každou zatáčku rychlostí její fáze (níže), takže stačí natažení nad vrchol rampy.
+    const builtFor = control === 'glide' ? 100 : builtForPercent;
+    const scale = Math.max(builtFor, ...(spec.phases?.map(phase => phase.speedPercent) ?? [])) / builtFor;
     if (control !== 'walker' && scale > 1) {
-      const stretch = (n: number) => Math.ceil(n * scale);
+      // Trať postavená na vrchol rampy (průběh P45C) se natáhne jen od první fáze rychlejší než ten vrchol:
+      // pomalejší úseky si nechají hustotu, pro kterou je generátor postavil (celé natažení dělalo závod i běžce snadnými).
+      const fast = builtFor > 100 ? spec.phases?.find(phase => phase.speedPercent > builtFor) : undefined;
+      const from = fast === undefined ? 0 : Math.floor(parts.level.length * fast.start / 1000);
+      const at = (n: number) => (from === 0 ? n * scale : n <= from ? n : from + (n - from) * scale);
+      const stretch = (n: number) => Math.ceil(at(n));
       const level = { ...parts.level, length: stretch(parts.level.length), bodies: parts.level.bodies.map(body => {
         if (control === 'steer' && ['tire-barrier','island','rock','building'].includes(body.kind)) {
-          const near = 2 * Math.floor((body.z - body.d / 2) * scale / 2), far = 2 * Math.floor((body.z + body.d / 2) * scale / 2);
+          const near = 2 * Math.floor(at(body.z - body.d / 2) / 2), far = 2 * Math.floor(at(body.z + body.d / 2) / 2);
           return { ...body, z: (near + far) / 2, d: far - near };
         }
-        return { ...body, z: stretch(body.z), d: stretch(body.d) };
+        return { ...body, z: stretch(body.z), d: from === 0 || body.z > from ? Math.ceil(body.d * scale) : body.d };
       }), ...(parts.level.sectionStarts ? { sectionStarts: parts.level.sectionStarts.map(stretch) as [number, number] } : {}) };
       const params = { ...parts.control.params, ...(control === 'steer' ? { course: courseOf(level) } : {}), ...(control === 'glide' ? { path: glidePathOf(level) } : {}), ...(Array.isArray(parts.control.params.ramp) ? { ramp: parts.control.params.ramp.map(stretch) } : {}) };
-      parts = { ...parts, level, control: { ...parts.control, params }, bot: { ...parts.bot, params: { ...parts.bot.params, ...(control === 'steer' || control === 'glide' ? params : {}) } }, rules: parts.rules.map(rule => typeof rule.params.atZ === 'number' ? { ...rule, params: { ...rule.params, atZ: stretch(rule.params.atZ) } } : rule) };
+      parts = { ...parts, level, control: { ...parts.control, params }, bot: { ...parts.bot, params: { ...parts.bot.params, ...(control === 'steer' || control === 'glide' ? params : {}), ...(control === 'flap' && Array.isArray(params.ramp) ? { ramp: params.ramp } : {}) } }, rules: parts.rules.map(rule => typeof rule.params.atZ === 'number' ? { ...rule, params: { ...rule.params, atZ: stretch(rule.params.atZ) } } : rule) };
     }
     const length = parts.level.length, course = control === 'steer' ? courseOf(parts.level) : undefined;
     const path = control === 'glide' ? glidePathOf(parts.level) : [];
@@ -98,7 +115,10 @@ export function progressionParts(parts: ArcadeParts, spec: Pick<GameSpecV1, 'pha
     }
     if (level.bodies.length + (level.spawnSlots ?? 0) > 256) throw new Error('Progression exceeds body budget');
     const maxScale = Math.max(...(spec.phases?.map(phase => phase.speedPercent) ?? [100])) / 100;
-    const issues = control === 'steer' ? checkSteerLevel(level, Math.ceil(Number(parts.control.params.topSpeed) * maxScale)) : control === 'glide' ? checkGlideLevel(level, Math.ceil(Number(parts.control.params.topSpeed) * maxScale)) : [];
+    const top = Number(parts.control.params.topSpeed);
+    // Bez rampy (průběh P45C, `builtForPercent` > 100) jede zatáčka rychlostí své fáze; jinak nejrychlejší fáze přes výchozí rampu jako dřív.
+    const phased = builtForPercent > 100 ? (z: number) => phaseSpeed(top, z, length, spec.phases) : undefined;
+    const issues = control === 'steer' ? checkSteerLevel(level, Math.ceil(top * maxScale), phased) : control === 'glide' ? checkGlideLevel(level, Math.ceil(Number(parts.control.params.topSpeed) * maxScale)) : [];
     // Native runner spacing is designed for the fastest speed+existing ramp.
     // Reject faster pacing if its native verifier cannot establish enough reserve.
     const pacing = spec.phases ? { phases: spec.phases, length } : undefined;

@@ -81,7 +81,8 @@ describe('stored voyage races without sections', () => {
     const spec = compileGenre(legacy);
     const { lengthM: _length, tuning, ...rest } = spec.controlParams as { lengthM?: number; tuning: Record<string, unknown> };
     const { sections: _sections, ...oldTuning } = tuning;
-    const compiled = compileArcade({ ...spec, controlParams: { ...rest, tuning: oldTuning } } as GameSpecV1, seed);
+    // Uložené hry nesou překlad žánru před průběhem P45C (`genre.v1`).
+    const compiled = compileArcade({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v1' }, controlParams: { ...rest, tuning: oldTuning } } as GameSpecV1, seed);
     if (!compiled.ok) throw new Error(compiled.issues.join('; '));
     expect(compiled.value.winsAtTick).toBe(tick);
   });

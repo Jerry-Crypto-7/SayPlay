@@ -23,8 +23,11 @@ export interface BodyView {
  * Tělo, které scéna nekreslí: neviditelná branka poletování a holá role `thing` –
  * počítadlo komba (P36A T5, `withScoring` v `compile.ts`) nese druh hrdiny, takže
  * by scéna stahovala neexistující `player-lod1.glb`. Věci pravidel mají vlastní kód role od 32.
+ * Počítadlo průběhu (`pacingKeeper`, P45C) nese druh hrdiny s rolí překážky: pozná se
+ * podle velikosti 1 × 1 × 1 jednotka, jakou žádná věc scény nemá.
  */
-export const drawsNothing = (view: Pick<BodyView, 'kind' | 'role'>): boolean => view.kind === 'gate' || view.role === ROLE.thing;
+export const drawsNothing = (view: Pick<BodyView, 'kind' | 'role' | 'w' | 'h' | 'd'>): boolean =>
+  view.kind === 'gate' || view.role === ROLE.thing || Math.max(view.w, view.h, view.d) * UNIT <= 1;
 
 const kindOf = (session: Pick<ArcadeSession, 'world'>, code: number): string => session.world.kinds[code] ?? 'crate';
 

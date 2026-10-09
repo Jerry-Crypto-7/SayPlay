@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import shooterFixture from '@/play/arcade/__fixtures__/shooter.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
-import { BODY, BUTTON, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import { BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { draftGameSpec } from '@/play/draft/draft';
 import { readGameSpec } from '@/play/spec';
 
@@ -61,7 +61,8 @@ describe('drawn bodies', () => {
     if (!built.ok) throw new Error(built.issues.join('; '));
     const views = bodiesOf(createArcadeSession(built.world));
     const hidden = views.filter(drawsNothing);
-    expect(hidden).toEqual([expect.objectContaining({ role: ROLE.thing, kind: 'player' })]);
+    // Počítadlo průběhu P45C (běžec je nová hra s křivkou) a za ním počítadlo komba.
+    expect(hidden).toEqual([expect.objectContaining({ role: ROLE.obstacle, kind: 'player', w: 1 / UNIT }), expect.objectContaining({ role: ROLE.thing, kind: 'player' })]);
     expect(views.filter((view) => !drawsNothing(view)).map((view) => view.role)).toContain(ROLE.player);
   });
 });
