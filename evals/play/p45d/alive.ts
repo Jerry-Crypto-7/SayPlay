@@ -18,7 +18,7 @@ import { ask, blindQuestion, matches } from '../../../scripts/p37d/judge-sheet.m
 
 /** Jedna řádka, žádné slovo, které by prozradilo, co se měří nebo jak se hra jmenuje. */
 export const ALIVE_QUESTION =
-  'The attached image is a contact sheet of 6 frames from a 3D game while it is being played, in reading order (left to right, then top to bottom), taken 0.15 s apart and cropped around one character. Reply only with the JSON the schema asks for: character = what the character is, the most likely common English noun (1-3 words); doing = what it is doing, at most 8 words; alive = true only if the body of the character itself visibly moves between the frames the way such a thing would move (legs stepping, hopping, wings flapping, tail or body swaying, leaning, squashing, bouncing on its wheels), false if it only slides across the picture, stands stiff like a statue, or nothing changes.';
+  'The attached image is a contact sheet of 6 frames from a 3D game while it is being played, in reading order (left to right, then top to bottom), taken 0.15 s apart, each frame cropped so that one character stays in the middle: its travel across the scene does not show and the background may shift. Reply only with the JSON the schema asks for: character = what the character is, the most likely common English noun (1-3 words); doing = what it is doing, at most 8 words; alive = true only if the body of the character itself visibly moves between the frames the way such a thing would move (legs stepping, hopping, wings flapping, tail or body swaying, leaning, squashing, bouncing on its wheels), false if it only slides across the picture, stands stiff like a statue, or nothing changes.';
 
 export const ALIVE_SCHEMA = {
   type: 'object',
@@ -70,6 +70,44 @@ export function assertOpenSet(file: string, sentences: readonly PanelSentence[])
 export function windowStart(moved: readonly boolean[], size = 6): number {
   for (let index = 0; index + size <= moved.length; index += 1) if (moved[index]) return index;
   return 0;
+}
+
+/** Promítnutý obdélník hrdiny v souřadnicích obrazu −1 … 1, +y nahoru (`__playFrame().hero`). */
+export interface HeroBox {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  readonly behind?: boolean;
+}
+
+export interface Crop {
+  readonly left: number;
+  readonly top: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
+ * Výřez každého snímku (px): čtverec stejný pro celé okno, vystředěný na hrdinu v tom snímku.
+ * Přesun hrdiny scénou (i skok jádra) tak z listu zmizí a zůstane jen pohyb jeho těla –
+ * se společným výřezem soudce bral posun po obraze za živost (T15: `--toy off` jen o 21,7
+ * bodu níž, P45D T24). Snímek bez hrdiny dostane průměrný střed; bez hrdiny celý obraz.
+ */
+export function stableCropsOf(boxes: readonly (HeroBox | null)[], width: number, height: number): Crop[] {
+  const seen = boxes.filter((box): box is HeroBox => box !== null && box.behind !== true);
+  if (seen.length === 0) return boxes.map(() => ({ left: 0, top: 0, width, height }));
+  const px = (x: number) => ((x + 1) / 2) * width;
+  const py = (y: number) => ((1 - y) / 2) * height;
+  const centre = (box: HeroBox) => ({ x: (px(box.minX) + px(box.maxX)) / 2, y: (py(box.minY) + py(box.maxY)) / 2 });
+  const largest = Math.max(...seen.map((box) => Math.max(px(box.maxX) - px(box.minX), py(box.minY) - py(box.maxY))));
+  const side = Math.round(Math.min(largest * 1.6 + 40, width, height));
+  const mean = { x: seen.reduce((sum, box) => sum + centre(box).x, 0) / seen.length, y: seen.reduce((sum, box) => sum + centre(box).y, 0) / seen.length };
+  const clamp = (value: number, max: number) => Math.round(Math.min(Math.max(value, 0), max));
+  return boxes.map((box) => {
+    const at = box !== null && box.behind !== true ? centre(box) : mean;
+    return { left: clamp(at.x - side / 2, width - side), top: clamp(at.y - side / 2, height - side), width: side, height: side };
+  });
 }
 
 /** Argumenty a pracovní adresář soudce nad listem: jen `sheet.png` a schéma v prázdném adresáři. */

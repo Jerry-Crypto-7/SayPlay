@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { ALIVE_QUESTION, aliveArgs, assertOpenSet, type PanelSentence, rowOf, summary, windowStart } from '../alive';
+import { ALIVE_QUESTION, aliveArgs, assertOpenSet, type PanelSentence, rowOf, stableCropsOf, summary, windowStart } from '../alive';
 
 /**
  * Měřidlo „je postava živá“ (P45D T3). Soudce, který vidí název souboru nebo dostane
@@ -76,5 +76,26 @@ describe('alive meter (P45D T3)', () => {
     // Pohyb příliš pozdě na celé okno, nebo žádný: od začátku.
     expect(windowStart([false, false, false, false, true, false, false])).toBe(0);
     expect(windowStart([false, false, false, false, false, false])).toBe(0);
+  });
+
+  it('keeps a travelling hero in the same spot of every tile, so only its body can move (P45D T24)', () => {
+    // Hrdina 0,1 × 0,2 NDC jde zleva doprava po 0,2 NDC (128 px při šířce 1280).
+    const boxes = [0, 1, 2].map((step) => ({ minX: -0.5 + 0.2 * step, maxX: -0.4 + 0.2 * step, minY: -0.1, maxY: 0.1 }));
+    const crops = stableCropsOf([...boxes, null, { ...boxes[0]!, behind: true }], 1280, 800);
+    const side = crops[0]!.width;
+    expect(crops.every((crop) => crop.width === side && crop.height === side)).toBe(true);
+    // Výřez jde s hrdinou: o tolik px, o kolik se posunul; hrdina je v každé dlaždici na stejném místě.
+    expect(crops[1]!.left - crops[0]!.left).toBe(128);
+    expect(crops[2]!.left - crops[1]!.left).toBe(128);
+    expect(new Set(crops.slice(0, 3).map((crop) => crop.top)).size).toBe(1);
+    // Výřez je velký podle hrdiny (80 px × 1,6 + 40), ne podle celé dráhy (336 px).
+    expect(side).toBe(Math.round(80 * 1.6 + 40));
+    // Snímek bez hrdiny i hrdina za kamerou: průměrný střed.
+    expect(crops[3]).toEqual(crops[1]);
+    expect(crops[4]).toEqual(crops[1]);
+    // Bez hrdiny celý obraz; u okraje výřez zůstane v obraze.
+    expect(stableCropsOf([null], 1280, 800)).toEqual([{ left: 0, top: 0, width: 1280, height: 800 }]);
+    const corner = Math.round(32 * 1.6 + 40);
+    expect(stableCropsOf([{ minX: 0.95, maxX: 1, minY: 0.95, maxY: 1 }], 1280, 800)[0]).toEqual({ left: 1280 - corner, top: 0, width: corner, height: corner });
   });
 });
