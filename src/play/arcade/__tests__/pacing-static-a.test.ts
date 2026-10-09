@@ -278,9 +278,11 @@ describe('static genres A are paced (shooter and duel; ball stays unpaced)', () 
     const duel = chain(world.control).find((ref) => ref.id === 'duel')!;
     expect(duel.params.pace).toBe(1000);
     expect(duel.params.rise).toBeUndefined();
-    // Úvod pomaleji, stupňování rychleji; vrchol a finále na stropu knoflíku (pod ním mezera po úderu unese reakci začátečníka).
+    // Úvod na dnešní úrovni (T18: lehčí úvod 700 soupeře v klipu zastavil), stupňování rychleji; vrchol a finále na stropu
+    // knoflíku (pod ním mezera po úderu unese reakci začátečníka).
     const cap = PACING_KNOBS.duel![0]!.max;
-    expect(scaledParams('duel', duel.params, PACING.intensity.intro).pace).toBe(PACING.intensity.intro);
+    expect(PACING.intensity.intro).toBeLessThan(1000);
+    expect(scaledParams('duel', duel.params, PACING.intensity.intro).pace).toBe(1000);
     expect(scaledParams('duel', duel.params, PACING.intensity.buildUp).pace).toBe(PACING.intensity.buildUp);
     expect(cap).toBeGreaterThan(PACING.intensity.buildUp);
     expect(scaledParams('duel', duel.params, PACING.intensity.finale).pace).toBe(cap);

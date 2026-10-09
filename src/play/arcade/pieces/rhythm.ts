@@ -189,8 +189,14 @@ export function beatMap(seed: number, params: RhythmLevelParams): number[] {
  * fráze po `phrase` notách. Vzor fráze podle intenzity jejího začátku: do stupňování `walk` (každá nota o
  * dráhu vedle, u kraje zpět), od stupňování (1100) se `walk` a `trill` (střídání dvou drah ob jednu) střídají
  * po frázích, finále (1500) je celé `trill` – rychlá závěrečná fráze.
+ *
+ * T18: 900 ‰ not písničky bez průběhu na čtvrtinách doby (dřív 750 ‰ na třetinách – soudce T17 viděl noty
+ * dlouho daleko od lišty, 0/2 párů). Každá nota navíc je pro začátečníka další šance minout (vypadne 12 tiků
+ * z každých 60, T14): semínka 1–20 / 21–60 začátečník 8/20 / 15/40 (dřív 11/20 / 15/40); plný počet na
+ * třetinách 5/20, na pětinách 6/20 / 7/40. Mřížka hrubší než třetina doby (celé doby, poloviny) nedá dvě noty
+ * blíž než doba – závěrečná fráze by nebyla rychlejší než doba.
  */
-export const RHYTHM_CURVE = { grid: 3, phrase: 4, share: 750 } as const;
+export const RHYTHM_CURVE = { grid: 4, phrase: 4, share: 900 } as const;
 
 /** Tik dílu mřížky `part` (`grid` dílů na dobu), bez driftu jako `beatTick`. */
 const gridTick = (bpm: number, part: number): number => RHYTHM.leadIn + Math.floor((part * ARCADE_HZ * 60) / (bpm * RHYTHM_CURVE.grid));

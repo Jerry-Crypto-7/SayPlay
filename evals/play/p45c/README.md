@@ -118,3 +118,65 @@ Cíl párového soudu pro jeden plán na panelu splněný, ale šum panelu je ~0
 - **`rising`:** T1 = tlak hrozeb (součet rychlostí) v poslední třetině ≥ 1,15 × první; P45A = víc událostí v poslední třetině než v první. Žánry bez hrozeb (`flap`, `rhythm`, `timing.stack`, `runner`) mají v P45A `rising` 1 už na `main` – houstnou sebrání a skóre – kdežto měřidlo T1 na `main` stoupání ukázalo jen v buňkách s vlnami a v souboji v aréně.
 - **Finále:** T1 = svět nese bosse nebo finále průběhu (stavba světa); P45A = poražený boss (≥ 3 zásahy, pak zmizí) nebo zhoustlý konec vyhraného běhu (climax). P45A tak finále nedá bossovi, kterého robot neporazí, a dá ho hře bez bosse (`runner` a `control:steer` už na `main`).
 - **Mrtvý čas** měří jen P45A. Podle plánu platí P45A a T18 ladí proti ní.
+
+## T18 – kalibrace
+
+9.–10. 10. 2026 nad `fc6adb61` (po R2). Změněné jsou dvě konstanty, `PACING`, `TENSION_CURVE` a `GENRE_PACING` zůstaly:
+
+- **`PACING_KNOBS.duel`** (`pacing.ts`): spodní mez agresivity soupeře 700 (úvod křivky) → **1000** (dnešní první soupeř), strop 1200 beze změny.
+- **`RHYTHM_CURVE`** (`rhythm.ts`): podíl not 750 → **900 ‰** písničky bez průběhu, mřížka třetiny → **čtvrtiny doby** (`grid` 3 → 4), fráze 4 beze změny.
+
+Mrtvý čas měří telemetrie P45A lokálně bez soudce (`P45_SET=panel … evals/play/p45/fun.measure.ts`, 40 vět panelu, robot `intermediate`); kde leží nejdelší mezera, ukázal dočasný běh nad týmiž hrami (`traceRun`, začátek mezery v podílu běhu a události na jejích krajích). Varianty konstant měřil dočasný běh nad buňkami P41 (semínka 1–20, novice / intermediate, jako `difficulty.measure.ts`).
+
+### Prahy AC
+
+| Měřítko | Před T18 (`fc6adb61`) | Po T18 | Práh | Splněno |
+| --- | --- | --- | --- | --- |
+| Novice 0,3–0,7 (`difficulty.json`, 20 semínek) | 54/54 buněk | **54/54** (0,30–0,70) | každá živá buňka | ano |
+| Intermediate (`difficulty.json`) | min 0,90 | **min 0,90** | ≥ 0,8 | ano |
+| Délka 30–90 s (`depth.json`, 260 vět) | 90,0 % | **90,0 %** | ≥ 85 % | ano |
+| `idle` prohraje (`depth.json`) | 100 % | **100 %** | ≥ 95 % | ano |
+| `rising` (`after.json`, 432 her) | 19 % | **19 %** | ≥ 70 % | **ne** |
+| Chování, medián (`after.json`) | 0 | **0** | ≥ 2 | **ne** |
+| Finále (`after.json`) | 35 % | **35 %** | ≥ 50 % | **ne** |
+| p95 `buildMs` (`after.json`, běh sám) | 1762 ms pod zátěží souběžných měření | **1554 ms** | ≤ 2000 ms | ano |
+| Přehrání = hash (`after.json`) | 100 % | **100 %** | 100 % | ano |
+
+V `difficulty.json` se pohnuly jen dvě laděné buňky: `rhythm.default` novice 0,55 → 0,40 a `duel.default` 0,50 → 0,40 (intermediate obě 1,0); hashe běhů jinde beze změny, vzory P41 přezmrazené jen u variant těchto dvou buněk. `noviceBand` v `after.json` (27 buněk mimo) je pohled přes 8 semínek – bránou je `difficulty.json` s 20. p95 `buildMs` 1554 ms proti 761 ms v baseline táhne ověření běžce s hrozbami v pruzích (R2: sonda každého chování hraje plánovač pruhů) – 7 ze 432 staveb nad 2 s, všechny v buňkách běžce (`runner.default+chase_me+shoot_at` až 3271 ms, `+chase_me` 2399 ms, `run.escape` 2053 ms). `depth.json` mimo pásmo jsou jen nativní hry bez žánru, na které P45C nesahá: `control:walker` 11, `control:ball` 8, `control:glide` 6, `control:move_free` 1.
+
+### Nesplněné prahy měřidla – rozbor po buňkách
+
+Konstantami nedosažitelné: stoupání, finále i chování dává jen průběh, a ten dostane 19 z 54 buněk.
+
+| Skupina | Buňky | `rising` | Finále | Chování |
+| --- | --- | --- | --- | --- |
+| Hrozby s průběhem (10) | `run.escape`, `runner.default` (+`shoot_at`, +`chase_me`, +`chase_me+shoot_at`), `arena.escape`, `arena.collect`, `arena.escape+collect`, `arena.fight`, `quest.spatial` | 8/8 každá | ano | 2–4 (`arena.escape` 2, ostatní 3–4) |
+| Statické s průběhem (9) | `flap.collect`, `flap.default`, `throw.default`, `timing.stack`, `timing.precision`, `timing.bridge`, `rhythm.default`, `duel.default`, `quest.station` | 0/8 – nemají hrozbu, tlak měřidla je 0 | ano | 0 |
+| Bez průběhu (35) | `drive.*` 8 (`steer_track`), `glide.*` 8 (`glide_course`), `walk.*` 7 (`walker_labyrinth`), `ball.*` 3 (`ball_pitch`), `roam.catch` (`arena_catch`) – nativní spec bez `genre`, záznam nikdy neběží (T11 (6)); `platformer.*` 4 a `jump.escape` (`platform_level`, bez záznamu – T11 (4)); `shooter.default` a `voyage.race` (jeden život / jedna havárie, odchylky T13 a T11); `voyage.land` (odchylka T14) | 0/8 | ne | 0–1 (dnešní `pursue-track`, `guard`, `pursue`, `wander-flee`, `pendulum`) |
+
+- **`rising`:** strop je 10 buněk s hrozbami = 80/432 = 19 % a všechny už stoupají v 8/8. Na 70 % chybí ~220 her; statické žánry měřidlo T1 z definice nezapočte (tlak = rychlost těl rolí `chaser`/`enemy`/`hazard`).
+- **Finále:** 19 buněk s průběhem × 8 = 152/432 = 35 %; na 50 % chybí 64 her = 8 buněk, a ty všechny průběh nemají (výše).
+- **Chování:** 256 ze 432 her má 0 chování, ≥ 2 jen 80 (10 buněk s hrozbami). Medián 2 chce 216 her; ani 2 chování v každé buňce s průběhem (152 her) by nestačila.
+
+Telemetrie P45A na panelu se konstantami T18 nehnula (před → po): mrtvý čas medián 6,79 → 6,79 s, `rising` 0,57 → 0,57, chování medián 1 → 1, finále 0,33 → 0,33 – všechny cíle P45A pořád nesplněné (měří je T19).
+
+### Ztráty z T17
+
+Mrtvý čas = nejdelší mezera bez události (P45A), průměr přes věty žánru v panelu; `main` = `evals/play/p45/baseline.json`.
+
+- **Souboj dvou – vyřízeno.** Příčina potvrzená: s agresivitou 700 v úvodu soupeř první útok dotáhne o 0,2 s později a celou úvodní část útočí o 43 % pomaleji. S mezí 1000: první úder `f02` 2,47 → 2,25 s, `h05` 2,50 → 2,27 s (`main` 2,25 / 2,27), délka `f02` 49,0 → 42,6 s, `h05` 52,8 → 45,8 s, `depth.json` souboj medián 50,9 → 44,2 s; P41 novice 0,40, intermediate 1,0. **Zbytek délky (`main` ~34 s) nevyřízen, příčina:** `main` zrychluje po soupeřích (`rise` 3 tiky) až na meze oken 18/17 tiků, průběh má strop 1200 kvůli začátečníkovi – mez 1000 se stropem 1300 dala novice 0/20, 1200 po celou hru 4/20. Mez 1100 (38–43 s, novice 8/20) nevybrána: úvod by byl těžší než dnešní a stupňování jen 1100 → 1200.
+- **Rytmus – vyřízeno zčásti.** Not na panelu `u01`/`u02` 39/38 → 47/45 (`main` ~50, odvozeno z `eventsPerS`), druhá nejdelší mezera 2,67/3,58 → 2,13/2,50 s, nejdelší (čekání na první notu) 4,33/4,50 → 4,00/4,00 s (`main` 3,00); finále `climax` zůstalo; P41 novice 0,55 → 0,40, na semínkách 21–60 15/40 → 15/40. **Zbytek nevyřízen, příčina:** první nota čeká na řídký úvod křivky – `placeByCurve` váží `intenzita − spawnFloor`, v úvodu 200, ve finále 1000 – a s tím `RHYTHM_CURVE` nehne (jen počet not). Plný počet not (1000 ‰) srazil novice na 5/20; celé doby a poloviny (`grid` 1, 2) dají novice 9/20 resp. 7/20, ale dvě noty nikdy blíž než doba – závěrečná fráze přestane být rychlejší (červený `pacing-static-b` a banner finále). `spawnFloor` 300 s plným počtem not (první nota 3,5/3,7 s, novice 0,40) přesune spawny všech žánrů: `run.escape` novice 0,35 → 0,25, `arena.escape` intermediate 0,90 → 0,80, `arena.fight` novice 0,45 → 0,30 – nepoužito.
+- **Mrtvý čas v osmi žánrech – domněnka „lehčí úvod“ potvrzená pro čtyři, vyvrácená pro čtyři:**
+
+| Žánr | `main` | před T18 | po T18 | Kde leží nejdelší mezera | Příčina |
+| --- | --- | --- | --- | --- | --- |
+| `duel` | 2,26 | 2,49 | **2,26** | začátek (první úder) | úvod 700 – vyřízeno |
+| `rhythm` | 3,00 | 4,42 | **4,00** | začátek (první nota) | řídký úvod křivky – zčásti |
+| `shooter` | 4,35 | 5,67 | 5,67 | 6–7 % běhu: od posledního sestřelení 1. vlny po první výstřel na 2. vlnu | 2. vlna vyjde později – rozestup pochodu × 1000 / intenzita začátku vlny (744 při čtyřech vlnách, 818 při třech) |
+| `flap` | 2,68 | 2,98 | 2,98 | začátek (první sebrání) | úvod trati 90 % rychlosti (`CURVE_SPEEDS`, `compose/progression.ts` – mimo soubory T18) |
+| `arena.collect` | 8,95 | 10,08 | 10,08 | 37 % běhu, mezi dvěma sebráními 2. vlny | ne úvod; **odvozeno:** robot čeká u strážce, který drží věc (neměřeno) |
+| `arena.fight` | 4,95 | 6,90 | 6,90 | jen `j08`: 11,6 s v 78 % běhu, mezi dvěma zásahy téhož soupeře; `f10` 2,17 s je lepší než `main` | ne úvod; **odvozeno:** poslední vlna s bossem. Každá zkoušená konstanta cestu přeskládá (`spawnFloor` 300: `j08` 2,45 s, úvod 850: `f10` 10,9 s) |
+| `throw` | 1,28 | 2,27 | 2,27 | 57 % běhu, od zásahu terče po další hod | ne úvod – robot čeká, až houpající se bonusový terč potká čáru (T14) |
+| `timing.stack` | 1,55 | 1,86 | 1,86 | 49 % a 92 % běhu, mezi dvěma položeními | ne úvod – čekání na další průjezd jezdce; `n01`, `n04` lepší než `main`, `d09` horší |
+
+**Vyšší úvod křivky (`intensity.intro` 850, se stejným vrcholem i se sníženým 1050/1250/1450) zkoušen a nepoužit** – měřeno nad sadou mez souboje 1000 + plný počet not + `spawnFloor` 300 a porovnáno s toutéž sadou bez vyššího úvodu: střelnici vrátil na 4,23–4,47 s a hod na 1,9–2,1 s, ale hry načasování spadly pod 30 s (30,4 → 28,8–28,9 s, pásmo délky), novice rytmu 0,40 → 0,15–0,20, `arena.fight` 0,30 → 0,25 (se stejným vrcholem), finále `climax` rytmu zmizelo (P45A finále 0,33 → 0,28–0,30) a plocha pod křivkou přetekla 105 % (1065–1094 ‰; `pacing-curve.test.ts`, směr plánu 95–105 %).

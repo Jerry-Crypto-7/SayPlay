@@ -161,7 +161,9 @@ export const PACING_KNOBS: Readonly<Record<string, readonly { readonly key: stri
   walker: [{ key: 'chaseSpeed', up: true, min: 0, max: 70 }],
   // Souboj dvou (T13): agresivita soupeře = intenzita, nejvýš 1200 – mezera po úderu by ve vrcholu (1300) klesla
   // pod reakci začátečníka (20 tiků + 2 na úder) a novice vyhrál 0/20 (1200: 10/20 s rozzuřením, 18/20 bez něj).
-  duel: [{ key: 'pace', up: true, min: PACING.intensity.intro, max: 1200 }],
+  // Nejméně dnešní úroveň (T18): s úvodem 700 soupeř v klipu skoro stál (slepý soud T17 0/2) a hra trvala 47–53 s;
+  // od 1000 začne jako dnešní první soupeř, hra 41–46 s, novice 8/20 (1100: 8/20, 38–43 s; 1200 po celou hru 4/20).
+  duel: [{ key: 'pace', up: true, min: 1000, max: 1200 }],
 };
 
 /**
