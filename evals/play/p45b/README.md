@@ -72,3 +72,31 @@ nevybral (žánry jejich slovesa hrají).
   šablonu nedostanou – `difficulty.json` se přepsal bajt po bajtu stejně (novice i intermediate
   beze změny, rozdíl 0).
 - **Golden P41** a replay brána zelené – golden matice jde mimo `compose`.
+
+## T11 – režisér s logikou na gpt-oss-20b (`director-logic.json`) – cíl nesplněn
+
+25 vět `director-sentences.json` (pravidlo výběru v souboru): braň s155 h03 j08 · zachraň d20 u47
+m10 · poraz s188 f22 si-031 ma-031 · přežij si-018 ma-048 pa-017 pa-018 · uteč s003 s008 h09 j10 ·
+závod s056 s058 h02 d06 · sbírej s002 j05 d16.
+
+```
+node D:/claude/_shared/gpu-lock.mjs -- powershell -NoProfile -ExecutionPolicy Bypass -File ops/llm/start.ps1 -Role fallback -Fallback gpt-oss-20b -Then evals/play/p45b/director-logic.cmd
+npx vitest run src/play/director/__tests__/logic-fixtures.test.ts
+```
+
+Kompaktní režisér jako v produktu (effort low, 4 000 tokenů, 120 s), **jen první odpověď, bez
+opravného kola**; soudí `judgeLogicAnswer` (`src/play/director/__fixtures__/logic-answers.ts`).
+
+| běh (9. 10.) | prompt | deklaruje logiku | projde |
+|---|---|---|---|
+| 1 | T10 | 1/23 (2× výpadek spojení) | 0/25 |
+| 2 | + „logic – REQUIRED…“ v systémovém promptu | 2/25 | 0/25 |
+| 3 | + řádek `COURSE_LINE` na konci zprávy k větě | **23/25** | **0/25** |
+
+**Proč padá (běh 3):** skoro každá odpověď deklaruje fázi, na kterou pravidlo reaguje
+(`when: {phase}`), ale žádné pravidlo do ní nevstoupí (`goPhase`) – `readGameSpec` odpověď odmítne
+(„no rule enters phase X“) a logika vypadne. Dál 2× robot prohraje, 1× vadný tvar (`things` s rolí
+`player`, podmínka s `atLeast` i `below`). Próza v systémovém promptu model skoro nehne, řádek ve
+zprávě ano. Plán dovolil dvě opravy promptu; obě vyčerpané. Další páka (deterministické doplnění
+vstupu do fáze, nebo soud až po opravných kolech produktu, která chybějící `goPhase` jmenují) čeká
+na rozhodnutí majitele.
