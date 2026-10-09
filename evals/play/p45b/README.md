@@ -218,3 +218,11 @@ okraje mimo arénu, krátký časovač). Další páka podle záznamů není pr�
 produktu (hlášky `no rule enters phase … add {"goPhase"}` model dostane, soud je ale jen první
 odpověď), nebo stejná oprava čtení jako vstup do fáze (T11) pro časovač, který nikdo nespustí, a
 fázi, do které nikdo nepřepne. Plán dovolil jednu další úpravu po záznamu 4; vyčerpaná, pokračuje T13.
+
+## T13 – konečné měření na panelu P45A (`final.json`, `final.md`)
+
+Panel P45A (40 vět), commit `f1b88a66`: logika v okamžitém návrhu **45 %**, hratelné 40/40
+(včetně přehrání a nečinného hráče), p95 874 ms, novice 54/54 buněk P41 v pásmu – splněno.
+Režisér 1/25 – nesplněno (T12a). Telemetrie P45A proti `main`: mrtvý čas 6,37 → 4,76 s, `rising`
+0,40 → 0,48, finále 0,15 → 0,10 – jen zapsané, cíle zábavy patří P45C+D. Tabulky a výhrady:
+`final.md`.
