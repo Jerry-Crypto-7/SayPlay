@@ -46,7 +46,7 @@ import { DIRECTIONS, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
 import { FIGHT_PHASE, facingOf, phaseOf, strikeDirectionOf } from '@/play/arcade/pieces/fight';
 import type { HeroAction } from '@/play/spec';
 
-import { type BodyView, bodiesOf, bodiesStale } from '../bodies';
+import { type BodyView, PACING_KINDS, bodiesOf, bodiesStale } from '../bodies';
 import { deadFor, fallOf, squashPose, tiltPose } from '../characterMotion';
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
@@ -327,22 +327,24 @@ const GLOW_EVERY = 20;
 /** Nejdelší krok hodin kresby souboje (s): snímek po pauze nepřeskočí záblesk ani pád. */
 const MAX_FX_STEP_S = 0.1;
 
-type Part = 'hero' | 'chaser' | 'enemy' | 'item' | 'block';
+/** `foe` = tělo průběhu P45C (chování, boss): model pronásledovatele z věty, bez vykřičníku a tahu kamery pronásledovatele. */
+type Part = 'hero' | 'chaser' | 'enemy' | 'foe' | 'item' | 'block';
 
-function partOf(view: BodyView): Part {
+export function partOf(view: BodyView): Part {
   if (view.role === ROLE.player) return 'hero';
   if (view.role === ROLE.chaser) return 'chaser';
+  if (PACING_KINDS.has(view.kind)) return 'foe';
   if (view.kind === 'enemy' || (view.kind === 'prey' && view.role === ROLE.enemy)) return 'enemy';
   if (view.role === ROLE.collectible) return 'item';
   return 'block';
 }
 
 /** Model z popisku role; věc bez modelu (`undefined`) je zářící drahokam. */
-function modelOf(part: Part, cast: Cast): string | undefined {
-  return part === 'hero' ? cast.player : part === 'chaser' ? cast.chaser : part === 'enemy' ? cast.enemy : part === 'item' ? cast.props.coin : undefined;
+export function modelOf(part: Part, cast: Cast): string | undefined {
+  return part === 'hero' ? cast.player : part === 'chaser' || part === 'foe' ? cast.chaser : part === 'enemy' ? cast.enemy : part === 'item' ? cast.props.coin : undefined;
 }
 
-const FALLBACK: Readonly<Record<Part, string>> = { hero: brand['sky-deep'], chaser: brand.alarm, enemy: brand['tomato-deep'], item: brand.sun, block: FENCE_COLOR };
+const FALLBACK: Readonly<Record<Part, string>> = { hero: brand['sky-deep'], chaser: brand.alarm, enemy: brand['tomato-deep'], foe: brand.alarm, item: brand.sun, block: FENCE_COLOR };
 
 interface Size {
   readonly w: number;

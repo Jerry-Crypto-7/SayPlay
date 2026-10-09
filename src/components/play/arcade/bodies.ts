@@ -7,8 +7,16 @@
  */
 
 import { BODY, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BEHAVIOURS } from '@/play/arcade/pieces/behaviours';
 
 import type { ArcadeSession } from './session';
+
+/**
+ * Druhy těl průběhu P45C (chování a boss, i terč střelnice). Katalog pro ně model nemá – scéna je kreslí
+ * modelem nepřítele ze specu (`cast.chaser`: pronásledovatel z věty, jinak nepřítel), vepsaným do kvádru těla,
+ * takže boss je větší podle svého AABB.
+ */
+export const PACING_KINDS: ReadonlySet<string> = new Set(Object.values(BEHAVIOURS).map((behaviour) => behaviour.body.kind));
 
 export interface BodyView {
   readonly index: number;
