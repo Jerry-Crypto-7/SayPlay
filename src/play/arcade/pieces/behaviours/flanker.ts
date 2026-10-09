@@ -12,6 +12,7 @@ import { type ArcadeInput, type ArcadeState, BODY, BUTTON, UNIT, bodyBase } from
 import { arenaAxis } from '../arena';
 import { RUNNER } from '../runner';
 import type { Behaviour, BehaviourStep, BehaviourView } from './index';
+import type { Box } from './lanes';
 
 type Point = { readonly x: number; readonly z: number };
 
@@ -155,15 +156,39 @@ export const flanker: Behaviour = {
     else set(state, body, 0, Math.trunc(pvz / 2));
   },
 
-  botStep(view, input, control, recent) {
-    if (view.phase !== 'telegraph' && view.phase !== 'act') return input;
+  // Trať: uhýbá plánovač pruhů běžce (`hazard`), jiná ovládání na trati neuhýbají.
+  botStep(view, input) {
+    if (view.space !== 'plane' || (view.phase !== 'telegraph' && view.phase !== 'act')) return input;
+    const { state, body, aim } = view;
+    return dodgeLine(view, input, { x: read(state, body, 'x'), z: read(state, body, 'z') }, aim, FLANKER.plane.clearance, (view.phase === 'telegraph' ? view.ticksLeft : 0) + 20);
+  },
+
+  hazard(view) {
+    if (view.space !== 'track' || (view.phase !== 'telegraph' && view.phase !== 'act')) return null;
+    // Do výpadu jede tempem hráče ve vedlejším pruhu, ve výpadu přejíždí do zamčeného a brzdí.
     const { state, body, player, aim } = view;
-    const from = { x: read(state, body, 'x'), z: read(state, body, 'z') };
-    if (view.space === 'plane') return dodgeLine(view, input, from, aim, FLANKER.plane.clearance, (view.phase === 'telegraph' ? view.ticksLeft : 0) + 20);
-    if (control !== 'runner' || from.z + read(state, body, 'd') < read(state, player, 'z') - read(state, player, 'd')) return input;
-    return dodgeLane(view, input, recent, laneOf(aim.x));
+    const pvz = read(state, player, 'vz');
+    const braked = Math.trunc(pvz / FLANKER.track.brake);
+    const { x, y, z, w, h, d } = boxOf(state, body);
+    const { laneSpeed } = RUNNER;
+    return (ticks) => {
+      const n = actTicks(view, TICKS.track.act, ticks);
+      return n === 0 ? null : { x: x + clampTo(aim.x - x, laneSpeed * n), y, z: z + pvz * (ticks - n) + braked * n, w, h, d };
+    };
   },
 };
+
+/** Kvádr těla z pozorovaného stavu. */
+export const boxOf = (state: ArcadeState, body: number): Box => ({ x: read(state, body, 'x'), y: read(state, body, 'y'), z: read(state, body, 'z'), w: read(state, body, 'w'), h: read(state, body, 'h'), d: read(state, body, 'd') });
+
+/**
+ * Kolikátý krok výpadu (`act`, `act` tiků dlouhý) je krok `ticks` po pohledu `view`; 0 = ještě varuje, nebo už je po
+ * výpadu. Varování s odpočtem `L` přejde do výpadu v `L`-tém kroku (automat ve `stepBehaviours`).
+ */
+export function actTicks(view: BehaviourView, act: number, ticks: number): number {
+  if (view.phase === 'telegraph') return ticks >= view.ticksLeft && ticks < view.ticksLeft + act ? ticks - view.ticksLeft + 1 : 0;
+  return view.phase === 'act' && ticks < view.ticksLeft ? ticks : 0;
+}
 
 /**
  * Robot v rovině: hráč, kterého jeho rychlost během `horizon` tiků přiblíží

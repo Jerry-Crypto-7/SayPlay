@@ -12,7 +12,7 @@
 import { type ArcadeEffect, type ArcadeInput, type BodyInit, UNIT } from '../../contract';
 import { ARENA, DIRECTIONS, arenaAxis, directionOfAxis } from '../arena';
 import { RUNNER } from '../runner';
-import { clampTo, dodgeLane, headTo, inside, laneOf, length, read, set, toward } from './flanker';
+import { clampTo, headTo, inside, laneOf, length, read, set, toward } from './flanker';
 import type { Behaviour, BehaviourRef, BehaviourSpace, BehaviourView } from './index';
 
 export const SNIPER = {
@@ -169,15 +169,19 @@ export const sniper: Behaviour = {
     return view.phase === 'act' && view.ticksLeft === TICKS[view.space].act ? fireShot(view, ref) : [];
   },
 
-  botStep(view, input, control, recent) {
-    const { state, body, player } = view;
+  // Trať: uhýbá plánovač pruhů běžce (výstřel ve vzduchu sám, ten, který teprve vyletí, `hazard`).
+  botStep(view, input, _control, recent) {
     // Výstřel je o `recent` tiků dál; během varování vyletí až po jeho konci.
-    if (view.space === 'plane') return view.phase === 'idle' ? input : dodgeShot(view, input, recent, view.phase === 'telegraph' ? Math.max(0, recent.length - view.ticksLeft) : flown(view, 'plane') + recent.length);
-    if (control !== 'runner' || (view.phase !== 'telegraph' && view.phase !== 'act')) return input;
-    const k = flown(view, view.space);
-    // Ostřelovač jede tempem hráče, výstřel proti němu: za `k` tiků je o `k × (tempo + výstřel)` blíž.
-    const shotZ = read(state, body, 'z') - k * (read(state, player, 'vz') + SNIPER.track.shot);
-    if (shotZ + SHOT.d < read(state, player, 'z') - read(state, player, 'd')) return input;
-    return dodgeLane(view, input, recent, laneOf(view.aim.x));
+    if (view.space !== 'plane' || view.phase === 'idle') return input;
+    return dodgeShot(view, input, recent, view.phase === 'telegraph' ? Math.max(0, recent.length - view.ticksLeft) : flown(view, 'plane') + recent.length);
+  },
+
+  hazard(view) {
+    // Výstřel vznikne v kroku, kdy varování přejde do výpadu, v pruhu zamčeném na začátku varování, a letí dozadu.
+    if (view.space !== 'track' || view.phase !== 'telegraph') return null;
+    const { state, body, player, ticksLeft } = view;
+    const fired = read(state, body, 'z') + read(state, player, 'vz') * ticksLeft;
+    const x = view.aim.x;
+    return (ticks) => (ticks < ticksLeft ? null : { x, y: SHOT.y, z: fired - SNIPER.track.shot * (ticks - ticksLeft), w: SHOT.w, h: SHOT.h, d: SHOT.d });
   },
 };

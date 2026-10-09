@@ -10,6 +10,7 @@
  */
 
 import { z } from 'zod';
+import { guardLanes } from './pieces/behaviours';
 import { pacedBotBase } from './pieces/phase-pieces';
 
 import type { GameSpecV1 } from '@/play/spec';
@@ -715,12 +716,15 @@ export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>): BotPiec
     decide: (observation, params) => {
       const base = bases[params.base.id];
       if (base === undefined) throw new Error(`arcade: unknown bot ${params.base.id}`);
-      let input = base.decide(observation, paramsOf(base, params.base.params));
+      const decided = base.decide(observation, paramsOf(base, params.base.params));
+      let input = decided;
       for (const id of params.addons) {
         const step = ADDON_PIECES[id]?.bot;
         if (step !== undefined) input = step(observation, input, pacedBotBase(params.base, observation));
       }
-      return input;
+      // Průběh (P45C R2): tah doplňku do jiného pruhu běžce ještě projde plánovačem pruhů – doplněk hrozby chování nevidí.
+      const lanes = BUTTON.LEFT | BUTTON.RIGHT;
+      return (input.buttons & lanes) === (decided.buttons & lanes) ? input : guardLanes(observation, params.base, input);
     },
   };
 }

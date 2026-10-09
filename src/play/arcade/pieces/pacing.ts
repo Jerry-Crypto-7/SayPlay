@@ -353,7 +353,12 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
 export interface PacingActor {
   readonly body: BodyInit;
   readonly behaviour?: BehaviourId;
+  /** Rozvrh ji nevysadí před tímhle postupem v promile (hejno běžce až ve vrcholu); krok dřív dostane jinou předlohu. */
+  readonly from?: number;
 }
+
+/** Ovládání pod obalem fází (`phase_control`): robot průběhu uhýbá podle něj, ne podle obalu. */
+const nativeControlId = (control: PieceRef): string => (control.id === 'phase_control' ? nativeControlId(control.params.base as PieceRef) : control.id);
 
 /** Co `withPacing` přidá: jak hra měří postup, kde se vstupuje, předlohy chování a kolik spawnů. */
 export interface PacingSetup {
@@ -414,11 +419,15 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const moved = refs.length === 0 ? {} : { behaviours: refs };
   const bodies = [...parts.level.bodies, ...[...actors.map((actor) => actor.body), ...shotBodies, ...extras].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
   const drawn = behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(rng, TENSION_CURVE, setup.budget, behaviours.length, setup.from, setup.until)
-    .map((entry) => {
-      const actor = behaviours[entry.behaviour]?.behaviour;
+    .flatMap((entry) => {
+      // Předloha, která ještě nesmí (`from`), předá krok jiné z těch, které už smí – bez dalšího losu, stream zůstane.
+      const ready = behaviours.flatMap((actor, index) => ((actor.from ?? 0) <= entry.atPermille ? [index] : []));
+      const index = ready.includes(entry.behaviour) ? entry.behaviour : ready[entry.behaviour % Math.max(1, ready.length)];
+      if (index === undefined) return [];
+      const actor = behaviours[index]?.behaviour;
       // Hejno je jeden spawn celé, i ve vrcholu (dvě hejna naráz by přetekla `maxActors`).
       const group = actor === undefined ? undefined : BEHAVIOURS[actor].group;
-      return { atPermille: Math.max(1, entry.atPermille), template: first + entry.behaviour, count: group?.size ?? entry.count, entry: entry.entry };
+      return [{ atPermille: Math.max(1, entry.atPermille), template: first + index, count: group?.size ?? entry.count, entry: entry.entry }];
     });
   const bossed = setup.boss === undefined ? drawn : [...drawn, { atPermille: Math.max(1, setup.boss.at), template: first + behaviours.length, count: 1, entry: 0 }];
   const schedule = setup.extra === undefined ? bossed : [...bossed, { atPermille: Math.max(1, setup.extra.at), template: keeper - 1, count: setup.extra.count, entry: 0 }];
@@ -433,7 +442,7 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   return {
     ...parts,
     control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper, ...moved, ...(refs.length === 0 ? {} : { space: setup.space }), ...steady } },
-    bot: { id: 'pacing_bot', params: { base: parts.bot, control: parts.control.id, keeper, ...moved, ...steady } },
+    bot: { id: 'pacing_bot', params: { base: parts.bot, control: nativeControlId(parts.control), keeper, ...moved, ...steady } },
     level: { ...parts.level, bodies, spawnSlots: (parts.level.spawnSlots ?? 0) + slots },
     rules: rule === null ? parts.rules : [...parts.rules, rule],
   };

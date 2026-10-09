@@ -204,6 +204,8 @@ describe('pacingBeatOf – what the game has, tick by tick', () => {
     const shown = blocks(run.banner);
     expect(shown.filter(([beat]) => beat === finale)).toHaveLength(1);
     expect(shown.map(([beat]) => beat)).toEqual(shown.length === 2 ? ['buildUp', finale] : [finale]);
+    // Běžec (R2): hrozby v pruzích přijdou před sprintem – „Here they come!“ je vidět.
+    if (finale === 'sprint') expect(shown.map(([beat]) => beat)).toEqual(['buildUp', 'sprint']);
     for (const [index, [beat, from, ticks]] of shown.entries()) {
       expect(from).toBe(run.beats.indexOf(beat));
       const next = shown[index + 1]?.[1] ?? run.banner.length;

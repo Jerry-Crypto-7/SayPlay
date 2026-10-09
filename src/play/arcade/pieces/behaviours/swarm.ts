@@ -10,10 +10,10 @@
  * přeletí šikmo přes krajní a prostřední pruh; protější pruh zůstane volný.
  */
 
-import { type ArcadeInput, type ArcadeState, BODY, BUTTON, FLAG, HEADER, HIT_GRACE, UNIT, bodyBase, graceOf } from '../../contract';
+import { type ArcadeState, BODY, FLAG, HEADER, HIT_GRACE, UNIT, bodyBase, graceOf } from '../../contract';
 import { ARENA, arenaAxis } from '../arena';
 import { RUNNER } from '../runner';
-import { clampTo, length, overlaps, read, set, toward } from './flanker';
+import { actTicks, boxOf, clampTo, length, overlaps, read, set, toward } from './flanker';
 import type { Behaviour, BehaviourStep, BehaviourView } from './index';
 
 type Point = { readonly x: number; readonly z: number };
@@ -128,14 +128,6 @@ const sideOf = (view: BehaviourView): number => (view.phase === 'recover' ? (vie
 
 const passed = (view: BehaviourView): boolean => read(view.state, view.body, 'z') + read(view.state, view.body, 'd') < read(view.state, view.player, 'z') - read(view.state, view.player, 'd');
 
-/** Robot běžce: do pruhu `target`, i se stisky, které ve stavu ještě nejsou. */
-function toLane(view: BehaviourView, input: ArcadeInput, recent: readonly ArcadeInput[], target: number): ArcadeInput {
-  const shift = (lane: number, buttons: number): number => Math.max(-1, Math.min(1, lane - ((buttons & BUTTON.LEFT) !== 0 ? 1 : 0) + ((buttons & BUTTON.RIGHT) !== 0 ? 1 : 0)));
-  const lane = recent.reduce((at, pressed) => shift(at, pressed.buttons), read(view.state, view.player, 'aux0'));
-  const steady = input.buttons & ~(BUTTON.LEFT | BUTTON.RIGHT);
-  return { buttons: lane === target ? steady : steady | (target < lane ? BUTTON.LEFT : BUTTON.RIGHT), axis: input.axis };
-}
-
 export const swarm: Behaviour = {
   id: 'swarm',
   telegraph: { plane: 'cluster', track: 'cluster' },
@@ -202,10 +194,10 @@ export const swarm: Behaviour = {
     return lands ? [{ kind: 'damage', amount: 1, grace: HIT_GRACE }, { kind: 'despawn', body: view.body }] : [];
   },
 
-  botStep(view, input, control, recent) {
-    if (view.phase !== 'telegraph' && view.phase !== 'act') return input;
+  // Trať: uhýbá plánovač pruhů běžce (`hazard`), jiná ovládání na trati neuhýbají.
+  botStep(view, input) {
+    if (view.space !== 'plane' || (view.phase !== 'telegraph' && view.phase !== 'act')) return input;
     const { state, body, player } = view;
-    if (view.space === 'track') return control === 'runner' && !passed(view) ? toLane(view, input, recent, view.aim.x < 0 ? -1 : 1) : input;
     // Utéct od blízkého těla, s tahem ke středu plochy (hráč je rychlejší, jen nesmí do rohu).
     const px = read(state, player, 'x');
     const pz = read(state, player, 'z');
@@ -216,5 +208,16 @@ export const swarm: Behaviour = {
     const unit = Math.max(1, gap);
     const pull = (value: number): number => clampTo(Math.trunc((-value * 1000) / ARENA.half), 1000);
     return { buttons: input.buttons, axis: arenaAxis(Math.trunc((rx * 1000) / unit) + pull(px), Math.trunc((rz * 1000) / unit) + pull(pz)) };
+  },
+
+  hazard(view) {
+    // Stojí za krajem, ve výpadu přelétá napříč k zamčenému `x`.
+    if (view.space !== 'track' || (view.phase !== 'telegraph' && view.phase !== 'act')) return null;
+    const { x, y, z, w, h, d } = boxOf(view.state, view.body);
+    const aim = view.aim.x;
+    return (ticks) => {
+      const n = actTicks(view, TICKS.track.act, ticks);
+      return n === 0 ? null : { x: x + clampTo(aim - x, SWARM.track.cross * n), y, z, w, h, d };
+    };
   },
 };

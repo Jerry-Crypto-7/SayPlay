@@ -23,13 +23,14 @@
 
 import { z } from 'zod';
 
-import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase } from '../../contract';
+import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, type PieceRef, ROLE, UNIT, bodyBase } from '../../contract';
 import { ARENA, DIRECTIONS, ESCAPE, directionOfAxis } from '../arena';
 import { predict } from '../arena-bot';
 import { ambusher } from './ambusher';
 import { boss, turret } from './boss';
 import { flanker, overlaps } from './flanker';
 import { guardian } from './guardian';
+import { type Hazard, fairStrike, planLanes } from './lanes';
 import { sniper } from './sniper';
 import { swarm } from './swarm';
 
@@ -113,6 +114,12 @@ export interface Behaviour {
   effects?(view: BehaviourView, ref: BehaviourRef): readonly ArcadeEffect[];
   /** Robot: jak uhnout. `control` = základní ovládání, `recent` = stisky, které ve stavu ještě nejsou. */
   botStep(view: BehaviourView, input: ArcadeInput, control: string, recent: readonly ArcadeInput[]): ArcadeInput;
+  /**
+   * Trať: čím tělo zraní `ticks` kroků po pohledu `view` – tělo ve výpadu, výstřel, který teprve vyletí (`Hazard`,
+   * stav čte jednou, plánovač se ptá na každý krok horizontu); `null` = z tohohle pohledu nezraní vůbec. S ní robot
+   * běžce místo `botStep` uhýbá plánovačem pruhů, který vidí i řady (`lanes.ts`).
+   */
+  hazard?(view: BehaviourView): Hazard | null;
   /**
    * Jak tělo vidí základní robot: věc, ke které jde (bezpečnou cestou), pronásledovatel, kterému se vyhne,
    * překážka (robot střelce na ni nemíří); bez metody vůbec.
@@ -211,22 +218,37 @@ export function matches(state: ArcadeState, body: number, template: number): boo
   return true;
 }
 
+type Actor = readonly [number, Behaviour, number, BehaviourRef];
+
 /**
- * Živá těla chování `[tělo, chování, kód, odkaz]` ve vzestupném pořadí těl; hráč a předlohy ne.
+ * Živá těla chování `[tělo, chování, kód, odkaz]` ve vzestupném pořadí těl; hráč a předlohy ne. S `shots` tímž
+ * průchodem dopíše i živé výstřely chování (těla s podpisem některé předlohy `shot`, každé jednou, vzestupně).
  * Robot, ovládání i pravidlo to volají každý tik: model předlohy se porovná dřív než celý podpis.
  */
-function actors(state: ArcadeState, player: number, refs: readonly BehaviourRef[]): (readonly [number, Behaviour, number, BehaviourRef])[] {
-  const found: (readonly [number, Behaviour, number, BehaviourRef])[] = [];
+function actors(state: ArcadeState, player: number, refs: readonly BehaviourRef[], shots?: number[]): Actor[] {
+  const found: Actor[] = [];
   const bodies = state[HEADER.bodyCount] as number;
   const kinds = refs.map((ref) => state[bodyBase(ref.template) + BODY.kind] as number);
+  const shotTemplates = shots === undefined ? [] : refs.flatMap((ref) => (ref.shot === undefined ? [] : [ref.shot]));
+  const shotKinds = shotTemplates.map((shot) => state[bodyBase(shot) + BODY.kind] as number);
+  // Smyčka přes všechna těla několikrát za tik: sloty a bit jednou (import pod vitestem čte každý přístup getterem).
+  const first = bodyBase(0);
+  const stride = bodyBase(1) - first;
+  const { flags: flagsSlot, kind: kindSlot } = BODY;
+  const aliveBit = FLAG.alive;
   for (let body = 0; body < bodies; body += 1) {
-    const base = bodyBase(body);
-    if (body === player || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
-    const kind = state[base + BODY.kind] as number;
+    const base = first + body * stride;
+    if (body === player || ((state[base + flagsSlot] as number) & aliveBit) === 0) continue;
+    const kind = state[base + kindSlot] as number;
     for (let k = 0; k < refs.length; k += 1) {
       const ref = refs[k] as BehaviourRef;
       if (kinds[k] !== kind || !matches(state, body, ref.template)) continue;
       found.push([body, BEHAVIOURS[ref.id], BEHAVIOUR_IDS.indexOf(ref.id) + 1, ref]);
+      break;
+    }
+    for (let k = 0; k < shotKinds.length; k += 1) {
+      if (shotKinds[k] !== kind || !matches(state, body, shotTemplates[k] as number)) continue;
+      shots?.push(body);
       break;
     }
   }
@@ -238,38 +260,81 @@ export const behaviourBodies = (state: ArcadeState, player: number, refs: readon
 
 /** Indexy živých výstřelů chování: těla s podpisem některé předlohy `shot`, každé jednou. */
 export function shotBodies(state: ArcadeState, player: number, refs: readonly BehaviourRef[]): number[] {
-  const shots = refs.flatMap((ref) => (ref.shot === undefined ? [] : [ref.shot]));
-  const found: number[] = [];
-  if (shots.length === 0) return found;
-  const kinds = shots.map((shot) => state[bodyBase(shot) + BODY.kind] as number);
-  const bodies = state[HEADER.bodyCount] as number;
-  for (let body = 0; body < bodies; body += 1) {
-    if (body === player || !alive(state, body)) continue;
-    const kind = state[bodyBase(body) + BODY.kind] as number;
-    if (shots.some((shot, k) => kinds[k] === kind && matches(state, body, shot))) found.push(body);
-  }
-  return found;
+  const shots: number[] = [];
+  if (refs.some((ref) => ref.shot !== undefined)) actors(state, player, refs, shots);
+  return shots;
 }
 
 // ---------------------------------------------------------------------------
 // Krok ovládání, pravidla a robota
 
+/** Výstřel chování letí rovně: kde bude za `ticks` kroků. */
+function shotPath(state: ArcadeState, shot: number): Hazard {
+  const base = bodyBase(shot);
+  const at = (slot: number): number => state[base + slot] as number;
+  const [x, y, z, w, h, d, vx, vz] = [at(BODY.x), at(BODY.y), at(BODY.z), at(BODY.w), at(BODY.h), at(BODY.d), at(BODY.vx), at(BODY.vz)];
+  return (ticks) => ({ x: x + vx * ticks, y, z: z + vz * ticks, w, h, d });
+}
+
+/**
+ * Čím chování na trati zraní v příštích krocích: těla s `hazard` (pohled ze stavu teď) a výstřely `shots` ve vzduchu.
+ * Hrozba čte stav při vzniku – ovládání mezi vznikem a dotazem mění jen rychlosti těl chování, ne to, co čte.
+ */
+function trackHazards(state: ArcadeState, player: number, found: readonly Actor[], shots: readonly number[]): Hazard[] {
+  const hazards: Hazard[] = [];
+  for (const [body, behaviour] of found) {
+    const view = viewOf(state, body, player);
+    const hazard = view.space === 'track' && (view.phase === 'telegraph' || view.phase === 'act') ? behaviour.hazard?.(view) : undefined;
+    if (hazard !== undefined && hazard !== null) hazards.push(hazard);
+  }
+  for (const shot of shots) hazards.push(shotPath(state, shot));
+  return hazards;
+}
+
 /**
  * `pacing_control`: posune automat fází každého těla chování a nechá ho
  * nastavit rychlost. Do `act` jen po celém `telegraph`; `act` končí
  * odpočtem, `done`, nebo dotykem hráče (jeden zásah na výpad).
+ *
+ * Trať (P45C R2): úder těla s `hazard` začne, jen když je férový (`fairStrike`) – s řadami a hrozbami, které
+ * už běží, nezavře hráči všechny pruhy; jinak tělo počká. Hejno rozhodne jednou za tik pro všechna svá těla, přes
+ * celou svou délku (`group`), ať se řada neroztrhne.
  */
 export function stepBehaviours(state: ArcadeState, player: number, refs: readonly BehaviourRef[], space: BehaviourSpace, intensity: number, half?: number): void {
-  for (const [body, behaviour, code] of actors(state, player, refs)) {
+  const found = actors(state, player, refs);
+  let live: Hazard[] | null = null;
+  let verdicts: Map<BehaviourRef, boolean> | null = null;
+  for (const [body, behaviour, code, ref] of found) {
     const ticks = behaviour.ticks[space];
     const before = viewOf(state, body, player);
     const step = (phase: BehaviourPhase, ticksLeft: number, aim = before.aim): BehaviourStep => ({ ...before, space, phase, ticksLeft, aim, intensity, ...(half === undefined ? {} : { half }), remember: (memo) => remember(state, body, memo) });
     let view = step(before.phase, before.ticksLeft);
     if (view.phase === 'idle') {
       if (behaviour.ready(view)) {
-        const aim = behaviour.aim(view);
-        state[bodyBase(body) + BODY.aux1] = packAim(aim.x, aim.z);
-        view = step('telegraph', Math.max(TELEGRAPH_MIN, behaviour.warnTicks?.(view) ?? ticks.telegraph), aimOf(state[bodyBase(body) + BODY.aux1] as number));
+        const wanted = behaviour.aim(view);
+        const packed = packAim(wanted.x, wanted.z);
+        const warned = step('telegraph', Math.max(TELEGRAPH_MIN, behaviour.warnTicks?.(view) ?? ticks.telegraph), aimOf(packed));
+        const hazard = space === 'track' ? behaviour.hazard?.(warned) : undefined;
+        let fair = verdicts?.get(ref);
+        if (fair === undefined && hazard !== undefined && hazard !== null) {
+          if (live === null) {
+            const shots: number[] = [];
+            actors(state, player, refs, shots);
+            live = trackHazards(state, player, found, shots);
+          }
+          const spread = behaviour.group === undefined ? 0 : 2 * (behaviour.group.size - 1) * behaviour.group.spacing;
+          const strike: Hazard = (t) => {
+            const box = hazard(t);
+            return box === null ? null : { ...box, d: box.d + spread };
+          };
+          fair = fairStrike(state, player, strike, live, warned.ticksLeft + ticks.act);
+          if (behaviour.group !== undefined) (verdicts ??= new Map()).set(ref, fair);
+          if (fair) live.push(strike);
+        }
+        if (fair !== false) {
+          state[bodyBase(body) + BODY.aux1] = packed;
+          view = warned;
+        }
       }
     } else {
       const left = view.ticksLeft - 1;
@@ -308,11 +373,12 @@ function shotGone(state: ArcadeState, shot: number, player: number, half: number
  */
 export function behaviourEffects(state: ArcadeState, player: number, refs: readonly BehaviourRef[], half?: number): ArcadeEffect[] {
   const effects: ArcadeEffect[] = [];
-  for (const [body, behaviour, , ref] of actors(state, player, refs)) {
+  const shots: number[] = [];
+  for (const [body, behaviour, , ref] of actors(state, player, refs, shots)) {
     const view = viewOf(state, body, player);
     effects.push(...(behaviour.effects === undefined ? strike(view) : behaviour.effects(view, ref)));
   }
-  for (const shot of shotBodies(state, player, refs)) {
+  for (const shot of shots) {
     if (overlaps(state, shot, player)) effects.push({ kind: 'damage', amount: 1, grace: HIT_GRACE }, { kind: 'despawn', body: shot });
     else if (shotGone(state, shot, player, half)) effects.push({ kind: 'despawn', body: shot });
   }
@@ -389,12 +455,38 @@ export function chaserClearance(observation: ArcadeObservation, input: ArcadeInp
  * `pacing_bot`: vstup základního robota upravený krokem robota každého těla
  * chování (vzestupně). Pronásledovatelé mají přednost: uhnutí, které by hráče
  * zahnalo k nim (nebo ho zastavilo, než doběhnou), neplatí a hraje útěk
- * základního robota.
+ * základního robota. Běžec na trati uhýbá tělům s `hazard` a výstřelům
+ * plánovačem pruhů (`planLanes`) – ten vidí i řady překážek.
  */
 export function dodge(observation: ArcadeObservation, refs: readonly BehaviourRef[], control: string, input: ArcadeInput): ArcadeInput {
   // Hráč, který se z místa nehne (střelnice: osa míří), neuhýbá – osa uhnutí by mu přenastavila míření.
   if (BEHAVIOUR_SPACE[control] === undefined) return input;
+  const { state, player } = observation;
+  const lanes = control === 'runner';
+  const shots: number[] | undefined = lanes ? [] : undefined;
+  const found = actors(state, player, refs, shots);
   let out = input;
-  for (const [body, behaviour] of actors(observation.state, observation.player, refs)) out = behaviour.botStep(viewOf(observation.state, body, observation.player), out, control, observation.recent);
+  for (const [body, behaviour] of found) {
+    const view = viewOf(state, body, player);
+    if (!lanes || view.space !== 'track' || behaviour.hazard === undefined) out = behaviour.botStep(view, out, control, observation.recent);
+  }
+  if (shots !== undefined) out = planLanes(observation, trackHazards(state, player, found, shots), out);
   return out.axis === input.axis || chaserClearance(observation, out) >= CHASER_CHECK.gap ? out : input;
+}
+
+/**
+ * Robot běžce s doplňky (`addon_bot`): tah doplňku do pruhu (k minci, před pronásledovatelem) projde ještě
+ * plánovačem pruhů – doplněk hrozby chování nevidí a přetahoval by se s uhnutím (změřeno: `+collect` na semínku 1
+ * střídal plánovač s mincí pruhy, až výstřel zasáhl). `bot` = robot pod doplňky; bez `pacing_bot` s chováním
+ * běžce vstup beze změny.
+ */
+export function guardLanes(observation: ArcadeObservation, bot: PieceRef, input: ArcadeInput): ArcadeInput {
+  let ref: PieceRef | undefined = bot;
+  while (ref !== undefined && ref.id !== 'pacing_bot') ref = ref.params.base as PieceRef | undefined;
+  const params = ref?.params as { readonly control?: string; readonly behaviours?: readonly BehaviourRef[] } | undefined;
+  if (params?.behaviours === undefined || params.control !== 'runner') return input;
+  const { state, player } = observation;
+  const shots: number[] = [];
+  const found = actors(state, player, params.behaviours, shots);
+  return planLanes(observation, trackHazards(state, player, found, shots), input);
 }

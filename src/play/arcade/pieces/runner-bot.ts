@@ -13,12 +13,12 @@ import { type ArcadeInput, BODY, BUTTON, type BotPiece, FLAG, HEADER, NO_INPUT, 
 import { JUMP_PEAK, RUNNER } from './runner';
 
 /** Skok, když je překážka podle zastaralého pohledu 24 tiků daleko – skutečně ~16, uprostřed okna. */
-const JUMP_AT_TICKS = 24;
-const SLIDE_AT_TICKS = 22;
+export const JUMP_AT_TICKS = 24;
+export const SLIDE_AT_TICKS = 22;
 /** Rezerva nad překážkou, kterou robot ještě považuje za přeskočitelnou. */
 const JUMP_MARGIN = 200;
 /** Překážky do 1 m od sebe v ose z jsou jedna řada. */
-const ROW_SPAN = 1000;
+export const ROW_SPAN = 1000;
 
 type LaneStatus = 0 | 1 | 2;
 const FREE: LaneStatus = 0;
@@ -35,6 +35,9 @@ const PEAK = JUMP_PEAK;
 const baseOf = bodyBase;
 
 const read = (state: Int32Array, base: number, slot: keyof typeof BODY): number => state[base + S[slot]] as number;
+
+/** Jak robot překážku mine z geometrie: plovoucí nad výškou skluzu podklouzne, dost nízkou přeskočí, jinak jen jiným pruhem (`null`). */
+export const obstacleAction = (y: number, top: number): 'jump' | 'slide' | null => (y >= RN.slideH ? 'slide' : top + JUMP_MARGIN <= PEAK ? 'jump' : null);
 
 export interface Row {
   readonly z: number;
@@ -62,8 +65,7 @@ export function nextRow(state: Int32Array, player: number): Row | null {
     if (i === player || read(state, base, 'role') !== RL.obstacle || (read(state, base, 'flags') & F.alive) === 0) continue;
     if (Math.abs(read(state, base, 'z') - rowZ) > ROW_SPAN) continue;
     const y = read(state, base, 'y');
-    const top = y + read(state, base, 'h');
-    const action = y >= RN.slideH ? 'slide' : top + JUMP_MARGIN <= PEAK ? 'jump' : null;
+    const action = obstacleAction(y, y + read(state, base, 'h'));
     lanes.forEach((lane, index) => {
       const laneX = (index - 1) * RN.laneWidth;
       if (Math.abs(read(state, base, 'x') - laneX) * 2 >= read(state, base, 'w') + RN.playerW) return;

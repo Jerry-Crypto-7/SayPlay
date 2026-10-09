@@ -69,7 +69,12 @@ export function behaviourHarness(space: BehaviourSpace, behaviour: BehaviourId, 
   return { world: made.world, body, space };
 }
 
-export const refsOf = (world: ArcadeWorld): readonly BehaviourRef[] => (world.control.params as { behaviours: BehaviourRef[] }).behaviours;
+/** Chování světa z `pacing_control`, i pod obaly doplňků a skládání (`params.base`). */
+export const refsOf = (world: ArcadeWorld): readonly BehaviourRef[] => {
+  let control = world.control;
+  while (control.id !== 'pacing_control' && control.params.base !== undefined) control = control.params.base as ArcadeWorld['control'];
+  return (control.params as { behaviours: BehaviourRef[] }).behaviours;
+};
 
 /** Odehraje záznam (`[]` = nečinný hráč); po každém tiku `onTick` se stavem a efekty tiku. */
 export function play(world: ArcadeWorld, inputs: readonly InputEvent[], onTick: (state: ArcadeState, tick: number, effects: readonly ArcadeEffect[]) => void): ArcadeState {

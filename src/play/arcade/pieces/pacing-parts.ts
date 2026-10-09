@@ -20,6 +20,7 @@ import { PACING, type PacingActor, type PacingSetup, TENSION_CURVE, intensityAt,
 import { progressionParts } from './progression-parts';
 import { QUEST } from './quest';
 import { checkRhythmLevel, rhythmLevel } from './rhythm';
+import { RUNNER } from './runner';
 import { type GunParams, marchedRange, shooterWaves } from './shooter';
 import { THROW_SWING, throwField, throwParamsFor, throwParts } from './throw';
 import { type TimingLevelParams, checkTimingLevel, timingLevel, timingLevelAtSpeeds, timingSpeedOf } from './timing';
@@ -60,16 +61,45 @@ export type GenrePacing = (parts: ArcadeParts, spec: GameSpecV1, seed: number) =
 const curvePhases = (rows: number): Phase[] => phasesFromCurve(TENSION_CURVE).map((phase, index, all) => (rows > 0 && index === all.length - 1 ? { ...phase, add: [{ role: 'obstacle', count: rows }] } : phase));
 
 /**
- * Dráhový žánr (P45C T11): postup = ujetá trať, fáze z křivky a finále
- * závěrečný sprint. Bez chování: robot běžce s nimi na trati s překážkami
- * prohrává (nález pod plánem), ostatní dráhy pruhy nemají.
+ * Hrozby v pruzích běžce (P45C R2): flanker a ostřelovač od stupňování, hejno až od vrcholu; vstupují `ahead`
+ * před hráčem ve vnějších pruzích. Robot uhýbá plánovačem pruhů, který vidí i řady (`behaviours/lanes.ts`).
+ * `room` = těla, která hrozby potřebují navíc (předlohy těl a výstřelu, sloty `maxActors` + `maxShots`), `spare` =
+ * rezerva pro doplňky za průběhem (`+shoot`: nepřítel za každou druhou řadou, předloha a střely ve vzduchu).
+ * simplified: `spare` je pevná rezerva, ne součet doplňků specu – dlouhá hustá trať hrozby ztratí i bez doplňků;
+ * počítat z `spec.addons`, až přibude doplněk s víc těly.
  */
-const track = (rows: number, rampLevel = false): GenrePacing => (parts) => ({
+export const RUNNER_FOES = {
+  actors: [{ behaviour: 'flanker', from: 200 }, { behaviour: 'sniper', from: 200 }, { behaviour: 'swarm', from: 650 }] as readonly { readonly behaviour: BehaviourId; readonly from: number }[],
+  budget: 8,
+  ahead: 40 * UNIT,
+  room: 3 + 1 + PACING.maxActors + PACING.maxShots,
+  spare: 48,
+} as const;
+
+/** Hrozby běžce, když se do stropu těl jádra vejdou i s doplňky; jinak trať bez nich (hra kvůli průběhu nikdy neselže). */
+function runnerFoes(parts: ArcadeParts): Pick<GenrePacingSetup, 'behaviours' | 'budget' | 'from' | 'spots'> | null {
+  const used = parts.level.bodies.length + (parts.level.spawnSlots ?? 0);
+  if (used + RUNNER_FOES.room + RUNNER_FOES.spare > ARCADE_LIMITS.maxBodies) return null;
+  const { actors, ahead } = RUNNER_FOES;
+  return {
+    behaviours: actors.map((actor) => ({ body: BEHAVIOURS[actor.behaviour].body, behaviour: actor.behaviour, from: actor.from })),
+    budget: RUNNER_FOES.budget,
+    from: Math.min(...actors.map((actor) => actor.from)),
+    spots: [-RUNNER.laneWidth, ahead, RUNNER.laneWidth, ahead],
+  };
+}
+
+/**
+ * Dráhový žánr (P45C T11): postup = ujetá trať, fáze z křivky a finále
+ * závěrečný sprint. Hrozby v pruzích jen běžec (`foes`, R2); ostatní dráhy pruhy nemají.
+ */
+const track = (rows: number, rampLevel = false, foes = false): GenrePacing => (parts) => ({
   goal: { by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks },
   space: 'track',
   spots: [0, 0],
   behaviours: [],
   budget: 0,
+  ...((foes ? runnerFoes(parts) : null) ?? {}),
   finale: 'sprint',
   phases: curvePhases(rows),
   ...(rampLevel ? { rampLevel: true } : {}),
@@ -554,7 +584,8 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   // Nad úrovní rampy: se stupňováním na 100 % základu měl začátečník víc času sestřelit nepřítele v pruhu (se střelbou 0,61 → 0,81 výher
   // na 80 semínkách); nad prostřední třetinou drží běžec svou dřívější obtížnost (0,59 / 0,58 / útěk 0,35 jako bez průběhu).
   // Složená hra (díly P42) ne: robot dílu `catch` uhne do pruhu padající kořisti jen při základní rychlosti (`assembly-parts` run/1 při 110 % nevyhrál).
-  runner_track: (parts, spec, seed) => track(0, spec.assemblyParts === undefined)(parts, spec, seed),
+  // Hrozby v pruzích (R2) taky jen bez dílů: robot dílu rozhoduje o pruhu až nad robotem průběhu a jeho plánovač pruhů by přebil.
+  runner_track: (parts, spec, seed) => track(0, spec.assemblyParts === undefined, spec.assemblyParts === undefined)(parts, spec, seed),
   // Poletování bez úrovně rampy: rychlejší let mu obtížnost nepřidá (sběr 0,7 → 0,9).
   flap_track: track(0),
   // Závod do prvního nárazu (`crashBudget` 1) si nechá rampu – odchylka P45C T11: vrchol křivky 115 % jede pod vrcholem rampy 120 %
