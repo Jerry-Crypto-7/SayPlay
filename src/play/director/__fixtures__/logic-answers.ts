@@ -47,7 +47,7 @@ export interface LogicVerdict {
    * odpověď odmítl („no rule enters phase“) a logika by vypadla – to je neúspěch.
    */
   readonly rawPassed: boolean;
-  /** Fáze, do kterých čtení odpovědi doplnilo vstupní pravidlo. */
+  /** Fáze, kterým oprava čtení doplní vstupní pravidlo (z pravidel odpovědi; strop pravidel světa ji může ještě odmítnout). */
   readonly phasesEntered: readonly string[];
   /** Model v odpovědi deklaroval aspoň jednu proměnnou, časovač, fázi nebo událost. */
   readonly wroteLogic: boolean;

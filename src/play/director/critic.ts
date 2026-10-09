@@ -287,8 +287,11 @@ export function ruleInvalidIssues(detail: string, written: unknown): CriticIssue
 
 const VERB_UNPROVED_MARK = /VERB_UNPROVED:([a-z][a-z-]*)/g;
 const VERB_NO_EFFECT_MARK = /VERB_NO_EFFECT:([a-z][a-z-]*)/g;
-/** `LOGIC_UNPROVED|LOGIC_NO_EFFECT:<druh>:<jméno>` – důvod za pomlčkou (`arcade/verify.ts`, P45B T7). */
-const LOGIC_MARK = /LOGIC_(UNPROVED|NO_EFFECT):(var|timer|phase|event|wave):([a-z][a-z0-9_]*) – ([^;]+)/g;
+/**
+ * `LOGIC_UNPROVED|LOGIC_NO_EFFECT:<druh>:<jméno>` – důvod za pomlčkou (`arcade/verify.ts`, P45B T7).
+ * Jméno vlny je id jejího pravidla, a to smí velká písmena i tečky (`startFight`), ne jen tvar jmen logiky.
+ */
+const LOGIC_MARK = /LOGIC_(UNPROVED|NO_EFFECT):(var|timer|phase|event|wave):([A-Za-z][A-Za-z0-9_.]*) – ([^;]+)/g;
 
 /**
  * Neprokázaná kostka logiky (P45B T10) jde do opravy i do vyřazení cestou slovesa

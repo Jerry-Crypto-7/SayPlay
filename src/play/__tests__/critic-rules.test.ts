@@ -116,6 +116,14 @@ describe('the critic names rule problems', () => {
     expect(issues[0]?.evidence).toMatch(/^"wave" VERB_NO_EFFECT/);
     expect(issues[0]?.repairHint).toContain('nonzero');
   });
+
+  it('LOGIC_NO_EFFECT of a wave whose rule id has capitals and a dot points at that rule, by its verb', () => {
+    const spec = { rules: [{ id: 'pick', verb: 'pick', when: { press: 'action' }, do: [{ score: 1 }] }, { id: 'bat.Wave', verb: 'swarm', when: { every: 60 }, do: [{ wave: { role: 'bat', count: 2, at: 'edge' } }] }] } as unknown as GameSpecV1;
+    const evidence = 'keypoint failed: logic_proved: LOGIC_NO_EFFECT:wave:bat.Wave – the rule fired, but its wave added no live body while the bot played';
+    const issues = verbIssues([{ code: 'KEYPOINT_FAILED', path: '/verification/0', evidence, repairHint: '' }], spec);
+    expect(issues).toEqual([expect.objectContaining({ code: 'VERB_UNPROVED', severity: 'block', path: '/rules/1' })]);
+    expect(issues[0]?.evidence).toMatch(/^"swarm" wave bat\.Wave LOGIC_NO_EFFECT/);
+  });
 });
 
 describe('the director repairs a verb that changes nothing', () => {

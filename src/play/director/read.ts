@@ -15,7 +15,8 @@
  *   Kontrola tady předbíhá schéma o jeden krok a `detail` nese ta jména.
  */
 
-import { type Logic, type Rule, withPhaseEntries } from '../arcade/rules/schema';
+import { arcadeWorldOf } from '../arcade/compile';
+import { logicSchema, rulesSchema, withPhaseEntries } from '../arcade/rules/schema';
 import { liveCells } from '../compose/allowed';
 import { recipeKey } from '../compose/recipe';
 import { recipeAnswerSchema, nativeRecipeParams, type RecipeAnswer } from './answer-schema';
@@ -50,14 +51,14 @@ export function withoutNulls(value: unknown): unknown {
   return value;
 }
 
-/**
- * Fáze, na kterou pravidlo odpovědi reaguje a nic do ní nevede, dostane vstupní pravidlo
- * (`withPhaseEntries`, P45B T11) – gpt-oss-20b fázi deklaruje, ale přepnutí do ní vynechá.
- */
-function withEnteredPhases<T extends { readonly rules?: readonly Rule[]; readonly logic?: Logic }>(content: T): T {
-  if (content.rules === undefined || content.logic === undefined) return content;
-  const rules = withPhaseEntries(content.rules, content.logic);
-  return rules === content.rules ? content : { ...content, rules };
+/** Spec s doplněným vstupem do fáze, na kterou pravidlo reaguje (`withPhaseEntries`); beze změny, když není co doplnit. */
+function withEnteredPhases(input: unknown): unknown {
+  if (!isRecord(input)) return input;
+  const rules = rulesSchema.safeParse(input.rules);
+  const logic = logicSchema.safeParse(input.logic);
+  if (!rules.success || !logic.success) return input;
+  const entered = withPhaseEntries(rules.data, logic.data);
+  return entered === rules.data ? input : { ...input, rules: entered };
 }
 
 /** Neznámá `id` v `mechanics`, v pořadí výskytu; prázdné, když je pole nečitelné. */
@@ -131,7 +132,7 @@ export function readRecipeAnswer(body: unknown): RecipeRead {
   const parsed = recipeAnswerSchema.safeParse(cleaned);
   if (!parsed.success) return { ok: false, reason: 'MALFORMED_SPEC', detail: parsed.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('; ') };
   if (!liveCells().some(cell => recipeKey(cell.recipe) === recipeKey(parsed.data.recipe))) return { ok: false, reason: 'MALFORMED_SPEC', detail: `recipe is not a live combination: ${recipeKey(parsed.data.recipe)}` };
-  return { ok: true, value: withEnteredPhases({ ...parsed.data, hero: singular(parsed.data.hero), ...(parsed.data.cast === undefined ? {} : { cast: parsed.data.cast.map(item => ({ ...item, label: singular(item.label) })) }) }) };
+  return { ok: true, value: { ...parsed.data, hero: singular(parsed.data.hero), ...(parsed.data.cast === undefined ? {} : { cast: parsed.data.cast.map(item => ({ ...item, label: singular(item.label) })) }) } };
 }
 
 export type GenreRead = { readonly ok: true; readonly spec: GameSpecV1; readonly genre: GenreSpec } | Extract<DirectorRead, { ok: false }>;
@@ -152,8 +153,7 @@ export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MOD
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
   const read = readGenreSpec(withoutNulls(raw));
   if (!read.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: read.issues.join('; ') };
-  const written = withEnteredPhases(singularRoles(read.value));
-  const genre = sentence === undefined ? written : ammoOfSentence(goalOfSentence(rideOfSentence(written, sentence), sentence, reading, modules), sentence, reading, modules);
+  const genre = sentence === undefined ? singularRoles(read.value) : ammoOfSentence(goalOfSentence(rideOfSentence(singularRoles(read.value), sentence), sentence, reading, modules), sentence, reading, modules);
   const game = compileGenreSpec(genre, modules);
   if (!game.ok) return game;
   // Věta mimo hry (P37A T5): AI verze řekne cíl slovy věty jako návrh („Dodge the long queues!“).
@@ -263,8 +263,15 @@ export function compileGenreSpec(genre: GenreSpec, modules: GenreModules = GENRE
  * totéž (B-R6). Od B-R8 model smí všechny spouštěče; meze `interact` soudí
  * `ruleIssues` v `readGameSpec`, takže platí i pro přenos, který schéma
  * odpovědi neposílá (Messages).
+ *
+ * Fáze, na kterou pravidlo reaguje a nic do ní nevede, dostane vstupní pravidlo
+ * (`withPhaseEntries`, P45B T11) – gpt-oss-20b fázi deklaruje, ale přepnutí do ní
+ * vynechá. Platí jen, když spec s ním projde a svět ho unese: strop pravidel jádra
+ * počítá i vestavěná pravidla hry (`arcade/compile.ts`). Jinak se čte, jak ho model napsal.
  */
 export function readModelSpec(input: unknown): DirectorRead {
-  const result = readGameSpec(input);
+  const entered = withEnteredPhases(input);
+  const repaired = entered === input ? null : readGameSpec(entered);
+  const result = repaired?.ok === true && arcadeWorldOf(repaired.value, 1).ok ? repaired : readGameSpec(input);
   return result.ok ? { ok: true, spec: result.value } : { ok: false, reason: result.reason, detail: result.issues.join('; ') };
 }

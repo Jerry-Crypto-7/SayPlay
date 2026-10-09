@@ -13,11 +13,13 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { arcadeWorldOf } from '../../arcade/compile';
 import { PHASE_ENTRY_TICKS } from '../../arcade/rules/schema';
 import { genreAnswer } from '../__fixtures__';
 import { LOGIC_ANSWERS_DIR, type LogicAnswerFixture, type LogicVerdict, judgeLogicAnswer } from '../__fixtures__/logic-answers';
 import { COMPACT_PROMPT_VERSION } from '../compact';
 import { DIRECTOR_PROMPT_VERSION } from '../prompt';
+import { readGenreAnswer, readModelSpec } from '../read';
 
 const SENTENCES = (JSON.parse(readFileSync('evals/play/p45b/director-sentences.json', 'utf8')) as { sentences: { id: string; text: string }[] }).sentences;
 const fixtures = (): LogicAnswerFixture[] =>
@@ -52,6 +54,24 @@ describe('the judge of a recorded logic answer', () => {
     expect(await judgeLogicAnswer(stub(harvestAnswer(true)))).toMatchObject({ passed: true, rawPassed: true, phasesEntered: [], why: null });
     expect(await judgeLogicAnswer(stub(harvestAnswer(false)))).toMatchObject({ passed: true, rawPassed: false, phasesEntered: ['harvest'], why: null });
   }, 120_000);
+});
+
+describe('the phase-entry repair of the read path', () => {
+  it('adds no entry the world cannot take: with every free rule slot used, the spec reads as the model wrote it', () => {
+    const read = readGenreAnswer(harvestAnswer(true));
+    if (!read.ok) throw new Error(read.detail);
+    const [ripen, cheer] = read.spec.rules!;
+    const pads = (count: number) => Array.from({ length: count }, (_, i) => ({ id: `pad${String(i)}`, verb: 'cheer', when: { every: 600 }, do: [{ score: 1 }] }));
+    // Kolik pravidel specu svět této arény unese vedle vestavěných – pod stropem specu 16, jinak by test zkoušel ten.
+    const fits = (count: number) => arcadeWorldOf({ ...read.spec, rules: [ripen!, cheer!, ...pads(count - 2)] }, 1).ok;
+    let most = 2;
+    while (most < 16 && fits(most + 1)) most += 1;
+    expect(most).toBeLessThan(16);
+    const roomy = readModelSpec({ ...read.spec, rules: [cheer!, ...pads(most - 2)] });
+    expect(roomy.ok ? roomy.spec.rules?.map((rule) => rule.id).at(-1) : roomy.detail).toBe('enter_harvest');
+    const full = readModelSpec({ ...read.spec, rules: [cheer!, ...pads(most - 1)] });
+    expect(full.ok ? full.spec.rules?.map((rule) => rule.id) : full.detail).toContain('no rule enters phase harvest');
+  });
 });
 
 describe('recorded gpt-oss-20b logic answers', () => {
