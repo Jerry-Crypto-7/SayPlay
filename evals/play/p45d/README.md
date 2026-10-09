@@ -57,7 +57,7 @@ node scripts/p45d/alive-clip.mjs --run p45d-alive-after-off --toy off --gpu --ou
 | okno začíná pohybem hrdiny | 21/23 | 21/23 | 18/23 |
 
 - **Cíl `alive` ≥ 70 %: číslem splněný (74 %), jako důkaz pohybu ne.** Kalibrace neprošla, viz další bod.
-- **Kalibrace neprošla: rozdíl 21,7 bodu, potřeba aspoň 25.** Měřidlo tedy pohyb těla neměří dost spolehlivě. Práh zůstává; opravit se má otázka nebo pás snímků z T3 (routed T24).
+- **Kalibrace neprošla: rozdíl 21,7 bodu, potřeba aspoň 25.** Měřidlo tedy pohyb těla neměří dost spolehlivě. Práh zůstal; opravený výřez a výsledek jsou v další části (T24).
 - **Proti základu bez hračkového pohybu žádný zisk:** 17/23 před i po. Mezi zapnuto a vypnuto se liší 9 vět: 7 vypnutím „umřelo“ (ogre, baby dragon, knight, witch, pirate, bear, bird), 2 naopak „ožily“ (phoenix, goldfish).
 - **Odhad (neověřeno): vypnuto je pod základem (12 vs 17), protože `?toy=off` vypne i pohyb, který byl před P45D.** Ten pohyb teď kreslí hračková vrstva. U ogre, knight a pirate se s vypnutím hrdina v okně ani nepohnul.
 - **Šum soudce je velký.** Phoenix a goldfish soudce uznal jen s vypnutým pohybem a nic jiného se mezi běhy nezměnilo. Opakovaný běh téhož buildu tu není, takže rozptyl změřený nemáme.
@@ -71,6 +71,32 @@ node scripts/p45d/alive-clip.mjs --run p45d-alive-after-off --toy off --gpu --ou
 | flyer | 3/4 | 1/4 | f26 broom – předmět stojí, hra s ním nehýbe |
 | swimmer | 0/1 | 1/1 | d12 goldfish – „turtle floating“, vlnění ocasu soudce nepoznal |
 | prop | 7/10 | 7/10 | f17 phoenix (šum, vypnuto prošel), m17 grandma a d01 hedgehog – hrdina se 6 s nehnul, takže podle kitu stojí |
+
+### Měřidlo s vystředěným výřezem (T24) – `alive-after-motion.json` → `centredMeter`
+
+**Proč:** v listech T15 se s vypnutým pohybem tělo nehýbalo, jen klouzalo po dlaždici (víla, auto, medvěd). Soudce to četl jako „jde“ nebo „jede“. Měřidlo (`648316a8`) proto každý snímek vystředí na hrdinu (`stableCropsOf`), takže přesun scénou zmizí. Otázka soudci to i říká. Práh a cíl zůstaly.
+
+Týž build `d4c63332`, týž panel, 23 + 23 volání:
+
+| | zapnuto | `--toy off` |
+|---|---|---|
+| živá (`alive`) | **19/23 (83 %)** | 10/23 (43 %) |
+| poznaná (`likeNoun`) | 7/23 (30 %) | 10/23 (43 %) |
+
+- **Kalibrace prošla: rozdíl 39 bodů, potřeba 25.** Měřidlo teď pohyb těla měří. Čísla T15 výš patří prvnímu měřidlu a s tímhle se nesčítají.
+- **Cíl `alive` ≥ 70 %: splněn, 83 %.**
+- **Vypnutý pohyb, a přesto „živá“ (10 vět):** riggované postavy hrají klipy, které vypínač nevypne (archer, troll, necromancer, cyclops/farmer, mermaid). Ninja cat skáče v jádře. Zbytek je šum soudce: fairy, goldfish a pirate prošli i jako stojící.
+- **Odhad (neověřeno):** se zapnutým pohybem vychází „poznaná“ hůř (7 vs 10). Kymácení a poskok nejspíš mění obrys, podle kterého soudce tvar pozná. Rozptyl soudce ale změřený nemáme.
+
+**Nesplněné se zapnutým pohybem, po třídě těla (podle slova):**
+
+| třída | živá zapnuto | vypnuto | nesplněné zapnuto |
+|---|---|---|---|
+| biped | 5/5 | 3/5 | – |
+| quadruped | 3/3 | 1/3 | – |
+| flyer | 2/4 | 1/4 | s035 bird – „moving without visible body articulation“: mávání křídel deformací soudce na listu nevidí; f26 broom – předmět klouže po cestě, hračka ho jako předmět nehoupe |
+| swimmer | 1/1 | 1/1 | – |
+| prop | 8/10 | 4/10 | m17 grandma a d01 hedgehog – hrdina se v 6 s hry nehnul, takže podle kitu stojí |
 
 ## Výběr jmen pro generátor – `gen-nouns.json`
 
