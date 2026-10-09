@@ -277,8 +277,12 @@ class LogicLedger {
   private touched = 0;
   /** Vlny, jejichž spawn jádro v tomto tiku ohlásilo. */
   private readonly spawned = new Set<WaveRule>();
+  // Pole vypsané zvlášť, ne `private readonly` v parametru: skripty čtou tenhle soubor přes
+  // odstranění typů v Node (strip-only), které vlastnosti v parametrech konstruktoru neumí.
+  private readonly world: ArcadeWorld;
 
-  private constructor(private readonly world: ArcadeWorld, initial: ArcadeState, waves: readonly WaveRule[]) {
+  private constructor(world: ArcadeWorld, initial: ArcadeState, waves: readonly WaveRule[]) {
+    this.world = world;
     const base = world.logic === undefined ? -1 : logicBase(initial);
     this.prior = base < 0 ? { names: undefined, vars: [], phase: 0 } : { names: world.logic?.names, vars: LOGIC_VAR_SLOTS.map((_, index) => varValue(initial, base, index)), phase: phaseOf(initial, base) };
     this.waves = waves;
