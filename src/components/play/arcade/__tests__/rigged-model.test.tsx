@@ -69,13 +69,24 @@ interface Shot {
 
 /**
  * Postava `id` s klipy `clips` hraje `ticks` tiků po dvou snímcích (podíl 0 a 0,5);
- * pohled těla v tiku dává `views`, stav klipu `clipOf`. Vrací pózu skupiny po každém snímku.
+ * pohled těla v tiku dává `views`, stav klipu `clipOf`, posunutý začátek úderu `attackAt`
+ * (jako aréna). Vrací pózu skupiny po každém snímku.
  */
-function play(id: string, clips: Partial<Record<ClipState, string>>, views: (tick: number) => ToyView, ticks: number, clipOf: (tick: number) => ClipState = () => 'idle'): Shot[] {
+function play(
+  id: string,
+  clips: Partial<Record<ClipState, string>>,
+  views: (tick: number) => ToyView,
+  ticks: number,
+  clipOf: (tick: number) => ClipState = () => 'idle',
+  attackAt: (tick: number) => number | undefined = () => undefined,
+): Shot[] {
   hooks.gltf = { scene: new Group(), animations: Object.values(clips).filter((name) => name !== 'procedural').map((name) => new AnimationClip(name, 1, [])) };
   let tick = 0;
   const character: RiggedCharacter = { id, path: `/models/${id}.glb`, tags: [], clips };
-  const toy = (): ToyFrame => ({ view: views(Math.floor(tick)), tick });
+  const toy = (): ToyFrame => {
+    const start = attackAt(Math.floor(tick));
+    return start === undefined ? { view: views(Math.floor(tick)), tick } : { view: views(Math.floor(tick)), tick, attackAt: start };
+  };
   const element = RiggedModel({ character, h: 1.8, clip: () => clipOf(Math.floor(tick)), fallback: '#94a3b8', toy }) as ReactElement<{ ref: RefObject<Group | null> }>;
   const holder = new Group();
   element.props.ref.current = holder;
@@ -127,5 +138,21 @@ describe('a rigged character borrows toy motion for the states it has no clip fo
     // Výhra a nesení klip nemají nikdy.
     expect(most(play('knight', KNIGHT, () => ({ ...STILL, won: true }), 40), 'y')).toBeGreaterThan(0.2);
     expect(play('knight', KNIGHT, () => ({ ...STILL, carrying: true }), 5).at(-1)!.pitch).toBeLessThan(-0.1);
+  });
+
+  it('an arena strike shifted back peaks toward the hero in the hit tick instead of winding up away (P45D T23)', () => {
+    // Aréna: rána dopadne v tiku 20, začátek úderu posune o 16 tiků zpět a pohled nese `attack: false`.
+    const HIT = 20;
+    const hitShot = HIT * 2;
+    for (const [id, clips] of [['pet-cat', PET], ['knight', KNIGHT]] as const) {
+      const shifted = play(id, clips, () => STILL, HIT + 30, () => 'idle', (tick) => (tick === HIT ? HIT - 16 : undefined));
+      // Před zásahem stojí; v tiku zásahu je výpad k hrdinovi skoro na vrcholu.
+      expect(shifted.slice(0, hitShot).every((shot) => shot.z === 0), id).toBe(true);
+      expect(shifted[hitShot]!.z, id).toBeGreaterThan(0.4);
+      expect(shifted[hitShot]!.z, id).toBeGreaterThan(0.9 * most(shifted, 'z'));
+    }
+    // Bez posunu by úder v tiku zásahu teprve začal nápřahem – tělo by od hrdiny ucuklo.
+    const unshifted = play('pet-cat', PET, (tick) => (tick === HIT ? { ...STILL, attack: true } : STILL), HIT + 30);
+    expect(least(unshifted.slice(hitShot, hitShot + 12), 'z')).toBeLessThan(-0.2);
   });
 });

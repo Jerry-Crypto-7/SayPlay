@@ -597,11 +597,11 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
         const seen = toyViewOf(state, prev, view.index);
         // Bojovníka zasáhne úbytek HP; KO kreslí `drawFighter` na hodinách kresby (poslední úder zastaví tiky), hračka ho nechá stát.
         const moving = fighter ? { ...seen, attack: false, alive: true, hit: seen.hit || bodyHp(state, view.index) < bodyHp(prev, view.index) } : { ...seen, attack: false };
-        // Riggovaná postava hraje tenhle pohled jen ve stavech bez klipu (`RiggedModel`, T13); začátek úderu
-        // jí posunout nejde a nápřah by v tiku zásahu ucukl od hrdiny, sek proto zůstává klipu.
-        toyFrames.current[view.index] = { view: moving, tick: toyTick };
+        const blow = blowOf(state, view.index, part!, fighter, seen.attack);
+        // Riggovaná postava hraje tenhle pohled jen ve stavech bez klipu (`RiggedModel`, T13); posunutý začátek
+        // úderu dostane s ním, ať i její výpad vrcholí v tiku zásahu (T23).
+        toyFrames.current[view.index] = blow === null ? { view: moving, tick: toyTick } : { view: moving, tick: toyTick, attackAt: blow - BLOW_PEAK_TICKS };
         if (inner !== null && inner !== undefined) {
-          const blow = blowOf(state, view.index, part!, fighter, seen.attack);
           const before = toyPoses.current[view.index] ?? null;
           const memory = blow === null || before === null || before.attackAt === blow - BLOW_PEAK_TICKS ? before : { ...before, attackAt: blow - BLOW_PEAK_TICKS };
           const toy = toyPoseOf(moving, bodyClasses[view.index]!, memory, toyTick, reduced);

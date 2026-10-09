@@ -81,6 +81,11 @@ export function poseTick(group: Group | null, held: HeldState | null, now: ClipS
 export interface ToyFrame {
   readonly view: ToyView;
   readonly tick: number;
+  /**
+   * Tik začátku úderu, když ho scéna posouvá (aréna, P45D T23): rána dopadá v tiku zásahu, takže
+   * úder začne o nápřah dřív a tik zásahu je vrchol výpadu k zasaženému. Bez něj úder čte pohled.
+   */
+  readonly attackAt?: number;
 }
 
 /**
@@ -211,7 +216,8 @@ export function RiggedModel({
       if (yaw !== undefined && holder.current !== null) holder.current.rotation.y = yaw();
     } else if (holder.current !== null) {
       // Póza čte jen pohled a tik; tik, který jde zpátky (restart), zahodí paměť minulého snímku.
-      const previous = toyPose.current !== null && frame.tick >= toyPose.current.at ? toyPose.current : null;
+      const kept = toyPose.current !== null && frame.tick >= toyPose.current.at ? toyPose.current : null;
+      const previous = kept === null || frame.attackAt === undefined || kept.attackAt === frame.attackAt ? kept : { ...kept, attackAt: frame.attackAt };
       toyPose.current = toyPoseOf(unclippedView(frame.view, hasClip), bodyClass, previous, frame.tick, !toyMotionOn());
       applyToy({ group: holder.current }, toyPose.current, h, yaw?.() ?? 0);
     }
