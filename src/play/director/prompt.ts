@@ -167,9 +167,15 @@ export function checklistLines(sentence: string): string {
   ].join('\n');
 }
 
-/** Zpráva požadavku: věta, její seznam a výchozí bod; plný i kompaktní prompt ji sdílejí. */
+/**
+ * Průběh hry jako poslední řádek zprávy (P45B T11): gpt-oss-20b nechával `logic`
+ * na `null` (2 z 25 vět), i když ho systémový prompt chtěl – řádek u věty je vidět víc.
+ */
+export const COURSE_LINE = 'Course: give this game a course – logic with a phase, a timer or a variable, and rules that start it (startTimer, goPhase, set) and react to it, like the LOGIC EXAMPLE; every timer needs a startTimer rule, every phase after the first a goPhase rule. null only when nothing in the game changes over time.';
+
+/** Zpráva požadavku: věta, její seznam, výchozí bod a průběh; plný i kompaktní prompt ji sdílejí. */
 export function directorUser(sentence: string, draft: GenreSpec | null): string {
-  return `${sentence.trim()}\n\n${checklistLines(sentence)}\n\n${startingPoint(draft)}`;
+  return `${sentence.trim()}\n\n${checklistLines(sentence)}\n\n${startingPoint(draft)}\n\n${COURSE_LINE}`;
 }
 
 /**
@@ -180,11 +186,11 @@ export function directorUser(sentence: string, draft: GenreSpec | null): string 
  */
 export function rulesPromptLines(): string {
   return [
-    'rules: for a verb of the sentence the genre cannot play (carry, push, open, pull, give…) or for the game\'s course over time (logic); else null. Each rule {id, verb, when, if, do}; verb = that sentence verb, one lowercase English word – the robot must see every rule fire while it wins (a lose or damage rule: when a robot walks into it), or the game is refused.',
+    'rules: for a verb of the sentence the genre cannot play (carry, push, open, pull, give…) and for the course (logic below); else null. Each rule {id, verb, when, if, do}; verb = that sentence verb, one lowercase English word – the robot must see every rule fire while it wins (a lose or damage rule: when a robot walks into it), or the game is refused.',
     `when: {"contact":[role,role]} | {"press":"action"|"alt"} | {"every":ticks60Hz} | {"counter":{"name":"score"|"items"|"health","atLeast":n}} | {"hit":role} | {"interact":{"role","radius":m,"hold":ticks,"states":2|3}} (hold Use at it; only as the winning rule, do {"win":true}, won when all targets are done; one per game, not with +shoot/+chaser). if (all hold, or null): {"holding":role} | {"notHolding":true} | {"counter":{"name","atLeast"|"below"}} | {"near":{"role","within":m}}. do: {"score":n} {"damage":n} {"win":true} {"lose":true} {"despawn":"other"|"self"|"held"} {"spawn":{"role","at":"player"|"other"}} {"count":{"counter","amount"}} {"respawn":true} {"checkpoint":"other"|"self"} {"grab":"other"|"self"} {"release":true} {"throwHeld":true} {"push":"other"|"self"} {"toggle":role} (bodies of that role switch once).`,
     `A role is "player" or an id from ruleRoles [{id, kind, label, count}] (kind: ${ROLE_KINDS.filter((kind) => kind !== 'player').join('|')}). things [{role, start:"hidden"}] = starts invisible until toggled. In arena or quest a rule that wins plays in a walled yard: carried things in front, the goal behind the gate.`,
     'RULE EXAMPLE: {"ruleRoles":[{"id":"key","kind":"key","label":"golden key","count":null},{"id":"door","kind":"door","label":"castle door","count":null},{"id":"stairs","kind":"exit","label":"tower stairs","count":null}],"things":null,"rules":[{"id":"take_key","verb":"carry","when":{"contact":["player","key"]},"if":[{"notHolding":true}],"do":[{"grab":"other"}]},{"id":"open_door","verb":"open","when":{"contact":["player","door"]},"if":[{"holding":"key"}],"do":[{"toggle":"door"},{"despawn":"held"}]},{"id":"climb","verb":"climb","when":{"contact":["player","stairs"]},"if":null,"do":[{"win":true}]}]}',
-    'logic (a course: stages, countdown, waves – survive, defend, race, rescue…; else null): {"vars":[{id,start}],"timers":[{id}],"phases":[{id}] (2–4, first is the start),"events":[id]}; declare only names rules use. Its rules – when: {"timer":id} (ran out) | {"phase":id} (entered) | {"phaseExit":id} | {"var":{"name","atLeast"|"below"}} | {"event":id}; if: {"var":…} | {"inPhase":id} | {"timerRunning":id} | {"timerStopped":id}; do: {"set":{"var","value"}} {"add":{"var","amount"}} {"goPhase":id} {"startTimer":{"timer","ticks"}} {"stopTimer":id} {"emit":id} {"wave":{"role","count","at":"edge"|"player"|"other"}} (bodies of a role appear at once).',
+    'logic – REQUIRED when the sentence has a course (survive, defend, waves, escape, race, rescue, fight, a time limit, stages), else null: {"vars":[{id,start}],"timers":[{id}],"phases":[{id}] (2–4, first is the start),"events":[id]}; every name needs a rule that starts or enters it (startTimer, goPhase, set/add, emit) and one that reacts to it. Its rules – when: {"timer":id} (ran out) | {"phase":id} (entered) | {"phaseExit":id} | {"var":{"name","atLeast"|"below"}} | {"event":id}; if: {"var":…} | {"inPhase":id} | {"timerRunning":id} | {"timerStopped":id}; do: {"set":{"var","value"}} {"add":{"var","amount"}} {"goPhase":id} {"startTimer":{"timer","ticks"}} {"stopTimer":id} {"emit":id} {"wave":{"role","count","at":"edge"|"player"|"other"}} (bodies of a role appear at once).',
     'LOGIC EXAMPLE: {"ruleRoles":[{"id":"bat","kind":"chaser","label":"bat","count":null}],"things":null,"logic":{"vars":null,"timers":[{"id":"night"}],"phases":[{"id":"calm"},{"id":"swarm"}],"events":null},"rules":[{"id":"dusk","verb":"darken","when":{"every":240},"if":[{"inPhase":"calm"}],"do":[{"goPhase":"swarm"},{"startTimer":{"timer":"night","ticks":900}}]},{"id":"flock","verb":"swarm","when":{"phase":"swarm"},"if":null,"do":[{"wave":{"role":"bat","count":3,"at":"edge"}}]},{"id":"dawn","verb":"survive","when":{"timer":"night"},"if":null,"do":[{"win":true}]}]}',
   ].join('\n');
 }
@@ -198,7 +204,7 @@ export function directorSystemPrompt(): string {
  * Hash systémového textu a schématu odpovědi – klíč cache a otisk verze
  * promptu. Schéma je v něm od P36A T7: dřív jeho změna cache nezneplatnila.
  */
-export const DIRECTOR_PROMPT_VERSION = canonicalHash({ system: directorSystemPrompt(), schema: GENRE_ANSWER_SCHEMA });
+export const DIRECTOR_PROMPT_VERSION = canonicalHash({ system: directorSystemPrompt(), schema: GENRE_ANSWER_SCHEMA, course: COURSE_LINE });
 
 /** Návrh ze slov jako výchozí bod; hra bez žánru (mřížka archetypu) žádný nedá. */
 export function startingPoint(draft: GenreSpec | null): string {

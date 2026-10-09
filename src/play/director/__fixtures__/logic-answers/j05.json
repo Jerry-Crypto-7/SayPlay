@@ -1,0 +1,183 @@
+{
+ "id": "j05",
+ "sentence": "pop ten balloons at a birthday party",
+ "axis": "collect",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:35:34.093Z",
+ "ms": 5405,
+ "answer": {
+  "plan": "Create a spatial quest where the hero pops ten balloons at a birthday party, avoiding a shadow chaser and collecting coins for extra points.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "partygoer",
+   "cast": [
+    {
+     "label": "balloon",
+     "does": "reach",
+     "verb": "hit",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "shadow",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": true
+    },
+    {
+     "label": "coin",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "throw",
+   "setting": "birthday party",
+   "palette": "beach",
+   "params": {
+    "seconds": 30,
+    "paceBudgetPct": 70,
+    "count": 1,
+    "chasers": 1,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 30
+   },
+   "counts": {
+    "enemy": 1,
+    "target": 2
+   },
+   "ruleRoles": [
+    {
+     "id": "balloon",
+     "kind": "target",
+     "label": "balloon",
+     "count": 2
+    },
+    {
+     "id": "shadow",
+     "kind": "chaser",
+     "label": "shadow",
+     "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "pop_balloon",
+     "verb": "hit",
+     "when": {
+      "contact": [
+       "player",
+       "balloon"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "score": 10
+      },
+      {
+       "despawn": "other"
+      }
+     ]
+    },
+    {
+     "id": "collect_coin",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "coin"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "score": 5
+      },
+      {
+       "despawn": "other"
+      }
+     ]
+    },
+    {
+     "id": "shadow_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "shadow"
+      ]
+     },
+     "if": [
+      {
+       "holding": "balloon"
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "win_condition",
+     "verb": "reach",
+     "when": {
+      "counter": {
+       "name": "score",
+       "atLeast": 100
+      }
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "party_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "play"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

@@ -1,0 +1,102 @@
+{
+ "id": "d16",
+ "sentence": "an owl delivers letters across a snowy mountain village",
+ "axis": "collect",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:35:38.506Z",
+ "ms": 4412,
+ "answer": {
+  "plan": "Create a quest‑style delivery game where the owl collects letters in a snowy mountain village, with a time limit and win condition when all letters are delivered.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "owl",
+   "cast": [
+    {
+     "label": "letter",
+     "does": "reach",
+     "verb": "deliver",
+     "states": null,
+     "patrol": null
+    }
+   ],
+   "heroAction": "none",
+   "setting": "snowy mountain village",
+   "palette": "snow",
+   "params": null,
+   "counts": {
+    "enemy": 0,
+    "target": null
+   },
+   "ruleRoles": [
+    {
+     "id": "letter",
+     "kind": "target",
+     "label": "letter",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "collect_letter",
+     "verb": "contact",
+     "when": {
+      "contact": [
+       "player",
+       "letter"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "win_condition",
+     "verb": "reach",
+     "when": {
+      "counter": {
+       "name": "items",
+       "atLeast": 5
+      }
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "time_limit"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "play"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

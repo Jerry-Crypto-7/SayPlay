@@ -1,0 +1,96 @@
+{
+ "id": "f22",
+ "sentence": "A knight fights a three-headed hydra at the castle gates.",
+ "axis": "defeat",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:33:17.691Z",
+ "ms": 5763,
+ "answer": {
+  "plan": "arena fight at castle gates",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "knight",
+   "cast": [
+    {
+     "label": "three-headed hydra",
+     "does": "fight",
+     "verb": "fight",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "fix",
+   "setting": "castle gates",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "hydra",
+     "kind": "chaser",
+     "label": "three-headed hydra",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "startFight",
+     "verb": "fight",
+     "when": {
+      "contact": [
+       "player",
+       "hydra"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    },
+    {
+     "id": "hydraAttack",
+     "verb": "attack",
+     "when": {
+      "contact": [
+       "player",
+       "hydra"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "fight"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "battle"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

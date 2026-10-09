@@ -1,0 +1,152 @@
+{
+ "id": "h03",
+ "sentence": "defend a castle from dragons by throwing snowballs",
+ "axis": "defend",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:32:20.944Z",
+ "ms": 8693,
+ "answer": {
+  "plan": "arena fight with dragon waves, hero throws snowballs to defend the castle",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "knight",
+   "cast": [
+    {
+     "label": "dragon",
+     "does": "chase_me",
+     "verb": "attack",
+     "states": null,
+     "patrol": true
+    },
+    {
+     "label": "snowball",
+     "does": "collect",
+     "verb": "throw",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "castle",
+     "does": "scenery",
+     "verb": "defend",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "throw",
+   "setting": "castle",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": 3,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "dragon",
+     "kind": "chaser",
+     "label": "dragon",
+     "count": 3
+    },
+    {
+     "id": "snowball",
+     "kind": "item",
+     "label": "snowball",
+     "count": null
+    },
+    {
+     "id": "castle",
+     "kind": "prop",
+     "label": "castle",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "spawn_dragons",
+     "verb": "spawn",
+     "when": {
+      "timer": "wave_start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "dragon",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "throw_snowball",
+     "verb": "throw",
+     "when": {
+      "contact": [
+       "player",
+       "snowball"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      }
+     ]
+    },
+    {
+     "id": "hit_dragon",
+     "verb": "hit",
+     "when": {
+      "contact": [
+       "player",
+       "dragon"
+      ]
+     },
+     "if": [
+      {
+       "holding": "snowball"
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "other"
+      },
+      {
+       "score": 10
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "wave_start"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "wave"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

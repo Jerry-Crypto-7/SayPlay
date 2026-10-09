@@ -1,0 +1,121 @@
+{
+ "id": "s188",
+ "sentence": "A grandma karate fights a gang of pigeons in the park",
+ "axis": "defeat",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:33:11.927Z",
+ "ms": 9319,
+ "answer": {
+  "plan": "arena fight with grandma karate vs pigeon gang in park",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "grandma karate",
+   "cast": [
+    {
+     "label": "pigeon",
+     "does": "fight",
+     "verb": "fight",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "gang",
+     "does": "fight",
+     "verb": "fight",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "fix",
+   "setting": "park",
+   "palette": "forest",
+   "params": null,
+   "counts": {
+    "enemy": 2,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "pigeon",
+     "kind": "chaser",
+     "label": "pigeon",
+     "count": null
+    },
+    {
+     "id": "gang",
+     "kind": "chaser",
+     "label": "gang",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "pigeon_fight",
+     "verb": "fight",
+     "when": {
+      "contact": [
+       "player",
+       "pigeon"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "spawn": {
+        "role": "pigeon",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "gang_fight",
+     "verb": "fight",
+     "when": {
+      "contact": [
+       "player",
+       "gang"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 2
+      },
+      {
+       "spawn": {
+        "role": "gang",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "win_condition",
+     "verb": "fight",
+     "when": {
+      "counter": {
+       "name": "health",
+       "atLeast": 0
+      }
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": null
+  }
+ },
+ "failure": null
+}

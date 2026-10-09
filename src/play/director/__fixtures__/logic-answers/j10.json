@@ -1,0 +1,125 @@
+{
+ "id": "j10",
+ "sentence": "an elf princess escapes a goblin castle through a dark forest",
+ "axis": "escape",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:35:00.184Z",
+ "ms": 6191,
+ "answer": {
+  "plan": "arena escape with goblin chase and timed escape to castle",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "elf princess",
+   "cast": [
+    {
+     "label": "goblin",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "goblin castle",
+     "does": "reach",
+     "verb": "reach",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "dark forest",
+   "palette": "forest",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "goblin",
+     "kind": "chaser",
+     "label": "goblin",
+     "count": 1
+    },
+    {
+     "id": "castle",
+     "kind": "destination",
+     "label": "goblin castle",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "spawn_goblin",
+     "verb": "spawn",
+     "when": {
+      "every": 1
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "goblin",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "start_timer",
+     "verb": "start",
+     "when": {
+      "every": 1
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "escape_timer",
+        "ticks": 3600
+       }
+      }
+     ]
+    },
+    {
+     "id": "lose_on_goblin_contact",
+     "verb": "damage",
+     "when": {
+      "contact": [
+       "player",
+       "goblin"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "lose": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "escape_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "chase"
+     },
+     {
+      "id": "escape"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

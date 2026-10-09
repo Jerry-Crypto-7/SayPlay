@@ -19,7 +19,7 @@ import { direct } from '..';
 import { genreAnswer } from '../__fixtures__';
 import { answered, fakeBranch } from '../__fixtures__/branch';
 import { GENRE_ANSWER_SCHEMA } from '../answer-schema';
-import { DIRECTOR_PROMPT_VERSION, directorSystemPrompt } from '../prompt';
+import { COURSE_LINE, DIRECTOR_PROMPT_VERSION, buildDirectorRequest, directorSystemPrompt } from '../prompt';
 import type { RepairIssue } from '../repair';
 
 type Json = Record<string, unknown>;
@@ -132,7 +132,7 @@ describe('the director prompt describes logic within budget', () => {
     expect(growth).toBeGreaterThan(0);
     expect(growth).toBeLessThanOrEqual(1_500);
     const lines = system.split('\n');
-    expect(lines.filter((line) => line.startsWith('logic ('))).toHaveLength(1);
+    expect(lines.filter((line) => line.startsWith('logic – '))).toHaveLength(1);
     const example = lines.filter((line) => line.startsWith('LOGIC EXAMPLE: '));
     expect(example).toHaveLength(1);
     for (const piece of ['"phases"', '"startTimer"', '"wave"']) expect(example[0]).toContain(piece);
@@ -140,8 +140,9 @@ describe('the director prompt describes logic within budget', () => {
     expect(lines.some((line) => line.startsWith('RULE EXAMPLE: '))).toBe(true);
   });
 
-  it('the prompt version hashes the new prompt and schema, so the cache keyed by it is invalidated', () => {
-    expect(DIRECTOR_PROMPT_VERSION).toBe(canonicalHash({ system: directorSystemPrompt(), schema: GENRE_ANSWER_SCHEMA }));
+  it('the prompt version hashes the new prompt, the schema and the course line, so the cache keyed by it is invalidated', () => {
+    expect(DIRECTOR_PROMPT_VERSION).toBe(canonicalHash({ system: directorSystemPrompt(), schema: GENRE_ANSWER_SCHEMA, course: COURSE_LINE }));
+    expect(buildDirectorRequest('Collect five acorns in a moonlit forest', null).user.endsWith(`\n\n${COURSE_LINE}`)).toBe(true);
   });
 });
 

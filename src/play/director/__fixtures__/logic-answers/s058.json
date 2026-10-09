@@ -1,0 +1,153 @@
+{
+ "id": "s058",
+ "sentence": "boat race through a jungle river full of crocodiles",
+ "axis": "race",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:35:11.043Z",
+ "ms": 5704,
+ "answer": {
+  "plan": "Create a voyage‑race game where the player drives a boat through a jungle river while avoiding crocodiles, with a timed race to finish before the timer runs out.",
+  "spec": {
+   "genre": "voyage",
+   "mode": "race",
+   "hero": "boat",
+   "cast": [
+    {
+     "label": "crocodile",
+     "does": "avoid",
+     "verb": "swim",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "jungle river full of crocodiles",
+   "palette": "jungle",
+   "params": {
+    "hazards": 1,
+    "turbo": 0,
+    "roadWidth": 5000,
+    "roadEntryWidth": 5000,
+    "crashBudget": 3,
+    "namedLandingTarget": 0,
+    "touchdownSpeed": 30,
+    "gravityRisePct": 10,
+    "lengthM": 600,
+    "topSpeed": 250,
+    "gravity": 800,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 60
+   },
+   "ruleRoles": [
+    {
+     "id": "crocodile",
+     "kind": "hazard",
+     "label": "crocodile",
+     "count": null
+    },
+    {
+     "id": "finishLine",
+     "kind": "destination",
+     "label": "finish line",
+     "count": null
+    }
+   ],
+   "things": [
+    {
+     "role": "crocodile",
+     "start": "hidden",
+     "physics": true
+    },
+    {
+     "role": "finishLine",
+     "start": "hidden",
+     "physics": true
+    }
+   ],
+   "rules": [
+    {
+     "id": "startRace",
+     "verb": "drive",
+     "when": {
+      "contact": [
+       "player",
+       "finishLine"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    },
+    {
+     "id": "crocodileHit",
+     "verb": "avoid",
+     "when": {
+      "hit": "crocodile"
+     },
+     "if": [
+      {
+       "holding": "player"
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "timerEnd",
+     "verb": "race",
+     "when": {
+      "timer": "race"
+     },
+     "if": [
+      {
+       "counter": {
+        "name": "score",
+        "atLeast": 0,
+        "below": 1
+       }
+      }
+     ],
+     "do": [
+      {
+       "lose": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "race"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "race"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

@@ -1,0 +1,96 @@
+{
+ "id": "s008",
+ "sentence": "temple run but you're a banana running from a monkey",
+ "axis": "escape",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:34:49.004Z",
+ "ms": 5483,
+ "answer": {
+  "plan": "runner",
+  "spec": {
+   "genre": "runner",
+   "mode": "default",
+   "hero": "banana",
+   "cast": [
+    {
+     "label": "monkey",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "temple",
+   "palette": "cave",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "monkey",
+     "kind": "chaser",
+     "label": "monkey",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "start_escape",
+     "verb": "run",
+     "when": {
+      "contact": [
+       "player",
+       "ground"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "escape",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "escape_timer",
+     "verb": "escape",
+     "when": {
+      "timer": "escape"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "escape"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "escape"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

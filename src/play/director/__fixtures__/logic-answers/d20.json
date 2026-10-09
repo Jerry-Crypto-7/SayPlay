@@ -1,0 +1,96 @@
+{
+ "id": "d20",
+ "sentence": "a knight rides a unicorn to rescue a prince from a cloud castle",
+ "axis": "rescue",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:32:40.451Z",
+ "ms": 7408,
+ "answer": {
+  "plan": "Create a quest game where the knight rides a unicorn to rescue a prince from a cloud castle, using a single rescue phase with a 60‑second timer and a win rule when the prince is reached.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "knight",
+   "cast": [
+    {
+     "label": "prince",
+     "does": "reach",
+     "verb": "rescue",
+     "states": null,
+     "patrol": null
+    }
+   ],
+   "heroAction": "none",
+   "setting": "castle",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "target": 1
+   },
+   "ruleRoles": [
+    {
+     "id": "prince",
+     "kind": "target",
+     "label": "prince",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "start_timer",
+     "verb": "start",
+     "when": {
+      "every": 1
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "rescue",
+        "ticks": 3600
+       }
+      }
+     ]
+    },
+    {
+     "id": "win_rescue",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "prince"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "rescue"
+     }
+    ],
+    "phases": [
+     {
+      "id": "rescue"
+     },
+     {
+      "id": "end"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

@@ -1,0 +1,99 @@
+{
+ "id": "pa-018",
+ "sentence": "survive in space by blasting asteroids with your spaceship",
+ "axis": "survive",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:34:36.749Z",
+ "ms": 11909,
+ "answer": {
+  "plan": "Create an arena‑escape game set in space where the player’s spaceship must survive a timed asteroid field by shooting them down.",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "spaceship",
+   "cast": [
+    {
+     "label": "asteroid",
+     "does": "shoot_at",
+     "verb": "shoot",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "space",
+   "palette": "space",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "asteroid",
+     "kind": "hazard",
+     "label": "asteroid",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "damage_asteroid",
+     "verb": "shoot",
+     "when": {
+      "contact": [
+       "player",
+       "asteroid"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "lose_on_hit",
+     "verb": "hit",
+     "when": {
+      "contact": [
+       "player",
+       "asteroid"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "lose": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "survival"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "survive"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

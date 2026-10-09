@@ -1,0 +1,228 @@
+{
+ "id": "si-031",
+ "sentence": "a karate kid fighting ninjas in the city",
+ "axis": "defeat",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:33:31.842Z",
+ "ms": 14150,
+ "answer": {
+  "plan": "Create an arena‑fight game where a karate kid battles ninjas in a city setting, winning when all ninjas are defeated.",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "karate kid",
+   "cast": [
+    {
+     "label": "ninja",
+     "does": "fight",
+     "verb": "fight",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "city",
+     "does": "scenery",
+     "verb": "none",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "city",
+   "palette": "city",
+   "params": null,
+   "counts": {
+    "enemy": 3,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "ninja1",
+     "kind": "chaser",
+     "label": "ninja",
+     "count": null
+    },
+    {
+     "id": "ninja2",
+     "kind": "chaser",
+     "label": "ninja",
+     "count": null
+    },
+    {
+     "id": "ninja3",
+     "kind": "chaser",
+     "label": "ninja",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "ninja1_spawn",
+     "verb": "spawn",
+     "when": {
+      "contact": [
+       "player",
+       "ninja1"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "ninja1",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "ninja2_spawn",
+     "verb": "spawn",
+     "when": {
+      "contact": [
+       "player",
+       "ninja2"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "ninja2",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "ninja3_spawn",
+     "verb": "spawn",
+     "when": {
+      "contact": [
+       "player",
+       "ninja3"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "ninja3",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "fight_ninja1",
+     "verb": "fight",
+     "when": {
+      "contact": [
+       "player",
+       "ninja1"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "other"
+      }
+     ]
+    },
+    {
+     "id": "fight_ninja2",
+     "verb": "fight",
+     "when": {
+      "contact": [
+       "player",
+       "ninja2"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "other"
+      }
+     ]
+    },
+    {
+     "id": "fight_ninja3",
+     "verb": "fight",
+     "when": {
+      "contact": [
+       "player",
+       "ninja3"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "other"
+      }
+     ]
+    },
+    {
+     "id": "check_win",
+     "verb": "win",
+     "when": {
+      "every": 60
+     },
+     "if": [
+      {
+       "counter": {
+        "name": "health",
+        "atLeast": 1,
+        "below": null
+       }
+      },
+      {
+       "counter": {
+        "name": "health",
+        "atLeast": 1,
+        "below": null
+       }
+      },
+      {
+       "counter": {
+        "name": "health",
+        "atLeast": 1,
+        "below": null
+       }
+      }
+     ],
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": null
+  }
+ },
+ "failure": null
+}

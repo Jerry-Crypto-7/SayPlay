@@ -20,7 +20,7 @@ import runnerFixture from '../arcade/__fixtures__/runner.json';
 import shooterFixture from '../arcade/__fixtures__/shooter.json';
 import { GENRE_ANSWER_SCHEMA, readyModes } from '../director/answer-schema';
 import { buildCompactRequest } from '../director/compact';
-import { DIRECTOR_PROMPT_VERSION, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
+import { COURSE_LINE, DIRECTOR_PROMPT_VERSION, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
 import { readDirectorAnswer } from '../director/read';
 import { repairDeterministically } from '../director/repair';
 import { draftGameSpecWithMeta } from '../draft';
@@ -45,7 +45,8 @@ describe('director prompt', () => {
     // P37A T8: mezi větou a výchozím bodem stojí kontrolní seznam věty a hlavní sloveso – podle nich brána upgradu AI verzi pustí.
     const checklist = 'Checklist: hero "wizard"; role "candle"; setting "haunted castle".\nMain verb: "light" – genre quest, mode spatial.';
     expect(checklistLines(sentence)).toBe(checklist);
-    expect(buildDirectorRequest(sentence, null).user).toBe(`${sentence}\n\n${checklist}\n\nStarting point: none – choose from the sentence.`);
+    // P45B T11: za výchozím bodem řádek průběhu hry (`COURSE_LINE`).
+    expect(buildDirectorRequest(sentence, null).user).toBe(`${sentence}\n\n${checklist}\n\nStarting point: none – choose from the sentence.\n\n${COURSE_LINE}`);
   });
 
   it('names the verb family and says when the sentence has no game verb (P37A T8)', () => {

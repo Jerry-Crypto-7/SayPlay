@@ -1,0 +1,179 @@
+{
+ "id": "m10",
+ "sentence": "FIREFIGHTER SAVES KITTENS FROM A BURNING TREE",
+ "axis": "rescue",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:33:02.608Z",
+ "ms": 13050,
+ "answer": {
+  "plan": "Create a quest‑style rescue game where a firefighter hero frees kittens from a burning tree while avoiding a shadowy pursuer and collecting coins for bonus points.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "firefighter",
+   "cast": [
+    {
+     "label": "kitten",
+     "does": "reach",
+     "verb": "free",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "shadow",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": true
+    },
+    {
+     "label": "coin",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "sweep",
+   "setting": "village",
+   "palette": "forest",
+   "params": {
+    "seconds": 60,
+    "paceBudgetPct": 70,
+    "count": 3,
+    "chasers": 1,
+    "lives": 3,
+    "targetScore": 500,
+    "timeLimit": 60
+   },
+   "counts": {
+    "enemy": 1,
+    "target": 3
+   },
+   "ruleRoles": [
+    {
+     "id": "kitten",
+     "kind": "target",
+     "label": "kitten",
+     "count": 3
+    },
+    {
+     "id": "shadow",
+     "kind": "chaser",
+     "label": "shadow",
+     "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 5
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "free_kitten",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "kitten"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "score": 100
+      },
+      {
+       "grab": "other"
+      }
+     ]
+    },
+    {
+     "id": "escape_shadow",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "shadow"
+      ]
+     },
+     "if": [
+      {
+       "holding": "kitten"
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "respawn": true
+      }
+     ]
+    },
+    {
+     "id": "collect_coin",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "coin"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 10
+      },
+      {
+       "grab": "other"
+      }
+     ]
+    },
+    {
+     "id": "win_condition",
+     "verb": "reach",
+     "when": {
+      "counter": {
+       "name": "score",
+       "atLeast": 500
+      }
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "fire_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "burning"
+     },
+     {
+      "id": "extinguish"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

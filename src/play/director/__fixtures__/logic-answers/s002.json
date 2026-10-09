@@ -1,0 +1,208 @@
+{
+ "id": "s002",
+ "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+ "axis": "collect",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:35:28.687Z",
+ "ms": 5426,
+ "answer": {
+  "plan": "Create an arena‑escape game where the knight collects three keys while avoiding ghosts in a haunted castle.",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "knight",
+   "cast": [
+    {
+     "label": "key",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "ghost",
+     "does": "avoid",
+     "verb": "avoid",
+     "states": null,
+     "patrol": true
+    }
+   ],
+   "heroAction": "none",
+   "setting": "haunted castle",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "collectible": 3
+   },
+   "ruleRoles": [
+    {
+     "id": "key1",
+     "kind": "collectible",
+     "label": "key",
+     "count": null
+    },
+    {
+     "id": "key2",
+     "kind": "collectible",
+     "label": "key",
+     "count": null
+    },
+    {
+     "id": "key3",
+     "kind": "collectible",
+     "label": "key",
+     "count": null
+    },
+    {
+     "id": "ghost1",
+     "kind": "hazard",
+     "label": "ghost",
+     "count": null
+    },
+    {
+     "id": "ghost2",
+     "kind": "hazard",
+     "label": "ghost",
+     "count": null
+    },
+    {
+     "id": "ghost3",
+     "kind": "hazard",
+     "label": "ghost",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "collect_key1",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key1"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "collect_key2",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key2"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "collect_key3",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key3"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "ghost_hit",
+     "verb": "avoid",
+     "when": {
+      "hit": "ghost1"
+     },
+     "if": [
+      {
+       "counter": {
+        "name": "health",
+        "atLeast": 1,
+        "below": 1
+       }
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": [
+     {
+      "id": "keys_collected",
+      "start": 0
+     }
+    ],
+    "timers": [
+     {
+      "id": "escape_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "mid"
+     },
+     {
+      "id": "end"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

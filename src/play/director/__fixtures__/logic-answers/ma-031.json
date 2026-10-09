@@ -1,0 +1,133 @@
+{
+ "id": "ma-031",
+ "sentence": "a knight fights a dragon to save the princess",
+ "axis": "defeat",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:33:42.896Z",
+ "ms": 11053,
+ "answer": {
+  "plan": "Create an arena‑style duel where the knight battles a dragon to reach and save the princess, with a timed rescue phase.",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "knight",
+   "cast": [
+    {
+     "label": "dragon",
+     "does": "fight",
+     "verb": "fight",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "princess",
+     "does": "reach",
+     "verb": "save",
+     "states": 2,
+     "patrol": false
+    }
+   ],
+   "heroAction": "fix",
+   "setting": "dusty town",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "dragon",
+     "kind": "chaser",
+     "label": "dragon",
+     "count": 1
+    },
+    {
+     "id": "princess",
+     "kind": "destination",
+     "label": "princess",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "start",
+     "when": {
+      "every": 60
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "rescue",
+        "ticks": 300
+       }
+      }
+     ]
+    },
+    {
+     "id": "dragonSpawn",
+     "verb": "spawn",
+     "when": {
+      "timer": "rescue"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "dragon",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "reachPrincess",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "princess"
+      ]
+     },
+     "if": [
+      {
+       "counter": {
+        "name": "health",
+        "atLeast": 1,
+        "below": null
+       }
+      }
+     ],
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "rescue"
+     }
+    ],
+    "phases": [
+     {
+      "id": "battle"
+     },
+     {
+      "id": "rescue"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

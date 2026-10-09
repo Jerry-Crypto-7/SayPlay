@@ -1,0 +1,132 @@
+{
+ "id": "d06",
+ "sentence": "race hot air balloons over a desert canyon",
+ "axis": "race",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:35:23.260Z",
+ "ms": 6412,
+ "answer": {
+  "plan": "Create a voyage‑race game where the player pilots a hot‑air balloon through a desert canyon, racing against another balloon to reach the finish line first.",
+  "spec": {
+   "genre": "voyage",
+   "mode": "race",
+   "hero": "balloon",
+   "cast": [
+    {
+     "label": "balloon",
+     "does": "reach",
+     "verb": "race",
+     "states": null,
+     "patrol": null
+    },
+    {
+     "label": "balloon",
+     "does": "reach",
+     "verb": "race",
+     "states": null,
+     "patrol": null
+    }
+   ],
+   "heroAction": "none",
+   "setting": "desert canyon",
+   "palette": "desert",
+   "params": null,
+   "ruleRoles": [
+    {
+     "id": "finish",
+     "kind": "destination",
+     "label": "finish line",
+     "count": null
+    },
+    {
+     "id": "opponent",
+     "kind": "chaser",
+     "label": "rival balloon",
+     "count": null
+    }
+   ],
+   "things": [
+    {
+     "role": "finish",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "opponent",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "spawn_opponent",
+     "verb": "spawn",
+     "when": {
+      "every": 60
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "opponent",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_finish",
+     "verb": "spawn",
+     "when": {
+      "every": 60
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "finish",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "reach_finish",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "finish"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "race_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "race"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

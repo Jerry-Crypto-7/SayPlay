@@ -1,0 +1,90 @@
+{
+ "id": "h02",
+ "sentence": "shopping cart race in a supermarket",
+ "axis": "race",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:35:16.848Z",
+ "ms": 5804,
+ "answer": {
+  "plan": "Create a voyage‑race game where the player drives a shopping cart through a supermarket, racing against a 60‑second timer to reach the checkout line.",
+  "spec": {
+   "genre": "voyage",
+   "mode": "race",
+   "hero": "shopping cart",
+   "cast": [],
+   "heroAction": "none",
+   "setting": "supermarket",
+   "palette": "supermarket",
+   "params": null,
+   "ruleRoles": [
+    {
+     "id": "checkout",
+     "kind": "destination",
+     "label": "checkout line",
+     "count": null
+    }
+   ],
+   "things": [
+    {
+     "role": "checkout",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "drive",
+     "when": {
+      "contact": [
+       "player",
+       "start"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "race",
+        "ticks": 3600
+       }
+      }
+     ]
+    },
+    {
+     "id": "winOnTimer",
+     "verb": "drive",
+     "when": {
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "race"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "race"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

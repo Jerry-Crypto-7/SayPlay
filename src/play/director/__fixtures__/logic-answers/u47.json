@@ -1,0 +1,134 @@
+{
+ "id": "u47",
+ "sentence": "a lifeguard rescues swimmers from sharks at a crowded beach",
+ "axis": "rescue",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:32:49.556Z",
+ "ms": 9105,
+ "answer": {
+  "plan": "Create a quest‑style beach rescue game where the lifeguard saves swimmers from sharks.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "lifeguard",
+   "cast": [
+    {
+     "label": "swimmer",
+     "does": "reach",
+     "verb": "free",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "shark",
+     "does": "chase_me",
+     "verb": "attack",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "sweep",
+   "setting": "crowded beach",
+   "palette": "beach",
+   "params": {
+    "seconds": 60,
+    "paceBudgetPct": 70,
+    "count": 3,
+    "chasers": 1,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 0
+   },
+   "counts": {
+    "enemy": 1,
+    "target": 3
+   },
+   "ruleRoles": [
+    {
+     "id": "swimmer",
+     "kind": "target",
+     "label": "swimmer",
+     "count": 3
+    },
+    {
+     "id": "shark",
+     "kind": "chaser",
+     "label": "shark",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "rescue_swimmer",
+     "verb": "free",
+     "when": {
+      "contact": [
+       "player",
+       "swimmer"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "shark_attack",
+     "verb": "attack",
+     "when": {
+      "contact": [
+       "player",
+       "shark"
+      ]
+     },
+     "if": [
+      {
+       "holding": "swimmer"
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "release": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "wave"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "wave"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

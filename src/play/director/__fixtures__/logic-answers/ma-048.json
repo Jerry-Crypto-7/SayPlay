@@ -1,0 +1,134 @@
+{
+ "id": "ma-048",
+ "sentence": "zombie survival: shoot zombies, collect ammo, survive 5 waves",
+ "axis": "survive",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:34:11.432Z",
+ "ms": 12015,
+ "answer": {
+  "plan": "Create a shooter game where the player (fox) shoots zombies, collects ammo, and survives 5 waves of enemies.",
+  "spec": {
+   "genre": "shooter",
+   "mode": "default",
+   "hero": "fox",
+   "cast": [
+    {
+     "label": "zombie",
+     "does": "shoot_at",
+     "verb": "shoot",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "ammo",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "desert outpost",
+   "palette": "desert",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "target": null
+   },
+   "ruleRoles": [
+    {
+     "id": "zombie",
+     "kind": "chaser",
+     "label": "zombie",
+     "count": null
+    },
+    {
+     "id": "ammo",
+     "kind": "item",
+     "label": "ammo",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "shoot_zombie",
+     "verb": "shoot",
+     "when": {
+      "contact": [
+       "player",
+       "zombie"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "other"
+      }
+     ]
+    },
+    {
+     "id": "collect_ammo",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "ammo"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "score": 10
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": [
+     {
+      "id": "wave",
+      "start": 1
+     }
+    ],
+    "timers": [
+     {
+      "id": "wave_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "wave1"
+     },
+     {
+      "id": "wave2"
+     },
+     {
+      "id": "wave3"
+     },
+     {
+      "id": "wave4"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

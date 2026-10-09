@@ -1,0 +1,191 @@
+{
+ "id": "j08",
+ "sentence": "a wizard defends a crystal tower from flying skeletons",
+ "axis": "defend",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:32:33.042Z",
+ "ms": 12097,
+ "answer": {
+  "plan": "arena fight with wizard defending crystal tower against waves of flying skeletons",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "wizard",
+   "cast": [
+    {
+     "label": "flying skeleton",
+     "does": "fight",
+     "verb": "attack",
+     "states": null,
+     "patrol": true
+    },
+    {
+     "label": "crystal tower",
+     "does": "reach",
+     "verb": "defend",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "tower",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": 3,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "skeleton",
+     "kind": "chaser",
+     "label": "flying skeleton",
+     "count": null
+    },
+    {
+     "id": "tower",
+     "kind": "destination",
+     "label": "crystal tower",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "spawn_wave1",
+     "verb": "spawn",
+     "when": {
+      "every": 120
+     },
+     "if": [
+      {
+       "var": {
+        "name": "wave",
+        "atLeast": 1,
+        "below": 3
+       }
+      }
+     ],
+     "do": [
+      {
+       "wave": {
+        "role": "skeleton",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_wave2",
+     "verb": "spawn",
+     "when": {
+      "every": 120
+     },
+     "if": [
+      {
+       "var": {
+        "name": "wave",
+        "atLeast": 2,
+        "below": 3
+       }
+      }
+     ],
+     "do": [
+      {
+       "wave": {
+        "role": "skeleton",
+        "count": 4,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_wave3",
+     "verb": "spawn",
+     "when": {
+      "every": 120
+     },
+     "if": [
+      {
+       "var": {
+        "name": "wave",
+        "atLeast": 3,
+        "below": 3
+       }
+      }
+     ],
+     "do": [
+      {
+       "wave": {
+        "role": "skeleton",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "increment_wave",
+     "verb": "increment",
+     "when": {
+      "every": 120
+     },
+     "if": null,
+     "do": [
+      {
+       "set": {
+        "var": "wave",
+        "value": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "win_tower",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "tower"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": [
+     {
+      "id": "wave",
+      "start": 1
+     }
+    ],
+    "timers": [],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "wave1"
+     },
+     {
+      "id": "wave2"
+     },
+     {
+      "id": "wave3"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

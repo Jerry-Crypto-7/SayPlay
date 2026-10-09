@@ -1,0 +1,75 @@
+{
+ "id": "h09",
+ "sentence": "escape from a haunted hospital with a flashlight",
+ "axis": "escape",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:34:53.992Z",
+ "ms": 4988,
+ "answer": {
+  "plan": "arena escape with flashlight",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "kid",
+   "cast": [],
+   "heroAction": "none",
+   "setting": "haunted hospital",
+   "palette": "cave",
+   "params": null,
+   "counts": null,
+   "ruleRoles": [],
+   "things": [],
+   "rules": [
+    {
+     "id": "start_escape",
+     "verb": "escape",
+     "when": {
+      "every": 1
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "escape",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "win_escape",
+     "verb": "escape",
+     "when": {
+      "timer": "escape"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "escape"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "escape"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

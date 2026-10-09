@@ -1,0 +1,141 @@
+{
+ "id": "s056",
+ "sentence": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+ "axis": "race",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:35:05.339Z",
+ "ms": 5154,
+ "answer": {
+  "plan": "Create a quest‑style city delivery game where a scooter races through traffic to deliver a pizza before it cools, using a timer to enforce the cold‑pizza deadline.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "delivery scooter",
+   "cast": [
+    {
+     "label": "pizza",
+     "does": "reach",
+     "verb": "deliver",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "traffic",
+     "does": "avoid",
+     "verb": "obstacle",
+     "states": null,
+     "patrol": true
+    }
+   ],
+   "heroAction": "sweep",
+   "setting": "traffic",
+   "palette": "city",
+   "params": null,
+   "counts": {
+    "enemy": 0,
+    "target": 1
+   },
+   "ruleRoles": [
+    {
+     "id": "pizza",
+     "kind": "target",
+     "label": "pizza",
+     "count": 1
+    },
+    {
+     "id": "traffic",
+     "kind": "hazard",
+     "label": "traffic",
+     "count": null
+    },
+    {
+     "id": "player",
+     "kind": "exit",
+     "label": "delivery point",
+     "count": null
+    }
+   ],
+   "things": [
+    {
+     "role": "player",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "pizza",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "traffic",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "player",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "start",
+     "when": {
+      "every": 1
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "cooldown",
+        "ticks": 180
+       }
+      }
+     ]
+    },
+    {
+     "id": "cooldown",
+     "verb": "timer",
+     "when": {
+      "timer": "cooldown"
+     },
+     "if": [
+      {
+       "counter": {
+        "name": "score",
+        "atLeast": 0,
+        "below": 1
+       }
+      }
+     ],
+     "do": [
+      {
+       "lose": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "cooldown"
+     }
+    ],
+    "phases": [
+     {
+      "id": "delivery"
+     },
+     {
+      "id": "finished"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

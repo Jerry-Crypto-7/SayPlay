@@ -1,0 +1,106 @@
+{
+ "id": "s003",
+ "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+ "axis": "escape",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:34:43.521Z",
+ "ms": 6771,
+ "answer": {
+  "plan": "arena escape",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "hamster",
+   "cast": [
+    {
+     "label": "giant roomba",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "exit",
+     "does": "reach",
+     "verb": "escape",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "cheese",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "supermarket",
+   "palette": "supermarket",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "roomba",
+     "kind": "chaser",
+     "label": "giant roomba",
+     "count": 1
+    },
+    {
+     "id": "exit",
+     "kind": "destination",
+     "label": "exit",
+     "count": 1
+    },
+    {
+     "id": "cheese",
+     "kind": "collectible",
+     "label": "cheese",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "start_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "roomba"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "chase_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "chase"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

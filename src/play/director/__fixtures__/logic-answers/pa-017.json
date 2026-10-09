@@ -1,0 +1,100 @@
+{
+ "id": "pa-017",
+ "sentence": "a spaceship shooting asteroids to survive",
+ "axis": "survive",
+ "model": "gpt-oss-20b",
+ "promptVersion": "b54cd531",
+ "directorPromptVersion": "3b597af4",
+ "recordedAt": "2026-10-09T00:34:24.840Z",
+ "ms": 13408,
+ "answer": {
+  "plan": "Create a shooter game where a spaceship shoots asteroids to survive.",
+  "spec": {
+   "genre": "shooter",
+   "mode": "default",
+   "hero": "spaceship",
+   "cast": [
+    {
+     "label": "asteroid",
+     "does": "shoot_at",
+     "verb": "shoot",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "fix",
+   "setting": "outer space",
+   "palette": "space",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "target": null
+   },
+   "ruleRoles": [
+    {
+     "id": "asteroid",
+     "kind": "hazard",
+     "label": "asteroid",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "shoot_asteroid",
+     "verb": "shoot",
+     "when": {
+      "contact": [
+       "player",
+       "asteroid"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "other"
+      }
+     ]
+    },
+    {
+     "id": "survive",
+     "verb": "survive",
+     "when": {
+      "timer": "survival"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "survival"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "survive"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}
