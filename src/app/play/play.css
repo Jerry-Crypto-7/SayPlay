@@ -1707,6 +1707,37 @@ button.play-version-switch__item:not(:disabled) {
   animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop);
 }
 
+/* Banner průběhu (P45C T16): „Here they come!“, „Boss!“, „Final wave!“ … štítek kitu (rajčatová = hrozba)
+ * nad řádkem se slovesem, 1,4 s herního času; nezachytává dotyky. */
+.play-pacing-banner {
+  top: 24%;
+  left: 50%;
+  z-index: 2;
+  margin: 0;
+  max-width: calc(100% - var(--sp-space-8));
+  box-shadow: var(--sp-shadow-sm);
+  pointer-events: none;
+  animation: play-pacing-banner var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
+/* Náběh přes vlastnost `scale`: `transform` nese náklon štítku kitu a `sp-pop-in` by ho po dobu náběhu přepsal. */
+@keyframes play-pacing-banner {
+  from {
+    scale: 0.6;
+    opacity: 0;
+  }
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-pacing-banner {
+    animation: none;
+  }
+}
+
 /* Arkáda (P35 T6): výzva uprostřed zakrývala hrdinu arény a úkolu. Plátno ví, kde
  * hrdina v obraze stojí (`PromptSpot` v `ArcadeStage.tsx`), a výzva sedne nad něj,
  * nebo pod něj – kde je víc místa. Bez hrdiny v záběru zůstává uprostřed.

@@ -15,10 +15,13 @@ import { z } from 'zod';
 import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 
 import type { ArcadeParts } from '../addons';
-import { ARCADE_LIMITS, type ArcadeEffect, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, bodyBase } from '../contract';
+import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeWorld, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, UNIT, bodyBase, nativeRule } from '../contract';
 import { ESCAPE } from './arena';
-import { BEHAVIOURS, type BehaviourId, type BehaviourSpace, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, seenByBase, stepBehaviours } from './behaviours';
+import { BEHAVIOURS, type BehaviourId, type BehaviourRef, type BehaviourSpace, behaviourBodies, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, seenByBase, stepBehaviours } from './behaviours';
+import { duelControl, enragedAfter } from './duel';
 import { FIGHT } from './fight';
+// Cyklus `throw.ts` ↔ tenhle modul je bezpečný: ani jeden nečte hodnoty druhého při načtení, jen ve funkcích.
+import { THROW_ROUND_COUNTER } from './throw';
 import { spotsAway, waveOf } from './waves';
 
 export const PACING = {
@@ -434,4 +437,83 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
     level: { ...parts.level, bodies, spawnSlots: (parts.level.spawnSlots ?? 0) + slots },
     rules: rule === null ? parts.rules : [...parts.rules, rule],
   };
+}
+
+// ---------------------------------------------------------------------------
+// Oznámení průběhu (P45C T16)
+
+/** Chvíle průběhu, kterou hra ohlásí: `buildUp` = na ploše je nové chování (ne boss), jinak běžící finále. */
+export type PacingBeat = 'buildUp' | (typeof FINALES)[number];
+
+type Beat = (state: Int32Array) => PacingBeat | null;
+const never = (): boolean => false;
+const playerZ = (state: Int32Array): number => state[bodyBase(state[HEADER.player] as number) + BODY.z] as number;
+
+/** Kus ovládání `id` v řetězu obalů (`params.base`: doplňky, průběh, fáze, skládání). */
+function controlIn(ref: PieceRef, id: string): PieceRef | undefined {
+  if (ref.id === id) return ref;
+  const base = ref.params.base;
+  return typeof base === 'object' && base !== null ? controlIn(base as PieceRef, id) : undefined;
+}
+
+/**
+ * Běží finále? Čte mechanismus, který finále ve světě opravdu dělá, ne jeho jméno: boss = živé tělo bosse,
+ * poslední vlna či kolo = čítač vlny arény, souboj dvou = rozzuření posledního soupeře (`enragedAfter`),
+ * sprint = nejrychlejší fáze trati (`phase_control`, jako `phaseSpeed`), náhlá smrt = posledních `sudden`
+ * úkolů rozhodčího (jako `judgeRule`), bonus hodu = poslední kolo. Fráze rytmu a útěk na čas jsou místo
+ * na křivce: noty rytmu leží podle její plochy (`placeByCurve`) a postup jsou vyřízené noty, takže finále
+ * začne s podílem not před vrcholem 850 ‰. Svět bez mechanismu svého finále ho neohlásí nikdy.
+ */
+function finaleOn(world: Pick<ArcadeWorld, 'rules' | 'control'>, finale: (typeof FINALES)[number], keeper: number, boss: readonly BehaviourRef[]): (state: Int32Array) => boolean {
+  const waves = nativeRule(world.rules, 'arena_waves')?.params.waves as readonly unknown[] | undefined;
+  if (finale === 'boss') return boss.length === 0 ? never : (state) => behaviourBodies(state, state[HEADER.player] as number, boss).length > 0;
+  if (finale === 'wave' || (finale === 'round' && waves !== undefined)) return waves === undefined ? never : (state) => waveOf(state) >= waves.length;
+  if (finale === 'round') {
+    const duel = controlIn(world.control, 'duel');
+    if (duel === undefined) return never;
+    const params = duelControl.params.parse(duel.params);
+    return (state) => enragedAfter(Math.floor(playerZ(state) / UNIT), params);
+  }
+  if (finale === 'sprint') {
+    const phased = controlIn(world.control, 'phase_control')?.params as { readonly phases: readonly { readonly start: number }[]; readonly length: number } | undefined;
+    const last = phased?.phases.at(-1)?.start ?? 0;
+    return phased === undefined || last === 0 ? never : (state) => Math.floor((playerZ(state) * 1000) / phased.length) >= last;
+  }
+  if (finale === 'sudden') {
+    const judge = nativeRule(world.rules, 'judge')?.params as { readonly goal: number; readonly sudden?: number } | undefined;
+    const from = judge?.sudden === undefined ? undefined : judge.goal - judge.sudden;
+    return from === undefined ? never : (state) => Math.floor(playerZ(state) / UNIT) >= from;
+  }
+  if (finale === 'bonus') {
+    const rounds = (nativeRule(world.rules, 'throw_rounds')?.params.rounds as readonly unknown[] | undefined)?.length;
+    return rounds === undefined ? never : (state) => (state[HEADER.counters + COUNTER[THROW_ROUND_COUNTER]] as number) >= rounds;
+  }
+  const from = finale === 'phrase' ? placeByCurve(TENSION_CURVE, 1000).filter((at) => at < S.peak).length : S.peak;
+  return (state) => reachedOf(state, keeper) >= from;
+}
+
+function beatOf(world: Pick<ArcadeWorld, 'rules' | 'control'>): Beat {
+  const params = nativeRule(world.rules, 'pacing')?.params as PacingRuleParams | undefined;
+  if (params?.finale === undefined) return () => null;
+  const { finale } = params;
+  const refs = params.behaviours ?? [];
+  // Boss je poslední předloha chování (`withPacing`).
+  const foes = finale === 'boss' ? refs.slice(0, -1) : refs;
+  const on = finaleOn(world, finale, params.keeper, finale === 'boss' ? refs.slice(-1) : []);
+  return (state) => {
+    if (on(state)) return finale;
+    return foes.length > 0 && behaviourBodies(state, state[HEADER.player] as number, foes).length > 0 ? 'buildUp' : null;
+  };
+}
+
+const beats = new WeakMap<object, Beat>();
+
+/**
+ * Co hra právě teď ohlásí (banner P45C T16): běžící finále, jinak `buildUp`, když je na ploše nové chování,
+ * jinak `null`. Hra bez finále v pravidle `pacing` nemá žádnou chvíli – ani se svými chováními. Jen čte stav.
+ */
+export function pacingBeatOf(world: Pick<ArcadeWorld, 'rules' | 'control'>, state: Int32Array): PacingBeat | null {
+  let beat = beats.get(world);
+  if (beat === undefined) beats.set(world, (beat = beatOf(world)));
+  return beat(state);
 }
