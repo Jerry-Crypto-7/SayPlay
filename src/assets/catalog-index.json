@@ -19785,6 +19785,102 @@
           0.34157
         ]
       }
+    },
+    {
+      "assetId": "gen3d-earring",
+      "tags": [
+        "earring"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-earring-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23076,
+          0,
+          -0.18367
+        ],
+        "max": [
+          0.23076,
+          0.99991,
+          0.18367
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-firework",
+      "tags": [
+        "firework"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-firework-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11957,
+          0,
+          -0.11907
+        ],
+        "max": [
+          0.11957,
+          1,
+          0.11907
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flower-pot",
+      "tags": [
+        "flower pot",
+        "flowerpot"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-pot-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71714,
+          0,
+          -0.71676
+        ],
+        "max": [
+          0.71714,
+          0.99999,
+          0.71676
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-glue",
+      "tags": [
+        "glue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-glue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18445,
+          0,
+          -0.18479
+        ],
+        "max": [
+          0.18445,
+          0.99995,
+          0.18479
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-joystick",
+      "tags": [
+        "joystick"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-joystick-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36494,
+          0,
+          -0.36463
+        ],
+        "max": [
+          0.36494,
+          1.00001,
+          0.36463
+        ]
+      }
     }
   ]
 }

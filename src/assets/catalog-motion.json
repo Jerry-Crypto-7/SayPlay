@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "c7ecf7db381b0db4924156b221c28d7156780a1d5c3d4521cc7043ef3908b26d",
+ "catalogHash": "074f478ef839748b8cf4c4cb4b054200ecabe6dc3f9130b0a2903173c7dfbc05",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -962,6 +962,11 @@
   "gen3d-stickman": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-stone-golem": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-cape": {"class":"prop"},
-  "gen3d-coral": {"class":"prop"}
+  "gen3d-coral": {"class":"prop"},
+  "gen3d-earring": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-firework": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-flower-pot": {"class":"prop"},
+  "gen3d-glue": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-joystick": {"class":"biped","regions":{"legY":0.25}}
  }
 }

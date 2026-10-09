@@ -17,7 +17,8 @@ Listy pro soud renderuje `scripts/assets/qa-sheets.mjs` s three.js z `node_modul
 |---|---|---|---|---|---|
 | 1 (07:43–08:08) | 10 | 8 | 4 | 4 | 17 + 8 |
 | 2 (08:02–08:22) | 10 | 7 | 4 | 3 | 19 + 7 |
-| 3 (08:19–08:41) | 10 | 8 | 4 | 2 | 19 + 8 |
+| 3 (08:19–08:43) | 10 | 8 | 4 | 2 | 19 + 8 |
+| 4 (08:36–09:03) | 10 | 7 | 5 | 5 | 17 + 7 |
 
 **Dávka 1** (robber … mahjong tile; v P45E 0/10 prošlo soudem, 5/10 předkontrolou a branou):
 - Povýšeno (4): top1 coffin; top3 bank manager („banker“), chimney („factory“, komín ve výčtu), firefly („fly“, světluška ve výčtu).
@@ -35,3 +36,9 @@ Listy pro soud renderuje `scripts/assets/qa-sheets.mjs` s three.js z `node_modul
 - Přijaté, nepovýšené (2): **captain** (top1 „ship captain“) – manifest P32 mu dal třídu humanoid; **chicken leg** (top1 „meat drumstick“) – třídu bird podle slova „chicken“. Oba zapsaly záznam do `src/play/assets/entries/catalog.json` a pin počtu v `catalog-entries.test.ts` zčervenal → `--drop`. Modely v `D:/claude/_gen3d-cache-p45f/`.
 - Soudce poznal něco jiného: blanket: gift box · boomerang: climbing wall · centaur: warrior (koňské tělo soudce nezmínil) · comet: popsicle.
 - Předkontrola odmítla všechny tři obrázky: broomstick: double-ended broom / broom / broom (vizuálně správně – koště; synonymum by ho pustilo) · canvas: easel ×3 (stojan přebil plátno, jméno navíc dávka zkrátí na „canva“).
+
+**Dávka 4** (drill … keyboard; v P45E 0/10 soudem, 5/10 předkontrolou a branou):
+- Povýšeno (5): top1 flower pot, glue („glue bottle“), joystick; top3 earring („seal stamp“, náušnice ve výčtu), firework („firecracker“).
+- Soudce poznal něco jiného: drill: screwdriver (akušroubovák – vizuálně blízko) · keyboard: shoe rack.
+- Bránou kvality neprošly: golem (3× `inconsistent face winding`) · golf ball (dvakrát předkontrola „golf ball“, ale označený jako rozbitý, třetí pokus brána).
+- Předkontrola odmítla všechny tři obrázky: dumpling: bamboo steamer / steamed dumpling – správné jméno, ale obrázek označený jako rozbitý (třetí pokus brána).
