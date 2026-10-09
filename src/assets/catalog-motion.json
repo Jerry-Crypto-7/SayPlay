@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "6982fcf444594f0046e51e161b4c0895e6580251ba5a45a54ca91bb4013aae76",
+ "catalogHash": "c7ecf7db381b0db4924156b221c28d7156780a1d5c3d4521cc7043ef3908b26d",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -960,6 +960,8 @@
   "gen3d-firefly": {"class":"prop"},
   "gen3d-net": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-stickman": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-stone-golem": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-stone-golem": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-cape": {"class":"prop"},
+  "gen3d-coral": {"class":"prop"}
  }
 }

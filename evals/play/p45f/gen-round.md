@@ -16,7 +16,8 @@ Listy pro soud renderuje `scripts/assets/qa-sheets.mjs` s three.js z `node_modul
 | Dávka | Jmen | Předkontrola a brána | Soud | Povýšeno | Codex (předkontrola + soud) |
 |---|---|---|---|---|---|
 | 1 (07:43–08:08) | 10 | 8 | 4 | 4 | 17 + 8 |
-| 2 (08:02–08:25) | 10 | 7 | 4 | 3 | 19 + 7 |
+| 2 (08:02–08:22) | 10 | 7 | 4 | 3 | 19 + 7 |
+| 3 (08:19–08:41) | 10 | 8 | 4 | 2 | 19 + 8 |
 
 **Dávka 1** (robber … mahjong tile; v P45E 0/10 prošlo soudem, 5/10 předkontrolou a branou):
 - Povýšeno (4): top1 coffin; top3 bank manager („banker“), chimney („factory“, komín ve výčtu), firefly („fly“, světluška ve výčtu).
@@ -28,3 +29,9 @@ Listy pro soud renderuje `scripts/assets/qa-sheets.mjs` s three.js z `node_modul
 - Přijatý, nepovýšený: **anthill** (top1). `scripts/assets/p32-manifest.mjs` mu podle slova „ant“ dal třídu animal a záznam v `src/play/assets/entries/catalog.json`, takže `src/play/assets/__tests__/catalog-entries.test.ts` (pin počtu) zčervenal → vyřazeno `--drop gen3d-anthill`. Model leží v `D:/claude/_gen3d-cache-p45f/anthill/`; povýšit jde po opravě třídy v manifestu (mraveniště není zvíře) nebo po zvednutí pinu.
 - Soudce poznal něco jiného: poacher: thief (bandit, burglar – role lidí) · receipt: CD rack · seashell: ice cream sundae.
 - Předkontrola odmítla všechny tři obrázky: mole: pig / pig (jako pilot P45E s růžovými tlapkami; třetí pokus neprošel branou) · passport: book ×3 (vizuálně blízko) · towel: stack of towels / towel stack (oba označené jako rozbité) / armchair.
+
+**Dávka 3** (blanket … coral; v P45E 0/10 soudem, 3/10 předkontrolou a branou):
+- Povýšeno (2): top1 cape, coral.
+- Přijaté, nepovýšené (2): **captain** (top1 „ship captain“) – manifest P32 mu dal třídu humanoid; **chicken leg** (top1 „meat drumstick“) – třídu bird podle slova „chicken“. Oba zapsaly záznam do `src/play/assets/entries/catalog.json` a pin počtu v `catalog-entries.test.ts` zčervenal → `--drop`. Modely v `D:/claude/_gen3d-cache-p45f/`.
+- Soudce poznal něco jiného: blanket: gift box · boomerang: climbing wall · centaur: warrior (koňské tělo soudce nezmínil) · comet: popsicle.
+- Předkontrola odmítla všechny tři obrázky: broomstick: double-ended broom / broom / broom (vizuálně správně – koště; synonymum by ho pustilo) · canvas: easel ×3 (stojan přebil plátno, jméno navíc dávka zkrátí na „canva“).

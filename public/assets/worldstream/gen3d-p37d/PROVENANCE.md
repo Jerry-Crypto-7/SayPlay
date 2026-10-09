@@ -185,3 +185,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-net` | net | 4734 / 2362 |
 | `gen3d-stickman` | stickman | 4748 / 2374 |
 | `gen3d-stone-golem` | stone golem | 4538 / 2111 |
+| `gen3d-cape` | cape | 4517 / 2225 |
+| `gen3d-coral` | coral | 4748 / 2372 |

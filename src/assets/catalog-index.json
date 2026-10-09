@@ -19747,6 +19747,44 @@
           0.16198
         ]
       }
+    },
+    {
+      "assetId": "gen3d-cape",
+      "tags": [
+        "cape"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cape-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.60779,
+          0,
+          -0.26077
+        ],
+        "max": [
+          0.60779,
+          0.99968,
+          0.26077
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coral",
+      "tags": [
+        "coral"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38508,
+          0,
+          -0.34157
+        ],
+        "max": [
+          0.38508,
+          0.99987,
+          0.34157
+        ]
+      }
     }
   ]
 }
