@@ -309,7 +309,9 @@ export function withPhaseEntries(rules: readonly Rule[], logic: Logic | undefine
 /** Fáze, do které vede vstup doplněný `withPhaseEntries` (P45B R6); `null` = pravidlo jiného tvaru, tedy modelu. */
 export function phaseEntryOf(rule: Rule): string | null {
   const [effect] = rule.do;
+  const [cond] = rule.if ?? [];
   if (rule.verb !== 'advance' || rule.do.length !== 1 || effect === undefined || !('goPhase' in effect)) return null;
+  if (rule.if?.length !== 1 || cond === undefined || !('inPhase' in cond)) return null;
   return rule.id === `enter_${effect.goPhase}` && 'every' in rule.when && rule.when.every === PHASE_ENTRY_TICKS ? effect.goPhase : null;
 }
 

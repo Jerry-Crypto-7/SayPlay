@@ -22,6 +22,7 @@ import type { GenerationBranch } from '@/server/pipeline';
 
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
 import { loadRapier } from '../arcade/physics/world';
+import { LOGIC_LIMITS } from '../arcade/contract';
 import { phaseEntryOf, readsLogic, rulesTouching } from '../arcade/rules/schema';
 import { verifyArcade } from '../arcade/verify';
 import { matchesWitness } from '../arcade/witness';
@@ -446,12 +447,16 @@ function withoutRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rul
   // Vstup doplněný čtením (`phaseEntryOf`, R6) jde ven jen s fází: vypadl-li on, nebo vše, co na fázi
   // reaguje, odejde fáze z bloku `logic` i s pravidly, která na ni sahají. Fáze za ní vede z ní, proto znovu.
   const entered = rules.flatMap((rule) => phaseEntryOf(rule) ?? []);
+  const declared = (spec.logic?.phases ?? []).map((phase) => phase.id);
   const gone = new Set<string>();
   for (;;) {
     const lone = entered.filter((phase) => {
       const own = rulesTouching(kept, 'phase', phase).map((index) => phaseEntryOf(kept[index]!) === phase);
       return !gone.has(phase) && (!own.includes(true) || !own.includes(false));
     });
+    // Jediná zbylá fáze není průběh a schéma chce aspoň dvě (`LOGIC_LIMITS.minPhases`) – odejde i ona.
+    const left = declared.filter((phase) => !gone.has(phase) && !lone.includes(phase));
+    if (gone.size + lone.length > 0 && left.length < LOGIC_LIMITS.minPhases) lone.push(...left);
     if (lone.length === 0) break;
     for (const phase of lone) gone.add(phase);
     const touched = new Set(lone.flatMap((phase) => rulesTouching(kept, 'phase', phase)));
@@ -460,8 +465,9 @@ function withoutRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rul
   if (kept.length === rules.length && rules.length > 0) return null;
   // Blok `logic` (P45B T10) jde pryč s posledním pravidlem, které ho čte – mrtvou deklaraci `readGameSpec` odmítne.
   const { rules: _rules, things, logic, ...rest } = spec;
-  const phases = logic?.phases?.filter((phase) => !gone.has(phase.id));
-  const withLogic = logic !== undefined && kept.some(readsLogic) ? { logic: { ...logic, ...(phases === undefined ? {} : { phases }) } } : {};
+  const { phases: _phases, ...logicRest } = logic ?? {};
+  const phases = (logic?.phases ?? []).filter((phase) => !gone.has(phase.id));
+  const withLogic = logic !== undefined && kept.some(readsLogic) ? { logic: { ...logicRest, ...(phases.length === 0 ? {} : { phases }) } } : {};
   if (kept.length > 0) return { ...rest, ...withLogic, rules: kept, ...(things === undefined ? {} : { things }) };
   return rest;
 }

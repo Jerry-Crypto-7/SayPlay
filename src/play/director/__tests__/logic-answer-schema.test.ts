@@ -12,9 +12,10 @@ import { describe, expect, it } from 'vitest';
 import { canonicalHash } from '@/ir/worlddoc';
 
 import { arcadeWorldOf } from '../../arcade/compile';
+import { phaseEntryOf, withPhaseEntries } from '../../arcade/rules/schema';
 import { templateParts } from '../../arcade/rules/templates';
 import { verifyArcade } from '../../arcade/verify';
-import type { GameSpecV1 } from '../../spec';
+import { type GameSpecV1, readGameSpec } from '../../spec';
 import { direct } from '..';
 import { genreAnswer } from '../__fixtures__';
 import { answered, fakeBranch } from '../__fixtures__/branch';
@@ -233,7 +234,8 @@ describe('the phase entry the read path adds is not the model\'s rule (R6)', () 
     },
   });
   const failed = (evidence: string): RepairIssue[] => [{ code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: `keypoint failed: ${evidence}`, repairHint: 'fix the game or the claim' }];
-  const shape = (spec: GameSpecV1) => ({ rules: (spec.rules ?? []).map((rule) => rule.id), timers: spec.logic?.timers?.map((timer) => timer.id), phases: spec.logic?.phases?.map((phase) => phase.id) });
+  /** `reads` = projde `readGameSpec`: hra z vyřazení jde do publikace bez dalšího čtení (nález R6-1). */
+  const shape = (spec: GameSpecV1) => ({ rules: (spec.rules ?? []).map((rule) => rule.id), timers: spec.logic?.timers?.map((timer) => timer.id), phases: spec.logic?.phases?.map((phase) => phase.id), reads: readGameSpec(spec).ok });
 
   /** Hry, které vyřazení dá ověřit, když `said` hlásí nález nad hrou (`null` = žádný). */
   async function dropOut(gusty: boolean, said: (spec: GameSpecV1) => string | null) {
@@ -264,16 +266,26 @@ describe('the phase entry the read path adds is not the model\'s rule (R6)', () 
     expect(unprovedVerbs(issues)).toEqual(['cheer']);
   });
 
-  it('dropping the rule that reacts to the phase takes the entry and the phase too', async () => {
+  it('only the exact added shape counts as the entry, a model rule without its inPhase does not', () => {
+    const logic = { phases: [{ id: 'calm' }, { id: 'harvest' }] };
+    const added = withPhaseEntries([{ id: 'cheer', verb: 'cheer', when: { phase: 'harvest' }, do: [{ score: 5 }] }], logic).at(-1)!;
+    expect(phaseEntryOf(added)).toBe('harvest');
+    const { if: _if, ...unconditioned } = added;
+    expect(phaseEntryOf(unconditioned)).toBeNull();
+    expect(phaseEntryOf({ ...added, if: [{ inPhase: 'calm' }, { inPhase: 'calm' }] })).toBeNull();
+  });
+
+  it('dropping the rule that reacts to the phase takes the entry and the phase too, and a lone phase left with them', async () => {
     const { game, seen } = await dropOut(true, (spec) => (inHarvest(spec) ? 'logic_proved: LOGIC_UNPROVED:phase:harvest – never entered while the bot played' : null));
-    expect(seen[0]).toEqual({ rules: ['cheer', 'wind', 'gust', 'enter_harvest'], timers: ['gust'], phases: ['calm', 'harvest'] });
-    expect(seen[1]).toEqual({ rules: ['wind', 'gust'], timers: ['gust'], phases: ['calm'] });
-    expect(game.spec.logic?.phases?.map((phase) => phase.id) ?? []).not.toContain('harvest');
+    expect(seen[0]).toEqual({ rules: ['cheer', 'wind', 'gust', 'enter_harvest'], timers: ['gust'], phases: ['calm', 'harvest'], reads: true });
+    // Fáze `calm` by zbyla sama – schéma chce aspoň dvě, takže odchází i ona; poryv zůstává.
+    expect(seen[1]).toEqual({ rules: ['wind', 'gust'], timers: ['gust'], phases: undefined, reads: true });
+    expect(readGameSpec(game.spec).ok).toBe(true);
   }, 120_000);
 
   it('dropping the added entry takes its phase and the rules that react to it', async () => {
     const { seen } = await dropOut(false, (spec) => (entered(spec) ? 'VERB_UNPROVED:advance' : null));
-    expect(seen[0]).toEqual({ rules: ['cheer', 'enter_harvest'], timers: undefined, phases: ['calm', 'harvest'] });
-    expect(seen[1]).toEqual({ rules: [], timers: undefined, phases: undefined });
+    expect(seen[0]).toEqual({ rules: ['cheer', 'enter_harvest'], timers: undefined, phases: ['calm', 'harvest'], reads: true });
+    expect(seen[1]).toEqual({ rules: [], timers: undefined, phases: undefined, reads: true });
   }, 120_000);
 });
