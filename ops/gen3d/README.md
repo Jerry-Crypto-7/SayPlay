@@ -38,6 +38,28 @@ GEN3D_KEY=<tajný klíč> uv run server.py     # jen 127.0.0.1:8790
   Pád ComfyUI ukončí úlohu `failed`. Rezervovaná jména Windows (`con`, `nul`, …) → 422.
 - Vestavěné stránky FastAPI (`/docs`, `/redoc`, `/openapi.json`) jsou vypnuté – klíč by obešly.
 
+## Dávka
+
+```bash
+node D:/claude/_shared/gpu-lock.mjs -- uv run python batch.py --from <seznam> --precheck --start-comfy --no-quarantine --record <batch.json>
+```
+
+- **Seznam** je textový (`jméno  # poznámka` na řádek) nebo JSON ve tvaru `evals/play/p45d/gen-nouns.json`
+  (`{"nouns": [{"noun", "class", "flat"}]}`) – jen ten nese třídu těla.
+- **Zadání podle třídy** (P45E): `config.toml` `[prompts.<třída>]` pro `quadruped`, `biped`, `flyer`,
+  `swimmer`, `vehicle`, `prop` a `flat` (ploché a drobné jméno přebije třídu); textový seznam a služba
+  používají `prop.a`, zadání všech modelů před P45E. Rozlišovací znak za jménem z `features.toml`
+  (orca: „black and white killer whale…“), psaný ručně.
+- **Pokusy** `--attempts a0,b0,a1` (výchozí): zadání A se semínkem 0, pak zadání B, pak A se semínkem 1.
+  Záznam nese použité `prompt`, `variant` a `seed`; `provenance()` píše do karantény skutečně použité
+  zadání. Povýšení `scripts/p37d/promote-batch.mjs` zapisuje do původu jen semínko (schéma dávky
+  `catalog-batch.v1` zadání nenese).
+- **`--precheck`**: obrázek se před TRELLIS ukáže slepě Codexu (`precheck.py` →
+  `scripts/p37d/judge-sheet.mjs --precheck`, prázdný adresář, jen `sheet.png`) a 3D se generuje jen
+  z obrázku, který soudce pozná (`top1`/`top3`). Odpovědi v `D:/caches/p45e/precheck/` (mimo repo).
+  Bez odpovědi Codexu (limit, pád) obrázek projde jako `unavailable` – kartu to nezastaví.
+- Mezipaměť je jedna na jméno: pro nové kolo nad jmény, která už v cache jsou, nastav `GEN3D_CACHE_DIR`.
+
 ## Rychlost
 
 Změřeno 24. 9. 2026 (`evals/gen3d/bench.json`): teplý medián **47 s** na slovo (obrázek 9 s,

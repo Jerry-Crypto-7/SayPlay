@@ -3,5 +3,34 @@
 # 12/12 ok, 51,9 s (obrázek 15,6 s) – stejná úspěšnost, o 5 s rychlejší a o 3 GB méně paměti karty.
 image_model = "klein"
 
-# Šablona zadání obrázku; {noun} je normalizované podstatné jméno.
-prompt = "a {noun}, low-poly stylized 3D game asset, single object, centered, full view, flat colors, plain white background"
+# Šablony zadání obrázku podle třídy těla (`scripts/p45d/motion-class.mjs`, P45E T2). {noun} je
+# normalizované jméno, za kterým stojí rozlišovací znak z features.toml, pokud ho jméno má.
+# `a` je první zadání, `b` druhé po neúspěchu; `flat` přebije třídu u plochých a drobných jmen.
+# `prop.a` je zadání všech modelů před P45E – server a bench ho používají dál.
+[prompts.prop]
+a = "a {noun}, low-poly stylized 3D game asset, single object, centered, full view, flat colors, plain white background"
+b = "a single {noun} as a chunky toy, whole object visible, three-quarter view, low-poly 3D game asset, flat colors, plain white background"
+
+[prompts.flat]
+a = "a chunky oversized toy version of a {noun}, thick, standing upright on a small base, low-poly stylized 3D game asset, single object, centered, flat colors, plain white background"
+b = "a {noun} made as a thick chunky toy block, standing upright on a small base, three-quarter view, low-poly 3D game asset, flat colors, plain white background"
+
+[prompts.quadruped]
+a = "a {noun}, full body side view, all four legs visible, standing, low-poly stylized 3D game asset, single creature, centered, flat colors, plain white background"
+b = "a {noun} toy figurine standing on four legs, three-quarter view of the whole body, chunky low-poly 3D game asset, flat colors, plain white background"
+
+[prompts.biped]
+a = "a {noun}, full figure standing upright, front view, arms at the sides, low-poly stylized 3D game character, single character, centered, flat colors, plain white background"
+b = "a {noun} toy action figure standing, whole figure from head to feet, three-quarter view, chunky low-poly 3D game character, flat colors, plain white background"
+
+[prompts.flyer]
+a = "a {noun} with wings spread wide, full body, low-poly stylized 3D game asset, single creature, centered, flat colors, plain white background"
+b = "a {noun} toy figurine with open wings, seen from the front and slightly above, chunky low-poly 3D game asset, flat colors, plain white background"
+
+[prompts.swimmer]
+a = "a {noun}, full body side view, fins and tail visible, low-poly stylized 3D game asset, single creature, centered, flat colors, plain white background"
+b = "a {noun} toy figurine, whole body in profile with tail and fins, chunky low-poly 3D game asset, flat colors, plain white background"
+
+[prompts.vehicle]
+a = "a {noun}, three-quarter front view, wheels, tracks or skis visible, low-poly stylized 3D game asset, single vehicle, centered, flat colors, plain white background"
+b = "a {noun} toy model vehicle, three-quarter front view of the whole vehicle, chunky low-poly 3D game asset, flat colors, plain white background"

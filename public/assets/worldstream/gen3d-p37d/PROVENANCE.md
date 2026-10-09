@@ -155,3 +155,26 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-sleigh` | sleigh | 4746 / 2373 |
 | `gen3d-boxer` | boxer | 4750 / 2370 |
 | `gen3d-icicle` | icicle | 4748 / 2374 |
+| `gen3d-paper-ball` | paper ball | 4748 / 2374 |
+| `gen3d-hippo` | hippo, hippopotamus | 4386 / 2156 |
+| `gen3d-spy` | spy, secret agent | 4728 / 2363 |
+| `gen3d-spaghetti` | spaghetti, pasta | 4254 / 2291 |
+| `gen3d-ramp` | ramp | 4748 / 2374 |
+| `gen3d-orca` | orca | 4748 / 2374 |
+| `gen3d-portrait` | portrait | 4138 / 1845 |
+| `gen3d-searchlight` | searchlight | 4677 / 2310 |
+| `gen3d-snowmobile` | snowmobile | 4295 / 2050 |
+| `gen3d-genie` | genie | 4685 / 2280 |
+| `gen3d-orange` | orange | 4701 / 2316 |
+| `gen3d-pie` | pie, tart | 4504 / 2186 |
+| `gen3d-statue` | statue | 4742 / 2370 |
+| `gen3d-snowboard` | snowboard | 4676 / 2329 |
+| `gen3d-playing-card` | playing card | 4606 / 2291 |
+| `gen3d-crossbow` | crossbow | 4746 / 2359 |
+| `gen3d-dishwasher` | dishwasher | 4150 / 2001 |
+| `gen3d-jetpack` | jetpack | 4373 / 2169 |
+| `gen3d-fuel-can` | fuel can, jerrycan | 4746 / 2370 |
+| `gen3d-juice` | juice | 4742 / 2364 |
+| `gen3d-noodle` | noodle, ramen | 4701 / 2261 |
+| `gen3d-orb` | orb | 4703 / 2317 |
+| `gen3d-printer` | printer | 4693 / 2286 |

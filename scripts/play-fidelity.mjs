@@ -57,14 +57,17 @@ const { specFidelity } = await import('../src/play/fidelity/score.ts');
 const { draftForControl, draftGameSpec } = await import('../src/play/draft/index.ts');
 const { compileGame } = await import('../src/play/compile/index.ts');
 const { readSentence } = await import('../src/play/read/client.ts');
+const { xoroshiro128plus } = await import('pure-rand/generator/xoroshiro128plus');
+const { uniformInt } = await import('pure-rand/distribution/uniformInt');
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'evals', 'play', 'fidelity');
 const P30 = join(ROOT, 'evals', 'play', 'p30');
 const P44E = join(ROOT, 'evals', 'play', 'p44e');
 const P43 = join(ROOT, 'evals', 'play', 'p43');
+const P45 = join(ROOT, 'evals', 'play', 'p45');
 /** Zapečetěné sady podle `source` věty: kam se zapíše jejich jediné otevření. */
-const SEALS = { test: { dir: P30, file: 'test-opened.json' }, 'sealed-p43': { dir: P43, file: 'sealed-opened.json' }, 'sealed-p44e': { dir: P44E, file: 'sealed-opened.json' } };
+const SEALS = { test: { dir: P30, file: 'test-opened.json' }, 'sealed-p43': { dir: P43, file: 'sealed-opened.json' }, 'sealed-p44e': { dir: P44E, file: 'sealed-opened.json' }, 'sealed-p45': { dir: P45, file: 'sealed-opened.json' } };
 
 export const SLOTS = ['hero', 'role', 'any', 'setting', 'verb'];
 
@@ -470,7 +473,7 @@ function breakSeal(file, { openTestOnce, runId, sealDir, sealFile }) {
  * Sada podle `--set`: `dev` a `test` jsou sady P30A v `evals/play/p30/`, jiný
  * název je soubor ve `fidelity/` (`judge-10.json`), bez názvu korpus.
  */
-const setFile = (name) => (name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : name === 'p43-sealed' ? join(P43, 'sealed-100.json') : name === 'p44e-sealed' ? join(P44E, 'sealed-200.json') : resolve(DIR, name ?? 'corpus.json'));
+const setFile = (name) => (name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : name === 'p43-sealed' ? join(P43, 'sealed-100.json') : name === 'p44e-sealed' ? join(P44E, 'sealed-200.json') : name === 'p45-sealed' ? join(P45, 'sealed-100.json') : name === 'p45-panel' ? join(P45, 'panel.json') : resolve(DIR, name ?? 'corpus.json'));
 const picked = (sentences, only) => {
   const ids = typeof only === 'string' ? new Set(only.split(',')) : null;
   return sentences.filter((sentence) => ids === null || ids.has(sentence.id));
@@ -568,7 +571,70 @@ async function clip(page, base, id, path) {
   return { robot, frames };
 }
 
-async function runOne(sentence, base, runDir, page, { clip: withClip = false, draftOnly = false } = {}) {
+/** Klip průběhu (P45A T8): první snímek po `leadTicks`, pak každých `gapTicks` (6 s hry), nejvýš `maxFrames`. */
+export const PACE = { leadTicks: 90, gapTicks: 360, maxFrames: 8 };
+
+/**
+ * Tiky snímků klipu průběhu pro běh, který skončil v `endTick` (`null` = nedoběhl
+ * za poslední snímek). Skončí-li dřív, poslední snímek je stav po konci – po něm
+ * by klip fotil prázdnou scénu a vypadal jako dlouhá hra.
+ */
+export function paceTicks(endTick) {
+  const ticks = [];
+  for (let tick = PACE.leadTicks; ticks.length < PACE.maxFrames; tick += PACE.gapTicks) {
+    if (endTick !== null && tick >= endTick) return [...ticks, endTick];
+    ticks.push(tick);
+  }
+  return ticks;
+}
+
+/**
+ * Robot hraje jako v `clip` (ruční hodiny sondy) a klip fotí celý jeho běh podle
+ * `paceTicks`. Hra bez sondy arkády se fotí ve skutečném čase a nese `robot: false`.
+ * `idle` (kalibrace soudce, T11): robot se nespustí, ruční hodiny tikají bez vstupu.
+ */
+async function paceClip(page, base, id, path, idle = false) {
+  await page.goto(`${base}/play/${id}`);
+  await page.locator('canvas').first().waitFor({ timeout: 30_000 });
+  const robot = await page.waitForFunction(() => typeof window.__playShell?.byHand === 'function', undefined, { timeout: 30_000 }).then(
+    () => true,
+    () => false,
+  );
+  if (robot) await page.evaluate(() => window.__playShell.byHand(true));
+  if (robot && !idle) {
+    await page.getByTestId('play-pause').click();
+    await page.getByTestId('play-demo-start').click({ timeout: 30_000 });
+  }
+  await page.addStyleTag(SCENE_ONLY);
+  const frames = [];
+  let tick = 0;
+  let endedAtTick = null;
+  for (const target of paceTicks(null)) {
+    if (robot) {
+      const now = await page.evaluate(async (count) => {
+        let last = null;
+        for (let step = 0; step < count; step += 1) {
+          last = window.__playShell.tickByHand();
+          if (last.runState !== 'running') break;
+        }
+        await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+        return last;
+      }, target - tick);
+      tick = now?.tick ?? target;
+      if (now !== null && now.runState !== 'running') endedAtTick = tick;
+    } else {
+      await page.waitForTimeout(((target - tick) * 1000) / CLIP.hz);
+      tick = target;
+    }
+    const frame = `${path}-pace-${frames.length + 1}.png`;
+    await page.screenshot({ path: frame });
+    frames.push(basename(frame));
+    if (endedAtTick !== null) break;
+  }
+  return { robot, idle, frames, endedAtTick };
+}
+
+async function runOne(sentence, base, runDir, page, { clip: withClip = false, pace = false, idle = false, draftOnly = false } = {}) {
   const started = Date.now();
   const response = await fetch(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence: sentence.text }) });
   const created = await response.json();
@@ -605,17 +671,24 @@ async function runOne(sentence, base, runDir, page, { clip: withClip = false, dr
   };
   result.draft.env = await shoot(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
   if (withClip) result.draft.clip = await clip(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
+  if (pace) result.pace = await paceClip(page, base, created.versionId, join(runDir, `${sentence.id}-draft`), idle);
   if (ai) result.ai.env = await shoot(page, base, upgrade.versionId, join(runDir, `${sentence.id}-ai`));
   if (ai && withClip) result.ai.clip = await clip(page, base, upgrade.versionId, join(runDir, `${sentence.id}-ai`));
   return result;
 }
 
 async function run(options) {
-  const base = options.base ?? 'http://127.0.0.1:3100';
   const runId = options.run ?? `${new Date().toISOString().slice(0, 10)}-${commit()}`;
   // Sada před složkou a prohlížečem: odmítnutá pečeť nesmí nechat stopu běhu.
   // `--set judge-10.json` / `dev` / `test` se vykazují ve vlastním `--run`.
   const sentences = loadSet(typeof options.set === 'string' ? options.set : undefined, { only: options.only, openTestOnce: options['open-test-once'] === true || options['open-sealed-once'] === true, runId });
+  await runSentences(sentences, { ...options, run: runId });
+}
+
+/** `run` nad už načtenými větami: `fun` načte sadu jednou a pustí ji proti dvěma serverům. */
+async function runSentences(sentences, options) {
+  const base = options.base ?? 'http://127.0.0.1:3100';
+  const runId = options.run;
   const runDir = join(DIR, 'runs', runId);
   mkdirSync(runDir, { recursive: true });
   const require = createRequire(import.meta.url);
@@ -628,7 +701,7 @@ async function run(options) {
     for (const sentence of sentences) {
       const path = join(runDir, `${sentence.id}.json`);
       if (existsSync(path)) continue;
-      const result = await runOne(sentence, base, runDir, page, { clip: options.clip === true, draftOnly: options['draft-only'] === true });
+      const result = await runOne(sentence, base, runDir, page, { clip: options.clip === true, pace: options['pace-clip'] === true, idle: options.idle === true, draftOnly: options['draft-only'] === true });
       writeJson(path, result);
       const robot = result.draft.clip ? ` robot ${result.draft.clip.robot ? 'yes' : 'no'}` : '';
       console.log(`${sentence.id} ${result.ai ? 'ai' : `draft (${result.upgrade.reason ?? result.upgrade.status})`} ${Math.round(result.upgrade.ms / 1000)} s env ${result.ai?.env ?? result.draft.env}${robot}`);
@@ -637,6 +710,182 @@ async function run(options) {
     await browser.close();
   }
   console.log(`run ${runId} -> ${runDir}`);
+}
+
+// ---------------------------------------------------------------- slepý párový soud zábavy (P45A T9)
+
+export const PAIR_SEED = 45045;
+
+export const PAIR_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['winner', 'why'],
+  properties: { winner: { type: 'string', enum: ['A', 'B', 'tie'] }, why: { type: 'string' } },
+};
+
+export const PAIR_QUESTION = `The attached image shows two small 3D video games side by side, each played by the same robot player. Game A is the left column, game B the right column. Rows go down in time: the first row is 1.5 seconds after the start, then one row every 6 seconds of play; a grey cell means that game had already ended. Page text is hidden, so judge only what the 3D scenes show. Which game would be more fun to play: its pace (something keeps happening), danger (threats close to the player), what goes on in the scene, and whether it builds up towards the end? Answer "tie" only when neither would be more fun. Reply only with the JSON the schema asks for: winner = "A", "B" or "tie"; why = one or two sentences naming what you see in each game.`;
+
+/** Kdo je vlevo (A) v každém páru: jeden stream `pure-rand` ze seedu, losuje se v pořadí id (vzor `sides` v `play-p39-blind.mjs`). */
+export function pairSides(seed, count) {
+  const rng = xoroshiro128plus(seed);
+  return Array.from({ length: count }, () => (uniformInt(rng, 0, 1) === 0 ? 'a' : 'b'));
+}
+
+/** Odpověď soudce (A = levý sloupec) přeložená na stranu běhu. */
+function pairWinner(answer, left) {
+  if (answer === 'tie') return 'tie';
+  return answer === 'A' ? left : left === 'a' ? 'b' : 'a';
+}
+
+const round3 = (value) => Math.round(value * 1000) / 1000;
+
+/** `bShare` = (výhry b + remízy / 2) / n; `leftWinShare` stejně pro levý sloupec – poziční zkreslení soudce. */
+function pairSummary(pairs) {
+  const n = pairs.length;
+  const count = (winner) => pairs.filter((pair) => pair.winner === winner).length;
+  const ties = count('tie');
+  const leftWins = pairs.filter((pair) => pair.winner === pair.left).length;
+  return { n, aWins: count('a'), bWins: count('b'), ties, bShare: n === 0 ? null : round3((count('b') + ties / 2) / n), leftWinShare: n === 0 ? null : round3((leftWins + ties / 2) / n) };
+}
+
+/** List pro soudce: sloupec A vlevo, B vpravo, řádky jsou snímky klipu průběhu v čase; šedá buňka = hra už skončila. */
+async function pairSheet(page, left, right, path) {
+  const rows = Math.max(left.length, right.length);
+  const cell = (file) => (file === undefined ? '<div class="over">ended</div>' : `<img src="data:image/png;base64,${readFileSync(file).toString('base64')}">`);
+  const seconds = (row) => Math.round(((PACE.leadTicks + row * PACE.gapTicks) / CLIP.hz) * 10) / 10;
+  const body = Array.from({ length: rows }, (_, row) => `<tr><td class="t">${seconds(row)} s</td><td>${cell(left[row])}</td><td>${cell(right[row])}</td></tr>`).join('');
+  await page.setContent(`<!doctype html><html><body style="margin:0;background:#fff;font:600 28px Arial,sans-serif;color:#111">
+<table style="border-spacing:16px 8px"><tr><td></td><th>Game A</th><th>Game B</th></tr>${body}</table>
+<style>img,.over{width:480px;height:300px;display:block;border:2px solid #111}.over{background:#9a9a9a;color:#444;text-align:center;line-height:300px}.t{font-size:18px;width:70px}</style></body></html>`);
+  await page.screenshot({ path, fullPage: true });
+}
+
+/**
+ * Slepý párový soud (P45A T9): pro každé id s klipem průběhu v běhu A i B složí
+ * list, stranu vlevo losuje `pairSides` ze seedu a soudce (`ask` ze
+ * `p37d/judge-sheet.mjs`, prázdný adresář jen se `sheet.png` a schématem) řekne,
+ * která hra by ho víc bavila. Hotová odpověď se při opakování nepřeptává.
+ * `ask` a `compose` jdou vstříknout (test bez Codexu a bez prohlížeče).
+ */
+export async function pairwise(options, { ask, compose } = {}) {
+  if (typeof options.a !== 'string' || typeof options.b !== 'string' || typeof options.out !== 'string') throw new Error('pairwise: --a <runId> --b <runId> --out <file> are required');
+  const runsDir = options.runsDir ?? join(DIR, 'runs');
+  const seed = options.seed === undefined ? PAIR_SEED : Number(options.seed);
+  const paceOf = (run, id) => {
+    const file = join(runsDir, run, `${id}.json`);
+    return existsSync(file) ? (readJson(file).pace?.frames ?? []).map((frame) => join(runsDir, run, frame)) : [];
+  };
+  const wanted = typeof options.only === 'string' ? new Set(options.only.split(',')) : null;
+  const ids = readdirSync(join(runsDir, options.a))
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => file.slice(0, -'.json'.length))
+    .filter((id) => (wanted === null || wanted.has(id)) && paceOf(options.a, id).length > 0 && paceOf(options.b, id).length > 0)
+    .sort();
+  const left = pairSides(seed, ids.length);
+  const pairDir = join(runsDir, `pair-${options.a}--${options.b}-${seed}`);
+  mkdirSync(pairDir, { recursive: true });
+  const schemaFile = join(pairDir, 'pair-schema.json');
+  writeJson(schemaFile, PAIR_SCHEMA);
+  const judgeOf = ask ?? (await import('./p37d/judge-sheet.mjs')).ask;
+  // Slib, ne prohlížeč: dvě vlákna by jinak oba viděla `null` a jeden prohlížeč by nikdo nezavřel.
+  let browser = null;
+  const composeOf = compose ?? (async (l, r, path) => {
+    browser ??= createRequire(import.meta.url)('@playwright/test').chromium.launch();
+    const page = await (await browser).newPage({ viewport: { width: 1100, height: 800 } });
+    await pairSheet(page, l, r, path);
+    await page.close();
+  });
+  const pairs = new Array(ids.length);
+  const queue = ids.map((id, index) => ({ id, index }));
+  const worker = async () => {
+    for (let job = queue.shift(); job !== undefined; job = queue.shift()) {
+      const { id, index } = job;
+      const side = left[index];
+      const answerFile = join(pairDir, `${id}.answer.json`);
+      if (!existsSync(answerFile)) {
+        const sheet = join(pairDir, `${id}-sheet.png`);
+        const [l, r] = side === 'a' ? [paceOf(options.a, id), paceOf(options.b, id)] : [paceOf(options.b, id), paceOf(options.a, id)];
+        await composeOf(l, r, sheet);
+        const asked = await judgeOf(sheet, schemaFile, answerFile, PAIR_QUESTION);
+        // Ztráta přihlášení nebo vyčerpaný limit: zastavit, ne počítat díru jako remízu.
+        if (!existsSync(answerFile)) throw new Error(`pairwise ${id}: the judge gave no answer (exit ${asked?.code}) ${asked?.stderr ?? ''}`);
+      }
+      const answer = readJson(answerFile);
+      pairs[index] = { id, left: side, winner: pairWinner(answer.winner, side), why: answer.why };
+      console.log(`${id}: left ${side} -> ${pairs[index].winner}`);
+    }
+  };
+  try {
+    await Promise.all(Array.from({ length: Math.max(1, Number(options.concurrency ?? 2)) }, worker));
+  } finally {
+    if (browser !== null) await (await browser).close();
+  }
+  const verdict = {
+    schema: 'pairwise.v1',
+    a: { run: options.a, commit: options['a-commit'] ?? null },
+    b: { run: options.b, commit: options['b-commit'] ?? null },
+    seed,
+    order: `pure-rand xoroshiro128plus(${seed}), uniformInt(0, 1) per pair in id order: 0 = a on the left (column A), 1 = b`,
+    pairs,
+    summary: pairSummary(pairs),
+  };
+  writeJson(options.out, verdict);
+  console.log(`pairwise ${options.a} vs ${options.b}: bShare ${verdict.summary.bShare} leftWinShare ${verdict.summary.leftWinShare} n ${verdict.summary.n} -> ${options.out}`);
+  return verdict;
+}
+
+// ---------------------------------------------------------------- konečné měření zábavy (P45A T10)
+
+/** Strana A konečného měření: `main` 8. 10. 2026, proti kterému se P45B/C/D porovnávají. */
+export const P45_BASE_COMMIT = '0714a352';
+/** Cíl párového soudu: 0,55 pro jeden plán, 0,65 pro P45C + D (`--target-b 0.65`). */
+export const PAIR_TARGET_B = 0.55;
+
+/** `fun.measure.ts` nad HEAD; souhrn z jeho výstupu. */
+async function measureFun(set, open, out) {
+  const env = { ...process.env, P45_SET: set, P45_OUT: out };
+  if (open) env.P45_OPEN_SEALED_ONCE = '1';
+  else delete env.P45_OPEN_SEALED_ONCE;
+  const measured = spawnSync('npx', ['vitest', 'run', '--config', 'vitest.measure.mts', 'evals/play/p45/fun.measure.ts'], { cwd: ROOT, env, stdio: 'inherit', shell: process.platform === 'win32' });
+  if (measured.status !== 0) throw new Error(`fun.measure.ts failed (exit ${measured.status})`);
+  return readJson(out).summary;
+}
+
+/**
+ * Konečné měření zábavy (P45A T10): sadu načte **jednou** (jedna pečeť pro obě
+ * strany), pustí klip průběhu proti A (`main`) do `<run>-a` a proti B (HEAD) do
+ * `<run>-b`, pak slepý párový soud a telemetrii nad HEAD, a zapíše
+ * `evals/play/p45/result-<run>.json`. Kroky jdou vstříknout (test bez serverů).
+ */
+export async function funCommand(options, steps = {}) {
+  const { loadSet: load = loadSet, runSentences: play = runSentences, pairwise: judgePairs = pairwise, measure = measureFun } = steps;
+  const set = options.set;
+  if (set !== 'p45-panel' && set !== 'p45-sealed') throw new Error('fun: --set p45-panel|p45-sealed');
+  for (const flag of ['base-a', 'base-b', 'run']) if (typeof options[flag] !== 'string') throw new Error(`fun: --${flag} is required`);
+  const open = options['open-sealed-once'] === true;
+  const runId = options.run;
+  const seed = options.seed === undefined ? PAIR_SEED : Number(options.seed);
+  const target = options['target-b'] === undefined ? PAIR_TARGET_B : Number(options['target-b']);
+  const outDir = options.outDir ?? P45;
+  const sides = {
+    a: { base: options['base-a'], run: `${runId}-a`, commit: options['commit-a'] ?? P45_BASE_COMMIT },
+    b: { base: options['base-b'], run: `${runId}-b`, commit: commit() },
+  };
+  // Jedno otevření pro obě strany: druhé `loadSet` na zapečetěné sadě by odmítlo.
+  const sentences = load(set, { openTestOnce: open, runId });
+  for (const side of [sides.a, sides.b]) await play(sentences, { base: side.base, run: side.run, 'pace-clip': true, 'draft-only': true, gpu: options.gpu });
+  const verdict = await judgePairs({ a: sides.a.run, b: sides.b.run, seed, out: join(DIR, 'runs', `${runId}-pairwise.json`), 'a-commit': sides.a.commit, 'b-commit': sides.b.commit, concurrency: options.concurrency });
+  const fun = await measure(set === 'p45-sealed' ? 'sealed' : 'panel', open, join(DIR, 'runs', `${runId}-fun.json`));
+  const bShare = verdict.summary.bShare;
+  const targets = {
+    pairwiseB: { goal: `>= ${target}`, value: bShare, met: bShare !== null && bShare >= target },
+    ...Object.fromEntries((fun.targets ?? []).map(({ metric, goal, value, met }) => [metric, { goal, value, met }])),
+  };
+  const result = { schema: 'p45-result.v1', set, seed, a: sides.a, b: sides.b, pairwise: verdict.summary, fun, targets, met: targets.pairwiseB.met && fun.met === true };
+  const out = join(outDir, `result-${runId}.json`);
+  writeJson(out, result);
+  console.log(`fun ${runId}: bShare ${bShare} (target ${target}) fun ${fun.met ? 'met' : 'missed'} -> ${out}`);
+  return result;
 }
 
 // ---------------------------------------------------------------- férové srovnání modelů (P30A T7)
@@ -1275,12 +1524,16 @@ if (isMain) {
   else if (options.offline) offline(options);
   else if (typeof options.models === 'string') process.exitCode = await compare(options);
   else if (step === 'run') await run(options);
+  else if (step === 'pairwise') await pairwise(options);
+  else if (step === 'fun') await funCommand(options);
   else if (step === 'judge') judge(options);
   else if (step === 'report') report(options);
   else if (step === 'summary') summary(options);
   else if (step === 'roles') roles(options);
   else {
-    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
+    console.error('usage: node scripts/play-fidelity.mjs fun --set p45-panel|p45-sealed --base-a <url main> --base-b <url HEAD> --run <id> [--open-sealed-once] [--seed 45045] [--target-b 0.55] [--commit-a 0714a352] [--gpu]');
+    console.error('usage: node scripts/play-fidelity.mjs pairwise --a <runId> --b <runId> --out <file> [--seed 45045] [--a-commit <sha>] [--b-commit <sha>] [--only <ids>] [--concurrency 2]');
+    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--pace-clip [--idle]] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
     process.exit(2);
   }
 }

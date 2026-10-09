@@ -17,6 +17,7 @@ import re
 import threading
 import tomllib
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -82,15 +83,31 @@ class Job:
 IMAGE_SEED = {"klein": ("noise", "noise_seed"), "zimage": ("sampler", "seed")}
 
 
-def generate(comfy: ComfyClient, noun: str, out_dir: Path, seed: int = 0) -> dict:
-    """Obrázek -> TRELLIS.2 -> dodělávka. Vyhazuje výjimku s důvodem, když cokoliv selže."""
+def generate(
+    comfy: ComfyClient,
+    noun: str,
+    out_dir: Path,
+    seed: int = 0,
+    prompt: str | None = None,
+    check: Callable[[Path], dict] | None = None,
+) -> dict:
+    """Obrázek -> TRELLIS.2 -> dodělávka. Vyhazuje výjimku s důvodem, když cokoliv selže.
+
+    `prompt` je hotové zadání obrázku (dávka P45E podle třídy), jinak `prompts.prop.a`.
+    `check` dostane stažený obrázek dřív, než karta pustí síť; výjimkou slovo shodí (P45E T2).
+    """
     name = out_dir.name
     image_graph = copy.deepcopy(WORKFLOWS[f"image_{CONFIG['image_model']}"])
-    image_graph["prompt"]["inputs"]["text"] = CONFIG["prompt"].format(noun=noun)
+    image_graph["prompt"]["inputs"]["text"] = prompt or CONFIG["prompts"]["prop"][
+        "a"
+    ].format(noun=noun)
     node, field = IMAGE_SEED[CONFIG["image_model"]]
     image_graph[node]["inputs"][field] = seed
     image_graph["save_image"]["inputs"]["filename_prefix"] = f"gen3d/{name}"
     image = outputs_of(comfy.run(image_graph), "save_image")[0]
+    checked = None
+    if check is not None:
+        checked = check(comfy.download(image, out_dir / "image.png"))
 
     mesh_graph = copy.deepcopy(WORKFLOWS["mesh"])
     mesh_graph["load_image"]["inputs"]["image"] = (
@@ -105,6 +122,8 @@ def generate(comfy: ComfyClient, noun: str, out_dir: Path, seed: int = 0) -> dic
     raw.unlink()
     if not result["gate"]["passed"]:
         raise RuntimeError("quality gate: " + "; ".join(result["gate"]["reasons"]))
+    if checked is not None:
+        result["precheck"] = checked
     return result
 
 
