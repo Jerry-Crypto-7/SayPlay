@@ -225,6 +225,8 @@ export class WitnessRecorder {
   private readonly movementVerb: string | undefined;
   private readonly positions = new Map<number, { roleId: string; x: number; y: number; z: number }>();
   private readonly hurt = new Set<string>();
+  /** Pronásledovatelé, které pravidlo `pacing` odvolalo živé (finále P45C T12: s bossem odejdou), poté co se hnuli. */
+  private readonly departed: RoleBinding[] = [];
   /** Keepers of a composed game: `assembly_gate_*` latches a native win there as `stateChange` 1 until the parts are done. */
   private readonly latches: ReadonlySet<number>;
   private readonly start: readonly number[];
@@ -319,6 +321,11 @@ export class WitnessRecorder {
     const origin = this.origins.get(effect);
     if (ref === undefined || origin === undefined) return;
     const player = state[HEADER.player]!;
+    // Lovce, kterého finále průběhu odvolá živého, hráč přečkal: únik z něj dokáže i výhra, při které už na ploše není.
+    if (ref.id === 'pacing' && effect.kind === 'despawn' && roleAt(state, effect.body) === ROLE.chaser) {
+      const binding = this.binding(effect.body, state);
+      if (binding !== undefined && this.hasMoved(binding, state)) this.departed.push(binding);
+    }
     const launchBefore = origin.projectileBefore;
     if (launchBefore !== undefined && effect.kind === 'spawn' && effect.template === ref.params.template &&
         roleAt(launchBefore, effect.template) === ROLE.projectile && kindAt(this.world, launchBefore, effect.template) === 'bullet' &&
@@ -609,7 +616,20 @@ export class WitnessRecorder {
         if ((threat.verb === 'chaser' || threat.verb === 'guard') && this.hasMoved(own, state)) this.add('escape', state[HEADER.player]!, body, tick, `survived-threat:${threat.runId}`, state);
         this.add('survive', state[HEADER.player]!, body, tick, `survived-threat:${threat.runId}`, state);
       }
+      for (const left of this.departed) {
+        if (left.roleId !== threat.actor.roleId) continue;
+        if (threat.verb === 'chaser' || threat.verb === 'guard') this.addLeft('escape', left, tick, `survived-threat:${threat.runId}`, state);
+        this.addLeft('survive', left, tick, `survived-threat:${threat.runId}`, state);
+      }
     }
     return this.finish('won');
+  }
+
+  /** Jako `add` s hráčem jako aktérem, ale předmět je vazba odvolaného těla (jeho slot mohl mezitím připadnout jinému). */
+  private addLeft(verb: string, what: RoleBinding, tick: number, evidence: string, state: ArcadeState): void {
+    const who = this.binding(state[HEADER.player]!, state);
+    if (who === undefined) return;
+    const key = `${verb}:${who.roleId}:${what.roleId}:${evidence}`;
+    if (!this.found.has(key)) this.found.set(key, { actor: who, verb, object: what, tick, evidence, run: this.run, runId: this.runId });
   }
 }

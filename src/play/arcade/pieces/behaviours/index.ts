@@ -24,6 +24,8 @@
 import { z } from 'zod';
 
 import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase } from '../../contract';
+import { ARENA, DIRECTIONS, ESCAPE, directionOfAxis } from '../arena';
+import { predict } from '../arena-bot';
 import { ambusher } from './ambusher';
 import { boss } from './boss';
 import { flanker, overlaps } from './flanker';
@@ -111,6 +113,8 @@ export interface Behaviour {
   effects?(view: BehaviourView, ref: BehaviourRef): readonly ArcadeEffect[];
   /** Robot: jak uhnout. `control` = základní ovládání, `recent` = stisky, které ve stavu ještě nejsou. */
   botStep(view: BehaviourView, input: ArcadeInput, control: string, recent: readonly ArcadeInput[]): ArcadeInput;
+  /** Jak tělo vidí základní robot: věc, ke které jde (bezpečnou cestou), pronásledovatel, kterému se vyhne; bez metody vůbec. */
+  seenAs?(view: BehaviourView): 'collectible' | 'chaser' | undefined;
 }
 
 /** Kód chování = pořadí + 1. Je součást hashe: nové jen na konec, nepřečíslovat. */
@@ -200,17 +204,30 @@ const alive = (state: ArcadeState, body: number): boolean => ((state[bodyBase(bo
 export function matches(state: ArcadeState, body: number, template: number): boolean {
   const a = bodyBase(body);
   const b = bodyBase(template);
-  return SIGNATURE.every((slot) => state[a + slot] === state[b + slot]);
+  for (const slot of SIGNATURE) if (state[a + slot] !== state[b + slot]) return false;
+  return true;
 }
 
-/** Živá těla chování `[tělo, chování, kód, odkaz]` ve vzestupném pořadí těl; hráč a předlohy ne. */
-function* actors(state: ArcadeState, player: number, refs: readonly BehaviourRef[]): Generator<readonly [number, Behaviour, number, BehaviourRef]> {
+/**
+ * Živá těla chování `[tělo, chování, kód, odkaz]` ve vzestupném pořadí těl; hráč a předlohy ne.
+ * Robot, ovládání i pravidlo to volají každý tik: model předlohy se porovná dřív než celý podpis.
+ */
+function actors(state: ArcadeState, player: number, refs: readonly BehaviourRef[]): (readonly [number, Behaviour, number, BehaviourRef])[] {
+  const found: (readonly [number, Behaviour, number, BehaviourRef])[] = [];
   const bodies = state[HEADER.bodyCount] as number;
+  const kinds = refs.map((ref) => state[bodyBase(ref.template) + BODY.kind] as number);
   for (let body = 0; body < bodies; body += 1) {
-    if (body === player || !alive(state, body)) continue;
-    const ref = refs.find((candidate) => matches(state, body, candidate.template));
-    if (ref !== undefined) yield [body, BEHAVIOURS[ref.id], BEHAVIOUR_IDS.indexOf(ref.id) + 1, ref];
+    const base = bodyBase(body);
+    if (body === player || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const kind = state[base + BODY.kind] as number;
+    for (let k = 0; k < refs.length; k += 1) {
+      const ref = refs[k] as BehaviourRef;
+      if (kinds[k] !== kind || !matches(state, body, ref.template)) continue;
+      found.push([body, BEHAVIOURS[ref.id], BEHAVIOUR_IDS.indexOf(ref.id) + 1, ref]);
+      break;
+    }
   }
+  return found;
 }
 
 /** Indexy živých těl chování (pro scénu a testy). */
@@ -221,8 +238,13 @@ export function shotBodies(state: ArcadeState, player: number, refs: readonly Be
   const shots = refs.flatMap((ref) => (ref.shot === undefined ? [] : [ref.shot]));
   const found: number[] = [];
   if (shots.length === 0) return found;
+  const kinds = shots.map((shot) => state[bodyBase(shot) + BODY.kind] as number);
   const bodies = state[HEADER.bodyCount] as number;
-  for (let body = 0; body < bodies; body += 1) if (body !== player && alive(state, body) && shots.some((shot) => matches(state, body, shot))) found.push(body);
+  for (let body = 0; body < bodies; body += 1) {
+    if (body === player || !alive(state, body)) continue;
+    const kind = state[bodyBase(body) + BODY.kind] as number;
+    if (shots.some((shot, k) => kinds[k] === kind && matches(state, body, shot))) found.push(body);
+  }
   return found;
 }
 
@@ -294,9 +316,80 @@ export function behaviourEffects(state: ArcadeState, player: number, refs: reado
   return effects;
 }
 
-/** `pacing_bot`: vstup základního robota upravený krokem robota každého těla chování (vzestupně). */
+/**
+ * `pacing_bot`: pozorování pro základního robota – těla chování s `seenAs`
+ * v kopii stavu s rolí, jak je má vidět (otevřený boss = věc, útočící boss =
+ * pronásledovatel). Bez takového těla totéž pozorování.
+ */
+export function seenByBase(observation: ArcadeObservation, refs: readonly BehaviourRef[]): ArcadeObservation {
+  let state: ArcadeState | null = null;
+  for (const [body, behaviour] of actors(observation.state, observation.player, refs)) {
+    const role = behaviour.seenAs?.(viewOf(observation.state, body, observation.player));
+    if (role === undefined) continue;
+    state ??= observation.state.slice();
+    state[bodyBase(body) + BODY.role] = ROLE[role];
+  }
+  return state === null ? observation : { ...observation, state };
+}
+
+/**
+ * Uhnutí před chováním nesmí hráče poslat pronásledovatelům do rukou: tah po
+ * uhnutí musí `ticks` tiků držet mezeru `gap` (okraj k okraji, po osách) od
+ * pronásledovatelů, kteří jdou rovnou na hráče nejvyšší rychlostí `speed`
+ * (vzor plánovače útěku `arena-bot.ts`). Naměřeno P45C T12 na 19 sestavách
+ * arény × 20 semínek: 45 tiků a 1 m – robot bez profilu prohrál 2/380 (dřív
+ * pronásledovatel do 3 m 22/230; 60 tiků a 2 m 5/380, uhnutí pak často
+ * neplatilo a strážce zasáhl).
+ */
+export const CHASER_CHECK = { ticks: 45, sample: 5, gap: UNIT, speed: ESCAPE.chaserSpeed.max, half: ARENA.half } as const;
+
+/** Nejmenší mezera tahu `input` k živým pronásledovatelům (role `chaser`) v horizontu; bez nich nekonečno. */
+export function chaserClearance(observation: ArcadeObservation, input: ArcadeInput): number {
+  const { state, player, recent } = observation;
+  const lag = recent.length;
+  const size = state[bodyBase(player) + BODY.w] as number;
+  const chasers: { x: number; z: number; reach: number }[] = [];
+  for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+    const base = bodyBase(body);
+    if (state[base + BODY.role] !== ROLE.chaser || !alive(state, body)) continue;
+    chasers.push({ x: (state[base + BODY.x] as number) + (state[base + BODY.vx] as number) * lag, z: (state[base + BODY.z] as number) + (state[base + BODY.vz] as number) * lag, reach: ((state[base + BODY.w] as number) + size) / 2 });
+  }
+  if (chasers.length === 0) return Number.POSITIVE_INFINITY;
+  const me = predict(state, player, recent);
+  const direction = directionOfAxis(input.axis);
+  const dir = direction < 0 ? { dx: 0, dz: 0 } : (DIRECTIONS[direction] as { dx: number; dz: number });
+  const { ticks, sample, speed, half } = CHASER_CHECK;
+  const limit = half - Math.ceil(size / 2);
+  const clamp = (value: number): number => Math.max(-limit, Math.min(limit, value));
+  let px = me.x;
+  let pz = me.z;
+  let clear = Number.POSITIVE_INFINITY;
+  for (let t = sample; t <= ticks; t += sample) {
+    px = clamp(px + Math.trunc((dir.dx * ARENA.speed * sample) / 1000));
+    pz = clamp(pz + Math.trunc((dir.dz * ARENA.speed * sample) / 1000));
+    for (const chaser of chasers) {
+      const dx = px - chaser.x;
+      const dz = pz - chaser.z;
+      const far = Math.sqrt(dx * dx + dz * dz);
+      const run = Math.min(far, speed * sample);
+      if (far > 0) {
+        chaser.x += (dx * run) / far;
+        chaser.z += (dz * run) / far;
+      }
+      clear = Math.min(clear, Math.max(Math.abs(px - chaser.x), Math.abs(pz - chaser.z)) - chaser.reach);
+    }
+  }
+  return clear;
+}
+
+/**
+ * `pacing_bot`: vstup základního robota upravený krokem robota každého těla
+ * chování (vzestupně). Pronásledovatelé mají přednost: uhnutí, které by hráče
+ * zahnalo k nim (nebo ho zastavilo, než doběhnou), neplatí a hraje útěk
+ * základního robota.
+ */
 export function dodge(observation: ArcadeObservation, refs: readonly BehaviourRef[], control: string, input: ArcadeInput): ArcadeInput {
   let out = input;
   for (const [body, behaviour] of actors(observation.state, observation.player, refs)) out = behaviour.botStep(viewOf(observation.state, body, observation.player), out, control, observation.recent);
-  return out;
+  return out.axis === input.axis || chaserClearance(observation, out) >= CHASER_CHECK.gap ? out : input;
 }

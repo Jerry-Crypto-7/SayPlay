@@ -15,11 +15,11 @@ import { z } from 'zod';
 import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 
 import type { ArcadeParts } from '../addons';
-import { ARCADE_LIMITS, type ArcadeEffect, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, type RulePiece, bodyBase } from '../contract';
+import { ARCADE_LIMITS, type ArcadeEffect, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, bodyBase } from '../contract';
 import { ESCAPE } from './arena';
-import { BEHAVIOURS, type BehaviourId, type BehaviourSpace, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, stepBehaviours } from './behaviours';
+import { BEHAVIOURS, type BehaviourId, type BehaviourSpace, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, seenByBase, stepBehaviours } from './behaviours';
 import { FIGHT } from './fight';
-import { spotsAway } from './waves';
+import { spotsAway, waveOf } from './waves';
 
 export const PACING = {
   /** Konce segmentů v promile postupu: úvod 0–200, stupňování 200–650, vrchol 650–850, finále 850–1000. */
@@ -67,11 +67,11 @@ export function intensityAt(progress: number, curve: TensionCurve): number {
   return y0 + (rise - (rise % (x1 - x0))) / (x1 - x0);
 }
 
-/** Jak hra měří postup ke cíli: ujetá trať, sebrané věci, skóre, padlí soupeři, nebo jen čas. */
+/** Jak hra měří postup ke cíli: ujetá trať, sebrané věci, skóre, padlí soupeři, jen čas, nebo vlny (`arena_waves`). */
 export const pacingGoalSchema = z
   .object({
-    by: z.enum(['distance', 'items', 'score', 'fallen', 'time']),
-    /** Délka trati v jednotkách, potřebné věci, cílové skóre, počet soupeřů, nebo tiky (`time`). */
+    by: z.enum(['distance', 'items', 'score', 'fallen', 'time', 'wave']),
+    /** Délka trati v jednotkách, potřebné věci, cílové skóre, počet soupeřů, tiky (`time`), nebo počet vln (`wave`). */
     need: z.int().min(1),
     /** Jen `fallen`: kód role soupeřů. */
     role: z.int().min(1).optional(),
@@ -99,7 +99,8 @@ export function progressOf(state: Int32Array, goal: PacingGoal): number {
       if (state[base + BODY.role] === goal.role && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0) alive += 1;
     }
     done = goal.need - alive;
-  } else done = state[HEADER.tick] as number;
+  } else if (goal.by === 'wave') done = waveOf(state);
+  else done = state[HEADER.tick] as number;
   return Math.max(time, share(done, goal.need));
 }
 
@@ -114,11 +115,12 @@ export interface ScheduleEntry {
 /**
  * `n` míst v promile postupu, kde kumulovaná plocha `intensita − spawnFloor`
  * dosáhne středů `n` stejných dílů (± čtvrt dílu losem, když je `rng`).
- * Husté tam, kde je křivka vysoko. Statické žánry (rytmus) staví nad ním noty.
+ * Husté tam, kde je křivka vysoko; před `from` ‰ a od `until` ‰ nic (třeba
+ * až od druhé vlny a jen do poslední). Statické žánry (rytmus) staví nad ním noty.
  */
-export function placeByCurve(curve: TensionCurve, n: number, rng?: CompileRng): number[] {
+export function placeByCurve(curve: TensionCurve, n: number, rng?: CompileRng, from = 0, until = 1000): number[] {
   const cumulative: number[] = [0];
-  for (let p = 0; p < 1000; p += 1) cumulative.push((cumulative[p] as number) + Math.max(0, intensityAt(p, curve) - PACING.spawnFloor));
+  for (let p = 0; p < 1000; p += 1) cumulative.push((cumulative[p] as number) + (p < from || p >= until ? 0 : Math.max(0, intensityAt(p, curve) - PACING.spawnFloor)));
   const total = cumulative[1000] as number;
   const quarter = Math.floor(total / (4 * n));
   const places: number[] = [];
@@ -131,9 +133,9 @@ export function placeByCurve(curve: TensionCurve, n: number, rng?: CompileRng): 
   return places;
 }
 
-/** Rozvrh `budget` spawnů z `kinds` chování; ve vrcholu a finále přijdou po dvou. Jen při stavbě. */
-export function scheduleOf(rng: CompileRng, curve: TensionCurve, budget: number, kinds = 1): ScheduleEntry[] {
-  return placeByCurve(curve, budget, rng).map((atPermille) => ({
+/** Rozvrh `budget` spawnů z `kinds` chování od `from` ‰ do `until` ‰; ve vrcholu a finále přijdou po dvou. Jen při stavbě. */
+export function scheduleOf(rng: CompileRng, curve: TensionCurve, budget: number, kinds = 1, from = 0, until = 1000): ScheduleEntry[] {
+  return placeByCurve(curve, budget, rng, from, until).map((atPermille) => ({
     atPermille,
     behaviour: rng.int(0, kinds - 1),
     count: intensityAt(atPermille, curve) >= PACING.intensity.peak ? 2 : 1,
@@ -170,8 +172,9 @@ const refSchema = z.object({ id: z.string(), params: z.record(z.string(), z.unkn
 
 /** Chování nepřátel ve hře (P45C T4): předlohy, podle jejichž podpisu se těla poznají. */
 const behaviourRefs = z.array(behaviourRefSchema).min(1).max(8);
-const controlParams = z.object({ base: refSchema, goal: pacingGoalSchema, keeper: z.int().min(1), behaviours: behaviourRefs.optional(), space: z.enum(['plane', 'track']).optional() }).strict();
-const botParams = z.object({ base: refSchema, control: z.string(), keeper: z.int().min(1), behaviours: behaviourRefs.optional() }).strict();
+/** `steady`: knoflíky žánru (`PACING_KNOBS`) se neškálují – křivka jen rozvrhuje spawny a finále. */
+const controlParams = z.object({ base: refSchema, goal: pacingGoalSchema, keeper: z.int().min(1), behaviours: behaviourRefs.optional(), space: z.enum(['plane', 'track']).optional(), steady: z.literal(true).optional() }).strict();
+const botParams = z.object({ base: refSchema, control: z.string(), keeper: z.int().min(1), behaviours: behaviourRefs.optional(), steady: z.literal(true).optional() }).strict();
 
 const parsed = new WeakMap<object, unknown>();
 /** Parametry základního kusu přečtené schématem jednou (výchozí hodnoty doplní zod). */
@@ -200,6 +203,17 @@ export function scaledParams(control: string, params: Readonly<Record<string, un
   return out;
 }
 
+const scaled = new WeakMap<object, Map<string, Readonly<Record<string, unknown>>>>();
+/** `scaledParams` jednou na parametry, ovládání a intenzitu: ovládání i robot je chtějí každý tik a intenzita se mění zřídka. */
+function scaledOnce(control: string, params: Readonly<Record<string, unknown>>, intensity: number): Readonly<Record<string, unknown>> {
+  let known = scaled.get(params);
+  if (known === undefined) scaled.set(params, (known = new Map()));
+  const key = `${control}:${intensity}`;
+  let out = known.get(key);
+  if (out === undefined) known.set(key, (out = scaledParams(control, params, intensity)));
+  return out;
+}
+
 /** Intenzita podle nejvyššího dosaženého postupu v počítadle. */
 const intensityOf = (state: Int32Array, keeper: number): number => intensityAt(reachedOf(state, keeper), TENSION_CURVE);
 
@@ -219,7 +233,7 @@ export function makePacingControl(controls: Readonly<Record<string, ControlPiece
       state[keeper + BODY.aux0] = Math.max(reached, progressOf(state, params.goal));
       const own = parseOnce(native, params.base.params);
       const intensity = intensityOf(state, params.keeper);
-      native.step(state, player, input, scaledParams(params.base.id, own, intensity));
+      native.step(state, player, input, params.steady === true ? own : scaledOnce(params.base.id, own, intensity));
       if (params.behaviours !== undefined) stepBehaviours(state, player, params.behaviours, params.space ?? 'plane', intensity, typeof own.half === 'number' ? own.half : undefined);
     },
   };
@@ -232,7 +246,9 @@ export function makePacingBot(bots: Readonly<Record<string, BotPiece>>): BotPiec
     decide(observation, params) {
       const native = bots[params.base.id];
       if (native === undefined) throw new Error(`arcade: unknown paced bot ${params.base.id}`);
-      const input = native.decide(observation, scaledParams(params.control, parseOnce(native, params.base.params), intensityOf(observation.state, params.keeper)));
+      const seen = params.behaviours === undefined ? observation : seenByBase(observation, params.behaviours);
+      const own = parseOnce(native, params.base.params);
+      const input = native.decide(seen, params.steady === true ? own : scaledOnce(params.control, own, intensityOf(observation.state, params.keeper)));
       return params.behaviours === undefined ? input : dodge(observation, params.behaviours, params.control, input);
     },
   };
@@ -254,6 +270,11 @@ const ruleParams = z
     behaviours: behaviourRefs.optional(),
     /** Polovina strany plochy (`plane`): výstřel chování za ní zmizí. */
     half: z.int().min(1).optional(),
+    /**
+     * Na postupu `at` ‰ odejdou všechna živá těla role `role` – pronásledovatelé
+     * uvolní plochu bossovi, nová chování odejdou před poslední vlnou.
+     */
+    clear: z.array(z.object({ role: z.int().min(1), at: z.int().min(1).max(1000) }).strict()).min(1).max(2).optional(),
   })
   .strict();
 export type PacingRuleParams = z.infer<typeof ruleParams>;
@@ -283,7 +304,18 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
     const before = state[keeper + BODY.aux1] as number;
     const reached = state[keeper + BODY.aux0] as number;
     const effects: ArcadeEffect[] = params.behaviours === undefined ? [] : behaviourEffects(state, player, params.behaviours, params.half);
-    const due = params.schedule.filter((entry) => entry.atPermille > before && entry.atPermille <= reached);
+    // Postup se v tomhle tiku nehnul: žádný krok rozvrhu ani úklid nepřešel.
+    if (reached === before) return effects;
+    const clears = (params.clear ?? []).filter((clear) => clear.at > before && clear.at <= reached);
+    for (const clear of clears) {
+      for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+        const base = bodyBase(body);
+        if (body !== player && state[base + BODY.role] === clear.role && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0) effects.push({ kind: 'despawn', body });
+      }
+    }
+    // Postup po vlnách skáče: krok rozvrhu před úklidem, který přešel tentýž tik, už nepřijde (jeho vlna skončila).
+    const stale = (entry: PacingRuleParams['schedule'][number]): boolean => clears.some((clear) => entry.atPermille < clear.at && state[bodyBase(entry.template) + BODY.role] === clear.role);
+    const due = params.schedule.filter((entry) => entry.atPermille > before && entry.atPermille <= reached && !stale(entry));
     if (due.length === 0) return effects;
     let room = params.maxActors - actorsAlive(state, new Set(params.schedule.map((entry) => entry.template)));
     const spots = params.spots.length >> 1;
@@ -319,10 +351,20 @@ export interface PacingSetup {
   readonly spots: readonly number[];
   /** Předlohy spawnů (`template: true`); prázdné = jen křivka bez spawnů. */
   readonly behaviours: readonly PacingActor[];
+  /** Hra dostane jen tolik z `behaviours`, losem ze streamu `pacing` před rozvrhem; bez pole všechny. */
+  readonly pick?: number;
   readonly budget: number;
+  /** Rozvrh nic nevysadí před tímhle postupem v promile (např. až od druhé vlny)… */
+  readonly from?: number;
+  /** …ani od tohohle (např. jen do poslední vlny). */
+  readonly until?: number;
   readonly finale?: (typeof FINALES)[number];
   /** Boss: tělo a postup v promile, na kterém přijde – jeden spawn mimo los rozvrhu, předloha za předlohami `behaviours`. */
   readonly boss?: { readonly body: BodyInit; readonly at: number };
+  /** Na postupu `at` ‰ odejdou živá těla role `role` (pronásledovatelé s příchodem bosse, chování před poslední vlnou). */
+  readonly clear?: readonly { readonly role: BodyInit['role']; readonly at: number }[];
+  /** Knoflíky žánru zůstanou, jak jsou (vlny si drží své zrychlení); křivka jen rozvrhuje spawny a finále. */
+  readonly steady?: boolean;
 }
 
 /**
@@ -336,8 +378,11 @@ export interface PacingSetup {
  */
 export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts {
   const first = parts.level.bodies.length;
+  const rng = createCompileRng(setup.seed, 'pacing');
+  // Výběr chování (`pick`) bere stream první, rozvrh pokračuje za ním; bez výběru rozvrh začíná na začátku streamu jako dřív.
+  const behaviours = setup.pick === undefined || setup.pick >= setup.behaviours.length ? setup.behaviours : rng.shuffle(setup.behaviours).slice(0, setup.pick);
   // Boss je poslední předloha chování; los rozvrhu ho nevybírá.
-  const actors: readonly PacingActor[] = setup.boss === undefined ? setup.behaviours : [...setup.behaviours, { body: setup.boss.body, behaviour: 'boss' }];
+  const actors: readonly PacingActor[] = setup.boss === undefined ? behaviours : [...behaviours, { body: setup.boss.body, behaviour: 'boss' }];
   const shooters = [...new Set(actors.flatMap((actor) => (actor.behaviour !== undefined && BEHAVIOURS[actor.behaviour].shot !== undefined ? [actor.behaviour] : [])))];
   const shotBodies = shooters.map((id) => BEHAVIOURS[id].shot as BodyInit);
   const keeper = first + actors.length + shooters.length;
@@ -347,24 +392,26 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const refs = actors.flatMap((actor, index) => (actor.behaviour === undefined ? [] : [{ id: actor.behaviour, template: first + index, ...shotOf(actor.behaviour) }]));
   const moved = refs.length === 0 ? {} : { behaviours: refs };
   const bodies = [...parts.level.bodies, ...[...actors.map((actor) => actor.body), ...shotBodies].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
-  const drawn = setup.behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(createCompileRng(setup.seed, 'pacing'), TENSION_CURVE, setup.budget, setup.behaviours.length)
+  const drawn = behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(rng, TENSION_CURVE, setup.budget, behaviours.length, setup.from, setup.until)
     .map((entry) => {
-      const actor = setup.behaviours[entry.behaviour]?.behaviour;
+      const actor = behaviours[entry.behaviour]?.behaviour;
       // Hejno je jeden spawn celé, i ve vrcholu (dvě hejna naráz by přetekla `maxActors`).
       const group = actor === undefined ? undefined : BEHAVIOURS[actor].group;
       return { atPermille: Math.max(1, entry.atPermille), template: first + entry.behaviour, count: group?.size ?? entry.count, entry: entry.entry };
     });
-  const schedule = setup.boss === undefined ? drawn : [...drawn, { atPermille: Math.max(1, setup.boss.at), template: first + setup.behaviours.length, count: 1, entry: 0 }];
+  const schedule = setup.boss === undefined ? drawn : [...drawn, { atPermille: Math.max(1, setup.boss.at), template: first + behaviours.length, count: 1, entry: 0 }];
   const half = parts.control.params.half;
   const edge = setup.space === 'plane' && shooters.length > 0 && typeof half === 'number' ? { half } : {};
+  const clear = setup.clear === undefined || setup.clear.length === 0 ? {} : { clear: setup.clear.map((step) => ({ role: ROLE[step.role], at: Math.max(1, step.at) })) };
   const rule: PieceRef | null = schedule.length === 0 && setup.finale === undefined && refs.length === 0 ? null : {
-    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved, ...edge },
+    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved, ...edge, ...clear },
   };
   const slots = (schedule.length === 0 ? 0 : PACING.maxActors) + (shooters.length === 0 ? 0 : PACING.maxShots);
+  const steady = setup.steady === true ? { steady: true as const } : {};
   return {
     ...parts,
-    control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper, ...moved, ...(refs.length === 0 ? {} : { space: setup.space }) } },
-    bot: { id: 'pacing_bot', params: { base: parts.bot, control: parts.control.id, keeper, ...moved } },
+    control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper, ...moved, ...(refs.length === 0 ? {} : { space: setup.space }), ...steady } },
+    bot: { id: 'pacing_bot', params: { base: parts.bot, control: parts.control.id, keeper, ...moved, ...steady } },
     level: { ...parts.level, bodies, spawnSlots: (parts.level.spawnSlots ?? 0) + slots },
     rules: rule === null ? parts.rules : [...parts.rules, rule],
   };

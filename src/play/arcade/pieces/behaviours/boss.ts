@@ -13,7 +13,7 @@
  * `recover` (zásah okno zavře), bit 8 = útok, který běží nebo běžel, je dupnutí.
  */
 
-import { type ArcadeEffect, type BodyInit, HIT_GRACE, UNIT, bodyHp } from '../../contract';
+import { type ArcadeEffect, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase, bodyHp } from '../../contract';
 import { arenaAxis } from '../arena';
 import { flanker, headTo, inside, length, read, set } from './flanker';
 import type { Behaviour, BehaviourPhase, BehaviourView } from './index';
@@ -63,6 +63,17 @@ function sinceLastShot(view: BehaviourView, recent: number): number {
   const { act, recover } = TICKS.plane;
   if (view.phase === 'act') return Math.max(0, act - view.ticksLeft - last + recent);
   return view.phase === 'recover' ? act - last + recover - view.ticksLeft + recent : 0;
+}
+
+/** Boss je poslední krok k výhře: na zemi neleží věc a nestojí soupeř s HP. */
+function lastStep(state: Int32Array, player: number): boolean {
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const base = bodyBase(i);
+    if (i === player || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const role = state[base + BODY.role];
+    if (role === ROLE.collectible || (role === ROLE.enemy && bodyHp(state, i) > 0)) return false;
+  }
+  return true;
 }
 
 export const boss: Behaviour = {
@@ -118,6 +129,16 @@ export const boss: Behaviour = {
     return elapsed === 0 && near ? [{ kind: 'damage', amount: 1, grace: HIT_GRACE }] : [];
   },
 
+  // Robot arény plánuje útěk před pronásledovateli a jde k věcem bezpečnou cestou:
+  // útočícímu bossovi se vyhne jako pronásledovateli, k otevřenému (a k bossovi,
+  // který nese poslední krok k výhře) dojde jako k věci.
+  seenAs(view) {
+    if (view.space !== 'plane') return undefined;
+    if (view.phase === 'telegraph' || view.phase === 'act') return 'chaser';
+    if (bossOpen(view.state, view.body, view.phase, view.memo)) return 'collectible';
+    return view.phase === 'idle' && lastStep(view.state, view.player) ? 'collectible' : undefined;
+  },
+
   botStep(view, input, _control, recent) {
     if (view.space !== 'plane' || view.phase === 'idle') return input;
     const { state, body, player } = view;
@@ -131,6 +152,9 @@ export const boss: Behaviour = {
       return gap <= safe + UNIT ? { buttons: input.buttons, axis: 0 } : input;
     }
     if (!stomping(view.memo)) {
+      // Při salvě se bosse nejdřív přestat dotýkat (dotek v útoku zraní), pak uhnout z přímky.
+      const touching = length(rx, rz) < Math.ceil(((read(state, body, 'w') + read(state, player, 'w')) * 3) / 4) + BOSS.margin;
+      if (view.phase !== 'recover' && touching) return { buttons: input.buttons, axis: arenaAxis(rx, rz) };
       const dodged = dodgeShot(view, input, recent, sinceLastShot(view, recent.length));
       if (dodged !== input || view.phase !== 'recover') return dodged;
     }

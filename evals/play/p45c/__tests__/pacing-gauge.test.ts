@@ -67,6 +67,8 @@ describe('pacing gauge', () => {
     if (cell === undefined) throw new Error('arena.escape is not live');
     const made = arcadeWorldOf(compileRecipe(assemblyOfCell(cell)), 1);
     if (!made.ok) throw new Error(made.issues.join('; '));
-    expect(behavioursOf(made.world)).toEqual(['pursue']);
+    // Od P45C T12 má přežití vedle pronásledovatele ještě jedno nové chování ze stream `pacing`.
+    expect(behavioursOf(made.world)).toContain('pursue');
+    expect(behavioursOf(made.world).length).toBe(2);
   });
 });

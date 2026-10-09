@@ -48,6 +48,7 @@ import {
   graceOf,
 } from '../contract';
 import { ARENA, DIRECTIONS, directionOfAxis, directionToward } from './arena';
+import { matches } from './behaviours';
 import { WAVE_LIMITS, entrySpots, waveOf } from './waves';
 
 export const FIGHT = {
@@ -351,10 +352,20 @@ const endParams = z
     knockout: z.object({ hp: z.int().min(1).max(HP_MAX), grace: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict().optional(),
     /** Vlny (P36A T4): výhra až ve vlně `waves` (poslední); dřív další vlnu přivede `arena_waves`. Bez nich jako dřív. */
     waves: z.int().min(2).max(WAVE_LIMITS.waves).optional(),
+    /** Boss poslední vlny (P45C, index předlohy): dokud stojí jeho kopie, výhra počká. Bez něj jako dřív. */
+    boss: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
   })
   .strict();
 
-/** Hráč na 0 HP = prohra (s knockouty ztráta života), všichni nepřátelé na 0 (ve vlnách v poslední) = výhra. */
+/** Stojí živá kopie předlohy bosse (týž podpis – role, model, rozměry)? */
+function bossStands(state: ArcadeState, template: number): boolean {
+  for (let i = state[HEADER.spawnBase] as number; i < (state[HEADER.bodyCount] as number); i += 1) {
+    if (((state[bodyBase(i) + BODY.flags] as number) & FLAG.alive) !== 0 && matches(state, i, template)) return true;
+  }
+  return false;
+}
+
+/** Hráč na 0 HP = prohra (s knockouty ztráta života), všichni nepřátelé na 0 (ve vlnách v poslední, s bossem až po jeho pádu) = výhra. */
 export const fightEnd: RulePiece<z.infer<typeof endParams>> = {
   id: 'fight_end',
   params: endParams,
@@ -372,6 +383,7 @@ export const fightEnd: RulePiece<z.infer<typeof endParams>> = {
       ];
     }
     if (params.waves !== undefined && waveOf(state) < params.waves - 1) return [];
+    if (params.boss !== undefined && bossStands(state, params.boss)) return [];
     const enemies = enemiesOf(state);
     return enemies.length > 0 && enemies.every((i) => bodyHp(state, i) === 0) ? [{ kind: 'win' }] : [];
   },

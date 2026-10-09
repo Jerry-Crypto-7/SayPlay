@@ -141,7 +141,8 @@ describe('director prompt', () => {
     // P41 adds a live recipe table and all essential triples; the historical
     // 10,082 B observation was not the 12,700 B budget. Report both channels.
     if (process.env.P41_PROMPT_REPORT) writeFileSync(process.env.P41_PROMPT_REPORT, JSON.stringify({ maxPromptBytes: max, outputSchemaBytes: Buffer.byteLength(JSON.stringify(GENRE_ANSWER_SCHEMA)), includesFullIntent: true, budgetBytes: 12_700 }, null, 2));
-  });
+    // Čtyřicet návrhů s ověřením robotem: arénu od P45C T12 ověřují i sondy nových chování (samotný test ~21 s).
+  }, 90_000);
 
   it('rejects an addon the control does not take and the deterministic repair drops it', () => {
     const body = { ...(shooterFixture as object), addons: ['shoot'] };
