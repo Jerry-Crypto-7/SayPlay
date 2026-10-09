@@ -280,7 +280,7 @@ export const RULE_TEMPLATES = {
    * návrh se pak ověřoval dvakrát; jedna hlídka navíc projde (`evals/play/p45b/README.md`).
    */
   reinforcements: {
-    verbs: ['infiltrate', 'rescue', 'save'],
+    verbs: ['tiptoe', 'rescue', 'save'],
     axes: ['action:interact', 'objective:survive'],
     kind: 'overlay',
     budget: 2,
@@ -312,12 +312,13 @@ export const RULE_TEMPLATES = {
 
   // -------------------------------------------------------------------------
   // Průběh pro nejčastější buňky okamžitého návrhu (P45B T9, změřeno nad `p30/dev` + `p37a/dev-150`).
-  // První slovo je vlastní (šablona je k nalezení `templateFor`) a v korpusu poptávky není; další
+  // První slovo je vlastní (šablona je k nalezení `templateFor`), zná ho katalog kotev slovníku
+  // (`vocab/anchors.ts`) a není v korpusu poptávky, dev sadách ani panelu P45; další
   // má šablona výš – pokrytí sloves (`evals/play/rules/coverage-p41.json`) se tím nemění.
 
   /** Zlatá horečka: po 5 s klidu se po okraji podlahy vysypou tři sbírané věci, za 8 s je zase klid. Jen aréna a úkol. */
   treasure_rush: {
-    verbs: ['scavenge', 'collect', 'gather'],
+    verbs: ['munch', 'collect', 'gather'],
     axes: ['objective:collect', 'action:collect'],
     kind: 'overlay',
     budget: 3,
@@ -331,7 +332,7 @@ export const RULE_TEMPLATES = {
   },
   /** Spršky na trati: po 5 s se kolem hráče vysypou tři sbírané věci, za 8 s znovu klid. Hraje i bez podlahy. */
   coin_shower: {
-    verbs: ['sprint', 'race', 'escape'],
+    verbs: ['surf', 'race', 'escape'],
     axes: ['objective:reach', 'objective:race', 'objective:escape'],
     kind: 'overlay',
     budget: 3,
