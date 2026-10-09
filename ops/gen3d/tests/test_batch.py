@@ -4,9 +4,10 @@ slovo (v cache i v záznamu) už nesmí generovat."""
 import json
 from pathlib import Path
 
+import pytest
+
 import batch
 import cache
-import pytest
 
 
 def fake_result(out_dir: Path) -> dict:
@@ -33,7 +34,7 @@ def make_generate(
 ):
     """`fail` = slova, která selžou; prvek `(slovo, semínko)` selže jen na tom semínku."""
 
-    def generate(noun: str, out_dir: Path, seed: int) -> dict:
+    def generate(noun: str, out_dir: Path, seed: int, prompt: str) -> dict:
         if stop_after is not None and len(calls) == stop_after:
             raise Interrupted
         calls.append(noun)
@@ -54,7 +55,7 @@ def run(tmp_path, nouns, generate, limit=10, seeds=(0,)):
         record_path=tmp_path / "batch.json",
         cache_root=tmp_path / "cache",
         quarantine=None,
-        seeds=seeds,
+        attempts=[("a", seed) for seed in seeds],
     )
 
 
