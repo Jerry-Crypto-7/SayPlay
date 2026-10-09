@@ -41,3 +41,9 @@ Každá živá buňka (`liveCells`) × semínka 1–8, týž svět jako `/play` 
 | Nečinný vyhrál | 0 |
 | Přehrání = hash | 100 % |
 | `buildMs` p95 | 761 ms |
+
+## T13 – střelnice, souboj dvou, míč
+
+- **Střelnice:** vlny čekají za branou 40 m (mimo dostřel) a vyjdou podle pochodu, jehož rozestupy zhušťuje křivka; ostřelovač od druhé vlny; finále boss-terč s HP 5 a salvou, kterou jde sestřelit. Buňka P41 `shooter.default` (jeden život) průběh nedostane vůbec: proniklý výstřel prohraje celou hru a začátečník s průběhem vyhrával 0,85–1,0 místo 0,7 (s bossem i jen s poslední vlnou jako finále) – páka jen na začátečníka se nenašla, náboje i rychlost salvy jsou útes i pro robota bez profilu.
+- **Souboj dvou:** agresivita soupeře jde s intenzitou (700–1200) místo zrychlení po soupeřích; finále = rozzuření posledního soupeře pod polovinou HP (nápřah +12 tiků, mezera −4). Soupeř stojí a scéna ho kreslí na startu, takže tlak tohoto měřidla je u souboje vždy 0 – stoupání souboje měří test četností úderů po třetinách.
+- **Míč bez průběhu:** spec míče staví `nativeSpec` bez `genre` (jako chodec), takže záznam by nikdy neběžel; volba finále podle módu `ball_pitch` (s brankářem boss-brankář, bez něj pohyblivá branka – bez soupeře není koho porazit) čeká na značku nové hry i pro nativní spec.

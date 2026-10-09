@@ -156,6 +156,9 @@ export const PACING_KNOBS: Readonly<Record<string, readonly { readonly key: stri
   move_free: [{ key: 'chase.speed', up: true, min: ESCAPE.chaserSpeed.min, max: ESCAPE.chaserSpeed.max }],
   fight: [{ key: 'enemySpeed', up: true, min: FIGHT.enemySpeed.min, max: FIGHT.enemySpeed.max }],
   walker: [{ key: 'chaseSpeed', up: true, min: 0, max: 70 }],
+  // Souboj dvou (T13): agresivita soupeře = intenzita, nejvýš 1200 – mezera po úderu by ve vrcholu (1300) klesla
+  // pod reakci začátečníka (20 tiků + 2 na úder) a novice vyhrál 0/20 (1200: 10/20 s rozzuřením, 18/20 bez něj).
+  duel: [{ key: 'pace', up: true, min: PACING.intensity.intro, max: 1200 }],
 };
 
 /**

@@ -27,7 +27,7 @@ import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type Arcad
 import { ARENA, DIRECTIONS, ESCAPE, directionOfAxis } from '../arena';
 import { predict } from '../arena-bot';
 import { ambusher } from './ambusher';
-import { boss } from './boss';
+import { boss, turret } from './boss';
 import { flanker, overlaps } from './flanker';
 import { guardian } from './guardian';
 import { sniper } from './sniper';
@@ -113,14 +113,17 @@ export interface Behaviour {
   effects?(view: BehaviourView, ref: BehaviourRef): readonly ArcadeEffect[];
   /** Robot: jak uhnout. `control` = základní ovládání, `recent` = stisky, které ve stavu ještě nejsou. */
   botStep(view: BehaviourView, input: ArcadeInput, control: string, recent: readonly ArcadeInput[]): ArcadeInput;
-  /** Jak tělo vidí základní robot: věc, ke které jde (bezpečnou cestou), pronásledovatel, kterému se vyhne; bez metody vůbec. */
-  seenAs?(view: BehaviourView): 'collectible' | 'chaser' | undefined;
+  /**
+   * Jak tělo vidí základní robot: věc, ke které jde (bezpečnou cestou), pronásledovatel, kterému se vyhne,
+   * překážka (robot střelce na ni nemíří); bez metody vůbec.
+   */
+  seenAs?(view: BehaviourView): 'collectible' | 'chaser' | 'obstacle' | undefined;
 }
 
 /** Kód chování = pořadí + 1. Je součást hashe: nové jen na konec, nepřečíslovat. */
-export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian', 'swarm', 'boss'] as const;
+export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian', 'swarm', 'boss', 'turret'] as const;
 export type BehaviourId = (typeof BEHAVIOUR_IDS)[number];
-export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian, swarm, boss };
+export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian, swarm, boss, turret };
 
 /** Chování ve světě: id a index předlohy, ze které se čte podpis; `shot` = předloha výstřelu. */
 export const behaviourRefSchema = z.object({ id: z.enum(BEHAVIOUR_IDS), template: z.int().min(1), shot: z.int().min(1).optional() }).strict();
@@ -389,6 +392,8 @@ export function chaserClearance(observation: ArcadeObservation, input: ArcadeInp
  * základního robota.
  */
 export function dodge(observation: ArcadeObservation, refs: readonly BehaviourRef[], control: string, input: ArcadeInput): ArcadeInput {
+  // Hráč, který se z místa nehne (střelnice: osa míří), neuhýbá – osa uhnutí by mu přenastavila míření.
+  if (BEHAVIOUR_SPACE[control] === undefined) return input;
   let out = input;
   for (const [body, behaviour] of actors(observation.state, observation.player, refs)) out = behaviour.botStep(viewOf(observation.state, body, observation.player), out, control, observation.recent);
   return out.axis === input.axis || chaserClearance(observation, out) >= CHASER_CHECK.gap ? out : input;

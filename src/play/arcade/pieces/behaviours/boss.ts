@@ -162,3 +162,80 @@ export const boss: Behaviour = {
     return bossOpen(state, body, view.phase, view.memo) ? { buttons: input.buttons, axis: arenaAxis(-rx, -rz) } : input;
   },
 };
+
+/**
+ * Boss-terč střelnice (P45C T13): hráč stojí, takže boss nedupe ani nechodí –
+ * stojí, kde přišel, a do `reach` od hráče po varování (`line`, 60 tiků, každý
+ * zásah o 8 méně) vypálí salvu tří výstřelů po zamčené přímce. Výstřely mají
+ * roli nepřítele: hráč je sestřelí (`shot_hit`), jinak zasáhnou. Po salvě 90
+ * tiků `recover`: první střela hráče bossovi ubere 1 HP (`boss_beat_hit`; terč
+ * mu `shot_hit` nesebere – `spare`). Role terče: výhra střelnice (`cleared`)
+ * počká na jeho pád. Paměť jako boss (HP na startu, HP na začátku `recover`).
+ */
+export const TURRET = {
+  /** Varuje, když je hráč blíž; stojí na místě vstupu (26 m), takže hned. */
+  reach: 30 * UNIT,
+  /**
+   * Salva: `shots` výstřelů po `volley` tikách rychlostí `shotSpeed` (střela hráče letí 400). Změřeno na
+   * střelnici s jedním životem (20 semínek): do 300 robot bez profilu salvu sestřelí vždy, od 330 ne
+   * (19/20, 400: 6/20) – přebíjení 75 tiků je delší než let výstřelu; 200 nechává rezervu.
+   */
+  shots: BOSS.shots, volley: BOSS.volley, shotSpeed: 200,
+  /** HP bosse-terče (zadání 4–6). */
+  hp: 5,
+} as const;
+
+/** Výstřel salvy: role nepřítele, spodní hrana 0,5 m, výška přes střelu hráče (ústí 1–1,2 m) i hráče. */
+export const TURRET_SHOT: BodyInit = { ...SHOT, role: 'enemy', kind: 'turret_shot', h: 800 };
+
+/** Výstřel salvy po zamčené přímce k cíli rychlostí `TURRET.shotSpeed`. */
+function turretShot(view: BehaviourView, ref: { readonly shot?: number }): readonly ArcadeEffect[] {
+  if (ref.shot === undefined) return [];
+  const x = read(view.state, view.body, 'x');
+  const z = read(view.state, view.body, 'z');
+  const gap = Math.max(1, length(view.aim.x - x, view.aim.z - z));
+  const speed = TURRET.shotSpeed;
+  return [{ kind: 'spawn', template: ref.shot, x, y: TURRET_SHOT.y, z, vx: Math.trunc(((view.aim.x - x) * speed) / gap), vy: 0, vz: Math.trunc(((view.aim.z - z) * speed) / gap) }];
+}
+
+export const turret: Behaviour = {
+  id: 'turret',
+  telegraph: { plane: 'line', track: 'line' },
+  ticks: TICKS,
+  body: { ...bossBody({ role: 'enemy', kind: 'enemy', x: 0, y: 0, z: 0, w: 800, h: 1700, d: 800, solid: false }, TURRET.hp), role: 'target' },
+  shot: TURRET_SHOT,
+
+  warnTicks: boss.warnTicks,
+  kindOf: () => 'line',
+
+  ready(view) {
+    const { state, body, player } = view;
+    return view.space === 'plane' && length(read(state, body, 'x') - read(state, player, 'x'), read(state, body, 'z') - read(state, player, 'z')) <= TURRET.reach;
+  },
+
+  aim(view) {
+    if (view.memo === 0) view.remember(memoOf(view));
+    return { x: read(view.state, view.player, 'x'), z: read(view.state, view.player, 'z') };
+  },
+
+  done: () => false,
+
+  move(view) {
+    const { state, body, phase } = view;
+    if (view.memo === 0 && phase === 'idle') view.remember(memoOf(view));
+    if (phase === 'recover' && view.ticksLeft === TICKS[view.space].recover) view.remember((view.memo & ~(HP_BITS << WINDOW_SHIFT)) | (bodyHp(state, body) << WINDOW_SHIFT));
+    set(state, body, 0, 0);
+  },
+
+  effects(view, ref): readonly ArcadeEffect[] {
+    if (view.phase !== 'act') return [];
+    const elapsed = TICKS[view.space].act - view.ticksLeft;
+    return elapsed % TURRET.volley === 0 && elapsed < TURRET.shots * TURRET.volley ? turretShot(view, ref) : [];
+  },
+
+  // Robot střelce míří na terče a nepřátele: zavřeného bosse nevidí jako terč (střela by jen zmizela), otevřeného ano.
+  seenAs: (view) => (bossOpen(view.state, view.body, view.phase, view.memo) ? undefined : 'obstacle'),
+
+  // Hráč střelnice z místa neuhne; salvu sestřelí robot střelce sám (výstřely jsou nepřátelé).
+  botStep: (_view, input) => input,
+};

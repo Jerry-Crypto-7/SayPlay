@@ -12,10 +12,13 @@
 import { type Phase, phasesFromCurve } from '../../compose/progression';
 import type { GameSpecV1 } from '../../spec';
 import type { ArcadeParts } from '../addons';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRef, RAMP_STEP_PCT } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRef, RAMP_STEP_PCT, ROLE, UNIT } from '../contract';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef } from './behaviours';
-import { type PacingActor, type PacingSetup, TENSION_CURVE, withPacing } from './pacing';
+import { TURRET } from './behaviours/boss';
+import { DUEL_ENRAGE } from './duel';
+import { type PacingActor, type PacingSetup, TENSION_CURVE, intensityAt, withPacing } from './pacing';
 import { progressionParts } from './progression-parts';
+import { type GunParams, marchedRange, shooterWaves } from './shooter';
 import type { WaveParams } from './waves';
 
 /** Co žánr dá průběhu: nastavení `withPacing` bez semínka; boss navíc s věcmi, které nese, a body za pád. */
@@ -28,6 +31,8 @@ export interface GenrePacingSetup extends Omit<PacingSetup, 'seed' | 'boss'> {
     readonly score?: number;
     /** S příchodem bosse odejdou živá těla té role (pronásledovatelé arény); bez bosse nic. */
     readonly clears?: BodyInit['role'];
+    /** Pravidlo zásahu: dotek (`boss_beat`, výchozí bosse) nebo střela hráče (`boss_beat_hit`, boss-terč střelnice). */
+    readonly beat?: 'boss_beat' | 'boss_beat_hit';
   };
   /**
    * Části generátoru pro hru s průběhem (např. poslední vlna bez věcí, které nese
@@ -285,6 +290,78 @@ const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
 };
 
 /**
+ * Souboj dvou (P45C T13): postup = zásahy hráče (jeho `z`; délka úrovně = HP všech soupeřů), knoflík
+ * agresivity soupeře `pace` (`PACING_KNOBS.duel`) místo zrychlení po soupeřích (`rise` – obojí naráz by
+ * stáhlo okna na mez dřív, než přijde finále), finále = rozzuření posledního soupeře pod polovinou HP
+ * (`DUEL_ENRAGE`: delší nápřah, kratší mezera). Bez chování: hráč z místa neuhne a scéna souboje kreslí
+ * jen dvě postavy.
+ */
+const duelPaced: GenrePacing = (parts) => (parts.control.id !== 'duel' ? null : {
+  goal: { by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks },
+  space: 'plane',
+  spots: [0, 0],
+  behaviours: [],
+  budget: 0,
+  finale: 'round',
+  adjust: (own) => {
+    const { rise: _rise, ...params } = own.control.params;
+    return { ...own, control: { ...own.control, params: { ...params, pace: 1000, enrage: { ...DUEL_ENRAGE } } } };
+  },
+});
+
+/** Ostřelovač střelnice (T5) s rolí nepřítele: hráč z místa neuhne, ale během varování ho sestřelí. */
+export const SHOOTER_SNIPER: BodyInit = { ...BEHAVIOURS.sniper.body, role: 'enemy' };
+
+/**
+ * Střelnice s průběhem: spawny ostřelovače na hru a náboje navíc do rezervy – za ostřelovače šest (robot bez
+ * profilu s nulou prohrál 10/20 buňky s jedním životem, se šesti vyhrál 20/20), za bosse-terč s HP 5 a salvou
+ * po třech výstřelech šedesát (robot vystřelí za souboj s bossem 42–55 ran; se čtyřiceti navíc vyhrál 20/20,
+ * s třiceti 15/20 – náboje jsou útes pro všechny profily, ne páka obtížnosti).
+ */
+export const SHOOTER_FOES = { budget: 3, sniperAmmo: 6, bossAmmo: 60 } as const;
+
+/**
+ * Střelnice (P45C T13): postup = sestřelení nepřátelé vln (`fallen`), vlny čekají za branou a vyjdou podle
+ * pochodu, jehož rozestupy zhušťuje křivka (`marchedRange`); od druhé vlny do poslední ostřelovač v
+ * rozvrhu (střílí po varování, sestřelit ho jde); finále boss-terč (`turret`) se začátkem poslední vlny –
+ * výhra `cleared` počká na jeho pád, nové `win` ani obal výhry nepřibude. Terče stojí od startu jako dřív:
+ * rozvrh vysazuje na místě vstupu nejdál od hráče, ne na vlastních místech terčů (odchylka T13).
+ */
+const shooterPaced: GenrePacing = (parts) => {
+  const gun = ruleOf(parts, 'gun')?.params as GunParams | undefined;
+  const byWave = shooterWaves(parts.level);
+  const waves = byWave.length;
+  const enemies = byWave.flat().length;
+  if (parts.control.id !== 'shooter' || gun === undefined || waves < 2) return null;
+  const density = (wave: number, count: number): number => intensityAt(waveStart(wave, count), TENSION_CURVE);
+  const last = waveStart(waves - 1, waves);
+  // Místa vstupu ostřelovače a bosse: 26 m před hráčem (v dostřelu), napříč podle terčů úrovně – každé semínko jinde.
+  const across = parts.level.bodies.flatMap((body) => (body.role === 'target' ? [Math.max(-8 * UNIT, Math.min(8 * UNIT, body.x))] : [])).slice(0, 4);
+  const spots = (across.length === 0 ? [-6 * UNIT, 6 * UNIT] : across).flatMap((x, index) => [x, 26 * UNIT + index * 250]);
+  return {
+    goal: { by: 'fallen', role: ROLE.enemy, need: enemies, limit: ARCADE_LIMITS.maxTicks },
+    space: 'plane',
+    spots,
+    behaviours: [{ body: SHOOTER_SNIPER, behaviour: 'sniper' }],
+    budget: SHOOTER_FOES.budget,
+    from: waveStart(1, waves),
+    until: last,
+    finale: 'boss',
+    boss: { body: { ...BEHAVIOURS.turret.body, hp: TURRET.hp }, at: last, behaviour: 'turret', beat: 'boss_beat_hit' },
+    adjust: (own, boss) => {
+      const marched = marchedRange(own.level, gun, density);
+      const reserve = (own.level.counters?.reserve ?? 0) + SHOOTER_FOES.sniperAmmo + (boss === undefined ? 0 : SHOOTER_FOES.bossAmmo);
+      return {
+        ...own,
+        control: { ...own.control, params: { ...own.control.params, ...(marched.march.length === 0 ? {} : { march: marched.march }) } },
+        level: { ...marched.level, counters: { ...own.level.counters, reserve } },
+        rules: boss === undefined ? own.rules : own.rules.map((rule) => (rule.id === 'shot_hit' ? { ...rule, params: { ...rule.params, spare: boss } } : rule)),
+      };
+    },
+  };
+};
+
+/**
  * Hra otevřeného pole, jejíž tvar průběh neunese, ho nedostane (odchylka T12):
  * - pravidla či věci specu (`rules`, `things`, např. „touch lava“): plánovač cílů i obcházení prohry
  *   (`rules/bot.ts`) hrají jen svět, jehož ovládání je přímo `move_free` (pod `pacing_control` robot do
@@ -335,6 +412,12 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   arena_escape: (parts, spec) => (ownShape(spec) ? null : (ruleOf(parts, 'survive_time') === undefined ? itemField(FIELD.escape) : survivalField(FIELD.survival))(parts, spec)),
   fight: (parts, spec) => (ownShape(spec) || livesAtMost(spec, 2) ? null : fightField(FIELD.fight)(parts, spec)),
   quest_spatial: (parts, spec) => (ownShape(spec) ? null : questField(FIELD.quest)(parts, spec)),
+  duel_arena: (parts, spec) => (ownShape(spec) ? null : duelPaced(parts, spec)),
+  // Střelnice s jediným životem (buňka P41 `shooter.default`) průběh nedostane – vzor závodu do prvního nárazu (T11), odchylka T13:
+  // proniklý výstřel salvy prohrává celou hru a začátečník s průběhem vyhrál 0,85–1,0 (20 semínek: boss se salvou 120–300 jednotek
+  // za tik 1,0–0,85, bez bosse s poslední vlnou jako finále 0,9) proti 0,7 bez něj; náboje i rychlost salvy jsou útes i pro robota
+  // bez profilu (salva 330: 19/20, o 30 nábojů méně: 15/20), páka jen na začátečníka se nenašla.
+  shooter_range: (parts, spec) => (ownShape(spec) || livesAtMost(spec, 1) ? null : shooterPaced(parts, spec)),
 };
 
 /** Verze překladu žánru před průběhem (`GENRE_COMPILER_VERSION` v `genre/contract.ts`): uložené hry s ní průběh nedostanou. */
@@ -406,10 +489,11 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
     ...(clear.length === 0 ? {} : { clear }),
     ...(setup.steady === true ? { steady: true } : {}),
   });
-  // Zásah a pád (`boss_beat`) má jen boss; strážce úkolu se neporáží, jen hlídá poslední věc.
-  if (boss === undefined || bossTemplate === undefined || (boss.behaviour ?? 'boss') !== 'boss' || (paced.issues?.length ?? 0) > 0) return paced;
+  // Zásah a pád (`boss_beat`) má jen boss a boss-terč; strážce úkolu se neporáží, jen hlídá poslední věc.
+  const beatId = boss?.beat ?? ((boss?.behaviour ?? 'boss') === 'boss' ? 'boss_beat' : undefined);
+  if (boss === undefined || bossTemplate === undefined || beatId === undefined || (paced.issues?.length ?? 0) > 0) return paced;
   const dropped = carried.length > 0 ? { template: carried[0] as number, count: carried.length } : boss.drop;
-  const beat: PieceRef = { id: 'boss_beat', params: { boss: bossTemplate, ...(dropped === undefined ? {} : { drop: dropped }), ...(boss.score === undefined ? {} : { score: boss.score }) } };
+  const beat: PieceRef = { id: beatId, params: { boss: bossTemplate, ...(dropped === undefined ? {} : { drop: dropped }), ...(boss.score === undefined ? {} : { score: boss.score }) } };
   return { ...paced, level: { ...paced.level, spawnSlots: (paced.level.spawnSlots ?? 0) + (dropped?.count ?? 0) }, rules: [...paced.rules, beat] };
 }
 
