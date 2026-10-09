@@ -18,6 +18,7 @@ import {
   ARCADE_HZ,
   ARCADE_LIMITS,
   ARCADE_RUNTIME_V2,
+  ARCADE_RUNTIME_VERSION,
   type ArcadeLevel,
   type ArcadeWorld,
   type BodyInit,
@@ -54,7 +55,7 @@ import { type CompiledRule, compileRules, logicNames, rulesOwnGoal, yardParts } 
 import { runBot } from './verify';
 import { bindRoles, type RoleBinding } from './witness';
 
-/** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra, kterou svět nese (P45B: jen svět s logikou je `arcade-v3`). */
+/** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra, kterou svět nese (P45B: svět s logikou nebo vlnou je `arcade-v3`). */
 export const arcadeCompilerVersion = (world: Pick<ArcadeWorld, 'runtimeVersion'>): string => `${GAME_COMPILER_VERSION}/${world.runtimeVersion}`;
 /** Verze hry bez logiky – všech her před P45B. */
 export const ARCADE_COMPILER_VERSION = arcadeCompilerVersion({ runtimeVersion: ARCADE_RUNTIME_V2 });
@@ -255,8 +256,12 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
     ARCADE_LIBRARY,
   );
   if (!built.ok) return built;
+  // Vlna bez logiky (R3): starý kód ji nepřečte, takže svět nese `arcade-v3` i bez logických těl –
+  // jinak by ho razítko ani verze kompilátoru od starých her neodlišily. Jádro podle verze nevětví.
+  const waves = ruled.rules.some((ref) => (ref.params as CompiledRule).do.some((effect) => 'wave' in effect));
+  const stamped: ArcadeWorld = waves ? { ...built.world, runtimeVersion: ARCADE_RUNTIME_VERSION } : built.world;
   // Jména deklarace logiky jdou se světem (T7): ověření jimi pojmenuje kostku, kterou robot nedokázal.
-  const world = built.world.logic === undefined ? built.world : { ...built.world, logic: { ...built.world.logic, names: logicNames(spec.logic) } };
+  const world = stamped.logic === undefined ? stamped : { ...stamped, logic: { ...stamped.logic, names: logicNames(spec.logic) } };
   return { ok: true, world, roleBindings: bindRoles(spec, world) };
 }
 

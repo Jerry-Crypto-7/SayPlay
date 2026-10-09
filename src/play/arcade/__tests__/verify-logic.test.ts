@@ -17,7 +17,7 @@ import { type GameSpecV1, readGameSpec } from '@/play/spec';
 import runnerFixture from '../__fixtures__/runner.json';
 import collectGate from '../__fixtures__/rules/collect-gate.json';
 import { arcadeWorldOf } from '../compile';
-import { ARCADE_LIMITS, ARCADE_RUNTIME_V2, type ArcadeWorld } from '../contract';
+import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld } from '../contract';
 import { type ArcadeVerdict, arcadeReport, verifyArcade } from '../verify';
 
 /** Tři rozmístění dvorku na svět, jako u robota logiky. */
@@ -364,8 +364,8 @@ describe('a logic construct the bot never proves blocks publication', () => {
 
   /**
    * Strašidla každý tik zaplní rezervu spawnu (8 + 8 + 1 slot), takže vlna výherního pravidla
-   * už nemá kam: pravidlo vystřelí (výhra), vlna nepřidá nikoho. Svět bez bloku `logic` (arcade-v2)
-   * – vlnu ověření dokazuje i tak.
+   * už nemá kam: pravidlo vystřelí (výhra), vlna nepřidá nikoho. Svět bez bloku `logic` (bez
+   * logických těl) – vlnu ověření dokazuje i tak.
    */
   const CROWD: Shape = {
     roles: [{ id: 'ghost', kind: 'patrol', label: 'pale ghost' }, EXIT],
@@ -410,9 +410,10 @@ describe('a logic construct the bot never proves blocks publication', () => {
       ['logic_proved', true],
     ]);
     expect(ok.publishEligible).toBe(true);
-    // Vlna bez bloku `logic`: svět arcade-v2, kontrolu dostane taky.
+    // Vlna bez bloku `logic`: svět bez logických těl (razítko arcade-v3 kvůli vlně, R3), kontrolu dostane taky.
     const crowd = made(CROWD, 1);
-    expect(crowd.runtimeVersion).toBe(ARCADE_RUNTIME_V2);
+    expect(crowd.runtimeVersion).toBe(ARCADE_RUNTIME_VERSION);
+    expect(crowd.logic).toBeUndefined();
     const failed = arcadeReport(verifyArcade(crowd), crowd, ids).keypoints.find((point) => point.assertionId === 'logic_proved');
     expect(failed?.passed).toBe(false);
     expect(failed?.failures).toEqual([expect.stringContaining('LOGIC_NO_EFFECT:wave:leave')]);

@@ -19,8 +19,9 @@ export const ARCADE_HZ = 60;
 export const UNIT = 1000;
 /**
  * Zvednout, když stejný svět a stejné vstupy dají jiný hash. `arcade-v3` (P45B) nese jen
- * svět se stavem logiky; svět bez logiky dál razítkuje `ARCADE_RUNTIME_V2` a hraje bajt po
- * bajtu jako dřív – uložené hry i jejich hashe se nepohnou.
+ * svět se stavem logiky nebo s vlnou (tu starý kód nepřečte, `arcadeWorldOf`); ostatní světy
+ * dál razítkují `ARCADE_RUNTIME_V2` a hrají bajt po bajtu jako dřív – uložené hry i jejich
+ * hashe se nepohnou.
  */
 export const ARCADE_RUNTIME_VERSION = 'arcade-v3';
 export const ARCADE_RUNTIME_V2 = 'arcade-v2';

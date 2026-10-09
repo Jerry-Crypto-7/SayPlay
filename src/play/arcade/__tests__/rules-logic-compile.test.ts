@@ -11,7 +11,7 @@ import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import arenaFixture from '../__fixtures__/arena.json';
 import runnerFixture from '../__fixtures__/runner.json';
-import { arcadeWorldOf } from '../compile';
+import { ARCADE_COMPILER_VERSION, arcadeCompilerVersion, arcadeWorldOf } from '../compile';
 import {
   ARCADE_LIMITS,
   ARCADE_RUNTIME_V2,
@@ -512,9 +512,12 @@ describe('compileRules lays out logic, templates and spawn slots', () => {
     expect(state[logicBase(state) + LOGIC_SLOTS.phasePending]).toBe(1);
   });
 
-  it('a spec without logic stays arcade-v2 without logic bodies, even with a wave', () => {
+  it('a spec without logic stays arcade-v2; with a wave it is arcade-v3 (old code cannot read it), still without logic bodies', () => {
+    expect(made(yard(undefined, [press('go', 'action', [{ score: 1 }])])).runtimeVersion).toBe(ARCADE_RUNTIME_V2);
     const world = made(yard(undefined, [wavePress(3, 'player')]));
-    expect(world.runtimeVersion).toBe(ARCADE_RUNTIME_V2);
+    // R3: razítko i verze kompilátoru odliší vlnu od starých her, jinak by ji rollback četl jako svou.
+    expect(world.runtimeVersion).toBe(ARCADE_RUNTIME_VERSION);
+    expect(arcadeCompilerVersion(world)).not.toBe(ARCADE_COMPILER_VERSION);
     expect(world.logic).toBeUndefined();
     expect(world.initial[HEADER.spawnBase]).toBe(world.initial[HEADER.bodyCount]);
   });
