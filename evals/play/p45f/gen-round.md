@@ -19,6 +19,14 @@ Listy pro soud renderuje `scripts/assets/qa-sheets.mjs` s three.js z `node_modul
 | 2 (08:02–08:22) | 10 | 7 | 4 | 3 | 19 + 7 |
 | 3 (08:19–08:43) | 10 | 8 | 4 | 2 | 19 + 8 |
 | 4 (08:36–09:03) | 10 | 7 | 5 | 5 | 17 + 7 |
+| 5 (08:59–09:17) | 10 | 7 | 1 | 1 | 16 + 7 |
+| **Celkem** | **50** | **37** | **18 (36 %)** | **15 (30 %)** | **88 + 37 = 125** |
+
+**Úspěšnost P45F:** soud 18/50 = 36 %, povýšeno 15/50 = 30 % – nad celým P45E (soud 31 %) a nad stejnými jmény v P45E (soud 0/50, předkontrola a brána 21/50 proti 37/50 teď). Přijaté soudem a nepovýšené kvůli testům v `src/play` (3): anthill, captain, chicken leg.
+
+**Povýšeno (15):** coffin, bank manager, chimney, firefly (1); stone golem, net, stickman (2); cape, coral (3); flower pot, glue, joystick, earring, firework (4); milk (5).
+
+**Nezpracovaná jména (8) – okno:** rhino, singer, space station, swing, tablet, tape, tea, torpedo (dávka 6, `D:/caches/p45f/round6/list.json`). Dávka 5 skončila generovat v 09:14; dávka 6 by s generováním (~17 min), soudem a sadami T4 nestihla 09:40, proto se nespustila. Znak v `features.toml` mají připravený. Limit Codexu nedošel (125 ze 150).
 
 **Dávka 1** (robber … mahjong tile; v P45E 0/10 prošlo soudem, 5/10 předkontrolou a branou):
 - Povýšeno (4): top1 coffin; top3 bank manager („banker“), chimney („factory“, komín ve výčtu), firefly („fly“, světluška ve výčtu).
@@ -42,3 +50,8 @@ Listy pro soud renderuje `scripts/assets/qa-sheets.mjs` s three.js z `node_modul
 - Soudce poznal něco jiného: drill: screwdriver (akušroubovák – vizuálně blízko) · keyboard: shoe rack.
 - Bránou kvality neprošly: golem (3× `inconsistent face winding`) · golf ball (dvakrát předkontrola „golf ball“, ale označený jako rozbitý, třetí pokus brána).
 - Předkontrola odmítla všechny tři obrázky: dumpling: bamboo steamer / steamed dumpling – správné jméno, ale obrázek označený jako rozbitý (třetí pokus brána).
+
+**Dávka 5** (magazine … pinecone; v P45E 0/10 soudem, 4/10 předkontrolou a branou):
+- Povýšeno (1): top1 milk („milk carton“).
+- Soudce poznal něco jiného: magazine: book · moon rover: monster truck (dune buggy ve výčtu, jako P45E) · newspaper: ATM · notebook: trash bin · peacock: flower, označený jako rozbitý (ocas složený, bránou prošel, soudem ne) · pinata: two-headed horse.
+- Předkontrola odmítla všechny tři obrázky: pinecone: **pine cone** ×3 – správně, ale předkontrola porovnává slovo „pinecone“ s „pine cone“ jako jiné jméno (stejná třída jako cyclops) · marshmallow: figurine / marshmallow / marshmallows (správné jméno, obrázky označené jako rozbité) · pebble: egg / gravestone / egg.

@@ -19881,6 +19881,25 @@
           0.36463
         ]
       }
+    },
+    {
+      "assetId": "gen3d-milk",
+      "tags": [
+        "milk"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-milk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21892,
+          0,
+          -0.22129
+        ],
+        "max": [
+          0.21892,
+          0.99983,
+          0.22129
+        ]
+      }
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "074f478ef839748b8cf4c4cb4b054200ecabe6dc3f9130b0a2903173c7dfbc05",
+ "catalogHash": "08938fa2b772273b17b0c125a069149066100e887a4679f29d7cdd8018b884ff",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -967,6 +967,7 @@
   "gen3d-firework": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-flower-pot": {"class":"prop"},
   "gen3d-glue": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-joystick": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-joystick": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-milk": {"class":"biped","regions":{"legY":0.25}}
  }
 }
