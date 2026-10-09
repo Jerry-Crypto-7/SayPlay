@@ -330,6 +330,9 @@ export const ROLE = {
 export type ArcadeRole = keyof typeof ROLE;
 export type ArcadeRoleCode = (typeof ROLE)[ArcadeRole];
 
+/** Logické tělo nese jen stav logiky – scéna ho nekreslí ani k němu nestahuje model. */
+export const isLogicBody = (role: number): boolean => role === ROLE.logic;
+
 /** Role specu, jejíž `count` čte generátor ovládání (P26D T9): id role specu, role jejích těl, klíč parametru, strop generátoru. */
 export interface CountedRole {
   readonly roleId: string;
