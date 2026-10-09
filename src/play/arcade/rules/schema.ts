@@ -306,6 +306,13 @@ export function withPhaseEntries(rules: readonly Rule[], logic: Logic | undefine
   return added.length === 0 ? rules : [...rules, ...added];
 }
 
+/** Fáze, do které vede vstup doplněný `withPhaseEntries` (P45B R6); `null` = pravidlo jiného tvaru, tedy modelu. */
+export function phaseEntryOf(rule: Rule): string | null {
+  const [effect] = rule.do;
+  if (rule.verb !== 'advance' || rule.do.length !== 1 || effect === undefined || !('goPhase' in effect)) return null;
+  return rule.id === `enter_${effect.goPhase}` && 'every' in rule.when && rule.when.every === PHASE_ENTRY_TICKS ? effect.goPhase : null;
+}
+
 /**
  * Soudí pravidla proti rolím specu – co schéma jednoho pole neunese: odkazy na
  * role, jednoznačnost id, čítač s právě jednou mezí a efekty mířící na tělo,

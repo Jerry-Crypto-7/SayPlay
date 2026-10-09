@@ -19,7 +19,9 @@ import { direct } from '..';
 import { genreAnswer } from '../__fixtures__';
 import { answered, fakeBranch } from '../__fixtures__/branch';
 import { GENRE_ANSWER_SCHEMA } from '../answer-schema';
+import { unprovedVerbs, verbIssues } from '../critic';
 import { COURSE_LINE, DIRECTOR_PROMPT_VERSION, buildDirectorRequest, directorSystemPrompt } from '../prompt';
+import { readGenreAnswer } from '../read';
 import type { RepairIssue } from '../repair';
 
 type Json = Record<string, unknown>;
@@ -210,4 +212,68 @@ describe('the director composes logic in its answer', () => {
     expect(game.spec.logic).toBeUndefined();
     expect(robot(game.spec)).toEqual([]);
   });
+});
+
+describe('the phase entry the read path adds is not the model\'s rule (R6)', () => {
+  /**
+   * Sběr žaludů s fází `harvest`, na kterou reaguje `cheer`; vstup do ní model nenapsal, doplní ho
+   * čtení (`enter_harvest`, sloveso `advance`). `gusty` přidá poryv – časovač, který přežije fázi.
+   */
+  const harvest = (gusty: boolean) => ({
+    plan: 'collect acorns until the harvest',
+    spec: {
+      ...genreAnswer().spec,
+      ruleRoles: null,
+      things: null,
+      logic: { vars: null, timers: gusty ? [{ id: 'gust' }] : null, events: null, phases: [{ id: 'calm' }, { id: 'harvest' }] },
+      rules: [
+        strictRule({ id: 'cheer', verb: 'cheer', when: { phase: 'harvest' }, do: [{ score: 5 }] }),
+        ...(gusty ? [strictRule({ id: 'wind', verb: 'blow', when: { every: 300 }, do: [{ startTimer: { timer: 'gust', ticks: 120 } }] }), strictRule({ id: 'gust', verb: 'blow', when: { timer: 'gust' }, do: [{ score: 1 }] })] : []),
+      ],
+    },
+  });
+  const failed = (evidence: string): RepairIssue[] => [{ code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: `keypoint failed: ${evidence}`, repairHint: 'fix the game or the claim' }];
+  const shape = (spec: GameSpecV1) => ({ rules: (spec.rules ?? []).map((rule) => rule.id), timers: spec.logic?.timers?.map((timer) => timer.id), phases: spec.logic?.phases?.map((phase) => phase.id) });
+
+  /** Hry, které vyřazení dá ověřit, když `said` hlásí nález nad hrou (`null` = žádný). */
+  async function dropOut(gusty: boolean, said: (spec: GameSpecV1) => string | null) {
+    const seen: ReturnType<typeof shape>[] = [];
+    let tick = 0;
+    const game = await direct(SENTENCE, {
+      branch: fakeBranch([answered(harvest(gusty))]),
+      now: () => (tick += 100),
+      compact: true,
+      maxRepairRounds: 0,
+      check: (candidate) => {
+        seen.push(shape(candidate));
+        const evidence = said(candidate);
+        return evidence === null ? [] : failed(evidence);
+      },
+    });
+    return { game, seen };
+  }
+  const entered = (spec: GameSpecV1) => (spec.rules ?? []).some((rule) => rule.id === 'enter_harvest');
+  const inHarvest = (spec: GameSpecV1) => (spec.logic?.phases ?? []).some((phase) => phase.id === 'harvest');
+
+  it('an unproved phase names the model\'s rule that reacts to it, never the added entry', () => {
+    const read = readGenreAnswer(harvest(false));
+    if (!read.ok) throw new Error(read.detail);
+    expect(read.spec.rules?.map((rule) => `${rule.id}:${rule.verb}`)).toEqual(['cheer:cheer', 'enter_harvest:advance']);
+    const issues = verbIssues(failed('logic_proved: LOGIC_UNPROVED:phase:harvest – never entered while the bot played'), read.spec);
+    expect(issues.map((issue) => `${issue.path} ${issue.evidence}`)).toEqual(['/rules/0 "cheer" phase harvest LOGIC_UNPROVED: never entered while the bot played']);
+    expect(unprovedVerbs(issues)).toEqual(['cheer']);
+  });
+
+  it('dropping the rule that reacts to the phase takes the entry and the phase too', async () => {
+    const { game, seen } = await dropOut(true, (spec) => (inHarvest(spec) ? 'logic_proved: LOGIC_UNPROVED:phase:harvest – never entered while the bot played' : null));
+    expect(seen[0]).toEqual({ rules: ['cheer', 'wind', 'gust', 'enter_harvest'], timers: ['gust'], phases: ['calm', 'harvest'] });
+    expect(seen[1]).toEqual({ rules: ['wind', 'gust'], timers: ['gust'], phases: ['calm'] });
+    expect(game.spec.logic?.phases?.map((phase) => phase.id) ?? []).not.toContain('harvest');
+  }, 120_000);
+
+  it('dropping the added entry takes its phase and the rules that react to it', async () => {
+    const { seen } = await dropOut(false, (spec) => (entered(spec) ? 'VERB_UNPROVED:advance' : null));
+    expect(seen[0]).toEqual({ rules: ['cheer', 'enter_harvest'], timers: undefined, phases: ['calm', 'harvest'] });
+    expect(seen[1]).toEqual({ rules: [], timers: undefined, phases: undefined });
+  }, 120_000);
 });

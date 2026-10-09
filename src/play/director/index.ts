@@ -22,7 +22,7 @@ import type { GenerationBranch } from '@/server/pipeline';
 
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
 import { loadRapier } from '../arcade/physics/world';
-import { readsLogic } from '../arcade/rules/schema';
+import { phaseEntryOf, readsLogic, rulesTouching } from '../arcade/rules/schema';
 import { verifyArcade } from '../arcade/verify';
 import { matchesWitness } from '../arcade/witness';
 import { assemblyOfCell, liveCells } from '../compose/allowed';
@@ -442,11 +442,26 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
 /** Spec bez pravidel, která `drop` vybere; `things` jen když žádné pravidlo nezbylo. `null` = nebylo co odebrat. */
 function withoutRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rules']>[number]) => boolean): GameSpecV1 | null {
   const rules = spec.rules ?? [];
-  const kept = rules.filter((rule) => !drop(rule));
+  let kept = rules.filter((rule) => !drop(rule));
+  // Vstup doplněný čtením (`phaseEntryOf`, R6) jde ven jen s fází: vypadl-li on, nebo vše, co na fázi
+  // reaguje, odejde fáze z bloku `logic` i s pravidly, která na ni sahají. Fáze za ní vede z ní, proto znovu.
+  const entered = rules.flatMap((rule) => phaseEntryOf(rule) ?? []);
+  const gone = new Set<string>();
+  for (;;) {
+    const lone = entered.filter((phase) => {
+      const own = rulesTouching(kept, 'phase', phase).map((index) => phaseEntryOf(kept[index]!) === phase);
+      return !gone.has(phase) && (!own.includes(true) || !own.includes(false));
+    });
+    if (lone.length === 0) break;
+    for (const phase of lone) gone.add(phase);
+    const touched = new Set(lone.flatMap((phase) => rulesTouching(kept, 'phase', phase)));
+    kept = kept.filter((_, index) => !touched.has(index));
+  }
   if (kept.length === rules.length && rules.length > 0) return null;
   // Blok `logic` (P45B T10) jde pryč s posledním pravidlem, které ho čte – mrtvou deklaraci `readGameSpec` odmítne.
   const { rules: _rules, things, logic, ...rest } = spec;
-  const withLogic = logic !== undefined && kept.some(readsLogic) ? { logic } : {};
+  const phases = logic?.phases?.filter((phase) => !gone.has(phase.id));
+  const withLogic = logic !== undefined && kept.some(readsLogic) ? { logic: { ...logic, ...(phases === undefined ? {} : { phases }) } } : {};
   if (kept.length > 0) return { ...rest, ...withLogic, rules: kept, ...(things === undefined ? {} : { things }) };
   return rest;
 }

@@ -28,7 +28,7 @@ import { missingActions } from '../fidelity/action-evidence';
 import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
 import type { ActionWitness } from '../arcade/witness';
-import { rulesTouching } from '../arcade/rules/schema';
+import { phaseEntryOf, rulesTouching } from '../arcade/rules/schema';
 
 export const CRITIC_CODES = [
   'NO_AGENCY',
@@ -295,8 +295,10 @@ const LOGIC_MARK = /LOGIC_(UNPROVED|NO_EFFECT):(var|timer|phase|event|wave):([A-
 
 /**
  * Neprokázaná kostka logiky (P45B T10) jde do opravy i do vyřazení cestou slovesa
- * (`VERB_UNPROVED`): nález na každé pravidlo, které na kostku sahá, s jeho slovesem
- * v uvozovkách (`unprovedVerbs`). Kostka, na kterou žádné pravidlo nesahá, míří na `/logic`.
+ * (`VERB_UNPROVED`): nález na každé pravidlo modelu, které na kostku sahá, s jeho slovesem
+ * v uvozovkách (`unprovedVerbs`). Vstup do fáze doplněný čtením (`phaseEntryOf`) model
+ * nenapsal, takže nález nedostane (R6) – jeho fázi odnese vyřazení s pravidly, která na ni
+ * reagují. Kostka, na kterou žádné pravidlo modelu nesahá, míří na `/logic`.
  */
 function logicIssues(evidence: string, spec: GameSpecV1): CriticIssue[] {
   const rules = spec.rules ?? [];
@@ -304,7 +306,7 @@ function logicIssues(evidence: string, spec: GameSpecV1): CriticIssue[] {
     // Jméno kostky bez uvozovek: první text v uvozovkách čte `unprovedVerbs` jako sloveso.
     const what = `${kind} ${id} LOGIC_${how}: ${why!.trim()}`;
     const repairHint = `make the ${kind} ${id} do its part on the way to the win (a rule that starts, sets or enters it and a rule that reacts to it), or remove the rules that use it`;
-    const touching = rulesTouching(rules, kind as 'var' | 'timer' | 'phase' | 'event' | 'wave', id!);
+    const touching = rulesTouching(rules, kind as 'var' | 'timer' | 'phase' | 'event' | 'wave', id!).filter((index) => phaseEntryOf(rules[index]!) === null);
     if (touching.length === 0) return [{ code: 'VERB_UNPROVED' as const, severity: 'block' as const, path: '/logic', evidence: what, repairHint }];
     return touching.map((index) => ({ code: 'VERB_UNPROVED' as const, severity: 'block' as const, path: `/rules/${String(index)}`, evidence: `"${rules[index]!.verb}" ${what}`, repairHint }));
   });
