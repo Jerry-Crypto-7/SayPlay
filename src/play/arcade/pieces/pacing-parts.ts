@@ -102,6 +102,14 @@ export const FIELD = {
   survival: { pool: ['sniper', 'ambusher'], pick: 1, budget: 2, step: 100, leave: true, steady: true } as FieldFoes,
   fight: { pool: ['ambusher', 'flanker'], pick: 1, budget: 1, step: 0, leave: true } as FieldFoes,
   /**
+   * Úkol v prostoru (část B, buňka `quest.spatial`, 40 semínek, bez profilu / intermediate / novice):
+   * bez průběhu 39 / 38 / 17. Rychlost pronásledovatelů křivka neškáluje a kola ji skoro nezvedají
+   * (`steady`, krok 1): křivka na rychlosti dala intermediate 15/20, se strážcem ve finále 8/20; krok kol
+   * 100 % se strážcem 15/20, 50 % 36/40 (na semínkách 1–8 jen 5/8). S `steady` a krokem 1: 40 / 39 / 23.
+   * Flanker, ostřelovač a hejno v rozvrhu shodili intermediate na 13–15/20.
+   */
+  quest: { pool: ['ambusher', 'guardian'], pick: 1, budget: 2, step: 0, steady: true } as FieldFoes,
+  /**
    * Souboj: ležící soupeři poslední vlny vstanou nejvýš s tolika HP a noví se
    * nepřidají – boss je hlavní soupeř vlny. Se slabšími (1–2 HP) stojí poslední
    * třetina a tlak neroste (stoupá 0–6/8 her). Na 30 semínkách × 6 sestav
@@ -245,6 +253,37 @@ const fightField = (foes: FieldFoes): GenrePacing => (parts) => {
   };
 };
 
+/** Strážce jako boss úkolu: větší než strážce rozvrhu (jiný podpis), stejné chování. */
+export const GUARDIAN_BOSS: BodyInit = { ...BEHAVIOURS.guardian.body, w: (BEHAVIOURS.guardian.body.w * 3) / 2, h: (BEHAVIOURS.guardian.body.h * 3) / 2, d: (BEHAVIOURS.guardian.body.d * 3) / 2 };
+
+/**
+ * Úkol v prostoru v kolech: postup = kola (`arena_waves` do hotových cíle), nová chování od druhého kola,
+ * finále strážce (T7) jako boss – přijde se začátkem posledního kola a hlídá nedotčený cíl; hotový opustí
+ * a přejde k dalšímu, takže poslední cíl kola hlídá vždy. Nové `win` ani obal výhry nepřidá: výhru vydá
+ * dál `interact`, až jsou hotové všechny cíle posledního kola. Hodiny = časovač specu. Úkol v jednom kole
+ * (bez `arena_waves`, např. s hodinami z věty) průběh nedostane – nemá druhé kolo ani poslední.
+ */
+const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
+  const waves = ruleOf(parts, 'arena_waves')?.params as WaveParams | undefined;
+  if (waves === undefined || waves.until !== 'targets' || waves.waves.length === 0) return null;
+  const count = waves.waves.length + 1;
+  const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd?: string } | undefined;
+  const clock = timer?.onEnd === 'lose' ? timer.seconds : undefined;
+  return {
+    goal: { by: 'wave', need: count, limit: clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock * ARCADE_HZ) },
+    space: 'plane',
+    spots: waves.spots,
+    behaviours: actorsOf(foes),
+    pick: foes.pick,
+    budget: foes.budget,
+    from: waveStart(1, count),
+    finale: 'boss',
+    boss: { body: GUARDIAN_BOSS, at: waveStart(count - 1, count), behaviour: 'guardian' },
+    ...(foes.steady === true ? { steady: true } : {}),
+    adjust: (own) => flatten(own, foes.step),
+  };
+};
+
 /**
  * Hra otevřeného pole, jejíž tvar průběh neunese, ho nedostane (odchylka T12):
  * - pravidla či věci specu (`rules`, `things`, např. „touch lava“): plánovač cílů i obcházení prohry
@@ -273,6 +312,13 @@ const livesAtMost = (spec: GameSpecV1, most: number): boolean => {
  * Plošinovka zatím ne (robot nezná rychlost běhu); `steer_track` a `glide_course` staví jen spec bez `genre`,
  * stejně jako `arena` (agar ze slovního návrhu bez žánru) a `arena_catch` (`compose/catch.ts` – spec bez `genre`):
  * žánr Aréna staví jen `arena_collect`, `arena_escape` a `fight` (`genre/arena.ts`).
+ *
+ * Chodec (`walker_*`) bez záznamu (odchylka T12, změřeno na 7 živých buňkách `walk.*` × 8 semínek): spec staví
+ * `nativeSpec` bez `genre`, takže záznam by nikdy neběžel, a hra tvar průběhu neunese – robot projde bludiště
+ * za 9,5–22 s s hodinami na délku své cesty (`paceBudgetPct` 100, rezerva pod 1 s), labyrint nemá hrozbu,
+ * těla chování projdou zdmi (pevná tělesa zastaví jen hráče) a uhnutí v rovině posílá kód směru arény, který
+ * ovládání `walker` čte jako rychlost v ose x. Útěk „na čas“ by v bludišti bez smyček (`walkerMaze`) před
+ * pronásledovatelem nešel přečkat. Značka nové hry pro nativní spec by navíc změnila otisk každé nové hry chodce.
  */
 export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   // Běžec bez řad navíc: obecné umístění (`progressionParts`) nezná volný pruh řady a zavřelo by ho – útěk s jedním životem vyhrál 2/8.
@@ -288,6 +334,7 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   arena_collect: (parts, spec) => (ownShape(spec) || livesAtMost(spec, 1) ? null : itemField(FIELD.collect)(parts, spec)),
   arena_escape: (parts, spec) => (ownShape(spec) ? null : (ruleOf(parts, 'survive_time') === undefined ? itemField(FIELD.escape) : survivalField(FIELD.survival))(parts, spec)),
   fight: (parts, spec) => (ownShape(spec) || livesAtMost(spec, 2) ? null : fightField(FIELD.fight)(parts, spec)),
+  quest_spatial: (parts, spec) => (ownShape(spec) ? null : questField(FIELD.quest)(parts, spec)),
 };
 
 /** Verze překladu žánru před průběhem (`GENRE_COMPILER_VERSION` v `genre/contract.ts`): uložené hry s ní průběh nedostanou. */
@@ -355,11 +402,12 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
     ...(setup.from === undefined ? {} : { from: setup.from }),
     ...(setup.until === undefined ? {} : { until: setup.until }),
     ...(finale === undefined ? {} : { finale }),
-    ...(boss === undefined ? {} : { boss: { body: boss.body, at: boss.at } }),
+    ...(boss === undefined ? {} : { boss: { body: boss.body, at: boss.at, ...(boss.behaviour === undefined ? {} : { behaviour: boss.behaviour }) } }),
     ...(clear.length === 0 ? {} : { clear }),
     ...(setup.steady === true ? { steady: true } : {}),
   });
-  if (boss === undefined || bossTemplate === undefined || (paced.issues?.length ?? 0) > 0) return paced;
+  // Zásah a pád (`boss_beat`) má jen boss; strážce úkolu se neporáží, jen hlídá poslední věc.
+  if (boss === undefined || bossTemplate === undefined || (boss.behaviour ?? 'boss') !== 'boss' || (paced.issues?.length ?? 0) > 0) return paced;
   const dropped = carried.length > 0 ? { template: carried[0] as number, count: carried.length } : boss.drop;
   const beat: PieceRef = { id: 'boss_beat', params: { boss: bossTemplate, ...(dropped === undefined ? {} : { drop: dropped }), ...(boss.score === undefined ? {} : { score: boss.score }) } };
   return { ...paced, level: { ...paced.level, spawnSlots: (paced.level.spawnSlots ?? 0) + (dropped?.count ?? 0) }, rules: [...paced.rules, beat] };

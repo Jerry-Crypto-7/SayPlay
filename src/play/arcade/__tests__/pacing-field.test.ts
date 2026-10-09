@@ -10,20 +10,25 @@
  * chování odejdou se začátkem poslední vlny, přežití drží rychlost vln
  * (`steady`), uhnutí, které hráče zažene k pronásledovateli, neplatí, a hry
  * s pravidly, věcmi či díly specu průběh nedostanou.
+ *
+ * Část B: úkol v prostoru v kolech – nová chování od druhého kola, finále
+ * strážce (T7) jako boss nad posledním cílem, rychlost pronásledovatelů
+ * plochá (`steady`, krok kol 1). Chodec zůstává bez průběhu (spec bez
+ * `genre`, odchylka v `GENRE_PACING`). Žádné finále nepřidá výhru ani obal výhry.
  */
 
 import { describe, expect, it } from 'vitest';
 
 import { behavioursOf, finaleOf, pressureRun, risingOf } from '../../../../evals/play/p45c/pacing';
 import { arcadeWorldOf, generatorOf, preloadPhysics } from '../compile';
-import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, type PieceRef, ROLE, UNIT, bodyBase, underlyingRule } from '../contract';
-import { instantiate } from '../kernel';
-import { ARCADE_LIBRARY } from '../library';
+import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, type PieceRef, ROLE, UNIT, bodyBase, targetStateOf, underlyingRule } from '../contract';
+import { instantiate, loadProgram, step } from '../kernel';
+import { ARCADE_LIBRARY, MODE_GENERATORS } from '../library';
 import { arenaAxis } from '../pieces/arena';
-import { type BehaviourRef, CHASER_CHECK, behaviourBodies, chaserClearance } from '../pieces/behaviours';
+import { type BehaviourRef, CHASER_CHECK, behaviourBodies, behaviourMemoOf, chaserClearance } from '../pieces/behaviours';
 import { play } from '../pieces/behaviours/__tests__/harness';
 import { PACING, type PacingRuleParams, intensityAt, pacingRule, TENSION_CURVE } from '../pieces/pacing';
-import { FIELD, GENRE_PACING, pacingProbeBodies } from '../pieces/pacing-parts';
+import { FIELD, GENRE_PACING, GUARDIAN_BOSS, pacingProbeBodies } from '../pieces/pacing-parts';
 import type { WaveParams } from '../pieces/waves';
 import { loadRapier } from '../physics/world';
 import { runBot, verifyArcade } from '../verify';
@@ -33,7 +38,7 @@ import type { GenreSpec } from '@/play/genre/contract';
 import { compileGenre, readGenreSpec } from '@/play/genre';
 import type { GameSpecV1 } from '@/play/spec';
 
-const FIELD_GENERATORS = ['arena_collect', 'arena_escape', 'fight'];
+const FIELD_GENERATORS = ['arena_collect', 'arena_escape', 'fight', 'quest_spatial'];
 const SEEDS = [1, 2, 3, 4, 5, 6, 7, 8];
 const CELLS = liveCells().filter((cell) => {
   const spec = compileRecipe(assemblyOfCell(cell));
@@ -56,6 +61,8 @@ const chain = (ref: PieceRef): PieceRef[] => {
 const ruleOf = (world: ArcadeWorld, id: string): PieceRef | undefined => world.rules.map(underlyingRule).find((rule) => rule.id === id);
 const pacedRefs = (world: ArcadeWorld): readonly BehaviourRef[] => (chain(world.control).find((ref) => ref.id === 'pacing_control')?.params.behaviours ?? []) as BehaviourRef[];
 const bossRef = (world: ArcadeWorld): BehaviourRef | undefined => pacedRefs(world).find((ref) => ref.id === 'boss');
+/** Boss finále (boss arény a souboje, strážce úkolu): poslední předloha chování, když pravidlo `pacing` má finále `boss`. */
+const finaleRef = (world: ArcadeWorld): BehaviourRef | undefined => ((ruleOf(world, 'pacing')?.params as { finale?: string } | undefined)?.finale === 'boss' ? pacedRefs(world).at(-1) : undefined);
 const wavesOf = (world: ArcadeWorld): WaveParams => ruleOf(world, 'arena_waves')!.params as WaveParams;
 const scheduleOf = (world: ArcadeWorld): { atPermille: number; template: number }[] => (ruleOf(world, 'pacing')!.params as { schedule: { atPermille: number; template: number }[] }).schedule;
 
@@ -72,9 +79,9 @@ function bossTrace(world: ArcadeWorld, inputs: Parameters<typeof play>[1]): { se
   return { seen, fell, end: state[HEADER.tick] as number };
 }
 
-describe('open-field genres are paced (arena and fight)', () => {
+describe('open-field genres are paced (arena, fight and spatial quest)', () => {
   it('covers every live arena cell with a genre', () => {
-    expect(CELLS.map((cell) => cell.id).sort()).toEqual(['arena.collect', 'arena.escape', 'arena.escape+collect', 'arena.fight']);
+    expect(CELLS.map((cell) => cell.id).sort()).toEqual(['arena.collect', 'arena.escape', 'arena.escape+collect', 'arena.fight', 'quest.spatial']);
   });
 
   for (const cell of CELLS) {
@@ -112,11 +119,11 @@ describe('open-field genres are paced (arena and fight)', () => {
       const draws = new Set<string>();
       for (const seed of SEEDS) {
         const world = worldOf(spec, seed);
-        const foes = pacingProbeBodies(world).filter((probe) => probe.behaviour !== 'boss');
+        const foes = pacingProbeBodies(world).filter((probe) => probe.body !== finaleRef(world)?.template);
         expect(foes.length, cell.id).toBeGreaterThanOrEqual(1);
         expect(foes.length, cell.id).toBeLessThanOrEqual(2);
         const second = Math.floor(1000 / (wavesOf(world).waves.length + 1));
-        const spawns = scheduleOf(world).filter((step) => step.template !== bossRef(world)?.template);
+        const spawns = scheduleOf(world).filter((step) => step.template !== finaleRef(world)?.template);
         expect(spawns.length, cell.id).toBeGreaterThan(0);
         for (const entry of spawns) expect(entry.atPermille, `${cell.id} seed ${seed}`).toBeGreaterThanOrEqual(second);
         draws.add(spawns.map((step) => foes.find((foe) => foe.body === step.template)!.behaviour).join('+'));
@@ -299,6 +306,118 @@ describe('open-field genres are paced (arena and fight)', () => {
         GENRE_PACING[generator] = record;
       }
       expect(chain(before.control).map((ref) => ref.id)).not.toContain('pacing_control');
+    }
+  });
+
+  it('no finale adds a win rule or a win wrapper: the paced rules are the stored ones plus pacing (and boss_beat), and neither wins', () => {
+    for (const cell of CELLS) {
+      const spec = cellSpec(cell.id);
+      const paced = worldOf(spec);
+      const stored = worldOf(storedOf(spec));
+      // Stejná pravidla ve stejném pořadí a stejně obalená (vnější id) – průběh jen připíše svá dvě.
+      expect(paced.rules.map((rule) => rule.id).filter((id) => id !== 'pacing' && id !== 'boss_beat'), cell.id).toEqual(stored.rules.map((rule) => rule.id));
+      const own = new Set(paced.rules.flatMap((rule, index) => (rule.id === 'pacing' || rule.id === 'boss_beat' ? [index] : [])));
+      const bot = runBot(paced, ARCADE_LIBRARY, { profile: 'intermediate' });
+      const winners = new Set<number>();
+      const program = loadProgram(paced, ARCADE_LIBRARY);
+      const state = instantiate(paced);
+      let next = 0;
+      for (let tick = 0; tick < bot.tick + 1 && state[HEADER.runState] === 0; tick += 1) {
+        while (next < bot.inputs.length && bot.inputs[next]!.tick < tick) next += 1;
+        const event = bot.inputs[next];
+        step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program, (rule, effect) => {
+          if (effect.kind === 'win') winners.add(rule);
+        });
+      }
+      expect(bot.outcome, cell.id).toBe('won');
+      expect(winners.size, cell.id).toBeGreaterThan(0);
+      for (const rule of winners) expect(own.has(rule), `${cell.id}: rule ${paced.rules[rule]!.id} won`).toBe(false);
+    }
+  });
+});
+
+describe('spatial quest is paced (P45C T12 part B)', () => {
+  const QUEST_CELL = 'quest.spatial';
+  const lastRound = (world: ArcadeWorld): number => {
+    const count = wavesOf(world).waves.length + 1;
+    return Math.floor(((count - 1) * 1000) / count);
+  };
+
+  it('the finale is the guardian as a boss: it comes with the last round, has no boss_beat, the rounds stay and the chasers keep a flat speed', () => {
+    const spec = cellSpec(QUEST_CELL);
+    for (const seed of SEEDS) {
+      const world = worldOf(spec, seed);
+      const boss = finaleRef(world);
+      expect(boss?.id, `seed ${seed}`).toBe('guardian');
+      expect(scheduleOf(world).find((step) => step.template === boss!.template)!.atPermille).toBe(lastRound(world));
+      expect(ruleOf(world, 'boss_beat')).toBeUndefined();
+      // Větší než strážce rozvrhu – vlastní podpis.
+      const state = instantiate(world);
+      expect([BODY.w, BODY.h, BODY.d].map((slot) => state[bodyBase(boss!.template) + slot])).toEqual([GUARDIAN_BOSS.w, GUARDIAN_BOSS.h, GUARDIAN_BOSS.d]);
+      // Kola a jejich cíle zůstávají; zrychlení po kolech jen o krok 1 a křivka rychlost neškáluje (`steady`):
+      // křivka na rychlosti pronásledovatelů dala robotovi intermediate 15/20, se strážcem 8/20 (odchylka T12).
+      expect(wavesOf(world)).toEqual(wavesOf(worldOf(storedOf(spec), seed)));
+      const free = chain(world.control).find((ref) => ref.id === 'move_free')!;
+      expect((free.params.chase as { step: number }).step).toBe(1);
+      expect(chain(world.control).find((ref) => ref.id === 'pacing_control')!.params.steady).toBe(true);
+      expect(chain(world.bot).find((ref) => ref.id === 'pacing_bot')!.params.steady).toBe(true);
+    }
+  });
+
+  it('the guardian boss guards the last target and the bot still finishes it before the quest clock (pin)', () => {
+    const spec = cellSpec(QUEST_CELL);
+    let beaten = 0;
+    for (const seed of SEEDS) {
+      const world = worldOf(spec, seed);
+      const boss = finaleRef(world)!;
+      const clock = (ruleOf(world, 'time_limit')!.params as { seconds: number }).seconds * ARCADE_HZ;
+      expect(clock).toBeLessThanOrEqual(88 * ARCADE_HZ);
+      const bot = runBot(world, ARCADE_LIBRARY, { profile: 'intermediate' });
+      // Tik před výhrou: který cíl strážce hlídá; v tiku výhry: který cíl se dokončil jako poslední.
+      const targetsOf = (state: Int32Array): Map<number, number> =>
+        new Map(Array.from({ length: state[HEADER.bodyCount] as number }, (_, body) => body).filter((body) => state[bodyBase(body) + BODY.role] === ROLE.target && (state[bodyBase(body) + BODY.flags]! & FLAG.alive) !== 0).map((body) => [body, targetStateOf(state, body)]));
+      let guarded = -1;
+      let last = -1;
+      let before = new Map<number, number>();
+      play(world, bot.inputs, (state) => {
+        const now = targetsOf(state);
+        if (state[HEADER.runState] === 1) {
+          last = [...now].find(([body, value]) => before.get(body) !== value)?.[0] ?? -1;
+          return;
+        }
+        const guards = behaviourBodies(state, state[HEADER.player] as number, [boss]);
+        guarded = guards.length === 0 ? -1 : behaviourMemoOf(state, guards[0]!) - 1;
+        before = now;
+      });
+      if (bot.outcome !== 'won') continue;
+      expect(bot.tick, `seed ${seed}`).toBeLessThan(clock);
+      // Poslední cíl hlídal strážce až do posledního kroku.
+      expect(last, `seed ${seed}`).toBeGreaterThanOrEqual(0);
+      expect(guarded, `seed ${seed}: the guardian did not guard the last target`).toBe(last);
+      beaten += 1;
+    }
+    expect(beaten).toBeGreaterThanOrEqual(7);
+  });
+});
+
+describe('walker modes stay unpaced (P45C T12 part B, deviation)', () => {
+  const WALKERS = liveCells().filter((cell) => generatorOf(compileRecipe(assemblyOfCell(cell))).startsWith('walker_'));
+
+  it('every walker cell is a native spec without genre: its world has no pacing, and the escape has no finale, win rule or win wrapper of its own', () => {
+    expect(WALKERS.map((cell) => cell.id).sort()).toEqual(['walk.collect', 'walk.collect+guard', 'walk.escape', 'walk.escape+collect', 'walk.escape+collect+guard', 'walk.reach', 'walk.reach+guard']);
+    for (const cell of WALKERS) {
+      const spec = compileRecipe(assemblyOfCell(cell));
+      expect(spec.genre, cell.id).toBeUndefined();
+      const generator = generatorOf(spec);
+      const { generator: _generator, ...params } = spec.controlParams as Record<string, unknown>;
+      for (const seed of [1, 2]) {
+        const world = worldOf(spec, seed);
+        expect(chain(world.control).map((ref) => ref.id), cell.id).toEqual(['walker']);
+        expect(chain(world.bot).map((ref) => ref.id), cell.id).toEqual(['walker_bot']);
+        // Pravidla jsou přesně ta, která postaví generátor: žádné `pacing`, žádná nová výhra ani obal výhry.
+        const own = MODE_GENERATORS[generator]!.parts(seed, MODE_GENERATORS[generator]!.params.parse(params), 3);
+        expect(world.rules, cell.id).toEqual(own.rules);
+      }
     }
   });
 });

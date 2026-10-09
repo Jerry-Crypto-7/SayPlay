@@ -10,7 +10,7 @@
  * (návrat + varování), než přijde další.
  */
 
-import { type ArcadeState, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '../../contract';
+import { type ArcadeState, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, targetStateOf } from '../../contract';
 import { ARENA } from '../arena';
 import { dodgeLane, dodgeLine, headTo, inside, laneOf, length, read, set } from './flanker';
 import type { Behaviour, BehaviourStep, BehaviourView } from './index';
@@ -34,7 +34,16 @@ const TICKS = { plane: { telegraph: 30, act: 30, recover: 90 }, track: { telegra
 
 const GUARDED: ReadonlySet<number> = new Set([ROLE.collectible, ROLE.goal]);
 
-const isItem = (state: ArcadeState, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0 && GUARDED.has(state[bodyBase(body) + BODY.role] as number);
+/**
+ * Věc ke hlídání: živá věc ke sběru nebo cíl, a v úkolu (P45C T12) cíl, na kterém hráč ještě nezačal
+ * (stav 0) – hotový cíl zůstává živý, strážce pak přejde k dalšímu. Kolik stavů cíl má, strážce neví:
+ * u cíle se třemi stavy hlídá jen první krok.
+ */
+const isItem = (state: ArcadeState, body: number): boolean => {
+  if (((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) === 0) return false;
+  const role = state[bodyBase(body) + BODY.role] as number;
+  return GUARDED.has(role) || (role === ROLE.target && targetStateOf(state, body) === 0);
+};
 
 /** Hlídaná věc z paměti, nebo -1 (sebraná, ještě nepřidělená). */
 const guardedOf = (view: BehaviourView): number => (view.memo > 0 && isItem(view.state, view.memo - 1) ? view.memo - 1 : -1);

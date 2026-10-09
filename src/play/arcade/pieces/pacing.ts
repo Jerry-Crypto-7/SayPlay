@@ -359,8 +359,11 @@ export interface PacingSetup {
   /** …ani od tohohle (např. jen do poslední vlny). */
   readonly until?: number;
   readonly finale?: (typeof FINALES)[number];
-  /** Boss: tělo a postup v promile, na kterém přijde – jeden spawn mimo los rozvrhu, předloha za předlohami `behaviours`. */
-  readonly boss?: { readonly body: BodyInit; readonly at: number };
+  /**
+   * Boss: tělo a postup v promile, na kterém přijde – jeden spawn mimo los rozvrhu, předloha za předlohami `behaviours`.
+   * `behaviour` = chování bosse (výchozí `boss`; úkol má za bosse strážce nad poslední věcí).
+   */
+  readonly boss?: { readonly body: BodyInit; readonly at: number; readonly behaviour?: BehaviourId };
   /** Na postupu `at` ‰ odejdou živá těla role `role` (pronásledovatelé s příchodem bosse, chování před poslední vlnou). */
   readonly clear?: readonly { readonly role: BodyInit['role']; readonly at: number }[];
   /** Knoflíky žánru zůstanou, jak jsou (vlny si drží své zrychlení); křivka jen rozvrhuje spawny a finále. */
@@ -382,7 +385,7 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   // Výběr chování (`pick`) bere stream první, rozvrh pokračuje za ním; bez výběru rozvrh začíná na začátku streamu jako dřív.
   const behaviours = setup.pick === undefined || setup.pick >= setup.behaviours.length ? setup.behaviours : rng.shuffle(setup.behaviours).slice(0, setup.pick);
   // Boss je poslední předloha chování; los rozvrhu ho nevybírá.
-  const actors: readonly PacingActor[] = setup.boss === undefined ? behaviours : [...behaviours, { body: setup.boss.body, behaviour: 'boss' }];
+  const actors: readonly PacingActor[] = setup.boss === undefined ? behaviours : [...behaviours, { body: setup.boss.body, behaviour: setup.boss.behaviour ?? 'boss' }];
   const shooters = [...new Set(actors.flatMap((actor) => (actor.behaviour !== undefined && BEHAVIOURS[actor.behaviour].shot !== undefined ? [actor.behaviour] : [])))];
   const shotBodies = shooters.map((id) => BEHAVIOURS[id].shot as BodyInit);
   const keeper = first + actors.length + shooters.length;

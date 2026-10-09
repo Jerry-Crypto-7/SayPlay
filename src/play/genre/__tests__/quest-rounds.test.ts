@@ -46,6 +46,18 @@ function publish(sentence: string, edit: (spec: GameSpecV1) => GameSpecV1 = (spe
   throw new Error(`${sentence}: no seed publishes`);
 }
 
+/** Průměrná délka výhry robota přes všechna semínka publikace, na kterých robot vyhraje a nečinný hráč ne (`compileArcade` jiná nepustí). */
+function meanWinSeconds(sentence: string): number {
+  const spec = legacySpec(sentence);
+  const wins: number[] = [];
+  for (const seed of derivedSeeds(seedFrom(sentence))) {
+    const compiled = compileArcade(spec, seed);
+    if (compiled.ok && compiled.value.winsAtTick !== null) wins.push(compiled.value.winsAtTick / ARCADE_HZ);
+  }
+  if (wins.length === 0) throw new Error(`${sentence}: no seed publishes`);
+  return wins.reduce((sum, seconds) => sum + seconds, 0) / wins.length;
+}
+
 const tuningOf = (spec: GameSpecV1) => (spec.controlParams as { tuning: Record<string, unknown> }).tuning;
 
 interface Round {
@@ -93,7 +105,9 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
       expect(game.winSeconds).toBeLessThanOrEqual(90);
       expect(game.idle).toBe('lost');
     }
-    expect(b.winSeconds).toBeGreaterThan(a.winSeconds);
+    // Průměr přes semínka publikace, ne jedno: s průběhem (P45C T12) kolísá délka mezi semínky víc než mezi
+    // počty – dvě svíčky 37–58 s, osm 49–56 s; první semínko dvou svíček je zrovna nejdelší.
+    expect(meanWinSeconds(long)).toBeGreaterThan(meanWinSeconds(short));
   });
 
   it('spatial: the win comes only in the last round, every round lays fresh targets elsewhere and brings more or faster chasers', () => {
@@ -204,7 +218,9 @@ describe('quest with seconds from the sentence – only as many rounds as fit th
   });
 
   it('a quest without seconds builds the same world as before', () => {
-    const spec = legacySpec('light five candles before the ghost catches you');
+    // Hra uložená před průběhem (`genre.v1`, P45C): nová hra má od T12 strážce a nová chování.
+    const fresh = legacySpec('light five candles before the ghost catches you');
+    const spec = { ...fresh, genre: { ...fresh.genre!, compilerVersion: 'genre.v1' } };
     const compiled = compileArcade(spec, 624372740);
     if (!compiled.ok) throw new Error(compiled.issues.join('; '));
     expect(compiled.value.worldHash).toBe('8ea05655');
