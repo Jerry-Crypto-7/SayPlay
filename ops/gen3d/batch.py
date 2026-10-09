@@ -20,6 +20,7 @@ import os
 import re
 import subprocess
 import time
+import tomllib
 from collections.abc import Callable, Sequence
 from datetime import date
 from pathlib import Path
@@ -42,6 +43,10 @@ NOT_NOUNS = {
     if not line.startswith("#")
     for word in line.split()
 }
+CONFIG = tomllib.loads((HERE / "config.toml").read_text(encoding="utf-8"))
+FEATURES = tomllib.loads((HERE / "features.toml").read_text(encoding="utf-8"))
+# Pořadí pokusů (P45E T2): jiné zadání pomůže víc než jiné semínko stejného zadání.
+ATTEMPTS = (("a", 0), ("b", 0), ("a", 1))
 
 
 def _tokens(text: str) -> list[str]:
@@ -95,7 +100,33 @@ def write_nouns(counted: list[tuple[str, int]], path: Path = NOUNS_FILE) -> None
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def prompt_for(noun: str, body: str, variant: str) -> str:
+    """Zadání obrázku: šablona třídy (neznámá třída → `prop`) a rozlišovací znak za jménem."""
+    templates = CONFIG["prompts"].get(body, CONFIG["prompts"]["prop"])
+    feature = FEATURES.get(noun)
+    return templates[variant].format(noun=f"{noun}, {feature}" if feature else noun)
+
+
+def load_classes(path: Path) -> dict[str, str]:
+    """Třída šablony podle jména ze seznamu `{"nouns": [{noun, class, flat}]}` (`gen-nouns.json`).
+
+    Plochá a drobná jména dostanou `flat`; textový seznam třídy nenese (všechno `prop`).
+    """
+    if path.suffix != ".json":
+        return {}
+    entries = json.loads(path.read_text(encoding="utf-8"))["nouns"]
+    return {
+        cache.normalize(entry["noun"]): "flat" if entry["flat"] else entry["class"]
+        for entry in entries
+    }
+
+
 def load_nouns(path: Path) -> list[str]:
+    if path.suffix == ".json":
+        return [
+            entry["noun"]
+            for entry in json.loads(path.read_text(encoding="utf-8"))["nouns"]
+        ]
     nouns = []
     for line in path.read_text(encoding="utf-8").splitlines():
         noun = line.split("#", 1)[0].strip()
@@ -114,18 +145,25 @@ def _save(records: dict[str, dict], path: Path) -> None:
 def run_batch(
     nouns: list[str],
     limit: int,
-    generate: Callable[[str, Path, int], dict],
+    generate: Callable[[str, Path, int, str], dict],
     record_path: Path = RECORD_FILE,
     cache_root: Path | None = None,
     quarantine: Callable[[str, dict], str] | None = None,
     deadline: float | None = None,
-    seeds: Sequence[int] = (0,),
+    attempts: Sequence[tuple[str, int]] = (("a", 0),),
+    prompt_of: Callable[[str, str], str] | None = None,
 ) -> list[dict]:
     """Projde prvních `limit` slov; vrátí jejich záznamy v pořadí seznamu.
 
-    Slovo, které na semínku selže, zkusí další semínko z `seeds` (P37D T2);
-    neúspěšné pokusy zůstanou v záznamu pod `attempts`.
+    Slovo, které selže, zkusí další dvojici (zadání, semínko) z `attempts` (P37D T2,
+    P45E T2); `prompt_of(slovo, zadání)` dá text, jinak šablona `prop`. Neúspěšné pokusy
+    zůstanou v záznamu pod `attempts`, použité zadání a semínko v `prompt` a `seed`.
     """
+    if prompt_of is None:
+
+        def prompt_of(noun: str, variant: str) -> str:
+            return prompt_for(noun, "prop", variant)
+
     records: dict[str, dict] = {}
     if record_path.exists():
         saved = json.loads(record_path.read_text(encoding="utf-8"))
@@ -153,24 +191,25 @@ def run_batch(
         result = None
         if hit and Path(hit["lod0"]).exists():
             result, record["cached"] = hit, True
-            if "seed" in hit:
-                record["seed"] = hit["seed"]
+            record.update(
+                {k: hit[k] for k in ("seed", "variant", "prompt") if k in hit}
+            )
         else:
             out_dir = cache.entry_dir(noun, cache_root)
-            for seed in seeds:
+            for variant, seed in attempts:
                 tried = time.perf_counter()
+                prompt = prompt_of(noun, variant)
                 try:
-                    result = cache.store(
-                        noun,
-                        {**generate(noun, out_dir, seed), "seed": seed},
-                        cache_root,
-                    )
-                    record["seed"] = seed
+                    made = generate(noun, out_dir, seed, prompt)
+                    used = {"seed": seed, "variant": variant, "prompt": prompt}
+                    result = cache.store(noun, {**made, **used}, cache_root)
+                    record.update(used)
                     break
                 except Exception as error:  # noqa: BLE001 – slovo se zapíše jako failed a dávka jede dál
                     record["reason"] = f"{type(error).__name__}: {error}"[:500]
                     record.setdefault("attempts", []).append(
                         {
+                            "variant": variant,
                             "seed": seed,
                             "seconds": round(time.perf_counter() - tried, 1),
                             "reason": record["reason"],
@@ -190,6 +229,8 @@ def run_batch(
                 lod1=result["lod1"],
                 preview=result["preview"],
             )
+            if "precheck" in result:
+                record["precheck"] = result["precheck"]["verdict"]
             if quarantine is not None and result["gate"]["passed"]:
                 record["quarantine"] = quarantine(noun, result)
         else:
@@ -200,20 +241,18 @@ def run_batch(
     return [records[n] for n in selected if n in records]
 
 
-def provenance(noun: str) -> str:
-    import tomllib
-
-    config = tomllib.loads((HERE / "config.toml").read_text(encoding="utf-8"))
+def provenance(prompt: str, seed: int) -> str:
+    """Původ modelu se zadáním a semínkem, ze kterých opravdu vznikl – ne se šablonou configu."""
     image = {
         "klein": "FLUX.2-klein-4B (Apache-2.0)",
         "zimage": "Z-Image-Turbo (Apache-2.0)",
-    }[config["image_model"]]
+    }[CONFIG["image_model"]]
     install = json.loads(
         (ROOT / "evals/gen3d/install.json").read_text(encoding="utf-8")
     )
     return (
         f"Generated locally on an RTX 3090 by ops/gen3d: {image} image from the prompt "
-        f"{config['prompt'].format(noun=noun)!r} -> BiRefNet (MIT) background removal -> "
+        f"{prompt!r}, seed {seed} -> BiRefNet (MIT) background removal -> "
         f"TRELLIS.2-4B bf16 (MIT) with DINOv3 ViT-L image encoder (DINOv3 License) via "
         f"ComfyUI {install['comfy']['version']} (GPL-3.0, local tool, not distributed) -> "
         f"Blender 5.1 finishing -> gltfpack 1.2.0 (MIT)."
@@ -227,7 +266,10 @@ def quarantine_package(noun: str, result: dict) -> str:
     if target.exists():
         return str(target)
     folder = Path(result["lod0"]).parent
-    source = provenance(noun)
+    # Cache z doby před P45E zadání ani semínko nenese: vznikla ze šablony `prop.a`, semínko 0.
+    source = provenance(
+        result.get("prompt", prompt_for(noun, "prop", "a")), result.get("seed", 0)
+    )
     (folder / "license-evidence.txt").write_text(
         f"{LICENSE}: generated by the project's own pipeline, no third-party asset.\n"
         "Model licences: FLUX.2-klein-4B / Z-Image-Turbo Apache-2.0, TRELLIS.2-4B MIT, "
@@ -316,7 +358,13 @@ def main() -> None:
     # P37D: záznam a list mimo repo, semínka na opakování, bez karantény, ComfyUI pod GPU zámkem.
     parser.add_argument("--record", type=Path, default=RECORD_FILE)
     parser.add_argument("--sheet", type=Path, default=SHEET_FILE)
-    parser.add_argument("--seeds", default="0", help="comma list, tried in order")
+    # P45E: pokusy jako zadání + semínko („b0“ = zadání B, semínko 0), předkontrola obrázku.
+    parser.add_argument(
+        "--attempts",
+        default=",".join(f"{v}{s}" for v, s in ATTEMPTS),
+        help="comma list of <prompt a|b><seed>, tried in order",
+    )
+    parser.add_argument("--precheck", action="store_true")
     parser.add_argument("--no-quarantine", action="store_true")
     parser.add_argument("--start-comfy", action="store_true")
     args = parser.parse_args()
@@ -335,9 +383,20 @@ def main() -> None:
         print(f"{len(counted)} nouns -> {NOUNS_FILE}")
         return
 
+    import precheck
     from comfy_client import ComfyClient
-
     from server import generate
+
+    classes = load_classes(args.source)
+
+    def make(noun: str, out_dir: Path, seed: int, prompt: str) -> dict:
+        check = None
+        if args.precheck:
+
+            def check(image: Path) -> dict:
+                return precheck.check(noun, image)
+
+        return generate(comfy, noun, out_dir, seed, prompt=prompt, check=check)
 
     comfy = ComfyClient()
     with comfy_running(comfy, args.start_comfy):
@@ -347,11 +406,14 @@ def main() -> None:
         records = run_batch(
             load_nouns(args.source),
             args.limit,
-            lambda noun, out_dir, seed: generate(comfy, noun, out_dir, seed),
+            make,
             record_path=args.record,
             quarantine=None if args.no_quarantine else quarantine_package,
             deadline=deadline,
-            seeds=[int(seed) for seed in args.seeds.split(",")],
+            attempts=[(a[0], int(a[1:])) for a in args.attempts.split(",")],
+            prompt_of=lambda noun, variant: prompt_for(
+                noun, classes.get(noun, "prop"), variant
+            ),
         )
     subprocess.run(
         [

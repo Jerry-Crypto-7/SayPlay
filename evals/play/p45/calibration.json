@@ -1,0 +1,412 @@
+{
+ "schema": "p45-calibration.v1",
+ "about": "P45A T11 judge calibration over the dev panel, 8 Oct 2026. Side A = main 0714a352 (own worktree, next start on 3218), side B = HEAD of P45A (3217); P45A does not touch game code, so both sides play the same games. Pacing clips with --gpu, judge = codex exec (subscription) through judge-sheet ask in an empty dir with sheet.png + schema only. One question version, one run each; no retry was needed.",
+ "judgeCalls": {
+  "nullTest": 40,
+  "sensitivity": 12,
+  "smoke": 1,
+  "total": 53
+ },
+ "nullTest": {
+  "command": "fun --set p45-panel --base-a http://127.0.0.1:3218 --base-b http://127.0.0.1:3217 --run p45a-null --gpu",
+  "a": {
+   "run": "p45a-null-a",
+   "commit": "0714a352"
+  },
+  "b": {
+   "run": "p45a-null-b",
+   "commit": "ab37571b"
+  },
+  "seed": 45045,
+  "summary": {
+   "n": 40,
+   "aWins": 1,
+   "bWins": 1,
+   "ties": 38,
+   "bShare": 0.5,
+   "leftWinShare": 0.5
+  },
+  "band": {
+   "bShare": [
+    0.35,
+    0.65
+   ],
+   "leftWinShare": [
+    0.35,
+    0.65
+   ]
+  },
+  "met": true,
+  "finding": "38/40 ties: the game code and the robot are deterministic, so A and B produce the same clips and the judge calls them a tie. The null test therefore shows the judge does not invent a difference between identical games; leftWinShare rests on 2 decided pairs and says nothing about position bias – read that from the sensitivity test.",
+  "pairs": [
+   {
+    "id": "d01",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "d03",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "d04",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "d09",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "f01",
+    "left": "b",
+    "winner": "b"
+   },
+   {
+    "id": "f02",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "f03",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "f05",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "f10",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "f12",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "f17",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "f18",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "h02",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "h03",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "h05",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "j01",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "j04",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "j05",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "j08",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "m01",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "m02",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "m03",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "m04",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "m06",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "m07",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "m08",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "m09",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "m11",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "m16",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "n01",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "n02",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "n04",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "s002",
+    "left": "b",
+    "winner": "a"
+   },
+   {
+    "id": "s003",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "s021",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "s035",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "u01",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "u02",
+    "left": "b",
+    "winner": "tie"
+   },
+   {
+    "id": "u03",
+    "left": "a",
+    "winner": "tie"
+   },
+   {
+    "id": "u06",
+    "left": "a",
+    "winner": "tie"
+   }
+  ]
+ },
+ "sensitivity": {
+  "command": "run --set p45-panel --only d04,f01,f02,f03,f05,f10,h02,m01,m02,m11,n02,u06 --run p45a-idle --pace-clip --idle --draft-only --gpu; pairwise --a p45a-idle --b p45a-null-b --only <same>",
+  "ids": [
+   "d04",
+   "f01",
+   "f02",
+   "f03",
+   "f05",
+   "f10",
+   "h02",
+   "m01",
+   "m02",
+   "m11",
+   "n02",
+   "u06"
+  ],
+  "a": "the same game with the robot not started (--idle)",
+  "b": "the game played by the robot (p45a-null-b)",
+  "seed": 45045,
+  "summary": {
+   "n": 12,
+   "aWins": 2,
+   "bWins": 10,
+   "ties": 0,
+   "bShare": 0.833,
+   "leftWinShare": 0.5
+  },
+  "playedWins": 10,
+  "threshold": 9,
+  "met": true,
+  "pairs": [
+   {
+    "id": "d04",
+    "left": "a",
+    "winner": "a",
+    "idleEndedAtTick": 1480,
+    "playedEndedAtTick": null,
+    "why": "Game A builds from distant targets to several nearby red enemies, with visible effects around the player before it ends. Game B stays mostly empty throughout, with the player aiming left and right and only an occasional visible shot, so it shows less danger and buildup."
+   },
+   {
+    "id": "f01",
+    "left": "a",
+    "winner": "b",
+    "idleEndedAtTick": null,
+    "playedEndedAtTick": 2608,
+    "why": "Game B shows the player moving across the arena amid large yellow projectiles and orange enemies, with nearby threats and varied action continuing into the final rows. Game A keeps the player near the center with mostly distant glowing rings and sparse white shots, making its pace and buildup look more repetitive."
+   },
+   {
+    "id": "f02",
+    "left": "b",
+    "winner": "b",
+    "idleEndedAtTick": 240,
+    "playedEndedAtTick": 1968,
+    "why": "Game A keeps showing action, with the nearby obstacle alternating between upright and airborne positions and the robot extending its blue weapon near the end. Game B shows a bright flash around the robot at 7.5 seconds but ends before the next frame, giving it less visible variety or buildup."
+   },
+   {
+    "id": "f03",
+    "left": "b",
+    "winner": "a",
+    "idleEndedAtTick": 1480,
+    "playedEndedAtTick": null,
+    "why": "Game B builds from distant targets to several enemies closer to the player, with bright impact effects before it ends, suggesting more action and danger. Game A stays largely unchanged for much longer, with sparse distant threats and only occasional shots."
+   },
+   {
+    "id": "f05",
+    "left": "b",
+    "winner": "b",
+    "idleEndedAtTick": 611,
+    "playedEndedAtTick": null,
+    "why": "Game A shows sustained movement, glowing projectiles, and multiple rock-like enemies closing in later, giving it more action and a stronger buildup. Game B shows a brief close encounter but ends soon afterward, with less visible variety or escalation."
+   },
+   {
+    "id": "f10",
+    "left": "a",
+    "winner": "b",
+    "idleEndedAtTick": 1372,
+    "playedEndedAtTick": null,
+    "why": "Game B shows several enemies crowding and chasing the player, with bright attack effects and action continuing into the final rows. Game A mostly shows one enemy directly ahead of the player with little change before ending, making its pace and danger feel flatter."
+   },
+   {
+    "id": "h02",
+    "left": "b",
+    "winner": "b",
+    "idleEndedAtTick": 425,
+    "playedEndedAtTick": 2178,
+    "why": "Game A keeps moving through changing groups of furniture, carts, and orange animals, with animals drawing close around the player and obstacles continuing into the later scenes. Game B has a large shelf looming close by 7.5 seconds, but ends before the next frame, giving it much less sustained action or buildup."
+   },
+   {
+    "id": "m01",
+    "left": "a",
+    "winner": "b",
+    "idleEndedAtTick": 620,
+    "playedEndedAtTick": 2400,
+    "why": "Game A’s two orange threats close around the white player by 13.5 seconds, then the game ends. Game B shows movement across more of the arena and builds from two threats to three later on, offering a longer, more varied chase with continuing danger."
+   },
+   {
+    "id": "m02",
+    "left": "b",
+    "winner": "b",
+    "idleEndedAtTick": null,
+    "playedEndedAtTick": null,
+    "why": "Game A shows the player moving around the arena, with orange enemies sometimes nearby and yellow projectiles scattered across changing positions. Game B has a busy opening, but afterward the player stays near the center with mostly distant glowing rings and little visible escalation."
+   },
+   {
+    "id": "m11",
+    "left": "b",
+    "winner": "b",
+    "idleEndedAtTick": 661,
+    "playedEndedAtTick": 380,
+    "why": "Game A shows more movement, with the character reaching the far wall before the game ends. Game B lasts longer but stays mostly on the same character in an empty field, with no visible nearby threats or escalating action."
+   },
+   {
+    "id": "n02",
+    "left": "a",
+    "winner": "b",
+    "idleEndedAtTick": 611,
+    "playedEndedAtTick": 2400,
+    "why": "Game B keeps the player moving around the arena as orange enemies regroup and increase to three, sustaining pursuit and building pressure late in play. Game A has a close encounter with two enemies near the center, but ends shortly afterward with much less action overall."
+   },
+   {
+    "id": "u06",
+    "left": "a",
+    "winner": "b",
+    "idleEndedAtTick": 624,
+    "playedEndedAtTick": null,
+    "why": "Game B shows the red car moving around crates and scattered green threats throughout the sequence, with nearby encounters continuing into the final frames. Game A begins obscured by fog, shows a brief close encounter near the center, and ends before 19.5 seconds, offering less sustained action."
+   }
+  ]
+ },
+ "fun": {
+  "n": 40,
+  "playable": 40,
+  "deadTimeMedianS": 6.37,
+  "risingShare": 0.4,
+  "behavioursMedian": 1,
+  "finaleShare": 0.15,
+  "eventsPerSMedian": 0.94,
+  "nearMissesMedian": 0,
+  "livesLostMedian": 0,
+  "targets": [
+   {
+    "metric": "deadTimeMedianS",
+    "goal": "<= 3",
+    "value": 6.37,
+    "met": false
+   },
+   {
+    "metric": "risingShare",
+    "goal": ">= 0.70",
+    "value": 0.4,
+    "met": false
+   },
+   {
+    "metric": "behavioursMedian",
+    "goal": ">= 2",
+    "value": 1,
+    "met": false
+   },
+   {
+    "metric": "finaleShare",
+    "goal": ">= 0.50",
+    "value": 0.15,
+    "met": false
+   }
+  ],
+  "met": false
+ },
+ "met": true
+}

@@ -1,0 +1,59 @@
+# Rozlišovací znak na jméno (P45E T2): `batch.prompt_for` ho připíše do zadání obrázku hned za
+# jméno, aby FLUX nenakreslil sourozence z knihovny nebo věc podobného tvaru. Psaný ručně pro
+# jména kola P45E (evals/play/p45d/gen-nouns.json a pilot), žádné placené API. V komentáři je,
+# co v P43 viděl slepý soudce místo jména (evals/play/p43/gen3d.md).
+
+# Zvířata a postavy
+orca = "black and white killer whale, tall dorsal fin"  # P43: penguin
+mole = "tiny dark grey burrowing animal with a long pointed snout, wide shovel-like front claws and no visible eyes"  # P43: bear; P45E pilot s „pink paws“: pig
+hippo = "huge grey hippopotamus, barrel body, wide mouth, short stubby legs"
+wolf = "grey wild wolf, pointed ears, long bushy tail"
+lizard = "green lizard, long tail, sprawling legs"
+firefly = "glowing beetle-like insect with a bright yellow light on its tail"  # P43: beetle
+cyclops = "one-eyed giant with a single big eye in the middle of the forehead"
+genie = "blue genie with a wisp tail instead of legs, rising from a lamp"  # P43: elf
+spy = "secret agent in a trench coat, hat and sunglasses"  # P43: soldier
+poacher = "hunter in a khaki vest holding a rifle"  # P43: soldier
+robber = "burglar with a black eye mask, striped shirt and a money sack"
+stickman = "stick figure made of thin black lines with a round head"
+"stone golem" = "giant made of stacked grey stone blocks"
+"bank manager" = "man in a suit and tie holding a briefcase"
+"financial advisor" = "woman in a business suit holding a clipboard"
+statue = "marble statue of a person standing on a stone pedestal"  # P43: man
+
+# Ploché a drobné věci
+frisbee = "red plastic flying disc toy with a raised rim, tilted to show its top"  # P43: plate; pilot: mirror
+receipt = "long white paper till receipt with printed rows of prices and a total, curled at the bottom"  # P43: recycling bin; pilot: checklist
+"playing card" = "single playing card, ace of hearts"  # P43: fuel can
+passport = "small dark red booklet with the gold word PASSPORT and a globe emblem on the cover"  # P43: man bust; pilot: book
+portrait = "framed painting of a face in a golden frame"  # P43: bust
+"mahjong tile" = "small white tile with a carved green symbol"  # P43: speaker
+seashell = "spiral sea snail shell"  # P43: spinning top
+towel = "folded bath towel"  # P43: payphone
+net = "fishing net on a wooden pole"  # P43: rolling pin
+ammo = "box of bullets with brass cartridges"  # P43: beverage can
+snowboard = "board with two bindings on top, no wheels"  # P43: skateboard
+"golf ball" = "white dimpled golf ball on a tee"  # P43: tree
+cape = "superhero cape flowing from a shoulder clasp"  # P43: vase
+
+# Ostatní věci
+"paper ball" = "crumpled ball of white paper"  # P43: egg
+coffin = "wooden coffin with a cross on the lid"  # P43: cooking pot
+ramp = "wooden skate ramp with a sloped surface"  # P43: door
+chimney = "red brick chimney on a piece of roof"  # P43: bollard
+orange = "orange citrus fruit with a green leaf"  # P43: volleyball
+marshmallow = "white puffy cylinder marshmallow on a stick"  # P43: cotton candy
+pie = "round baked pie with a lattice crust"  # P43: pizza
+broomstick = "witch's flying broom with a twig bundle"  # P43: broom
+pinata = "colorful paper donkey pinata"  # P43: bush
+firework = "firework rocket with a fuse and a pointed tip"  # P43: feather duster
+dynamite = "bundle of red dynamite sticks with a fuse"  # P43: spray can
+boomerang = "curved wooden V-shaped boomerang"  # P43: hoe
+crossbow = "medieval crossbow with a bow across the stock"  # P43: gun
+dishwasher = "kitchen dishwasher with the door open and plate racks inside"  # P43: storage bin
+jetpack = "backpack with two rocket thrusters and flames"  # P43: suitcase
+spaghetti = "plate of spaghetti with tomato sauce"
+fuel = "red jerry can of fuel"
+mane = "lion's mane, big shaggy ring of hair"
+searchlight = "big searchlight lamp on a stand"
+snowmobile = "snow vehicle with front skis and a rear track"

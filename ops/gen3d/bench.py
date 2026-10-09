@@ -35,7 +35,9 @@ WORK_DIR = Path("D:/claude/_gen3d-bench")
 IMAGE_MODELS = ("zimage", "klein")
 STAGES = ("imageS", "meshS", "finishS", "totalS")
 MAX_TRIS = 5000
-PROMPT = tomllib.loads((HERE / "config.toml").read_text(encoding="utf-8"))["prompt"]
+PROMPT = tomllib.loads((HERE / "config.toml").read_text(encoding="utf-8"))["prompts"][
+    "prop"
+]["a"]
 
 
 def load_nouns(path: Path) -> list[str]:
