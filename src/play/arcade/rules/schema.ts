@@ -281,6 +281,31 @@ function logicIssues(rules: readonly Rule[], logic: Logic | undefined): string[]
   return issues;
 }
 
+/** Po kolika ticích přijde doplněná fáze po té před ní – jako `LOGIC EXAMPLE` promptu režiséra (`director/prompt.ts`) a šablona `break`. */
+export const PHASE_ENTRY_TICKS = 240;
+
+/**
+ * Deterministická oprava odpovědi režiséra (P45B T11): fáze, na kterou pravidlo reaguje
+ * (`when.phase`, `when.phaseExit`, `if.inPhase`), ale žádné do ní nepřepne, dostane vstupní
+ * pravidlo – každých `PHASE_ENTRY_TICKS` tiků z fáze, která je v deklaraci před ní. Jen
+ * tenhle tvar: fázi, kterou nikdo nečte, nechá být a `logicIssues` ji dál odmítne. Bez místa
+ * v rozpočtu pravidel nebo s obsazeným `id` se fáze nedoplní. Vstupy jdou na konec v obráceném
+ * pořadí, ať dvě doplněné fáze za sebou nepřeskočí v jednom tiku obě.
+ */
+export function withPhaseEntries(rules: readonly Rule[], logic: Logic | undefined): readonly Rule[] {
+  const phases = logic?.phases ?? [];
+  const uses = rules.flatMap(logicRefsOf).filter((ref) => ref.kind === 'phase');
+  const added: Rule[] = [];
+  phases.forEach((phase, index) => {
+    const id = `enter_${phase.id}`;
+    const read = uses.some((ref) => ref.name === phase.id && ref.use === 'read');
+    const entered = uses.some((ref) => ref.name === phase.id && ref.use === 'write');
+    if (index === 0 || !read || entered || rules.length + added.length >= RULES_MAX || rules.some((rule) => rule.id === id)) return;
+    added.unshift({ id, verb: 'advance', when: { every: PHASE_ENTRY_TICKS }, if: [{ inPhase: phases[index - 1]!.id }], do: [{ goPhase: phase.id }] });
+  });
+  return added.length === 0 ? rules : [...rules, ...added];
+}
+
 /**
  * Soudí pravidla proti rolím specu – co schéma jednoho pole neunese: odkazy na
  * role, jednoznačnost id, čítač s právě jednou mezí a efekty mířící na tělo,

@@ -13,7 +13,7 @@ import { draftForControl } from '@/play/draft';
 import { genreSpecSchema } from '@/play/genre/contract';
 import { readGameSpec } from '@/play/spec';
 
-import { modelRulesSchema, ruleDoSchema, ruleIfSchema, ruleWhenSchema } from '../schema';
+import { PHASE_ENTRY_TICKS, RULES_MAX, modelRulesSchema, ruleDoSchema, ruleIfSchema, ruleWhenSchema, withPhaseEntries } from '../schema';
 import { RULE_TEMPLATES, TEMPLATE_NAMES, expandTemplate } from '../templates';
 
 const base = draftForControl('a cat collects fish in the garden', 'move_free')!;
@@ -142,5 +142,45 @@ describe('logic block and rule constructs v2', () => {
       expect(parsed.success ? parsed.data : parsed.error.issues, name).toEqual(rules);
       expect(RULE_TEMPLATES[name].rules.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('withPhaseEntries: a phase a rule reacts to gets an entry (director answers, T11)', () => {
+  const typed = (rules: unknown) => modelRulesSchema.parse(rules);
+  // `rush` už do vlny nepřepne; `bang` na fázi `wave` dál reaguje (`if.inPhase`).
+  const unentered = typed(RULES.map((rule) => (rule.id === 'rush' ? { ...rule, do: [{ wave: { role: 'bat', count: 3, at: 'edge' } }] } : rule)));
+  const withBoss = { ...LOGIC, phases: [...LOGIC.phases, { id: 'boss' }] };
+
+  it('enters it from the phase before it every PHASE_ENTRY_TICKS, and the spec then reads', () => {
+    expect(issuesOf(LOGIC, unentered)).toContain('/logic/phases/1: no rule enters phase wave – add a rule with {"goPhase":"wave"}');
+    const entered = withPhaseEntries(unentered, LOGIC);
+    expect(entered.slice(unentered.length)).toEqual([{ id: 'enter_wave', verb: 'advance', when: { every: PHASE_ENTRY_TICKS }, if: [{ inPhase: 'calm' }], do: [{ goPhase: 'wave' }] }]);
+    expect(issuesOf(LOGIC, entered)).toEqual([]);
+  });
+
+  it('leaves a phase a rule already enters as it is', () => {
+    const rules = typed(RULES);
+    expect(withPhaseEntries(rules, LOGIC)).toBe(rules);
+  });
+
+  it('leaves a phase nobody reacts to alone, still refused', () => {
+    const rules = typed(RULES);
+    expect(withPhaseEntries(rules, withBoss)).toBe(rules);
+    expect(issuesOf(withBoss, withPhaseEntries(rules, withBoss))).toContain('/logic/phases/2: no rule enters phase boss – add a rule with {"goPhase":"boss"}');
+  });
+
+  it('two such phases in a row: the later entry goes first, so one tick never passes through both', () => {
+    const rules = typed([...unentered, { id: 'fin', verb: 'win', when: { phase: 'boss' }, do: [{ win: true }] }]);
+    const added = withPhaseEntries(rules, withBoss).slice(rules.length);
+    expect(added.map((rule) => [rule.id, rule.if])).toEqual([['enter_boss', [{ inPhase: 'wave' }]], ['enter_wave', [{ inPhase: 'calm' }]]]);
+    expect(issuesOf(withBoss, [...rules, ...added])).toEqual([]);
+  });
+
+  it('adds nothing without room in the rule budget or with its id taken', () => {
+    const pad = (id: string) => ({ id, verb: 'pad', when: { press: 'alt' }, do: [{ score: 1 }] });
+    const full = typed([...unentered, ...Array.from({ length: RULES_MAX - unentered.length }, (_, i) => pad(`pad${String(i)}`))]);
+    expect(withPhaseEntries(full, LOGIC)).toBe(full);
+    const taken = typed([...unentered, pad('enter_wave')]);
+    expect(withPhaseEntries(taken, LOGIC)).toBe(taken);
   });
 });
