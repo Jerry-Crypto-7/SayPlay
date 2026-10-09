@@ -1,0 +1,43 @@
+# P45D T16: chybějící podstatná jména, pro která se model negeneruje (čte scripts/p45d/pick-nouns.mjs).
+# Jedno jméno na řádek, `#` uvozuje komentář. Základ je seznam vynechaných z evals/play/p43/gen3d-nouns.txt.
+
+# Jevy – kreslí je scéna jako efekt, ne model.
+fire
+rain
+wind
+tide
+spark
+ash
+pollen
+northern light
+puddle
+
+# Kulisy a terén – část úrovně, ne předmět.
+crater
+rail
+board
+vine
+
+# Abstraktní nebo dokument bez tvaru.
+song
+story
+poem
+movie
+opera
+karaoke
+sudoku
+extra work
+finance team
+quarterly budget
+expense report
+electricity bill
+mortgage paper
+paper
+pin
+
+# Obecné role bez vlastní podoby.
+owner
+defender
+
+# Šum rozkladu vět.
+mar

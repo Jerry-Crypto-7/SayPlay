@@ -15,4 +15,5 @@ export declare function catalogBatch(
   viewed?: Map<string, string>,
   aliases?: Record<string, string[]>,
 ): Promise<{ schema: 'catalog-batch.v1'; entries: CatalogBatchEntry[] }>;
-export declare function blindQuestion(sheet: string, schemaFile: string): { cwd: string; args: string[] };
+export declare function blindQuestion(sheet: string, schemaFile: string, question?: string): { cwd: string; args: string[] };
+export declare function ask(sheet: string, schemaFile: string, answerFile: string, question?: string): Promise<{ code: number | null; seconds: number; stderr: string }>;
