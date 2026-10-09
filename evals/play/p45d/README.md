@@ -21,7 +21,15 @@ P43 `after-b.json` měl hrdinu modelem 20/23 nad buildem `a11e657c`; navíc dnes
 
 **Hrdinové panelu bez modelu (vstup pro T16):** f08 unicorn, f24 cyclops, m09 ninja cat, u08 mole.
 
-**P45A v `origin/main`:** ne – `git log origin/main --grep "P45A"` je prázdný a `evals/play/p45/` neexistuje (8. 10. 2026). Měření nad vývojovým panelem P45A čeká na sloučení (T20).
+**P45A v `origin/main`:** 8. 10. ne; 9. 10. ano (`c5260d42`, `evals/play/p45/` existuje). P45B a P45C v `main` 9. 10. ještě nejsou.
+
+### Sloučení s `main` (T20, 9. 10. 2026) – `882308a8`
+
+`origin/main` `fc6b99ba` = P45A + P45E. Konflikty jen v souborech P45D, které si P45E vzal z rané větve P45D: měřidlo „živá“ zůstalo ve verzi T24 (vystředěný výřez), test výběru jmen a `catalog-motion.json` přišly z P45E (pokrytí ze snímku, třídy těla pro 23 nových modelů). Zakázané cesty (jádro, pravidla, kusy, skládání, režisér, kontrakt) beze změny.
+
+- **Celá sada sama:** 12 297 zelených, 32 červených – všechny časové (28 vypršení, 3 časové limity, čekání na zámek) a jeden chybějící gitignorovaný plán P8 ve worktree. Na stroji současně běželo 13 autopilotů (CPU 100 %). Ze 4 souborů červených i při druhém běhu 3 projdou samy; test „návrh do 3 s“ padá stejně na starém `main` `0714a352` (3,1 s), P45D ho nemění.
+- **Replay brána:** 38/38.
+- **E2E `/play`** (`play-physics-replay`, `p37c-ghost` místo smazaných `witness-replay` a `branch-replay`, `play-hero-size`, `interface-language`, `p35-perf`, `p45d-toy-motion`): zelené kromě `p45d-toy-motion › reduce › runner-zombie` – vyprší 180 s v profilu Pixel 7 se 4× pomalejším CPU. Bez škrcení běží runner se zombíkem zapnuto, pod `reduce` i s `?toy=off` stejně (medián 16–17 ms na snímek, geometrie stálá 27), se škrcením na přetíženém stroji 1,8–3,1 s na snímek. **Neověřeno v klidu** – při T14 test prošel; zopakovat na stroji bez jiné zátěže.
 
 ## Je postava živá – `alive-baseline.json`
 
