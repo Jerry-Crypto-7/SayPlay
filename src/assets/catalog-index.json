@@ -19613,6 +19613,83 @@
           0.27298
         ]
       }
+    },
+    {
+      "assetId": "gen3d-bank-manager",
+      "tags": [
+        "bank manager"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bank-manager-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29458,
+          0,
+          -0.15687
+        ],
+        "max": [
+          0.29458,
+          0.99756,
+          0.15687
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-chimney",
+      "tags": [
+        "chimney"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-chimney-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31822,
+          0,
+          -0.25923
+        ],
+        "max": [
+          0.31822,
+          0.99759,
+          0.25923
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coffin",
+      "tags": [
+        "coffin",
+        "casket"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coffin-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.50263,
+          0,
+          -0.67843
+        ],
+        "max": [
+          1.50263,
+          0.99966,
+          0.67843
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-firefly",
+      "tags": [
+        "firefly"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-firefly-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.07559,
+          0,
+          -0.34468
+        ],
+        "max": [
+          1.07559,
+          0.99929,
+          0.34468
+        ]
+      }
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "cde95217e7e8f7f547261549b763112ff17f11be0e74fd50c565c3cf88182d90",
+ "catalogHash": "8291b2df362573db072c95456599a34007b21efb18e327b3a371c1561ee1a5da",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -953,6 +953,10 @@
   "gen3d-juice": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-noodle": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-orb": {"class":"prop"},
-  "gen3d-printer": {"class":"prop"}
+  "gen3d-printer": {"class":"prop"},
+  "gen3d-bank-manager": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-chimney": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-coffin": {"class":"prop"},
+  "gen3d-firefly": {"class":"prop"}
  }
 }

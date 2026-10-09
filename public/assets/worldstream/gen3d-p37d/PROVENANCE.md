@@ -178,3 +178,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-noodle` | noodle, ramen | 4701 / 2261 |
 | `gen3d-orb` | orb | 4703 / 2317 |
 | `gen3d-printer` | printer | 4693 / 2286 |
+| `gen3d-bank-manager` | bank manager | 4727 / 2335 |
+| `gen3d-chimney` | chimney | 4586 / 2276 |
+| `gen3d-coffin` | coffin, casket | 4744 / 2340 |
+| `gen3d-firefly` | firefly | 4746 / 2370 |
