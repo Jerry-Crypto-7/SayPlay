@@ -3,12 +3,12 @@
  "sentence": "a lifeguard rescues swimmers from sharks at a crowded beach",
  "axis": "rescue",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:32:49.556Z",
- "ms": 9105,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:37:23.883Z",
+ "ms": 20658,
  "answer": {
-  "plan": "Create a quest‑style beach rescue game where the lifeguard saves swimmers from sharks.",
+  "plan": "Create a quest‑style rescue game where the lifeguard must reach a swimmer before a shark catches them, using a simple two‑phase timer to spawn the shark.",
   "spec": {
    "genre": "quest",
    "mode": "spatial",
@@ -17,7 +17,7 @@
     {
      "label": "swimmer",
      "does": "reach",
-     "verb": "free",
+     "verb": "rescue",
      "states": 2,
      "patrol": false
     },
@@ -29,13 +29,13 @@
      "patrol": false
     }
    ],
-   "heroAction": "sweep",
+   "heroAction": "none",
    "setting": "crowded beach",
    "palette": "beach",
    "params": {
-    "seconds": 60,
-    "paceBudgetPct": 70,
-    "count": 3,
+    "seconds": null,
+    "paceBudgetPct": null,
+    "count": null,
     "chasers": 1,
     "lives": 3,
     "targetScore": 0,
@@ -43,14 +43,14 @@
    },
    "counts": {
     "enemy": 1,
-    "target": 3
+    "target": 1
    },
    "ruleRoles": [
     {
      "id": "swimmer",
      "kind": "target",
      "label": "swimmer",
-     "count": 3
+     "count": 1
     },
     {
      "id": "shark",
@@ -59,11 +59,33 @@
      "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "shark",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "rescue_swimmer",
-     "verb": "free",
+     "id": "spawn_shark",
+     "verb": "spawn",
+     "when": {
+      "timer": "spawn_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "shark",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "win_rescue",
+     "verb": "interact",
      "when": {
       "contact": [
        "player",
@@ -77,36 +99,7 @@
      ],
      "do": [
       {
-       "grab": "other"
-      },
-      {
-       "count": {
-        "counter": "items",
-        "amount": 1
-       }
-      }
-     ]
-    },
-    {
-     "id": "shark_attack",
-     "verb": "attack",
-     "when": {
-      "contact": [
-       "player",
-       "shark"
-      ]
-     },
-     "if": [
-      {
-       "holding": "swimmer"
-      }
-     ],
-     "do": [
-      {
-       "damage": 1
-      },
-      {
-       "release": true
+       "win": true
       }
      ]
     }
@@ -115,15 +108,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave"
+      "id": "spawn_timer"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "waiting"
      },
      {
-      "id": "wave"
+      "id": "action"
      }
     ],
     "events": null

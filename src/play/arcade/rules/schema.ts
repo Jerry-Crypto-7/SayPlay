@@ -281,7 +281,7 @@ function logicIssues(rules: readonly Rule[], logic: Logic | undefined): string[]
   return issues;
 }
 
-/** Po kolika ticích přijde doplněná fáze po té před ní – jako `LOGIC EXAMPLE` promptu režiséra (`director/prompt.ts`) a šablona `break`. */
+/** Po kolika ticích přijde doplněná fáze po té před ní – jako `LOGIC EXAMPLE` promptu režiséra z T10 a šablona `break`. */
 export const PHASE_ENTRY_TICKS = 240;
 
 /**

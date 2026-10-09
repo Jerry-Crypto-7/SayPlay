@@ -3,12 +3,12 @@
  "sentence": "race hot air balloons over a desert canyon",
  "axis": "race",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:35:23.260Z",
- "ms": 6412,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:41:36.487Z",
+ "ms": 12690,
  "answer": {
-  "plan": "Create a voyage‑race game where the player pilots a hot‑air balloon through a desert canyon, racing against another balloon to reach the finish line first.",
+  "plan": "Create a voyage‑race game where the player pilots a hot‑air balloon through a desert canyon, competing against a single rival balloon.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -19,14 +19,14 @@
      "does": "reach",
      "verb": "race",
      "states": null,
-     "patrol": null
+     "patrol": false
     },
     {
-     "label": "balloon",
+     "label": "rival balloon",
      "does": "reach",
      "verb": "race",
      "states": null,
-     "patrol": null
+     "patrol": false
     }
    ],
    "heroAction": "none",
@@ -35,73 +35,79 @@
    "params": null,
    "ruleRoles": [
     {
-     "id": "finish",
-     "kind": "destination",
-     "label": "finish line",
+     "id": "player",
+     "kind": "exit",
+     "label": "player balloon",
      "count": null
     },
     {
-     "id": "opponent",
-     "kind": "chaser",
+     "id": "rival",
+     "kind": "exit",
      "label": "rival balloon",
      "count": null
     }
    ],
-   "things": [
-    {
-     "role": "finish",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "opponent",
-     "start": "hidden",
-     "physics": null
-    }
-   ],
+   "things": null,
    "rules": [
     {
-     "id": "spawn_opponent",
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "race",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "goRace",
+     "verb": "wait",
+     "when": {
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "race"
+      }
+     ]
+    },
+    {
+     "id": "spawnRival",
      "verb": "spawn",
      "when": {
-      "every": 60
+      "phase": "race"
      },
      "if": null,
      "do": [
       {
        "spawn": {
-        "role": "opponent",
+        "role": "rival",
         "at": "player"
        }
       }
      ]
     },
     {
-     "id": "spawn_finish",
-     "verb": "spawn",
-     "when": {
-      "every": 60
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "finish",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "reach_finish",
+     "id": "checkWin",
      "verb": "reach",
      "when": {
-      "contact": [
-       "player",
-       "finish"
-      ]
+      "phase": "race"
      },
-     "if": null,
+     "if": [
+      {
+       "near": {
+        "role": "rival",
+        "within": 10
+       }
+      }
+     ],
      "do": [
       {
        "win": true
@@ -113,7 +119,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "race_timer"
+      "id": "race"
      }
     ],
     "phases": [

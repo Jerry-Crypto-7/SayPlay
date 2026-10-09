@@ -3,12 +3,12 @@
  "sentence": "FIREFIGHTER SAVES KITTENS FROM A BURNING TREE",
  "axis": "rescue",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:33:02.608Z",
- "ms": 13050,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:37:45.037Z",
+ "ms": 21153,
  "answer": {
-  "plan": "Create a quest‑style rescue game where a firefighter hero frees kittens from a burning tree while avoiding a shadowy pursuer and collecting coins for bonus points.",
+  "plan": "Create a spatial quest where a firefighter rescues kittens from a burning tree while avoiding a shadowy pursuer and collecting coins.",
   "spec": {
    "genre": "quest",
    "mode": "spatial",
@@ -40,13 +40,13 @@
    "setting": "village",
    "palette": "forest",
    "params": {
-    "seconds": 60,
+    "seconds": 30,
     "paceBudgetPct": 70,
     "count": 3,
     "chasers": 1,
     "lives": 3,
-    "targetScore": 500,
-    "timeLimit": 60
+    "targetScore": 0,
+    "timeLimit": 0
    },
    "counts": {
     "enemy": 1,
@@ -76,7 +76,7 @@
    "rules": [
     {
      "id": "free_kitten",
-     "verb": "reach",
+     "verb": "interact",
      "when": {
       "contact": [
        "player",
@@ -90,33 +90,13 @@
      ],
      "do": [
       {
-       "score": 100
-      },
-      {
        "grab": "other"
-      }
-     ]
-    },
-    {
-     "id": "escape_shadow",
-     "verb": "chase",
-     "when": {
-      "contact": [
-       "player",
-       "shadow"
-      ]
-     },
-     "if": [
-      {
-       "holding": "kitten"
-      }
-     ],
-     "do": [
-      {
-       "damage": 1
       },
       {
-       "respawn": true
+       "set": {
+        "var": "free",
+        "value": 1
+       }
       }
      ]
     },
@@ -132,43 +112,52 @@
      "if": null,
      "do": [
       {
-       "score": 10
-      },
-      {
-       "grab": "other"
+       "add": {
+        "var": "score",
+        "amount": 10
+       }
       }
      ]
     },
     {
-     "id": "win_condition",
-     "verb": "reach",
+     "id": "shadow_chase",
+     "verb": "chase",
      "when": {
-      "counter": {
-       "name": "score",
-       "atLeast": 500
-      }
+      "contact": [
+       "player",
+       "shadow"
+      ]
      },
      "if": null,
      "do": [
       {
-       "win": true
+       "damage": 1
       }
      ]
     }
    ],
    "logic": {
-    "vars": null,
+    "vars": [
+     {
+      "id": "free",
+      "start": 0
+     },
+     {
+      "id": "score",
+      "start": 0
+     }
+    ],
     "timers": [
      {
-      "id": "fire_timer"
+      "id": "phase1"
      }
     ],
     "phases": [
      {
-      "id": "burning"
+      "id": "first"
      },
      {
-      "id": "extinguish"
+      "id": "second"
      }
     ],
     "events": null

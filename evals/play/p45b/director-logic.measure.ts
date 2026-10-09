@@ -85,6 +85,8 @@ async function writeSummary(fixtures: readonly LogicAnswerFixture[], endpoint: s
     directorPromptVersion: DIRECTOR_PROMPT_VERSION,
     raw: hit((verdict) => verdict.rawPassed),
     repaired: hit((verdict) => verdict.passed),
+    // T12a: čísla záznamu 3 z T11 (příklad bez spouštěče a čtenáře každé deklarace) vedle nového.
+    before: { record: 'T11 record 3', directorPromptVersion: '3b597af4', raw: { hit: 0, of: 25 }, repaired: { hit: 0, of: 25 } },
     phasesEntered: verdicts.filter((verdict) => verdict.phasesEntered.length > 0).length,
     wroteLogic: verdicts.filter((verdict) => verdict.wroteLogic).length,
     answered: fixtures.filter((fixture) => fixture.answer !== null).length,

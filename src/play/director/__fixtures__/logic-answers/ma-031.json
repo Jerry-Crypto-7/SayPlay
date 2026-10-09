@@ -3,12 +3,12 @@
  "sentence": "a knight fights a dragon to save the princess",
  "axis": "defeat",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:33:42.896Z",
- "ms": 11053,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:38:43.818Z",
+ "ms": 9611,
  "answer": {
-  "plan": "Create an arena‑style duel where the knight battles a dragon to reach and save the princess, with a timed rescue phase.",
+  "plan": "arena fight with timed phases",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -29,7 +29,7 @@
      "patrol": false
     }
    ],
-   "heroAction": "fix",
+   "heroAction": "none",
    "setting": "dusty town",
    "palette": "castle",
    "params": null,
@@ -54,58 +54,74 @@
    "things": null,
    "rules": [
     {
-     "id": "startTimer",
-     "verb": "start",
+     "id": "startPhase",
+     "verb": "wait",
      "when": {
-      "every": 60
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
        "startTimer": {
-        "timer": "rescue",
-        "ticks": 300
+        "timer": "battle",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "dragonSpawn",
-     "verb": "spawn",
+     "id": "battleTimer",
+     "verb": "wait",
      "when": {
-      "timer": "rescue"
+      "timer": "battle"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "dragon",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "secondPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
        "spawn": {
-        "role": "dragon",
+        "role": "princess",
         "at": "player"
        }
       }
      ]
     },
     {
-     "id": "reachPrincess",
-     "verb": "reach",
+     "id": "dragonContact",
+     "verb": "fight",
      "when": {
       "contact": [
        "player",
-       "princess"
+       "dragon"
       ]
      },
      "if": [
       {
-       "counter": {
-        "name": "health",
-        "atLeast": 1,
-        "below": null
-       }
+       "notHolding": true
       }
      ],
      "do": [
       {
-       "win": true
+       "damage": 1
       }
      ]
     }
@@ -114,15 +130,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "rescue"
+      "id": "battle"
      }
     ],
     "phases": [
      {
-      "id": "battle"
+      "id": "first"
      },
      {
-      "id": "rescue"
+      "id": "second"
      }
     ],
     "events": null

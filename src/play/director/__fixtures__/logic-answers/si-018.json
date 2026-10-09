@@ -3,89 +3,41 @@
  "sentence": "survive in the desert for 3 minutes",
  "axis": "survive",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:33:59.416Z",
- "ms": 16518,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:38:54.925Z",
+ "ms": 11106,
  "answer": {
-  "plan": "Create an arena escape game where a fox survives a 3‑minute desert run chased by a scorpion.",
+  "plan": "Create an arena‑escape game where the player must survive 180 seconds in a desert, with a simple timer that drives the game’s phases.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
    "hero": "fox",
-   "cast": [
-    {
-     "label": "scorpion",
-     "does": "chase_me",
-     "verb": "chase",
-     "states": null,
-     "patrol": false
-    }
-   ],
+   "cast": [],
    "heroAction": "none",
    "setting": "desert",
    "palette": "desert",
    "params": {
-    "entryDistance": 8000,
-    "chaseLead": 60,
+    "entryDistance": 6000,
+    "chaseLead": 0,
     "seconds": 30,
     "items": 1,
-    "pursuitCeiling": 120,
-    "itemSizePct": 120,
+    "pursuitCeiling": 90,
+    "itemSizePct": 100,
     "chasers": 1,
-    "chaserSpeed": 70,
+    "chaserSpeed": 50,
     "enemies": 1,
-    "enemyHp": 3,
-    "enemySpeed": 80,
-    "playerHp": 3,
+    "enemyHp": 1,
+    "enemySpeed": 40,
+    "playerHp": 1,
     "lives": 1,
     "targetScore": 0,
-    "timeLimit": 0
+    "timeLimit": 3
    },
-   "counts": {
-    "enemy": 1,
-    "collectible": null
-   },
-   "ruleRoles": [
-    {
-     "id": "scorpion",
-     "kind": "chaser",
-     "label": "scorpion",
-     "count": 1
-    }
-   ],
+   "counts": null,
+   "ruleRoles": [],
    "things": null,
-   "rules": [
-    {
-     "id": "start_timer",
-     "verb": "start",
-     "when": {
-      "every": 1
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "survival",
-        "ticks": 180
-       }
-      }
-     ]
-    },
-    {
-     "id": "win_on_timer",
-     "verb": "survive",
-     "when": {
-      "timer": "survival"
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
-      }
-     ]
-    }
-   ],
+   "rules": [],
    "logic": {
     "vars": null,
     "timers": [
@@ -98,7 +50,7 @@
       "id": "start"
      },
      {
-      "id": "end"
+      "id": "survive"
      }
     ],
     "events": null

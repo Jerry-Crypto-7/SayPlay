@@ -3,12 +3,12 @@
  "sentence": "temple run but you're a banana running from a monkey",
  "axis": "escape",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:34:49.004Z",
- "ms": 5483,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:40:20.401Z",
+ "ms": 15067,
  "answer": {
-  "plan": "runner",
+  "plan": "Create a runner game where a banana flees a monkey through a temple setting, using a simple two‑phase timer logic.",
   "spec": {
    "genre": "runner",
    "mode": "default",
@@ -24,51 +24,61 @@
    ],
    "heroAction": "none",
    "setting": "temple",
-   "palette": "cave",
+   "palette": "castle",
    "params": null,
-   "counts": {
-    "enemy": 1,
-    "collectible": null
-   },
+   "counts": null,
    "ruleRoles": [
     {
      "id": "monkey",
      "kind": "chaser",
      "label": "monkey",
-     "count": 1
+     "count": null
     }
    ],
    "things": null,
    "rules": [
     {
-     "id": "start_escape",
-     "verb": "run",
+     "id": "startTimer",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "ground"
-      ]
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
        "startTimer": {
         "timer": "escape",
-        "ticks": 600
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "escape_timer",
-     "verb": "escape",
+     "id": "phaseSwitch",
+     "verb": "wait",
      "when": {
       "timer": "escape"
      },
      "if": null,
      "do": [
       {
-       "win": true
+       "goPhase": "second"
+      }
+     ]
+    },
+    {
+     "id": "phaseSecond",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "monkey",
+        "at": "player"
+       }
       }
      ]
     }
@@ -82,10 +92,10 @@
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "escape"
+      "id": "second"
      }
     ],
     "events": null

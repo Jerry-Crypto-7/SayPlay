@@ -3,12 +3,12 @@
  "sentence": "boat race through a jungle river full of crocodiles",
  "axis": "race",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:35:11.043Z",
- "ms": 5704,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:41:14.492Z",
+ "ms": 13657,
  "answer": {
-  "plan": "Create a voyage‑race game where the player drives a boat through a jungle river while avoiding crocodiles, with a timed race to finish before the timer runs out.",
+  "plan": "Create a voyage‑race game where the player steers a boat through a jungle river teeming with crocodiles, using a simple phase‑timer mechanic to spawn waves of crocodiles.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -19,11 +19,11 @@
      "does": "avoid",
      "verb": "swim",
      "states": null,
-     "patrol": false
+     "patrol": true
     }
    ],
    "heroAction": "none",
-   "setting": "jungle river full of crocodiles",
+   "setting": "jungle river",
    "palette": "jungle",
    "params": {
     "hazards": 1,
@@ -39,7 +39,7 @@
     "gravity": 800,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 60
+    "timeLimit": 0
    },
    "ruleRoles": [
     {
@@ -47,85 +47,56 @@
      "kind": "hazard",
      "label": "crocodile",
      "count": null
-    },
-    {
-     "id": "finishLine",
-     "kind": "destination",
-     "label": "finish line",
-     "count": null
     }
    ],
-   "things": [
-    {
-     "role": "crocodile",
-     "start": "hidden",
-     "physics": true
-    },
-    {
-     "role": "finishLine",
-     "start": "hidden",
-     "physics": true
-    }
-   ],
+   "things": null,
    "rules": [
     {
-     "id": "startRace",
-     "verb": "drive",
+     "id": "startTimer",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "finishLine"
-      ]
+      "phase": "start"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "win": true
-      }
-     ]
-    },
-    {
-     "id": "crocodileHit",
-     "verb": "avoid",
-     "when": {
-      "hit": "crocodile"
-     },
-     "if": [
-      {
-       "holding": "player"
-      }
-     ],
-     "do": [
-      {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "timerEnd",
-     "verb": "race",
-     "when": {
-      "timer": "race"
-     },
-     "if": [
-      {
-       "counter": {
-        "name": "score",
-        "atLeast": 0,
-        "below": 1
+       "startTimer": {
+        "timer": "wave",
+        "ticks": 60
        }
       }
-     ],
+     ]
+    },
+    {
+     "id": "waveSpawn",
+     "verb": "wait",
+     "when": {
+      "timer": "wave"
+     },
+     "if": null,
      "do": [
       {
-       "lose": true
+       "wave": {
+        "role": "crocodile",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "resetWave",
+     "verb": "wait",
+     "when": {
+      "timer": "wave"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "wave",
+        "ticks": 60
+       }
       }
      ]
     }
@@ -134,7 +105,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "race"
+      "id": "wave"
      }
     ],
     "phases": [
@@ -142,7 +113,7 @@
       "id": "start"
      },
      {
-      "id": "race"
+      "id": "running"
      }
     ],
     "events": null

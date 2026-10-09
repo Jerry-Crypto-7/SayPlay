@@ -3,12 +3,12 @@
  "sentence": "A grandma karate fights a gang of pigeons in the park",
  "axis": "defeat",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:33:11.927Z",
- "ms": 9319,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:38:06.643Z",
+ "ms": 21605,
  "answer": {
-  "plan": "arena fight with grandma karate vs pigeon gang in park",
+  "plan": "Create an arena‑fight game where a karate‑practicing grandma battles a gang of pigeons in a park, using a simple wave‑based logic system.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -29,12 +29,12 @@
      "patrol": false
     }
    ],
-   "heroAction": "fix",
+   "heroAction": "paint",
    "setting": "park",
    "palette": "forest",
    "params": null,
    "counts": {
-    "enemy": 2,
+    "enemy": null,
     "collectible": null
    },
    "ruleRoles": [
@@ -54,67 +54,78 @@
    "things": null,
    "rules": [
     {
-     "id": "pigeon_fight",
-     "verb": "fight",
+     "id": "spawn_wave",
+     "verb": "spawn",
      "when": {
-      "contact": [
-       "player",
-       "pigeon"
-      ]
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
-      },
-      {
-       "spawn": {
+       "wave": {
         "role": "pigeon",
-        "at": "player"
+        "count": 5,
+        "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "gang_fight",
-     "verb": "fight",
+     "id": "spawn_gang",
+     "verb": "spawn",
      "when": {
-      "contact": [
-       "player",
-       "gang"
-      ]
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "damage": 2
-      },
-      {
-       "spawn": {
+       "wave": {
         "role": "gang",
-        "at": "player"
+        "count": 3,
+        "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "win_condition",
-     "verb": "fight",
+     "id": "check_win",
+     "verb": "check",
      "when": {
-      "counter": {
-       "name": "health",
-       "atLeast": 0
-      }
+      "phase": "second"
      },
-     "if": null,
+     "if": [
+      {
+       "counter": {
+        "name": "health",
+        "atLeast": 1,
+        "below": 1
+       }
+      }
+     ],
      "do": [
       {
-       "win": true
+       "lose": true
       }
      ]
     }
    ],
-   "logic": null
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "phase_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "first"
+     },
+     {
+      "id": "second"
+     }
+    ],
+    "events": null
+   }
   }
  },
  "failure": null

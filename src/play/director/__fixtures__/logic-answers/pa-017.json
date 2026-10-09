@@ -3,12 +3,12 @@
  "sentence": "a spaceship shooting asteroids to survive",
  "axis": "survive",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:34:24.840Z",
- "ms": 13408,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:39:37.998Z",
+ "ms": 22486,
  "answer": {
-  "plan": "Create a shooter game where a spaceship shoots asteroids to survive.",
+  "plan": "Create a shooter‑style space survival game where the player’s spaceship shoots incoming asteroids while avoiding collisions to keep the ship alive.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -22,7 +22,7 @@
      "patrol": false
     }
    ],
-   "heroAction": "fix",
+   "heroAction": "none",
    "setting": "outer space",
    "palette": "space",
    "params": null,
@@ -59,20 +59,42 @@
        "damage": 1
       },
       {
-       "despawn": "other"
+       "despawn": "self"
       }
      ]
     },
     {
-     "id": "survive",
-     "verb": "survive",
+     "id": "hit_asteroid",
+     "verb": "hit",
      "when": {
-      "timer": "survival"
+      "contact": [
+       "player",
+       "asteroid"
+      ]
      },
      "if": null,
      "do": [
       {
-       "win": true
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "respawn_asteroid",
+     "verb": "spawn",
+     "when": {
+      "timer": "spawn_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "asteroid",
+        "at": "player"
+       }
       }
      ]
     }
@@ -81,15 +103,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "survival"
+      "id": "spawn_timer"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "survive"
+      "id": "second"
      }
     ],
     "events": null

@@ -3,12 +3,12 @@
  "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
  "axis": "collect",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:35:28.687Z",
- "ms": 5426,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:41:52.591Z",
+ "ms": 16104,
  "answer": {
-  "plan": "Create an arena‑escape game where the knight collects three keys while avoiding ghosts in a haunted castle.",
+  "plan": "Create an arena‑escape game where the knight collects three keys while ghosts chase him.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -24,7 +24,7 @@
     {
      "label": "ghost",
      "does": "avoid",
-     "verb": "avoid",
+     "verb": "obstacle",
      "states": null,
      "patrol": true
     }
@@ -34,7 +34,7 @@
    "palette": "castle",
    "params": null,
    "counts": {
-    "enemy": null,
+    "enemy": 1,
     "collectible": 3
    },
    "ruleRoles": [
@@ -58,25 +58,98 @@
     },
     {
      "id": "ghost1",
-     "kind": "hazard",
-     "label": "ghost",
-     "count": null
-    },
-    {
-     "id": "ghost2",
-     "kind": "hazard",
-     "label": "ghost",
-     "count": null
-    },
-    {
-     "id": "ghost3",
-     "kind": "hazard",
+     "kind": "chaser",
      "label": "ghost",
      "count": null
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "key1",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "key2",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "key3",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "ghost1",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
+    {
+     "id": "spawn_keys",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "key1",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_keys2",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "key2",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_keys3",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "key3",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_ghost",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "ghost1",
+        "at": "player"
+       }
+      }
+     ]
+    },
     {
      "id": "collect_key1",
      "verb": "collect",
@@ -156,20 +229,15 @@
      ]
     },
     {
-     "id": "ghost_hit",
-     "verb": "avoid",
+     "id": "ghost_chase",
+     "verb": "chase",
      "when": {
-      "hit": "ghost1"
+      "contact": [
+       "player",
+       "ghost1"
+      ]
      },
-     "if": [
-      {
-       "counter": {
-        "name": "health",
-        "atLeast": 1,
-        "below": 1
-       }
-      }
-     ],
+     "if": null,
      "do": [
       {
        "damage": 1
@@ -180,24 +248,17 @@
    "logic": {
     "vars": [
      {
-      "id": "keys_collected",
+      "id": "items",
       "start": 0
      }
     ],
-    "timers": [
-     {
-      "id": "escape_timer"
-     }
-    ],
+    "timers": [],
     "phases": [
      {
       "id": "start"
      },
      {
-      "id": "mid"
-     },
-     {
-      "id": "end"
+      "id": "play"
      }
     ],
     "events": null

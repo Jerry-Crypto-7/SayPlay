@@ -3,10 +3,10 @@
  "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
  "axis": "escape",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:34:43.521Z",
- "ms": 6771,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:40:05.335Z",
+ "ms": 14535,
  "answer": {
   "plan": "arena escape",
   "spec": {
@@ -18,13 +18,6 @@
      "label": "giant roomba",
      "does": "chase_me",
      "verb": "chase",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "exit",
-     "does": "reach",
-     "verb": "escape",
      "states": null,
      "patrol": false
     },
@@ -42,7 +35,7 @@
    "params": null,
    "counts": {
     "enemy": 1,
-    "collectible": null
+    "collectible": 1
    },
    "ruleRoles": [
     {
@@ -52,22 +45,16 @@
      "count": 1
     },
     {
-     "id": "exit",
-     "kind": "destination",
-     "label": "exit",
-     "count": 1
-    },
-    {
      "id": "cheese",
      "kind": "collectible",
      "label": "cheese",
-     "count": null
+     "count": 1
     }
    ],
    "things": null,
    "rules": [
     {
-     "id": "start_chase",
+     "id": "roomba_chase",
      "verb": "chase",
      "when": {
       "contact": [
@@ -75,10 +62,59 @@
        "roomba"
       ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
        "damage": 1
+      }
+     ]
+    },
+    {
+     "id": "roomba_spawn",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "roomba",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "cheese_spawn",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "cheese",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "escape_to_exit",
+     "verb": "escape",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -87,15 +123,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "chase_timer"
+      "id": "escape_timer"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "chase"
+      "id": "second"
      }
     ],
     "events": null

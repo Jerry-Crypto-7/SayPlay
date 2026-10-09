@@ -3,12 +3,12 @@
  "sentence": "zombie survival: shoot zombies, collect ammo, survive 5 waves",
  "axis": "survive",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:34:11.432Z",
- "ms": 12015,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:39:15.511Z",
+ "ms": 20585,
  "answer": {
-  "plan": "Create a shooter game where the player (fox) shoots zombies, collects ammo, and survives 5 waves of enemies.",
+  "plan": "Create a shooter game where the fox survives 5 zombie waves by shooting zombies and collecting ammo in a desert outpost.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -54,59 +54,83 @@
    "things": null,
    "rules": [
     {
-     "id": "shoot_zombie",
-     "verb": "shoot",
+     "id": "spawn_wave",
+     "verb": "spawn",
      "when": {
-      "contact": [
-       "player",
-       "zombie"
-      ]
+      "phase": "wave_start"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "damage": 1
-      },
-      {
-       "despawn": "other"
+       "wave": {
+        "role": "zombie",
+        "count": 5,
+        "at": "edge"
+       }
       }
      ]
     },
     {
-     "id": "collect_ammo",
-     "verb": "collect",
+     "id": "spawn_ammo",
+     "verb": "spawn",
      "when": {
-      "contact": [
-       "player",
-       "ammo"
-      ]
+      "phase": "wave_start"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "grab": "other"
-      },
+       "spawn": {
+        "role": "ammo",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "check_wave",
+     "verb": "wait",
+     "when": {
+      "phase": "wave_start"
+     },
+     "if": null,
+     "do": [
       {
-       "score": 10
+       "startTimer": {
+        "timer": "wave_timer",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "wave_timeout",
+     "verb": "wait",
+     "when": {
+      "timer": "wave_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "wave_end"
+      }
+     ]
+    },
+    {
+     "id": "wave_end",
+     "verb": "wait",
+     "when": {
+      "phase": "wave_end"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "wave_start"
       }
      ]
     }
    ],
    "logic": {
-    "vars": [
-     {
-      "id": "wave",
-      "start": 1
-     }
-    ],
+    "vars": null,
     "timers": [
      {
       "id": "wave_timer"
@@ -114,16 +138,10 @@
     ],
     "phases": [
      {
-      "id": "wave1"
+      "id": "wave_start"
      },
      {
-      "id": "wave2"
-     },
-     {
-      "id": "wave3"
-     },
-     {
-      "id": "wave4"
+      "id": "wave_end"
      }
     ],
     "events": null

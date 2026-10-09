@@ -173,3 +173,48 @@ restartu serveru s `PLAY_LAB=1`, který jejich laboratorní stránky potřebují
 **Brány nad sloučeným stavem:** replay brána 116/116 (+ `kernel-logic` 12 = dřívějších 128), hloubka
 zelená beze změny proti T9 (v pásmu 234/260 = 0,90, nečinný prohraje 260/260, víc životů 0,881;
 `depth.json` vrácen), obtížnost – `difficulty.json` bajtově stejný. Hranice plánu prázdné.
+
+## T12a – příklad, kde každá fáze a časovač mají spouštěč i čtenáře (9. 10.) – cíl nesplněn
+
+Stejný příkaz a soud jako T11. `director-logic.json` nese nový soud (`raw`, `repaired`) a vedle něj
+čísla záznamu 3 z T11 (`before`).
+
+| záznam (9. 10.) | prompt | deklaruje logiku | `raw` | `repaired` |
+|---|---|---|---|---|
+| 3 (T11) | příklad T10 (přežití: `every` přepne do roje, výhra na časovači) + `Course:` z T11 | 23/25 | 0/25 | 0/25 |
+| 4 | nový `LOGIC EXAMPLE` + věta pravidla v systémovém promptu | 25/25 | 1/25 (ma-048) | 1/25 |
+| 5 | + řádek `Course:` popisuje celé zapojení a zakazuje výhru/prohru na časovači a fázi | 24/25 | **1/25** (s008) | **1/25** |
+
+**Nový příklad** (`prompt.ts`): fáze `day` vstoupí v tiku 0 → `sunset` spustí časovač `dusk` jednou →
+`fall` na doběhnutí přepne do `night` → `swarm` na vstup do noci pustí jednoho netopýra od okraje.
+Vlastní výhru nemá – cíl drží žánr. Test `logic-answer-schema.test.ts` pouští příklad přes `direct()`
+a robota: projde bez opravného kola s prokázanou fází, časovačem i vlnou. Vlna pronásledovatele
+v Aréně je citlivá na čas: noc po 300, 480 a 600 tikách robot prohraje (netopýr ho chytí), po 180,
+900 a 1 200 vyhraje – příklad má 900. Fixtury a soud jsou záznam 5 (hash dnešního promptu).
+
+**Co řádek `Course:` hnul** (statický rozbor odpovědí, jedna odpověď může mít víc příčin):
+
+| zapojení | záznam 4 | záznam 5 |
+|---|---|---|
+| pozdější fáze, do které žádné pravidlo nepřepne (`goPhase`) | 23 | **18** |
+| výhra nebo prohra na časovači | 11 | **1** |
+| výhra nebo prohra na vstupu do fáze | 0 | 3 |
+| pravidlo na doběhnutí časovače přepne fázi (vzor příkladu) | 2 | **6** |
+| časovač, který nic nespustí | 11 | 12 |
+| časovač, který nic nečte | 10 | 9 |
+| časovač kratší než 10 s | 8 | 6 |
+| bez logiky | 0 | 1 (j05) |
+
+**Proč záznam 5 padá** (soud cestou produktu): 12× `ACTION_LOST` + `RULE_INVALID` (logika
+nezapojená a hra ztratí svědka věty; u útěků s003 h09 j10 může jít i o stav z `main` – Aréna
+s `ruleRoles` ztratí svědka útěku i bez pravidel, viz T10), 4× jen
+`RULE_INVALID` (mrtvá fáze nebo nespuštěný časovač), 3× `MALFORMED` (logika bez pravidel, která ji
+čtou a mění – si-018), 3× `UNREPAIRED` (`wave` s `"at":"edge"` v žánru bez podlahy – střílečka
+ma-048, si-031), 1× nečinný hráč vyhraje (d06: výhra na vstupu do fáze), 1× bez logiky.
+
+**Odhad, ne měření:** model opíše začátek vzoru (fáze → časovač), ale druhou polovinu (časovač →
+`goPhase` → reakce) dopíše jen v 6 z 25 a z nich projde 1 – zbytek padá na jiných vadách (vlna od
+okraje mimo arénu, krátký časovač). Další páka podle záznamů není próza promptu: buď opravná kola
+produktu (hlášky `no rule enters phase … add {"goPhase"}` model dostane, soud je ale jen první
+odpověď), nebo stejná oprava čtení jako vstup do fáze (T11) pro časovač, který nikdo nespustí, a
+fázi, do které nikdo nepřepne. Plán dovolil jednu další úpravu po záznamu 4; vyčerpaná, pokračuje T13.

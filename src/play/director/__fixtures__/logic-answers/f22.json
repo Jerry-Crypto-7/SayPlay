@@ -3,12 +3,12 @@
  "sentence": "A knight fights a three-headed hydra at the castle gates.",
  "axis": "defeat",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:33:17.691Z",
- "ms": 5763,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:38:18.031Z",
+ "ms": 11387,
  "answer": {
-  "plan": "arena fight at castle gates",
+  "plan": "Create an arena‑style duel where the knight battles a three‑headed hydra at the castle gates, using a simple two‑phase timer to spawn the hydra’s heads.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -18,7 +18,7 @@
      "label": "three-headed hydra",
      "does": "fight",
      "verb": "fight",
-     "states": null,
+     "states": 3,
      "patrol": false
     }
    ],
@@ -41,18 +41,32 @@
    "things": null,
    "rules": [
     {
-     "id": "startFight",
-     "verb": "fight",
+     "id": "spawnHydra",
+     "verb": "spawn",
      "when": {
-      "contact": [
-       "player",
-       "hydra"
-      ]
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "win": true
+       "wave": {
+        "role": "hydra",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "phaseTransition",
+     "verb": "wait",
+     "when": {
+      "timer": "hydra_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
       }
      ]
     },
@@ -60,10 +74,7 @@
      "id": "hydraAttack",
      "verb": "attack",
      "when": {
-      "contact": [
-       "player",
-       "hydra"
-      ]
+      "phase": "second"
      },
      "if": null,
      "do": [
@@ -77,15 +88,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "fight"
+      "id": "hydra_timer"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "battle"
+      "id": "second"
      }
     ],
     "events": null

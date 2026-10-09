@@ -3,48 +3,150 @@
  "sentence": "escape from a haunted hospital with a flashlight",
  "axis": "escape",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:34:53.992Z",
- "ms": 4988,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:40:34.953Z",
+ "ms": 14551,
  "answer": {
-  "plan": "arena escape with flashlight",
+  "plan": "arena escape with ghost chasers, flashlight as light source, timed phases",
   "spec": {
    "genre": "arena",
    "mode": "escape",
    "hero": "kid",
-   "cast": [],
-   "heroAction": "none",
+   "cast": [
+    {
+     "label": "ghost",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": true
+    },
+    {
+     "label": "patient",
+     "does": "avoid",
+     "verb": "avoid",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "flashlight",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "hospital",
+     "does": "reach",
+     "verb": "escape",
+     "states": 2,
+     "patrol": false
+    }
+   ],
+   "heroAction": "carry",
    "setting": "haunted hospital",
    "palette": "cave",
    "params": null,
-   "counts": null,
-   "ruleRoles": [],
-   "things": [],
+   "counts": {
+    "enemy": 2,
+    "collectible": 1
+   },
+   "ruleRoles": [
+    {
+     "id": "ghost",
+     "kind": "chaser",
+     "label": "ghost",
+     "count": null
+    },
+    {
+     "id": "patient",
+     "kind": "hazard",
+     "label": "patient",
+     "count": null
+    },
+    {
+     "id": "flashlight",
+     "kind": "item",
+     "label": "flashlight",
+     "count": null
+    },
+    {
+     "id": "hospital",
+     "kind": "destination",
+     "label": "hospital",
+     "count": null
+    }
+   ],
+   "things": null,
    "rules": [
     {
-     "id": "start_escape",
-     "verb": "escape",
+     "id": "ghost_wave",
+     "verb": "spawn",
      "when": {
-      "every": 1
+      "phase": "night"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "escape",
-        "ticks": 600
+       "wave": {
+        "role": "ghost",
+        "count": 2,
+        "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "win_escape",
-     "verb": "escape",
+     "id": "patient_wave",
+     "verb": "spawn",
      "when": {
-      "timer": "escape"
+      "phase": "night"
      },
      "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "patient",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "flashlight_collect",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "flashlight"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      }
+     ]
+    },
+    {
+     "id": "escape_win",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "hospital"
+      ]
+     },
+     "if": [
+      {
+       "holding": "flashlight"
+      }
+     ],
      "do": [
       {
        "win": true
@@ -56,15 +158,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "escape"
+      "id": "night_timer"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "day"
      },
      {
-      "id": "escape"
+      "id": "night"
      }
     ],
     "events": null

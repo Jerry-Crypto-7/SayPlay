@@ -163,6 +163,23 @@ describe('the director composes logic in its answer', () => {
     expect(verdict.logic.every((proof) => proof.fired && proof.changed)).toBe(true);
   });
 
+  it('the LOGIC EXAMPLE of the prompt is itself a game the robot wins, every phase and timer proved', async () => {
+    // P45B T12a: příklad, který robot neprokáže, by model učil hru, kterou ověření odmítne.
+    const line = directorSystemPrompt().split('\n').find((text) => text.startsWith('LOGIC EXAMPLE: ')) ?? '';
+    const example = JSON.parse(line.slice('LOGIC EXAMPLE: '.length)) as { ruleRoles: Json[]; things: Json[] | null; logic: Json; rules: Json[] };
+    const answer = { plan: 'the bats swarm once night falls', spec: { ...genreAnswer().spec, ...example, rules: example.rules.map(strictRule) } };
+    const { game, branch } = await run(answer, []);
+    expect(branch.calls).toHaveLength(1);
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 0 });
+    const made = arcadeWorldOf(game.spec, 1);
+    expect(made.ok).toBe(true);
+    if (!made.ok) return;
+    const verdict = verifyArcade(made.world);
+    expect(verdict.failures).toEqual([]);
+    expect(verdict.logic.map((proof) => `${proof.kind}:${proof.id}`)).toEqual(expect.arrayContaining(['phase:night', 'timer:dusk', 'wave:swarm']));
+    expect(verdict.logic.every((proof) => proof.fired && proof.changed)).toBe(true);
+  });
+
   it('a rule on an undeclared timer goes to the repair round with its path and reason, and the repaired logic is accepted', async () => {
     const ending = strictRule({ id: 'dawn', verb: 'survive', when: { timer: 'nope' }, do: [{ score: 1 }] });
     const valid = logicAnswer().spec.rules.map(({ if: cond, ...rule }) => (cond === null ? rule : { ...rule, if: cond }));

@@ -3,12 +3,12 @@
  "sentence": "a wizard defends a crystal tower from flying skeletons",
  "axis": "defend",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:32:33.042Z",
- "ms": 12097,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:36:55.366Z",
+ "ms": 8872,
  "answer": {
-  "plan": "arena fight with wizard defending crystal tower against waves of flying skeletons",
+  "plan": "Create an arena‑fight game where a wizard protects a crystal tower from waves of flying skeletons, using a simple phase‑timer logic to spawn enemies.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -19,13 +19,6 @@
      "does": "fight",
      "verb": "attack",
      "states": null,
-     "patrol": true
-    },
-    {
-     "label": "crystal tower",
-     "does": "reach",
-     "verb": "defend",
-     "states": null,
      "patrol": false
     }
    ],
@@ -34,7 +27,7 @@
    "palette": "castle",
    "params": null,
    "counts": {
-    "enemy": 3,
+    "enemy": null,
     "collectible": null
    },
    "ruleRoles": [
@@ -43,31 +36,33 @@
      "kind": "chaser",
      "label": "flying skeleton",
      "count": null
-    },
-    {
-     "id": "tower",
-     "kind": "destination",
-     "label": "crystal tower",
-     "count": null
     }
    ],
    "things": null,
    "rules": [
     {
-     "id": "spawn_wave1",
-     "verb": "spawn",
+     "id": "start_wave",
+     "verb": "wait",
      "when": {
-      "every": 120
+      "phase": "first"
      },
-     "if": [
+     "if": null,
+     "do": [
       {
-       "var": {
-        "name": "wave",
-        "atLeast": 1,
-        "below": 3
+       "startTimer": {
+        "timer": "wave_timer",
+        "ticks": 120
        }
       }
-     ],
+     ]
+    },
+    {
+     "id": "spawn_skeleton",
+     "verb": "spawn",
+     "when": {
+      "timer": "wave_timer"
+     },
+     "if": null,
      "do": [
       {
        "wave": {
@@ -79,108 +74,32 @@
      ]
     },
     {
-     "id": "spawn_wave2",
-     "verb": "spawn",
+     "id": "reset_wave",
+     "verb": "wait",
      "when": {
-      "every": 120
-     },
-     "if": [
-      {
-       "var": {
-        "name": "wave",
-        "atLeast": 2,
-        "below": 3
-       }
-      }
-     ],
-     "do": [
-      {
-       "wave": {
-        "role": "skeleton",
-        "count": 4,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "spawn_wave3",
-     "verb": "spawn",
-     "when": {
-      "every": 120
-     },
-     "if": [
-      {
-       "var": {
-        "name": "wave",
-        "atLeast": 3,
-        "below": 3
-       }
-      }
-     ],
-     "do": [
-      {
-       "wave": {
-        "role": "skeleton",
-        "count": 5,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "increment_wave",
-     "verb": "increment",
-     "when": {
-      "every": 120
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "set": {
-        "var": "wave",
-        "value": 1
-       }
-      }
-     ]
-    },
-    {
-     "id": "win_tower",
-     "verb": "reach",
-     "when": {
-      "contact": [
-       "player",
-       "tower"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
+       "goPhase": "first"
       }
      ]
     }
    ],
    "logic": {
-    "vars": [
+    "vars": null,
+    "timers": [
      {
-      "id": "wave",
-      "start": 1
+      "id": "wave_timer"
      }
     ],
-    "timers": [],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "wave1"
-     },
-     {
-      "id": "wave2"
-     },
-     {
-      "id": "wave3"
+      "id": "second"
      }
     ],
     "events": null

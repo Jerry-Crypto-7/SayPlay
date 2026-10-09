@@ -3,12 +3,12 @@
  "sentence": "defend the castle from waves of goblins",
  "axis": "defend",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:32:12.250Z",
- "ms": 11931,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:36:35.847Z",
+ "ms": 10571,
  "answer": {
-  "plan": "Create an arena‑fight game where a knight defends a castle against successive waves of goblins.",
+  "plan": "Create an arena‑fight game where a knight defends a castle against waves of goblins, using a simple phase‑timer logic to spawn enemies.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -41,45 +41,28 @@
    "things": null,
    "rules": [
     {
-     "id": "spawn_wave_1",
-     "verb": "spawn",
+     "id": "start_wave_timer",
+     "verb": "wait",
      "when": {
-      "every": 120
+      "phase": "start"
      },
-     "if": [
-      {
-       "var": {
-        "name": "wave",
-        "atLeast": 1,
-        "below": 3
-       }
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "wave": {
-        "role": "goblin",
-        "count": 3,
-        "at": "edge"
+       "startTimer": {
+        "timer": "wave",
+        "ticks": 600
        }
       }
      ]
     },
     {
-     "id": "spawn_wave_2",
+     "id": "spawn_wave",
      "verb": "spawn",
      "when": {
-      "every": 120
+      "timer": "wave"
      },
-     "if": [
-      {
-       "var": {
-        "name": "wave",
-        "atLeast": 3,
-        "below": 5
-       }
-      }
-     ],
+     "if": null,
      "do": [
       {
        "wave": {
@@ -91,141 +74,35 @@
      ]
     },
     {
-     "id": "spawn_wave_3",
-     "verb": "spawn",
+     "id": "reset_wave_timer",
+     "verb": "wait",
      "when": {
-      "every": 120
+      "timer": "wave"
      },
-     "if": [
-      {
-       "var": {
-        "name": "wave",
-        "atLeast": 5,
-        "below": 7
-       }
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "wave": {
-        "role": "goblin",
-        "count": 7,
-        "at": "edge"
+       "startTimer": {
+        "timer": "wave",
+        "ticks": 600
        }
-      }
-     ]
-    },
-    {
-     "id": "spawn_wave_4",
-     "verb": "spawn",
-     "when": {
-      "every": 120
-     },
-     "if": [
-      {
-       "var": {
-        "name": "wave",
-        "atLeast": 7,
-        "below": 9
-       }
-      }
-     ],
-     "do": [
-      {
-       "wave": {
-        "role": "goblin",
-        "count": 7,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "spawn_wave_5",
-     "verb": "spawn",
-     "when": {
-      "every": 120
-     },
-     "if": [
-      {
-       "var": {
-        "name": "wave",
-        "atLeast": 9,
-        "below": 11
-       }
-      }
-     ],
-     "do": [
-      {
-       "wave": {
-        "role": "goblin",
-        "count": 5,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "spawn_wave_6",
-     "verb": "spawn",
-     "when": {
-      "every": 120
-     },
-     "if": [
-      {
-       "var": {
-        "name": "wave",
-        "atLeast": 11,
-        "below": 13
-       }
-      }
-     ],
-     "do": [
-      {
-       "wave": {
-        "role": "goblin",
-        "count": 3,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "end_game",
-     "verb": "win",
-     "when": {
-      "every": 120
-     },
-     "if": [
-      {
-       "var": {
-        "name": "wave",
-        "atLeast": 13,
-        "below": 15
-       }
-      }
-     ],
-     "do": [
-      {
-       "win": true
       }
      ]
     }
    ],
    "logic": {
-    "vars": [
+    "vars": null,
+    "timers": [
      {
-      "id": "wave",
-      "start": 1
+      "id": "wave"
      }
     ],
-    "timers": [],
     "phases": [
      {
       "id": "start"
      },
      {
-      "id": "battle"
+      "id": "active"
      }
     ],
     "events": null

@@ -3,12 +3,12 @@
  "sentence": "an elf princess escapes a goblin castle through a dark forest",
  "axis": "escape",
  "model": "gpt-oss-20b",
- "promptVersion": "b54cd531",
- "directorPromptVersion": "3b597af4",
- "recordedAt": "2026-10-09T00:35:00.184Z",
- "ms": 6191,
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:40:53.497Z",
+ "ms": 18543,
  "answer": {
-  "plan": "arena escape with goblin chase and timed escape to castle",
+  "plan": "arena escape with goblin chaser in dark forest",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -57,7 +57,7 @@
      "id": "spawn_goblin",
      "verb": "spawn",
      "when": {
-      "every": 1
+      "phase": "chase"
      },
      "if": null,
      "do": [
@@ -70,29 +70,10 @@
      ]
     },
     {
-     "id": "start_timer",
-     "verb": "start",
-     "when": {
-      "every": 1
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "escape_timer",
-        "ticks": 3600
-       }
-      }
-     ]
-    },
-    {
-     "id": "lose_on_goblin_contact",
+     "id": "lose_on_hit",
      "verb": "damage",
      "when": {
-      "contact": [
-       "player",
-       "goblin"
-      ]
+      "hit": "goblin"
      },
      "if": null,
      "do": [
@@ -106,7 +87,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "escape_timer"
+      "id": "chase_timer"
      }
     ],
     "phases": [

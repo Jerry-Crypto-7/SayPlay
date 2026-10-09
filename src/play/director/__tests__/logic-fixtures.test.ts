@@ -4,8 +4,9 @@
  * psaná odpověď by prošla vždy, proto test bere jen soubor s modelem a s hashem
  * dnešního promptu – po změně promptu nebo schématu se musí nahrát znovu.
  * Cíl byl ≥ 20 z 25 odpovědí s logikou, které projdou včetně `logic_proved` cestou
- * produktu (s opravou vstupu do fáze). Nesplněn (README), takže test drží zapsané
- * číslo: soud každé fixtury bez opravy i s ní musí sedět na `director-logic.json`.
+ * produktu (s opravou vstupu do fáze). Nesplněn ani po novém příkladu T12a (1/25,
+ * README), takže test drží zapsané číslo: soud každé fixtury bez opravy i s ní musí
+ * sedět na `director-logic.json`.
  */
 
 import { readFileSync, readdirSync } from 'node:fs';
@@ -96,5 +97,7 @@ describe('recorded gpt-oss-20b logic answers', () => {
     expect(rows(verdicts)).toEqual(rows(summary.rows));
     expect(verdicts.filter((verdict) => verdict.passed).length).toBe(summary.repaired.hit);
     expect(verdicts.filter((verdict) => verdict.rawPassed).length).toBe(summary.raw.hit);
+    // T12a záznam 5: číslo pevně – nový záznam, který ho pohne, musí přepsat i README.
+    expect([summary.raw.hit, summary.repaired.hit]).toEqual([1, 1]);
   }, 600_000);
 });
