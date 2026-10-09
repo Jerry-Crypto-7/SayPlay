@@ -182,3 +182,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-chimney` | chimney | 4586 / 2276 |
 | `gen3d-coffin` | coffin, casket | 4744 / 2340 |
 | `gen3d-firefly` | firefly | 4746 / 2370 |
+| `gen3d-net` | net | 4734 / 2362 |
+| `gen3d-stickman` | stickman | 4748 / 2374 |
+| `gen3d-stone-golem` | stone golem | 4538 / 2111 |

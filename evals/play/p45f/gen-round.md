@@ -16,8 +16,15 @@ Listy pro soud renderuje `scripts/assets/qa-sheets.mjs` s three.js z `node_modul
 | Dávka | Jmen | Předkontrola a brána | Soud | Povýšeno | Codex (předkontrola + soud) |
 |---|---|---|---|---|---|
 | 1 (07:43–08:08) | 10 | 8 | 4 | 4 | 17 + 8 |
+| 2 (08:02–08:25) | 10 | 7 | 4 | 3 | 19 + 7 |
 
 **Dávka 1** (robber … mahjong tile; v P45E 0/10 prošlo soudem, 5/10 předkontrolou a branou):
 - Povýšeno (4): top1 coffin; top3 bank manager („banker“), chimney („factory“, komín ve výčtu), firefly („fly“, světluška ve výčtu).
 - Soudce poznal něco jiného: ammo: trash can · financial advisor: businesswoman (role lidí jako v P45E) · mahjong tile: pedestal · robber: person, označený jako rozbitý model.
 - Předkontrola odmítla všechny tři obrázky: frisbee: ashtray / ashtray / plate · cyclops: **cyclops** třikrát – obrázek je správně, ale dávka jméno normalizuje na „cyclop“ (`ops/gen3d/cache.py`, množné číslo) a předkontrola porovnává s ním. Znak teď do zadání dojde (klíč `cyclop`), shodu zablokuje až porovnání; oprava patří do `IRREGULAR` v `cache.py` (kód generátoru, mimo P45F).
+
+**Dávka 2** (mole … anthill; v P45E 0/10 soudem, 4/10 předkontrolou a branou):
+- Povýšeno (3): top1 stone golem („rock golem“); top3 net („standing mirror“, butterfly net a fishing net ve výčtu), stickman („stick figure“).
+- Přijatý, nepovýšený: **anthill** (top1). `scripts/assets/p32-manifest.mjs` mu podle slova „ant“ dal třídu animal a záznam v `src/play/assets/entries/catalog.json`, takže `src/play/assets/__tests__/catalog-entries.test.ts` (pin počtu) zčervenal → vyřazeno `--drop gen3d-anthill`. Model leží v `D:/claude/_gen3d-cache-p45f/anthill/`; povýšit jde po opravě třídy v manifestu (mraveniště není zvíře) nebo po zvednutí pinu.
+- Soudce poznal něco jiného: poacher: thief (bandit, burglar – role lidí) · receipt: CD rack · seashell: ice cream sundae.
+- Předkontrola odmítla všechny tři obrázky: mole: pig / pig (jako pilot P45E s růžovými tlapkami; třetí pokus neprošel branou) · passport: book ×3 (vizuálně blízko) · towel: stack of towels / towel stack (oba označené jako rozbité) / armchair.

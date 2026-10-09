@@ -19690,6 +19690,63 @@
           0.34468
         ]
       }
+    },
+    {
+      "assetId": "gen3d-net",
+      "tags": [
+        "net"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-net-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1696,
+          0,
+          -0.11916
+        ],
+        "max": [
+          0.1696,
+          0.99995,
+          0.11916
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stickman",
+      "tags": [
+        "stickman"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stickman-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22999,
+          0,
+          -0.12527
+        ],
+        "max": [
+          0.22999,
+          0.99813,
+          0.12527
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stone-golem",
+      "tags": [
+        "stone golem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-golem-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3863,
+          0,
+          -0.16198
+        ],
+        "max": [
+          0.3863,
+          0.9989,
+          0.16198
+        ]
+      }
     }
   ]
 }
