@@ -1,0 +1,195 @@
+/**
+ * Režisér skládá průběh hry (P45B T10): schéma odpovědi nabízí blok `logic`
+ * v tvaru, který přijme přísný režim poskytovatele (bez `$ref`/`$defs`, každé
+ * pole povinné, `additionalProperties: false`), prompt naroste proti `main`
+ * nejvýš o 1 500 znaků a odpověď s logikou se přečte, zkompiluje a ověří
+ * skutečným robotem. Vadná logika jde do opravného kola s cestou a hláškou;
+ * neprokázaná logika, kterou oprava nespraví, ze hry vypadne i s blokem `logic`.
+ */
+
+import { describe, expect, it } from 'vitest';
+
+import { canonicalHash } from '@/ir/worlddoc';
+
+import { arcadeWorldOf } from '../../arcade/compile';
+import { templateParts } from '../../arcade/rules/templates';
+import { verifyArcade } from '../../arcade/verify';
+import type { GameSpecV1 } from '../../spec';
+import { direct } from '..';
+import { genreAnswer } from '../__fixtures__';
+import { answered, fakeBranch } from '../__fixtures__/branch';
+import { GENRE_ANSWER_SCHEMA } from '../answer-schema';
+import { DIRECTOR_PROMPT_VERSION, directorSystemPrompt } from '../prompt';
+import type { RepairIssue } from '../repair';
+
+type Json = Record<string, unknown>;
+
+/**
+ * `directorSystemPrompt().length` na `main` `0714a352` (před P45B) – 9 921 znaků.
+ * Jediná změna promptu od té doby je `rulesPromptLines` (T10): řádek 1 a dva nové
+ * řádky logiky. Změřeno 9. 10. nad `git show 0714a352:src/play/director/prompt.ts`.
+ */
+const MAIN_SYSTEM_PROMPT_CHARS = 9_921;
+
+/**
+ * Věta sady režiséra (`director.test.ts`), jejíž trojice robot dosvědčí. Věta s útěkem
+ * („escapes a wolf“) tu nejde: Aréna s `ruleRoles` ztratí svědka útěku i bez pravidel
+ * a logiky (`ACTION_LOST`, stav z `main`) – test by zkoušel tohle, ne logiku.
+ */
+const SENTENCE = 'Collect five acorns in a moonlit forest';
+
+const isObject = (value: unknown): value is Json => typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** Každý uzel schématu (objekty i prvky polí), do hloubky. */
+function nodes(node: unknown, out: Json[] = []): Json[] {
+  if (Array.isArray(node)) for (const item of node) nodes(item, out);
+  else if (isObject(node)) {
+    out.push(node);
+    for (const value of Object.values(node)) nodes(value, out);
+  }
+  return out;
+}
+
+const variants = () => ((GENRE_ANSWER_SCHEMA.properties as Json).spec as { anyOf: Json[] }).anyOf;
+
+/** Pravidlo, jak ho model píše v přísném schématu: `if` je vždy, nejvýš `null`. */
+const strictRule = (rule: object) => ({ if: null, ...rule });
+
+/** Strážný, kterého šablona `reinforcements` pouští vlnou; v přísném schématu i `count: null`. */
+const GUARD = { id: 'guard', kind: 'chaser', label: 'guard', count: null };
+
+/** Útěk v Aréně (vlk, žaludy) s průběhem klid → poplach → vlna strážných ze šablony `reinforcements`. */
+function logicAnswer(edit: (rules: Json[]) => Json[] = (rules) => rules) {
+  const parts = templateParts('reinforcements', { enemy: 'guard' });
+  if (parts === null) throw new Error('reinforcements needs an enemy slot');
+  return {
+    plan: 'escape the wolf while the guards muster',
+    spec: {
+      ...genreAnswer().spec,
+      ruleRoles: [GUARD],
+      things: null,
+      logic: { vars: null, timers: null, events: null, ...parts.logic },
+      rules: edit(parts.rules.map(strictRule)),
+    },
+  };
+}
+
+/** Robot na seedu 1 jako v publikaci (vzor `critic-rules.test.ts`): selhání nese `LOGIC_UNPROVED:<druh>:<jméno>`. */
+function robot(spec: GameSpecV1): RepairIssue[] {
+  const made = arcadeWorldOf(spec, 1);
+  if (!made.ok) return [{ code: 'WORLD_REJECTED', path: '', evidence: made.issues.join('; '), repairHint: '' }];
+  return verifyArcade(made.world).failures.map((failure) => ({ code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: `keypoint failed: ${failure}`, repairHint: 'fix the game or the claim' }));
+}
+
+const NOOP = [{ op: 'replace', path: '/title', value: 'Night Watch' }];
+
+async function run(first: object, repairs: readonly unknown[]) {
+  let tick = 0;
+  const branch = fakeBranch([answered(first), ...repairs.map((body) => answered(body))]);
+  const game = await direct(SENTENCE, { branch, now: () => (tick += 100), compact: true, check: robot, maxRepairRounds: 2 });
+  return { game, branch };
+}
+
+describe('the director answer schema offers logic in strict form', () => {
+  it('has no $ref or $defs anywhere', () => {
+    const text = JSON.stringify(GENRE_ANSWER_SCHEMA);
+    expect(text).not.toContain('"$ref"');
+    expect(text).not.toContain('"$defs"');
+  });
+
+  it('every object closes its properties and requires every key', () => {
+    const objects = nodes(GENRE_ANSWER_SCHEMA).filter((node) => node.type === 'object');
+    expect(objects.length).toBeGreaterThan(100);
+    for (const node of objects) {
+      expect(node.additionalProperties).toBe(false);
+      expect([...(node.required as string[])].sort()).toEqual(Object.keys(node.properties as Json).sort());
+    }
+  });
+
+  it('every variant that offers rules offers logic too, required and nullable, with the whole grammar', () => {
+    const withRules = variants().filter((variant) => isObject(variant.properties) && 'rules' in variant.properties);
+    expect(withRules.length).toBeGreaterThan(3);
+    for (const variant of withRules) {
+      const properties = variant.properties as Json;
+      expect(variant.required).toContain('logic');
+      const logic = properties.logic as { anyOf: Json[] };
+      expect(logic.anyOf).toContainEqual({ type: 'null' });
+      const declared = logic.anyOf.find((option) => option.type === 'object')!;
+      expect(Object.keys(declared.properties as Json).sort()).toEqual(['events', 'phases', 'timers', 'vars']);
+      // Spouštěče, podmínky a efekty logiky v gramatice pravidel téže varianty.
+      const grammar = JSON.stringify(properties.rules);
+      for (const key of ['timer', 'phase', 'phaseExit', 'var', 'event', 'inPhase', 'timerRunning', 'timerStopped', 'set', 'add', 'goPhase', 'startTimer', 'stopTimer', 'emit', 'wave']) {
+        expect(grammar, key).toContain(`"${key}"`);
+      }
+    }
+  });
+});
+
+describe('the director prompt describes logic within budget', () => {
+  it('grows by at most 1 500 characters over main, with one grammar line and one example of a phase, a timer and a wave', () => {
+    const system = directorSystemPrompt();
+    const growth = system.length - MAIN_SYSTEM_PROMPT_CHARS;
+    expect(growth).toBeGreaterThan(0);
+    expect(growth).toBeLessThanOrEqual(1_500);
+    const lines = system.split('\n');
+    expect(lines.filter((line) => line.startsWith('logic ('))).toHaveLength(1);
+    const example = lines.filter((line) => line.startsWith('LOGIC EXAMPLE: '));
+    expect(example).toHaveLength(1);
+    for (const piece of ['"phases"', '"startTimer"', '"wave"']) expect(example[0]).toContain(piece);
+    // Dnešní příklad klíče a dveří zůstává vedle.
+    expect(lines.some((line) => line.startsWith('RULE EXAMPLE: '))).toBe(true);
+  });
+
+  it('the prompt version hashes the new prompt and schema, so the cache keyed by it is invalidated', () => {
+    expect(DIRECTOR_PROMPT_VERSION).toBe(canonicalHash({ system: directorSystemPrompt(), schema: GENRE_ANSWER_SCHEMA }));
+  });
+});
+
+describe('the director composes logic in its answer', () => {
+  it('an answer with a phase and a wave is read, compiled and verified with logic_proved', async () => {
+    const { game, branch } = await run(logicAnswer(), []);
+    expect(branch.calls).toHaveLength(1);
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 0 });
+    expect(game.spec.logic?.phases?.map((phase) => phase.id)).toEqual(['calm', 'alarm']);
+    expect(game.spec.rules?.map((rule) => rule.verb)).toEqual(['sound', 'muster']);
+    const made = arcadeWorldOf(game.spec, 1);
+    expect(made.ok).toBe(true);
+    if (!made.ok) return;
+    expect(made.world.runtimeVersion).toBe('arcade-v3');
+    const verdict = verifyArcade(made.world);
+    expect(verdict.failures).toEqual([]);
+    expect(verdict.logic.length).toBeGreaterThan(0);
+    expect(verdict.logic.every((proof) => proof.fired && proof.changed)).toBe(true);
+  });
+
+  it('a rule on an undeclared timer goes to the repair round with its path and reason, and the repaired logic is accepted', async () => {
+    const ending = strictRule({ id: 'dawn', verb: 'survive', when: { timer: 'nope' }, do: [{ score: 1 }] });
+    const valid = logicAnswer().spec.rules.map(({ if: cond, ...rule }) => (cond === null ? rule : { ...rule, if: cond }));
+    const { game, branch } = await run(logicAnswer((rules) => [...rules, ending]), [
+      [
+        { op: 'add', path: '/logic', value: { phases: [{ id: 'calm' }, { id: 'alarm' }] } },
+        { op: 'add', path: '/rules', value: valid },
+      ],
+    ]);
+    const sent = branch.calls[1]?.request.user ?? '';
+    expect(sent).toContain('RULE_INVALID');
+    expect(sent).toMatch(/\/rules\/2\/when\/timer/);
+    expect(sent).toContain('unknown timer');
+    expect(game).toMatchObject({ source: 'authored', repairRounds: 1 });
+    expect(game.spec.logic?.phases?.map((phase) => phase.id)).toEqual(['calm', 'alarm']);
+    expect(robot(game.spec)).toEqual([]);
+  });
+
+  it('logic the robot never sees, unrepaired, leaves the game with its rules and the logic block', async () => {
+    // Poplach po 90 s: robot vyhraje útěk dřív, fáze `alarm` se nikdy nespustí.
+    const late = (rules: Json[]) => rules.map((rule) => (rule.id === 'sound' ? { ...rule, when: { every: 5400 } } : rule));
+    const { game, branch } = await run(logicAnswer(late), [NOOP, NOOP]);
+    const sent = branch.calls[1]?.request.user ?? '';
+    expect(sent).toContain('LOGIC_UNPROVED');
+    expect(sent).toContain('phase alarm');
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED' });
+    expect(game.spec.rules).toBeUndefined();
+    expect(game.spec.logic).toBeUndefined();
+    expect(robot(game.spec)).toEqual([]);
+  });
+});
