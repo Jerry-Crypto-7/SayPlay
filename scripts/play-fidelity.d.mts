@@ -134,6 +134,51 @@ export declare function compareVerdict(models: Record<string, ModelComparison>):
 
 export declare const CLIP: { readonly frames: number; readonly gapTicks: number; readonly leadTicks: number; readonly hz: number };
 
+export declare const PACE: { readonly leadTicks: number; readonly gapTicks: number; readonly maxFrames: number };
+export declare function paceTicks(endTick: number | null): number[];
+
+export type PairSide = 'a' | 'b';
+export interface PairSummary {
+  readonly n: number;
+  readonly aWins: number;
+  readonly bWins: number;
+  readonly ties: number;
+  readonly bShare: number | null;
+  readonly leftWinShare: number | null;
+}
+export interface PairVerdict {
+  readonly schema: 'pairwise.v1';
+  readonly a: { readonly run: string; readonly commit: string | null };
+  readonly b: { readonly run: string; readonly commit: string | null };
+  readonly seed: number;
+  readonly order: string;
+  readonly pairs: readonly { readonly id: string; readonly left: PairSide; readonly winner: PairSide | 'tie'; readonly why: string }[];
+  readonly summary: PairSummary;
+}
+export declare const PAIR_SEED: number;
+export declare const PAIR_QUESTION: string;
+export declare const PAIR_SCHEMA: Record<string, unknown>;
+export declare function pairSides(seed: number, count: number): PairSide[];
+export declare function pairwise(
+  options: Record<string, unknown>,
+  steps?: {
+    readonly ask?: (sheet: string, schemaFile: string, answerFile: string, question: string) => Promise<{ readonly code: number | null; readonly stderr?: string }>;
+    readonly compose?: (left: readonly string[], right: readonly string[], path: string) => Promise<void>;
+  },
+): Promise<PairVerdict>;
+
+export declare const P45_BASE_COMMIT: string;
+export declare const PAIR_TARGET_B: number;
+export declare function funCommand(
+  options: Record<string, unknown>,
+  steps?: {
+    readonly loadSet?: (name: string, options: { readonly openTestOnce: boolean; readonly runId: string }) => unknown;
+    readonly runSentences?: (sentences: unknown, options: Record<string, unknown>) => Promise<void>;
+    readonly pairwise?: (options: Record<string, unknown>) => Promise<{ readonly summary: PairSummary }>;
+    readonly measure?: (set: 'panel' | 'sealed', open: boolean, out: string) => Promise<{ readonly met: boolean; readonly targets?: readonly { readonly metric: string; readonly goal: string; readonly value: number | null; readonly met: boolean }[] } & Record<string, unknown>>;
+  },
+): Promise<Record<string, unknown>>;
+
 export declare function contract(checklist: readonly ChecklistEntry[], frames?: number): string;
 
 export declare function judgeShot(
