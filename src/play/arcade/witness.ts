@@ -433,7 +433,8 @@ export class WitnessRecorder {
     if (effect.kind === 'score' && effect.amount > 0) {
       this.add('score', player, null, tick, 'score-increased', state);
       if (ref.id === 'judge') {
-        const verb = this.control === 'rhythm' ? 'beat' : this.control === 'duel' ? 'duel' : this.world.control.params.mode === 'stack' ? 'stack' : 'time';
+        // Mód čte základní ovládání: nad průběhem (P45C T14) je ovládání světa `pacing_control`.
+        const verb = this.control === 'rhythm' ? 'beat' : this.control === 'duel' ? 'duel' : this.stack ? 'stack' : 'time';
         const target = [...this.bindings.values()].find(b => !b.player && (roleAt(state, b.body) === ROLE.enemy || roleAt(state, b.body) === ROLE.target));
         this.add(verb, player, target?.body ?? null, tick, 'successful-timing', state);
       }
@@ -442,7 +443,7 @@ export class WitnessRecorder {
     if (effect.kind === 'win' || effect.kind === 'stateChange' && effect.state === 1 && this.latches.has(effect.body)) {
       if ((ref.id === 'finish' || ref.id === 'finish_collected' || ref.id === 'rule_contact') && (code === ROLE.goal || ['exit', 'destination'].includes(this.binding(other, state)?.roleKind ?? ''))) this.add('reach', player, other, tick, 'finish-contact', state);
       if (ref.id === 'survive_time') this.add('survive', player, null, tick, 'survival-timer', state);
-      if (ref.id === 'judge' && this.control === 'timing' && this.world.control.params.mode === 'stack' && [...this.found.values()].some(w => w.verb === 'stack')) this.add('build', player, null, tick, 'stack-completed', state);
+      if (ref.id === 'judge' && this.stack && [...this.found.values()].some(w => w.verb === 'stack')) this.add('build', player, null, tick, 'stack-completed', state);
       if (ref.id === 'rival_finish' && 'land' in ref.params) {
         const goal = [...this.bindings.values()].find(b => roleAt(state, b.body) === ROLE.goal);
         if (goal !== undefined) this.add('land', player, goal.body, tick, 'safe-landing', state);

@@ -18,6 +18,7 @@ import { useMemo, useRef } from 'react';
 import type { Group, MeshStandardMaterial, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
+import { baseControlOf } from '@/play/arcade/addons';
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
@@ -77,7 +78,8 @@ export function RhythmScene({
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(0, 0, 9), []);
   const edge = useMemo(() => new Vector3(), []);
-  const hitWindow = (world.control.params as { window?: number }).window ?? RHYTHM.window;
+  // Okno čte základní ovládání: nad průběhem (P45C T14) je ovládání světa `pacing_control`.
+  const hitWindow = (baseControlOf(world.control).params as { window?: number }).window ?? RHYTHM.window;
   const reach = hitWindow * RHYTHM.noteSpeed;
 
   useFrame((_, delta) => {

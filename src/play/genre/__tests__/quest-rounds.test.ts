@@ -17,6 +17,7 @@ import { compileArcade } from '@/play/arcade/compile';
 import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '@/play/arcade/contract';
 import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
+import { STATION_PACE } from '@/play/arcade/pieces/pacing-parts';
 import { WAVE_PLAN, waveOf } from '@/play/arcade/pieces/waves';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta, draftGenreFor } from '@/play/draft';
@@ -130,13 +131,15 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
 
   it('station: the same stations start over each round, the win comes in the last one and the boil-over limit shrinks', () => {
     const game = publish('flip two pancakes in the kitchen');
-    const planned = tuningOf(game.spec).rounds as number;
+    // Průběh P45C T14: dvojí úkol posledního kola stojí `STATION_PACE.drop` kol; jeho stanoviště přibudou až tik po začátku kola.
+    const planned = (tuningOf(game.spec).rounds as number) - STATION_PACE.drop;
     const { rounds, wonInRound } = roundsOf(game.world);
     expect(rounds).toHaveLength(planned);
     expect(wonInRound).toBe(planned - 1);
     expect(new Set(rounds.map((round) => JSON.stringify(round.targets))).size).toBe(1);
-    const boil = game.world.rules.find((rule) => rule.id === 'boil_over')?.params as { ticks: number; step: number; floor: number };
-    const limit = (round: number) => Math.max(boil.floor, boil.ticks - boil.step * round);
+    // Lhůta po kolech z křivky (`limits`, P45C T14).
+    const boil = game.world.rules.find((rule) => rule.id === 'boil_over')?.params as { limits: number[] };
+    const limit = (round: number) => boil.limits[Math.min(round, boil.limits.length - 1)]!;
     expect(limit(planned - 1)).toBeLessThan(limit(0));
     expect(limit(planned - 1)).toBeGreaterThanOrEqual(4 * ARCADE_HZ);
   });

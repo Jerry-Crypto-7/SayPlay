@@ -257,7 +257,12 @@ export function makePacingBot(bots: Readonly<Record<string, BotPiece>>): BotPiec
   };
 }
 
-export const FINALES = ['boss', 'wave', 'sprint', 'round', 'escape'] as const;
+/**
+ * Druhy finále. T14 připsal statické žánry: `sudden` – náhlá smrt posledních kol načasování, `phrase` – rychlá
+ * závěrečná fráze rytmu, `bonus` – poslední pohyblivý bonusový terč hodu; `round` = poslední kolo (u stanoviště
+ * s dvojím úkolem).
+ */
+export const FINALES = ['boss', 'wave', 'sprint', 'round', 'escape', 'sudden', 'phrase', 'bonus'] as const;
 
 const ruleParams = z
   .object({
@@ -333,7 +338,8 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
         const shift = group === undefined ? 0 : Math.trunc(((2 * k - entry.count + 1) * group.spacing) / 2);
         const x = (params.spots[2 * at] as number) + (params.space === 'plane' ? shift : 0);
         const z = (params.spots[2 * at + 1] as number) + (params.space === 'track' ? (state[p + BODY.z] as number) + shift : 0);
-        effects.push({ kind: 'spawn', template: entry.template, x, y: 0, z, vx: 0, vy: 0, vz: 0 });
+        // Výška předlohy: těla chování i boss stojí na zemi (0), stanoviště finále (T14) na pultu.
+        effects.push({ kind: 'spawn', template: entry.template, x, y: state[bodyBase(entry.template) + BODY.y] as number, z, vx: 0, vy: 0, vz: 0 });
       }
     }
     return effects;
@@ -371,6 +377,11 @@ export interface PacingSetup {
   readonly clear?: readonly { readonly role: BodyInit['role']; readonly at: number }[];
   /** Knoflíky žánru zůstanou, jak jsou (vlny si drží své zrychlení); křivka jen rozvrhuje spawny a finále. */
   readonly steady?: boolean;
+  /**
+   * Finále bez chování (T14): na postupu `at` ‰ přijde `count` kopií těla `body` na místech `spots` ve výšce
+   * předlohy – stanoviště dvojího úkolu posledního kola. Předloha jde za předlohy výstřelů, mimo los rozvrhu.
+   */
+  readonly extra?: { readonly body: BodyInit; readonly at: number; readonly count: number };
 }
 
 /**
@@ -391,13 +402,14 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const actors: readonly PacingActor[] = setup.boss === undefined ? behaviours : [...behaviours, { body: setup.boss.body, behaviour: setup.boss.behaviour ?? 'boss' }];
   const shooters = [...new Set(actors.flatMap((actor) => (actor.behaviour !== undefined && BEHAVIOURS[actor.behaviour].shot !== undefined ? [actor.behaviour] : [])))];
   const shotBodies = shooters.map((id) => BEHAVIOURS[id].shot as BodyInit);
-  const keeper = first + actors.length + shooters.length;
+  const extras = setup.extra === undefined ? [] : [setup.extra.body];
+  const keeper = first + actors.length + shooters.length + extras.length;
   const duplicate = duplicateSignature([...actors.map((actor) => actor.body), ...shotBodies]);
   if (duplicate !== null) return { ...parts, issues: [...(parts.issues ?? []), `pacing: two spawn templates share the signature ${duplicate} (role:kind:w:h:d)`] };
   const shotOf = (id: BehaviourId): { shot?: number } => (shooters.includes(id) ? { shot: first + actors.length + shooters.indexOf(id) } : {});
   const refs = actors.flatMap((actor, index) => (actor.behaviour === undefined ? [] : [{ id: actor.behaviour, template: first + index, ...shotOf(actor.behaviour) }]));
   const moved = refs.length === 0 ? {} : { behaviours: refs };
-  const bodies = [...parts.level.bodies, ...[...actors.map((actor) => actor.body), ...shotBodies].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
+  const bodies = [...parts.level.bodies, ...[...actors.map((actor) => actor.body), ...shotBodies, ...extras].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
   const drawn = behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(rng, TENSION_CURVE, setup.budget, behaviours.length, setup.from, setup.until)
     .map((entry) => {
       const actor = behaviours[entry.behaviour]?.behaviour;
@@ -405,7 +417,8 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
       const group = actor === undefined ? undefined : BEHAVIOURS[actor].group;
       return { atPermille: Math.max(1, entry.atPermille), template: first + entry.behaviour, count: group?.size ?? entry.count, entry: entry.entry };
     });
-  const schedule = setup.boss === undefined ? drawn : [...drawn, { atPermille: Math.max(1, setup.boss.at), template: first + behaviours.length, count: 1, entry: 0 }];
+  const bossed = setup.boss === undefined ? drawn : [...drawn, { atPermille: Math.max(1, setup.boss.at), template: first + behaviours.length, count: 1, entry: 0 }];
+  const schedule = setup.extra === undefined ? bossed : [...bossed, { atPermille: Math.max(1, setup.extra.at), template: keeper - 1, count: setup.extra.count, entry: 0 }];
   const half = parts.control.params.half;
   const edge = setup.space === 'plane' && shooters.length > 0 && typeof half === 'number' ? { half } : {};
   const clear = setup.clear === undefined || setup.clear.length === 0 ? {} : { clear: setup.clear.map((step) => ({ role: ROLE[step.role], at: Math.max(1, step.at) })) };

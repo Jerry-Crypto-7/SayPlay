@@ -23,6 +23,7 @@ import { z } from 'zod';
 import { createCompileRng } from '@/play/compile/rng';
 
 import { ARCADE_HZ, ARCADE_LIMITS, AXIS_MAX, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HEADER, UNIT, bodyBase } from '../contract';
+import { PACING, TENSION_CURVE, intensityAt, placeByCurve } from './pacing';
 import { PLATFORM_FEEL } from './platform';
 import { judgeRules } from './timing';
 
@@ -153,6 +154,8 @@ const generatorParams = z
     lanes: z.boolean().optional(),
     /** Odpuštění ťuku (P37A T7, `rhythmControl` `feel`) – úroveň ho nečte. */
     feel: z.literal(2).optional(),
+    /** Průběh P45C T14 (píše ho jen průběh, ne spec): noty podle křivky (`curveTicks`) ve frázích dvou vzorů drah (`curveLanes`); `ramp` a `density` pak nic nemění. */
+    curve: z.literal(true).optional(),
   })
   .strict();
 export type RhythmLevelParams = z.infer<typeof generatorParams>;
@@ -181,6 +184,59 @@ export function beatMap(seed: number, params: RhythmLevelParams): number[] {
   return ticks.slice(0, ARCADE_LIMITS.maxBodies - 1);
 }
 
+/**
+ * Písnička s průběhem (P45C T14, `curve`): na každou dobu `RHYTHM_CURVE.grid` dílů mřížky; noty jsou v řadě
+ * fráze po `phrase` notách. Vzor fráze podle intenzity jejího začátku: do stupňování `walk` (každá nota o
+ * dráhu vedle, u kraje zpět), od stupňování (1100) se `walk` a `trill` (střídání dvou drah ob jednu) střídají
+ * po frázích, finále (1500) je celé `trill` – rychlá závěrečná fráze.
+ */
+export const RHYTHM_CURVE = { grid: 3, phrase: 4, share: 750 } as const;
+
+/** Tik dílu mřížky `part` (`grid` dílů na dobu), bez driftu jako `beatTick`. */
+const gridTick = (bpm: number, part: number): number => RHYTHM.leadIn + Math.floor((part * ARCADE_HZ * 60) / (bpm * RHYTHM_CURVE.grid));
+
+/**
+ * Tiky not s průběhem: tolik not jako bez něj (`beatMap`), na místech podle křivky napětí (`placeByCurve`,
+ * ‰ písničky) – úvod řídký, stupňování hustne, vrchol a finále nejhustší. Místo padne na nejbližší díl mřížky;
+ * nota bližší než dvě okna a tik předchozí se posune o díly dál, takže počet not i „hratelné z konstrukce“
+ * platí (konec písničky se pak může o pár dílů posunout za poslední dobu).
+ */
+export function curveTicks(seed: number, params: RhythmLevelParams): number[] {
+  const count = Math.round((beatMap(seed, params).length * RHYTHM_CURVE.share) / 1000);
+  const parts = RHYTHM_CURVE.grid * (params.beats - 1);
+  const minGap = 2 * params.window + 2;
+  const ticks: number[] = [];
+  let part = -1;
+  for (const place of placeByCurve(TENSION_CURVE, count, createCompileRng(seed, 'pacing'))) {
+    part = Math.max(part + 1, Math.round((place * parts) / 1000));
+    while (ticks.length > 0 && gridTick(params.bpm, part) - (ticks.at(-1) as number) < minGap) part += 1;
+    ticks.push(gridTick(params.bpm, part));
+  }
+  return ticks;
+}
+
+/** Dráhy not s průběhem po frázích (`RHYTHM_CURVE`): vzor podle intenzity místa první noty fráze. */
+export function curveLanes(seed: number, ticks: readonly number[], params: RhythmLevelParams): number[] {
+  const rng = createCompileRng(seed ^ 0x5eed);
+  const last = RHYTHM.lanes - 1;
+  const span = gridTick(params.bpm, RHYTHM_CURVE.grid * (params.beats - 1)) - RHYTHM.leadIn;
+  let lane = rng.int(0, last);
+  let step = 1;
+  let trill: readonly [number, number] | null = null;
+  return ticks.map((tick, index) => {
+    if (index % RHYTHM_CURVE.phrase === 0) {
+      const intensity = intensityAt(Math.min(1000, Math.floor(((tick - RHYTHM.leadIn) * 1000) / span)), TENSION_CURVE);
+      const phrase = index / RHYTHM_CURVE.phrase;
+      const low = rng.int(0, last - 2);
+      trill = intensity >= PACING.intensity.finale || (intensity >= PACING.intensity.buildUp && phrase % 2 === 1) ? [low, low + 2] : null;
+      step = rng.int(0, 1) === 0 ? -1 : 1;
+    }
+    if (trill !== null) return (lane = trill[index % 2] as number);
+    if (lane + step < 0 || lane + step > last) step = -step;
+    return (lane += step);
+  });
+}
+
 export const rhythmLevel: GeneratorPiece<RhythmLevelParams> = {
   id: 'rhythm_level',
   params: generatorParams,
@@ -188,16 +244,17 @@ export const rhythmLevel: GeneratorPiece<RhythmLevelParams> = {
   cost: (params) => ({ bodies: 1 + params.beats * 2, rules: 2 }),
   generate: (seed, params) => {
     const rng = createCompileRng(seed ^ 0x5eed);
-    const notes = beatMap(seed, params);
+    const notes = params.curve === true ? curveTicks(seed, params) : beatMap(seed, params);
+    const lanes = params.curve === true ? curveLanes(seed, notes, params) : null;
     const width = RHYTHM.lanes * RHYTHM.laneW;
     const bodies: BodyInit[] = [
       { role: 'player', kind: 'hitbar', x: 0, y: 0, z: 0, w: width, h: 200, d: 600, solid: false },
       ...notes.map(
-        (tick): BodyInit => ({
+        (tick, index): BodyInit => ({
           role: 'target',
           kind: 'note',
           // Pruh ze semínka; ťuk s dráhou (`lanes`) platí jen na notu v ní, jinak na nejbližší v kterémkoli pruhu.
-          x: (rng.int(0, RHYTHM.lanes - 1) * 2 - (RHYTHM.lanes - 1)) * (RHYTHM.laneW / 2),
+          x: ((lanes?.[index] ?? rng.int(0, RHYTHM.lanes - 1)) * 2 - (RHYTHM.lanes - 1)) * (RHYTHM.laneW / 2),
           y: 0,
           z: tick * RHYTHM.noteSpeed,
           w: 800,

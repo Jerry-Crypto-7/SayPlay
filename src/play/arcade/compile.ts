@@ -49,7 +49,7 @@ import { duelParts } from './pieces/duel';
 import { rhythmParts } from './pieces/rhythm';
 import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
 import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
-import { throwBudgetIn, throwField, throwParts } from './pieces/throw';
+import { throwField, throwParamsFor, throwParts } from './pieces/throw';
 import { timingParts } from './pieces/timing';
 import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
@@ -136,8 +136,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const clock = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
     // The opt-in pace ratio keeps the authored work budget, but the actual timer
     // and HUD use the shorter deadline. Without it the legacy remix clamp is unchanged.
-    const fitted = params.budget === undefined || clock?.onEnd !== 'lose' ? params : { ...params, budget: Math.min(params.budget, throwBudgetIn(limitSeconds(params.paceBudgetPct === undefined ? clock.seconds : Math.ceil(clock.seconds * 100 / params.paceBudgetPct)))) };
-    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, fitted), health: undefined };
+    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, throwParamsFor(params, clock)), health: undefined };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });
   // Se životy náraz ubere život, překážka zmizí, běh jede dál a vteřinu milosti další náraz nic nebere (P36A T2).
