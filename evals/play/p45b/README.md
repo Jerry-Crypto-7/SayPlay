@@ -135,3 +135,41 @@ opravných kolech produktu (ta chybějící `goPhase`/`startTimer` jmenují), ne
 deklarace má pravidlo, které ji spustí, i pravidlo, které na ni reaguje. Cíl ≥ 20/25 je nesplněný;
 `logic-fixtures.test.ts` drží zapsané číslo (každá fixtura `raw` i `repaired` jako
 v `director-logic.json`).
+
+## T12 – po sloučení `origin/main` (9. 10.)
+
+Sloučen `main` `fc6b99ba` (P45A #30 měřidlo zábavy, P45E #31 modely) bez konfliktu – žádný soubor
+nezměnily obě strany. `tsc` čisté.
+
+**Celá sada** (`npx vitest run`, 21 min): 12 464 testů, 32 červených ve 21 souborech. Stroj byl celou
+dobu na 100 % CPU od cizí práce (antivir, procesy jiných relací), sada tedy neběžela „v klidu“.
+
+| skupina | testů | co s tím |
+|---|---|---|
+| skutečná chyba P45B: `p30-sets` – skript čte `verify.ts` přes odstranění typů v Node, které neumí vlastnost v parametru konstruktoru (T7) | 1 | opraveno `7728a189` |
+| skutečná chyba P45B: `anchors` – vyhledávací slovesa šablon T9 (`infiltrate`, `scavenge`, `sprint`) katalog kotev nezná | 1 | opraveno `75e6957f` → `tiptoe`, `munch`, `surf` (kotvená, v žádné sadě vět nejsou, pokrytí ani `dev.json` se nehnou) |
+| prostředí worktree: ENOENT `plans/P8-odevzdani.md` (`submission-check`) | 1 | gitignorovaný soubor |
+| pod zátěží (časové meze, souběh procesů) – soubory zvlášť zelené | 27 | – |
+| časové meze pod zátěží – červené i zvlášť | 2 | stejně červené na čistém `main` (níže) |
+
+Dva zbylé testy pustil i dočasný worktree `origin/main` při stejné zátěži:
+
+| test | `main` | P45B |
+|---|---|---|
+| `scenery-carve` (mez 30 s; kód P45B nemění) | 46,3 s ✗ | 32,5–35,8 s ✗ |
+| `upgrade` „návrh pod 3 s“ | 4,2 / 3,7 s ✗ | 5,7 / 5,5 s ✗ |
+
+**Fakt:** P45B je u `upgrade` o ~1,5 s pomalejší. Rozklad stejnou větou („A hamster escapes…“):
+první návrh nové věty `main` 1,6–2,0 s, P45B 2,6 s – šablona `coin_shower` projde ověřením napoprvé,
+ale svět s logikou a vlnou se ověřuje déle; věta, které šablona vypadne (rytíř a netopýři), stojí
+na obou stranách stejně (1,2–1,5 s). Opakovaný návrh téže věty 4–24 ms na obou stranách.
+**Odhad:** v klidu (T9: p50 247 ms, p95 497 ms) se strop 3 s nepřekročí; ověřit sadou v klidu před
+pushem.
+
+**E2E** (build `npm run build`, `next start -p 3217`, `FALLBACK_SMOKE_URL`): všech 10 souborů zelených
+– 50 testů napoprvé, zbylých 10 (`play-rules`, `play-physics-*`, `play-composed-actions`) po
+restartu serveru s `PLAY_LAB=1`, který jejich laboratorní stránky potřebují (bez něj 404).
+
+**Brány nad sloučeným stavem:** replay brána 116/116 (+ `kernel-logic` 12 = dřívějších 128), hloubka
+zelená beze změny proti T9 (v pásmu 234/260 = 0,90, nečinný prohraje 260/260, víc životů 0,881;
+`depth.json` vrácen), obtížnost – `difficulty.json` bajtově stejný. Hranice plánu prázdné.
