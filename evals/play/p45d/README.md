@@ -41,6 +41,37 @@ Ne: unicorn (soudce viděl auto), baby dragon, phoenix, broom, grandma a hedgeho
 
 **Zjištění – měřidlo je zatím shovívavé.** 74 % vychází už bez hračkového pohybu, nad cílem 70 %. Část je skutečná (riggované postavy hrají klipy chůze a útoku – mole a cyclops jsou riggovaný farmář), ale list zlaté rybky (d12) ukazuje skoro nehybné tělo, které jen pluje, a soudce ho přesto uznal jako „swimming“. Jestli otázka měří pohyb těla, rozhodne kalibrace `--toy off` v T15 (vypnuto musí vyjít aspoň o 25 bodů níž); když ne, opravuje se otázka nebo pás snímků, práh zůstává.
 
+## Je postava živá po pohybu ve všech scénách – `alive-after-motion.json`
+
+9. 10. 2026, build `d4c63332` (všechny scény s hračkovým pohybem, T7–T14), týž panel a týchž 23 vět jako `alive-baseline.json`, dva běhy nad stejným buildem (23 + 23 volání Codexu):
+
+```
+node scripts/p45d/alive-clip.mjs --run p45d-alive-after --gpu --out <on>.json
+node scripts/p45d/alive-clip.mjs --run p45d-alive-after-off --toy off --gpu --out <off>.json
+```
+
+| | základ `0714a352` | zapnuto | `--toy off` |
+|---|---|---|---|
+| živá (`alive`) | 17/23 (74 %) | **17/23 (74 %)** | 12/23 (52 %) |
+| poznaná (`likeNoun`) | 9/23 (39 %) | 10/23 (43 %) | 9/23 (39 %) |
+| okno začíná pohybem hrdiny | 21/23 | 21/23 | 18/23 |
+
+- **Cíl `alive` ≥ 70 %: číslem splněný (74 %), jako důkaz pohybu ne.** Kalibrace neprošla, viz další bod.
+- **Kalibrace neprošla: rozdíl 21,7 bodu, potřeba aspoň 25.** Měřidlo tedy pohyb těla neměří dost spolehlivě. Práh zůstává; opravit se má otázka nebo pás snímků z T3 (routed T24).
+- **Proti základu bez hračkového pohybu žádný zisk:** 17/23 před i po. Mezi zapnuto a vypnuto se liší 9 vět: 7 vypnutím „umřelo“ (ogre, baby dragon, knight, witch, pirate, bear, bird), 2 naopak „ožily“ (phoenix, goldfish).
+- **Odhad (neověřeno): vypnuto je pod základem (12 vs 17), protože `?toy=off` vypne i pohyb, který byl před P45D.** Ten pohyb teď kreslí hračková vrstva. U ogre, knight a pirate se s vypnutím hrdina v okně ani nepohnul.
+- **Šum soudce je velký.** Phoenix a goldfish soudce uznal jen s vypnutým pohybem a nic jiného se mezi běhy nezměnilo. Opakovaný běh téhož buildu tu není, takže rozptyl změřený nemáme.
+
+**Nesplněné věty se zapnutým pohybem, po třídě těla.** Třída je podle slova hrdiny (`bodyOfNoun`), ne podle modelu, který hra nakreslila; víceslovná jména a tvory, které slovník nezná, padají do `prop`.
+
+| třída (podle slova) | živá zapnuto | vypnuto | nesplněné zapnuto |
+|---|---|---|---|
+| biped | 4/5 | 1/5 | f24 cyclops – riggovaný farmář s klipem, soudce viděl „cowboy“ stát |
+| quadruped | 3/3 | 2/3 | – |
+| flyer | 3/4 | 1/4 | f26 broom – předmět stojí, hra s ním nehýbe |
+| swimmer | 0/1 | 1/1 | d12 goldfish – „turtle floating“, vlnění ocasu soudce nepoznal |
+| prop | 7/10 | 7/10 | f17 phoenix (šum, vypnuto prošel), m17 grandma a d01 hedgehog – hrdina se 6 s nehnul, takže podle kitu stojí |
+
 ## Výběr jmen pro generátor – `gen-nouns.json`
 
 `node scripts/p37d/missing-nouns.mjs --out evals/play/p45d/missing.json` nad dnešním katalogem: 118 chybějících (P43 jich mělo 136). `node scripts/p45d/pick-nouns.mjs` z nich vybere 48: 2 hrdinové panelu (cyclops, mole), 29 podle počtu vět, 17 záměn soudce P43; 13 je plochých nebo drobných. Vyřazené jevy, kulisy a šum jsou v `scripts/p45d/not-models.txt`.

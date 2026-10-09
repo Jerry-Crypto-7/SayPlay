@@ -1,0 +1,635 @@
+{
+ "about": "P45D T15: the T3 alive meter (scripts/p45d/alive-clip.mjs) over the T3 panel after every scene got toy motion, once with toy motion on and once with ?toy=off on the same build. Calibration: alive with toy off must come out at least 25 points lower, otherwise the meter does not measure motion. Target alive >= 70 %.",
+ "build": "d4c63332",
+ "set": "evals/play/p43/panel.json",
+ "runs": {
+  "on": "p45d-alive-after",
+  "off": "p45d-alive-after-off"
+ },
+ "measuredAt": {
+  "on": "2026-10-09T00:29:07.717Z",
+  "off": "2026-10-09T00:39:26.372Z"
+ },
+ "calls": {
+  "on": 23,
+  "off": 23
+ },
+ "summary": {
+  "on": {
+   "sentences": 23,
+   "judged": 23,
+   "alive": {
+    "hit": 17,
+    "of": 23,
+    "share": 0.739
+   },
+   "likeNoun": {
+    "hit": 10,
+    "of": 23,
+    "share": 0.435
+   },
+   "moving": {
+    "hit": 21,
+    "of": 23,
+    "share": 0.913
+   }
+  },
+  "off": {
+   "sentences": 23,
+   "judged": 23,
+   "alive": {
+    "hit": 12,
+    "of": 23,
+    "share": 0.522
+   },
+   "likeNoun": {
+    "hit": 9,
+    "of": 23,
+    "share": 0.391
+   },
+   "moving": {
+    "hit": 18,
+    "of": 23,
+    "share": 0.783
+   }
+  },
+  "baseline": {
+   "sentences": 23,
+   "judged": 23,
+   "alive": {
+    "hit": 17,
+    "of": 23,
+    "share": 0.739
+   },
+   "likeNoun": {
+    "hit": 9,
+    "of": 23,
+    "share": 0.391
+   },
+   "moving": {
+    "hit": 21,
+    "of": 23,
+    "share": 0.913
+   }
+  }
+ },
+ "calibration": {
+  "gapPoints": 21.7,
+  "required": 25,
+  "measuresMotion": false
+ },
+ "target": {
+  "alive": 0.7,
+  "met": true
+ },
+ "byBody": {
+  "flyer": {
+   "sentences": 4,
+   "aliveOn": 3,
+   "aliveOff": 1,
+   "notAliveOn": [
+    "f26"
+   ]
+  },
+  "biped": {
+   "sentences": 5,
+   "aliveOn": 4,
+   "aliveOff": 1,
+   "notAliveOn": [
+    "f24"
+   ]
+  },
+  "prop": {
+   "sentences": 10,
+   "aliveOn": 7,
+   "aliveOff": 7,
+   "notAliveOn": [
+    "f17",
+    "m17",
+    "d01"
+   ]
+  },
+  "quadruped": {
+   "sentences": 3,
+   "aliveOn": 3,
+   "aliveOff": 2,
+   "notAliveOn": []
+  },
+  "swimmer": {
+   "sentences": 1,
+   "aliveOn": 0,
+   "aliveOff": 1,
+   "notAliveOn": [
+    "d12"
+   ]
+  }
+ },
+ "rows": [
+  {
+   "id": "f01",
+   "noun": "dragon",
+   "body": "flyer",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "demon",
+    "doing": "Flapping its wings and turning"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "bat",
+    "doing": "Flapping its wings"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "f02",
+   "noun": "ogre",
+   "body": "biped",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": true,
+    "character": "ogre",
+    "doing": "straightening up from a crouch"
+   },
+   "off": {
+    "moving": false,
+    "alive": false,
+    "likeNoun": true,
+    "character": "troll",
+    "doing": "standing still"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "f03",
+   "noun": "elf archer",
+   "body": "prop",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": true,
+    "character": "archer",
+    "doing": "Shooting a bow, then lowering it"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": true,
+    "character": "archer",
+    "doing": "Shooting arrows, then lowering its bow"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "f04",
+   "noun": "troll",
+   "body": "biped",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "tree monster",
+    "doing": "Walking and turning"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "tree monster",
+    "doing": "Walking and turning"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "f05",
+   "noun": "fairy",
+   "body": "prop",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "insect",
+    "doing": "Walking across the ground"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "dinosaur",
+    "doing": "Walking with its body bobbing"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "f08",
+   "noun": "unicorn",
+   "body": "prop",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "car",
+    "doing": "Rocking side to side on its wheels"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "race car",
+    "doing": "Driving and swaying slightly on its wheels"
+   },
+   "baseline": {
+    "alive": false
+   }
+  },
+  {
+   "id": "f11",
+   "noun": "necromancer",
+   "body": "prop",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": true,
+    "character": "wizard",
+    "doing": "casting a spell"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": true,
+    "character": "wizard",
+    "doing": "Being attacked by a swordsman"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "f12",
+   "noun": "baby dragon",
+   "body": "flyer",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "bat",
+    "doing": "flapping its wings"
+   },
+   "off": {
+    "moving": true,
+    "alive": false,
+    "likeNoun": false,
+    "character": "bat",
+    "doing": "Holding its wings spread"
+   },
+   "baseline": {
+    "alive": false
+   }
+  },
+  {
+   "id": "f17",
+   "noun": "phoenix",
+   "body": "prop",
+   "on": {
+    "moving": true,
+    "alive": false,
+    "likeNoun": true,
+    "character": "bird",
+    "doing": "flying past cacti"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "butterfly",
+    "doing": "flying"
+   },
+   "baseline": {
+    "alive": false
+   }
+  },
+  {
+   "id": "f22",
+   "noun": "knight",
+   "body": "biped",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": true,
+    "character": "knight",
+    "doing": "rising from a crouch while holding a sword"
+   },
+   "off": {
+    "moving": false,
+    "alive": false,
+    "likeNoun": true,
+    "character": "knight",
+    "doing": "standing still holding a sword"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "f24",
+   "noun": "cyclops",
+   "body": "biped",
+   "on": {
+    "moving": true,
+    "alive": false,
+    "likeNoun": false,
+    "character": "cowboy",
+    "doing": "Standing as projectiles fly past"
+   },
+   "off": {
+    "moving": true,
+    "alive": false,
+    "likeNoun": false,
+    "character": "farmer",
+    "doing": "Throwing a red ball"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "f26",
+   "noun": "broom",
+   "body": "flyer",
+   "on": {
+    "moving": true,
+    "alive": false,
+    "likeNoun": true,
+    "character": "broom",
+    "doing": "standing upright on a path"
+   },
+   "off": {
+    "moving": true,
+    "alive": false,
+    "likeNoun": true,
+    "character": "broom",
+    "doing": "standing upright"
+   },
+   "baseline": {
+    "alive": false
+   }
+  },
+  {
+   "id": "m09",
+   "noun": "ninja cat",
+   "body": "quadruped",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "boy",
+    "doing": "jumping across gaps between platforms"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "boy",
+    "doing": "jumping forward and landing on a platform"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "m16",
+   "noun": "kangaroo",
+   "body": "prop",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": true,
+    "character": "kangaroo",
+    "doing": "jumping across gaps between platforms"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": true,
+    "character": "kangaroo",
+    "doing": "jumping across gaps between platforms"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "m17",
+   "noun": "grandma",
+   "body": "prop",
+   "on": {
+    "moving": false,
+    "alive": false,
+    "likeNoun": true,
+    "character": "elderly woman",
+    "doing": "standing beside a building"
+   },
+   "off": {
+    "moving": false,
+    "alive": false,
+    "likeNoun": true,
+    "character": "elderly woman",
+    "doing": "standing beside a building"
+   },
+   "baseline": {
+    "alive": false
+   }
+  },
+  {
+   "id": "u08",
+   "noun": "mole",
+   "body": "quadruped",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "cowboy",
+    "doing": "Walking across the grass"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "cowboy",
+    "doing": "walking across the grass"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "d01",
+   "noun": "hedgehog",
+   "body": "prop",
+   "on": {
+    "moving": false,
+    "alive": false,
+    "likeNoun": true,
+    "character": "hedgehog",
+    "doing": "standing still"
+   },
+   "off": {
+    "moving": false,
+    "alive": false,
+    "likeNoun": true,
+    "character": "hedgehog",
+    "doing": "standing still"
+   },
+   "baseline": {
+    "alive": false
+   }
+  },
+  {
+   "id": "d03",
+   "noun": "witch",
+   "body": "prop",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "turret",
+    "doing": "Rotating and firing projectiles"
+   },
+   "off": {
+    "moving": true,
+    "alive": false,
+    "likeNoun": false,
+    "character": "turret",
+    "doing": "Firing at nearby enemies"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "d08",
+   "noun": "mermaid",
+   "body": "prop",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "snake",
+    "doing": "Slithering among glowing orbs"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "person",
+    "doing": "Walking among glowing orbs"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "d10",
+   "noun": "pirate",
+   "body": "biped",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "warrior",
+    "doing": "Walking while holding two daggers"
+   },
+   "off": {
+    "moving": false,
+    "alive": false,
+    "likeNoun": false,
+    "character": "warrior",
+    "doing": "Standing still holding two blades"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "d12",
+   "noun": "goldfish",
+   "body": "swimmer",
+   "on": {
+    "moving": true,
+    "alive": false,
+    "likeNoun": false,
+    "character": "turtle",
+    "doing": "Floating in water"
+   },
+   "off": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "turtle",
+    "doing": "swimming"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "d14",
+   "noun": "bear",
+   "body": "quadruped",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": false,
+    "character": "gorilla",
+    "doing": "Walking forward"
+   },
+   "off": {
+    "moving": true,
+    "alive": false,
+    "likeNoun": false,
+    "character": "tank",
+    "doing": "Moving across the grass"
+   },
+   "baseline": {
+    "alive": true
+   }
+  },
+  {
+   "id": "s035",
+   "noun": "bird",
+   "body": "flyer",
+   "on": {
+    "moving": true,
+    "alive": true,
+    "likeNoun": true,
+    "character": "bird",
+    "doing": "hopping forward"
+   },
+   "off": {
+    "moving": true,
+    "alive": false,
+    "likeNoun": true,
+    "character": "bird",
+    "doing": "Moving to the right"
+   },
+   "baseline": {
+    "alive": true
+   }
+  }
+ ]
+}
