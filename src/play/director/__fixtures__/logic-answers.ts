@@ -7,12 +7,16 @@
  * vrátí zaznamenané tělo, bez opravného kola. Prošla, když model logiku napsal,
  * hra je autorská a nese logiku té odpovědi (ne šablonu okamžitého návrhu, která
  * se připojí jen hře bez logiky), zkompiluje se a robot ji ověří včetně `logic_proved`.
+ * Cesta produktu nese deterministickou opravu vstupu do fáze (`withPhaseEntries`);
+ * `rawPassed` říká, jestli by odpověď prošla i bez ní.
  */
 
 import { arcadeWorldOf } from '../../arcade/compile';
+import { logicSchema, modelRulesSchema, withPhaseEntries } from '../../arcade/rules/schema';
 import { verifyArcade } from '../../arcade/verify';
 import type { GameSpecV1 } from '../../spec';
 import { direct } from '..';
+import { withoutNulls } from '../read';
 import { answered, fakeBranch } from './branch';
 
 export const LOGIC_ANSWERS_DIR = 'src/play/director/__fixtures__/logic-answers';
@@ -36,7 +40,15 @@ export interface LogicAnswerFixture {
 
 export interface LogicVerdict {
   readonly id: string;
+  /** Prošla cestou produktu, tedy i s opravou vstupu do fáze. */
   readonly passed: boolean;
+  /**
+   * Prošla by i bez opravy: oprava nic nedoplnila. Kde doplnila, `readGameSpec` by bez ní
+   * odpověď odmítl („no rule enters phase“) a logika by vypadla – to je neúspěch.
+   */
+  readonly rawPassed: boolean;
+  /** Fáze, do kterých čtení odpovědi doplnilo vstupní pravidlo. */
+  readonly phasesEntered: readonly string[];
   /** Model v odpovědi deklaroval aspoň jednu proměnnou, časovač, fázi nebo událost. */
   readonly wroteLogic: boolean;
   /** První důvod neúspěchu; `null` = prošla. */
@@ -55,10 +67,22 @@ function namesOf(logic: Declared | null | undefined): string[] {
   return [...ids('var', logic.vars), ...ids('timer', logic.timers), ...ids('phase', logic.phases), ...ids('event', logic.events)];
 }
 
+/** Fáze, do kterých oprava čtení doplní vstup – na pravidlech a logice, jak je odpověď napsala. */
+function phasesEnteredIn(spec: unknown): string[] {
+  const cleaned = withoutNulls(spec);
+  const rules = modelRulesSchema.safeParse(isRecord(cleaned) ? cleaned.rules : undefined);
+  const logic = logicSchema.safeParse(isRecord(cleaned) ? cleaned.logic : undefined);
+  if (!rules.success || !logic.success) return [];
+  return withPhaseEntries(rules.data, logic.data)
+    .slice(rules.data.length)
+    .flatMap((rule) => rule.do.flatMap((effect) => ('goPhase' in effect ? [effect.goPhase] : [])));
+}
+
 export async function judgeLogicAnswer(fixture: LogicAnswerFixture): Promise<LogicVerdict> {
-  const verdict = (passed: boolean, wroteLogic: boolean, why: string | null, fallbackReason: string | null = null): LogicVerdict => ({ id: fixture.id, passed, wroteLogic, why, fallbackReason });
-  if (fixture.answer === null) return verdict(false, false, `no answer: ${String(fixture.failure)}`);
   const spec = isRecord(fixture.answer) && isRecord(fixture.answer.spec) ? fixture.answer.spec : fixture.answer;
+  const phasesEntered = phasesEnteredIn(spec);
+  const verdict = (passed: boolean, wroteLogic: boolean, why: string | null, fallbackReason: string | null = null): LogicVerdict => ({ id: fixture.id, passed, rawPassed: passed && phasesEntered.length === 0, phasesEntered, wroteLogic, why, fallbackReason });
+  if (fixture.answer === null) return verdict(false, false, `no answer: ${String(fixture.failure)}`);
   const written = namesOf(isRecord(spec) ? (spec.logic as Declared | null | undefined) : undefined);
   if (written.length === 0) return verdict(false, false, 'the answer declares no logic');
 

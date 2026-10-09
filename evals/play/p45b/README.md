@@ -85,7 +85,8 @@ npx vitest run src/play/director/__tests__/logic-fixtures.test.ts
 ```
 
 Kompaktní režisér jako v produktu (effort low, 4 000 tokenů, 120 s), **jen první odpověď, bez
-opravného kola**; soudí `judgeLogicAnswer` (`src/play/director/__fixtures__/logic-answers.ts`).
+opravného kola**; soudí `judgeLogicAnswer` (`src/play/director/__fixtures__/logic-answers.ts`)
+cestou produktu – `direct()` včetně opravy vstupu do fáze (níže).
 
 | běh (9. 10.) | prompt | deklaruje logiku | projde |
 |---|---|---|---|
@@ -93,10 +94,44 @@ opravného kola**; soudí `judgeLogicAnswer` (`src/play/director/__fixtures__/lo
 | 2 | + „logic – REQUIRED…“ v systémovém promptu | 2/25 | 0/25 |
 | 3 | + řádek `COURSE_LINE` na konci zprávy k větě | **23/25** | **0/25** |
 
-**Proč padá (běh 3):** skoro každá odpověď deklaruje fázi, na kterou pravidlo reaguje
-(`when: {phase}`), ale žádné pravidlo do ní nevstoupí (`goPhase`) – `readGameSpec` odpověď odmítne
-(„no rule enters phase X“) a logika vypadne. Dál 2× robot prohraje, 1× vadný tvar (`things` s rolí
-`player`, podmínka s `atLeast` i `below`). Próza v systémovém promptu model skoro nehne, řádek ve
-zprávě ano. Plán dovolil dvě opravy promptu; obě vyčerpané. Další páka (deterministické doplnění
-vstupu do fáze, nebo soud až po opravných kolech produktu, která chybějící `goPhase` jmenují) čeká
-na rozhodnutí majitele.
+Próza v systémovém promptu model skoro nehne, řádek ve zprávě ano. Plán dovolil dvě opravy
+promptu; obě vyčerpané.
+
+**Oprava vstupu do fáze (rozhodnutí 9. 10., varianta a).** Čtení odpovědi režiséra
+(`readGenreAnswer` i `readRecipeAnswer` v `src/play/director/read.ts`) volá `withPhaseEntries`
+(`src/play/arcade/rules/schema.ts`): fáze, na kterou pravidlo reaguje (`when.phase`,
+`when.phaseExit`, `if.inPhase`) a nic do ní nepřepne, dostane pravidlo `enter_<fáze>` – každých
+240 tiků z fáze před ní (jako `LOGIC EXAMPLE` promptu), sloveso `advance`. Fázi, kterou nikdo nečte,
+nechá být. Prompt se neměnil, záznam 3 platí, nový záznam nebyl.
+
+| soud záznamu 3 | projde |
+|---|---|
+| `raw` – bez opravy | **0/25** |
+| `repaired` – cesta produktu s opravou | **0/25** |
+| odpovědí, kterým oprava něco doplnila | 0/25 |
+
+```
+set P45B_JUDGE_ONLY=1 && npx vitest run --config vitest.measure.mts evals/play/p45b/director-logic.measure.ts
+```
+
+**Proč padá – fakta ze záznamů** (statický rozbor odpovědí, jedna odpověď může mít víc příčin):
+
+| příčina | odpovědí |
+|---|---|
+| deklaruje fázi za první, kterou žádné pravidlo nečte ani do ní nepřepne | **23 z 23** s logikou |
+| pravidlo, které na fázi reaguje – tvar, na který míří oprava | **0** |
+| deklaruje časovač, který žádné pravidlo nespustí | 13 |
+| spouští časovač `every: N` kratším než jeho délka – obnoví se dřív, než doběhne | 6 |
+| podmínka s `atLeast` i `below` zároveň | 5 |
+| bez logiky | 2 (s188, si-031) |
+
+Dřívější popis („deklaruje fázi, na kterou pravidlo reaguje“) byl chybný: žádná odpověď na fázi
+nereaguje. Model opíše kostru „fáze + časovač“ z řádku `Course:` a příkladu, ale nepropojí ji
+s pravidly.
+
+**Odhad, ne měření:** ani zahození mrtvých deklarací fází by na 20/25 nestačilo – bez jiné statické
+vady zůstávají jen h02 a s008. Páky, které by číslo hnuly, míří na model, ne na čtení: soud až po
+opravných kolech produktu (ta chybějící `goPhase`/`startTimer` jmenují), nebo příklad, kde každá
+deklarace má pravidlo, které ji spustí, i pravidlo, které na ni reaguje. Cíl ≥ 20/25 je nesplněný;
+`logic-fixtures.test.ts` drží zapsané číslo (každá fixtura `raw` i `repaired` jako
+v `director-logic.json`).
