@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "bfaed45bb34d941496a03bd293556789bc005540644b028b65b6d75282ef82aa",
+ "catalogHash": "5b135647403dcca32be9b04c3be07d267c3d3b02e2d025528bb71bda7571becd",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1109,6 +1109,11 @@
   "gen3d-karaoke-machine": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-greenhouse": {"class":"prop"},
   "gen3d-mop": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-whistle": {"class":"prop"}
+  "gen3d-whistle": {"class":"prop"},
+  "gen3d-hairbrush": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-robber": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-peacock": {"class":"flyer","regions":{"midX":0,"wingX":0.308,"legY":0.248}},
+  "gen3d-centaur": {"class":"quadruped","regions":{"tailZ":-0.187,"legY":0.25}},
+  "gen3d-comet": {"class":"prop"}
  }
 }

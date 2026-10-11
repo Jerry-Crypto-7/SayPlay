@@ -334,3 +334,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-greenhouse` | greenhouse | 3317 / 1679 |
 | `gen3d-mop` | mop | 4702 / 2332 |
 | `gen3d-whistle` | whistle | 4485 / 2189 |
+| `gen3d-hairbrush` | hairbrush | 4494 / 2183 |
+| `gen3d-robber` | robber | 4689 / 2228 |
+| `gen3d-peacock` | peacock | 4558 / 2231 |
+| `gen3d-centaur` | centaur | 4541 / 2162 |
+| `gen3d-comet` | comet | 4748 / 2374 |

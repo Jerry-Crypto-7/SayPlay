@@ -22582,6 +22582,101 @@
           0.38945
         ]
       }
+    },
+    {
+      "assetId": "gen3d-hairbrush",
+      "tags": [
+        "hairbrush"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hairbrush-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.14936,
+          0,
+          -0.08121
+        ],
+        "max": [
+          0.14936,
+          0.99678,
+          0.08121
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-robber",
+      "tags": [
+        "robber"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-robber-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30519,
+          0,
+          -0.11636
+        ],
+        "max": [
+          0.30519,
+          0.99569,
+          0.11636
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-peacock",
+      "tags": [
+        "peacock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-peacock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.51253,
+          0,
+          -0.55218
+        ],
+        "max": [
+          0.51253,
+          0.9913,
+          0.55218
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-centaur",
+      "tags": [
+        "centaur"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-centaur-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3363,
+          0,
+          -0.37449
+        ],
+        "max": [
+          0.3363,
+          0.99982,
+          0.37449
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-comet",
+      "tags": [
+        "comet"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-comet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58602,
+          0,
+          -0.1625
+        ],
+        "max": [
+          0.58602,
+          0.99754,
+          0.1625
+        ]
+      }
     }
   ]
 }
