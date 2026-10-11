@@ -259,3 +259,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-mining-helmet` | mining helmet | 4383 / 2174 |
 | `gen3d-stone-bridge` | stone bridge | 4443 / 2192 |
 | `gen3d-velvet-rope` | velvet rope | 4748 / 2372 |
+| `gen3d-emu` | emu | 4462 / 2026 |
+| `gen3d-medicine-cabinet` | medicine cabinet | 4453 / 2172 |
+| `gen3d-playground-slide` | playground slide | 4693 / 2248 |
+| `gen3d-post-box` | post box | 4746 / 2372 |
+| `gen3d-parcel` | parcel | 4698 / 2301 |

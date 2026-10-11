@@ -25,6 +25,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | 10 (16:54–17:11) | 10 | 8 | 5 | 5 | 14 + 8 |
 | 11 (17:09–17:38) | 10 | 7 | 7 | 5 | 20 + 7 |
 | 12 (17:35–18:05) | 10 | 8 | 5 | 4 | 14 + 8 |
+| 13 (18:01–18:17) | 10 | 6 | 5 | 5 | 19 + 6 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -91,3 +92,8 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Přijatý, nepovýšený: **dinosaur skeleton** (top1) – manifest P32 mu podle slova „dinosaur“ dal třídu monster, pin počtu zčervenal → `--drop`.
 - Soudce poznal něco jiného: mining drill: drilling rig · alpine chalet: house · display case: trash can.
 - Bránou kvality neprošly: timber house, mushroom house (`inconsistent face winding`).
+
+**Dávka 13** (outback, pet salon, pharmacy, playground, post office):
+- Povýšeno (5): top1 medicine cabinet, playground slide, post box, parcel; top3 emu („ostrich“, emu ve výčtu).
+- Soudce poznal něco jiného: pet bed: fire pit.
+- Předkontrola odmítla všechny obrázky: dingo: dog / fox / dog (vizuálně správně – dingo je pes; třetí pokus neprošel bránou kvality) · grooming table, pill bottle, sandbox – správné jméno, obrázky označené jako rozbité.

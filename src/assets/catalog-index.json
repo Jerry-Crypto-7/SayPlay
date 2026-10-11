@@ -21154,6 +21154,101 @@
           0.17345
         ]
       }
+    },
+    {
+      "assetId": "gen3d-emu",
+      "tags": [
+        "emu"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-emu-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22732,
+          0,
+          -0.41195
+        ],
+        "max": [
+          0.22732,
+          0.99906,
+          0.41195
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-medicine-cabinet",
+      "tags": [
+        "medicine cabinet"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-medicine-cabinet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43057,
+          0,
+          -0.26901
+        ],
+        "max": [
+          0.43057,
+          1,
+          0.26901
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-playground-slide",
+      "tags": [
+        "playground slide"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-playground-slide-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2106,
+          0,
+          -0.54344
+        ],
+        "max": [
+          0.2106,
+          0.99727,
+          0.54344
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-post-box",
+      "tags": [
+        "post box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-post-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21583,
+          0,
+          -0.21569
+        ],
+        "max": [
+          0.21583,
+          0.99864,
+          0.21569
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-parcel",
+      "tags": [
+        "parcel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-parcel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.70966,
+          0,
+          -0.28636
+        ],
+        "max": [
+          0.70966,
+          0.9995,
+          0.28636
+        ]
+      }
     }
   ]
 }
