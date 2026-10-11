@@ -22392,6 +22392,82 @@
           0.35425
         ]
       }
+    },
+    {
+      "assetId": "gen3d-napkin-dispenser",
+      "tags": [
+        "napkin dispenser"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-napkin-dispenser-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49111,
+          0,
+          -0.25356
+        ],
+        "max": [
+          0.49111,
+          0.99915,
+          0.25356
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mushroom-lantern",
+      "tags": [
+        "mushroom lantern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mushroom-lantern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41665,
+          0,
+          -0.41499
+        ],
+        "max": [
+          0.41665,
+          0.99783,
+          0.41499
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fairy-door",
+      "tags": [
+        "fairy door"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fairy-door-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38226,
+          0,
+          -0.15697
+        ],
+        "max": [
+          0.38226,
+          1.00001,
+          0.15697
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-grooming-dryer",
+      "tags": [
+        "grooming dryer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-grooming-dryer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.14309,
+          0,
+          -0.15444
+        ],
+        "max": [
+          0.14309,
+          0.99826,
+          0.15444
+        ]
+      }
     }
   ]
 }

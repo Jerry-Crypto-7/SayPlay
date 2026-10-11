@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "9dee013f584aff2ddb1f5941fa681f776e5b9e245cf3882d272f4ed08c6a8959",
+ "catalogHash": "9925e5bf2a050f8d21a5ada687b338cb7bc55f2ce9d916aed6ac604946d5dbcf",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1099,6 +1099,10 @@
   "gen3d-potato-sack": {"class":"prop"},
   "gen3d-beanstalk": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-floating-island": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-deep-fryer": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-deep-fryer": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-napkin-dispenser": {"class":"prop"},
+  "gen3d-mushroom-lantern": {"class":"prop"},
+  "gen3d-fairy-door": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-grooming-dryer": {"class":"biped","regions":{"legY":0.25}}
  }
 }

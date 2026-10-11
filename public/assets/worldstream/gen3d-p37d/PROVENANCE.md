@@ -324,3 +324,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-beanstalk` | beanstalk | 4599 / 2243 |
 | `gen3d-floating-island` | floating island | 4485 / 2095 |
 | `gen3d-deep-fryer` | deep fryer | 4500 / 2190 |
+| `gen3d-napkin-dispenser` | napkin dispenser | 4472 / 2214 |
+| `gen3d-mushroom-lantern` | mushroom lantern | 4391 / 2069 |
+| `gen3d-fairy-door` | fairy door | 4529 / 2210 |
+| `gen3d-grooming-dryer` | grooming dryer | 4750 / 2364 |
