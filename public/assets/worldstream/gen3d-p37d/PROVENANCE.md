@@ -197,3 +197,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-swing` | swing | 4698 / 2318 |
 | `gen3d-torpedo` | torpedo | 4469 / 2125 |
 | `gen3d-ice-fishing-hut` | ice fishing hut | 4358 / 2086 |
+| `gen3d-ice-floe` | ice floe | 4581 / 2253 |
+| `gen3d-toll-booth` | toll booth | 4690 / 2320 |
+| `gen3d-highway-sign` | highway sign | 4478 / 2142 |
+| `gen3d-checkout-counter` | checkout counter | 4701 / 2347 |
+| `gen3d-shopping-basket` | shopping basket | 4373 / 2074 |
+| `gen3d-sea-anemone` | sea anemone | 4551 / 2210 |

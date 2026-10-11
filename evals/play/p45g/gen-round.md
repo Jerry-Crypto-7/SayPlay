@@ -14,9 +14,16 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | Dávka | Jmen | Předkontrola a brána | Soud | Povýšeno | Codex (předkontrola + soud) |
 |---|---|---|---|---|---|
 | 1 (14:07–14:27) | 10 | 6 | 4 | 4 | 19 + 6 |
+| 2 (14:23–14:58) | 10 | 9 | 7 | 6 | 14 + 9 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
 - Soudce poznal něco jiného: tablet: crate · tape: ring sculpture.
 - Předkontrola odmítla všechny tři obrázky: space station: satellite ×3 · tea: teacup ×3, označený jako rozbitý · ice fishing hole: **ice fishing hole** ×3 – správné jméno, ale obrázek označený jako rozbitý (díra v ledu není samostatný předmět).
 - Bránou kvality neprošel: rhino (3× `inconsistent face winding`).
+
+**Dávka 2** (frozen lake, highway, supermarket, underwater):
+- Povýšeno (6): top1 ice floe, toll booth, highway sign („directional sign“), checkout counter, shopping basket; top3 sea anemone („coral“, sea anemone ve výčtu).
+- Přijatý, nepovýšený: sea urchin (top3 „cactus“, sea urchin ve výčtu) – `normalize: LOD1 cannot be made lighter than LOD0 at the same size` (stejná třída jako dynamite v P45E).
+- Soudce poznal něco jiného: overpass: trampoline · diving bell: hanging lantern.
+- Předkontrola odmítla všechny tři obrázky: grocery shelf: store shelf ×3, označený jako rozbitý (vizuálně správně – synonymum by ho pustilo).

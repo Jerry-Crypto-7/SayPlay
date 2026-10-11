@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "38fb77c79693e833aec4f256fce923de424be28b327775302296e86af2c4e62b",
+ "catalogHash": "ebb9bf510be81f1a422c9142529a8d64750c247eb22c476cf9a157eeb8ebb625",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -972,6 +972,12 @@
   "gen3d-singer": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-swing": {"class":"prop"},
   "gen3d-torpedo": {"class":"prop"},
-  "gen3d-ice-fishing-hut": {"class":"prop"}
+  "gen3d-ice-fishing-hut": {"class":"prop"},
+  "gen3d-ice-floe": {"class":"prop"},
+  "gen3d-toll-booth": {"class":"prop"},
+  "gen3d-highway-sign": {"class":"prop"},
+  "gen3d-checkout-counter": {"class":"prop"},
+  "gen3d-shopping-basket": {"class":"prop"},
+  "gen3d-sea-anemone": {"class":"prop"}
  }
 }

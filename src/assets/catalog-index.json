@@ -19976,6 +19976,120 @@
           0.47646
         ]
       }
+    },
+    {
+      "assetId": "gen3d-ice-floe",
+      "tags": [
+        "ice floe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-floe-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.82951,
+          0,
+          -2.82206
+        ],
+        "max": [
+          2.82951,
+          0.99834,
+          2.82206
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-toll-booth",
+      "tags": [
+        "toll booth"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-toll-booth-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.76473,
+          0,
+          -0.24891
+        ],
+        "max": [
+          0.76473,
+          1.00001,
+          0.24891
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-highway-sign",
+      "tags": [
+        "highway sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-highway-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40812,
+          0,
+          -0.18872
+        ],
+        "max": [
+          0.40812,
+          0.99998,
+          0.18872
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-checkout-counter",
+      "tags": [
+        "checkout counter"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-checkout-counter-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.113,
+          0,
+          -0.36149
+        ],
+        "max": [
+          1.113,
+          0.99719,
+          0.36149
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-shopping-basket",
+      "tags": [
+        "shopping basket"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-shopping-basket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44565,
+          0,
+          -0.45209
+        ],
+        "max": [
+          0.44565,
+          0.99724,
+          0.45209
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sea-anemone",
+      "tags": [
+        "sea anemone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sea-anemone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39875,
+          0,
+          -0.40603
+        ],
+        "max": [
+          0.39875,
+          1.00001,
+          0.40603
+        ]
+      }
     }
   ]
 }
