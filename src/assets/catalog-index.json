@@ -19613,6 +19613,1699 @@
           0.27298
         ]
       }
+    },
+    {
+      "assetId": "gen3d-bank-manager",
+      "tags": [
+        "bank manager"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bank-manager-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29458,
+          0,
+          -0.15687
+        ],
+        "max": [
+          0.29458,
+          0.99756,
+          0.15687
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-chimney",
+      "tags": [
+        "chimney"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-chimney-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31822,
+          0,
+          -0.25923
+        ],
+        "max": [
+          0.31822,
+          0.99759,
+          0.25923
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coffin",
+      "tags": [
+        "coffin",
+        "casket"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coffin-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.50263,
+          0,
+          -0.67843
+        ],
+        "max": [
+          1.50263,
+          0.99966,
+          0.67843
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-firefly",
+      "tags": [
+        "firefly"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-firefly-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.07559,
+          0,
+          -0.34468
+        ],
+        "max": [
+          1.07559,
+          0.99929,
+          0.34468
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-net",
+      "tags": [
+        "net"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-net-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1696,
+          0,
+          -0.11916
+        ],
+        "max": [
+          0.1696,
+          0.99995,
+          0.11916
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stickman",
+      "tags": [
+        "stickman"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stickman-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22999,
+          0,
+          -0.12527
+        ],
+        "max": [
+          0.22999,
+          0.99813,
+          0.12527
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stone-golem",
+      "tags": [
+        "stone golem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-golem-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3863,
+          0,
+          -0.16198
+        ],
+        "max": [
+          0.3863,
+          0.9989,
+          0.16198
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cape",
+      "tags": [
+        "cape"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cape-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.60779,
+          0,
+          -0.26077
+        ],
+        "max": [
+          0.60779,
+          0.99968,
+          0.26077
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coral",
+      "tags": [
+        "coral"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38508,
+          0,
+          -0.34157
+        ],
+        "max": [
+          0.38508,
+          0.99987,
+          0.34157
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-earring",
+      "tags": [
+        "earring"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-earring-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23076,
+          0,
+          -0.18367
+        ],
+        "max": [
+          0.23076,
+          0.99991,
+          0.18367
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-firework",
+      "tags": [
+        "firework"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-firework-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11957,
+          0,
+          -0.11907
+        ],
+        "max": [
+          0.11957,
+          1,
+          0.11907
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flower-pot",
+      "tags": [
+        "flower pot",
+        "flowerpot"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-pot-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71714,
+          0,
+          -0.71676
+        ],
+        "max": [
+          0.71714,
+          0.99999,
+          0.71676
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-glue",
+      "tags": [
+        "glue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-glue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18445,
+          0,
+          -0.18479
+        ],
+        "max": [
+          0.18445,
+          0.99995,
+          0.18479
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-joystick",
+      "tags": [
+        "joystick"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-joystick-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36494,
+          0,
+          -0.36463
+        ],
+        "max": [
+          0.36494,
+          1.00001,
+          0.36463
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-milk",
+      "tags": [
+        "milk"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-milk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21892,
+          0,
+          -0.22129
+        ],
+        "max": [
+          0.21892,
+          0.99983,
+          0.22129
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-singer",
+      "tags": [
+        "singer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-singer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2083,
+          0,
+          -0.16369
+        ],
+        "max": [
+          0.2083,
+          0.9942,
+          0.16369
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-swing",
+      "tags": [
+        "swing"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-swing-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37598,
+          0,
+          -0.48346
+        ],
+        "max": [
+          0.37598,
+          0.9987,
+          0.48346
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-torpedo",
+      "tags": [
+        "torpedo"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-torpedo-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.56956,
+          0,
+          -1.44846
+        ],
+        "max": [
+          0.56956,
+          0.99276,
+          1.44846
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-fishing-hut",
+      "tags": [
+        "ice fishing hut"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-fishing-hut-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37386,
+          0,
+          -0.47646
+        ],
+        "max": [
+          0.37386,
+          0.99761,
+          0.47646
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-floe",
+      "tags": [
+        "ice floe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-floe-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.82951,
+          0,
+          -2.82206
+        ],
+        "max": [
+          2.82951,
+          0.99834,
+          2.82206
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-toll-booth",
+      "tags": [
+        "toll booth"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-toll-booth-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.76473,
+          0,
+          -0.24891
+        ],
+        "max": [
+          0.76473,
+          1.00001,
+          0.24891
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-highway-sign",
+      "tags": [
+        "highway sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-highway-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40812,
+          0,
+          -0.18872
+        ],
+        "max": [
+          0.40812,
+          0.99998,
+          0.18872
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-checkout-counter",
+      "tags": [
+        "checkout counter"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-checkout-counter-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.113,
+          0,
+          -0.36149
+        ],
+        "max": [
+          1.113,
+          0.99719,
+          0.36149
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-shopping-basket",
+      "tags": [
+        "shopping basket"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-shopping-basket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44565,
+          0,
+          -0.45209
+        ],
+        "max": [
+          0.44565,
+          0.99724,
+          0.45209
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sea-anemone",
+      "tags": [
+        "sea anemone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sea-anemone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39875,
+          0,
+          -0.40603
+        ],
+        "max": [
+          0.39875,
+          1.00001,
+          0.40603
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-candelabra",
+      "tags": [
+        "candelabra"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-candelabra-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16081,
+          0,
+          -0.23045
+        ],
+        "max": [
+          0.16081,
+          0.99992,
+          0.23045
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-grandfather-clock",
+      "tags": [
+        "grandfather clock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-grandfather-clock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18736,
+          0,
+          -0.09221
+        ],
+        "max": [
+          0.18736,
+          1.00001,
+          0.09221
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-chandelier",
+      "tags": [
+        "chandelier"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-chandelier-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44436,
+          0,
+          -0.44194
+        ],
+        "max": [
+          0.44436,
+          0.99998,
+          0.44194
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-escalator",
+      "tags": [
+        "escalator"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-escalator-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31481,
+          0,
+          -0.55384
+        ],
+        "max": [
+          0.31481,
+          0.99573,
+          0.55384
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mannequin",
+      "tags": [
+        "mannequin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mannequin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16487,
+          0,
+          -0.16474
+        ],
+        "max": [
+          0.16487,
+          0.99866,
+          0.16474
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-clothing-rack",
+      "tags": [
+        "clothing rack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-clothing-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32988,
+          0,
+          -0.49933
+        ],
+        "max": [
+          0.32988,
+          0.99512,
+          0.49933
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tankard",
+      "tags": [
+        "tankard"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tankard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48606,
+          0,
+          -0.30115
+        ],
+        "max": [
+          0.48606,
+          0.99665,
+          0.30115
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tavern-sign",
+      "tags": [
+        "tavern sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tavern-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33727,
+          0,
+          -0.14145
+        ],
+        "max": [
+          0.33727,
+          0.99972,
+          0.14145
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pet-carrier",
+      "tags": [
+        "pet carrier"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pet-carrier-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5988,
+          0,
+          -0.44951
+        ],
+        "max": [
+          0.5988,
+          0.98183,
+          0.44951
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bread-oven",
+      "tags": [
+        "bread oven"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bread-oven-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.53582,
+          0,
+          -0.54177
+        ],
+        "max": [
+          0.53582,
+          0.99852,
+          0.54177
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cake-stand",
+      "tags": [
+        "cake stand"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cake-stand-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34374,
+          0,
+          -0.34437
+        ],
+        "max": [
+          0.34374,
+          0.99997,
+          0.34437
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-baguette",
+      "tags": [
+        "baguette"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-baguette-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.7659,
+          0,
+          -2.37085
+        ],
+        "max": [
+          0.7659,
+          0.99956,
+          2.37085
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-burnt-tree",
+      "tags": [
+        "burnt tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-burnt-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44218,
+          0,
+          -0.25694
+        ],
+        "max": [
+          0.44218,
+          0.99954,
+          0.25694
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-charred-log",
+      "tags": [
+        "charred log"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-charred-log-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.41304,
+          0,
+          -0.50993
+        ],
+        "max": [
+          1.41304,
+          0.99208,
+          0.50993
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-burning-tree",
+      "tags": [
+        "burning tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-burning-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35272,
+          0,
+          -0.32992
+        ],
+        "max": [
+          0.35272,
+          0.99409,
+          0.32992
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rock-arch",
+      "tags": [
+        "rock arch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rock-arch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.91667,
+          0,
+          -0.32215
+        ],
+        "max": [
+          0.91667,
+          0.99471,
+          0.32215
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mesa",
+      "tags": [
+        "mesa"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mesa-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.43841,
+          0,
+          -1.48518
+        ],
+        "max": [
+          1.43841,
+          0.99827,
+          1.48518
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-castle-gate",
+      "tags": [
+        "castle gate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-castle-gate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58171,
+          0,
+          -0.2066
+        ],
+        "max": [
+          0.58171,
+          0.99839,
+          0.2066
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-portcullis",
+      "tags": [
+        "portcullis"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-portcullis-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4852,
+          0,
+          -0.10516
+        ],
+        "max": [
+          0.4852,
+          1,
+          0.10516
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flagpole",
+      "tags": [
+        "flagpole"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flagpole-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17343,
+          0,
+          -0.14089
+        ],
+        "max": [
+          0.17343,
+          0.99923,
+          0.14089
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rope-bridge",
+      "tags": [
+        "rope bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rope-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.52041,
+          0,
+          -0.70645
+        ],
+        "max": [
+          0.52041,
+          0.99487,
+          0.70645
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-diploma",
+      "tags": [
+        "diploma"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-diploma-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13375,
+          0,
+          -0.1592
+        ],
+        "max": [
+          0.13375,
+          0.99886,
+          0.1592
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lecture-podium",
+      "tags": [
+        "lecture podium"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lecture-podium-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26991,
+          0,
+          -0.27022
+        ],
+        "max": [
+          0.26991,
+          0.99985,
+          0.27022
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-music-stand",
+      "tags": [
+        "music stand"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-music-stand-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30467,
+          0,
+          -0.21949
+        ],
+        "max": [
+          0.30467,
+          0.99949,
+          0.21949
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crooked-tower",
+      "tags": [
+        "crooked tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-crooked-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16212,
+          0,
+          -0.16974
+        ],
+        "max": [
+          0.16212,
+          0.99997,
+          0.16974
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crooked-house",
+      "tags": [
+        "crooked house"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-crooked-house-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42384,
+          0,
+          -0.4279
+        ],
+        "max": [
+          0.42384,
+          0.99808,
+          0.4279
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dentist-chair",
+      "tags": [
+        "dentist chair"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dentist-chair-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28851,
+          0,
+          -0.25259
+        ],
+        "max": [
+          0.28851,
+          0.99307,
+          0.25259
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-obelisk",
+      "tags": [
+        "obelisk"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-obelisk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.09541,
+          0,
+          -0.0998
+        ],
+        "max": [
+          0.09541,
+          0.99921,
+          0.0998
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-garden-hose",
+      "tags": [
+        "garden hose"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-garden-hose-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71751,
+          0,
+          -0.29968
+        ],
+        "max": [
+          0.71751,
+          0.99746,
+          0.29968
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fruit-crate",
+      "tags": [
+        "fruit crate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fruit-crate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6967,
+          0,
+          -0.68483
+        ],
+        "max": [
+          0.6967,
+          0.9795,
+          0.68483
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-vegetable-basket",
+      "tags": [
+        "vegetable basket"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-vegetable-basket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47589,
+          0,
+          -0.42325
+        ],
+        "max": [
+          0.47589,
+          0.99667,
+          0.42325
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rocking-chair",
+      "tags": [
+        "rocking chair"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rocking-chair-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29873,
+          0,
+          -0.34021
+        ],
+        "max": [
+          0.29873,
+          0.99731,
+          0.34021
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cattail",
+      "tags": [
+        "cattail"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cattail-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20619,
+          0,
+          -0.21501
+        ],
+        "max": [
+          0.20619,
+          0.998,
+          0.21501
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-hut",
+      "tags": [
+        "wooden hut"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-hut-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.54306,
+          0,
+          -0.53419
+        ],
+        "max": [
+          0.54306,
+          0.99893,
+          0.53419
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fallen-log",
+      "tags": [
+        "fallen log"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fallen-log-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.17045,
+          0,
+          -0.56113
+        ],
+        "max": [
+          1.17045,
+          1.00001,
+          0.56113
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hiking-backpack",
+      "tags": [
+        "hiking backpack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hiking-backpack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31976,
+          0,
+          -0.278
+        ],
+        "max": [
+          0.31976,
+          1.00001,
+          0.278
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-grindstone",
+      "tags": [
+        "grindstone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-grindstone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46373,
+          0,
+          -0.40753
+        ],
+        "max": [
+          0.46373,
+          0.99136,
+          0.40753
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-forge-furnace",
+      "tags": [
+        "forge furnace"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-forge-furnace-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.307,
+          0,
+          -0.32644
+        ],
+        "max": [
+          0.307,
+          0.99177,
+          0.32644
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-funeral-wreath",
+      "tags": [
+        "funeral wreath"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-funeral-wreath-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40773,
+          0,
+          -0.19246
+        ],
+        "max": [
+          0.40773,
+          1.00001,
+          0.19246
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-cave",
+      "tags": [
+        "ice cave"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-cave-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75871,
+          0,
+          -0.68603
+        ],
+        "max": [
+          0.75871,
+          0.99198,
+          0.68603
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mausoleum",
+      "tags": [
+        "mausoleum"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mausoleum-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33947,
+          0,
+          -0.32169
+        ],
+        "max": [
+          0.33947,
+          0.99934,
+          0.32169
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-angel-statue",
+      "tags": [
+        "angel statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-angel-statue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25295,
+          0,
+          -0.19228
+        ],
+        "max": [
+          0.25295,
+          0.99773,
+          0.19228
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-skate",
+      "tags": [
+        "ice skate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-skate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20734,
+          0,
+          -0.55453
+        ],
+        "max": [
+          0.20734,
+          0.99898,
+          0.55453
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-planet-rover",
+      "tags": [
+        "planet rover"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-planet-rover-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.82118,
+          0,
+          -0.69646
+        ],
+        "max": [
+          0.82118,
+          0.98821,
+          0.69646
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tiki-torch",
+      "tags": [
+        "tiki torch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tiki-torch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12477,
+          0,
+          -0.12546
+        ],
+        "max": [
+          0.12477,
+          0.99825,
+          0.12546
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-medical-tent",
+      "tags": [
+        "medical tent"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-medical-tent-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.7657,
+          0,
+          -0.69481
+        ],
+        "max": [
+          0.7657,
+          1.00001,
+          0.69481
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-jungle-vine",
+      "tags": [
+        "jungle vine"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jungle-vine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29076,
+          0,
+          -0.29001
+        ],
+        "max": [
+          0.29076,
+          0.99758,
+          0.29001
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mangrove-tree",
+      "tags": [
+        "mangrove tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mangrove-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4528,
+          0,
+          -0.44757
+        ],
+        "max": [
+          0.4528,
+          0.99992,
+          0.44757
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fruit-bowl",
+      "tags": [
+        "fruit bowl"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fruit-bowl-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50005,
+          0,
+          -0.50107
+        ],
+        "max": [
+          0.50005,
+          0.99079,
+          0.50107
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pepper-mill",
+      "tags": [
+        "pepper mill"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pepper-mill-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19065,
+          0,
+          -0.19054
+        ],
+        "max": [
+          0.19065,
+          1.00001,
+          0.19054
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-potion-bottle",
+      "tags": [
+        "potion bottle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-potion-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36624,
+          0,
+          -0.32648
+        ],
+        "max": [
+          0.36624,
+          1.00001,
+          0.32648
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dandelion",
+      "tags": [
+        "dandelion"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dandelion-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15367,
+          0,
+          -0.15449
+        ],
+        "max": [
+          0.15367,
+          0.99978,
+          0.15449
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pillory",
+      "tags": [
+        "pillory"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pillory-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27753,
+          0,
+          -0.0811
+        ],
+        "max": [
+          0.27753,
+          0.99985,
+          0.0811
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mining-helmet",
+      "tags": [
+        "mining helmet"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mining-helmet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.68807,
+          0,
+          -0.77774
+        ],
+        "max": [
+          0.68807,
+          1.00001,
+          0.77774
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stone-bridge",
+      "tags": [
+        "stone bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.4127,
+          0,
+          -0.94451
+        ],
+        "max": [
+          1.4127,
+          0.99817,
+          0.94451
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-velvet-rope",
+      "tags": [
+        "velvet rope"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-velvet-rope-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.8673,
+          0,
+          -0.17345
+        ],
+        "max": [
+          0.8673,
+          0.99784,
+          0.17345
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-emu",
+      "tags": [
+        "emu"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-emu-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22732,
+          0,
+          -0.41195
+        ],
+        "max": [
+          0.22732,
+          0.99906,
+          0.41195
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-medicine-cabinet",
+      "tags": [
+        "medicine cabinet"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-medicine-cabinet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43057,
+          0,
+          -0.26901
+        ],
+        "max": [
+          0.43057,
+          1,
+          0.26901
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-playground-slide",
+      "tags": [
+        "playground slide"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-playground-slide-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2106,
+          0,
+          -0.54344
+        ],
+        "max": [
+          0.2106,
+          0.99727,
+          0.54344
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-post-box",
+      "tags": [
+        "post box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-post-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21583,
+          0,
+          -0.21569
+        ],
+        "max": [
+          0.21583,
+          0.99864,
+          0.21569
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-parcel",
+      "tags": [
+        "parcel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-parcel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.70966,
+          0,
+          -0.28636
+        ],
+        "max": [
+          0.70966,
+          0.9995,
+          0.28636
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wagon-wheel",
+      "tags": [
+        "wagon wheel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wagon-wheel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49633,
+          0,
+          -0.04829
+        ],
+        "max": [
+          0.49633,
+          0.9932,
+          0.04829
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-planter-box",
+      "tags": [
+        "planter box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-planter-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.83976,
+          0,
+          -0.36905
+        ],
+        "max": [
+          0.83976,
+          0.99906,
+          0.36905
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-air-conditioner",
+      "tags": [
+        "air conditioner"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-air-conditioner-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.54945,
+          0,
+          -0.42589
+        ],
+        "max": [
+          0.54945,
+          1,
+          0.42589
+        ]
+      }
     }
   ]
 }

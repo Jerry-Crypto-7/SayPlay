@@ -1,0 +1,588 @@
+{
+ "about": "P45F T2: nouns that missed in P45E (evals/play/p45e/gen-round.md - precheck, quality gate or blind judge), minus lizard, demon, wolf, dynamite, catalog nouns and the two dropped in evals/play/p45f/README.md; ranked by sentences in evals/play/p45d/missing.json, then alphabetically. class/flat from the P45E input lists (scripts/p45d/motion-class.mjs, three corrected, see classBefore); p45e = where it failed and what the judge saw instead. Feature per noun in ops/gen3d/features.toml.",
+ "nouns": [
+  {
+   "noun": "robber",
+   "class": "biped",
+   "flat": false,
+   "sentences": 2,
+   "p45e": {
+    "stage": "judge",
+    "saw": "soldier"
+   }
+  },
+  {
+   "noun": "ammo",
+   "class": "prop",
+   "flat": true,
+   "sentences": 1,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "radiator / pillar / gravestone"
+   }
+  },
+  {
+   "noun": "bank manager",
+   "class": "biped",
+   "flat": false,
+   "sentences": 1,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "businessman"
+   }
+  },
+  {
+   "noun": "chimney",
+   "class": "prop",
+   "flat": false,
+   "sentences": 1,
+   "p45e": {
+    "stage": "judge",
+    "saw": "bollard"
+   }
+  },
+  {
+   "noun": "coffin",
+   "class": "prop",
+   "flat": false,
+   "sentences": 1,
+   "p45e": {
+    "stage": "judge",
+    "saw": "medical bag"
+   }
+  },
+  {
+   "noun": "cyclops",
+   "class": "biped",
+   "flat": false,
+   "sentences": 1,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "man"
+   }
+  },
+  {
+   "noun": "financial advisor",
+   "class": "biped",
+   "flat": false,
+   "sentences": 1,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "businesswoman"
+   }
+  },
+  {
+   "noun": "firefly",
+   "class": "flyer",
+   "flat": false,
+   "sentences": 1,
+   "p45e": {
+    "stage": "judge",
+    "saw": "beetle"
+   }
+  },
+  {
+   "noun": "frisbee",
+   "class": "prop",
+   "flat": true,
+   "sentences": 1,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "tabletop mirror"
+   }
+  },
+  {
+   "noun": "mahjong tile",
+   "class": "prop",
+   "flat": true,
+   "sentences": 1,
+   "p45e": {
+    "stage": "judge",
+    "saw": "recycling bin"
+   }
+  },
+  {
+   "noun": "mole",
+   "class": "quadruped",
+   "flat": false,
+   "sentences": 1,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "shrew / bear / wolf"
+   }
+  },
+  {
+   "noun": "net",
+   "class": "prop",
+   "flat": true,
+   "sentences": 1,
+   "p45e": {
+    "stage": "judge",
+    "saw": "Christmas tree"
+   }
+  },
+  {
+   "noun": "passport",
+   "class": "prop",
+   "flat": true,
+   "sentences": 1,
+   "p45e": {
+    "stage": "judge",
+    "saw": "gravestone"
+   }
+  },
+  {
+   "noun": "poacher",
+   "class": "biped",
+   "flat": false,
+   "sentences": 1,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "soldier / soldier / hunter"
+   }
+  },
+  {
+   "noun": "receipt",
+   "class": "prop",
+   "flat": true,
+   "sentences": 1,
+   "p45e": {
+    "stage": "judge",
+    "saw": "stone pillar"
+   }
+  },
+  {
+   "noun": "seashell",
+   "class": "prop",
+   "flat": true,
+   "sentences": 1,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "gong / shield / diving helmet"
+   }
+  },
+  {
+   "noun": "stickman",
+   "class": "biped",
+   "flat": false,
+   "sentences": 1,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "person"
+   }
+  },
+  {
+   "noun": "stone golem",
+   "class": "biped",
+   "flat": false,
+   "sentences": 1,
+   "p45e": {
+    "stage": "judge",
+    "saw": "robot"
+   }
+  },
+  {
+   "noun": "towel",
+   "class": "prop",
+   "flat": true,
+   "sentences": 1,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "mirror / pillar / punching bag"
+   }
+  },
+  {
+   "noun": "anthill",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "rock"
+   }
+  },
+  {
+   "noun": "blanket",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "monolith / stone pillar / hedge"
+   }
+  },
+  {
+   "noun": "boomerang",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "pickaxe / walking cane"
+   }
+  },
+  {
+   "noun": "broomstick",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "witch"
+   },
+   "classBefore": "flyer"
+  },
+  {
+   "noun": "canvas",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "monolith / pillar / pants"
+   }
+  },
+  {
+   "noun": "cape",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "cloaked statue"
+   }
+  },
+  {
+   "noun": "captain",
+   "class": "biped",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "military officer / police officer"
+   }
+  },
+  {
+   "noun": "centaur",
+   "class": "quadruped",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "horse"
+   }
+  },
+  {
+   "noun": "chicken leg",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "torch"
+   }
+  },
+  {
+   "noun": "comet",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "plumb bob / ore rock / crystal pendant"
+   }
+  },
+  {
+   "noun": "coral",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "fire pit"
+   }
+  },
+  {
+   "noun": "drill",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "spark plug"
+   }
+  },
+  {
+   "noun": "dumpling",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "rock / potato"
+   }
+  },
+  {
+   "noun": "earring",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "tree / gravestone / sign"
+   }
+  },
+  {
+   "noun": "firework",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "rocket / rocket / arrow"
+   }
+  },
+  {
+   "noun": "flower pot",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "potted plant (2x); third attempt failed the quality gate"
+   }
+  },
+  {
+   "noun": "glue",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "square nut / rock / cylinder"
+   }
+  },
+  {
+   "noun": "golem",
+   "class": "biped",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "goblin"
+   }
+  },
+  {
+   "noun": "golf ball",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "globe lamp"
+   }
+  },
+  {
+   "noun": "joystick",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "chess pawn"
+   }
+  },
+  {
+   "noun": "keyboard",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "forge"
+   }
+  },
+  {
+   "noun": "magazine",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "tombstone / block tower / hard drive"
+   }
+  },
+  {
+   "noun": "marshmallow",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "popsicle"
+   }
+  },
+  {
+   "noun": "milk",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "jar / rock"
+   }
+  },
+  {
+   "noun": "moon rover",
+   "class": "vehicle",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "dune buggy"
+   },
+   "classBefore": "prop"
+  },
+  {
+   "noun": "newspaper",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "signboard"
+   }
+  },
+  {
+   "noun": "notebook",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "book"
+   }
+  },
+  {
+   "noun": "peacock",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "gate",
+    "saw": "inconsistent face winding (3x)"
+   },
+   "classBefore": "flyer"
+  },
+  {
+   "noun": "pebble",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "standing stone / gravestone"
+   }
+  },
+  {
+   "noun": "pinata",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "horse"
+   }
+  },
+  {
+   "noun": "pinecone",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "hop cone / pine tree"
+   }
+  },
+  {
+   "noun": "rhino",
+   "class": "quadruped",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "wild boar (broken model)"
+   }
+  },
+  {
+   "noun": "singer",
+   "class": "biped",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "woman / businessman / person"
+   }
+  },
+  {
+   "noun": "space station",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "mine"
+   }
+  },
+  {
+   "noun": "swing",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "squat rack / guillotine / railing"
+   }
+  },
+  {
+   "noun": "tablet",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "computer monitor"
+   }
+  },
+  {
+   "noun": "tape",
+   "class": "prop",
+   "flat": true,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "gravestone / pillar"
+   }
+  },
+  {
+   "noun": "tea",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "judge",
+    "saw": "mug"
+   }
+  },
+  {
+   "noun": "torpedo",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "p45e": {
+    "stage": "precheck",
+    "saw": "drill chuck / grenade"
+   }
+  }
+ ]
+}

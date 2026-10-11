@@ -178,3 +178,92 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-noodle` | noodle, ramen | 4701 / 2261 |
 | `gen3d-orb` | orb | 4703 / 2317 |
 | `gen3d-printer` | printer | 4693 / 2286 |
+| `gen3d-bank-manager` | bank manager | 4727 / 2335 |
+| `gen3d-chimney` | chimney | 4586 / 2276 |
+| `gen3d-coffin` | coffin, casket | 4744 / 2340 |
+| `gen3d-firefly` | firefly | 4746 / 2370 |
+| `gen3d-net` | net | 4734 / 2362 |
+| `gen3d-stickman` | stickman | 4748 / 2374 |
+| `gen3d-stone-golem` | stone golem | 4538 / 2111 |
+| `gen3d-cape` | cape | 4517 / 2225 |
+| `gen3d-coral` | coral | 4748 / 2372 |
+| `gen3d-earring` | earring | 4750 / 2372 |
+| `gen3d-firework` | firework | 4748 / 2374 |
+| `gen3d-flower-pot` | flower pot, flowerpot | 4748 / 2374 |
+| `gen3d-glue` | glue | 4749 / 2372 |
+| `gen3d-joystick` | joystick | 4748 / 2374 |
+| `gen3d-milk` | milk | 4748 / 2374 |
+| `gen3d-singer` | singer | 4710 / 2327 |
+| `gen3d-swing` | swing | 4698 / 2318 |
+| `gen3d-torpedo` | torpedo | 4469 / 2125 |
+| `gen3d-ice-fishing-hut` | ice fishing hut | 4358 / 2086 |
+| `gen3d-ice-floe` | ice floe | 4581 / 2253 |
+| `gen3d-toll-booth` | toll booth | 4690 / 2320 |
+| `gen3d-highway-sign` | highway sign | 4478 / 2142 |
+| `gen3d-checkout-counter` | checkout counter | 4701 / 2347 |
+| `gen3d-shopping-basket` | shopping basket | 4373 / 2074 |
+| `gen3d-sea-anemone` | sea anemone | 4551 / 2210 |
+| `gen3d-candelabra` | candelabra | 4748 / 2374 |
+| `gen3d-grandfather-clock` | grandfather clock | 4682 / 2338 |
+| `gen3d-chandelier` | chandelier | 4214 / 2048 |
+| `gen3d-escalator` | escalator | 4274 / 2118 |
+| `gen3d-mannequin` | mannequin | 4740 / 2366 |
+| `gen3d-clothing-rack` | clothing rack | 4503 / 2071 |
+| `gen3d-tankard` | tankard | 3979 / 1893 |
+| `gen3d-tavern-sign` | tavern sign | 4668 / 2314 |
+| `gen3d-pet-carrier` | pet carrier | 4133 / 1962 |
+| `gen3d-bread-oven` | bread oven | 3898 / 1928 |
+| `gen3d-cake-stand` | cake stand | 4687 / 2341 |
+| `gen3d-baguette` | baguette | 4748 / 2374 |
+| `gen3d-burnt-tree` | burnt tree | 4617 / 2271 |
+| `gen3d-charred-log` | charred log | 4600 / 2246 |
+| `gen3d-burning-tree` | burning tree | 4319 / 2136 |
+| `gen3d-rock-arch` | rock arch | 4290 / 2118 |
+| `gen3d-mesa` | mesa | 4748 / 2374 |
+| `gen3d-castle-gate` | castle gate | 4258 / 2018 |
+| `gen3d-portcullis` | portcullis | 4541 / 2231 |
+| `gen3d-flagpole` | flagpole | 4748 / 2374 |
+| `gen3d-rope-bridge` | rope bridge | 4300 / 2089 |
+| `gen3d-diploma` | diploma | 4716 / 2352 |
+| `gen3d-lecture-podium` | lecture podium | 4585 / 2266 |
+| `gen3d-music-stand` | music stand | 4721 / 2359 |
+| `gen3d-crooked-tower` | crooked tower | 4483 / 2095 |
+| `gen3d-crooked-house` | crooked house | 4363 / 2070 |
+| `gen3d-dentist-chair` | dentist chair | 4653 / 2234 |
+| `gen3d-obelisk` | obelisk | 4748 / 2374 |
+| `gen3d-garden-hose` | garden hose | 4535 / 2100 |
+| `gen3d-fruit-crate` | fruit crate | 4130 / 3145 |
+| `gen3d-vegetable-basket` | vegetable basket | 4204 / 2050 |
+| `gen3d-rocking-chair` | rocking chair | 4687 / 2319 |
+| `gen3d-cattail` | cattail | 4712 / 2340 |
+| `gen3d-wooden-hut` | wooden hut | 4128 / 2131 |
+| `gen3d-fallen-log` | fallen log | 4553 / 2261 |
+| `gen3d-hiking-backpack` | hiking backpack | 4277 / 2095 |
+| `gen3d-grindstone` | grindstone | 4226 / 2050 |
+| `gen3d-forge-furnace` | forge furnace | 4222 / 1998 |
+| `gen3d-funeral-wreath` | funeral wreath | 4359 / 1921 |
+| `gen3d-ice-cave` | ice cave | 4512 / 2124 |
+| `gen3d-mausoleum` | mausoleum | 4210 / 2091 |
+| `gen3d-angel-statue` | angel statue | 4581 / 2201 |
+| `gen3d-ice-skate` | ice skate | 4621 / 2288 |
+| `gen3d-planet-rover` | planet rover | 4350 / 2004 |
+| `gen3d-tiki-torch` | tiki torch | 4643 / 2244 |
+| `gen3d-medical-tent` | medical tent | 4387 / 2172 |
+| `gen3d-jungle-vine` | jungle vine | 4721 / 2338 |
+| `gen3d-mangrove-tree` | mangrove tree | 4147 / 1945 |
+| `gen3d-fruit-bowl` | fruit bowl | 4196 / 2625 |
+| `gen3d-pepper-mill` | pepper mill | 4748 / 2374 |
+| `gen3d-potion-bottle` | potion bottle | 4631 / 2315 |
+| `gen3d-dandelion` | dandelion | 4579 / 2155 |
+| `gen3d-pillory` | pillory | 4637 / 2313 |
+| `gen3d-mining-helmet` | mining helmet | 4383 / 2174 |
+| `gen3d-stone-bridge` | stone bridge | 4443 / 2192 |
+| `gen3d-velvet-rope` | velvet rope | 4748 / 2372 |
+| `gen3d-emu` | emu | 4462 / 2026 |
+| `gen3d-medicine-cabinet` | medicine cabinet | 4453 / 2172 |
+| `gen3d-playground-slide` | playground slide | 4693 / 2248 |
+| `gen3d-post-box` | post box | 4746 / 2372 |
+| `gen3d-parcel` | parcel | 4698 / 2301 |
+| `gen3d-wagon-wheel` | wagon wheel | 4732 / 2319 |
+| `gen3d-planter-box` | planter box | 4358 / 2114 |
+| `gen3d-air-conditioner` | air conditioner | 3778 / 2095 |

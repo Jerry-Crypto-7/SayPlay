@@ -2,53 +2,28 @@
 # jméno, aby FLUX nenakreslil sourozence z knihovny nebo věc podobného tvaru. Psaný ručně pro
 # jména kola P45E (evals/play/p45d/gen-nouns.json a pilot), žádné placené API. V komentáři je,
 # co v P43 viděl slepý soudce místo jména (evals/play/p43/gen3d.md).
+# Klíč je jméno po `cache.normalize` – „cyclops“ a „canvas“ dávka zkrátí na „cyclop“ a „canva“.
 
 # Zvířata a postavy
 orca = "black and white killer whale, tall dorsal fin"  # P43: penguin
-mole = "tiny dark grey burrowing animal with a long pointed snout, wide shovel-like front claws and no visible eyes"  # P43: bear; P45E pilot s „pink paws“: pig
 hippo = "huge grey hippopotamus, barrel body, wide mouth, short stubby legs"
 wolf = "grey wild wolf, pointed ears, long bushy tail"
 lizard = "green lizard, long tail, sprawling legs"
-firefly = "glowing beetle-like insect with a bright yellow light on its tail"  # P43: beetle
-cyclops = "one-eyed giant with a single big eye in the middle of the forehead"
 genie = "blue genie with a wisp tail instead of legs, rising from a lamp"  # P43: elf
 spy = "secret agent in a trench coat, hat and sunglasses"  # P43: soldier
-poacher = "hunter in a khaki vest holding a rifle"  # P43: soldier
-robber = "burglar with a black eye mask, striped shirt and a money sack"
-stickman = "stick figure made of thin black lines with a round head"
-"stone golem" = "giant made of stacked grey stone blocks"
-"bank manager" = "man in a suit and tie holding a briefcase"
-"financial advisor" = "woman in a business suit holding a clipboard"
 statue = "marble statue of a person standing on a stone pedestal"  # P43: man
 
 # Ploché a drobné věci
-frisbee = "red plastic flying disc toy with a raised rim, tilted to show its top"  # P43: plate; pilot: mirror
-receipt = "long white paper till receipt with printed rows of prices and a total, curled at the bottom"  # P43: recycling bin; pilot: checklist
 "playing card" = "single playing card, ace of hearts"  # P43: fuel can
-passport = "small dark red booklet with the gold word PASSPORT and a globe emblem on the cover"  # P43: man bust; pilot: book
 portrait = "framed painting of a face in a golden frame"  # P43: bust
-"mahjong tile" = "small white tile with a carved green symbol"  # P43: speaker
-seashell = "spiral sea snail shell"  # P43: spinning top
-towel = "folded bath towel"  # P43: payphone
-net = "fishing net on a wooden pole"  # P43: rolling pin
-ammo = "box of bullets with brass cartridges"  # P43: beverage can
 snowboard = "board with two bindings on top, no wheels"  # P43: skateboard
-"golf ball" = "white dimpled golf ball on a tee"  # P43: tree
-cape = "superhero cape flowing from a shoulder clasp"  # P43: vase
 
 # Ostatní věci
 "paper ball" = "crumpled ball of white paper"  # P43: egg
-coffin = "wooden coffin with a cross on the lid"  # P43: cooking pot
 ramp = "wooden skate ramp with a sloped surface"  # P43: door
-chimney = "red brick chimney on a piece of roof"  # P43: bollard
 orange = "orange citrus fruit with a green leaf"  # P43: volleyball
-marshmallow = "white puffy cylinder marshmallow on a stick"  # P43: cotton candy
 pie = "round baked pie with a lattice crust"  # P43: pizza
-broomstick = "witch's flying broom with a twig bundle"  # P43: broom
-pinata = "colorful paper donkey pinata"  # P43: bush
-firework = "firework rocket with a fuse and a pointed tip"  # P43: feather duster
 dynamite = "bundle of red dynamite sticks with a fuse"  # P43: spray can
-boomerang = "curved wooden V-shaped boomerang"  # P43: hoe
 crossbow = "medieval crossbow with a bow across the stock"  # P43: gun
 dishwasher = "kitchen dishwasher with the door open and plate racks inside"  # P43: storage bin
 jetpack = "backpack with two rocket thrusters and flames"  # P43: suitcase
@@ -57,3 +32,260 @@ fuel = "red jerry can of fuel"
 mane = "lion's mane, big shaggy ring of hair"
 searchlight = "big searchlight lamp on a stand"
 snowmobile = "snow vehicle with front skis and a rear track"
+
+# P45F: jména, která v P45E neprošla (evals/play/p45f/retry-nouns.json). Znak má odlišit jméno od
+# toho, co v P45E viděl Codex (komentář `# P45E:` – soud, nebo předkontrola u všech tří obrázků).
+
+# Postavy
+robber = "masked burglar in a black and white striped shirt and black eye mask, carrying a sack with a dollar sign"  # P45E: soldier
+"bank manager" = "man in a navy suit with a bank name badge, holding a big gold vault key and a money bag"  # P45E: businessman
+"financial advisor" = "woman in a grey suit holding a board with a rising green stock chart and a calculator"  # P45E: businesswoman
+cyclop = "huge one-eyed giant with a single big eye in the middle of the forehead, green skin, fur loincloth, wooden club"  # P45E: man (klíč „cyclops“ se nepřipsal)
+poacher = "shady hunter in a dark hooded jacket with a rifle, dragging a net sack holding a stolen ivory tusk"  # P45E: soldier / soldier / hunter
+stickman = "black stick figure made of thin black rods, plain round black head, no clothes, no face, no hands"  # P45E: person
+"stone golem" = "hulking giant built from rough mossy grey boulders, glowing orange cracks for eyes, no metal parts"  # P45E: robot
+golem = "huge hulking brown clay giant with cracked mud skin, tiny head and thick arms reaching the ground"  # P45E: goblin
+captain = "ship captain in a white naval uniform and white peaked cap with a gold anchor badge, grey beard, brass telescope"  # P45E: military officer / police officer
+singer = "pop singer holding a microphone to her open mouth, glittering sequin stage dress, singing"  # P45E: woman / businessman / person
+
+# Zvířata
+mole = "black velvet mole poking out of a brown dirt mound, huge pink digging paws, tiny pointed pink nose"  # P45E: shrew / bear / wolf
+centaur = "half man half horse, a bearded man's bare torso, arms and head rising where a brown horse's neck would be"  # P45E: horse
+rhino = "big grey rhinoceros with one large curved horn on its nose and a small second horn, thick skin folds"  # P45E: wild boar
+firefly = "small dark firefly whose rear half glows bright yellow green like a lantern, thin clear wings"  # P45E: beetle
+peacock = "blue peacock standing with its long green tail feathers closed and trailing behind on the ground, small head crest"  # P45E: brána kvality 3×
+
+# Ploché a drobné věci
+net = "landing net with a big oval metal hoop and a loose white mesh bag on a long wooden handle"  # P45E: Christmas tree
+receipt = "long thin strip of white paper with black printed lines of prices, curled into a loose roll"  # P45E: stone pillar
+"mahjong tile" = "small ivory white rectangular game tile with a red and green Chinese character carved on its face"  # P45E: recycling bin
+passport = "small dark red booklet with a gold crest on the cover, slightly open showing the photo page"  # P45E: gravestone
+cape = "red superhero cape spread out like a wide fan, gold clasp at the neck, nobody wearing it"  # P45E: cloaked statue
+"golf ball" = "small white dimpled golf ball sitting on a short wooden tee on a patch of green grass"  # P45E: globe lamp
+frisbee = "bright orange plastic frisbee disc lying flat, curled rim, seen from slightly above"  # P45E: tabletop mirror
+seashell = "pink and cream spiral conch seashell with a pointed tip and a wide glossy opening"  # P45E: gong / shield / diving helmet
+towel = "soft blue bath towel folded into a neat stack with striped fringed ends, lying flat"  # P45E: mirror / pillar / punching bag
+ammo = "open green military ammo box full of shiny brass bullets with pointed copper tips"  # P45E: radiator / pillar / gravestone
+blanket = "soft red and white checkered blanket rolled up thick and tied with a ribbon"  # P45E: monolith / stone pillar / hedge
+canva = "artist's painting canvas on a wooden easel, white canvas covered with colourful paint strokes"  # P45E: monolith / pillar / pants
+earring = "single gold hoop earring with a dangling red gem drop, shiny metal"  # P45E: tree / gravestone / sign
+magazine = "glossy magazine with a colourful cover photo and a big bold title, pages slightly fanned open"  # P45E: tombstone / block tower / hard drive
+keyboard = "computer keyboard, long flat black slab covered in rows of small white square keys"  # P45E: forge
+newspaper = "folded grey newspaper with a big black headline, columns of small print and a photo"  # P45E: signboard
+notebook = "spiral notebook with a silver metal coil binding along the side and blue lined paper pages"  # P45E: book
+pebble = "single small smooth oval grey river pebble, glossy and rounded, lying down"  # P45E: standing stone / gravestone
+tablet = "handheld touchscreen tablet with a thin black bezel and a colourful grid of app icons, no stand"  # P45E: computer monitor
+tape = "roll of shiny silver duct tape, a thick ring with a big hole in the middle"  # P45E: gravestone / pillar
+
+# Ostatní věci
+coffin = "long dark brown wooden coffin, six-sided shape wider at the shoulders, closed lid with brass handles"  # P43: cooking pot; P45E: medical bag
+chimney = "red brick chimney stack standing on a slanted piece of roof with grey tiles, puff of smoke on top"  # P43: bollard; P45E: bollard
+marshmallow = "three soft pink and white marshmallows, puffy short cylinders in a little pile, no stick"  # P45E: popsicle
+broomstick = "long wooden broom handle with a tied bundle of straw twigs at one end, lying flat, no rider"  # P45E: witch
+firework = "fat cardboard firework tube wrapped in red and yellow paper with stars, short fuse on top, no fins"  # P45E: rocket / rocket / arrow
+boomerang = "flat wide wooden boomerang bent into a V shape with painted dot patterns, lying flat"  # P45E: pickaxe / walking cane
+pinata = "colourful paper donkey pinata covered in rows of pink, yellow and blue paper fringe, hanging on a string"  # P45E: horse
+coral = "branching pink and orange coral reef piece with finger-like branches, growing on a sandy rock"  # P45E: fire pit
+drill = "cordless power drill with a yellow pistol grip body, black battery at the bottom and a long drill bit"  # P45E: spark plug
+anthill = "brown dirt mound with a hole on top and many small black ants crawling up its sides"  # P45E: rock
+comet = "icy blue rock flying with a long bright glowing tail of white and yellow fire streaming behind"  # P45E: plumb bob / ore rock / crystal pendant
+dumpling = "plump white steamed dumpling with a pleated pinched top, sitting in a round bamboo steamer basket"  # P45E: rock / potato
+glue = "white plastic glue bottle with an orange pointed cap and a label reading GLUE"  # P45E: square nut / rock / cylinder
+"flower pot" = "empty terracotta flower pot, orange clay with a thick rim, no plant, no soil"  # P45E: potted plant
+"chicken leg" = "roasted golden brown chicken drumstick with a bulging meaty end and a white bone sticking out"  # P45E: torch
+joystick = "black arcade joystick on a square base with a red ball-top stick and two round buttons"  # P45E: chess pawn
+milk = "white milk carton with a blue gable top and a cow picture on the side"  # P45E: jar / rock
+pinecone = "brown woody pine cone with open scales in a spiral, egg shaped, no needles"  # P45E: hop cone / pine tree
+swing = "children's playground swing, a wooden seat hanging on two chains from a red A-frame"  # P45E: squat rack / guillotine / railing
+tea = "cup of hot tea on a saucer, tea bag string and tag hanging over the rim, steam rising"  # P45E: mug
+torpedo = "long dark grey torpedo, cigar-shaped body with a propeller and cross fins at the tail"  # P45E: drill chuck / grenade
+"space station" = "space station with a white cylinder core, big blue solar panel wings and docking ports"  # P45E: mine
+"moon rover" = "lunar rover, white and silver six-wheeled moon vehicle with a dish antenna and a solar panel"  # P45E: dune buggy
+
+# P45G: rekvizity pro prostředí, která knihovna nemá (evals/play/p45g/kit-nouns.json). Znak ukáže
+# předmět tak, aby z něj šlo poznat prostředí, a odliší ho od podobného modelu, který katalog už má.
+
+# Zamrzlé jezero, dálnice, supermarket
+"ice fishing hole" = "round dark hole cut in a flat white ice sheet, fishing line dropping in, small stool beside it"
+"ice fishing hut" = "small red wooden shack on runners standing on white ice, tiny window and stovepipe chimney"
+"ice floe" = "flat jagged slab of white and pale blue floating ice, thick edges, cracks across the top"
+"toll booth" = "small highway toll booth kiosk with glass windows, red and white striped barrier arm lowered beside it"
+"highway sign" = "large green overhead highway sign with white arrows and white lettering on two grey metal posts"
+overpass = "concrete highway overpass bridge on thick grey pillars, flat road deck with railings, a car-sized gap underneath"
+"grocery shelf" = "supermarket shelf unit with three white metal shelves stocked with colourful boxes, cans and bottles in rows"
+"checkout counter" = "supermarket checkout counter with a black conveyor belt, a cash register and a card reader at the end"
+"shopping basket" = "red plastic supermarket shopping basket with two black handles, holding bread, apples and a milk bottle"
+
+# Pod vodou a hlubiny
+"sea anemone" = "soft pink sea anemone, short thick stalk with a crown of many wavy tentacles, on a small rock"
+"sea urchin" = "round dark purple-black sea urchin ball covered in long sharp spines pointing outward, sitting on sand"
+"diving bell" = "old brass diving bell, heavy round metal dome with small round glass portholes, hanging from a chain"
+"giant clam" = "huge open clam shell with wavy ridged edges, blue and turquoise inner lips, white pearl in the middle"
+
+# Strašidelný dům, obchodní centrum, hospoda
+candelabra = "tall silver candelabra with five curved arms each holding a lit white candle, round heavy base"
+"grandfather clock" = "tall dark wooden grandfather clock standing on the floor, round white clock face and a brass pendulum behind glass"
+chandelier = "hanging crystal chandelier, gold metal ring of curved arms with candle bulbs and dangling glass drops"
+escalator = "moving staircase escalator, metal steps rising diagonally between two black rubber handrails and glass side panels"
+mannequin = "white faceless shop mannequin standing on a round stand, wearing a red dress, smooth plastic head"
+"clothing rack" = "rolling metal clothing rail with colourful shirts and jackets hanging on hangers, four small wheels"
+tankard = "big wooden beer tankard with metal bands and a handle, foam spilling over the top"
+"tavern sign" = "wooden tavern sign hanging from an iron bracket, painted with a golden beer mug, carved edges"
+"bar counter" = "long wooden tavern bar counter with brass foot rail, beer taps on top and bottles behind"
+
+# Útulek, pekárna, spálený les
+"pet carrier" = "small plastic pet carrier box with a grey metal grid door at the front and a handle on top"
+"dog kennel" = "small wooden doghouse with a pointed red roof, arched door opening and a name plate above it"
+"dog bowl" = "shiny steel dog food bowl full of brown kibble, a bone shape printed on the side"
+"bread oven" = "domed brick bread oven with an arched opening, glowing fire inside and a wooden peel in front"
+"cake stand" = "white glass cake stand on a tall stem holding a round frosted layer cake under a clear dome"
+baguette = "long thin golden brown French baguette loaf with diagonal slashes on top, crusty and slightly curved"
+"burnt tree" = "dead burnt tree with a charred black trunk and bare twisted branches, no leaves, grey ash at the base"
+"charred log" = "black charred log lying on its side, cracked burnt surface glowing with a few orange embers"
+"burning tree" = "green leafy tree on fire, bright orange and yellow flames rising from the crown, smoke above"
+
+# Kaňon, brána, sklep, radnice, útes, oblačný hrad
+"rock arch" = "natural red sandstone rock arch, a curved stone bridge with a big hole through the middle, desert colours"
+mesa = "flat-topped red rock mesa with steep layered cliff sides in orange and brown bands, small desert butte"
+"castle gate" = "stone castle gatehouse with two round towers, battlements and a big arched wooden door between them"
+portcullis = "heavy iron portcullis grid of thick crossed black bars with pointed spikes at the bottom, in a stone arch"
+"wine rack" = "wooden wine rack with a diamond lattice of cubbies holding dark green wine bottles lying down"
+"cellar door" = "slanted pair of wooden cellar doors set in the ground, iron handles and hinges, half open"
+"city hall" = "white town hall building with stone columns, wide front steps, a clock in the pediment and a flag"
+flagpole = "tall white flagpole with a gold ball on top and a waving red and blue flag, square base"
+"rocky cliff" = "tall grey rocky cliff face with a sheer drop, grass on the flat top edge, rubble at the bottom"
+"rope bridge" = "wobbly rope bridge of wooden planks tied between two thick rope rails, sagging between two wooden posts"
+"cloud castle" = "white and gold fairy tale castle with pointed blue turrets sitting on top of a big fluffy white cloud"
+"cloud platform" = "flat round fluffy white cloud floating in the air, flat walkable top, small golden stairs on its side"
+
+# Univerzita, koncertní sál, křivá věž, zubař
+diploma = "rolled white diploma scroll tied with a red ribbon bow and a gold seal hanging from it"
+"lecture podium" = "wooden lecture podium lectern with a slanted top, a small microphone on a gooseneck and a crest on the front"
+"music stand" = "black metal music stand with a folding tripod base and a slanted holder with sheet music pages"
+"stage curtain" = "heavy red velvet theatre stage curtains drawn open on both sides, gold tassels, gold fringe on top"
+"crooked tower" = "tall stone tower leaning badly to one side, crooked windows and a pointed roof tilting over"
+"crooked house" = "wobbly crooked cartoon house with bent walls, tilted windows, twisted chimney and a sagging roof"
+"dentist chair" = "white and blue reclining dentist chair with a round lamp on an arm above and a small tool tray"
+"tooth model" = "giant white molar tooth model with two roots, smiling face, shiny enamel, standing upright"
+
+# Poušť, jídelna, příjezdová cesta, trh, krb
+"cow skull" = "bleached white cow skull with two long curved horns and empty eye holes, lying on sand"
+tumbleweed = "round dry tumbleweed ball of tangled light brown twigs, loose and airy, rolling on the ground"
+sphinx = "sandy yellow stone sphinx statue lying down, lion body with front paws forward and a pharaoh's head with striped headdress"
+obelisk = "tall thin four-sided stone obelisk tapering to a pointed pyramid tip, carved hieroglyphs down the sides"
+"diner booth" = "retro diner booth, two red vinyl bench seats facing a small white table with a chrome edge"
+griddle = "flat black steel diner griddle with sizzling burger patties and a spatula, chrome edges and knobs"
+"garage door" = "white sectional garage door with horizontal panels and a small row of windows, set in a brick frame"
+"garden hose" = "green garden hose coiled on a wall reel with a yellow spray nozzle hanging from the end"
+"fruit crate" = "wooden slatted market crate overflowing with red apples, oranges and bananas, a price card on front"
+"vegetable basket" = "wicker basket full of fresh carrots with green tops, tomatoes, lettuce and an eggplant"
+fireplace = "brick fireplace with a crackling log fire inside, a wooden mantel shelf on top with candles"
+"rocking chair" = "wooden rocking chair with curved runners under the legs, tall spindle back and a red cushion"
+
+# Jezero v mlze, chata, lesní stezka, kovárna
+"wooden dock" = "small wooden lake dock, plank walkway on posts standing in water, a rope tied to the end post"
+cattail = "clump of tall green cattail reeds with brown sausage-shaped seed heads on long stems"
+"wooden hut" = "small log hut with a sloped wooden shingle roof, a plank door and one square window"
+"chopping block" = "thick tree stump chopping block with an axe stuck in the top and split firewood beside it"
+"fallen log" = "long mossy fallen tree log lying on the ground, green moss on top, hollow open end, small mushrooms"
+"hiking backpack" = "tall hiking backpack with a rolled sleeping mat strapped on top, many pockets and buckles, orange and grey"
+grindstone = "round grey sharpening grindstone wheel on a wooden frame with a hand crank and a water trough below"
+"forge furnace" = "blacksmith forge, stone hearth with glowing orange coals, a chimney hood above and tongs resting on the edge"
+
+# Pohřeb, garáž, ledovec, hřbitov, strašidelný hrad
+"funeral wreath" = "round funeral wreath of white lilies and dark green leaves on a stand, black ribbon sash across it"
+hearse = "long black hearse car with a raised rear compartment, side windows with curtains and chrome trim"
+"tool chest" = "red metal rolling tool chest with many shallow drawers, chrome handles and a wrench on top"
+"car jack" = "red hydraulic floor car jack, low flat body on four small wheels with a long handle and lifting pad"
+"tire stack" = "stack of four black car tires piled on top of each other, chunky treads"
+"ice wall" = "tall wall of solid pale blue glacier ice with jagged top edge, smooth frozen face and icicles"
+"ice cave" = "entrance to a glowing blue ice cave, arched opening in a white glacier with icicles hanging over the mouth"
+mausoleum = "small grey stone mausoleum crypt building with columns, a triangular roof and an iron door"
+"angel statue" = "white marble angel statue with folded feathered wings, praying hands, standing on a mossy plinth"
+"suit of armor" = "empty medieval suit of armor standing upright, shiny steel plates, closed visor helmet, holding a halberd"
+
+# Hotel, kluziště, ledový měsíc, džungle
+"luggage cart" = "brass hotel luggage cart with a tall arched rail on top, red carpet base, stacked suitcases"
+"laundry cart" = "grey canvas laundry cart on wheels with a metal frame, heaped with white folded towels and sheets"
+"ice skate" = "single white figure ice skate boot with laces and a long silver blade underneath"
+"hockey goal" = "ice hockey goal with a red metal frame and white net, a black puck in front"
+"ice resurfacer" = "boxy ice resurfacing machine like a Zamboni, white and blue body, driver seat on top, on an ice rink"
+"ice geyser" = "white icy geyser erupting a tall plume of frozen spray from a cracked blue ice crater"
+"planet rover" = "six-wheeled space rover with a white body, camera mast, solar panel wings, on red dusty ground"
+"tiki torch" = "tall bamboo tiki torch with a woven basket top burning a bright orange flame"
+"tribal drum" = "tall wooden tribal drum with an animal skin top tied by criss-cross ropes, carved patterns"
+"medical tent" = "white canvas field hospital tent with a big red cross on the roof flap and an open entrance"
+"jungle vine" = "thick green jungle vine hanging down in loops from a branch, leafy and twisted, curling at the end"
+"mangrove tree" = "mangrove tree standing in water on a tangle of arched stilt roots, dense green leafy crown"
+
+# Vrakoviště, kuchyně, obývák, kouzelná věž, louka
+"car wreck" = "rusty crushed car wreck with no wheels, smashed windows, dented brown and orange body"
+"scrap pile" = "heap of rusty scrap metal, old pipes, bent car doors, springs and a tire, brown and grey"
+"fruit bowl" = "round ceramic fruit bowl filled with apples, a bunch of bananas, grapes and an orange"
+"pepper mill" = "tall wooden pepper mill grinder shaped like a chess pawn, polished brown wood, metal knob on top"
+"coffee table" = "low rectangular wooden coffee table with short legs, a stack of books and a mug on top"
+"wizard tower" = "tall narrow stone wizard tower with a pointed dark blue cone roof dotted with gold stars, round windows"
+"potion bottle" = "round glass potion flask with a cork stopper, glowing bubbling green liquid inside, a paper tag"
+wildflower = "clump of wildflowers with red poppies, blue cornflowers and white daisies on thin green stems"
+dandelion = "single dandelion with a round white fluffy seed puff ball on a thin green stem, jagged leaves"
+
+# Středověké město, důl, horská vesnice, muzeum
+"timber house" = "medieval half-timbered house, white walls with dark brown wooden beams, steep red tile roof"
+pillory = "wooden medieval pillory stocks on a post, a board with one big hole for the head and two for hands"
+"mining drill" = "large yellow mining drill machine with a long spiral drill bit, tracks and a cab"
+"mining helmet" = "yellow hard hat mining helmet with a bright headlamp mounted on the front"
+"alpine chalet" = "Swiss alpine chalet, wooden house with a wide gentle roof, flower boxes and carved balcony"
+"stone bridge" = "old arched grey stone bridge with one round arch and low stone walls, mossy stones"
+"dinosaur skeleton" = "museum dinosaur skeleton, white bones of a long-necked dinosaur standing on a low display platform"
+"display case" = "museum glass display case on a wooden base holding a golden ancient vase, glass box on top"
+"velvet rope" = "two shiny brass posts with a red velvet rope hanging between them in a curve"
+
+# Hřibová vesnice, vnitrozemí, salon, lékárna, hřiště
+"mushroom house" = "cottage built inside a giant red mushroom with white spots, round door and windows in the stem"
+dingo = "sandy ginger wild dingo dog with pointed upright ears, white paws and a bushy tail"
+emu = "tall shaggy brown emu bird standing on two long legs, long neck, small head, no wings visible"
+"grooming table" = "pet grooming table with a grey rubber top, a metal arm loop above and a small dryer beside"
+"pet bed" = "round fluffy plush pet bed with a raised soft rim and a paw print cushion inside"
+"pill bottle" = "orange plastic prescription pill bottle with a white child-proof cap, white label, a few pills spilling"
+"medicine cabinet" = "white wall medicine cabinet with a mirror door half open showing shelves of bottles and a green cross"
+"playground slide" = "children's playground slide, red plastic chute curving down from a small tower with a ladder"
+sandbox = "square wooden kids sandbox full of yellow sand with a red bucket and a blue spade in it"
+
+# Pošta, ranč, řeka, střecha
+"post box" = "red round British pillar post box with a black cap, a letter slot and a crown on the front"
+parcel = "brown cardboard parcel box wrapped in twine with postage stamps and a white address label"
+"wagon wheel" = "big wooden wagon wheel with a metal rim and many thin wooden spokes, leaning upright"
+horseshoe = "single iron horseshoe, U-shaped with nail holes around it, grey metal, standing on its ends"
+"beaver dam" = "beaver dam, a pile of gnawed sticks and logs plugged with mud across a small stream"
+"planter box" = "rectangular wooden planter box full of green vegetables and herbs, on short legs"
+"garden trellis" = "white wooden garden trellis arch covered with climbing green vines and pink roses"
+"rooftop water tank" = "round wooden rooftop water tower on steel stilt legs, cone roof and a ladder up the side"
+"air conditioner" = "boxy grey rooftop air conditioning unit with a big round fan grille on top and pipes"
+
+# Sněhová pevnost, zasněžený les a vesnice
+"snow fort" = "snow fort, low round wall of stacked white snow blocks with a doorway, snowballs piled inside"
+"snow wall" = "low curved wall of packed white snow blocks, a small pyramid of snowballs behind it"
+"snowy pine tree" = "pine tree with thick white snow piled on every branch, dark green needles peeking out"
+snowshoe = "single wooden snowshoe, wide teardrop shape with a woven rawhide web and leather foot straps"
+"snowy cottage" = "small cottage with a thick white snow layer on the roof, warm yellow lit windows and icicles"
+"snowy lamppost" = "old black iron street lamppost with a glowing lantern top and snow resting on it"
+
+# Potopené město, provazochodec, náměstí, poklad, koruny stromů
+"broken column" = "broken white marble Greek column, fluted shaft snapped at the top, cracked base, a fallen piece beside it"
+shipwreck = "broken old wooden sailing ship wreck lying tilted on sand, snapped mast, holes in the hull"
+tightrope = "tightrope wire stretched between two tall striped circus poles with small platforms at the top"
+trapeze = "circus trapeze, a short horizontal bar hanging from two long ropes, red and white striped"
+"clock tower" = "tall brick clock tower with a big round white clock face on each side and a pointed roof"
+"notice board" = "wooden town notice board on two posts with a small roof, paper notes pinned to it"
+"gold pile" = "heap of shiny gold coins with a few red rubies and a golden goblet on top"
+stalagmite = "tall pointed cave stalagmite rising from the floor, wet beige limestone with rings"
+"rope ladder" = "hanging rope ladder with two thick ropes and round wooden rungs, dangling straight down"
+"zip line" = "zip line cable stretched downhill between two wooden platforms, a pulley with a hanging handle on it"
+
+# Svatba, zimní festival, zoo
+"wedding arch" = "white wedding arch covered in white roses and flowing white fabric, standing on a small aisle"
+bouquet = "bridal bouquet of white roses and pink peonies wrapped in a satin ribbon, green leaves"
+"ice sculpture" = "clear blue ice sculpture of a swan carved from a block of ice, standing on a base"
+"snow globe" = "glass snow globe with a tiny snowy village inside and white flakes, on a wooden base"
+"zoo gate" = "zoo entrance gate, an arched sign with animal silhouettes above two stone pillars and an iron gate"
+"ticket booth" = "small striped ticket booth kiosk with a window, a ticket sign and a pointed red roof"

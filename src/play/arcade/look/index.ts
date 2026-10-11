@@ -9,9 +9,12 @@
  * (`lookFor`). `null` = věta místo nejmenuje nebo ho sady neznají – pak
  * výchozí louka, a sada věrnosti prostředí nepočítá jako přečtené.
  *
- * Bez runtime importů – skript sady věrnosti soubor načítá holým Nodem.
+ * Jediný runtime import je tabulka rekvizit prostředí (P45H) – skripty ho
+ * holým Nodem načtou přes `scripts/ts-paths.mjs`, který JSON doplní atribut.
  * Nic fialového: odstíny 250–320° tu nejsou.
  */
+
+import settingKits from './setting-kits.json';
 
 /** Počasí a denní doba nad sadou (P29D): živá změna je píše do logu, sdílená verze do `theme`. */
 export const WEATHERS = ['clear', 'rain', 'snow', 'fog'] as const;
@@ -152,10 +155,22 @@ export const SCENERY_MODELS = {
   'gen3d-stone-water-well': 1.8,
   'gen3d-gravestone': 1.3,
 } as const satisfies Readonly<Record<string, number>>;
-export type SceneryModel = keyof typeof SCENERY_MODELS;
+/** Rekvizita prostředí z `setting-kits.json` (P45H): model gen3d, který žádná sada nenese. */
+export type KitModel = `gen3d-${string}`;
+export type SceneryModel = keyof typeof SCENERY_MODELS | KitModel;
 export type SceneryKind = PropKind | SceneryModel;
 
-export const isSceneryModel = (kind: SceneryKind): kind is SceneryModel => Object.hasOwn(SCENERY_MODELS, kind);
+/**
+ * Prostředí z věty → rekvizity (P45H T2, `scripts/p45h/build-setting-kits.mjs`):
+ * jen modely povýšené do katalogu, s výškou kulisy v metrech.
+ */
+const SETTING_KITS = settingKits.kits.map((kit) => ({ pattern: new RegExp(kit.pattern), props: kit.props.map((prop) => prop.id as KitModel) }));
+const KIT_HEIGHTS: ReadonlyMap<string, number> = new Map(settingKits.kits.flatMap((kit) => kit.props.map((prop) => [prop.id, prop.height] as const)));
+
+export const isSceneryModel = (kind: SceneryKind): kind is SceneryModel => Object.hasOwn(SCENERY_MODELS, kind) || KIT_HEIGHTS.has(kind);
+
+/** Výška modelu kulisy při měřítku 1 (m): sady ze `SCENERY_MODELS`, rekvizity prostředí z tabulky. */
+export const modelHeight = (id: SceneryModel): number => (Object.hasOwn(SCENERY_MODELS, id) ? SCENERY_MODELS[id as keyof typeof SCENERY_MODELS] : KIT_HEIGHTS.get(id)!);
 
 /** Povrch ostrůvků a podlahy arény (P32A T9): tráva, sníh a led, písek, dlažba, holá skála. */
 export const COVERS = ['grass', 'snow', 'sand', 'paving', 'rock'] as const;
@@ -301,14 +316,42 @@ const PLACE_GROUNDS: readonly (readonly [RegExp, string | null])[] = [
 /** Voda pod závodem: loď po řece nejede po asfaltu. */
 const WATERWAY = /\brivers?\b|canal|\blake\b|rapids|\bsea\b|ocean/;
 
-/** Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem) a jízda hrdiny. */
+/**
+ * Rekvizity prostředí, které text jmenuje (P45H T3): nejdelší shoda vyhrává
+ * („desert canyon“ před „canyon“), při shodné délce dřívější řádek tabulky.
+ * Prázdný seznam = prostředí bez kitu.
+ */
+export function kitFor(setting: string): readonly KitModel[] {
+  const lower = setting.toLowerCase();
+  let best: { readonly props: readonly KitModel[]; readonly length: number } | null = null;
+  for (const kit of SETTING_KITS) {
+    const hit = kit.pattern.exec(lower);
+    if (hit !== null && (best === null || hit[0].length > best.length)) best = { props: kit.props, length: hit[0].length };
+  }
+  return best?.props ?? [];
+}
+
+/**
+ * Rekvizity sady s kitem prostředí: kit a sada se střídají, sada si nechá
+ * rekvizity z lichých pozic, kit zabere místo sudých. Seznam má sudou délku
+ * 4–8, protože `sceneryPlaces` jde po rekvizitách krokem 7: ze sady o sedmi
+ * by viděl jen první a poslední. Počet kulis ve scéně dává délka trati, ne seznam.
+ */
+export function withKit(props: readonly SceneryKind[], kit: readonly KitModel[]): readonly SceneryKind[] {
+  if (kit.length === 0) return props;
+  const kept = props.filter((_, index) => index % 2 === 1);
+  return Array.from({ length: Math.max(kept.length, kit.length) }, (_, index) => [kit[index % kit.length]!, kept[index % kept.length]!]).flat();
+}
+
+/** Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem, rekvizity prostředí) a jízda hrdiny. */
 export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay }): Look {
   const look = LOOKS[lookOf(theme)];
   const setting = theme.setting.toLowerCase();
   const ground = PLACE_GROUNDS.find(([pattern]) => pattern.test(setting))?.[1] ?? look.ground;
   const afloat = WATERWAY.test(setting);
   const ride = theme.motion === 'ride';
-  const placed = ground === look.ground && !afloat && !ride ? look : { ...look, ground, afloat, ...(ride ? { ride } : {}) };
+  const kit = kitFor(setting);
+  const placed = ground === look.ground && !afloat && !ride && kit.length === 0 ? look : { ...look, ground, afloat, props: withKit(look.props, kit), ...(ride ? { ride } : {}) };
   const time = theme.timeOfDay ?? timeOfDayFor(theme.setting);
   if (time === 'night') return { ...placed, sky: '#101d32', skyTop: '#050d1b', horizon: '#172c45', light: ['#92b9df', '#283747', 0.8], sun: 0.35, sunColor: '#bcdcff', glow: 0.12, exposure: Math.min(placed.exposure, 1) };
   if (time === 'dusk') return { ...placed, sky: '#785944', skyTop: '#233a51', horizon: '#d59461', light: ['#e3b28b', '#4c4137', 0.95], sun: 0.75, sunColor: '#ffd1a0', glow: 0.55 };
