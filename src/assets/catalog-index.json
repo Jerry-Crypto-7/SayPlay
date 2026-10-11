@@ -21498,6 +21498,82 @@
           0.4641
         ]
       }
+    },
+    {
+      "assetId": "gen3d-snowshoe",
+      "tags": [
+        "snowshoe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowshoe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24088,
+          0,
+          -0.08331
+        ],
+        "max": [
+          0.24088,
+          1.00001,
+          0.08331
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowy-lamppost",
+      "tags": [
+        "snowy lamppost"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-lamppost-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.08434,
+          0,
+          -0.08874
+        ],
+        "max": [
+          0.08434,
+          0.99977,
+          0.08874
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-clock-tower",
+      "tags": [
+        "clock tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-clock-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11111,
+          0,
+          -0.11092
+        ],
+        "max": [
+          0.11111,
+          0.99731,
+          0.11092
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-notice-board",
+      "tags": [
+        "notice board"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-notice-board-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38038,
+          0,
+          -0.10389
+        ],
+        "max": [
+          0.38038,
+          0.99945,
+          0.10389
+        ]
+      }
     }
   ]
 }

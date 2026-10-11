@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "1097ae2e0c68c14d6cb86cab2b762209f74ac9976d5bd735495304aa947491a6",
+ "catalogHash": "02a9db45a6f59c97b383116675dba2c25f6895b941190de64f49bc09700f2a6a",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1052,6 +1052,10 @@
   "gen3d-dinosaur-skeleton": {"class":"prop"},
   "gen3d-rooftop-water-tank": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-anthill": {"class":"prop"},
-  "gen3d-chicken-leg": {"class":"prop"}
+  "gen3d-chicken-leg": {"class":"prop"},
+  "gen3d-snowshoe": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-snowy-lamppost": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-clock-tower": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-notice-board": {"class":"biped","regions":{"legY":0.25}}
  }
 }

@@ -277,3 +277,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-rooftop-water-tank` | rooftop water tank | 4528 / 2151 |
 | `gen3d-anthill` | anthill, ant mound | 4728 / 2328 |
 | `gen3d-chicken-leg` | chicken leg, drumstick | 4748 / 2370 |
+| `gen3d-snowshoe` | snowshoe | 4649 / 2317 |
+| `gen3d-snowy-lamppost` | snowy lamppost | 4744 / 2358 |
+| `gen3d-clock-tower` | clock tower | 4748 / 2368 |
+| `gen3d-notice-board` | notice board | 4703 / 2327 |
