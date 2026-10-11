@@ -20831,6 +20831,63 @@
           0.19246
         ]
       }
+    },
+    {
+      "assetId": "gen3d-ice-cave",
+      "tags": [
+        "ice cave"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-cave-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75871,
+          0,
+          -0.68603
+        ],
+        "max": [
+          0.75871,
+          0.99198,
+          0.68603
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mausoleum",
+      "tags": [
+        "mausoleum"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mausoleum-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33947,
+          0,
+          -0.32169
+        ],
+        "max": [
+          0.33947,
+          0.99934,
+          0.32169
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-angel-statue",
+      "tags": [
+        "angel statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-angel-statue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25295,
+          0,
+          -0.19228
+        ],
+        "max": [
+          0.25295,
+          0.99773,
+          0.19228
+        ]
+      }
     }
   ]
 }

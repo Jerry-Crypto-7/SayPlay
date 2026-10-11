@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "ffffffb06021b928a0bdacc62aa18eb1561fcc631d0ea70604fc5423003e1f1e",
+ "catalogHash": "26b4fbc2695e2496d517d2fc99cfdf023f73816dd332c33fb64a5a8afd6209f4",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1017,6 +1017,9 @@
   "gen3d-hiking-backpack": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-grindstone": {"class":"prop"},
   "gen3d-forge-furnace": {"class":"biped","regions":{"legY":0.248}},
-  "gen3d-funeral-wreath": {"class":"prop"}
+  "gen3d-funeral-wreath": {"class":"prop"},
+  "gen3d-ice-cave": {"class":"prop"},
+  "gen3d-mausoleum": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-angel-statue": {"class":"biped","regions":{"legY":0.249}}
  }
 }

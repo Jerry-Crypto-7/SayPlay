@@ -21,6 +21,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | 6 (15:40–15:56) | 10 | 8 | 7 | 6 | 14 + 8 |
 | 7 (15:52–16:21) | 10 | 7 | 5 | 4 | 20 + 7 |
 | 8 (16:18–16:42) | 10 | 9 | 8 | 8 | 17 + 9 |
+| 9 (16:40–17:00) | 10 | 7 | 6 | 3 | 17 + 7 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -65,3 +66,9 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Povýšeno (8): top1 rocking chair, cattail („cattails“), fallen log („hollow log“), hiking backpack, grindstone, forge furnace („furnace“), funeral wreath („wreath“); top3 wooden hut („wooden cabin“).
 - Soudce poznal, ale označil jako rozbitý: wooden dock („wooden bridge“, dock ve výčtu) – nepovýšen.
 - Předkontrola odmítla všechny tři obrázky: chopping block – správné jméno, obrázky označené jako rozbité.
+
+**Dávka 9** (funeral, garage, glacier, graveyard, haunted castle, hotel basement):
+- Povýšeno (3): top1 ice cave, angel statue; top3 mausoleum („shrine“).
+- Přijaté, nepovýšené (3): **car jack** (top1 „floor jack“), **luggage cart** (top1) – manifest P32 jim podle slov „car“ a „cart“ dal třídu vehicle, pin počtu zčervenal → `--drop`; hearse (top3 „car“) – `normalize: LOD1 cannot be made lighter than LOD0`.
+- Soudce poznal něco jiného: ice wall: ice block.
+- Předkontrola odmítla všechny tři obrázky: tool chest: tool cabinet ×3, označený jako rozbitý · tire stack – správné jméno, obrázky označené jako rozbité · suit of armor: armored knight ×3 (prázdné brnění vypadá jako rytíř).

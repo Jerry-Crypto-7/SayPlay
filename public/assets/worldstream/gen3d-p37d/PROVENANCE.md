@@ -242,3 +242,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-grindstone` | grindstone | 4226 / 2050 |
 | `gen3d-forge-furnace` | forge furnace | 4222 / 1998 |
 | `gen3d-funeral-wreath` | funeral wreath | 4359 / 1921 |
+| `gen3d-ice-cave` | ice cave | 4512 / 2124 |
+| `gen3d-mausoleum` | mausoleum | 4210 / 2091 |
+| `gen3d-angel-statue` | angel statue | 4581 / 2201 |
