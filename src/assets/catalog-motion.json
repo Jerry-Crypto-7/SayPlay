@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "02a9db45a6f59c97b383116675dba2c25f6895b941190de64f49bc09700f2a6a",
+ "catalogHash": "12b7ce1d3bd991bf22f516b3f4caa02863bb0c5d48ad9b3a63129d0160b594bc",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1056,6 +1056,9 @@
   "gen3d-snowshoe": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-snowy-lamppost": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-clock-tower": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-notice-board": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-notice-board": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-rope-ladder": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-snow-globe": {"class":"prop"},
+  "gen3d-zoo-gate": {"class":"prop"}
  }
 }

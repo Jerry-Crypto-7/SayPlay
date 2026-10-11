@@ -281,3 +281,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-snowy-lamppost` | snowy lamppost | 4744 / 2358 |
 | `gen3d-clock-tower` | clock tower | 4748 / 2368 |
 | `gen3d-notice-board` | notice board | 4703 / 2327 |
+| `gen3d-rope-ladder` | rope ladder | 4740 / 2348 |
+| `gen3d-snow-globe` | snow globe | 4547 / 2231 |
+| `gen3d-zoo-gate` | zoo gate | 4596 / 2250 |

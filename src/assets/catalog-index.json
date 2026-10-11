@@ -21574,6 +21574,63 @@
           0.10389
         ]
       }
+    },
+    {
+      "assetId": "gen3d-rope-ladder",
+      "tags": [
+        "rope ladder"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rope-ladder-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16696,
+          0,
+          -0.07243
+        ],
+        "max": [
+          0.16696,
+          0.99987,
+          0.07243
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snow-globe",
+      "tags": [
+        "snow globe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snow-globe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41388,
+          0,
+          -0.41267
+        ],
+        "max": [
+          0.41388,
+          0.9939,
+          0.41267
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-zoo-gate",
+      "tags": [
+        "zoo gate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-zoo-gate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.62939,
+          0,
+          -0.12857
+        ],
+        "max": [
+          0.62939,
+          0.99988,
+          0.12857
+        ]
+      }
     }
   ]
 }
