@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "ebb9bf510be81f1a422c9142529a8d64750c247eb22c476cf9a157eeb8ebb625",
+ "catalogHash": "5b5cdedcdb09fd1ffda1f331f1e0195abac80d4a0f928c73ef0582b6016cc8fa",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -978,6 +978,14 @@
   "gen3d-highway-sign": {"class":"prop"},
   "gen3d-checkout-counter": {"class":"prop"},
   "gen3d-shopping-basket": {"class":"prop"},
-  "gen3d-sea-anemone": {"class":"prop"}
+  "gen3d-sea-anemone": {"class":"prop"},
+  "gen3d-candelabra": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-grandfather-clock": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-chandelier": {"class":"prop"},
+  "gen3d-escalator": {"class":"prop"},
+  "gen3d-mannequin": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-clothing-rack": {"class":"prop"},
+  "gen3d-tankard": {"class":"prop"},
+  "gen3d-tavern-sign": {"class":"biped","regions":{"legY":0.25}}
  }
 }

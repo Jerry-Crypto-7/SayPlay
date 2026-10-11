@@ -15,6 +15,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 |---|---|---|---|---|---|
 | 1 (14:07–14:27) | 10 | 6 | 4 | 4 | 19 + 6 |
 | 2 (14:23–14:58) | 10 | 9 | 7 | 6 | 14 + 9 |
+| 3 (14:56–15:11) | 10 | 9 | 8 | 8 | 12 + 9 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -27,3 +28,8 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Přijatý, nepovýšený: sea urchin (top3 „cactus“, sea urchin ve výčtu) – `normalize: LOD1 cannot be made lighter than LOD0 at the same size` (stejná třída jako dynamite v P45E).
 - Soudce poznal něco jiného: overpass: trampoline · diving bell: hanging lantern.
 - Předkontrola odmítla všechny tři obrázky: grocery shelf: store shelf ×3, označený jako rozbitý (vizuálně správně – synonymum by ho pustilo).
+
+**Dávka 3** (deep sea, haunted mansion, mall, tavern):
+- Povýšeno (8): top1 candelabra, grandfather clock, chandelier, escalator, mannequin, clothing rack („clothes rack“), tavern sign; top3 tankard („beer mug“).
+- Soudce poznal něco jiného: giant clam: bowl.
+- Předkontrola odmítla všechny tři obrázky: bar counter: **bar counter** ×3 – správné jméno, obrázek označený jako rozbitý.

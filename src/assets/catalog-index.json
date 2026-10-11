@@ -20090,6 +20090,158 @@
           0.40603
         ]
       }
+    },
+    {
+      "assetId": "gen3d-candelabra",
+      "tags": [
+        "candelabra"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-candelabra-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16081,
+          0,
+          -0.23045
+        ],
+        "max": [
+          0.16081,
+          0.99992,
+          0.23045
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-grandfather-clock",
+      "tags": [
+        "grandfather clock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-grandfather-clock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18736,
+          0,
+          -0.09221
+        ],
+        "max": [
+          0.18736,
+          1.00001,
+          0.09221
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-chandelier",
+      "tags": [
+        "chandelier"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-chandelier-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44436,
+          0,
+          -0.44194
+        ],
+        "max": [
+          0.44436,
+          0.99998,
+          0.44194
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-escalator",
+      "tags": [
+        "escalator"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-escalator-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31481,
+          0,
+          -0.55384
+        ],
+        "max": [
+          0.31481,
+          0.99573,
+          0.55384
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mannequin",
+      "tags": [
+        "mannequin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mannequin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16487,
+          0,
+          -0.16474
+        ],
+        "max": [
+          0.16487,
+          0.99866,
+          0.16474
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-clothing-rack",
+      "tags": [
+        "clothing rack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-clothing-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32988,
+          0,
+          -0.49933
+        ],
+        "max": [
+          0.32988,
+          0.99512,
+          0.49933
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tankard",
+      "tags": [
+        "tankard"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tankard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48606,
+          0,
+          -0.30115
+        ],
+        "max": [
+          0.48606,
+          0.99665,
+          0.30115
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tavern-sign",
+      "tags": [
+        "tavern sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tavern-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33727,
+          0,
+          -0.14145
+        ],
+        "max": [
+          0.33727,
+          0.99972,
+          0.14145
+        ]
+      }
     }
   ]
 }

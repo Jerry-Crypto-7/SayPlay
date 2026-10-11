@@ -203,3 +203,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-checkout-counter` | checkout counter | 4701 / 2347 |
 | `gen3d-shopping-basket` | shopping basket | 4373 / 2074 |
 | `gen3d-sea-anemone` | sea anemone | 4551 / 2210 |
+| `gen3d-candelabra` | candelabra | 4748 / 2374 |
+| `gen3d-grandfather-clock` | grandfather clock | 4682 / 2338 |
+| `gen3d-chandelier` | chandelier | 4214 / 2048 |
+| `gen3d-escalator` | escalator | 4274 / 2118 |
+| `gen3d-mannequin` | mannequin | 4740 / 2366 |
+| `gen3d-clothing-rack` | clothing rack | 4503 / 2071 |
+| `gen3d-tankard` | tankard | 3979 / 1893 |
+| `gen3d-tavern-sign` | tavern sign | 4668 / 2314 |
