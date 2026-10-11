@@ -2,53 +2,28 @@
 # jméno, aby FLUX nenakreslil sourozence z knihovny nebo věc podobného tvaru. Psaný ručně pro
 # jména kola P45E (evals/play/p45d/gen-nouns.json a pilot), žádné placené API. V komentáři je,
 # co v P43 viděl slepý soudce místo jména (evals/play/p43/gen3d.md).
+# Klíč je jméno po `cache.normalize` – „cyclops“ a „canvas“ dávka zkrátí na „cyclop“ a „canva“.
 
 # Zvířata a postavy
 orca = "black and white killer whale, tall dorsal fin"  # P43: penguin
-mole = "tiny dark grey burrowing animal with a long pointed snout, wide shovel-like front claws and no visible eyes"  # P43: bear; P45E pilot s „pink paws“: pig
 hippo = "huge grey hippopotamus, barrel body, wide mouth, short stubby legs"
 wolf = "grey wild wolf, pointed ears, long bushy tail"
 lizard = "green lizard, long tail, sprawling legs"
-firefly = "glowing beetle-like insect with a bright yellow light on its tail"  # P43: beetle
-cyclops = "one-eyed giant with a single big eye in the middle of the forehead"
 genie = "blue genie with a wisp tail instead of legs, rising from a lamp"  # P43: elf
 spy = "secret agent in a trench coat, hat and sunglasses"  # P43: soldier
-poacher = "hunter in a khaki vest holding a rifle"  # P43: soldier
-robber = "burglar with a black eye mask, striped shirt and a money sack"
-stickman = "stick figure made of thin black lines with a round head"
-"stone golem" = "giant made of stacked grey stone blocks"
-"bank manager" = "man in a suit and tie holding a briefcase"
-"financial advisor" = "woman in a business suit holding a clipboard"
 statue = "marble statue of a person standing on a stone pedestal"  # P43: man
 
 # Ploché a drobné věci
-frisbee = "red plastic flying disc toy with a raised rim, tilted to show its top"  # P43: plate; pilot: mirror
-receipt = "long white paper till receipt with printed rows of prices and a total, curled at the bottom"  # P43: recycling bin; pilot: checklist
 "playing card" = "single playing card, ace of hearts"  # P43: fuel can
-passport = "small dark red booklet with the gold word PASSPORT and a globe emblem on the cover"  # P43: man bust; pilot: book
 portrait = "framed painting of a face in a golden frame"  # P43: bust
-"mahjong tile" = "small white tile with a carved green symbol"  # P43: speaker
-seashell = "spiral sea snail shell"  # P43: spinning top
-towel = "folded bath towel"  # P43: payphone
-net = "fishing net on a wooden pole"  # P43: rolling pin
-ammo = "box of bullets with brass cartridges"  # P43: beverage can
 snowboard = "board with two bindings on top, no wheels"  # P43: skateboard
-"golf ball" = "white dimpled golf ball on a tee"  # P43: tree
-cape = "superhero cape flowing from a shoulder clasp"  # P43: vase
 
 # Ostatní věci
 "paper ball" = "crumpled ball of white paper"  # P43: egg
-coffin = "wooden coffin with a cross on the lid"  # P43: cooking pot
 ramp = "wooden skate ramp with a sloped surface"  # P43: door
-chimney = "red brick chimney on a piece of roof"  # P43: bollard
 orange = "orange citrus fruit with a green leaf"  # P43: volleyball
-marshmallow = "white puffy cylinder marshmallow on a stick"  # P43: cotton candy
 pie = "round baked pie with a lattice crust"  # P43: pizza
-broomstick = "witch's flying broom with a twig bundle"  # P43: broom
-pinata = "colorful paper donkey pinata"  # P43: bush
-firework = "firework rocket with a fuse and a pointed tip"  # P43: feather duster
 dynamite = "bundle of red dynamite sticks with a fuse"  # P43: spray can
-boomerang = "curved wooden V-shaped boomerang"  # P43: hoe
 crossbow = "medieval crossbow with a bow across the stock"  # P43: gun
 dishwasher = "kitchen dishwasher with the door open and plate racks inside"  # P43: storage bin
 jetpack = "backpack with two rocket thrusters and flames"  # P43: suitcase
@@ -57,3 +32,72 @@ fuel = "red jerry can of fuel"
 mane = "lion's mane, big shaggy ring of hair"
 searchlight = "big searchlight lamp on a stand"
 snowmobile = "snow vehicle with front skis and a rear track"
+
+# P45F: jména, která v P45E neprošla (evals/play/p45f/retry-nouns.json). Znak má odlišit jméno od
+# toho, co v P45E viděl Codex (komentář `# P45E:` – soud, nebo předkontrola u všech tří obrázků).
+
+# Postavy
+robber = "masked burglar in a black and white striped shirt and black eye mask, carrying a sack with a dollar sign"  # P45E: soldier
+"bank manager" = "man in a navy suit with a bank name badge, holding a big gold vault key and a money bag"  # P45E: businessman
+"financial advisor" = "woman in a grey suit holding a board with a rising green stock chart and a calculator"  # P45E: businesswoman
+cyclop = "huge one-eyed giant with a single big eye in the middle of the forehead, green skin, fur loincloth, wooden club"  # P45E: man (klíč „cyclops“ se nepřipsal)
+poacher = "shady hunter in a dark hooded jacket with a rifle, dragging a net sack holding a stolen ivory tusk"  # P45E: soldier / soldier / hunter
+stickman = "black stick figure made of thin black rods, plain round black head, no clothes, no face, no hands"  # P45E: person
+"stone golem" = "hulking giant built from rough mossy grey boulders, glowing orange cracks for eyes, no metal parts"  # P45E: robot
+golem = "huge hulking brown clay giant with cracked mud skin, tiny head and thick arms reaching the ground"  # P45E: goblin
+captain = "ship captain in a white naval uniform and white peaked cap with a gold anchor badge, grey beard, brass telescope"  # P45E: military officer / police officer
+singer = "pop singer holding a microphone to her open mouth, glittering sequin stage dress, singing"  # P45E: woman / businessman / person
+
+# Zvířata
+mole = "black velvet mole poking out of a brown dirt mound, huge pink digging paws, tiny pointed pink nose"  # P45E: shrew / bear / wolf
+centaur = "half man half horse, a bearded man's bare torso, arms and head rising where a brown horse's neck would be"  # P45E: horse
+rhino = "big grey rhinoceros with one large curved horn on its nose and a small second horn, thick skin folds"  # P45E: wild boar
+firefly = "small dark firefly whose rear half glows bright yellow green like a lantern, thin clear wings"  # P45E: beetle
+peacock = "blue peacock standing with its long green tail feathers closed and trailing behind on the ground, small head crest"  # P45E: brána kvality 3×
+
+# Ploché a drobné věci
+net = "landing net with a big oval metal hoop and a loose white mesh bag on a long wooden handle"  # P45E: Christmas tree
+receipt = "long thin strip of white paper with black printed lines of prices, curled into a loose roll"  # P45E: stone pillar
+"mahjong tile" = "small ivory white rectangular game tile with a red and green Chinese character carved on its face"  # P45E: recycling bin
+passport = "small dark red booklet with a gold crest on the cover, slightly open showing the photo page"  # P45E: gravestone
+cape = "red superhero cape spread out like a wide fan, gold clasp at the neck, nobody wearing it"  # P45E: cloaked statue
+"golf ball" = "small white dimpled golf ball sitting on a short wooden tee on a patch of green grass"  # P45E: globe lamp
+frisbee = "bright orange plastic frisbee disc lying flat, curled rim, seen from slightly above"  # P45E: tabletop mirror
+seashell = "pink and cream spiral conch seashell with a pointed tip and a wide glossy opening"  # P45E: gong / shield / diving helmet
+towel = "soft blue bath towel folded into a neat stack with striped fringed ends, lying flat"  # P45E: mirror / pillar / punching bag
+ammo = "open green military ammo box full of shiny brass bullets with pointed copper tips"  # P45E: radiator / pillar / gravestone
+blanket = "soft red and white checkered blanket rolled up thick and tied with a ribbon"  # P45E: monolith / stone pillar / hedge
+canva = "artist's painting canvas on a wooden easel, white canvas covered with colourful paint strokes"  # P45E: monolith / pillar / pants
+earring = "single gold hoop earring with a dangling red gem drop, shiny metal"  # P45E: tree / gravestone / sign
+magazine = "glossy magazine with a colourful cover photo and a big bold title, pages slightly fanned open"  # P45E: tombstone / block tower / hard drive
+keyboard = "computer keyboard, long flat black slab covered in rows of small white square keys"  # P45E: forge
+newspaper = "folded grey newspaper with a big black headline, columns of small print and a photo"  # P45E: signboard
+notebook = "spiral notebook with a silver metal coil binding along the side and blue lined paper pages"  # P45E: book
+pebble = "single small smooth oval grey river pebble, glossy and rounded, lying down"  # P45E: standing stone / gravestone
+tablet = "handheld touchscreen tablet with a thin black bezel and a colourful grid of app icons, no stand"  # P45E: computer monitor
+tape = "roll of shiny silver duct tape, a thick ring with a big hole in the middle"  # P45E: gravestone / pillar
+
+# Ostatní věci
+coffin = "long dark brown wooden coffin, six-sided shape wider at the shoulders, closed lid with brass handles"  # P43: cooking pot; P45E: medical bag
+chimney = "red brick chimney stack standing on a slanted piece of roof with grey tiles, puff of smoke on top"  # P43: bollard; P45E: bollard
+marshmallow = "three soft pink and white marshmallows, puffy short cylinders in a little pile, no stick"  # P45E: popsicle
+broomstick = "long wooden broom handle with a tied bundle of straw twigs at one end, lying flat, no rider"  # P45E: witch
+firework = "fat cardboard firework tube wrapped in red and yellow paper with stars, short fuse on top, no fins"  # P45E: rocket / rocket / arrow
+boomerang = "flat wide wooden boomerang bent into a V shape with painted dot patterns, lying flat"  # P45E: pickaxe / walking cane
+pinata = "colourful paper donkey pinata covered in rows of pink, yellow and blue paper fringe, hanging on a string"  # P45E: horse
+coral = "branching pink and orange coral reef piece with finger-like branches, growing on a sandy rock"  # P45E: fire pit
+drill = "cordless power drill with a yellow pistol grip body, black battery at the bottom and a long drill bit"  # P45E: spark plug
+anthill = "brown dirt mound with a hole on top and many small black ants crawling up its sides"  # P45E: rock
+comet = "icy blue rock flying with a long bright glowing tail of white and yellow fire streaming behind"  # P45E: plumb bob / ore rock / crystal pendant
+dumpling = "plump white steamed dumpling with a pleated pinched top, sitting in a round bamboo steamer basket"  # P45E: rock / potato
+glue = "white plastic glue bottle with an orange pointed cap and a label reading GLUE"  # P45E: square nut / rock / cylinder
+"flower pot" = "empty terracotta flower pot, orange clay with a thick rim, no plant, no soil"  # P45E: potted plant
+"chicken leg" = "roasted golden brown chicken drumstick with a bulging meaty end and a white bone sticking out"  # P45E: torch
+joystick = "black arcade joystick on a square base with a red ball-top stick and two round buttons"  # P45E: chess pawn
+milk = "white milk carton with a blue gable top and a cow picture on the side"  # P45E: jar / rock
+pinecone = "brown woody pine cone with open scales in a spiral, egg shaped, no needles"  # P45E: hop cone / pine tree
+swing = "children's playground swing, a wooden seat hanging on two chains from a red A-frame"  # P45E: squat rack / guillotine / railing
+tea = "cup of hot tea on a saucer, tea bag string and tag hanging over the rim, steam rising"  # P45E: mug
+torpedo = "long dark grey torpedo, cigar-shaped body with a propeller and cross fins at the tail"  # P45E: drill chuck / grenade
+"space station" = "space station with a white cylinder core, big blue solar panel wings and docking ports"  # P45E: mine
+"moon rover" = "lunar rover, white and silver six-wheeled moon vehicle with a dish antenna and a solar panel"  # P45E: dune buggy
