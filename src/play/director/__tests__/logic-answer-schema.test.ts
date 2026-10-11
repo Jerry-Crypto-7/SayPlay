@@ -288,4 +288,36 @@ describe('the phase entry the read path adds is not the model\'s rule (R6)', () 
     expect(seen[0]).toEqual({ rules: ['cheer', 'enter_harvest'], timers: undefined, phases: ['calm', 'harvest'], reads: true });
     expect(seen[1]).toEqual({ rules: [], timers: undefined, phases: undefined, reads: true });
   }, 120_000);
+
+  it('a drop-out that leaves a declared event without its listener is never played nor published (R6-2 A)', async () => {
+    // `shout` vysílá `boom`, jediný posluchač `hear` neprojde – bez něj by `readGameSpec` hru odmítl.
+    const answer = {
+      plan: 'collect acorns while the owl hoots',
+      spec: {
+        ...genreAnswer().spec,
+        ruleRoles: null,
+        things: null,
+        logic: { vars: null, timers: null, events: ['boom'], phases: null },
+        rules: [
+          strictRule({ id: 'shout', verb: 'shout', when: { every: 30 }, do: [{ emit: 'boom' }, { score: 1 }] }),
+          strictRule({ id: 'hear', verb: 'hear', when: { event: 'boom' }, do: [{ score: 0 }] }),
+        ],
+      },
+    };
+    const seen: ReturnType<typeof shape>[] = [];
+    let tick = 0;
+    const game = await direct(SENTENCE, {
+      branch: fakeBranch([answered(answer)]),
+      now: () => (tick += 100),
+      compact: true,
+      maxRepairRounds: 0,
+      check: (candidate) => {
+        seen.push(shape(candidate));
+        return (candidate.rules ?? []).some((rule) => rule.id === 'hear') ? failed('VERB_UNPROVED:hear') : [];
+      },
+    });
+    expect(seen.every((candidate) => candidate.reads)).toBe(true);
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED' });
+    expect(readGameSpec(game.spec).ok).toBe(true);
+  }, 120_000);
 });

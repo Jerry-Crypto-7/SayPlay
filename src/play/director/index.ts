@@ -39,7 +39,7 @@ import type { DirectorResult, FallbackReason } from '../contracts';
 import { draftGameSpecWithMeta } from '../draft';
 import type { GenreModules } from '../genre/classify';
 import { readBeforeDraft, readerEnabled } from '../read/client';
-import type { GameSpecV1 } from '../spec';
+import { type GameSpecV1, readGameSpec } from '../spec';
 import { vocabVersion } from '../vocab';
 
 import type { DirectorCache } from './cache';
@@ -440,8 +440,17 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   };
 }
 
-/** Spec bez pravidel, která `drop` vybere; `things` jen když žádné pravidlo nezbylo. `null` = nebylo co odebrat. */
+/**
+ * Spec bez pravidel, která `drop` vybere; `null` = nebylo co odebrat, nebo výsledek `readGameSpec` odmítne
+ * (R6-2: např. vyhlášená událost bez posluchače). Kandidát z vyřazení jde do publikace bez dalšího čtení.
+ */
 function withoutRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rules']>[number]) => boolean): GameSpecV1 | null {
+  const candidate = droppedRules(spec, drop);
+  return candidate !== null && readGameSpec(candidate).ok ? candidate : null;
+}
+
+/** Spec bez pravidel, která `drop` vybere; `things` jen když žádné pravidlo nezbylo. `null` = nebylo co odebrat. */
+function droppedRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rules']>[number]) => boolean): GameSpecV1 | null {
   const rules = spec.rules ?? [];
   let kept = rules.filter((rule) => !drop(rule));
   // Vstup doplněný čtením (`phaseEntryOf`, R6) jde ven jen s fází: vypadl-li on, nebo vše, co na fázi
