@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "01aad80e8946788f943517c762f57596371791c0f8fda9813eb06a57419ff3ed",
+ "catalogHash": "3cbe4501e0edcdb618b3081116af78ea1e05abd6c83bb84e94ed012e1488194e",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1042,6 +1042,14 @@
   "gen3d-parcel": {"class":"prop"},
   "gen3d-wagon-wheel": {"class":"prop"},
   "gen3d-planter-box": {"class":"prop"},
-  "gen3d-air-conditioner": {"class":"prop"}
+  "gen3d-air-conditioner": {"class":"prop"},
+  "gen3d-dog-kennel": {"class":"prop"},
+  "gen3d-dog-bowl": {"class":"prop"},
+  "gen3d-cow-skull": {"class":"prop"},
+  "gen3d-car-jack": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-luggage-cart": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-wizard-tower": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-dinosaur-skeleton": {"class":"prop"},
+  "gen3d-rooftop-water-tank": {"class":"biped","regions":{"legY":0.25}}
  }
 }

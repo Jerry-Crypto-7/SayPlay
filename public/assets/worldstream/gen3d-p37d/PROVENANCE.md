@@ -267,3 +267,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wagon-wheel` | wagon wheel | 4732 / 2319 |
 | `gen3d-planter-box` | planter box | 4358 / 2114 |
 | `gen3d-air-conditioner` | air conditioner | 3778 / 2095 |
+| `gen3d-dog-kennel` | dog kennel | 4363 / 2120 |
+| `gen3d-dog-bowl` | dog bowl | 4540 / 2131 |
+| `gen3d-cow-skull` | cow skull | 4680 / 2316 |
+| `gen3d-car-jack` | car jack | 4669 / 2312 |
+| `gen3d-luggage-cart` | luggage cart | 4471 / 2208 |
+| `gen3d-wizard-tower` | wizard tower | 4702 / 2340 |
+| `gen3d-dinosaur-skeleton` | dinosaur skeleton | 4668 / 2274 |
+| `gen3d-rooftop-water-tank` | rooftop water tank | 4528 / 2151 |

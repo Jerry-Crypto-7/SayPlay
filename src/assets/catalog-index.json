@@ -21306,6 +21306,158 @@
           0.42589
         ]
       }
+    },
+    {
+      "assetId": "gen3d-dog-kennel",
+      "tags": [
+        "dog kennel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dog-kennel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38599,
+          0,
+          -0.37457
+        ],
+        "max": [
+          0.38599,
+          1.00001,
+          0.37457
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dog-bowl",
+      "tags": [
+        "dog bowl"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dog-bowl-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.37718,
+          0,
+          -1.37868
+        ],
+        "max": [
+          1.37718,
+          0.9935,
+          1.37868
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cow-skull",
+      "tags": [
+        "cow skull"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cow-skull-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47839,
+          0,
+          -0.32107
+        ],
+        "max": [
+          0.47839,
+          0.99882,
+          0.32107
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-car-jack",
+      "tags": [
+        "car jack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-car-jack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32551,
+          0,
+          -0.172
+        ],
+        "max": [
+          0.32551,
+          0.995,
+          0.172
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-luggage-cart",
+      "tags": [
+        "luggage cart"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-luggage-cart-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25982,
+          0,
+          -0.35375
+        ],
+        "max": [
+          0.25982,
+          0.99546,
+          0.35375
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wizard-tower",
+      "tags": [
+        "wizard tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wizard-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15513,
+          0,
+          -0.15624
+        ],
+        "max": [
+          0.15513,
+          0.99585,
+          0.15624
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dinosaur-skeleton",
+      "tags": [
+        "dinosaur skeleton"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dinosaur-skeleton-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26355,
+          0,
+          -0.6431
+        ],
+        "max": [
+          0.26355,
+          0.99588,
+          0.6431
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rooftop-water-tank",
+      "tags": [
+        "rooftop water tank"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rooftop-water-tank-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22692,
+          0,
+          -0.24598
+        ],
+        "max": [
+          0.22692,
+          0.99896,
+          0.24598
+        ]
+      }
     }
   ]
 }
