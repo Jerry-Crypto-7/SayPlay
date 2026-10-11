@@ -100,6 +100,8 @@ describe('rekvizity prostředí (P45H T3)', () => {
     // Nejdelší shoda vyhrává: pouštní kaňon má vlastní kit.
     ['a desert canyon', ['gen3d-rock-arch']],
     ['Haunted Mansion at midnight', ['gen3d-candelabra', 'gen3d-grandfather-clock', 'gen3d-chandelier']],
+    // Návrh z „escape the haunted mansion“ píše místo jen „mansion“.
+    ['mansion', ['gen3d-candelabra', 'gen3d-grandfather-clock', 'gen3d-chandelier']],
     ['a dog runs in a park', []],
     ['a completely different place', []],
   ] as const)('%s → %j', (setting, props) => {

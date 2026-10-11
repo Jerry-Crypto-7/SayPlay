@@ -125,7 +125,8 @@ const CLASS_HEIGHTS = { prop: 1.2, vehicle: 2, quadruped: 1.4, biped: 1.8, flyer
 const ALIASES = {
   'highway': ['\\b(?:freeway|motorway|interstate)s?\\b'],
   'underwater': ['\\bunder[\\s-]+(?:the[\\s-]+)?(?:water|sea)\\b'],
-  'haunted mansion': ['\\bhaunted[\\s-]+houses?\\b'],
+  // Návrh z „escape the haunted mansion“ píše místo jen „mansion“ (P45H T4); svícen, hodiny a lustr sedí každému sídlu.
+  'haunted mansion': ['\\bhaunted[\\s-]+houses?\\b', '\\bmansions?\\b'],
   'mall': ['\\bshopping[\\s-]+cent(?:er|re)s?\\b'],
   'tavern': ['\\b(?:inn|pub)s?\\b'],
   'graveyard': ['\\bcemeter(?:y|ies)\\b'],

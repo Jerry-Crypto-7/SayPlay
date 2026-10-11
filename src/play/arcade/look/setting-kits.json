@@ -70,7 +70,7 @@
     },
     {
       "setting": "haunted mansion",
-      "pattern": "\\bhaunted[\\s-]+mansion(?:e?s)?\\b|\\bhaunted[\\s-]+houses?\\b",
+      "pattern": "\\bhaunted[\\s-]+mansion(?:e?s)?\\b|\\bhaunted[\\s-]+houses?\\b|\\bmansions?\\b",
       "look": "graveyard",
       "props": [
         {
