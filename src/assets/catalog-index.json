@@ -19900,6 +19900,82 @@
           0.22129
         ]
       }
+    },
+    {
+      "assetId": "gen3d-singer",
+      "tags": [
+        "singer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-singer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2083,
+          0,
+          -0.16369
+        ],
+        "max": [
+          0.2083,
+          0.9942,
+          0.16369
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-swing",
+      "tags": [
+        "swing"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-swing-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37598,
+          0,
+          -0.48346
+        ],
+        "max": [
+          0.37598,
+          0.9987,
+          0.48346
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-torpedo",
+      "tags": [
+        "torpedo"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-torpedo-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.56956,
+          0,
+          -1.44846
+        ],
+        "max": [
+          0.56956,
+          0.99276,
+          1.44846
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-fishing-hut",
+      "tags": [
+        "ice fishing hut"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-fishing-hut-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37386,
+          0,
+          -0.47646
+        ],
+        "max": [
+          0.37386,
+          0.99761,
+          0.47646
+        ]
+      }
     }
   ]
 }

@@ -193,3 +193,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-glue` | glue | 4749 / 2372 |
 | `gen3d-joystick` | joystick | 4748 / 2374 |
 | `gen3d-milk` | milk | 4748 / 2374 |
+| `gen3d-singer` | singer | 4710 / 2327 |
+| `gen3d-swing` | swing | 4698 / 2318 |
+| `gen3d-torpedo` | torpedo | 4469 / 2125 |
+| `gen3d-ice-fishing-hut` | ice fishing hut | 4358 / 2086 |
