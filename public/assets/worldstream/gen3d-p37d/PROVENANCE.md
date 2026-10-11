@@ -250,3 +250,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-tiki-torch` | tiki torch | 4643 / 2244 |
 | `gen3d-medical-tent` | medical tent | 4387 / 2172 |
 | `gen3d-jungle-vine` | jungle vine | 4721 / 2338 |
+| `gen3d-mangrove-tree` | mangrove tree | 4147 / 1945 |
+| `gen3d-fruit-bowl` | fruit bowl | 4196 / 2625 |
+| `gen3d-pepper-mill` | pepper mill | 4748 / 2374 |
+| `gen3d-potion-bottle` | potion bottle | 4631 / 2315 |
+| `gen3d-dandelion` | dandelion | 4579 / 2155 |

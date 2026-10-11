@@ -20983,6 +20983,101 @@
           0.29001
         ]
       }
+    },
+    {
+      "assetId": "gen3d-mangrove-tree",
+      "tags": [
+        "mangrove tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mangrove-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4528,
+          0,
+          -0.44757
+        ],
+        "max": [
+          0.4528,
+          0.99992,
+          0.44757
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fruit-bowl",
+      "tags": [
+        "fruit bowl"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fruit-bowl-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50005,
+          0,
+          -0.50107
+        ],
+        "max": [
+          0.50005,
+          0.99079,
+          0.50107
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pepper-mill",
+      "tags": [
+        "pepper mill"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pepper-mill-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19065,
+          0,
+          -0.19054
+        ],
+        "max": [
+          0.19065,
+          1.00001,
+          0.19054
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-potion-bottle",
+      "tags": [
+        "potion bottle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-potion-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36624,
+          0,
+          -0.32648
+        ],
+        "max": [
+          0.36624,
+          1.00001,
+          0.32648
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dandelion",
+      "tags": [
+        "dandelion"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dandelion-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15367,
+          0,
+          -0.15449
+        ],
+        "max": [
+          0.15367,
+          0.99978,
+          0.15449
+        ]
+      }
     }
   ]
 }

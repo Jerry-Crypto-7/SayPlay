@@ -23,6 +23,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | 8 (16:18–16:42) | 10 | 9 | 8 | 8 | 17 + 9 |
 | 9 (16:40–17:00) | 10 | 7 | 6 | 3 | 17 + 7 |
 | 10 (16:54–17:11) | 10 | 8 | 5 | 5 | 14 + 8 |
+| 11 (17:09–17:38) | 10 | 7 | 7 | 5 | 20 + 7 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -78,3 +79,8 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Povýšeno (5): top1 ice skate, planet rover („space rover“), tiki torch („torch“), medical tent („tent“), jungle vine („hanging vine“).
 - Soudce poznal něco jiného: laundry cart: trash bin · ice resurfacer: floor scrubber · tribal drum: log.
 - Předkontrola odmítla všechny tři obrázky: hockey goal – správné jméno, obrázky označené jako rozbité · ice geyser: ice spike ×3.
+
+**Dávka 11** (jungle river, junkyard garage, kitchen table, living room, magic tower, meadow):
+- Povýšeno (5): top1 mangrove tree, fruit bowl, potion bottle, dandelion; top3 pepper mill („pepper grinder“).
+- Přijaté, nepovýšené (2): **wizard tower** (top1) – manifest P32 mu podle slova „wizard“ dal třídu humanoid, pin počtu zčervenal → `--drop`; wildflower (top1 „wildflowers“) – `normalize: LOD1 cannot be made lighter than LOD0`.
+- Předkontrola odmítla všechny tři obrázky: car wreck: car / wrecked car (vizuálně správně – synonymum by ho pustilo) · scrap pile – správné jméno, obrázky označené jako rozbité · coffee table: coffee table / table, označené jako rozbité.

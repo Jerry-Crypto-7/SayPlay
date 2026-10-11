@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "e1d1cb7f2a2af5130a37f319d72fba87bd09e2381d61ed3cc7ab6c4ebe3037fc",
+ "catalogHash": "3324b764dbb913a442c93d067682cab5a1d929d867f88d1c30604291b8c13779",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1025,6 +1025,11 @@
   "gen3d-planet-rover": {"class":"prop"},
   "gen3d-tiki-torch": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-medical-tent": {"class":"prop"},
-  "gen3d-jungle-vine": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-jungle-vine": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-mangrove-tree": {"class":"prop"},
+  "gen3d-fruit-bowl": {"class":"prop"},
+  "gen3d-pepper-mill": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-potion-bottle": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-dandelion": {"class":"biped","regions":{"legY":0.25}}
  }
 }
