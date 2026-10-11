@@ -289,3 +289,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-rhino` | rhino, rhinoceros | 4727 / 2343 |
 | `gen3d-timber-house` | timber house | 3791 / 1945 |
 | `gen3d-mushroom-house` | mushroom house | 4684 / 2308 |
+| `gen3d-bar-counter` | bar counter | 4552 / 2237 |
+| `gen3d-griddle` | griddle | 4725 / 2351 |
+| `gen3d-hockey-goal` | hockey goal | 4429 / 2033 |
+| `gen3d-coffee-table` | coffee table | 4596 / 2279 |
+| `gen3d-grooming-table` | grooming table | 4743 / 2363 |

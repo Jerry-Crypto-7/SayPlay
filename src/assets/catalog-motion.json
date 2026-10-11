@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "ac313d1eaf93e7bf9f91599639fd1d64ba4fbb2d3bc46901e34cd9281b05671a",
+ "catalogHash": "eeca667185ad3a785128b8ab5416c637a9c460c8160d8526be04885ed95a9d37",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1064,6 +1064,11 @@
   "gen3d-fireplace": {"class":"prop"},
   "gen3d-rhino": {"class":"quadruped","regions":{"tailZ":-0.452,"legY":0.249}},
   "gen3d-timber-house": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-mushroom-house": {"class":"prop"}
+  "gen3d-mushroom-house": {"class":"prop"},
+  "gen3d-bar-counter": {"class":"prop"},
+  "gen3d-griddle": {"class":"prop"},
+  "gen3d-hockey-goal": {"class":"prop"},
+  "gen3d-coffee-table": {"class":"prop"},
+  "gen3d-grooming-table": {"class":"biped","regions":{"legY":0.25}}
  }
 }

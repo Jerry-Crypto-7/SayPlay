@@ -21727,6 +21727,101 @@
           0.46693
         ]
       }
+    },
+    {
+      "assetId": "gen3d-bar-counter",
+      "tags": [
+        "bar counter"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bar-counter-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.34875,
+          0,
+          -0.43474
+        ],
+        "max": [
+          1.34875,
+          0.99984,
+          0.43474
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-griddle",
+      "tags": [
+        "griddle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-griddle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.98512,
+          0,
+          -0.88066
+        ],
+        "max": [
+          0.98512,
+          0.99963,
+          0.88066
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hockey-goal",
+      "tags": [
+        "hockey goal"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hockey-goal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.59331,
+          0,
+          -0.35788
+        ],
+        "max": [
+          0.59331,
+          0.99777,
+          0.35788
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coffee-table",
+      "tags": [
+        "coffee table"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coffee-table-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.17769,
+          0,
+          -0.60859
+        ],
+        "max": [
+          1.17769,
+          0.99992,
+          0.60859
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-grooming-table",
+      "tags": [
+        "grooming table"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-grooming-table-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33516,
+          0,
+          -0.20015
+        ],
+        "max": [
+          0.33516,
+          0.9992,
+          0.20015
+        ]
+      }
     }
   ]
 }
