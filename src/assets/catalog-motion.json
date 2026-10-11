@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "eeca667185ad3a785128b8ab5416c637a9c460c8160d8526be04885ed95a9d37",
+ "catalogHash": "a99769338088dc316967713d43915519690a7611a70469103d29135f3ec537ef",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1069,6 +1069,14 @@
   "gen3d-griddle": {"class":"prop"},
   "gen3d-hockey-goal": {"class":"prop"},
   "gen3d-coffee-table": {"class":"prop"},
-  "gen3d-grooming-table": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-grooming-table": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-pill-bottle": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-horseshoe": {"class":"prop"},
+  "gen3d-rock-pillar": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-theater-seat": {"class":"prop"},
+  "gen3d-toothpaste-tube": {"class":"prop"},
+  "gen3d-pharaoh-mask": {"class":"prop"},
+  "gen3d-recycling-bin": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-firewood-basket": {"class":"prop"}
  }
 }

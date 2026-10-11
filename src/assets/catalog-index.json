@@ -21822,6 +21822,158 @@
           0.20015
         ]
       }
+    },
+    {
+      "assetId": "gen3d-pill-bottle",
+      "tags": [
+        "pill bottle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pill-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2766,
+          0,
+          -0.27662
+        ],
+        "max": [
+          0.2766,
+          1,
+          0.27662
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-horseshoe",
+      "tags": [
+        "horseshoe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-horseshoe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46588,
+          0,
+          -0.0792
+        ],
+        "max": [
+          0.46588,
+          0.99739,
+          0.0792
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rock-pillar",
+      "tags": [
+        "rock pillar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rock-pillar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16107,
+          0,
+          -0.16068
+        ],
+        "max": [
+          0.16107,
+          1,
+          0.16068
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-theater-seat",
+      "tags": [
+        "theater seat"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-theater-seat-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.87327,
+          0,
+          -0.36451
+        ],
+        "max": [
+          0.87327,
+          0.99963,
+          0.36451
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-toothpaste-tube",
+      "tags": [
+        "toothpaste tube"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-toothpaste-tube-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.15064,
+          0,
+          -2.28797
+        ],
+        "max": [
+          1.15064,
+          0.99653,
+          2.28797
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pharaoh-mask",
+      "tags": [
+        "pharaoh mask"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pharaoh-mask-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41637,
+          0,
+          -0.39007
+        ],
+        "max": [
+          0.41637,
+          0.99598,
+          0.39007
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-recycling-bin",
+      "tags": [
+        "recycling bin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-recycling-bin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3523,
+          0,
+          -0.36428
+        ],
+        "max": [
+          0.3523,
+          0.99989,
+          0.36428
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-firewood-basket",
+      "tags": [
+        "firewood basket"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-firewood-basket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.96147,
+          0,
+          -0.76181
+        ],
+        "max": [
+          0.96147,
+          1.00001,
+          0.76181
+        ]
+      }
     }
   ]
 }

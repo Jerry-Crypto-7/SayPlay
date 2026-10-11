@@ -294,3 +294,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-hockey-goal` | hockey goal | 4429 / 2033 |
 | `gen3d-coffee-table` | coffee table | 4596 / 2279 |
 | `gen3d-grooming-table` | grooming table | 4743 / 2363 |
+| `gen3d-pill-bottle` | pill bottle | 4661 / 2274 |
+| `gen3d-horseshoe` | horseshoe | 4746 / 2362 |
+| `gen3d-rock-pillar` | rock pillar | 4734 / 2366 |
+| `gen3d-theater-seat` | theater seat | 4613 / 2177 |
+| `gen3d-toothpaste-tube` | toothpaste tube | 4586 / 2270 |
+| `gen3d-pharaoh-mask` | pharaoh mask | 4572 / 2283 |
+| `gen3d-recycling-bin` | recycling bin | 4643 / 2315 |
+| `gen3d-firewood-basket` | firewood basket | 4383 / 2146 |
