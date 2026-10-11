@@ -245,3 +245,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-ice-cave` | ice cave | 4512 / 2124 |
 | `gen3d-mausoleum` | mausoleum | 4210 / 2091 |
 | `gen3d-angel-statue` | angel statue | 4581 / 2201 |
+| `gen3d-ice-skate` | ice skate | 4621 / 2288 |
+| `gen3d-planet-rover` | planet rover | 4350 / 2004 |
+| `gen3d-tiki-torch` | tiki torch | 4643 / 2244 |
+| `gen3d-medical-tent` | medical tent | 4387 / 2172 |
+| `gen3d-jungle-vine` | jungle vine | 4721 / 2338 |

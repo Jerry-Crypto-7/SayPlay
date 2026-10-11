@@ -20888,6 +20888,101 @@
           0.19228
         ]
       }
+    },
+    {
+      "assetId": "gen3d-ice-skate",
+      "tags": [
+        "ice skate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-skate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20734,
+          0,
+          -0.55453
+        ],
+        "max": [
+          0.20734,
+          0.99898,
+          0.55453
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-planet-rover",
+      "tags": [
+        "planet rover"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-planet-rover-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.82118,
+          0,
+          -0.69646
+        ],
+        "max": [
+          0.82118,
+          0.98821,
+          0.69646
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tiki-torch",
+      "tags": [
+        "tiki torch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tiki-torch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12477,
+          0,
+          -0.12546
+        ],
+        "max": [
+          0.12477,
+          0.99825,
+          0.12546
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-medical-tent",
+      "tags": [
+        "medical tent"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-medical-tent-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.7657,
+          0,
+          -0.69481
+        ],
+        "max": [
+          0.7657,
+          1.00001,
+          0.69481
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-jungle-vine",
+      "tags": [
+        "jungle vine"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jungle-vine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29076,
+          0,
+          -0.29001
+        ],
+        "max": [
+          0.29076,
+          0.99758,
+          0.29001
+        ]
+      }
     }
   ]
 }

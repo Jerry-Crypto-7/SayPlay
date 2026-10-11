@@ -22,6 +22,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | 7 (15:52–16:21) | 10 | 7 | 5 | 4 | 20 + 7 |
 | 8 (16:18–16:42) | 10 | 9 | 8 | 8 | 17 + 9 |
 | 9 (16:40–17:00) | 10 | 7 | 6 | 3 | 17 + 7 |
+| 10 (16:54–17:11) | 10 | 8 | 5 | 5 | 14 + 8 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -72,3 +73,8 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Přijaté, nepovýšené (3): **car jack** (top1 „floor jack“), **luggage cart** (top1) – manifest P32 jim podle slov „car“ a „cart“ dal třídu vehicle, pin počtu zčervenal → `--drop`; hearse (top3 „car“) – `normalize: LOD1 cannot be made lighter than LOD0`.
 - Soudce poznal něco jiného: ice wall: ice block.
 - Předkontrola odmítla všechny tři obrázky: tool chest: tool cabinet ×3, označený jako rozbitý · tire stack – správné jméno, obrázky označené jako rozbité · suit of armor: armored knight ×3 (prázdné brnění vypadá jako rytíř).
+
+**Dávka 10** (hotel basement, ice rink, icy moon, jungle festival, jungle hospital, jungle river):
+- Povýšeno (5): top1 ice skate, planet rover („space rover“), tiki torch („torch“), medical tent („tent“), jungle vine („hanging vine“).
+- Soudce poznal něco jiného: laundry cart: trash bin · ice resurfacer: floor scrubber · tribal drum: log.
+- Předkontrola odmítla všechny tři obrázky: hockey goal – správné jméno, obrázky označené jako rozbité · ice geyser: ice spike ×3.
