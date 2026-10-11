@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "5b135647403dcca32be9b04c3be07d267c3d3b02e2d025528bb71bda7571becd",
+ "catalogHash": "cd6454c19150451954ae3b73060116916826f56913e06a71fa15068f8e1d44be",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1114,6 +1114,9 @@
   "gen3d-robber": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-peacock": {"class":"flyer","regions":{"midX":0,"wingX":0.308,"legY":0.248}},
   "gen3d-centaur": {"class":"quadruped","regions":{"tailZ":-0.187,"legY":0.25}},
-  "gen3d-comet": {"class":"prop"}
+  "gen3d-comet": {"class":"prop"},
+  "gen3d-keyboard": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-moon-rover": {"class":"prop"},
+  "gen3d-drill": {"class":"biped","regions":{"legY":0.25}}
  }
 }

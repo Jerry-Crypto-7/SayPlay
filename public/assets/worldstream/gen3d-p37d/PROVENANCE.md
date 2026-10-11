@@ -339,3 +339,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-peacock` | peacock | 4558 / 2231 |
 | `gen3d-centaur` | centaur | 4541 / 2162 |
 | `gen3d-comet` | comet | 4748 / 2374 |
+| `gen3d-keyboard` | keyboard | 4725 / 2341 |
+| `gen3d-moon-rover` | moon rover, lunar rover | 4418 / 2205 |
+| `gen3d-drill` | drill | 4733 / 2348 |

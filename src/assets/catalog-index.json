@@ -22677,6 +22677,64 @@
           0.1625
         ]
       }
+    },
+    {
+      "assetId": "gen3d-keyboard",
+      "tags": [
+        "keyboard"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-keyboard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1928,
+          0,
+          -0.13013
+        ],
+        "max": [
+          0.1928,
+          1,
+          0.13013
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-moon-rover",
+      "tags": [
+        "moon rover",
+        "lunar rover"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-moon-rover-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40523,
+          0,
+          -0.48562
+        ],
+        "max": [
+          0.40523,
+          0.99447,
+          0.48562
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-drill",
+      "tags": [
+        "drill"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-drill-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12557,
+          0,
+          -0.16966
+        ],
+        "max": [
+          0.12557,
+          0.9989,
+          0.16966
+        ]
+      }
     }
   ]
 }
