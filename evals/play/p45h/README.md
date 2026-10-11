@@ -60,10 +60,12 @@ Build P45H (`1413c7de`, po opravě mansion `f6a06c36`) proti `50796f7d` (P45G, d
 
 `FALLBACK_SMOKE_URL` na build `f6a06c36`, projekt `chromium`, bez `@measure`: p30b-camera-frame, p30b-settings, p32-arena, p32-first-seconds, p32-penguin, p32-quest, p32-split, p32-terrain-gallery, play-audio, play-cast, play-env, play-postrun, play-scenery-gallery, play-setting.
 
-- **74 prošlo, 16 přeskočeno, 13 červených** – všech 13 červených padá stejně i na buildu P45G (`50796f7d`), s touto změnou nesouvisí:
+- **První běh: 74 prošlo, 16 přeskočeno, 13 červených** – všech 13 padlo na nastavení serveru, ne na změně:
   - `p32-terrain-gallery` (12×) – stránka laboratoře `/play/lab/terrain` je v produkci 404, spec chce server spuštěný s `PLAY_LAB=1`.
-  - `play-env` „custom panorama“ (1×) – čeká vlastní panorama `custom-cuckoo-clock`, server bez modelu ho nevyrobí a nechá `meadow-3`.
-- Sady přepsaly 56 sledovaných snímků a manifestů v `evals/play/p30b`, `p32`, `p39`, `p41` – vrácené `git checkout`, v commitu nejsou.
+  - `play-env` „custom panorama“ (1×) – server neměl adresu služby panoramat (`PLAY_ENV_ENDPOINT` + `PLAY_ENV_KEY` na podvrh, který spec sám spustí), takže zůstal u `meadow-3`.
+- **Opakování obou souborů** na stejném buildu se serverem `PLAY_LAB=1`, `PLAY_ENV_ENDPOINT=http://127.0.0.1:3296`, `PLAY_ENV_KEY=e2e-env-key` a `E2E_ENV_STUB_PORT=3296` (3295 držel běh jiné relace): **16/16 zelených** (`D:/caches/p45h/e2e-rerun.log`).
+- **`play-scenery-gallery`** (bez `P28_SCENERY_DIR` se přeskočí) puštěná zvlášť: 12/12, snímky v `D:/caches/p45h/scenery-gallery/`. Kit dostanou jen dvě věty, obě s prostředím „meadow“ (pampeliška): j01 ji ukazuje za zdí arény vedle rekvizit sady, x-grid je mřížka a kulisy nerámuje. Ostatní scény kit nemají a vypadají jako dřív; „walk my dog along the beach…“ stojí na sněhu, protože návrh pro ni píše `look: snow` – starší chování, ne P45H.
+- Sady přepsaly 56 sledovaných snímků a manifestů v `evals/play/p30b`, `p32`, `p39`, `p41`, opakování dalších 10 v `p32/terrain` a `p41/env` – vše vrácené `git checkout`, v commitu nejsou.
 
 ## Doporučení
 
