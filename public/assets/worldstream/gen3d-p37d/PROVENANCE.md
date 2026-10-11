@@ -224,3 +224,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-portcullis` | portcullis | 4541 / 2231 |
 | `gen3d-flagpole` | flagpole | 4748 / 2374 |
 | `gen3d-rope-bridge` | rope bridge | 4300 / 2089 |
+| `gen3d-diploma` | diploma | 4716 / 2352 |
+| `gen3d-lecture-podium` | lecture podium | 4585 / 2266 |
+| `gen3d-music-stand` | music stand | 4721 / 2359 |
+| `gen3d-crooked-tower` | crooked tower | 4483 / 2095 |
+| `gen3d-crooked-house` | crooked house | 4363 / 2070 |
+| `gen3d-dentist-chair` | dentist chair | 4653 / 2234 |

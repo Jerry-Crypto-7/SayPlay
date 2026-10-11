@@ -18,6 +18,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | 3 (14:56–15:11) | 10 | 9 | 8 | 8 | 12 + 9 |
 | 4 (15:10–15:28) | 10 | 10 | 10 | 8 | 10 + 10 |
 | 5 (15:24–15:42) | 10 | 10 | 6 | 5 | 11 + 10 |
+| 6 (15:40–15:56) | 10 | 8 | 7 | 6 | 14 + 8 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -44,3 +45,9 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Povýšeno (5): top1 mesa, castle gate, flagpole, rope bridge; top3 portcullis („iron gate“).
 - Přijatý, nepovýšený: cloud castle (top1 „castle“) – `normalize: LOD1 cannot be made lighter than LOD0`.
 - Soudce poznal něco jiného: wine rack: coal crate · cellar door: wooden barricade · city hall: temple · rocky cliff: rock pillar.
+
+**Dávka 6** (cloud castle, college, concert hall, crooked tower, dentist office, desert canyon):
+- Povýšeno (6): top1 diploma, music stand, crooked tower („tower“), crooked house („house“), dentist chair („dental chair“); top3 lecture podium („lectern“).
+- Přijatý, nepovýšený: **cow skull** (top1 „bull skull“) – manifest P32 mu podle slova „cow“ dal třídu animal, pin počtu zčervenal → `--drop`.
+- Soudce poznal něco jiného: stage curtain: puppet theater.
+- Předkontrola odmítla všechny tři obrázky: cloud platform: cloud / UFO / … · tooth model: tooth ×3 (vizuálně správně – zub; slovo „model“ předkontrola nebere).

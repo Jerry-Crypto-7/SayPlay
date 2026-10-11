@@ -2858,7 +2858,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Paid fallback of the director (gpt-6-astra): called only when the deployment sets WORLDSMITH_FALLBACK_ENDPOINT=openai:https://api.openai.com with the owner's key, under its own spend cap, and only after the primary director failed or stalled. Without that configuration the product never calls it. The game spec it returns is AI-generated output.
 
-## Vlastní, ne třetí strana (2315)
+## Vlastní, ne třetí strana (2333)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -3501,12 +3501,24 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-credit-card-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-credit-card-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-credit-card.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-crooked-house-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-crooked-house-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-crooked-house.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-crooked-tower-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-crooked-tower-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-crooked-tower.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-crossbow-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-crossbow-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-crossbow.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-crystal-ball-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-crystal-ball-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-crystal-ball.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-dentist-chair-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-dentist-chair-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-dentist-chair.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-diploma-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-diploma-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-diploma.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-dishwasher-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-dishwasher-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-dishwasher.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
@@ -3681,6 +3693,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-lawn-mower-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-lawn-mower-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-lawn-mower.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-lecture-podium-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-lecture-podium-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-lecture-podium.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-lemon-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-lemon-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-lemon.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
@@ -3723,6 +3738,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-muffin-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-muffin-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-muffin.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-music-stand-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-music-stand-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-music-stand.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-net-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-net-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-net.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
