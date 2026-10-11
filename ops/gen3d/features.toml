@@ -106,21 +106,21 @@ torpedo = "long dark grey torpedo, cigar-shaped body with a propeller and cross 
 # předmět tak, aby z něj šlo poznat prostředí, a odliší ho od podobného modelu, který katalog už má.
 
 # Zamrzlé jezero, dálnice, supermarket
-"ice fishing hole" = "round dark hole cut in a flat white ice sheet, fishing line dropping in, small stool beside it"
+"ice fishing hole" = "single round slab of white ice with a dark round fishing hole cut through its middle, chunky rim"  # P45I: P45G předkontrola ×3 „broken“ (stolička a vlasec = víc předmětů)
 "ice fishing hut" = "small red wooden shack on runners standing on white ice, tiny window and stovepipe chimney"
 "ice floe" = "flat jagged slab of white and pale blue floating ice, thick edges, cracks across the top"
 "toll booth" = "small highway toll booth kiosk with glass windows, red and white striped barrier arm lowered beside it"
 "highway sign" = "large green overhead highway sign with white arrows and white lettering on two grey metal posts"
 overpass = "concrete highway overpass bridge on thick grey pillars, flat road deck with railings, a car-sized gap underneath"
-"grocery shelf" = "supermarket shelf unit with three white metal shelves stocked with colourful boxes, cans and bottles in rows"
+"grocery shelf" = "one white metal supermarket shelving unit seen whole from the front, three shelves packed solid with colourful goods"  # P45I: P45G store shelf ×3 „broken“
 "checkout counter" = "supermarket checkout counter with a black conveyor belt, a cash register and a card reader at the end"
 "shopping basket" = "red plastic supermarket shopping basket with two black handles, holding bread, apples and a milk bottle"
 
 # Pod vodou a hlubiny
 "sea anemone" = "soft pink sea anemone, short thick stalk with a crown of many wavy tentacles, on a small rock"
 "sea urchin" = "round dark purple-black sea urchin ball covered in long sharp spines pointing outward, sitting on sand"
-"diving bell" = "old brass diving bell, heavy round metal dome with small round glass portholes, hanging from a chain"
-"giant clam" = "huge open clam shell with wavy ridged edges, blue and turquoise inner lips, white pearl in the middle"
+"diving bell" = "big brass diving bell standing on the seabed, round riveted dome with three glass portholes, no chain"  # P45G: hanging lantern
+"giant clam" = "giant clam standing half open, two thick wavy scalloped grey shells hinged at the back, blue lips inside"  # P45G: bowl
 
 # Strašidelný dům, obchodní centrum, hospoda
 candelabra = "tall silver candelabra with five curved arms each holding a lit white candle, round heavy base"
@@ -131,7 +131,7 @@ mannequin = "white faceless shop mannequin standing on a round stand, wearing a 
 "clothing rack" = "rolling metal clothing rail with colourful shirts and jackets hanging on hangers, four small wheels"
 tankard = "big wooden beer tankard with metal bands and a handle, foam spilling over the top"
 "tavern sign" = "wooden tavern sign hanging from an iron bracket, painted with a golden beer mug, carved edges"
-"bar counter" = "long wooden tavern bar counter with brass foot rail, beer taps on top and bottles behind"
+"bar counter" = "single long wooden tavern bar counter with a polished top and a brass foot rail, nothing on it"  # P45I: P45G předkontrola ×3 „broken“ (kohoutky a lahve)
 
 # Útulek, pekárna, spálený les
 "pet carrier" = "small plastic pet carrier box with a grey metal grid door at the front and a handle on top"
@@ -149,9 +149,9 @@ baguette = "long thin golden brown French baguette loaf with diagonal slashes on
 mesa = "flat-topped red rock mesa with steep layered cliff sides in orange and brown bands, small desert butte"
 "castle gate" = "stone castle gatehouse with two round towers, battlements and a big arched wooden door between them"
 portcullis = "heavy iron portcullis grid of thick crossed black bars with pointed spikes at the bottom, in a stone arch"
-"wine rack" = "wooden wine rack with a diamond lattice of cubbies holding dark green wine bottles lying down"
-"cellar door" = "slanted pair of wooden cellar doors set in the ground, iron handles and hinges, half open"
-"city hall" = "white town hall building with stone columns, wide front steps, a clock in the pediment and a flag"
+"wine rack" = "tall upright wooden wine rack, a grid of round holes with a green bottle neck poking out of each"  # P45G: coal crate
+"cellar door" = "two slanted wooden cellar hatch doors set into a low stone frame on the ground, iron ring handles"  # P45G: wooden barricade
+"city hall" = "town hall building with a central clock tower, red brick walls, white columns, front stairs and a flag on top"  # P45G: temple
 flagpole = "tall white flagpole with a gold ball on top and a waving red and blue flag, square base"
 "rocky cliff" = "tall grey rocky cliff face with a sheer drop, grass on the flat top edge, rubble at the bottom"
 "rope bridge" = "wobbly rope bridge of wooden planks tied between two thick rope rails, sagging between two wooden posts"
@@ -171,10 +171,10 @@ diploma = "rolled white diploma scroll tied with a red ribbon bow and a gold sea
 # Poušť, jídelna, příjezdová cesta, trh, krb
 "cow skull" = "bleached white cow skull with two long curved horns and empty eye holes, lying on sand"
 tumbleweed = "round dry tumbleweed ball of tangled light brown twigs, loose and airy, rolling on the ground"
-sphinx = "sandy yellow stone sphinx statue lying down, lion body with front paws forward and a pharaoh's head with striped headdress"
+sphinx = "great sphinx of Egypt, huge sandstone statue, lying lion body, human pharaoh face with a blue and gold striped headdress"  # P45G: dog
 obelisk = "tall thin four-sided stone obelisk tapering to a pointed pyramid tip, carved hieroglyphs down the sides"
-"diner booth" = "retro diner booth, two red vinyl bench seats facing a small white table with a chrome edge"
-griddle = "flat black steel diner griddle with sizzling burger patties and a spatula, chrome edges and knobs"
+"diner booth" = "one retro diner booth unit, two red vinyl benches joined to a small white table, chrome trim, seen whole"  # P45I: P45G předkontrola ×3 „broken“
+griddle = "single flat black steel diner griddle cooktop on a chrome stand, four knobs on the front, empty"  # P45I: P45G předkontrola ×3 „broken“ (karbanátky a obracečka)
 "garage door" = "white sectional garage door with horizontal panels and a small row of windows, set in a brick frame"
 "garden hose" = "green garden hose coiled on a wall reel with a yellow spray nozzle hanging from the end"
 "fruit crate" = "wooden slatted market crate overflowing with red apples, oranges and bananas, a price card on front"
@@ -183,10 +183,10 @@ fireplace = "brick fireplace with a crackling log fire inside, a wooden mantel s
 "rocking chair" = "wooden rocking chair with curved runners under the legs, tall spindle back and a red cushion"
 
 # Jezero v mlze, chata, lesní stezka, kovárna
-"wooden dock" = "small wooden lake dock, plank walkway on posts standing in water, a rope tied to the end post"
+"wooden dock" = "short wooden lake pier jutting out, plank deck on round posts, a ladder down one side and a mooring post"  # P45G: wooden bridge, broken
 cattail = "clump of tall green cattail reeds with brown sausage-shaped seed heads on long stems"
 "wooden hut" = "small log hut with a sloped wooden shingle roof, a plank door and one square window"
-"chopping block" = "thick tree stump chopping block with an axe stuck in the top and split firewood beside it"
+"chopping block" = "single thick round tree stump chopping block with an axe stuck upright in its top"  # P45I: P45G předkontrola ×3 „broken“ (polena vedle)
 "fallen log" = "long mossy fallen tree log lying on the ground, green moss on top, hollow open end, small mushrooms"
 "hiking backpack" = "tall hiking backpack with a rolled sleeping mat strapped on top, many pockets and buckles, orange and grey"
 grindstone = "round grey sharpening grindstone wheel on a wooden frame with a hand crank and a water trough below"
@@ -195,35 +195,35 @@ grindstone = "round grey sharpening grindstone wheel on a wooden frame with a ha
 # Pohřeb, garáž, ledovec, hřbitov, strašidelný hrad
 "funeral wreath" = "round funeral wreath of white lilies and dark green leaves on a stand, black ribbon sash across it"
 hearse = "long black hearse car with a raised rear compartment, side windows with curtains and chrome trim"
-"tool chest" = "red metal rolling tool chest with many shallow drawers, chrome handles and a wrench on top"
+"tool chest" = "single red metal rolling tool chest, many shallow drawers with chrome handles, closed lid, seen whole"  # P45I: P45G tool cabinet ×3 „broken“
 "car jack" = "red hydraulic floor car jack, low flat body on four small wheels with a long handle and lifting pad"
-"tire stack" = "stack of four black car tires piled on top of each other, chunky treads"
+"tire stack" = "one neat upright column of four black car tires stacked flat, chunky treads, seen whole"  # P45I: P45G předkontrola ×3 „broken“
 "ice wall" = "tall wall of solid pale blue glacier ice with jagged top edge, smooth frozen face and icicles"
 "ice cave" = "entrance to a glowing blue ice cave, arched opening in a white glacier with icicles hanging over the mouth"
 mausoleum = "small grey stone mausoleum crypt building with columns, a triangular roof and an iron door"
 "angel statue" = "white marble angel statue with folded feathered wings, praying hands, standing on a mossy plinth"
-"suit of armor" = "empty medieval suit of armor standing upright, shiny steel plates, closed visor helmet, holding a halberd"
+"suit of armor" = "empty suit of armor on a wooden display stand, steel plates, open visor showing the helmet is hollow"  # P45G: armored knight
 
 # Hotel, kluziště, ledový měsíc, džungle
 "luggage cart" = "brass hotel luggage cart with a tall arched rail on top, red carpet base, stacked suitcases"
-"laundry cart" = "grey canvas laundry cart on wheels with a metal frame, heaped with white folded towels and sheets"
+"laundry cart" = "hotel laundry cart, wide grey canvas bag hanging in a metal frame on four caster wheels, white towels"  # P45G: trash bin
 "ice skate" = "single white figure ice skate boot with laces and a long silver blade underneath"
-"hockey goal" = "ice hockey goal with a red metal frame and white net, a black puck in front"
-"ice resurfacer" = "boxy ice resurfacing machine like a Zamboni, white and blue body, driver seat on top, on an ice rink"
+"hockey goal" = "single ice hockey goal, red metal tube frame with a white mesh net, seen whole"  # P45I: P45G předkontrola ×3 „broken“ (puk před brankou)
+"ice resurfacer" = "Zamboni ice resurfacer vehicle, big white and blue boxy body, driver seat high on top, four wheels"  # P45G: floor scrubber
 "ice geyser" = "white icy geyser erupting a tall plume of frozen spray from a cracked blue ice crater"
 "planet rover" = "six-wheeled space rover with a white body, camera mast, solar panel wings, on red dusty ground"
 "tiki torch" = "tall bamboo tiki torch with a woven basket top burning a bright orange flame"
-"tribal drum" = "tall wooden tribal drum with an animal skin top tied by criss-cross ropes, carved patterns"
+"tribal drum" = "tall African djembe drum, goblet-shaped carved wooden body, tan skin top laced with criss-cross ropes"  # P45G: log
 "medical tent" = "white canvas field hospital tent with a big red cross on the roof flap and an open entrance"
 "jungle vine" = "thick green jungle vine hanging down in loops from a branch, leafy and twisted, curling at the end"
 "mangrove tree" = "mangrove tree standing in water on a tangle of arched stilt roots, dense green leafy crown"
 
 # Vrakoviště, kuchyně, obývák, kouzelná věž, louka
 "car wreck" = "rusty crushed car wreck with no wheels, smashed windows, dented brown and orange body"
-"scrap pile" = "heap of rusty scrap metal, old pipes, bent car doors, springs and a tire, brown and grey"
+"scrap pile" = "one compact heap of rusty brown and grey scrap metal pieces fused into a single mound"  # P45I: P45G předkontrola ×3 „broken“
 "fruit bowl" = "round ceramic fruit bowl filled with apples, a bunch of bananas, grapes and an orange"
 "pepper mill" = "tall wooden pepper mill grinder shaped like a chess pawn, polished brown wood, metal knob on top"
-"coffee table" = "low rectangular wooden coffee table with short legs, a stack of books and a mug on top"
+"coffee table" = "single low rectangular wooden coffee table with four short legs and a lower shelf, empty top"  # P45I: P45G předkontrola ×3 „broken“ (knihy a hrnek)
 "wizard tower" = "tall narrow stone wizard tower with a pointed dark blue cone roof dotted with gold stars, round windows"
 "potion bottle" = "round glass potion flask with a cork stopper, glowing bubbling green liquid inside, a paper tag"
 wildflower = "clump of wildflowers with red poppies, blue cornflowers and white daisies on thin green stems"
@@ -237,25 +237,25 @@ pillory = "wooden medieval pillory stocks on a post, a board with one big hole f
 "alpine chalet" = "Swiss alpine chalet, wooden house with a wide gentle roof, flower boxes and carved balcony"
 "stone bridge" = "old arched grey stone bridge with one round arch and low stone walls, mossy stones"
 "dinosaur skeleton" = "museum dinosaur skeleton, white bones of a long-necked dinosaur standing on a low display platform"
-"display case" = "museum glass display case on a wooden base holding a golden ancient vase, glass box on top"
+"display case" = "museum display case, a clear glass box on a tall wooden pedestal with a golden vase inside"  # P45G: trash can
 "velvet rope" = "two shiny brass posts with a red velvet rope hanging between them in a curve"
 
 # Hřibová vesnice, vnitrozemí, salon, lékárna, hřiště
 "mushroom house" = "cottage built inside a giant red mushroom with white spots, round door and windows in the stem"
 dingo = "sandy ginger wild dingo dog with pointed upright ears, white paws and a bushy tail"
 emu = "tall shaggy brown emu bird standing on two long legs, long neck, small head, no wings visible"
-"grooming table" = "pet grooming table with a grey rubber top, a metal arm loop above and a small dryer beside"
-"pet bed" = "round fluffy plush pet bed with a raised soft rim and a paw print cushion inside"
-"pill bottle" = "orange plastic prescription pill bottle with a white child-proof cap, white label, a few pills spilling"
+"grooming table" = "single pet grooming table, grey rubber top on folding metal legs, a tall metal arm with a loop"  # P45I: P45G předkontrola ×3 „broken“ (fén vedle)
+"pet bed" = "soft round pet bed cushion, plush fabric with a raised blue rim and a bone-pattern pillow inside"  # P45G: fire pit
+"pill bottle" = "single orange plastic prescription pill bottle with a white child-proof cap and a white label, closed"  # P45I: P45G předkontrola ×3 „broken“ (vysypané pilulky)
 "medicine cabinet" = "white wall medicine cabinet with a mirror door half open showing shelves of bottles and a green cross"
 "playground slide" = "children's playground slide, red plastic chute curving down from a small tower with a ladder"
-sandbox = "square wooden kids sandbox full of yellow sand with a red bucket and a blue spade in it"
+sandbox = "single square wooden kids sandbox frame filled with smooth yellow sand, corner seats, nothing else"  # P45I: P45G předkontrola ×3 „broken“ (kbelík a lopatka)
 
 # Pošta, ranč, řeka, střecha
 "post box" = "red round British pillar post box with a black cap, a letter slot and a crown on the front"
 parcel = "brown cardboard parcel box wrapped in twine with postage stamps and a white address label"
 "wagon wheel" = "big wooden wagon wheel with a metal rim and many thin wooden spokes, leaning upright"
-horseshoe = "single iron horseshoe, U-shaped with nail holes around it, grey metal, standing on its ends"
+horseshoe = "single big iron horseshoe, U-shaped with nail holes, grey metal, standing upright on its two ends"  # P45I: P45G brake pads / „broken“
 "beaver dam" = "beaver dam, a pile of gnawed sticks and logs plugged with mud across a small stream"
 "planter box" = "rectangular wooden planter box full of green vegetables and herbs, on short legs"
 "garden trellis" = "white wooden garden trellis arch covered with climbing green vines and pink roses"
