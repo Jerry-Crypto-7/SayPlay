@@ -9,10 +9,10 @@ const binOf = (noun: string): string | undefined =>
 
 describe('missing-nouns (P37D T1)', () => {
   it('lists a noun the sentences use and the catalog cannot draw', () => {
-    // Lupiče P43 T12 vygeneroval, ale soudce model odmítl jako rozbitý; dvě věty ho chtějí.
-    // (Dřív tu byl provaz – ten P43 T12 do knihovny dostal.)
-    expect(binOf('robber')).toBe('missing');
-    expect(result.missing.find((row) => row.noun === 'robber')?.sentences).toBeGreaterThanOrEqual(2);
+    // Déšť chtějí dvě věty a kreslí ho scéna, model z něj nikdo dělat nebude.
+    // (Dřív tu byl provaz a pak lupič – oba se do knihovny dostaly, lupič v P45I.)
+    expect(binOf('rain')).toBe('missing');
+    expect(result.missing.find((row) => row.noun === 'rain')?.sentences).toBeGreaterThanOrEqual(2);
   });
 
   it('treats a catalog tag as covered, plural included', () => {
