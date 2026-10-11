@@ -275,3 +275,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wizard-tower` | wizard tower | 4702 / 2340 |
 | `gen3d-dinosaur-skeleton` | dinosaur skeleton | 4668 / 2274 |
 | `gen3d-rooftop-water-tank` | rooftop water tank | 4528 / 2151 |
+| `gen3d-anthill` | anthill, ant mound | 4728 / 2328 |
+| `gen3d-chicken-leg` | chicken leg, drumstick | 4748 / 2370 |

@@ -21458,6 +21458,46 @@
           0.24598
         ]
       }
+    },
+    {
+      "assetId": "gen3d-anthill",
+      "tags": [
+        "anthill",
+        "ant mound"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-anthill-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.06204,
+          0,
+          -1.06159
+        ],
+        "max": [
+          1.06204,
+          0.9959,
+          1.06159
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-chicken-leg",
+      "tags": [
+        "chicken leg",
+        "drumstick"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-chicken-leg-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.34395,
+          0,
+          -0.4641
+        ],
+        "max": [
+          1.34395,
+          0.99129,
+          0.4641
+        ]
+      }
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "3cbe4501e0edcdb618b3081116af78ea1e05abd6c83bb84e94ed012e1488194e",
+ "catalogHash": "1097ae2e0c68c14d6cb86cab2b762209f74ac9976d5bd735495304aa947491a6",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1050,6 +1050,8 @@
   "gen3d-luggage-cart": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-wizard-tower": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-dinosaur-skeleton": {"class":"prop"},
-  "gen3d-rooftop-water-tank": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-rooftop-water-tank": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-anthill": {"class":"prop"},
+  "gen3d-chicken-leg": {"class":"prop"}
  }
 }
