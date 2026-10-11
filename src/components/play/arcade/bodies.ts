@@ -18,6 +18,9 @@ import type { ArcadeSession } from './session';
  */
 export const PACING_KINDS: ReadonlySet<string> = new Set(Object.values(BEHAVIOURS).map((behaviour) => behaviour.body.kind));
 
+/** Výstřely chování P45C (ostřelovač, salva bosse, terč střelnice) – katalog je nemá, scéna je kreslí jako střelu. */
+export const PACING_SHOT_KINDS: ReadonlySet<string> = new Set(Object.values(BEHAVIOURS).flatMap((behaviour) => (behaviour.shot === undefined ? [] : [behaviour.shot.kind])));
+
 export interface BodyView {
   readonly index: number;
   readonly kind: string;

@@ -20,7 +20,8 @@ import { compileRecipe } from '@/play/compose/compile';
 
 import { modelIdOf } from '../World';
 import { modelOf, partOf } from '../arena/ArenaScene';
-import { type BodyView, PACING_KINDS, bodiesOf } from '../bodies';
+import { type BodyView, PACING_KINDS, PACING_SHOT_KINDS, bodiesOf } from '../bodies';
+import { SHOT_PRIMITIVES } from '../shooter/primitives';
 
 /** Model, který scéna opravdu načte: riggovaná postava, nebo GLB v `public/`. */
 const exists = (id: string): boolean => riggedCharacter(id) !== undefined || existsSync(join(process.cwd(), 'public', modelPath(id)));
@@ -30,6 +31,8 @@ interface Paced {
   readonly cast: { readonly player: string; readonly enemy: string; readonly chaser: string; readonly props: Record<string, never> };
   /** Předlohy chování a bosse (pravidlo `pacing`) a jejich pohled scény. */
   readonly foes: readonly BodyView[];
+  /** Předlohy výstřelů (`ref.shot`) – běžec s ostřelovačem stahoval `sniper_shot-lod1.glb` (404, T19). */
+  readonly shots: readonly BodyView[];
 }
 
 function pacedCells(): Paced[] {
@@ -42,7 +45,12 @@ function pacedCells(): Paced[] {
     if (refs.length === 0) continue;
     const state = instantiate(made.world);
     const views = bodiesOf({ world: made.world, state: () => state });
-    out.push({ id: cell.id, cast: { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: {} }, foes: refs.map((ref) => views[ref.template]!) });
+    out.push({
+      id: cell.id,
+      cast: { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: {} },
+      foes: refs.map((ref) => views[ref.template]!),
+      shots: refs.flatMap((ref) => (ref.shot === undefined ? [] : [views[ref.shot]!])),
+    });
   }
   return out;
 }
@@ -72,6 +80,18 @@ describe('pacing bodies draw the sentence enemy, not fallback boxes', () => {
       expect(modelIdOf(view, cell.cast), view.kind).toBe(cell.cast.chaser);
       expect(partOf(view), view.kind).toBe('foe');
       expect(modelOf(partOf(view), cell.cast), view.kind).toBe(cell.cast.chaser);
+    }
+  });
+
+  it('every behaviour shot has no catalog model and draws as a bullet primitive, in every live cell that fires one', () => {
+    expect(PACING_SHOT_KINDS).toEqual(new Set(['sniper_shot', 'boss_shot', 'turret_shot']));
+    expect([...PACING_SHOT_KINDS].filter(exists)).toEqual([]);
+    const shots = cells.flatMap((cell) => cell.shots.map((view) => [cell, view] as const));
+    expect(shots.length).toBeGreaterThan(0);
+    for (const [cell, view] of shots) {
+      expect(PACING_SHOT_KINDS.has(view.kind), `${cell.id} ${view.kind}`).toBe(true);
+      expect(modelIdOf(view, cell.cast), `${cell.id} ${view.kind}`).toBe('bullet');
+      expect(SHOT_PRIMITIVES.has(modelIdOf(view, cell.cast))).toBe(true);
     }
   });
 

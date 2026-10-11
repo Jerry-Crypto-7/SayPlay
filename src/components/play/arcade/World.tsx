@@ -35,7 +35,7 @@ import { RUNNER } from '@/play/arcade/pieces/runner';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 import type { HeroAction } from '@/play/spec';
 
-import { type BodyView, PACING_KINDS, bodiesOf, bodiesStale, drawsNothing } from './bodies';
+import { type BodyView, PACING_KINDS, PACING_SHOT_KINDS, bodiesOf, bodiesStale, drawsNothing } from './bodies';
 import { deadFor, fallOf, headingOf, squashPose, tiltPose, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
@@ -97,6 +97,7 @@ export function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.kind.startsWith('thing:') && cast.things?.[view.kind.slice(6)] !== undefined) return cast.things[view.kind.slice(6)]!;
   if (view.role === ROLE.player) return cast.player;
   if (PACING_KINDS.has(view.kind)) return cast.chaser;
+  if (PACING_SHOT_KINDS.has(view.kind)) return 'bullet';
   // P35 T3: cíl skákačky z věty („moon“, „battery“); bez modelu v katalogu vlajka.
   if (view.kind === 'finish') return cast.props.finish ?? 'finish-flag';
   if (view.kind === 'goal' && cast.props.finish !== undefined) return cast.props.finish;
