@@ -1,0 +1,680 @@
+{
+  "about": "P45H T2 – setting → scenery props, written by scripts/p45h/build-setting-kits.mjs from evals/play/p45g/kit-nouns.json and src/assets/catalog.json (promoted models only). Do not edit by hand; rerun the script.",
+  "kits": [
+    {
+      "setting": "frozen lake",
+      "pattern": "\\bfrozen[\\s-]+lake(?:e?s)?\\b",
+      "look": "snow",
+      "props": [
+        {
+          "id": "gen3d-ice-fishing-hut",
+          "height": 2.3
+        },
+        {
+          "id": "gen3d-ice-floe",
+          "height": 0.5
+        }
+      ]
+    },
+    {
+      "setting": "highway",
+      "pattern": "\\bhighway(?:e?s)?\\b|\\b(?:freeway|motorway|interstate)s?\\b",
+      "look": "city",
+      "props": [
+        {
+          "id": "gen3d-toll-booth",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-highway-sign",
+          "height": 4.5
+        }
+      ]
+    },
+    {
+      "setting": "supermarket",
+      "pattern": "\\bsupermarket(?:e?s)?\\b",
+      "look": "supermarket",
+      "props": [
+        {
+          "id": "gen3d-checkout-counter",
+          "height": 1.1
+        },
+        {
+          "id": "gen3d-shopping-basket",
+          "height": 0.8
+        }
+      ]
+    },
+    {
+      "setting": "grocery store",
+      "pattern": "\\bgrocery[\\s-]+store(?:e?s)?\\b",
+      "look": "supermarket",
+      "props": [
+        {
+          "id": "gen3d-checkout-counter",
+          "height": 1.1
+        }
+      ]
+    },
+    {
+      "setting": "underwater",
+      "pattern": "\\bunderwater(?:e?s)?\\b|\\bunder[\\s-]+(?:the[\\s-]+)?(?:water|sea)\\b",
+      "look": "underwater",
+      "props": [
+        {
+          "id": "gen3d-sea-anemone",
+          "height": 0.9
+        }
+      ]
+    },
+    {
+      "setting": "haunted mansion",
+      "pattern": "\\bhaunted[\\s-]+mansion(?:e?s)?\\b|\\bhaunted[\\s-]+houses?\\b",
+      "look": "graveyard",
+      "props": [
+        {
+          "id": "gen3d-candelabra",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-grandfather-clock",
+          "height": 2.1
+        },
+        {
+          "id": "gen3d-chandelier",
+          "height": 1.2
+        }
+      ]
+    },
+    {
+      "setting": "haunted castle",
+      "pattern": "\\bhaunted[\\s-]+castle(?:e?s)?\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-candelabra",
+          "height": 1.4
+        }
+      ]
+    },
+    {
+      "setting": "mall",
+      "pattern": "\\bmall(?:e?s)?\\b|\\bshopping[\\s-]+cent(?:er|re)s?\\b",
+      "look": "mall",
+      "props": [
+        {
+          "id": "gen3d-escalator",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-mannequin",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-clothing-rack",
+          "height": 1.6
+        }
+      ]
+    },
+    {
+      "setting": "tavern",
+      "pattern": "\\btavern(?:e?s)?\\b|\\b(?:inn|pub)s?\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-tankard",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-tavern-sign",
+          "height": 2.4
+        }
+      ]
+    },
+    {
+      "setting": "animal shelter",
+      "pattern": "\\banimal[\\s-]+shelter(?:e?s)?\\b",
+      "look": "living_room",
+      "props": [
+        {
+          "id": "gen3d-pet-carrier",
+          "height": 0.8
+        }
+      ]
+    },
+    {
+      "setting": "bakery",
+      "pattern": "\\bbakery(?:e?s)?\\b",
+      "look": "supermarket",
+      "props": [
+        {
+          "id": "gen3d-bread-oven",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-cake-stand",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-baguette",
+          "height": 0.4
+        }
+      ]
+    },
+    {
+      "setting": "burned forest",
+      "pattern": "\\bburned[\\s-]+forest(?:e?s)?\\b",
+      "look": "forest",
+      "props": [
+        {
+          "id": "gen3d-burnt-tree",
+          "height": 4.5
+        },
+        {
+          "id": "gen3d-charred-log",
+          "height": 0.7
+        }
+      ]
+    },
+    {
+      "setting": "burning tree",
+      "pattern": "\\bburning[\\s-]+tree(?:e?s)?\\b",
+      "look": "forest",
+      "props": [
+        {
+          "id": "gen3d-burnt-tree",
+          "height": 4.5
+        },
+        {
+          "id": "gen3d-burning-tree",
+          "height": 4.5
+        }
+      ]
+    },
+    {
+      "setting": "canyon",
+      "pattern": "\\bcanyon(?:e?s)?\\b",
+      "look": "desert",
+      "props": [
+        {
+          "id": "gen3d-rock-arch",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-mesa",
+          "height": 1.4
+        }
+      ]
+    },
+    {
+      "setting": "desert canyon",
+      "pattern": "\\bdesert[\\s-]+canyon(?:e?s)?\\b",
+      "look": "desert",
+      "props": [
+        {
+          "id": "gen3d-rock-arch",
+          "height": 2.2
+        }
+      ]
+    },
+    {
+      "setting": "castle gate",
+      "pattern": "\\bcastle[\\s-]+gate(?:e?s)?\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-castle-gate",
+          "height": 3.4
+        },
+        {
+          "id": "gen3d-portcullis",
+          "height": 3
+        }
+      ]
+    },
+    {
+      "setting": "city hall",
+      "pattern": "\\bcity[\\s-]+hall(?:e?s)?\\b",
+      "look": "city",
+      "props": [
+        {
+          "id": "gen3d-flagpole",
+          "height": 6
+        }
+      ]
+    },
+    {
+      "setting": "cliff",
+      "pattern": "\\bcliff(?:e?s)?\\b",
+      "look": "desert",
+      "props": [
+        {
+          "id": "gen3d-rope-bridge",
+          "height": 2
+        }
+      ]
+    },
+    {
+      "setting": "rocky river",
+      "pattern": "\\brocky[\\s-]+river(?:e?s)?\\b",
+      "look": "ocean",
+      "props": [
+        {
+          "id": "gen3d-rope-bridge",
+          "height": 2
+        }
+      ]
+    },
+    {
+      "setting": "college",
+      "pattern": "\\bcollege(?:e?s)?\\b|\\buniversit(?:y|ies)\\b|\\bcampus\\b",
+      "look": "living_room",
+      "props": [
+        {
+          "id": "gen3d-diploma",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-lecture-podium",
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "setting": "concert hall",
+      "pattern": "\\bconcert[\\s-]+hall(?:e?s)?\\b",
+      "look": "mall",
+      "props": [
+        {
+          "id": "gen3d-music-stand",
+          "height": 1.4
+        }
+      ]
+    },
+    {
+      "setting": "crooked tower",
+      "pattern": "\\bcrooked[\\s-]+tower(?:e?s)?\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-crooked-tower",
+          "height": 6
+        },
+        {
+          "id": "gen3d-crooked-house",
+          "height": 4.5
+        }
+      ]
+    },
+    {
+      "setting": "dentist office",
+      "pattern": "\\bdentist[\\s-]+office(?:e?s)?\\b|\\bdentist(?:'s|s)?\\b",
+      "look": "living_room",
+      "props": [
+        {
+          "id": "gen3d-dentist-chair",
+          "height": 1.4
+        }
+      ]
+    },
+    {
+      "setting": "desert temple",
+      "pattern": "\\bdesert[\\s-]+temple(?:e?s)?\\b",
+      "look": "desert",
+      "props": [
+        {
+          "id": "gen3d-obelisk",
+          "height": 5
+        }
+      ]
+    },
+    {
+      "setting": "driveway",
+      "pattern": "\\bdriveway(?:e?s)?\\b",
+      "look": "city",
+      "props": [
+        {
+          "id": "gen3d-garden-hose",
+          "height": 0.8
+        }
+      ]
+    },
+    {
+      "setting": "farm market",
+      "pattern": "\\bfarm[\\s-]+market(?:e?s)?\\b|\\bfarmers'?[\\s-]+markets?\\b",
+      "look": "supermarket",
+      "props": [
+        {
+          "id": "gen3d-fruit-crate",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-vegetable-basket",
+          "height": 0.7
+        }
+      ]
+    },
+    {
+      "setting": "fireplace",
+      "pattern": "\\bfireplace(?:e?s)?\\b",
+      "look": "living_room",
+      "props": [
+        {
+          "id": "gen3d-rocking-chair",
+          "height": 1.2
+        }
+      ]
+    },
+    {
+      "setting": "foggy lake",
+      "pattern": "\\bfoggy[\\s-]+lake(?:e?s)?\\b",
+      "look": "ocean",
+      "props": [
+        {
+          "id": "gen3d-cattail",
+          "height": 1.6
+        }
+      ]
+    },
+    {
+      "setting": "forest hut",
+      "pattern": "\\bforest[\\s-]+hut(?:e?s)?\\b",
+      "look": "forest",
+      "props": [
+        {
+          "id": "gen3d-wooden-hut",
+          "height": 3
+        }
+      ]
+    },
+    {
+      "setting": "forest path",
+      "pattern": "\\bforest[\\s-]+path(?:e?s)?\\b",
+      "look": "forest",
+      "props": [
+        {
+          "id": "gen3d-fallen-log",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-hiking-backpack",
+          "height": 0.9
+        }
+      ]
+    },
+    {
+      "setting": "forge",
+      "pattern": "\\bforge(?:e?s)?\\b|\\bblacksmith(?:'s|s)?\\b|\\bsmithy\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-grindstone",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-forge-furnace",
+          "height": 2.2
+        }
+      ]
+    },
+    {
+      "setting": "funeral",
+      "pattern": "\\bfuneral(?:e?s)?\\b",
+      "look": "graveyard",
+      "props": [
+        {
+          "id": "gen3d-funeral-wreath",
+          "height": 1.4
+        }
+      ]
+    },
+    {
+      "setting": "glacier",
+      "pattern": "\\bglacier(?:e?s)?\\b",
+      "look": "snow",
+      "props": [
+        {
+          "id": "gen3d-ice-cave",
+          "height": 2.6
+        }
+      ]
+    },
+    {
+      "setting": "graveyard",
+      "pattern": "\\bgraveyard(?:e?s)?\\b|\\bcemeter(?:y|ies)\\b",
+      "look": "graveyard",
+      "props": [
+        {
+          "id": "gen3d-mausoleum",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-angel-statue",
+          "height": 2.2
+        }
+      ]
+    },
+    {
+      "setting": "ice rink",
+      "pattern": "\\bice[\\s-]+rink(?:e?s)?\\b|\\bskating[\\s-]+rinks?\\b|\\bice[\\s-]+skating\\b",
+      "look": "snow",
+      "props": [
+        {
+          "id": "gen3d-ice-skate",
+          "height": 0.7
+        }
+      ]
+    },
+    {
+      "setting": "icy moon",
+      "pattern": "\\bicy[\\s-]+moon(?:e?s)?\\b",
+      "look": "space",
+      "props": [
+        {
+          "id": "gen3d-planet-rover",
+          "height": 1.6
+        }
+      ]
+    },
+    {
+      "setting": "jungle festival",
+      "pattern": "\\bjungle[\\s-]+festival(?:e?s)?\\b",
+      "look": "jungle",
+      "props": [
+        {
+          "id": "gen3d-tiki-torch",
+          "height": 1.9
+        }
+      ]
+    },
+    {
+      "setting": "jungle hospital",
+      "pattern": "\\bjungle[\\s-]+hospital(?:e?s)?\\b",
+      "look": "jungle",
+      "props": [
+        {
+          "id": "gen3d-medical-tent",
+          "height": 2.4
+        }
+      ]
+    },
+    {
+      "setting": "jungle river",
+      "pattern": "\\bjungle[\\s-]+river(?:e?s)?\\b",
+      "look": "jungle",
+      "props": [
+        {
+          "id": "gen3d-jungle-vine",
+          "height": 3
+        },
+        {
+          "id": "gen3d-mangrove-tree",
+          "height": 4
+        }
+      ]
+    },
+    {
+      "setting": "kitchen table",
+      "pattern": "\\bkitchen[\\s-]+table(?:e?s)?\\b",
+      "look": "supermarket",
+      "props": [
+        {
+          "id": "gen3d-fruit-bowl",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-pepper-mill",
+          "height": 0.9
+        }
+      ]
+    },
+    {
+      "setting": "magic tower",
+      "pattern": "\\bmagic[\\s-]+tower(?:e?s)?\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-potion-bottle",
+          "height": 0.9
+        }
+      ]
+    },
+    {
+      "setting": "meadow",
+      "pattern": "\\bmeadow(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-dandelion",
+          "height": 1
+        }
+      ]
+    },
+    {
+      "setting": "medieval town",
+      "pattern": "\\bmedieval[\\s-]+town(?:e?s)?\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-pillory",
+          "height": 2
+        }
+      ]
+    },
+    {
+      "setting": "mining colony",
+      "pattern": "\\bmining[\\s-]+colony(?:e?s)?\\b",
+      "look": "factory",
+      "props": [
+        {
+          "id": "gen3d-mining-helmet",
+          "height": 0.6
+        }
+      ]
+    },
+    {
+      "setting": "mountain village",
+      "pattern": "\\bmountain[\\s-]+village(?:e?s)?\\b",
+      "look": "snow",
+      "props": [
+        {
+          "id": "gen3d-stone-bridge",
+          "height": 1.4
+        }
+      ]
+    },
+    {
+      "setting": "museum hall",
+      "pattern": "\\bmuseum[\\s-]+hall(?:e?s)?\\b|\\bmuseums?\\b",
+      "look": "mall",
+      "props": [
+        {
+          "id": "gen3d-velvet-rope",
+          "height": 1
+        }
+      ]
+    },
+    {
+      "setting": "outback",
+      "pattern": "\\boutback(?:e?s)?\\b",
+      "look": "desert",
+      "props": [
+        {
+          "id": "gen3d-emu",
+          "height": 1.7
+        }
+      ]
+    },
+    {
+      "setting": "pharmacy",
+      "pattern": "\\bpharmacy(?:e?s)?\\b|\\bpharmacies\\b|\\bdrugstores?\\b",
+      "look": "supermarket",
+      "props": [
+        {
+          "id": "gen3d-medicine-cabinet",
+          "height": 1.8
+        }
+      ]
+    },
+    {
+      "setting": "playground",
+      "pattern": "\\bplayground(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-playground-slide",
+          "height": 2.2
+        }
+      ]
+    },
+    {
+      "setting": "post office",
+      "pattern": "\\bpost[\\s-]+office(?:e?s)?\\b",
+      "look": "living_room",
+      "props": [
+        {
+          "id": "gen3d-post-box",
+          "height": 1.3
+        },
+        {
+          "id": "gen3d-parcel",
+          "height": 0.7
+        }
+      ]
+    },
+    {
+      "setting": "ranch",
+      "pattern": "\\branch(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-wagon-wheel",
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "setting": "rooftop garden",
+      "pattern": "\\brooftop[\\s-]+garden(?:e?s)?\\b",
+      "look": "city",
+      "props": [
+        {
+          "id": "gen3d-planter-box",
+          "height": 0.8
+        }
+      ]
+    },
+    {
+      "setting": "school rooftop",
+      "pattern": "\\bschool[\\s-]+rooftop(?:e?s)?\\b",
+      "look": "living_room",
+      "props": [
+        {
+          "id": "gen3d-air-conditioner",
+          "height": 1.2
+        }
+      ]
+    }
+  ]
+}

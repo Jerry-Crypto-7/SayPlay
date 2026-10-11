@@ -9,6 +9,7 @@ import corpus from '../../../evals/play/fidelity/corpus.json';
 import catalog from '@/assets/catalog-index.json';
 
 import { LOOKS, LOOK_IDS, SCENERY_MODELS, isSceneryModel, lookFor, lookOf } from '../arcade/look';
+import settingKits from '../arcade/look/setting-kits.json';
 import { readGameSpec } from '../spec';
 import runner from '../arcade/__fixtures__/runner.json';
 
@@ -72,6 +73,14 @@ describe('kulisy z katalogu', () => {
     const primitiveOnly = LOOK_IDS.filter((id) => !LOOKS[id].props.some(isSceneryModel));
     // Od 28. 9. má i sopka model z gen3d, primitiv `volcano` zůstal vedle něj.
     expect(primitiveOnly).toEqual([]);
+  });
+
+  it('rekvizity prostředí jsou modely katalogu a každé prostředí má aspoň jednu (P45H T2)', () => {
+    const ids = new Set(catalog.assets.map((asset) => asset.assetId));
+    expect(settingKits.kits.length).toBeGreaterThanOrEqual(20);
+    expect(settingKits.kits.filter((kit) => kit.props.length === 0).map((kit) => kit.setting)).toEqual([]);
+    expect(settingKits.kits.flatMap((kit) => kit.props.filter((prop) => !ids.has(prop.id) || !(prop.height > 0)).map((prop) => prop.id))).toEqual([]);
+    expect(settingKits.kits.filter((kit) => !(LOOK_IDS as readonly string[]).includes(kit.look)).map((kit) => kit.setting)).toEqual([]);
   });
 });
 
