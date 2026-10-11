@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "29c7e49684422c3b7df9cda4110da23f23f640eba15c3c11af5186a0e2848588",
+ "catalogHash": "ffffffb06021b928a0bdacc62aa18eb1561fcc631d0ea70604fc5423003e1f1e",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1009,6 +1009,14 @@
   "gen3d-obelisk": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-garden-hose": {"class":"prop"},
   "gen3d-fruit-crate": {"class":"prop"},
-  "gen3d-vegetable-basket": {"class":"prop"}
+  "gen3d-vegetable-basket": {"class":"prop"},
+  "gen3d-rocking-chair": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-cattail": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-wooden-hut": {"class":"prop"},
+  "gen3d-fallen-log": {"class":"prop"},
+  "gen3d-hiking-backpack": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-grindstone": {"class":"prop"},
+  "gen3d-forge-furnace": {"class":"biped","regions":{"legY":0.248}},
+  "gen3d-funeral-wreath": {"class":"prop"}
  }
 }

@@ -234,3 +234,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-garden-hose` | garden hose | 4535 / 2100 |
 | `gen3d-fruit-crate` | fruit crate | 4130 / 3145 |
 | `gen3d-vegetable-basket` | vegetable basket | 4204 / 2050 |
+| `gen3d-rocking-chair` | rocking chair | 4687 / 2319 |
+| `gen3d-cattail` | cattail | 4712 / 2340 |
+| `gen3d-wooden-hut` | wooden hut | 4128 / 2131 |
+| `gen3d-fallen-log` | fallen log | 4553 / 2261 |
+| `gen3d-hiking-backpack` | hiking backpack | 4277 / 2095 |
+| `gen3d-grindstone` | grindstone | 4226 / 2050 |
+| `gen3d-forge-furnace` | forge furnace | 4222 / 1998 |
+| `gen3d-funeral-wreath` | funeral wreath | 4359 / 1921 |

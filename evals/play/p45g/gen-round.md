@@ -20,6 +20,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | 5 (15:24–15:42) | 10 | 10 | 6 | 5 | 11 + 10 |
 | 6 (15:40–15:56) | 10 | 8 | 7 | 6 | 14 + 8 |
 | 7 (15:52–16:21) | 10 | 7 | 5 | 4 | 20 + 7 |
+| 8 (16:18–16:42) | 10 | 9 | 8 | 8 | 17 + 9 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -59,3 +60,8 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Soudce poznal něco jiného: sphinx: dog · garage door: crate.
 - Předkontrola odmítla všechny tři obrázky: diner booth, griddle – obojí se správným jménem, obrázky označené jako rozbité.
 - Bránou kvality neprošel: tumbleweed (`inconsistent face winding`, pivot mimo střed – řídký chuchvalec větviček).
+
+**Dávka 8** (fireplace, foggy lake, forest hut, forest path, forge, funeral):
+- Povýšeno (8): top1 rocking chair, cattail („cattails“), fallen log („hollow log“), hiking backpack, grindstone, forge furnace („furnace“), funeral wreath („wreath“); top3 wooden hut („wooden cabin“).
+- Soudce poznal, ale označil jako rozbitý: wooden dock („wooden bridge“, dock ve výčtu) – nepovýšen.
+- Předkontrola odmítla všechny tři obrázky: chopping block – správné jméno, obrázky označené jako rozbité.

@@ -20679,6 +20679,158 @@
           0.42325
         ]
       }
+    },
+    {
+      "assetId": "gen3d-rocking-chair",
+      "tags": [
+        "rocking chair"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rocking-chair-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29873,
+          0,
+          -0.34021
+        ],
+        "max": [
+          0.29873,
+          0.99731,
+          0.34021
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cattail",
+      "tags": [
+        "cattail"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cattail-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20619,
+          0,
+          -0.21501
+        ],
+        "max": [
+          0.20619,
+          0.998,
+          0.21501
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-hut",
+      "tags": [
+        "wooden hut"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-hut-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.54306,
+          0,
+          -0.53419
+        ],
+        "max": [
+          0.54306,
+          0.99893,
+          0.53419
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fallen-log",
+      "tags": [
+        "fallen log"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fallen-log-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.17045,
+          0,
+          -0.56113
+        ],
+        "max": [
+          1.17045,
+          1.00001,
+          0.56113
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hiking-backpack",
+      "tags": [
+        "hiking backpack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hiking-backpack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31976,
+          0,
+          -0.278
+        ],
+        "max": [
+          0.31976,
+          1.00001,
+          0.278
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-grindstone",
+      "tags": [
+        "grindstone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-grindstone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46373,
+          0,
+          -0.40753
+        ],
+        "max": [
+          0.46373,
+          0.99136,
+          0.40753
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-forge-furnace",
+      "tags": [
+        "forge furnace"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-forge-furnace-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.307,
+          0,
+          -0.32644
+        ],
+        "max": [
+          0.307,
+          0.99177,
+          0.32644
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-funeral-wreath",
+      "tags": [
+        "funeral wreath"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-funeral-wreath-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40773,
+          0,
+          -0.19246
+        ],
+        "max": [
+          0.40773,
+          1.00001,
+          0.19246
+        ]
+      }
     }
   ]
 }
