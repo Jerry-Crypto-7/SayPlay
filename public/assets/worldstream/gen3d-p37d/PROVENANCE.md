@@ -328,3 +328,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-mushroom-lantern` | mushroom lantern | 4391 / 2069 |
 | `gen3d-fairy-door` | fairy door | 4529 / 2210 |
 | `gen3d-grooming-dryer` | grooming dryer | 4750 / 2364 |
+| `gen3d-fire` | fire | 4369 / 2153 |
+| `gen3d-paper` | paper | 4737 / 2368 |
+| `gen3d-karaoke-machine` | karaoke machine | 4122 / 1982 |
+| `gen3d-greenhouse` | greenhouse | 3317 / 1679 |
+| `gen3d-mop` | mop | 4702 / 2332 |
+| `gen3d-whistle` | whistle | 4485 / 2189 |

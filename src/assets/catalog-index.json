@@ -22468,6 +22468,120 @@
           0.15444
         ]
       }
+    },
+    {
+      "assetId": "gen3d-fire",
+      "tags": [
+        "fire"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fire-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41121,
+          0,
+          -0.29815
+        ],
+        "max": [
+          0.41121,
+          0.99916,
+          0.29815
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-paper",
+      "tags": [
+        "paper"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-paper-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33902,
+          0,
+          -0.13575
+        ],
+        "max": [
+          0.33902,
+          0.99996,
+          0.13575
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-karaoke-machine",
+      "tags": [
+        "karaoke machine"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-karaoke-machine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34392,
+          0,
+          -0.24071
+        ],
+        "max": [
+          0.34392,
+          0.99955,
+          0.24071
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-greenhouse",
+      "tags": [
+        "greenhouse"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-greenhouse-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45753,
+          0,
+          -0.45981
+        ],
+        "max": [
+          0.45753,
+          0.99001,
+          0.45981
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mop",
+      "tags": [
+        "mop"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mop-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1897,
+          0,
+          -0.17601
+        ],
+        "max": [
+          0.1897,
+          0.99924,
+          0.17601
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-whistle",
+      "tags": [
+        "whistle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-whistle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29469,
+          0,
+          -0.38945
+        ],
+        "max": [
+          0.29469,
+          0.99988,
+          0.38945
+        ]
+      }
     }
   ]
 }
