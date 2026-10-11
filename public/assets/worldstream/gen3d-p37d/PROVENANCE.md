@@ -230,3 +230,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-crooked-tower` | crooked tower | 4483 / 2095 |
 | `gen3d-crooked-house` | crooked house | 4363 / 2070 |
 | `gen3d-dentist-chair` | dentist chair | 4653 / 2234 |
+| `gen3d-obelisk` | obelisk | 4748 / 2374 |
+| `gen3d-garden-hose` | garden hose | 4535 / 2100 |
+| `gen3d-fruit-crate` | fruit crate | 4130 / 3145 |
+| `gen3d-vegetable-basket` | vegetable basket | 4204 / 2050 |

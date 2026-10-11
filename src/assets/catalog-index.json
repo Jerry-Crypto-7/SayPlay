@@ -20603,6 +20603,82 @@
           0.25259
         ]
       }
+    },
+    {
+      "assetId": "gen3d-obelisk",
+      "tags": [
+        "obelisk"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-obelisk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.09541,
+          0,
+          -0.0998
+        ],
+        "max": [
+          0.09541,
+          0.99921,
+          0.0998
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-garden-hose",
+      "tags": [
+        "garden hose"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-garden-hose-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71751,
+          0,
+          -0.29968
+        ],
+        "max": [
+          0.71751,
+          0.99746,
+          0.29968
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fruit-crate",
+      "tags": [
+        "fruit crate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fruit-crate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6967,
+          0,
+          -0.68483
+        ],
+        "max": [
+          0.6967,
+          0.9795,
+          0.68483
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-vegetable-basket",
+      "tags": [
+        "vegetable basket"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-vegetable-basket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47589,
+          0,
+          -0.42325
+        ],
+        "max": [
+          0.47589,
+          0.99667,
+          0.42325
+        ]
+      }
     }
   ]
 }

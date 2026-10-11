@@ -19,6 +19,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | 4 (15:10–15:28) | 10 | 10 | 10 | 8 | 10 + 10 |
 | 5 (15:24–15:42) | 10 | 10 | 6 | 5 | 11 + 10 |
 | 6 (15:40–15:56) | 10 | 8 | 7 | 6 | 14 + 8 |
+| 7 (15:52–16:21) | 10 | 7 | 5 | 4 | 20 + 7 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -51,3 +52,10 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Přijatý, nepovýšený: **cow skull** (top1 „bull skull“) – manifest P32 mu podle slova „cow“ dal třídu animal, pin počtu zčervenal → `--drop`.
 - Soudce poznal něco jiného: stage curtain: puppet theater.
 - Předkontrola odmítla všechny tři obrázky: cloud platform: cloud / UFO / … · tooth model: tooth ×3 (vizuálně správně – zub; slovo „model“ předkontrola nebere).
+
+**Dávka 7** (desert canyon, desert temple, diner kitchen, driveway, farm market, fireplace):
+- Povýšeno (4): top1 obelisk, fruit crate, vegetable basket, garden hose.
+- Přijatý, nepovýšený: fireplace (top1) – `normalize: LOD1 cannot be made lighter than LOD0`.
+- Soudce poznal něco jiného: sphinx: dog · garage door: crate.
+- Předkontrola odmítla všechny tři obrázky: diner booth, griddle – obojí se správným jménem, obrázky označené jako rozbité.
+- Bránou kvality neprošel: tumbleweed (`inconsistent face winding`, pivot mimo střed – řídký chuchvalec větviček).

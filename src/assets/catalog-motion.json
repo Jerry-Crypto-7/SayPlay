@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "d4ff49d354d2254f2a126769b3b17d5d69201cf9b416e0ee67fa73157bb437e0",
+ "catalogHash": "29c7e49684422c3b7df9cda4110da23f23f640eba15c3c11af5186a0e2848588",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1005,6 +1005,10 @@
   "gen3d-music-stand": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-crooked-tower": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-crooked-house": {"class":"prop"},
-  "gen3d-dentist-chair": {"class":"biped","regions":{"legY":0.248}}
+  "gen3d-dentist-chair": {"class":"biped","regions":{"legY":0.248}},
+  "gen3d-obelisk": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-garden-hose": {"class":"prop"},
+  "gen3d-fruit-crate": {"class":"prop"},
+  "gen3d-vegetable-basket": {"class":"prop"}
  }
 }
