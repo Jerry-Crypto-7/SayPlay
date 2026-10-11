@@ -302,3 +302,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-pharaoh-mask` | pharaoh mask | 4572 / 2283 |
 | `gen3d-recycling-bin` | recycling bin | 4643 / 2315 |
 | `gen3d-firewood-basket` | firewood basket | 4383 / 2146 |
+| `gen3d-dingo` | dingo | 4703 / 2317 |

@@ -21974,6 +21974,25 @@
           0.76181
         ]
       }
+    },
+    {
+      "assetId": "gen3d-dingo",
+      "tags": [
+        "dingo"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dingo-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18763,
+          0,
+          -0.65027
+        ],
+        "max": [
+          0.18763,
+          0.99605,
+          0.65027
+        ]
+      }
     }
   ]
 }

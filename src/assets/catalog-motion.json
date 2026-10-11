@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "a99769338088dc316967713d43915519690a7611a70469103d29135f3ec537ef",
+ "catalogHash": "1d709405a065b25d1bffe56a4b80863db218a64e7d87df5b33e85f0564438259",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1077,6 +1077,7 @@
   "gen3d-toothpaste-tube": {"class":"prop"},
   "gen3d-pharaoh-mask": {"class":"prop"},
   "gen3d-recycling-bin": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-firewood-basket": {"class":"prop"}
+  "gen3d-firewood-basket": {"class":"prop"},
+  "gen3d-dingo": {"class":"prop"}
  }
 }
