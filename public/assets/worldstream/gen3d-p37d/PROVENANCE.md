@@ -284,3 +284,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-rope-ladder` | rope ladder | 4740 / 2348 |
 | `gen3d-snow-globe` | snow globe | 4547 / 2231 |
 | `gen3d-zoo-gate` | zoo gate | 4596 / 2250 |
+| `gen3d-cloud-castle` | cloud castle | 4605 / 2150 |
+| `gen3d-fireplace` | fireplace | 4352 / 2080 |
+| `gen3d-rhino` | rhino, rhinoceros | 4727 / 2343 |
+| `gen3d-timber-house` | timber house | 3791 / 1945 |
+| `gen3d-mushroom-house` | mushroom house | 4684 / 2308 |

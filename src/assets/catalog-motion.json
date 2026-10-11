@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "12b7ce1d3bd991bf22f516b3f4caa02863bb0c5d48ad9b3a63129d0160b594bc",
+ "catalogHash": "ac313d1eaf93e7bf9f91599639fd1d64ba4fbb2d3bc46901e34cd9281b05671a",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1059,6 +1059,11 @@
   "gen3d-notice-board": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-rope-ladder": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-snow-globe": {"class":"prop"},
-  "gen3d-zoo-gate": {"class":"prop"}
+  "gen3d-zoo-gate": {"class":"prop"},
+  "gen3d-cloud-castle": {"class":"prop"},
+  "gen3d-fireplace": {"class":"prop"},
+  "gen3d-rhino": {"class":"quadruped","regions":{"tailZ":-0.452,"legY":0.249}},
+  "gen3d-timber-house": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-mushroom-house": {"class":"prop"}
  }
 }

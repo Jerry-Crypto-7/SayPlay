@@ -21631,6 +21631,102 @@
           0.12857
         ]
       }
+    },
+    {
+      "assetId": "gen3d-cloud-castle",
+      "tags": [
+        "cloud castle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cloud-castle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43598,
+          0,
+          -0.41986
+        ],
+        "max": [
+          0.43598,
+          0.99686,
+          0.41986
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fireplace",
+      "tags": [
+        "fireplace"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fireplace-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6198,
+          0,
+          -0.39329
+        ],
+        "max": [
+          0.6198,
+          1.00001,
+          0.39329
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rhino",
+      "tags": [
+        "rhino",
+        "rhinoceros"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rhino-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29813,
+          0,
+          -0.90448
+        ],
+        "max": [
+          0.29813,
+          0.99577,
+          0.90448
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-timber-house",
+      "tags": [
+        "timber house"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-timber-house-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35987,
+          0,
+          -0.38302
+        ],
+        "max": [
+          0.35987,
+          1.00001,
+          0.38302
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mushroom-house",
+      "tags": [
+        "mushroom house"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mushroom-house-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46696,
+          0,
+          -0.46693
+        ],
+        "max": [
+          0.46696,
+          0.99984,
+          0.46693
+        ]
+      }
     }
   ]
 }
