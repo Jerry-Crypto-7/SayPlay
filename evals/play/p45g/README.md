@@ -30,3 +30,55 @@ Plán: P45G (interní). Větev převzala fast-forwardem lokální `features/P45F
 - Po **11. 10. 2026 18:45** se nová dávka nespouští; rozběhnutá se dokončí, hotové se povýší, zbytek se zapíše do `gen-round.md`. Souhrn hotový nejpozději v 19:15.
 - Codex na předplatné (předkontrola + slepý soud v prázdném adresáři, jen `sheet.png`): strop celého P45G **400 volání**. Vyčerpaný limit = zbylá jména „čeká na soud“, běh končí. Výstupy soudce nikdy do trénovacích dat.
 - Povýšení nesmí změnit výsledek testů v `src/play`; když zčervenají, jméno jde ven přes `promote-batch.mjs --drop` a zapíše se jako zjištění.
+
+## Souhrn kola (11. 10. 2026, 14:07–18:38)
+
+| | Jmen | Předkontrola a brána | Slepý soud | Povýšeno |
+|---|---|---|---|---|
+| P45G, 14 dávek po 10 | 140 | 110 | **87 (62 %)** | **74 (53 %)** |
+| P45F, 5 dávek po 10 | 50 | 37 | 18 (36 %) | 15 (30 %) |
+
+- **Úspěšnost:** soud 62 % proti 36 % v P45F, povýšeno 53 % proti 30 %. Generátor, soudce i ruční znak stejné jako v P45F. *Odhad, neměřeno:* rozdíl dělá hlavně seznam – P45F zkoušel znovu jména, která už jednou neprošla, P45G nové běžné předměty (pult, budka, regál).
+- **Cíl ≥ 25 modelů splněn: 74 nových modelů** v knihovně, každý s licencí a původem v `disclosure.json`. Po dávkách a jménech `gen-round.md`.
+- **Cíl ≥ 2 rekvizity na zpracované prostředí splněn jen u 20 ze 64:** frozen lake, highway, supermarket, haunted mansion, mall, tavern, bakery, burned forest, burning tree, canyon, castle gate, college, crooked tower, farm market, forest path, forge, graveyard, jungle river, kitchen table, post office. Jednu novou rekvizitu má 33 prostředí, žádnou 11 (deep sea, cellar, cloud castle, diner kitchen, garage, junkyard garage, hotel basement, living room, mushroom village, pet salon, snow fort). Počítané jen nové modely – rekvizity, které katalog už měl (T2), sem nepatří.
+- **Přijaté soudem, nepovýšené (13):**
+  - 8 kvůli pinu v `src/play` – dog kennel, dog bowl, cow skull, car jack, luggage cart, wizard tower, dinosaur skeleton, rooftop water tank. `scripts/assets/p32-manifest.mjs` jim podle slova ve jménu (dog, cow, car, cart, wizard, dinosaur, tank) dá záznam zvířete, vozidla nebo postavy v `src/play/assets/entries/catalog.json` a pin počtu v `src/play/assets/__tests__/catalog-entries.test.ts` zčervená. Ruční třída prop z `kit-nouns.json` do manifestu nedojde. Modely leží v `D:/claude/_gen3d-cache-p45g/`.
+  - 5 kvůli `normalize: LOD1 cannot be made lighter than LOD0` – sea urchin, cloud castle, fireplace, hearse, wildflower.
+- **Co zbylo (85 ze 159 jmen):**
+  - 19 nespuštěných kvůli oknu – dávky 15 a 16 (`D:/caches/p45g/round15/list.json.held`, `round16/list.json`), znak mají.
+  - 53 zkoušených a neprošlých: soudce viděl něco jiného (23), předkontrola odmítla všechny obrázky (25), brána kvality – `inconsistent face winding` (5: rhino, tumbleweed, timber house, mushroom house, snowy pine tree).
+  - U 13 z těch 25 předkontrola řekla správné jméno, ale obrázek označila jako rozbitý (ice fishing hole, bar counter, diner booth, griddle, chopping block, tire stack, hockey goal, scrap pile, coffee table, grooming table, pill bottle, sandbox, horseshoe). U 3 dalších viděla blízké slovo bez označení „rozbitý“ – synonymum by je pustilo k soudu: car wreck → wrecked car, dingo → dog, tooth model → tooth.
+- **Codex:** 333 ze 400 volání (223 předkontrol + 110 soudů), limit nedošel.
+
+## Sady (T4, 11. 10. 2026 18:37–18:40)
+
+- Po každé dávce prošly `src/assets`, `scripts/p37d`, `models-qa`, `hero-choice` a `catalog-entries` (po dávce 14 1184/1184).
+- `evals/play/catalog-coverage.json` po nových modelech zastaral (967 → 1041 modelů) – přegenerováno `node scripts/assets/cc0/coverage.mjs`, pokrytí jmen beze změny, test pokrytí prošel.
+- `npx vitest run src/assets scripts src/play/arcade/__tests__` + test pokrytí, v klidu (CPU 25 %, generování doběhlo): 142 souborů, **3152 z 3153 testů prošlo**. Jediný červený je `scripts/__tests__/submission-check.test.ts`, který čte gitignorovaný `plans/P8-odevzdani.md` – worktree ho nemá, s P45G nesouvisí. `loader.test.ts` a `p32-heavy.test.ts`, v P45F červené pod cizí zátěží, prošly.
+
+## Objeví se nová rekvizita ve hře? (T4)
+
+Měřeno na `npm run build` + `next start` (build `a6b8892d`, dávky 1–8): věta poslaná přes `/api/play/games`, hra otevřená v headless Chromiu, zapsané všechny načtené GLB a snímky obrazovky (`D:/caches/p45g/t4/`).
+
+- **Věta, která jmenuje jen prostředí, novou rekvizitu nenačte.** Tři prostředí s nejvíc větami:
+  - „ice fishing on a frozen lake“ – načte iceberg, tučňáka a hvězdu; ice floe ani ice fishing hut ne.
+  - „race cars on the highway“ – načte městskou sadu (taxi, hydrant, zastávka, semafor, dům); toll booth ani highway sign ne.
+  - „a cat runs through a supermarket“ – načte sadu supermarketu (regály, lednice, pokladna, vozík); checkout counter ani shopping basket ne.
+- **Věta, která rekvizitu jmenuje jako součást hry, ji ukáže.** „dodge toll booths on the highway“ dá mýtnou budku jako překážku: na snímku po 6 s hraní stojí na silnici budka se závorami, stejná jako náhled v katalogu (`D:/caches/p45g/t4/toll-6s.png`).
+- **Kdo vybírá scenérii** (vstup pro další plán), vše v `src/play/arcade/look/index.ts`:
+  - `KEYWORDS` – pevná tabulka slov, která prostředí přiřadí jednu ze 17 sad (highway → city, frozen lake → snow, haunted mansion → graveyard); nic nesedí → meadow.
+  - `LOOKS` – pevný seznam rekvizit každé sady.
+  - `SCENERY_MODELS` – seznam modelů, které smí být scenérie (id → výška); rozmisťuje je `src/components/play/arcade/look/Scenery.tsx`. Pin `src/play/__tests__/look.test.ts` hlídá, že každé id z něj je v katalogu.
+  - Štítky katalogu výběr scenérie neovlivní.
+- *Odhad, neověřeno:* aby se kity P45G ukázaly i ve větě jen s prostředím, musí další plán buď doplnit nové sady a jejich rekvizity do `KEYWORDS`/`LOOKS`/`SCENERY_MODELS`, nebo vybírat scenérii z katalogu podle prostředí – mapu prostředí → rekvizity už má `kit-nouns.json`.
+
+## Doporučení
+
+1. **Další plán na `src/play`:** výběr scenérie podle prostředí z `kit-nouns.json` – bez něj 74 nových modelů uvidí hráč jen ve větě, která je jmenuje.
+2. **Oprava třídy v `scripts/assets/p32-manifest.mjs`** (brát ruční třídu, ne slovo ve jménu) vrátí 8 přijatých modelů z mezipaměti bez nového generování.
+3. **Dávky 15–16** (19 jmen) jsou připravené; odhadem ~40 minut GPU a ~50 volání Codexu.
+4. **Předkontrola se synonymy** by pustila k soudu aspoň 3 jména (car wreck, dingo, tooth model).
+
+## Slučování
+
+Slučuje se **po P45F** (větev P45G na ní stojí). Konflikt v `src/assets/catalog-motion.json` a `evals/play/catalog-coverage.json` se neřeší ručně: vzít libovolnou stranu a znovu spustit `node scripts/p45d/motion-class.mjs` a `node scripts/assets/cc0/coverage.mjs`. `src/play` a `src/components` P45G nemění.
