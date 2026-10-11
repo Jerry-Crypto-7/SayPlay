@@ -22107,6 +22107,139 @@
           0.1013
         ]
       }
+    },
+    {
+      "assetId": "gen3d-tiki-mask",
+      "tags": [
+        "tiki mask"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tiki-mask-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20564,
+          0,
+          -0.16758
+        ],
+        "max": [
+          0.20564,
+          0.99696,
+          0.16758
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-picnic-basket",
+      "tags": [
+        "picnic basket"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-picnic-basket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6642,
+          0,
+          -0.55526
+        ],
+        "max": [
+          0.6642,
+          0.99614,
+          0.55526
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hay-cart",
+      "tags": [
+        "hay cart"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hay-cart-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.64003,
+          0,
+          -0.45133
+        ],
+        "max": [
+          0.64003,
+          0.99937,
+          0.45133
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-water-wheel",
+      "tags": [
+        "water wheel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-water-wheel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19318,
+          0,
+          -0.49007
+        ],
+        "max": [
+          0.19318,
+          0.9971,
+          0.49007
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-kangaroo-sign",
+      "tags": [
+        "kangaroo sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-kangaroo-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34381,
+          0,
+          -0.15325
+        ],
+        "max": [
+          0.34381,
+          0.99816,
+          0.15325
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mortar-and-pestle",
+      "tags": [
+        "mortar and pestle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mortar-and-pestle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49952,
+          0,
+          -0.50249
+        ],
+        "max": [
+          0.49952,
+          0.99999,
+          0.50249
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-saddle",
+      "tags": [
+        "saddle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-saddle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34211,
+          0,
+          -0.21056
+        ],
+        "max": [
+          0.34211,
+          0.99818,
+          0.21056
+        ]
+      }
     }
   ]
 }

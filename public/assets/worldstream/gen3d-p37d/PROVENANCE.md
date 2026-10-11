@@ -309,3 +309,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-cereal-box` | cereal box | 4522 / 2063 |
 | `gen3d-water-heater` | water heater | 4747 / 2338 |
 | `gen3d-antenna-tower` | antenna tower | 4746 / 2356 |
+| `gen3d-tiki-mask` | tiki mask | 4553 / 2274 |
+| `gen3d-picnic-basket` | picnic basket | 4200 / 1888 |
+| `gen3d-hay-cart` | hay cart | 3671 / 1758 |
+| `gen3d-water-wheel` | water wheel | 4011 / 2334 |
+| `gen3d-kangaroo-sign` | kangaroo sign | 4744 / 2372 |
+| `gen3d-mortar-and-pestle` | mortar and pestle | 4368 / 2294 |
+| `gen3d-saddle` | saddle | 4615 / 2276 |

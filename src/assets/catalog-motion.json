@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "15a0793dec413bd4169f26e8201242fcd25a67738cd8e47f56c6f988c7a8625c",
+ "catalogHash": "1edfa11cfc0eb65d2ac3ae35f3d14a03723fc4da4f3cc18e6707e5c71292d5e6",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1084,6 +1084,13 @@
   "gen3d-ice-spike": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-cereal-box": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-water-heater": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-antenna-tower": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-antenna-tower": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-tiki-mask": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-picnic-basket": {"class":"prop"},
+  "gen3d-hay-cart": {"class":"prop"},
+  "gen3d-water-wheel": {"class":"prop"},
+  "gen3d-kangaroo-sign": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-mortar-and-pestle": {"class":"prop"},
+  "gen3d-saddle": {"class":"biped","regions":{"legY":0.25}}
  }
 }
