@@ -21249,6 +21249,63 @@
           0.28636
         ]
       }
+    },
+    {
+      "assetId": "gen3d-wagon-wheel",
+      "tags": [
+        "wagon wheel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wagon-wheel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49633,
+          0,
+          -0.04829
+        ],
+        "max": [
+          0.49633,
+          0.9932,
+          0.04829
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-planter-box",
+      "tags": [
+        "planter box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-planter-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.83976,
+          0,
+          -0.36905
+        ],
+        "max": [
+          0.83976,
+          0.99906,
+          0.36905
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-air-conditioner",
+      "tags": [
+        "air conditioner"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-air-conditioner-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.54945,
+          0,
+          -0.42589
+        ],
+        "max": [
+          0.54945,
+          1,
+          0.42589
+        ]
+      }
     }
   ]
 }

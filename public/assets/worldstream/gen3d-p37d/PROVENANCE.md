@@ -264,3 +264,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-playground-slide` | playground slide | 4693 / 2248 |
 | `gen3d-post-box` | post box | 4746 / 2372 |
 | `gen3d-parcel` | parcel | 4698 / 2301 |
+| `gen3d-wagon-wheel` | wagon wheel | 4732 / 2319 |
+| `gen3d-planter-box` | planter box | 4358 / 2114 |
+| `gen3d-air-conditioner` | air conditioner | 3778 / 2095 |

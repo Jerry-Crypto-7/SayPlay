@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "83de5673966fb44b95bc8c2ba473627059b9e0131f60fe9fc46197721afef3a3",
+ "catalogHash": "01aad80e8946788f943517c762f57596371791c0f8fda9813eb06a57419ff3ed",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1039,6 +1039,9 @@
   "gen3d-medicine-cabinet": {"class":"prop"},
   "gen3d-playground-slide": {"class":"prop"},
   "gen3d-post-box": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-parcel": {"class":"prop"}
+  "gen3d-parcel": {"class":"prop"},
+  "gen3d-wagon-wheel": {"class":"prop"},
+  "gen3d-planter-box": {"class":"prop"},
+  "gen3d-air-conditioner": {"class":"prop"}
  }
 }

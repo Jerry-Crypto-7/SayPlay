@@ -26,6 +26,8 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | 11 (17:09–17:38) | 10 | 7 | 7 | 5 | 20 + 7 |
 | 12 (17:35–18:05) | 10 | 8 | 5 | 4 | 14 + 8 |
 | 13 (18:01–18:17) | 10 | 6 | 5 | 5 | 19 + 6 |
+| 14 (18:15–18:38) | 10 | 6 | 4 | 3 | 22 + 6 |
+| **celkem** | **140** | **110** | **87** | **74** | **223 + 110 = 333** |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -97,3 +99,12 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Povýšeno (5): top1 medicine cabinet, playground slide, post box, parcel; top3 emu („ostrich“, emu ve výčtu).
 - Soudce poznal něco jiného: pet bed: fire pit.
 - Předkontrola odmítla všechny obrázky: dingo: dog / fox / dog (vizuálně správně – dingo je pes; třetí pokus neprošel bránou kvality) · grooming table, pill bottle, sandbox – správné jméno, obrázky označené jako rozbité.
+
+**Dávka 14** (ranch, rocky river, rooftop garden, school rooftop, snow fort, snowy forest):
+- Povýšeno (3): top1 wagon wheel, planter box, air conditioner.
+- Přijatý, nepovýšený: **rooftop water tank** (top3 „water tower“) – manifest P32 mu podle slova „tank“ dal třídu vehicle (ruční třída prop z T2 tam nedojde), pin počtu zčervenal → `--drop`.
+- Soudce poznal něco jiného: beaver dam: campfire · snow wall: campfire.
+- Předkontrola odmítla všechny obrázky: horseshoe – správné jméno, obrázky označené jako rozbité · garden trellis: garden arch / garden arbor · snow fort: brick furnace / fire pit / ball pit.
+- Bránou kvality neprošel: snowy pine tree (3× `inconsistent face winding`).
+
+**Dávky 15–16 nespuštěné** (19 jmen, `D:/caches/p45g/round15/list.json.held`, `round16/list.json`): dávka 14 doběhla v 18:34, další by končila kolem 19:00 a nestihla by souhrn do 19:15.
