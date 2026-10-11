@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "1d709405a065b25d1bffe56a4b80863db218a64e7d87df5b33e85f0564438259",
+ "catalogHash": "15a0793dec413bd4169f26e8201242fcd25a67738cd8e47f56c6f988c7a8625c",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1078,6 +1078,12 @@
   "gen3d-pharaoh-mask": {"class":"prop"},
   "gen3d-recycling-bin": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-firewood-basket": {"class":"prop"},
-  "gen3d-dingo": {"class":"prop"}
+  "gen3d-dingo": {"class":"prop"},
+  "gen3d-lake-buoy": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-funeral-urn": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-ice-spike": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-cereal-box": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-water-heater": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-antenna-tower": {"class":"biped","regions":{"legY":0.249}}
  }
 }

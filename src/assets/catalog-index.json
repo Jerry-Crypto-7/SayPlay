@@ -21993,6 +21993,120 @@
           0.65027
         ]
       }
+    },
+    {
+      "assetId": "gen3d-lake-buoy",
+      "tags": [
+        "lake buoy"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lake-buoy-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3701,
+          0,
+          -0.36984
+        ],
+        "max": [
+          0.3701,
+          0.99625,
+          0.36984
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-funeral-urn",
+      "tags": [
+        "funeral urn"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-funeral-urn-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27822,
+          0,
+          -0.27849
+        ],
+        "max": [
+          0.27822,
+          0.99917,
+          0.27849
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-spike",
+      "tags": [
+        "ice spike"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-spike-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25566,
+          0,
+          -0.28348
+        ],
+        "max": [
+          0.25566,
+          0.99985,
+          0.28348
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cereal-box",
+      "tags": [
+        "cereal box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cereal-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26906,
+          0,
+          -0.14119
+        ],
+        "max": [
+          0.26906,
+          0.99997,
+          0.14119
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-water-heater",
+      "tags": [
+        "water heater"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-water-heater-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20878,
+          0,
+          -0.22057
+        ],
+        "max": [
+          0.20878,
+          0.99996,
+          0.22057
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-antenna-tower",
+      "tags": [
+        "antenna tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-antenna-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.10027,
+          0,
+          -0.1013
+        ],
+        "max": [
+          0.10027,
+          0.99598,
+          0.1013
+        ]
+      }
     }
   ]
 }

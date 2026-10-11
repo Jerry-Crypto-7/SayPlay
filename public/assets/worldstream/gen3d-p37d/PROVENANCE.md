@@ -303,3 +303,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-recycling-bin` | recycling bin | 4643 / 2315 |
 | `gen3d-firewood-basket` | firewood basket | 4383 / 2146 |
 | `gen3d-dingo` | dingo | 4703 / 2317 |
+| `gen3d-lake-buoy` | lake buoy | 4748 / 2374 |
+| `gen3d-funeral-urn` | funeral urn | 4694 / 2339 |
+| `gen3d-ice-spike` | ice spike | 4748 / 2372 |
+| `gen3d-cereal-box` | cereal box | 4522 / 2063 |
+| `gen3d-water-heater` | water heater | 4747 / 2338 |
+| `gen3d-antenna-tower` | antenna tower | 4746 / 2356 |
