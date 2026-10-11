@@ -8,7 +8,9 @@ import { describe, expect, it } from 'vitest';
 import corpus from '../../../evals/play/fidelity/corpus.json';
 import catalog from '@/assets/catalog-index.json';
 
-import { LOOKS, LOOK_IDS, SCENERY_MODELS, isSceneryModel, lookFor, lookOf } from '../arcade/look';
+import { sceneryPlaces } from '@/components/play/arcade/look/Scenery';
+
+import { LOOKS, LOOK_IDS, PROP_KINDS, SCENERY_MODELS, isSceneryModel, kitFor, lookFor, lookOf, sceneLook } from '../arcade/look';
 import settingKits from '../arcade/look/setting-kits.json';
 import { readGameSpec } from '../spec';
 import runner from '../arcade/__fixtures__/runner.json';
@@ -81,6 +83,56 @@ describe('kulisy z katalogu', () => {
     expect(settingKits.kits.filter((kit) => kit.props.length === 0).map((kit) => kit.setting)).toEqual([]);
     expect(settingKits.kits.flatMap((kit) => kit.props.filter((prop) => !ids.has(prop.id) || !(prop.height > 0)).map((prop) => prop.id))).toEqual([]);
     expect(settingKits.kits.filter((kit) => !(LOOK_IDS as readonly string[]).includes(kit.look)).map((kit) => kit.setting)).toEqual([]);
+  });
+
+  it('sady nesou jen primitivy a modely ze SCENERY_MODELS (id gen3d-* typ nehlídá)', () => {
+    const unknown = LOOK_IDS.flatMap((id) => LOOKS[id].props.filter((prop) => !(PROP_KINDS as readonly string[]).includes(prop) && !Object.hasOwn(SCENERY_MODELS, prop)));
+    expect(unknown).toEqual([]);
+  });
+});
+
+describe('rekvizity prostředí (P45H T3)', () => {
+  it.each([
+    ['ice fishing on a frozen lake', ['gen3d-ice-fishing-hut', 'gen3d-ice-floe']],
+    ['race cars on the highway', ['gen3d-toll-booth', 'gen3d-highway-sign']],
+    ['a cat runs through a supermarket', ['gen3d-checkout-counter', 'gen3d-shopping-basket']],
+    ['a canyon', ['gen3d-rock-arch', 'gen3d-mesa']],
+    // Nejdelší shoda vyhrává: pouštní kaňon má vlastní kit.
+    ['a desert canyon', ['gen3d-rock-arch']],
+    ['Haunted Mansion at midnight', ['gen3d-candelabra', 'gen3d-grandfather-clock', 'gen3d-chandelier']],
+    ['a dog runs in a park', []],
+    ['a completely different place', []],
+  ] as const)('%s → %j', (setting, props) => {
+    expect(kitFor(setting)).toEqual(props);
+  });
+
+  const theme = (setting: string) => ({ setting, mood: 'playful' });
+  const kinds = (props: Parameters<typeof sceneryPlaces>[0], layout: 'sides' | 'behind') => sceneryPlaces(props, layout, 6, 0, 120).map((place) => place.kind);
+
+  it('věta bez kitu má sadu beze změny', () => {
+    expect(sceneLook(theme('a dog runs in a park'))).toBe(LOOKS.meadow);
+    expect(sceneLook(theme('a cozy living room at night')).props).toBe(LOOKS.living_room.props);
+    expect(sceneLook({ ...theme('busy city traffic'), look: 'city' }).props).toBe(LOOKS.city.props);
+  });
+
+  it.each([
+    ['ice fishing on a frozen lake', 'snow'],
+    ['a cat runs through a supermarket', 'supermarket'],
+    ['a cat runs through a shopping mall', 'mall'],
+    ['race cars on the highway', 'city'],
+    ['a canyon', 'desert'],
+  ] as const)('%s: kit stojí místo části sady, kulis není víc (%s)', (setting, look) => {
+    const kit = kitFor(setting);
+    const props = sceneLook(theme(setting)).props;
+    expect(lookOf(theme(setting))).toBe(look);
+    for (const layout of ['sides', 'behind'] as const) {
+      const before = kinds(LOOKS[look].props, layout);
+      const after = kinds(props, layout);
+      expect(after).toHaveLength(before.length);
+      // Každá rekvizita kitu ve scéně opravdu stojí, a sada v ní pořád je.
+      expect(kit.filter((id) => !after.includes(id))).toEqual([]);
+      expect(after.some((kind) => (LOOKS[look].props as readonly string[]).includes(kind))).toBe(true);
+    }
   });
 });
 
