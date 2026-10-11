@@ -180,3 +180,17 @@ Mrtvý čas = nejdelší mezera bez události (P45A), průměr přes věty žán
 | `timing.stack` | 1,55 | 1,86 | 1,86 | 49 % a 92 % běhu, mezi dvěma položeními | ne úvod – čekání na další průjezd jezdce; `n01`, `n04` lepší než `main`, `d09` horší |
 
 **Vyšší úvod křivky (`intensity.intro` 850, se stejným vrcholem i se sníženým 1050/1250/1450) zkoušen a nepoužit** – měřeno nad sadou mez souboje 1000 + plný počet not + `spawnFloor` 300 a porovnáno s toutéž sadou bez vyššího úvodu: střelnici vrátil na 4,23–4,47 s a hod na 1,9–2,1 s, ale hry načasování spadly pod 30 s (30,4 → 28,8–28,9 s, pásmo délky), novice rytmu 0,40 → 0,15–0,20, `arena.fight` 0,30 → 0,25 (se stejným vrcholem), finále `climax` rytmu zmizelo (P45A finále 0,33 → 0,28–0,30) a plocha pod křivkou přetekla 105 % (1065–1094 ‰; `pacing-curve.test.ts`, směr plánu 95–105 %).
+
+## T19 – konečné měření (panel 40 vět)
+
+11. 10. 2026, celý zápis v `final.md`, data v `final.json`. A = `origin/main` `fc6b99ba`, B = `91d8e4bb`; zapečetěná sada neotevřená.
+
+| Cíl | `main` | T17 | T19 | Cíl | Splněno |
+| --- | --- | --- | --- | --- | --- |
+| Párový soud nová vs `main` | – | 0,638 | **0,675** (na 28 změněných větách 0,73) | ≥ 0,55 | **ano** |
+| Mrtvý čas – medián | 6,37 s | 6,79 s | 6,79 s | ≤ 3 s | ne |
+| `rising` | 0,40 | 0,57 | 0,57 | ≥ 0,70 | ne |
+| Chování – medián | 1 | 1 | 1 | ≥ 2 | ne |
+| Finále | 0,15 | 0,33 | 0,33 | ≥ 0,50 | ne |
+
+Brány beze ztrát drží (hratelné 40/40, prahy T18 beze změny kódu hry). Nesplněné cíle drží hlavně 12 nativních her bez průběhu a 11 her statických žánrů bez hrozeb (23 ze 40 vět) – rozbor v `final.md`. **P45B a P45D v `main` nejsou (nesloučeno).** e2e /play našlo chybějící model výstřelu chování (404), opraveno v `91d8e4bb`.
