@@ -24,6 +24,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | 9 (16:40–17:00) | 10 | 7 | 6 | 3 | 17 + 7 |
 | 10 (16:54–17:11) | 10 | 8 | 5 | 5 | 14 + 8 |
 | 11 (17:09–17:38) | 10 | 7 | 7 | 5 | 20 + 7 |
+| 12 (17:35–18:05) | 10 | 8 | 5 | 4 | 14 + 8 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -84,3 +85,9 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Povýšeno (5): top1 mangrove tree, fruit bowl, potion bottle, dandelion; top3 pepper mill („pepper grinder“).
 - Přijaté, nepovýšené (2): **wizard tower** (top1) – manifest P32 mu podle slova „wizard“ dal třídu humanoid, pin počtu zčervenal → `--drop`; wildflower (top1 „wildflowers“) – `normalize: LOD1 cannot be made lighter than LOD0`.
 - Předkontrola odmítla všechny tři obrázky: car wreck: car / wrecked car (vizuálně správně – synonymum by ho pustilo) · scrap pile – správné jméno, obrázky označené jako rozbité · coffee table: coffee table / table, označené jako rozbité.
+
+**Dávka 12** (medieval town, mining colony, mountain village, museum hall, mushroom village):
+- Povýšeno (4): top1 pillory, mining helmet, stone bridge; top3 velvet rope („rope barrier“).
+- Přijatý, nepovýšený: **dinosaur skeleton** (top1) – manifest P32 mu podle slova „dinosaur“ dal třídu monster, pin počtu zčervenal → `--drop`.
+- Soudce poznal něco jiného: mining drill: drilling rig · alpine chalet: house · display case: trash can.
+- Bránou kvality neprošly: timber house, mushroom house (`inconsistent face winding`).

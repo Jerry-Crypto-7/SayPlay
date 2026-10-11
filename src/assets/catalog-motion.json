@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "3324b764dbb913a442c93d067682cab5a1d929d867f88d1c30604291b8c13779",
+ "catalogHash": "068bc7c76512ac18a38a4272d98448d5e398ea257a372a097f274112f09253a9",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1030,6 +1030,10 @@
   "gen3d-fruit-bowl": {"class":"prop"},
   "gen3d-pepper-mill": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-potion-bottle": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-dandelion": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-dandelion": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-pillory": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-mining-helmet": {"class":"prop"},
+  "gen3d-stone-bridge": {"class":"prop"},
+  "gen3d-velvet-rope": {"class":"prop"}
  }
 }

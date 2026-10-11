@@ -21078,6 +21078,82 @@
           0.15449
         ]
       }
+    },
+    {
+      "assetId": "gen3d-pillory",
+      "tags": [
+        "pillory"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pillory-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27753,
+          0,
+          -0.0811
+        ],
+        "max": [
+          0.27753,
+          0.99985,
+          0.0811
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mining-helmet",
+      "tags": [
+        "mining helmet"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mining-helmet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.68807,
+          0,
+          -0.77774
+        ],
+        "max": [
+          0.68807,
+          1.00001,
+          0.77774
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stone-bridge",
+      "tags": [
+        "stone bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.4127,
+          0,
+          -0.94451
+        ],
+        "max": [
+          1.4127,
+          0.99817,
+          0.94451
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-velvet-rope",
+      "tags": [
+        "velvet rope"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-velvet-rope-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.8673,
+          0,
+          -0.17345
+        ],
+        "max": [
+          0.8673,
+          0.99784,
+          0.17345
+        ]
+      }
     }
   ]
 }

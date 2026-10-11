@@ -255,3 +255,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-pepper-mill` | pepper mill | 4748 / 2374 |
 | `gen3d-potion-bottle` | potion bottle | 4631 / 2315 |
 | `gen3d-dandelion` | dandelion | 4579 / 2155 |
+| `gen3d-pillory` | pillory | 4637 / 2313 |
+| `gen3d-mining-helmet` | mining helmet | 4383 / 2174 |
+| `gen3d-stone-bridge` | stone bridge | 4443 / 2192 |
+| `gen3d-velvet-rope` | velvet rope | 4748 / 2372 |
