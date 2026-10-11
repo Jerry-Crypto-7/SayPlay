@@ -20394,6 +20394,101 @@
           0.32215
         ]
       }
+    },
+    {
+      "assetId": "gen3d-mesa",
+      "tags": [
+        "mesa"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mesa-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.43841,
+          0,
+          -1.48518
+        ],
+        "max": [
+          1.43841,
+          0.99827,
+          1.48518
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-castle-gate",
+      "tags": [
+        "castle gate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-castle-gate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58171,
+          0,
+          -0.2066
+        ],
+        "max": [
+          0.58171,
+          0.99839,
+          0.2066
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-portcullis",
+      "tags": [
+        "portcullis"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-portcullis-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4852,
+          0,
+          -0.10516
+        ],
+        "max": [
+          0.4852,
+          1,
+          0.10516
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flagpole",
+      "tags": [
+        "flagpole"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flagpole-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17343,
+          0,
+          -0.14089
+        ],
+        "max": [
+          0.17343,
+          0.99923,
+          0.14089
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rope-bridge",
+      "tags": [
+        "rope bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rope-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.52041,
+          0,
+          -0.70645
+        ],
+        "max": [
+          0.52041,
+          0.99487,
+          0.70645
+        ]
+      }
     }
   ]
 }

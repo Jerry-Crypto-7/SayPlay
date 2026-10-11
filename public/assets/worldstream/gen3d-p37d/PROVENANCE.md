@@ -219,3 +219,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-charred-log` | charred log | 4600 / 2246 |
 | `gen3d-burning-tree` | burning tree | 4319 / 2136 |
 | `gen3d-rock-arch` | rock arch | 4290 / 2118 |
+| `gen3d-mesa` | mesa | 4748 / 2374 |
+| `gen3d-castle-gate` | castle gate | 4258 / 2018 |
+| `gen3d-portcullis` | portcullis | 4541 / 2231 |
+| `gen3d-flagpole` | flagpole | 4748 / 2374 |
+| `gen3d-rope-bridge` | rope bridge | 4300 / 2089 |

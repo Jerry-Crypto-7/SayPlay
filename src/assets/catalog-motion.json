@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "638e7ba44a63f15c95bbfbc09a269f8db587392d6927d18dd77d7c9c7d818296",
+ "catalogHash": "c57a49e85f9cd6118307d52703642ee6ac68224743ca8ecd5392547f7bc235ad",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -994,6 +994,11 @@
   "gen3d-burnt-tree": {"class":"prop"},
   "gen3d-charred-log": {"class":"prop"},
   "gen3d-burning-tree": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-rock-arch": {"class":"prop"}
+  "gen3d-rock-arch": {"class":"prop"},
+  "gen3d-mesa": {"class":"prop"},
+  "gen3d-castle-gate": {"class":"prop"},
+  "gen3d-portcullis": {"class":"prop"},
+  "gen3d-flagpole": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-rope-bridge": {"class":"prop"}
  }
 }
