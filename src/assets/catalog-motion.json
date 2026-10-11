@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "1edfa11cfc0eb65d2ac3ae35f3d14a03723fc4da4f3cc18e6707e5c71292d5e6",
+ "catalogHash": "9dee013f584aff2ddb1f5941fa681f776e5b9e245cf3882d272f4ed08c6a8959",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1091,6 +1091,14 @@
   "gen3d-water-wheel": {"class":"prop"},
   "gen3d-kangaroo-sign": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-mortar-and-pestle": {"class":"prop"},
-  "gen3d-saddle": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-saddle": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-tomato-plant": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-snowy-stump": {"class":"prop"},
+  "gen3d-deep-sea-diver": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-oil-lamp": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-potato-sack": {"class":"prop"},
+  "gen3d-beanstalk": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-floating-island": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-deep-fryer": {"class":"biped","regions":{"legY":0.249}}
  }
 }

@@ -316,3 +316,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-kangaroo-sign` | kangaroo sign | 4744 / 2372 |
 | `gen3d-mortar-and-pestle` | mortar and pestle | 4368 / 2294 |
 | `gen3d-saddle` | saddle | 4615 / 2276 |
+| `gen3d-tomato-plant` | tomato plant | 4687 / 2302 |
+| `gen3d-snowy-stump` | snowy stump | 4702 / 2299 |
+| `gen3d-deep-sea-diver` | deep sea diver | 4713 / 2235 |
+| `gen3d-oil-lamp` | oil lamp | 4739 / 2368 |
+| `gen3d-potato-sack` | potato sack | 4677 / 2298 |
+| `gen3d-beanstalk` | beanstalk | 4599 / 2243 |
+| `gen3d-floating-island` | floating island | 4485 / 2095 |
+| `gen3d-deep-fryer` | deep fryer | 4500 / 2190 |

@@ -22240,6 +22240,158 @@
           0.21056
         ]
       }
+    },
+    {
+      "assetId": "gen3d-tomato-plant",
+      "tags": [
+        "tomato plant"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tomato-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25706,
+          0,
+          -0.27411
+        ],
+        "max": [
+          0.25706,
+          1.00001,
+          0.27411
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowy-stump",
+      "tags": [
+        "snowy stump"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-stump-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.04313,
+          0,
+          -1.02459
+        ],
+        "max": [
+          1.04313,
+          0.9988,
+          1.02459
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-deep-sea-diver",
+      "tags": [
+        "deep sea diver"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-deep-sea-diver-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.272,
+          0,
+          -0.13678
+        ],
+        "max": [
+          0.272,
+          0.99891,
+          0.13678
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-oil-lamp",
+      "tags": [
+        "oil lamp"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-oil-lamp-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27739,
+          0,
+          -0.28404
+        ],
+        "max": [
+          0.27739,
+          1.00001,
+          0.28404
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-potato-sack",
+      "tags": [
+        "potato sack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-potato-sack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4214,
+          0,
+          -0.41277
+        ],
+        "max": [
+          0.4214,
+          0.9962,
+          0.41277
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beanstalk",
+      "tags": [
+        "beanstalk"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beanstalk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13569,
+          0,
+          -0.1391
+        ],
+        "max": [
+          0.13569,
+          0.99992,
+          0.1391
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-floating-island",
+      "tags": [
+        "floating island"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-floating-island-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23902,
+          0,
+          -0.26078
+        ],
+        "max": [
+          0.23902,
+          0.99593,
+          0.26078
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-deep-fryer",
+      "tags": [
+        "deep fryer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-deep-fryer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31144,
+          0,
+          -0.35425
+        ],
+        "max": [
+          0.31144,
+          0.9974,
+          0.35425
+        ]
+      }
     }
   ]
 }
