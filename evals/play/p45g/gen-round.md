@@ -16,6 +16,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 | 1 (14:07–14:27) | 10 | 6 | 4 | 4 | 19 + 6 |
 | 2 (14:23–14:58) | 10 | 9 | 7 | 6 | 14 + 9 |
 | 3 (14:56–15:11) | 10 | 9 | 8 | 8 | 12 + 9 |
+| 4 (15:10–15:28) | 10 | 10 | 10 | 8 | 10 + 10 |
 
 **Dávka 1** (8 jmen P45F, ice fishing hole, ice fishing hut):
 - Povýšeno (4): top1 swing („swing set“); top3 singer („woman“, female singer ve výčtu), torpedo („bomb“), ice fishing hut („shack“, hut ve výčtu).
@@ -33,3 +34,7 @@ Generování další dávky běží souběžně se soudem a povýšením předch
 - Povýšeno (8): top1 candelabra, grandfather clock, chandelier, escalator, mannequin, clothing rack („clothes rack“), tavern sign; top3 tankard („beer mug“).
 - Soudce poznal něco jiného: giant clam: bowl.
 - Předkontrola odmítla všechny tři obrázky: bar counter: **bar counter** ×3 – správné jméno, obrázek označený jako rozbitý.
+
+**Dávka 4** (animal shelter, bakery, burned forest, burning tree, canyon):
+- Povýšeno (8): top1 pet carrier, bread oven („pizza oven“), cake stand, baguette, burnt tree („dead tree“), charred log („log“, charred log ve výčtu), burning tree („tree“, burning tree ve výčtu), rock arch („stone arch“).
+- Přijaté, nepovýšené (2): **dog bowl** (top1), **dog kennel** (top3 „doghouse“) – `scripts/assets/p32-manifest.mjs` jim podle slova „dog“ dal třídu animal a záznam v `src/play/assets/entries/catalog.json`, pin počtu v `src/play/assets/__tests__/catalog-entries.test.ts` zčervenal (263 místo 261) → `--drop` (stejná třída jako anthill a chicken leg v P45F). Modely v `D:/claude/_gen3d-cache-p45g/`.

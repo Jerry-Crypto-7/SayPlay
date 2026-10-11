@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "5b5cdedcdb09fd1ffda1f331f1e0195abac80d4a0f928c73ef0582b6016cc8fa",
+ "catalogHash": "638e7ba44a63f15c95bbfbc09a269f8db587392d6927d18dd77d7c9c7d818296",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -986,6 +986,14 @@
   "gen3d-mannequin": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-clothing-rack": {"class":"prop"},
   "gen3d-tankard": {"class":"prop"},
-  "gen3d-tavern-sign": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-tavern-sign": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-pet-carrier": {"class":"prop"},
+  "gen3d-bread-oven": {"class":"prop"},
+  "gen3d-cake-stand": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-baguette": {"class":"prop"},
+  "gen3d-burnt-tree": {"class":"prop"},
+  "gen3d-charred-log": {"class":"prop"},
+  "gen3d-burning-tree": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-rock-arch": {"class":"prop"}
  }
 }

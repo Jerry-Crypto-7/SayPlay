@@ -20242,6 +20242,158 @@
           0.14145
         ]
       }
+    },
+    {
+      "assetId": "gen3d-pet-carrier",
+      "tags": [
+        "pet carrier"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pet-carrier-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5988,
+          0,
+          -0.44951
+        ],
+        "max": [
+          0.5988,
+          0.98183,
+          0.44951
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bread-oven",
+      "tags": [
+        "bread oven"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bread-oven-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.53582,
+          0,
+          -0.54177
+        ],
+        "max": [
+          0.53582,
+          0.99852,
+          0.54177
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cake-stand",
+      "tags": [
+        "cake stand"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cake-stand-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34374,
+          0,
+          -0.34437
+        ],
+        "max": [
+          0.34374,
+          0.99997,
+          0.34437
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-baguette",
+      "tags": [
+        "baguette"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-baguette-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.7659,
+          0,
+          -2.37085
+        ],
+        "max": [
+          0.7659,
+          0.99956,
+          2.37085
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-burnt-tree",
+      "tags": [
+        "burnt tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-burnt-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44218,
+          0,
+          -0.25694
+        ],
+        "max": [
+          0.44218,
+          0.99954,
+          0.25694
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-charred-log",
+      "tags": [
+        "charred log"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-charred-log-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.41304,
+          0,
+          -0.50993
+        ],
+        "max": [
+          1.41304,
+          0.99208,
+          0.50993
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-burning-tree",
+      "tags": [
+        "burning tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-burning-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35272,
+          0,
+          -0.32992
+        ],
+        "max": [
+          0.35272,
+          0.99409,
+          0.32992
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rock-arch",
+      "tags": [
+        "rock arch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rock-arch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.91667,
+          0,
+          -0.32215
+        ],
+        "max": [
+          0.91667,
+          0.99471,
+          0.32215
+        ]
+      }
     }
   ]
 }

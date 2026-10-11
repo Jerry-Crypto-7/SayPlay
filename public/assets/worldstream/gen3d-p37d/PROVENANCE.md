@@ -211,3 +211,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-clothing-rack` | clothing rack | 4503 / 2071 |
 | `gen3d-tankard` | tankard | 3979 / 1893 |
 | `gen3d-tavern-sign` | tavern sign | 4668 / 2314 |
+| `gen3d-pet-carrier` | pet carrier | 4133 / 1962 |
+| `gen3d-bread-oven` | bread oven | 3898 / 1928 |
+| `gen3d-cake-stand` | cake stand | 4687 / 2341 |
+| `gen3d-baguette` | baguette | 4748 / 2374 |
+| `gen3d-burnt-tree` | burnt tree | 4617 / 2271 |
+| `gen3d-charred-log` | charred log | 4600 / 2246 |
+| `gen3d-burning-tree` | burning tree | 4319 / 2136 |
+| `gen3d-rock-arch` | rock arch | 4290 / 2118 |
