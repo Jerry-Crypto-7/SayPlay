@@ -83,16 +83,25 @@ function genreOf(spec: ReturnType<typeof draftGameSpecWithMeta>['spec']): string
   return spec.control === undefined || spec.control === 'tap_go' ? 'grid' : `control:${spec.control}`;
 }
 
-export async function funRow(sentence: FunSentence): Promise<FunRow> {
-  const { spec } = draftGameSpecWithMeta(sentence.text, 1);
+/** Svět, který publikace vybere (`world`), nebo důvod, proč arkádová hra nevznikla. */
+export interface PublishedWorld {
+  readonly genre: string;
+  readonly seed: number | null;
+  readonly playable: boolean;
+  readonly world: ArcadeWorld | null;
+  readonly issues: readonly string[];
+}
+
+export async function publishedWorld(text: string): Promise<PublishedWorld> {
+  const { spec } = draftGameSpecWithMeta(text, 1);
   const genre = genreOf(spec);
-  const dead = (issues: readonly string[]): FunRow => ({ id: sentence.id, genre, seed: null, playable: false, metrics: null, issues });
+  const dead = (issues: readonly string[]): PublishedWorld => ({ genre, seed: null, playable: false, world: null, issues });
   if (genre === 'grid') return dead(['the draft fell back to the grid game – no arcade world to measure']);
   await preloadPhysics(spec, loadRapier);
   // Táž výhybka jako `compileOnSeeds`: další semínko jen tehdy, když robot nevyhrál nebo nečinný vyhrál.
   let chosen: { seed: number; world: ArcadeWorld } | null = null;
   let last: ArcadeWorld | null = null;
-  for (const seed of derivedSeeds(seedFrom(sentence.text.trim()))) {
+  for (const seed of derivedSeeds(seedFrom(text.trim()))) {
     const made = arcadeWorldOf(spec, seed);
     if (!made.ok) return dead(made.issues);
     last = made.world;
@@ -103,9 +112,14 @@ export async function funRow(sentence: FunSentence): Promise<FunRow> {
     }
   }
   // Nehratelná hra se změří taky (hráč ji může dostat), do souhrnu ale nevstupuje.
-  const world = chosen?.world ?? (last as ArcadeWorld);
+  return { genre, seed: chosen?.seed ?? null, playable: chosen !== null, world: chosen?.world ?? last, issues: [] };
+}
+
+export async function funRow(sentence: FunSentence): Promise<FunRow> {
+  const { genre, seed, playable, world, issues } = await publishedWorld(sentence.text);
+  if (world === null) return { id: sentence.id, genre, seed, playable, metrics: null, issues };
   const bot = runBot(world, undefined, { profile: 'intermediate' });
-  return { id: sentence.id, genre, seed: chosen?.seed ?? null, playable: chosen !== null, metrics: funMetrics(traceRun(world, bot.inputs)), issues: [] };
+  return { id: sentence.id, genre, seed, playable, metrics: funMetrics(traceRun(world, bot.inputs)), issues };
 }
 
 const round2 = (value: number): number => Math.round(value * 100) / 100;
