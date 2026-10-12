@@ -14,7 +14,7 @@ import type { GameSpecV1 } from '../../spec';
 import type { ArcadeParts } from '../addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRef, RAMP_STEP_PCT, ROLE, UNIT } from '../contract';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef } from './behaviours';
-import { BOSS, TURRET } from './behaviours/boss';
+import { BOSS, DROPPER, TURRET } from './behaviours/boss';
 import { DUEL_ENRAGE } from './duel';
 import { PACING, type PacingActor, type PacingSetup, TENSION_CURVE, intensityAt, withPacing } from './pacing';
 import { progressionParts } from './progression-parts';
@@ -22,6 +22,7 @@ import { QUEST } from './quest';
 import { checkRhythmLevel, rhythmLevel } from './rhythm';
 import { RUNNER } from './runner';
 import { type GunParams, marchedRange, shooterWaves } from './shooter';
+import { courseOf, steerSegments } from './steer';
 import { THROW_SWING, throwField, throwParamsFor, throwParts } from './throw';
 import { type TimingLevelParams, checkTimingLevel, timingLevel, timingLevelAtSpeeds, timingSpeedOf } from './timing';
 import type { WaveParams } from './waves';
@@ -115,6 +116,73 @@ const track = (rows: number, rampLevel = false, foes = false): GenrePacing => (p
   phases: curvePhases(rows),
   ...(rampLevel ? { rampLevel: true } : {}),
 });
+
+/**
+ * Řízení (P46B T5): soupeři úseků a boss finále jsou shazovači (`behaviours/boss.ts` `dropper`) – jedou po silnici
+ * před hráčem a shazují do ní překážky po varování. Soupeř úseku (`scout`, 2 HP) od úseku 2 do příchodu bosse, boss
+ * (3 HP, větší) od `bossAt`; s ním soupeři i se shozy odjedou. Vstupují `ahead` před hráčem na ose x = 0 a na silnici
+ * dojedou sami. `room` = předlohy (soupeř, boss, překážka, počítadlo) a sloty `maxActors` + `maxShots`, `spare` =
+ * rezerva pro doplňky. Rozvrh losuje přes celou trať (`from` jen u soupeře): kroky rozjezdu propadnou a první soupeř
+ * přijde brzy po začátku úseku 2.
+ *
+ * Změřeno (20 semínek × 8 buněk `drive.*`, robot intermediate): boss od 760 ‰ padl s rezervou a poslední 4 s hry
+ * byly bez události (mrtvý čas závodu 4,07 s); od 810 ‰ mrtvý čas ≤ 3,35 s a boss padl v každé výhře. Rychlosti
+ * křivky (90/100/115/125 %) daly novice 0,9–1,0 bez střelby: soupeř shoz vidí od začátku varování a uhne; obtížnost
+ * dělá rychlost v úzkých zatáčkách. S 95/105/125/125 novice 0,55–0,65, se střelbou 0,35–0,5, intermediate ≥ 0,85.
+ */
+export const STEER_FOES = {
+  scout: BEHAVIOURS.dropper.body,
+  boss: { ...BEHAVIOURS.dropper.body, kind: 'boss', w: 1600, h: 1400, d: 3000, hp: DROPPER.bossHp } as BodyInit,
+  budget: 10,
+  from: PACING.segments.intro,
+  bossAt: 810,
+  ahead: 40 * UNIT,
+  room: 3 + 1 + PACING.maxActors + PACING.maxShots,
+  spare: 48,
+  /** Rychlost úseků v % (rozjezd, úsek 2, úsek 3, finále) místo `CURVE_SPEEDS`. */
+  speeds: [95, 105, 125, 125] as readonly number[],
+} as const;
+
+/** Silnice řízení s úseky: osa, šířka každého úseku a stopa soupeřů jako `steerControlRef` – fáze (`progressionParts`) je natažením zahodí. */
+function withRoad(parts: ArcadeParts): ArcadeParts {
+  const course = { ...courseOf(parts.level), rivalLane: 600, halfWidths: steerSegments(parts.level).map((segment) => Math.floor(segment.width / 2)) };
+  const road = (ref: PieceRef): PieceRef => {
+    if (ref.id === 'steer' || ref.id === 'steer_bot') return { ...ref, params: { ...ref.params, course } };
+    const base = ref.params.base as PieceRef | undefined;
+    return base === undefined ? ref : { ...ref, params: { ...ref.params, base: road(base) } };
+  };
+  return { ...parts, control: road(parts.control), bot: road(parts.bot) };
+}
+
+/**
+ * Řízení s průběhem: postup = ujetá trať, fáze z křivky (rychlost úseků), soupeř úseku a boss finále (`STEER_FOES`),
+ * když se do stropu těl vejdou; jinak trať bez nich a finále sprint (hra kvůli průběhu nikdy neselže). Užší úseky
+ * a turba rozjezdu staví generátor (`segments`).
+ */
+const steerPaced: GenrePacing = (parts, spec) => {
+  const used = parts.level.bodies.length + (parts.level.spawnSlots ?? 0) + STEER_FOES.room + STEER_FOES.spare;
+  const foes: Partial<GenrePacingSetup> = used > ARCADE_LIMITS.maxBodies ? {} : {
+    behaviours: [{ body: STEER_FOES.scout, behaviour: 'dropper', from: STEER_FOES.from }],
+    budget: STEER_FOES.budget,
+    until: STEER_FOES.bossAt,
+    // S bossem soupeři úseků odjedou i se svými shozy: boss má finále sám (jinak čekal na jejich shozy a do cíle nepadl).
+    clear: [{ role: 'hazard', at: STEER_FOES.bossAt }],
+    finale: 'boss',
+    boss: { body: STEER_FOES.boss, at: STEER_FOES.bossAt, behaviour: 'dropper' },
+  };
+  return {
+    goal: { by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks },
+    space: 'track',
+    spots: [0, STEER_FOES.ahead],
+    behaviours: [],
+    budget: 0,
+    finale: 'sprint',
+    ...foes,
+    segments: 'steer',
+    phases: curvePhases(0).map((phase, index) => ({ ...phase, speedPercent: STEER_FOES.speeds[index] ?? phase.speedPercent })),
+    ...(generatorParams(spec).roadWidth === undefined ? {} : { adjust: withRoad }),
+  };
+};
 
 /** Nová chování otevřeného pole: z kterých se losuje, kolik jich hra dostane a kolik spawnů rozvrh rozdá. */
 interface FieldFoes {
@@ -574,9 +642,10 @@ const livesAtMost = (spec: GameSpecV1, most: number): boolean => {
 
 /**
  * Průběh podle generátoru světa (`generatorOf`); žánry plní T11–T14. Generátor bez záznamu hraje beze změny.
- * Plošinovka zatím ne (robot nezná rychlost běhu); `steer_track` a `glide_course` staví jen spec bez `genre`,
+ * Plošinovka zatím ne (robot nezná rychlost běhu); `glide_course` staví jen spec bez `genre`,
  * stejně jako `arena` (agar ze slovního návrhu bez žánru) a `arena_catch` (`compose/catch.ts` – spec bez `genre`):
- * žánr Aréna staví jen `arena_collect`, `arena_escape` a `fight` (`genre/arena.ts`).
+ * žánr Aréna staví jen `arena_collect`, `arena_escape` a `fight` (`genre/arena.ts`). `steer_track` (P46B T5) staví
+ * spec bez `genre` (`compose/drive.ts`): průběh dostane, jen když nese značku nové hry `segments` (`pacedNative`).
  *
  * Chodec (`walker_*`) bez záznamu (odchylka T12, změřeno na 7 živých buňkách `walk.*` × 8 semínek): spec staví
  * `nativeSpec` bez `genre`, takže záznam by nikdy neběžel, a hra tvar průběhu neunese – robot projde bludiště
@@ -616,10 +685,18 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   rhythm_level: (parts, spec, seed) => (ownShape(spec) ? null : rhythmPaced(parts, spec, seed)),
   quest_station: (parts, spec, seed) => (ownShape(spec) ? null : stationPaced(parts, spec, seed)),
   throw_field: (parts, spec, seed) => (ownShape(spec) ? null : throwPaced(parts, spec, seed)),
+  // Řízení (P46B T5): složená hra (díly P42) ne – robot dílu by se s uhýbáním shozům přetahoval (vzor běžce).
+  steer_track: (parts, spec, seed) => (spec.assemblyParts !== undefined ? null : steerPaced(parts, spec, seed)),
 };
 
 /** Verze překladu žánru před průběhem (`GENRE_COMPILER_VERSION` v `genre/contract.ts`): uložené hry s ní průběh nedostanou. */
 export const UNPACED_GENRE_VERSION = 'genre.v1';
+
+/**
+ * Spec bez `genre`, který průběh dostane: nová hra řízení (P46B T5) nese v parametrech generátoru `segments` –
+ * uložená hra bez značky (i se stejným generátorem) staví tentýž svět jako dřív.
+ */
+const pacedNative = (spec: GameSpecV1): boolean => generatorParams(spec).segments === true;
 
 /** Nejvýš tolik pravidel ze stropu jádra si průběh vezme: `pacing` a `boss_beat`. */
 export const PACING_RULES = 2;
@@ -641,7 +718,7 @@ function rulesBesides(parts: ArcadeParts, spec: GameSpecV1): number {
  * křivka (`pacing_control`) zůstane vždy – hra kvůli průběhu nikdy neselže.
  */
 export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, generator: string): ArcadeParts {
-  const unpaced = spec.genre === undefined || spec.genre.compilerVersion === UNPACED_GENRE_VERSION;
+  const unpaced = spec.genre === undefined ? !pacedNative(spec) : spec.genre.compilerVersion === UNPACED_GENRE_VERSION;
   const entry = unpaced || (parts.issues?.length ?? 0) > 0 ? undefined : GENRE_PACING[generator];
   let setup = entry?.(parts, spec, seed) ?? null;
   if (setup === null || entry === undefined) return parts;

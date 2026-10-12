@@ -22,6 +22,7 @@ import { duelControl, enragedAfter } from './duel';
 import { FIGHT } from './fight';
 // Cykly `throw.ts` a `segments.ts` ↔ tenhle modul jsou bezpečné: ani jeden nečte hodnoty druhého při načtení, jen ve funkcích.
 import { type SegmentGenre, segmentScriptOf, segmentSpans } from './segments';
+import { type SteerCourse, steerSegments } from './steer';
 import { THROW_ROUND_COUNTER } from './throw';
 import { spotsAway, waveOf } from './waves';
 
@@ -226,6 +227,14 @@ function scaledOnce(control: string, params: Readonly<Record<string, unknown>>, 
 /** Intenzita podle nejvyššího dosaženého postupu v počítadle. */
 const intensityOf = (state: Int32Array, keeper: number): number => intensityAt(reachedOf(state, keeper), TENSION_CURVE);
 
+const roads = new WeakMap<object, SteerCourse | null>();
+/** Silnice řízení pod obaly základního ovládání (osa trati `course`), jednou na parametry; jiné ovládání ji nemá. */
+function roadOf(base: PieceRef): SteerCourse | undefined {
+  let road = roads.get(base);
+  if (road === undefined) roads.set(base, (road = (controlIn(base, 'steer')?.params.course as SteerCourse | undefined) ?? null));
+  return road ?? undefined;
+}
+
 /**
  * `pacing_control`: posune počítadlo postupu, pak krok základního ovládání se
  * škálovanými knoflíky žánru (`PACING_KNOBS`) a krok těl chování.
@@ -243,7 +252,7 @@ export function makePacingControl(controls: Readonly<Record<string, ControlPiece
       const own = parseOnce(native, params.base.params);
       const intensity = intensityOf(state, params.keeper);
       native.step(state, player, input, params.steady === true ? own : scaledOnce(params.base.id, own, intensity));
-      if (params.behaviours !== undefined) stepBehaviours(state, player, params.behaviours, params.space ?? 'plane', intensity, typeof own.half === 'number' ? own.half : undefined);
+      if (params.behaviours !== undefined) stepBehaviours(state, player, params.behaviours, params.space ?? 'plane', intensity, typeof own.half === 'number' ? own.half : undefined, roadOf(params.base));
     },
   };
 }
@@ -407,6 +416,16 @@ function segmentSpeeds(control: PieceRef): number[] {
   return [0, ...segmentSpans().map(([at]) => at)].map((at) => [...phases].reverse().find((phase) => phase.start <= at)?.speedPercent ?? 100);
 }
 
+/** Šířka silnice řízení (mezi mantinely) uprostřed rozjezdu a úseků scénáře; trať bez mantinelů = prázdné. */
+function segmentWidths(level: ArcadeParts['level']): number[] {
+  const walls = steerSegments(level);
+  if (walls.length === 0) return [];
+  return [[0, PACING.segments.intro] as const, ...segmentSpans()].map(([from, to]) => {
+    const z = Math.floor((level.length * (from + to)) / 2000);
+    return (walls.find((segment) => z < segment.far) ?? (walls[walls.length - 1] as (typeof walls)[number])).width;
+  });
+}
+
 /**
  * Části hry s průběhem: obalí ovládání a robota, za tělesa úrovně přidá
  * předlohy chování a počítadlo, rezervu spawnů a pravidlo `pacing` s rozvrhem
@@ -435,7 +454,7 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const bodies = [...parts.level.bodies, ...[...actors.map((actor) => actor.body), ...shotBodies, ...extras].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
   const raw = behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(rng, TENSION_CURVE, setup.budget, behaviours.length, setup.from, setup.until);
   // Scénář losuje až za rozvrhem, takže kroky zůstanou, kde byly: nový nepřítel úseku smí až od jeho začátku a první krok úseku je jeho.
-  const cast = { foes: behaviours.flatMap((actor) => (actor.behaviour === undefined ? [] : [{ behaviour: actor.behaviour, from: actor.from ?? 0 }])), speeds: segmentSpeeds(parts.control) };
+  const cast = { foes: behaviours.flatMap((actor) => (actor.behaviour === undefined ? [] : [{ behaviour: actor.behaviour, from: actor.from ?? 0 }])), speeds: segmentSpeeds(parts.control), widths: setup.segments === 'steer' ? segmentWidths(parts.level) : [] };
   const script = setup.segments === undefined ? [] : segmentScriptOf(rng, setup.segments, cast);
   const arrivals = script.flatMap((step) => step.changes.flatMap((change) => (change.kind === 'newFoe' ? [{ ...step, index: behaviours.findIndex((actor) => actor.behaviour === change.behaviour) }] : [])));
   const fromOf = (index: number): number => Math.max(behaviours[index]?.from ?? 0, arrivals.find((arrival) => arrival.index === index)?.at ?? 0);

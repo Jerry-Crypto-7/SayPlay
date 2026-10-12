@@ -23,14 +23,15 @@
 
 import { z } from 'zod';
 
-import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, type PieceRef, ROLE, UNIT, bodyBase } from '../../contract';
+import { AIM_GRID, type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, type PieceRef, ROLE, UNIT, bodyBase } from '../../contract';
 import { ARENA, DIRECTIONS, ESCAPE, directionOfAxis } from '../arena';
 import { predict } from '../arena-bot';
+import type { SteerCourse } from '../steer';
 import { ambusher } from './ambusher';
-import { boss, turret } from './boss';
+import { boss, dropper, turret } from './boss';
 import { flanker, overlaps } from './flanker';
 import { guardian } from './guardian';
-import { type Hazard, fairStrike, planLanes } from './lanes';
+import { type Box, type Hazard, fairStrike, planLanes } from './lanes';
 import { sniper } from './sniper';
 import { swarm } from './swarm';
 
@@ -84,6 +85,10 @@ export interface BehaviourStep extends BehaviourView {
   readonly intensity: number;
   /** Polovina strany plochy (`plane`), když ji základní ovládání zná. */
   readonly half?: number;
+  /** Osa a šířka silnice řízení (`steer` pod obaly), když trať je silnice, ne pruhy běžce (P46B T5). */
+  readonly road?: SteerCourse;
+  /** Jen v `idle` (pro `ready`): ostatní živá těla téhož chování – shazovače se střídají (P46B T5). */
+  readonly peers?: readonly BehaviourView[];
   /** Zapíše paměť chování (`memo` od dalšího tiku). */
   remember(memo: number): void;
 }
@@ -98,6 +103,8 @@ export interface Behaviour {
   readonly shot?: BodyInit;
   /** Hejno: kolik těl přijde jedním spawnem rozvrhu, na jednom místě po `spacing` od sebe. */
   readonly group?: { readonly size: number; readonly spacing: number };
+  /** Těla chování se střídají: `ready` dostane `peers` (ostatní živá těla téhož chování). */
+  readonly takesTurns?: true;
   /** Délka tohoto varování (boss ji zkracuje zásahy); bez metody `ticks.telegraph`, nikdy pod `TELEGRAPH_MIN`. */
   warnTicks?(view: BehaviourStep): number;
   /** Druh varování podle útoku, který přijde; bez metody `telegraph[space]`. */
@@ -125,12 +132,17 @@ export interface Behaviour {
    * překážka (robot střelce na ni nemíří); bez metody vůbec.
    */
   seenAs?(view: BehaviourView): 'collectible' | 'chaser' | 'obstacle' | undefined;
+  /**
+   * Kde tělo vidí základní robot, když jinde, než je (P46B T5): kvádr (varování shozu = překážka v místě shozu),
+   * nebo `null` = robot tělo nevidí vůbec. Má přednost před `seenAs`.
+   */
+  seenBox?(view: BehaviourView): Box | null;
 }
 
 /** Kód chování = pořadí + 1. Je součást hashe: nové jen na konec, nepřečíslovat. */
-export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian', 'swarm', 'boss', 'turret'] as const;
+export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian', 'swarm', 'boss', 'turret', 'dropper'] as const;
 export type BehaviourId = (typeof BEHAVIOUR_IDS)[number];
-export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian, swarm, boss, turret };
+export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian, swarm, boss, turret, dropper };
 
 /** Chování ve světě: id a index předlohy, ze které se čte podpis; `shot` = předloha výstřelu. */
 export const behaviourRefSchema = z.object({ id: z.enum(BEHAVIOUR_IDS), template: z.int().min(1), shot: z.int().min(1).optional() }).strict();
@@ -150,8 +162,7 @@ const LEFT_MASK = 0x7ff;
 const MEMO_SHIFT = 20;
 const MEMO_MASK = 0x7ff;
 /** Cíl v `aux1`: `x / 16` v horních, `z / 64` v dolních 16 bitech (±524 m, ±2 km – trať 90 s se vejde). */
-const AIM_X = 16;
-const AIM_Z = 64;
+const { x: AIM_X, z: AIM_Z } = AIM_GRID;
 
 const packAim = (x: number, z: number): number => ((Math.trunc(x / AIM_X) & 0xffff) << 16) | (Math.trunc(z / AIM_Z) & 0xffff);
 const aimOf = (packed: number): { x: number; z: number } => ({ x: (packed >> 16) * AIM_X, z: ((packed << 16) >> 16) * AIM_Z });
@@ -300,17 +311,20 @@ function trackHazards(state: ArcadeState, player: number, found: readonly Actor[
  * už běží, nezavře hráči všechny pruhy; jinak tělo počká. Hejno rozhodne jednou za tik pro všechna svá těla, přes
  * celou svou délku (`group`), ať se řada neroztrhne.
  */
-export function stepBehaviours(state: ArcadeState, player: number, refs: readonly BehaviourRef[], space: BehaviourSpace, intensity: number, half?: number): void {
+export function stepBehaviours(state: ArcadeState, player: number, refs: readonly BehaviourRef[], space: BehaviourSpace, intensity: number, half?: number, road?: SteerCourse): void {
   const found = actors(state, player, refs);
   let live: Hazard[] | null = null;
   let verdicts: Map<BehaviourRef, boolean> | null = null;
+  // Plocha a silnice jednou za tik, ne pro každý krok každého těla.
+  const ground = { ...(half === undefined ? {} : { half }), ...(road === undefined ? {} : { road }) };
   for (const [body, behaviour, code, ref] of found) {
     const ticks = behaviour.ticks[space];
     const before = viewOf(state, body, player);
-    const step = (phase: BehaviourPhase, ticksLeft: number, aim = before.aim): BehaviourStep => ({ ...before, space, phase, ticksLeft, aim, intensity, ...(half === undefined ? {} : { half }), remember: (memo) => remember(state, body, memo) });
+    const step = (phase: BehaviourPhase, ticksLeft: number, aim = before.aim): BehaviourStep => ({ ...before, space, phase, ticksLeft, aim, intensity, ...ground, remember: (memo) => remember(state, body, memo) });
     let view = step(before.phase, before.ticksLeft);
     if (view.phase === 'idle') {
-      if (behaviour.ready(view)) {
+      const peers = behaviour.takesTurns === true ? found.flatMap(([other, kind]) => (kind === behaviour && other !== body ? [viewOf(state, other, player)] : [])) : undefined;
+      if (behaviour.ready(peers === undefined || peers.length === 0 ? view : { ...view, peers })) {
         const wanted = behaviour.aim(view);
         const packed = packAim(wanted.x, wanted.z);
         const warned = step('telegraph', Math.max(TELEGRAPH_MIN, behaviour.warnTicks?.(view) ?? ticks.telegraph), aimOf(packed));
@@ -393,7 +407,20 @@ export function behaviourEffects(state: ArcadeState, player: number, refs: reado
 export function seenByBase(observation: ArcadeObservation, refs: readonly BehaviourRef[]): ArcadeObservation {
   let state: ArcadeState | null = null;
   for (const [body, behaviour] of actors(observation.state, observation.player, refs)) {
-    const role = behaviour.seenAs?.(viewOf(observation.state, body, observation.player));
+    const view = viewOf(observation.state, body, observation.player);
+    if (behaviour.seenBox !== undefined) {
+      // Kvádr v kopii stavu: robot ho vidí tam (a tak velký), stojící, nebo vůbec.
+      const box = behaviour.seenBox(view);
+      state ??= observation.state.slice();
+      const base = bodyBase(body);
+      if (box === null) state[base + BODY.flags] = (state[base + BODY.flags] as number) & ~FLAG.alive;
+      else {
+        for (const slot of ['x', 'y', 'z', 'w', 'h', 'd'] as const) state[base + BODY[slot]] = box[slot];
+        for (const slot of ['vx', 'vy', 'vz'] as const) state[base + BODY[slot]] = 0;
+      }
+      continue;
+    }
+    const role = behaviour.seenAs?.(view);
     if (role === undefined) continue;
     state ??= observation.state.slice();
     state[bodyBase(body) + BODY.role] = ROLE[role];

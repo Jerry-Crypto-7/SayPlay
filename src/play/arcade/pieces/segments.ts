@@ -14,8 +14,8 @@ import type { BehaviourId } from './behaviours';
 // Cyklus s `pacing.ts` (`withPacing` losuje scénář) je bezpečný: `PACING` se čte jen ve funkcích, ne při načtení.
 import { PACING } from './pacing';
 
-/** Žánry se scénářem úseků; řízení a skákačka přibudou s T5 a T6. */
-export type SegmentGenre = 'runner';
+/** Žánry se scénářem úseků; skákačka přibude s T6. */
+export type SegmentGenre = 'runner' | 'steer';
 
 export type SegmentChange =
   | { readonly kind: 'newFoe'; readonly behaviour: BehaviourId }
@@ -37,6 +37,8 @@ export interface SegmentCast {
   readonly speeds: readonly number[];
   readonly terrain?: readonly string[];
   readonly density?: readonly number[];
+  /** Volná šířka trati uprostřed rozjezdu, úseku 2 a úseku 3 (řízení: mezi mantinely); užší úsek = prostředí `narrow`. */
+  readonly widths?: readonly number[];
 }
 
 /** Úseky 2 a 3 jako `[začátek, konec)` v promile postupu. */
@@ -47,14 +49,18 @@ export const segmentSpans = (): readonly (readonly [number, number])[] => [
 
 /**
  * Které změny žánr unese. Běžec bez prostředí a hustoty: řady navíc by zavřely
- * volný pruh (`GENRE_PACING.runner_track`), rychlost dávají fáze křivky.
+ * volný pruh (`GENRE_PACING.runner_track`), rychlost dávají fáze křivky. Řízení
+ * (T5): nový soupeř, rychlost a užší trať (`widths` – šířky staví generátor).
  */
 const KINDS: Readonly<Record<SegmentGenre, readonly SegmentChange['kind'][]>> = {
   runner: ['speedTier', 'newFoe'],
+  steer: ['speedTier', 'newFoe', 'terrain'],
 };
 
 const rises = (values: readonly number[] | undefined, k: number): boolean =>
   values !== undefined && (values[k] ?? 0) > (values[k - 1] ?? Infinity);
+const falls = (values: readonly number[] | undefined, k: number): boolean =>
+  values !== undefined && (values[k] ?? Infinity) < (values[k - 1] ?? 0);
 
 /**
  * Scénář úseků 2 a 3: rychlost a hustota, když proti předchozímu úseku rostou,
@@ -80,7 +86,9 @@ export function segmentScriptOf(rng: CompileRng, genre: SegmentGenre, cast: Segm
       changes.push({ kind: 'newFoe', behaviour });
     }
     const terrain = (cast.terrain ?? []).filter((variant) => !used.has(`terrain:${variant}`));
-    if (kinds.has('terrain') && terrain.length > 0) {
+    // Užší trať je změna každého úseku, který zúží – bez losu (šířky jsou ve světě hotové).
+    if (kinds.has('terrain') && falls(cast.widths, k)) changes.push({ kind: 'terrain', variant: 'narrow' });
+    else if (kinds.has('terrain') && terrain.length > 0) {
       const variant = rng.pick(terrain);
       used.add(`terrain:${variant}`);
       changes.push({ kind: 'terrain', variant });

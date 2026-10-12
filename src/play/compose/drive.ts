@@ -53,6 +53,8 @@ export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
       drift: params.drift === 1,
       ...(params.grip === undefined ? {} : { grip: params.grip }),
       ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }),
+      // Nová hra (P46B T5): úseky, soupeři úseků a boss finále (`pacingParts`); uložený spec bez značky se nemění.
+      segments: true,
     },
     title: `${content.hero} ${race ? 'race' : chase ? 'escape' : 'drive'}`,
     archetype: 'hazard_crossing',

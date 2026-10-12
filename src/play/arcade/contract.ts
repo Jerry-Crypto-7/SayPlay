@@ -756,3 +756,9 @@ export interface ArcadeWorld {
   readonly length: number;
   readonly initial: readonly number[];
 }
+
+/**
+ * Mřížka zamčeného cíle chování (`aux1`, P45C): `x` po 16, `z` po 64 jednotkách. Chování, které podle cíle
+ * staví (shazovač P46B T5 – osa silnice v místě shozu), počítá s cílem už zarovnaným na ni.
+ */
+export const AIM_GRID = { x: 16, z: 64 } as const;

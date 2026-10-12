@@ -360,6 +360,8 @@ export const steerParamsSchema = z
     drift: z.boolean().optional(),
     grip: z.int().min(4).max(20).optional(),
     brakeDrift: z.int().min(4).max(20).optional(),
+    /** Nová hra s úseky a bossem (P46B T5, `steerTrack`); uložený spec bez pole hraje jako dřív. */
+    segments: z.literal(true).optional(),
   })
   .strict();
 export type SteerParams = z.infer<typeof steerParamsSchema>;

@@ -24,9 +24,10 @@
  * resp. skok (trať), bit 9 = trať (okno `recover` se neotvírá).
  */
 
-import { type ArcadeEffect, type ArcadeState, BODY, type BodyInit, COUNTER, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase, bodyHp } from '../../contract';
+import { AIM_GRID, type ArcadeEffect, type ArcadeState, BODY, type BodyInit, COUNTER, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase, bodyHp } from '../../contract';
 import { arenaAxis } from '../arena';
 import { RUNNER } from '../runner';
+import { STEER_TRACK, type SteerCourse, centerAt, halfWidthAt } from '../steer';
 import { actTicks, boxOf, clampTo, flanker, headTo, inside, laneOf, length, read, set, sideLaneX, toward } from './flanker';
 import type { Behaviour, BehaviourPhase, BehaviourRef, BehaviourStep, BehaviourView } from './index';
 import { SHOT, dodgeShot, fireShot } from './sniper';
@@ -346,4 +347,152 @@ export const turret: Behaviour = {
 
   // Hráč střelnice z místa neuhne; salvu sestřelí robot střelce sám (výstřely jsou nepřátelé).
   botStep: (_view, input) => input,
+};
+
+/**
+ * Shazovač (P46B T5): boss na silnici – soupeř úseků a boss finále řízení. Silnice řízení se stáčí (osa `centerAt`
+ * a šířka `halfWidthAt` z `BehaviourStep.road`), pruhy běžce kolem x = 0 (`laneOf`, `sideLaneX`) na ní nejdou.
+ *
+ * Jede po ose silnice před hráčem. Odkud ho hráč dojede až za varování a `lead` tiků, tam zamkne místo shozu,
+ * zastaví se na něm a varuje (`ring`, `telegraph` tiků); pak shodí překážku (výstřel; stojí) a ujede dopředu. Na
+ * rovince padá shoz do stopy (`minOff` od osy, na straně hráče – na druhé straně osy zbude průjezd), jinde k vnějšímu
+ * kraji zatáčky; na rovinku do `wait` počká. Překážka, kterou hráč celou minul, zmizí a shazovači ubere 1 HP; poslední
+ * HP = odjede (zmizí). Vlastní další shoz až po minutí předchozího místa – shazovač má na silnici nejvýš jednu svou
+ * překážku a pozná ji podle polohy (= zamčený cíl); varování shazovačů se nepřekrývají (`takesTurns`). Výhru nedá –
+ * trať se dál dojede do cíle. Bez silnice (jiné ovládání) jen drží tempo hráče a nevaruje nikdy.
+ *
+ * Obtížnost (P46B T5, 20 semínek × 8 buněk `drive.*`): `lead` 4, rychlosti úseků `STEER_FOES.speeds` – novice
+ * 0,35–0,65, intermediate ≥ 0,85, boss padl v každé výhře intermediate. Při `lead` 10–20 vyhrával novice skoro vše:
+ * varování robot vidí od začátku (`seenBox`) a uhne včas; obtížnost pro něj dávají rychlost a šířka v zatáčkách.
+ */
+export const DROPPER = {
+  /** Odstup v ticích jízdy hráče: za varováním ještě `lead` tiků k překážce; stojí o `slack` dál; nejpomalejší tempo pro odstup. */
+  lead: 4, slack: 4 * UNIT, minPace: 200,
+  /** Dorovnání odstupu za tik (hráč jede 270–435) a přesun napříč. */
+  catchUp: 400, across: 300,
+  telegraph: 36,
+  /** Střed shozu do stopy `minOff` od osy; u kraje zatáčky `edge` od mantinelu (kraj překážky 0,2 m od něj). */
+  minOff: 500, edge: 500,
+  /** Další shoz, až hráč minul předchozí místo shozu aspoň o tolik. */
+  clear: 2 * UNIT,
+  /**
+   * Shoz do stopy hráče jen na rovince, aspoň `after` za jejím začátkem a `before` před koncem: v zatáčce by uhnutí
+   * ke kraji nestihlo další schod a před zatáčkou by se řidič nevrátil na osu (robot pak narazil do mantinelu).
+   * Jinde leží shoz u vnějšího kraje zatáčky (`edge` od mantinelu), mimo stopu, kterou zatáčka vede.
+   */
+  after: 6 * UNIT, before: 12 * UNIT,
+  /** Shoz u kraje jen, když místo do stopy nezačne do `wait` dál (jinak by do stopy padal zřídka). */
+  wait: 30 * UNIT,
+  /** HP soupeře úseku (dva uhnuté shozy) a bosse (tři – měřidlo finále chce ≥ 3 zásahy). */
+  hp: 2, bossHp: 3,
+} as const;
+
+/** Shozená překážka: stojí na silnici, nižší a širší než výstřel ostřelovače. */
+export const DROP: BodyInit = { role: 'hazard', kind: 'road_drop', x: 0, y: 0, z: 0, w: 600, h: 500, d: 600, solid: false };
+
+/** Shoz trvá tik (překážka pak stojí sama). */
+const DROP_TICKS = { telegraph: DROPPER.telegraph, act: 1, recover: 12 } as const;
+
+/** Odstup před hráčem, odkud shazovač varuje: hráč tam dojede za varování a `lead` tiků. */
+const dropDistance = (view: BehaviourView): number => Math.max(DROPPER.minPace, read(view.state, view.player, 'vz')) * (DROPPER.telegraph + DROPPER.lead);
+
+/** Leží `z` na rovince silnice (úsek delší než schod zatáčky), aspoň `after` za začátkem a `before` před koncem? */
+function onStraight(road: SteerCourse, z: number): boolean {
+  const at = road.ends.findIndex((end) => z < end);
+  if (at < 1) return false;
+  const near = road.ends[at - 1] as number;
+  const far = road.ends[at] as number;
+  return far - near > STEER_TRACK.segment && z - near >= DROPPER.after && far - z >= DROPPER.before;
+}
+
+/** Začne do `wait` za `z` místo, kde smí shoz do stopy (`onStraight`)? Pak shazovač počká na něj. */
+function straightSoon(road: SteerCourse, z: number): boolean {
+  for (let at = Math.max(1, road.ends.findIndex((end) => z < end)); at > 0 && at < road.ends.length; at += 1) {
+    const near = road.ends[at - 1] as number;
+    if (near + DROPPER.after > z + DROPPER.wait) return false;
+    if ((road.ends[at] as number) - near > STEER_TRACK.segment && (road.ends[at] as number) - Math.max(z, near + DROPPER.after) >= DROPPER.before) return true;
+  }
+  return false;
+}
+
+/** Živá překážka shazovače v místě jeho zamčeného cíle (předloha `shot`), nebo −1. */
+function dropAt(view: BehaviourView, shot: number): number {
+  const { state, aim } = view;
+  for (let body = state[HEADER.spawnBase] as number; body < (state[HEADER.bodyCount] as number); body += 1) {
+    if (thrownBy(state, body, shot) && read(state, body, 'x') === aim.x && read(state, body, 'z') === aim.z) return body;
+  }
+  return -1;
+}
+
+export const dropper: Behaviour = {
+  id: 'dropper',
+  telegraph: { plane: 'ring', track: 'ring' },
+  ticks: { plane: DROP_TICKS, track: DROP_TICKS },
+  body: { role: 'hazard', kind: 'dropper', x: 0, y: 0, z: 0, w: 1000, h: 900, d: 1800, solid: false, hp: DROPPER.hp },
+  shot: DROP,
+  takesTurns: true,
+
+  ready(view) {
+    const { state, body, player } = view;
+    const z = read(state, body, 'z');
+    const pz = read(state, player, 'z');
+    const ahead = z - pz;
+    const from = dropDistance(view);
+    // Vlastní další shoz až za minutým předchozím (pozná ho podle cíle); cizí varování se nepřekrývají – shozy dvou
+    // shazovačů jdou po sobě aspoň o varování (slalom), nikdy vedle sebe.
+    const passed = (aim: BehaviourView['aim']): boolean => pz > aim.z + DROPPER.clear;
+    if (view.road === undefined || ahead < from || ahead > from + 2 * DROPPER.slack || !passed(view.aim) || (view.peers ?? []).some((peer) => peer.phase === 'telegraph')) return false;
+    const at = Math.trunc(z / AIM_GRID.z) * AIM_GRID.z;
+    return onStraight(view.road, at) || !straightSoon(view.road, at);
+  },
+
+  aim(view) {
+    const { state, body, player, road } = view;
+    // Místo shozu už na mřížce zamčeného cíle: osa silnice se počítá tam, kam překážka opravdu padne.
+    const z = Math.trunc(read(state, body, 'z') / AIM_GRID.z) * AIM_GRID.z;
+    if (road === undefined) return { x: read(state, body, 'x'), z };
+    const center = centerAt(road, z);
+    const before = view.aim.x - centerAt(road, view.aim.z);
+    if (!onStraight(road, z)) {
+      // Mimo rovinku: k vnějšímu kraji zatáčky (proti směru, kam silnice uhýbá), na rovné na druhou stranu než minule.
+      const bend = Math.sign(centerAt(road, z + STEER_TRACK.segment) - centerAt(road, z - STEER_TRACK.segment));
+      return { x: center + (bend !== 0 ? -bend : before > 0 ? -1 : 1) * (halfWidthAt(road, z) - DROPPER.edge), z };
+    }
+    // Rovinka: do stopy – `minOff` od osy, kudy řidič rovinku jede, na straně, kde hráč je; hráč na ose dostane
+    // shoz na druhou stranu než minule. Na druhé straně osy zbude průjezd.
+    const rel = read(state, player, 'x') - centerAt(road, read(state, player, 'z'));
+    const side = Math.abs(rel) * 2 >= DROPPER.minOff ? Math.sign(rel) : before > 0 ? -1 : 1;
+    return { x: center + side * DROPPER.minOff, z };
+  },
+
+  done: () => true,
+
+  move(view) {
+    const { state, body, player, phase, road } = view;
+    const x = read(state, body, 'x');
+    const z = read(state, body, 'z');
+    // Varování: stojí na místě shozu. Jinak po ose silnice na odstup před hráčem.
+    if (phase === 'telegraph') set(state, body, toward(x, view.aim.x, DROPPER.across), clampTo(view.aim.z - z, DROPPER.catchUp));
+    else {
+      const target = read(state, player, 'z') + dropDistance(view) + DROPPER.slack;
+      set(state, body, road === undefined ? 0 : toward(x, centerAt(road, z), DROPPER.across), read(state, player, 'vz') + clampTo(target - z, DROPPER.catchUp));
+    }
+  },
+
+  effects(view, ref): readonly ArcadeEffect[] {
+    if (ref.shot === undefined) return [];
+    const { state, body, player } = view;
+    const effects: ArcadeEffect[] = view.phase === 'act' && view.ticksLeft === DROP_TICKS.act ? [{ kind: 'spawn', template: ref.shot, x: view.aim.x, y: DROP.y, z: view.aim.z, vx: 0, vy: 0, vz: 0 }] : [];
+    const drop = dropAt(view, ref.shot);
+    // Uhnutý shoz: překážka celá za hráčem.
+    if (drop < 0 || read(state, drop, 'z') + Math.trunc(read(state, drop, 'd') / 2) >= read(state, player, 'z') - Math.trunc(read(state, player, 'd') / 2)) return effects;
+    effects.push({ kind: 'despawn', body: drop }, { kind: 'hit', body, by: player, amount: 1 });
+    if (bodyHp(state, body) <= 1) effects.push({ kind: 'despawn', body });
+    return effects;
+  },
+
+  // Řidič uhýbá sám (`steer_bot` s `dodge`): varování vidí jako překážku v místě shozu (`seenBox`).
+  botStep: (_view, input) => input,
+
+  seenBox: (view) => (view.phase === 'telegraph' ? { x: view.aim.x, y: DROP.y, z: view.aim.z, w: DROP.w, h: DROP.h, d: DROP.d } : null),
 };
