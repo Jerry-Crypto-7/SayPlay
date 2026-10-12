@@ -54,3 +54,18 @@ Zorné pole je 40 m před hráčem a 5 m za ním. Plošiny a dlouhé stěny do h
 | Test T6 (semínka 1–8, intermediate): mrtvý čas | – | ≤ 3,62 s, boss padl v každé výhře |
 
 Nalezeno, nevyřešeno: věty se sbíráním všeho (`collectAll`, např. „collecting bananas“) mají jen věci z věty a mrtvý čas 9,5–15,5 s (mince navíc by se staly povinnými). Věta „obby game with lava and spinning bars“ boss ani změnu úseku 3 v měřidle nemá (důvod neověřen; měřidlo výsledek běhu nezapisuje).
+
+## Po T7 (`after.json`, 13. 10., `5462f04b`) – cíl T8 zatím nesplněn
+
+| Buňka | Mrtvý čas (medián, s) | `rising` | `finale` | `segmentChanges ≥ 2` | Cíl T8 |
+|---|---|---|---|---|---|
+| běžec | 9,36 (beze změny) | 1 | 0,67 (beze změny) | 1 | mrtvý čas a finále ne |
+| řízení | 3,23 | 1 | 1 | 1 | ano |
+| skákačka | 2,77 | 1 | 0,86 | 0,86 | `segmentChanges` ne (6/7) |
+
+Proč (změřeno sondou nad publikovaným světem, robot intermediate):
+
+- **Hry s díly (P42, `assemblyParts`) průběh úseků ani bosse nedostanou** – výjimka v `GENRE_PACING` od P45C (běžec) a T5/T6 (řízení, skákačka): robot dílu rozhoduje o pruhu nad robotem průběhu. Z 6 vět běžce jsou takové 3 (b02 „Amanita … flee and shoot“ díl `fight`, b03 a s003 křeček s Roombou díl `escape`), mají finále `sprint`, prázdný rozvrh a mrtvý čas 8,7–10 s; b02 a b03 jsou věty majitele. Ze skákačky „obby“ (díl `hazard`), proto 6/7.
+- **Běžec s úseky (b01, b04, m08) má mince po celé trati, ale robot běžce je nesbírá** – `runner-bot.ts` jen uhýbá, mince bere náhodou. Mince leží každá 2–4 % trati (~1,5–2 s), v rozjezdu od 65 ‰. Robot: tučňák první mince až po 20 s (mrtvý čas 10 s mezi vlnami šablony v 5. a 15. s), králík 5,08 s, veverka 6,52 s. Finále těchto tří je boss (`why: boss`).
+
+Zábava panelu P45 (40 her) proti `fun-baseline.json` P46A (týž základ `491079b7`): mrtvý čas medián 5,36 → 4,00 s, `rising` 0,55 → 0,63, finále 0,23 → 0,35, události/s 1,09 → 1,16. Žádná věta horší (hratelnost, nejdelší mezera +0,5 s, ztracené stoupání, finále, počet chování).
