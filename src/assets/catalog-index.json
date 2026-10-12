@@ -25209,6 +25209,139 @@
           0.19445
         ]
       }
+    },
+    {
+      "assetId": "gen3d-sandworm",
+      "tags": [
+        "sandworm"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sandworm-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.70381,
+          0,
+          -0.70325
+        ],
+        "max": [
+          0.70381,
+          1.00001,
+          0.70325
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crystal-golem",
+      "tags": [
+        "crystal golem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-crystal-golem-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33277,
+          0,
+          -0.17524
+        ],
+        "max": [
+          0.33277,
+          0.9995,
+          0.17524
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-scrap-golem",
+      "tags": [
+        "scrap golem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-scrap-golem-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36447,
+          0,
+          -0.16676
+        ],
+        "max": [
+          0.36447,
+          0.99656,
+          0.16676
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-warthog",
+      "tags": [
+        "warthog"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-warthog-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35964,
+          0,
+          -0.62601
+        ],
+        "max": [
+          0.35964,
+          0.99096,
+          0.62601
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wraith",
+      "tags": [
+        "wraith"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wraith-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32828,
+          0,
+          -0.14132
+        ],
+        "max": [
+          0.32828,
+          0.99294,
+          0.14132
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bison",
+      "tags": [
+        "bison"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bison-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28677,
+          0,
+          -0.77961
+        ],
+        "max": [
+          0.28677,
+          0.98893,
+          0.77961
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ghoul",
+      "tags": [
+        "ghoul"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ghoul-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48863,
+          0,
+          -0.33951
+        ],
+        "max": [
+          0.48863,
+          0.9997,
+          0.33951
+        ]
+      }
     }
   ]
 }

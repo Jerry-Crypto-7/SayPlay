@@ -12,3 +12,4 @@ Psaný smyčkou `D:/caches/p46f/loop.mjs` po každém kole. **Model** = obrázek
 | 6 (opakování) | boss-runner boss-end boss-air boss-machine | 10 | 9 | 9/9 | 6 | – | lava golem, hydra, gyrocopter, gatling gun, bigfoot, wild boar | – |
 | 7 (opakování) | boss-runner boss-air boss-end boss-machine | 10 | 4 | 2/4 | 2 | – | kraken tentacle, chariot | – |
 | 8 | boss-runner boss-end | 10 | 8 | 6/8 | 6 | – | iron golem, lich, manticore, evil snowman, chimera, mud golem | – |
+| 9 | boss-runner boss-end | 10 | 10 | 7/10 | 7 | – | sandworm, crystal golem, scrap golem, warthog, wraith, bison, ghoul | – |

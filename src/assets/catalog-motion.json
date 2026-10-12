@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "377ce72c54fad24156d2401d7fee0c44ecb5497ce0f60f370387e705dd81674e",
+ "catalogHash": "a2e43bd8c563386da7ee289736f21df674eb17aebfda48c36b584fe56e6fef15",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1246,6 +1246,13 @@
   "gen3d-manticore": {"class":"prop"},
   "gen3d-evil-snowman": {"class":"prop"},
   "gen3d-chimera": {"class":"prop"},
-  "gen3d-mud-golem": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-mud-golem": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-sandworm": {"class":"prop"},
+  "gen3d-crystal-golem": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-scrap-golem": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-warthog": {"class":"prop"},
+  "gen3d-wraith": {"class":"biped","regions":{"legY":0.248}},
+  "gen3d-bison": {"class":"prop"},
+  "gen3d-ghoul": {"class":"prop"}
  }
 }

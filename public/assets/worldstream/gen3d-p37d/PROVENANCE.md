@@ -471,3 +471,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-evil-snowman` | evil snowman | 4700 / 2328 |
 | `gen3d-chimera` | chimera | 4594 / 2284 |
 | `gen3d-mud-golem` | mud golem | 4089 / 1910 |
+| `gen3d-sandworm` | sandworm | 4729 / 2361 |
+| `gen3d-crystal-golem` | crystal golem | 4565 / 2201 |
+| `gen3d-scrap-golem` | scrap golem | 4430 / 2055 |
+| `gen3d-warthog` | warthog | 4574 / 2257 |
+| `gen3d-wraith` | wraith | 4591 / 2269 |
+| `gen3d-bison` | bison | 4528 / 2233 |
+| `gen3d-ghoul` | ghoul | 4615 / 2103 |
