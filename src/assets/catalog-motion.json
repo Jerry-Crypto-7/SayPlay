@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "71bb101b321e76adf914e7db5f4ed63b0633b286cde87eaa22f70d6a79723a01",
+ "catalogHash": "bbe5ca258836eb52e3ca3106a3c7a71ff1cbe55a79771af24d026f007a6f916c",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1196,6 +1196,8 @@
   "gen3d-bread-basket": {"class":"prop"},
   "gen3d-ballot-box": {"class":"prop"},
   "gen3d-clothes-iron": {"class":"prop"},
-  "gen3d-diner-booth": {"class":"prop"}
+  "gen3d-diner-booth": {"class":"prop"},
+  "gen3d-battering-ram": {"class":"prop"},
+  "gen3d-notebook": {"class":"biped","regions":{"legY":0.25}}
  }
 }

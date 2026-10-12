@@ -24237,6 +24237,44 @@
           0.57897
         ]
       }
+    },
+    {
+      "assetId": "gen3d-battering-ram",
+      "tags": [
+        "battering ram"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-battering-ram-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35999,
+          0,
+          -0.50615
+        ],
+        "max": [
+          0.35999,
+          0.99811,
+          0.50615
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-notebook",
+      "tags": [
+        "notebook"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-notebook-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37119,
+          0,
+          -0.22162
+        ],
+        "max": [
+          0.37119,
+          1.00001,
+          0.22162
+        ]
+      }
     }
   ]
 }
