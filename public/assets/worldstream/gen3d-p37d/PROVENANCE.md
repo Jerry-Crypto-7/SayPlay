@@ -425,3 +425,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-notebook` | notebook | 4528 / 2194 |
 | `gen3d-didgeridoo` | didgeridoo | 4748 / 2374 |
 | `gen3d-rolling-pin` | rolling pin | 4748 / 2374 |
+| `gen3d-diner-sign` | diner sign | 4321 / 2128 |
+| `gen3d-flower-garland` | flower garland | 4149 / 2059 |
