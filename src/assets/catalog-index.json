@@ -22735,6 +22735,25 @@
           0.16966
         ]
       }
+    },
+    {
+      "assetId": "gen3d-ammo",
+      "tags": [
+        "ammo"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ammo-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24247,
+          0,
+          -0.28228
+        ],
+        "max": [
+          0.24247,
+          0.99948,
+          0.28228
+        ]
+      }
     }
   ]
 }
