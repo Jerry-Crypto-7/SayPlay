@@ -171,6 +171,9 @@ function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
       actions: recipe.actions.filter(action => ['shoot', 'collect', 'deliver'].includes(action)),
       threats: recipe.threats.filter(threat => ['rival', 'chaser', 'obstacle'].includes(threat)) },
     { ...content, params: { lengthM: 700, roadWidth: 3600, roadEntryWidth: 10000, crashBudget: 3, ...content.params } });
+    // A drive with parts gets no pacing (`GENRE_PACING.steer_track`), so no paced road or dodging bot either: the track stays as it was.
+    const { segments: _segments, ...road } = (base.controlParams ?? {}) as Record<string, unknown>;
+    if (parts.length > 0) base = { ...base, controlParams: road as GameSpecV1['controlParams'] };
   } else if (move === 'glide' && recipe.objective === 'land') {
     base = compileWith(GENRE_MODULES.voyage as GenreModule, { ...content, genre: 'voyage', mode: 'land', params: { touchdownSpeed: 19, gravityRisePct: 1, lives: 1, ...content.params } });
   } else if (['glide', 'walk', 'ball'].includes(move)) {

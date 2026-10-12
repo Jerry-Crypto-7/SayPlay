@@ -162,6 +162,17 @@ describe('steer pacing', () => {
     expect(nativeRule(worldOf(genre).rules, 'pacing')?.params).toMatchObject({ finale: 'boss' });
   });
 
+  it('builds a drive with parts (P42) as before: no mark, no pacing, no paced road and no dodging bot', () => {
+    const content = { genre: 'voyage', mode: 'race', hero: 'seal', setting: 'snow' } as const;
+    const parted = compileRecipe({ preset: 'assembled', move: 'drive', actions: [], objective: 'reach', threats: [], content, parts: [{ kind: 'catch', role: 'part_0', label: 'fish', phase: 0, motion: 'fall' }] });
+    expect(parted.controlParams).not.toHaveProperty('segments');
+    const world = worldOf(parted);
+    expect(nativeRule(world.rules, 'pacing')).toBeUndefined();
+    expect(pieceIn(world.bot, 'steer_bot')?.params).not.toHaveProperty('dodge');
+    // Bez dílů je to nová hra řízení: značku nese.
+    expect(compileRecipe({ preset: 'assembled', move: 'drive', actions: [], objective: 'reach', threats: [], content, parts: [] }).controlParams).toMatchObject({ segments: true });
+  });
+
   it('gives a track too full for the foes only the curve and a sprint finale – the game never fails because of pacing', () => {
     const spec = specOf('drive.reach');
     const params = steerTrack.params.parse(spec.controlParams);
