@@ -25342,6 +25342,120 @@
           0.33951
         ]
       }
+    },
+    {
+      "assetId": "gen3d-gremlin",
+      "tags": [
+        "gremlin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gremlin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.61004,
+          0,
+          -0.36825
+        ],
+        "max": [
+          0.61004,
+          0.99535,
+          0.36825
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rattlesnake",
+      "tags": [
+        "rattlesnake"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rattlesnake-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.04208,
+          0,
+          -1.04961
+        ],
+        "max": [
+          1.04208,
+          0.98768,
+          1.04961
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tarantula",
+      "tags": [
+        "tarantula"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tarantula-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.5391,
+          0,
+          -1.49107
+        ],
+        "max": [
+          1.5391,
+          0.99066,
+          1.49107
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-giant-hand",
+      "tags": [
+        "giant hand"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-giant-hand-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37728,
+          0,
+          -0.0953
+        ],
+        "max": [
+          0.37728,
+          1.00001,
+          0.0953
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-venus-flytrap",
+      "tags": [
+        "venus flytrap"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-venus-flytrap-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31086,
+          0,
+          -0.26462
+        ],
+        "max": [
+          0.31086,
+          1.00001,
+          0.26462
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mimic-chest",
+      "tags": [
+        "mimic chest"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mimic-chest-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.61529,
+          0,
+          -0.52644
+        ],
+        "max": [
+          0.61529,
+          0.99964,
+          0.52644
+        ]
+      }
     }
   ]
 }

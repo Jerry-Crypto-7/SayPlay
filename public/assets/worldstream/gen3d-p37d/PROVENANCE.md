@@ -478,3 +478,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wraith` | wraith | 4591 / 2269 |
 | `gen3d-bison` | bison | 4528 / 2233 |
 | `gen3d-ghoul` | ghoul | 4615 / 2103 |
+| `gen3d-gremlin` | gremlin | 4481 / 2097 |
+| `gen3d-rattlesnake` | rattlesnake | 4561 / 2201 |
+| `gen3d-tarantula` | tarantula | 4571 / 2203 |
+| `gen3d-giant-hand` | giant hand | 4710 / 2326 |
+| `gen3d-venus-flytrap` | venus flytrap | 4711 / 2308 |
+| `gen3d-mimic-chest` | mimic chest | 4624 / 2262 |

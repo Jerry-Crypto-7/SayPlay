@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "a2e43bd8c563386da7ee289736f21df674eb17aebfda48c36b584fe56e6fef15",
+ "catalogHash": "191b1325ccc5d8f3d30ea994da706a9fc597e9b2fb1fc1aff3736a4c67703693",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1253,6 +1253,12 @@
   "gen3d-warthog": {"class":"prop"},
   "gen3d-wraith": {"class":"biped","regions":{"legY":0.248}},
   "gen3d-bison": {"class":"prop"},
-  "gen3d-ghoul": {"class":"prop"}
+  "gen3d-ghoul": {"class":"prop"},
+  "gen3d-gremlin": {"class":"prop"},
+  "gen3d-rattlesnake": {"class":"prop"},
+  "gen3d-tarantula": {"class":"prop"},
+  "gen3d-giant-hand": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-venus-flytrap": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-mimic-chest": {"class":"prop"}
  }
 }
