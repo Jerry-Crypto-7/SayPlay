@@ -24765,6 +24765,64 @@
           0.29823
         ]
       }
+    },
+    {
+      "assetId": "gen3d-grim-reaper",
+      "tags": [
+        "grim reaper",
+        "reaper"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-grim-reaper-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36919,
+          0,
+          -0.22505
+        ],
+        "max": [
+          0.36919,
+          1.00001,
+          0.22505
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-howitzer",
+      "tags": [
+        "howitzer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-howitzer-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.37346,
+          0,
+          -1.22436
+        ],
+        "max": [
+          1.37346,
+          0.99425,
+          1.22436
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-vulture",
+      "tags": [
+        "vulture"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-vulture-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.99653,
+          0,
+          -0.46232
+        ],
+        "max": [
+          0.99653,
+          0.99829,
+          0.46232
+        ]
+      }
     }
   ]
 }

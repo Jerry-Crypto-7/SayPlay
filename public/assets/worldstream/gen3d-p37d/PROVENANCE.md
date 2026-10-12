@@ -448,3 +448,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-siege-tower` | siege tower | 4514 / 2252 |
 | `gen3d-locomotive` | locomotive, steam locomotive, steam engine | 4567 / 2194 |
 | `gen3d-harpy` | harpy | 4577 / 2150 |
+| `gen3d-grim-reaper` | grim reaper, reaper | 4687 / 2342 |
+| `gen3d-howitzer` | howitzer | 4710 / 2349 |
+| `gen3d-vulture` | vulture | 4739 / 2354 |
