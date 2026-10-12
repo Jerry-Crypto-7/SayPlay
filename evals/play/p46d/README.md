@@ -26,4 +26,4 @@ Se soudcem navíc server nad buildem webpack: `npm run build`, `node node_module
 - Běžec: celá trať je jeden vzor `mixed` (náhodné řady, žádný poznatelný úsek).
 - Řízení: u všech čtyř vět stejná řada „rovinka, 5× dlouhá zatáčka střídaná s rovinkou s turbem“.
 - Skákačka: u všech čtyř vět stejná řada se dvěma checkpointy, chodbou s hroty kolem pohyblivé plošiny ve třetím úseku.
-- Slepý soudce na baseline zatím nedoběhl (`judge: null`).
+- Slepý soudce (běh `baseline`): „liší se tvarem“ u 3 z 18 dvojic (17 %). Běžec 0/6, řízení 0/6, skákačka 3/6 – všechny tři jsou dvojice s p4 (hrad) a soudce u nich popisuje oblouk mostu, který je kulisa u hradu, ne tvar levelu. U ostatních píše „rovná široká trať, žádné zatáčky, rozcestí, mosty ani tunely“.
