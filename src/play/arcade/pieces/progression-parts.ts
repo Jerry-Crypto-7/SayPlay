@@ -53,7 +53,7 @@ export function progressionParts(parts: ArcadeParts, spec: Pick<GameSpecV1, 'pha
         }
         return { ...body, z: stretch(body.z), d: from === 0 || body.z > from ? Math.ceil(body.d * scale) : body.d };
       }), ...(parts.level.sectionStarts ? { sectionStarts: parts.level.sectionStarts.map(stretch) as [number, number] } : {}) };
-      const params = { ...parts.control.params, ...(control === 'steer' ? { course: courseOf(level) } : {}), ...(control === 'glide' ? { path: glidePathOf(level) } : {}), ...(Array.isArray(parts.control.params.ramp) ? { ramp: parts.control.params.ramp.map(stretch) } : {}) };
+      const params = { ...parts.control.params, ...(control === 'steer' ? { course: { ...(parts.control.params.course as object | undefined), ...courseOf(level) } } : {}), ...(control === 'glide' ? { path: glidePathOf(level) } : {}), ...(Array.isArray(parts.control.params.ramp) ? { ramp: parts.control.params.ramp.map(stretch) } : {}) };
       parts = { ...parts, level, control: { ...parts.control, params }, bot: { ...parts.bot, params: { ...parts.bot.params, ...(control === 'steer' || control === 'glide' ? params : {}), ...(control === 'flap' && Array.isArray(params.ramp) ? { ramp: params.ramp } : {}) } }, rules: parts.rules.map(rule => typeof rule.params.atZ === 'number' ? { ...rule, params: { ...rule.params, atZ: stretch(rule.params.atZ) } } : rule) };
     }
     const length = parts.level.length, course = control === 'steer' ? courseOf(parts.level) : undefined;
