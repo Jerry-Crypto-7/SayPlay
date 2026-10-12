@@ -10,9 +10,10 @@
  */
 
 import type { AbilityId, BodyInit } from '../contract';
-import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, hitParamsFor, wrapControl } from '../addons';
+import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, hitParamsFor, wrapBot, wrapControl } from '../addons';
 import { grabRule } from './grab';
-import { HARMFUL_ROLES, dashRule, shieldRule } from './guard';
+import { dashRule, shieldRule } from './guard';
+import { HARMFUL_ROLES } from './state';
 import { shootAbility } from './shoot';
 import { strikeRule } from './strike';
 
@@ -115,5 +116,7 @@ export function applyAbilities(parts: ArcadeParts, context: AddonContext): Arcad
   const counter: BodyInit = { role: 'thing', kind: hero.kind, x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true };
   let next: ArcadeParts = { ...parts, level: { ...parts.level, bodies: [...parts.level.bodies, counter] } };
   for (const id of APPLY_ORDER) if (ids.includes(id)) next = ABILITY_PIECES[id].apply(next, { ...context, keeper, slot: ids.indexOf(id) });
-  return { ...next, control: wrapControl(next, { abilities: { keeper, ids: [...ids] } }) };
+  // Robot akcí (T6) zná role, před kterými dash a štít chrání – stejné jako jejich pravidla.
+  const harm = [...new Set(next.rules.flatMap((rule) => (rule.id === dashRule.id || rule.id === shieldRule.id ? (rule.params.roles as (typeof HARMFUL_ROLES)[number][]) : [])))];
+  return { ...next, control: wrapControl(next, { abilities: { keeper, ids: [...ids] } }), bot: wrapBot(next, { keeper, ids: [...ids], harm }) };
 }

@@ -12,9 +12,7 @@
 import { z } from 'zod';
 
 import { ABILITY_SLOTS, ARCADE_LIMITS, BODY, FLAG, ROLE, type RulePiece, bodyBase } from '../contract';
-import { abilityActive } from './state';
-
-export const HARMFUL_ROLES = ['obstacle', 'chaser', 'hazard', 'enemy'] as const;
+import { HARMFUL_ROLES, abilityActive } from './state';
 
 const harmful = z.array(z.enum(HARMFUL_ROLES)).min(1).max(HARMFUL_ROLES.length);
 

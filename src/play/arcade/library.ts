@@ -8,6 +8,7 @@ import { assemblyPart, assemblyFinish, assemblyGateRules, makeAssemblyControl, m
 
 import { ADDON_RULES, makeAddonBot, makeAddonControl } from './addons';
 import { ABILITY_RULES } from './abilities';
+import { abilityStep } from './abilities/bot';
 import type { BotPiece, ControlPiece, ModeGeneratorPiece, RulePiece } from './contract';
 import { bossBeat, bossBeatHit } from './pieces/boss';
 import { makePacingBot, makePacingControl, pacingRule } from './pieces/pacing';
@@ -124,7 +125,7 @@ const NATIVE_LIBRARY: ArcadeLibrary = {
     duel_arena: duelArena,
     ...MODE_GENERATORS,
   },
-  bots: { ...PROGRESSION_BOTS, addon_bot: makeAddonBot(PROGRESSION_BOTS) as BotPiece },
+  bots: { ...PROGRESSION_BOTS, addon_bot: makeAddonBot(PROGRESSION_BOTS, abilityStep) as BotPiece },
 };
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {

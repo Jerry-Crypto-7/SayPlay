@@ -117,9 +117,10 @@ describe.each(CONTROLS)('P46A dash, shield and grab on %s', (control) => {
   it('shields exactly one hit', () => {
     const world = worldOf(control, { abilities: ['shield'] });
     const keeper = (world.control.params as { abilities: { keeper: number } }).abilities.keeper;
-    const second = RAM_AT + 30;
+    const second = RAM_AT + 20;
     let charge = -1;
-    const shielded = harms(world, press([1], BUTTON.ACTION_A), second + 3, (state, tick) => {
+    // Blok platí 40 tiků: stisk těsně před prvním nárazem, druhý přijde ještě v okně.
+    const shielded = harms(world, press([RAM_AT - 5], BUTTON.ACTION_A), second + 3, (state, tick) => {
       rams(world, [RAM_AT, second])(state, tick);
       if (tick === RAM_AT + 2) charge = state[bodyBase(keeper) + ABILITY_SLOTS.shield] as number;
     });
@@ -132,7 +133,11 @@ describe.each(CONTROLS)('P46A dash, shield and grab on %s', (control) => {
   it('grabs only what is in reach and counts it in items', () => {
     const world = worldOf(control, { abilities: ['grab'] });
     const bot = new Map(runBot(world).inputs.map((event) => [event.tick, event]));
-    const botInput = (tick: number): ArcadeInput => bot.get(tick) ?? NO_INPUT;
+    // Robot akcí krade sám (T6); test chce jeho pohyb, ale stisk jen svůj.
+    const botInput = (tick: number): ArcadeInput => {
+      const event = bot.get(tick) ?? NO_INPUT;
+      return { buttons: event.buttons & ~(BUTTON.ACTION_A | BUTTON.ACTION_B), axis: event.axis };
+    };
     // Tik, kdy je věc v dosahu krádeže, ale hrdina se jí ještě nedotkl.
     let at = -1;
     let loot = -1;

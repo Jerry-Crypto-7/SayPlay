@@ -42,7 +42,9 @@ const keeperOf = (world: ArcadeWorld): number => (world.control.params as { abil
 function botWith(world: ArcadeWorld, at = -1, press = 0): (tick: number) => ArcadeInput {
   const byTick = new Map(runBot(world).inputs.map((event) => [event.tick, event]));
   return (tick) => {
-    const base = byTick.get(tick) ?? NO_INPUT;
+    // Robot akcí mačká akce sám (T6); test chce jeho pohyb, ale stisk jen svůj.
+    const event = byTick.get(tick) ?? NO_INPUT;
+    const base = { buttons: event.buttons & ~(BUTTON.ACTION_A | BUTTON.ACTION_B), axis: event.axis };
     return tick === at ? { buttons: base.buttons | press, axis: base.axis } : base;
   };
 }

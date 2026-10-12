@@ -16,7 +16,9 @@ export const ABILITY_TIMING: Readonly<Record<AbilityId, { readonly cooldown: num
   shoot: { cooldown: 0, active: 1 },
   strike: { cooldown: Math.round(ARCADE_HZ / 2), active: 6 },
   dash: { cooldown: ARCADE_HZ, active: 18 },
-  shield: { cooldown: 2 * ARCADE_HZ, active: 0 },
+  // Blok, ne trvalý náboj: náboj drží jen po okno 40 tiků. Náboj do zásahu by skákačku
+  // úplně zjednodušil (novice 10/10 proti 5/10 bez akce, i s cooldownem 4 s).
+  shield: { cooldown: 2 * ARCADE_HZ, active: 40 },
   grab: { cooldown: Math.round(ARCADE_HZ / 3), active: 6 },
 };
 
@@ -33,6 +35,13 @@ export const abilityControlParams = z
   .strict();
 export type AbilityControl = z.infer<typeof abilityControlParams>;
 
+/** Role, které hrdinovi ublíží nárazem – ty dash prorazí a štít odrazí. */
+export const HARMFUL_ROLES = ['obstacle', 'chaser', 'hazard', 'enemy'] as const;
+
+/** Robot akcí (P46A T6): totéž co obal ovládání a role, před kterými dash a štít chrání. */
+export const abilityBotParams = abilityControlParams.extend({ harm: z.array(z.enum(HARMFUL_ROLES)).max(HARMFUL_ROLES.length) });
+export type AbilityBot = z.infer<typeof abilityBotParams>;
+
 /** Tlačítko akce `id` ve hře s akcemi `ids`; 0 = hra ji nemá. */
 export const abilityButton = (ids: readonly AbilityId[], id: AbilityId): number => {
   const slot = ids.indexOf(id);
@@ -47,10 +56,11 @@ export function tickAbilities(state: Int32Array, buttons: number, params: Abilit
     const active = k + (ACTIVE[slot] as number);
     if ((state[cooldown] as number) > 0) state[cooldown] = (state[cooldown] as number) - 1;
     if ((state[active] as number) > 0) state[active] = (state[active] as number) - 1;
+    // Štít: náboj platí jen v okně; spotřebuje ho zásah (pravidlo `ability_shield`), nebo konec okna.
+    if (id === 'shield' && (state[active] as number) === 0) state[k + ABILITY_SLOTS.shield] = 0;
     if ((buttons & (ABILITY_BUTTONS[slot] as number)) === 0 || (state[cooldown] as number) > 0) return;
     state[active] = ABILITY_TIMING[id].active;
     state[cooldown] = ABILITY_TIMING[id].cooldown;
-    // Štít nemá okno: nabije jeden náboj, který drží do zásahu (spotřebuje ho pravidlo `ability_shield`).
     if (id === 'shield') state[k + ABILITY_SLOTS.shield] = 1;
   });
   state[k + ABILITY_SLOTS.held] = buttons & (BUTTON.ACTION_A | BUTTON.ACTION_B);

@@ -46,7 +46,7 @@ import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
 import { census, shotHit } from './pieces/shots';
-import { abilityButton, abilityControlParams, tickAbilities } from './abilities/state';
+import { abilityBotParams, abilityButton, abilityControlParams, tickAbilities } from './abilities/state';
 
 /** Parametry kusu pod obalem, přečtené jednou: obal běží každý tik a zod parse by ho zpomalil. */
 const parsedParams = new WeakMap<object, unknown>();
@@ -379,7 +379,7 @@ function covered(state: Int32Array, target: number): boolean {
  * poletování dopočítá výšku z vlastních ťuků (jako jeho robot). Aréna
  * střílí ve směru pohybu na cokoli v ráně, jen když nic neletí.
  */
-const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
+export const shootStep: AddonBotStep =({ state, player, recent }, input, base) => {
   if (recent.some((seen) => (seen.buttons & BUTTON.FIRE) !== 0)) return input;
   if (base.id === 'arena_bot' && census(state).projectiles > 0) return input;
   const p = bodyBase(player);
@@ -702,16 +702,27 @@ export function applyAddons(parts: ArcadeParts, context: AddonContext): ArcadePa
 const addonBotParams = z
   .object({
     base: z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) }).strict(),
-    addons: z.array(z.enum(ADDONS)).min(1).max(3),
+    // Bez doplňků jen u robota s akcemi (P46A).
+    addons: z.array(z.enum(ADDONS)).max(3),
+    abilities: abilityBotParams.optional(),
   })
   .strict();
+
+/** Krok robota akcí (`abilities/bot.ts`); předává se zvenku kvůli kruhovému importu. */
+export type AbilityBotStep = (observation: ArcadeObservation, input: ArcadeInput, base: PieceRef, params: z.infer<typeof abilityBotParams>) => ArcadeInput;
+
+/** Obalí robota `addon_bot` s akcemi, nebo jim doplní obal, který už tam je. */
+export function wrapBot(parts: ArcadeParts, abilities: z.infer<typeof abilityBotParams>): PieceRef {
+  const params = parts.bot.id === 'addon_bot' ? parts.bot.params : { base: parts.bot, addons: [] };
+  return { id: 'addon_bot', params: { ...params, abilities } };
+}
 
 /**
  * Robot s doplňky: základní robot rozhodne, doplňky v pořadí vstup upraví.
  * `bases` jsou roboti knihovny – předávají se zvenku, ať knihovna a doplňky
  * nemají kruhový import.
  */
-export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>): BotPiece<z.infer<typeof addonBotParams>> {
+export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>, abilityStep?: AbilityBotStep): BotPiece<z.infer<typeof addonBotParams>> {
   return {
     id: 'addon_bot',
     params: addonBotParams,
@@ -730,7 +741,9 @@ export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>): BotPiec
       }
       // Průběh (P45C R2): tah doplňku do jiného pruhu běžce ještě projde plánovačem pruhů – doplněk hrozby chování nevidí.
       const lanes = BUTTON.LEFT | BUTTON.RIGHT;
-      return (input.buttons & lanes) === (decided.buttons & lanes) ? input : guardLanes(observation, params.base, input);
+      const guarded = (input.buttons & lanes) === (decided.buttons & lanes) ? input : guardLanes(observation, params.base, input);
+      // Akce hrdiny (P46A T6) až po plánovači pruhů: robot s připravenou akcí smí neuhnout.
+      return params.abilities === undefined || abilityStep === undefined ? guarded : abilityStep(observation, guarded, pacedBotBase(params.base, observation), params.abilities);
     },
   };
 }

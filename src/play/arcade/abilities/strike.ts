@@ -29,13 +29,14 @@ const strikeParams = z
 
 const isStruck = (role: number): boolean => role === ROLE.enemy || role === ROLE.chaser;
 
-/** Je tělo `other` v dosahu úderu hrdiny `player`? */
-export function inStrikeReach(state: Int32Array, player: number, other: number): boolean {
+/** Je tělo `other` v dosahu úderu hrdiny `player`? `ahead` = za kolik tiků, když oba poletí dál svou rychlostí (robot). */
+export function inStrikeReach(state: Int32Array, player: number, other: number, ahead = 0): boolean {
   const p = bodyBase(player);
   const b = bodyBase(other);
-  const dz = (state[b + BODY.z] as number) - (state[p + BODY.z] as number);
+  const along = (base: number, axis: number, speed: number): number => (state[base + axis] as number) + (state[base + speed] as number) * ahead;
+  const dz = along(b, BODY.z, BODY.vz) - along(p, BODY.z, BODY.vz);
   if (dz < -STRIKE.back || dz > STRIKE.reach) return false;
-  const dx = Math.abs((state[b + BODY.x] as number) - (state[p + BODY.x] as number));
+  const dx = Math.abs(along(b, BODY.x, BODY.vx) - along(p, BODY.x, BODY.vx));
   if (dx * 2 >= (state[b + BODY.w] as number) + (state[p + BODY.w] as number) + 2 * STRIKE.wide) return false;
   const py = state[p + BODY.y] as number;
   const by = state[b + BODY.y] as number;
