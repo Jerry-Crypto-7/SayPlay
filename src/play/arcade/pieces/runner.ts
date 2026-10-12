@@ -345,6 +345,12 @@ function patternLayout(rng: CompileRng, params: RunnerTrackParams, rows: number,
   let speed = base;
   let gap: 'sprint' | 'trail' | null = null;
   let afterRow = false;
+  // Těžké finále (zavřené řady řetězů) má polovina tratí; vlastní knihovna (test jednoho vzoru) ho má vždy.
+  // Recept s vlastním podílem zavřených řad (`fullRowPct`, P45) ho nemá: obtížnost už kalibroval sám.
+  const coin = rng.int(0, 1) === 1;
+  const hard = library !== undefined || (params.fullRowPct === undefined && coin);
+  // Náhodná řada nezavře všechny pruhy, zavřené řady dávají jen řetězy těžkého finále (bez nich začátečník vyhraje 30 z 30, se zavřenými 2 z 30).
+  const rowParams: RunnerTrackParams = { ...params, fullRowPct: params.fullRowPct ?? 0 };
   sectionRows(rows).forEach((count, section) => {
     const level = Math.max(0, Math.min(RUNNER_DENSITIES.length - 1, step + section - 1));
     const density = RUNNER_DENSITIES[level] as RunnerDensity;
@@ -352,7 +358,7 @@ function patternLayout(rng: CompileRng, params: RunnerTrackParams, rows: number,
     speed = Math.floor((base * (100 + RAMP_STEP_PCT * section)) / 100);
     let left = count;
     while (left > 0) {
-      const pattern = pickPattern(rng, { step: level, kinds: params.obstacles, coins: params.coins, used: patterns, left, first: far === null, gap, afterRow }, library);
+      const pattern = pickPattern(rng, { step: level, kinds: params.obstacles, coins: params.coins, used: patterns, left, first: far === null, gap, afterRow, hard }, library);
       const steps: readonly (RunnerStep | 'random')[] = pattern === null ? ['random'] : pattern.build(rng, params.obstacles, pattern.units[1] === 0 ? 0 : rng.int(pattern.units[0], Math.min(pattern.units[1], left)));
       if (pattern !== null) patterns.push(pattern.id);
       for (const item of steps) {
@@ -370,7 +376,7 @@ function patternLayout(rng: CompileRng, params: RunnerTrackParams, rows: number,
         }
         gap = null;
         if (item === 'random' || 'row' in item) {
-          if (item === 'random') bodies.push(...obstacleRow(rng, params, density, far === null, near));
+          if (item === 'random') bodies.push(...obstacleRow(rng, rowParams, density, far === null, near));
           else item.row.forEach((kind, index) => {
             if (kind !== null) bodies.push(obstacleBody(kind, index - 1, near));
           });

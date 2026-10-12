@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createCompileRng } from '@/play/compile/rng';
+import { compileRecipe } from '@/play/compose/compile';
 import { draftGameSpecWithMeta } from '@/play/draft';
 
 import { arcadeWorldOf } from '../compile';
@@ -15,7 +16,7 @@ import { buildWorld } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { OBSTACLE_KINDS, RUNNER, RUNNER_DENSITIES, RUNNER_STRUCTURE_D, RUNNER_TRACK, checkRunnerLevel, runnerPatternTrack, runnerTrack } from '../pieces/runner';
 import { RUNNER_PATTERNS, RUNNER_PATTERN_LIBRARY, STRUCTURES } from '../pieces/runner-sections';
-import { type BotProfile, runBot } from '../verify';
+import { type BotProfile, runBot, verifyArcade } from '../verify';
 
 /** Parametry, jak je píše žánr Běžec (bez skluzové laťky, když překážka nevisí). */
 const params = (extra: Record<string, unknown> = {}) => runnerTrack.params.parse({ sections: 3, patterns: 1, feel: 2, obstacles: OBSTACLE_KINDS.filter((kind) => kind !== 'slide-bar'), ...extra });
@@ -96,6 +97,20 @@ describe('trať ze vzorů', () => {
     }
   });
 
+  it('poslední úsek je hustší než první (P36A T4): 30 semínek, aspoň o půl pruhu na řadu', () => {
+    for (let seed = 1; seed <= 30; seed += 1) {
+      const level = runnerTrack.generate(seed, params());
+      const [, last] = level.sectionStarts!;
+      const rows = new Map<number, number>();
+      for (const body of level.bodies) if (body.role === 'obstacle') rows.set(body.z, (rows.get(body.z) ?? 0) + 1);
+      const lanes = (inside: (z: number) => boolean): number => {
+        const counts = [...rows].filter(([z]) => inside(z)).map(([, count]) => count);
+        return counts.reduce((sum, count) => sum + count, 0) / counts.length;
+      };
+      expect(lanes((z) => z >= last!) - lanes((z) => z < level.sectionStarts![0]!), `${seed}`).toBeGreaterThanOrEqual(0.5);
+    }
+  });
+
   it('stavby zavřou své pruhy po celé délce a nic uvnitř nestojí', () => {
     for (let seed = 1; seed <= 30; seed += 1) {
       const { level } = runnerPatternTrack(seed, params());
@@ -143,6 +158,26 @@ describe('checkRunnerLevel – stavby', () => {
     const fine = levelOf([obstacle(0, at, 10 * UNIT), { ...obstacle(2000, at + 5 * UNIT + 12 * UNIT, 300), kind: 'hurdle', w: 1600, h: 600 }]);
     expect(checkRunnerLevel(fine, 'normal')).toEqual([]);
   });
+});
+
+describe('sestavená hra na trati ze vzorů', () => {
+  // Bez středu mezery stály ryba ve zdi rozcestí a kámen těsně za řadou: kořist 18/20, kámen dokázaný 15/20.
+  it('kořist i padající kámen leží ve volné mezeře: 20 semínek chycená kořist a dokázaný kámen', () => {
+    for (const kind of ['catch', 'hazard'] as const) {
+      const spec = compileRecipe({ preset: 'assembled', move: 'run', actions: [], objective: 'reach', threats: kind === 'hazard' ? ['hazard'] : [],
+        content: { genre: 'runner', mode: 'default', hero: 'seal', setting: 'snow' },
+        parts: [{ kind, role: 'part_0', label: kind === 'hazard' ? 'rock' : 'fish', phase: 0, motion: 'fall' }] });
+      expect((spec.controlParams as { patterns?: number }).patterns).toBe(1);
+      for (let seed = 1; seed <= 20; seed += 1) {
+        const built = arcadeWorldOf(spec, seed);
+        if (!built.ok) throw new Error(built.issues.join('; '));
+        if (kind === 'catch') {
+          const run = runBot(built.world, ARCADE_LIBRARY, { roleBindings: built.roleBindings });
+          expect(run.outcome === 'won' && run.witnesses.some((witness) => witness.verb === 'catch'), `catch/${seed}`).toBe(true);
+        } else expect(verifyArcade(built.world, ARCADE_LIBRARY, built.roleBindings).witnesses.some((witness) => witness.verb === 'hazard'), `hazard/${seed}`).toBe(true);
+      }
+    }
+  }, 120_000);
 });
 
 describe('hra žánru Běžec', () => {

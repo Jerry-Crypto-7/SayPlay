@@ -117,7 +117,9 @@ function compileRecipeBase(assembly: RecipeAssembly): GameSpecV1 {
     if (escape) {
       // Getting caught ends this new course. Existing reach+chaser still retains its legacy health.
       const chaser = compiled.roles.find(role => role.kind === 'chaser')?.label ?? 'pursuer';
-      return { ...compiled, mechanics: compiled.mechanics.map(mechanic => mechanic.id === 'health' ? { id: 'health', params: { max: 1 } } : mechanic),
+      // Útěk běží na trati z náhodných řad: hrozby průběhu (P45C) stavby trati ze vzorů (P46D T2) nečtou – 0 úderů a prohra robota.
+      const { patterns: _patterns, ...controlParams } = compiled.controlParams as Record<string, unknown>;
+      return { ...compiled, controlParams, mechanics: compiled.mechanics.map(mechanic => mechanic.id === 'health' ? { id: 'health', params: { max: 1 } } : mechanic),
         tutorial: { ...compiled.tutorial, goalLine: `Reach the finish without being caught by the ${chaser}.` },
         objective: { ...compiled.objective, description: `Escape the ${chaser} and reach the finish without being caught.` } };
     }

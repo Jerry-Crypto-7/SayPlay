@@ -65,12 +65,16 @@ export interface RunnerPattern {
   readonly id: RunnerPatternId;
   /** Nejnižší stupeň hustoty úseku (`RUNNER_DENSITIES`: 0 řídce, 1 normálně, 2 hustě), od kterého vzor přijde. */
   readonly from: number;
+  /** Nejvyšší stupeň hustoty, do kterého vzor přijde; bez hodnoty všude. */
+  readonly to?: number;
   /** Kolik řad nebo staveb vzor zabere: [min, max]; 0 = jen mezera před další řadou. */
   readonly units: readonly [number, number];
   /** První krok je řada, která zavře startovní pruh: vzor smí trať otevřít a stát za sprintem. */
   readonly opens: boolean;
   /** Nejvýš tolikrát na trati; bez hodnoty bez omezení. */
   readonly most?: number;
+  /** Zavřené řady, na kterých začátečník ztrácí životy: jen na trati s těžkým finále (`PatternSlot.hard`). */
+  readonly hard?: true;
   /** Váha při losování mezi vzory, které se hodí; bez hodnoty `PATTERN_WEIGHT`. */
   readonly weight?: number;
   /** Vzor jde postavit z druhů překážek věty (a s mincemi, když je potřebuje). */
@@ -127,8 +131,11 @@ function structure(kind: StructureKind): Pick<RunnerPattern, 'fits' | 'build' | 
 export const RUNNER_PATTERN_LIBRARY: readonly RunnerPattern[] = [
   {
     // Cik-cak: jediný volný pruh na kraji, každou řadu na opačném (přesun o dva pruhy).
+    // Dva zavřené pruhy v každé řadě: jen normální hustota (řídký stupeň zavírá jeden pruh, `ROW_LANES`;
+    // v nejhustším úseku začátečník přesun o dva pruhy každou řadu nestihne a vyhrál 0 z 60).
     id: 'zigzag',
-    from: 0,
+    from: 1,
+    to: 1,
     units: [4, 5],
     opens: true,
     fits: () => true,
@@ -150,15 +157,16 @@ export const RUNNER_PATTERN_LIBRARY: readonly RunnerPattern[] = [
       return issues;
     },
   },
-  // Zavřené řady jen v nejtěžším úseku, jednou na trať a s poloviční vahou: začátečník (reakce +12 tiků)
-  // skáče pozdě a na řetězu ztratí všechny životy, bez řetězu vyhraje ~5 z 6. S rovnou vahou řetěz stál
-  // na 3 tratích ze 4 a začátečník vyhrál 5/20; cíl 0,3–0,7 hlídá `runner-sections.test.ts`.
-  { id: 'jump-chain', from: 2, units: [3, 3], opens: true, most: 1, weight: 1, ...closedChain('jump') },
-  { id: 'slide-alley', from: 2, units: [3, 3], opens: true, most: 1, weight: 1, ...closedChain('slide') },
+  // Zavřené řady jen v nejtěžším úseku, jednou na trať a jen na trati s těžkým finále: začátečník (reakce
+  // +12 tiků) skáče pozdě a na řetězu ztratí všechny životy, bez zavřených řad vyhraje 30 z 30. Cíl 0,3–0,7
+  // hlídá `runner-sections.test.ts`.
+  { id: 'jump-chain', from: 2, units: [3, 3], opens: true, most: 1, hard: true, ...closedChain('jump') },
+  { id: 'slide-alley', from: 2, units: [3, 3], opens: true, most: 1, hard: true, ...closedChain('slide') },
   {
     // Rozcestí: vstupní řada zavře střed (a jeden kraj překážkou ke skoku či skluzu), pak zeď dělí trať na dvě cesty.
     id: 'fork',
     from: 0,
+    to: 1,
     units: [2, 2],
     opens: true,
     fits: () => true,
@@ -176,13 +184,16 @@ export const RUNNER_PATTERN_LIBRARY: readonly RunnerPattern[] = [
     },
   },
   // Most s jedním pruhem: voda v krajních pruzích, běží se středem.
-  { id: 'bridge', from: 0, units: [1, 1], opens: false, ...structure('water') },
+  // Voda zavře dva pruhy: až od normální hustoty, rozjezd zavírá jeden (`ROW_LANES`).
+  { id: 'bridge', from: 1, to: 1, units: [1, 1], opens: false, ...structure('water') },
   // Tunel: strop nad hlavou přes celou trať, skok do něj narazí.
-  { id: 'tunnel', from: 0, units: [1, 1], opens: false, ...structure('ceiling') },
+  { id: 'tunnel', from: 0, to: 1, units: [1, 1], opens: false, ...structure('ceiling') },
   {
     // Stezka věcí: delší mezera, ve které mince kličkují napříč pruhy (klade je skladatel).
+    // Oddech jen mimo nejhustší stupeň: poslední úsek je hustší než první (P36A T4, `sections.test.ts`).
     id: 'trail',
     from: 0,
+    to: 1,
     units: [0, 0],
     opens: false,
     fits: (_kinds, coins) => coins,
@@ -193,6 +204,7 @@ export const RUNNER_PATTERN_LIBRARY: readonly RunnerPattern[] = [
     // Volný sprint: mezera `SPRINT_GAPS`× delší, jen mezi dvěma řadami.
     id: 'sprint',
     from: 0,
+    to: 1,
     units: [0, 0],
     opens: false,
     fits: () => true,
@@ -217,6 +229,8 @@ export interface PatternSlot {
   readonly gap: 'sprint' | 'trail' | null;
   /** Poslední postavený prvek byla řada, ne stavba (sprint měřidlo pozná jen mezi řadami). */
   readonly afterRow: boolean;
+  /** Trať s těžkým finále smí mít zavřené řady (`RunnerPattern.hard`). */
+  readonly hard: boolean;
 }
 
 export const PATTERN_WEIGHT = 2;
@@ -230,7 +244,8 @@ export function pickPattern(rng: CompileRng, slot: PatternSlot, library?: readon
 /** Vzory, které se na místo hodí. */
 export function patternsFor(slot: PatternSlot, library: readonly RunnerPattern[] = RUNNER_PATTERN_LIBRARY): RunnerPattern[] {
   return library.filter((pattern) => {
-    if (pattern.from > slot.step || pattern.id === slot.used.at(-1) || !pattern.fits(slot.kinds, slot.coins) || pattern.units[0] > slot.left) return false;
+    if (pattern.from > slot.step || (pattern.to ?? slot.step) < slot.step || pattern.id === slot.used.at(-1) || !pattern.fits(slot.kinds, slot.coins) || pattern.units[0] > slot.left) return false;
+    if (pattern.hard && !slot.hard) return false;
     if (pattern.most !== undefined && slot.used.filter((id) => id === pattern.id).length >= pattern.most) return false;
     if (slot.first || slot.gap === 'sprint') return pattern.opens;
     if (pattern.units[1] === 0) return slot.gap === null && (pattern.id !== 'sprint' || slot.afterRow);
