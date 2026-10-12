@@ -171,7 +171,10 @@ const CASES: readonly (readonly [string, Finale])[] = [
   ['arena.fight', 'boss'],
   ['quest.spatial', 'boss'],
   ['arena.escape', 'wave'],
-  ['runner.default', 'sprint'],
+  // Běžec (P46B T4) končí bossem v pruzích, řízení (T5) pronásledovatelem; sprint zůstal poletování.
+  ['runner.default', 'boss'],
+  ['drive.race', 'boss'],
+  ['flap.default', 'sprint'],
   ['duel.default', 'round'],
   ['quest.station', 'round'],
   ['throw.default', 'bonus'],
@@ -204,8 +207,8 @@ describe('pacingBeatOf – what the game has, tick by tick', () => {
     const shown = blocks(run.banner);
     expect(shown.filter(([beat]) => beat === finale)).toHaveLength(1);
     expect(shown.map(([beat]) => beat)).toEqual(shown.length === 2 ? ['buildUp', finale] : [finale]);
-    // Běžec (R2): hrozby v pruzích přijdou před sprintem – „Here they come!“ je vidět.
-    if (finale === 'sprint') expect(shown.map(([beat]) => beat)).toEqual(['buildUp', 'sprint']);
+    // Běžec (R2): hrozby v pruzích přijdou před bossem – „Here they come!“ je vidět.
+    if (id === 'runner.default') expect(shown.map(([beat]) => beat)).toEqual(['buildUp', 'boss']);
     for (const [index, [beat, from, ticks]] of shown.entries()) {
       expect(from).toBe(run.beats.indexOf(beat));
       const next = shown[index + 1]?.[1] ?? run.banner.length;
@@ -274,13 +277,13 @@ describe('the banner on screen', () => {
     let early: ArcadeState | null = null;
     play(world, inputs, (state, tick) => {
       if (tick === 10) early = state.slice();
-      if (finale === null && pacingBeatOf(world, state) === 'sprint') finale = state.slice();
+      if (finale === null && pacingBeatOf(world, state) === 'boss') finale = state.slice();
     });
     const session = (state: ArcadeState) => ({ world, state: () => state, subscribe: () => () => undefined });
     const html = renderToStaticMarkup(createElement(PacingBanner, { session: session(finale!), enabled: true }));
     expect(html).toContain('class="sp-world-tag play-pacing-banner"');
-    expect(html).toContain('data-beat="sprint"');
-    expect(html).toContain('Final sprint!');
+    expect(html).toContain('data-beat="boss"');
+    expect(html).toContain('Boss!');
     expect(renderToStaticMarkup(createElement(PacingBanner, { session: session(finale!), enabled: false }))).toBe('');
     expect(renderToStaticMarkup(createElement(PacingBanner, { session: session(early!), enabled: true }))).toBe('');
   }, SLOW);
@@ -290,12 +293,12 @@ describe('the banner on screen', () => {
     const watch = createPacingBannerWatch(world);
     const states: ArcadeState[] = [];
     play(world, bot(world), (state) => {
-      if (pacingBeatOf(world, state) === 'sprint' && states.length < 2) states.push(state.slice());
+      if (pacingBeatOf(world, state) === 'boss' && states.length < 2) states.push(state.slice());
     });
     const start = instantiate(world);
-    expect(watch.see(states[0]!)).toBe('sprint');
+    expect(watch.see(states[0]!)).toBe('boss');
     expect(watch.see(start)).toBeNull();
-    expect(watch.see(states[1]!)).toBe('sprint');
+    expect(watch.see(states[1]!)).toBe('boss');
     const css = readFileSync(join(process.cwd(), 'src/app/play/play.css'), 'utf8');
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\.play-pacing-banner \{\s*animation: none;\s*\}\s*\}/);
     expect(css).not.toMatch(/\.play-pacing-banner[^{]*\{[^}]*(display: none|visibility: hidden)/);
