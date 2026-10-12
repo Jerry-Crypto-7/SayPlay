@@ -23021,6 +23021,120 @@
           0.23693
         ]
       }
+    },
+    {
+      "assetId": "gen3d-weather-vane",
+      "tags": [
+        "weather vane"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-weather-vane-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.06988,
+          0,
+          -0.26933
+        ],
+        "max": [
+          0.06988,
+          0.99935,
+          0.26933
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stone-column",
+      "tags": [
+        "stone column"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-column-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1509,
+          0,
+          -0.15189
+        ],
+        "max": [
+          0.1509,
+          1.00001,
+          0.15189
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-anubis-statue",
+      "tags": [
+        "anubis statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-anubis-statue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22357,
+          0,
+          -0.18788
+        ],
+        "max": [
+          0.22357,
+          0.99883,
+          0.18788
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wood-stove",
+      "tags": [
+        "wood stove"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wood-stove-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23195,
+          0,
+          -0.23201
+        ],
+        "max": [
+          0.23195,
+          0.99955,
+          0.23201
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-drip-stand",
+      "tags": [
+        "drip stand"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-drip-stand-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.14303,
+          0,
+          -0.14029
+        ],
+        "max": [
+          0.14303,
+          0.99956,
+          0.14029
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-butterfly-net",
+      "tags": [
+        "butterfly net"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-butterfly-net-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15617,
+          0,
+          -0.15707
+        ],
+        "max": [
+          0.15617,
+          0.99985,
+          0.15707
+        ]
+      }
     }
   ]
 }

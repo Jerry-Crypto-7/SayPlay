@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "d764603d3f1da414c31a399d1ee3bd31233fff215279c425d50433dca76268d1",
+ "catalogHash": "1cc4d847fe3f91115aa827afa0613f7ebf9f6e86449126366381efdd69762819",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1132,6 +1132,12 @@
   "gen3d-stilt-hut": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-salt-shaker": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-magic-mirror": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-marble-bust": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-marble-bust": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-weather-vane": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-stone-column": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-anubis-statue": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-wood-stove": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-drip-stand": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-butterfly-net": {"class":"biped","regions":{"legY":0.25}}
  }
 }

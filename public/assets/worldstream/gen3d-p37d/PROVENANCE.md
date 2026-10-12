@@ -357,3 +357,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-salt-shaker` | salt shaker | 4590 / 2284 |
 | `gen3d-magic-mirror` | magic mirror | 4720 / 2359 |
 | `gen3d-marble-bust` | marble bust | 4480 / 2215 |
+| `gen3d-weather-vane` | weather vane | 4736 / 2362 |
+| `gen3d-stone-column` | stone column | 4607 / 2285 |
+| `gen3d-anubis-statue` | anubis statue | 4707 / 2278 |
+| `gen3d-wood-stove` | wood stove | 4554 / 2225 |
+| `gen3d-drip-stand` | drip stand | 4740 / 2360 |
+| `gen3d-butterfly-net` | butterfly net | 4740 / 2344 |
