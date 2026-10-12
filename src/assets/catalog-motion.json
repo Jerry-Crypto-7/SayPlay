@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "fae1117fefa2bf4519eeb15ff8954f0e37487a9893478d78923eba66e648382b",
+ "catalogHash": "3bf673e83aac348d0262ad6716da40a686bf48a7109d8048c079eb6041769c9c",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1118,6 +1118,12 @@
   "gen3d-keyboard": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-moon-rover": {"class":"prop"},
   "gen3d-drill": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-ammo": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-ammo": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-golf-ball": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-boomerang": {"class":"prop"},
+  "gen3d-dynamite": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-ice-auger": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-gas-pump": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-pearl-oyster": {"class":"prop"}
  }
 }

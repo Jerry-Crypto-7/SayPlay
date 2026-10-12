@@ -22754,6 +22754,121 @@
           0.28228
         ]
       }
+    },
+    {
+      "assetId": "gen3d-golf-ball",
+      "tags": [
+        "golf ball"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-golf-ball-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34838,
+          0,
+          -0.34827
+        ],
+        "max": [
+          0.34838,
+          0.99632,
+          0.34827
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-boomerang",
+      "tags": [
+        "boomerang"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-boomerang-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.55347,
+          0,
+          -0.05317
+        ],
+        "max": [
+          0.55347,
+          0.99914,
+          0.05317
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dynamite",
+      "tags": [
+        "dynamite",
+        "tnt"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dynamite-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20045,
+          0,
+          -0.1977
+        ],
+        "max": [
+          0.20045,
+          0.99713,
+          0.1977
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-auger",
+      "tags": [
+        "ice auger"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-auger-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.14393,
+          0,
+          -0.05778
+        ],
+        "max": [
+          0.14393,
+          0.99809,
+          0.05778
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gas-pump",
+      "tags": [
+        "gas pump"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gas-pump-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26106,
+          0,
+          -0.10863
+        ],
+        "max": [
+          0.26106,
+          0.99735,
+          0.10863
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pearl-oyster",
+      "tags": [
+        "pearl oyster"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pearl-oyster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.87037,
+          0,
+          -0.88402
+        ],
+        "max": [
+          0.87037,
+          0.99823,
+          0.88402
+        ]
+      }
     }
   ]
 }

@@ -343,3 +343,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-moon-rover` | moon rover, lunar rover | 4418 / 2205 |
 | `gen3d-drill` | drill | 4733 / 2348 |
 | `gen3d-ammo` | ammo | 4508 / 2213 |
+| `gen3d-golf-ball` | golf ball | 4748 / 2374 |
+| `gen3d-boomerang` | boomerang | 4574 / 2232 |
+| `gen3d-dynamite` | dynamite, tnt | 4529 / 2263 |
+| `gen3d-ice-auger` | ice auger | 4746 / 2366 |
+| `gen3d-gas-pump` | gas pump | 4617 / 2307 |
+| `gen3d-pearl-oyster` | pearl oyster | 4750 / 2374 |
