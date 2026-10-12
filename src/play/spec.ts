@@ -30,7 +30,7 @@ import { assemblyPartsSchema } from './compose/parts';
 import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
-import { ADDONS, type AddonId } from './arcade/contract';
+import { ABILITIES, type AbilityId, ADDONS, type AddonId } from './arcade/contract';
 import { LOOK_IDS, TIMES_OF_DAY, WEATHERS } from './arcade/look';
 import { logicSchema, ruleIssues, rulesSchema, thingsSchema } from './arcade/rules/schema';
 import { CAPABILITIES } from './capabilities';
@@ -265,7 +265,7 @@ export type ControlId = (typeof CONTROLS)[number];
  * Doplňky arkády (P26D), seznam v `arcade/contract.ts`. Pole ve specu je
  * volitelné **bez výchozí hodnoty**, jako `control`.
  */
-export { ADDONS, type AddonId };
+export { ABILITIES, type AbilityId, ADDONS, type AddonId };
 
 /** Parametry běžce; co chybí, doplní generátor tratě svým výchozím. */
 export const runnerParamsSchema = z
@@ -506,6 +506,8 @@ export const gameSpecSchema = z
       ])
       .optional(),
     addons: z.array(z.enum(ADDONS)).max(3).optional(),
+    /** Akce hrdiny na dvou tlačítkách (P46A). Bez výchozí hodnoty: spec bez nich má stejný hash jako dřív. */
+    abilities: z.array(z.enum(ABILITIES)).max(2).optional(),
     /**
      * Žánr, ze kterého spec vznikl (P32, `genre/contract.ts`). Bez výchozí
      * hodnoty, jako `control`: spec bez něj má stejný `gameSpecHash` jako dřív.
@@ -671,6 +673,17 @@ export function readGameSpec(input: unknown): GameSpecResult {
           : [`/addons/${index}: ${spec.control ?? 'tap_go'} does not take ${addon} (allowed: ${allowed.join(', ') || 'none'})`],
     );
     if (addonIssues.length > 0) return { ok: false, reason: 'MALFORMED_SPEC', issues: addonIssues };
+  }
+  if (spec.abilities !== undefined) {
+    const allowed = CAPABILITIES[spec.control ?? 'tap_go'].abilities;
+    const abilityIssues = spec.abilities.flatMap((ability, index) =>
+      spec.abilities!.indexOf(ability) !== index
+        ? [`/abilities/${index}: ${ability} is listed twice`]
+        : allowed.includes(ability)
+          ? []
+          : [`/abilities/${index}: ${spec.control ?? 'tap_go'} does not take ${ability} (allowed: ${allowed.join(', ') || 'none'})`],
+    );
+    if (abilityIssues.length > 0) return { ok: false, reason: 'MALFORMED_SPEC', issues: abilityIssues };
   }
   if (spec.control === 'move_free') {
     const win = arenaWinOf(spec);

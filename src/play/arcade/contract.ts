@@ -366,6 +366,29 @@ export const ADDONS = ['shoot', 'collect', 'chaser', 'lives'] as const;
 export type AddonId = (typeof ADDONS)[number];
 
 /**
+ * Akce hrdiny (P46A): nejvýš 2 na hru, první na `ACTION_A`, druhá na `ACTION_B`.
+ * Která ovládání kterou berou, říká `CAPABILITIES[control].abilities`.
+ */
+export const ABILITIES = ['shoot', 'strike', 'dash', 'shield', 'grab'] as const;
+export type AbilityId = (typeof ABILITIES)[number];
+
+/**
+ * Stav akcí (P46A T1, `.claude/debate/p46a-ability-state.md`) nese tělo-počítadlo
+ * `abilityKeeper` jako kombo: mrtvá předloha za tělesy úrovně, jen ve světě
+ * s `abilities`, takže hash starých her se nepohne. Cooldown a aktivní okno
+ * v tikách, štít jako náboj 0/1, `held` = tlačítka minulého tiku (hrana stisku).
+ * `aux0`/`aux1` zůstávají volné pro power-up (P46C).
+ */
+export const ABILITY_SLOTS = {
+  cooldownA: BODY.x,
+  cooldownB: BODY.y,
+  activeA: BODY.z,
+  activeB: BODY.vx,
+  shield: BODY.vy,
+  held: BODY.vz,
+} as const;
+
+/**
  * Celý stav instance: `HEADER_SIZE` slotů hlavičky, pak `maxBodies × BODY_STRIDE`
  * slotů těl. Nic mimo tohle pole hash nevidí a nic jiného se mezi tiky nenese.
  */
@@ -456,6 +479,10 @@ export const BUTTON = {
   ATTACK: 1 << 7,
   /** Použít (P32-0 T4, úkol P32G): klávesa K, na telefonu „Use“; drží se jako `HOLD`. */
   INTERACT: 1 << 8,
+  /** Akce hrdiny A (P46A): první ze `spec.abilities`, klávesa J, na telefonu levé tlačítko vpravo dole. */
+  ACTION_A: 1 << 9,
+  /** Akce hrdiny B (P46A): druhá ze `spec.abilities`, klávesa K. */
+  ACTION_B: 1 << 10,
 } as const;
 
 export const AXIS_MIN = -1000;
