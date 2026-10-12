@@ -25095,6 +25095,120 @@
           0.41204
         ]
       }
+    },
+    {
+      "assetId": "gen3d-iron-golem",
+      "tags": [
+        "iron golem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-iron-golem-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29849,
+          0,
+          -0.13307
+        ],
+        "max": [
+          0.29849,
+          0.99953,
+          0.13307
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lich",
+      "tags": [
+        "lich"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lich-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34029,
+          0,
+          -0.1788
+        ],
+        "max": [
+          0.34029,
+          0.99925,
+          0.1788
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-manticore",
+      "tags": [
+        "manticore"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-manticore-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.7251,
+          0,
+          -0.71913
+        ],
+        "max": [
+          0.7251,
+          0.99725,
+          0.71913
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-evil-snowman",
+      "tags": [
+        "evil snowman"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-evil-snowman-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.53223,
+          0,
+          -0.32044
+        ],
+        "max": [
+          0.53223,
+          1.00001,
+          0.32044
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-chimera",
+      "tags": [
+        "chimera"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-chimera-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24629,
+          0,
+          -0.62858
+        ],
+        "max": [
+          0.24629,
+          0.99953,
+          0.62858
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mud-golem",
+      "tags": [
+        "mud golem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mud-golem-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46079,
+          0,
+          -0.19445
+        ],
+        "max": [
+          0.46079,
+          0.99418,
+          0.19445
+        ]
+      }
     }
   ]
 }

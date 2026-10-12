@@ -465,3 +465,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wild-boar` | wild boar, boar | 4421 / 2096 |
 | `gen3d-kraken-tentacle` | kraken tentacle | 4743 / 2357 |
 | `gen3d-chariot` | chariot | 4226 / 1934 |
+| `gen3d-iron-golem` | iron golem | 4331 / 2122 |
+| `gen3d-lich` | lich | 4342 / 2082 |
+| `gen3d-manticore` | manticore | 4463 / 2179 |
+| `gen3d-evil-snowman` | evil snowman | 4700 / 2328 |
+| `gen3d-chimera` | chimera | 4594 / 2284 |
+| `gen3d-mud-golem` | mud golem | 4089 / 1910 |

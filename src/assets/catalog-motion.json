@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "6a2fa2fba123cf70219a3465f66f0ae55d129eaf1f0d99eae8766f07fca803e4",
+ "catalogHash": "377ce72c54fad24156d2401d7fee0c44ecb5497ce0f60f370387e705dd81674e",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1240,6 +1240,12 @@
   "gen3d-bigfoot": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-wild-boar": {"class":"prop"},
   "gen3d-kraken-tentacle": {"class":"prop"},
-  "gen3d-chariot": {"class":"prop"}
+  "gen3d-chariot": {"class":"prop"},
+  "gen3d-iron-golem": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-lich": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-manticore": {"class":"prop"},
+  "gen3d-evil-snowman": {"class":"prop"},
+  "gen3d-chimera": {"class":"prop"},
+  "gen3d-mud-golem": {"class":"biped","regions":{"legY":0.249}}
  }
 }
