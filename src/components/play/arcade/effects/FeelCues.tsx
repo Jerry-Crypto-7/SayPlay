@@ -6,6 +6,7 @@ import { type InstancedMesh, Object3D } from 'three';
 import { color } from '@/brand/tokens';
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import { baseControlOf } from '@/play/arcade/addons';
+import { runnerPathOf } from '../runner/path';
 import type { ArcadeSession } from '../session';
 import { renderHeld } from './render-feel';
 import { skidStrength, threatTelegraphs } from './feel';
@@ -17,6 +18,7 @@ export function FeelCues({session}:{readonly session:ArcadeSession}) {
   const trail=useRef<{x:number;y:number;z:number;strength:number;tick:number}[]>([]);
   const last=useRef(-1);
   const control=baseControlOf(session.world.control).id;
+  const path=useMemo(()=>runnerPathOf(session.world),[session]);
   useFrame(({camera})=>{
     if(renderHeld(session)) return;
     const state=session.state(),tick=state[HEADER.tick]!;
@@ -24,7 +26,9 @@ export function FeelCues({session}:{readonly session:ArcadeSession}) {
     if(warnings.current!==null) {
       const cues=threatTelegraphs(state,session.world);warnings.current.count=cues.length;
       cues.forEach((cue,i)=>{
-        pose.position.set(-cue.x/UNIT, cue.y/UNIT+0.7, cue.z/UNIT);
+        // Zakřivená trať běžce (P46D T3): varování nad tělem tam, kde ho scéna kreslí.
+        const bend=path?.(cue.z/UNIT);
+        pose.position.set(-cue.x/UNIT+(bend?.x??0), cue.y/UNIT+0.7+(bend?.y??0), cue.z/UNIT);
         pose.quaternion.copy(camera.quaternion);
         pose.scale.setScalar(Math.max(0.55,cue.radius/UNIT)*(0.8+cue.urgency*0.2));
         pose.updateMatrix();warnings.current!.setMatrixAt(i,pose.matrix);

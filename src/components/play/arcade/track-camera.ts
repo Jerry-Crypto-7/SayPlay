@@ -14,6 +14,8 @@
 
 import type { PerspectiveCamera, Vector3 } from 'three';
 
+import { type Path, slopeAt } from './runner/path';
+
 const clamp = (value: number, low: number, high: number): number => Math.max(low, Math.min(high, value));
 
 /**
@@ -46,10 +48,16 @@ export function placeAngled(camera: PerspectiveCamera, look: Vector3, z: number,
 
 const DEG = Math.PI / 180;
 
-/** Kamera běžce: za hrdinou a nad ním, kouká po trati před něj. `x`, `z` = hrdina ve scéně (m). */
-export function placeRunner(camera: PerspectiveCamera, look: Vector3, x: number, z: number): void {
-  camera.position.set(x * 0.6, 3.4, z - 6.5);
-  look.set(x * 0.4, 1.1, z + 9);
+/**
+ * Kamera běžce: za hrdinou a nad ním, kouká po trati před něj. `x`, `z` = hrdina ve scéně (m),
+ * `x` v pruzích bez zatáčky. Na zakřivené trati (P46D T3) stojí kamera i bod pohledu na tečně
+ * křivky v místě hrdiny: hrdina je v záběru tam, kde na rovné trati, a zatáčka se stáčí před ním.
+ */
+export function placeRunner(camera: PerspectiveCamera, look: Vector3, x: number, z: number, path?: Path): void {
+  const at = path?.(z) ?? { x: 0, y: 0 };
+  const slope = path === undefined ? { x: 0, y: 0 } : slopeAt(path, z);
+  camera.position.set(x * 0.6 + at.x - 6.5 * slope.x, 3.4 + at.y - 6.5 * slope.y, z - 6.5);
+  look.set(x * 0.4 + at.x + 9 * slope.x, 1.1 + at.y + 9 * slope.y, z + 9);
   camera.lookAt(look);
 }
 

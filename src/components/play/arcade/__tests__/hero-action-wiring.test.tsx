@@ -80,7 +80,8 @@ function sessionOf(world: ArcadeWorld): ArcadeSession {
 }
 
 /** Svět jen s ovládáním – `ArcadeStage` a `StageCanvas` z něj čtou, kterou scénu postavit. */
-const bare = (id: string): ArcadeSession => sessionOf({ control: { id, params: { half: 20_000 } }, rules: [], length: 0 } as unknown as ArcadeWorld);
+// Prázdný svět bez těl: zakřivená trať běžce (P46D T3) z něj čte semínko a počet těl.
+const bare = (id: string): ArcadeSession => sessionOf({ seed: 1, control: { id, params: { half: 20_000 } }, rules: [], kinds: [], initial: [0, 0, 0], length: 0 } as unknown as ArcadeWorld);
 
 /** Element `StageCanvas` (memo za hranicí `ArcadeStage`) mezi dětmi stage. */
 function canvasHost(stage: Element): Element {
