@@ -383,3 +383,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-porthole` | porthole | 4695 / 2337 |
 | `gen3d-sunken-cannon` | sunken cannon | 4656 / 2282 |
 | `gen3d-haunted-portrait` | haunted portrait | 4406 / 2187 |
+| `gen3d-mall-kiosk` | mall kiosk | 4299 / 2146 |
+| `gen3d-flour-sack` | flour sack | 4245 / 2088 |
+| `gen3d-ancient-vase` | ancient vase | 4691 / 2120 |
+| `gen3d-thin-ice-sign` | thin ice sign | 4748 / 2374 |
+| `gen3d-castle-banner` | castle banner | 4749 / 2364 |

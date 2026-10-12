@@ -23515,6 +23515,101 @@
           0.17243
         ]
       }
+    },
+    {
+      "assetId": "gen3d-mall-kiosk",
+      "tags": [
+        "mall kiosk"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mall-kiosk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33054,
+          0,
+          -0.32295
+        ],
+        "max": [
+          0.33054,
+          1.00001,
+          0.32295
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flour-sack",
+      "tags": [
+        "flour sack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flour-sack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42249,
+          0,
+          -0.29806
+        ],
+        "max": [
+          0.42249,
+          0.99266,
+          0.29806
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ancient-vase",
+      "tags": [
+        "ancient vase"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ancient-vase-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35214,
+          0,
+          -0.29786
+        ],
+        "max": [
+          0.35214,
+          0.99997,
+          0.29786
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-thin-ice-sign",
+      "tags": [
+        "thin ice sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-thin-ice-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30959,
+          0,
+          -0.15224
+        ],
+        "max": [
+          0.30959,
+          1.00001,
+          0.15224
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-castle-banner",
+      "tags": [
+        "castle banner"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-castle-banner-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21165,
+          0,
+          -0.12934
+        ],
+        "max": [
+          0.21165,
+          1.00001,
+          0.12934
+        ]
+      }
     }
   ]
 }
