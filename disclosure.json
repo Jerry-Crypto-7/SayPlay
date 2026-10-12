@@ -64410,6 +64410,19 @@
       "reviewNote": "Background removal between the image and TRELLIS.2. Used instead of RMBG-2.0, which is non-commercial. Both the repack card and the Lucida card declare MIT for weights and code, read 2026-09-24."
     },
     {
+      "name": "claude-code",
+      "kind": "model",
+      "scope": "tool",
+      "source": "https://docs.anthropic.com/en/docs/claude-code/overview",
+      "authorOrProvider": "Anthropic",
+      "license": "komerční podmínky služby (Anthropic Commercial Terms); lokální běh na uživatelském předplatném Claude",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "Anthropic, https://www.anthropic.com/legal/commercial-terms",
+      "reviewNote": "Není to model, ale CLI, přes které scripts/p37d/judge-sheet.mjs (--judge claude, P46F) volá claude-opus-5-5; jméno je v cestě k binárce @anthropic-ai/claude-code. Jen nástroj vývoje knihovny modelů, produkt ho nevolá."
+    },
+    {
       "name": "claude-opus-5",
       "kind": "model",
       "source": "https://docs.anthropic.com/en/docs/about-claude/models",
@@ -64420,6 +64433,19 @@
       ],
       "attribution": "Anthropic, https://www.anthropic.com/legal/commercial-terms",
       "reviewNote": "Od 6. 9. 2026 se NEVOLÁ a produktu se neúčastní. Do té chvíle stál v src/model/prompt.ts jako EMISSION_MODEL a proxy vracela pod tím jménem odpovědi gpt-5.6-sol; emisní cesta proto jmenuje ten model přímo. Položka zůstává, protože identifikátor je pořád v kódu — v testech a fixturách (evals/harness/**, evals/worldstream/__tests__/**, scripts/__tests__/**)."
+    },
+    {
+      "name": "claude-opus-5-5",
+      "kind": "model",
+      "scope": "tool",
+      "source": "https://docs.anthropic.com/en/docs/about-claude/models",
+      "authorOrProvider": "Anthropic",
+      "license": "komerční podmínky služby (Anthropic Commercial Terms); lokální běh na uživatelském předplatném Claude přes claude -p",
+      "requiredNotices": [
+        "žádné pro volajícího; výstupy modelu podléhají podmínkám služby"
+      ],
+      "attribution": "Anthropic, https://www.anthropic.com/legal/commercial-terms",
+      "reviewNote": "Od 12. 10. 2026 (P46F) slepý soudce generovaných 3D modelů a předkontrola obrázku před TRELLIS: scripts/p37d/judge-sheet.mjs --judge claude, prázdný adresář jen s obrázkem, nástroj jen Read. Odpověď (jméno předmětu) rozhoduje, jestli model jde do knihovny; do knihovny ani do trénovacích dat se z ní nic nepíše. Produkt ho nevolá."
     },
     {
       "name": "claude-sonnet-5",
