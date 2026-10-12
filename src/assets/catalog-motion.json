@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "47ced971847bc3e1a1649d15c8315b9fa3e607c653f1aa7290430698c6dd5c18",
+ "catalogHash": "f6abb47c1ab45c5506835fc07b007b853cf095a3f7b1386f8de84009a40fccd8",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1145,6 +1145,12 @@
   "gen3d-compost-bin": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-amphora": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-bandstand": {"class":"prop"},
-  "gen3d-gingerbread-house": {"class":"prop"}
+  "gen3d-gingerbread-house": {"class":"prop"},
+  "gen3d-diving-bell": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-cellar-door": {"class":"prop"},
+  "gen3d-sphinx": {"class":"prop"},
+  "gen3d-wooden-dock": {"class":"prop"},
+  "gen3d-laundry-cart": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-tribal-drum": {"class":"biped","regions":{"legY":0.25}}
  }
 }

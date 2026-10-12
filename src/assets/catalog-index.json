@@ -23268,6 +23268,120 @@
           0.44882
         ]
       }
+    },
+    {
+      "assetId": "gen3d-diving-bell",
+      "tags": [
+        "diving bell"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-diving-bell-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34292,
+          0,
+          -0.34071
+        ],
+        "max": [
+          0.34292,
+          0.99963,
+          0.34071
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cellar-door",
+      "tags": [
+        "cellar door"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cellar-door-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46048,
+          0,
+          -0.16915
+        ],
+        "max": [
+          0.46048,
+          0.99438,
+          0.16915
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sphinx",
+      "tags": [
+        "sphinx"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sphinx-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.57745,
+          0,
+          -0.66037
+        ],
+        "max": [
+          0.57745,
+          1.00001,
+          0.66037
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-dock",
+      "tags": [
+        "wooden dock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-dock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.64787,
+          0,
+          -0.55259
+        ],
+        "max": [
+          0.64787,
+          0.99818,
+          0.55259
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-laundry-cart",
+      "tags": [
+        "laundry cart"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-laundry-cart-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34243,
+          0,
+          -0.31493
+        ],
+        "max": [
+          0.34243,
+          0.99918,
+          0.31493
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tribal-drum",
+      "tags": [
+        "tribal drum"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tribal-drum-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31045,
+          0,
+          -0.30895
+        ],
+        "max": [
+          0.31045,
+          1.00001,
+          0.30895
+        ]
+      }
     }
   ]
 }

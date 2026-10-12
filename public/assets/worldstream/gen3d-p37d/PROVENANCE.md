@@ -370,3 +370,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-amphora` | amphora | 4748 / 2374 |
 | `gen3d-bandstand` | bandstand | 4645 / 2295 |
 | `gen3d-gingerbread-house` | gingerbread house | 3889 / 1934 |
+| `gen3d-diving-bell` | diving bell | 4609 / 2192 |
+| `gen3d-cellar-door` | cellar door | 3716 / 1759 |
+| `gen3d-sphinx` | sphinx | 4307 / 2127 |
+| `gen3d-wooden-dock` | wooden dock | 4455 / 2165 |
+| `gen3d-laundry-cart` | laundry cart | 4465 / 2176 |
+| `gen3d-tribal-drum` | tribal drum | 4670 / 2273 |
