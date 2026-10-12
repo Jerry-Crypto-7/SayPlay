@@ -163,7 +163,8 @@ describe('direct – the model answers', () => {
       expect(game.fallbackReason, name).toBe(unmet.length > 0 ? 'VERB_UNPROVED' : null);
       expect(game.spec.roles.find((role) => role.kind === 'player')?.label, name).toBe('fox');
     }
-  });
+    // Každý žánr ověří robot; s logikou P45B a průběhem P45C samotný test ~20 s.
+  }, 90_000);
 
   it('a GameSpec body is unreadable – draft + MALFORMED after one call, the table no longer repairs it', async () => {
     const good = answerFixture('good-collect_exit');
