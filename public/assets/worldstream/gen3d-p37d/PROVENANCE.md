@@ -393,3 +393,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-dungeon-door` | dungeon door | 4468 / 2169 |
 | `gen3d-fuse-box` | fuse box | 4139 / 2062 |
 | `gen3d-sugar-bowl` | sugar bowl | 4502 / 2214 |
+| `gen3d-record-player` | record player | 4658 / 2307 |
+| `gen3d-water-pump` | water pump | 4739 / 2364 |
+| `gen3d-milk-can` | milk can | 4748 / 2362 |
+| `gen3d-medicine-bottle` | medicine bottle | 4640 / 2272 |
+| `gen3d-spring-rider` | spring rider | 4497 / 2153 |
+| `gen3d-branding-iron` | branding iron | 4748 / 2374 |
+| `gen3d-frozen-fountain` | frozen fountain | 4309 / 2076 |

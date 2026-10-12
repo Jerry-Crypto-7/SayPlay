@@ -23705,6 +23705,139 @@
           0.60045
         ]
       }
+    },
+    {
+      "assetId": "gen3d-record-player",
+      "tags": [
+        "record player"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-record-player-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5531,
+          0,
+          -0.45083
+        ],
+        "max": [
+          0.5531,
+          0.99996,
+          0.45083
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-water-pump",
+      "tags": [
+        "water pump"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-water-pump-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37981,
+          0,
+          -0.43408
+        ],
+        "max": [
+          0.37981,
+          0.99989,
+          0.43408
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-milk-can",
+      "tags": [
+        "milk can"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-milk-can-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30842,
+          0,
+          -0.23216
+        ],
+        "max": [
+          0.30842,
+          1.00001,
+          0.23216
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-medicine-bottle",
+      "tags": [
+        "medicine bottle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-medicine-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19446,
+          0,
+          -0.19445
+        ],
+        "max": [
+          0.19446,
+          0.99962,
+          0.19445
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spring-rider",
+      "tags": [
+        "spring rider"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spring-rider-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16001,
+          0,
+          -0.30007
+        ],
+        "max": [
+          0.16001,
+          0.99454,
+          0.30007
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-branding-iron",
+      "tags": [
+        "branding iron"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-branding-iron-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.09771,
+          0,
+          -0.04796
+        ],
+        "max": [
+          0.09771,
+          0.99981,
+          0.04796
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-frozen-fountain",
+      "tags": [
+        "frozen fountain"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-fountain-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46833,
+          0,
+          -0.46938
+        ],
+        "max": [
+          0.46833,
+          0.95578,
+          0.46938
+        ]
+      }
     }
   ]
 }

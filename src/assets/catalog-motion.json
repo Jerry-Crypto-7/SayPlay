@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "77bf106b21552b7348f9480f224c30704b01496cb1be1d82dcacdedeacbaabca",
+ "catalogHash": "aa2c15392b82959a8970c5bb6b336f8caad989a9d3e5a0209d9a49cee186fbfa",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1168,6 +1168,13 @@
   "gen3d-sword-rack": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-dungeon-door": {"class":"prop"},
   "gen3d-fuse-box": {"class":"prop"},
-  "gen3d-sugar-bowl": {"class":"prop"}
+  "gen3d-sugar-bowl": {"class":"prop"},
+  "gen3d-record-player": {"class":"prop"},
+  "gen3d-water-pump": {"class":"prop"},
+  "gen3d-milk-can": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-medicine-bottle": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-spring-rider": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-branding-iron": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-frozen-fountain": {"class":"prop"}
  }
 }
