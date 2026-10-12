@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "353fb4374059056a142c40978e05a41b1234dcc1ebd0ba48f7ca6e8f106d5ca3",
+ "catalogHash": "71bb101b321e76adf914e7db5f4ed63b0633b286cde87eaa22f70d6a79723a01",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1194,6 +1194,8 @@
   "gen3d-message-in-a-bottle": {"class":"prop"},
   "gen3d-statue-head": {"class":"prop"},
   "gen3d-bread-basket": {"class":"prop"},
-  "gen3d-ballot-box": {"class":"prop"}
+  "gen3d-ballot-box": {"class":"prop"},
+  "gen3d-clothes-iron": {"class":"prop"},
+  "gen3d-diner-booth": {"class":"prop"}
  }
 }

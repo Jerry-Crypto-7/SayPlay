@@ -24199,6 +24199,44 @@
           0.46294
         ]
       }
+    },
+    {
+      "assetId": "gen3d-clothes-iron",
+      "tags": [
+        "clothes iron"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-clothes-iron-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41833,
+          0,
+          -0.93894
+        ],
+        "max": [
+          0.41833,
+          0.99025,
+          0.93894
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-diner-booth",
+      "tags": [
+        "diner booth"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-diner-booth-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.62106,
+          0,
+          -0.57897
+        ],
+        "max": [
+          0.62106,
+          0.9898,
+          0.57897
+        ]
+      }
     }
   ]
 }
