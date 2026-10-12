@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "b7409b95602d51af42fca5cc11972634e61520ec5c515e9a13bccf45bdfe7c4f",
+ "catalogHash": "353fb4374059056a142c40978e05a41b1234dcc1ebd0ba48f7ca6e8f106d5ca3",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1193,6 +1193,7 @@
   "gen3d-soda-fountain": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-message-in-a-bottle": {"class":"prop"},
   "gen3d-statue-head": {"class":"prop"},
-  "gen3d-bread-basket": {"class":"prop"}
+  "gen3d-bread-basket": {"class":"prop"},
+  "gen3d-ballot-box": {"class":"prop"}
  }
 }

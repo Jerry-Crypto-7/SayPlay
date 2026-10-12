@@ -24180,6 +24180,25 @@
           0.41864
         ]
       }
+    },
+    {
+      "assetId": "gen3d-ballot-box",
+      "tags": [
+        "ballot box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ballot-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.51852,
+          0,
+          -0.46294
+        ],
+        "max": [
+          0.51852,
+          0.9999,
+          0.46294
+        ]
+      }
     }
   ]
 }

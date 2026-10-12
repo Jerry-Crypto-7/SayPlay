@@ -418,3 +418,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-message-in-a-bottle` | message in a bottle | 4746 / 2364 |
 | `gen3d-statue-head` | statue head | 4229 / 2094 |
 | `gen3d-bread-basket` | bread basket | 4055 / 2103 |
+| `gen3d-ballot-box` | ballot box | 3961 / 1937 |
