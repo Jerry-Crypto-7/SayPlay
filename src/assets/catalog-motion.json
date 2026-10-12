@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "f6abb47c1ab45c5506835fc07b007b853cf095a3f7b1386f8de84009a40fccd8",
+ "catalogHash": "e002f79afe3630a3992ee805b1c95864eabbb3157ee130be5b2d68ed10bed9ca",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1151,6 +1151,13 @@
   "gen3d-sphinx": {"class":"prop"},
   "gen3d-wooden-dock": {"class":"prop"},
   "gen3d-laundry-cart": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-tribal-drum": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-tribal-drum": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-display-case": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-tool-chest": {"class":"prop"},
+  "gen3d-suit-of-armor": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-deli-counter": {"class":"prop"},
+  "gen3d-porthole": {"class":"prop"},
+  "gen3d-sunken-cannon": {"class":"prop"},
+  "gen3d-haunted-portrait": {"class":"biped","regions":{"legY":0.25}}
  }
 }

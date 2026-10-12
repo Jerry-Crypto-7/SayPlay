@@ -23382,6 +23382,139 @@
           0.30895
         ]
       }
+    },
+    {
+      "assetId": "gen3d-display-case",
+      "tags": [
+        "display case"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-display-case-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19219,
+          0,
+          -0.19228
+        ],
+        "max": [
+          0.19219,
+          0.99996,
+          0.19228
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tool-chest",
+      "tags": [
+        "tool chest"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tool-chest-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40767,
+          0,
+          -0.31226
+        ],
+        "max": [
+          0.40767,
+          0.99592,
+          0.31226
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-suit-of-armor",
+      "tags": [
+        "suit of armor"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-suit-of-armor-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31311,
+          0,
+          -0.20056
+        ],
+        "max": [
+          0.31311,
+          1.00001,
+          0.20056
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-deli-counter",
+      "tags": [
+        "deli counter"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-deli-counter-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.55536,
+          0,
+          -0.3079
+        ],
+        "max": [
+          0.55536,
+          0.99997,
+          0.3079
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-porthole",
+      "tags": [
+        "porthole"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-porthole-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49853,
+          0,
+          -0.07574
+        ],
+        "max": [
+          0.49853,
+          0.99986,
+          0.07574
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sunken-cannon",
+      "tags": [
+        "sunken cannon"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sunken-cannon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.99944,
+          0,
+          -1.01843
+        ],
+        "max": [
+          0.99944,
+          1.00001,
+          1.01843
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-haunted-portrait",
+      "tags": [
+        "haunted portrait"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-haunted-portrait-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31631,
+          0,
+          -0.17243
+        ],
+        "max": [
+          0.31631,
+          1.00001,
+          0.17243
+        ]
+      }
     }
   ]
 }

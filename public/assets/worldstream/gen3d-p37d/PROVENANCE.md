@@ -376,3 +376,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wooden-dock` | wooden dock | 4455 / 2165 |
 | `gen3d-laundry-cart` | laundry cart | 4465 / 2176 |
 | `gen3d-tribal-drum` | tribal drum | 4670 / 2273 |
+| `gen3d-display-case` | display case | 4562 / 2272 |
+| `gen3d-tool-chest` | tool chest | 3647 / 1805 |
+| `gen3d-suit-of-armor` | suit of armor | 4596 / 2245 |
+| `gen3d-deli-counter` | deli counter | 4330 / 2049 |
+| `gen3d-porthole` | porthole | 4695 / 2337 |
+| `gen3d-sunken-cannon` | sunken cannon | 4656 / 2282 |
+| `gen3d-haunted-portrait` | haunted portrait | 4406 / 2187 |
