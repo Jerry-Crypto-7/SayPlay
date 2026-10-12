@@ -388,3 +388,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-ancient-vase` | ancient vase | 4691 / 2120 |
 | `gen3d-thin-ice-sign` | thin ice sign | 4748 / 2374 |
 | `gen3d-castle-banner` | castle banner | 4749 / 2364 |
+| `gen3d-fireplace-screen` | fireplace screen | 4708 / 2314 |
+| `gen3d-sword-rack` | sword rack | 4746 / 2372 |
+| `gen3d-dungeon-door` | dungeon door | 4468 / 2169 |
+| `gen3d-fuse-box` | fuse box | 4139 / 2062 |
+| `gen3d-sugar-bowl` | sugar bowl | 4502 / 2214 |

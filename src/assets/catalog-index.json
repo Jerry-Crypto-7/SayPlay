@@ -23610,6 +23610,101 @@
           0.12934
         ]
       }
+    },
+    {
+      "assetId": "gen3d-fireplace-screen",
+      "tags": [
+        "fireplace screen"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fireplace-screen-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.7755,
+          0,
+          -0.09637
+        ],
+        "max": [
+          0.7755,
+          0.99426,
+          0.09637
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sword-rack",
+      "tags": [
+        "sword rack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sword-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20441,
+          0,
+          -0.14219
+        ],
+        "max": [
+          0.20441,
+          1.00001,
+          0.14219
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dungeon-door",
+      "tags": [
+        "dungeon door"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dungeon-door-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39053,
+          0,
+          -0.09625
+        ],
+        "max": [
+          0.39053,
+          1.00001,
+          0.09625
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fuse-box",
+      "tags": [
+        "fuse box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fuse-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49377,
+          0,
+          -0.35754
+        ],
+        "max": [
+          0.49377,
+          0.99996,
+          0.35754
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sugar-bowl",
+      "tags": [
+        "sugar bowl"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sugar-bowl-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45364,
+          0,
+          -0.60045
+        ],
+        "max": [
+          0.45364,
+          0.996,
+          0.60045
+        ]
+      }
     }
   ]
 }

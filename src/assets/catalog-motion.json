@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "7522d600c4253269e366b9967a5d1a17a9559537dc5e42cd221f4fad11dab289",
+ "catalogHash": "77bf106b21552b7348f9480f224c30704b01496cb1be1d82dcacdedeacbaabca",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1163,6 +1163,11 @@
   "gen3d-flour-sack": {"class":"prop"},
   "gen3d-ancient-vase": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-thin-ice-sign": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-castle-banner": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-castle-banner": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-fireplace-screen": {"class":"prop"},
+  "gen3d-sword-rack": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-dungeon-door": {"class":"prop"},
+  "gen3d-fuse-box": {"class":"prop"},
+  "gen3d-sugar-bowl": {"class":"prop"}
  }
 }
