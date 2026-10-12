@@ -427,3 +427,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-rolling-pin` | rolling pin | 4748 / 2374 |
 | `gen3d-diner-sign` | diner sign | 4321 / 2128 |
 | `gen3d-flower-garland` | flower garland | 4149 / 2059 |
+| `gen3d-blimp` | blimp, zeppelin, dirigible | 4738 / 2366 |
+| `gen3d-frost-giant` | frost giant | 4496 / 2069 |
+| `gen3d-cannon-tower` | cannon tower | 4418 / 2103 |
+| `gen3d-airship` | airship, steampunk airship | 4714 / 2299 |
+| `gen3d-laser-turret` | laser turret | 4242 / 2097 |
+| `gen3d-angry-bull` | angry bull, bull | 4197 / 1879 |

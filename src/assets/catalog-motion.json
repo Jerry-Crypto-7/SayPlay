@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "28522a437f12b51c1447a534f64db913dba05c6c353336ee35b215d398f57fc8",
+ "catalogHash": "69132047807c91e93a7e0050a21fcefe7d4a80520494c2961b91329f2847cb89",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1202,6 +1202,12 @@
   "gen3d-didgeridoo": {"class":"prop"},
   "gen3d-rolling-pin": {"class":"prop"},
   "gen3d-diner-sign": {"class":"prop"},
-  "gen3d-flower-garland": {"class":"prop"}
+  "gen3d-flower-garland": {"class":"prop"},
+  "gen3d-blimp": {"class":"prop"},
+  "gen3d-frost-giant": {"class":"prop"},
+  "gen3d-cannon-tower": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-airship": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-laser-turret": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-angry-bull": {"class":"prop"}
  }
 }

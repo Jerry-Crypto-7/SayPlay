@@ -24351,6 +24351,124 @@
           1.32913
         ]
       }
+    },
+    {
+      "assetId": "gen3d-blimp",
+      "tags": [
+        "blimp",
+        "zeppelin",
+        "dirigible"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-blimp-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50531,
+          0,
+          -0.79583
+        ],
+        "max": [
+          0.50531,
+          0.99994,
+          0.79583
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-frost-giant",
+      "tags": [
+        "frost giant"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-frost-giant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46512,
+          0,
+          -0.23138
+        ],
+        "max": [
+          0.46512,
+          0.99995,
+          0.23138
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cannon-tower",
+      "tags": [
+        "cannon tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cannon-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2554,
+          0,
+          -0.3172
+        ],
+        "max": [
+          0.2554,
+          0.99819,
+          0.3172
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-airship",
+      "tags": [
+        "airship",
+        "steampunk airship"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-airship-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24533,
+          0,
+          -0.24753
+        ],
+        "max": [
+          0.24533,
+          0.99972,
+          0.24753
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-laser-turret",
+      "tags": [
+        "laser turret"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-laser-turret-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32446,
+          0,
+          -0.32671
+        ],
+        "max": [
+          0.32446,
+          0.99999,
+          0.32671
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-angry-bull",
+      "tags": [
+        "angry bull",
+        "bull"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-angry-bull-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.52398,
+          0,
+          -0.76508
+        ],
+        "max": [
+          0.52398,
+          0.97784,
+          0.76508
+        ]
+      }
     }
   ]
 }
