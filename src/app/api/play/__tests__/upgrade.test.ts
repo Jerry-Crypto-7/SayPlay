@@ -136,6 +136,8 @@ function holdDirector(): void {
 describe('POST s větou: návrh hned, režisér na pozadí', () => {
   it('odpoví návrhem dřív, než režisér doběhne, a pod 3 s', async () => {
     holdDirector();
+    // První publikace v procesu nese i načtení a JIT modulů návrhu (5 s pod vitestem); měří se ustálená cesta.
+    await publish({ sentence: 'A frog jumps across a swamp.' });
     const started = performance.now();
     const created = await publish({ sentence: SENTENCE });
     const elapsed = performance.now() - started;
@@ -295,7 +297,8 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     const child = await game(children[0] as string);
     expect(child.spec.control).toBe('runner');
     expect(child.spec.title).toBe('Cyber Cat Run');
-  });
+    // Robot ověřuje běžce ~25–45 s (měřeno 12. 10., i před spojením verzí); rozpočet režie je 270 s.
+  }, 90_000);
 
   // P32B T2: mřížkový návrh nová věta už nedostane; křeček je útěk v aréně.
   // P32B T5: běžce věrnost pustí, jen když ho hraje hlavní sloveso („runs“); návrh zůstane útěkem,
@@ -312,7 +315,8 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(children).toHaveLength(1);
     expect((await game(children[0] as string)).spec.control).toBe('runner');
     expect(director.branch?.calls[1]?.request.user).toContain('chaser');
-  });
+    // Robot ověřuje běžce víckrát (odpověď, opravné kolo, spojení s návrhem) – 30–45 s.
+  }, 90_000);
 
 
 });
