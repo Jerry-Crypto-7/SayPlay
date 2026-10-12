@@ -283,6 +283,8 @@ export const runnerParamsSchema = z
     feel: z.literal(2).optional(),
     /** Trať ze tří úseků s délkou podle obsahu (P36A T4); žánr Běžec ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
     sections: z.literal(3).optional(),
+    /** Úseky z knihovny vzorů (P46D T2); žánr Běžec ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
+    patterns: z.literal(1).optional(),
   })
   .strict();
 export type RunnerParams = z.infer<typeof runnerParamsSchema>;

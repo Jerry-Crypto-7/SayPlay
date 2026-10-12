@@ -81,6 +81,8 @@ export const runnerGenre: GenreModule<'runner'> = {
         feel: 2,
         // Rozjezd, hustší, nejtěžší úsek; délka podle počtů z věty (P36A T4).
         sections: 3,
+        // Úseky z knihovny vzorů: cik-cak, řetěz skoků, rozcestí, most, tunel… (P46D T2).
+        patterns: 1,
       },
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} Run`,
