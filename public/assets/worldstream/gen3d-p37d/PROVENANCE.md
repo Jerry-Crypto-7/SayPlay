@@ -484,3 +484,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-giant-hand` | giant hand | 4710 / 2326 |
 | `gen3d-venus-flytrap` | venus flytrap | 4711 / 2308 |
 | `gen3d-mimic-chest` | mimic chest | 4624 / 2262 |
+| `gen3d-laser-gun` | laser gun, laser pistol | 4635 / 2237 |
+| `gen3d-round-shield` | round shield | 4687 / 2301 |
+| `gen3d-speed-boot` | speed boot | 4541 / 2210 |
+| `gen3d-treasure-pile` | treasure pile, gold hoard, treasure hoard, hoard | 4390 / 1996 |
+| `gen3d-battle-axe` | battle axe | 4748 / 2374 |
+| `gen3d-winged-shoe` | winged shoe | 4563 / 2264 |
+| `gen3d-cheese-wheel` | cheese wheel | 4742 / 2326 |
+| `gen3d-kite-shield` | kite shield | 4742 / 2370 |

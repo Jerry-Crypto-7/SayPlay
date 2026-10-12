@@ -25456,6 +25456,162 @@
           0.52644
         ]
       }
+    },
+    {
+      "assetId": "gen3d-laser-gun",
+      "tags": [
+        "laser gun",
+        "laser pistol"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-laser-gun-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20257,
+          0,
+          -0.87289
+        ],
+        "max": [
+          0.20257,
+          0.99967,
+          0.87289
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-round-shield",
+      "tags": [
+        "round shield"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-round-shield-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47988,
+          0,
+          -0.07894
+        ],
+        "max": [
+          0.47988,
+          0.9965,
+          0.07894
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-speed-boot",
+      "tags": [
+        "speed boot"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-speed-boot-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43322,
+          0,
+          -0.79399
+        ],
+        "max": [
+          0.43322,
+          1.00001,
+          0.79399
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-treasure-pile",
+      "tags": [
+        "treasure pile",
+        "gold hoard",
+        "treasure hoard",
+        "hoard"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-treasure-pile-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.39316,
+          0,
+          -1.37961
+        ],
+        "max": [
+          1.39316,
+          1.00001,
+          1.37961
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-battle-axe",
+      "tags": [
+        "battle axe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-battle-axe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24089,
+          0,
+          -0.04027
+        ],
+        "max": [
+          0.24089,
+          0.99932,
+          0.04027
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-winged-shoe",
+      "tags": [
+        "winged shoe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-winged-shoe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.97551,
+          0,
+          -1.04246
+        ],
+        "max": [
+          0.97551,
+          0.99916,
+          1.04246
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cheese-wheel",
+      "tags": [
+        "cheese wheel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cheese-wheel-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.05881,
+          0,
+          -1.05763
+        ],
+        "max": [
+          1.05881,
+          0.99978,
+          1.05763
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-kite-shield",
+      "tags": [
+        "kite shield"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-kite-shield-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29796,
+          0,
+          -0.07555
+        ],
+        "max": [
+          0.29796,
+          0.99812,
+          0.07555
+        ]
+      }
     }
   ]
 }

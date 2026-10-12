@@ -14,3 +14,4 @@ Psaný smyčkou `D:/caches/p46f/loop.mjs` po každém kole. **Model** = obrázek
 | 8 | boss-runner boss-end | 10 | 8 | 6/8 | 6 | – | iron golem, lich, manticore, evil snowman, chimera, mud golem | – |
 | 9 | boss-runner boss-end | 10 | 10 | 7/10 | 7 | – | sandworm, crystal golem, scrap golem, warthog, wraith, bison, ghoul | – |
 | 10 | boss-runner boss-end | 10 | 8 | 6/8 | 6 | – | gremlin, rattlesnake, tarantula, giant hand, venus flytrap, mimic chest | – |
+| 11 | action-weapon action-shield action-powerup action-loot | 10 | 10 | 8/10 | 6 | – | laser gun, round shield, treasure pile, battle axe, cheese wheel, kite shield | – |
