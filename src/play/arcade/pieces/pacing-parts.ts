@@ -14,7 +14,7 @@ import type { GameSpecV1 } from '../../spec';
 import type { ArcadeParts } from '../addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRef, RAMP_STEP_PCT, ROLE, UNIT } from '../contract';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef } from './behaviours';
-import { TURRET } from './behaviours/boss';
+import { BOSS, TURRET } from './behaviours/boss';
 import { DUEL_ENRAGE } from './duel';
 import { PACING, type PacingActor, type PacingSetup, TENSION_CURVE, intensityAt, withPacing } from './pacing';
 import { progressionParts } from './progression-parts';
@@ -76,24 +76,32 @@ export const RUNNER_FOES = {
   ahead: 40 * UNIT,
   room: 3 + 1 + PACING.maxActors + PACING.maxShots,
   spare: 48,
+  /**
+   * Boss finále (T4, `behaviours/boss.ts` na trati): přijde na `bossAt` ‰. Od vrcholu (850 ‰) by měl jen ~4,5 s
+   * a tři uhnuté útoky s varováním se do nich nevejdou; od 760 ‰ má ~7 s. `bossRoom` = předloha těla a hozené překážky.
+   */
+  bossAt: 760,
+  bossRoom: 2,
 } as const;
 
-/** Hrozby běžce, když se do stropu těl jádra vejdou i s doplňky; jinak trať bez nich (hra kvůli průběhu nikdy neselže). */
-function runnerFoes(parts: ArcadeParts): Pick<GenrePacingSetup, 'behaviours' | 'budget' | 'from' | 'spots'> | null {
-  const used = parts.level.bodies.length + (parts.level.spawnSlots ?? 0);
-  if (used + RUNNER_FOES.room + RUNNER_FOES.spare > ARCADE_LIMITS.maxBodies) return null;
+/** Hrozby běžce, když se do stropu těl jádra vejdou i s doplňky; jinak trať bez nich (hra kvůli průběhu nikdy neselže). Boss jen s místem i pro něj. */
+function runnerFoes(parts: ArcadeParts): Pick<GenrePacingSetup, 'behaviours' | 'budget' | 'from' | 'spots' | 'finale' | 'boss'> | null {
+  const used = parts.level.bodies.length + (parts.level.spawnSlots ?? 0) + RUNNER_FOES.room + RUNNER_FOES.spare;
+  if (used > ARCADE_LIMITS.maxBodies) return null;
   const { actors, ahead } = RUNNER_FOES;
+  const boss = used + RUNNER_FOES.bossRoom > ARCADE_LIMITS.maxBodies ? {} : { finale: 'boss' as const, boss: { body: { ...BEHAVIOURS.boss.body, hp: BOSS.track.hp }, at: RUNNER_FOES.bossAt } };
   return {
     behaviours: actors.map((actor) => ({ body: BEHAVIOURS[actor.behaviour].body, behaviour: actor.behaviour, from: actor.from })),
     budget: RUNNER_FOES.budget,
     from: Math.min(...actors.map((actor) => actor.from)),
     spots: [-RUNNER.laneWidth, ahead, RUNNER.laneWidth, ahead],
+    ...boss,
   };
 }
 
 /**
  * Dráhový žánr (P45C T11): postup = ujetá trať, fáze z křivky a finále
- * závěrečný sprint. Hrozby v pruzích jen běžec (`foes`, R2); ostatní dráhy pruhy nemají.
+ * závěrečný sprint. Hrozby v pruzích jen běžec (`foes`, R2), a s nimi finále boss (P46B T4); ostatní dráhy pruhy nemají.
  */
 const track = (rows: number, rampLevel = false, foes = false): GenrePacing => (parts) => ({
   goal: { by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks },
@@ -101,9 +109,9 @@ const track = (rows: number, rampLevel = false, foes = false): GenrePacing => (p
   spots: [0, 0],
   behaviours: [],
   budget: 0,
+  finale: 'sprint',
   ...((foes ? runnerFoes(parts) : null) ?? {}),
   ...(foes ? { segments: 'runner' as const } : {}),
-  finale: 'sprint',
   phases: curvePhases(rows),
   ...(rampLevel ? { rampLevel: true } : {}),
 });

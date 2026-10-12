@@ -86,7 +86,8 @@ function speedAt(world: ArcadeWorld, at: number): number {
 /** Kroky rozvrhu chování (bez bosse) v pravidle `pacing`. */
 function laneSchedule(rules: readonly PieceRef[]): PacingRuleParams['schedule'] {
   const rule = nativeRule(rules, 'pacing')?.params as PacingRuleParams;
-  const lanes = new Set(rule.behaviours!.map((ref) => ref.template));
+  // Boss finále (T4) přijde mimo los rozvrhu a scénář úseků se ho netýká.
+  const lanes = new Set(rule.behaviours!.filter((ref) => ref.id !== 'boss').map((ref) => ref.template));
   return rule.schedule.filter((entry) => lanes.has(entry.template));
 }
 

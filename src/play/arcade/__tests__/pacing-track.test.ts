@@ -57,9 +57,11 @@ const phasesOf = (world: ArcadeWorld): unknown => chain(world.control).find((ref
 /** Hrozby běžce ve světě: chování v pravidle `pacing`, jeho rozvrh a místa vstupu. */
 function foesOf(world: ArcadeWorld): void {
   const rule = nativeRule(world.rules, 'pacing')?.params as PacingRuleParams;
-  expect(rule.behaviours?.map((ref) => ref.id)).toEqual(['flanker', 'sniper', 'swarm']);
+  expect(rule.behaviours?.map((ref) => ref.id)).toEqual(['flanker', 'sniper', 'swarm', 'boss']);
   expect(rule.spots).toEqual([-RUNNER.laneWidth, 40 * UNIT, RUNNER.laneWidth, 40 * UNIT]);
-  expect(rule.schedule).toHaveLength(RUNNER_FOES.budget);
+  // Rozvrh hrozeb a mimo los boss finále (P46B T4).
+  expect(rule.schedule).toHaveLength(RUNNER_FOES.budget + 1);
+  expect(rule.schedule.at(-1)).toMatchObject({ atPermille: RUNNER_FOES.bossAt, template: rule.behaviours?.at(-1)?.template, count: 1 });
   // Flanker a ostřelovač od stupňování (200 ‰), hejno až od vrcholu (650 ‰).
   expect(Math.min(...rule.schedule.map((entry) => entry.atPermille))).toBeGreaterThanOrEqual(200);
   const swarm = rule.behaviours?.find((ref) => ref.id === 'swarm')?.template;
