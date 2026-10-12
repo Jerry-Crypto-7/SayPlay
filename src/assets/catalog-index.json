@@ -24469,6 +24469,145 @@
           0.76508
         ]
       }
+    },
+    {
+      "assetId": "gen3d-necromancer",
+      "tags": [
+        "necromancer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-necromancer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31066,
+          0,
+          -0.22633
+        ],
+        "max": [
+          0.31066,
+          1.00001,
+          0.22633
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tesla-coil",
+      "tags": [
+        "tesla coil"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tesla-coil-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12009,
+          0,
+          -0.11794
+        ],
+        "max": [
+          0.12009,
+          0.99887,
+          0.11794
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-t-rex",
+      "tags": [
+        "t rex",
+        "tyrannosaurus",
+        "tyrannosaurus rex"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-t-rex-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29962,
+          0,
+          -0.81655
+        ],
+        "max": [
+          0.29962,
+          0.99826,
+          0.81655
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-storm-cloud",
+      "tags": [
+        "storm cloud",
+        "thundercloud",
+        "thunder cloud"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-storm-cloud-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46314,
+          0,
+          -0.46942
+        ],
+        "max": [
+          0.46314,
+          0.98921,
+          0.46942
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sorcerer",
+      "tags": [
+        "sorcerer",
+        "warlock",
+        "sorceress"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sorcerer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42017,
+          0,
+          -0.23092
+        ],
+        "max": [
+          0.42017,
+          0.99927,
+          0.23092
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sentry-gun",
+      "tags": [
+        "sentry gun"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sentry-gun-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32546,
+          0,
+          -0.45466
+        ],
+        "max": [
+          0.32546,
+          0.99754,
+          0.45466
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-kaiju",
+      "tags": [
+        "kaiju"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-kaiju-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37272,
+          0,
+          -0.61287
+        ],
+        "max": [
+          0.37272,
+          0.99806,
+          0.61287
+        ]
+      }
     }
   ]
 }

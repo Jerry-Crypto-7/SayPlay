@@ -433,3 +433,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-airship` | airship, steampunk airship | 4714 / 2299 |
 | `gen3d-laser-turret` | laser turret | 4242 / 2097 |
 | `gen3d-angry-bull` | angry bull, bull | 4197 / 1879 |
+| `gen3d-necromancer` | necromancer | 4572 / 2221 |
+| `gen3d-tesla-coil` | tesla coil | 4748 / 2326 |
+| `gen3d-t-rex` | t rex, tyrannosaurus, tyrannosaurus rex | 4410 / 2199 |
+| `gen3d-storm-cloud` | storm cloud, thundercloud, thunder cloud | 4508 / 2210 |
+| `gen3d-sorcerer` | sorcerer, warlock, sorceress | 4528 / 2177 |
+| `gen3d-sentry-gun` | sentry gun | 4617 / 2276 |
+| `gen3d-kaiju` | kaiju | 4723 / 2320 |
