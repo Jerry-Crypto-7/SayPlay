@@ -423,3 +423,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-diner-booth` | diner booth | 4152 / 2041 |
 | `gen3d-battering-ram` | battering ram | 3987 / 1986 |
 | `gen3d-notebook` | notebook | 4528 / 2194 |
+| `gen3d-didgeridoo` | didgeridoo | 4748 / 2374 |
+| `gen3d-rolling-pin` | rolling pin | 4748 / 2374 |

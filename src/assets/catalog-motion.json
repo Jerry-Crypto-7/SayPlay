@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "bbe5ca258836eb52e3ca3106a3c7a71ff1cbe55a79771af24d026f007a6f916c",
+ "catalogHash": "e21cfc0fa9990323d877f6390d5fb656bfbbb22bc8b57a061d7702a01010d87d",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1198,6 +1198,8 @@
   "gen3d-clothes-iron": {"class":"prop"},
   "gen3d-diner-booth": {"class":"prop"},
   "gen3d-battering-ram": {"class":"prop"},
-  "gen3d-notebook": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-notebook": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-didgeridoo": {"class":"prop"},
+  "gen3d-rolling-pin": {"class":"prop"}
  }
 }

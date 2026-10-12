@@ -24275,6 +24275,44 @@
           0.22162
         ]
       }
+    },
+    {
+      "assetId": "gen3d-didgeridoo",
+      "tags": [
+        "didgeridoo"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-didgeridoo-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.60925,
+          0,
+          -0.52926
+        ],
+        "max": [
+          2.60925,
+          0.99689,
+          0.52926
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rolling-pin",
+      "tags": [
+        "rolling pin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rolling-pin-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.81724,
+          0,
+          -0.51953
+        ],
+        "max": [
+          1.81724,
+          0.99996,
+          0.51953
+        ]
+      }
     }
   ]
 }
