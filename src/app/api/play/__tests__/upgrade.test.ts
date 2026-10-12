@@ -264,13 +264,16 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   // P32B T5: opravit smí jen na žánr hlavního slovesa. Úkol (celý `fallback`) je návrhem jen věty,
   // ve které žádný `ready` žánr nic neslyšel, a tu věrnost z úkolu nepustí – proto návrh z Arény:
   // útěk nasbírá víc bodů („scary“, „escapes“, „survives“, „hunts“) než hlavní sloveso „jumps“.
-  it('návrh zachová skákání a odmítne plošinovku, která ztratila pronásledovatele', async () => {
+  it('návrh zachová skákání; plošinovku, která ztratila pronásledovatele, nahradí hra návrhu', async () => {
     director.script = [answered(genreAnswer({ genre: 'platformer', mode: 'default', hero: 'frog', cast: [{ label: 'snake', does: 'avoid' }], setting: 'swamp', palette: 'forest' }))];
     const created = await publish({ sentence: 'A frog jumps across a scary swamp, escapes and survives while a snake hunts it.' });
     expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'platformer', mode: 'default' });
     expect((await game(created.body.versionId)).spec.control).toBe('platform');
-    expect(await settled(created.body.versionId)).toEqual({status:'draft-final',reason:'ACTION_LOST'});
-    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+    // Demo 12. 10.: verze, která pronásledovatele ztratila, nevyjde – vyjde hra návrhu se vzhledem od režiséra (`onQuickGame`).
+    expect(await settled(created.body.versionId)).toEqual(expect.objectContaining({ status: 'ready' }));
+    const children = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
+    expect(children).toHaveLength(1);
+    expect((await game(children[0] as string)).spec.roles).toEqual(expect.arrayContaining((await game(created.body.versionId)).spec.roles));
     expect(director.branch?.calls[1]?.request.user).toContain('chaser');
   });
 
@@ -303,8 +306,11 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     const created = await publish({ sentence: 'A hamster runs through a scary supermarket, escapes and survives while a giant Roomba chases it.' });
     expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'runner', mode: 'default' });
     expect((await game(created.body.versionId)).spec.control).toBe('runner');
-    expect(await settled(created.body.versionId)).toEqual({status:'draft-final',reason:'ACTION_LOST'});
-    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+    // Demo 12. 10.: vyjde hra návrhu se vzhledem od režiséra (`onQuickGame`), ovládání zůstane z návrhu.
+    expect(await settled(created.body.versionId)).toEqual(expect.objectContaining({ status: 'ready' }));
+    const children = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
+    expect(children).toHaveLength(1);
+    expect((await game(children[0] as string)).spec.control).toBe('runner');
     expect(director.branch?.calls[1]?.request.user).toContain('chaser');
   });
 

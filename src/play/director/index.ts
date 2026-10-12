@@ -302,7 +302,10 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     // Broken custom rules may be removed, but every resulting candidate is
     // played again and its missing intent triples remain explicit.
     const ruleFailures = issues.filter(issue => issue.code === 'RULE_INVALID' || issue.code === 'VERB_UNPROVED');
-    if (ruleFailures.length > 0) {
+    // Vlny a fáze z pravidel umí hru přitížit tak, že ji robot neprojde (demo 12. 10.: 6 z 25 nahraných
+    // odpovědí, bez pravidel 5 z nich vyhraje) – hra bez pravidel je pořád AI verze s obsazením z odpovědi.
+    const unplayable = (verified.issues.length > 0 || blockingIssues(critique(nativeSpec)).length > 0) && (nativeSpec.rules?.length ?? 0) > 0;
+    if (ruleFailures.length > 0 || unplayable) {
       const unproved = new Set(unprovedVerbs(ruleFailures));
       for (const candidate of [withoutRules(nativeSpec, rule => unproved.has(rule.verb)), withoutRules(nativeSpec, () => true)]) {
         if (candidate === null || blockingIssues(critique(candidate)).length > 0) continue;

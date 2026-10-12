@@ -285,12 +285,13 @@ function logicIssues(rules: readonly Rule[], logic: Logic | undefined): string[]
 export const PHASE_ENTRY_TICKS = 240;
 
 /**
- * Deterministická oprava odpovědi režiséra (P45B T11): fáze, na kterou pravidlo reaguje
- * (`when.phase`, `when.phaseExit`, `if.inPhase`), ale žádné do ní nepřepne, dostane vstupní
- * pravidlo – každých `PHASE_ENTRY_TICKS` tiků z fáze, která je v deklaraci před ní. Jen
- * tenhle tvar: fázi, kterou nikdo nečte, nechá být a `logicIssues` ji dál odmítne. Bez místa
- * v rozpočtu pravidel nebo s obsazeným `id` se fáze nedoplní. Vstupy jdou na konec v obráceném
- * pořadí, ať dvě doplněné fáze za sebou nepřeskočí v jednom tiku obě.
+ * Deterministická oprava odpovědi režiséra (P45B T11): fáze, do které žádné pravidlo
+ * nepřepne, dostane vstupní pravidlo – každých `PHASE_ENTRY_TICKS` tiků z fáze, která je
+ * v deklaraci před ní. I fáze, kterou nikdo nečte (demo 12. 10.: 23 z 23 odpovědí s logikou
+ * takovou deklarovalo a celá odpověď padla) – vstup do ní nic nezmění, jen deklarace přestane
+ * být mrtvá. Bez místa v rozpočtu pravidel nebo s obsazeným `id` se fáze nedoplní a
+ * `logicIssues` ji dál odmítne. Vstupy jdou na konec v obráceném pořadí, ať dvě doplněné
+ * fáze za sebou nepřeskočí v jednom tiku obě.
  */
 export function withPhaseEntries(rules: readonly Rule[], logic: Logic | undefined): readonly Rule[] {
   const phases = logic?.phases ?? [];
@@ -298,12 +299,36 @@ export function withPhaseEntries(rules: readonly Rule[], logic: Logic | undefine
   const added: Rule[] = [];
   phases.forEach((phase, index) => {
     const id = `enter_${phase.id}`;
-    const read = uses.some((ref) => ref.name === phase.id && ref.use === 'read');
     const entered = uses.some((ref) => ref.name === phase.id && ref.use === 'write');
-    if (index === 0 || !read || entered || rules.length + added.length >= RULES_MAX || rules.some((rule) => rule.id === id)) return;
+    if (index === 0 || entered || rules.length + added.length >= RULES_MAX || rules.some((rule) => rule.id === id)) return;
     added.unshift({ id, verb: 'advance', when: { every: PHASE_ENTRY_TICKS }, if: [{ inPhase: phases[index - 1]!.id }], do: [{ goPhase: phase.id }] });
   });
   return added.length === 0 ? rules : [...rules, ...added];
+}
+
+/**
+ * Časovač, který žádné pravidlo nespustí (demo 12. 10.: 13 z 25 odpovědí režiséra): když na
+ * něj pravidlo čeká, dostane spouštěč `start_<id>` – každých `PHASE_ENTRY_TICKS` tiků ho
+ * natáhne na polovinu, takže doběhne jednou za tu dobu. Když na něj nikdo nečeká, deklarace
+ * zmizí. Bez místa v rozpočtu pravidel nebo s obsazeným `id` zůstane, jak byl, a
+ * `logicIssues` ho dál odmítne.
+ */
+export function withStartedTimers(rules: readonly Rule[], logic: Logic | undefined): { readonly rules: readonly Rule[]; readonly logic: Logic | undefined } {
+  const timers = logic?.timers ?? [];
+  const uses = rules.flatMap(logicRefsOf).filter((ref) => ref.kind === 'timer');
+  const started = (id: string) => uses.some((ref) => ref.name === id && ref.path.endsWith('/startTimer/timer'));
+  const dead = timers.filter((timer) => !started(timer.id) && !uses.some((ref) => ref.name === timer.id));
+  const added: Rule[] = [];
+  for (const timer of timers) {
+    const id = `start_${timer.id}`;
+    if (started(timer.id) || dead.includes(timer) || rules.length + added.length >= RULES_MAX || rules.some((rule) => rule.id === id)) continue;
+    added.push({ id, verb: 'wait', when: { every: PHASE_ENTRY_TICKS }, do: [{ startTimer: { timer: timer.id, ticks: PHASE_ENTRY_TICKS / 2 } }] });
+  }
+  const next = added.length === 0 ? rules : [...rules, ...added];
+  if (dead.length === 0) return { rules: next, logic };
+  const kept = timers.filter((timer) => !dead.includes(timer));
+  const { timers: _, ...rest } = logic as Logic;
+  return { rules: next, logic: kept.length === 0 ? rest : { ...rest, timers: kept } };
 }
 
 /** Fáze, do které vede vstup doplněný `withPhaseEntries` (P45B R6); `null` = pravidlo jiného tvaru, tedy modelu. */

@@ -16,7 +16,7 @@
  */
 
 import { arcadeWorldOf } from '../arcade/compile';
-import { logicSchema, rulesSchema, withPhaseEntries } from '../arcade/rules/schema';
+import { logicSchema, rulesSchema, withPhaseEntries, withStartedTimers } from '../arcade/rules/schema';
 import { liveCells } from '../compose/allowed';
 import { recipeKey } from '../compose/recipe';
 import { recipeAnswerSchema, nativeRecipeParams, type RecipeAnswer } from './answer-schema';
@@ -54,11 +54,18 @@ export function withoutNulls(value: unknown): unknown {
 /** Spec s doplněným vstupem do fáze, na kterou pravidlo reaguje (`withPhaseEntries`); beze změny, když není co doplnit. */
 function withEnteredPhases(input: unknown): unknown {
   if (!isRecord(input)) return input;
+  // Logika bez jediného pravidla nic nedělá a `readGameSpec` by kvůli ní odmítl celou odpověď (demo 12. 10.: si-018).
+  if (input.logic !== undefined && (!Array.isArray(input.rules) || input.rules.length === 0)) {
+    const { logic: _, ...rest } = input;
+    return rest;
+  }
   const rules = rulesSchema.safeParse(input.rules);
   const logic = logicSchema.safeParse(input.logic);
   if (!rules.success || !logic.success) return input;
   const entered = withPhaseEntries(rules.data, logic.data);
-  return entered === rules.data ? input : { ...input, rules: entered };
+  const timed = withStartedTimers(entered, logic.data);
+  if (timed.rules === rules.data && timed.logic === logic.data) return input;
+  return { ...input, rules: timed.rules, ...(timed.logic === logic.data ? {} : { logic: timed.logic }) };
 }
 
 /** Neznámá `id` v `mechanics`, v pořadí výskytu; prázdné, když je pole nečitelné. */

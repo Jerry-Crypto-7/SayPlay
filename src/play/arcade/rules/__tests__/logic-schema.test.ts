@@ -13,7 +13,7 @@ import { draftForControl } from '@/play/draft';
 import { genreSpecSchema } from '@/play/genre/contract';
 import { readGameSpec } from '@/play/spec';
 
-import { PHASE_ENTRY_TICKS, RULES_MAX, modelRulesSchema, ruleDoSchema, ruleIfSchema, ruleWhenSchema, withPhaseEntries } from '../schema';
+import { PHASE_ENTRY_TICKS, RULES_MAX, modelRulesSchema, ruleDoSchema, ruleIfSchema, ruleWhenSchema, withPhaseEntries, withStartedTimers } from '../schema';
 import { RULE_TEMPLATES, TEMPLATE_NAMES, expandTemplate } from '../templates';
 
 const base = draftForControl('a cat collects fish in the garden', 'move_free')!;
@@ -163,10 +163,29 @@ describe('withPhaseEntries: a phase a rule reacts to gets an entry (director ans
     expect(withPhaseEntries(rules, LOGIC)).toBe(rules);
   });
 
-  it('leaves a phase nobody reacts to alone, still refused', () => {
+  // Demo 12. 10.: 23 z 23 odpovědí s logikou deklarovalo fázi, kterou nikdo nečte, a celé padly.
+  it('enters a phase nobody reacts to as well, so the declaration is no longer dead', () => {
     const rules = typed(RULES);
-    expect(withPhaseEntries(rules, withBoss)).toBe(rules);
-    expect(issuesOf(withBoss, withPhaseEntries(rules, withBoss))).toContain('/logic/phases/2: no rule enters phase boss – add a rule with {"goPhase":"boss"}');
+    const entered = withPhaseEntries(rules, withBoss);
+    expect(entered.slice(rules.length).map((rule) => [rule.id, rule.if])).toEqual([['enter_boss', [{ inPhase: 'wave' }]]]);
+    expect(issuesOf(withBoss, entered)).toEqual([]);
+  });
+
+  it('a timer nobody starts: started when a rule waits for it, dropped when nobody does', () => {
+    const fuse = { ...LOGIC, timers: [...LOGIC.timers, { id: 'fuse' }] };
+    const waited = typed([...RULES, { id: 'boom', verb: 'boom', when: { timer: 'fuse' }, do: [{ score: 1 }] }]);
+    expect(issuesOf(fuse, waited)).toContain('/logic/timers/1: no rule starts timer fuse – add a rule with {"startTimer":{"timer":"fuse","ticks":…}}');
+    const started = withStartedTimers(waited, fuse);
+    expect(started.logic).toBe(fuse);
+    expect(started.rules.slice(waited.length)).toEqual([{ id: 'start_fuse', verb: 'wait', when: { every: PHASE_ENTRY_TICKS }, do: [{ startTimer: { timer: 'fuse', ticks: PHASE_ENTRY_TICKS / 2 } }] }]);
+    expect(issuesOf(fuse, started.rules)).toEqual([]);
+    const idle = typed(RULES);
+    const dropped = withStartedTimers(idle, fuse);
+    expect(dropped.rules).toBe(idle);
+    expect(dropped.logic).toEqual(LOGIC);
+    expect(issuesOf(LOGIC, dropped.rules)).toEqual([]);
+    // Spuštěný časovač zůstane, jak byl.
+    expect(withStartedTimers(idle, LOGIC)).toEqual({ rules: idle, logic: LOGIC });
   });
 
   it('two such phases in a row: the later entry goes first, so one tick never passes through both', () => {

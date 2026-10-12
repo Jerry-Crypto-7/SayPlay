@@ -25,7 +25,7 @@ import { join } from 'node:path';
 
 import { after } from 'next/server';
 
-import { gameSpecHash } from '@/play/spec';
+import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
@@ -236,22 +236,55 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
 
   const intent = extractIntent(request.sentence);
   const before = await actionEvidence(draft.spec, draft.version.seed, draft.arcade);
-  const preservingSeeds: number[] = [];
-  for (const seed of seeds) {
-    const after = await actionEvidence(directed.spec, seed);
-    if (lostActions(intent, before, after).length === 0) preservingSeeds.push(seed);
+  const preserving = async (spec: GameSpecV1): Promise<number[]> => {
+    const kept: number[] = [];
+    for (const seed of seeds) if (lostActions(intent, before, await actionEvidence(spec, seed)).length === 0) kept.push(seed);
+    return kept;
+  };
+  let upgraded = directed.spec;
+  let preservingSeeds = await preserving(upgraded);
+  if (preservingSeeds.length === 0) {
+    // Režisér často vybere jiný žánr a akci z věty ztratí (demo 12. 10.: 12 z 22 nahraných odpovědí).
+    // Druhý pokus: hra rychlé verze s pravidly, logikou a vzhledem od režiséra (9 z 12 pak projde).
+    const grafted = onQuickGame(draft.spec, directed.spec);
+    if (grafted !== null && gameSpecHash(grafted) !== gameSpecHash(draft.spec) && playabilityIssues(grafted, seeds).length === 0) {
+      const kept = await preserving(grafted);
+      if (kept.length > 0) [upgraded, preservingSeeds] = [grafted, kept];
+    }
   }
   if (preservingSeeds.length === 0) return final('ACTION_LOST', { stage: 'upgrade', reason: 'ACTION_LOST', detail: 'No candidate seed preserves all essential actions witnessed in the published quick version.', raw: directed.spec });
 
-  const published = await publishReadSpec(versions, directed.spec, preservingSeeds, draftId, {
+  const published = await publishReadSpec(versions, upgraded, preservingSeeds, draftId, {
     relation: 'upgrade',
     timings: { ackMs: request.ackMs, draftReadyMs: request.draftReadyMs, directorMs, source: directed.source },
   });
   if (!published.ok) {
     const reason = published.issues?.[0] === 'CONTENT_REJECTED' ? 'BLOCKED' : (REFUSAL_REASON[published.response.status] ?? 'FAILED');
-    return final(reason, { stage: 'publish', reason: published.issues?.[0] ?? String(published.response.status), detail: (published.issues ?? []).slice(1).join('; '), raw: directed.spec });
+    return final(reason, { stage: 'publish', reason: published.issues?.[0] ?? String(published.response.status), detail: (published.issues ?? []).slice(1).join('; '), raw: upgraded });
   }
   return { status: 'ready', versionId: published.value.game.version.versionId };
+}
+
+/**
+ * Hra rychlé verze (žánr, ovládání, mechaniky), na které leží název, téma a nové role od
+ * režiséra; jeho pravidla s věcmi a logikou nahradí ta z rychlé verze, jen když nějaká napsal.
+ * `null` = výsledek `readGameSpec` odmítne.
+ */
+export function onQuickGame(quick: GameSpecV1, ai: GameSpecV1): GameSpecV1 | null {
+  const { rules: _rules, things: _things, logic: _logic, ...base } = quick;
+  const own = (ai.rules?.length ?? 0) > 0 ? ai : quick;
+  const ids = new Set(quick.roles.map((role) => role.id));
+  const candidate = {
+    ...base,
+    title: ai.title,
+    theme: ai.theme,
+    roles: [...quick.roles, ...ai.roles.filter((role) => !ids.has(role.id) && role.kind !== 'player')],
+    ...(own.rules === undefined ? {} : { rules: own.rules }),
+    ...(own.things === undefined ? {} : { things: own.things }),
+    ...(own.logic === undefined ? {} : { logic: own.logic }),
+  };
+  const read = readGameSpec(candidate);
+  return read.ok ? read.value : null;
 }
 
 /**
