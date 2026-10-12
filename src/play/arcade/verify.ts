@@ -127,6 +127,8 @@ function changeOf(effect: ArcadeEffect, after: ArcadeState, tick: number, prior:
     case 'lose':
     // Kombo je zápis počítadla k sebrání – změnu za slovesem dokládá skóre téhož pravidla.
     case 'combo':
+    // Zápis počítadla akcí (P46A) – změnu za slovesem dokládá zmizení těla z téhož pravidla.
+    case 'ability':
       return null;
     case 'despawn':
       return effect.body >= 0 && effect.body < (after[HEADER.bodyCount] as number) && !alive(after, effect.body) ? `body ${String(effect.body)} gone ${at}` : null;

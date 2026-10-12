@@ -50,8 +50,21 @@ export function tickAbilities(state: Int32Array, buttons: number, params: Abilit
     if ((buttons & (ABILITY_BUTTONS[slot] as number)) === 0 || (state[cooldown] as number) > 0) return;
     state[active] = ABILITY_TIMING[id].active;
     state[cooldown] = ABILITY_TIMING[id].cooldown;
+    // Štít nemá okno: nabije jeden náboj, který drží do zásahu (spotřebuje ho pravidlo `ability_shield`).
+    if (id === 'shield') state[k + ABILITY_SLOTS.shield] = 1;
   });
   state[k + ABILITY_SLOTS.held] = buttons & (BUTTON.ACTION_A | BUTTON.ACTION_B);
+}
+
+/** Ochrana nárazu (`hit`, `steer_crash`) dashem ve slotu `dash` nebo štítem (P46A T5). */
+export const guardParams = z
+  .object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), dash: z.int().min(0).max(1).optional(), shield: z.literal(true).optional() })
+  .strict();
+
+/** Chrání hrdinu dash nebo nabitý štít? Pohlcení samo (zmizení těla, spotřebu náboje) dělají pravidla akcí. */
+export function guarded(state: Int32Array, guard: z.infer<typeof guardParams>): boolean {
+  if (guard.dash !== undefined && abilityActive(state, guard.keeper, guard.dash) > 0) return true;
+  return guard.shield === true && (state[bodyBase(guard.keeper) + ABILITY_SLOTS.shield] as number) > 0;
 }
 
 /** Zbývající aktivní tiky akce ve slotu `slot` (0 = A, 1 = B). */

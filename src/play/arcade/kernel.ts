@@ -816,6 +816,10 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
       state[base + S.aux0] = effect.multiplier;
       state[base + S.aux1] = (state[HD.tick] as number) + 1;
       state[base + S.x] = state[HD.counters + CT.health] as number;
+    } else if (effect.kind === 'ability') {
+      const at = baseOf(effect.body) + effect.slot;
+      changed = state[at] !== effect.value;
+      state[at] = effect.value;
     }
     // Předloha spawnu ani mrtvé tělo zásah nenese – kopie by zdědily jeho HP (revize P32-0 T4).
     else if ((effect.kind === 'hit' || effect.kind === 'stateChange') && !alive(state, baseOf(effect.body))) changed = false;

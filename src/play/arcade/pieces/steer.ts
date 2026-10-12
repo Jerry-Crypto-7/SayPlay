@@ -56,6 +56,7 @@ import {
   rampMarks,
   rampedSpeed,
 } from '../contract';
+import { guardParams, guarded } from '../abilities/state';
 import { GRAVITY } from '../kernel';
 
 export const STEER_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -833,10 +834,11 @@ export const voyageLand: ModeGeneratorPiece<VoyageLandParams> = {
 };
 
 /** Opt-in damage from an actual barrier contact; walls remain solid and intact. */
-export const steerCrash: RulePiece<Record<string, never>> = {
-  id: 'steer_crash', params: z.object({}).strict(), roles: ['player', 'obstacle'],
+export const steerCrash: RulePiece<{ guard?: z.infer<typeof guardParams> }> = {
+  // `guard` = dash nebo štít hrdiny (P46A T5), jako u `hit`.
+  id: 'steer_crash', params: z.object({ guard: guardParams.optional() }).strict(), roles: ['player', 'obstacle'],
   trigger: 'contact', cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, player, other }) => state[bodyBase(other) + BODY.role] !== ROLE.obstacle || graceOf(state, player) > 0
+  fire: ({ state, player, other }, params) => state[bodyBase(other) + BODY.role] !== ROLE.obstacle || graceOf(state, player) > 0 || (params.guard !== undefined && guarded(state, params.guard))
     ? [] : [{ kind: 'damage', amount: 1, grace: 60 }],
 };
 

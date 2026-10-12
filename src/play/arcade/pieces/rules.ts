@@ -5,6 +5,7 @@
 
 import { z } from 'zod';
 
+import { guardParams, guarded } from '../abilities/state';
 import { ARCADE_HZ, ARCADE_LIMITS, BODY, COMBO, COUNTER, FLAG, HEADER, ROLE, type RulePiece, type ScoreBonusParams, bodyBase, graceOf } from '../contract';
 
 const roleOf = (state: Int32Array, body: number): number => state[bodyBase(body) + BODY.role] as number;
@@ -17,6 +18,8 @@ const hitParams = z
     grace: z.int().min(1).max(ARCADE_LIMITS.maxTicks).optional(),
     /** Co po ztrátě života (P36A T2): překážka zmizí (výchozí, jako dřív), nebo se hráč vrátí na místo návratu (checkpoint). */
     after: z.enum(['despawn', 'respawn']).optional(),
+    /** Ochrana akcí hrdiny (P46A T5): v aktivním dashi (`dash` = slot A/B) nebo s nabitým štítem náraz nic nebere. */
+    guard: guardParams.optional(),
   })
   .strict();
 
@@ -36,6 +39,7 @@ export const hit: RulePiece<z.infer<typeof hitParams>> = {
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, player, other }, params) => {
     if (roleOf(state, other) !== ROLE[params.role]) return [];
+    if (params.guard !== undefined && guarded(state, params.guard)) return [];
     if (params.effect === 'lose') return [{ kind: 'lose' }];
     const despawn = params.after !== 'respawn';
     if (params.grace !== undefined && graceOf(state, player) > 0) return despawn && solidBody(state, other) ? [{ kind: 'despawn', body: other }] : [];

@@ -588,6 +588,11 @@ export type ArcadeEffect =
    */
   | { readonly kind: 'combo'; readonly body: number; readonly multiplier: number }
   /**
+   * Akce hrdiny (P46A T5): počítadlo akcí `body` si zapíše `value` do slotu
+   * `slot` (`ABILITY_SLOTS`) – štít tak spotřebuje náboj. Pravidla stav nepíšou přímo.
+   */
+  | { readonly kind: 'ability'; readonly body: number; readonly slot: number; readonly value: number }
+  /**
    * Logika (P45B), indexy z deklarace `logic`: proměnná na hodnotu / o kolik (saturuje na
    * ±`LOGIC_LIMITS.varSaturation`), přechod do fáze, spuštění / zastavení časovače, vyslání
    * události. Stopu ohlásí jen skutečná změna – nastavení na tutéž hodnotu, vstup do fáze, ve
