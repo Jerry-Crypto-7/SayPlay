@@ -463,3 +463,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-gatling-gun` | gatling gun | 4746 / 2362 |
 | `gen3d-bigfoot` | bigfoot, sasquatch | 4573 / 2184 |
 | `gen3d-wild-boar` | wild boar, boar | 4421 / 2096 |
+| `gen3d-kraken-tentacle` | kraken tentacle | 4743 / 2357 |
+| `gen3d-chariot` | chariot | 4226 / 1934 |

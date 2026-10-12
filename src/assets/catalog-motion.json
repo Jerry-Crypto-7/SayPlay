@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "68d77b805076980cefd90b4f23e094153521b53a37ca95bcacfa0dc02849d7f7",
+ "catalogHash": "6a2fa2fba123cf70219a3465f66f0ae55d129eaf1f0d99eae8766f07fca803e4",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1238,6 +1238,8 @@
   "gen3d-gyrocopter": {"class":"prop"},
   "gen3d-gatling-gun": {"class":"prop"},
   "gen3d-bigfoot": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-wild-boar": {"class":"prop"}
+  "gen3d-wild-boar": {"class":"prop"},
+  "gen3d-kraken-tentacle": {"class":"prop"},
+  "gen3d-chariot": {"class":"prop"}
  }
 }
