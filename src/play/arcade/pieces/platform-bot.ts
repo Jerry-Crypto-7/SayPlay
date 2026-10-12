@@ -70,14 +70,14 @@ function scan(state: Int32Array, player: number): { slabs: Slab[]; spikes: Spike
 
 const toward = (value: number, target: number, step: number): number => (value < target ? Math.min(target, value + step) : Math.max(target, value - step));
 
-/** Vlastní rychlost a poloha „teď“: viděný stav + stisky, které v něm ještě nejsou. */
-function ownMotion(z0: number, vz0: number, grounded: boolean, recent: readonly ArcadeInput[]): { z: number; vz: number } {
+/** Vlastní rychlost a poloha „teď“: viděný stav + stisky, které v něm ještě nejsou, s nejvyšší rychlostí běhu `run`. */
+function ownMotion(z0: number, vz0: number, grounded: boolean, recent: readonly ArcadeInput[], run: number): { z: number; vz: number } {
   let z = z0;
   let vz = vz0;
   for (const input of recent) {
-    let target = Math.trunc((input.axis * PL.maxRun) / AXIS_MAX);
-    if ((input.buttons & BUTTON.LEFT) !== 0) target = -PL.maxRun;
-    if ((input.buttons & BUTTON.RIGHT) !== 0) target = PL.maxRun;
+    let target = Math.trunc((input.axis * run) / AXIS_MAX);
+    if ((input.buttons & BUTTON.LEFT) !== 0) target = -run;
+    if ((input.buttons & BUTTON.RIGHT) !== 0) target = run;
     const rate = target !== 0 ? (grounded ? PL.groundAccel : PL.airAccel) : grounded ? PL.groundFriction : PL.airDrag;
     vz = toward(vz, target, rate);
     z += vz;
@@ -86,7 +86,7 @@ function ownMotion(z0: number, vz0: number, grounded: boolean, recent: readonly 
 }
 
 /** Tiků do dopadu na výšku `top` z viděného `y`, `vy` (jen sestup); `null`, když ji skok nedosáhne. */
-function ticksToLand(y: number, vy: number, top: number): number | null {
+export function ticksToLand(y: number, vy: number, top: number): number | null {
   let cy = y;
   let cvy = vy;
   for (let t = 1; t < 240; t += 1) {
@@ -99,7 +99,11 @@ function ticksToLand(y: number, vy: number, top: number): number | null {
 
 const move = (axis: number, tap = false): ArcadeInput => ({ buttons: tap ? BUTTON.TAP : 0, axis });
 
-const botParams = z.object({}).strict();
+/**
+ * `speed` = nejvyšší rychlost běhu, kterou má ovládání právě teď (P46B T6: fáze průběhu ji škálují podle úseku
+ * a `phase_bot` ji robotovi předá stejně škálovanou); bez ní `PLATFORM.maxRun`.
+ */
+const botParams = z.object({ speed: z.int().min(1).max(2 * PL.maxRun).optional() }).strict();
 
 export const platformBot: BotPiece<z.infer<typeof botParams>> = {
   id: 'platform_bot',
@@ -107,13 +111,13 @@ export const platformBot: BotPiece<z.infer<typeof botParams>> = {
   roles: ['player', 'platform', 'hazard'],
   reactionTicks: REACTION,
   cost: () => ({ bodies: 0, rules: 0 }),
-  decide: ({ state, player, recent }): ArcadeInput => {
+  decide: ({ state, player, recent }, params): ArcadeInput => {
     const p = baseOf(player);
     const py = state[p + S.y] as number;
     const vy = state[p + S.vy] as number;
     const grounded = ((state[p + S.flags] as number) & F.grounded) !== 0;
     const tapped = recent.some((input) => (input.buttons & BUTTON.TAP) !== 0);
-    const own = ownMotion(state[p + S.z] as number, state[p + S.vz] as number, grounded && !tapped, recent);
+    const own = ownMotion(state[p + S.z] as number, state[p + S.vz] as number, grounded && !tapped, recent, params.speed ?? PL.maxRun);
     const { slabs, spikes } = scan(state, player);
     const halfD = PL.playerD / 2;
     const onSlab = (slab: Slab, z0: number): boolean => z0 + halfD > slab.near && z0 - halfD < slab.far;

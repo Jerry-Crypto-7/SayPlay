@@ -14,7 +14,9 @@ export function makePacedControl(controls: Readonly<Record<string, ControlPiece>
       const adjusted = { ...raw, ...(typeof raw.topSpeed === 'number' ? { topSpeed: speed(raw.topSpeed) } : {}), ...(typeof raw.speed === 'number' ? { speed: speed(raw.speed) } : {}) };
       // Original schema is parsed at compilation; scaled speed is a bounded runtime value.
       native.step(state, player, input, adjusted);
-      if (params.base.id === 'runner' || params.base.id === 'platform') state[p + BODY.vz] = speed(state[p + BODY.vz]!);
+      // Plošinovka ne (P46B T6): její rychlost se k cíli rozjíždí a škálování výsledku by ji násobilo každý tik dál –
+      // fáze jí škálují nejvyšší rychlost běhu `speed` (výše), jako poletování.
+      if (params.base.id === 'runner') state[p + BODY.vz] = speed(state[p + BODY.vz]!);
     } };
 }
 export function makePacedBot(bots: Readonly<Record<string, BotPiece>>): BotPiece<z.infer<typeof paramsSchema>> {

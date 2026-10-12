@@ -110,7 +110,11 @@ export const PLATFORM_FEEL = {
 
 const toward = (value: number, target: number, step: number): number => (value < target ? Math.min(target, value + step) : Math.max(target, value - step));
 
-const controlParams = z.object({ doubleJump: z.boolean().default(false), feel: z.literal(2).optional() }).strict();
+/**
+ * `speed` = nejvyšší rychlost běhu za tik (P46B T6): fáze průběhu (`phase_control`) ji škálují podle úseku
+ * a robot ji dostane taky. Bez ní `PLATFORM.maxRun` – uložená úroveň jezdí jako dřív.
+ */
+const controlParams = z.object({ doubleJump: z.boolean().default(false), feel: z.literal(2).optional(), speed: z.int().min(1).max(2 * PLATFORM.maxRun).optional() }).strict();
 
 const JUMP = BUTTON.TAP | BUTTON.UP;
 
@@ -157,9 +161,10 @@ export const platformControl: ControlPiece<z.infer<typeof controlParams>> = {
   step: (state, player, input, params) => {
     const base = bodyBase(player);
     const grounded = ((state[base + BODY.flags] as number) & FLAG.grounded) !== 0;
-    let target = Math.trunc((Math.max(-AXIS_MAX, Math.min(AXIS_MAX, input.axis)) * PLATFORM.maxRun) / AXIS_MAX);
-    if ((input.buttons & BUTTON.LEFT) !== 0) target = -PLATFORM.maxRun;
-    if ((input.buttons & BUTTON.RIGHT) !== 0) target = PLATFORM.maxRun;
+    const run = params.speed ?? PLATFORM.maxRun;
+    let target = Math.trunc((Math.max(-AXIS_MAX, Math.min(AXIS_MAX, input.axis)) * run) / AXIS_MAX);
+    if ((input.buttons & BUTTON.LEFT) !== 0) target = -run;
+    if ((input.buttons & BUTTON.RIGHT) !== 0) target = run;
     const vz = state[base + BODY.vz] as number;
     const rate = target !== 0 ? (grounded ? PLATFORM.groundAccel : PLATFORM.airAccel) : grounded ? PLATFORM.groundFriction : PLATFORM.airDrag;
     state[base + BODY.vz] = toward(vz, target, rate);
