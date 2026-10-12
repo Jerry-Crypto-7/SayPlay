@@ -1023,7 +1023,8 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick, topic:
       ...(choice.doubleJump ? { doubleJump: true } : {}),
     };
   } else if (choice.control === 'steer') {
-    spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(choice.drift ? { drift: true } : {}) };
+    // Okruh ze vzorů: šikany, zúžení, rozcestí… (P46D T4).
+    spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(choice.drift ? { drift: true } : {}), patterns: 1 };
   } else if (choice.control === 'move_free') {
     if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
   } else if (choice.control === 'throw') {

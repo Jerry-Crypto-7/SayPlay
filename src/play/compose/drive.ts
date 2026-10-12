@@ -53,6 +53,8 @@ export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
       drift: params.drift === 1,
       ...(params.grip === undefined ? {} : { grip: params.grip }),
       ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }),
+      // Okruh ze vzorů: šikany, zúžení, rozcestí… (P46D T4).
+      patterns: 1,
     },
     title: `${content.hero} ${race ? 'race' : chase ? 'escape' : 'drive'}`,
     archetype: 'hazard_crossing',

@@ -362,6 +362,8 @@ export const steerParamsSchema = z
     drift: z.boolean().optional(),
     grip: z.int().min(4).max(20).optional(),
     brakeDrift: z.int().min(4).max(20).optional(),
+    /** Okruh ze vzorů (P46D T4); návrh závodu ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
+    patterns: z.literal(1).optional(),
   })
   .strict();
 export type SteerParams = z.infer<typeof steerParamsSchema>;
