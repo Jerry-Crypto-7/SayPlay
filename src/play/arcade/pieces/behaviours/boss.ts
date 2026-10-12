@@ -24,7 +24,7 @@
  * resp. skok (trať), bit 9 = trať (okno `recover` se neotvírá).
  */
 
-import { type ArcadeEffect, type ArcadeState, BODY, type BodyInit, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase, bodyHp } from '../../contract';
+import { type ArcadeEffect, type ArcadeState, BODY, type BodyInit, COUNTER, FLAG, HEADER, HIT_GRACE, ROLE, UNIT, bodyBase, bodyHp } from '../../contract';
 import { arenaAxis } from '../arena';
 import { RUNNER } from '../runner';
 import { actTicks, boxOf, clampTo, flanker, headTo, inside, laneOf, length, read, set, sideLaneX, toward } from './flanker';
@@ -70,6 +70,8 @@ const TRACK = 1 << 9;
 
 /** Rovina: dupnutí; trať: skok. */
 const stomping = (memo: number): boolean => (memo & STOMP) !== 0;
+/** Život hráče: zásah (`damage`) ubírá čítač `health`, ne HP jeho těla. */
+const healthOf = (state: ArcadeState): number => state[HEADER.counters + COUNTER.health] as number;
 /** Paměť i před prvním zápisem: HP na startu = HP teď. */
 const memoOf = (view: BehaviourView): number => (view.memo === 0 ? bodyHp(view.state, view.body) & HP_BITS : view.memo);
 
@@ -105,7 +107,7 @@ function moveOnTrack(view: BehaviourStep): void {
 function trackBlows(view: BehaviourView, ref: BehaviourRef): ArcadeEffect[] {
   const { state, body, player, memo } = view;
   const effects: ArcadeEffect[] = [];
-  let blows = view.phase === 'recover' && view.ticksLeft === TICKS.track.recover && stomping(memo) && bodyHp(state, player) >= ((memo >> WINDOW_SHIFT) & HP_BITS) ? 1 : 0;
+  let blows = view.phase === 'recover' && view.ticksLeft === TICKS.track.recover && stomping(memo) && healthOf(state) >= ((memo >> WINDOW_SHIFT) & HP_BITS) ? 1 : 0;
   if (ref.shot !== undefined) {
     const behind = read(state, player, 'z') - Math.trunc(read(state, player, 'd') / 2);
     for (let shot = state[HEADER.spawnBase] as number; shot < (state[HEADER.bodyCount] as number); shot += 1) {
@@ -164,7 +166,7 @@ export const boss: Behaviour = {
     const { state, body, player } = view;
     if (view.space === 'track') {
       // Pruh hráče; do paměti jeho život teď – skok je uhnutý, když do konce útoku neubude.
-      view.remember(((memoOf(view) ^ STOMP) & ~(HP_BITS << WINDOW_SHIFT)) | (Math.min(HP_BITS, bodyHp(state, player)) << WINDOW_SHIFT) | TRACK);
+      view.remember(((memoOf(view) ^ STOMP) & ~(HP_BITS << WINDOW_SHIFT)) | (Math.min(HP_BITS, Math.max(0, healthOf(state))) << WINDOW_SHIFT) | TRACK);
       return { x: laneOf(read(state, player, 'x')) * RUNNER.laneWidth, z: read(state, body, 'z') };
     }
     // Útoky se střídají; dupnutí míří na bosse samého, salva tam, kde hráč stojí.

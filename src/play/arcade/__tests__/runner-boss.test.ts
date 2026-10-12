@@ -7,12 +7,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf, preloadPhysics } from '../compile';
-import { type ArcadeEffect, type ArcadeWorld, BODY, FLAG, HEADER, RUN_STATE, bodyBase, bodyHp, nativeRule } from '../contract';
+import { type ArcadeEffect, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, RUN_STATE, bodyBase, bodyHp, nativeRule } from '../contract';
 import { instantiate } from '../kernel';
 import { loadRapier } from '../physics/world';
-import { TELEGRAPH_MIN, behaviourPhaseOf } from '../pieces/behaviours';
+import { TELEGRAPH_MIN, behaviourMemoOf, behaviourPhaseOf } from '../pieces/behaviours';
 import { behaviourHarness, play, refsOf, telegraphCheck } from '../pieces/behaviours/__tests__/harness';
-import { BOSS } from '../pieces/behaviours/boss';
+import { BOSS, bossOpen } from '../pieces/behaviours/boss';
 import type { PacingRuleParams } from '../pieces/pacing';
 import { RUNNER_FOES } from '../pieces/pacing-parts';
 import { runBot } from '../verify';
@@ -20,6 +20,9 @@ import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
 
 const SEEDS = Array.from({ length: 10 }, (_, index) => index + 1);
+
+/** Hozená překážka startuje ≥ `BOSS.track.near` (8 m) před hráčem a blíží se nejvýš ~370/tik: dřív než za 10 tiků ho minout nemůže. */
+const FLIGHT_MIN = 10;
 
 interface BossRun {
   /** `RUN_STATE` na konci záznamu. */
@@ -29,16 +32,27 @@ interface BossRun {
   readonly hits: number;
   readonly gone: number;
   readonly warnings: readonly number[];
+  /** Skoky, během nichž hráči ubyl život, a kolik z nich přesto bossovi ubralo život. */
+  readonly hurtLeaps: number;
+  readonly hurtBlows: number;
+  /** Zásahy za hozenou překážku dřív, než mohla hráče minout, zásahy bez skoku i bez minulé překážky, a tiky otevřeného okna. */
+  readonly earlyThrows: number;
+  readonly stray: number;
+  readonly open: number;
 }
 
 /** Přehraje vstupy a sleduje první živé tělo bosse (spawn předlohy `template`, nebo tělo `fixed` úrovně). */
 function bossRun(world: ArcadeWorld, inputs: Parameters<typeof play>[1], template: number, fixed?: number): BossRun {
+  const shot = refsOf(world).find((ref) => ref.id === 'boss')?.shot;
   let body = -1;
-  let hits = 0;
   let gone = -1;
   let end = 0;
   let warned = 0;
   let last = 'idle';
+  let armed = 0;
+  let armedAt = -1;
+  let thrownAt = -1;
+  const count = { hits: 0, hurtLeaps: 0, hurtBlows: 0, earlyThrows: 0, stray: 0, open: 0 };
   const warnings: number[] = [];
   const final = play(world, inputs, (state, tick, effects: readonly ArcadeEffect[]) => {
     end = tick;
@@ -47,17 +61,28 @@ function bossRun(world: ArcadeWorld, inputs: Parameters<typeof play>[1], templat
       if ((b === fixed || (fixed === undefined && same(BODY.kind) && same(BODY.w))) && ((state[bodyBase(b) + BODY.flags] as number) & FLAG.alive) !== 0) body = b;
     }
     if (body < 0 || gone >= 0) return;
+    const health = state[HEADER.counters + COUNTER.health] as number;
     const phase = behaviourPhaseOf(state, body);
+    if (phase === 'telegraph' && last !== 'telegraph') [armed, armedAt] = [health, tick];
     if (phase === 'telegraph') warned += 1;
     if (phase === 'act' && last !== 'act') warnings.push(warned);
     if (phase !== 'telegraph') warned = phase === 'act' ? warned : 0;
+    if (bossOpen(state, body, phase, behaviourMemoOf(state, body))) count.open += 1;
+    const isShot = (b: number): boolean => shot !== undefined && b !== body && state[bodyBase(b) + BODY.kind] === state[bodyBase(shot) + BODY.kind];
+    if (effects.some((effect) => effect.kind === 'spawn' && effect.template === shot)) thrownAt = tick;
+    const blows = effects.filter((effect) => effect.kind === 'hit' && effect.body === body).length;
+    const passed = Math.min(blows, effects.filter((effect) => effect.kind === 'despawn' && isShot(effect.body)).length);
+    // Skok skončí prvním tikem `recover` útoku, ve kterém boss nic nehodil.
+    const leapEnd = phase === 'recover' && last !== 'recover' && thrownAt < armedAt;
+    const leapBlow = leapEnd && blows > passed ? 1 : 0;
+    if (leapEnd && health < armed) [count.hurtLeaps, count.hurtBlows] = [count.hurtLeaps + 1, count.hurtBlows + leapBlow];
+    if (passed > 0 && tick - thrownAt < FLIGHT_MIN) count.earlyThrows += passed;
+    count.stray += blows - passed - leapBlow;
+    count.hits += blows;
     last = phase;
-    for (const effect of effects) {
-      if (effect.kind === 'hit' && effect.body === body) hits += 1;
-      if (effect.kind === 'despawn' && effect.body === body) gone = tick;
-    }
+    if (effects.some((effect) => effect.kind === 'despawn' && effect.body === body)) gone = tick;
   });
-  return { outcome: final[HEADER.runState] as number, end, hits, gone, warnings };
+  return { outcome: final[HEADER.runState] as number, end, gone, warnings, ...count };
 }
 
 /** Běžec bez a se střelbou; `+chase_me` hraje na semínkách 1–20 totéž co bez něj (měření T4). */
@@ -79,20 +104,22 @@ describe('runner boss', () => {
   });
 
   it('warns at least TELEGRAPH_MIN ticks before every attack and loses a life only to an attack the player dodged', () => {
-    // Boss na trati s pravidlem zásahu (dotek ve skoku zraní): hráč, který stojí, nepadne mu. Zásah mu dá jen útok,
-    // který hráče zastihl v milosti po předchozím zásahu (život neubyl) – nikdy všechny.
+    // Boss na trati s pravidlem zásahu (dotek ve skoku zraní): hráč, který stojí, nepadne mu. Skok, který ho zranil,
+    // bossovi život nebere; hozená překážka ho stojícího zasáhne, nemine.
     const harness = behaviourHarness('track', 'boss', 1, { extra: (parts) => ({ ...parts, rules: [...parts.rules, { id: 'boss_beat', params: { boss: parts.level.bodies.findIndex((body) => body.template === true && body.kind === 'boss') } }] }) });
     const idle = bossRun(harness.world, [], harness.body, harness.body);
     expect(idle.warnings.length).toBeGreaterThanOrEqual(2);
     for (const warned of idle.warnings) expect(warned).toBeGreaterThanOrEqual(TELEGRAPH_MIN);
+    expect(idle.hurtLeaps).toBeGreaterThan(0);
+    expect(idle).toMatchObject({ hurtBlows: 0, earlyThrows: 0, stray: 0, open: 0, gone: -1 });
     expect(idle.hits).toBeLessThan(idle.warnings.length);
-    expect(idle.gone).toBe(-1);
-    // Robot, který uhýbá plánovačem pruhů, ho třemi uhnutými útoky porazí.
+    // Robot, který uhýbá plánovačem pruhů, ho uhnutými útoky porazí; na trati se okno zásahu nikdy neotevře.
     const bot = runBot(harness.world);
     const dodged = bossRun(harness.world, bot.inputs, harness.body, harness.body);
     // Tělo harnessu je výchozí boss (`BOSS.hp`), ne boss běžce.
     expect(dodged.hits).toBe(BOSS.hp);
     expect(dodged.gone).toBeGreaterThan(0);
+    expect(dodged).toMatchObject({ hurtBlows: 0, earlyThrows: 0, stray: 0, open: 0 });
     for (const warned of dodged.warnings) expect(warned).toBeGreaterThanOrEqual(TELEGRAPH_MIN);
   });
 
@@ -118,7 +145,9 @@ describe('runner boss', () => {
             continue;
           }
           // Měřidlo finále: hrozba s ≥ 3 zásahy, která do konce zmizí – a výhru přinesl až cíl, ne pád bosse.
-          const fight = bossRun(world, run.inputs, boss.template);          expect(fight.hits, `${id}: boss hits`).toBeGreaterThanOrEqual(3);
+          const fight = bossRun(world, run.inputs, boss.template);
+          expect(fight.hits, `${id}: boss hits`).toBeGreaterThanOrEqual(3);
+          expect(fight.hurtBlows, `${id}: a leap that hurt the player`).toBe(0);
           expect(fight.gone, `${id}: boss gone`).toBeGreaterThan(0);
           expect(fight.gone, `${id}: boss falls before the finish`).toBeLessThan(fight.end);
         }
