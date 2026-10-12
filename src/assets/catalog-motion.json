@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "1cc4d847fe3f91115aa827afa0613f7ebf9f6e86449126366381efdd69762819",
+ "catalogHash": "47ced971847bc3e1a1649d15c8315b9fa3e607c653f1aa7290430698c6dd5c18",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1138,6 +1138,13 @@
   "gen3d-anubis-statue": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-wood-stove": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-drip-stand": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-butterfly-net": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-butterfly-net": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-pharmacy-sign": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-merry-go-round": {"class":"prop"},
+  "gen3d-lasso": {"class":"prop"},
+  "gen3d-compost-bin": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-amphora": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-bandstand": {"class":"prop"},
+  "gen3d-gingerbread-house": {"class":"prop"}
  }
 }

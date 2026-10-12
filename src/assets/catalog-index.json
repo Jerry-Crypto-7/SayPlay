@@ -23135,6 +23135,139 @@
           0.15707
         ]
       }
+    },
+    {
+      "assetId": "gen3d-pharmacy-sign",
+      "tags": [
+        "pharmacy sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pharmacy-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16447,
+          0,
+          -0.3613
+        ],
+        "max": [
+          0.16447,
+          0.99988,
+          0.3613
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-merry-go-round",
+      "tags": [
+        "merry go round"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-merry-go-round-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.18779,
+          0,
+          -1.18837
+        ],
+        "max": [
+          1.18779,
+          0.99979,
+          1.18837
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lasso",
+      "tags": [
+        "lasso"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lasso-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.44919,
+          0,
+          -2.14569
+        ],
+        "max": [
+          2.44919,
+          0.99072,
+          2.14569
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-compost-bin",
+      "tags": [
+        "compost bin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-compost-bin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38306,
+          0,
+          -0.33574
+        ],
+        "max": [
+          0.38306,
+          0.99999,
+          0.33574
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-amphora",
+      "tags": [
+        "amphora"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-amphora-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27726,
+          0,
+          -0.27845
+        ],
+        "max": [
+          0.27726,
+          1.00001,
+          0.27845
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bandstand",
+      "tags": [
+        "bandstand"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bandstand-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43584,
+          0,
+          -0.4098
+        ],
+        "max": [
+          0.43584,
+          0.99899,
+          0.4098
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gingerbread-house",
+      "tags": [
+        "gingerbread house"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gingerbread-house-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38874,
+          0,
+          -0.44882
+        ],
+        "max": [
+          0.38874,
+          0.99688,
+          0.44882
+        ]
+      }
     }
   ]
 }

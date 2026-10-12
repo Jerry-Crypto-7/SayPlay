@@ -363,3 +363,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wood-stove` | wood stove | 4554 / 2225 |
 | `gen3d-drip-stand` | drip stand | 4740 / 2360 |
 | `gen3d-butterfly-net` | butterfly net | 4740 / 2344 |
+| `gen3d-pharmacy-sign` | pharmacy sign | 4748 / 2372 |
+| `gen3d-merry-go-round` | merry go round | 4749 / 2373 |
+| `gen3d-lasso` | lasso | 4648 / 2319 |
+| `gen3d-compost-bin` | compost bin | 4582 / 2265 |
+| `gen3d-amphora` | amphora | 4748 / 2374 |
+| `gen3d-bandstand` | bandstand | 4645 / 2295 |
+| `gen3d-gingerbread-house` | gingerbread house | 3889 / 1934 |
