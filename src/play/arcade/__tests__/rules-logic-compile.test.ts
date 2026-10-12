@@ -542,10 +542,14 @@ describe('compileRules lays out logic, templates and spawn slots', () => {
     expect(compiled.level.bodies.length + LOGIC_BODIES + (compiled.level.spawnSlots ?? 0)).toBe(ARCADE_LIMITS.maxBodies);
   });
 
-  it('an edge wave in a game without a floor (runner) is refused with a reason the director can act on', () => {
+  // Demo 12. 10.: režisér psal vlnu od okraje do duelu a celá AI verze propadla i po opravných kolech.
+  it('an edge wave in a game without a floor (runner) compiles as a ring around the player', () => {
     const spec = read({ ...runnerFixture, rules: [{ id: 'flood', verb: 'flood', when: { press: 'action' }, do: [{ wave: { role: 'coin', count: 3, at: 'edge' } }] }] });
     const result = arcadeWorldOf(spec, 1);
-    expect(result.ok ? [] : result.issues).toEqual(['/rules/0/do/0/wave/at: "edge" needs a floor with edges (free movement in a yard or an arena) – use "player" or "other"']);
+    if (!result.ok) throw new Error(result.issues.join('; '));
+    expect(JSON.stringify(result.world)).toContain('"wave":{"template":');
+    expect(JSON.stringify(result.world)).not.toContain('"at":"edge"');
+    expect(JSON.stringify(result.world)).toContain('"count":3,"at":"player"');
   });
 
   it('every new construct lowers to names-as-indices in the compiled rule params', () => {

@@ -677,7 +677,9 @@ function compileRule(rule: Rule, index: number, codes: ReadonlyMap<string, numbe
     if ('emit' in effect) return { emit: names.event.indexOf(effect.emit) };
     if ('wave' in effect) {
       const { role, count, at } = effect.wave;
-      return { wave: { template: templates.get(role) as number, count, at, ...(floor === undefined ? {} : { floor }) } };
+      // Bez podlahy (běžec, duel) nemá vlna okraj: přijde kruhem kolem hráče, ať AI verze nepropadne kvůli místu vzniku.
+      if (floor === undefined) return { wave: { template: templates.get(role) as number, count, at: at === 'edge' ? 'player' : at } };
+      return { wave: { template: templates.get(role) as number, count, at, floor } };
     }
     return effect;
   });
@@ -702,10 +704,7 @@ export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number,
     .map((id) => `things: role "${id}" is built by the ${spec.control} game itself and is visible from the start, so start:"hidden" cannot apply – give the hidden thing its own role id and kind`);
   const pairs = rules.filter((rule) => 'contact' in rule.when && codes.get(rule.when.contact[0]) !== ROLE.player && codes.get(rule.when.contact[1]) !== ROLE.player).length;
   if (pairs > PAIR_RULES_MAX) issues.push(`rules: ${pairs} rules watch a contact between two things without the player; at most ${PAIR_RULES_MAX} may – merge them`);
-  const waves = rules.flatMap((rule, index) => rule.do.flatMap((effect, i) => ('wave' in effect ? [{ ...effect.wave, path: `/rules/${index}/do/${i}/wave/at` }] : [])));
-  if (floor === undefined) {
-    for (const wave of waves.filter((w) => w.at === 'edge')) issues.push(`${wave.path}: "edge" needs a floor with edges (free movement in a yard or an arena) – use "player" or "other"`);
-  }
+  const waves = rules.flatMap((rule) => rule.do.flatMap((effect) => ('wave' in effect ? [effect.wave] : [])));
   // Fyzikální věc (P29A T13): hýbe s ní Rapier. Jen věci pravidel – tělesa generátoru mají vlastní pohyb.
   const physical = new Set((spec.things ?? []).filter((thing) => thing.physics === true).map((thing) => thing.role));
   const physics = (id: string): Partial<BodyInit> => (physical.has(id) ? { physics: true } : {});
