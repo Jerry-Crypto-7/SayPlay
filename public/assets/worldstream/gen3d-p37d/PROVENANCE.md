@@ -413,3 +413,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-pinwheel` | pinwheel | 4686 / 2290 |
 | `gen3d-price-tag` | price tag | 4708 / 2302 |
 | `gen3d-scarab-statue` | scarab statue | 4274 / 2111 |
+| `gen3d-oil-drum` | oil drum | 4748 / 2374 |
+| `gen3d-soda-fountain` | soda fountain | 4144 / 2070 |
+| `gen3d-message-in-a-bottle` | message in a bottle | 4746 / 2364 |
+| `gen3d-statue-head` | statue head | 4229 / 2094 |
+| `gen3d-bread-basket` | bread basket | 4055 / 2103 |

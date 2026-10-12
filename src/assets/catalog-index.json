@@ -24085,6 +24085,101 @@
           0.29076
         ]
       }
+    },
+    {
+      "assetId": "gen3d-oil-drum",
+      "tags": [
+        "oil drum"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-oil-drum-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34974,
+          0,
+          -0.34922
+        ],
+        "max": [
+          0.34974,
+          0.99977,
+          0.34922
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-soda-fountain",
+      "tags": [
+        "soda fountain"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-soda-fountain-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33831,
+          0,
+          -0.33718
+        ],
+        "max": [
+          0.33831,
+          0.99979,
+          0.33718
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-message-in-a-bottle",
+      "tags": [
+        "message in a bottle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-message-in-a-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.4817,
+          0,
+          -0.51477
+        ],
+        "max": [
+          1.4817,
+          0.99889,
+          0.51477
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-statue-head",
+      "tags": [
+        "statue head"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-statue-head-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43041,
+          0,
+          -0.57876
+        ],
+        "max": [
+          0.43041,
+          0.99394,
+          0.57876
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bread-basket",
+      "tags": [
+        "bread basket"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bread-basket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46006,
+          0,
+          -0.41864
+        ],
+        "max": [
+          0.46006,
+          1,
+          0.41864
+        ]
+      }
     }
   ]
 }
