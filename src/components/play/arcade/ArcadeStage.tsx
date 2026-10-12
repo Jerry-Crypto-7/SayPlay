@@ -45,6 +45,7 @@ import { useBallInput } from './ball/BallScene';
 import { useSteerInput } from './steer/SteerScene';
 import { type BodyModel, TimingScene, useTapInput } from './timing/TimingScene';
 import { TouchStick, TouchZones } from './TouchControls';
+import { type ToyTarget, appliedToyOf } from './toy/applyToy';
 import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
 import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
@@ -98,6 +99,39 @@ export interface FrameReport {
    * kolik jich je vidět a obdélník té, která je v záběru nejvíc.
    */
   readonly items: Readonly<Record<string, { readonly count: number; readonly box: FrameBox | null }>>;
+  /**
+   * Hračková póza hrdiny, jak ji `applyToy` nastavil (P45D T14): předklon a úklon (rad, bez
+   * natočení po směru – to je hra), měřítko, poskok a výpad vnitřní skupiny (m; poloha ve
+   * hře je na vnější), součet otočení dílů (rad) a uniformy deformace. Hledá
+   * `userData.toyHero`, jinak první hračkovou skupinu pod hrdinou sondy; `null` = bez pózy.
+   */
+  readonly heroToy: Readonly<Record<'pitch' | 'roll' | 'sx' | 'sy' | 'sz' | 'hop' | 'lunge' | 'parts' | 'flap' | 'sway' | 'stride', number>> | null;
+}
+
+/** Hračková póza hrdiny pro `FrameReport.heroToy`. */
+function heroToyOf(scene: Object3D, hero: Object3D | null): FrameReport['heroToy'] {
+  let toy: ToyTarget | undefined;
+  scene.traverse((node) => {
+    if (toy === undefined && node.userData.toyHero === true && shown(node)) toy = appliedToyOf(node);
+  });
+  hero?.traverse((node) => {
+    if (toy === undefined && shown(node)) toy = appliedToyOf(node);
+  });
+  if (toy === undefined) return null;
+  const { group, parts = [], deform } = toy as ToyTarget;
+  return {
+    pitch: group.rotation.x,
+    roll: group.rotation.z,
+    sx: group.scale.x,
+    sy: group.scale.y,
+    sz: group.scale.z,
+    hop: group.position.y,
+    lunge: Math.hypot(group.position.x, group.position.z),
+    parts: parts.reduce((sum, { pivot }) => sum + Math.abs(pivot.rotation.x) + Math.abs(pivot.rotation.y) + Math.abs(pivot.rotation.z), 0),
+    flap: deform?.toyFlap.value ?? 0,
+    sway: deform?.toySway.value ?? 0,
+    stride: deform?.toyStride.value ?? 0,
+  };
 }
 
 /** Jak daleko od středu obrazu obdélník leží (NDC); za kamerou nekonečno. */
@@ -122,6 +156,12 @@ export interface RenderReport {
    * mění stínový výřez i průchody a s nimi `calls`.
    */
   readonly meshes: number;
+  /**
+   * Vyčleněné díly hýbajících se těl (P45D T6, `mergePosed`): viditelné sítě pod pivoty
+   * dílů (`ink` z nich jsou obaly obrysu) a kolik těl díly má – bez nich by tělo bylo
+   * jedna slitá síť jako dřív.
+   */
+  readonly toyParts: { readonly meshes: number; readonly ink: number; readonly bodies: number };
 }
 
 declare global {
@@ -142,6 +182,21 @@ function RenderProbe() {
       });
       return count;
     };
+    const toyParts = (): RenderReport['toyParts'] => {
+      const bodies = new Set<Object3D>();
+      let count = 0;
+      let ink = 0;
+      scene.traverseVisible((node) => {
+        if (node.userData.toyPart === undefined) return;
+        if (node.parent !== null) bodies.add(node.parent);
+        node.traverseVisible((inner) => {
+          if ((inner as Mesh).isMesh !== true) return;
+          count += 1;
+          if (isInk(inner as Mesh)) ink += 1;
+        });
+      });
+      return { meshes: count, ink, bodies: bodies.size };
+    };
     const probe = (): RenderReport => ({
       calls: gl.info.render.calls,
       triangles: gl.info.render.triangles,
@@ -153,6 +208,7 @@ function RenderProbe() {
       post: (gl.domElement.dataset.post ?? '').split(' ').filter(Boolean),
       grade: gl.domElement.dataset.grade ?? null,
       meshes: meshes(),
+      toyParts: toyParts(),
     });
     window.__playRender = probe;    return () => {
       if (window.__playRender === probe) delete window.__playRender;
@@ -267,6 +323,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
         items,
+        heroToy: heroToyOf(scene, hero),
       };
     };
     // Bez podmínky, stejně jako `__playShell`: e2e ji čte na každé arkádové hře.

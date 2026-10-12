@@ -12,6 +12,9 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 
 import { modelPath } from '@/play/arcade/models';
 
+import type { ToyPart } from '../toy/applyToy';
+import { type MotionPart, motionOf } from '../toy/body-class';
+
 const modelCache = new Map<string, Promise<Object3D | null>>();
 
 /**
@@ -286,14 +289,68 @@ export function mergeRig(root: Object3D): Object3D {
   return root;
 }
 
+/** Nejvýš tolik pohyblivých dílů na tělo – každý je síť (a obrys) navíc. */
+export const MAX_PARTS = 2;
+
+/** Pivot vyčleněného dílu nese roli a stranu (−1, 1) podle x pivotu – `toyPartsOf`. */
+interface PartTag {
+  readonly role: string;
+  readonly side: number;
+}
+
+/**
+ * Tělo, které se hýbe (P45D T6): nejvýš `MAX_PARTS` dílů z `catalog-motion.json`
+ * se vyčlení jako vlastní slitá síť pod skupinou v pivotu, zbytek se slije jako
+ * dřív. Sdílený model z `loadModel` zůstane celý – díly se odebírají z klonu.
+ * Pivot je poloha uzlu v prostoru modelu, tedy v prostoru slité geometrie.
+ */
+export function mergePosed(model: Object3D, parts: readonly MotionPart[]): Object3D {
+  const rest = model.clone(true);
+  rest.updateMatrixWorld(true);
+  const out = new Group();
+  for (const part of parts) {
+    if (out.children.length === MAX_PARTS) break;
+    const node = rest.getObjectByName(part.node);
+    if (node === undefined) continue;
+    const piece = node.clone(true);
+    node.matrixWorld.decompose(piece.position, piece.quaternion, piece.scale);
+    node.removeFromParent();
+    const [x, y, z] = part.pivot;
+    const body = mergeBody(new Group().add(piece));
+    body.position.set(-x, -y, -z);
+    const pivot = new Group();
+    pivot.position.set(x, y, z);
+    pivot.userData.toyPart = { role: part.role, side: Math.sign(x) || 1 } satisfies PartTag;
+    out.add(pivot.add(body));
+  }
+  return out.children.length === 0 ? mergeBody(model) : out.add(mergeBody(rest));
+}
+
+/** Díly těla z `mergePosed` pro `applyToy`; pivoty se hýbou, jejich matice se nesmí zmrazit. */
+export function toyPartsOf(root: Object3D): ToyPart[] {
+  const parts: ToyPart[] = [];
+  root.traverse((node) => {
+    const tag = node.userData.toyPart as PartTag | undefined;
+    if (tag !== undefined) parts.push({ pivot: node, role: tag.role, side: tag.side });
+  });
+  return parts;
+}
+
+/** Tělo modelu `id`: hýbající se role (`posed`) s díly v katalogu je dostane vyčleněné, jinak jedna síť. */
+export function bodyFor(model: Object3D, id: string, posed: boolean): Object3D {
+  const parts = posed ? motionOf(id)?.parts : undefined;
+  return parts === undefined ? mergeBody(model) : mergePosed(model, parts);
+}
+
 const bodyCache = new Map<string, Promise<Object3D | null>>();
 
-/** Model těla role (`World.tsx`), slitý `mergeBody`. */
-export function loadBodyModel(id: string): Promise<Object3D | null> {
-  let pending = bodyCache.get(id);
+/** Model těla role (`World.tsx`), slitý `mergeBody`; `posed` = role, která se hýbe (hrdina, nepřítel). */
+export function loadBodyModel(id: string, { posed = false }: { readonly posed?: boolean } = {}): Promise<Object3D | null> {
+  const key = posed && motionOf(id)?.parts !== undefined ? `${id}:posed` : id;
+  let pending = bodyCache.get(key);
   if (pending === undefined) {
-    pending = loadModel(id).then((model) => (model === null ? null : mergeBody(model)));
-    bodyCache.set(id, pending);
+    pending = loadModel(id).then((model) => (model === null ? null : bodyFor(model, id, posed)));
+    bodyCache.set(key, pending);
   }
   return pending;
 }

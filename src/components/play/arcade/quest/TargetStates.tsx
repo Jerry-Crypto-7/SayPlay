@@ -13,7 +13,9 @@
  *
  * Sloveso bez druhu („paint“) kreslí kvádr v barvě stavu. Nedokončený cíl má na
  * zemi kroužek, hotový ho ztratí. Modely jsou z katalogu (`FittedModel`), dokud
- * se nenačtou nebo když chybí, stojí na jejich místě kvádr v paletě.
+ * se nenačtou nebo když chybí, stojí na jejich místě kvádr v paletě. Cíl z věty,
+ * jehož model má dveře, křídlo nebo víko (`catalog-motion.json`), je s prvním
+ * posunem stavu otevře kolem pivotu (P45D T12, `open` hračkového pohybu).
  *
  * Částice jsou smyčky three.quarks ve vlastní dávce, s tečkou jako efekty A;
  * přechod stavu bouchne záblesk přes `createParticleDirector` efektů A. Bodová
@@ -44,12 +46,16 @@ import {
 } from 'three.quarks';
 
 import { color as brand } from '@/brand/tokens';
-import type { ArcadeWorld } from '@/play/arcade/contract';
+import { type ArcadeWorld, HEADER } from '@/play/arcade/contract';
+import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { VerbKind } from '@/play/genre/quest';
 
 import type { TargetBody, TargetLayer } from '../arena/TargetsMount';
 import { type Burst, createParticleDirector } from '../effects/particles';
-import { FittedModel } from '../World';
+import type { ArcadeSession } from '../session';
+import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
+import { bodyClassOf, motionOf } from '../toy/body-class';
+import { FittedModel, toyTargetOf } from '../World';
 import { type Stage, StationScene, type StationSetup } from './StationScene';
 import { EMITTERS, type EmitterKind, type EmitterPreset, KIND_BODY, MAX_LIGHTS, fxOf, lightsOf, questVerbOf, risenBursts } from './verbFx';
 
@@ -63,7 +69,39 @@ export function questTargets(world: Pick<ArcadeWorld, 'rules'>, stage?: Stage, m
   if (verb === null) return undefined;
   const { kind, states, interact } = verb;
   const station = interact.order === true && stage !== undefined ? { ...stage, interact } : undefined;
-  return (targets) => <TargetStates targets={targets} kind={kind} states={states} station={station} model={model} />;
+  return (targets) => <TargetStates targets={targets} kind={kind} states={states} station={station} model={model} session={stage?.session} />;
+}
+
+/** Role dílů, které se s posunem stavu cíle otevřou (`applyToy`: dveře a okenní křídlo kolem svislé osy, víko kolem vodorovné). */
+const OPENING_ROLES: ReadonlySet<string> = new Set(['door', 'lid']);
+
+/** Model katalogu s dílem, který se otevře (`panel-door`, `iron-gate`, `storage-cabinet`, `framed-window` …). */
+export const opensOnState = (model: string): boolean => motionOf(model)?.parts?.some((part) => OPENING_ROLES.has(part.role)) === true;
+
+/**
+ * Model cíle, který se s posunem stavu otevře: díly pod pivotem (`posed`) a hračková póza cíle –
+ * `open` 0 → 1 za `duration-celebrate` od tiku prvního posunu, pod omezeným pohybem rovnou otevřeno.
+ * Póza čte jen stav relace a tik s podílem.
+ */
+function OpeningModel({ session, index, id, w, h, d, fallback }: { readonly session: ArcadeSession; readonly index: number; readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string }) {
+  const inner = useRef<Group>(null);
+  const pose = useRef<ToyPose | null>(null);
+  const body = useMemo(() => bodyClassOf(id), [id]);
+  useFrame(() => {
+    const group = inner.current;
+    if (group === null) return;
+    const state = session.state();
+    const tick = toyTickOf(session);
+    // Restart: tik zpět – paměť pózy (tik otevření) patří minulé hře.
+    if (pose.current !== null && tick < pose.current.at) pose.current = null;
+    pose.current = toyPoseOf(toyViewOf(state, session.prev(), index), body, pose.current, tick, !toyMotionOn());
+    applyToy(toyTargetOf(group), pose.current, h);
+  });
+  return (
+    <group ref={inner}>
+      <FittedModel id={id} w={w} h={h} d={d} fallback={fallback} posed />
+    </group>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -259,8 +297,11 @@ function reachOf(kind: VerbKind | null, target: TargetBody): number {
   return Math.max(KIND_BODY[kind].w, KIND_BODY[kind].d) / 2;
 }
 
-/** Jeden cíl ve svém stavu: tvar, zdroje částic a kroužek, dokud není hotový (`ring`; stanoviště kreslí vlastní na desce). */
-export function targetParts(target: TargetBody, kind: VerbKind | null, states: number, ring = true, model?: string): ReactElement {
+/**
+ * Jeden cíl ve svém stavu: tvar, zdroje částic a kroužek, dokud není hotový (`ring`; stanoviště kreslí vlastní na desce).
+ * S relací (`session`) model z věty s dveřmi nebo víkem díl při posunu stavu otevře (`OpeningModel`).
+ */
+export function targetParts(target: TargetBody, kind: VerbKind | null, states: number, ring = true, model?: string, session?: ArcadeSession): ReactElement {
   const state = Math.min(target.state, states - 1);
   const done = state === states - 1;
   // Preserve bespoke tree/candle/machine/cage and pancake/dog animations when
@@ -268,13 +309,18 @@ export function targetParts(target: TargetBody, kind: VerbKind | null, states: n
   const ownModel = kind !== null && kind !== 'grow' ? KIND_BODY[kind].model : undefined;
   const named = model !== undefined && model !== ownModel && !(kind === 'cook' && model === 'cc0-pancake') && !(kind === 'free' && model === 'dog');
   const r = (named ? Math.max(target.w, target.d) / 2 : reachOf(kind, target)) + 0.15;
+  const fallback = done ? PLAIN[2] : PLAIN[Math.min(state, 1)];
   return (
     <group key={target.index} position={[target.x, target.y, target.z]} userData={{ frame: 'target' }}>
       {named ? [
-        <FittedModel key="named-model" id={model} w={target.w} h={target.h} d={target.d} fallback={done ? PLAIN[2] : PLAIN[Math.min(state, 1)]} />,
+        session !== undefined && opensOnState(model) ? (
+          <OpeningModel key="named-model" session={session} index={target.index} id={model} w={target.w} h={target.h} d={target.d} fallback={fallback} />
+        ) : (
+          <FittedModel key="named-model" id={model} w={target.w} h={target.h} d={target.d} fallback={fallback} />
+        ),
         <mesh key="status" position={[0, target.h + 0.12, 0]} userData={NO_SHADOW}>
           <sphereGeometry args={[0.09, 12, 8]} />
-          <meshBasicMaterial color={done ? PLAIN[2] : PLAIN[Math.min(state, 1)]} />
+          <meshBasicMaterial color={fallback} />
         </mesh>,
       ] : partsOf(kind, state, done, target)}
       {fxOf(kind, state).emitters.map((emitter) => (
@@ -384,12 +430,15 @@ export function TargetStates({
   states,
   station,
   model,
+  session,
 }: {
   readonly targets: readonly TargetBody[];
   readonly kind: VerbKind | null;
   readonly states: number;
   readonly station?: StationSetup | undefined;
   readonly model?: string | undefined;
+  /** Relace scény: model cíle s dveřmi čte z ní tik otevření (P45D T12). */
+  readonly session?: ArcadeSession | undefined;
 }) {
   const camera = useThree((three) => three.camera);
   const scene = useThree((three) => three.scene);
@@ -468,7 +517,7 @@ export function TargetStates({
           decay={2}
         />
       ))}
-      {targets.map((target) => targetParts(target, kind, states, station === undefined, model))}
+      {targets.map((target) => targetParts(target, kind, states, station === undefined, model, session))}
       {station !== undefined && <StationScene {...station} targets={targets} kind={kind} states={states} burst={burst} />}
     </FxContext.Provider>
   );

@@ -17,10 +17,11 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { Group, Object3D, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
-import { BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { RHYTHM, rhythmLaneAxis } from '@/play/arcade/pieces/rhythm';
 import { TIMING, TIMING_SLOTS } from '@/play/arcade/pieces/timing';
+import { type ToyPose, toyEventsLive, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
 import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
@@ -28,6 +29,7 @@ import { isTyping } from '../input';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 
 const TAP_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
 /** Klávesy drah rytmu zleva doprava (P36A T11). */
@@ -96,6 +98,45 @@ const SCENERY_BEHIND = 7;
 /** Model z popisku role vepsaný do kvádru těla (w × h × d, metry), postavený na zem. */
 export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
 
+/** Poskok po trefě (P45D T11): tak dlouho (s) je tělo ve vzduchu a tak vysoko (podíl výšky) vyskočí. */
+const BEAT_HOP_S = 0.24;
+const BEAT_HOP = 0.18;
+
+/**
+ * Hračková póza hráče rytmu a načasování (P45D T11). Výsledek ťuku leží jeden tik v `aux0`
+ * hráče (body = trefa, −1 = minutí) a `toyViewOf` ho nečte, proto ho do pohledu dá tahle
+ * funkce: trefa = poskok (od tiku trefy je tělo `BEAT_HOP_S` ve vzduchu, `toyPoseOf` ho
+ * natáhne a po dopadu zmáčkne), minutí = zásah (cuknutí a zakymácení), výhra = oslava,
+ * prohra = pád. Bez události tělo stojí – žádné pohupování do taktu (kit `09-motion.md`).
+ * Čte jen stav a `tick` s podílem; `previous` je póza minulého snímku.
+ */
+export function beatPoseOf(state: Int32Array, prev: Int32Array, previous: ToyPose | null, tick: number, reduced: boolean): ToyPose {
+  // Póza z pozdějšího tiku patří běhu před restartem.
+  const memory = previous !== null && tick >= previous.at ? previous : null;
+  const player = state[HEADER.player] as number;
+  const view = toyViewOf(state, prev, player);
+  // Po konci běhu stojí stav s výsledkem posledního ťuku – ten platí jen v tiku konce.
+  const result = toyEventsLive(view, memory, tick) ? (state[bodyBase(player) + BODY.aux0] as number) : 0;
+  // Stav je už po tiku trefy, ten se počítá celý – poskok je vidět hned v prvním snímku.
+  const sinceHop = (at: number): number => (tick + 1 - at) / ARCADE_HZ;
+  // Nová trefa začne nový poskok, i když minulý ještě nedopadl.
+  const before = result > 0 && memory !== null ? { ...memory, grounded: true } : memory;
+  const airborne = result > 0 || (before !== null && !before.grounded && sinceHop(before.airAt) < BEAT_HOP_S);
+  // Hráč stojí na místě a třída těla mění jen chůzi, takže tu žádnou roli nehraje.
+  const toy = toyPoseOf({ ...view, grounded: !airborne, hit: view.hit || result < 0 }, 'biped', before, tick, reduced);
+  if (reduced || !airborne || !view.alive) return toy;
+  const u = Math.min(1, sinceHop(toy.airAt) / BEAT_HOP_S);
+  return { ...toy, hop: toy.hop + 4 * BEAT_HOP * u * (1 - u) };
+}
+
+/** Skupina pózy zpět do klidu (blok, který přestal být vrchním). */
+function standStill(group: Object3D): void {
+  group.position.set(0, 0, 0);
+  group.rotation.set(0, 0, 0);
+  group.scale.set(1, 1, 1);
+  group.visible = true;
+}
+
 /** `blockModel` (P30B T4): díl věže z popisku role `block` („pancakes“), vyplní kvádr dílu; jen u stavění věže. */
 export function TimingScene({
   session,
@@ -120,6 +161,11 @@ export function TimingScene({
   const sliderKind = sliderInit.kind;
   const slider = useRef<Group | null>(null);
   const placed = useRef<(Object3D | null)[]>([]);
+  // Hračková póza (P45D T11): vnitřní skupiny jezdce a položených dílů, póza minulého snímku a kolo vrchního dílu.
+  const sliderPose = useRef<Group | null>(null);
+  const placedPoses = useRef<(Group | null)[]>([]);
+  const toyPose = useRef<ToyPose | null>(null);
+  const posedRound = useRef(-1);
   // Jehla a prkno můstku nejsou díly věže – model z popisku nese jen `block`.
   const blocks = sliderKind === 'block' ? blockModel : undefined;
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
@@ -148,6 +194,19 @@ export function TimingScene({
       mesh.scale.x = w;
       mesh.position.set(-(state[m + BODY.x] as number) / UNIT, (state[m + BODY.y] as number) / UNIT + TIMING.blockH / UNIT / 2, 0);
     });
+    // Trefa = jezdec i právě položený díl poskočí, minutí = zakymácejí se, výhra = vrchní díl slaví (jezdec už je schovaný).
+    const pose = beatPoseOf(state, prev, toyPose.current, toyTickOf(session), !toyMotionOn());
+    toyPose.current = pose;
+    const pieceH = TIMING.blockH / UNIT;
+    if (sliderPose.current !== null) applyToy({ group: sliderPose.current }, pose, pieceH);
+    const newest = Math.floor((state[bodyBase(state[HEADER.player] as number) + BODY.z] as number) / UNIT) - 1;
+    if (posedRound.current !== newest) {
+      const was = placedPoses.current[posedRound.current];
+      if (was !== null && was !== undefined) standStill(was);
+      posedRound.current = newest;
+    }
+    const topPiece = placedPoses.current[newest];
+    if (topPiece !== null && topPiece !== undefined) applyToy({ group: topPiece }, pose, pieceH);
     const y = (state[s + BODY.y] as number) / UNIT;
     followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 3));
     // Vidět celý kyv (±amplituda + blok) i na výšku: vzdálenost z poměru stran.
@@ -184,29 +243,37 @@ export function TimingScene({
         <boxGeometry args={[target.w, top + 1, 0.02]} />
         <meshBasicMaterial color="#16a34a" transparent opacity={0.28} />
       </mesh>
-      {/* Položený díl má jednotkovou šířku a `scale.x` mu dá šířku z jádra; model dílu stojí na zemi, proto o půl výšky níž. */}
-      {Array.from({ length: marks }, (_, round) =>
-        blocks !== undefined ? (
-          <group key={round} ref={(group) => { placed.current[round] = group; }} visible={false} userData={{ item: 'block' }}>
-            <group position={[0, -blockH / 2, 0]}>{blocks(1, blockH, depth)}</group>
+      {/* Položený díl má jednotkovou šířku a `scale.x` mu dá šířku z jádra; díl stojí na zemi, proto o půl výšky níž. */}
+      {/* Vnitřní skupina pózy (P45D T11) má počátek u paty dílu, ať se díl při dopadu zmáčkne na díl pod sebou. */}
+      {Array.from({ length: marks }, (_, round) => (
+        <group key={round} ref={(group) => { placed.current[round] = group; }} visible={false} userData={{ item: sliderKind === 'block' ? 'block' : undefined }}>
+          <group position={[0, -blockH / 2, 0]}>
+            <group ref={(group) => { placedPoses.current[round] = group; }}>
+              {blocks !== undefined ? (
+                blocks(1, blockH, depth)
+              ) : (
+                <mesh position={[0, blockH / 2, 0]}>
+                  <boxGeometry args={[1, blockH, depth]} />
+                  <meshStandardMaterial color={MARK_COLORS[round % MARK_COLORS.length]} roughness={0.6} />
+                </mesh>
+              )}
+            </group>
           </group>
-        ) : (
-          <mesh key={round} ref={(mesh) => { placed.current[round] = mesh; }} visible={false} userData={{ item: sliderKind === 'block' ? 'block' : undefined }}>
-            <boxGeometry args={[1, blockH, depth]} />
-            <meshStandardMaterial color={MARK_COLORS[round % MARK_COLORS.length]} roughness={0.6} />
-          </mesh>
-        ),
-      )}
+        </group>
+      ))}
       {/* Jezdec věže je zároveň díl z věty (P30B T5, `item`), sonda ho počítá i jako položku. */}
+      {/* Kyv jede po vnější skupině, hračková póza (P45D T11) po vnitřní. */}
       <group ref={slider} userData={{ frame: 'hero', item: sliderKind === 'block' ? 'block' : undefined }}>
-        {blocks !== undefined ? (
-          blocks(sliderInit.w, blockH, depth)
-        ) : (
-          <mesh position={[0, blockH / 2, 0]}>
-            <boxGeometry args={[sliderInit.w, blockH, depth]} />
-            <meshStandardMaterial color={SLIDER_COLOR[sliderKind] ?? '#f59e0b'} roughness={0.5} />
-          </mesh>
-        )}
+        <group ref={sliderPose}>
+          {blocks !== undefined ? (
+            blocks(sliderInit.w, blockH, depth)
+          ) : (
+            <mesh position={[0, blockH / 2, 0]}>
+              <boxGeometry args={[sliderInit.w, blockH, depth]} />
+              <meshStandardMaterial color={SLIDER_COLOR[sliderKind] ?? '#f59e0b'} roughness={0.5} />
+            </mesh>
+          )}
+        </group>
       </group>
       {/* Slot ducha (P37-0 T3) vedle jezdce, ne v jeho skupině. */}
       <GhostSlot ghost={ghost} session={session} place={ghostSpot} />

@@ -8,6 +8,8 @@ import { renderHeld } from '../effects/render-feel';
  * jantarový s rukou nahoře (uhni), mezera zelená s pokleslou rukou (udeř),
  * úder soupeře ruku švihne dolů. Hráč se při úhybu přikrčí (výška z jádra)
  * a při úderu natáhne ruku. `z` hráče je počítadlo zásahů, kreslí se na místě.
+ * Bojovník s modelem (P45D T10) hraje místo toho hračkový pohyb: úder = nápřah
+ * a výpad k soupeři, úhyb = přikrčení, zásah, pád, výhra.
  *
  * Vstup: mezerník / Enter / šipka nahoru nebo ťuk do pravé půlky = úder;
  * šipka dolů / S nebo ťuk do levé půlky = úhyb.
@@ -18,9 +20,10 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { Group, MeshStandardMaterial, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
-import { BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, BUTTON, HEADER, RUN_STATE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { DUEL, DUEL_FOE, DUEL_PHASE } from '@/play/arcade/pieces/duel';
+import { type BodyClass, type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
 import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
@@ -32,10 +35,15 @@ import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { DUEL_ZONES, zoneAt } from '../touch-zones';
 import { initialBody } from '../timing/TimingScene';
+import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 
 const STRIKE_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
 const DODGE_KEYS = new Set(['arrowdown', 's']);
 const STRIKE_TICKS = 10;
+/** Potácení po vykrytém úderu: náklon k soupeři (rad). */
+const STAGGER_LEAN = 0.25;
+/** Bojovníci stojí na místě: třída těla tvaruje jen chůzi, kterou souboj nemá (a model sem přijde bez jména). */
+const FIGHTER: BodyClass = 'biped';
 
 export function useDuelInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
   useEffect(() => {
@@ -70,44 +78,62 @@ const PHASE_COLOR: Readonly<Record<number, string>> = {
   [DUEL_PHASE.struck]: '#dc2626',
 };
 
+/** Ruka soupeře podle fáze v ringu (soupeř hledí k −z): nápřah ji zvedne za hlavu, těsně před úderem švihne k hráči, v mezeře visí. */
+const foeArmOf = (phase: number, left: number): number => (phase === DUEL_PHASE.windup ? (left <= 4 ? Math.PI / 2 : -Math.PI * 0.8) : phase === DUEL_PHASE.open ? 0.1 : 0);
+/** Náklon soupeře podle fáze v ringu: nápřah dozadu, mezera k hráči. */
+const foeLeanOf = (phase: number): number => (phase === DUEL_PHASE.open ? -0.2 : phase === DUEL_PHASE.windup ? 0.12 : 0);
+
 interface Fighter {
   readonly body: React.RefObject<Group | null>;
   readonly arm: React.RefObject<Group | null>;
   readonly material: React.RefObject<MeshStandardMaterial | null>;
 }
 
-/**
- * Postava z primitiv: trup, hlava a jedna ruka, která míří k soupeři (`facing` ±1 po z).
- * S modelem z popisku (P27A T4) stojí místo trupu a hlavy model; fázi pak nese barva ruky.
- */
-function Figure({ fighter, color, facing, w, h, model }: { readonly fighter: Fighter; readonly color: string; readonly facing: 1 | -1; readonly w: number; readonly h: number; readonly model?: React.ReactNode }) {
+/** Rameno je kloub: ruka visí dolů a otáčí se k soupeři (`toward` ±1 po z rodičovské skupiny); `tinted` = barvu fáze nese ruka. */
+function Arm({ fighter, color, toward, w, torso, tinted }: { readonly fighter: Fighter; readonly color: string; readonly toward: 1 | -1; readonly w: number; readonly torso: number; readonly tinted: boolean }) {
+  return (
+    <group ref={fighter.arm} position={[0, torso * 0.9, toward * w * 0.3]}>
+      <mesh position={[0, -torso * 0.35, 0]}>
+        <boxGeometry args={[w * 0.2, torso * 0.7, w * 0.2]} />
+        <meshStandardMaterial ref={tinted ? fighter.material : undefined} color={color} roughness={0.6} />
+      </mesh>
+      <mesh position={[0, -torso * 0.72, 0]}>
+        <sphereGeometry args={[w * 0.16, 12, 8]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.5} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Postava z primitiv: trup, hlava a jedna ruka, která míří k soupeři (`facing` ±1 po z). */
+function Figure({ fighter, color, facing, w, h }: { readonly fighter: Fighter; readonly color: string; readonly facing: 1 | -1; readonly w: number; readonly h: number }) {
   const torso = h * 0.62;
   const head = h * 0.14;
   return (
     <group ref={fighter.body}>
-      {model ?? (
-        <>
-          <mesh position={[0, torso / 2, 0]}>
-            <boxGeometry args={[w * 0.7, torso, w * 0.55]} />
-            <meshStandardMaterial ref={fighter.material} color={color} roughness={0.6} />
-          </mesh>
-          <mesh position={[0, torso + head * 1.1, 0]}>
-            <sphereGeometry args={[head, 16, 12]} />
-            <meshStandardMaterial color="#fcd34d" roughness={0.7} />
-          </mesh>
-        </>
-      )}
-      {/* Rameno je kloub: ruka visí dolů a otáčí se k soupeři. */}
-      <group ref={fighter.arm} position={[0, torso * 0.9, (facing * w * 0.3)]}>
-        <mesh position={[0, -torso * 0.35, 0]}>
-          <boxGeometry args={[w * 0.2, torso * 0.7, w * 0.2]} />
-          <meshStandardMaterial ref={model === undefined ? undefined : fighter.material} color={color} roughness={0.6} />
-        </mesh>
-        <mesh position={[0, -torso * 0.72, 0]}>
-          <sphereGeometry args={[w * 0.16, 12, 8]} />
-          <meshStandardMaterial color="#f8fafc" roughness={0.5} />
-        </mesh>
-      </group>
+      <mesh position={[0, torso / 2, 0]}>
+        <boxGeometry args={[w * 0.7, torso, w * 0.55]} />
+        <meshStandardMaterial ref={fighter.material} color={color} roughness={0.6} />
+      </mesh>
+      <mesh position={[0, torso + head * 1.1, 0]}>
+        <sphereGeometry args={[head, 16, 12]} />
+        <meshStandardMaterial color="#fcd34d" roughness={0.7} />
+      </mesh>
+      <Arm fighter={fighter} color={color} toward={facing} w={w} torso={torso} tinted={false} />
+    </group>
+  );
+}
+
+/**
+ * Bojovník s modelem z popisku (P27A T4, P43 T14b): model leží ve skupině pózy natočené
+ * k soupeři (`heading` kolem y), hračkový pohyb (P45D T10) ji posune výpadem po jejím +z.
+ * Ruku z primitiv má jen soupeř (`arm` = její barva): nese barvu fáze, podle které hráč uhýbá.
+ */
+function ModelFigure({ fighter, heading, w, h, arm, children }: { readonly fighter: Fighter; readonly heading: number; readonly w: number; readonly h: number; readonly arm?: string; readonly children: React.ReactNode }) {
+  return (
+    <group ref={fighter.body} rotation={[0, heading, 0]}>
+      {children}
+      {arm !== undefined && <Arm fighter={fighter} color={arm} toward={1} w={w} torso={h * 0.62} tinted />}
     </group>
   );
 }
@@ -125,7 +151,7 @@ export function DuelScene({
 }: {
   readonly session: ArcadeSession;
   readonly look: Look;
-  /** P43 T14b: hrdina z věty (rytíř, pirát) místo kvádru; ruka z primitiv zůstává pro úder. */
+  /** P43 T14b: hrdina z věty (rytíř, pirát) místo kvádru; úder hraje hračkový pohyb (P45D T10), ne ruka z primitiv. */
   readonly heroModel?: RivalModel;
   readonly rivalModel?: RivalModel;
   readonly heroAction: HeroAction;
@@ -139,33 +165,83 @@ export function DuelScene({
   const player: Fighter = { body: useRef(null), arm: useRef(null), material: useRef(null) };
   const foe: Fighter = { body: useRef(null), arm: useRef(null), material: useRef(null) };
   const lastStrike = useRef(-STRIKE_TICKS);
+  // Hračková póza bojovníků s modelem (P45D T10) s pamětí minulého snímku; tik kvůli restartu.
+  const heroToy = useRef<ToyPose | null>(null);
+  const rivalToy = useRef<ToyPose | null>(null);
+  const lastTick = useRef(0);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(), []);
   const midZ = rival.z / 2;
 
   useFrame((_, delta) => {
-    session.advance(delta * 1000);
+    const alpha = session.advance(delta * 1000);
     if (renderHeld(session)) return;
     const state = session.state();
+    const prev = session.prev();
     const tick = state[HEADER.tick] as number;
-    const p = bodyBase(state[HEADER.player] as number);
+    if (tick < lastTick.current) {
+      lastStrike.current = -STRIKE_TICKS;
+      heroToy.current = null;
+      rivalToy.current = null;
+    }
+    lastTick.current = tick;
+    const playerIndex = state[HEADER.player] as number;
+    const p = bodyBase(playerIndex);
     const f = bodyBase(DUEL_FOE);
     const phase = state[f + BODY.aux0] as number;
     const left = state[f + BODY.aux1] as number;
-    if ((state[p + BODY.aux0] as number) > 0) lastStrike.current = tick;
-
-    // Hráč: přikrčení z výšky jádra, natažená ruka chvíli po úderu, potácení = náklon dozadu.
+    // Úder hráče v mezeře zasáhl soupeře v tomhle tiku.
+    const struck = (state[p + BODY.aux0] as number) > 0;
+    if (struck) lastStrike.current = tick;
     const crouch = (state[p + BODY.h] as number) / UNIT / hero.h;
     const timer = state[p + BODY.aux1] as number;
-    if (player.body.current !== null) {
-      player.body.current.scale.y = crouch;
-      player.body.current.rotation.x = timer < -DUEL.cooldown ? 0.25 : 0;
-    }
-    if (player.arm.current !== null) player.arm.current.rotation.x = tick - lastStrike.current < STRIKE_TICKS ? -Math.PI / 2 : -0.2;
+    const stagger = timer < -DUEL.cooldown ? STAGGER_LEAN : 0;
+    // Póza jen čte stav a tik s podílem; pod `prefers-reduced-motion` ukáže stav okamžitě.
+    const toyTick = toyTickOf(session);
+    const reduced = !toyMotionOn();
+    const runState = state[HEADER.runState] as number;
 
-    // Soupeř: nápřah zvedá ruku dozadu nad hlavu, úder ji švihne k hráči, mezera ji nechá viset.
-    if (foe.arm.current !== null) foe.arm.current.rotation.x = phase === DUEL_PHASE.windup ? (left <= 4 ? Math.PI / 2 : -Math.PI * 0.8) : phase === DUEL_PHASE.open ? 0.1 : 0;
-    if (foe.body.current !== null) foe.body.current.rotation.x = phase === DUEL_PHASE.open ? -0.2 : phase === DUEL_PHASE.windup ? 0.12 : 0;
+    if (heroModel === undefined) {
+      // Panák: přikrčení z výšky jádra, natažená ruka chvíli po úderu, potácení = náklon.
+      if (player.body.current !== null) {
+        player.body.current.scale.y = crouch;
+        player.body.current.rotation.x = stagger;
+      }
+      if (player.arm.current !== null) player.arm.current.rotation.x = tick - lastStrike.current < STRIKE_TICKS ? -Math.PI / 2 : -0.2;
+    } else if (player.body.current !== null) {
+      // Hrdina s modelem: úder = nápřah a výpad k soupeři, úhyb = zmáčknutí na výšku jádra, potácení = předklon.
+      const toy = toyPoseOf({ ...toyViewOf(state, prev, playerIndex), attack: struck }, FIGHTER, heroToy.current, toyTick, reduced);
+      heroToy.current = toy;
+      applyToy({ group: player.body.current }, { ...toy, squash: toy.squash + 1 - crouch, pitch: toy.pitch + stagger }, hero.h);
+    }
+
+    if (rivalModel === undefined) {
+      // Soupeř: nápřah zvedá ruku dozadu nad hlavu, úder ji švihne k hráči, mezera ji nechá viset.
+      if (foe.arm.current !== null) foe.arm.current.rotation.x = foeArmOf(phase, left);
+      if (foe.body.current !== null) foe.body.current.rotation.x = foeLeanOf(phase);
+    } else {
+      // Skupina pózy soupeře s modelem je otočená o π k hráči: úhly kolem x v ní mají opačné znaménko než v ringu.
+      if (foe.arm.current !== null) foe.arm.current.rotation.x = -foeArmOf(phase, left);
+      if (foe.body.current !== null) {
+        const view = toyViewOf(state, prev, DUEL_FOE);
+        const toy = toyPoseOf(
+          {
+            ...view,
+            // Úder soupeře = konec nápřahu; zásah = úder hráče v mezeře; padne s výhrou hráče, slaví jeho prohru.
+            attack: phase === DUEL_PHASE.open && (prev[f + BODY.aux0] as number) === DUEL_PHASE.windup,
+            hit: struck,
+            alive: view.alive && runState !== RUN_STATE.won,
+            won: runState === RUN_STATE.lost,
+          },
+          FIGHTER,
+          rivalToy.current,
+          toyTick,
+          reduced,
+        );
+        rivalToy.current = toy;
+        applyToy({ group: foe.body.current }, { ...toy, pitch: toy.pitch - foeLeanOf(phase) }, rival.h, Math.PI);
+      }
+    }
     foe.material.current?.color.set(PHASE_COLOR[phase] ?? '#64748b');
 
     const tan = Math.tan((camera.fov * Math.PI) / 360);
@@ -193,15 +269,27 @@ export function DuelScene({
         <InkOutline ink="hero" />
         {/* Činnost hrdiny (P37B T2) – `none` nechá postavu beze změny stromu. */}
         <HeroActionBody action={heroAction} session={session} h={hero.h}>
-          <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} model={heroModel?.(hero.w, hero.h, hero.d)} />
+          {heroModel === undefined ? (
+            <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} />
+          ) : (
+            <ModelFigure fighter={player} heading={0} w={hero.w} h={hero.h}>
+              {heroModel(hero.w, hero.h, hero.d)}
+            </ModelFigure>
+          )}
         </HeroActionBody>
       </group>
       {/* Slot ducha (P37-0 T3) vedle hrdiny, ne v jeho skupině. */}
       <GhostSlot ghost={ghost} session={session} place={ghostSpot} />
       <group position={[0, 0, rival.z]} userData={{ frame: 'target', item: 'rival' }}>
         <InkOutline ink="foe" />
-        {/* Model hledí k hráči (−z). */}
-        <Figure fighter={foe} color={PHASE_COLOR[DUEL_PHASE.ready]!} facing={-1} w={rival.w} h={rival.h} model={rivalModel === undefined ? undefined : <group rotation={[0, Math.PI, 0]}>{rivalModel(rival.w, rival.h, rival.d)}</group>} />
+        {/* Model hledí k hráči (−z): skupinu pózy natočí o π `ModelFigure` i `applyToy`. */}
+        {rivalModel === undefined ? (
+          <Figure fighter={foe} color={PHASE_COLOR[DUEL_PHASE.ready]!} facing={-1} w={rival.w} h={rival.h} />
+        ) : (
+          <ModelFigure fighter={foe} heading={Math.PI} w={rival.w} h={rival.h} arm={PHASE_COLOR[DUEL_PHASE.ready]!}>
+            {rivalModel(rival.w, rival.h, rival.d)}
+          </ModelFigure>
+        )}
       </group>
     </>
   );

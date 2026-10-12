@@ -8,8 +8,9 @@ import { renderHeld } from '../effects/render-feel';
  * (P32F T5) – pevné desky jádra jsou ostrůvky ze skály s okrajem sady
  * (`islands.ts` od A, horní plocha přesně ve výšce desky) nad vlnící se hladinou.
  * Kvádry, které za desky kreslí `World`, se schovají; pohyblivá plošina si svůj
- * vzhled nechává – hráč z něj čte pohyb. Hrdina se při odrazu zmáčkne jako běžec
- * (`runner/heroMotion.ts`), dopad hlásí sběrnice efektů (`land`).
+ * vzhled nechává – hráč z něj čte pohyb. Krok, skok a dopad hrdiny podle třídy těla
+ * mu dává hračková póza ze sdíleného `World` (P45D T7, T8), dopad hlásí i sběrnice
+ * efektů (`land`).
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
@@ -24,7 +25,6 @@ import { GhostSlot } from '../GhostSlot';
 import { buildIslands, platformIslands, platformSlabKeys, spotKey } from '../look/rig/terrain/islands';
 import { buildWater } from '../look/rig/terrain/water';
 import { Scenery } from '../look/Scenery';
-import { createHeroMotion } from '../runner/heroMotion';
 import type { GroundGap } from '../runner/RunnerWorld';
 import type { ArcadeSession } from '../session';
 import { World, type WorldProps } from '../World';
@@ -65,13 +65,13 @@ function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; re
 
 /**
  * Běží po snímku `World` (sourozenec za ním, jako `HeroPose` běžce): `World` každý
- * snímek zapíše skupinám polohu a viditelnost, tady se kvádry desek znovu schovají
- * a hrdina dostane zmáčknutí odrazu.
+ * snímek zapíše skupinám polohu a viditelnost, tady se kvádry desek znovu schovají.
+ * Hrdinu pózuje jen `World` (hračková póza vnitřní skupiny, P45D T7): druhé zmáčknutí
+ * odrazu na obalu by se s jeho skokem sečetlo.
  */
 function PlatformPose({ session, terrain }: { readonly session: ArcadeSession; readonly terrain: RefObject<Mesh | null> }) {
   const scene = useThree((three) => three.scene);
   const get = useThree((three) => three.get);
-  const motion = useMemo(() => createHeroMotion(session, null), [session]);
   const slabs = useMemo(() => platformSlabKeys(session.world), [session]);
   const found = useRef<{ boxes: Object3D[]; hero: Object3D | null; frame: number }>({ boxes: [], hero: null, frame: 0 });
 
@@ -92,12 +92,6 @@ function PlatformPose({ session, terrain }: { readonly session: ArcadeSession; r
       });
     }
     for (const box of found.current.boxes) box.visible = false;
-    const hero = found.current.hero;
-    if (hero === null) return;
-    // Zmáčknutí kolem paty (objem drží); natažení ve vzduchu a dosednutí dává `World` vnitřní skupině.
-    const { squash } = motion.sample();
-    const wide = 1 + squash / 2;
-    hero.scale.set(wide, hero.scale.y * (1 - squash), wide);
   });
 
   // Sonda: nejnižší bod nakresleného hrdiny proti ploše ostrůvku pod ním, obojí promítnuté kamerou (px).

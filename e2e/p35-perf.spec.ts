@@ -115,6 +115,33 @@ test.describe('phone performance, Pixel 7 with CPU 4× slower', () => {
     expect(report.triangles, 'modely kočky, medvěda a ryb jsou ve scéně').toBeGreaterThan(5000);
     expect(report.meshes, 'viditelné sítě kočičí arény').toBeLessThanOrEqual(CAT_MESHES);
   });
+
+  /**
+   * Hračkový pohyb (P45D T6, T14): hýbající se tělo s díly v `catalog-motion.json` je
+   * nejvýš dva díly navíc vedle slitého zbytku, dřív jedna slitá síť. Klokan má díly
+   * ocas a nohu (pes taky, ale slovo „dog“ dostane riggovaného psa s klipy, bez dílů).
+   * Běžec nepřátele nemá, 20 jich drží aréna; „dnešní počet“ jsou sítě mimo díly.
+   */
+  test('arena with 20 model enemies adds at most two meshes per moving body with parts', async ({ page, request, context }) => {
+    test.setTimeout(180_000);
+    const shooter = JSON.parse(readFileSync(join(process.cwd(), 'src/play/arcade/__fixtures__/shooter.json'), 'utf8')) as { roles: { kind: string }[] };
+    const pack = { ...shooter, roles: shooter.roles.map((role) => (role.kind === 'hazard' ? { ...role, label: 'kangaroo', count: 20 } : role)) };
+    const url = await publishSpec(request, pack);
+    const cdp = await context.newCDPSession(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+    await page.goto(url);
+    const report = await settledRender(page);
+    const { meshes, ink, bodies } = report.toyParts;
+    const line = `pack: ${report.meshes} sítí, z toho ${meshes} v dílech ${bodies} těl (${ink} obalů obrysu)`;
+    test.info().annotations.push({ type: 'render', description: line });
+    console.log(line);
+    // Střelnice z 20 nepřátel ukáže najednou první vlny – 15.
+    expect(bodies, 'klokani s díly se kreslí').toBeGreaterThanOrEqual(15);
+    expect(meshes - ink, 'sítě dílů nad dnešní počet: nejvýš dvě na hýbající se tělo s díly').toBeLessThanOrEqual(2 * bodies);
+    // Nepřítel má obrys (`InkOutline`), takže ho dostane i každý díl: nejvýš jeden obal na díl.
+    expect(ink, 'obaly obrysu dílů').toBeLessThanOrEqual(meshes - ink);
+    expect(report.meshes, 'celá scéna v rozpočtu telefonu jako kočičí aréna').toBeLessThanOrEqual(CAT_MESHES);
+  });
 });
 
 // ---------------------------------------------------------------------------

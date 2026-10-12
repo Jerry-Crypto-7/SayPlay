@@ -21,6 +21,8 @@ import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 
 import { colorHex } from '@/brand/tokens';
 
+import { type ToyUniforms, withToyDeform } from '../toy-deform';
+
 import { flagShadow } from './StyleRig';
 
 export type Ink = 'hero' | 'foe';
@@ -61,16 +63,21 @@ void main() {
   #include <fog_fragment>
 }`;
 
+const shaderOf = (uniforms: ShaderMaterial['uniforms'], vertexShader: string): ShaderMaterial =>
+  new ShaderMaterial({ uniforms, vertexShader, fragmentShader: FRAGMENT, side: BackSide, fog: true, toneMapped: false });
+
 /** Jeden materiál na barvu a renderer: posun (NDC na 2,5 px) se přepočítá z velikosti plátna. */
 function inkMaterial(ink: Ink): ShaderMaterial {
-  return new ShaderMaterial({
-    uniforms: UniformsUtils.merge([UniformsLib.fog, { color: { value: new Color(INK_COLOR[ink]) }, inkOffset: { value: new Vector2() } }]),
-    vertexShader: VERTEX,
-    fragmentShader: FRAGMENT,
-    side: BackSide,
-    fog: true,
-    toneMapped: false,
-  });
+  return shaderOf(UniformsUtils.merge([UniformsLib.fog, { color: { value: new Color(INK_COLOR[ink]) }, inkOffset: { value: new Vector2() } }]), VERTEX);
+}
+
+/**
+ * Obal deformovaného těla (P45D T6) se ohne stejně jako tělo, jinak by obrys
+ * křídel zůstal stát. Uniformy obrysu sdílí s materiálem barvy (posun z
+ * `setInkViewport` platí dál), uniformy deformace s tělem.
+ */
+function deformedInk(base: ShaderMaterial, toy: ToyUniforms): ShaderMaterial {
+  return shaderOf({ ...base.uniforms, ...toy }, withToyDeform(VERTEX));
 }
 
 /**
@@ -123,7 +130,9 @@ export function inkMeshes(root: Object3D, ink: Ink): number {
     // Tělo vrhá stín hned, ne až s plošným průchodem rigu (`flagShadow`); obal níž stín nevrhá.
     if (mesh.userData.rigShadow === undefined) flagShadow(mesh);
     const geometry = hullOf(mesh.geometry);
-    const material = inkMaterialOf(ink, mesh, geometry);
+    const base = inkMaterialOf(ink, mesh, geometry);
+    const toy = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material)?.userData.toyDeform as ToyUniforms | undefined;
+    const material = toy === undefined ? base : deformedInk(base, toy);
     let hull: Mesh;
     if ((mesh as SkinnedMesh).isSkinnedMesh === true) {
       const skinned = new SkinnedMesh(geometry, material);
