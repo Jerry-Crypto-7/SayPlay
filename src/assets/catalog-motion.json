@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "aadd200ac9c69491ede6ec8b839afc65b373abcb749ede9890a47a3a443417c7",
+ "catalogHash": "c73b7b7c4634672a3d3d9d55c3c9f950cd1fd62ff6a750a0c0eb8ad2abdfe352",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1226,6 +1226,12 @@
   "gen3d-harpy": {"class":"prop"},
   "gen3d-grim-reaper": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-howitzer": {"class":"prop"},
-  "gen3d-vulture": {"class":"prop"}
+  "gen3d-vulture": {"class":"prop"},
+  "gen3d-floating-eye": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-combine-harvester": {"class":"prop"},
+  "gen3d-giant-snowball": {"class":"prop"},
+  "gen3d-hovercraft": {"class":"prop"},
+  "gen3d-cement-mixer": {"class":"prop"},
+  "gen3d-sabertooth": {"class":"prop"}
  }
 }

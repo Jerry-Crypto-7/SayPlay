@@ -24823,6 +24823,122 @@
           0.46232
         ]
       }
+    },
+    {
+      "assetId": "gen3d-floating-eye",
+      "tags": [
+        "floating eye"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-floating-eye-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.375,
+          0,
+          -0.37909
+        ],
+        "max": [
+          0.375,
+          1.00001,
+          0.37909
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-combine-harvester",
+      "tags": [
+        "combine harvester",
+        "harvester"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-combine-harvester-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.81836,
+          0,
+          -0.9062
+        ],
+        "max": [
+          0.81836,
+          1.00001,
+          0.9062
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-giant-snowball",
+      "tags": [
+        "giant snowball"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-giant-snowball-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49885,
+          0,
+          -0.48229
+        ],
+        "max": [
+          0.49885,
+          1.00001,
+          0.48229
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hovercraft",
+      "tags": [
+        "hovercraft"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hovercraft-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.64855,
+          0,
+          -1.05866
+        ],
+        "max": [
+          0.64855,
+          0.99314,
+          1.05866
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cement-mixer",
+      "tags": [
+        "cement mixer",
+        "concrete mixer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cement-mixer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37449,
+          0,
+          -0.58281
+        ],
+        "max": [
+          0.37449,
+          0.98764,
+          0.58281
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sabertooth",
+      "tags": [
+        "sabertooth"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sabertooth-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.84378,
+          0,
+          -0.81094
+        ],
+        "max": [
+          0.84378,
+          0.99965,
+          0.81094
+        ]
+      }
     }
   ]
 }

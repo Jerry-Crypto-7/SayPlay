@@ -451,3 +451,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-grim-reaper` | grim reaper, reaper | 4687 / 2342 |
 | `gen3d-howitzer` | howitzer | 4710 / 2349 |
 | `gen3d-vulture` | vulture | 4739 / 2354 |
+| `gen3d-floating-eye` | floating eye | 4367 / 2102 |
+| `gen3d-combine-harvester` | combine harvester, harvester | 4226 / 1924 |
+| `gen3d-giant-snowball` | giant snowball | 4554 / 2201 |
+| `gen3d-hovercraft` | hovercraft | 4479 / 2153 |
+| `gen3d-cement-mixer` | cement mixer, concrete mixer | 4094 / 2031 |
+| `gen3d-sabertooth` | sabertooth | 4704 / 2310 |

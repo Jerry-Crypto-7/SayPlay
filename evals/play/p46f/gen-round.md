@@ -8,3 +8,4 @@ Psaný smyčkou `D:/caches/p46f/loop.mjs` po každém kole. **Model** = obrázek
 | 2 | boss-end boss-machine boss-runner boss-air | 10 | 9 | 7/9 | 7 | – | necromancer, tesla coil, t rex, storm cloud, sorcerer, sentry gun, kaiju | timeouts alone under GPU load: scripts/assets/cc0/__tests__/promote.test.ts |
 | 3 | boss-runner boss-air boss-end boss-machine | 10 | 10 | 8/10 | 8 | – | pterodactyl, wyvern, trebuchet, flying carpet, gargoyle, siege tower, locomotive, harpy | – |
 | 4 | boss-end boss-machine boss-runner boss-air | 10 | 6 | 4/6 | 3 | – | grim reaper, howitzer, vulture | – |
+| 5 | boss-runner boss-air boss-end boss-machine | 10 | 6 | 6/6 | 6 | – | floating eye, combine harvester, giant snowball, hovercraft, cement mixer, sabertooth | – |
