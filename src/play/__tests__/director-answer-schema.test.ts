@@ -254,7 +254,8 @@ describe('director answer schema for a GenreSpec', () => {
       checked += 1;
     }
     expect(checked).toBeGreaterThan(10);
-  });
+    // Čtyřicet návrhů s ověřením robotem: arénu od P45C T12 ověřují i sondy nových chování (samotný test ~21 s).
+  }, 90_000);
 
   it('refuses a mode of another genre, a param out of bounds and a GameSpec in its place', () => {
     const params = { entryDistance: null, chaseLead: null, pursuitCeiling: null, itemSizePct: null, seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null, lives: null, targetScore: null, timeLimit: null };

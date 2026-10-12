@@ -10,6 +10,7 @@
  */
 
 import { z } from 'zod';
+import { guardLanes } from './pieces/behaviours';
 import { pacedBotBase } from './pieces/phase-pieces';
 
 import type { GameSpecV1 } from '@/play/spec';
@@ -70,7 +71,10 @@ export interface ArcadeParts {
  * poznat běžce a scéna podle něj volí kameru a vstup.
  */
 export const baseControlOf = (control: PieceRef): PieceRef =>
-  control.id === 'addon_control' || control.id === 'phase_control' || control.id === 'assembly_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
+  control.id === 'addon_control' || control.id === 'phase_control' || control.id === 'pacing_control' || control.id === 'assembly_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
+/** Základní robot pod obaly doplňků, fází, průběhu a skládání – scéna z něj čte trať (`course`). */
+export const baseBotOf = (bot: PieceRef): PieceRef =>
+  bot.id === 'addon_bot' || bot.id === 'phase_bot' || bot.id === 'pacing_bot' || bot.id === 'assembly_bot' ? baseBotOf((bot.params as { base: PieceRef }).base) : bot;
 const baseControl = (parts: ArcadeParts): PieceRef => baseControlOf(parts.control);
 
 export { mapUnderlying, underlyingRule } from './contract';
@@ -712,12 +716,15 @@ export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>): BotPiec
     decide: (observation, params) => {
       const base = bases[params.base.id];
       if (base === undefined) throw new Error(`arcade: unknown bot ${params.base.id}`);
-      let input = base.decide(observation, paramsOf(base, params.base.params));
+      const decided = base.decide(observation, paramsOf(base, params.base.params));
+      let input = decided;
       for (const id of params.addons) {
         const step = ADDON_PIECES[id]?.bot;
         if (step !== undefined) input = step(observation, input, pacedBotBase(params.base, observation));
       }
-      return input;
+      // Průběh (P45C R2): tah doplňku do jiného pruhu běžce ještě projde plánovačem pruhů – doplněk hrozby chování nevidí.
+      const lanes = BUTTON.LEFT | BUTTON.RIGHT;
+      return (input.buttons & lanes) === (decided.buttons & lanes) ? input : guardLanes(observation, params.base, input);
     },
   };
 }

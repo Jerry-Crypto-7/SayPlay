@@ -346,6 +346,8 @@ const boilParams = z
     /** Kola (P36A T4): každé další kolo (`waveOf`) zkrátí lhůtu o `step` tiků, nejníž na `floor`. */
     step: z.int().min(1).max(ARCADE_LIMITS.maxTicks).optional(),
     floor: z.int().min(ARCADE_HZ).max(ARCADE_LIMITS.maxTicks).optional(),
+    /** Průběh P45C T14: lhůta kola `k` (`waveOf`) = `limits[k]`, za koncem pole poslední; přebije `ticks`, `step` i `floor`. */
+    limits: z.array(z.int().min(ARCADE_HZ).max(ARCADE_LIMITS.maxTicks)).min(1).max(WAVE_LIMITS.rounds).optional(),
   })
   .strict();
 
@@ -375,7 +377,12 @@ export const boilOver: RulePiece<z.infer<typeof boilParams>> = {
     const done = stepsDone(state);
     let ticks = done === seen.done ? seen.ticks + 1 : 0;
     const effects: ArcadeEffect[] = [];
-    const limit = params.step === undefined ? params.ticks : Math.max(params.floor ?? ARCADE_HZ, params.ticks - params.step * waveOf(state));
+    const limit =
+      params.limits !== undefined
+        ? (params.limits[Math.min(waveOf(state), params.limits.length - 1)] as number)
+        : params.step === undefined
+          ? params.ticks
+          : Math.max(params.floor ?? ARCADE_HZ, params.ticks - params.step * waveOf(state));
     if (ticks >= limit) {
       effects.push(params.effect === 'lose' ? { kind: 'lose' } : { kind: 'damage', amount: 1, grace: HIT_GRACE });
       ticks = 0;

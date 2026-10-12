@@ -182,12 +182,20 @@ export const timingControl: ControlPiece<TimingControlParams> = {
 // ---------------------------------------------------------------------------
 // Pravidlo
 
-const judgeParams = z.object({ goal: z.int().min(1).max(ARCADE_LIMITS.maxBodies), miss: z.enum(['lose', 'damage']) }).strict();
+const judgeParams = z
+  .object({
+    goal: z.int().min(1).max(ARCADE_LIMITS.maxBodies),
+    miss: z.enum(['lose', 'damage']),
+    /** Náhlá smrt (finále průběhu P45C T14): v posledních `sudden` úkolech minutí prohrává i se životy. Bez hodnoty žádná. */
+    sudden: z.int().min(1).max(ARCADE_LIMITS.maxBodies).optional(),
+  })
+  .strict();
 
 /**
  * Výsledek ťuku z `aux0` hráče → efekty: trefa = body, minutí = prohra nebo
- * život. `goal` splněných úkolů (`z` hráče v metrech) = výhra. Sdílí ho
- * načasování, rytmus i souboj – všechna tři ovládání píšou výsledek stejně.
+ * život (v posledních `sudden` úkolech vždy prohra). `goal` splněných úkolů
+ * (`z` hráče v metrech) = výhra. Sdílí ho načasování, rytmus i souboj – všechna
+ * tři ovládání píšou výsledek stejně.
  */
 export const judgeRule: RulePiece<z.infer<typeof judgeParams>> = {
   id: 'judge',
@@ -199,8 +207,9 @@ export const judgeRule: RulePiece<z.infer<typeof judgeParams>> = {
     const p = bodyBase(player);
     const result = state[p + S.aux0] as number;
     const effects: ({ kind: 'score'; amount: number } | { kind: 'damage'; amount: number } | { kind: 'lose' } | { kind: 'win' })[] = [];
+    const sudden = params.sudden !== undefined && Math.floor((state[p + S.z] as number) / UNIT) >= params.goal - params.sudden;
     if (result > 0) effects.push({ kind: 'score', amount: result });
-    else if (result < 0) effects.push(params.miss === 'lose' ? { kind: 'lose' } : { kind: 'damage', amount: 1 });
+    else if (result < 0) effects.push(params.miss === 'lose' || sudden ? { kind: 'lose' } : { kind: 'damage', amount: 1 });
     if ((state[p + S.z] as number) >= params.goal * UNIT) effects.push({ kind: 'win' });
     return effects;
   },
@@ -235,6 +244,22 @@ export type TimingLevelParams = z.infer<typeof generatorParams>;
 export function timingSpeedOf(params: TimingLevelParams, round: number): number {
   const base = TIMING.speed[params.speed];
   return params.rise === true && params.rounds > 1 ? base + Math.floor((TIMING.rise * round) / (params.rounds - 1)) : base;
+}
+
+/**
+ * Úroveň s rychlostí jezdce po kolech `speeds` (průběh P45C T14): jezdec a
+ * předlohy kol začnou na kraji kyvu své rychlosti, stranu nechá ze semínka.
+ * Rozložení těl i počet kol se nemění.
+ */
+export function timingLevelAtSpeeds(level: ArcadeLevel, speeds: readonly number[]): ArcadeLevel {
+  const edge = (side: number, speed: number): Pick<BodyInit, 'x' | 'vx'> => ({ x: side * ((timingPeriod(speed) * speed) / 2), vx: -side * speed });
+  const sideOf = (body: BodyInit): number => (body.x < 0 ? -1 : 1);
+  const bodies = level.bodies.map((body, index): BodyInit => {
+    if (index === TIMING_SLOTS.slider) return { ...body, ...edge(sideOf(body), speeds[0] as number), period: timingPeriod(speeds[0] as number) };
+    const round = index - TIMING_SLOTS.marks;
+    return round >= 0 && round < speeds.length ? { ...body, ...edge(sideOf(body), speeds[round] as number) } : body;
+  });
+  return { ...level, bodies };
 }
 
 const KINDS: Readonly<Record<TimingMode, { readonly base: string; readonly slider: string; readonly w: number }>> = {

@@ -11,6 +11,7 @@ import { compileGenre } from '@/play/genre/index';
 import { readGameSpec } from '@/play/spec';
 
 import runnerFixture from '../__fixtures__/runner.json';
+import { baseControlOf } from '../addons';
 import { arcadeWorldOf } from '../compile';
 import { type ArcadeInput, type ArcadeWorld, BODY, BUTTON, type BodyInit, FLAG, NO_INPUT, bodyBase } from '../contract';
 import { GRAVITY, buildWorld, instantiate, loadProgram, step } from '../kernel';
@@ -132,7 +133,7 @@ describe('runner feel: 2 – jump buffer', () => {
 });
 
 describe('runner feel: 2 – who gets it', () => {
-  const controlOf = (world: ArcadeWorld): Record<string, unknown> => world.control.params as Record<string, unknown>;
+  const controlOf = (world: ArcadeWorld): Record<string, unknown> => baseControlOf(world.control).params as Record<string, unknown>;
 
   it('every runner genre game carries feel: 2 to the control', () => {
     const spec = compileGenre({ genre: 'runner', mode: 'default', hero: 'penguin', cast: [{ label: 'rock', does: 'avoid' }, { label: 'snowflake', does: 'collect' }], setting: 'icy mountain slope' });

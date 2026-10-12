@@ -55,6 +55,16 @@ export const DUEL = {
   minRecover: 17,
 } as const;
 
+/**
+ * Rozzuření posledního soupeře pod polovinou jeho HP (finále průběhu P45C T13):
+ * nápřah – varování – o `warn` tiků delší, mezera po úderu o `faster` kratší
+ * (soupeř se rychleji vzpamatuje a útočí znovu), nikdy pod `minRecover`.
+ * Rozzuření bez delšího varování by soupeře udělalo jen nefér. Změřeno (souboj z věty, 20 semínek,
+ * agresivita nejvýš 1200): začátečník vyhrál s `faster` 0 / 3 / 4 / 5 / 6 18 / 15 / 10 / 0 / 0 her –
+ * kratší mezera mu bere úder (reakce 20 tiků), delší nápřah mu úhyb nechá.
+ */
+export const DUEL_ENRAGE = { warn: 12, faster: 4 } as const;
+
 /** Fáze soupeře v `aux0`. */
 export const DUEL_PHASE = { ready: 0, windup: 1, open: 2, struck: 3 } as const;
 /** Sloty čítačů: životy soupeře a pořadí útoku. */
@@ -73,6 +83,13 @@ const controlParams = z
     rounds: z.int().min(1).max(DUEL.maxRounds).optional(),
     /** O kolik tiků další soupeř zkrátí nápřah i mezeru (nejvýš na `minWindup` / `minRecover`). */
     rise: z.int().min(0).max(10).optional(),
+    /**
+     * Agresivita soupeře v promile (průběh P45C T13 ji škáluje intenzitou): nápřah i mezera
+     * × 1000 / `pace`, ne pod mez. Bez hodnoty vzorec beze změny.
+     */
+    pace: z.int().min(100).max(5000).optional(),
+    /** Rozzuření posledního soupeře pod polovinou HP (`DUEL_ENRAGE`); bez hodnoty žádné. */
+    enrage: z.object({ warn: z.int().min(1).max(ARCADE_HZ), faster: z.int().min(0).max(ARCADE_HZ) }).strict().optional(),
   })
   .strict();
 export type DuelControlParams = z.infer<typeof controlParams>;
@@ -83,6 +100,24 @@ const S = BODY;
 export function duelAttackAt(move: DuelAttack, round: number, rise: number): DuelAttack {
   const shorter = (ticks: number, floor: number): number => Math.max(Math.min(ticks, floor), ticks - round * rise);
   return { windup: shorter(move.windup, DUEL.minWindup), recover: shorter(move.recover, DUEL.minRecover) };
+}
+
+/** Útok s agresivitou `pace` (promile): delší pod 1000, kratší nad, ne pod mez – co už pod ní je, zůstane. */
+export function pacedAttack(move: DuelAttack, pace: number): DuelAttack {
+  const scaled = (ticks: number, floor: number): number => Math.max(Math.min(ticks, floor), Math.floor((ticks * 1000) / pace));
+  return { windup: scaled(move.windup, DUEL.minWindup), recover: scaled(move.recover, DUEL.minRecover) };
+}
+
+/** Rozzuřený útok: delší nápřah (varování), kratší mezera, ne pod `minRecover`. */
+export const enragedAttack = (move: DuelAttack, enrage: { readonly warn: number; readonly faster: number }): DuelAttack =>
+  ({ windup: move.windup + enrage.warn, recover: Math.max(Math.min(move.recover, DUEL.minRecover), move.recover - enrage.faster) });
+
+/** Rozzuřený je poslední soupeř, kterému po `hits` zásazích zbývá méně než polovina HP. */
+export function enragedAfter(hits: number, params: DuelControlParams): boolean {
+  if (params.enrage === undefined) return false;
+  const rounds = params.rounds ?? 1;
+  const left = params.foeHealth * rounds - hits;
+  return hits >= params.foeHealth * (rounds - 1) && left > 0 && left * 2 < params.foeHealth;
 }
 
 export const duelControl: ControlPiece<DuelControlParams> = {
@@ -114,7 +149,12 @@ export const duelControl: ControlPiece<DuelControlParams> = {
     const hits = Math.floor((state[p + S.z] as number) / UNIT);
     // Soupeř, se kterým se teď bojuje (od 0): každý další útočí rychleji.
     const round = Math.floor(hits / params.foeHealth);
-    const moveAt = (index: number): DuelAttack => duelAttackAt(params.pattern[index] as DuelAttack, round, params.rise ?? 0);
+    const enraged = enragedAfter(hits, params);
+    const moveAt = (index: number): DuelAttack => {
+      const move = duelAttackAt(params.pattern[index] as DuelAttack, round, params.rise ?? 0);
+      const paced = params.pace === undefined ? move : pacedAttack(move, params.pace);
+      return enraged && params.enrage !== undefined ? enragedAttack(paced, params.enrage) : paced;
+    };
     if ((state[HEADER.tick] as number) >= DUEL.lead) {
       if (left > 0) left -= 1;
       if (left === 0) {

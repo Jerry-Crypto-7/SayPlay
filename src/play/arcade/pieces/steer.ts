@@ -619,9 +619,11 @@ export function steerRules(level: ArcadeLevel, params?: Pick<SteerTrackParams, '
 
 /**
  * Tvrzení „hratelné z konstrukce“ nad hotovou tratí: vrací porušení, prázdné
- * pole = hratelná. Rychlost je nejvyšší možná (spec + turbo).
+ * pole = hratelná. Rychlost je nejvyšší možná (spec + turbo). `ramp` jsou
+ * značky rampy, nebo rychlost bez turba na místě `z` (fáze průběhu P45C).
  */
-export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.topSpeed, ramp: readonly number[] | undefined = rampMarks(level.length)): string[] {
+export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.topSpeed, ramp: readonly number[] | ((z: number) => number) | undefined = rampMarks(level.length)): string[] {
+  const speedAt = (z: number): number => (typeof ramp === 'function' ? ramp(z) + STEER.boost : fastest(topSpeed, z, ramp));
   const issues: string[] = [];
   const m = (units: number): string => `${(units / UNIT).toFixed(1)} m`;
   const segments = steerSegments(level);
@@ -641,7 +643,7 @@ export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.top
     // Obrat směru: boční rychlost míří na opačnou stranu a musí se nejdřív zrušit.
     const before = segments[index - 2];
     const reverse = before !== undefined && Math.sign(prev.center - before.center) === -Math.sign(shift) && shift !== 0;
-    const reach = lateralReach(prev.far - prev.near, fastest(topSpeed, segment.near, ramp), reverse ? -STEER.latMax : 0) - STEER.clearance;
+    const reach = lateralReach(prev.far - prev.near, speedAt(segment.near), reverse ? -STEER.latMax : 0) - STEER.clearance;
     if (Math.abs(shift) > reach) issues.push(`the bend at ${m(segment.near)} moves ${m(shift)} but the car can steer only ${m(reach)} at full speed`);
   });
 

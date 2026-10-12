@@ -2,7 +2,9 @@ import {createHash} from 'node:crypto';
 import {expect,it} from 'vitest';
 import {voyageRace,steerControl} from '../pieces/steer';
 import {arcadeWorldOf} from '../compile';
-import {BODY,COUNTER,HEADER,NO_INPUT,ROLE,FLAG,bodyBase,rampedSpeed} from '../contract';
+import {BODY,COUNTER,HEADER,NO_INPUT,ROLE,FLAG,bodyBase,rampedSpeed,type PieceRef} from '../contract';
+import {baseControlOf} from '../addons';
+import {type Phase,phaseSpeed} from '../../compose/progression';
 import {instantiate,loadProgram,step} from '../kernel';
 import {runBot} from '../verify';
 import {ARCADE_LIBRARY} from '../library';
@@ -17,7 +19,10 @@ const cell=liveCells().find(c=>c.id==='voyage.race')!;for(const params of[{hazar
 const params=voyageRace.params.parse({hazards:false,turbo:true,roadWidth:3600,roadEntryWidth:4000,crashBudget:1,lengthM:700});const parts=voyageRace.parts!(1,params,3),cost=voyageRace.cost(params);expect(parts.level.bodies.length).toBeLessThanOrEqual(cost.bodies);expect(parts.rules.length).toBeLessThanOrEqual(cost.rules);expect(parts.level.bodies.some(b=>b.role==='hazard')).toBe(false);expect(parts.level.bodies.some(b=>b.kind==='turbo'&&b.role==='collectible')).toBe(true);expect(parts.health).toBe(1);
 });
 it('collects visible turbo bodies and really accelerates the boat in the actual recipe',()=>{
-const cell=liveCells().find(c=>c.id==='voyage.race')!,spec=compileRecipe(assemblyOfCell(cell));expect(readGameSpec(spec).ok).toBe(true);expect(spec.tutorial?.controlsHint).toContain('Banks end run');expect(spec.roles.some(r=>r.id==='turbo'&&r.kind==='collectible')).toBe(true);const made=arcadeWorldOf(spec,1);if(!made.ok)throw Error(made.issues.join(';'));const run=runBot(made.world);expect(run.outcome).toBe('won');const state=instantiate(made.world),program=loadProgram(made.world,ARCADE_LIBRARY),params=steerControl.params.parse(made.world.control.params),p=bodyBase(0);let cursor=0,boosted=false,picked=false;
-for(let tick=0;tick<run.tick;tick++){const event=run.inputs[cursor];step(state,event?.tick===tick?event:NO_INPUT,program);if(event?.tick===tick)cursor++;picked ||= state[HEADER.counters+COUNTER.score]!>0;boosted ||= state[p+BODY.vz]!>rampedSpeed(params.topSpeed,state[p+BODY.z]!,params.ramp);}
+const cell=liveCells().find(c=>c.id==='voyage.race')!,spec=compileRecipe(assemblyOfCell(cell));expect(readGameSpec(spec).ok).toBe(true);expect(spec.tutorial?.controlsHint).toContain('Banks end run');expect(spec.roles.some(r=>r.id==='turbo'&&r.kind==='collectible')).toBe(true);const made=arcadeWorldOf(spec,1);if(!made.ok)throw Error(made.issues.join(';'));const run=runBot(made.world);expect(run.outcome).toBe('won');const state=instantiate(made.world),program=loadProgram(made.world,ARCADE_LIBRARY),params=steerControl.params.parse(baseControlOf(made.world.control).params),p=bodyBase(0);let cursor=0,boosted=false,picked=false;
+// Průběh (P45C T11) obalí řízení fázemi: běžná rychlost je pak fáze, ne rampa.
+const under=(ref:PieceRef):PieceRef|undefined=>ref.id==='phase_control'?ref:typeof ref.params.base==='object'?under(ref.params.base as PieceRef):undefined,phase=under(made.world.control)?.params as {phases:Phase[];length:number}|undefined;
+const cruise=(z:number)=>phase===undefined?rampedSpeed(params.topSpeed,z,params.ramp):phaseSpeed(params.topSpeed,z,phase.length,phase.phases);
+for(let tick=0;tick<run.tick;tick++){const event=run.inputs[cursor];step(state,event?.tick===tick?event:NO_INPUT,program);if(event?.tick===tick)cursor++;picked ||= state[HEADER.counters+COUNTER.score]!>0;boosted ||= state[p+BODY.vz]!>cruise(state[p+BODY.z]!);}
 expect(picked).toBe(true);expect(boosted).toBe(true);expect(Array.from({length:state[HEADER.bodyCount]!},(_,i)=>bodyBase(i)).some(b=>state[b+BODY.role]===ROLE.collectible&&(state[b+BODY.flags]!&FLAG.alive)===0)).toBe(true);
 });

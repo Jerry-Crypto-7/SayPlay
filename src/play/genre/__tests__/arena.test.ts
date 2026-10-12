@@ -44,6 +44,12 @@ function bodiesOf(spec: GameSpecV1, seed = 1): { readonly roles: number[]; reado
   return { roles, hp, alive };
 }
 
+/** Jen těla živá na startu (bez mrtvých předloh spawnů). */
+function liveBodiesOf(spec: GameSpecV1): { readonly roles: number[]; readonly hp: number[] } {
+  const { roles, hp, alive } = bodiesOf(spec);
+  return { roles: roles.filter((_, i) => alive[i]), hp: hp.filter((_, i) => alive[i]) };
+}
+
 describe('arena genre – the cat and the polar bear', () => {
   it('compiles to arena_escape with the polar bear chasing and a win after N fish', () => {
     const spec = read(CAT);
@@ -88,7 +94,8 @@ describe('arena genre – two knights duel', () => {
     const spec = read(KNIGHTS);
     expect(generatorOf(spec)).toBe('fight');
     expect(spec.roles).toEqual(expect.arrayContaining([expect.objectContaining({ id: 'rival', label: 'knight', count: 1 })]));
-    const { roles, hp } = bodiesOf(spec);
+    // Za tělesy na startu leží od P45C T12 mrtvé předlohy průběhu (nové chování, boss poslední vlny, počítadlo).
+    const { roles, hp } = liveBodiesOf(spec);
     expect(roles).toEqual([ROLE.player, ROLE.enemy]);
     expect(hp).toEqual([FIGHT.playerHp.default, FIGHT.enemyHp.default]);
   });
@@ -100,7 +107,7 @@ describe('arena genre – two knights duel', () => {
 
   it('spec params reach the fight generator through tuning', () => {
     const spec = read({ ...KNIGHTS, cast: [{ label: 'black knight', does: 'fight' }], params: { enemies: 3, enemyHp: 2, playerHp: 7 } });
-    const { roles, hp } = bodiesOf(spec);
+    const { roles, hp } = liveBodiesOf(spec);
     expect(roles.filter((role) => role === ROLE.enemy).length).toBe(3);
     expect(hp).toEqual([7, 2, 2, 2]);
     expect(compileArcade(spec, 1).ok).toBe(true);

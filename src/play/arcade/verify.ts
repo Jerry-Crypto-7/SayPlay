@@ -44,6 +44,7 @@ import { releasePhysics } from './physics/step';
 import { avoidingLosses, lossPlanner, losingVerbs, rulesPlanner } from './rules/bot';
 import { type CompiledRule, SPEC_RULES } from './rules/compile';
 import { type ActionWitness, type RoleBinding, WitnessRecorder, threatProbeInput } from './witness';
+import { pacingProbeBodies } from './pieces/pacing-parts';
 
 export interface BotRun {
   readonly witnesses: readonly ActionWitness[];
@@ -618,6 +619,12 @@ export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE
     if (binding.player || !['hazard', 'chaser', 'patrol'].includes(binding.roleKind) || probed.has(binding.roleId)) continue;
     probed.add(binding.roleId);
     const probe = runBot(world, library, { roleBindings, probeBody: binding.body, runId: `probe:${binding.roleId}` });
+    probes.push(...probe.witnesses.filter(w => w.actor.roleId === binding.roleId));
+  }
+  // Průběh hry (P45C): první tělo každého chování a bosse má svou sondu – nepřítel, kterého sonda nevidí, by prošel jako kulisa.
+  for (const { body, behaviour } of pacingProbeBodies(world)) {
+    const binding: RoleBinding = { body, roleId: `pacing:${behaviour}`, label: behaviour, roleKind: 'hazard', player: false };
+    const probe = runBot(world, library, { roleBindings: [...(roleBindings ?? []), binding], probeBody: body, runId: `probe:${binding.roleId}` });
     probes.push(...probe.witnesses.filter(w => w.actor.roleId === binding.roleId));
   }
   const bot = runBot(world, library, { roleBindings, threatProofs: probes });

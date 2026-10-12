@@ -47,6 +47,7 @@ import type { ArcadeSession } from '../session';
 import { type EffectsBus, type VisualEventKind, createEffectsBus } from './bus';
 import { installRenderFeel, renderHeld } from './render-feel';
 import { FeelCues } from './FeelCues';
+import { PacingFx } from './PacingFx';
 import { reducedMotion, shakeAmount, winTimeScale, winZoom } from './feel';
 import { type Burst, type BurstLook, PARTICLE_CAP, burstsOf, createParticleDirector } from './particles';
 import { busPresets } from './sound';
@@ -237,6 +238,6 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     camera.updateMatrixWorld();
   });
 
-  // Sebrání a doručení vidět u hrdiny v každé scéně (P43 T6).
-  return <><primitive object={batch} /><FeelCues session={session} /><HeroCueFx session={session} /></>;
+  // Sebrání a doručení vidět u hrdiny v každé scéně (P43 T6); varování průběhu a blízká minutí (P45C T15).
+  return <><primitive object={batch} /><FeelCues session={session} /><HeroCueFx session={session} /><PacingFx session={session} bus={bus} surface={surface} /></>;
 }

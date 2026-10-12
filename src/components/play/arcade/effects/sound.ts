@@ -22,6 +22,8 @@ export const BUS_SFX: Readonly<Record<VisualEventKind, SfxPreset>> = {
   stateChange: 'chime',
   land: 'land',
   spawn: 'spawn',
+  // Blízké minutí (P45C T15): krátký „whoosh“ – šum skluzu, který hrozba nechala za sebou.
+  nearMiss: 'slide',
 };
 
 /** Zvuk jedné události: zásah jiného těla než hráče je úder, ne bolest hráče. */

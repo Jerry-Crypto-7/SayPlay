@@ -7,8 +7,19 @@
  */
 
 import { BODY, HEADER, ROLE, UNIT, bodyBase, isLogicBody } from '@/play/arcade/contract';
+import { BEHAVIOURS } from '@/play/arcade/pieces/behaviours';
 
 import type { ArcadeSession } from './session';
+
+/**
+ * Druhy těl průběhu P45C (chování a boss, i terč střelnice). Katalog pro ně model nemá – scéna je kreslí
+ * modelem nepřítele ze specu (`cast.chaser`: pronásledovatel z věty, jinak nepřítel), vepsaným do kvádru těla,
+ * takže boss je větší podle svého AABB.
+ */
+export const PACING_KINDS: ReadonlySet<string> = new Set(Object.values(BEHAVIOURS).map((behaviour) => behaviour.body.kind));
+
+/** Výstřely chování P45C (ostřelovač, salva bosse, terč střelnice) – katalog je nemá, scéna je kreslí jako střelu. */
+export const PACING_SHOT_KINDS: ReadonlySet<string> = new Set(Object.values(BEHAVIOURS).flatMap((behaviour) => (behaviour.shot === undefined ? [] : [behaviour.shot.kind])));
 
 export interface BodyView {
   readonly index: number;
@@ -24,8 +35,11 @@ export interface BodyView {
  * počítadlo komba (P36A T5, `withScoring` v `compile.ts`) nese druh hrdiny, takže
  * by scéna stahovala neexistující `player-lod1.glb`. Věci pravidel mají vlastní kód role od 32.
  * Logické tělo (P45B, `isLogicBody`) nese jen stav logiky, taky se nekreslí.
+ * Počítadlo průběhu (`pacingKeeper`, P45C) nese druh hrdiny s rolí překážky: pozná se
+ * podle velikosti 1 × 1 × 1 jednotka, jakou žádná věc scény nemá.
  */
-export const drawsNothing = (view: Pick<BodyView, 'kind' | 'role'>): boolean => view.kind === 'gate' || view.role === ROLE.thing || isLogicBody(view.role);
+export const drawsNothing = (view: Pick<BodyView, 'kind' | 'role' | 'w' | 'h' | 'd'>): boolean =>
+  view.kind === 'gate' || view.role === ROLE.thing || isLogicBody(view.role) || Math.max(view.w, view.h, view.d) * UNIT <= 1;
 
 const kindOf = (session: Pick<ArcadeSession, 'world'>, code: number): string => session.world.kinds[code] ?? 'crate';
 

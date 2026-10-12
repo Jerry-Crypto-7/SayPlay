@@ -30,6 +30,8 @@ export function makePacedBot(bots: Readonly<Record<string, BotPiece>>): BotPiece
 
 /** Addon aiming must still see the native movement and its current speed. */
 export function pacedBotBase(ref: PieceRef, observation: ArcadeObservation): PieceRef {
+  // Průběh hry (P45C) obalí robota fází; doplněk má vidět základního robota pod oběma.
+  if (ref.id === 'pacing_bot') return pacedBotBase(ref.params.base as PieceRef, observation);
   if (ref.id !== 'phase_bot') return ref;
   const params = paramsSchema.parse(ref.params), raw = params.base.params;
   const at = observation.state[bodyBase(observation.player) + BODY.z]!;

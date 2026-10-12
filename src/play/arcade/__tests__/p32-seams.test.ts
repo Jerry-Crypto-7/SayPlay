@@ -178,8 +178,10 @@ describe('P32-0 T4 kernel seams', () => {
   });
 
   it('an old world keeps HP and target state at 0 in every body', () => {
-    // Souboj z žánru HP nese (P32E); starý svět souboje je uložený duel.
-    for (const spec of [compileGenre(SAMPLE.escape as GenreSpec), read(duelFixture), compileGenre(SAMPLE.platformer as GenreSpec)]) {
+    // Souboj z žánru HP nese (P32E); starý svět souboje je uložený duel. Starý svět žánru = uložený
+    // před průběhem (`genre.v1`): nová hra útěku nese od P45C T12 bosse s HP.
+    const stored = (spec: GameSpecV1): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v1' } });
+    for (const spec of [stored(compileGenre(SAMPLE.escape as GenreSpec)), read(duelFixture), stored(compileGenre(SAMPLE.platformer as GenreSpec))]) {
       const compiled = compileArcade(read(spec), 1);
       if (!compiled.ok || compiled.value.arcade === undefined) throw new Error('fixture did not compile');
       const state = instantiate(compiled.value.arcade);

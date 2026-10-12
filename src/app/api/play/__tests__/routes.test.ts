@@ -19,6 +19,7 @@ import chaseEscape from '@/play/__fixtures__/chase_escape.json';
 import collectExit from '@/play/__fixtures__/collect_exit.json';
 import hazardCrossing from '@/play/__fixtures__/hazard_crossing.json';
 import switchPuzzle from '@/play/__fixtures__/switch_puzzle.json';
+import { baseControlOf } from '@/play/arcade/addons';
 import { arcadeCompilerVersion } from '@/play/arcade/compile';
 import { ARCADE_RUNTIME_V2, ARCADE_RUNTIME_VERSION } from '@/play/arcade/contract';
 import type { GameCompiler } from '@/play/contracts';
@@ -103,7 +104,8 @@ describe('publikace → čtení → remix → rodokmen', () => {
     expect(game.body.spec.schema).toBe('gamespec.v1');
     // Žánrová hra běží v jádře arkády: svět místo blueprintu mřížky.
     expect(game.body.blueprint).toBeNull();
-    expect(game.body.arcade.control.id).toBe(game.body.spec.control);
+    // Ovládání může nést obal průběhu (`pacing_control`, P45C); pod ním je ovládání specu.
+    expect(baseControlOf(game.body.arcade.control).id).toBe(game.body.spec.control);
     expect(game.body.report.publishEligible).toBe(true);
     expect(game.body.children).toEqual([]);
     expect(game.body.lineage.map((v: { versionId: string }) => v.versionId)).toEqual([created.body.versionId]);
@@ -244,13 +246,15 @@ describe('Oracle', () => {
     expect(put).not.toHaveBeenCalled();
   });
 
+  // 51 skutečných publikací sběru v aréně: od P45C T12 má hra tři sondy nových chování a bosse, ověření
+  // trvá ~0,7 s místo ~0,2 s (samotný test ~50 s) – vlastní strop místo výchozích 30 s.
   it('(7) 51. požadavek v okně → 429 s retry-after', async () => {
     let last: Response | null = null;
     for (let i = 0; i < 51; i += 1) last = await createGame(post('/api/play/games', { sentence: 'Collect the coins' }));
     expect(last!.status).toBe(429);
     expect(last!.headers.get('retry-after')).toMatch(/^\d+$/);
     expect(Object.keys(await last!.json())).toEqual(['error']);
-  });
+  }, 180_000);
 
   it('(8) remix nepřepíše rodiče a stejný remix podruhé dá 200 exists s týmž versionId', async () => {
     const created = await publish('Collect the coins');
@@ -310,7 +314,7 @@ describe('Oracle', () => {
         post('/api/play/games', { sentence: 'Collect the coins' }, { 'x-forwarded-for': `10.0.${String(i)}.1`, 'x-vercel-forwarded-for': '203.0.113.9' }),
       );
     expect(last!.status).toBe(429);
-  });
+  }, 180_000);
 
   it('(2b) čtení má bránu: vypínač all → 503, 51. GET → 429', async () => {
     const created = await publish('Collect the coins');

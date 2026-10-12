@@ -11,10 +11,20 @@ import { SHOOTER, gunOf, gunTick } from './shooter';
 
 const noParams = z.object({}).strict();
 
-/** Index těla-počítadla komba (P36A T10, `COMBO`); bez něj zásah za bod jako dřív. */
-const shotHitParams = z.object({ combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional() }).strict();
+/**
+ * `combo` = index těla-počítadla komba (P36A T10, `COMBO`); bez něj zásah za bod jako dřív.
+ * `spare` = předloha bosse-terče (P45C T13): tělo s jejím podpisem zásah nesebere – HP mu ubírá `boss_beat_hit`.
+ */
+const shotHitParams = z.object({ combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(), spare: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional() }).strict();
 
 const isFoe = (role: number): boolean => role === ROLE.target || role === ROLE.enemy;
+
+/** Má tělo `body` podpis (role, model, rozměry) předlohy `template`? */
+function sameAs(state: Int32Array, body: number, template: number): boolean {
+  const a = bodyBase(body);
+  const b = bodyBase(template);
+  return [BODY.role, BODY.kind, BODY.w, BODY.h, BODY.d].every((slot) => state[a + slot] === state[b + slot]);
+}
 
 /** Živé terče a nepřátelé; `projectiles` navíc počítá projektily ve vzduchu. */
 export function census(state: Int32Array): { foes: number; projectiles: number } {
@@ -40,6 +50,7 @@ export const shotHit: RulePiece<z.infer<typeof shotHitParams>> = {
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, other }, params) => {
     if (other < 0 || !isFoe(state[bodyBase(other) + BODY.role] as number)) return [];
+    if (params.spare !== undefined && sameAs(state, other, params.spare)) return [];
     if (params.combo === undefined) {
       return [
         { kind: 'score', amount: 1 },
