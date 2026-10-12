@@ -23838,6 +23838,158 @@
           0.46938
         ]
       }
+    },
+    {
+      "assetId": "gen3d-circus-cannon",
+      "tags": [
+        "circus cannon"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-circus-cannon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30015,
+          0,
+          -0.53836
+        ],
+        "max": [
+          0.30015,
+          1.00001,
+          0.53836
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-street-clock",
+      "tags": [
+        "street clock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-street-clock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12024,
+          0,
+          -0.05575
+        ],
+        "max": [
+          0.12024,
+          0.99867,
+          0.05575
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hammock",
+      "tags": [
+        "hammock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hammock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44839,
+          0,
+          -0.86159
+        ],
+        "max": [
+          0.44839,
+          0.99961,
+          0.86159
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ring-box",
+      "tags": [
+        "ring box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ring-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36437,
+          0,
+          -0.48858
+        ],
+        "max": [
+          0.36437,
+          0.99999,
+          0.48858
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-champagne-tower",
+      "tags": [
+        "champagne tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-champagne-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22199,
+          0,
+          -0.22198
+        ],
+        "max": [
+          0.22199,
+          0.9998,
+          0.22198
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-lantern",
+      "tags": [
+        "ice lantern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-lantern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25133,
+          0,
+          -0.19396
+        ],
+        "max": [
+          0.25133,
+          0.99782,
+          0.19396
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-nutcracker",
+      "tags": [
+        "nutcracker"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-nutcracker-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20037,
+          0,
+          -0.15884
+        ],
+        "max": [
+          0.20037,
+          0.99995,
+          0.15884
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-parcel-scale",
+      "tags": [
+        "parcel scale"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-parcel-scale-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.56196,
+          0,
+          -0.56204
+        ],
+        "max": [
+          0.56196,
+          0.99992,
+          0.56204
+        ]
+      }
     }
   ]
 }

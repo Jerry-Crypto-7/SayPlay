@@ -400,3 +400,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-spring-rider` | spring rider | 4497 / 2153 |
 | `gen3d-branding-iron` | branding iron | 4748 / 2374 |
 | `gen3d-frozen-fountain` | frozen fountain | 4309 / 2076 |
+| `gen3d-circus-cannon` | circus cannon | 4470 / 2232 |
+| `gen3d-street-clock` | street clock | 4748 / 2370 |
+| `gen3d-hammock` | hammock | 4662 / 2232 |
+| `gen3d-ring-box` | ring box | 4355 / 2044 |
+| `gen3d-champagne-tower` | champagne tower | 4297 / 2028 |
+| `gen3d-ice-lantern` | ice lantern | 4680 / 2325 |
+| `gen3d-nutcracker` | nutcracker | 4750 / 2374 |
+| `gen3d-parcel-scale` | parcel scale | 4735 / 2358 |
