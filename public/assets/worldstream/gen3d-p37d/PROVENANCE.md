@@ -349,3 +349,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-ice-auger` | ice auger | 4746 / 2366 |
 | `gen3d-gas-pump` | gas pump | 4617 / 2307 |
 | `gen3d-pearl-oyster` | pearl oyster | 4750 / 2374 |
+| `gen3d-honey-jar` | honey jar | 4650 / 2295 |
+| `gen3d-trail-sign` | trail sign | 4504 / 2234 |
+| `gen3d-forge-tong` | forge tong | 4750 / 2372 |
+| `gen3d-open-grave` | open grave | 4512 / 2211 |
+| `gen3d-stilt-hut` | stilt hut | 4429 / 2040 |
+| `gen3d-salt-shaker` | salt shaker | 4590 / 2284 |
+| `gen3d-magic-mirror` | magic mirror | 4720 / 2359 |
+| `gen3d-marble-bust` | marble bust | 4480 / 2215 |

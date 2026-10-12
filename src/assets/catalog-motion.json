@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "3bf673e83aac348d0262ad6716da40a686bf48a7109d8048c079eb6041769c9c",
+ "catalogHash": "d764603d3f1da414c31a399d1ee3bd31233fff215279c425d50433dca76268d1",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1124,6 +1124,14 @@
   "gen3d-dynamite": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-ice-auger": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-gas-pump": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-pearl-oyster": {"class":"prop"}
+  "gen3d-pearl-oyster": {"class":"prop"},
+  "gen3d-honey-jar": {"class":"prop"},
+  "gen3d-trail-sign": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-forge-tong": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-open-grave": {"class":"prop"},
+  "gen3d-stilt-hut": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-salt-shaker": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-magic-mirror": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-marble-bust": {"class":"biped","regions":{"legY":0.249}}
  }
 }

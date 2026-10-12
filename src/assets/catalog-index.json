@@ -22869,6 +22869,158 @@
           0.88402
         ]
       }
+    },
+    {
+      "assetId": "gen3d-honey-jar",
+      "tags": [
+        "honey jar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-honey-jar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47134,
+          0,
+          -0.37229
+        ],
+        "max": [
+          0.47134,
+          0.99952,
+          0.37229
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-trail-sign",
+      "tags": [
+        "trail sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-trail-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38151,
+          0,
+          -0.20343
+        ],
+        "max": [
+          0.38151,
+          0.99994,
+          0.20343
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-forge-tong",
+      "tags": [
+        "forge tong"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-forge-tong-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.05271,
+          0,
+          -0.36887
+        ],
+        "max": [
+          0.05271,
+          0.99876,
+          0.36887
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-open-grave",
+      "tags": [
+        "open grave"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-open-grave-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.03779,
+          0,
+          -0.81909
+        ],
+        "max": [
+          1.03779,
+          0.98892,
+          0.81909
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stilt-hut",
+      "tags": [
+        "stilt hut"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stilt-hut-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37598,
+          0,
+          -0.38045
+        ],
+        "max": [
+          0.37598,
+          0.99949,
+          0.38045
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-salt-shaker",
+      "tags": [
+        "salt shaker"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-salt-shaker-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29,
+          0,
+          -0.2888
+        ],
+        "max": [
+          0.29,
+          0.99967,
+          0.2888
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-magic-mirror",
+      "tags": [
+        "magic mirror"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-magic-mirror-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31037,
+          0,
+          -0.17118
+        ],
+        "max": [
+          0.31037,
+          0.99518,
+          0.17118
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-marble-bust",
+      "tags": [
+        "marble bust"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-marble-bust-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27863,
+          0,
+          -0.23693
+        ],
+        "max": [
+          0.27863,
+          0.99765,
+          0.23693
+        ]
+      }
     }
   ]
 }
