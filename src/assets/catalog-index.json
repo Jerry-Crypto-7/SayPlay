@@ -24608,6 +24608,163 @@
           0.61287
         ]
       }
+    },
+    {
+      "assetId": "gen3d-pterodactyl",
+      "tags": [
+        "pterodactyl",
+        "pteranodon",
+        "pterosaur"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pterodactyl-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.76949,
+          0,
+          -0.76046
+        ],
+        "max": [
+          0.76949,
+          0.9983,
+          0.76046
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wyvern",
+      "tags": [
+        "wyvern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wyvern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.89914,
+          0,
+          -0.89974
+        ],
+        "max": [
+          0.89914,
+          0.99482,
+          0.89974
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-trebuchet",
+      "tags": [
+        "trebuchet"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-trebuchet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.52177,
+          0,
+          -0.25614
+        ],
+        "max": [
+          0.52177,
+          1.00001,
+          0.25614
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flying-carpet",
+      "tags": [
+        "flying carpet",
+        "magic carpet"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flying-carpet-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.8847,
+          0,
+          -1.09831
+        ],
+        "max": [
+          1.8847,
+          1.00001,
+          1.09831
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gargoyle",
+      "tags": [
+        "gargoyle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gargoyle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.64253,
+          0,
+          -0.44899
+        ],
+        "max": [
+          0.64253,
+          0.99757,
+          0.44899
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-siege-tower",
+      "tags": [
+        "siege tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-siege-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1995,
+          0,
+          -0.19308
+        ],
+        "max": [
+          0.1995,
+          0.99871,
+          0.19308
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-locomotive",
+      "tags": [
+        "locomotive",
+        "steam locomotive",
+        "steam engine"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-locomotive-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.66737,
+          0,
+          -0.18945
+        ],
+        "max": [
+          0.66737,
+          0.99876,
+          0.18945
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-harpy",
+      "tags": [
+        "harpy"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-harpy-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.53454,
+          0,
+          -0.29823
+        ],
+        "max": [
+          0.53454,
+          0.99952,
+          0.29823
+        ]
+      }
     }
   ]
 }

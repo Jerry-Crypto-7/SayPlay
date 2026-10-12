@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "ea21e352a75c91b4c428d0741d42d49463cebf685288da38e6c4d61f7cac3979",
+ "catalogHash": "9907a063fd758a0ef5285bc546107ec52e18213e3c792fdb309bb1926339c9b7",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1215,6 +1215,14 @@
   "gen3d-storm-cloud": {"class":"prop"},
   "gen3d-sorcerer": {"class":"prop"},
   "gen3d-sentry-gun": {"class":"prop"},
-  "gen3d-kaiju": {"class":"prop"}
+  "gen3d-kaiju": {"class":"prop"},
+  "gen3d-pterodactyl": {"class":"prop"},
+  "gen3d-wyvern": {"class":"prop"},
+  "gen3d-trebuchet": {"class":"prop"},
+  "gen3d-flying-carpet": {"class":"prop"},
+  "gen3d-gargoyle": {"class":"prop"},
+  "gen3d-siege-tower": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-locomotive": {"class":"prop"},
+  "gen3d-harpy": {"class":"prop"}
  }
 }

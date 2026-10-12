@@ -440,3 +440,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-sorcerer` | sorcerer, warlock, sorceress | 4528 / 2177 |
 | `gen3d-sentry-gun` | sentry gun | 4617 / 2276 |
 | `gen3d-kaiju` | kaiju | 4723 / 2320 |
+| `gen3d-pterodactyl` | pterodactyl, pteranodon, pterosaur | 4708 / 2346 |
+| `gen3d-wyvern` | wyvern | 4716 / 2328 |
+| `gen3d-trebuchet` | trebuchet | 4658 / 2320 |
+| `gen3d-flying-carpet` | flying carpet, magic carpet | 4750 / 2356 |
+| `gen3d-gargoyle` | gargoyle | 4487 / 2180 |
+| `gen3d-siege-tower` | siege tower | 4514 / 2252 |
+| `gen3d-locomotive` | locomotive, steam locomotive, steam engine | 4567 / 2194 |
+| `gen3d-harpy` | harpy | 4577 / 2150 |
