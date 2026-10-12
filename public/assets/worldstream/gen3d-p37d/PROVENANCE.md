@@ -457,3 +457,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-hovercraft` | hovercraft | 4479 / 2153 |
 | `gen3d-cement-mixer` | cement mixer, concrete mixer | 4094 / 2031 |
 | `gen3d-sabertooth` | sabertooth | 4704 / 2310 |
+| `gen3d-lava-golem` | lava golem | 4533 / 2142 |
+| `gen3d-hydra` | hydra | 4596 / 2265 |
+| `gen3d-gyrocopter` | gyrocopter, autogyro, gyroplane | 4740 / 2340 |
+| `gen3d-gatling-gun` | gatling gun | 4746 / 2362 |
+| `gen3d-bigfoot` | bigfoot, sasquatch | 4573 / 2184 |
+| `gen3d-wild-boar` | wild boar, boar | 4421 / 2096 |

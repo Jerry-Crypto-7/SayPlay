@@ -24939,6 +24939,124 @@
           0.81094
         ]
       }
+    },
+    {
+      "assetId": "gen3d-lava-golem",
+      "tags": [
+        "lava golem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lava-golem-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42885,
+          0,
+          -0.19352
+        ],
+        "max": [
+          0.42885,
+          0.99628,
+          0.19352
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hydra",
+      "tags": [
+        "hydra"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hydra-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4493,
+          0,
+          -0.65381
+        ],
+        "max": [
+          0.4493,
+          0.99718,
+          0.65381
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gyrocopter",
+      "tags": [
+        "gyrocopter",
+        "autogyro",
+        "gyroplane"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gyrocopter-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.8022,
+          0,
+          -0.80077
+        ],
+        "max": [
+          0.8022,
+          0.99141,
+          0.80077
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gatling-gun",
+      "tags": [
+        "gatling gun"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gatling-gun-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.61319,
+          0,
+          -0.23065
+        ],
+        "max": [
+          0.61319,
+          0.99861,
+          0.23065
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bigfoot",
+      "tags": [
+        "bigfoot",
+        "sasquatch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bigfoot-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30638,
+          0,
+          -0.1682
+        ],
+        "max": [
+          0.30638,
+          0.99821,
+          0.1682
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wild-boar",
+      "tags": [
+        "wild boar",
+        "boar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wild-boar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30378,
+          0,
+          -0.64466
+        ],
+        "max": [
+          0.30378,
+          1.00001,
+          0.64466
+        ]
+      }
     }
   ]
 }
