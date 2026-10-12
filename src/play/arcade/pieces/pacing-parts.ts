@@ -184,6 +184,43 @@ const steerPaced: GenrePacing = (parts, spec) => {
   };
 };
 
+/**
+ * Skákačka (P46B T6): úseky staví generátor (`PLATFORM_SEGMENTS`, značka `segments`) – úsek 2 přinese past a
+ * pohyblivou plošinu, úsek 3 rychlost (fáze `speeds`, robot skáče rychlostí úseku). Boss finále (`behaviours/boss.ts`
+ * `brute`) přijde na `bossAt` ‰ do arény na konci úrovně; padne po třech skocích na hlavu a výhru nedá – úroveň se
+ * dál vyhrává cílem. `room` = předloha bosse, počítadlo a sloty `maxActors`.
+ */
+export const PLATFORM_FOES = {
+  bossAt: PACING.segments.peak,
+  /** Boss vstoupí tak daleko před hráčem a hned odejde do arény (`brute` ji najde podle cíle). */
+  ahead: 40 * UNIT,
+  room: 2 + PACING.maxActors,
+  /** Rychlost úseků v % (rozjezd, úsek 2, úsek 3, finále) místo `CURVE_SPEEDS`. */
+  speeds: [90, 100, 115, 100] as readonly number[],
+} as const;
+
+/**
+ * Skákačka s průběhem: postup = trať, hodiny úrovně = `limit` postupu; jen nová hra se značkou `segments`
+ * (generátor bez ní arénu ani úseky nestaví). Boss jen s místem v těle světa; jinak finále sprint.
+ */
+const platformPaced: GenrePacing = (parts, spec) => {
+  if (generatorParams(spec).segments !== true) return null;
+  const clock = (ruleOf(parts, 'time_limit')?.params as { readonly seconds: number } | undefined)?.seconds;
+  const used = parts.level.bodies.length + (parts.level.spawnSlots ?? 0) + PLATFORM_FOES.room;
+  const boss: Partial<GenrePacingSetup> = used > ARCADE_LIMITS.maxBodies ? {} : { finale: 'boss', boss: { body: BEHAVIOURS.brute.body, at: PLATFORM_FOES.bossAt, behaviour: 'brute' } };
+  return {
+    goal: { by: 'distance', need: parts.level.length, limit: clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock * ARCADE_HZ) },
+    space: 'track',
+    spots: [0, PLATFORM_FOES.ahead],
+    behaviours: [],
+    budget: 0,
+    finale: 'sprint',
+    ...boss,
+    segments: 'platform',
+    phases: curvePhases(0).map((phase, index) => ({ ...phase, speedPercent: PLATFORM_FOES.speeds[index] ?? phase.speedPercent })),
+  };
+};
+
 /** Nová chování otevřeného pole: z kterých se losuje, kolik jich hra dostane a kolik spawnů rozvrh rozdá. */
 interface FieldFoes {
   readonly pool: readonly BehaviourId[];
@@ -642,7 +679,7 @@ const livesAtMost = (spec: GameSpecV1, most: number): boolean => {
 
 /**
  * Průběh podle generátoru světa (`generatorOf`); žánry plní T11–T14. Generátor bez záznamu hraje beze změny.
- * Plošinovka zatím ne (robot nezná rychlost běhu); `glide_course` staví jen spec bez `genre`,
+ * Plošinovka (P46B T6) jen se značkou nové hry `segments` (`platformPaced`); `glide_course` staví jen spec bez `genre`,
  * stejně jako `arena` (agar ze slovního návrhu bez žánru) a `arena_catch` (`compose/catch.ts` – spec bez `genre`):
  * žánr Aréna staví jen `arena_collect`, `arena_escape` a `fight` (`genre/arena.ts`). `steer_track` (P46B T5) staví
  * spec bez `genre` (`compose/drive.ts`): průběh dostane, jen když nese značku nové hry `segments` (`pacedNative`).
@@ -687,6 +724,10 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   throw_field: (parts, spec, seed) => (ownShape(spec) ? null : throwPaced(parts, spec, seed)),
   // Řízení (P46B T5): složená hra (díly P42) ne – robot dílu by se s uhýbáním shozům přetahoval (vzor běžce).
   steer_track: (parts, spec, seed) => (spec.assemblyParts !== undefined ? null : steerPaced(parts, spec, seed)),
+  // Skákačka (P46B T6): složená hra (díly P42) ne – robot dílu by se se skoky na bosse přetahoval (vzor běžce). S jedním
+  // životem (buňka `jump.escape`) ne – vzor závodu do prvního nárazu: dotek bosse končí hru a začátečník s finále 115 %
+  // vyhrál 7/16, se 100 % 15/16 (16 semínek); páka mezi tím útesem se nenašla.
+  platform_level: (parts, spec, seed) => (spec.assemblyParts !== undefined || livesAtMost(spec, 1) ? null : platformPaced(parts, spec, seed)),
 };
 
 /** Verze překladu žánru před průběhem (`GENRE_COMPILER_VERSION` v `genre/contract.ts`): uložené hry s ní průběh nedostanou. */

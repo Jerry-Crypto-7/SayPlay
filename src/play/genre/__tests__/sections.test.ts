@@ -187,11 +187,16 @@ describe('platformer sections (P36A T4)', () => {
   });
 
   it('three sections: a checkpoint opens the second and the third, which has wider gaps and more spikes than the first', () => {
-    const { world } = publish('a frog jumps across lily pads to reach the island');
+    const sentence = 'a frog jumps across lily pads to reach the island';
+    const { world } = publish(sentence);
     const list = bodies(world);
     const checkpoints = list.filter((body) => body.role === 'checkpoint').map((body) => body.z).sort((a, b) => a - b);
-    expect(checkpoints).toHaveLength(2);
-    const sectionOf = (z: number): number => (z >= checkpoints[1]! - 1000 ? 2 : z >= checkpoints[0]! - 1000 ? 1 : 0);
+    // Úseky průběhu (P46B T6) mají checkpointů víc (i uprostřed úseků a v aréně): začátky úseků zná generátor.
+    const { tuning, ...own } = legacySpec(sentence).controlParams as Record<string, unknown> & { tuning?: Record<string, unknown> };
+    const starts = platformLevel.generate(world.seed, platformLevel.params.parse({ ...own, ...tuning })).sectionStarts ?? [];
+    expect(starts).toHaveLength(2);
+    for (const start of starts) expect(checkpoints).toContain(start + 800);
+    const sectionOf = (z: number): number => (z >= starts[1]! ? 2 : z >= starts[0]! ? 1 : 0);
     const slabs = list.filter((body) => body.role === 'platform').sort((a, b) => a.z - b.z);
     const gaps = (section: number): number[] =>
       slabs.flatMap((slab, i) => {

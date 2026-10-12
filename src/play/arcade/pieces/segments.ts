@@ -14,8 +14,8 @@ import type { BehaviourId } from './behaviours';
 // Cyklus s `pacing.ts` (`withPacing` losuje scénář) je bezpečný: `PACING` se čte jen ve funkcích, ne při načtení.
 import { PACING } from './pacing';
 
-/** Žánry se scénářem úseků; skákačka přibude s T6. */
-export type SegmentGenre = 'runner' | 'steer';
+/** Žánry se scénářem úseků. */
+export type SegmentGenre = 'runner' | 'steer' | 'platform';
 
 export type SegmentChange =
   | { readonly kind: 'newFoe'; readonly behaviour: BehaviourId }
@@ -39,6 +39,11 @@ export interface SegmentCast {
   readonly density?: readonly number[];
   /** Volná šířka trati uprostřed rozjezdu, úseku 2 a úseku 3 (řízení: mezi mantinely); užší úsek = prostředí `narrow`. */
   readonly widths?: readonly number[];
+  /**
+   * Druhy prostředí, které generátor postavil do rozjezdu, úseku 2 a úseku 3 (skákačka: `trap` = past, `moving` =
+   * pohyblivá plošina); každý, který dřívější úsek neměl, je změna úseku – bez losu, svět je hotový.
+   */
+  readonly places?: readonly (readonly string[])[];
 }
 
 /** Úseky 2 a 3 jako `[začátek, konec)` v promile postupu. */
@@ -55,6 +60,8 @@ export const segmentSpans = (): readonly (readonly [number, number])[] => [
 const KINDS: Readonly<Record<SegmentGenre, readonly SegmentChange['kind'][]>> = {
   runner: ['speedTier', 'newFoe'],
   steer: ['speedTier', 'newFoe', 'terrain'],
+  // Skákačka (T6): nová past a pohyblivá plošina (`places` z generátoru) a rychlost; nepřítel je jen boss finále.
+  platform: ['speedTier', 'terrain'],
 };
 
 const rises = (values: readonly number[] | undefined, k: number): boolean =>
@@ -86,8 +93,10 @@ export function segmentScriptOf(rng: CompileRng, genre: SegmentGenre, cast: Segm
       changes.push({ kind: 'newFoe', behaviour });
     }
     const terrain = (cast.terrain ?? []).filter((variant) => !used.has(`terrain:${variant}`));
-    // Užší trať je změna každého úseku, který zúží – bez losu (šířky jsou ve světě hotové).
+    const placed = (cast.places?.[k] ?? []).filter((variant) => !(cast.places ?? []).slice(0, k).some((earlier) => earlier.includes(variant)));
+    // Užší trať je změna každého úseku, který zúží – bez losu (šířky jsou ve světě hotové); stejně nový druh prostředí z generátoru.
     if (kinds.has('terrain') && falls(cast.widths, k)) changes.push({ kind: 'terrain', variant: 'narrow' });
+    else if (kinds.has('terrain') && placed.length > 0) changes.push(...placed.map((variant) => ({ kind: 'terrain' as const, variant })));
     else if (kinds.has('terrain') && terrain.length > 0) {
       const variant = rng.pick(terrain);
       used.add(`terrain:${variant}`);

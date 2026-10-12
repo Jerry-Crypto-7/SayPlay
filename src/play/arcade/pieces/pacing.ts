@@ -427,6 +427,21 @@ function segmentWidths(level: ArcadeParts['level']): number[] {
 }
 
 /**
+ * Druhy prostředí skákačky (P46B T6) v rozjezdu a úsecích scénáře podle polohy na trati: kinematický hrot = past
+ * (`trap`), kinematická plošina = pohyblivá plošina (`moving`).
+ */
+function segmentPlaces(level: ArcadeParts['level']): string[][] {
+  return [[0, PACING.segments.intro] as const, ...segmentSpans()].map(([from, to]) => {
+    const kinds = level.bodies.flatMap((body) => {
+      const at = Math.floor((body.z * 1000) / Math.max(1, level.length));
+      if (body.kinematic !== true || body.template === true || at < from || at >= to) return [];
+      return body.role === 'hazard' ? ['trap'] : body.role === 'platform' ? ['moving'] : [];
+    });
+    return [...new Set(kinds)].sort().reverse();
+  });
+}
+
+/**
  * Části hry s průběhem: obalí ovládání a robota, za tělesa úrovně přidá
  * předlohy chování a počítadlo, rezervu spawnů a pravidlo `pacing` s rozvrhem
  * z `createCompileRng(seed, 'pacing')`. Bez předloh (a bez finále) pravidlo
@@ -454,7 +469,12 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const bodies = [...parts.level.bodies, ...[...actors.map((actor) => actor.body), ...shotBodies, ...extras].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
   const raw = behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(rng, TENSION_CURVE, setup.budget, behaviours.length, setup.from, setup.until);
   // Scénář losuje až za rozvrhem, takže kroky zůstanou, kde byly: nový nepřítel úseku smí až od jeho začátku a první krok úseku je jeho.
-  const cast = { foes: behaviours.flatMap((actor) => (actor.behaviour === undefined ? [] : [{ behaviour: actor.behaviour, from: actor.from ?? 0 }])), speeds: segmentSpeeds(parts.control), widths: setup.segments === 'steer' ? segmentWidths(parts.level) : [] };
+  const cast = {
+    foes: behaviours.flatMap((actor) => (actor.behaviour === undefined ? [] : [{ behaviour: actor.behaviour, from: actor.from ?? 0 }])),
+    speeds: segmentSpeeds(parts.control),
+    widths: setup.segments === 'steer' ? segmentWidths(parts.level) : [],
+    ...(setup.segments === 'platform' ? { places: segmentPlaces(parts.level) } : {}),
+  };
   const script = setup.segments === undefined ? [] : segmentScriptOf(rng, setup.segments, cast);
   const arrivals = script.flatMap((step) => step.changes.flatMap((change) => (change.kind === 'newFoe' ? [{ ...step, index: behaviours.findIndex((actor) => actor.behaviour === change.behaviour) }] : [])));
   const fromOf = (index: number): number => Math.max(behaviours[index]?.from ?? 0, arrivals.find((arrival) => arrival.index === index)?.at ?? 0);

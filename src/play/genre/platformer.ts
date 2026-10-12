@@ -53,7 +53,8 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
       ...(spec.params?.difficulty === undefined ? {} : { difficulty: PLATFORM_DIFFICULTIES[spec.params.difficulty] }),
       ...(spec.params?.lengthM === undefined ? {} : { lengthM: spec.params.lengthM }),
       // Tři úseky s rostoucí obtížností, checkpoint na začátku druhého a třetího, hodiny (P36A T4).
-      tuning: { feel: 2, sections: 3, ...(collect ? { collectAll: true, coinCount: count } : {}) },
+      // `segments` (P46B T6): úseky průběhu a boss na konci – značka nové hry, uložené hry bez ní staví tentýž svět.
+      tuning: { feel: 2, sections: 3, segments: true, ...(collect ? { collectAll: true, coinCount: count } : {}) },
     },
     archetype: 'hazard_crossing',
     title: `${titleCase(spec.hero)} Jump`,

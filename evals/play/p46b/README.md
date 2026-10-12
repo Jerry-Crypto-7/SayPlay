@@ -36,3 +36,21 @@ Zorné pole je 40 m před hráčem a 5 m za ním. Plošiny a dlouhé stěny do h
 - **Řízení** mění jen úsek 2 (zúžení trati z 10 m na 3,8 m a krok rampy +10 %), úsek 3 nic. Bez finále.
 - **Skákačka** mění jen úsek 2 (pohyblivá plošina, hustší hroty), úsek 3 nic, intenzita nestoupá a finále nemá.
 - Pět her má mrtvý čas přesně 10 s – první herní událost přijde až v 10. s (pravděpodobně první vlna šablony pravidel; ověří T2).
+
+## T6 – skákačka: úseky a boss (12. 10.)
+
+**Záložní plán z plánu se nepoužil**: robot skákačky plánuje skoky rychlostí úseku (`speed` v parametrech ovládání i robota, fáze ji škálují), takže skákačka má úseky i se změnou rychlosti a finále s bossem.
+
+- **Jen nová hra.** Žánr Skákačka píše do `tuning` značku `segments`; jen s ní generátor staví úroveň po úsecích průběhu (`PLATFORM_SEGMENTS`) a `GENRE_PACING.platform_level` ji pace. Uložená hra bez značky, `genre.v1` i fixtura staví tentýž svět. Útěk s jedním životem (`jump.escape`) značku ani průběh nedostane: dotek bosse končí hru a začátečník vyhrál s finále 115 % 7/16, se 100 % 15/16 – útes, ne páka.
+- **Úseky:** rozjezd o stupeň lehčí (90 %), úsek 2 od 450 ‰ past (hrot, který vyjíždí ze země a zajíždí) a pohyblivá plošina (100 %) – obojí až za 40 m zorného pole měřidla od konce rozjezdu –, úsek 3 rychlejší (115 %), finále aréna 20 m s checkpointem (100 %).
+- **Boss `brute`** (nové chování na konci `BEHAVIOUR_IDS`): pevné tělo role `hazard`, 3 HP. Dotek z boku zraní jako hrot, doskok na hlavu mu ubere 1 HP a omráčí ho na 45 tiků; po varování 40 tiků (−4 za zásah) nabíhá na zamčené místo hráče. Výhru nedá, padne třetím doskokem.
+- **Mrtvý čas:** mince u hrany, kde se čeká na pohyblivou plošinu, a mince, která jede s ní; mince rozložené po celé trati (dřív je rozpočet 60 vyčerpal úvod); rozjezd jen prostřední mince (hra k finále houstne).
+
+| Měřeno | Před | Po |
+|---|---|---|
+| Měřidlo T1, skákačka (7 vět): mrtvý čas medián | 9 s | 2,77 s |
+| `rising` / `finale` / `segmentChanges ≥ 2` | 0 / 0 / 0 | 1 / 0,86 / 0,86 |
+| 4 buňky `platformer.default*`, semínka 1–20: novice / intermediate | 0,30 / 1,0 | 0,45 / 0,45 / 0,35 / 0,35 · 1,0 |
+| Test T6 (semínka 1–8, intermediate): mrtvý čas | – | ≤ 3,62 s, boss padl v každé výhře |
+
+Nalezeno, nevyřešeno: věty se sbíráním všeho (`collectAll`, např. „collecting bananas“) mají jen věci z věty a mrtvý čas 9,5–15,5 s (mince navíc by se staly povinnými). Věta „obby game with lava and spinning bars“ boss ani změnu úseku 3 v měřidle nemá (důvod neověřen; měřidlo výsledek běhu nezapisuje).

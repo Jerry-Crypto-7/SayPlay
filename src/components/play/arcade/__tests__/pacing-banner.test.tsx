@@ -174,6 +174,8 @@ const CASES: readonly (readonly [string, Finale])[] = [
   // Běžec (P46B T4) končí bossem v pruzích, řízení (T5) pronásledovatelem; sprint zůstal poletování.
   ['runner.default', 'boss'],
   ['drive.race', 'boss'],
+  // Skákačka (T6) končí bossem v aréně.
+  ['platformer.default', 'boss'],
   ['flap.default', 'sprint'],
   ['duel.default', 'round'],
   ['quest.station', 'round'],
@@ -217,7 +219,7 @@ describe('pacingBeatOf – what the game has, tick by tick', () => {
   }, SLOW);
 
   it('a game without a finale shows no banner – even with new behaviours on the field', () => {
-    for (const id of ['platformer.default', 'shooter.default', 'voyage.race']) {
+    for (const id of ['shooter.default', 'voyage.race']) {
       const world = cellWorld(id, 1);
       expect(pacingOf(world)?.finale, id).toBeUndefined();
       const run = trace(world, bot(world));

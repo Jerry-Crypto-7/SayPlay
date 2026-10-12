@@ -104,7 +104,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
       bot: { id: 'platform_bot', params: {} },
       level,
       // Úroveň z úseků má hodiny: nečinný hráč na startu prohraje (P36A T4).
-      rules: platformRules(params, health, params.sections === undefined ? undefined : platformSeconds(level, params.difficulty)),
+      rules: platformRules(params, health, params.sections === undefined ? undefined : platformSeconds(level, params.difficulty, params.segments === true)),
     };
   }
   if (spec.control === 'steer') {

@@ -29,6 +29,7 @@ import { predict } from '../arena-bot';
 import type { SteerCourse } from '../steer';
 import { ambusher } from './ambusher';
 import { boss, dropper, turret } from './boss';
+import { brute } from './brute';
 import { flanker, overlaps } from './flanker';
 import { guardian } from './guardian';
 import { type Box, type Hazard, fairStrike, planLanes } from './lanes';
@@ -140,9 +141,9 @@ export interface Behaviour {
 }
 
 /** Kód chování = pořadí + 1. Je součást hashe: nové jen na konec, nepřečíslovat. */
-export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian', 'swarm', 'boss', 'turret', 'dropper'] as const;
+export const BEHAVIOUR_IDS = ['flanker', 'sniper', 'ambusher', 'guardian', 'swarm', 'boss', 'turret', 'dropper', 'brute'] as const;
 export type BehaviourId = (typeof BEHAVIOUR_IDS)[number];
-export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian, swarm, boss, turret, dropper };
+export const BEHAVIOURS: Readonly<Record<BehaviourId, Behaviour>> = { flanker, sniper, ambusher, guardian, swarm, boss, turret, dropper, brute };
 
 /** Chování ve světě: id a index předlohy, ze které se čte podpis; `shot` = předloha výstřelu. */
 export const behaviourRefSchema = z.object({ id: z.enum(BEHAVIOUR_IDS), template: z.int().min(1), shot: z.int().min(1).optional() }).strict();

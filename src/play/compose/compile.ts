@@ -117,7 +117,11 @@ function compileRecipeBase(assembly: RecipeAssembly): GameSpecV1 {
     if (escape) {
       // Getting caught ends this new course. Existing reach+chaser still retains its legacy health.
       const chaser = compiled.roles.find(role => role.kind === 'chaser')?.label ?? 'pursuer';
-      return { ...compiled, mechanics: compiled.mechanics.map(mechanic => mechanic.id === 'health' ? { id: 'health', params: { max: 1 } } : mechanic),
+      // One life gets no pacing (`GENRE_PACING.platform_level`), so no paced layout either: the course stays as it was.
+      const paced = (compiled.controlParams?.tuning as Record<string, unknown> | undefined)?.segments === true;
+      const { segments: _segments, ...tuning } = (compiled.controlParams?.tuning ?? {}) as Record<string, unknown>;
+      return { ...compiled, ...(paced ? { controlParams: { ...compiled.controlParams, tuning } } : {}),
+        mechanics: compiled.mechanics.map(mechanic => mechanic.id === 'health' ? { id: 'health', params: { max: 1 } } : mechanic),
         tutorial: { ...compiled.tutorial, goalLine: `Reach the finish without being caught by the ${chaser}.` },
         objective: { ...compiled.objective, description: `Escape the ${chaser} and reach the finish without being caught.` } };
     }

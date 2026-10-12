@@ -52,13 +52,14 @@ describe('rule templates use only roles the game really has', () => {
     expect(showered('a pengiun tht slides down a mountin')).toBe('coin');
   });
 
+  // 52 návrhů s ověřením robotem: skákačka s bossem (P46B T6) ho prodloužila na ~32 s.
   it('never sends a wave of a role the spec does not declare, over the P45 panel and the P46B sentences', () => {
     expect(SENTENCES.length).toBe(52);
     for (const sentence of SENTENCES) {
       const { spec } = draftGameSpecWithMeta(sentence.text, 1);
       for (const wave of wavesOf(spec)) expect(roleOf(spec, wave.role), `${sentence.id}: wave of ${wave.role}`).toBeDefined();
     }
-  });
+  }, 90_000);
 
   it('gives a game without anything to collect no wave of items', () => {
     let without = 0;
