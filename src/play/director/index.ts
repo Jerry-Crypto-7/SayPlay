@@ -22,6 +22,8 @@ import type { GenerationBranch } from '@/server/pipeline';
 
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
 import { loadRapier } from '../arcade/physics/world';
+import { LOGIC_LIMITS } from '../arcade/contract';
+import { phaseEntryOf, readsLogic, rulesTouching } from '../arcade/rules/schema';
 import { verifyArcade } from '../arcade/verify';
 import { matchesWitness } from '../arcade/witness';
 import { assemblyOfCell, liveCells } from '../compose/allowed';
@@ -37,7 +39,7 @@ import type { DirectorResult, FallbackReason } from '../contracts';
 import { draftGameSpecWithMeta } from '../draft';
 import type { GenreModules } from '../genre/classify';
 import { readBeforeDraft, readerEnabled } from '../read/client';
-import type { GameSpecV1 } from '../spec';
+import { type GameSpecV1, readGameSpec } from '../spec';
 import { vocabVersion } from '../vocab';
 
 import type { DirectorCache } from './cache';
@@ -438,13 +440,44 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   };
 }
 
-/** Spec bez pravidel, která `drop` vybere; `things` jen když žádné pravidlo nezbylo. `null` = nebylo co odebrat. */
+/**
+ * Spec bez pravidel, která `drop` vybere; `null` = nebylo co odebrat, nebo výsledek `readGameSpec` odmítne
+ * (R6-2: např. vyhlášená událost bez posluchače). Kandidát z vyřazení jde do publikace bez dalšího čtení.
+ */
 function withoutRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rules']>[number]) => boolean): GameSpecV1 | null {
+  const candidate = droppedRules(spec, drop);
+  return candidate !== null && readGameSpec(candidate).ok ? candidate : null;
+}
+
+/** Spec bez pravidel, která `drop` vybere; `things` jen když žádné pravidlo nezbylo. `null` = nebylo co odebrat. */
+function droppedRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rules']>[number]) => boolean): GameSpecV1 | null {
   const rules = spec.rules ?? [];
-  const kept = rules.filter((rule) => !drop(rule));
+  let kept = rules.filter((rule) => !drop(rule));
+  // Vstup doplněný čtením (`phaseEntryOf`, R6) jde ven jen s fází: vypadl-li on, nebo vše, co na fázi
+  // reaguje, odejde fáze z bloku `logic` i s pravidly, která na ni sahají. Fáze za ní vede z ní, proto znovu.
+  const entered = rules.flatMap((rule) => phaseEntryOf(rule) ?? []);
+  const declared = (spec.logic?.phases ?? []).map((phase) => phase.id);
+  const gone = new Set<string>();
+  for (;;) {
+    const lone = entered.filter((phase) => {
+      const own = rulesTouching(kept, 'phase', phase).map((index) => phaseEntryOf(kept[index]!) === phase);
+      return !gone.has(phase) && (!own.includes(true) || !own.includes(false));
+    });
+    // Jediná zbylá fáze není průběh a schéma chce aspoň dvě (`LOGIC_LIMITS.minPhases`) – odejde i ona.
+    const left = declared.filter((phase) => !gone.has(phase) && !lone.includes(phase));
+    if (gone.size + lone.length > 0 && left.length < LOGIC_LIMITS.minPhases) lone.push(...left);
+    if (lone.length === 0) break;
+    for (const phase of lone) gone.add(phase);
+    const touched = new Set(lone.flatMap((phase) => rulesTouching(kept, 'phase', phase)));
+    kept = kept.filter((_, index) => !touched.has(index));
+  }
   if (kept.length === rules.length && rules.length > 0) return null;
-  const { rules: _rules, things, ...rest } = spec;
-  if (kept.length > 0) return { ...rest, rules: kept, ...(things === undefined ? {} : { things }) };
+  // Blok `logic` (P45B T10) jde pryč s posledním pravidlem, které ho čte – mrtvou deklaraci `readGameSpec` odmítne.
+  const { rules: _rules, things, logic, ...rest } = spec;
+  const { phases: _phases, ...logicRest } = logic ?? {};
+  const phases = (logic?.phases ?? []).filter((phase) => !gone.has(phase.id));
+  const withLogic = logic !== undefined && kept.some(readsLogic) ? { logic: { ...logicRest, ...(phases.length === 0 ? {} : { phases }) } } : {};
+  if (kept.length > 0) return { ...rest, ...withLogic, rules: kept, ...(things === undefined ? {} : { things }) };
   return rest;
 }
 

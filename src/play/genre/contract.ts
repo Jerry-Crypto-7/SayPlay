@@ -15,7 +15,7 @@ import { z } from 'zod';
 
 import { START_LIVES } from '../arcade/contract';
 import { LOOK_IDS } from '../arcade/look';
-import { THINGS_MAX, type Rule, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
+import { THINGS_MAX, type Rule, logicSchema, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { readRoles } from '../draft/lexicon';
 import type { Reading } from '../read/schema';
 import { HERO_ACTIONS } from '../hero-action';
@@ -142,6 +142,8 @@ const variant = <G extends GenreId>(genre: G) =>
       ruleRoles: z.array(ruleRoleSchema).max(THINGS_MAX).optional(),
       things: thingsSchema.optional(),
       rules: modelRulesSchema.optional(),
+      /** Stav pro pravidla (P45B): proměnné, časovače, fáze, události; překlad ho propíše beze změny. */
+      logic: logicSchema.optional(),
     })
     .strict();
 
@@ -373,6 +375,7 @@ export function legacySpec(spec: GenreSpec, game: LegacyGame): GameSpecV1 {
     roles,
     ...(rules.length === 0 ? {} : { rules }),
     ...(spec.things === undefined || spec.things.length === 0 ? {} : { things: spec.things }),
+    ...(spec.logic === undefined ? {} : { logic: spec.logic }),
     // Kombo a bonus na konci (P36A T5) má každá nová hra žánru; cílové skóre z věty dosadí rychlý návrh.
     scoring: {},
     tutorial: game.tutorial,

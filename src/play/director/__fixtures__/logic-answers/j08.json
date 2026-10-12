@@ -1,0 +1,110 @@
+{
+ "id": "j08",
+ "sentence": "a wizard defends a crystal tower from flying skeletons",
+ "axis": "defend",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:36:55.366Z",
+ "ms": 8872,
+ "answer": {
+  "plan": "Create an arena‑fight game where a wizard protects a crystal tower from waves of flying skeletons, using a simple phase‑timer logic to spawn enemies.",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "wizard",
+   "cast": [
+    {
+     "label": "flying skeleton",
+     "does": "fight",
+     "verb": "attack",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "tower",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "skeleton",
+     "kind": "chaser",
+     "label": "flying skeleton",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "start_wave",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "wave_timer",
+        "ticks": 120
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_skeleton",
+     "verb": "spawn",
+     "when": {
+      "timer": "wave_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "skeleton",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "reset_wave",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "first"
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "wave_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "first"
+     },
+     {
+      "id": "second"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

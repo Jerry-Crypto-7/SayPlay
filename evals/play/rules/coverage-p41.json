@@ -6,15 +6,23 @@
  },
  "after": {
   "piece": 87,
-  "template": 14,
-  "none": 99
+  "template": 36,
+  "none": 77
  },
  "byTemplate": {
+  "collect_unlock": 1,
+  "escape_countdown": 4,
+  "boss_finale": 6,
+  "race_clock": 3,
   "push": 3,
   "open": 3,
   "throw": 4,
   "stack": 2,
-  "carry": 2
+  "build_floors": 2,
+  "defend_base": 3,
+  "carry": 2,
+  "waves_survive": 2,
+  "catch_count": 1
  },
  "topUncovered": [
   {
@@ -24,14 +32,6 @@
   {
    "verb": "(manipulate)",
    "count": 6
-  },
-  {
-   "verb": "fight",
-   "count": 5
-  },
-  {
-   "verb": "escape",
-   "count": 4
   },
   {
    "verb": "match",
@@ -54,8 +54,16 @@
    "count": 3
   },
   {
-   "verb": "merge",
+   "verb": "sneak",
    "count": 3
+  },
+  {
+   "verb": "tap",
+   "count": 3
+  },
+  {
+   "verb": "(idle)",
+   "count": 2
   }
  ],
  "sentences": [
@@ -73,8 +81,8 @@
    "id": "s002",
    "verbClass": "tap_go",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "collect_unlock",
    "verbs": [
     "dodge",
     "collect"
@@ -84,8 +92,8 @@
    "id": "s003",
    "verbClass": "tap_go",
    "drafted": "runner",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "escape_countdown",
    "verbs": [
     "escape",
     "hunt"
@@ -156,7 +164,7 @@
    "verbClass": "runner",
    "drafted": "runner",
    "cover": "piece",
-   "template": null,
+   "template": "collect_unlock",
    "verbs": [
     "fight",
     "collect"
@@ -177,7 +185,7 @@
    "verbClass": "runner",
    "drafted": "runner",
    "cover": "piece",
-   "template": null,
+   "template": "collect_unlock",
    "verbs": [
     "collect",
     "run"
@@ -188,7 +196,7 @@
    "verbClass": "runner",
    "drafted": "runner",
    "cover": "piece",
-   "template": null,
+   "template": "collect_unlock",
    "verbs": [
     "fish",
     "collect",
@@ -200,7 +208,7 @@
    "verbClass": "runner",
    "drafted": "runner",
    "cover": "piece",
-   "template": null,
+   "template": "catch_count",
    "verbs": [
     "chase"
    ]
@@ -341,7 +349,7 @@
    "verbClass": "platform",
    "drafted": "platform",
    "cover": "piece",
-   "template": null,
+   "template": "collect_unlock",
    "verbs": [
     "jump",
     "collect"
@@ -479,7 +487,7 @@
    "verbClass": "aim_shoot",
    "drafted": "shooter",
    "cover": "piece",
-   "template": null,
+   "template": "boss_finale",
    "verbs": [
     "water",
     "fight"
@@ -508,7 +516,7 @@
    "verbClass": "aim_shoot",
    "drafted": "shooter",
    "cover": "piece",
-   "template": null,
+   "template": "defend_base",
    "verbs": [
     "defend"
    ]
@@ -529,7 +537,7 @@
    "verbClass": "move_free",
    "drafted": "move_free",
    "cover": "piece",
-   "template": null,
+   "template": "waves_survive",
    "verbs": [
     "shoot",
     "survive"
@@ -549,8 +557,8 @@
    "id": "s051",
    "verbClass": "aim_shoot",
    "drafted": "steer",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "boss_finale",
    "verbs": []
   },
   {
@@ -568,7 +576,7 @@
    "verbClass": "steer",
    "drafted": "steer",
    "cover": "piece",
-   "template": null,
+   "template": "race_clock",
    "verbs": [
     "race"
    ]
@@ -615,7 +623,7 @@
    "verbClass": "steer",
    "drafted": "steer",
    "cover": "piece",
-   "template": null,
+   "template": "race_clock",
    "verbs": [
     "race"
    ]
@@ -624,8 +632,8 @@
    "id": "s059",
    "verbClass": "timing",
    "drafted": "steer",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "race_clock",
    "verbs": [
     "race"
    ]
@@ -653,7 +661,7 @@
    "verbClass": "steer",
    "drafted": "steer",
    "cover": "piece",
-   "template": null,
+   "template": "escape_countdown",
    "verbs": [
     "escape"
    ]
@@ -662,8 +670,8 @@
    "id": "s063",
    "verbClass": "steer",
    "drafted": "platform",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "race_clock",
    "verbs": [
     "race",
     "climb"
@@ -674,7 +682,7 @@
    "verbClass": "steer",
    "drafted": "steer",
    "cover": "piece",
-   "template": null,
+   "template": "race_clock",
    "verbs": [
     "race"
    ]
@@ -683,8 +691,8 @@
    "id": "s065",
    "verbClass": "steer",
    "drafted": "runner",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "race_clock",
    "verbs": [
     "race"
    ]
@@ -702,7 +710,7 @@
    "verbClass": "steer",
    "drafted": "steer",
    "cover": "piece",
-   "template": null,
+   "template": "race_clock",
    "verbs": [
     "race"
    ]
@@ -795,8 +803,8 @@
    "id": "s077",
    "verbClass": "tap_go",
    "drafted": "glide",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "escape_countdown",
    "verbs": [
     "escape"
    ]
@@ -999,7 +1007,7 @@
    "verbClass": "timing",
    "drafted": "timing",
    "cover": "piece",
-   "template": null,
+   "template": "build_floors",
    "verbs": [
     "build"
    ]
@@ -1162,7 +1170,7 @@
    "verbClass": "move_free",
    "drafted": "move_free",
    "cover": "piece",
-   "template": null,
+   "template": "boss_finale",
    "verbs": []
   },
   {
@@ -1170,7 +1178,7 @@
    "verbClass": "move_free",
    "drafted": "move_free",
    "cover": "piece",
-   "template": null,
+   "template": "collect_unlock",
    "verbs": [
     "collect"
    ]
@@ -1197,8 +1205,8 @@
    "id": "s119",
    "verbClass": "idle",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "build_floors",
    "verbs": [
     "build"
    ]
@@ -1207,8 +1215,8 @@
    "id": "s120",
    "verbClass": "idle",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "boss_finale",
    "verbs": [
     "merge",
     "fight"
@@ -1415,7 +1423,7 @@
    "verbClass": "rhythm",
    "drafted": "rhythm",
    "cover": "piece",
-   "template": null,
+   "template": "boss_finale",
    "verbs": []
   },
   {
@@ -1491,8 +1499,8 @@
    "id": "s150",
    "verbClass": "tap_go",
    "drafted": "runner",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "escape_countdown",
    "verbs": [
     "escape",
     "avoid"
@@ -1532,8 +1540,8 @@
    "id": "s154",
    "verbClass": "build_place",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "defend_base",
    "verbs": [
     "defend"
    ]
@@ -1542,8 +1550,8 @@
    "id": "s155",
    "verbClass": "build_place",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "defend_base",
    "verbs": [
     "defend"
    ]
@@ -1581,8 +1589,8 @@
    "id": "s159",
    "verbClass": "build_place",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "defend_base",
    "verbs": [
     "protect"
    ]
@@ -1766,8 +1774,8 @@
    "id": "s179",
    "verbClass": "tap_go",
    "drafted": "runner",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "escape_countdown",
    "verbs": [
     "escape"
    ]
@@ -1784,8 +1792,8 @@
    "id": "s181",
    "verbClass": "tap_go",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "waves_survive",
    "verbs": [
     "survive"
    ]
@@ -1802,8 +1810,8 @@
    "id": "s183",
    "verbClass": "tap_go",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "catch_count",
    "verbs": [
     "hunt"
    ]
@@ -1830,8 +1838,8 @@
    "id": "s186",
    "verbClass": "melee",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "boss_finale",
    "verbs": [
     "fight"
    ]
@@ -1840,8 +1848,8 @@
    "id": "s187",
    "verbClass": "melee",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "boss_finale",
    "verbs": [
     "fight"
    ]
@@ -1850,8 +1858,8 @@
    "id": "s188",
    "verbClass": "melee",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "boss_finale",
    "verbs": [
     "park",
     "fight"
@@ -1861,8 +1869,8 @@
    "id": "s189",
    "verbClass": "melee",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "boss_finale",
    "verbs": [
     "fight"
    ]
@@ -1900,7 +1908,7 @@
    "verbClass": "move_free",
    "drafted": "move_free",
    "cover": "piece",
-   "template": null,
+   "template": "build_floors",
    "verbs": [
     "build",
     "catch",
@@ -1911,8 +1919,8 @@
    "id": "s194",
    "verbClass": "sandbox",
    "drafted": "move_free",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "waves_survive",
    "verbs": [
     "craft",
     "mine",
@@ -1970,8 +1978,8 @@
    "id": "s200",
    "verbClass": "sandbox",
    "drafted": "steer",
-   "cover": "none",
-   "template": null,
+   "cover": "template",
+   "template": "build_floors",
    "verbs": [
     "build",
     "drive",

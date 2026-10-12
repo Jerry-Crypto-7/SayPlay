@@ -13,10 +13,11 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
-import { type ArcadeParts, addonControlParams, addonLives, applyAddons, mapUnderlying, underlyingRule } from './addons';
+import { type ArcadeParts, addonControlParams, addonLives, applyAddons, baseControlOf, mapUnderlying, underlyingRule } from './addons';
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
+  ARCADE_RUNTIME_V2,
   ARCADE_RUNTIME_VERSION,
   type ArcadeLevel,
   type ArcadeWorld,
@@ -40,7 +41,7 @@ import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
 import { ballPitch } from './pieces/ball';
 import { rapierIfLoaded } from './physics/world';
-import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
+import { ARENA, arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
 import { platformControlRef, platformLevel, platformRules, platformSeconds } from './pieces/platform';
 import { runnerTrack } from './pieces/runner';
@@ -50,12 +51,14 @@ import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
 import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
 import { throwBudgetIn, throwField, throwParts } from './pieces/throw';
 import { timingParts } from './pieces/timing';
-import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
+import { type CompiledRule, compileRules, logicNames, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
 import { bindRoles, type RoleBinding } from './witness';
 
-/** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra. */
-export const ARCADE_COMPILER_VERSION = `${GAME_COMPILER_VERSION}/${ARCADE_RUNTIME_VERSION}`;
+/** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra, kterou svět nese (P45B: svět s logikou nebo vlnou je `arcade-v3`). */
+export const arcadeCompilerVersion = (world: Pick<ArcadeWorld, 'runtimeVersion'>): string => `${GAME_COMPILER_VERSION}/${world.runtimeVersion}`;
+/** Verze hry bez logiky – všech her před P45B. */
+export const ARCADE_COMPILER_VERSION = arcadeCompilerVersion({ runtimeVersion: ARCADE_RUNTIME_V2 });
 
 export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld; readonly roleBindings: readonly RoleBinding[] } | { readonly ok: false; readonly issues: readonly string[] };
 
@@ -216,8 +219,11 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   const lives = 'health' in own ? own.health : health;
   const { control, bot, level: baseLevel, rules, issues } = assemblyParts(applyAddons(own, { spec, seed, health: lives }), spec, ARCADE_LIBRARY.rules);
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
-  // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění.
-  const ruled = compileRules(spec, baseLevel, seed);
+  // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění. Volný pohyb má
+  // čtvercovou podlahu (dvorek, aréna) – její okraj je místo vlny `edge` (P45B).
+  const moving = baseControlOf(control);
+  const floor = moving.id === 'move_free' ? ((moving.params as { readonly half?: number }).half ?? ARENA.half) : undefined;
+  const ruled = compileRules(spec, baseLevel, seed, floor);
   if (ruled.issues.length > 0) return { ok: false, issues: ruled.issues };
   const level = ruled.level;
   const builtIn = rules.length + (timer?.onEnd === 'lose' ? 1 : 0);
@@ -227,15 +233,36 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   }
   // Složená hra (P42): výhra pravidla specu i cílového skóre počká v obalu, až budou hotové díly.
   const gate = assemblyGate(rules, ARCADE_LIBRARY.rules);
-  rules.push(...ruled.rules.map(gate));
+  // Časovač, fáze a událost obal nemají (P45B R1): pravidlo bez výhry hraje vedle dílů beze změny,
+  // výhru by obal nepodržel – složená hra ji odmítne.
+  const triggerOf = (ref: PieceRef): string => ARCADE_LIBRARY.rules[ref.id]!.trigger;
+  const ungated = (ref: PieceRef): boolean => !(`assembly_gate_${triggerOf(ref)}` in ARCADE_LIBRARY.rules);
+  if (rules.some((ref) => ref.id === 'assembly_finish')) {
+    const early = ruled.rules.filter((ref) => ungated(ref) && (ref.params as CompiledRule).do.some((effect) => 'win' in effect));
+    if (early.length > 0) {
+      return { ok: false, issues: early.map((ref) => `rules: rule "${(ref.params as CompiledRule).id}" wins on a ${triggerOf(ref)} trigger, but a composed game holds every win until its parts are done and only contact, tick, counter, hit or press rules can wait – win from one of those`) };
+    }
+  }
+  rules.push(...ruled.rules.map((ref) => (ungated(ref) ? ref : gate(ref))));
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: limitSeconds(timer.seconds) } });
   const scored = spec.scoring === undefined ? { level, rules } : withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0, gate);
   if (scored.rules.length > ARCADE_LIMITS.maxRules) {
     return { ok: false, issues: [`rules: this ${spec.control} game with scoring uses ${scored.rules.length} rules, over the ${ARCADE_LIMITS.maxRules} limit – merge or drop rules`] };
   }
 
-  const built = buildWorld({ seed, control, rules: scored.rules, bot, level: scored.level, ...(lives === undefined ? {} : { health: lives }) }, ARCADE_LIBRARY);
-  return built.ok ? { ok: true, world: built.world, roleBindings: bindRoles(spec, built.world) } : built;
+  // Logika (P45B) jen ze specu s blokem `logic`: jen takový svět dostane logická těla a `arcade-v3`.
+  const built = buildWorld(
+    { seed, control, rules: scored.rules, bot, level: scored.level, ...(lives === undefined ? {} : { health: lives }), ...(ruled.logic === undefined ? {} : { logic: ruled.logic }) },
+    ARCADE_LIBRARY,
+  );
+  if (!built.ok) return built;
+  // Vlna bez logiky (R3): starý kód ji nepřečte, takže svět nese `arcade-v3` i bez logických těl –
+  // jinak by ho razítko ani verze kompilátoru od starých her neodlišily. Jádro podle verze nevětví.
+  const waves = ruled.rules.some((ref) => (ref.params as CompiledRule).do.some((effect) => 'wave' in effect));
+  const stamped: ArcadeWorld = waves ? { ...built.world, runtimeVersion: ARCADE_RUNTIME_VERSION } : built.world;
+  // Jména deklarace logiky jdou se světem (T7): ověření jimi pojmenuje kostku, kterou robot nedokázal.
+  const world = stamped.logic === undefined ? stamped : { ...stamped, logic: { ...stamped.logic, names: logicNames(spec.logic) } };
+  return { ok: true, world, roleBindings: bindRoles(spec, world) };
 }
 
 /**
@@ -329,7 +356,7 @@ export function compileArcade(spec: GameSpecV1, seed: number): CompileGameResult
       spec,
       specHash: canonicalHash(spec),
       seed,
-      compilerVersion: ARCADE_COMPILER_VERSION,
+      compilerVersion: arcadeCompilerVersion(world),
       blueprint: null,
       arcade: world,
       worldHash: canonicalHash(world),

@@ -26,16 +26,6 @@ function handTargets(target: AnchorTarget, verb: string): string[] {
     .map((item) => `${item.axis}:${item.verb}`);
 }
 
-/** Šablona pravidel → akce záměru, kterou hraje. */
-const TEMPLATE_TARGET: Readonly<Record<TemplateName, AnchorTarget>> = {
-  carry: 'action:deliver',
-  throw: 'action:throw',
-  push: 'action:kick',
-  open: 'action:interact',
-  give: 'action:deliver',
-  stack: 'action:stack',
-};
-
 describe('anchor catalogue', () => {
   it('has one anchor per intent target and per visible hero action', () => {
     const expected = [
@@ -80,12 +70,12 @@ describe('anchor catalogue', () => {
     expect(unconfirmed).toEqual([]);
   });
 
-  it('anchors every rule-template verb on the action its template plays, unless the hand table says otherwise', () => {
+  it('anchors every rule-template verb on an axis its template plays, unless the hand table says otherwise', () => {
     const missing: string[] = [];
     for (const name of Object.keys(RULE_TEMPLATES) as TemplateName[])
       for (const verb of RULE_TEMPLATES[name].verbs) {
-        const target = TEMPLATE_TARGET[name];
-        if (anchor(target).verbs.includes(verb)) continue;
+        // Osy šablony (P45B T8) nahradily ruční tabulku šablona → akce.
+        if (RULE_TEMPLATES[name].axes.some((target) => anchor(target).verbs.includes(verb))) continue;
         const elsewhere = AXIS_TARGETS.find((other) => anchor(other).verbs.includes(verb) && handTargets(other, verb).includes(other));
         if (elsewhere === undefined) missing.push(`${name}:${verb}`);
       }

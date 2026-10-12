@@ -1,0 +1,149 @@
+{
+ "id": "ma-031",
+ "sentence": "a knight fights a dragon to save the princess",
+ "axis": "defeat",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:38:43.818Z",
+ "ms": 9611,
+ "answer": {
+  "plan": "arena fight with timed phases",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "knight",
+   "cast": [
+    {
+     "label": "dragon",
+     "does": "fight",
+     "verb": "fight",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "princess",
+     "does": "reach",
+     "verb": "save",
+     "states": 2,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "dusty town",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "dragon",
+     "kind": "chaser",
+     "label": "dragon",
+     "count": 1
+    },
+    {
+     "id": "princess",
+     "kind": "destination",
+     "label": "princess",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "startPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "battle",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "battleTimer",
+     "verb": "wait",
+     "when": {
+      "timer": "battle"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "dragon",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "secondPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "princess",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "dragonContact",
+     "verb": "fight",
+     "when": {
+      "contact": [
+       "player",
+       "dragon"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "battle"
+     }
+    ],
+    "phases": [
+     {
+      "id": "first"
+     },
+     {
+      "id": "second"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

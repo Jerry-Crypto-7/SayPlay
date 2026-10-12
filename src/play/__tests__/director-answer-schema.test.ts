@@ -153,6 +153,18 @@ describe('director answer schema (strict mode)', () => {
     }
   });
 
+  it('offers the model the logic block and every logic construct with it (P45B T10)', () => {
+    // Před T10 schéma kostky neneslo (kostka bez bloku `logic` propadne čtením); od T10 jdou spolu.
+    const logicKeys = new Set(['logic', 'timer', 'phase', 'phaseExit', 'var', 'event', 'inPhase', 'timerRunning', 'timerStopped', 'set', 'add', 'goPhase', 'startTimer', 'stopTimer', 'emit', 'wave']);
+    const offered = new Set<string>();
+    walk(GENRE_ANSWER_SCHEMA as Json, (_node, path) => {
+      const key = /\/properties\/([^/]+)$/.exec(path)?.[1];
+      // `recipe.phases` je prostorové tempo trati (`compose/progression.ts`), ne logika.
+      if (key !== undefined && logicKeys.has(key) && (key === 'logic' || path.includes('/properties/rules/'))) offered.add(key);
+    });
+    expect([...offered].sort()).toEqual([...logicKeys].sort());
+  });
+
   it('codex gets the schema file only when the request carries one', () => {
     // Za `exec`, ne před ním: `codex --output-schema … exec` končí „unexpected argument“.
     expect(codexArgs('m', 'high', 'C:/tmp/x', true).join(' ')).toMatch(/^exec .*--output-schema \S*answer-schema\.json/);
@@ -195,6 +207,8 @@ describe('director answer schema for a GenreSpec', () => {
         ruleRoles: null,
         things: null,
         rules: null,
+        // P45B T10: blok logiky – v přísném režimu povinný, bez průběhu null.
+        logic: null,
       },
     };
     expect(validate(GENRE_ANSWER_SCHEMA, answer)).toEqual([]);
@@ -244,7 +258,7 @@ describe('director answer schema for a GenreSpec', () => {
 
   it('refuses a mode of another genre, a param out of bounds and a GameSpec in its place', () => {
     const params = { entryDistance: null, chaseLead: null, pursuitCeiling: null, itemSizePct: null, seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null, lives: null, targetScore: null, timeLimit: null };
-    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', cast: [{ label: 'wolf', does: 'chase_me', verb: null, states: null, patrol: null }], heroAction: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null };
+    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', cast: [{ label: 'wolf', does: 'chase_me', verb: null, states: null, patrol: null }], heroAction: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null, logic: null };
     expect(validate(GENRE_SPEC, ok)).toEqual([]);
     // Počty (B-R4): jen role, které Aréna počítá, v mezích parametru, do kterého jdou.
     expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 3, collectible: null } })).toEqual([]);

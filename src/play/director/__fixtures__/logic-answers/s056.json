@@ -1,0 +1,106 @@
+{
+ "id": "s056",
+ "sentence": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+ "axis": "race",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:41:00.834Z",
+ "ms": 7337,
+ "answer": {
+  "plan": "Create a quest‑style delivery game where a scooter races through traffic to deliver a pizza before it gets cold.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "delivery scooter",
+   "cast": [
+    {
+     "label": "pizza",
+     "does": "reach",
+     "verb": "deliver",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "traffic",
+     "does": "avoid",
+     "verb": "obstacle",
+     "states": null,
+     "patrol": true
+    }
+   ],
+   "heroAction": "none",
+   "setting": "traffic",
+   "palette": "city",
+   "params": null,
+   "counts": {
+    "enemy": 0,
+    "target": 1
+   },
+   "ruleRoles": [
+    {
+     "id": "pizza",
+     "kind": "target",
+     "label": "pizza",
+     "count": 1
+    },
+    {
+     "id": "traffic",
+     "kind": "hazard",
+     "label": "traffic",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "cold",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "coldTimer",
+     "verb": "wait",
+     "when": {
+      "timer": "cold"
+     },
+     "if": null,
+     "do": [
+      {
+       "lose": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "cold"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "running"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

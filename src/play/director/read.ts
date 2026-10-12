@@ -15,6 +15,8 @@
  *   Kontrola tady předbíhá schéma o jeden krok a `detail` nese ta jména.
  */
 
+import { arcadeWorldOf } from '../arcade/compile';
+import { logicSchema, rulesSchema, withPhaseEntries } from '../arcade/rules/schema';
 import { liveCells } from '../compose/allowed';
 import { recipeKey } from '../compose/recipe';
 import { recipeAnswerSchema, nativeRecipeParams, type RecipeAnswer } from './answer-schema';
@@ -43,10 +45,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /** Přísný režim píše chybějící volitelné pole jako `null`; spec ho chce vynechané. */
-function withoutNulls(value: unknown): unknown {
+export function withoutNulls(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(withoutNulls);
   if (isRecord(value)) return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== null).map(([name, item]) => [name, withoutNulls(item)]));
   return value;
+}
+
+/** Spec s doplněným vstupem do fáze, na kterou pravidlo reaguje (`withPhaseEntries`); beze změny, když není co doplnit. */
+function withEnteredPhases(input: unknown): unknown {
+  if (!isRecord(input)) return input;
+  const rules = rulesSchema.safeParse(input.rules);
+  const logic = logicSchema.safeParse(input.logic);
+  if (!rules.success || !logic.success) return input;
+  const entered = withPhaseEntries(rules.data, logic.data);
+  return entered === rules.data ? input : { ...input, rules: entered };
 }
 
 /** Neznámá `id` v `mechanics`, v pořadí výskytu; prázdné, když je pole nečitelné. */
@@ -236,7 +248,8 @@ export function answerRules(body: unknown): readonly unknown[] | null {
  */
 export function withoutAnswerRules(body: unknown): unknown {
   if (!isRecord(body)) return body;
-  const { rules: _rules, things: _things, ...rest } = answerSpec(body);
+  // Blok `logic` (P45B T10) bez pravidel by byl mrtvá deklarace – jde pryč s nimi.
+  const { rules: _rules, things: _things, logic: _logic, ...rest } = answerSpec(body);
   return answerSpec(body) === body ? rest : { ...body, spec: rest };
 }
 
@@ -250,8 +263,15 @@ export function compileGenreSpec(genre: GenreSpec, modules: GenreModules = GENRE
  * totéž (B-R6). Od B-R8 model smí všechny spouštěče; meze `interact` soudí
  * `ruleIssues` v `readGameSpec`, takže platí i pro přenos, který schéma
  * odpovědi neposílá (Messages).
+ *
+ * Fáze, na kterou pravidlo reaguje a nic do ní nevede, dostane vstupní pravidlo
+ * (`withPhaseEntries`, P45B T11) – gpt-oss-20b fázi deklaruje, ale přepnutí do ní
+ * vynechá. Platí jen, když spec s ním projde a svět ho unese: strop pravidel jádra
+ * počítá i vestavěná pravidla hry (`arcade/compile.ts`). Jinak se čte, jak ho model napsal.
  */
 export function readModelSpec(input: unknown): DirectorRead {
-  const result = readGameSpec(input);
+  const entered = withEnteredPhases(input);
+  const repaired = entered === input ? null : readGameSpec(entered);
+  const result = repaired?.ok === true && arcadeWorldOf(repaired.value, 1).ok ? repaired : readGameSpec(input);
   return result.ok ? { ok: true, spec: result.value } : { ok: false, reason: result.reason, detail: result.issues.join('; ') };
 }

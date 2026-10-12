@@ -1,0 +1,132 @@
+{
+ "id": "s188",
+ "sentence": "A grandma karate fights a gang of pigeons in the park",
+ "axis": "defeat",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:38:06.643Z",
+ "ms": 21605,
+ "answer": {
+  "plan": "Create an arena‑fight game where a karate‑practicing grandma battles a gang of pigeons in a park, using a simple wave‑based logic system.",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "grandma karate",
+   "cast": [
+    {
+     "label": "pigeon",
+     "does": "fight",
+     "verb": "fight",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "gang",
+     "does": "fight",
+     "verb": "fight",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "paint",
+   "setting": "park",
+   "palette": "forest",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "pigeon",
+     "kind": "chaser",
+     "label": "pigeon",
+     "count": null
+    },
+    {
+     "id": "gang",
+     "kind": "chaser",
+     "label": "gang",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "spawn_wave",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "pigeon",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_gang",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "gang",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "check_win",
+     "verb": "check",
+     "when": {
+      "phase": "second"
+     },
+     "if": [
+      {
+       "counter": {
+        "name": "health",
+        "atLeast": 1,
+        "below": 1
+       }
+      }
+     ],
+     "do": [
+      {
+       "lose": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "phase_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "first"
+     },
+     {
+      "id": "second"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

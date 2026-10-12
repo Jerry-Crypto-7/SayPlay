@@ -4,7 +4,7 @@
  * vyrenderovaná z modulů (jen režimy `ready`, třídy hrdinů, meze parametrů),
  * že v něm nezůstal seznam starých ovládání ani `tap_go` – prompt, který je
  * dál zmiňuje, vypadá v pořádku a model by psal hru, kterou odpověď nepustí –
- * a že velikost nepřeteče stropu 12 700 B.
+ * a že velikost nepřeteče stropu 14 200 B (P45B T10, dřív 12 700 B).
  *
  * Do P32B T4 prompt vypisoval 11 ovládání, registr mechanik a tvar GameSpecu:
  * 12 691 B nad 40 zlatými větami. Žánrový prompt to celé nahrazuje.
@@ -20,7 +20,7 @@ import runnerFixture from '../arcade/__fixtures__/runner.json';
 import shooterFixture from '../arcade/__fixtures__/shooter.json';
 import { GENRE_ANSWER_SCHEMA, readyModes } from '../director/answer-schema';
 import { buildCompactRequest } from '../director/compact';
-import { DIRECTOR_PROMPT_VERSION, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
+import { COURSE_LINE, DIRECTOR_PROMPT_VERSION, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
 import { readDirectorAnswer } from '../director/read';
 import { repairDeterministically } from '../director/repair';
 import { draftGameSpecWithMeta } from '../draft';
@@ -45,7 +45,8 @@ describe('director prompt', () => {
     // P37A T8: mezi větou a výchozím bodem stojí kontrolní seznam věty a hlavní sloveso – podle nich brána upgradu AI verzi pustí.
     const checklist = 'Checklist: hero "wizard"; role "candle"; setting "haunted castle".\nMain verb: "light" – genre quest, mode spatial.';
     expect(checklistLines(sentence)).toBe(checklist);
-    expect(buildDirectorRequest(sentence, null).user).toBe(`${sentence}\n\n${checklist}\n\nStarting point: none – choose from the sentence.`);
+    // P45B T11: za výchozím bodem řádek průběhu hry (`COURSE_LINE`).
+    expect(buildDirectorRequest(sentence, null).user).toBe(`${sentence}\n\n${checklist}\n\nStarting point: none – choose from the sentence.\n\n${COURSE_LINE}`);
   });
 
   it('names the verb family and says when the sentence has no game verb (P37A T8)', () => {
@@ -127,7 +128,8 @@ describe('director prompt', () => {
   // P37A T8: 8 908 B – kontrolní seznam věty a hlavní sloveso s rodinou v požadavku a řádek, podle kterého brána upgradu AI verzi pustí.
   // P38: 9 254 B – výchozí bod je odhad, ne kostra; dvě činnosti věty (skok + střelba); věta v jiném jazyce.
   // P39 T11: 10 082 B – obsazení místo `enemy`/`enemyMoves`/`collectible`/`target`: tvar položky a řádek na každé `does`.
-  it('stays under 12 700 bytes for all forty golden sentences, with examples and the complete intent', () => {
+  // P45B T10: +1 500 B na průběh hry (`logic`) – řádek gramatiky a příklad s fází, časovačem a vlnou; strop 14 200 B.
+  it('stays under 14 200 bytes for all forty golden sentences, with examples and the complete intent', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(entry.prompt).genre;
@@ -137,10 +139,10 @@ describe('director prompt', () => {
         max = Math.max(max, Buffer.byteLength(request.system + request.user + fullIntent));
       }
     }
-    expect(max).toBeLessThanOrEqual(12_700);
+    expect(max).toBeLessThanOrEqual(14_200);
     // P41 adds a live recipe table and all essential triples; the historical
     // 10,082 B observation was not the 12,700 B budget. Report both channels.
-    if (process.env.P41_PROMPT_REPORT) writeFileSync(process.env.P41_PROMPT_REPORT, JSON.stringify({ maxPromptBytes: max, outputSchemaBytes: Buffer.byteLength(JSON.stringify(GENRE_ANSWER_SCHEMA)), includesFullIntent: true, budgetBytes: 12_700 }, null, 2));
+    if (process.env.P41_PROMPT_REPORT) writeFileSync(process.env.P41_PROMPT_REPORT, JSON.stringify({ maxPromptBytes: max, outputSchemaBytes: Buffer.byteLength(JSON.stringify(GENRE_ANSWER_SCHEMA)), includesFullIntent: true, budgetBytes: 14_200 }, null, 2));
   });
 
   it('rejects an addon the control does not take and the deterministic repair drops it', () => {

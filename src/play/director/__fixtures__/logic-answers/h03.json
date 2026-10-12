@@ -1,0 +1,186 @@
+{
+ "id": "h03",
+ "sentence": "defend a castle from dragons by throwing snowballs",
+ "axis": "defend",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:36:46.493Z",
+ "ms": 10623,
+ "answer": {
+  "plan": "arena fight with dragon chasers, hero throws snowballs to defend the castle",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "dragon slayer",
+   "cast": [
+    {
+     "label": "dragon",
+     "does": "chase_me",
+     "verb": "fly",
+     "states": null,
+     "patrol": true
+    },
+    {
+     "label": "castle",
+     "does": "scenery",
+     "verb": "protect",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "snowball",
+     "does": "collect",
+     "verb": "throw",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "throw",
+   "setting": "castle",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "dragon",
+     "kind": "chaser",
+     "label": "dragon",
+     "count": 1
+    },
+    {
+     "id": "snowball",
+     "kind": "item",
+     "label": "snowball",
+     "count": null
+    },
+    {
+     "id": "castle",
+     "kind": "prop",
+     "label": "castle",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "dragon_spawn",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "dragon",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "snowball_spawn",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "snowball",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "throw_snowball",
+     "verb": "throw",
+     "when": {
+      "contact": [
+       "player",
+       "snowball"
+      ]
+     },
+     "if": [
+      {
+       "holding": "snowball"
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "release": true
+      },
+      {
+       "spawn": {
+        "role": "snowball",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "dragon_damage",
+     "verb": "damage",
+     "when": {
+      "hit": "dragon"
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "dragon_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "dragon"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "phase_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "active"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

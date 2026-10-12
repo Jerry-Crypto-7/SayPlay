@@ -1,0 +1,107 @@
+{
+ "id": "h02",
+ "sentence": "shopping cart race in a supermarket",
+ "axis": "race",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:41:23.796Z",
+ "ms": 9304,
+ "answer": {
+  "plan": "Create a voyage‑race game where the player drives a shopping cart through a supermarket, racing against a timer that triggers a wave of moving obstacles.",
+  "spec": {
+   "genre": "voyage",
+   "mode": "race",
+   "hero": "shopping cart",
+   "cast": [],
+   "heroAction": "none",
+   "setting": "supermarket",
+   "palette": "supermarket",
+   "params": null,
+   "ruleRoles": [
+    {
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "moving shelf",
+     "count": null
+    },
+    {
+     "id": "goal",
+     "kind": "destination",
+     "label": "checkout counter",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "race",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawnObstacles",
+     "verb": "wait",
+     "when": {
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "obstacle",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "reachGoal",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "goal"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "race"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "running"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

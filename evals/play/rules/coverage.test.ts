@@ -8,7 +8,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { ruleIssues, rulesSchema } from '@/play/arcade/rules/schema';
-import { RULE_TEMPLATES, TEMPLATE_NAMES, expandTemplate, templateFor } from '@/play/arcade/rules/templates';
+import { RULE_TEMPLATES, TEMPLATE_NAMES, expandTemplate, templateFor, templateParts } from '@/play/arcade/rules/templates';
 
 import corpus from '../demand/corpus.json';
 // Preserve the pre-composer coverage.json baseline; P41's current measurement
@@ -43,14 +43,17 @@ describe('verb coverage on the demand set', () => {
 });
 
 describe('rule templates', () => {
-  const ROLES = { item: 'rock', goal: 'nest', target: 'bell', lever: 'lever', door: 'gate' } as const;
+  const ROLES = { item: 'rock', goal: 'nest', target: 'bell', lever: 'lever', door: 'gate', enemy: 'wolf', hazard: 'lava', exit: 'stairs', zone: 'ring' } as const;
 
   it.each(TEMPLATE_NAMES)('%s expands into valid rules of the language', (name) => {
+    // Šablona s logikou (P45B T8) nese i blok `logic` a doplňky rolí; `goal` šablona hraje na dvorku.
+    const parts = templateParts(name, ROLES);
     const rules = expandTemplate(name, ROLES);
     expect(rules).not.toBeNull();
     const parsed = rulesSchema.safeParse(rules);
     expect(parsed.success).toBe(true);
-    expect(ruleIssues(parsed.data ?? [], [], new Set(Object.values(ROLES)))).toEqual([]);
+    const game = { yard: RULE_TEMPLATES[name].kind === 'goal', ...(parts?.logic === undefined ? {} : { logic: parts.logic }) };
+    expect(ruleIssues(parsed.data ?? [], parts?.things ?? [], new Set(Object.values(ROLES)), game)).toEqual([]);
     expect(JSON.stringify(rules)).not.toContain('$');
   });
 

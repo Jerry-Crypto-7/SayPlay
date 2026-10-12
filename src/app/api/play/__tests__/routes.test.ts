@@ -19,7 +19,8 @@ import chaseEscape from '@/play/__fixtures__/chase_escape.json';
 import collectExit from '@/play/__fixtures__/collect_exit.json';
 import hazardCrossing from '@/play/__fixtures__/hazard_crossing.json';
 import switchPuzzle from '@/play/__fixtures__/switch_puzzle.json';
-import { ARCADE_COMPILER_VERSION } from '@/play/arcade/compile';
+import { arcadeCompilerVersion } from '@/play/arcade/compile';
+import { ARCADE_RUNTIME_V2, ARCADE_RUNTIME_VERSION } from '@/play/arcade/contract';
 import type { GameCompiler } from '@/play/contracts';
 import { STARTERS } from '@/components/play/starters';
 import { draftGameSpec } from '@/play/draft';
@@ -552,7 +553,8 @@ describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
       const game = await read(created.body.versionId);
       expect(game.body.spec.control, starter.sentence).toBeDefined();
       controls.add(game.body.spec.control);
-      expect(game.body.version.compilerVersion).toBe(ARCADE_COMPILER_VERSION);
+      // P45B T9: návrh se šablonou pravidel nese logiku, jen takový svět je `arcade-v3`.
+      expect(game.body.version.compilerVersion).toBe(arcadeCompilerVersion({ runtimeVersion: game.body.spec.logic === undefined ? ARCADE_RUNTIME_V2 : ARCADE_RUNTIME_VERSION }));
       expect(game.body.report.keypoints.length, starter.sentence).toBeGreaterThan(0);
       expect(game.body.report.publishEligible, starter.sentence).toBe(true);
       expect('stub' in game.body.report).toBe(false);

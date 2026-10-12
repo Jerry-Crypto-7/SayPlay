@@ -10,9 +10,59 @@ import { nativeSpec } from './native';
 import { timeOfDayFor } from '../arcade/look';
 import { BALL_DIFFICULTY } from './ball-difficulty';
 import { singular } from '../draft/lexicon';
+import { RULE_TEMPLATES, type RuleTemplate, TEMPLATE_NAMES, type TemplateName, type TemplateSlot, says, templateParts, templatesFor } from '../arcade/rules/templates';
 
 /** Recipes select an assembly; existing piece builders retain their frozen output. */
 export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
+  return compileTemplated(assembly).spec;
+}
+
+/** `compileRecipe` and the rule template it attached (P45B T9); `null` = none. */
+export function compileTemplated(assembly: RecipeAssembly): { readonly spec: GameSpecV1; readonly template: TemplateName | null } {
+  return withTemplate(compileRecipeSpec(assembly), assembly);
+}
+
+/** Druhy rolí hry, které šablona dosadí do slotu – první volná role hry v pořadí `roles[]`. */
+const SLOT_KINDS: Readonly<Record<TemplateSlot, readonly string[]>> = {
+  item: ['item', 'key', 'collectible'], goal: ['destination', 'exit'], target: ['target'], lever: ['switch'], door: ['door'],
+  enemy: ['chaser', 'patrol', 'hazard'], hazard: ['hazard'], exit: ['exit', 'destination'], zone: ['zone', 'checkpoint'],
+};
+
+/**
+ * Šablona pravidel pro recept ze `assemble` (P45B T9; jiné cesty záměr nenesou a šablonu
+ * nedostanou). Žánr, který žádané sloveso nehraje (`unplayed`), dostane nejdřív `goal` šablonu
+ * toho slovesa; jinak (a po ní) `overlay` podle os receptu a slov věty. Sloty berou role hry –
+ * ne role dílů ani munici; chybí-li role, šablona se přeskočí. Platí první, která se vejde
+ * do zbylých pravidel; nevejde-li se hra s vestavěnými pravidly, `compose` ji zkusí bez ní.
+ */
+function withTemplate(game: GameSpecV1, assembly: RecipeAssembly): { readonly spec: GameSpecV1; readonly template: TemplateName | null } {
+  const { intent } = assembly;
+  if (intent === undefined || game.logic !== undefined) return { spec: game, template: null };
+  const budget = ARCADE_LIMITS.maxRules - (game.rules ?? []).length;
+  const axes = [`move:${assembly.move}`, ...assembly.actions.map((action) => `action:${action}`), `objective:${assembly.objective}`];
+  const goals = templatesFor(intent.unplayed.map((verb) => `action:${verb}`), budget).filter((name) => RULE_TEMPLATES[name].kind === 'goal');
+  const overlays = TEMPLATE_NAMES.filter((name) => {
+    const template: RuleTemplate = RULE_TEMPLATES[name];
+    return template.kind === 'overlay' && template.budget <= budget && (template.axes.some((axis) => axes.includes(axis)) || template.verbs.some((verb) => says(intent.words, verb)));
+  });
+  const taken = new Set(['ammunition', ...(game.assemblyParts ?? []).map((part) => part.role)]);
+  for (const name of [...goals, ...overlays]) {
+    const roles: Partial<Record<TemplateSlot, string>> = {};
+    for (const slot of RULE_TEMPLATES[name].slots) {
+      const role = game.roles.find((item) => SLOT_KINDS[slot].includes(item.kind) && !taken.has(item.id) && !Object.values(roles).includes(item.id));
+      if (role !== undefined) roles[slot] = role.id;
+    }
+    const parts = templateParts(name, roles);
+    if (parts === null) continue;
+    return {
+      spec: { ...game, rules: [...(game.rules ?? []), ...parts.rules], ...(parts.things.length === 0 ? {} : { things: [...(game.things ?? []), ...parts.things] }), ...(parts.logic === undefined ? {} : { logic: parts.logic }) },
+      template: name,
+    };
+  }
+  return { spec: game, template: null };
+}
+
+function compileRecipeSpec(assembly: RecipeAssembly): GameSpecV1 {
   const base = compileRecipeBase(assembly);
   const time = timeOfDayFor(assembly.content.setting);
   const game = time === null ? base : { ...base, theme: { ...base.theme, timeOfDay: time } };

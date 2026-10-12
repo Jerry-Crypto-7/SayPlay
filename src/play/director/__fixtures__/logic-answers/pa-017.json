@@ -1,0 +1,122 @@
+{
+ "id": "pa-017",
+ "sentence": "a spaceship shooting asteroids to survive",
+ "axis": "survive",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:39:37.998Z",
+ "ms": 22486,
+ "answer": {
+  "plan": "Create a shooter‑style space survival game where the player’s spaceship shoots incoming asteroids while avoiding collisions to keep the ship alive.",
+  "spec": {
+   "genre": "shooter",
+   "mode": "default",
+   "hero": "spaceship",
+   "cast": [
+    {
+     "label": "asteroid",
+     "does": "shoot_at",
+     "verb": "shoot",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "outer space",
+   "palette": "space",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "target": null
+   },
+   "ruleRoles": [
+    {
+     "id": "asteroid",
+     "kind": "hazard",
+     "label": "asteroid",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "shoot_asteroid",
+     "verb": "shoot",
+     "when": {
+      "contact": [
+       "player",
+       "asteroid"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "hit_asteroid",
+     "verb": "hit",
+     "when": {
+      "contact": [
+       "player",
+       "asteroid"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "respawn_asteroid",
+     "verb": "spawn",
+     "when": {
+      "timer": "spawn_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "asteroid",
+        "at": "player"
+       }
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "spawn_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "first"
+     },
+     {
+      "id": "second"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

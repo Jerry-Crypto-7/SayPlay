@@ -1,0 +1,368 @@
+{
+  "roles": {
+    "item": "rock",
+    "goal": "nest",
+    "target": "bell",
+    "lever": "lever",
+    "door": "gate"
+  },
+  "templates": {
+    "carry": {
+      "verbs": [
+        "carry",
+        "bring",
+        "deliver",
+        "fetch",
+        "haul",
+        "transport",
+        "grab"
+      ],
+      "slots": [
+        "item",
+        "goal"
+      ],
+      "rules": [
+        {
+          "id": "take",
+          "verb": "carry",
+          "when": {
+            "contact": [
+              "player",
+              "rock"
+            ]
+          },
+          "if": [
+            {
+              "notHolding": true
+            }
+          ],
+          "do": [
+            {
+              "grab": "other"
+            }
+          ]
+        },
+        {
+          "id": "deliver",
+          "verb": "deliver",
+          "when": {
+            "contact": [
+              "player",
+              "nest"
+            ]
+          },
+          "if": [
+            {
+              "holding": "rock"
+            }
+          ],
+          "do": [
+            {
+              "despawn": "held"
+            },
+            {
+              "score": 1
+            },
+            {
+              "win": true
+            }
+          ]
+        }
+      ]
+    },
+    "throw": {
+      "verbs": [
+        "throw",
+        "toss",
+        "hurl",
+        "lob",
+        "fling"
+      ],
+      "slots": [
+        "item",
+        "target"
+      ],
+      "rules": [
+        {
+          "id": "pick",
+          "verb": "pick",
+          "when": {
+            "contact": [
+              "player",
+              "rock"
+            ]
+          },
+          "if": [
+            {
+              "notHolding": true
+            }
+          ],
+          "do": [
+            {
+              "grab": "other"
+            }
+          ]
+        },
+        {
+          "id": "throw",
+          "verb": "throw",
+          "when": {
+            "press": "action"
+          },
+          "if": [
+            {
+              "holding": "rock"
+            }
+          ],
+          "do": [
+            {
+              "throwHeld": true
+            }
+          ]
+        },
+        {
+          "id": "hit",
+          "verb": "hit",
+          "when": {
+            "contact": [
+              "rock",
+              "bell"
+            ]
+          },
+          "do": [
+            {
+              "score": 1
+            },
+            {
+              "win": true
+            }
+          ]
+        }
+      ]
+    },
+    "push": {
+      "verbs": [
+        "push",
+        "shove",
+        "nudge",
+        "kick"
+      ],
+      "slots": [
+        "item",
+        "goal"
+      ],
+      "rules": [
+        {
+          "id": "push",
+          "verb": "push",
+          "when": {
+            "contact": [
+              "player",
+              "rock"
+            ]
+          },
+          "do": [
+            {
+              "push": "other"
+            }
+          ]
+        },
+        {
+          "id": "place",
+          "verb": "place",
+          "when": {
+            "contact": [
+              "rock",
+              "nest"
+            ]
+          },
+          "do": [
+            {
+              "win": true
+            }
+          ]
+        }
+      ]
+    },
+    "open": {
+      "verbs": [
+        "open",
+        "pull",
+        "unlock",
+        "flip"
+      ],
+      "slots": [
+        "lever",
+        "door",
+        "goal"
+      ],
+      "rules": [
+        {
+          "id": "pull",
+          "verb": "pull",
+          "when": {
+            "contact": [
+              "player",
+              "lever"
+            ]
+          },
+          "do": [
+            {
+              "toggle": "gate"
+            }
+          ]
+        },
+        {
+          "id": "pass",
+          "verb": "pass",
+          "when": {
+            "contact": [
+              "player",
+              "nest"
+            ]
+          },
+          "do": [
+            {
+              "win": true
+            }
+          ]
+        }
+      ]
+    },
+    "give": {
+      "verbs": [
+        "give",
+        "hand",
+        "offer",
+        "feed",
+        "serve"
+      ],
+      "slots": [
+        "item",
+        "goal"
+      ],
+      "rules": [
+        {
+          "id": "pick",
+          "verb": "pick",
+          "when": {
+            "contact": [
+              "player",
+              "rock"
+            ]
+          },
+          "if": [
+            {
+              "notHolding": true
+            }
+          ],
+          "do": [
+            {
+              "grab": "other"
+            }
+          ]
+        },
+        {
+          "id": "give",
+          "verb": "give",
+          "when": {
+            "contact": [
+              "player",
+              "nest"
+            ]
+          },
+          "if": [
+            {
+              "holding": "rock"
+            }
+          ],
+          "do": [
+            {
+              "despawn": "held"
+            },
+            {
+              "score": 1
+            },
+            {
+              "win": true
+            }
+          ]
+        }
+      ]
+    },
+    "stack": {
+      "verbs": [
+        "stack",
+        "pile",
+        "heap"
+      ],
+      "slots": [
+        "item",
+        "goal"
+      ],
+      "rules": [
+        {
+          "id": "pick",
+          "verb": "pick",
+          "when": {
+            "contact": [
+              "player",
+              "rock"
+            ]
+          },
+          "if": [
+            {
+              "notHolding": true
+            }
+          ],
+          "do": [
+            {
+              "grab": "other"
+            }
+          ]
+        },
+        {
+          "id": "stack",
+          "verb": "stack",
+          "when": {
+            "contact": [
+              "player",
+              "nest"
+            ]
+          },
+          "if": [
+            {
+              "holding": "rock"
+            }
+          ],
+          "do": [
+            {
+              "despawn": "held"
+            },
+            {
+              "count": {
+                "counter": "items",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "tall",
+          "verb": "finish",
+          "when": {
+            "counter": {
+              "name": "items",
+              "atLeast": 3
+            }
+          },
+          "do": [
+            {
+              "win": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

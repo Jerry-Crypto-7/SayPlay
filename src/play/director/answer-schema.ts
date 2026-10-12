@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 
-import { THINGS_MAX, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
+import { THINGS_MAX, logicSchema, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { COUNT_PARAMS, COUNT_ROLES, type CountRole, type GenreModule, genreSpecSchema, ruleRoleSchema } from '../genre/contract';
 import { GENRE_MODULES, paramBoundsOf } from '../genre/index';
 import { ROLE_KINDS } from '../spec';
@@ -92,11 +92,12 @@ function genreVariant(module: GenreModule): Json | null {
 /** Druhy rolí, které smí nést jen pravidla – hráče staví modul. */
 const RULE_ROLE_KINDS = ROLE_KINDS.filter((kind) => kind !== 'player') as [string, ...string[]];
 
-/** Shared construction source; emitted independently inside every variant. */
-const RULE_DEFS: Readonly<Record<'ruleRoles' | 'things' | 'rules', Json>> = {
+/** Shared construction source; emitted independently inside every variant. `logic` + its rule constructs since P45B T10. */
+const RULE_DEFS: Readonly<Record<'ruleRoles' | 'things' | 'rules' | 'logic', Json>> = {
   ruleRoles: strictSchema(toJson(z.array(ruleRoleSchema.extend({ kind: z.enum(RULE_ROLE_KINDS) })).max(THINGS_MAX))),
   things: strictSchema(toJson(thingsSchema)),
   rules: strictSchema(toJson(modelRulesSchema)),
+  logic: strictSchema(toJson(logicSchema)),
 };
 
 /**
