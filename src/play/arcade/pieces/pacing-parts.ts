@@ -63,6 +63,8 @@ const curvePhases = (rows: number): Phase[] => phasesFromCurve(TENSION_CURVE).ma
 /**
  * Hrozby v pruzích běžce (P45C R2): flanker a ostřelovač od stupňování, hejno až od vrcholu; vstupují `ahead`
  * před hráčem ve vnějších pruzích. Robot uhýbá plánovačem pruhů, který vidí i řady (`behaviours/lanes.ts`).
+ * Scénář úseků (P46B T3, `segments.ts`) z nich losuje nového nepřítele úseku 2 a 3: přijde s prvním krokem
+ * rozvrhu úseku a dřív ne. Spawnů nepřibude – rozpočet zůstává, obtížnost běžce je změřená na něm.
  * `room` = těla, která hrozby potřebují navíc (předlohy těl a výstřelu, sloty `maxActors` + `maxShots`), `spare` =
  * rezerva pro doplňky za průběhem (`+shoot`: nepřítel za každou druhou řadou, předloha a střely ve vzduchu).
  * simplified: `spare` je pevná rezerva, ne součet doplňků specu – dlouhá hustá trať hrozby ztratí i bez doplňků;
@@ -100,6 +102,7 @@ const track = (rows: number, rampLevel = false, foes = false): GenrePacing => (p
   behaviours: [],
   budget: 0,
   ...((foes ? runnerFoes(parts) : null) ?? {}),
+  ...(foes ? { segments: 'runner' as const } : {}),
   finale: 'sprint',
   phases: curvePhases(rows),
   ...(rampLevel ? { rampLevel: true } : {}),
@@ -676,6 +679,7 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
     ...(clear.length === 0 ? {} : { clear }),
     ...(setup.steady === true ? { steady: true } : {}),
     ...(setup.extra === undefined ? {} : { extra: setup.extra }),
+    ...(setup.segments === undefined ? {} : { segments: setup.segments }),
   });
   // Zásah a pád (`boss_beat`) má jen boss a boss-terč; strážce úkolu se neporáží, jen hlídá poslední věc.
   const beatId = boss?.beat ?? ((boss?.behaviour ?? 'boss') === 'boss' ? 'boss_beat' : undefined);

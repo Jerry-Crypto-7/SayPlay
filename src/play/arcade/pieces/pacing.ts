@@ -20,7 +20,8 @@ import { ESCAPE } from './arena';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef, type BehaviourSpace, behaviourBodies, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, seenByBase, stepBehaviours } from './behaviours';
 import { duelControl, enragedAfter } from './duel';
 import { FIGHT } from './fight';
-// Cyklus `throw.ts` ↔ tenhle modul je bezpečný: ani jeden nečte hodnoty druhého při načtení, jen ve funkcích.
+// Cykly `throw.ts` a `segments.ts` ↔ tenhle modul jsou bezpečné: ani jeden nečte hodnoty druhého při načtení, jen ve funkcích.
+import { type SegmentGenre, segmentScriptOf, segmentSpans } from './segments';
 import { THROW_ROUND_COUNTER } from './throw';
 import { spotsAway, waveOf } from './waves';
 
@@ -392,6 +393,18 @@ export interface PacingSetup {
    * předlohy – stanoviště dvojího úkolu posledního kola. Předloha jde za předlohy výstřelů, mimo los rozvrhu.
    */
   readonly extra?: { readonly body: BodyInit; readonly at: number; readonly count: number };
+  /**
+   * Scénář úseků žánru (P46B T3, `segmentScriptOf`): nový nepřítel úseku přijde s jeho prvním krokem
+   * rozvrhu a dřív ne – úsek 2 i 3 tak vždy přinese chování, které hráč ještě neviděl.
+   */
+  readonly segments?: SegmentGenre;
+}
+
+/** Rychlost fází (`phase_control`) v % na začátku rozjezdu a úseků scénáře; trať bez fází = prázdné. */
+function segmentSpeeds(control: PieceRef): number[] {
+  const phases = controlIn(control, 'phase_control')?.params.phases as readonly { readonly start: number; readonly speedPercent: number }[] | undefined;
+  if (phases === undefined) return [];
+  return [0, ...segmentSpans().map(([at]) => at)].map((at) => [...phases].reverse().find((phase) => phase.start <= at)?.speedPercent ?? 100);
 }
 
 /**
@@ -420,11 +433,30 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const refs = actors.flatMap((actor, index) => (actor.behaviour === undefined ? [] : [{ id: actor.behaviour, template: first + index, ...shotOf(actor.behaviour) }]));
   const moved = refs.length === 0 ? {} : { behaviours: refs };
   const bodies = [...parts.level.bodies, ...[...actors.map((actor) => actor.body), ...shotBodies, ...extras].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
-  const drawn = behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(rng, TENSION_CURVE, setup.budget, behaviours.length, setup.from, setup.until)
-    .flatMap((entry) => {
-      // Předloha, která ještě nesmí (`from`), předá krok jiné z těch, které už smí – bez dalšího losu, stream zůstane.
-      const ready = behaviours.flatMap((actor, index) => ((actor.from ?? 0) <= entry.atPermille ? [index] : []));
-      const index = ready.includes(entry.behaviour) ? entry.behaviour : ready[entry.behaviour % Math.max(1, ready.length)];
+  const raw = behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(rng, TENSION_CURVE, setup.budget, behaviours.length, setup.from, setup.until);
+  // Scénář losuje až za rozvrhem, takže kroky zůstanou, kde byly: nový nepřítel úseku smí až od jeho začátku a první krok úseku je jeho.
+  const cast = { foes: behaviours.flatMap((actor) => (actor.behaviour === undefined ? [] : [{ behaviour: actor.behaviour, from: actor.from ?? 0 }])), speeds: segmentSpeeds(parts.control) };
+  const script = setup.segments === undefined ? [] : segmentScriptOf(rng, setup.segments, cast);
+  const arrivals = script.flatMap((step) => step.changes.flatMap((change) => (change.kind === 'newFoe' ? [{ ...step, index: behaviours.findIndex((actor) => actor.behaviour === change.behaviour) }] : [])));
+  const fromOf = (index: number): number => Math.max(behaviours[index]?.from ?? 0, arrivals.find((arrival) => arrival.index === index)?.at ?? 0);
+  // Předloha, která ještě nesmí (`from`), předá krok jiné z těch, které už smí – bez dalšího losu, stream zůstane.
+  const picked = raw.map((entry) => {
+    const ready = behaviours.flatMap((_actor, index) => (fromOf(index) <= entry.atPermille ? [index] : []));
+    return ready.includes(entry.behaviour) ? entry.behaviour : ready[entry.behaviour % Math.max(1, ready.length)];
+  });
+  // Nový nepřítel úseku dostane jeho první krok a chování z toho kroku si vezme jeho nejbližší pozdější krok:
+  // hra má dál stejné složení nepřátel (přepsat oba kroky ostřelovače vzalo semínku 7 běžce 15 z 24 útoků).
+  const firsts = arrivals.map((arrival) => raw.findIndex((entry) => entry.atPermille >= arrival.at && entry.atPermille < arrival.until));
+  for (const [n, arrival] of arrivals.entries()) {
+    const k = firsts[n] as number;
+    if (k < 0 || picked[k] === arrival.index) continue;
+    const swap = picked.findIndex((index, j) => j > k && index === arrival.index && !firsts.includes(j));
+    if (swap >= 0) picked[swap] = picked[k];
+    picked[k] = arrival.index;
+  }
+  const drawn = raw
+    .flatMap((entry, k) => {
+      const index = picked[k];
       if (index === undefined) return [];
       const actor = behaviours[index]?.behaviour;
       // Hejno je jeden spawn celé, i ve vrcholu (dvě hejna naráz by přetekla `maxActors`).
