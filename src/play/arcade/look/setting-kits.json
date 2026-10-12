@@ -69,6 +69,17 @@
       ]
     },
     {
+      "setting": "deep sea",
+      "pattern": "\\bdeep[\\s-]+sea(?:e?s)?\\b",
+      "look": "underwater",
+      "props": [
+        {
+          "id": "gen3d-diving-bell",
+          "height": 1.2
+        }
+      ]
+    },
+    {
       "setting": "haunted mansion",
       "pattern": "\\bhaunted[\\s-]+mansion(?:e?s)?\\b|\\bhaunted[\\s-]+houses?\\b|\\bmansions?\\b",
       "look": "graveyard",
@@ -95,6 +106,10 @@
         {
           "id": "gen3d-candelabra",
           "height": 1.4
+        },
+        {
+          "id": "gen3d-suit-of-armor",
+          "height": 1.2
         }
       ]
     },
@@ -129,6 +144,10 @@
         {
           "id": "gen3d-tavern-sign",
           "height": 2.4
+        },
+        {
+          "id": "gen3d-bar-counter",
+          "height": 1.2
         }
       ]
     },
@@ -140,6 +159,14 @@
         {
           "id": "gen3d-pet-carrier",
           "height": 0.8
+        },
+        {
+          "id": "gen3d-dog-kennel",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-dog-bowl",
+          "height": 1.2
         }
       ]
     },
@@ -215,6 +242,10 @@
         {
           "id": "gen3d-rock-arch",
           "height": 2.2
+        },
+        {
+          "id": "gen3d-cow-skull",
+          "height": 1.2
         }
       ]
     },
@@ -230,6 +261,17 @@
         {
           "id": "gen3d-portcullis",
           "height": 3
+        }
+      ]
+    },
+    {
+      "setting": "cellar",
+      "pattern": "\\bcellar(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-cellar-door",
+          "height": 1.2
         }
       ]
     },
@@ -263,6 +305,17 @@
         {
           "id": "gen3d-rope-bridge",
           "height": 2
+        }
+      ]
+    },
+    {
+      "setting": "cloud castle",
+      "pattern": "\\bcloud[\\s-]+castle(?:e?s)?\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-cloud-castle",
+          "height": 1.2
         }
       ]
     },
@@ -324,8 +377,27 @@
       "look": "desert",
       "props": [
         {
+          "id": "gen3d-sphinx",
+          "height": 1.2
+        },
+        {
           "id": "gen3d-obelisk",
           "height": 5
+        }
+      ]
+    },
+    {
+      "setting": "diner kitchen",
+      "pattern": "\\bdiner[\\s-]+kitchen(?:e?s)?\\b",
+      "look": "supermarket",
+      "props": [
+        {
+          "id": "gen3d-diner-booth",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-griddle",
+          "height": 1.2
         }
       ]
     },
@@ -361,6 +433,10 @@
       "look": "living_room",
       "props": [
         {
+          "id": "gen3d-fireplace",
+          "height": 1.2
+        },
+        {
           "id": "gen3d-rocking-chair",
           "height": 1.2
         }
@@ -371,6 +447,10 @@
       "pattern": "\\bfoggy[\\s-]+lake(?:e?s)?\\b",
       "look": "ocean",
       "props": [
+        {
+          "id": "gen3d-wooden-dock",
+          "height": 1.2
+        },
         {
           "id": "gen3d-cattail",
           "height": 1.6
@@ -430,6 +510,21 @@
       ]
     },
     {
+      "setting": "garage",
+      "pattern": "\\bgarage(?:e?s)?\\b",
+      "look": "factory",
+      "props": [
+        {
+          "id": "gen3d-tool-chest",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-car-jack",
+          "height": 1.2
+        }
+      ]
+    },
+    {
       "setting": "glacier",
       "pattern": "\\bglacier(?:e?s)?\\b",
       "look": "snow",
@@ -456,6 +551,21 @@
       ]
     },
     {
+      "setting": "hotel basement",
+      "pattern": "\\bhotel[\\s-]+basement(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-luggage-cart",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-laundry-cart",
+          "height": 1.2
+        }
+      ]
+    },
+    {
       "setting": "ice rink",
       "pattern": "\\bice[\\s-]+rink(?:e?s)?\\b|\\bskating[\\s-]+rinks?\\b|\\bice[\\s-]+skating\\b",
       "look": "snow",
@@ -463,6 +573,10 @@
         {
           "id": "gen3d-ice-skate",
           "height": 0.7
+        },
+        {
+          "id": "gen3d-hockey-goal",
+          "height": 1.2
         }
       ]
     },
@@ -485,6 +599,10 @@
         {
           "id": "gen3d-tiki-torch",
           "height": 1.9
+        },
+        {
+          "id": "gen3d-tribal-drum",
+          "height": 1.2
         }
       ]
     },
@@ -530,10 +648,25 @@
       ]
     },
     {
+      "setting": "living room",
+      "pattern": "\\bliving[\\s-]+room(?:e?s)?\\b",
+      "look": "living_room",
+      "props": [
+        {
+          "id": "gen3d-coffee-table",
+          "height": 1.2
+        }
+      ]
+    },
+    {
       "setting": "magic tower",
       "pattern": "\\bmagic[\\s-]+tower(?:e?s)?\\b",
       "look": "castle",
       "props": [
+        {
+          "id": "gen3d-wizard-tower",
+          "height": 1.2
+        },
         {
           "id": "gen3d-potion-bottle",
           "height": 0.9
@@ -556,6 +689,10 @@
       "pattern": "\\bmedieval[\\s-]+town(?:e?s)?\\b",
       "look": "castle",
       "props": [
+        {
+          "id": "gen3d-timber-house",
+          "height": 1.2
+        },
         {
           "id": "gen3d-pillory",
           "height": 2
@@ -590,8 +727,27 @@
       "look": "mall",
       "props": [
         {
+          "id": "gen3d-dinosaur-skeleton",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-display-case",
+          "height": 1.2
+        },
+        {
           "id": "gen3d-velvet-rope",
           "height": 1
+        }
+      ]
+    },
+    {
+      "setting": "mushroom village",
+      "pattern": "\\bmushroom[\\s-]+village(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-mushroom-house",
+          "height": 1.2
         }
       ]
     },
@@ -601,8 +757,23 @@
       "look": "desert",
       "props": [
         {
+          "id": "gen3d-dingo",
+          "height": 1.4
+        },
+        {
           "id": "gen3d-emu",
           "height": 1.7
+        }
+      ]
+    },
+    {
+      "setting": "pet salon",
+      "pattern": "\\bpet[\\s-]+salon(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-grooming-table",
+          "height": 1.2
         }
       ]
     },
@@ -611,6 +782,10 @@
       "pattern": "\\bpharmacy(?:e?s)?\\b|\\bpharmacies\\b|\\bdrugstores?\\b",
       "look": "supermarket",
       "props": [
+        {
+          "id": "gen3d-pill-bottle",
+          "height": 1.2
+        },
         {
           "id": "gen3d-medicine-cabinet",
           "height": 1.8
@@ -651,6 +826,10 @@
         {
           "id": "gen3d-wagon-wheel",
           "height": 1.3
+        },
+        {
+          "id": "gen3d-horseshoe",
+          "height": 1.2
         }
       ]
     },
@@ -671,7 +850,81 @@
       "look": "living_room",
       "props": [
         {
+          "id": "gen3d-rooftop-water-tank",
+          "height": 1.2
+        },
+        {
           "id": "gen3d-air-conditioner",
+          "height": 1.2
+        }
+      ]
+    },
+    {
+      "setting": "snowy forest",
+      "pattern": "\\bsnowy[\\s-]+forest(?:e?s)?\\b",
+      "look": "snow",
+      "props": [
+        {
+          "id": "gen3d-snowshoe",
+          "height": 1.2
+        }
+      ]
+    },
+    {
+      "setting": "snowy village",
+      "pattern": "\\bsnowy[\\s-]+village(?:e?s)?\\b",
+      "look": "snow",
+      "props": [
+        {
+          "id": "gen3d-snowy-lamppost",
+          "height": 1.2
+        }
+      ]
+    },
+    {
+      "setting": "town square",
+      "pattern": "\\btown[\\s-]+square(?:e?s)?\\b",
+      "look": "city",
+      "props": [
+        {
+          "id": "gen3d-clock-tower",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-notice-board",
+          "height": 1.2
+        }
+      ]
+    },
+    {
+      "setting": "treetop",
+      "pattern": "\\btreetop(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-rope-ladder",
+          "height": 1.2
+        }
+      ]
+    },
+    {
+      "setting": "winter festival",
+      "pattern": "\\bwinter[\\s-]+festival(?:e?s)?\\b",
+      "look": "snow",
+      "props": [
+        {
+          "id": "gen3d-snow-globe",
+          "height": 1.2
+        }
+      ]
+    },
+    {
+      "setting": "zoo",
+      "pattern": "\\bzoo(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-zoo-gate",
           "height": 1.2
         }
       ]
