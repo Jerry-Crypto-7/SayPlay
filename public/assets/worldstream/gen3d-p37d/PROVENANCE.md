@@ -408,3 +408,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-ice-lantern` | ice lantern | 4680 / 2325 |
 | `gen3d-nutcracker` | nutcracker | 4750 / 2374 |
 | `gen3d-parcel-scale` | parcel scale | 4735 / 2358 |
+| `gen3d-ore-crusher` | ore crusher | 4290 / 2083 |
+| `gen3d-lifebuoy` | lifebuoy | 4747 / 2366 |
+| `gen3d-pinwheel` | pinwheel | 4686 / 2290 |
+| `gen3d-price-tag` | price tag | 4708 / 2302 |
+| `gen3d-scarab-statue` | scarab statue | 4274 / 2111 |

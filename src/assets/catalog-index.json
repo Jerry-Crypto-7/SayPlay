@@ -23990,6 +23990,101 @@
           0.56204
         ]
       }
+    },
+    {
+      "assetId": "gen3d-ore-crusher",
+      "tags": [
+        "ore crusher"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ore-crusher-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27622,
+          0,
+          -0.39293
+        ],
+        "max": [
+          0.27622,
+          0.99983,
+          0.39293
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lifebuoy",
+      "tags": [
+        "lifebuoy"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lifebuoy-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.51581,
+          0,
+          -0.07432
+        ],
+        "max": [
+          0.51581,
+          0.99727,
+          0.07432
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pinwheel",
+      "tags": [
+        "pinwheel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pinwheel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31658,
+          0,
+          -0.06173
+        ],
+        "max": [
+          0.31658,
+          0.99756,
+          0.06173
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-price-tag",
+      "tags": [
+        "price tag"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-price-tag-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25433,
+          0,
+          -0.20449
+        ],
+        "max": [
+          0.25433,
+          0.9975,
+          0.20449
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-scarab-statue",
+      "tags": [
+        "scarab statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-scarab-statue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44881,
+          0,
+          -0.29076
+        ],
+        "max": [
+          0.44881,
+          0.99719,
+          0.29076
+        ]
+      }
     }
   ]
 }

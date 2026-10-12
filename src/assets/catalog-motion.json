@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "c47b04fd35dbc7c0bc36aee1af177c52612358ae1c30cf5c0a1fc5ffb890bbcc",
+ "catalogHash": "c82947557c562d647b39e283b562b99a1b8b19d9f8206faaed43bfc66850c3f1",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1183,6 +1183,11 @@
   "gen3d-champagne-tower": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-ice-lantern": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-nutcracker": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-parcel-scale": {"class":"prop"}
+  "gen3d-parcel-scale": {"class":"prop"},
+  "gen3d-ore-crusher": {"class":"prop"},
+  "gen3d-lifebuoy": {"class":"prop"},
+  "gen3d-pinwheel": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-price-tag": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-scarab-statue": {"class":"prop"}
  }
 }
