@@ -46,6 +46,7 @@ import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
 import { census, shotHit } from './pieces/shots';
+import { abilityButton, abilityControlParams, tickAbilities } from './abilities/state';
 
 /** Parametry kusu pod obalem, přečtené jednou: obal běží každý tik a zod parse by ho zpomalil. */
 const parsedParams = new WeakMap<object, unknown>();
@@ -109,7 +110,7 @@ export interface AddonPiece<P = unknown> {
 const noParams = z.object({}).strict();
 
 /** Náraz do nového nepřítele: bez životů prohra, se životy ztráta života a vteřina milosti (P36A T2). */
-const hitParamsFor = (role: 'enemy' | 'chaser', health: number | undefined): Readonly<Record<string, unknown>> =>
+export const hitParamsFor = (role: 'enemy' | 'chaser', health: number | undefined): Readonly<Record<string, unknown>> =>
   health === undefined ? { role, effect: 'lose' } : { role, effect: 'damage', grace: HIT_GRACE };
 
 /** `+lives`: tři životy. Náraz pak ubere život místo prohry – pravidla ovládání to podle `health` udělají sama. */
@@ -296,7 +297,7 @@ function runnerRows(level: ArcadeLevel): Map<number, Set<number>> {
  * volný (za mince), plošinovce na vzdálený konec desky, poletování do
  * mezery trubky. Každý druhý úsek, ať mezi nimi zbude čas.
  */
-function enemiesFor(control: string, level: ArcadeLevel): BodyInit[] {
+export function enemiesFor(control: string, level: ArcadeLevel): BodyInit[] {
   if (control === 'glide') {
     // Actual XYZ ring apertures, not a floor-level track: there is enough time
     // to settle into the next ring's lane and fire before reaching its target.
@@ -639,11 +640,13 @@ const wrappedControlParams = z
   .object({
     base: z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) }).strict(),
     chase: z.object({ along: z.int().min(1), across: z.int().min(0), oncoming: z.boolean().optional(), commit: z.int().min(0).optional(), course: courseSchema.optional() }).strict().optional(),
+    /** Akce hrdiny (P46A): počítadlo a akce v pořadí tlačítek A, B. */
+    abilities: abilityControlParams.optional(),
   })
   .strict();
 
 /** Obalí ovládání `addon_control`, nebo doplní parametry obalu, který už tam je. */
-function wrapControl(parts: ArcadeParts, extra: Partial<z.infer<typeof wrappedControlParams>>): PieceRef {
+export function wrapControl(parts: ArcadeParts, extra: Partial<z.infer<typeof wrappedControlParams>>): PieceRef {
   const params = parts.control.id === 'addon_control' ? parts.control.params : { base: parts.control };
   return { id: 'addon_control', params: { ...params, ...extra } };
 }
@@ -662,7 +665,10 @@ export function makeAddonControl(bases: Readonly<Record<string, ControlPiece>>):
       const base = bases[params.base.id];
       if (base === undefined) throw new Error(`arcade: unknown control ${params.base.id}`);
       base.step(state, player, input, paramsOf(base, params.base.params));
-      state[HEADER.counters + COUNTER.trigger] = (input.buttons & BUTTON.FIRE) !== 0 ? 1 : 0;
+      // Střelba jako akce hrdiny (P46A) spouští blaster i svým tlačítkem A nebo B.
+      const fire = params.abilities === undefined ? BUTTON.FIRE : BUTTON.FIRE | abilityButton(params.abilities.ids, 'shoot');
+      state[HEADER.counters + COUNTER.trigger] = (input.buttons & fire) !== 0 ? 1 : 0;
+      if (params.abilities !== undefined) tickAbilities(state, input.buttons, params.abilities);
       if (params.chase !== undefined) chase(state, player, params.chase);
     },
   };

@@ -15,7 +15,14 @@ const noParams = z.object({}).strict();
  * `combo` = index těla-počítadla komba (P36A T10, `COMBO`); bez něj zásah za bod jako dřív.
  * `spare` = předloha bosse-terče (P45C T13): tělo s jejím podpisem zásah nesebere – HP mu ubírá `boss_beat_hit`.
  */
-const shotHitParams = z.object({ combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(), spare: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional() }).strict();
+const shotHitParams = z
+  .object({
+    combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+    spare: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+    // Střelba jako akce hrdiny (P46A): ověření robotem pak dokazuje sloveso zásahem.
+    verb: z.literal('shoot').optional(),
+  })
+  .strict();
 
 const isFoe = (role: number): boolean => role === ROLE.target || role === ROLE.enemy;
 

@@ -14,6 +14,7 @@ import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts'
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { type ArcadeParts, addonControlParams, addonLives, applyAddons, baseControlOf, mapUnderlying, underlyingRule } from './addons';
+import { applyAbilities } from './abilities';
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
@@ -217,7 +218,9 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   // Pahýl módu vrací prázdnou úroveň s issue; doplňky by z ní četly tělo hráče (revize T4 kolo 2).
   if (own.issues !== undefined && own.issues.length > 0) return { ok: false, issues: own.issues };
   const lives = 'health' in own ? own.health : health;
-  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(applyAddons(own, { spec, seed, health: lives }), spec, ARCADE_LIBRARY.rules);
+  // Akce hrdiny (P46A) po doplňcích: střelba převezme blaster, který `+shoot` už dal.
+  const addonContext = { spec, seed, health: lives };
+  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(applyAbilities(applyAddons(own, addonContext), addonContext), spec, ARCADE_LIBRARY.rules);
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
   // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění. Volný pohyb má
   // čtvercovou podlahu (dvorek, aréna) – její okraj je místo vlny `edge` (P45B).
