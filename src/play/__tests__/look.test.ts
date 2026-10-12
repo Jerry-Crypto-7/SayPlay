@@ -98,7 +98,7 @@ describe('rekvizity prostředí (P45H T3)', () => {
     ['a cat runs through a supermarket', ['gen3d-checkout-counter', 'gen3d-shopping-basket']],
     ['a canyon', ['gen3d-rock-arch', 'gen3d-mesa']],
     // Nejdelší shoda vyhrává: pouštní kaňon má vlastní kit.
-    ['a desert canyon', ['gen3d-rock-arch']],
+    ['a desert canyon', ['gen3d-rock-arch', 'gen3d-cow-skull']],
     ['Haunted Mansion at midnight', ['gen3d-candelabra', 'gen3d-grandfather-clock', 'gen3d-chandelier']],
     // Návrh z „escape the haunted mansion“ píše místo jen „mansion“.
     ['mansion', ['gen3d-candelabra', 'gen3d-grandfather-clock', 'gen3d-chandelier']],
@@ -113,7 +113,7 @@ describe('rekvizity prostředí (P45H T3)', () => {
 
   it('věta bez kitu má sadu beze změny', () => {
     expect(sceneLook(theme('a dog runs in a park'))).toBe(LOOKS.meadow);
-    expect(sceneLook(theme('a cozy living room at night')).props).toBe(LOOKS.living_room.props);
+    // Obývák má od modelů P45I vlastní kit (konferenční stolek), proto tu už není.
     expect(sceneLook({ ...theme('busy city traffic'), look: 'city' }).props).toBe(LOOKS.city.props);
   });
 
