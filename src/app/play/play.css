@@ -1708,13 +1708,19 @@ button.play-version-switch__item:not(:disabled) {
 }
 
 /* Banner průběhu (P45C T16): „Here they come!“, „Boss!“, „Final wave!“ … štítek kitu (rajčatová = hrozba)
- * nad řádkem se slovesem, 1,4 s herního času; nezachytává dotyky. */
+ * nad řádkem se slovesem, 1,4 s herního času; nezachytává dotyky. Úseky P46B T7 nesou jméno z věty
+ * („Boss: Police helicopter“) – dlouhé jméno se na úzkém telefonu zalomí místo přetečení přes okraj. */
 .play-pacing-banner {
   top: 24%;
   left: 50%;
   z-index: 2;
   margin: 0;
+  /* Šířka podle textu, ne podle místa vpravo od `left: 50%` – zalomí se až u okraje scény. */
+  width: max-content;
   max-width: calc(100% - var(--sp-space-8));
+  white-space: normal;
+  text-align: center;
+  text-wrap: balance;
   box-shadow: var(--sp-shadow-sm);
   pointer-events: none;
   animation: play-pacing-banner var(--sp-duration-celebrate) var(--sp-ease-pop) both;

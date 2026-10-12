@@ -16,13 +16,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf } from '@/play/arcade/compile';
-import { type ArcadeState, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, type PieceRef, UNIT, bodyBase, nativeRule, underlyingRule } from '@/play/arcade/contract';
+import { type ArcadeState, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, type PieceRef, ROLE, UNIT, bodyBase, nativeRule, underlyingRule } from '@/play/arcade/contract';
 import { instantiate } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { type BehaviourRef, behaviourBodies } from '@/play/arcade/pieces/behaviours';
 import { play } from '@/play/arcade/pieces/behaviours/__tests__/harness';
 import { duelControl, enragedAfter } from '@/play/arcade/pieces/duel';
-import { FINALES, type PacingBeat, type PacingRuleParams, pacingBeatOf, reachedOf } from '@/play/arcade/pieces/pacing';
+import { FINALES, NEWS_LEAD, type PacingBeat, type PacingRuleParams, SEGMENT_NEWS, type SegmentNews, pacingBeatOf, reachedOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
 import { THROW_ROUND_COUNTER } from '@/play/arcade/pieces/throw';
 import { waveOf } from '@/play/arcade/pieces/waves';
@@ -31,7 +31,7 @@ import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
 import { type Phase, phaseSpeed } from '@/play/compose/progression';
 
-import { PACING_BANNER_LABELS, PACING_BANNER_TICKS, PacingBanner, createPacingBannerWatch } from '../PacingBanner';
+import { PACING_BANNER_LABELS, PACING_BANNER_TICKS, PacingBanner, SEGMENT_NEWS_LABELS, createPacingBannerWatch, pacingBannerLabel } from '../PacingBanner';
 
 type Finale = (typeof FINALES)[number];
 
@@ -184,12 +184,18 @@ const CASES: readonly (readonly [string, Finale])[] = [
   ['rhythm.default', 'phrase'],
 ];
 
+/** Hry se scénářem úseků (P46B): místo „Here they come!“ ohlásí úsek 2 a 3. */
+const SEGMENTED: ReadonlySet<string> = new Set(['runner.default', 'drive.race', 'platformer.default']);
+
 describe('pacingBeatOf – what the game has, tick by tick', () => {
   it.each(CASES)('%s: the %s finale is announced exactly while its mechanism runs, once, after the build-up', (id, finale) => {
     const { world, run } = wonRun(id);
+    const segmented = SEGMENTED.has(id);
     expect(pacingOf(world)?.finale).toBe(finale);
+    expect(segmentNewsOf(world).map((item) => item.beat), 'segments are announced only in segment games').toEqual(segmented ? ['segment2', 'segment3'] : []);
     // Jen chvíle, které tahle hra má (úkol: postup po kolech skočí na místo prvního chování i bosse v jednom tiku).
-    expect(new Set(run.beats.filter((beat) => beat !== null))).toEqual(new Set(run.states.some((state) => state.foes > 0 && !state.mechanism) ? ['buildUp', finale] : [finale]));
+    const early = segmented ? ['segment2', 'segment3'] : run.states.some((state) => state.foes > 0 && !state.mechanism) ? ['buildUp'] : [];
+    expect(new Set(run.beats.filter((beat) => beat !== null))).toEqual(new Set([...early, finale]));
     if (finale === 'phrase') {
       // Rytmus: finále začne s první notou finále křivky (± jedna fráze čtyř not), ne až s 85 % vyřízených not.
       const first = run.beats.indexOf('phrase');
@@ -201,16 +207,14 @@ describe('pacingBeatOf – what the game has, tick by tick', () => {
       const wrong = run.beats.flatMap((beat, tick) => ((beat === finale) !== run.states[tick]!.mechanism ? [tick] : []));
       expect(wrong.slice(0, 5), `ticks where the ${finale} beat and the world disagree`).toEqual([]);
     }
-    // Stupňování: přesně když je na ploše nové chování (ne boss) a finále neběží.
-    const foes = run.beats.flatMap((beat, tick) => ((beat === 'buildUp') !== (run.states[tick]!.foes > 0 && beat !== finale) ? [tick] : []));
+    // Stupňování: přesně když je na ploše nové chování (ne boss) a finále neběží; hra s úseky ho nemá (co a kdy úsek řekne, hlídá „segment announcements“).
+    const foes = run.beats.flatMap((beat, tick) => ((beat === 'buildUp') !== (!segmented && run.states[tick]!.foes > 0 && beat !== finale) ? [tick] : []));
     expect(foes.slice(0, 5)).toEqual([]);
 
-    // Banner: finále jednou, stupňování nejvýš jednou a před ním, každé na celých 1,4 s (nebo do finále či konce běhu).
+    // Banner: finále jednou, stupňování nejvýš jednou a před ním (s úseky úsek 2 a 3 před ním), každé na celých 1,4 s (nebo do další chvíle či konce běhu).
     const shown = blocks(run.banner);
     expect(shown.filter(([beat]) => beat === finale)).toHaveLength(1);
-    expect(shown.map(([beat]) => beat)).toEqual(shown.length === 2 ? ['buildUp', finale] : [finale]);
-    // Běžec (R2): hrozby v pruzích přijdou před bossem – „Here they come!“ je vidět.
-    if (id === 'runner.default') expect(shown.map(([beat]) => beat)).toEqual(['buildUp', 'boss']);
+    expect(shown.map(([beat]) => beat)).toEqual(segmented ? ['segment2', 'segment3', finale] : shown.length === 2 ? ['buildUp', finale] : [finale]);
     for (const [index, [beat, from, ticks]] of shown.entries()) {
       expect(from).toBe(run.beats.indexOf(beat));
       const next = shown[index + 1]?.[1] ?? run.banner.length;
@@ -260,16 +264,156 @@ describe('pacingBeatOf – what the game has, tick by tick', () => {
   }, SLOW);
 });
 
+/**
+ * Nápis úseku (P46B T7) slibuje změnu – „Faster!“ bez rychlejší fáze nebo „New foe“ bez nového nepřítele by
+ * sliboval něco, co se nestane. Pin: v každém vyhraném běhu běžce, řízení a skákačky se každý nápis úseku
+ * přečte jako text, který hráč vidí, a porovná se se světem v tiku, kdy se objevil – nezávisle na tom, jak
+ * ho `segmentNewsOf` odvodila: nový nepřítel je tělo chování, které na ploše ještě nebylo; rychlost je fáze
+ * trati (`phaseSpeed`) vyšší než kdykoli předtím; užší silnice jsou mantinely před hráčem užší než všechny
+ * projeté; nová past a pohyblivá plošina je první kinematická nástraha či plošina trati, kousek před hráčem.
+ */
+describe('segment announcements – what the world really changes', () => {
+  /** Mantinel: pevná překážka aspoň 10 m dlouhá (jako měřidlo T1); dvojice se stejným `z` a hloubkou je kus silnice. */
+  function roadPieces(world: ArcadeWorld): { readonly near: number; readonly far: number; readonly width: number }[] {
+    const initial = instantiate(world);
+    const pairs = new Map<string, number[]>();
+    for (let body = 1; body < (initial[HEADER.bodyCount] as number); body += 1) {
+      const base = bodyBase(body);
+      if (initial[base + BODY.role] !== ROLE.obstacle || !alive(initial, body) || (initial[base + BODY.d] as number) < 10 * UNIT) continue;
+      const key = `${initial[base + BODY.z]}/${initial[base + BODY.d]}`;
+      pairs.set(key, [...(pairs.get(key) ?? []), body]);
+    }
+    return [...pairs.values()].flatMap((bodies) => {
+      if (bodies.length !== 2) return [];
+      const [a, b] = bodies.map(bodyBase).sort((p, q) => (initial[p + BODY.x] as number) - (initial[q + BODY.x] as number)) as [number, number];
+      const width = (initial[b + BODY.x] as number) - (initial[b + BODY.w] as number) / 2 - ((initial[a + BODY.x] as number) + (initial[a + BODY.w] as number) / 2);
+      return [{ near: (initial[a + BODY.z] as number) - (initial[a + BODY.d] as number) / 2, far: (initial[a + BODY.z] as number) + (initial[a + BODY.d] as number) / 2, width }];
+    });
+  }
+
+  /** Kinematické nástrahy (`hazard`) a plošiny (`platform`) trati: přední hrana každé. */
+  function movers(world: ArcadeWorld, role: number): number[] {
+    const initial = instantiate(world);
+    const out: number[] = [];
+    for (let body = 1; body < (initial[HEADER.bodyCount] as number); body += 1) {
+      const base = bodyBase(body);
+      if (initial[base + BODY.role] === role && alive(initial, body) && ((initial[base + BODY.flags] as number) & FLAG.kinematic) !== 0) out.push((initial[base + BODY.z] as number) - (initial[base + BODY.d] as number) / 2);
+    }
+    return out;
+  }
+
+  /** Změna, kterou nápis tvrdí – z textu, který hráč vidí. */
+  function claimOf(label: string): SegmentNews {
+    if (label.startsWith('New foe')) return 'newFoe';
+    const found = (Object.entries(SEGMENT_NEWS_LABELS) as [SegmentNews, string][]).find(([, text]) => text === label);
+    if (found === undefined) throw new Error(`not a segment label: ${label}`);
+    return found[0];
+  }
+
+  /** Vyhraný běh: chvíle banneru, poloha a rychlost hráče a první tik každého nepřítele rozvrhu (ne bosse) na ploše. */
+  function changesRun(world: ArcadeWorld): { readonly banner: (PacingBeat | null)[]; readonly z: number[]; readonly speed: number[]; readonly arrivals: number[] } {
+    const refs = (pacingOf(world)?.behaviours ?? []).slice(0, -1);
+    const phased = controlIn(world.control, 'phase_control')!.params as { phases: Phase[]; length: number };
+    const watch = createPacingBannerWatch(world);
+    const out = { banner: [] as (PacingBeat | null)[], z: [] as number[], speed: [] as number[], arrivals: [] as number[] };
+    const seen = new Set<number>();
+    const end = play(world, bot(world), (state, tick) => {
+      out.banner.push(watch.see(state));
+      out.z.push(playerZ(state));
+      out.speed.push(phaseSpeed(1000, playerZ(state), phased.length, phased.phases));
+      for (const ref of refs) {
+        if (seen.has(ref.template) || behaviourBodies(state, state[HEADER.player] as number, [ref]).length === 0) continue;
+        seen.add(ref.template);
+        out.arrivals.push(tick);
+      }
+    });
+    expect(end[HEADER.runState], 'the bot wins').toBe(1);
+    return out;
+  }
+
+  it.each([...SEGMENTED])('%s: segment 2, segment 3 and the boss are announced, each segment by a change the world makes right then', (id) => {
+    const claims = new Set<SegmentNews>();
+    // Dvě semínka na žánr: nápis se odvozuje ze světa, každé semínko staví jiný.
+    for (const seed of [1, 2]) {
+      const world = cellWorld(id, seed);
+      const run = changesRun(world);
+      const shown = blocks(run.banner);
+      expect(shown.map(([beat]) => beat), `seed ${seed}`).toEqual(['segment2', 'segment3', 'boss']);
+      expect(pacingBannerLabel(world, 'boss', 'police helicopter')).toBe('Boss: Police helicopter');
+      const road = roadPieces(world);
+      for (const [beat, from] of shown.slice(0, 2)) {
+        const label = pacingBannerLabel(world, beat, 'fox');
+        const claim = claimOf(label);
+        claims.add(claim);
+        const z = run.z[from]!;
+        const where = `seed ${seed} ${beat} “${label}” at tick ${from}`;
+        if (claim === 'newFoe') {
+          expect(label, where).toBe('New foe: Fox');
+          // Nepřítel, který na ploše ještě nebyl, přišel právě teď.
+          expect(run.arrivals.some((tick) => tick >= from && tick <= from + 1), where).toBe(true);
+        } else if (claim === 'faster') {
+          // Fáze trati právě teď zrychlila nad všechno předtím.
+          expect(run.speed[from]!, where).toBeGreaterThan(Math.max(...run.speed.slice(0, from)));
+        } else if (claim === 'narrow') {
+          const ahead = road.filter((piece) => piece.far > z && piece.near <= z + NEWS_LEAD + UNIT);
+          const driven = road.filter((piece) => piece.near <= z);
+          expect(Math.min(...ahead.map((piece) => piece.width)), where).toBeLessThan(Math.min(...driven.map((piece) => piece.width)));
+        } else {
+          // Nová past či pohyblivá plošina: první kinematická na trati, nejvýš `NEWS_LEAD` před hráčem.
+          const fronts = movers(world, claim === 'trap' ? ROLE.hazard : ROLE.platform);
+          const next = Math.min(...fronts.filter((front) => front >= z - UNIT));
+          expect(next - z, where).toBeLessThanOrEqual(NEWS_LEAD + UNIT);
+          expect(fronts.filter((front) => front < z - UNIT), where).toEqual([]);
+        }
+      }
+    }
+    // Žánr má co říct: dvě různé změny za úseky 2 a 3.
+    expect(claims.size).toBeGreaterThanOrEqual(2);
+  }, SLOW);
+
+  it('the segment news follows the world: flat speeds never say “Faster!”, a schedule without foes never says “New foe”', () => {
+    const world = cellWorld('runner.default', 1);
+    const recontrol = (ref: PieceRef, change: (phase: PieceRef) => PieceRef): PieceRef =>
+      ref.id === 'phase_control' ? change(ref) : { ...ref, params: { ...ref.params, base: recontrol(ref.params.base as PieceRef, change) } };
+    const flat: ArcadeWorld = { ...world, control: recontrol(world.control, (phase) => ({ ...phase, params: { ...phase.params, phases: (phase.params.phases as Phase[]).map((item) => ({ ...item, speedPercent: 100 })) } })) };
+    const rule = pacingOf(world)!;
+    const boss = rule.behaviours!.at(-1)!.template;
+    const alone: ArcadeWorld = { ...world, rules: world.rules.map((ref) => (underlyingRule(ref).id === 'pacing' ? { ...ref, params: { ...ref.params, schedule: rule.schedule.filter((entry) => entry.template === boss) } } : ref)) };
+    expect(segmentNewsOf(world).map((item) => item.news)).toContain('faster');
+    expect(segmentNewsOf(flat).map((item) => item.news)).not.toContain('faster');
+    expect(segmentNewsOf(flat).map((item) => item.news)).toEqual(['newFoe', 'newFoe']);
+    expect(segmentNewsOf(alone).map((item) => item.news)).toEqual(['faster', 'faster']);
+    // Hra bez scénáře úseků (poletování se sprintem) úseky neohlásí, i když jí trať zrychluje.
+    expect(segmentNewsOf(cellWorld('flap.default', 1))).toEqual([]);
+  });
+});
+
 describe('the banner on screen', () => {
   it('every beat has a short English label in sentence case', () => {
     expect(Object.keys(PACING_BANNER_LABELS).sort()).toEqual(['buildUp', ...FINALES].sort());
+    expect(Object.keys(SEGMENT_NEWS_LABELS).sort()).toEqual([...SEGMENT_NEWS].sort());
     expect(PACING_BANNER_LABELS.buildUp).toBe('Here they come!');
     expect([PACING_BANNER_LABELS.boss, PACING_BANNER_LABELS.wave, PACING_BANNER_LABELS.sprint, PACING_BANNER_LABELS.round]).toEqual(['Boss!', 'Final wave!', 'Final sprint!', 'Last round!']);
-    for (const label of Object.values(PACING_BANNER_LABELS)) {
+    expect(SEGMENT_NEWS_LABELS.faster).toBe('Faster!');
+    for (const label of [...Object.values(PACING_BANNER_LABELS), ...Object.values(SEGMENT_NEWS_LABELS)]) {
       expect(label).toMatch(/^[A-Z][a-z]*( [a-z]+)*!$/);
       expect(label.length).toBeLessThanOrEqual(15);
     }
     expect(PACING_BANNER_TICKS).toBe(84);
+  });
+
+  it('a new foe and the boss carry the name from the sentence after a fixed prefix; without a name the plain label', () => {
+    const world = cellWorld('runner.default', 1);
+    const foeBeat = segmentNewsOf(world).find((item) => item.news === 'newFoe')!.beat;
+    for (const [name, shown] of [['fox', 'Fox'], ['police helicopter', 'Police helicopter']] as const) {
+      expect(pacingBannerLabel(world, 'boss', name)).toBe(`Boss: ${shown}`);
+      expect(pacingBannerLabel(world, foeBeat, name)).toBe(`New foe: ${shown}`);
+    }
+    for (const label of [pacingBannerLabel(world, 'boss', 'fox'), pacingBannerLabel(world, foeBeat, 'police helicopter')]) expect(label).toMatch(/^(Boss|New foe): [A-Z][a-z]*( [a-z]+)*$/);
+    expect(pacingBannerLabel(world, 'boss')).toBe('Boss!');
+    expect(pacingBannerLabel(world, foeBeat)).toBe('New foe!');
+    // Jméno nese jen boss a nový nepřítel: finále jiného druhu zůstane, jak je.
+    expect(pacingBannerLabel(world, 'sprint', 'fox')).toBe('Final sprint!');
   });
 
   it('renders the kit world tag with the beat while the game runs, nothing before the beat or when off', () => {
@@ -286,6 +430,7 @@ describe('the banner on screen', () => {
     expect(html).toContain('class="sp-world-tag play-pacing-banner"');
     expect(html).toContain('data-beat="boss"');
     expect(html).toContain('Boss!');
+    expect(renderToStaticMarkup(createElement(PacingBanner, { session: session(finale!), enabled: true, foe: 'fox' }))).toContain('>Boss: Fox</p>');
     expect(renderToStaticMarkup(createElement(PacingBanner, { session: session(finale!), enabled: false }))).toBe('');
     expect(renderToStaticMarkup(createElement(PacingBanner, { session: session(early!), enabled: true }))).toBe('');
   }, SLOW);

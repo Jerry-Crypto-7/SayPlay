@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 
 import type { ArcadeParts } from '../addons';
-import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeWorld, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, UNIT, bodyBase, nativeRule } from '../contract';
+import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeLevel, type ArcadeRole, type ArcadeWorld, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, UNIT, bodyBase, nativeRule } from '../contract';
 import { ESCAPE } from './arena';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef, type BehaviourSpace, behaviourBodies, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, seenByBase, stepBehaviours } from './behaviours';
 import { duelControl, enragedAfter } from './duel';
@@ -522,14 +522,130 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
 }
 
 // ---------------------------------------------------------------------------
-// Oznámení průběhu (P45C T16)
+// Oznámení průběhu (P45C T16) a úseků (P46B T7)
 
-/** Chvíle průběhu, kterou hra ohlásí: `buildUp` = na ploše je nové chování (ne boss), jinak běžící finále. */
-export type PacingBeat = 'buildUp' | (typeof FINALES)[number];
+/** Úseky 2 a 3 jako chvíle banneru. */
+export const SEGMENT_BEATS = ['segment2', 'segment3'] as const;
+export type SegmentBeat = (typeof SEGMENT_BEATS)[number];
+
+/**
+ * Chvíle průběhu, kterou hra ohlásí: `buildUp` = na ploše je nové chování (ne boss), `segment2`/`segment3` =
+ * změna úseku (hra se scénářem úseků místo `buildUp`), jinak běžící finále.
+ */
+export type PacingBeat = 'buildUp' | SegmentBeat | (typeof FINALES)[number];
+
+/** Svět, ze kterého se chvíle čtou: pravidla a ovládání, úseky navíc úroveň z počátečního stavu. */
+export type BeatWorld = Pick<ArcadeWorld, 'rules' | 'control' | 'initial' | 'kinds' | 'length'>;
+
+/**
+ * Co úsek 2 či 3 hráči opravdu přinesl, v pořadí přednosti pro jediný nápis úseku: nový nepřítel, užší silnice,
+ * nová past, pohyblivé plošiny, vyšší rychlost.
+ */
+export const SEGMENT_NEWS = ['newFoe', 'narrow', 'trap', 'moving', 'faster'] as const;
+export type SegmentNews = (typeof SEGMENT_NEWS)[number];
+
+/**
+ * Ohlášená změna úseku a chvíle, kdy nastane: postup `reached` ‰ dojde na `at` (nový nepřítel přijde s krokem
+ * rozvrhu), nebo hráč na trati dojede do `z` = `at` (rychlejší fáze, past nebo užší silnice před ním).
+ */
+export interface SegmentAnnouncement {
+  readonly beat: SegmentBeat;
+  readonly news: SegmentNews;
+  readonly by: 'reached' | 'z';
+  readonly at: number;
+}
+
+/** Past, pohyblivou plošinu a užší silnici banner ohlásí o tolik dřív, než k nim hráč dojede – uvidí je včas. */
+export const NEWS_LEAD = 20 * UNIT;
 
 type Beat = (state: Int32Array) => PacingBeat | null;
 const never = (): boolean => false;
 const playerZ = (state: Int32Array): number => state[bodyBase(state[HEADER.player] as number) + BODY.z] as number;
+
+/** Hra se scénářem úseků (běžec, řízení, skákačka – `withPacing` `segments`): trať, jejíž finále je boss. */
+const segmentPaced = (params: PacingRuleParams): boolean => params.space === 'track' && params.finale === 'boss';
+
+const ROLE_NAMES: ReadonlyMap<number, ArcadeRole> = new Map(Object.entries(ROLE).map(([name, code]) => [code, name as ArcadeRole]));
+
+/** Úroveň zpátky z počátečního stavu světa: role, model, rozměry, kinematika a předlohy (`segmentWidths`, `segmentPlaces`). */
+function levelOf(world: BeatWorld): ArcadeLevel {
+  const bodies: BodyInit[] = [];
+  for (let body = 0; body < (world.initial[HEADER.bodyCount] as number); body += 1) {
+    const at = (slot: number): number => world.initial[bodyBase(body) + slot] as number;
+    const flags = at(BODY.flags);
+    bodies.push({
+      role: ROLE_NAMES.get(at(BODY.role)) ?? 'thing', kind: world.kinds[at(BODY.kind)] ?? '',
+      x: at(BODY.x), y: at(BODY.y), z: at(BODY.z), w: at(BODY.w), h: at(BODY.h), d: at(BODY.d),
+      solid: (flags & FLAG.solid) !== 0, kinematic: (flags & FLAG.kinematic) !== 0, template: (flags & FLAG.alive) === 0,
+    });
+  }
+  return { bodies, length: world.length };
+}
+
+/**
+ * Co úseky 2 a 3 hry opravdu změnily, přečteno ze světa, ne z pevného seznamu: nový nepřítel = chování, jehož
+ * první krok rozvrhu pravidla `pacing` padne do úseku (`withPacing` dává novému nepříteli úseku jeho první krok);
+ * rychlost = fáze trati (`segmentSpeeds`); užší silnice řízení a nová past či pohyblivá plošina skákačky = tělesa
+ * úrovně (`segmentWidths`, `segmentPlaces` nad úrovní z počátečního stavu) – tatáž čtení, ze kterých staví scénář
+ * úseků (`segmentScriptOf`). Úsek ohlásí jednu změnu: první podle `SEGMENT_NEWS`, která není druhem změny předchozího
+ * úseku (dvakrát „New foe“ řekne míň než „New foe“ a „Faster!“). Úsek beze změny nic. Jen hra se scénářem úseků.
+ */
+function segmentNewsOfWorld(world: BeatWorld): SegmentAnnouncement[] {
+  const params = nativeRule(world.rules, 'pacing')?.params as PacingRuleParams | undefined;
+  if (params === undefined || !segmentPaced(params)) return [];
+  // Boss je poslední předloha chování (`withPacing`); nový nepřítel je jen chování rozvrhu před ním.
+  const boss = params.behaviours?.at(-1)?.template;
+  const firsts = new Map<number, number>();
+  for (const entry of params.schedule) if (entry.template !== boss) firsts.set(entry.template, Math.min(firsts.get(entry.template) ?? 1000, entry.atPermille));
+  const phased = controlIn(world.control, 'phase_control')?.params as { readonly phases: readonly { readonly start: number }[]; readonly length: number } | undefined;
+  const speeds = segmentSpeeds(world.control);
+  const steer = controlIn(world.control, 'steer') !== undefined;
+  const platform = controlIn(world.control, 'platform') !== undefined;
+  const level = steer || platform ? levelOf(world) : { bodies: [], length: world.length };
+  const widths = steer ? segmentWidths(level) : [];
+  const walls = steer ? steerSegments(level) : [];
+  const places = platform ? segmentPlaces(level) : [];
+  const zOf = (permille: number): number => Math.floor((world.length * permille) / 1000);
+  let previous: SegmentNews | undefined;
+  return segmentSpans().flatMap(([from, until], index): SegmentAnnouncement[] => {
+    const k = index + 1;
+    const found: Omit<SegmentAnnouncement, 'beat'>[] = [];
+    const arrivals = [...firsts.values()].filter((at) => at >= from && at < until);
+    if (arrivals.length > 0) found.push({ news: 'newFoe', by: 'reached', at: Math.min(...arrivals) });
+    const before = widths[k - 1] ?? 0;
+    if ((widths[k] ?? Infinity) < before) {
+      const narrower = walls.find((wall) => wall.far > zOf(from) && wall.width < before);
+      found.push({ news: 'narrow', by: 'z', at: Math.max(0, (narrower?.near ?? zOf(from)) - NEWS_LEAD) });
+    }
+    for (const variant of (places[k] ?? []).filter((kind) => !places.slice(0, k).some((earlier) => earlier.includes(kind)))) {
+      const role = variant === 'trap' ? 'hazard' : 'platform';
+      const near = Math.min(...level.bodies.flatMap((body) => {
+        const at = Math.floor((body.z * 1000) / Math.max(1, level.length));
+        return body.role === role && body.kinematic === true && body.template !== true && at >= from && at < until ? [body.z - body.d / 2] : [];
+      }));
+      found.push({ news: variant as 'trap' | 'moving', by: 'z', at: Math.max(0, near - NEWS_LEAD) });
+    }
+    if (phased !== undefined && (speeds[k] ?? 0) > (speeds[k - 1] ?? Infinity)) {
+      // Fáze platí od `floor(z · 1000 / délka) >= start` (`phaseSpeed`): od prvního celého `z` nad `start · délka / 1000`.
+      const start = [...phased.phases].reverse().find((phase) => phase.start <= from)?.start ?? 0;
+      found.push({ news: 'faster', by: 'z', at: Math.ceil((start * phased.length) / 1000) });
+    }
+    found.sort((a, b) => SEGMENT_NEWS.indexOf(a.news) - SEGMENT_NEWS.indexOf(b.news));
+    const chosen = found.find((item) => item.news !== previous) ?? found[0];
+    if (chosen === undefined) return [];
+    previous = chosen.news;
+    return [{ beat: SEGMENT_BEATS[index] as SegmentBeat, ...chosen }];
+  });
+}
+
+const news = new WeakMap<object, readonly SegmentAnnouncement[]>();
+
+/** Ohlášené změny úseků 2 a 3 (`segmentNewsOfWorld`), jednou na svět; hra bez scénáře úseků prázdné. Jen čte svět. */
+export function segmentNewsOf(world: BeatWorld): readonly SegmentAnnouncement[] {
+  let known = news.get(world);
+  if (known === undefined) news.set(world, (known = segmentNewsOfWorld(world)));
+  return known;
+}
 
 /** Kus ovládání `id` v řetězu obalů (`params.base`: doplňky, průběh, fáze, skládání). */
 function controlIn(ref: PieceRef, id: string): PieceRef | undefined {
@@ -574,14 +690,22 @@ function finaleOn(world: Pick<ArcadeWorld, 'rules' | 'control'>, finale: (typeof
   return (state) => reachedOf(state, keeper) >= from;
 }
 
-function beatOf(world: Pick<ArcadeWorld, 'rules' | 'control'>): Beat {
+function beatOf(world: BeatWorld): Beat {
   const params = nativeRule(world.rules, 'pacing')?.params as PacingRuleParams | undefined;
   if (params?.finale === undefined) return () => null;
-  const { finale } = params;
+  const { finale, keeper } = params;
   const refs = params.behaviours ?? [];
   // Boss je poslední předloha chování (`withPacing`).
   const foes = finale === 'boss' ? refs.slice(0, -1) : refs;
-  const on = finaleOn(world, finale, params.keeper, finale === 'boss' ? refs.slice(-1) : []);
+  const on = finaleOn(world, finale, keeper, finale === 'boss' ? refs.slice(-1) : []);
+  if (segmentPaced(params)) {
+    // Úseky místo stupňování: poslední úsek, jehož změna už nastala.
+    const happened = [...segmentNewsOf(world)].reverse();
+    return (state) => {
+      if (on(state)) return finale;
+      return happened.find((item) => (item.by === 'reached' ? reachedOf(state, keeper) : playerZ(state)) >= item.at)?.beat ?? null;
+    };
+  }
   return (state) => {
     if (on(state)) return finale;
     return foes.length > 0 && behaviourBodies(state, state[HEADER.player] as number, foes).length > 0 ? 'buildUp' : null;
@@ -591,10 +715,11 @@ function beatOf(world: Pick<ArcadeWorld, 'rules' | 'control'>): Beat {
 const beats = new WeakMap<object, Beat>();
 
 /**
- * Co hra právě teď ohlásí (banner P45C T16): běžící finále, jinak `buildUp`, když je na ploše nové chování,
- * jinak `null`. Hra bez finále v pravidle `pacing` nemá žádnou chvíli – ani se svými chováními. Jen čte stav.
+ * Co hra právě teď ohlásí (banner P45C T16): běžící finále, jinak u hry se scénářem úseků úsek, jehož změna už
+ * nastala (`segmentNewsOf`), u jiné `buildUp`, když je na ploše nové chování, jinak `null`. Hra bez finále
+ * v pravidle `pacing` nemá žádnou chvíli – ani se svými chováními. Jen čte stav.
  */
-export function pacingBeatOf(world: Pick<ArcadeWorld, 'rules' | 'control'>, state: Int32Array): PacingBeat | null {
+export function pacingBeatOf(world: BeatWorld, state: Int32Array): PacingBeat | null {
   let beat = beats.get(world);
   if (beat === undefined) beats.set(world, (beat = beatOf(world)));
   return beat(state);

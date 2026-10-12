@@ -16,7 +16,7 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
-import { chaserModel, enemyModel, heroModel, propModels, sceneModelOf } from '@/play/arcade/models';
+import { chaserModel, chaserName, enemyModel, heroModel, propModels, sceneModelOf } from '@/play/arcade/models';
 import { targetModelOf } from '@/play/arcade/target-model';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setMusicTension, setSoundLook, vibrateFor } from '@/play/audio';
@@ -401,6 +401,8 @@ function ArcadePlayGame({
     })),
     };
   }, [spec]);
+  // Jméno nepřítele a bosse v banneru průběhu (P46B T7): popisek role, jejíž model je kreslí.
+  const foe = useMemo(() => chaserName(spec), [spec]);
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
@@ -876,7 +878,7 @@ function ArcadePlayGame({
             )}
             {/* Sloveso, které hra hraje (P43 T7), první tři vteřiny po prvním tahu. Cílovou větu doplňuje, nenahrazuje. */}
             {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null) && <VerbLine line={verb} />}
-            <PacingBanner session={session} enabled={running && active} />
+            <PacingBanner session={session} enabled={running && active} foe={foe} />
           </>
         }
       />
