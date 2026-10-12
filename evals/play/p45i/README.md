@@ -57,3 +57,51 @@ Mimo: `src/play/**` a `src/components/**` (P45H), placená API, zapečetěné sa
 | cyclops, canvas, bellows | `cache.normalize` utne koncové s, jméno by se rozešlo s katalogem |
 | captain, lizard, wolf, demon | hrdinové – nový model by změnil pin hrdinů v `src/play` (P45H) |
 | sandbox | katalog ho pozná přes `seen:sandbox` (vor a mapa pokladu ze slepého soudu P43) |
+
+## Souhrn kola (11.–12. 10. 2026, 21:49–07:03)
+
+| | Jmen | Předkontrola a brána | Slepý soud | Povýšeno |
+|---|---|---|---|---|
+| P45I, kola 1–26 (první pokus) | 251 | 207 | **147 (59 %)** | **141 (56 %)** |
+| P45I, kola 27–35 (opakování) | 78 | 52 | 14 | 9 (12 %) |
+| P45G, 14 dávek | 140 | 110 | 87 (62 %) | 74 (53 %) |
+
+- **Cíl ≥ 60 modelů splněn: 160 nových modelů v katalogu** (1041 → 1201), každý s licencí a původem v `disclosure.json`:
+  - 150 z kol P45I,
+  - 8 přijatých v P45G, které pustila až oprava třídy v T2,
+  - 2 z P45F (anthill, chicken leg).
+  - Po kolech a jménech: `gen-round.md`.
+- **Úspěšnost proti P45G:** první pokus 59 % soud / 56 % povýšení proti 62 % / 53 %, tedy srovnatelná. *Odhad, neměřeno:* povýšení je vyšší, protože po T2 už žádný přijatý model nezastaví slovo ve jménu.
+- **Opakování skoro nic nepřinesla:** 9 povýšených ze 78 pokusů. Kola 27–29 navíc soudila tentýž model z mezipaměti (22 jmen) – `batch.py` vezme mezipaměť dřív, než zkusí nová semínka; od kola 30 odsunuto ručně.
+- **Cíl ≥ 2 rekvizity na zpracované prostředí splněn u 68 ze 78** (P45G: 20 ze 64). Počítané jen nové modely P45G a P45I, stejně jako v P45G.
+  - Jednu rekvizitu má 6: rocky river, junkyard garage, tightrope, zoo, birthday party, treasure island.
+  - Žádnou nemají 4: snow fort (snowball bucket, toboggan – soudce viděl koš a kufr), treasure cave (gold pile, stalagmite, golden idol), brick wall (brick pile), mushroom hill (mushroom ring).
+- **Co zbylo (101 z 251 jmen)**, podle posledního pokusu:
+  - 51 – soudce poznal jiný předmět (stalagmite → dopravní kužel, hubcap → kolo, tablet → monitor).
+  - 36 – předkontrola odmítla všechny obrázky. U 13 z nich viděla správné jméno, ale obrázek označila jako rozbitý (víc kusů nebo useknutý předmět – tire stack, ore pile, laundry basket).
+  - 7 – soudce přijal, povýšení selhalo na `normalize: LOD1 cannot be made lighter than LOD0`: wedding arch, sea urchin, wildflower, snowy pine tree, gargoyle, city hall, stagecoach. Stagecoach selhal stejně i na novém modelu, takže jde o chybu normalizace, ne o smůlu generování.
+  - 7 – brána kvality, `inconsistent face winding` (rozbitá síť).
+  - Kolo 36 (9 opakování) nezačalo kvůli oknu.
+- **Codex:** 756 z 900 volání (497 předkontrol + 259 soudů), limit nedošel.
+- **Velikost:** 160 modelů = 320 GLB (LOD0 a LOD1) **19,9 MB** + 160 náhledů PNG 4,1 MB. Modely P45E–I leží v `public/assets/worldstream/gen3d-p37d/` – celkem **67 MB**. `public/assets/worldstream/gen3d/` (63 MB) P45I nemění.
+
+## Sady (T5, 12. 10. 2026 07:05–07:09)
+
+- Po každém kole prošly `src/assets`, `scripts/p37d`, `scripts/assets`, `models-qa`, `hero-choice` a `catalog-entries`. Výjimky – zapsané v těle commitu kola:
+  - kolo 12: HOLD kvůli pinu `missing-nouns`, opraveno (`5506831f`);
+  - kola 1 a 8: časové testy pod zátěží karty, samy zelené.
+- `evals/play/catalog-coverage.json` přegenerovaný (1041 → 1201 modelů). `node scripts/assets/cc0/coverage.mjs` ve worktree bez vlastního `node_modules` spadne (hledá `node_modules/vitest` jen ve worktree), proto běžel stejný příkaz přes `npx vitest run --config vitest.measure.mts evals/play/catalog-coverage.measure.ts`.
+- `npx vitest run src/assets scripts src/play/arcade/__tests__` + test pokrytí, v klidu (karta 0 %, žádný jiný běh): 143 souborů, **3316 z 3317 testů prošlo**. Jediný červený je `scripts/__tests__/submission-check.test.ts` – čte gitignorovaný `plans/P8-odevzdani.md`, který worktree nemá; stejně jako v P45G, s P45I nesouvisí.
+- Kontrola ve hře není součást P45I – dělá ji P45H po sloučení.
+
+## Doporučení
+
+1. **Oprava `normalize: LOD1 cannot be made lighter than LOD0`** vrátí 7 přijatých modelů bez nového generování – všechny leží v `D:/claude/_gen3d-cache-p45i/` (starší model stagecoach v `_superseded/stagecoach-r34`).
+2. **Opakování ne, nová jména ano:** první pokus dává 56 %, opakování 12 %. Pokud se opakuje, `batch.py` potřebuje volbu, která při `--attempts` přeskočí mezipaměť – jinak se soudí starý model.
+3. **10 prostředí bez dvou rekvizit** potřebuje jiná jména, ne další semínka: jmenované předměty soudce nepoznal ani na druhý pokus.
+4. **Předkontrola s pravopisnými variantami** (pinecone / pine cone, snow plow / snowplow) by pustila k soudu aspoň 2 jména.
+5. **Slepý soudce není úplně stálý:** ze 22 stejných modelů posouzených podruhé jeden změnil výsledek (ballot box z „no“ na top3). U hraničních jmen by pomohly dva soudy a přijetí jen při shodě.
+
+## Slučování
+
+Slučuje se **po P45G** (větev P45I na ní stojí). Konflikt v `src/assets/catalog-motion.json` a `evals/play/catalog-coverage.json` se neřeší ručně: vzít libovolnou stranu a znovu spustit `node scripts/p45d/motion-class.mjs` a měření pokrytí. Po sloučení P45H znovu pustí `scripts/p45h/build-setting-kits.mjs`. `src/play` a `src/components` P45I nemění.
