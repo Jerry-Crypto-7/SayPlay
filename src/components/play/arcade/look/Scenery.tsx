@@ -11,7 +11,7 @@
 import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Box3, type Group, type Object3D, Vector3 } from 'three';
 
-import { isSceneryModel, type Look, type PropKind, SCENERY_MODELS, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
+import { isSceneryModel, type Look, modelHeight, type PropKind, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
 
 import { UNDER_PANORAMA } from './under-panorama';
 import { loadFlatModel } from './load';
@@ -39,8 +39,8 @@ const PROP_HEIGHTS: Readonly<Record<PropKind, number>> = {
   chimney: 6, tower: 6.6, grave: 1.35, coral: 1.8, seaweed: 2.4, crystal: 1.7, iceblock: 1.2, volcano: 5, buoy: 1.45,
 };
 
-/** Výška kulisy při měřítku 1 (m): model z katalogu (`SCENERY_MODELS`), primitivy z `PROP_HEIGHTS`. */
-export const sceneryHeight = (kind: SceneryKind): number => (isSceneryModel(kind) ? SCENERY_MODELS[kind] : PROP_HEIGHTS[kind]);
+/** Výška kulisy při měřítku 1 (m): model z katalogu (`SCENERY_MODELS`, rekvizity prostředí), primitivy z `PROP_HEIGHTS`. */
+export const sceneryHeight = (kind: SceneryKind): number => (isSceneryModel(kind) ? modelHeight(kind) : PROP_HEIGHTS[kind]);
 
 /**
  * Strop kulisy v popředí: nejvýš 3 výšky hrdiny (P36C T5). Kamera arény kouká
@@ -200,7 +200,7 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
   }
 }
 
-/** Model katalogu postavený na zem ve výšce ze `SCENERY_MODELS`; dokud se nenačte, nic. `cap` = sněhová čepička. */
+/** Model katalogu postavený na zem ve výšce kulisy (`modelHeight`); dokud se nenačte, nic. `cap` = sněhová čepička. */
 function SceneryModelProp({ id, cap }: { readonly id: SceneryModel; readonly cap?: string }) {
   const [model, setModel] = useState<Object3D | null>(null);
   useEffect(() => {
@@ -217,7 +217,7 @@ function SceneryModelProp({ id, cap }: { readonly id: SceneryModel; readonly cap
     const copy = model.clone(true);
     const box = new Box3().setFromObject(copy);
     const size = box.getSize(new Vector3());
-    const scale = SCENERY_MODELS[id] / Math.max(size.y, 1e-3);
+    const scale = modelHeight(id) / Math.max(size.y, 1e-3);
     copy.scale.setScalar(scale);
     const center = box.getCenter(new Vector3());
     copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
