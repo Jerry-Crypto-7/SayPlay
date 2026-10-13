@@ -1923,6 +1923,27 @@ button.play-version-switch__item:not(:disabled) {
   bottom: calc(var(--_stack) + 168px);
 }
 
+/* Akce hrdiny (P46A T7, `AbilityButton`): totéž kolo ve sloupci vpravo dole, A pod B.
+ * `--_slot` = kolikáté kolo odspodu (střelba a úder/použití jsou pod nimi). Ikona nad popiskem. */
+.play-ability {
+  bottom: calc(var(--_stack) + var(--_slot, 0) * 84px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: var(--sp-secondary);
+  color: var(--sp-on-secondary);
+  font-size: var(--sp-text-caption-size);
+  line-height: 1;
+  transition: transform var(--sp-duration-press) var(--sp-ease-standard), box-shadow var(--sp-duration-press) var(--sp-ease-standard);
+}
+
+.play-ability:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
 /* Fáze světla mřížky (P25D T1) pod časovačem: rajčatová stůj, mátová jdi – text to říká i bez barvy. */
 .play-hud-phase {
   grid-column: 3;

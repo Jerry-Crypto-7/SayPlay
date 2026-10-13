@@ -25,7 +25,7 @@ import { CAPABILITIES } from '@/play/capabilities';
 import { stageOf } from '@/play/compose/stage-registry';
 import type { ControlId, HeroAction } from '@/play/spec';
 
-import { ActionButton, actionsOf, useActionInput } from './ActionButton';
+import { AbilityButton, ActionButton, abilitiesOf, actionsOf, useAbilityInput, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
 import type { ArcadeGhost } from './GhostSlot';
@@ -561,19 +561,22 @@ function useFlapInput(session: ArcadeSession, target: React.RefObject<HTMLDivEle
 }
 
 const FIRE_KEYS = new Set(['f', 'j', 'enter']);
+/** S akcemi hrdiny (P46A T7) patří J akci A, střelba zůstane na F a Enter. */
+const FIRE_KEYS_WITH_ABILITIES = new Set(['f', 'enter']);
 
 /** Střelba doplňku `+shoot` (P26D): F/J/Enter, na dotyku tlačítko ve scéně – skok a skluz zůstávají, kde byly. */
-function useFireInput(session: ArcadeSession, active: boolean): void {
+function useFireInput(session: ArcadeSession, active: boolean, abilities: boolean): void {
   useEffect(() => {
     if (!active) return;
+    const keys = abilities ? FIRE_KEYS_WITH_ABILITIES : FIRE_KEYS;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !FIRE_KEYS.has(event.key.toLowerCase())) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !keys.has(event.key.toLowerCase())) return;
       event.preventDefault();
       session.press(BUTTON.FIRE);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [session, active]);
+  }, [session, active, abilities]);
 }
 
 function FireButton({ session }: { readonly session: ArcadeSession }) {
@@ -783,10 +786,17 @@ export default function ArcadeStage({
   const fires = hasBlaster(session.world.rules);
   // Úder a použití (P32-0 T5) jen ve světě, který je čte.
   const actions = useMemo(() => actionsOf(session.world), [session]);
+  // Akce hrdiny (P46A T7): J/K patří tlačítkům A/B, úder a použití starých her je bez nich mají dál.
+  const abilities = useMemo(() => abilitiesOf(session.world), [session]);
+  const hasAbilities = abilities.length > 0;
+  // Tlačítko Shoot akce střílí týmž blasterem – druhé tlačítko střelby by bylo navíc.
+  const fireButton = fires && !abilities.includes('shoot');
+  const abilityBase = actions.length > 0 ? 1 + actions.length : fireButton ? 1 : 0;
   const look = scene ?? LOOKS[lookId];
   const draws = CAPABILITIES[control as ControlId]?.setting === true;
-  useFireInput(session, fires && enabled);
-  useActionInput(session, actions, enabled);
+  useFireInput(session, fires && enabled, hasAbilities);
+  useActionInput(session, actions, enabled && !hasAbilities);
+  useAbilityInput(session, abilities, enabled);
   useRunnerInput(session, surface, enabled && input === 'runner');
   usePlatformInput(session, surface, enabled && input === 'platform');
   useFlapInput(session, surface, enabled && input === 'flap');
@@ -823,8 +833,9 @@ export default function ArcadeStage({
         style={{ position: 'absolute', left: 12, top: 12, maxWidth: '65%', pointerEvents: 'none' }}>
         Left side: drag to move. Right side: aim and release to shoot. Keyboard: arrows move, Q/E aim, Space shoots.
       </div>}
-      {fires && enabled && <FireButton session={session} />}
+      {fireButton && enabled && <FireButton session={session} />}
       {enabled && actions.map((action) => <ActionButton key={action} session={session} action={action} />)}
+      {enabled && abilities.map((ability, slot) => <AbilityButton key={ability} session={session} ability={ability} slot={slot} stack={abilityBase + slot} />)}
     </div>
   );
 }

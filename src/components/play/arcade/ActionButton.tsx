@@ -9,14 +9,19 @@
  *
  * J je i klávesa střelby doplňku `+shoot` (`FIRE_KEYS` v `ArcadeStage.tsx`):
  * svět se soubojem i střelbou by na J dostal oba bity naráz.
+ *
+ * Akce hrdiny (P46A T7, `AbilityButton`) berou J a K pro sebe: ve hře s nimi
+ * J ani K nestřílí, neudeří ani nepoužijí – stisknou akci A a B.
  */
 
-import { useEffect, useRef } from 'react';
+import { type CSSProperties, useEffect, useRef } from 'react';
 
+import { ABILITY_BUTTONS, type AbilityControl } from '@/play/arcade/abilities/state';
 import { baseControlOf, underlyingRule } from '@/play/arcade/addons';
-import { type ArcadeWorld, BUTTON, nativeRule } from '@/play/arcade/contract';
+import { type AbilityId, type ArcadeWorld, BUTTON, nativeRule } from '@/play/arcade/contract';
 import { FIGHT_RULES } from '@/play/arcade/pieces/fight';
 
+import { Icon, type IconName } from '../ui/icons';
 import { isTyping } from './input';
 import type { ArcadeSession } from './session';
 
@@ -101,6 +106,79 @@ export function ActionButton({ session, action }: { readonly session: ArcadeSess
   return (
     <button ref={button} type="button" className="play-fire play-action" data-testid={`arcade-${action}`}>
       {label}
+    </button>
+  );
+}
+
+/** Akce hrdiny (P46A T7): popisek a ikona. Klávesa podle pořadí ve `spec.abilities`: A = J, B = K. */
+const ABILITY_FACES: Readonly<Record<AbilityId, { readonly label: string; readonly icon: IconName }>> = {
+  shoot: { label: 'Shoot', icon: 'shoot' },
+  strike: { label: 'Strike', icon: 'strike' },
+  dash: { label: 'Dash', icon: 'dash' },
+  shield: { label: 'Shield', icon: 'shield' },
+  grab: { label: 'Grab', icon: 'grab' },
+};
+const ABILITY_KEYS = ['j', 'k'] as const;
+
+/** Akce hrdiny světa v pořadí tlačítek A, B; hra bez nich (a každá stará hra) vrátí prázdný seznam. */
+export function abilitiesOf(world: ArcadeWorld): readonly AbilityId[] {
+  if (world.control.id !== 'addon_control') return [];
+  return (world.control.params as { readonly abilities?: AbilityControl }).abilities?.ids ?? [];
+}
+
+/** J a K stisknou akci A a B (stisk, ne držení – střelba i úder jdou na nový stisk). */
+export function useAbilityInput(session: ArcadeSession, abilities: readonly AbilityId[], active: boolean): void {
+  useEffect(() => {
+    if (!active || abilities.length === 0) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
+      const slot = (ABILITY_KEYS as readonly string[]).indexOf(event.key.toLowerCase());
+      if (slot < 0 || slot >= abilities.length) return;
+      event.preventDefault();
+      if (!event.repeat) session.press(ABILITY_BUTTONS[slot] as number);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [session, abilities, active]);
+}
+
+/**
+ * Tlačítko akce `slot` (0 = A, 1 = B) s ikonou a popiskem. `stack` = kolikáté kolo
+ * odspodu ve sloupci vpravo dole (střelba a úder/použití leží pod ním).
+ */
+export function AbilityButton({ session, ability, slot, stack }: { readonly session: ArcadeSession; readonly ability: AbilityId; readonly slot: number; readonly stack: number }) {
+  const button = useRef<HTMLButtonElement | null>(null);
+  const { label, icon } = ABILITY_FACES[ability];
+  const bit = ABILITY_BUTTONS[slot] as number;
+  // Ťuk nesmí doběhnout k ploše scény (tam je skok nebo tah), jako u střelby.
+  useEffect(() => {
+    const element = button.current;
+    if (element === null) return;
+    const stop = (event: PointerEvent) => event.stopPropagation();
+    const down = (event: PointerEvent) => {
+      stop(event);
+      session.press(bit);
+    };
+    element.addEventListener('pointerdown', down);
+    element.addEventListener('pointerup', stop);
+    return () => {
+      element.removeEventListener('pointerdown', down);
+      element.removeEventListener('pointerup', stop);
+    };
+  }, [session, bit]);
+  const key = ABILITY_KEYS[slot] as string;
+  return (
+    <button
+      ref={button}
+      type="button"
+      className="play-fire play-ability"
+      data-testid={`arcade-ability-${ability}`}
+      data-slot={slot === 0 ? 'a' : 'b'}
+      aria-keyshortcuts={key.toUpperCase()}
+      style={{ '--_slot': stack } as CSSProperties}
+    >
+      <Icon name={icon} />
+      <span>{label}</span>
     </button>
   );
 }

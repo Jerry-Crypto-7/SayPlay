@@ -11,6 +11,7 @@ Kit v `docs/brand/` je zdroj pravdy pro vzhled, texty a pohyb celého produktu (
 | `fonts/` v kitu | do repa nepatří | OFL – soubory písem kitu se necommitují |
 | Tab bar Make · Play · My games · Me | jen položky, které produkt umí | účty a profil v produktu nejsou; prázdnou položku nevymýšlet |
 | Odkaz `sayplay.[tld]/g/{id}` | dnešní `/play/{id}` | doména není rozhodnutá |
+| Sada 31 ikon (`10-icons.md`) | **36**: navíc `shoot`, `strike`, `dash`, `shield`, `grab` | tlačítka akcí hrdiny (P46A, 13. 10. 2026); dokreslené podle `10-icons.md` na mřížce 24 × 24 s tahem 2,2 px, v `icons/` i `sprite.svg` |
 
 ## Jak se kit používá v kódu
 

@@ -63381,9 +63381,9 @@
       "name": "public/brand/icons/sprite.svg",
       "kind": "asset",
       "firstParty": true,
-      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; UI icon sprite copied unchanged from docs/brand/icons/.",
-      "source": "docs/brand/icons/sprite.svg (Sayplay Brand & UI kit v1.0)",
-      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; UI icon sprite copied unchanged from docs/brand/icons/. Five hero-action icons (shoot, strike, dash, shield, grab) drawn by the project on the kit grid on 2026-10-13 and added to both sprites.",
+      "source": "docs/brand/icons/sprite.svg (Sayplay Brand & UI kit v1.0, plus five project-drawn icons)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30; action icons by the project, 2026-10-13",
       "scope": "prod"
     },
     {
