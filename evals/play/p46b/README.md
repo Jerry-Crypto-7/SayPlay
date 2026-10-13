@@ -69,3 +69,26 @@ Proč (změřeno sondou nad publikovaným světem, robot intermediate):
 - **Běžec s úseky (b01, b04, m08) má mince po celé trati, ale robot běžce je nesbírá** – `runner-bot.ts` jen uhýbá, mince bere náhodou. Mince leží každá 2–4 % trati (~1,5–2 s), v rozjezdu od 65 ‰. Robot: tučňák první mince až po 20 s (mrtvý čas 10 s mezi vlnami šablony v 5. a 15. s), králík 5,08 s, veverka 6,52 s. Finále těchto tří je boss (`why: boss`).
 
 Zábava panelu P45 (40 her) proti `fun-baseline.json` P46A (týž základ `491079b7`): mrtvý čas medián 5,36 → 4,00 s, `rising` 0,55 → 0,63, finále 0,23 → 0,35, události/s 1,09 → 1,16. Žádná věta horší (hratelnost, nejdelší mezera +0,5 s, ztracené stoupání, finále, počet chování).
+
+## Po R1 a R2 (`after.json`, 13. 10.) – číselný cíl T8 splněn
+
+R1 (`0e091749`): robot běžce si zajede pro minci, když se stihne vrátit před řadu. R2: hry s díly běžce a skákačky dostanou hrozby, úseky a bosse jako hry bez dílů.
+
+| Buňka | Mrtvý čas (medián, s) | `rising` | `finale` | `segmentChanges ≥ 2` |
+|---|---|---|---|---|
+| běžec | 9,36 → 3,8 | 1 | 0,67 → 1 | 1 |
+| řízení | 3,23 | 1 | 1 | 1 |
+| skákačka | 2,77 → 3,58 | 1 | 0,86 → 1 | 0,86 → 1 |
+
+Skákačka má medián vyšší, protože do souhrnu nově vstupuje „obby“ (3,58 s). Věty se sbíráním všeho zůstávají na 9,5–15,5 s (viz T6).
+
+### R2 – hry s díly: změřeno sondou, 20 semínek, robot intermediate / začátečník
+
+Sonda stavěla věty b02, b03, s003, s021 a recepty `assembled` se všemi 9 druhy dílů pro běžce i skákačku. Výsledky před → po:
+
+- **Přetahování robotů se nepotvrdilo.** Robot dílu přebije pruh jen u svého cíle a jen bez překážky před sebou. Intermediate vyhrál stejně jako bez průběhu: běžec 0,85–1,0 (`catch` 0,85 před i po), skákačka 1,0. Boss padl v každé výhře. Úprava robota (vzor `dodgeLane`) nebyla potřeba.
+- **Běžec s díly:** finále `sprint` → boss, `rising` 0,2–0,8 → 0,95–1. Nejdelší mezera přes 20 semínek klesla z 10,85 s na 5,7 s. U `deliver`/`interact` klesla z 52 s na 5,7 s. Úseky 2 a 3 se mění na 20/20 semínek už dřív (rychlost a hustota fází).
+- **Skákačka s díly:** dřív bez průběhu, teď s pastí, pohyblivou plošinou, rychlejším úsekem 3 a bossem. `segmentChanges ≥ 2` 0,35–0,55 → 0,8–0,85. Semínka 2, 11 a 15 nemají změnu úseku 3 ani u `platformer.default` bez dílů: rychlost 115 % robot v mediánu nevyjede. Je to vlastnost generátoru z T6, ne dílů. Začátečník 0,5–0,8 → 0,3–0,45 (bez dílů 0,45).
+- **Skákačka s dílem `chaser` průběh nedostane.** Pronásledovatel dílu vyběhne hráči naproti a v první sekundě mu vezme život. Past a boss se pak hrají na dva životy a začátečník spadl z 0,5 na 0,25 (pod pásmem 0,3–0,7).
+
+**Nalezeno, nevyřešeno – začátečník běžce z vět vyhrává 5–10 %.** Platí s díly i bez nich (b01, b04, m08 0,1), před R2 i na základu P45 `491079b7`. Takže to nezpůsobil P46B. Buňky P41 dávají začátečníkovi 0,45–0,6, protože nesou ladění obtížnosti `legacy-difficulty.ts` (`fullRowPct` 50, tedy polovina řad s volným pruhem). Věta z návrhu ani recept `assembled` ho nemají. Změřeno: začátečník přijde o životy nárazy (`hit`) v poslední pětině trati. Odvozeno, neověřeno: jde o plné řady, protože spec věty se od buňky liší jen chybějícím `fullRowPct`. Oprava patří k obtížnosti návrhu, ne k úsekům.

@@ -7,10 +7,10 @@
    "sentences": 6,
    "playable": 6,
    "offGenre": [],
-   "deadTimeMedianS": 9.36,
+   "deadTimeMedianS": 3.8,
    "risingShare": 1,
-   "finaleShare": 0.67,
-   "behavioursMedian": 1.5,
+   "finaleShare": 1,
+   "behavioursMedian": 3,
    "segmentChangesMedian": 2,
    "segmentChanges2Share": 1
   },
@@ -29,12 +29,12 @@
    "sentences": 7,
    "playable": 7,
    "offGenre": [],
-   "deadTimeMedianS": 2.77,
+   "deadTimeMedianS": 3.58,
    "risingShare": 1,
-   "finaleShare": 0.86,
+   "finaleShare": 1,
    "behavioursMedian": 3,
    "segmentChangesMedian": 2,
-   "segmentChanges2Share": 0.86
+   "segmentChanges2Share": 1
   }
  },
  "rows": [
@@ -101,7 +101,7 @@
    "genre": "runner",
    "seed": 971846864,
    "playable": true,
-   "deadTimeS": 10,
+   "deadTimeS": 3.58,
    "rising": true,
    "finale": true,
    "behaviours": 2,
@@ -200,19 +200,22 @@
    "genre": "runner",
    "seed": 1924202525,
    "playable": true,
-   "deadTimeS": 8.72,
+   "deadTimeS": 3.98,
    "rising": true,
    "finale": true,
-   "behaviours": 1,
+   "behaviours": 3,
    "segmentChanges": 2,
    "changes": [
     [
      "foe:chaser:chase",
+     "foe:hazard:chase",
+     "foe:hazard:roam",
      "speed:8.1->9",
-     "density:7.98->14.17"
+     "density:7.98->17.13"
     ],
     [
-     "speed:9->10.32"
+     "speed:9->10.32",
+     "density:17.13->30.54"
     ]
    ],
    "issues": []
@@ -224,17 +227,19 @@
    "genre": "platformer",
    "seed": 292625551,
    "playable": true,
-   "deadTimeS": 2.25,
+   "deadTimeS": 3.58,
    "rising": true,
-   "finale": false,
-   "behaviours": 2,
-   "segmentChanges": 1,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
    "changes": [
     [
      "foe:hazard:roam",
      "terrain:platform:moving"
     ],
-    []
+    [
+     "speed:3.36->4.86"
+    ]
    ],
    "issues": []
   },
@@ -245,10 +250,10 @@
    "genre": "runner",
    "seed": 733405828,
    "playable": true,
-   "deadTimeS": 5.08,
+   "deadTimeS": 3.73,
    "rising": true,
    "finale": true,
-   "behaviours": 4,
+   "behaviours": 3,
    "segmentChanges": 2,
    "changes": [
     [
@@ -272,18 +277,22 @@
    "genre": "runner",
    "seed": 20779725,
    "playable": true,
-   "deadTimeS": 10,
+   "deadTimeS": 3.95,
    "rising": true,
-   "finale": false,
-   "behaviours": 0,
+   "finale": true,
+   "behaviours": 3,
    "segmentChanges": 2,
    "changes": [
     [
-     "speed:8.1->9"
+     "foe:hazard:chase",
+     "foe:hazard:roam",
+     "speed:8.1->9",
+     "density:7.61->13.52"
     ],
     [
+     "foe:hazard:static",
      "speed:9->10.32",
-     "density:11.1->19.53"
+     "density:13.52->36.89"
     ]
    ],
    "issues": []
@@ -295,19 +304,23 @@
    "genre": "runner",
    "seed": 2076206606,
    "playable": true,
-   "deadTimeS": 10,
+   "deadTimeS": 3.87,
    "rising": true,
-   "finale": false,
-   "behaviours": 1,
+   "finale": true,
+   "behaviours": 3,
    "segmentChanges": 2,
    "changes": [
     [
      "foe:chaser:chase",
-     "speed:8.1->9"
+     "foe:hazard:chase",
+     "foe:hazard:roam",
+     "foe:hazard:static",
+     "speed:8.1->9",
+     "density:8.17->13.3"
     ],
     [
      "speed:9->10.32",
-     "density:10.28->19.07"
+     "density:13.3->36.77"
     ]
    ],
    "issues": []
@@ -319,7 +332,7 @@
    "genre": "runner",
    "seed": 1890262350,
    "playable": true,
-   "deadTimeS": 6.52,
+   "deadTimeS": 3.7,
    "rising": true,
    "finale": true,
    "behaviours": 2,

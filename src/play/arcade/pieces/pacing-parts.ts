@@ -701,8 +701,9 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   // Nad úrovní rampy: se stupňováním na 100 % základu měl začátečník víc času sestřelit nepřítele v pruhu (se střelbou 0,61 → 0,81 výher
   // na 80 semínkách); nad prostřední třetinou drží běžec svou dřívější obtížnost (0,59 / 0,58 / útěk 0,35 jako bez průběhu).
   // Složená hra (díly P42) ne: robot dílu `catch` uhne do pruhu padající kořisti jen při základní rychlosti (`assembly-parts` run/1 při 110 % nevyhrál).
-  // Hrozby v pruzích (R2) taky jen bez dílů: robot dílu rozhoduje o pruhu až nad robotem průběhu a jeho plánovač pruhů by přebil.
-  runner_track: (parts, spec, seed) => track(0, spec.assemblyParts === undefined, spec.assemblyParts === undefined)(parts, spec, seed),
+  // Hrozby v pruzích (P45C R2), úseky a boss (P46B R2) i se díly: robot dílu přebije pruh jen u svého cíle a jen bez překážky
+  // před sebou – 9 druhů dílů × 20 semínek: intermediate vyhrál stejně jako bez průběhu (0,85–1,0), boss padl v každé výhře.
+  runner_track: (parts, spec, seed) => track(0, spec.assemblyParts === undefined, true)(parts, spec, seed),
   // Poletování bez úrovně rampy: rychlejší let mu obtížnost nepřidá (sběr 0,7 → 0,9).
   flap_track: track(0),
   // Závod do prvního nárazu (`crashBudget` 1) si nechá rampu – odchylka P45C T11: vrchol křivky 115 % jede pod vrcholem rampy 120 %
@@ -724,10 +725,11 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   throw_field: (parts, spec, seed) => (ownShape(spec) ? null : throwPaced(parts, spec, seed)),
   // Řízení (P46B T5): složená hra (díly P42) ne – robot dílu by se s uhýbáním shozům přetahoval (vzor běžce).
   steer_track: (parts, spec, seed) => (spec.assemblyParts !== undefined ? null : steerPaced(parts, spec, seed)),
-  // Skákačka (P46B T6): složená hra (díly P42) ne – robot dílu by se se skoky na bosse přetahoval (vzor běžce). S jedním
-  // životem (buňka `jump.escape`) ne – vzor závodu do prvního nárazu: dotek bosse končí hru a začátečník s finále 115 %
-  // vyhrál 7/16, se 100 % 15/16 (16 semínek); páka mezi tím útesem se nenašla.
-  platform_level: (parts, spec, seed) => (spec.assemblyParts !== undefined || livesAtMost(spec, 1) ? null : platformPaced(parts, spec, seed)),
+  // Skákačka (P46B T6): s jedním životem (buňka `jump.escape`) ne – vzor závodu do prvního nárazu: dotek bosse končí hru
+  // a začátečník s finále 115 % vyhrál 7/16, se 100 % 15/16 (16 semínek); páka mezi tím útesem se nenašla.
+  // Složená hra (díly P42, R2) ano, kromě dílu `chaser`: vyběhne hráči naproti a v první sekundě mu vezme život, takže past
+  // a boss průběhu se hrají na dva – začátečník 0,5 → 0,25 (20 semínek). Ostatní díly: intermediate 1,0, začátečník 0,3–0,45.
+  platform_level: (parts, spec, seed) => (livesAtMost(spec, 1) || spec.assemblyParts?.some((part) => part.kind === 'chaser') === true ? null : platformPaced(parts, spec, seed)),
 };
 
 /** Verze překladu žánru před průběhem (`GENRE_COMPILER_VERSION` v `genre/contract.ts`): uložené hry s ní průběh nedostanou. */
