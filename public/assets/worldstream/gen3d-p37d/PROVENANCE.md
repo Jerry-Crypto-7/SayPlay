@@ -645,3 +645,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-lavender-bush` | lavender bush, lavender | 4327 / 2766 |
 | `gen3d-coral-rock` | coral rock, reef rock | 4748 / 2374 |
 | `gen3d-thistle-plant` | thistle plant, thistle | 4722 / 2360 |
+| `gen3d-aloe-plant` | aloe plant, aloe vera, aloe | 4661 / 2294 |
+| `gen3d-park-bench` | park bench | 4626 / 2271 |
+| `gen3d-brick-townhouse` | brick townhouse, row house | 4107 / 2027 |
+| `gen3d-white-picket-fence` | white picket fence, picket fence | 4731 / 2363 |

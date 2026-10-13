@@ -28623,6 +28623,86 @@
           0.20606
         ]
       }
+    },
+    {
+      "assetId": "gen3d-aloe-plant",
+      "tags": [
+        "aloe plant",
+        "aloe vera",
+        "aloe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-aloe-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50975,
+          0,
+          -0.41227
+        ],
+        "max": [
+          0.50975,
+          1,
+          0.41227
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-park-bench",
+      "tags": [
+        "park bench"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-park-bench-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.81783,
+          0,
+          -0.43132
+        ],
+        "max": [
+          0.81783,
+          0.99823,
+          0.43132
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-brick-townhouse",
+      "tags": [
+        "brick townhouse",
+        "row house"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-brick-townhouse-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46394,
+          0,
+          -0.41489
+        ],
+        "max": [
+          0.46394,
+          1.00001,
+          0.41489
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-white-picket-fence",
+      "tags": [
+        "white picket fence",
+        "picket fence"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-white-picket-fence-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.53561,
+          0,
+          -0.08652
+        ],
+        "max": [
+          1.53561,
+          0.99728,
+          0.08652
+        ]
+      }
     }
   ]
 }

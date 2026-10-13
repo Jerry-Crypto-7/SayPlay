@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "65622f4635c758c8f25f970d42668a54b79c6489e9267241227c0fc9e09a728c",
+ "catalogHash": "632fe4e4f296ec18eab5038adca3f93276cd76b022f3831a75547297317ed6a0",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1420,6 +1420,10 @@
   "gen3d-wooden-pier": {"class":"prop"},
   "gen3d-lavender-bush": {"class":"prop"},
   "gen3d-coral-rock": {"class":"prop"},
-  "gen3d-thistle-plant": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-thistle-plant": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-aloe-plant": {"class":"prop"},
+  "gen3d-park-bench": {"class":"prop"},
+  "gen3d-brick-townhouse": {"class":"prop"},
+  "gen3d-white-picket-fence": {"class":"prop"}
  }
 }
