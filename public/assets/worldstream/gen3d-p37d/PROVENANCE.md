@@ -492,3 +492,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-winged-shoe` | winged shoe | 4563 / 2264 |
 | `gen3d-cheese-wheel` | cheese wheel | 4742 / 2326 |
 | `gen3d-kite-shield` | kite shield | 4742 / 2370 |
+| `gen3d-sand-golem` | sand golem | 4344 / 2136 |
+| `gen3d-banshee` | banshee | 4678 / 2257 |

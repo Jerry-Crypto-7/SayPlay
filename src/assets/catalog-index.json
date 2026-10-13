@@ -25612,6 +25612,44 @@
           0.07555
         ]
       }
+    },
+    {
+      "assetId": "gen3d-sand-golem",
+      "tags": [
+        "sand golem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sand-golem-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37232,
+          0,
+          -0.15864
+        ],
+        "max": [
+          0.37232,
+          0.99998,
+          0.15864
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-banshee",
+      "tags": [
+        "banshee"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-banshee-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34213,
+          0,
+          -0.22816
+        ],
+        "max": [
+          0.34213,
+          0.99919,
+          0.22816
+        ]
+      }
     }
   ]
 }

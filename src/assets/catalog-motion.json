@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "3fe9fec69a4938aa30f0f7fcd6c4953120ec19672ff4a73a4131d5b01a6c8436",
+ "catalogHash": "c703c8ea0f6ff87688f35606ad84657b09d1d35fdfe248d4ef67a282b78a1660",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1267,6 +1267,8 @@
   "gen3d-battle-axe": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-winged-shoe": {"class":"prop"},
   "gen3d-cheese-wheel": {"class":"prop"},
-  "gen3d-kite-shield": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-kite-shield": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-sand-golem": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-banshee": {"class":"biped","regions":{"legY":0.25}}
  }
 }
