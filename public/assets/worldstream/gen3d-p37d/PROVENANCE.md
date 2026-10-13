@@ -652,3 +652,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-exposed-tree-root` | exposed tree root | 4748 / 2374 |
 | `gen3d-dune-grass-clump` | dune grass clump, dune grass, marram grass | 4232 / 1931 |
 | `gen3d-ice-block-pile` | ice block pile, ice blocks, ice chunks | 3810 / 1801 |
+| `gen3d-street-trash-can` | street trash can, garbage bin, litter bin | 3988 / 1979 |
+| `gen3d-traffic-cone` | traffic cone | 4748 / 2374 |
+| `gen3d-red-phone-booth` | red phone booth, phone booth, telephone box | 4670 / 2309 |
+| `gen3d-park-fountain` | park fountain | 4530 / 2256 |
+| `gen3d-billboard-sign` | billboard sign | 3970 / 1913 |
+| `gen3d-concrete-planter-with-tree` | concrete planter with tree, planter, street planter | 4229 / 2068 |

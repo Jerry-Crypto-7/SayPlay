@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "40840a4ca740592919d26fb75630f027cab5261b8d6c22019f96cf60ff51b26d",
+ "catalogHash": "3ec6100019a44f2bb3095ee82f6ac6aeff3b2d20be42a49d8a173f45fd8374db",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1427,6 +1427,12 @@
   "gen3d-cattail-reed": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-exposed-tree-root": {"class":"prop"},
   "gen3d-dune-grass-clump": {"class":"prop"},
-  "gen3d-ice-block-pile": {"class":"prop"}
+  "gen3d-ice-block-pile": {"class":"prop"},
+  "gen3d-street-trash-can": {"class":"prop"},
+  "gen3d-traffic-cone": {"class":"prop"},
+  "gen3d-red-phone-booth": {"class":"biped","regions":{"legY":0.248}},
+  "gen3d-park-fountain": {"class":"prop"},
+  "gen3d-billboard-sign": {"class":"prop"},
+  "gen3d-concrete-planter-with-tree": {"class":"biped","regions":{"legY":0.25}}
  }
 }

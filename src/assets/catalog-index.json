@@ -28764,6 +28764,126 @@
           0.65915
         ]
       }
+    },
+    {
+      "assetId": "gen3d-street-trash-can",
+      "tags": [
+        "street trash can",
+        "garbage bin",
+        "litter bin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-street-trash-can-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42243,
+          0,
+          -0.42215
+        ],
+        "max": [
+          0.42243,
+          0.99996,
+          0.42215
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-traffic-cone",
+      "tags": [
+        "traffic cone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-traffic-cone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37308,
+          0,
+          -0.39314
+        ],
+        "max": [
+          0.37308,
+          1.00001,
+          0.39314
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-red-phone-booth",
+      "tags": [
+        "red phone booth",
+        "phone booth",
+        "telephone box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-red-phone-booth-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22526,
+          0,
+          -0.22503
+        ],
+        "max": [
+          0.22526,
+          0.99157,
+          0.22503
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-park-fountain",
+      "tags": [
+        "park fountain"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-park-fountain-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.77204,
+          0,
+          -0.77236
+        ],
+        "max": [
+          0.77204,
+          0.99988,
+          0.77236
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-billboard-sign",
+      "tags": [
+        "billboard sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-billboard-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47947,
+          0,
+          -0.1978
+        ],
+        "max": [
+          0.47947,
+          0.99958,
+          0.1978
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-concrete-planter-with-tree",
+      "tags": [
+        "concrete planter with tree",
+        "planter",
+        "street planter"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-concrete-planter-with-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25646,
+          0,
+          -0.24758
+        ],
+        "max": [
+          0.25646,
+          0.99893,
+          0.24758
+        ]
+      }
     }
   ]
 }
