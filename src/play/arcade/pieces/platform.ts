@@ -26,6 +26,7 @@ import { createCompileRng } from '@/play/compile/rng';
 
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeInput, type ArcadeLevel, AXIS_MAX, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HIT_GRACE, type PieceRef, UNIT, bodyBase } from '../contract';
 import { GRAVITY } from '../kernel';
+import { type ChunkStep, PLATFORM_CHUNK_LIBRARY, type PlatformChunk, type PlatformChunkId, REST_CHUNK, pickPlatformChunk } from './platform-chunks';
 
 export const PLATFORM_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type PlatformDifficulty = (typeof PLATFORM_DIFFICULTIES)[number];
@@ -239,6 +240,11 @@ const generatorParams = z
      * (P36A T4, `PLATFORM_SECTIONS`); žánr Skákačka ho píše do `tuning`. Bez něj úroveň jako dřív.
      */
     sections: z.literal(3).optional(),
+    /**
+     * Úseky ze vzorů (P46D T5, `platform-chunks.ts`): schody, mezery, výstup, propadající se
+     * plošiny, chodba s ostny, voda… Jen se `sections`; žánr Skákačka ho píše do `tuning`. Bez něj úroveň jako dřív.
+     */
+    chunks: z.literal(1).optional(),
   })
   .strict();
 export type PlatformLevelParams = z.infer<typeof generatorParams>;
@@ -362,13 +368,18 @@ function sectionPlatforms(count: number): readonly [number, number, number] {
   return [first, second, Math.max(1, count - first - second)];
 }
 
-/** Úroveň z úseků s `extra` plošinami navíc (záporné = méně) proti obsahu věty. */
-function sectionedLayout(seed: number, params: PlatformLevelParams, extra: number): { readonly level: ArcadeLevel; readonly platforms: number } {
-  const rng = createCompileRng(seed);
+/** Plošin úrovně z úseků: los z rozsahu, věci ke sběru nad výchozí počet a `extra` z natahování. */
+function platformCount(rng: ReturnType<typeof createCompileRng>, params: PlatformLevelParams, extra: number): number {
   // Los plošin jde vždy první: proud je stejný s počtem z věty i bez něj.
   const drawn = rng.int(PLATFORM_SECTIONS.platforms[0], PLATFORM_SECTIONS.platforms[1]);
   const items = params.collectAll === true ? (params.coinCount ?? PLATFORM_LEVEL.collectCount) - PLATFORM_LEVEL.collectCount : 0;
-  const platforms = Math.max(3, Math.min(PLATFORM_SECTIONS.maxPlatforms, drawn + PLATFORM_SECTIONS.perItem * items + extra));
+  return Math.max(3, Math.min(PLATFORM_SECTIONS.maxPlatforms, drawn + PLATFORM_SECTIONS.perItem * items + extra));
+}
+
+/** Úroveň z úseků s `extra` plošinami navíc (záporné = méně) proti obsahu věty. */
+function sectionedLayout(seed: number, params: PlatformLevelParams, extra: number): { readonly level: ArcadeLevel; readonly platforms: number } {
+  const rng = createCompileRng(seed);
+  const platforms = platformCount(rng, params, extra);
   const { startSlab, finalSlab } = PLATFORM_LEVEL;
 
   const slabs: BodyInit[] = [slab(-2000, startSlab - 2000, PLATFORM.baseTop)];
@@ -425,15 +436,111 @@ function sectionedLayout(seed: number, params: PlatformLevelParams, extra: numbe
   return { level: { bodies, length: goalZ, sectionStarts: starts }, platforms };
 }
 
+/** Bod v rozsahu: 0 = začátek, 100 = konec. */
+const within = (range: readonly [number, number], pct: number): number => range[0] + Math.floor(((range[1] - range[0]) * pct) / 100);
+
+/**
+ * Úroveň z úseků ze vzorů (P46D T5): úsek bere vzory podle semínka a své obtížnosti,
+ * dokud nemá své plošiny; druhý a třetí začíná odpočinkem s checkpointem (končí-li
+ * předchozí úsek odpočinkem, začne na něm). Krok vzoru se ořízne do dosahu skoku.
+ */
+function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number, library: readonly PlatformChunk[]): { readonly level: ArcadeLevel; readonly platforms: number; readonly chunks: readonly PlatformChunkId[] } {
+  const rng = createCompileRng(seed);
+  const platforms = platformCount(rng, params, extra);
+  const slabs: BodyInit[] = [slab(-2000, PLATFORM_LEVEL.startSlab - 2000, PLATFORM.baseTop)];
+  const extras: BodyInit[] = [];
+  const pools: BodyInit[] = [];
+  const spots = { coinSpots: [] as Spot[], runMids: [] as Spot[], runSides: [] as Spot[] };
+  const starts: number[] = [];
+  const chunks: PlatformChunkId[] = [];
+  let far = PLATFORM_LEVEL.startSlab - 2000;
+  let top: number = PLATFORM.baseTop;
+  let lastNear = far;
+
+  const lay = (step: ChunkStep, tier: Tier, index: number): number => {
+    const want = step.motion === 'shuttle' ? top : top + Math.round(step.rise * tier.rise);
+    const nextTop = Math.max(PLATFORM.minTop, top - PLATFORM.maxRise, Math.min(PLATFORM.maxTop, top + PLATFORM.maxRise, want));
+    const start = far;
+    if (step.motion === 'shuttle') {
+      const gap = rng.int(PLATFORM_LEVEL.shuttleGap[0], PLATFORM_LEVEL.shuttleGap[1]);
+      extras.push(shuttleBody(far, gap, top));
+      far += gap;
+    } else far += Math.min(within(tier.gap, step.gap), maxGap(nextTop - top));
+    if (step.water === true) pools.push({ role: 'obstacle', kind: 'pool', x: 0, y: 0, z: Math.floor((start + far) / 2), w: PLATFORM.slabW, h: PLATFORM.fallBelowY - 200, d: far - start, solid: false });
+
+    const near = far;
+    const length = typeof step.slab === 'number' ? within(tier.slab, step.slab) : step.slab.fixed;
+    far = near + length;
+    top = nextTop;
+    slabs.push(slab(near, far, top));
+    const spikes = step.spikes ?? (index > 0 && index % tier.spikeEvery === 0 ? 1 : 0);
+    for (let k = 1; k <= spikes; k += 1) {
+      const z = Math.floor(near + (length * k) / (spikes + 1));
+      extras.push(spikeBody(z, top));
+      spots.coinSpots.push({ z, y: top + 1400 });
+    }
+    if (spikes === 0) {
+      const mid = Math.floor((near + far) / 2);
+      for (let c = -1; c <= 1; c += 1) spots.coinSpots.push({ z: mid + c * 1000, y: top + 300 });
+      spots.runMids.push({ z: mid, y: top + 300 });
+      spots.runSides.push({ z: mid - 1000, y: top + 300 }, { z: mid + 1000, y: top + 300 });
+    }
+    return near;
+  };
+
+  /** Úsek začíná na odpočinku; checkpoint jen tady, ne na odpočinku uprostřed úseku. */
+  const open = (near: number): void => {
+    starts.push(near);
+    if (params.checkpoints) extras.push(checkpointBody(near + 800, top));
+  };
+  sectionPlatforms(platforms).forEach((count, section) => {
+    const difficulty = sectionDifficulty(params.difficulty, section);
+    const tier = TIERS[difficulty];
+    let index = 0;
+    if (section > 0 && chunks[chunks.length - 1] === REST_CHUNK.id) {
+      open(lastNear);
+      index = 1;
+    }
+    while (index < count) {
+      const chunk = section > 0 && index === 0 ? REST_CHUNK : pickPlatformChunk(rng, library, PLATFORM_DIFFICULTIES.indexOf(difficulty), chunks[chunks.length - 1]);
+      chunks.push(chunk.id);
+      for (const step of chunk.build(rng, { top, maxTop: PLATFORM.maxTop, rise: tier.rise })) {
+        lastNear = lay(step, tier, index);
+        if (section > 0 && index === 0) open(lastNear);
+        index += 1;
+      }
+    }
+  });
+  lay({ gap: rng.int(0, 100), rise: 0, slab: { fixed: PLATFORM_LEVEL.finalSlab }, spikes: 0 }, TIERS[sectionDifficulty(params.difficulty, 2)], 0);
+
+  const lastSlab = slabs[slabs.length - 1] as BodyInit;
+  const goalZ = lastSlab.z + lastSlab.d / 2 - 1500;
+  const bodies = [playerBody(), ...slabs, ...extras];
+  placeCoins(bodies, params, spots);
+  bodies.push({ role: 'goal', kind: 'finish', x: 0, y: top, z: goalZ, w: PLATFORM.slabW, h: 3 * UNIT, d: 400, solid: false });
+  // Voda až za hroty: vazba nebezpečí z věty bere první překážku a sonda ji musí umět zasáhnout.
+  bodies.push(...pools);
+  return { level: { bodies, length: goalZ, sectionStarts: starts }, platforms, chunks };
+}
+
 /** Úroveň z úseků natažená nebo zkrácená po plošinách do `minTicks`..`maxTicks` odhadu robota a aspoň na `lengthM`. */
-function sectionedLevel(seed: number, params: PlatformLevelParams): ArcadeLevel {
+function fitted<T extends { readonly level: ArcadeLevel; readonly platforms: number }>(params: PlatformLevelParams, layout: (extra: number) => T): T {
   const ticks = (level: ArcadeLevel): number => platformPaceTicks(level, params.difficulty);
   const short = (level: ArcadeLevel): boolean => ticks(level) < PLATFORM_SECTIONS.minTicks || level.length < params.lengthM * UNIT;
   let extra = 0;
-  let built = sectionedLayout(seed, params, extra);
-  while (short(built.level) && built.platforms < PLATFORM_SECTIONS.maxPlatforms) built = sectionedLayout(seed, params, (extra += 1));
-  while (ticks(built.level) > PLATFORM_SECTIONS.maxTicks && built.platforms > 3) built = sectionedLayout(seed, params, (extra -= 1));
-  return built.level;
+  let built = layout(extra);
+  while (short(built.level) && built.platforms < PLATFORM_SECTIONS.maxPlatforms) built = layout((extra += 1));
+  while (ticks(built.level) > PLATFORM_SECTIONS.maxTicks && built.platforms > 3) built = layout((extra -= 1));
+  return built;
+}
+
+function sectionedLevel(seed: number, params: PlatformLevelParams): ArcadeLevel {
+  return params.chunks === 1 ? platformChunkLevel(seed, params).level : fitted(params, (extra) => sectionedLayout(seed, params, extra)).level;
+}
+
+/** Úroveň ze vzorů i jejich pořadí; `library` zúží knihovnu (testy jednotlivých vzorů). */
+export function platformChunkLevel(seed: number, params: PlatformLevelParams, library: readonly PlatformChunk[] = PLATFORM_CHUNK_LIBRARY): { readonly level: ArcadeLevel; readonly chunks: readonly PlatformChunkId[] } {
+  return fitted(params, (extra) => chunkedLayout(seed, params, extra, library));
 }
 
 export const platformLevel: GeneratorPiece<PlatformLevelParams> = {

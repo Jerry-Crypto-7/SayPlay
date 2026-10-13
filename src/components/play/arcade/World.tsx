@@ -82,7 +82,7 @@ const FALLBACK_COLOR: Readonly<Record<string, string>> = {
 const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name]));
 
 /** Id modelu, který katalog nemá – kreslí se primitivem (objednávka modelů pro P25F je ve Findings plánu). */
-const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', 'turbo', ...SHOT_PRIMITIVES]);
+const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', 'turbo', 'pool', ...SHOT_PRIMITIVES]);
 
 /** Modely z popisků rolí (`@/play/arcade/models`): hrdina, nepřítel střelnice a rekvizity. */
 export interface Cast {
@@ -223,7 +223,7 @@ export function FittedModel({ id, w, h, d, fallback, character = false, fill = f
  * Tělesa bez modelu: plošina (hlína + tráva, nebo hmota sady), řada hrotů,
  * trubka, strop, ptáček. Pohyblivá plošina si barvu nechává: hráč z ní čte pohyb.
  */
-function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: Look['block'] }) {
+function Primitive({ id, w, h, d, block, water }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: Look['block']; readonly water?: string }) {
   if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} block={block?.[1]} />;
   if (id === 'turbo') return <mesh position={[0, h / 2, 0]}>
     <boxGeometry args={[w, h, d]} />
@@ -259,6 +259,11 @@ function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: nu
       </>
     );
   }
+  // Voda pod mezerou skákačky (P46D T5): hladina těsně pod hranou pádu.
+  if (id === 'pool') return <mesh position={[0, h / 2, 0]}>
+    <boxGeometry args={[w * 3, h, d]} />
+    <meshStandardMaterial color={water ?? '#0284c7'} roughness={0.15} metalness={0.2} transparent opacity={0.8} />
+  </mesh>;
   if (id === 'bird') {
     const r = Math.min(w, h, d) / 2;
     return (
@@ -653,7 +658,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                 chasm={bridgesOverChasm(session.world.seed)}
               />
             ) : PRIMITIVE.has(modelIdOf(view, cast)) ? (
-              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} />
+              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} water={scene.water} />
             ) : rigged[view.index] !== undefined ? (
               // Riggovaná postava hraje klipy – poskok a zmáčknutí statických modelů by se s nimi praly.
               <RiggedModel

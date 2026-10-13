@@ -52,8 +52,9 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
       checkpoints: true,
       ...(spec.params?.difficulty === undefined ? {} : { difficulty: PLATFORM_DIFFICULTIES[spec.params.difficulty] }),
       ...(spec.params?.lengthM === undefined ? {} : { lengthM: spec.params.lengthM }),
-      // Tři úseky s rostoucí obtížností, checkpoint na začátku druhého a třetího, hodiny (P36A T4).
-      tuning: { feel: 2, sections: 3, ...(collect ? { collectAll: true, coinCount: count } : {}) },
+      // Tři úseky s rostoucí obtížností, checkpoint na začátku druhého a třetího, hodiny (P36A T4);
+      // úseky ze vzorů: schody, výstup, propadající se plošiny, voda… (P46D T5).
+      tuning: { feel: 2, sections: 3, chunks: 1, ...(collect ? { collectAll: true, coinCount: count } : {}) },
     },
     archetype: 'hazard_crossing',
     title: `${titleCase(spec.hero)} Jump`,
