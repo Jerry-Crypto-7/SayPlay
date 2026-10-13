@@ -21,6 +21,8 @@ import { Color, SRGBColorSpace } from 'three';
 import catalog from '@/assets/catalog-index.json';
 import type { Flora, PlantSpecies } from '@/play/arcade/look';
 
+import type { Box } from './ground';
+
 export const LAYERS = ['near', 'mid', 'far'] as const;
 export type Layer = (typeof LAYERS)[number];
 
@@ -150,6 +152,59 @@ export function placeVegetation({ flora, seed, from, to, road, clear, profile }:
     }
   }
   return plants;
+}
+
+/** Strana hrací plochy ve scéně; `-z` je strana, odkud se na ni dívá kamera arény, bludiště i hřiště. */
+export const SIDES = ['-x', '+x', '-z', '+z'] as const;
+export type Side = (typeof SIDES)[number];
+
+export interface AroundOptions {
+  readonly flora: Flora;
+  /** Semínko hry (`ArcadeWorld.seed`). */
+  readonly seed: number;
+  /** Hrací plocha ve scéně (m). */
+  readonly box: Box;
+  /** Volný pás za hranou plochy (m), kam žádná rostlina nesahá. */
+  readonly clear: number;
+  /**
+   * Vrstvy, které na straně rostou. Rostlina, jejíž střed leží za volným pásem
+   * na víc stranách (roh), musí mít vrstvu povolenou na každé z nich.
+   */
+  readonly layers: Readonly<Record<Side, readonly Layer[]>>;
+  readonly profile: VegetationProfile;
+}
+
+/** Plocha, na kterou kamera kouká šikmo shora z −z (aréna): na její straně jen nízké drobnosti, které hrdinu u hrany nezakryjí. */
+export const LOW_TOWARD_CAMERA: Readonly<Record<Side, readonly Layer[]>> = { '-x': LAYERS, '+x': LAYERS, '-z': ['near'], '+z': LAYERS };
+/** Plocha, kam hrdina vchází z −z (bludiště) nebo kde za ním stojí kamera nízko (hřiště): na straně kamery nic. */
+export const NONE_TOWARD_CAMERA: Readonly<Record<Side, readonly Layer[]>> = { '-x': LAYERS, '+x': LAYERS, '-z': [], '+z': LAYERS };
+
+/** Jak daleko za volný pás pruhy kolem plochy sahají (m): konec vzdálené linie a koruna stromu. */
+const AROUND_M = BANDS.far.to + 10;
+/** Sůl pruhů před a za plochou: jiný les než po stranách. */
+const ENDS_SALT = 0x51ed27;
+
+/**
+ * Vegetace kolem obdélníkové hrací plochy (P46G T7: aréna, bludiště, hřiště).
+ * Dva pruhy jako u cesty (`placeVegetation`): po stranách −x a +x celou délkou
+ * i s rohy, před a za plochou (−z, +z) jen mezi volnými pásy stran – s prohozenými
+ * osami. Půdorys žádné rostliny nesahá do plochy rozšířené o `clear`; strana
+ * kamery dostane jen to, co jí `layers` dovolí (nízké drobnosti, nebo nic).
+ */
+export function placeAround({ flora, seed, box, clear, layers, profile }: AroundOptions): Plant[] {
+  const [cx, cz] = [(box.x0 + box.x1) / 2, (box.z0 + box.z1) / 2];
+  const [hx, hz] = [(box.x1 - box.x0) / 2, (box.z1 - box.z0) / 2];
+  const sides = placeVegetation({ flora, seed, from: box.z0 - clear - AROUND_M, to: box.z1 + clear + AROUND_M, road: () => ({ center: cx, half: hx }), clear, profile });
+  const ends = placeVegetation({ flora, seed: seed ^ ENDS_SALT, from: box.x0 - clear, to: box.x1 + clear, road: () => ({ center: cz, half: hz }), clear, profile })
+    .map((plant) => ({ ...plant, x: plant.z, z: plant.x }))
+    .filter((plant) => Math.abs(plant.x - cx) < hx + clear);
+  const beyond = (plant: Plant): Side[] => [
+    ...(plant.x < box.x0 - clear ? (['-x'] as const) : []),
+    ...(plant.x > box.x1 + clear ? (['+x'] as const) : []),
+    ...(plant.z < box.z0 - clear ? (['-z'] as const) : []),
+    ...(plant.z > box.z1 + clear ? (['+z'] as const) : []),
+  ];
+  return [...sides, ...ends].filter((plant) => beyond(plant).every((side) => layers[side].includes(plant.layer)));
 }
 
 /** Šedá z palety katalogu (`scripts/assets/cc0/normalize.mjs --style`), kterou mají listí, mech a kaktusy modelů Quaternius. */

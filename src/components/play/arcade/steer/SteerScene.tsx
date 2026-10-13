@@ -25,6 +25,7 @@ import type { HeroAction } from '@/play/spec';
 
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
+import { FieldGround } from '../look/FieldGround';
 import { buildRoadGround } from '../look/ground';
 import { type IslandSpot, buildIslands, islandPalette } from '../look/rig/terrain/islands';
 import { hash } from '../look/rig/terrain/valley';
@@ -336,6 +337,14 @@ const BANK_TOP = 1.1;
 const SLAB_BULGE = 0.32;
 /** Kulisa, která by stála ve vodě, se schová pod hladinu. */
 const SUNK = -8;
+/** Kulisa za mlhou plavby po moři stojí na hladině. */
+const AT_SEA = (): number => WATER_LEVEL;
+
+/** Zem kaňonu a přistání s odstíny a skvrnami (P46G T7) – dřív jedna barva sady; do stran a za cíl jako dřívější rovina. */
+function VoyageLand({ look, reach, far }: { readonly look: Look; readonly reach: number; readonly far: number }) {
+  const area = useMemo(() => ({ x0: -reach - 110, x1: reach + 110, z0: -80, z1: far + 40 }), [reach, far]);
+  return <FieldGround look={look} area={area} y={-0.03} under />;
+}
 /** Záře: barva × tolik je nad prahem bloomu (`bloomThreshold`), bez tone mappingu. */
 const GLOW = 3;
 /** Stopa dělové koule: kolik posledních poloh. */
@@ -585,13 +594,12 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard, namedPad }
       ) : water !== null ? (
         <mesh geometry={water.geometry} material={water.material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'water' }} />
       ) : (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, far / 2 - 20]} renderOrder={UNDER_PANORAMA}>
-          <planeGeometry args={[layout.reach * 2 + 220, far + 120]} />
-          <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
-        </mesh>
+        <VoyageLand look={look} reach={layout.reach} far={far} />
       )}
       {layout.terrain !== 'buildings' && (
         <>
+          {/* Kulisa za mlhou (P46G T7): na moři z hladiny, v kaňonu ze země; průsek nad kanálem. Přistání ne – kamera letí ve výšce rakety a prstenec by z ní byl zeď na zemi. */}
+          {layout.mode !== 'land' && <HorizonBackdrop look={look} seed={session.world.seed} length={length} clear={half + SCENERY_MARGIN} ground={sea ? AT_SEA : undefined} />}
           <mesh geometry={islands.geometry} material={landMaterial} castShadow receiveShadow userData={{ terrain: 'islands' }} />
           {segments.map((segment, i) =>
             segment.far - segment.near < STRAIGHT_M ? null : (

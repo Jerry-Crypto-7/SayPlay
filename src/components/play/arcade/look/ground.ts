@@ -116,6 +116,65 @@ export function groundPainter(palette: GroundPalette, vergeM = 1.4): GroundPaint
   };
 }
 
+/** Obdélník ve scéně (m): x od `x0` do `x1`, z od `z0` do `z1`; nekonečná mez = pás bez konce. */
+export interface Box {
+  readonly x0: number;
+  readonly x1: number;
+  readonly z0: number;
+  readonly z1: number;
+}
+
+/** Kraj hrací plochy pro `groundPainter`: vzdálenost od obdélníku (m) venku, `null` uvnitř – plocha má odstíny a skvrny, ne krajnici. */
+export function boxEdge({ x0, x1, z0, z1 }: Box): (x: number, z: number) => number | null {
+  return (x, z) => {
+    const [dx, dz] = [Math.max(x0 - x, 0, x - x1), Math.max(z0 - z, 0, z - z1)];
+    return dx === 0 && dz === 0 ? null : Math.hypot(dx, dz);
+  };
+}
+
+/** Krok mřížky rovné země (m): nejjemnější oktáva šumu má ~2 m, hustší síť by ji jen přepočítala. */
+const FIELD_CELL_M = 2.5;
+
+/**
+ * Rovná zem pod hrou bez cesty (P46G T7: bludiště, hřiště, střelnice, ring…):
+ * mřížka v y = 0 přes `area` s barvami ve vrcholech z `groundPainter`, normála
+ * nahoru. `edge` = kraj hrací plochy (`boxEdge`); bez něj jen odstíny a skvrny.
+ */
+export function buildFieldGround(look: Look, area: Box, edge: (x: number, z: number) => number | null = () => null): BufferGeometry {
+  const paint = groundPainter(groundPalette(look));
+  const columns = Math.max(1, Math.ceil((area.x1 - area.x0) / FIELD_CELL_M));
+  const rows = Math.max(1, Math.ceil((area.z1 - area.z0) / FIELD_CELL_M));
+  const positions = new Float32Array((rows + 1) * (columns + 1) * 3);
+  const colors = new Float32Array(positions.length);
+  const normals = new Float32Array(positions.length);
+  const color = new Color();
+  for (let row = 0; row <= rows; row += 1) {
+    const z = area.z0 + ((area.z1 - area.z0) * row) / rows;
+    for (let column = 0; column <= columns; column += 1) {
+      const x = area.x0 + ((area.x1 - area.x0) * column) / columns;
+      paint(x, z, edge(x, z), color);
+      const at = (row * (columns + 1) + column) * 3;
+      positions.set([x, 0, z], at);
+      colors.set([color.r, color.g, color.b], at);
+      normals.set([0, 1, 0], at);
+    }
+  }
+  const index: number[] = [];
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const a = row * (columns + 1) + column;
+      const [b, c, d] = [a + 1, a + columns + 1, a + columns + 2];
+      index.push(a, c, b, b, c, d);
+    }
+  }
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('normal', new Float32BufferAttribute(normals, 3));
+  geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+  geometry.setIndex(index);
+  return geometry;
+}
+
 /** Odstup sloupců země závodu od kraje cesty (m): hustě u krajnice, řídce do dálky. Krok řad podél trati (m). */
 const ROAD_COLUMNS = [0, 0.7, 1.5, 2.5, 3.5, 5, 7, 10, 14, 20, 28, 39, 53, 68, 86];
 const ROAD_ROW_M = 2;

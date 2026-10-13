@@ -23,20 +23,22 @@ export interface HorizonBackdropProps {
   readonly look: Look;
   /** Semínko hry (`ArcadeWorld.seed`). */
   readonly seed: number;
-  /** Délka trati (m): na jejím konci je vrstva o `approach` blíž. */
-  readonly length: number;
-  /** Půl šířky průseku nad cestou v nejbližší vrstvě (m). */
+  /** Délka trati (m): na jejím konci je vrstva o `approach` blíž. Scéna bez trati (hřiště, ring) ji nemá – vrstvy se nepřibližují. */
+  readonly length?: number;
+  /** Půl šířky průseku nad cestou v nejbližší vrstvě (m); 0 = bez průseku. */
   readonly clear: number;
   /** Jak hluboko pata sahá pod zem (m); závod má rovinu, běžec kopce trati. */
   readonly skirt?: number;
-  /** Výška trati v `z` (kopce běžce); bez ní rovina y = 0. */
+  /** Výška trati v `z` (kopce běžce, hladina pod plošinami); bez ní rovina y = 0. */
   readonly ground?: (z: number) => number;
+  /** Nejmenší poloměr nejbližší vrstvy (m): kulisa nikdy nestojí na hrací ploše (`backdropLayers`). */
+  readonly beyond?: number;
 }
 
 const eye = new Vector3();
 
-export function HorizonBackdrop({ look, seed, length, clear, skirt = 0.05, ground }: HorizonBackdropProps) {
-  const parts = useMemo(() => buildBackdrop(look, { seed, clear, skirt }), [look, seed, clear, skirt]);
+export function HorizonBackdrop({ look, seed, length = Infinity, clear, skirt = 0.05, ground, beyond = 0 }: HorizonBackdropProps) {
+  const parts = useMemo(() => buildBackdrop(look, { seed, clear, skirt, beyond }), [look, seed, clear, skirt, beyond]);
   const material = useMemo(() => new MeshBasicMaterial({ vertexColors: true, side: DoubleSide }), []);
   const meshes = useMemo(
     () =>

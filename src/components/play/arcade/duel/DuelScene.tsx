@@ -28,7 +28,8 @@ import type { HeroAction } from '@/play/spec';
 
 import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { isTyping } from '../input';
-import { UNDER_PANORAMA } from '../look/under-panorama';
+import { HorizonBackdrop } from '../look/Backdrop';
+import { FieldGround } from '../look/FieldGround';
 import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
 import { Scenery } from '../look/Scenery';
@@ -40,6 +41,8 @@ import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 const STRIKE_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
 const DODGE_KEYS = new Set(['arrowdown', 's']);
 const STRIKE_TICKS = 10;
+/** Nejbližší vrstva kulisy za mlhou (m): boční kamera 5–8 m před ringem, kulisy 4–9 m za ním. */
+const BACKDROP_BEYOND = 22;
 /** Potácení po vykrytém úderu: náklon k soupeři (rad). */
 const STAGGER_LEAN = 0.25;
 /** Bojovníci stojí na místě: třída těla tvaruje jen chůzi, kterou souboj nemá (a model sem přijde bez jména). */
@@ -172,6 +175,7 @@ export function DuelScene({
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(), []);
   const midZ = rival.z / 2;
+  const duelLand = useMemo(() => ({ x0: -30, x1: 30, z0: midZ - 30, z1: midZ + 30 }), [midZ]);
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
@@ -255,11 +259,11 @@ export function DuelScene({
     <>
       {/* Obloha, mlha, světla, stín a ladění jsou rigu (`look/rig/StyleRig.tsx`, P37B T3). */}
       {/* Prostředí (P27A T4): zem sady a kulisy za ringem – boční kamera na −x je vidí za soupeři. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.12, midZ]} renderOrder={UNDER_PANORAMA}>
-        <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
-      </mesh>
+      {/* Zem s odstíny a skvrnami (P46G T7); vegetace ne – ring s boční kamerou má za soupeři jen řadu kulis. */}
+      <FieldGround look={scene} area={duelLand} y={-0.12} under />
       <Scenery look={scene} layout="behind" inner={4} from={midZ - 12} to={midZ + 12} />
+      {/* Kulisa za mlhou za řadou kulis (4–9 m za ringem). */}
+      <HorizonBackdrop look={scene} seed={session.world.seed} clear={0} beyond={BACKDROP_BEYOND} />
       <mesh position={[0, -0.1, midZ]}>
         <boxGeometry args={[4, 0.2, 9]} />
         <meshStandardMaterial color="#78716c" roughness={0.95} />

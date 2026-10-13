@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Vegetace podél cesty (P46G T4): rozmístění z `vegetation-places.ts`, každý druh jedna
- * `InstancedMesh` – jedno kreslicí volání na druh, ať je rostlin kolik chce.
+ * Vegetace podél cesty (P46G T4) a kolem hrací plochy (T7): rozmístění z `vegetation-places.ts`,
+ * každý druh jedna `InstancedMesh` – jedno kreslicí volání na druh, ať je rostlin kolik chce.
  *
  * Trať má rostlin tisíce, kamera ale vidí jen kus před sebou (`FarAtFog`). Instance
  * jsou seřazené podle z a do bufferu jde jen okno kolem kamery; posouvá se po
@@ -17,8 +17,9 @@ import { InstancedBufferAttribute, InstancedMesh, Matrix4, type PerspectiveCamer
 
 import type { Flora } from '@/play/arcade/look';
 
+import type { Box } from './ground';
 import { type PlantModel, paintedPlant, plantMaterial } from './load';
-import { type Plant, type RoadAt, type VegetationProfile, placeVegetation } from './vegetation-places';
+import { type Layer, type Plant, type RoadAt, type Side, type VegetationProfile, placeAround, placeVegetation } from './vegetation-places';
 
 /** Okno kreslení: kolik metrů za kamerou, krok posunu a rezerva za koncem mlhy na korunu stromu (m). */
 const BEHIND_M = 15;
@@ -45,20 +46,53 @@ export interface VegetationProps {
 
 export function Vegetation({ flora, seed, from, to, road, clear, ground, bend }: VegetationProps) {
   const [profile] = useState(profileOf);
+  const plants = useMemo(() => placeVegetation({ flora, seed, from, to, road, clear, profile }), [flora, seed, from, to, road, clear, profile]);
+  return <Plants flora={flora} plants={plants} ground={ground} bend={bend} />;
+}
+
+export interface VegetationAroundProps {
+  readonly flora: Flora;
+  readonly seed: number;
+  /** Hrací plocha (m); objekt drží volající stálý (`useMemo`). */
+  readonly box: Box;
+  readonly clear: number;
+  /** Vrstvy po stranách plochy (`placeAround`); stálý objekt. */
+  readonly layers: Readonly<Record<Side, readonly Layer[]>>;
+  /** Kolik metrů za kamerou (po z) okno kreslení drží: boční kamera vidí do stran po z daleko. */
+  readonly behind?: number;
+}
+
+/** Vegetace kolem hrací plochy (P46G T7): aréna, bludiště, hřiště. */
+export function VegetationAround({ flora, seed, box, clear, layers, behind }: VegetationAroundProps) {
+  const [profile] = useState(profileOf);
+  const plants = useMemo(() => placeAround({ flora, seed, box, clear, layers, profile }), [flora, seed, box, clear, layers, profile]);
+  return <Plants flora={flora} plants={plants} behind={behind} />;
+}
+
+interface PlantsProps {
+  readonly flora: Flora;
+  readonly plants: readonly Plant[];
+  readonly ground?: VegetationProps['ground'];
+  readonly bend?: VegetationProps['bend'];
+  readonly behind?: number;
+}
+
+/** Rostliny po druzích, každý druh jedna instancovaná síť. */
+function Plants({ flora, plants, ground, bend, behind = BEHIND_M }: PlantsProps) {
   const species = useMemo(() => {
     const byId = new Map<string, Plant[]>();
-    for (const plant of placeVegetation({ flora, seed, from, to, road, clear, profile })) {
+    for (const plant of plants) {
       const list = byId.get(plant.id) ?? [];
       list.push(plant);
       byId.set(plant.id, list);
     }
     const trees = new Set(flora.mid.map((entry) => entry.id));
-    return [...byId].map(([id, plants]) => ({ id, plants: plants.sort((a, b) => a.z - b.z), cast: trees.has(id) }));
-  }, [flora, seed, from, to, road, clear, profile]);
+    return [...byId].map(([id, list]) => ({ id, plants: list.sort((a, b) => a.z - b.z), cast: trees.has(id) }));
+  }, [flora, plants]);
   return (
     <group name="vegetation">
-      {species.map(({ id, plants, cast }) => (
-        <Species key={id} id={id} flora={flora} plants={plants} cast={cast} ground={ground} bend={bend} />
+      {species.map(({ id, plants: list, cast }) => (
+        <Species key={id} id={id} flora={flora} plants={list} cast={cast} ground={ground} bend={bend} behind={behind} />
       ))}
     </group>
   );
@@ -75,7 +109,7 @@ function firstAtLeast(values: Float64Array, value: number): number {
   return lo;
 }
 
-function Species({ id, flora, plants, cast, ground, bend }: { readonly id: string; readonly flora: Flora; readonly plants: readonly Plant[]; readonly cast: boolean; readonly ground?: VegetationProps['ground']; readonly bend?: VegetationProps['bend'] }) {
+function Species({ id, flora, plants, cast, ground, bend, behind }: { readonly id: string; readonly flora: Flora; readonly plants: readonly Plant[]; readonly cast: boolean; readonly ground?: VegetationProps['ground']; readonly bend?: VegetationProps['bend']; readonly behind: number }) {
   const [model, setModel] = useState<PlantModel | null>(null);
   useEffect(() => {
     let live = true;
@@ -117,9 +151,9 @@ function Species({ id, flora, plants, cast, ground, bend }: { readonly id: strin
   const shown = useRef({ built: null as typeof built, lo: -1, hi: -1 });
   useFrame(({ camera }) => {
     if (built === null) return;
-    const start = Math.floor((camera.position.z - BEHIND_M) / STEP_M) * STEP_M;
+    const start = Math.floor((camera.position.z - behind) / STEP_M) * STEP_M;
     const lo = firstAtLeast(built.zs, start);
-    const hi = firstAtLeast(built.zs, start + STEP_M + BEHIND_M + (camera as PerspectiveCamera).far + MARGIN_M);
+    const hi = firstAtLeast(built.zs, start + STEP_M + behind + (camera as PerspectiveCamera).far + MARGIN_M);
     const last = shown.current;
     if (last.built === built && last.lo === lo && last.hi === hi) return;
     shown.current = { built, lo, hi };

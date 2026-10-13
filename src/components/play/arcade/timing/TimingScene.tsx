@@ -26,7 +26,8 @@ import type { HeroAction } from '@/play/spec';
 
 import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { isTyping } from '../input';
-import { UNDER_PANORAMA } from '../look/under-panorama';
+import { HorizonBackdrop } from '../look/Backdrop';
+import { FieldGround } from '../look/FieldGround';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
@@ -94,6 +95,10 @@ export function initialBody(world: ArcadeSession['world'], index: number) {
 
 /** Jak daleko za hrací plochou (m po +z) stojí řada kulis – za zemí hrací plochy. */
 const SCENERY_BEHIND = 7;
+/** Zem načasování (m): do stran za kyv jezdce, dozadu pod kulisy a do mlhy. */
+const TIMING_LAND = { x0: -40, x1: 40, z0: -20, z1: 60 } as const;
+/** Nejbližší vrstva kulisy (m od kamery 8+ m před věží): za řadou kulis (7–12 m za věží). */
+const BACKDROP_BEYOND = 26;
 
 /** Model z popisku role vepsaný do kvádru těla (w × h × d, metry), postavený na zem. */
 export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
@@ -224,15 +229,14 @@ export function TimingScene({
   return (
     <>
       {/* Obloha, mlha, světla a stíny jsou rigu (`look/rig/StyleRig.tsx`, P32A T10). */}
-      {/* Zem a základna (věž stojí na ní, můstek začíná sloupem, lišta je deska). */}
-      <mesh position={[0, -0.05, 0]} renderOrder={UNDER_PANORAMA}>
-        <boxGeometry args={[40, 0.1, 12]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
-      </mesh>
+      {/* Zem a základna (věž stojí na ní, můstek začíná sloupem, lišta je deska). Zem s odstíny a skvrnami až pod kulisy a do mlhy (P46G T7). */}
+      <FieldGround look={scene} area={TIMING_LAND} y={-0.005} under />
       {/* Kulisy sady prostředí (P27A T4) v řadě za hrací plochou: otočená sada „behind“ jde přes x v hloubce +z. */}
       <group rotation={[0, -Math.PI / 2, 0]}>
         <Scenery look={scene} layout="behind" inner={SCENERY_BEHIND} from={-14} to={14} />
       </group>
+      {/* Kulisa za mlhou (P46G T7) za řadou kulis; vegetace ne – plocha je jen věž a kyv jezdce. */}
+      <HorizonBackdrop look={scene} seed={world.seed} clear={0} beyond={BACKDROP_BEYOND} />
       <mesh position={[0, base.h / 2, 0]}>
         <boxGeometry args={[base.w, base.h, depth]} />
         <meshStandardMaterial color={BASE_COLOR[baseKind] ?? '#475569'} roughness={0.8} />

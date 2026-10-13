@@ -77,6 +77,8 @@ export interface BackdropOptions {
   readonly clear: number;
   /** O kolik metrů pata sahá pod zem: v údolí běžce kryje kopce trati, na rovině závodu jen spáru. */
   readonly skirt: number;
+  /** Nejmenší poloměr nejbližší vrstvy (m, `backdropLayers`); bez něj jen podle mlhy. */
+  readonly beyond?: number;
 }
 
 type Next = () => number;
@@ -213,8 +215,17 @@ function colorsOf(look: Look, tone: string, strength: number): { readonly top: s
   return { top: `#${top.getHexString()}`, foot: `#${foot.getHexString()}` };
 }
 
-/** Vrstvy kulisy sady od nejvzdálenější po nejbližší; sada bez `skyline` nemá žádnou. */
-export function backdropLayers(look: Look, seed: number, clear: number): BackdropLayer[] {
+/** Odstup sousedních vrstev (m), když je odsune `beyond`: vzdálenější vrstva zůstane za bližší. */
+const BEYOND_STEP_M = 6;
+
+/**
+ * Vrstvy kulisy sady od nejvzdálenější po nejbližší; sada bez `skyline` nemá žádnou.
+ * `beyond` (m) = nejmenší poloměr nejbližší vrstvy (P46G T7): scéna s hrací plochou
+ * daleko před kamerou (aréna v jeskyni, hřiště, střelnice) by jinak měla kulisu
+ * v mlze krátké sady uvnitř hry. Odsunutá vrstva může skončit za koncem mlhy – pak
+ * není vidět, ale nikdy nestojí před hrou.
+ */
+export function backdropLayers(look: Look, seed: number, clear: number, beyond = 0): BackdropLayer[] {
   const skyline = look.skyline;
   if (skyline === undefined) return [];
   const rng = xoroshiro128plus((seed ^ SALT) | 0);
@@ -224,7 +235,7 @@ export function backdropLayers(look: Look, seed: number, clear: number): Backdro
   return skyline.layers.map((kind, index) => {
     const u = last === 0 ? 1 : index / last;
     const toward = (far: number, near: number): number => far + (near - far) * u;
-    const radius = fogNear + toward(FAR.fog, NEAR.fog) * (fogFar - fogNear);
+    const radius = Math.max(fogNear + toward(FAR.fog, NEAR.fog) * (fogFar - fogNear), beyond > 0 ? beyond + (last - index) * BEYOND_STEP_M : 0);
     const follow = toward(FAR.follow, NEAR.follow);
     const notch = index === last && last > 0 ? clear / radius : 0;
     const profile = shapeOf(kind, next).map(([angle, height]): ProfilePoint => {
@@ -260,8 +271,8 @@ export function backdropGeometry(layer: BackdropLayer, skirt: number): BufferGeo
 }
 
 /** Celá kulisa sady: vrstvy a jejich sítě, jedna síť na vrstvu. */
-export function buildBackdrop(look: Look, { seed, clear, skirt }: BackdropOptions): BackdropPart[] {
-  return backdropLayers(look, seed, clear).map((layer) => ({ layer, geometry: backdropGeometry(layer, skirt) }));
+export function buildBackdrop(look: Look, { seed, clear, skirt, beyond = 0 }: BackdropOptions): BackdropPart[] {
+  return backdropLayers(look, seed, clear, beyond).map((layer) => ({ layer, geometry: backdropGeometry(layer, skirt) }));
 }
 
 /**

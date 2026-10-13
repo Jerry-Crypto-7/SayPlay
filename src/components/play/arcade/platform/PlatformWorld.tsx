@@ -22,6 +22,7 @@ import type { Look } from '@/play/arcade/look';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 
 import { GhostSlot } from '../GhostSlot';
+import { HorizonBackdrop } from '../look/Backdrop';
 import { buildIslands, platformIslands, platformSlabKeys, spotKey } from '../look/rig/terrain/islands';
 import { buildWater } from '../look/rig/terrain/water';
 import { Scenery } from '../look/Scenery';
@@ -59,9 +60,16 @@ function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; re
       <mesh geometry={water.geometry} material={water.material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'water' }} />
       <mesh ref={terrain} geometry={islands.geometry} material={material} castShadow receiveShadow userData={{ rigShadow: 'both', terrain: 'islands' }} />
       <Scenery look={look} layout="behind" inner={11} from={-20} to={length + 20} y={WATER} size={1.6} />
+      {/* Kulisa za mlhou (P46G T7) z hladiny, za řadou kulis. Vegetace ne: ostrůvky jsou plochy skoků a pod nimi voda – strom by zakryl doskok i minci. */}
+      <HorizonBackdrop look={look} seed={world.seed} length={length} clear={0} ground={AT_WATER} beyond={BACKDROP_BEYOND} />
     </>
   );
 }
+
+/** Kulisa stojí na hladině, ne v y = 0 nad ní. */
+const AT_WATER = (): number => WATER;
+/** Nejbližší vrstva kulisy (m): boční kamera 10–18 m před ostrůvky, kulisy 11–17 m za nimi. */
+const BACKDROP_BEYOND = 36;
 
 /**
  * Běží po snímku `World` (sourozenec za ním, jako `HeroPose` běžce): `World` každý

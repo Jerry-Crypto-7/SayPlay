@@ -31,8 +31,6 @@ import type { Look } from '@/play/arcade/look';
 import { type PropRole, fitScale, riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { FLAP } from '@/play/arcade/pieces/flap';
-import { PLATFORM } from '@/play/arcade/pieces/platform';
-import { RUNNER } from '@/play/arcade/pieces/runner';
 import { STRUCTURE_KINDS } from '@/play/arcade/pieces/runner-sections';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
@@ -42,13 +40,11 @@ import { type BodyView, PACING_KINDS, PACING_SHOT_KINDS, bodiesOf, bodiesStale, 
 import { headingOf, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
-import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
 import { loadBodyModel, toyPartsOf } from './look/load';
 import { deformBody } from './look/toy-deform';
 import { HeroActionBody } from './hero-action/HeroActionBody';
 import { type Ink, InkOutline } from './look/rig/InkOutline';
-import { Scenery } from './look/Scenery';
 import { RiggedModel } from './RiggedModel';
 import { type Path, bendGeometry, bridgesOverChasm, runnerPathOf, slopeAt } from './runner/path';
 import type { ArcadeSession } from './session';
@@ -62,6 +58,7 @@ import { ThrowRig } from './throw/ThrowRig';
 import { type ToyTarget, applyToy, toyMotionOn, toyTickOf } from './toy/applyToy';
 import { bodyClassOf, motionOf } from './toy/body-class';
 import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
+import { WorldBackdrop } from './WorldBackdrop';
 
 /** Barva náhradního kvádru podle id těla; nic fialového. */
 const FALLBACK_COLOR: Readonly<Record<string, string>> = {
@@ -415,7 +412,7 @@ export interface WorldProps {
   readonly surface: React.RefObject<HTMLDivElement | null>;
   readonly scene: Look;
   readonly enabled: boolean;
-  /** Podklad místo výchozího (`Backdrop`): údolí běžce kreslí `RunnerWorld` (P32A T3). */
+  /** Podklad místo výchozího (`WorldBackdrop`): údolí běžce kreslí `RunnerWorld` (P32A T3). */
   readonly backdrop?: React.ReactNode;
   /** Viditelná činnost hrdiny (P37-0 T2); `none` = dnešní hra. Jen vzhled, jádro ji nečte. */
   readonly heroAction: HeroAction;
@@ -634,7 +631,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
         : control === 'steer' ? (
           <SteerBackdrop session={session} course={baseControlOf(session.world.control).params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} namedHazard={cast.props.hazard !== undefined} namedPad={cast.things?.pad} />
         ) : (
-          <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
+          <WorldBackdrop control={control} length={session.world.length / UNIT} look={scene} seed={session.world.seed} />
         ))}
       {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
@@ -698,70 +695,6 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       )}
       {/* Slot ducha (P37-0 T3): ostatní žánry tohohle světa ho drží ve své scéně, poletování vlastní nemá. */}
       {control === 'flap' && <GhostSlot ghost={ghost} session={session} />}
-    </>
-  );
-}
-
-/** Podklad scény v barvách sady prostředí (P26 T11): dráha běžce, hladina pod plošinami, zem pod trubkami, rekvizity. */
-function Backdrop({ control, length, look }: { readonly control: string; readonly length: number; readonly look: Look }) {
-  const span = length + 60;
-  if (control === 'platform') {
-    const water = PLATFORM.fallBelowY / UNIT - 0.4;
-    return (
-      <>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, water, span / 2 - 30]}>
-          <planeGeometry args={[80, span]} />
-          <meshStandardMaterial color={look.water} roughness={0.3} />
-        </mesh>
-        <Scenery look={look} layout="behind" inner={11} from={-20} to={length + 20} y={water} size={1.6} />
-      </>
-    );
-  }
-  if (control === 'flap') {
-    // Úzký pás země: z boku je to proužek pod trubkami a za ním obloha. Široká
-    // plocha by z výšky kamery zabrala spodní půlku obrazu a spolkla dolní trubky.
-    return (
-      <>
-        <mesh position={[0, -0.4, span / 2 - 30]}>
-          <boxGeometry args={[3, 0.8, span]} />
-          <meshStandardMaterial color={look.ground} roughness={1} />
-        </mesh>
-        {/* Boční kamera vidí kulisy za tratí malé a v mlze: dvojnásobná velikost (P28D T6). */}
-        <Scenery look={look} layout="behind" inner={12} from={-20} to={length + 20} y={-0.4} size={2} />
-      </>
-    );
-  }
-  if (control === 'shooter' || control === 'throw') {
-    return (
-      <>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]} renderOrder={UNDER_PANORAMA}>
-          <planeGeometry args={[120, 120]} />
-          <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
-        </mesh>
-        {control === 'shooter' ? <Scenery look={look} layout="sides" inner={14} from={-4} to={60} size={1.5} /> : <Scenery look={look} layout="behind" inner={13} from={-10} to={45} size={1.5} />}
-      </>
-    );
-  }
-  const trackLength = length + 20;
-  const trackWidth = (RUNNER.lanes * RUNNER.laneWidth) / UNIT;
-  const laneWidth = RUNNER.laneWidth / UNIT;
-  return (
-    <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, trackLength / 2 - 10]}>
-        <planeGeometry args={[trackWidth + 0.6, trackLength]} />
-        <meshStandardMaterial color={look.track} roughness={0.9} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, trackLength / 2 - 10]} renderOrder={UNDER_PANORAMA}>
-        <planeGeometry args={[80, trackLength + 80]} />
-        <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
-      </mesh>
-      <Scenery look={look} layout="sides" inner={trackWidth / 2 + 2.5} from={-10} to={trackLength - 10} />
-      {[-0.5, 0.5].map((edge) => (
-        <mesh key={edge} rotation={[-Math.PI / 2, 0, 0]} position={[edge * laneWidth, 0, trackLength / 2 - 10]}>
-          <planeGeometry args={[0.08, trackLength]} />
-          <meshBasicMaterial color="#e2e8f0" />
-        </mesh>
-      ))}
     </>
   );
 }

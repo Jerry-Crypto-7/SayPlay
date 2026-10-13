@@ -13,7 +13,7 @@ import catalog from '@/assets/catalog-index.json';
 import { type Flora, floraIds, landmarks, LOOK_IDS, LOOKS, sceneLook } from '@/play/arcade/look';
 
 import { type StripSegment, stripCurve } from '../road-strip';
-import { PHONE_SHARE, type Plant, type RoadAt, type VegetationOptions, placeVegetation, plantPaint } from '../vegetation-places';
+import { type AroundOptions, LAYERS, LOW_TOWARD_CAMERA, NONE_TOWARD_CAMERA, PHONE_SHARE, type Plant, type RoadAt, type VegetationOptions, placeAround, placeVegetation, plantPaint } from '../vegetation-places';
 
 /** Silnice závodu se šikanou, zúžením a rozšířením. */
 const SEGMENTS: readonly StripSegment[] = [
@@ -129,6 +129,61 @@ describe('rozmístění vegetace', () => {
     }
     expect(Math.min(...plants.map((plant) => plant.size))).toBeLessThan(0.72);
     expect(Math.max(...plants.map((plant) => plant.size))).toBeGreaterThan(1.38);
+  });
+});
+
+/**
+ * Vegetace kolem hrací plochy (P46G T7): aréna 30 × 30 m posunutá ze středu, ať se
+ * nespletou osy. Pinuje se, co by na snímku vypadalo dobře, a přesto bylo špatně:
+ * strom na hrací ploše nebo ve stěně, vysoký strom mezi kamerou a hrdinou u přední
+ * hrany, vegetace před bludištěm, kudy hrdina vchází, a roh, který obejde pravidlo strany.
+ */
+describe('vegetace kolem hrací plochy', () => {
+  const BOX = { x0: -12, x1: 18, z0: -5, z1: 25 } as const;
+  const CLEAR = 3;
+  const ALL = { '-x': LAYERS, '+x': LAYERS, '-z': LAYERS, '+z': LAYERS } as const;
+  const around = (flora: Flora, overrides: Partial<AroundOptions> = {}): Plant[] => placeAround({ flora, seed: 7, box: BOX, clear: CLEAR, layers: LOW_TOWARD_CAMERA, profile: 'desktop', ...overrides });
+  /** Odstup půdorysu od plochy rozšířené o volný pás (m); záporný = sahá dovnitř. */
+  const gapToBox = (plant: Plant): number => Math.hypot(Math.max(BOX.x0 - plant.x, 0, plant.x - BOX.x1), Math.max(BOX.z0 - plant.z, 0, plant.z - BOX.z1)) - plant.reach - CLEAR;
+  const inFront = (plant: Plant): boolean => plant.z < BOX.z0 - CLEAR;
+
+  it.each(FLORAS)('%s: žádný půdorys nesahá na plochu ani do volného pásu', (_, flora) => {
+    const plants = around(flora, { layers: ALL });
+    expect(plants.length).toBeGreaterThan(100);
+    expect(plants.filter((plant) => gapToBox(plant) < -1e-6).map((plant) => `${plant.id} ${plant.x.toFixed(1)},${plant.z.toFixed(1)} gap=${gapToBox(plant).toFixed(2)}`)).toEqual([]);
+  });
+
+  it('roste ze všech čtyř stran, i v rozích', () => {
+    const plants = around(FOREST, { layers: ALL });
+    const count = (test: (plant: Plant) => boolean): number => plants.filter(test).length;
+    expect(count((plant) => plant.x < BOX.x0 - CLEAR && !inFront(plant))).toBeGreaterThan(100);
+    expect(count((plant) => plant.x > BOX.x1 + CLEAR && !inFront(plant))).toBeGreaterThan(100);
+    expect(count((plant) => plant.z > BOX.z1 + CLEAR && plant.x > BOX.x0 && plant.x < BOX.x1)).toBeGreaterThan(50);
+    expect(count((plant) => inFront(plant) && plant.x > BOX.x0 && plant.x < BOX.x1)).toBeGreaterThan(50);
+    expect(count((plant) => plant.x > BOX.x1 + CLEAR && plant.z > BOX.z1 + CLEAR)).toBeGreaterThan(20);
+  });
+
+  it.each(FLORAS)('%s: na straně kamery jen nízké drobnosti, u vchodu bludiště nic – i v rozích', (_, flora) => {
+    const low = around(flora);
+    const front = low.filter(inFront);
+    expect(front.length).toBeGreaterThan(0);
+    expect(front.filter((plant) => plant.layer !== 'near').map((plant) => `${plant.id} ${plant.layer} ${plant.x.toFixed(1)},${plant.z.toFixed(1)}`)).toEqual([]);
+    // Drobnost na straně kamery je nižší než hrdina s rezervou: přes ni kamera pod 40° vidí na paty hrdiny u hrany.
+    expect(Math.max(...front.map((plant) => plant.height))).toBeLessThan(2);
+    // Stromy dál rostou po stranách a vzadu.
+    expect(low.filter((plant) => !inFront(plant) && plant.layer !== 'near').length).toBeGreaterThan(20);
+    expect(around(flora, { layers: NONE_TOWARD_CAMERA }).filter(inFront)).toEqual([]);
+  });
+
+  it('tatáž hra dá tutéž vegetaci, telefon nejvýš 60 % desktopu a jeho podmnožinu', () => {
+    const desktop = around(FOREST);
+    expect(around(FOREST)).toEqual(desktop);
+    expect(around(FOREST, { seed: 8 })).not.toEqual(desktop);
+    const phone = around(FOREST, { profile: 'phone' });
+    expect(phone.length).toBeLessThanOrEqual(0.6 * desktop.length);
+    expect(phone.length).toBeGreaterThan(0.4 * desktop.length);
+    const kept = new Set(desktop.map((plant) => `${plant.id}:${plant.x}:${plant.z}`));
+    expect(phone.filter((plant) => !kept.has(`${plant.id}:${plant.x}:${plant.z}`))).toEqual([]);
   });
 });
 

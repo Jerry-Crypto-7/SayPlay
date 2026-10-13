@@ -106,6 +106,22 @@ describe('kulisa za mlhou', () => {
     }
   });
 
+  it('`beyond` odsune každou vrstvu za hrací plochu, vzdálená zůstane za bližší; bez něj poloměry podle mlhy', () => {
+    for (const id of LOOK_IDS) {
+      const look = LOOKS[id];
+      const byFog = backdropLayers(look, OPTIONS.seed, 0);
+      // Hřiště nebo ring v jeskyni (mlha 8–40 m): kulisa by jinak stála 25 m od kamery, uprostřed hry.
+      for (const beyond of [0, 26, 46, 72]) {
+        const layers = backdropLayers(look, OPTIONS.seed, 0, beyond);
+        layers.forEach((layer, i) => {
+          expect(layer.radius, `${id} ${beyond}`).toBeGreaterThanOrEqual(Math.max(beyond, byFog[i]!.radius));
+          if (i > 0) expect(layer.radius, `${id} ${beyond}`).toBeLessThan(layers[i - 1]!.radius);
+        });
+        if (beyond === 0) expect(layers.map((layer) => layer.radius)).toEqual(byFog.map((layer) => layer.radius));
+      }
+    }
+  });
+
   it('barvy jdou z mlhy po náladě: siluety tmavší než mlha, temný les temnější než les, nic fialového', () => {
     const purple: string[] = [];
     for (const setting of MOODS) {

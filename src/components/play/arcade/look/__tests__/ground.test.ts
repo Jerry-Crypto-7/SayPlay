@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import { LOOK_IDS, LOOKS, type Look } from '@/play/arcade/look';
 
-import { type GroundPalette, buildRoadGround, groundPainter, groundPalette } from '../ground';
+import { type GroundPalette, boxEdge, buildFieldGround, buildRoadGround, groundPainter, groundPalette } from '../ground';
 import type { StripSegment } from '../road-strip';
 
 /** Silnice se šikanou a zúžením, jak ji kreslí závod. */
@@ -146,5 +146,47 @@ describe('race ground', () => {
     }
     expect(checked).toBeGreaterThanOrEqual(8);
     expect(near).toBe(checked);
+  });
+});
+
+/**
+ * Zem bez cesty (P46G T7): bludiště, hřiště, střelnice, ring. Rovina jedné barvy
+ * by prošla každým testem scény; pinuje se, že síť leží rovně v celé ploše, má
+ * kresbu a kolem hrací plochy krajnici, uvnitř ne.
+ */
+describe('field ground', () => {
+  const FIELD = { x0: -10, x1: 14, z0: -2, z1: 30 } as const;
+  const AREA = { x0: -60, x1: 64, z0: -40, z1: 80 } as const;
+  const ground = buildFieldGround(LOOKS.forest, AREA, boxEdge(FIELD));
+  const position = ground.getAttribute('position');
+  const color = ground.getAttribute('color');
+  const at = (i: number): Color => new Color(color.getX(i), color.getY(i), color.getZ(i));
+
+  it('lies flat over the whole area with normals up, the same every time', () => {
+    const xs = Array.from({ length: position.count }, (_, i) => position.getX(i));
+    const zs = Array.from({ length: position.count }, (_, i) => position.getZ(i));
+    expect([Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)]).toEqual([AREA.x0, AREA.x1, AREA.z0, AREA.z1]);
+    expect(Array.from({ length: position.count }, (_, i) => position.getY(i)).every((y) => y === 0)).toBe(true);
+    const normal = ground.getAttribute('normal');
+    for (let i = 0; i < normal.count; i += 41) expect(normal.getY(i)).toBe(1);
+    // Telefon: krok ~2,5 m, ne mřížka po metru.
+    expect(position.count).toBeLessThan(((AREA.x1 - AREA.x0) / 2 + 1) * ((AREA.z1 - AREA.z0) / 2 + 1));
+    expect(Array.from(buildFieldGround(LOOKS.forest, AREA, boxEdge(FIELD)).getAttribute('color').array)).toEqual(Array.from(color.array));
+  });
+
+  it('has shades instead of one colour, and a verge at the field edge but not inside', () => {
+    const shades = new Set(Array.from({ length: color.count }, (_, i) => Math.round(luminance(at(i)) * 200)));
+    expect(shades.size).toBeGreaterThan(8);
+    const verge = new Color(groundPalette(LOOKS.forest).verge);
+    const distance = (a: Color): number => Math.hypot(a.r - verge.r, a.g - verge.g, a.b - verge.b);
+    const edge = boxEdge(FIELD);
+    const mean = (test: (gap: number | null) => boolean): number => {
+      const picked = Array.from({ length: position.count }, (_, i) => i).filter((i) => test(edge(position.getX(i), position.getZ(i))));
+      return picked.reduce((sum, i) => sum + distance(at(i)), 0) / picked.length;
+    };
+    expect(mean((gap) => gap !== null && gap < 0.6)).toBeLessThan(mean((gap) => gap === null) / 3);
+    expect(edge(0, 10)).toBeNull();
+    expect(edge(-13, 10)).toBeCloseTo(3);
+    expect(edge(17, 34)).toBeCloseTo(5);
   });
 });
