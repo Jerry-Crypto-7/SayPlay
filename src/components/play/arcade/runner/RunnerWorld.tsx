@@ -16,11 +16,12 @@ import { Box3, DataTexture, LinearFilter, type Mesh, MeshBasicMaterial, MeshStan
 
 import { color } from '@/brand/tokens';
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
-import type { Look } from '@/play/arcade/look';
+import { type Look, SURFACES } from '@/play/arcade/look';
 
 import { type GhostPlacement, worldPlacement } from '../Ghost';
 import { type GhostPose, GhostSlot } from '../GhostSlot';
-import { buildValley, PLAYABLE_HALF } from '../look/rig/terrain/valley';
+import { buildValley, LANE_HALF, PLAYABLE_HALF } from '../look/rig/terrain/valley';
+import { roadGeometry } from '../look/road-strip';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { type ToyTarget, applyToy, toyMotionOn } from '../toy/applyToy';
@@ -31,6 +32,8 @@ import { type Path, bendGeometry, runnerPathOf, slopeAt } from './path';
 
 /** Údolí začíná za kamerou úvodního záběru a končí za koncem mlhy po cíli. */
 const BEHIND_M = 40;
+/** Polovina šířky cesty (m): pruhy a kus okraje, uvnitř rovné hrací plochy údolí. */
+const PATH_HALF = LANE_HALF + 0.8;
 
 /** Údolí ohnuté po křivce trati (P46D T3): dráha, svahy i kulisy jdou zatáčkou a kopcem spolu s těly. */
 function RunnerValley({ look, length, terrain, path }: { readonly look: Look; readonly length: number; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
@@ -42,10 +45,34 @@ function RunnerValley({ look, length, terrain, path }: { readonly look: Look; re
   const material = useMemo(() => new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), []);
   useEffect(() => () => valley.geometry.dispose(), [valley]);
   useEffect(() => () => material.dispose(), [material]);
+  // Cesta jako jeden pás s hladkými okraji (P46G T2), ohnutý po křivce trati jako údolí; údolí pod ní je tráva sady.
+  const surface = SURFACES[look.surface];
+  const lane = useMemo(() => {
+    const built = roadGeometry([{ near: -BEHIND_M, far: length + look.fog[1] + 10, center: 0, width: 2 * PATH_HALF }], surface);
+    if (built !== null && path !== null) for (const geometry of [built.surface, built.edges, built.marks]) if (geometry !== null) bendGeometry(geometry, path);
+    return built;
+  }, [surface, look.fog, length, path]);
+  useEffect(() => () => { lane?.surface.dispose(); lane?.edges.dispose(); lane?.marks?.dispose(); }, [lane]);
   return (
     <>
       {/* Stín jen přijímá: vlastní stín by se na rovné dráze odrážel jako akné. */}
       <mesh ref={terrain} geometry={valley.geometry} material={material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'valley' }} />
+      {lane !== null && (
+        <>
+          <mesh geometry={lane.surface} receiveShadow>
+            <meshStandardMaterial color={surface.color} roughness={0.95} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+          </mesh>
+          <mesh geometry={lane.edges} receiveShadow>
+            <meshStandardMaterial color={surface.edge} roughness={0.95} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+          </mesh>
+          {/* Spáry prken ano, středová čára asfaltu ne: ta by vedla pod hrdinou prostředním pruhem. */}
+          {lane.marks !== null && 'marks' in surface && surface.marks.kind === 'seams' && (
+            <mesh geometry={lane.marks} receiveShadow>
+              <meshStandardMaterial color={surface.marks.color} roughness={0.95} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+            </mesh>
+          )}
+        </>
+      )}
       <Scenery look={look} layout="sides" inner={PLAYABLE_HALF + 1.5} from={-10} to={length + 10} ground={valley.heightAt} cap={look.terrain?.cap} bend={path ?? undefined} />
     </>
   );

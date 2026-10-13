@@ -77,12 +77,11 @@ describe('runner valley', () => {
     expect(geometry.getAttribute('color').count).toBe(geometry.getAttribute('position').count);
   });
 
-  it('takes an icy lane for snow, sand for the desert and a road for the city', () => {
-    expect(valleyPalette(LOOKS.snow).lane).not.toBe(valleyPalette(LOOKS.snow).surface);
+  it('takes sand for the desert, the kit ground elsewhere, and leaves the lane to the road strip', () => {
     expect(valleyPalette(LOOKS.desert).surface).toBe(LOOKS.desert.ground);
-    expect(valleyPalette(LOOKS.city).lane).not.toBe(valleyPalette(LOOKS.desert).lane);
-    // Sada bez vlastní palety si ji odvodí ze země a dráhy.
-    expect(valleyPalette(LOOKS.meadow)).toMatchObject({ surface: LOOKS.meadow.ground, lane: LOOKS.meadow.track });
+    expect(valleyPalette(LOOKS.meadow).surface).toBe(LOOKS.meadow.ground);
+    // Dráhu kreslí hladký pás (P46G T2): údolí uvnitř hrací plochy nemá barvu dráhy se zubatým krajem.
+    expect(Object.keys(valleyPalette(LOOKS.city)).sort()).toEqual(['rock', 'shade', 'surface']);
   });
 
   it.each(LOOK_IDS)('%s derives no purple terrain colour', (id) => {

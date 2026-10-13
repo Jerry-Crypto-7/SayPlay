@@ -36,8 +36,12 @@ interface Wall {
   readonly d: number;
 }
 
-/** Úseky a mantinely silnice; trať bez pneumatik (plavba) dá prázdné seznamy. */
-export function roadShapeOf(world: ArcadeWorld): { readonly segments: RoadSegment[]; readonly barriers: RoadBarrier[] } {
+/**
+ * Úseky a mantinely silnice; trať bez pneumatik (plavba) dá prázdné seznamy.
+ * `islands` = ostrůvky rozcestí (jsou i v `barriers`): scéna kreslí okrajové
+ * mantinely po hladké křivce (P46G T2) a ostrůvky zvlášť jako kvádry.
+ */
+export function roadShapeOf(world: ArcadeWorld): { readonly segments: RoadSegment[]; readonly barriers: RoadBarrier[]; readonly islands: RoadBarrier[] } {
   const state = instantiate(world);
   const groups = new Map<string, Wall[]>();
   for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
@@ -49,9 +53,13 @@ export function roadShapeOf(world: ArcadeWorld): { readonly segments: RoadSegmen
   }
   const sides: { readonly near: number; readonly far: number; readonly low: number; readonly high: number }[] = [];
   const barriers: RoadBarrier[] = [];
+  const islands: RoadBarrier[] = [];
   for (const walls of groups.values()) {
     // Osamělý mantinel je ostrůvek rozcestí: kreslí se celý.
-    if (walls.length === 1) barriers.push(walls[0] as Wall);
+    if (walls.length === 1) {
+      barriers.push(walls[0] as Wall);
+      islands.push(walls[0] as Wall);
+    }
     if (walls.length !== 2) continue;
     const [a, b] = walls as [Wall, Wall];
     const [low, high] = a.x < b.x ? [a, b] : [b, a];
@@ -73,5 +81,5 @@ export function roadShapeOf(world: ArcadeWorld): { readonly segments: RoadSegmen
       barriers.push({ x: (min + max) / 2, z: side.near, w: max - min, d: BARRIER_W });
     }
   });
-  return { segments, barriers };
+  return { segments, barriers, islands };
 }

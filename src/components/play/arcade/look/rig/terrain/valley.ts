@@ -30,7 +30,6 @@ const XS = [...COLUMNS.slice(1).reverse().map((x) => -x), ...COLUMNS];
 const ROW = 2;
 
 export interface ValleyPalette {
-  readonly lane: string;
   readonly surface: string;
   readonly shade: string;
   readonly rock: string;
@@ -38,12 +37,11 @@ export interface ValleyPalette {
 
 export const mix = (from: string, to: string, t: number): string => `#${new Color(from).lerp(new Color(to), t).getHexString()}`;
 
-/** Barvy údolí: povrch je země sady, dráha, stín a skála z `look.terrain`, jinak odvozené. */
+/** Barvy údolí: povrch je země sady, stín a skála z `look.terrain`, jinak odvozené. Dráhu kreslí pás cesty (P46G T2). */
 export function valleyPalette(look: Look): ValleyPalette {
   const surface = look.ground;
   return {
     surface,
-    lane: look.terrain?.lane ?? look.track,
     shade: look.terrain?.shade ?? mix(surface, look.light[1], 0.35),
     rock: look.terrain?.rock ?? mix(surface, '#57534e', 0.6),
   };
@@ -120,7 +118,7 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley {
   const h = (column: number, row: number): number => heights[row * XS.length + column]!;
 
   const palette = valleyPalette(look);
-  const colors = { lane: new Color(palette.lane), surface: new Color(palette.surface), shade: new Color(palette.shade), rock: new Color(palette.rock) };
+  const colors = { surface:new Color(palette.surface), shade: new Color(palette.shade), rock: new Color(palette.rock) };
   const cells = rows * (XS.length - 1);
   const positions = new Float32Array(cells * 18);
   const tints = new Float32Array(cells * 18);
@@ -143,11 +141,8 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley {
     const up = ny / Math.max(1e-9, Math.hypot(nx, ny, nz));
     const mx = (ax + bx + cx) / 3;
     const mz = (az + bz + cz) / 3;
-    // Kraj ledu je zubatý: šíře dráhy kolísá podél trati o trojúhelník až dva.
-    const edge = LANE_HALF + 1.2 * noise(mz * 0.35, 7.3);
-    const flat = Math.max(Math.abs(ax), Math.abs(bx), Math.abs(cx)) <= PLAYABLE_HALF;
-    if (flat && Math.abs(mx) < edge) face.copy(colors.lane);
-    else if (up < 0.5) face.copy(colors.rock);
+    // Dráhu kreslí hladký pás nad údolím (P46G T2): zubatý kraj po trojúhelnících tu nechával schody.
+    if (up < 0.5) face.copy(colors.rock);
     else if (up < 0.78 || noise(mx * 0.2 + 50, mz * 0.2) > 0.72) face.copy(colors.shade);
     else face.copy(colors.surface);
     face.multiplyScalar(0.94 + 0.1 * hash(index, 17));
