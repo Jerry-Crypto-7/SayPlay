@@ -52,6 +52,8 @@ export interface BotRun {
   readonly outcome: ArcadeOutcome;
   readonly tick: number;
   readonly hash: string;
+  /** Čítač skóre na konci běhu; s `replayEqual` týž jako u `scoredReplay` jeho vstupů – par bez dalšího přehrání. */
+  readonly score: number;
   /** Kde hráč skončil (metry trati) – pro důvod prohry. */
   readonly distanceM: number;
   /** Tik prvního výstřelu každého pravidla světa (index jako `world.rules`), −1 = nevystřelilo (P29A). */
@@ -529,6 +531,7 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
     outcome: outcomeOf(state),
     tick: state[HEADER.tick] as number,
     hash: hashArcade(state),
+    score: state[HEADER.counters + COUNTER.score] as number,
     distanceM: Math.round((state[bodyBase(player) + BODY.z] as number) / UNIT),
     firstFired,
     changes,
