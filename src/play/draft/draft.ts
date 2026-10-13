@@ -64,6 +64,7 @@ import { defaultCollectible, defaultFoe, defaultHero, defaultTarget, heroFits } 
 import { AMMO_VERB } from '../genre/throw';
 import { lookFor, lookWords } from '../arcade/look';
 import { modelOf } from '../arcade/models';
+import { steerStyleFor } from '../arcade/pieces/steer';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
 
 import { type ControlChoice, type ControlPick, nearestControl, pickControl } from './controls';
@@ -1023,8 +1024,9 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick, topic:
       ...(choice.doubleJump ? { doubleJump: true } : {}),
     };
   } else if (choice.control === 'steer') {
-    // Okruh ze vzorů: šikany, zúžení, rozcestí… (P46D T4).
-    spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(choice.drift ? { drift: true } : {}), patterns: 1 };
+    // Okruh ze vzorů: šikany, zúžení, rozcestí… (P46D T4) ve stylu podle prostředí (R2).
+    const style = steerStyleFor(spec.theme.look ?? lookFor(spec.theme.setting));
+    spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(choice.drift ? { drift: true } : {}), patterns: 1, ...(style === undefined ? {} : { style }) };
   } else if (choice.control === 'move_free') {
     if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
   } else if (choice.control === 'throw') {

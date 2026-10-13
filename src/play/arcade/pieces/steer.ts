@@ -29,6 +29,7 @@
 
 import { z } from 'zod';
 
+import type { LookId } from '@/play/arcade/look';
 import { createCompileRng } from '@/play/compile/rng';
 
 import {
@@ -60,6 +61,9 @@ import { GRAVITY } from '../kernel';
 
 export const STEER_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type SteerDifficulty = (typeof STEER_DIFFICULTIES)[number];
+/** Styly okruhu ze vzorů (P46D R2), popsané u `STEER_STYLE_LIBRARY`. */
+export const STEER_STYLES = ['open', 'winding', 'aisles', 'streets'] as const;
+export type SteerStyleId = (typeof STEER_STYLES)[number];
 
 export const STEER = {
   /** Nejvyšší rychlost vpřed (18 m/s). */
@@ -473,6 +477,8 @@ const generatorParams = z
     brakeDrift: z.int().min(4).max(20).optional(),
     /** Okruh ze vzorů (P46D T4). Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
     patterns: z.literal(1).optional(),
+    /** Styl okruhu ze vzorů (P46D R2, `STEER_STYLE_LIBRARY`); žánr ho píše podle prostředí, bez něj ho vybere semínko. */
+    style: z.enum(STEER_STYLES).optional(),
   })
   .strict();
 export type SteerTrackParams = z.infer<typeof generatorParams>;
@@ -506,6 +512,60 @@ export const STEER_PATTERN_LIBRARY: readonly SteerPattern[] = [
   { id: 'fork', from: 0, weight: 2 },
   { id: 'turbo-straight', from: 0, weight: 2 },
 ];
+
+// Styl okruhu (P46D R2)
+
+export interface SteerStyle {
+  readonly id: SteerStyleId;
+  /** Vzor, který styl nese: přijde hned, jak ho trať dovolí (první vzor nesmí být užší než trať). */
+  readonly signature: SteerPatternId;
+  /** Váhy vzorů; vzor bez váhy se v tomhle stylu nelosuje (dlouhá zatáčka přijde vždy). */
+  readonly weights: Readonly<Partial<Record<SteerPatternId, number>>>;
+  /** Dlouhé zatáčky v plné šířce trati (otevřená krajina), jinak těsné. */
+  readonly wide?: true;
+}
+
+/**
+ * Otevřená krajina (široké dlouhé zatáčky a rovinky s turbem), klikatá
+ * lesní cesta (krátké zatáčky), uličky obchodu (rozcestí a zúžení) a ulice
+ * (šikany a zúžení). Každý styl má od nejlehčího stupně aspoň dva vzory,
+ * takže se vzor nikdy neopakuje hned po sobě.
+ */
+export const STEER_STYLE_LIBRARY: Readonly<Record<SteerStyleId, SteerStyle>> = {
+  open: { id: 'open', signature: 'turbo-straight', weights: { sweep: 5, 'turbo-straight': 4 }, wide: true },
+  winding: { id: 'winding', signature: 'kink', weights: { kink: 6, sweep: 3 } },
+  aisles: { id: 'aisles', signature: 'fork', weights: { fork: 6, narrow: 2, sweep: 1 } },
+  streets: { id: 'streets', signature: 'chicane', weights: { chicane: 4, narrow: 4, sweep: 1 } },
+};
+
+/**
+ * Styl podle sady prostředí: poušť, pláž, louka, oceán, sníh a vesmír =
+ * otevřená krajina, les, džungle, sopka, jeskyně a hřbitov = klikatá cesta,
+ * obchody, obývák a továrna = uličky, město, hrad a podmořský svět = ulice.
+ * Sada, kterou tabulka nezná, nechá styl na semínku.
+ */
+const STEER_STYLE_OF_LOOK: Readonly<Partial<Record<LookId, SteerStyleId>>> = {
+  desert: 'open',
+  beach: 'open',
+  meadow: 'open',
+  ocean: 'open',
+  snow: 'open',
+  space: 'open',
+  forest: 'winding',
+  jungle: 'winding',
+  volcano: 'winding',
+  cave: 'winding',
+  graveyard: 'winding',
+  supermarket: 'aisles',
+  mall: 'aisles',
+  living_room: 'aisles',
+  factory: 'aisles',
+  city: 'streets',
+  castle: 'streets',
+  underwater: 'streets',
+};
+
+export const steerStyleFor = (look: LookId | null): SteerStyleId | undefined => (look === null ? undefined : STEER_STYLE_OF_LOOK[look]);
 
 export const STEER_SHAPE = {
   /** Spojka za každým vzorem: rovinka kratší než 30 m (tam turbo nestojí) a delší než 15 m (jinak by dvě krátké zatáčky četly jako šikana). */
@@ -569,7 +629,7 @@ const NARROWED: ReadonlySet<SteerPatternId> = new Set(['kink', 'chicane', 'narro
  * stejné vzory nejdou po sobě a dlouhá zatáčka přijde vždy (kdo neřídí,
  * narazí). Úseky bez vlastní šířky dostanou šířku trati (u `roadWidth` podle třetiny).
  */
-function patternCourse(rng: ReturnType<typeof createCompileRng>, tier: Tier, params: SteerTrackParams, maxShift: number, library: readonly SteerPattern[]) {
+function patternCourse(rng: ReturnType<typeof createCompileRng>, tier: Tier, params: SteerTrackParams, maxShift: number, library: readonly SteerPattern[], style: SteerStyle | undefined) {
   const length = params.lengthM * UNIT;
   const step = STEER_DIFFICULTIES.indexOf(params.difficulty);
   const segments: TrackPiece[] = [{ near: -STEER_TRACK.startBack, far: STEER_TRACK.runIn, center: 0 }];
@@ -597,6 +657,8 @@ function patternCourse(rng: ReturnType<typeof createCompileRng>, tier: Tier, par
   const sideFor = (total: number): number => (Math.abs(center) + total > STEER_TRACK.maxCenter ? -Math.sign(center) : rng.int(0, 1) === 0 ? -1 : 1);
 
   const usable = library.filter((pattern) => pattern.from <= step);
+  // Styl přepíše váhy; dlouhá zatáčka zůstává v `usable`, aby přišla vždy.
+  const weighted = style === undefined ? usable : usable.flatMap((pattern) => ((style.weights[pattern.id] ?? 0) === 0 ? [] : [{ ...pattern, weight: style.weights[pattern.id] as number }]));
   const road = params.roadWidth ?? tier.width;
   const narrowWidth = 2 * Math.floor(Math.max(STEER_SHAPE.narrowMin, (road * (STEER_SHAPE.narrowPct[step] as number)) / 100) / 2);
   const forkWidth = params.roadWidth === undefined ? tier.width : STEER_SHAPE.forkRoad;
@@ -613,18 +675,20 @@ function patternCourse(rng: ReturnType<typeof createCompileRng>, tier: Tier, par
     const mustSweep = !patterns.includes('sweep') && usable.some((pattern) => pattern.id === 'sweep') && z + longest + ROOM + STEER_TRACK.finalStraight >= length;
     // Za startem jede pole soupeřů vedle sebe: nic úzkého hned za rozjezdem, jinak je hráč nemá kudy předjet.
     const previous = patterns[patterns.length - 1];
-    const fresh = usable.filter((pattern) => (mustSweep ? pattern.id === 'sweep' : pattern.id !== previous && (patterns.length > 0 || !NARROWED.has(pattern.id)) && (previous !== 'turbo-straight' || TURNS.has(pattern.id))));
-    const pool = fresh.length > 0 ? fresh : usable;
-    let roll = rng.int(0, pool.reduce((sum, pattern) => sum + pattern.weight, 0) - 1);
-    const pick = pool.find((pattern) => (roll -= pattern.weight) < 0) as SteerPattern;
+    const fresh = (mustSweep ? usable : weighted).filter((pattern) => (mustSweep ? pattern.id === 'sweep' : pattern.id !== previous && (patterns.length > 0 || !NARROWED.has(pattern.id)) && (previous !== 'turbo-straight' || TURNS.has(pattern.id))));
+    const pool = fresh.length > 0 ? fresh : weighted;
+    // Vzor stylu přijde hned, jak ho trať dovolí: je vidět od prvního úseku.
+    const signature = style === undefined || patterns.includes(style.signature) ? undefined : fresh.find((pattern) => pattern.id === style.signature);
+    let roll = signature === undefined ? rng.int(0, pool.reduce((sum, pattern) => sum + pattern.weight, 0) - 1) : 0;
+    const pick = signature ?? (pool.find((pattern) => (roll -= pattern.weight) < 0) as SteerPattern);
     patterns.push(pick.id);
     switch (pick.id) {
       case 'sweep': {
         // Posun úseků do jedné strany, celkem víc než šířka trati.
         const shift = shiftOf();
         const count = Math.ceil((tier.width + STEER.carW) / shift) + rng.int(0, 1);
-        // První vzor jede vedle pole soupeřů a zůstává v šířce trati.
-        turn(count, sideFor(shift * count), shift, patterns.length > 1 ? tight(shift) : undefined);
+        // První vzor jede vedle pole soupeřů a zůstává v šířce trati, otevřená krajina celá.
+        turn(count, sideFor(shift * count), shift, patterns.length > 1 && style?.wide !== true ? tight(shift) : undefined);
         break;
       }
       case 'kink': {
@@ -686,9 +750,10 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
   generate: (seed, params) => steerPatternTrack(seed, params).level,
 };
 
-/** Trať i pořadí vzorů (jen `patterns: 1`); `library` zúží knihovnu (testy jednotlivých vzorů). */
-export function steerPatternTrack(seed: number, params: SteerTrackParams, library: readonly SteerPattern[] = STEER_PATTERN_LIBRARY): { readonly level: ArcadeLevel; readonly patterns: readonly SteerPatternId[] } {
+/** Trať, pořadí vzorů a styl (jen `patterns: 1`); vlastní `library` zúží knihovnu a styl vypne (testy jednotlivých vzorů). */
+export function steerPatternTrack(seed: number, params: SteerTrackParams, own?: readonly SteerPattern[]): { readonly level: ArcadeLevel; readonly patterns: readonly SteerPatternId[]; readonly style: SteerStyleId | undefined } {
     const rng = createCompileRng(seed);
+    const style = params.patterns !== 1 || own !== undefined ? undefined : STEER_STYLE_LIBRARY[params.style ?? (STEER_STYLES[rng.int(0, STEER_STYLES.length - 1)] as SteerStyleId)];
     const tier = TIERS[params.difficulty];
     const length = params.lengthM * UNIT;
     const { width } = tier;
@@ -704,7 +769,7 @@ export function steerPatternTrack(seed: number, params: SteerTrackParams, librar
     // Posun úseku nesmí přerůst boční dosah při nejvyšší rychlosti (rychlejší
     // spec = mírnější zatáčky); počítá se s rychlostí za poslední značkou rampy.
     const maxShift = Math.min(tier.shift[1], params.roadWidth === undefined ? Infinity : params.roadWidth - STEER.carW - 2 * STEER.clearance, lateralReach(STEER_TRACK.segment, fastest(params.topSpeed, length, rampMarks(length))) - STEER.clearance);
-    if (params.patterns === 1) ({ segments, straights, dividers, patterns, center } = patternCourse(rng, tier, params, maxShift, library));
+    if (params.patterns === 1) ({ segments, straights, dividers, patterns, center } = patternCourse(rng, tier, params, maxShift, own ?? STEER_PATTERN_LIBRARY, style));
     else for (;;) {
       // Zatáčka: posun úseků do jedné strany, celkem víc než šířka trati.
       const shift = rng.int(Math.min(tier.shift[0], maxShift), maxShift);
@@ -759,7 +824,7 @@ export function steerPatternTrack(seed: number, params: SteerTrackParams, librar
       for (const spot of spots.slice(0, Math.max(0, budget))) bodies.push({ role: 'collectible', kind: 'turbo', x: spot.x, y: 0, z: spot.z, w: 1500, h: 300, d: 1500, solid: false });
     }
     bodies.push({ role: 'goal', kind: 'finish', x: center, y: 0, z: finishZ, w: width, h: 3 * UNIT, d: 400, solid: false });
-    return { level: { bodies, length: finishZ }, patterns };
+    return { level: { bodies, length: finishZ }, patterns, style: style?.id };
 }
 
 // ---------------------------------------------------------------------------

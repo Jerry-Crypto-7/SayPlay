@@ -13,7 +13,7 @@ import { arcadeWorldOf } from '../compile';
 import { type ArcadeLevel, type ArcadeWorld } from '../contract';
 import { buildWorld } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { STEER_DIFFICULTIES, STEER_PATTERNS, STEER_PATTERN_LIBRARY, type SteerPatternId, type SteerTrackParams, checkSteerLevel, courseOf, steerBotRef, steerControlRef, steerPatternTrack, steerRoute, steerRules, steerSegments, steerTrack } from '../pieces/steer';
+import { STEER_DIFFICULTIES, STEER_PATTERNS, STEER_PATTERN_LIBRARY, STEER_STYLES, STEER_STYLE_LIBRARY, type SteerPatternId, type SteerTrackParams, checkSteerLevel, courseOf, steerBotRef, steerControlRef, steerPatternTrack, steerRoute, steerRules, steerSegments, steerStyleFor, steerTrack } from '../pieces/steer';
 import { type BotProfile, runBot, verifyArcade } from '../verify';
 
 const params = (extra: Record<string, unknown> = {}): SteerTrackParams => steerTrack.params.parse({ patterns: 1, ...extra });
@@ -85,6 +85,29 @@ describe('vzory okruhu', () => {
         const road = (segments[0] as (typeof segments)[number]).width;
         expect(Math.min(...segments.map((segment) => segment.width)) * 2, `${id}/${seed}`).toBeLessThanOrEqual(road);
       }
+    }
+  });
+
+  // P46D R2: poušť = otevřená krajina, les = klikatá cesta, obchod = uličky s rozcestím, město = ulice se šikanami.
+  it('styl podle prostředí: jeho vzor přijde hned, jak ho trať dovolí, a okruh bere jen vzory stylu', () => {
+    expect([steerStyleFor('desert'), steerStyleFor('forest'), steerStyleFor('supermarket'), steerStyleFor('city'), steerStyleFor(null)]).toEqual(['open', 'winding', 'aisles', 'streets', undefined]);
+    for (const style of STEER_STYLES) {
+      const own = STEER_STYLE_LIBRARY[style];
+      for (let seed = 1; seed <= 8; seed += 1) {
+        const made = steerPatternTrack(seed, params({ style }));
+        expect(made.style).toBe(style);
+        expect(made.patterns.slice(0, 2), `${style}/${seed}`).toContain(own.signature);
+        for (const id of made.patterns) expect(id === 'sweep' || (own.weights[id] ?? 0) > 0, `${style}/${seed}: ${id}`).toBe(true);
+      }
+    }
+  });
+
+  it('otevřená krajina má dlouhé zatáčky v celé šířce trati, ostatní styly těsné', () => {
+    for (let seed = 1; seed <= 6; seed += 1) {
+      const open = steerSegments(steerPatternTrack(seed, params({ style: 'open' })).level);
+      expect(new Set(open.map((segment) => segment.width)), `open/${seed}`).toEqual(new Set([open[0]!.width]));
+      const winding = steerSegments(steerPatternTrack(seed, params({ style: 'winding' })).level);
+      expect(Math.min(...winding.map((segment) => segment.width)) * 2, `winding/${seed}`).toBeLessThanOrEqual(winding[0]!.width);
     }
   });
 
