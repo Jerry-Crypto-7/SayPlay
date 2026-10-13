@@ -26,7 +26,7 @@ import { createCompileRng } from '@/play/compile/rng';
 
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeInput, type ArcadeLevel, AXIS_MAX, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HIT_GRACE, type PieceRef, UNIT, bodyBase } from '../contract';
 import { GRAVITY } from '../kernel';
-import { type ChunkStep, PLATFORM_CHUNK_LIBRARY, type PlatformChunk, type PlatformChunkId, REST_CHUNK, pickPlatformChunk } from './platform-chunks';
+import { type ChunkStep, PLATFORM_STYLES, PLATFORM_STYLE_LIBRARY, type PlatformChunk, type PlatformChunkId, type PlatformStyleId, REST_CHUNK, pickPlatformChunk, styledChunks } from './platform-chunks';
 
 export const PLATFORM_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type PlatformDifficulty = (typeof PLATFORM_DIFFICULTIES)[number];
@@ -245,6 +245,8 @@ const generatorParams = z
      * plošiny, chodba s ostny, voda… Jen se `sections`; žánr Skákačka ho píše do `tuning`. Bez něj úroveň jako dřív.
      */
     chunks: z.literal(1).optional(),
+    /** Styl úrovně ze vzorů (P46D R2, `PLATFORM_STYLE_LIBRARY`); žánr ho píše podle prostředí, bez něj ho vybere semínko. */
+    style: z.enum(PLATFORM_STYLES).optional(),
   })
   .strict();
 export type PlatformLevelParams = z.infer<typeof generatorParams>;
@@ -443,10 +445,16 @@ const within = (range: readonly [number, number], pct: number): number => range[
  * Úroveň z úseků ze vzorů (P46D T5): úsek bere vzory podle semínka a své obtížnosti,
  * dokud nemá své plošiny; druhý a třetí začíná odpočinkem s checkpointem (končí-li
  * předchozí úsek odpočinkem, začne na něm). Krok vzoru se ořízne do dosahu skoku.
+ *
+ * Styl (R2): bez vlastní knihovny (testy jednotlivých vzorů) bere úroveň vzory svého
+ * stylu a první úsek otevírá vzor stylu. Styl bez parametru losuje semínko hned po počtu plošin.
  */
-function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number, library: readonly PlatformChunk[]): { readonly level: ArcadeLevel; readonly platforms: number; readonly chunks: readonly PlatformChunkId[] } {
+function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number, own: readonly PlatformChunk[] | undefined): { readonly level: ArcadeLevel; readonly platforms: number; readonly chunks: readonly PlatformChunkId[]; readonly style: PlatformStyleId | undefined } {
   const rng = createCompileRng(seed);
   const platforms = platformCount(rng, params, extra);
+  const style = own === undefined ? PLATFORM_STYLE_LIBRARY[params.style ?? (PLATFORM_STYLES[rng.int(0, PLATFORM_STYLES.length - 1)] as PlatformStyleId)] : undefined;
+  const library = own ?? styledChunks(style!);
+  const opener = style === undefined ? undefined : library.find((chunk) => chunk.id === style.signature);
   const slabs: BodyInit[] = [slab(-2000, PLATFORM_LEVEL.startSlab - 2000, PLATFORM.baseTop)];
   const extras: BodyInit[] = [];
   const pools: BodyInit[] = [];
@@ -458,14 +466,14 @@ function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number,
   let lastNear = far;
 
   const lay = (step: ChunkStep, tier: Tier, index: number): number => {
-    const want = step.motion === 'shuttle' ? top : top + Math.round(step.rise * tier.rise);
+    const want = step.motion === 'shuttle' ? top : top + step.rise;
     const nextTop = Math.max(PLATFORM.minTop, top - PLATFORM.maxRise, Math.min(PLATFORM.maxTop, top + PLATFORM.maxRise, want));
     const start = far;
     if (step.motion === 'shuttle') {
       const gap = rng.int(PLATFORM_LEVEL.shuttleGap[0], PLATFORM_LEVEL.shuttleGap[1]);
       extras.push(shuttleBody(far, gap, top));
       far += gap;
-    } else far += Math.min(within(tier.gap, step.gap), maxGap(nextTop - top));
+    } else far += Math.min(typeof step.gap === 'number' ? within(tier.gap, step.gap) : step.gap.fixed, maxGap(nextTop - top));
     if (step.water === true) pools.push({ role: 'obstacle', kind: 'pool', x: 0, y: 0, z: Math.floor((start + far) / 2), w: PLATFORM.slabW, h: PLATFORM.fallBelowY - 200, d: far - start, solid: false });
 
     const near = far;
@@ -502,9 +510,9 @@ function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number,
       index = 1;
     }
     while (index < count) {
-      const chunk = section > 0 && index === 0 ? REST_CHUNK : pickPlatformChunk(rng, library, PLATFORM_DIFFICULTIES.indexOf(difficulty), chunks[chunks.length - 1]);
+      const chunk = section > 0 && index === 0 ? REST_CHUNK : chunks.length === 0 && opener !== undefined ? opener : pickPlatformChunk(rng, library, PLATFORM_DIFFICULTIES.indexOf(difficulty), chunks[chunks.length - 1]);
       chunks.push(chunk.id);
-      for (const step of chunk.build(rng, { top, maxTop: PLATFORM.maxTop, rise: tier.rise })) {
+      for (const step of chunk.build(rng, { top, minTop: PLATFORM.minTop, maxTop: PLATFORM.maxTop, rise: tier.rise, gap: tier.gap })) {
         lastNear = lay(step, tier, index);
         if (section > 0 && index === 0) open(lastNear);
         index += 1;
@@ -520,7 +528,7 @@ function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number,
   bodies.push({ role: 'goal', kind: 'finish', x: 0, y: top, z: goalZ, w: PLATFORM.slabW, h: 3 * UNIT, d: 400, solid: false });
   // Voda až za hroty: vazba nebezpečí z věty bere první překážku a sonda ji musí umět zasáhnout.
   bodies.push(...pools);
-  return { level: { bodies, length: goalZ, sectionStarts: starts }, platforms, chunks };
+  return { level: { bodies, length: goalZ, sectionStarts: starts }, platforms, chunks, style: style?.id };
 }
 
 /** Úroveň z úseků natažená nebo zkrácená po plošinách do `minTicks`..`maxTicks` odhadu robota a aspoň na `lengthM`. */
@@ -538,8 +546,8 @@ function sectionedLevel(seed: number, params: PlatformLevelParams): ArcadeLevel 
   return params.chunks === 1 ? platformChunkLevel(seed, params).level : fitted(params, (extra) => sectionedLayout(seed, params, extra)).level;
 }
 
-/** Úroveň ze vzorů i jejich pořadí; `library` zúží knihovnu (testy jednotlivých vzorů). */
-export function platformChunkLevel(seed: number, params: PlatformLevelParams, library: readonly PlatformChunk[] = PLATFORM_CHUNK_LIBRARY): { readonly level: ArcadeLevel; readonly chunks: readonly PlatformChunkId[] } {
+/** Úroveň ze vzorů, jejich pořadí a styl; vlastní `library` (testy jednotlivých vzorů) styl vypne. */
+export function platformChunkLevel(seed: number, params: PlatformLevelParams, library?: readonly PlatformChunk[]): { readonly level: ArcadeLevel; readonly chunks: readonly PlatformChunkId[]; readonly style: PlatformStyleId | undefined } {
   return fitted(params, (extra) => chunkedLayout(seed, params, extra, library));
 }
 
