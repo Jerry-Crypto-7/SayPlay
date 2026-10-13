@@ -659,3 +659,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-billboard-sign` | billboard sign | 3970 / 1913 |
 | `gen3d-concrete-planter-with-tree` | concrete planter with tree, planter, street planter | 4229 / 2068 |
 | `gen3d-dead-desert-tree` | dead desert tree | 4592 / 2243 |
+| `gen3d-mossy-rock-cluster` | mossy rock cluster, mossy rocks | 4478 / 2168 |
+| `gen3d-beach-umbrella` | beach umbrella, parasol, sun umbrella | 4742 / 2352 |
+| `gen3d-apartment-block` | apartment block, apartment building, tower block | 4339 / 1956 |
+| `gen3d-glass-office-tower` | glass office tower, office building | 4350 / 2082 |

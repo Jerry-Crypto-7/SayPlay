@@ -28903,6 +28903,88 @@
           0.4977
         ]
       }
+    },
+    {
+      "assetId": "gen3d-mossy-rock-cluster",
+      "tags": [
+        "mossy rock cluster",
+        "mossy rocks"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mossy-rock-cluster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75092,
+          0,
+          -0.71923
+        ],
+        "max": [
+          0.75092,
+          0.99466,
+          0.71923
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-umbrella",
+      "tags": [
+        "beach umbrella",
+        "parasol",
+        "sun umbrella"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-umbrella-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.51311,
+          0,
+          -0.51313
+        ],
+        "max": [
+          0.51311,
+          0.99908,
+          0.51313
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-apartment-block",
+      "tags": [
+        "apartment block",
+        "apartment building",
+        "tower block"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-apartment-block-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33495,
+          0,
+          -0.22954
+        ],
+        "max": [
+          0.33495,
+          0.99994,
+          0.22954
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-glass-office-tower",
+      "tags": [
+        "glass office tower",
+        "office building"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-glass-office-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15109,
+          0,
+          -0.15347
+        ],
+        "max": [
+          0.15109,
+          0.9995,
+          0.15347
+        ]
+      }
     }
   ]
 }

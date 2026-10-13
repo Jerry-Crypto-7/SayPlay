@@ -25,3 +25,4 @@ Psaný smyčkou `D:/caches/p46g/loop.mjs` po každém kole. **Model** = obrázek
 | 19 | city | 10 | 8 | 6/8 | 6 | – | street trash can, traffic cone, red phone booth, park fountain, billboard sign, concrete planter with tree | – |
 | 20 | city forest snow jungle desert | 10 | 5 | 1/5 | 1 | – | dead desert tree | – |
 | 21 | meadow forest | 2 | 0 | 0/0 | 0 | – | – | – |
+| 22 (opakování) | forest snow coast meadow city | 10 | 7 | 5/7 | 4 | – | mossy rock cluster, beach umbrella, apartment block, glass office tower | – |
