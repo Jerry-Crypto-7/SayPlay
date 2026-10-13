@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "3ec6100019a44f2bb3095ee82f6ac6aeff3b2d20be42a49d8a173f45fd8374db",
+ "catalogHash": "1005b16b81fa54d21253d7ee109efa1208428a974a64f1217aac4cc48f3b81dd",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1433,6 +1433,7 @@
   "gen3d-red-phone-booth": {"class":"biped","regions":{"legY":0.248}},
   "gen3d-park-fountain": {"class":"prop"},
   "gen3d-billboard-sign": {"class":"prop"},
-  "gen3d-concrete-planter-with-tree": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-concrete-planter-with-tree": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-dead-desert-tree": {"class":"prop"}
  }
 }

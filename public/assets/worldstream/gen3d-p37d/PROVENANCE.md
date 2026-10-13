@@ -658,3 +658,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-park-fountain` | park fountain | 4530 / 2256 |
 | `gen3d-billboard-sign` | billboard sign | 3970 / 1913 |
 | `gen3d-concrete-planter-with-tree` | concrete planter with tree, planter, street planter | 4229 / 2068 |
+| `gen3d-dead-desert-tree` | dead desert tree | 4592 / 2243 |

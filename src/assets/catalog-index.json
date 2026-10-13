@@ -28884,6 +28884,25 @@
           0.24758
         ]
       }
+    },
+    {
+      "assetId": "gen3d-dead-desert-tree",
+      "tags": [
+        "dead desert tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dead-desert-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48112,
+          0,
+          -0.4977
+        ],
+        "max": [
+          0.48112,
+          1.00001,
+          0.4977
+        ]
+      }
     }
   ]
 }
