@@ -608,3 +608,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-layered-canyon-rock` | layered canyon rock, butte, canyon rock | 4653 / 2311 |
 | `gen3d-poplar-tree` | poplar tree, poplar | 4741 / 2362 |
 | `gen3d-leaning-palm-tree` | leaning palm tree | 4321 / 2010 |
+| `gen3d-basalt-column-rock` | basalt column rock | 4748 / 2374 |
+| `gen3d-olive-tree` | olive tree, olive | 4450 / 2460 |
+| `gen3d-larch-tree` | larch tree, larch | 4692 / 2268 |
+| `gen3d-rubber-tree` | rubber tree, ficus tree | 4748 / 2374 |
+| `gen3d-cholla-cactus` | cholla cactus | 4548 / 2254 |

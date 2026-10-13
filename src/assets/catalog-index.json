@@ -27874,6 +27874,104 @@
           0.31959
         ]
       }
+    },
+    {
+      "assetId": "gen3d-basalt-column-rock",
+      "tags": [
+        "basalt column rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-basalt-column-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42793,
+          0,
+          -0.44211
+        ],
+        "max": [
+          0.42793,
+          0.99986,
+          0.44211
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-olive-tree",
+      "tags": [
+        "olive tree",
+        "olive"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-olive-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38965,
+          0,
+          -0.40168
+        ],
+        "max": [
+          0.38965,
+          0.99152,
+          0.40168
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-larch-tree",
+      "tags": [
+        "larch tree",
+        "larch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-larch-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30194,
+          0,
+          -0.29402
+        ],
+        "max": [
+          0.30194,
+          0.99999,
+          0.29402
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rubber-tree",
+      "tags": [
+        "rubber tree",
+        "ficus tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rubber-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38231,
+          0,
+          -0.40754
+        ],
+        "max": [
+          0.38231,
+          0.99342,
+          0.40754
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cholla-cactus",
+      "tags": [
+        "cholla cactus"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cholla-cactus-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13527,
+          0,
+          -0.31874
+        ],
+        "max": [
+          0.13527,
+          0.99674,
+          0.31874
+        ]
+      }
     }
   ]
 }
