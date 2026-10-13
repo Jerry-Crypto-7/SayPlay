@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "8d6d3e67a0d8863d82e04017dd78a707ae4bb555f7b47528137f8e30aa6f4a5e",
+ "catalogHash": "2f46dd71cdf59b2cf37bb9c353438269235a8f9a213667f75a306bbe705dbf41",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1284,7 +1284,6 @@
   "gen3d-diamond-ring": {"class":"prop"},
   "gen3d-freeze-ray": {"class":"prop"},
   "gen3d-emerald": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-angel-wing": {"class":"prop"},
   "gen3d-nunchaku": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-safe": {"class":"prop"},
   "gen3d-invisibility-cloak": {"class":"biped","regions":{"legY":0.25}},
@@ -1327,6 +1326,12 @@
   "gen3d-pizza-slice": {"class":"prop"},
   "gen3d-chocolate-bar": {"class":"prop"},
   "gen3d-power-glove": {"class":"prop"},
-  "gen3d-popsicle": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-popsicle": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-whip": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-angel-wing": {"class":"prop"},
+  "gen3d-scimitar": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-harpoon": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-laser-rifle": {"class":"prop"},
+  "gen3d-golden-idol": {"class":"biped","regions":{"legY":0.249}}
  }
 }

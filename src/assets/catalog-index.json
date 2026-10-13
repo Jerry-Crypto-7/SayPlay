@@ -25925,25 +25925,6 @@
       }
     },
     {
-      "assetId": "gen3d-angel-wing",
-      "tags": [
-        "angel wing"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-angel-wing-lod1.glb",
-      "bounds": {
-        "min": [
-          -1.27356,
-          0,
-          -0.06958
-        ],
-        "max": [
-          1.27356,
-          1.00001,
-          0.06958
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-nunchaku",
       "tags": [
         "nunchaku",
@@ -26759,6 +26740,120 @@
           0.18054,
           0.99979,
           0.15089
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-whip",
+      "tags": [
+        "whip"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-whip-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29411,
+          0,
+          -0.04961
+        ],
+        "max": [
+          0.29411,
+          0.99937,
+          0.04961
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-angel-wing",
+      "tags": [
+        "angel wing"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-angel-wing-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.25301,
+          0,
+          -0.0698
+        ],
+        "max": [
+          1.25301,
+          0.99714,
+          0.0698
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-scimitar",
+      "tags": [
+        "scimitar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-scimitar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.10859,
+          0,
+          -0.03976
+        ],
+        "max": [
+          0.10859,
+          0.99972,
+          0.03976
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-harpoon",
+      "tags": [
+        "harpoon"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-harpoon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.09537,
+          0,
+          -0.025
+        ],
+        "max": [
+          0.09537,
+          1.00001,
+          0.025
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-laser-rifle",
+      "tags": [
+        "laser rifle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-laser-rifle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40901,
+          0,
+          -2.27297
+        ],
+        "max": [
+          0.40901,
+          0.99664,
+          2.27297
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-golden-idol",
+      "tags": [
+        "golden idol"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-golden-idol-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35187,
+          0,
+          -0.32292
+        ],
+        "max": [
+          0.35187,
+          0.99725,
+          0.32292
         ]
       }
     }
