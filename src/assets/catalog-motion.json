@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "20aaadd5e5d7dad85a717f4b9cd0545238e09de8c2793c9f31de265a48acbcea",
+ "catalogHash": "0b528d430f3fd4fac2ffee003e67e5c150f1333799c82e3c4f65d60e33d2b509",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1276,6 +1276,14 @@
   "gen3d-gold-bar": {"class":"prop"},
   "gen3d-bazooka": {"class":"prop"},
   "gen3d-power-crystal": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-ruby": {"class":"prop"}
+  "gen3d-ruby": {"class":"prop"},
+  "gen3d-shuriken": {"class":"prop"},
+  "gen3d-golden-apple": {"class":"prop"},
+  "gen3d-golden-egg": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-spiked-club": {"class":"prop"},
+  "gen3d-money-bundle": {"class":"prop"},
+  "gen3d-flamethrower": {"class":"prop"},
+  "gen3d-diamond-ring": {"class":"prop"},
+  "gen3d-freeze-ray": {"class":"prop"}
  }
 }

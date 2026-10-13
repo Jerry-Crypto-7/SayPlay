@@ -501,3 +501,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-bazooka` | bazooka | 4750 / 2370 |
 | `gen3d-power-crystal` | power crystal | 4748 / 2374 |
 | `gen3d-ruby` | ruby | 4579 / 2271 |
+| `gen3d-shuriken` | shuriken, throwing star | 4509 / 2201 |
+| `gen3d-golden-apple` | golden apple | 4749 / 2370 |
+| `gen3d-golden-egg` | golden egg | 4748 / 2312 |
+| `gen3d-spiked-club` | spiked club, club | 4745 / 2346 |
+| `gen3d-money-bundle` | money bundle, cash, money stack, stack of money | 4599 / 2235 |
+| `gen3d-flamethrower` | flamethrower | 4734 / 2362 |
+| `gen3d-diamond-ring` | diamond ring | 4514 / 2227 |
+| `gen3d-freeze-ray` | freeze ray | 4495 / 2022 |

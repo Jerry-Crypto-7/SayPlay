@@ -25785,6 +25785,163 @@
           0.66557
         ]
       }
+    },
+    {
+      "assetId": "gen3d-shuriken",
+      "tags": [
+        "shuriken",
+        "throwing star"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-shuriken-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4206,
+          0,
+          -0.43453
+        ],
+        "max": [
+          0.4206,
+          0.99489,
+          0.43453
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-golden-apple",
+      "tags": [
+        "golden apple"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-golden-apple-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42228,
+          0,
+          -0.38882
+        ],
+        "max": [
+          0.42228,
+          0.99936,
+          0.38882
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-golden-egg",
+      "tags": [
+        "golden egg"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-golden-egg-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32091,
+          0,
+          -0.32083
+        ],
+        "max": [
+          0.32091,
+          0.99706,
+          0.32083
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spiked-club",
+      "tags": [
+        "spiked club",
+        "club"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spiked-club-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.55172,
+          0,
+          -0.44167
+        ],
+        "max": [
+          0.55172,
+          0.99447,
+          0.44167
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-money-bundle",
+      "tags": [
+        "money bundle",
+        "cash",
+        "money stack",
+        "stack of money"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-money-bundle-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.0385,
+          0,
+          -1.37993
+        ],
+        "max": [
+          1.0385,
+          0.99993,
+          1.37993
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flamethrower",
+      "tags": [
+        "flamethrower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flamethrower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42169,
+          0,
+          -1.5544
+        ],
+        "max": [
+          0.42169,
+          0.99741,
+          1.5544
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-diamond-ring",
+      "tags": [
+        "diamond ring"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-diamond-ring-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39084,
+          0,
+          -0.23523
+        ],
+        "max": [
+          0.39084,
+          0.99827,
+          0.23523
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-freeze-ray",
+      "tags": [
+        "freeze ray"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-freeze-ray-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.10763,
+          0,
+          -1.08936
+        ],
+        "max": [
+          1.10763,
+          0.99076,
+          1.08936
+        ]
+      }
     }
   ]
 }
