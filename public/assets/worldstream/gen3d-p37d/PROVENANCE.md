@@ -486,10 +486,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-mimic-chest` | mimic chest | 4624 / 2262 |
 | `gen3d-laser-gun` | laser gun, laser pistol | 4635 / 2237 |
 | `gen3d-round-shield` | round shield | 4687 / 2301 |
-| `gen3d-speed-boot` | speed boot | 4541 / 2210 |
 | `gen3d-treasure-pile` | treasure pile, gold hoard, treasure hoard, hoard | 4390 / 1996 |
 | `gen3d-battle-axe` | battle axe | 4748 / 2374 |
-| `gen3d-winged-shoe` | winged shoe | 4563 / 2264 |
 | `gen3d-cheese-wheel` | cheese wheel | 4742 / 2326 |
 | `gen3d-kite-shield` | kite shield | 4742 / 2370 |
 | `gen3d-sand-golem` | sand golem | 4344 / 2136 |
@@ -514,3 +512,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-nunchaku` | nunchaku, nunchucks | 4748 / 2374 |
 | `gen3d-safe` | safe | 4653 / 2269 |
 | `gen3d-invisibility-cloak` | invisibility cloak | 4737 / 2276 |
+| `gen3d-speed-boot` | speed boot | 4166 / 1987 |
+| `gen3d-winged-shoe` | winged shoe | 4626 / 2301 |
+| `gen3d-katana` | katana | 4748 / 2374 |
+| `gen3d-treasure-chest` | treasure chest | 4162 / 3061 |
+| `gen3d-spring-shoe` | spring shoe | 4218 / 2082 |
+| `gen3d-magic-bean` | magic bean | 4748 / 2374 |

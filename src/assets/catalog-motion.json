@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "d7a0577dbef804c7b3be66ab5c2b6c93051d1507c7282bac33db03c4feba7871",
+ "catalogHash": "e9373c4b7f714a36ca1348fc6d94446dd501c9fd67792859f73aca6235e82d7e",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1262,10 +1262,8 @@
   "gen3d-mimic-chest": {"class":"prop"},
   "gen3d-laser-gun": {"class":"prop"},
   "gen3d-round-shield": {"class":"prop"},
-  "gen3d-speed-boot": {"class":"prop"},
   "gen3d-treasure-pile": {"class":"prop"},
   "gen3d-battle-axe": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-winged-shoe": {"class":"prop"},
   "gen3d-cheese-wheel": {"class":"prop"},
   "gen3d-kite-shield": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-sand-golem": {"class":"biped","regions":{"legY":0.25}},
@@ -1289,6 +1287,12 @@
   "gen3d-angel-wing": {"class":"prop"},
   "gen3d-nunchaku": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-safe": {"class":"prop"},
-  "gen3d-invisibility-cloak": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-invisibility-cloak": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-speed-boot": {"class":"prop"},
+  "gen3d-winged-shoe": {"class":"prop"},
+  "gen3d-katana": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-treasure-chest": {"class":"prop"},
+  "gen3d-spring-shoe": {"class":"prop"},
+  "gen3d-magic-bean": {"class":"biped","regions":{"legY":0.25}}
  }
 }

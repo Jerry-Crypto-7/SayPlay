@@ -25497,25 +25497,6 @@
       }
     },
     {
-      "assetId": "gen3d-speed-boot",
-      "tags": [
-        "speed boot"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-speed-boot-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.43322,
-          0,
-          -0.79399
-        ],
-        "max": [
-          0.43322,
-          1.00001,
-          0.79399
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-treasure-pile",
       "tags": [
         "treasure pile",
@@ -25553,25 +25534,6 @@
           0.24089,
           0.99932,
           0.04027
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-winged-shoe",
-      "tags": [
-        "winged shoe"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-winged-shoe-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.97551,
-          0,
-          -1.04246
-        ],
-        "max": [
-          0.97551,
-          0.99916,
-          1.04246
         ]
       }
     },
@@ -26036,6 +25998,120 @@
           0.25861,
           0.99998,
           0.25411
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-speed-boot",
+      "tags": [
+        "speed boot"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-speed-boot-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58563,
+          0,
+          -0.6913
+        ],
+        "max": [
+          0.58563,
+          0.99798,
+          0.6913
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-winged-shoe",
+      "tags": [
+        "winged shoe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-winged-shoe-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.02991,
+          0,
+          -0.57864
+        ],
+        "max": [
+          1.02991,
+          0.9954,
+          0.57864
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-katana",
+      "tags": [
+        "katana"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-katana-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.08083,
+          0,
+          -0.04222
+        ],
+        "max": [
+          0.08083,
+          0.99958,
+          0.04222
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-treasure-chest",
+      "tags": [
+        "treasure chest"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-treasure-chest-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38467,
+          0,
+          -0.46211
+        ],
+        "max": [
+          0.38467,
+          0.98607,
+          0.46211
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spring-shoe",
+      "tags": [
+        "spring shoe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spring-shoe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34391,
+          0,
+          -0.5508
+        ],
+        "max": [
+          0.34391,
+          0.99918,
+          0.5508
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-magic-bean",
+      "tags": [
+        "magic bean"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-magic-bean-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.327,
+          0,
+          -0.15658
+        ],
+        "max": [
+          0.327,
+          0.99889,
+          0.15658
         ]
       }
     }
