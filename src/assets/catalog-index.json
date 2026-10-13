@@ -27674,6 +27674,67 @@
           1.04505
         ]
       }
+    },
+    {
+      "assetId": "gen3d-maple-tree",
+      "tags": [
+        "maple tree",
+        "maple"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-maple-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35714,
+          0,
+          -0.29017
+        ],
+        "max": [
+          0.35714,
+          1.00001,
+          0.29017
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-agave-plant",
+      "tags": [
+        "agave plant",
+        "agave"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-agave-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50615,
+          0,
+          -0.50697
+        ],
+        "max": [
+          0.50615,
+          0.99714,
+          0.50697
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-willow-tree",
+      "tags": [
+        "willow tree",
+        "weeping willow",
+        "willow"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-willow-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35693,
+          0,
+          -0.35492
+        ],
+        "max": [
+          0.35693,
+          1.00001,
+          0.35492
+        ]
+      }
     }
   ]
 }

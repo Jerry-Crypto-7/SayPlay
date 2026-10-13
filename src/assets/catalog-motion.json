@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "87a16780b42b82b309184a10c6a00fde72ae0eff19b9e328a9b3cfc5b813b864",
+ "catalogHash": "4b442fa69fcb0fbda25383a20d15f9edfd101080601160c93fbe57b553001009",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1373,6 +1373,9 @@
   "gen3d-mossy-stump": {"class":"prop"},
   "gen3d-jungle-vine": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-mossy-boulder": {"class":"prop"},
-  "gen3d-sandstone-rock": {"class":"prop"}
+  "gen3d-sandstone-rock": {"class":"prop"},
+  "gen3d-maple-tree": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-agave-plant": {"class":"prop"},
+  "gen3d-willow-tree": {"class":"biped","regions":{"legY":0.25}}
  }
 }

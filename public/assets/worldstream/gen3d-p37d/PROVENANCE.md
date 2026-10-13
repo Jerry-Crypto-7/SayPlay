@@ -598,3 +598,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-jungle-vine` | jungle vine, liana | 4712 / 2322 |
 | `gen3d-mossy-boulder` | mossy boulder, moss-covered boulder, mossy rock | 4631 / 2307 |
 | `gen3d-sandstone-rock` | sandstone rock, sandstone, red sandstone | 4748 / 2374 |
+| `gen3d-maple-tree` | maple tree, maple | 4488 / 2197 |
+| `gen3d-agave-plant` | agave plant, agave | 4609 / 2265 |
+| `gen3d-willow-tree` | willow tree, weeping willow, willow | 4487 / 2077 |

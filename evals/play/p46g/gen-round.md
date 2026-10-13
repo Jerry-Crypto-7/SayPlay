@@ -8,3 +8,4 @@ Psaný smyčkou `D:/caches/p46g/loop.mjs` po každém kole. **Model** = obrázek
 | 2 | snow meadow city coast forest jungle desert | 10 | 7 | 6/7 | 6 | – | bare winter tree, wildflower patch, kapok tree, snowy rock, tall grass tuft, sea rock | red under load, green alone: src/assets/__tests__/external-import.test.ts |
 | 3 | forest jungle desert snow meadow | 10 | 8 | 7/8 | 5 | – | frozen shrub, mossy stump, jungle vine, mossy boulder, sandstone rock | – |
 | 4 | forest | 1 | 0 | 0/0 | 0 | – | – | red under load, green alone: src/assets/__tests__/external-import.test.ts |
+| 5 (opakování) | coast city forest desert jungle meadow | 10 | 4 | 3/4 | 3 | – | maple tree, agave plant, willow tree | timeouts alone under GPU load: src/assets/__tests__/external-import.test.ts |
