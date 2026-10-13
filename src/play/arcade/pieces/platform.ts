@@ -270,6 +270,8 @@ export const PLATFORM_SECTIONS = {
   platforms: [16, 22],
   /** Plošin navíc za každou věc ke sběru nad `PLATFORM_LEVEL.collectCount`. */
   perItem: 2,
+  /** Úroveň ze vzorů (P46D R2): každá věc nad výchozí počet zvedne i nejkratší odhad robota o tolik. */
+  perItemTicks: 3 * ARCADE_HZ,
   maxPlatforms: 40,
   /** Podíl plošin v úsecích, procenta. */
   share: [30, 33, 37],
@@ -370,12 +372,14 @@ function sectionPlatforms(count: number): readonly [number, number, number] {
   return [first, second, Math.max(1, count - first - second)];
 }
 
+/** Věcí ke sběru nad výchozí počet (pod ním záporně). */
+const extraItems = (params: PlatformLevelParams): number => (params.collectAll === true ? (params.coinCount ?? PLATFORM_LEVEL.collectCount) - PLATFORM_LEVEL.collectCount : 0);
+
 /** Plošin úrovně z úseků: los z rozsahu, věci ke sběru nad výchozí počet a `extra` z natahování. */
 function platformCount(rng: ReturnType<typeof createCompileRng>, params: PlatformLevelParams, extra: number): number {
   // Los plošin jde vždy první: proud je stejný s počtem z věty i bez něj.
   const drawn = rng.int(PLATFORM_SECTIONS.platforms[0], PLATFORM_SECTIONS.platforms[1]);
-  const items = params.collectAll === true ? (params.coinCount ?? PLATFORM_LEVEL.collectCount) - PLATFORM_LEVEL.collectCount : 0;
-  return Math.max(3, Math.min(PLATFORM_SECTIONS.maxPlatforms, drawn + PLATFORM_SECTIONS.perItem * items + extra));
+  return Math.max(3, Math.min(PLATFORM_SECTIONS.maxPlatforms, drawn + PLATFORM_SECTIONS.perItem * extraItems(params) + extra));
 }
 
 /** Úroveň z úseků s `extra` plošinami navíc (záporné = méně) proti obsahu věty. */
@@ -534,9 +538,9 @@ function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number,
 }
 
 /** Úroveň z úseků natažená nebo zkrácená po plošinách do `minTicks`..`maxTicks` odhadu robota a aspoň na `lengthM`. */
-function fitted<T extends { readonly level: ArcadeLevel; readonly platforms: number }>(params: PlatformLevelParams, layout: (extra: number) => T): T {
+function fitted<T extends { readonly level: ArcadeLevel; readonly platforms: number }>(params: PlatformLevelParams, layout: (extra: number) => T, minTicks: number = PLATFORM_SECTIONS.minTicks): T {
   const ticks = (level: ArcadeLevel): number => platformPaceTicks(level, params.difficulty);
-  const short = (level: ArcadeLevel): boolean => ticks(level) < PLATFORM_SECTIONS.minTicks || level.length < params.lengthM * UNIT;
+  const short = (level: ArcadeLevel): boolean => ticks(level) < minTicks || level.length < params.lengthM * UNIT;
   let extra = 0;
   let built = layout(extra);
   while (short(built.level) && built.platforms < PLATFORM_SECTIONS.maxPlatforms) built = layout((extra += 1));
@@ -550,7 +554,8 @@ function sectionedLevel(seed: number, params: PlatformLevelParams): ArcadeLevel 
 
 /** Úroveň ze vzorů, jejich pořadí a styl; vlastní `library` (testy jednotlivých vzorů) styl vypne. */
 export function platformChunkLevel(seed: number, params: PlatformLevelParams, library?: readonly PlatformChunk[]): { readonly level: ArcadeLevel; readonly chunks: readonly PlatformChunkId[]; readonly style: PlatformStyleId | undefined } {
-  return fitted(params, (extra) => chunkedLayout(seed, params, extra, library));
+  // Lekníny jsou krátké desky: úroveň s věcmi navíc by natahování dorovnalo na stejné minimum jako bez nich. Věc navíc proto přidá i čas.
+  return fitted(params, (extra) => chunkedLayout(seed, params, extra, library), PLATFORM_SECTIONS.minTicks + Math.max(0, extraItems(params)) * PLATFORM_SECTIONS.perItemTicks);
 }
 
 export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
