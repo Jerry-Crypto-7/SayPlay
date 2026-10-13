@@ -6,3 +6,4 @@ Psaný smyčkou `D:/caches/p46g/loop.mjs` po každém kole. **Model** = obrázek
 |---|---|---|---|---|---|---|---|---|
 | 1 | forest jungle desert snow meadow city coast | 10 | 9 | 9/9 | 9 | – | fir tree, banana plant, saguaro cactus, snowy fir tree, apple tree, street tree, spruce tree, monstera plant, joshua tree | – |
 | 2 | snow meadow city coast forest jungle desert | 10 | 7 | 6/7 | 6 | – | bare winter tree, wildflower patch, kapok tree, snowy rock, tall grass tuft, sea rock | red under load, green alone: src/assets/__tests__/external-import.test.ts |
+| 3 | forest jungle desert snow meadow | 10 | 8 | 7/8 | 5 | – | frozen shrub, mossy stump, jungle vine, mossy boulder, sandstone rock | – |

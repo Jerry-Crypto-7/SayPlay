@@ -249,7 +249,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-planet-rover` | planet rover | 4350 / 2004 |
 | `gen3d-tiki-torch` | tiki torch | 4643 / 2244 |
 | `gen3d-medical-tent` | medical tent | 4387 / 2172 |
-| `gen3d-jungle-vine` | jungle vine | 4721 / 2338 |
 | `gen3d-mangrove-tree` | mangrove tree | 4147 / 1945 |
 | `gen3d-fruit-bowl` | fruit bowl | 4196 / 2625 |
 | `gen3d-pepper-mill` | pepper mill | 4748 / 2374 |
@@ -594,3 +593,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-snowy-rock` | snowy rock, snow-covered rock, snowy boulder | 4750 / 2364 |
 | `gen3d-tall-grass-tuft` | tall grass tuft, tall grass, grass tuft | 4699 / 2337 |
 | `gen3d-sea-rock` | sea rock, coastal rock, sea stack | 4697 / 2294 |
+| `gen3d-frozen-shrub` | frozen shrub, frosted shrub, frosted bush | 4748 / 2374 |
+| `gen3d-mossy-stump` | mossy stump, moss-covered stump | 4748 / 2372 |
+| `gen3d-jungle-vine` | jungle vine, liana | 4712 / 2322 |
+| `gen3d-mossy-boulder` | mossy boulder, moss-covered boulder, mossy rock | 4631 / 2307 |
+| `gen3d-sandstone-rock` | sandstone rock, sandstone, red sandstone | 4748 / 2374 |

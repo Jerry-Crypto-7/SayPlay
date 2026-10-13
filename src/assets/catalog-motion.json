@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "6190f4737065e3e0105c6ed0277c75c6da4c6923b8f7437c2b6ea97a9df99ae4",
+ "catalogHash": "87a16780b42b82b309184a10c6a00fde72ae0eff19b9e328a9b3cfc5b813b864",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1025,7 +1025,6 @@
   "gen3d-planet-rover": {"class":"prop"},
   "gen3d-tiki-torch": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-medical-tent": {"class":"prop"},
-  "gen3d-jungle-vine": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-mangrove-tree": {"class":"prop"},
   "gen3d-fruit-bowl": {"class":"prop"},
   "gen3d-pepper-mill": {"class":"biped","regions":{"legY":0.25}},
@@ -1369,6 +1368,11 @@
   "gen3d-kapok-tree": {"class":"prop"},
   "gen3d-snowy-rock": {"class":"prop"},
   "gen3d-tall-grass-tuft": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-sea-rock": {"class":"prop"}
+  "gen3d-sea-rock": {"class":"prop"},
+  "gen3d-frozen-shrub": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-mossy-stump": {"class":"prop"},
+  "gen3d-jungle-vine": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-mossy-boulder": {"class":"prop"},
+  "gen3d-sandstone-rock": {"class":"prop"}
  }
 }

@@ -20966,25 +20966,6 @@
       }
     },
     {
-      "assetId": "gen3d-jungle-vine",
-      "tags": [
-        "jungle vine"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-jungle-vine-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.29076,
-          0,
-          -0.29001
-        ],
-        "max": [
-          0.29076,
-          0.99758,
-          0.29001
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-mangrove-tree",
       "tags": [
         "mangrove tree"
@@ -27588,6 +27569,109 @@
           0.75026,
           0.99942,
           0.74989
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-frozen-shrub",
+      "tags": [
+        "frozen shrub",
+        "frosted shrub",
+        "frosted bush"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-shrub-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35016,
+          0,
+          -0.36305
+        ],
+        "max": [
+          0.35016,
+          0.99916,
+          0.36305
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mossy-stump",
+      "tags": [
+        "mossy stump",
+        "moss-covered stump"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mossy-stump-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.20982,
+          0,
+          -0.98229
+        ],
+        "max": [
+          1.20982,
+          0.99988,
+          0.98229
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-jungle-vine",
+      "tags": [
+        "jungle vine",
+        "liana"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jungle-vine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28986,
+          0,
+          -0.2899
+        ],
+        "max": [
+          0.28986,
+          0.99932,
+          0.2899
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mossy-boulder",
+      "tags": [
+        "mossy boulder",
+        "moss-covered boulder",
+        "mossy rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mossy-boulder-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44247,
+          0,
+          -0.44926
+        ],
+        "max": [
+          0.44247,
+          0.99783,
+          0.44926
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sandstone-rock",
+      "tags": [
+        "sandstone rock",
+        "sandstone",
+        "red sandstone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sandstone-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.03997,
+          0,
+          -1.04505
+        ],
+        "max": [
+          1.03997,
+          1.00001,
+          1.04505
         ]
       }
     }
