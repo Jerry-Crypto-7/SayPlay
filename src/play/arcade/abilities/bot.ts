@@ -13,7 +13,7 @@ import { shootStep } from '../addons';
 import { ABILITY_SLOTS, AXIS_MAX, type AbilityId, type ArcadeInput, type ArcadeObservation, BODY, BUTTON, FLAG, HEADER, type PieceRef, ROLE, UNIT, bodyBase } from '../contract';
 import { arenaAxis } from '../pieces/arena';
 import { ABILITY_BUTTONS, ABILITY_TIMING, type AbilityBot, abilityActive, abilityCooldown } from './state';
-import { inStrikeReach } from './strike';
+import { inStrikeReachWithin } from './strike';
 
 /** Jak daleko dopředu (tiky po zmáčknutí) robot hlídá tělo, kvůli kterému neuhne. */
 const COMMIT_TICKS = 24;
@@ -29,20 +29,48 @@ const EVADE: Readonly<Record<string, number>> = {
 
 const alive = (state: Int32Array, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
 
+/**
+ * Rozestup těla od hrdiny v ose je v t lineární: nejmenší je na kraji okna `from..to`, nebo nula,
+ * když mezi kraji mění znaménko. Tělo, které se ani tak nepřiblíží, se nedotkne v žádném tiku.
+ */
+function apart(state: Int32Array, p: number, b: number, axis: number, speed: number, size: number, from: number, to: number): boolean {
+  const gap = (state[b + axis] as number) - (state[p + axis] as number);
+  const drift = (state[b + speed] as number) - (state[p + speed] as number);
+  const near = gap + drift * from;
+  const far = gap + drift * to;
+  const least = Math.sign(near) !== Math.sign(far) ? 0 : Math.min(Math.abs(near), Math.abs(far));
+  return least * 2 >= (state[p + size] as number) + (state[b + size] as number);
+}
+
 /** První tik v `from..to` (od pozorování), kdy se hrdina a tělo dotknou, když oba letí dál svou rychlostí; jinak −1. */
-function contactAt(state: Int32Array, player: number, body: number, from: number, to: number): number {
+export function contactAt(state: Int32Array, player: number, body: number, from: number, to: number): number {
   const p = bodyBase(player);
   const b = bodyBase(body);
-  const at = (base: number, axis: number, speed: number, t: number): number => (state[base + axis] as number) + (state[base + speed] as number) * t;
   const py = state[p + BODY.y] as number;
   const by = state[b + BODY.y] as number;
   if (!(py < by + (state[b + BODY.h] as number) && by < py + (state[p + BODY.h] as number))) return -1;
+  // R5: robot se ptá u každého těla trati v každém tiku – vzdálená těla vyřadí dřív než smyčka.
+  if (apart(state, p, b, BODY.x, BODY.vx, BODY.w, from, to) || apart(state, p, b, BODY.z, BODY.vz, BODY.d, from, to)) return -1;
+  const at = (base: number, axis: number, speed: number, t: number): number => (state[base + axis] as number) + (state[base + speed] as number) * t;
   for (let t = from; t <= to; t += 1) {
     const dx = Math.abs(at(b, BODY.x, BODY.vx, t) - at(p, BODY.x, BODY.vx, t));
     const dz = Math.abs(at(b, BODY.z, BODY.vz, t) - at(p, BODY.z, BODY.vz, t));
     if (dx * 2 < (state[p + BODY.w] as number) + (state[b + BODY.w] as number) && dz * 2 < (state[p + BODY.d] as number) + (state[b + BODY.d] as number)) return t;
   }
   return -1;
+}
+
+/** Živá těla kromě hrdiny podle role, v pořadí indexu – krok akcí je projde jednou za tik (R5). */
+function livingByRole(state: Int32Array, player: number): Map<number, number[]> {
+  const out = new Map<number, number[]>();
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    if (i === player || !alive(state, i)) continue;
+    const role = state[bodyBase(i) + BODY.role] as number;
+    let bodies = out.get(role);
+    if (bodies === undefined) out.set(role, (bodies = []));
+    bodies.push(i);
+  }
+  return out;
 }
 
 /** Živá těla rolí `roles` kromě hrdiny. */
@@ -103,14 +131,15 @@ function aheadAt(state: Int32Array, player: number, body: number, from: number, 
   return at >= from && at <= to ? at : -1;
 }
 
-/** Tělo, kterému robot neuhne, a tik dotyku – nejbližší ze `targets` na kolizním kurzu. */
-function oncoming(observation: ArcadeObservation, targets: readonly number[], horizon: number, steer: boolean): { body: number; at: number } | null {
-  const { state, player } = observation;
-  const n = observation.recent.length;
+/**
+ * Tělo, kterému robot neuhne, a tik dotyku – nejbližší z těl `targets`, která akci patří (`owned`),
+ * na kolizním kurzu (`contact` = tik dotyku, nebo −1). Vlastníka zjišťuje až u těl s dotykem.
+ */
+function oncoming(targets: readonly number[], contact: (body: number) => number, owned: (body: number) => boolean): { body: number; at: number } | null {
   let best: { body: number; at: number } | null = null;
   for (const body of targets) {
-    const at = steer ? aheadAt(state, player, body, n, n + horizon) : contactAt(state, player, body, n, n + horizon);
-    if (at >= 0 && (best === null || at < best.at)) best = { body, at };
+    const at = contact(body);
+    if (at >= 0 && (best === null || at < best.at) && owned(body)) best = { body, at };
   }
   return best;
 }
@@ -139,18 +168,11 @@ function seekAxis(state: Int32Array, player: number, roles: readonly number[]): 
 
 const STRUCK = [ROLE.enemy, ROLE.chaser];
 const LOOT = [ROLE.collectible, ROLE.enemy];
+const ENEMY = [ROLE.enemy];
 
 /** Role těl, na která akce sahá: střelba na nepřátele, úder a krádež na své cíle, dash a štít na nárazy. */
 const rolesOf = (id: AbilityId, harm: readonly number[]): readonly number[] =>
   id === 'shoot' ? [ROLE.enemy] : id === 'strike' ? STRUCK : id === 'grab' ? LOOT : harm;
-
-/** Těla, na která `keep` platí, a zbytek. */
-function partition(bodies: readonly number[], keep: (body: number) => boolean): [number[], number[]] {
-  const kept: number[] = [];
-  const rest: number[] = [];
-  for (const body of bodies) (keep(body) ? kept : rest).push(body);
-  return [kept, rest];
-}
 
 /** Tělo, na které smí každý uchazeč. */
 const SHARED = -1;
@@ -201,15 +223,38 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   const harm = params.harm.map((role) => ROLE[role]).filter((role) => !steer || role !== ROLE.obstacle);
   const around = AROUND_BOTS.includes(base.id);
   const slots = slotsOf(observation, params);
-  const assigned = ownerOf(state, params.ids, harm, fire);
+  let living: Map<number, number[]> | undefined;
+  const lists = new Map<readonly number[], readonly number[]>();
+  const of = (roles: readonly number[]): readonly number[] => {
+    let bodies = lists.get(roles);
+    if (bodies !== undefined) return bodies;
+    const byRole = (living ??= livingByRole(state, player));
+    bodies = roles.length === 1 ? byRole.get(roles[0] as number) ?? [] : [...new Set(roles)].flatMap((role) => byRole.get(role) ?? []).sort((a, b) => a - b);
+    lists.set(roles, bodies);
+    return bodies;
+  };
+  // Přidělení prochází všechna těla: spočítá se až u prvního těla, na kterém záleží (většinu tiků žádné).
+  let assignment: ((body: number) => number) | undefined;
+  const assigned = (body: number): number => (assignment ??= ownerOf(state, params.ids, harm, fire))(body);
   const horizon = steer ? STEER_COMMIT_TICKS : COMMIT_TICKS;
+  // Tik dotyku a vlastník se v jednom tiku robota nemění: každé tělo se spočítá jednou (R5).
+  const contacts = new Map<number, number>();
+  const contact = (body: number): number => {
+    let at = contacts.get(body);
+    if (at === undefined) contacts.set(body, (at = steer ? aheadAt(state, player, body, n, n + horizon) : contactAt(state, player, body, n, n + horizon)));
+    return at;
+  };
   // Přidělení propadne, když vlastník do dotyku nebude připravený ani aktivní: tělo by prošlo bez obrany.
   // Jen tehdy – úder, který jednou mine, to za cooldown zkusí znovu a tělo mu mezitím nesmí vzít druhá akce.
+  const owners = new Map<number, number>();
   const owner = (body: number): number => {
+    const known = owners.get(body);
+    if (known !== undefined) return known;
     const slot = slots[assigned(body)];
-    if (slot === undefined || slot.ready) return assigned(body);
-    const at = steer ? aheadAt(state, player, body, n, n + horizon) : contactAt(state, player, body, n, n + horizon);
-    return at < 0 || slot.activeUntil >= at || slot.readyAt < at ? assigned(body) : SHARED;
+    const at = slot === undefined || slot.ready ? -1 : contact(body);
+    const own = slot === undefined || at < 0 || slot.activeUntil >= at || slot.readyAt < at ? assigned(body) : SHARED;
+    owners.set(body, own);
+    return own;
   };
   const mine = (slot: number) => (body: number) => owner(body) === slot || owner(body) === SHARED;
   // Doplněk střílí na nepřátele akce střelby, když ji hra má; jinak (−1 = `SHARED`) jen na společné.
@@ -234,17 +279,19 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
       continue;
     }
     if (slot.id === 'strike' || slot.id === 'grab') {
-      const active = ABILITY_TIMING[slot.id].active;
-      const hits = (body: number): boolean => Array.from({ length: active }, (_v, k) => n + k).some((t) => inStrikeReach(state, player, body, t, around));
-      const [reach, spoiled] = partition(bodiesOf(state, player, slot.id === 'strike' ? STRUCK : LOOT), owned);
-      // Úder a krádež berou všechno v dosahu: nezmáčknout, když by vzaly i tělo přidělené druhé akci.
-      if (slot.ready && reach.some(hits) && !spoiled.some(hits)) buttons |= slot.button;
+      if (slot.ready) {
+        const last = n + ABILITY_TIMING[slot.id].active - 1;
+        const hits = (body: number): boolean => inStrikeReachWithin(state, player, body, n, last, around);
+        // Úder a krádež berou všechno v dosahu: nezmáčknout, když by vzaly i tělo přidělené druhé akci.
+        const struck = of(slot.id === 'strike' ? STRUCK : LOOT).filter(hits);
+        if (struck.length > 0 && struck.every(owned)) buttons |= slot.button;
+      }
       // Úder a krádež nepřítele chtějí, aby přišel: s připravenou akcí neuhnout tomu, co míří na hrdinu.
-      const threat = oncoming(observation, bodiesOf(state, player, slot.id === 'strike' ? STRUCK : [ROLE.enemy]).filter(owned), steer ? STEER_COMMIT_TICKS : COMMIT_TICKS, steer);
+      const threat = oncoming(of(slot.id === 'strike' ? STRUCK : ENEMY), contact, owned);
       if (threat !== null && (slot.ready || slot.activeUntil >= threat.at)) hold = threat.body;
       continue;
     }
-    const threat = oncoming(observation, bodiesOf(state, player, harm).filter(owned), steer ? STEER_COMMIT_TICKS : COMMIT_TICKS, steer);
+    const threat = oncoming(of(harm), contact, owned);
     // Dash i štít (blok) chrání jen po okno: zmáčknout, až dotyk padne do jeho první půlky.
     // Náboj štítu spotřebovaný v posledních tikách robot ještě nevidí – riziko jednoho zásahu.
     const active = ABILITY_TIMING[slot.id].active;

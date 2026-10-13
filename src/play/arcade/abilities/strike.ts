@@ -57,6 +57,33 @@ export function inStrikeReach(state: Int32Array, player: number, other: number, 
   return by < py + (state[p + BODY.h] as number) + STRIKE.wide && py < by + (state[b + BODY.h] as number) + STRIKE.wide;
 }
 
+/**
+ * Je tělo `other` v dosahu úderu v některém tiku `from..to` (robot)? Rozestupy jsou v t lineární:
+ * tělo mimo dosah na obou krajích okna ze stejné strany se dosahu nedotkne ani mezi nimi, a to
+ * se pozná bez smyčky (R5: krádež se ptá u každé mrkve na trati v každém tiku).
+ */
+export function inStrikeReachWithin(state: Int32Array, player: number, other: number, from: number, to: number, around = false): boolean {
+  const p = bodyBase(player);
+  const b = bodyBase(other);
+  const ends = (axis: number, speed: number): [number, number] => {
+    const gap = (state[b + axis] as number) - (state[p + axis] as number);
+    const drift = (state[b + speed] as number) - (state[p + speed] as number);
+    return [gap + drift * from, gap + drift * to];
+  };
+  /** Nejmenší |rozestup| v okně: nula, když mezi kraji mění znaménko. */
+  const least = ([near, far]: [number, number]): number => (Math.sign(near) !== Math.sign(far) ? 0 : Math.min(Math.abs(near), Math.abs(far)));
+  const sizes = (size: number): number => (state[b + size] as number) + (state[p + size] as number);
+  if (around) {
+    if (least(ends(BODY.x, BODY.vx)) * 2 >= sizes(BODY.w) + 2 * STRIKE.around || least(ends(BODY.z, BODY.vz)) * 2 >= sizes(BODY.d) + 2 * STRIKE.around) return false;
+  } else {
+    const [near, far] = ends(BODY.z, BODY.vz);
+    if (Math.max(near, far) < -STRIKE.back || Math.min(near, far) > STRIKE.reach) return false;
+    if (least(ends(BODY.x, BODY.vx)) * 2 >= sizes(BODY.w) + 2 * STRIKE.wide) return false;
+  }
+  for (let t = from; t <= to; t += 1) if (inStrikeReach(state, player, other, t, around)) return true;
+  return false;
+}
+
 export const strikeRule: RulePiece<z.infer<typeof strikeParams>> = {
   id: 'ability_strike',
   params: strikeParams,
