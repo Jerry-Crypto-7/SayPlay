@@ -29,3 +29,24 @@ Bez `P46_OUT` se zapíše `actions-baseline.json`.
 Akci dnes dostanou jen věty se střelbou v řízení, letu a žánru střelce. Bití, krádež, uhnutí a štít nemá žádná hra. Cíl P46A (T10) je u všech tří čísel ≥ 0,85.
 
 Zábava panelu P45 nad touto větví (`fun-baseline.json`, 40 hratelných her): mrtvý čas medián 5,36 s, gradace 0,55, počet chování medián 1, finále 0,23.
+
+## Po P46A (13. 10. 2026)
+
+`actions-after.json` a `fun-after-a.json`, větev `features/P46A-akce-hrdiny-2026-10-12`.
+
+| Měření | Před | Po | Cíl |
+|---|---|---|---|
+| `hasAction` | 0,24 | 0,88 | ≥ 0,85 |
+| `botUsed` | 0,28 | 0,92 | ≥ 0,85 |
+| `verbFired` | 0,28 | 0,92 | ≥ 0,85 |
+| mrtvý čas, medián | 5,36 s | 4,96 s | ne horší |
+
+Gradace, počet chování a finále se nepohnuly (0,55 / 1 / 0,23); hratelných zůstává 40 ze 40.
+
+Akci dnes dostane běžec, skákačka, řízení, let (flap, glide), aréna útěk a sběr i bludiště (krádež). Souboj v aréně (generátor `fight`) bije na Attack a měřidlo ho od T10 počítá jako úder, jak tahle stránka od začátku definuje – dřív se počítalo jen ovládání `duel`. Výchozí stav se znovu neměřil; f10 byla souboj už tehdy, takže výchozí `hasAction` by s touto opravou byl nejspíš 0,28 (odvozeno, ne změřeno).
+
+Tři věty akci nemají:
+
+- **h03** (hod, chce štít) – hod akce nebere, jeho jediné tlačítko je samo hra.
+- **j08** (souboj v aréně, chce štít) – v souboji robot s akcí nedohraje, proto ho rychlá verze akcemi nevybaví.
+- **a14** (řízení, chce dash + střelbu) – robot s dash a střelbou prohraje na všech semínkách, `compose` akce zahodí a hra má jen doplněk střelby. Opraví R4.
