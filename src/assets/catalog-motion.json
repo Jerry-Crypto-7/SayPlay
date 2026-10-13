@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "0b528d430f3fd4fac2ffee003e67e5c150f1333799c82e3c4f65d60e33d2b509",
+ "catalogHash": "d7a0577dbef804c7b3be66ab5c2b6c93051d1507c7282bac33db03c4feba7871",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1284,6 +1284,11 @@
   "gen3d-money-bundle": {"class":"prop"},
   "gen3d-flamethrower": {"class":"prop"},
   "gen3d-diamond-ring": {"class":"prop"},
-  "gen3d-freeze-ray": {"class":"prop"}
+  "gen3d-freeze-ray": {"class":"prop"},
+  "gen3d-emerald": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-angel-wing": {"class":"prop"},
+  "gen3d-nunchaku": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-safe": {"class":"prop"},
+  "gen3d-invisibility-cloak": {"class":"biped","regions":{"legY":0.25}}
  }
 }

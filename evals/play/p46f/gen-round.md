@@ -18,3 +18,4 @@ Psaný smyčkou `D:/caches/p46f/loop.mjs` po každém kole. **Model** = obrázek
 | 12 (opakování) | boss-runner boss-end | 10 | 7 | 2/7 | 2 | – | sand golem, banshee | red under load, green alone: src/assets/__tests__/external-import.test.ts |
 | 13 | action-powerup action-loot action-weapon action-shield | 10 | 9 | 7/9 | 7 | – | stopwatch, war hammer, four leaf clover, gold bar, bazooka, power crystal, ruby | – |
 | 14 | action-weapon action-powerup action-loot | 10 | 9 | 8/9 | 8 | – | shuriken, golden apple, golden egg, spiked club, money bundle, flamethrower, diamond ring, freeze ray | – |
+| 15 | action-powerup action-loot action-weapon | 10 | 8 | 5/8 | 4 | – | emerald, nunchaku, safe, invisibility cloak | – |

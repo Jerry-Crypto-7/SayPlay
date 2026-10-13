@@ -509,3 +509,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-flamethrower` | flamethrower | 4734 / 2362 |
 | `gen3d-diamond-ring` | diamond ring | 4514 / 2227 |
 | `gen3d-freeze-ray` | freeze ray | 4495 / 2022 |
+| `gen3d-emerald` | emerald | 4743 / 2357 |
+| `gen3d-angel-wing` | angel wing | 4738 / 2368 |
+| `gen3d-nunchaku` | nunchaku, nunchucks | 4748 / 2374 |
+| `gen3d-safe` | safe | 4653 / 2269 |
+| `gen3d-invisibility-cloak` | invisibility cloak | 4737 / 2276 |

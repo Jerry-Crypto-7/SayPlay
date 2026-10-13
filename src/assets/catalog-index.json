@@ -25942,6 +25942,102 @@
           1.08936
         ]
       }
+    },
+    {
+      "assetId": "gen3d-emerald",
+      "tags": [
+        "emerald"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-emerald-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36947,
+          0,
+          -0.36894
+        ],
+        "max": [
+          0.36947,
+          0.99995,
+          0.36894
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-angel-wing",
+      "tags": [
+        "angel wing"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-angel-wing-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.27356,
+          0,
+          -0.06958
+        ],
+        "max": [
+          1.27356,
+          1.00001,
+          0.06958
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-nunchaku",
+      "tags": [
+        "nunchaku",
+        "nunchucks"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-nunchaku-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33838,
+          0,
+          -0.33923
+        ],
+        "max": [
+          0.33838,
+          0.99862,
+          0.33923
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-safe",
+      "tags": [
+        "safe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-safe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44485,
+          0,
+          -0.44168
+        ],
+        "max": [
+          0.44485,
+          1,
+          0.44168
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-invisibility-cloak",
+      "tags": [
+        "invisibility cloak"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-invisibility-cloak-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25861,
+          0,
+          -0.25411
+        ],
+        "max": [
+          0.25861,
+          0.99998,
+          0.25411
+        ]
+      }
     }
   ]
 }
