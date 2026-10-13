@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { GameSpecV1 } from '../../spec';
 import { assemblyPartSchema } from '../../compose/parts';
 import { baseControlOf, type ArcadeParts } from '../addons';
+import { abilityButton, abilityIdsOf } from '../abilities/state';
 import { AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp, graceOf, targetStateOf,
   type ArcadeEffect, type BodyInit, type BotPiece, type ControlPiece, type PieceRef, type RulePiece, type RuleTrigger } from '../contract';
 import { arenaAxis } from './arena';
@@ -16,7 +17,8 @@ export const runtimePartSchema = assemblyPartSchema.extend({
   body: z.int().nonnegative(), startX: z.int(), startY: z.int(), startZ: z.int(),
   goalX: z.int(), goalY: z.int(), goalZ: z.int(), speed: z.int().positive(),
 });
-const sharedSchema = z.object({ parts: z.array(runtimePartSchema), keeper: z.int(), length: z.int(), control: z.string(), path: z.array(pointSchema), maze: walkerMapSchema.optional() });
+// `strike`: tlačítko akce úderu (P46A T8) – díl souboje ho bere jako ATTACK, protože J ve hře s akcemi patří akci.
+const sharedSchema = z.object({ parts: z.array(runtimePartSchema), keeper: z.int(), length: z.int(), control: z.string(), path: z.array(pointSchema), maze: walkerMapSchema.optional(), strike: z.int().optional() });
 const wrappedSchema = sharedSchema.extend({ base: refSchema });
 const partParams = sharedSchema.extend({ part: runtimePartSchema });
 type Shared = z.infer<typeof sharedSchema>;
@@ -131,7 +133,7 @@ export function makeAssemblyControl(controls: Readonly<Record<string, ControlPie
 /** A single named body owns each rule, keeping effect attribution unambiguous. */
 export const assemblyPart: RulePiece<z.infer<typeof partParams>> = {
   id: 'assembly_part', params: partParams, roles: ['player', 'thing'], trigger: 'tick', cost: () => ({ bodies: 0, rules: 1 }),
-  fire({ state, player, input }, { part, parts, length, maze }) {
+  fire({ state, player, input }, { part, parts, length, maze, strike }) {
     if (!alive(state, part.body) || !phaseReady(state, part, parts) || (done(state, part) && required(part))) return [];
     const tick = state[HEADER.tick]!, p = bodyBase(player), b = bodyBase(part.body);
     const finish: ArcadeEffect[] = [{ kind: 'stateChange', body: part.body, state: 2 }];
@@ -141,7 +143,7 @@ export const assemblyPart: RulePiece<z.infer<typeof partParams>> = {
       if (!close(state, player, part.body, 1400)) return [];
       // ATTACK is an edge input: a human press must work on every frame.
       // Held fire/primary controls retain their regular attack cadence.
-      if ((input.buttons & BUTTON.ATTACK) || (tick % 20 === 0 && (input.buttons & (BUTTON.FIRE | BUTTON.TAP | BUTTON.HOLD)))) return [{ kind: 'hit', body: part.body, by: player, amount: 1 }];
+      if ((input.buttons & (BUTTON.ATTACK | (strike ?? 0))) || (tick % 20 === 0 && (input.buttons & (BUTTON.FIRE | BUTTON.TAP | BUTTON.HOLD)))) return [{ kind: 'hit', body: part.body, by: player, amount: 1 }];
       if (tick % 90 === 0 && graceOf(state, player) === 0) return [{ kind: 'damage', amount: 1, grace: 60 }, ...(state[HEADER.counters + COUNTER.health]! <= 1 ? [{ kind: 'lose' as const }] : [])];
       return [];
     }
@@ -321,7 +323,8 @@ export function assemblyParts(parts: ArcadeParts, spec: GameSpecV1, ruleLibrary:
   });
   const keeper = bodies.length;
   bodies.push({ role: 'thing', roleCode: 150, kind: 'assembly-state', x: 0, y: -10000, z: 0, w: 1, h: 1, d: 1, solid: false });
-  const shared: Shared = { parts: runtime, keeper, length, control, path, ...(maze ? { maze } : {}) };
+  const strike = abilityButton(abilityIdsOf(parts.control), 'strike');
+  const shared: Shared = { parts: runtime, keeper, length, control, path, ...(maze ? { maze } : {}), ...(strike === 0 ? {} : { strike }) };
   return { ...parts, level: { ...parts.level, bodies },
     control: { id: 'assembly_control', params: { ...shared, base: parts.control } },
     bot: { id: 'assembly_bot', params: { ...shared, base: parts.bot } },

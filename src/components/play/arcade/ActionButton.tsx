@@ -16,7 +16,7 @@
 
 import { type CSSProperties, useEffect, useRef } from 'react';
 
-import { ABILITY_BUTTONS, type AbilityControl } from '@/play/arcade/abilities/state';
+import { ABILITY_BUTTONS, abilityIdsOf } from '@/play/arcade/abilities/state';
 import { baseControlOf, underlyingRule } from '@/play/arcade/addons';
 import { type AbilityId, type ArcadeWorld, BUTTON, nativeRule } from '@/play/arcade/contract';
 import { FIGHT_RULES } from '@/play/arcade/pieces/fight';
@@ -121,10 +121,7 @@ const ABILITY_FACES: Readonly<Record<AbilityId, { readonly label: string; readon
 const ABILITY_KEYS = ['j', 'k'] as const;
 
 /** Akce hrdiny světa v pořadí tlačítek A, B; hra bez nich (a každá stará hra) vrátí prázdný seznam. */
-export function abilitiesOf(world: ArcadeWorld): readonly AbilityId[] {
-  if (world.control.id !== 'addon_control') return [];
-  return (world.control.params as { readonly abilities?: AbilityControl }).abilities?.ids ?? [];
-}
+export const abilitiesOf = (world: ArcadeWorld): readonly AbilityId[] => abilityIdsOf(world.control);
 
 /** J a K stisknou akci A a B (stisk, ne držení – střelba i úder jdou na nový stisk). */
 export function useAbilityInput(session: ArcadeSession, abilities: readonly AbilityId[], active: boolean): void {

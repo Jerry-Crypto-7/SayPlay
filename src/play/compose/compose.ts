@@ -207,7 +207,9 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
       const recipe = { ...requested, parts: requested.parts?.slice(0, count), content: withoutPartNames(requested.content, requested.parts?.slice(count) ?? []) };
       // Šablona pravidel (P45B T9) jde první; neprojde-li, tentýž recept bez ní – teprve potom méně dílů.
       const { intent: _intent, ...untemplated } = recipe;
-      for (const attempt of [recipe, untemplated]) {
+      // Akce hrdiny (P46A T8), které robot neprokáže, ustoupí dřív než díly: věta nesmí kvůli tlačítku spadnout.
+      const { abilities: _abilities, ...plain } = untemplated;
+      for (const attempt of [recipe, untemplated, plain]) {
         try {
           const { spec, template } = compileTemplated(attempt);
           const key = JSON.stringify(spec);

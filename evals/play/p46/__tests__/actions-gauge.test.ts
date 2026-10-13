@@ -35,7 +35,8 @@ describe('P46 verb-to-action gauge', () => {
 
   it('does not credit an action the game lacks', async () => {
     const text = 'A rabbit steals carrots and runs from a fox';
-    const { spec } = draftGameSpecWithMeta(text, 1);
+    // Rychlá verze dá králíkovi Grab (P46A T8) – hra bez akce je tentýž spec bez ní.
+    const { abilities: _abilities, ...spec } = draftGameSpecWithMeta(text, 1).spec;
     const row = await actionRowOf({ id: 't', text }, { ...spec, control: 'runner', addons: [] });
     expect(row.hasAction).toBe(false);
     expect(row.botUsed).toBe(false);

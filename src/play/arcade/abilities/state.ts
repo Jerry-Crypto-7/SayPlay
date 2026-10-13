@@ -8,7 +8,7 @@
 
 import { z } from 'zod';
 
-import { ABILITIES, ABILITY_SLOTS, type AbilityId, ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, BUTTON, bodyBase } from '../contract';
+import { ABILITIES, ABILITY_SLOTS, type AbilityId, ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, BUTTON, type PieceRef, bodyBase } from '../contract';
 
 /** Cooldown a délka aktivního okna v tikách (60 Hz). */
 export const ABILITY_TIMING: Readonly<Record<AbilityId, { readonly cooldown: number; readonly active: number }>> = {
@@ -41,6 +41,22 @@ export const HARMFUL_ROLES = ['obstacle', 'chaser', 'hazard', 'enemy'] as const;
 /** Robot akcí (P46A T6): totéž co obal ovládání a role, před kterými dash a štít chrání. */
 export const abilityBotParams = abilityControlParams.extend({ harm: z.array(z.enum(HARMFUL_ROLES)).max(HARMFUL_ROLES.length) });
 export type AbilityBot = z.infer<typeof abilityBotParams>;
+
+/** Obaly ovládání, pod kterými může ležet obal akcí (`baseControlOf` v `addons.ts`). */
+const WRAPPERS = new Set(['addon_control', 'phase_control', 'pacing_control', 'assembly_control']);
+
+/**
+ * Akce hrdiny ovládání v pořadí tlačítek A, B (P46A T8). Díly složené hry
+ * (`assembly_control`) a průběh obalí ovládání až po akcích, takže se hledá
+ * pod obaly; hra bez akcí vrátí prázdný seznam.
+ */
+export function abilityIdsOf(control: PieceRef): readonly AbilityId[] {
+  for (let ref: PieceRef | undefined = control; ref !== undefined && WRAPPERS.has(ref.id); ref = (ref.params as { readonly base?: PieceRef }).base) {
+    const own = (ref.params as { readonly abilities?: AbilityControl }).abilities;
+    if (ref.id === 'addon_control' && own !== undefined) return own.ids;
+  }
+  return [];
+}
 
 /** Tlačítko akce `id` ve hře s akcemi `ids`; 0 = hra ji nemá. */
 export const abilityButton = (ids: readonly AbilityId[], id: AbilityId): number => {

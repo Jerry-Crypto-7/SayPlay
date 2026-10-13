@@ -66,7 +66,7 @@ import { lookFor, lookWords } from '../arcade/look';
 import { modelOf } from '../arcade/models';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
 
-import { type ControlChoice, type ControlPick, nearestControl, pickControl } from './controls';
+import { abilityHint, type ControlChoice, type ControlPick, nearestControl, pickControl } from './controls';
 import { type Twist, isPerson, isScenery, twistGoal, twistOf } from './twist';
 import {
   CARE,
@@ -1038,6 +1038,12 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick, topic:
   applySentenceCounts(spec, sentence, reading);
   const fireHint = `${spec.tutorial.controlsHint} F or Fire to shoot.`;
   if (choice.addons?.includes('shoot') === true && fireHint.length <= 80) spec.tutorial.controlsHint = fireHint;
+  // P46A T8: akce hrdiny ze sloves věty, které ovládání bere; nápověda k tlačítkům, když se vejde.
+  if (choice.abilities !== undefined) {
+    spec.abilities = [...choice.abilities];
+    const buttons = `${spec.tutorial.controlsHint} ${abilityHint(choice.abilities)}`;
+    if (buttons.length <= 80) spec.tutorial.controlsHint = buttons;
+  }
   const result = readGameSpec(spec);
   return result.ok ? result.value : null;
 }

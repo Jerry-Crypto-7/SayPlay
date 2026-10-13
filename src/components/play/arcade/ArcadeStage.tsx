@@ -785,9 +785,10 @@ export default function ArcadeStage({
   const input = stageOf(control)?.input;
   const fires = hasBlaster(session.world.rules);
   // Úder a použití (P32-0 T5) jen ve světě, který je čte.
-  const actions = useMemo(() => actionsOf(session.world), [session]);
   // Akce hrdiny (P46A T7): J/K patří tlačítkům A/B, úder a použití starých her je bez nich mají dál.
   const abilities = useMemo(() => abilitiesOf(session.world), [session]);
+  // Díl souboje bere i úder akce (P46A T8), takže tlačítko Attack by bylo navíc.
+  const actions = useMemo(() => actionsOf(session.world).filter((action) => action !== 'attack' || !abilities.includes('strike')), [session, abilities]);
   const hasAbilities = abilities.length > 0;
   // Tlačítko Shoot akce střílí týmž blasterem – druhé tlačítko střelby by bylo navíc.
   const fireButton = fires && !abilities.includes('shoot');

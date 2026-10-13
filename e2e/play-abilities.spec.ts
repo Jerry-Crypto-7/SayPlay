@@ -178,6 +178,18 @@ test.describe('/play/[id] – hero action buttons on desktop', () => {
     expect((await pressed()).some((buttons) => (buttons & (1 << 6)) !== 0)).toBe(false);
   });
 
+  test('a drafted fight game puts Strike on J instead of the Attack button', async ({ page, request }) => {
+    test.setTimeout(120_000);
+    // Rychlá verze (P46A T8): díl souboje s goblinem pod obalem dílů, úder je akce A.
+    const response = await request.post('/api/play/games', { data: { sentence: 'A knight runs through a castle and punches goblins' }, headers: { 'x-forwarded-for': `198.51.100.${String(160 + (people += 1))}` } });
+    expect(response.status(), await response.text()).toBeLessThan(300);
+    const errors = watchErrors(page);
+    await openGame(page, ((await response.json()) as { url: string }).url);
+    await expect(page.getByTestId('arcade-ability-strike')).toHaveAttribute('aria-keyshortcuts', 'J');
+    await expect(page.getByTestId('arcade-attack')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+
   test('an old game without abilities has no action buttons and J still fires', async ({ page, request }) => {
     test.setTimeout(120_000);
     const url = await publish(request, PLAIN);
