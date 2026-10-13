@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "e0f48c38fe4309aa924ec1882e7d846381bdbd39c2b7a14e6bcbb227b9fdfc04",
+ "catalogHash": "65622f4635c758c8f25f970d42668a54b79c6489e9267241227c0fc9e09a728c",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1417,6 +1417,9 @@
   "gen3d-volcanic-rock": {"class":"prop"},
   "gen3d-log-cabin": {"class":"prop"},
   "gen3d-oasis-well": {"class":"prop"},
-  "gen3d-wooden-pier": {"class":"prop"}
+  "gen3d-wooden-pier": {"class":"prop"},
+  "gen3d-lavender-bush": {"class":"prop"},
+  "gen3d-coral-rock": {"class":"prop"},
+  "gen3d-thistle-plant": {"class":"biped","regions":{"legY":0.25}}
  }
 }

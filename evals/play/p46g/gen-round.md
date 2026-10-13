@@ -19,3 +19,4 @@ Psaný smyčkou `D:/caches/p46g/loop.mjs` po každém kole. **Model** = obrázek
 | 13 | snow coast forest jungle desert meadow | 10 | 9 | 8/9 | 6 | water tower | ski lift tower, old stone bridge, wooden rope bridge, frozen waterfall, castle ruin wall, stone obelisk | – |
 | 14 | coast meadow forest desert jungle | 10 | 7 | 6/7 | 3 | red toadstool mushroom, bleached cow skull | lifeguard tower, wooden signpost, mossy fallen log | – |
 | 15 (opakování) | desert meadow jungle snow forest coast | 10 | 6 | 5/6 | 4 | – | volcanic rock, log cabin, oasis well, wooden pier | – |
+| 16 | meadow desert forest coast snow jungle | 10 | 7 | 5/7 | 3 | bird of paradise plant | lavender bush, coral rock, thistle plant | – |

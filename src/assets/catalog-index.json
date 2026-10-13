@@ -28563,6 +28563,66 @@
           1.77129
         ]
       }
+    },
+    {
+      "assetId": "gen3d-lavender-bush",
+      "tags": [
+        "lavender bush",
+        "lavender"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lavender-bush-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46834,
+          0,
+          -0.46742
+        ],
+        "max": [
+          0.46834,
+          0.99101,
+          0.46742
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coral-rock",
+      "tags": [
+        "coral rock",
+        "reef rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.60486,
+          0,
+          -0.58679
+        ],
+        "max": [
+          0.60486,
+          0.99937,
+          0.58679
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-thistle-plant",
+      "tags": [
+        "thistle plant",
+        "thistle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-thistle-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23523,
+          0,
+          -0.20606
+        ],
+        "max": [
+          0.23523,
+          1.00001,
+          0.20606
+        ]
+      }
     }
   ]
 }

@@ -642,3 +642,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-log-cabin` | log cabin, wooden cabin | 4341 / 2145 |
 | `gen3d-oasis-well` | oasis well, desert well | 4748 / 2374 |
 | `gen3d-wooden-pier` | wooden pier, pier, jetty, dock | 4654 / 2283 |
+| `gen3d-lavender-bush` | lavender bush, lavender | 4327 / 2766 |
+| `gen3d-coral-rock` | coral rock, reef rock | 4748 / 2374 |
+| `gen3d-thistle-plant` | thistle plant, thistle | 4722 / 2360 |
