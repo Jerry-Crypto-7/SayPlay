@@ -1,6 +1,6 @@
 {
  "about": "P45B T2: replay hashes of stored arcade-v2 games, frozen from the kernel before logic state (arcade-v3). Regenerate only over an unchanged kernel.",
- "commit": "ad05220946e19e280b7d98a93bcd2f7fcaf748f3",
+ "commit": "88bd47a693fb81b0df32234133d8c12a86eb2908",
  "games": [
   {
    "id": "builtin:c8091ce61c83f0cdc0ddce35cd4a540d",
@@ -364,12 +364,12 @@
   },
   {
    "id": "demo",
-   "worldHash": "acdbbe17",
-   "initialHash": "f501e23a",
+   "worldHash": "110d3798",
+   "initialHash": "739202c7",
    "replay": {
     "outcome": "won",
     "tick": 1522,
-    "hash": "e5678dbb"
+    "hash": "1a240d46"
    },
    "inputs": "Y2BkYnjBxMjCEMvIwpDKxMSwhJGRheEfiJjIyMjE4MTIxAAA",
    "inputsFrom": "bot"
