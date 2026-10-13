@@ -1,132 +1,1112 @@
 {
  "about": "P46G T8 extension (13. 10. 2026, owner: 12 h of RTX time): environment models beyond vegetation, in priority order – variants of trees per setting, track-edge rocks and cliffs, landmarks, ground detail, then city, snow and coast props. Appended to D:/caches/p46g/queue.json by D:/caches/p46g/append-env.mjs, which drops nouns the catalog already tags. Group = setting, kind = why it is on the list.",
  "names": [
-  { "noun": "tall pine tree", "group": "forest", "kind": "variant", "aliases": ["pine", "pine tree"] },
-  { "noun": "granite cliff wall", "group": "forest", "kind": "edge", "aliases": ["cliff", "rock wall", "rock face"] },
-  { "noun": "coconut palm", "group": "jungle", "kind": "variant", "aliases": ["palm tree", "coconut tree"] },
-  { "noun": "sandstone cliff wall", "group": "desert", "kind": "edge", "aliases": ["cliff", "canyon wall", "rock wall"] },
-  { "noun": "snow covered pine", "group": "snow", "kind": "variant", "aliases": ["snowy pine", "pine tree"] },
-  { "noun": "birch tree", "group": "forest", "kind": "variant", "aliases": ["birch"] },
-  { "noun": "mossy rock wall", "group": "jungle", "kind": "edge", "aliases": ["rock wall", "cliff"] },
-  { "noun": "barrel cactus", "group": "desert", "kind": "variant", "aliases": ["cactus"] },
-  { "noun": "oak tree", "group": "meadow", "kind": "variant", "aliases": ["oak"] },
-  { "noun": "coastal cliff", "group": "coast", "kind": "edge", "aliases": ["sea cliff", "cliff"] },
-  { "noun": "dead pine tree", "group": "forest", "kind": "variant", "aliases": ["dead tree", "bare tree"] },
-  { "noun": "ice cliff", "group": "snow", "kind": "edge", "aliases": ["glacier wall", "ice wall"] },
-  { "noun": "bamboo cluster", "group": "jungle", "kind": "variant", "aliases": ["bamboo"] },
-  { "noun": "prickly pear cactus", "group": "desert", "kind": "variant", "aliases": ["cactus", "opuntia"] },
-  { "noun": "twisted old oak", "group": "forest", "kind": "variant", "aliases": ["old oak", "oak tree", "gnarled tree"] },
-  { "noun": "scree rock pile", "group": "forest", "kind": "edge", "aliases": ["rock pile", "rubble", "rocks"] },
-  { "noun": "mangrove tree", "group": "jungle", "kind": "variant", "aliases": ["mangrove"] },
-  { "noun": "layered canyon rock", "group": "desert", "kind": "edge", "aliases": ["mesa", "butte", "canyon rock"] },
-  { "noun": "small snowy fir", "group": "snow", "kind": "variant", "aliases": ["snowy fir", "fir tree"] },
-  { "noun": "poplar tree", "group": "meadow", "kind": "variant", "aliases": ["poplar"] },
-  { "noun": "leaning palm tree", "group": "coast", "kind": "variant", "aliases": ["palm tree", "palm"] },
-  { "noun": "young fir sapling", "group": "forest", "kind": "variant", "aliases": ["sapling", "small fir"] },
-  { "noun": "jungle rock wall with vines", "group": "jungle", "kind": "edge", "aliases": ["vine covered rock", "rock wall", "cliff"] },
-  { "noun": "dead desert tree", "group": "desert", "kind": "variant", "aliases": ["dead tree", "bare tree"] },
-  { "noun": "snowy rock ledge", "group": "snow", "kind": "edge", "aliases": ["snowy cliff", "rock ledge"] },
-  { "noun": "cherry blossom tree", "group": "meadow", "kind": "variant", "aliases": ["sakura tree", "blossom tree"] },
-  { "noun": "river boulders", "group": "forest", "kind": "edge", "aliases": ["boulders", "rocks", "stones"] },
-  { "noun": "strangler fig tree", "group": "jungle", "kind": "variant", "aliases": ["fig tree", "banyan tree"] },
-  { "noun": "date palm", "group": "desert", "kind": "variant", "aliases": ["palm tree", "palm"] },
-  { "noun": "frozen dead tree", "group": "snow", "kind": "variant", "aliases": ["dead tree", "icy tree"] },
-  { "noun": "beech tree", "group": "forest", "kind": "variant", "aliases": ["beech"] },
-  { "noun": "basalt column rocks", "group": "coast", "kind": "edge", "aliases": ["basalt columns", "rock columns"] },
-  { "noun": "tree fern", "group": "jungle", "kind": "variant", "aliases": ["fern tree"] },
-  { "noun": "rock arch", "group": "desert", "kind": "edge", "aliases": ["natural arch", "stone arch"] },
-  { "noun": "olive tree", "group": "meadow", "kind": "variant", "aliases": ["olive"] },
-  { "noun": "limestone outcrop", "group": "meadow", "kind": "edge", "aliases": ["rock outcrop", "rocks"] },
-  { "noun": "larch tree", "group": "forest", "kind": "variant", "aliases": ["larch"] },
-  { "noun": "rubber tree", "group": "jungle", "kind": "variant", "aliases": ["ficus tree"] },
-  { "noun": "cholla cactus", "group": "desert", "kind": "variant", "aliases": ["cactus"] },
-  { "noun": "snow covered bush", "group": "snow", "kind": "variant", "aliases": ["snowy bush", "frozen bush"] },
-  { "noun": "stone pillar rock", "group": "desert", "kind": "edge", "aliases": ["hoodoo", "rock pillar", "rock spire"] },
-  { "noun": "juniper bush", "group": "forest", "kind": "variant", "aliases": ["juniper"] },
-  { "noun": "cycad palm", "group": "jungle", "kind": "variant", "aliases": ["sago palm", "cycad"] },
-  { "noun": "ocotillo", "group": "desert", "kind": "variant", "aliases": ["ocotillo cactus"] },
-  { "noun": "hawthorn bush", "group": "meadow", "kind": "variant", "aliases": ["hawthorn", "hedge bush"] },
-  { "noun": "pandanus tree", "group": "coast", "kind": "variant", "aliases": ["screw pine"] },
-  { "noun": "volcanic rock", "group": "jungle", "kind": "edge", "aliases": ["lava rock", "black rock"] },
-  { "noun": "rocky ridge", "group": "snow", "kind": "edge", "aliases": ["mountain ridge", "ridge"] },
-  { "noun": "hollow tree trunk", "group": "forest", "kind": "detail", "aliases": ["hollow log", "tree trunk"] },
-  { "noun": "elephant ear plant", "group": "jungle", "kind": "variant", "aliases": ["taro plant", "alocasia"] },
-
-  { "noun": "ruined stone tower", "group": "forest", "kind": "landmark", "aliases": ["tower ruin", "stone tower", "ruin"] },
-  { "noun": "jungle temple ruin", "group": "jungle", "kind": "landmark", "aliases": ["temple ruin", "temple", "ruin"] },
-  { "noun": "adobe house", "group": "desert", "kind": "landmark", "aliases": ["mud brick house", "pueblo house"] },
-  { "noun": "igloo", "group": "snow", "kind": "landmark", "aliases": ["snow house"] },
-  { "noun": "lighthouse", "group": "coast", "kind": "landmark", "aliases": ["light tower"] },
-  { "noun": "windmill", "group": "meadow", "kind": "landmark", "aliases": ["wind mill"] },
-  { "noun": "log cabin", "group": "forest", "kind": "landmark", "aliases": ["wooden cabin", "cabin"] },
-  { "noun": "stone idol head", "group": "jungle", "kind": "landmark", "aliases": ["stone head", "idol", "statue head"] },
-  { "noun": "oasis well", "group": "desert", "kind": "landmark", "aliases": ["desert well", "well"] },
-  { "noun": "snowy log cabin", "group": "snow", "kind": "landmark", "aliases": ["snowy cabin", "cabin"] },
-  { "noun": "beach hut", "group": "coast", "kind": "landmark", "aliases": ["beach cabin", "hut"] },
-  { "noun": "red barn", "group": "meadow", "kind": "landmark", "aliases": ["barn"] },
-  { "noun": "wooden watchtower", "group": "forest", "kind": "landmark", "aliases": ["watchtower", "lookout tower"] },
-  { "noun": "tribal totem pole", "group": "jungle", "kind": "landmark", "aliases": ["totem pole", "totem"] },
-  { "noun": "bedouin tent", "group": "desert", "kind": "landmark", "aliases": ["desert tent", "tent"] },
-  { "noun": "ski lift tower", "group": "snow", "kind": "landmark", "aliases": ["ski lift", "chairlift pylon"] },
-  { "noun": "wooden pier", "group": "coast", "kind": "landmark", "aliases": ["pier", "jetty", "dock"] },
-  { "noun": "farmhouse", "group": "meadow", "kind": "landmark", "aliases": ["farm house", "cottage"] },
-  { "noun": "old stone bridge", "group": "forest", "kind": "landmark", "aliases": ["stone bridge", "bridge"] },
-  { "noun": "wooden rope bridge", "group": "jungle", "kind": "landmark", "aliases": ["rope bridge", "suspension bridge"] },
-  { "noun": "sandstone pyramid ruin", "group": "desert", "kind": "landmark", "aliases": ["pyramid", "ruin"] },
-  { "noun": "frozen waterfall", "group": "snow", "kind": "landmark", "aliases": ["ice waterfall", "icefall"] },
-  { "noun": "shipwreck", "group": "coast", "kind": "landmark", "aliases": ["wrecked ship", "ship wreck"] },
-  { "noun": "water tower", "group": "meadow", "kind": "landmark", "aliases": ["water tank tower"] },
-  { "noun": "castle ruin wall", "group": "forest", "kind": "landmark", "aliases": ["castle ruin", "ruined wall"] },
-  { "noun": "stone obelisk", "group": "desert", "kind": "landmark", "aliases": ["obelisk", "monolith"] },
-  { "noun": "lifeguard tower", "group": "coast", "kind": "landmark", "aliases": ["lifeguard stand", "lifeguard hut"] },
-  { "noun": "stone well", "group": "meadow", "kind": "landmark", "aliases": ["well", "wishing well"] },
-  { "noun": "campfire with logs", "group": "forest", "kind": "landmark", "aliases": ["campfire", "bonfire"] },
-  { "noun": "wooden signpost", "group": "meadow", "kind": "landmark", "aliases": ["signpost", "direction sign"] },
-
-  { "noun": "red toadstool mushroom", "group": "forest", "kind": "detail", "aliases": ["toadstool", "fly agaric", "red mushroom"] },
-  { "noun": "mossy fallen log", "group": "forest", "kind": "detail", "aliases": ["fallen log", "fallen tree", "log"] },
-  { "noun": "cattail reeds", "group": "meadow", "kind": "detail", "aliases": ["reeds", "bulrush", "cattails"] },
-  { "noun": "bleached cow skull", "group": "desert", "kind": "detail", "aliases": ["cow skull", "animal skull", "skull"] },
-  { "noun": "mushroom cluster", "group": "forest", "kind": "detail", "aliases": ["mushrooms", "fungi"] },
-  { "noun": "exposed tree roots", "group": "jungle", "kind": "detail", "aliases": ["tree roots", "roots"] },
-  { "noun": "sunflower cluster", "group": "meadow", "kind": "detail", "aliases": ["sunflowers", "sunflower"] },
-  { "noun": "dry thornbush", "group": "desert", "kind": "detail", "aliases": ["thorn bush", "dry bush"] },
-  { "noun": "stacked firewood pile", "group": "forest", "kind": "detail", "aliases": ["woodpile", "firewood", "log pile"] },
-  { "noun": "dune grass clump", "group": "coast", "kind": "detail", "aliases": ["dune grass", "marram grass"] },
-  { "noun": "hay bale", "group": "meadow", "kind": "detail", "aliases": ["haystack", "straw bale"] },
-  { "noun": "ice block pile", "group": "snow", "kind": "detail", "aliases": ["ice blocks", "ice chunks"] },
-  { "noun": "lavender bush", "group": "meadow", "kind": "detail", "aliases": ["lavender"] },
-  { "noun": "bird of paradise plant", "group": "jungle", "kind": "detail", "aliases": ["strelitzia", "bird of paradise flower"] },
-  { "noun": "mossy rock cluster", "group": "forest", "kind": "detail", "aliases": ["mossy rocks", "rocks"] },
-  { "noun": "snowman", "group": "snow", "kind": "detail", "aliases": ["snow man"] },
-  { "noun": "coral rock", "group": "coast", "kind": "detail", "aliases": ["coral", "reef rock"] },
-  { "noun": "thistle plant", "group": "meadow", "kind": "detail", "aliases": ["thistle"] },
-  { "noun": "aloe plant", "group": "desert", "kind": "detail", "aliases": ["aloe vera", "aloe"] },
-  { "noun": "rowing boat", "group": "coast", "kind": "detail", "aliases": ["rowboat", "dinghy", "boat"] },
-  { "noun": "wooden sled", "group": "snow", "kind": "detail", "aliases": ["sled", "sledge", "toboggan"] },
-  { "noun": "wild berry bush", "group": "forest", "kind": "detail", "aliases": ["berry bush"] },
-  { "noun": "beach umbrella", "group": "coast", "kind": "detail", "aliases": ["parasol", "sun umbrella"] },
-  { "noun": "pumpkin patch", "group": "meadow", "kind": "detail", "aliases": ["pumpkins"] },
-
-  { "noun": "street lamp", "group": "city", "kind": "city", "aliases": ["lamp post", "streetlight"] },
-  { "noun": "park bench", "group": "city", "kind": "city", "aliases": ["bench"] },
-  { "noun": "brick townhouse", "group": "city", "kind": "city", "aliases": ["townhouse", "row house", "house"] },
-  { "noun": "fire hydrant", "group": "city", "kind": "city", "aliases": ["hydrant"] },
-  { "noun": "bus stop shelter", "group": "city", "kind": "city", "aliases": ["bus stop", "bus shelter"] },
-  { "noun": "white picket fence", "group": "city", "kind": "city", "aliases": ["picket fence", "fence"] },
-  { "noun": "street trash can", "group": "city", "kind": "city", "aliases": ["trash can", "garbage bin", "litter bin"] },
-  { "noun": "apartment block", "group": "city", "kind": "city", "aliases": ["apartment building", "tower block"] },
-  { "noun": "traffic cone", "group": "city", "kind": "city", "aliases": ["cone"] },
-  { "noun": "red phone booth", "group": "city", "kind": "city", "aliases": ["phone booth", "telephone box"] },
-  { "noun": "park fountain", "group": "city", "kind": "city", "aliases": ["fountain"] },
-  { "noun": "corner shop front", "group": "city", "kind": "city", "aliases": ["shop", "storefront", "store"] },
-  { "noun": "street mailbox", "group": "city", "kind": "city", "aliases": ["mailbox", "post box"] },
-  { "noun": "trimmed hedge row", "group": "city", "kind": "city", "aliases": ["hedge", "hedgerow"] },
-  { "noun": "billboard sign", "group": "city", "kind": "city", "aliases": ["billboard"] },
-  { "noun": "traffic light", "group": "city", "kind": "city", "aliases": ["stoplight", "traffic signal"] },
-  { "noun": "newspaper stand", "group": "city", "kind": "city", "aliases": ["news stand", "kiosk"] },
-  { "noun": "concrete planter with tree", "group": "city", "kind": "city", "aliases": ["planter", "street planter"] },
-  { "noun": "glass office tower", "group": "city", "kind": "city", "aliases": ["skyscraper", "office building"] },
-  { "noun": "parking meter", "group": "city", "kind": "city", "aliases": ["meter"] }
+  {
+   "noun": "tall pine tree",
+   "group": "forest",
+   "kind": "variant",
+   "aliases": [
+    "pine",
+    "pine tree"
+   ]
+  },
+  {
+   "noun": "granite cliff wall",
+   "group": "forest",
+   "kind": "edge",
+   "aliases": [
+    "cliff",
+    "rock wall",
+    "rock face"
+   ]
+  },
+  {
+   "noun": "coconut palm",
+   "group": "jungle",
+   "kind": "variant",
+   "aliases": [
+    "palm tree",
+    "coconut tree"
+   ]
+  },
+  {
+   "noun": "sandstone cliff wall",
+   "group": "desert",
+   "kind": "edge",
+   "aliases": [
+    "cliff",
+    "canyon wall",
+    "rock wall"
+   ]
+  },
+  {
+   "noun": "snow covered pine",
+   "group": "snow",
+   "kind": "variant",
+   "aliases": [
+    "snowy pine",
+    "pine tree"
+   ]
+  },
+  {
+   "noun": "birch tree",
+   "group": "forest",
+   "kind": "variant",
+   "aliases": [
+    "birch"
+   ]
+  },
+  {
+   "noun": "mossy rock wall",
+   "group": "jungle",
+   "kind": "edge",
+   "aliases": [
+    "rock wall",
+    "cliff"
+   ]
+  },
+  {
+   "noun": "barrel cactus",
+   "group": "desert",
+   "kind": "variant",
+   "aliases": [
+    "cactus"
+   ]
+  },
+  {
+   "noun": "oak tree",
+   "group": "meadow",
+   "kind": "variant",
+   "aliases": [
+    "oak"
+   ]
+  },
+  {
+   "noun": "coastal cliff",
+   "group": "coast",
+   "kind": "edge",
+   "aliases": [
+    "sea cliff",
+    "cliff"
+   ]
+  },
+  {
+   "noun": "dead pine tree",
+   "group": "forest",
+   "kind": "variant",
+   "aliases": [
+    "dead tree",
+    "bare tree"
+   ]
+  },
+  {
+   "noun": "ice cliff",
+   "group": "snow",
+   "kind": "edge",
+   "aliases": [
+    "glacier wall",
+    "ice wall"
+   ]
+  },
+  {
+   "noun": "bamboo cluster",
+   "group": "jungle",
+   "kind": "variant",
+   "aliases": [
+    "bamboo"
+   ]
+  },
+  {
+   "noun": "prickly pear cactus",
+   "group": "desert",
+   "kind": "variant",
+   "aliases": [
+    "cactus",
+    "opuntia"
+   ]
+  },
+  {
+   "noun": "twisted old oak",
+   "group": "forest",
+   "kind": "variant",
+   "aliases": [
+    "old oak",
+    "oak tree",
+    "gnarled tree"
+   ]
+  },
+  {
+   "noun": "scree rock pile",
+   "group": "forest",
+   "kind": "edge",
+   "aliases": [
+    "rock pile",
+    "rubble",
+    "rocks"
+   ]
+  },
+  {
+   "noun": "mangrove tree",
+   "group": "jungle",
+   "kind": "variant",
+   "aliases": [
+    "mangrove"
+   ]
+  },
+  {
+   "noun": "layered canyon rock",
+   "group": "desert",
+   "kind": "edge",
+   "aliases": [
+    "mesa",
+    "butte",
+    "canyon rock"
+   ]
+  },
+  {
+   "noun": "small snowy fir",
+   "group": "snow",
+   "kind": "variant",
+   "aliases": [
+    "snowy fir",
+    "fir tree"
+   ]
+  },
+  {
+   "noun": "poplar tree",
+   "group": "meadow",
+   "kind": "variant",
+   "aliases": [
+    "poplar"
+   ]
+  },
+  {
+   "noun": "leaning palm tree",
+   "group": "coast",
+   "kind": "variant",
+   "aliases": [
+    "palm tree",
+    "palm"
+   ]
+  },
+  {
+   "noun": "young fir sapling",
+   "group": "forest",
+   "kind": "variant",
+   "aliases": [
+    "sapling",
+    "small fir"
+   ]
+  },
+  {
+   "noun": "vine covered rock wall",
+   "group": "jungle",
+   "kind": "edge",
+   "aliases": [
+    "vine covered rock",
+    "rock wall",
+    "cliff"
+   ]
+  },
+  {
+   "noun": "dead desert tree",
+   "group": "desert",
+   "kind": "variant",
+   "aliases": [
+    "dead tree",
+    "bare tree"
+   ]
+  },
+  {
+   "noun": "snowy rock ledge",
+   "group": "snow",
+   "kind": "edge",
+   "aliases": [
+    "snowy cliff",
+    "rock ledge"
+   ]
+  },
+  {
+   "noun": "cherry blossom tree",
+   "group": "meadow",
+   "kind": "variant",
+   "aliases": [
+    "sakura tree",
+    "blossom tree"
+   ]
+  },
+  {
+   "noun": "river boulders",
+   "group": "forest",
+   "kind": "edge",
+   "aliases": [
+    "boulders",
+    "rocks",
+    "stones"
+   ]
+  },
+  {
+   "noun": "strangler fig tree",
+   "group": "jungle",
+   "kind": "variant",
+   "aliases": [
+    "fig tree",
+    "banyan tree"
+   ]
+  },
+  {
+   "noun": "date palm",
+   "group": "desert",
+   "kind": "variant",
+   "aliases": [
+    "palm tree",
+    "palm"
+   ]
+  },
+  {
+   "noun": "frozen dead tree",
+   "group": "snow",
+   "kind": "variant",
+   "aliases": [
+    "dead tree",
+    "icy tree"
+   ]
+  },
+  {
+   "noun": "beech tree",
+   "group": "forest",
+   "kind": "variant",
+   "aliases": [
+    "beech"
+   ]
+  },
+  {
+   "noun": "basalt column rocks",
+   "group": "coast",
+   "kind": "edge",
+   "aliases": [
+    "basalt columns",
+    "rock columns"
+   ]
+  },
+  {
+   "noun": "tree fern",
+   "group": "jungle",
+   "kind": "variant",
+   "aliases": [
+    "fern tree"
+   ]
+  },
+  {
+   "noun": "rock arch",
+   "group": "desert",
+   "kind": "edge",
+   "aliases": [
+    "natural arch",
+    "stone arch"
+   ]
+  },
+  {
+   "noun": "olive tree",
+   "group": "meadow",
+   "kind": "variant",
+   "aliases": [
+    "olive"
+   ]
+  },
+  {
+   "noun": "limestone outcrop",
+   "group": "meadow",
+   "kind": "edge",
+   "aliases": [
+    "rock outcrop",
+    "rocks"
+   ]
+  },
+  {
+   "noun": "larch tree",
+   "group": "forest",
+   "kind": "variant",
+   "aliases": [
+    "larch"
+   ]
+  },
+  {
+   "noun": "rubber tree",
+   "group": "jungle",
+   "kind": "variant",
+   "aliases": [
+    "ficus tree"
+   ]
+  },
+  {
+   "noun": "cholla cactus",
+   "group": "desert",
+   "kind": "variant",
+   "aliases": [
+    "cactus"
+   ]
+  },
+  {
+   "noun": "snow covered bush",
+   "group": "snow",
+   "kind": "variant",
+   "aliases": [
+    "snowy bush",
+    "frozen bush"
+   ]
+  },
+  {
+   "noun": "stone pillar rock",
+   "group": "desert",
+   "kind": "edge",
+   "aliases": [
+    "hoodoo",
+    "rock pillar",
+    "rock spire"
+   ]
+  },
+  {
+   "noun": "juniper bush",
+   "group": "forest",
+   "kind": "variant",
+   "aliases": [
+    "juniper"
+   ]
+  },
+  {
+   "noun": "cycad palm",
+   "group": "jungle",
+   "kind": "variant",
+   "aliases": [
+    "sago palm",
+    "cycad"
+   ]
+  },
+  {
+   "noun": "ocotillo",
+   "group": "desert",
+   "kind": "variant",
+   "aliases": [
+    "ocotillo cactus"
+   ]
+  },
+  {
+   "noun": "hawthorn bush",
+   "group": "meadow",
+   "kind": "variant",
+   "aliases": [
+    "hawthorn",
+    "hedge bush"
+   ]
+  },
+  {
+   "noun": "pandanus tree",
+   "group": "coast",
+   "kind": "variant",
+   "aliases": [
+    "screw pine"
+   ]
+  },
+  {
+   "noun": "volcanic rock",
+   "group": "jungle",
+   "kind": "edge",
+   "aliases": [
+    "lava rock",
+    "black rock"
+   ]
+  },
+  {
+   "noun": "rocky ridge",
+   "group": "snow",
+   "kind": "edge",
+   "aliases": [
+    "mountain ridge",
+    "ridge"
+   ]
+  },
+  {
+   "noun": "hollow tree trunk",
+   "group": "forest",
+   "kind": "detail",
+   "aliases": [
+    "hollow log",
+    "tree trunk"
+   ]
+  },
+  {
+   "noun": "elephant ear plant",
+   "group": "jungle",
+   "kind": "variant",
+   "aliases": [
+    "taro plant",
+    "alocasia"
+   ]
+  },
+  {
+   "noun": "ruined stone tower",
+   "group": "forest",
+   "kind": "landmark",
+   "aliases": [
+    "tower ruin",
+    "stone tower",
+    "ruin"
+   ]
+  },
+  {
+   "noun": "jungle temple ruin",
+   "group": "jungle",
+   "kind": "landmark",
+   "aliases": [
+    "temple ruin",
+    "temple",
+    "ruin"
+   ]
+  },
+  {
+   "noun": "adobe house",
+   "group": "desert",
+   "kind": "landmark",
+   "aliases": [
+    "mud brick house",
+    "pueblo house"
+   ]
+  },
+  {
+   "noun": "igloo",
+   "group": "snow",
+   "kind": "landmark",
+   "aliases": [
+    "snow house"
+   ]
+  },
+  {
+   "noun": "lighthouse",
+   "group": "coast",
+   "kind": "landmark",
+   "aliases": [
+    "light tower"
+   ]
+  },
+  {
+   "noun": "windmill",
+   "group": "meadow",
+   "kind": "landmark",
+   "aliases": [
+    "wind mill"
+   ]
+  },
+  {
+   "noun": "log cabin",
+   "group": "forest",
+   "kind": "landmark",
+   "aliases": [
+    "wooden cabin",
+    "cabin"
+   ]
+  },
+  {
+   "noun": "stone idol head",
+   "group": "jungle",
+   "kind": "landmark",
+   "aliases": [
+    "stone head",
+    "idol",
+    "statue head"
+   ]
+  },
+  {
+   "noun": "oasis well",
+   "group": "desert",
+   "kind": "landmark",
+   "aliases": [
+    "desert well",
+    "well"
+   ]
+  },
+  {
+   "noun": "snowy log cabin",
+   "group": "snow",
+   "kind": "landmark",
+   "aliases": [
+    "snowy cabin",
+    "cabin"
+   ]
+  },
+  {
+   "noun": "beach hut",
+   "group": "coast",
+   "kind": "landmark",
+   "aliases": [
+    "beach cabin",
+    "hut"
+   ]
+  },
+  {
+   "noun": "red barn",
+   "group": "meadow",
+   "kind": "landmark",
+   "aliases": [
+    "barn"
+   ]
+  },
+  {
+   "noun": "wooden watchtower",
+   "group": "forest",
+   "kind": "landmark",
+   "aliases": [
+    "watchtower",
+    "lookout tower"
+   ]
+  },
+  {
+   "noun": "tribal totem pole",
+   "group": "jungle",
+   "kind": "landmark",
+   "aliases": [
+    "totem pole",
+    "totem"
+   ]
+  },
+  {
+   "noun": "bedouin tent",
+   "group": "desert",
+   "kind": "landmark",
+   "aliases": [
+    "desert tent",
+    "tent"
+   ]
+  },
+  {
+   "noun": "ski lift tower",
+   "group": "snow",
+   "kind": "landmark",
+   "aliases": [
+    "ski lift",
+    "chairlift pylon"
+   ]
+  },
+  {
+   "noun": "wooden pier",
+   "group": "coast",
+   "kind": "landmark",
+   "aliases": [
+    "pier",
+    "jetty",
+    "dock"
+   ]
+  },
+  {
+   "noun": "farmhouse",
+   "group": "meadow",
+   "kind": "landmark",
+   "aliases": [
+    "farm house",
+    "cottage"
+   ]
+  },
+  {
+   "noun": "old stone bridge",
+   "group": "forest",
+   "kind": "landmark",
+   "aliases": [
+    "stone bridge",
+    "bridge"
+   ]
+  },
+  {
+   "noun": "wooden rope bridge",
+   "group": "jungle",
+   "kind": "landmark",
+   "aliases": [
+    "rope bridge",
+    "suspension bridge"
+   ]
+  },
+  {
+   "noun": "sandstone pyramid ruin",
+   "group": "desert",
+   "kind": "landmark",
+   "aliases": [
+    "pyramid",
+    "ruin"
+   ]
+  },
+  {
+   "noun": "frozen waterfall",
+   "group": "snow",
+   "kind": "landmark",
+   "aliases": [
+    "ice waterfall",
+    "icefall"
+   ]
+  },
+  {
+   "noun": "shipwreck",
+   "group": "coast",
+   "kind": "landmark",
+   "aliases": [
+    "wrecked ship",
+    "ship wreck"
+   ]
+  },
+  {
+   "noun": "water tower",
+   "group": "meadow",
+   "kind": "landmark",
+   "aliases": [
+    "water tank tower"
+   ]
+  },
+  {
+   "noun": "castle ruin wall",
+   "group": "forest",
+   "kind": "landmark",
+   "aliases": [
+    "castle ruin",
+    "ruined wall"
+   ]
+  },
+  {
+   "noun": "stone obelisk",
+   "group": "desert",
+   "kind": "landmark",
+   "aliases": [
+    "obelisk",
+    "monolith"
+   ]
+  },
+  {
+   "noun": "lifeguard tower",
+   "group": "coast",
+   "kind": "landmark",
+   "aliases": [
+    "lifeguard stand",
+    "lifeguard hut"
+   ]
+  },
+  {
+   "noun": "stone well",
+   "group": "meadow",
+   "kind": "landmark",
+   "aliases": [
+    "well",
+    "wishing well"
+   ]
+  },
+  {
+   "noun": "campfire with logs",
+   "group": "forest",
+   "kind": "landmark",
+   "aliases": [
+    "campfire",
+    "bonfire"
+   ]
+  },
+  {
+   "noun": "wooden signpost",
+   "group": "meadow",
+   "kind": "landmark",
+   "aliases": [
+    "signpost",
+    "direction sign"
+   ]
+  },
+  {
+   "noun": "red toadstool mushroom",
+   "group": "forest",
+   "kind": "detail",
+   "aliases": [
+    "toadstool",
+    "fly agaric",
+    "red mushroom"
+   ]
+  },
+  {
+   "noun": "mossy fallen log",
+   "group": "forest",
+   "kind": "detail",
+   "aliases": [
+    "fallen log",
+    "fallen tree",
+    "log"
+   ]
+  },
+  {
+   "noun": "cattail reeds",
+   "group": "meadow",
+   "kind": "detail",
+   "aliases": [
+    "reeds",
+    "bulrush",
+    "cattails"
+   ]
+  },
+  {
+   "noun": "bleached cow skull",
+   "group": "desert",
+   "kind": "detail",
+   "aliases": [
+    "cow skull",
+    "animal skull",
+    "skull"
+   ]
+  },
+  {
+   "noun": "mushroom cluster",
+   "group": "forest",
+   "kind": "detail",
+   "aliases": [
+    "mushrooms",
+    "fungi"
+   ]
+  },
+  {
+   "noun": "exposed tree roots",
+   "group": "jungle",
+   "kind": "detail",
+   "aliases": [
+    "tree roots",
+    "roots"
+   ]
+  },
+  {
+   "noun": "sunflower cluster",
+   "group": "meadow",
+   "kind": "detail",
+   "aliases": [
+    "sunflowers",
+    "sunflower"
+   ]
+  },
+  {
+   "noun": "dry thornbush",
+   "group": "desert",
+   "kind": "detail",
+   "aliases": [
+    "thorn bush",
+    "dry bush"
+   ]
+  },
+  {
+   "noun": "stacked firewood pile",
+   "group": "forest",
+   "kind": "detail",
+   "aliases": [
+    "woodpile",
+    "firewood",
+    "log pile"
+   ]
+  },
+  {
+   "noun": "dune grass clump",
+   "group": "coast",
+   "kind": "detail",
+   "aliases": [
+    "dune grass",
+    "marram grass"
+   ]
+  },
+  {
+   "noun": "hay bale",
+   "group": "meadow",
+   "kind": "detail",
+   "aliases": [
+    "haystack",
+    "straw bale"
+   ]
+  },
+  {
+   "noun": "ice block pile",
+   "group": "snow",
+   "kind": "detail",
+   "aliases": [
+    "ice blocks",
+    "ice chunks"
+   ]
+  },
+  {
+   "noun": "lavender bush",
+   "group": "meadow",
+   "kind": "detail",
+   "aliases": [
+    "lavender"
+   ]
+  },
+  {
+   "noun": "bird of paradise plant",
+   "group": "jungle",
+   "kind": "detail",
+   "aliases": [
+    "strelitzia",
+    "bird of paradise flower"
+   ]
+  },
+  {
+   "noun": "mossy rock cluster",
+   "group": "forest",
+   "kind": "detail",
+   "aliases": [
+    "mossy rocks",
+    "rocks"
+   ]
+  },
+  {
+   "noun": "snowman",
+   "group": "snow",
+   "kind": "detail",
+   "aliases": [
+    "snow man"
+   ]
+  },
+  {
+   "noun": "coral rock",
+   "group": "coast",
+   "kind": "detail",
+   "aliases": [
+    "coral",
+    "reef rock"
+   ]
+  },
+  {
+   "noun": "thistle plant",
+   "group": "meadow",
+   "kind": "detail",
+   "aliases": [
+    "thistle"
+   ]
+  },
+  {
+   "noun": "aloe plant",
+   "group": "desert",
+   "kind": "detail",
+   "aliases": [
+    "aloe vera",
+    "aloe"
+   ]
+  },
+  {
+   "noun": "rowing boat",
+   "group": "coast",
+   "kind": "detail",
+   "aliases": [
+    "rowboat",
+    "dinghy",
+    "boat"
+   ]
+  },
+  {
+   "noun": "wooden sled",
+   "group": "snow",
+   "kind": "detail",
+   "aliases": [
+    "sled",
+    "sledge",
+    "toboggan"
+   ]
+  },
+  {
+   "noun": "wild berry bush",
+   "group": "forest",
+   "kind": "detail",
+   "aliases": [
+    "berry bush"
+   ]
+  },
+  {
+   "noun": "beach umbrella",
+   "group": "coast",
+   "kind": "detail",
+   "aliases": [
+    "parasol",
+    "sun umbrella"
+   ]
+  },
+  {
+   "noun": "pumpkin patch",
+   "group": "meadow",
+   "kind": "detail",
+   "aliases": [
+    "pumpkins"
+   ]
+  },
+  {
+   "noun": "street lamp",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "lamp post",
+    "streetlight"
+   ]
+  },
+  {
+   "noun": "park bench",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "bench"
+   ]
+  },
+  {
+   "noun": "brick townhouse",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "townhouse",
+    "row house",
+    "house"
+   ]
+  },
+  {
+   "noun": "fire hydrant",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "hydrant"
+   ]
+  },
+  {
+   "noun": "bus stop shelter",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "bus stop",
+    "bus shelter"
+   ]
+  },
+  {
+   "noun": "white picket fence",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "picket fence",
+    "fence"
+   ]
+  },
+  {
+   "noun": "street trash can",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "trash can",
+    "garbage bin",
+    "litter bin"
+   ]
+  },
+  {
+   "noun": "apartment block",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "apartment building",
+    "tower block"
+   ]
+  },
+  {
+   "noun": "traffic cone",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "cone"
+   ]
+  },
+  {
+   "noun": "red phone booth",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "phone booth",
+    "telephone box"
+   ]
+  },
+  {
+   "noun": "park fountain",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "fountain"
+   ]
+  },
+  {
+   "noun": "corner shop front",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "shop",
+    "storefront",
+    "store"
+   ]
+  },
+  {
+   "noun": "street mailbox",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "mailbox",
+    "post box"
+   ]
+  },
+  {
+   "noun": "trimmed hedge row",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "hedge",
+    "hedgerow"
+   ]
+  },
+  {
+   "noun": "billboard sign",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "billboard"
+   ]
+  },
+  {
+   "noun": "traffic light",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "stoplight",
+    "traffic signal"
+   ]
+  },
+  {
+   "noun": "newspaper stand",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "news stand",
+    "kiosk"
+   ]
+  },
+  {
+   "noun": "concrete planter with tree",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "planter",
+    "street planter"
+   ]
+  },
+  {
+   "noun": "glass office tower",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "skyscraper",
+    "office building"
+   ]
+  },
+  {
+   "noun": "parking meter",
+   "group": "city",
+   "kind": "city",
+   "aliases": [
+    "meter"
+   ]
+  }
  ]
 }

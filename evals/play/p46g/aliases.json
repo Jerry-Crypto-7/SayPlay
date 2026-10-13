@@ -486,11 +486,6 @@
   "sapling",
   "small fir"
  ],
- "jungle rock wall with vines": [
-  "vine covered rock",
-  "rock wall",
-  "cliff"
- ],
  "dead desert tree": [
   "dead tree",
   "bare tree"
@@ -846,5 +841,10 @@
  ],
  "parking meter": [
   "meter"
+ ],
+ "vine covered rock wall": [
+  "vine covered rock",
+  "rock wall",
+  "cliff"
  ]
 }
