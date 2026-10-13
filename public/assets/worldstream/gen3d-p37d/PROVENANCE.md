@@ -579,3 +579,12 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-killer-tomato` | killer tomato | 4369 / 2155 |
 | `gen3d-pumpkin-head` | pumpkin head | 4681 / 2224 |
 | `gen3d-barbed-wire` | barbed wire | 4699 / 2329 |
+| `gen3d-fir-tree` | fir tree, fir, fir conifer | 4748 / 2374 |
+| `gen3d-banana-plant` | banana plant, banana tree | 4647 / 2270 |
+| `gen3d-saguaro-cactus` | saguaro cactus, saguaro | 4748 / 2372 |
+| `gen3d-snowy-fir-tree` | snowy fir tree, snow-covered fir, snowy pine tree | 4748 / 2374 |
+| `gen3d-apple-tree` | apple tree, apple orchard tree | 4749 / 2371 |
+| `gen3d-street-tree` | street tree, sidewalk tree, park tree | 4750 / 2374 |
+| `gen3d-spruce-tree` | spruce tree, spruce | 4304 / 2010 |
+| `gen3d-monstera-plant` | monstera plant, monstera, swiss cheese plant | 4129 / 1983 |
+| `gen3d-joshua-tree` | joshua tree, yucca tree | 4748 / 2374 |

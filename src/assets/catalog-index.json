@@ -27280,6 +27280,190 @@
           0.61774
         ]
       }
+    },
+    {
+      "assetId": "gen3d-fir-tree",
+      "tags": [
+        "fir tree",
+        "fir",
+        "fir conifer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fir-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25547,
+          0,
+          -0.29543
+        ],
+        "max": [
+          0.25547,
+          0.99915,
+          0.29543
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-banana-plant",
+      "tags": [
+        "banana plant",
+        "banana tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-banana-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47741,
+          0,
+          -0.47927
+        ],
+        "max": [
+          0.47741,
+          1.00001,
+          0.47927
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-saguaro-cactus",
+      "tags": [
+        "saguaro cactus",
+        "saguaro"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-saguaro-cactus-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22194,
+          0,
+          -0.06452
+        ],
+        "max": [
+          0.22194,
+          0.99983,
+          0.06452
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowy-fir-tree",
+      "tags": [
+        "snowy fir tree",
+        "snow-covered fir",
+        "snowy pine tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-fir-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29942,
+          0,
+          -0.29354
+        ],
+        "max": [
+          0.29942,
+          0.99798,
+          0.29354
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-apple-tree",
+      "tags": [
+        "apple tree",
+        "apple orchard tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-apple-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39667,
+          0,
+          -0.38793
+        ],
+        "max": [
+          0.39667,
+          0.99994,
+          0.38793
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-street-tree",
+      "tags": [
+        "street tree",
+        "sidewalk tree",
+        "park tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-street-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37173,
+          0,
+          -0.38467
+        ],
+        "max": [
+          0.37173,
+          0.99984,
+          0.38467
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spruce-tree",
+      "tags": [
+        "spruce tree",
+        "spruce"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spruce-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31554,
+          0,
+          -0.36982
+        ],
+        "max": [
+          0.31554,
+          1.00001,
+          0.36982
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-monstera-plant",
+      "tags": [
+        "monstera plant",
+        "monstera",
+        "swiss cheese plant"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-monstera-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45723,
+          0,
+          -0.5002
+        ],
+        "max": [
+          0.45723,
+          0.99952,
+          0.5002
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-joshua-tree",
+      "tags": [
+        "joshua tree",
+        "yucca tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-joshua-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32461,
+          0,
+          -0.32674
+        ],
+        "max": [
+          0.32461,
+          0.99703,
+          0.32674
+        ]
+      }
     }
   ]
 }

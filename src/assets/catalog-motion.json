@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "afecab2c554eb075881af612449df23231a64d85fe4609a7d656e2f50be23a91",
+ "catalogHash": "0122578cea78dccbc416598ca3d8b6925aff3971361914c8ae7704b8d6a069ef",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1354,6 +1354,15 @@
   "gen3d-giant-gear": {"class":"prop"},
   "gen3d-killer-tomato": {"class":"prop"},
   "gen3d-pumpkin-head": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-barbed-wire": {"class":"prop"}
+  "gen3d-barbed-wire": {"class":"prop"},
+  "gen3d-fir-tree": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-banana-plant": {"class":"prop"},
+  "gen3d-saguaro-cactus": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-snowy-fir-tree": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-apple-tree": {"class":"prop"},
+  "gen3d-street-tree": {"class":"prop"},
+  "gen3d-spruce-tree": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-monstera-plant": {"class":"prop"},
+  "gen3d-joshua-tree": {"class":"biped","regions":{"legY":0.249}}
  }
 }
