@@ -59,7 +59,13 @@ interface Row {
   readonly passed: number;
   /** Co pruh −1, 0, 1 žádá (jako `nextRow`). */
   readonly lanes: readonly Need[];
+  /** Totéž jako stav pruhu robota běžce (`rankOf`) – plán ho čte každý krok. */
+  readonly ranks: readonly number[];
 }
+
+/** Stav pruhu, jak ho čte `laneChoice`: volno < skok či skluz < zavřeno. */
+const rankOf = (need: Need): number => (need === 'free' ? 0 : need === 'blocked' ? 2 : 1);
+const FREE_RANKS: readonly number[] = [0, 0, 0];
 
 interface Plan {
   readonly target: number;
@@ -194,7 +200,8 @@ export function planLanes(observation: ArcadeObservation, hazards: readonly Haza
     const z = (ahead[k] as Box).z;
     const row: Box[] = [];
     while (k < ahead.length && (ahead[k] as Box).z - z <= ROW_SPAN) row.push(ahead[k++] as Box);
-    rows.push({ z, passed: Math.max(...row.map((body) => body.z + (body.d + RUNNER.playerD) / 2)), lanes: needsOf(row) });
+    const lanes = needsOf(row);
+    rows.push({ z, passed: Math.max(...row.map((body) => body.z + (body.d + RUNNER.playerD) / 2)), lanes, ranks: lanes.map(rankOf) });
   }
   const crash: Box[][] = Array.from({ length: end }, (_, s) => ahead.filter((body) => Math.abs(body.z - zAt(s)) * 2 < body.d + pd));
   /** Řada, kterou pohled robota běžce (o `lag` starší) v kroku `s` má před sebou – nezávisí na tazích plánu. */
@@ -286,7 +293,6 @@ export function planLanes(observation: ArcadeObservation, hazards: readonly Haza
   // Tah robota běžce, když vydrží celý plán; jinak ostatní (zůstat, vlevo, vpravo) a ten, který vydrží nejdéle.
   const wanted = clampLane(now.target + pressOf(input.buttons)) - now.target;
   // Nejčastěji stačí tah robota a dál jeho vlastní volba pruhu (`laneChoice`, jako `runnerBot`): jedna cesta místo prohledávání.
-  const rank = (need: Need | undefined): number => (need === 'free' ? 0 : need === 'blocked' ? 2 : 1);
   // Mince a těla, která zraní, jak je robot běžce vidí v pozorování (pohyb těl během plánu nesleduje, hrozby chování ano).
   const coins = footprintsOf(state, [ROLE.collectible]);
   const hostile = footprintsOf(state, HOSTILE);
@@ -294,7 +300,7 @@ export function planLanes(observation: ArcadeObservation, hazards: readonly Haza
     const row = rowAt[s];
     const rowZ = row?.z ?? Number.POSITIVE_INFINITY;
     const seen = pz + vz * s;
-    const status = row === undefined ? [0, 0, 0] : row.lanes.map(rank);
+    const status = row === undefined ? FREE_RANKS : row.ranks;
     const last = collect ? lastCoins(coins, seen, rowZ) : NO_COINS;
     return Math.sign(laneChoice(status, plan.target, rowZ, seen, vz, lag, last, hostileLanes(hostile, seen, rowZ)) - plan.target);
   };

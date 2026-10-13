@@ -205,6 +205,11 @@ export function telegraphOf(state: ArcadeState, body: number): { readonly kind: 
 // Podpis
 
 const SIGNATURE = [BODY.role, BODY.kind, BODY.w, BODY.h, BODY.d] as const;
+// Sloty jednou za modul: import pod vitestem čte každý přístup getterem a `actors` jde přes všechna těla několikrát za tik.
+const FIRST_BODY = bodyBase(0);
+const STRIDE = bodyBase(1) - FIRST_BODY;
+const { flags: FLAGS_SLOT, kind: KIND_SLOT } = BODY;
+const ALIVE = FLAG.alive;
 
 /** Podpis předlohy ve stavbě: role, model, rozměry. */
 export const signatureOf = (body: BodyInit): string => [body.roleCode ?? ROLE[body.role], body.kind, body.w, body.h, body.d].join(':');
@@ -224,8 +229,8 @@ const alive = (state: ArcadeState, body: number): boolean => ((state[bodyBase(bo
 
 /** Živé tělo se stejným podpisem jako předloha `template`. */
 export function matches(state: ArcadeState, body: number, template: number): boolean {
-  const a = bodyBase(body);
-  const b = bodyBase(template);
+  const a = FIRST_BODY + body * STRIDE;
+  const b = FIRST_BODY + template * STRIDE;
   for (const slot of SIGNATURE) if (state[a + slot] !== state[b + slot]) return false;
   return true;
 }
@@ -235,23 +240,22 @@ type Actor = readonly [number, Behaviour, number, BehaviourRef];
 /**
  * Živá těla chování `[tělo, chování, kód, odkaz]` ve vzestupném pořadí těl; hráč a předlohy ne. S `shots` tímž
  * průchodem dopíše i živé výstřely chování (těla s podpisem některé předlohy `shot`, každé jednou, vzestupně).
- * Robot, ovládání i pravidlo to volají každý tik: model předlohy se porovná dřív než celý podpis.
+ * Robot, ovládání i pravidlo to volají každý tik: model předlohy se porovná dřív než celý podpis, a tělo s modelem
+ * pod 31, který žádná předloha nemá, odpadne jedním bitem (`wanted`) – většina těl trati jsou překážky a mince.
  */
 function actors(state: ArcadeState, player: number, refs: readonly BehaviourRef[], shots?: number[]): Actor[] {
   const found: Actor[] = [];
   const bodies = state[HEADER.bodyCount] as number;
-  const kinds = refs.map((ref) => state[bodyBase(ref.template) + BODY.kind] as number);
+  const kinds = refs.map((ref) => state[FIRST_BODY + ref.template * STRIDE + KIND_SLOT] as number);
   const shotTemplates = shots === undefined ? [] : refs.flatMap((ref) => (ref.shot === undefined ? [] : [ref.shot]));
-  const shotKinds = shotTemplates.map((shot) => state[bodyBase(shot) + BODY.kind] as number);
-  // Smyčka přes všechna těla několikrát za tik: sloty a bit jednou (import pod vitestem čte každý přístup getterem).
-  const first = bodyBase(0);
-  const stride = bodyBase(1) - first;
-  const { flags: flagsSlot, kind: kindSlot } = BODY;
-  const aliveBit = FLAG.alive;
+  const shotKinds = shotTemplates.map((shot) => state[FIRST_BODY + shot * STRIDE + KIND_SLOT] as number);
+  let wanted = 0;
+  for (const kind of [...kinds, ...shotKinds]) if (kind >= 0 && kind < 31) wanted |= 1 << kind;
   for (let body = 0; body < bodies; body += 1) {
-    const base = first + body * stride;
-    if (body === player || ((state[base + flagsSlot] as number) & aliveBit) === 0) continue;
-    const kind = state[base + kindSlot] as number;
+    const base = FIRST_BODY + body * STRIDE;
+    if (body === player || ((state[base + FLAGS_SLOT] as number) & ALIVE) === 0) continue;
+    const kind = state[base + KIND_SLOT] as number;
+    if (kind >= 0 && kind < 31 && ((wanted >> kind) & 1) === 0) continue;
     for (let k = 0; k < refs.length; k += 1) {
       const ref = refs[k] as BehaviourRef;
       if (kinds[k] !== kind || !matches(state, body, ref.template)) continue;

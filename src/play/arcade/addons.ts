@@ -47,6 +47,13 @@ import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
 import { census, shotHit } from './pieces/shots';
 
+// Sloty jednou za modul: import pod vitestem čte každý přístup getterem a pronásledovatel jde přes všechna těla každý tik.
+const FIRST_BODY = bodyBase(0);
+const STRIDE = bodyBase(1) - FIRST_BODY;
+const { role: ROLE_SLOT, flags: FLAGS_SLOT } = BODY;
+const ALIVE = FLAG.alive;
+const CHASER = ROLE.chaser;
+
 /** Parametry kusu pod obalem, přečtené jednou: obal běží každý tik a zod parse by ho zpomalil. */
 const parsedParams = new WeakMap<object, unknown>();
 function paramsOf(piece: { readonly params: { parse(input: unknown): unknown } }, raw: Readonly<Record<string, unknown>>): unknown {
@@ -539,9 +546,10 @@ function chaserFor(control: PieceRef, level: ArcadeLevel): { body: BodyInit; spe
 function chase(state: Int32Array, player: number, speed: ChaseSpeed): void {
   const p = bodyBase(player);
   const clamp = (delta: number, limit: number) => Math.max(-limit, Math.min(limit, delta));
-  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
-    const b = bodyBase(i);
-    if (state[b + BODY.role] !== ROLE.chaser || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+  const bodies = state[HEADER.bodyCount] as number;
+  for (let i = 0; i < bodies; i += 1) {
+    const b = FIRST_BODY + i * STRIDE;
+    if (state[b + ROLE_SLOT] !== CHASER || ((state[b + FLAGS_SLOT] as number) & ALIVE) === 0) continue;
     if (speed.oncoming === true) {
       const aiming = (state[b + BODY.z] as number) - (state[p + BODY.z] as number) > (speed.commit ?? 0);
       state[b + BODY.vx] = aiming ? clamp((state[p + BODY.x] as number) - (state[b + BODY.x] as number), speed.across) : 0;
@@ -583,9 +591,10 @@ const chaseStep: AddonBotStep = ({ state, player, recent }, input, base) => {
   // Pruhy, kam pronásledovatel stihne dorazit, než hráče mine – a za kolik tiků ho mine.
   let soonest = Number.POSITIVE_INFINITY;
   const danger = new Set<number>();
-  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
-    const b = bodyBase(i);
-    if (state[b + BODY.role] !== ROLE.chaser || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+  const bodies = state[HEADER.bodyCount] as number;
+  for (let i = 0; i < bodies; i += 1) {
+    const b = FIRST_BODY + i * STRIDE;
+    if (state[b + ROLE_SLOT] !== CHASER || ((state[b + FLAGS_SLOT] as number) & ALIVE) === 0) continue;
     const closing = (state[p + BODY.vz] as number) + CHASE.runner.along;
     const seenDz = (state[b + BODY.z] as number) - (state[p + BODY.z] as number);
     const dz = seenDz - closing * lag;

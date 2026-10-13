@@ -213,14 +213,15 @@ export function scaledParams(control: string, params: Readonly<Record<string, un
   return out;
 }
 
-const scaled = new WeakMap<object, Map<string, Readonly<Record<string, unknown>>>>();
+const scaled = new WeakMap<object, Map<string, Map<number, Readonly<Record<string, unknown>>>>>();
 /** `scaledParams` jednou na parametry, ovládání a intenzitu: ovládání i robot je chtějí každý tik a intenzita se mění zřídka. */
 function scaledOnce(control: string, params: Readonly<Record<string, unknown>>, intensity: number): Readonly<Record<string, unknown>> {
   let known = scaled.get(params);
   if (known === undefined) scaled.set(params, (known = new Map()));
-  const key = `${control}:${intensity}`;
-  let out = known.get(key);
-  if (out === undefined) known.set(key, (out = scaledParams(control, params, intensity)));
+  let byIntensity = known.get(control);
+  if (byIntensity === undefined) known.set(control, (byIntensity = new Map()));
+  let out = byIntensity.get(intensity);
+  if (out === undefined) byIntensity.set(intensity, (out = scaledParams(control, params, intensity)));
   return out;
 }
 

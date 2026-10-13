@@ -112,10 +112,15 @@ export function footprintsOf(state: Int32Array, roles: readonly number[]): Footp
   return found;
 }
 
-/** Pruhy −1, 0, 1, které tělo napříč zasahuje, pokud ho hráč v `pz` ještě neminul a leží před řadou `rowZ`. */
-function lanesAhead(body: Footprint, pz: number, rowZ: number): number[] {
-  if (body.z + (body.d + RN.playerD) / 2 <= pz || body.z >= rowZ) return [];
-  return [-1, 0, 1].filter((lane) => Math.abs(body.x - lane * RN.laneWidth) * 2 < body.w + RN.playerW);
+/**
+ * Pruhy (bit `pruh + 1`), které tělo napříč zasahuje, pokud ho hráč v `pz` ještě neminul a leží před řadou `rowZ`.
+ * Bez pole: robot i plánovač pruhů to volají pro každou minci každý tik.
+ */
+function lanesAhead(body: Footprint, pz: number, rowZ: number): number {
+  if (body.z + (body.d + RN.playerD) / 2 <= pz || body.z >= rowZ) return 0;
+  let lanes = 0;
+  for (let lane = -1; lane <= 1; lane += 1) if (Math.abs(body.x - lane * RN.laneWidth) * 2 < body.w + RN.playerW) lanes |= 1 << (lane + 1);
+  return lanes;
 }
 
 /**
@@ -124,7 +129,10 @@ function lanesAhead(body: Footprint, pz: number, rowZ: number): number[] {
  */
 export function lastCoins(coins: readonly Footprint[], pz: number, rowZ: number): (number | null)[] {
   const last: (number | null)[] = [null, null, null];
-  for (const coin of coins) for (const lane of lanesAhead(coin, pz, rowZ)) last[lane + 1] = Math.max(last[lane + 1] ?? coin.z, coin.z);
+  for (const coin of coins) {
+    const lanes = lanesAhead(coin, pz, rowZ);
+    for (let at = 0; at < 3; at += 1) if (((lanes >> at) & 1) !== 0) last[at] = Math.max(last[at] ?? coin.z, coin.z);
+  }
   return last;
 }
 
@@ -135,9 +143,12 @@ export function lastCoins(coins: readonly Footprint[], pz: number, rowZ: number)
  */
 export function hostileLanes(hostile: readonly Footprint[], pz: number, rowZ: number): number {
   let lanes = 0;
-  for (const body of hostile) for (const lane of lanesAhead(body, pz, rowZ)) lanes |= 1 << (lane + 1);
+  for (const body of hostile) lanes |= lanesAhead(body, pz, rowZ);
   return lanes;
 }
+
+/** Pruhy s mincí v pořadí zkoušení, posun od pruhu robota: nejbližší první. */
+const COIN_LANES = [0, -1, 1, -2, 2] as const;
 
 /**
  * Pruh, kam robot běžce z pruhu `lane` míří (sdílí ho plánovač pruhů, `lanes.ts`): nejprůchodnější pruh řady
@@ -152,13 +163,15 @@ export function laneChoice(status: readonly number[], lane: number, rowZ: number
   // Mezi stejně průchodnými pruhy ten bez těla, které zraní, pak nejbližší.
   const bestFrom = (from: number): number => {
     let best = from;
-    for (const candidate of [-1, 0, 1]) {
-      const [a, b] = [rank(candidate) * 2 + hostile(candidate), rank(best) * 2 + hostile(best)];
+    for (let candidate = -1; candidate <= 1; candidate += 1) {
+      const a = rank(candidate) * 2 + hostile(candidate);
+      const b = rank(best) * 2 + hostile(best);
       if (a < b || (a === b && Math.abs(candidate - from) < Math.abs(best - from))) best = candidate;
     }
     return best;
   };
-  for (const candidate of [lane, lane - 1, lane + 1, lane - 2, lane + 2]) {
+  for (const offset of COIN_LANES) {
+    const candidate = lane + offset;
     const coin = last[candidate + 1];
     if (coin === null || coin === undefined || (coin - pz) / vz < lag + LANE_TICKS * Math.abs(candidate - lane)) continue;
     let crossed = 0;
