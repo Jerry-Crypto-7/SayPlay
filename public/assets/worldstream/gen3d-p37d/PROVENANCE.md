@@ -427,3 +427,155 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-rolling-pin` | rolling pin | 4748 / 2374 |
 | `gen3d-diner-sign` | diner sign | 4321 / 2128 |
 | `gen3d-flower-garland` | flower garland | 4149 / 2059 |
+| `gen3d-blimp` | blimp, zeppelin, dirigible | 4738 / 2366 |
+| `gen3d-frost-giant` | frost giant | 4496 / 2069 |
+| `gen3d-cannon-tower` | cannon tower | 4418 / 2103 |
+| `gen3d-airship` | airship, steampunk airship | 4714 / 2299 |
+| `gen3d-laser-turret` | laser turret | 4242 / 2097 |
+| `gen3d-angry-bull` | angry bull, bull | 4197 / 1879 |
+| `gen3d-necromancer` | necromancer | 4572 / 2221 |
+| `gen3d-tesla-coil` | tesla coil | 4748 / 2326 |
+| `gen3d-t-rex` | t rex, tyrannosaurus, tyrannosaurus rex | 4410 / 2199 |
+| `gen3d-storm-cloud` | storm cloud, thundercloud, thunder cloud | 4508 / 2210 |
+| `gen3d-sorcerer` | sorcerer, warlock, sorceress | 4528 / 2177 |
+| `gen3d-sentry-gun` | sentry gun | 4617 / 2276 |
+| `gen3d-kaiju` | kaiju | 4723 / 2320 |
+| `gen3d-pterodactyl` | pterodactyl, pteranodon, pterosaur | 4708 / 2346 |
+| `gen3d-wyvern` | wyvern | 4716 / 2328 |
+| `gen3d-trebuchet` | trebuchet | 4658 / 2320 |
+| `gen3d-flying-carpet` | flying carpet, magic carpet | 4750 / 2356 |
+| `gen3d-gargoyle` | gargoyle | 4487 / 2180 |
+| `gen3d-siege-tower` | siege tower | 4514 / 2252 |
+| `gen3d-locomotive` | locomotive, steam locomotive, steam engine | 4567 / 2194 |
+| `gen3d-harpy` | harpy | 4577 / 2150 |
+| `gen3d-grim-reaper` | grim reaper, reaper | 4687 / 2342 |
+| `gen3d-howitzer` | howitzer | 4710 / 2349 |
+| `gen3d-vulture` | vulture | 4739 / 2354 |
+| `gen3d-floating-eye` | floating eye | 4367 / 2102 |
+| `gen3d-combine-harvester` | combine harvester, harvester | 4226 / 1924 |
+| `gen3d-giant-snowball` | giant snowball | 4554 / 2201 |
+| `gen3d-hovercraft` | hovercraft | 4479 / 2153 |
+| `gen3d-cement-mixer` | cement mixer, concrete mixer | 4094 / 2031 |
+| `gen3d-sabertooth` | sabertooth | 4704 / 2310 |
+| `gen3d-lava-golem` | lava golem | 4533 / 2142 |
+| `gen3d-hydra` | hydra | 4596 / 2265 |
+| `gen3d-gyrocopter` | gyrocopter, autogyro, gyroplane | 4740 / 2340 |
+| `gen3d-gatling-gun` | gatling gun | 4746 / 2362 |
+| `gen3d-bigfoot` | bigfoot, sasquatch | 4573 / 2184 |
+| `gen3d-wild-boar` | wild boar, boar | 4421 / 2096 |
+| `gen3d-kraken-tentacle` | kraken tentacle | 4743 / 2357 |
+| `gen3d-chariot` | chariot | 4226 / 1934 |
+| `gen3d-iron-golem` | iron golem | 4331 / 2122 |
+| `gen3d-lich` | lich | 4342 / 2082 |
+| `gen3d-manticore` | manticore | 4463 / 2179 |
+| `gen3d-evil-snowman` | evil snowman | 4700 / 2328 |
+| `gen3d-chimera` | chimera | 4594 / 2284 |
+| `gen3d-mud-golem` | mud golem | 4089 / 1910 |
+| `gen3d-sandworm` | sandworm | 4729 / 2361 |
+| `gen3d-crystal-golem` | crystal golem | 4565 / 2201 |
+| `gen3d-scrap-golem` | scrap golem | 4430 / 2055 |
+| `gen3d-warthog` | warthog | 4574 / 2257 |
+| `gen3d-wraith` | wraith | 4591 / 2269 |
+| `gen3d-bison` | bison | 4528 / 2233 |
+| `gen3d-ghoul` | ghoul | 4615 / 2103 |
+| `gen3d-gremlin` | gremlin | 4481 / 2097 |
+| `gen3d-rattlesnake` | rattlesnake | 4561 / 2201 |
+| `gen3d-tarantula` | tarantula | 4571 / 2203 |
+| `gen3d-giant-hand` | giant hand | 4710 / 2326 |
+| `gen3d-venus-flytrap` | venus flytrap | 4711 / 2308 |
+| `gen3d-mimic-chest` | mimic chest | 4624 / 2262 |
+| `gen3d-laser-gun` | laser gun, laser pistol | 4635 / 2237 |
+| `gen3d-round-shield` | round shield | 4687 / 2301 |
+| `gen3d-treasure-pile` | treasure pile, gold hoard, treasure hoard, hoard | 4390 / 1996 |
+| `gen3d-battle-axe` | battle axe | 4748 / 2374 |
+| `gen3d-cheese-wheel` | cheese wheel | 4742 / 2326 |
+| `gen3d-kite-shield` | kite shield | 4742 / 2370 |
+| `gen3d-sand-golem` | sand golem | 4344 / 2136 |
+| `gen3d-banshee` | banshee | 4678 / 2257 |
+| `gen3d-stopwatch` | stopwatch | 4479 / 2217 |
+| `gen3d-war-hammer` | war hammer | 4748 / 2374 |
+| `gen3d-four-leaf-clover` | four leaf clover | 4704 / 2351 |
+| `gen3d-gold-bar` | gold bar, gold ingot, gold bullion | 4748 / 2374 |
+| `gen3d-bazooka` | bazooka | 4750 / 2370 |
+| `gen3d-power-crystal` | power crystal | 4748 / 2374 |
+| `gen3d-ruby` | ruby | 4579 / 2271 |
+| `gen3d-shuriken` | shuriken, throwing star | 4509 / 2201 |
+| `gen3d-golden-apple` | golden apple | 4749 / 2370 |
+| `gen3d-golden-egg` | golden egg | 4748 / 2312 |
+| `gen3d-spiked-club` | spiked club, club | 4745 / 2346 |
+| `gen3d-money-bundle` | money bundle, cash, money stack, stack of money | 4599 / 2235 |
+| `gen3d-flamethrower` | flamethrower | 4734 / 2362 |
+| `gen3d-diamond-ring` | diamond ring | 4514 / 2227 |
+| `gen3d-freeze-ray` | freeze ray | 4495 / 2022 |
+| `gen3d-emerald` | emerald | 4743 / 2357 |
+| `gen3d-nunchaku` | nunchaku, nunchucks | 4748 / 2374 |
+| `gen3d-safe` | safe | 4653 / 2269 |
+| `gen3d-invisibility-cloak` | invisibility cloak | 4737 / 2276 |
+| `gen3d-speed-boot` | speed boot | 4166 / 1987 |
+| `gen3d-winged-shoe` | winged shoe | 4626 / 2301 |
+| `gen3d-katana` | katana | 4748 / 2374 |
+| `gen3d-treasure-chest` | treasure chest | 4162 / 3061 |
+| `gen3d-spring-shoe` | spring shoe | 4218 / 2082 |
+| `gen3d-magic-bean` | magic bean | 4748 / 2374 |
+| `gen3d-chalice` | chalice | 4746 / 2372 |
+| `gen3d-pogo-stick` | pogo stick | 4750 / 2326 |
+| `gen3d-loot-sack` | loot sack, loot bag | 4676 / 2238 |
+| `gen3d-energy-ball` | energy ball | 4627 / 2199 |
+| `gen3d-hoverboard` | hoverboard | 4458 / 2153 |
+| `gen3d-pearl-necklace` | pearl necklace | 4750 / 2374 |
+| `gen3d-flail` | flail | 4478 / 2133 |
+| `gen3d-hang-glider` | hang glider | 4556 / 2242 |
+| `gen3d-tiara` | tiara | 4713 / 2256 |
+| `gen3d-morning-star` | morning star | 4746 / 2366 |
+| `gen3d-feather` | feather | 4694 / 2302 |
+| `gen3d-vault-door` | vault door | 4676 / 2283 |
+| `gen3d-grappling-hook` | grappling hook | 4716 / 2326 |
+| `gen3d-plasma-gun` | plasma gun | 4267 / 2029 |
+| `gen3d-spell-book` | spell book | 4684 / 2295 |
+| `gen3d-golden-statue` | golden statue | 4496 / 2162 |
+| `gen3d-tomahawk` | tomahawk | 4748 / 2374 |
+| `gen3d-rune-stone` | rune stone | 4644 / 2277 |
+| `gen3d-pocket-watch` | pocket watch | 4747 / 2354 |
+| `gen3d-throwing-knife` | throwing knife | 4750 / 2372 |
+| `gen3d-spyglass` | spyglass | 4748 / 2374 |
+| `gen3d-musket` | musket | 4746 / 2366 |
+| `gen3d-ancient-scroll` | ancient scroll | 4639 / 2256 |
+| `gen3d-flintlock-pistol` | flintlock pistol | 4729 / 2351 |
+| `gen3d-music-box` | music box | 4330 / 2039 |
+| `gen3d-purse` | purse | 4748 / 2369 |
+| `gen3d-bubble-gun` | bubble gun | 4533 / 2210 |
+| `gen3d-cream-pie` | cream pie | 4626 / 2263 |
+| `gen3d-cookie-jar` | cookie jar | 4171 / 2359 |
+| `gen3d-magic-orb` | magic orb | 4748 / 2374 |
+| `gen3d-pizza-slice` | pizza slice | 4742 / 2346 |
+| `gen3d-chocolate-bar` | chocolate bar | 4732 / 2348 |
+| `gen3d-power-glove` | power glove | 4464 / 2062 |
+| `gen3d-popsicle` | popsicle | 4748 / 2374 |
+| `gen3d-whip` | whip | 4729 / 2359 |
+| `gen3d-angel-wing` | angel wing | 4744 / 2372 |
+| `gen3d-scimitar` | scimitar | 4750 / 2374 |
+| `gen3d-harpoon` | harpoon | 4748 / 2374 |
+| `gen3d-laser-rifle` | laser rifle | 4744 / 2370 |
+| `gen3d-golden-idol` | golden idol | 4539 / 2232 |
+| `gen3d-halberd` | halberd | 4748 / 2374 |
+| `gen3d-sundae` | sundae | 4621 / 2272 |
+| `gen3d-rapier` | rapier | 4748 / 2372 |
+| `gen3d-sickle` | sickle | 4635 / 2254 |
+| `gen3d-quiver` | quiver | 4685 / 2176 |
+| `gen3d-spiked-ball` | spiked ball | 4460 / 2113 |
+| `gen3d-lumberjack` | lumberjack | 4479 / 2194 |
+| `gen3d-bandit` | bandit, outlaw | 4659 / 2271 |
+| `gen3d-spike-trap` | spike trap | 4737 / 2358 |
+| `gen3d-explosive-barrel` | explosive barrel | 4748 / 2374 |
+| `gen3d-banana-peel` | banana peel | 4496 / 2165 |
+| `gen3d-cockroach` | cockroach | 4681 / 2340 |
+| `gen3d-jaguar` | jaguar | 4513 / 2113 |
+| `gen3d-tnt-crate` | tnt crate, dynamite crate, tnt box | 3900 / 2119 |
+| `gen3d-roadblock` | roadblock, road barrier, barricade | 4713 / 2333 |
+| `gen3d-praying-mantis` | praying mantis, mantis | 4740 / 2361 |
+| `gen3d-thorn-bush` | thorn bush | 4347 / 2113 |
+| `gen3d-stegosaurus` | stegosaurus | 4748 / 2368 |
+| `gen3d-giant-gear` | giant gear | 4750 / 2372 |
+| `gen3d-killer-tomato` | killer tomato | 4369 / 2155 |
+| `gen3d-pumpkin-head` | pumpkin head | 4681 / 2224 |
+| `gen3d-barbed-wire` | barbed wire | 4699 / 2329 |

@@ -365,6 +365,8 @@ def main() -> None:
         help="comma list of <prompt a|b><seed>, tried in order",
     )
     parser.add_argument("--precheck", action="store_true")
+    # P46F: předkontrolu může soudit Opus 5.5 (`claude -p`) místo Codexu.
+    parser.add_argument("--judge", choices=("codex", "claude"), default="codex")
     parser.add_argument("--no-quarantine", action="store_true")
     parser.add_argument("--start-comfy", action="store_true")
     args = parser.parse_args()
@@ -394,7 +396,7 @@ def main() -> None:
         if args.precheck:
 
             def check(image: Path) -> dict:
-                return precheck.check(noun, image)
+                return precheck.check(noun, image, judge=args.judge)
 
         return generate(comfy, noun, out_dir, seed, prompt=prompt, check=check)
 

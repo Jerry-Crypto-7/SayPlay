@@ -1,0 +1,300 @@
+{
+ "about": "P46F: evals/play/p37d/aliases.json plus synonyms of the P46F names (evals/play/p46f/round-nouns.json) for scripts/p37d/judge-sheet.mjs --aliases; every P46F synonym is free of manifest class words.",
+ "bug": [
+  "beetle",
+  "insect"
+ ],
+ "investor": [
+  "businessman",
+  "banker"
+ ],
+ "pin": [
+  "pushpin",
+  "thumbtack"
+ ],
+ "police officer": [
+  "policeman",
+  "cop"
+ ],
+ "spellbook": [
+  "grimoire"
+ ],
+ "hippo": [
+  "hippopotamus"
+ ],
+ "rhino": [
+  "rhinoceros"
+ ],
+ "seagull": [
+  "gull"
+ ],
+ "shrimp": [
+  "prawn"
+ ],
+ "kraken": [
+  "giant squid"
+ ],
+ "demon": [
+  "devil"
+ ],
+ "caveman": [
+  "neanderthal"
+ ],
+ "spy": [
+  "secret agent"
+ ],
+ "mailman": [
+  "postman"
+ ],
+ "cashier": [
+  "clerk"
+ ],
+ "athlete": [
+  "runner",
+  "sprinter"
+ ],
+ "sailor": [
+  "seaman"
+ ],
+ "fisherman": [
+  "angler"
+ ],
+ "fire truck": [
+  "firetruck"
+ ],
+ "excavator": [
+  "digger",
+  "backhoe"
+ ],
+ "roller skate": [
+  "rollerskate"
+ ],
+ "wagon": [
+  "cart"
+ ],
+ "noodle": [
+  "ramen"
+ ],
+ "spaghetti": [
+  "pasta"
+ ],
+ "pie": [
+  "tart"
+ ],
+ "muffin": [
+  "cupcake"
+ ],
+ "tea": [
+  "teacup",
+  "teapot"
+ ],
+ "frying pan": [
+  "skillet"
+ ],
+ "headphone": [
+  "headset"
+ ],
+ "suitcase": [
+  "luggage"
+ ],
+ "sunglass": [
+  "shades"
+ ],
+ "shoe": [
+  "sneaker"
+ ],
+ "glove": [
+  "mitten"
+ ],
+ "amulet": [
+  "pendant",
+  "talisman"
+ ],
+ "wrench": [
+  "spanner"
+ ],
+ "street lamp": [
+  "streetlight",
+  "lamppost"
+ ],
+ "sign": [
+  "signpost"
+ ],
+ "seesaw": [
+  "teeter totter"
+ ],
+ "seashell": [
+  "shell",
+  "conch"
+ ],
+ "coffin": [
+  "casket"
+ ],
+ "ornament": [
+  "bauble"
+ ],
+ "santa": [
+  "santa claus"
+ ],
+ "raindrop": [
+  "droplet"
+ ],
+ "comet": [
+  "meteor"
+ ],
+ "anthill": [
+  "ant mound"
+ ],
+ "flower pot": [
+  "flowerpot"
+ ],
+ "dynamite": [
+  "tnt"
+ ],
+ "lamp post": [
+  "streetlight",
+  "lamppost"
+ ],
+ "game controller": [
+  "gamepad"
+ ],
+ "bow tie": [
+  "bowtie"
+ ],
+ "hair dryer": [
+  "hairdryer",
+  "blow dryer"
+ ],
+ "space suit": [
+  "spacesuit"
+ ],
+ "moon rover": [
+  "lunar rover"
+ ],
+ "ray gun": [
+  "blaster"
+ ],
+ "fuel can": [
+  "jerrycan"
+ ],
+ "lawn mower": [
+  "lawnmower"
+ ],
+ "doghouse": [
+  "kennel"
+ ],
+ "fish tank": [
+  "aquarium"
+ ],
+ "chicken leg": [
+  "drumstick"
+ ],
+ "t rex": [
+  "tyrannosaurus",
+  "tyrannosaurus rex"
+ ],
+ "bigfoot": [
+  "sasquatch"
+ ],
+ "angry bull": [
+  "bull"
+ ],
+ "wild boar": [
+  "boar"
+ ],
+ "steamroller": [
+  "road roller",
+  "steam roller"
+ ],
+ "locomotive": [
+  "steam locomotive",
+  "steam engine"
+ ],
+ "blimp": [
+  "zeppelin",
+  "dirigible"
+ ],
+ "airship": [
+  "steampunk airship"
+ ],
+ "gyrocopter": [
+  "autogyro",
+  "gyroplane"
+ ],
+ "flying carpet": [
+  "magic carpet"
+ ],
+ "storm cloud": [
+  "thundercloud",
+  "thunder cloud"
+ ],
+ "pterodactyl": [
+  "pteranodon",
+  "pterosaur"
+ ],
+ "sorcerer": [
+  "warlock",
+  "sorceress"
+ ],
+ "grim reaper": [
+  "reaper"
+ ],
+ "cement mixer": [
+  "concrete mixer"
+ ],
+ "combine harvester": [
+  "harvester"
+ ],
+ "shuriken": [
+  "throwing star"
+ ],
+ "nunchaku": [
+  "nunchucks"
+ ],
+ "laser gun": [
+  "laser pistol"
+ ],
+ "spiked club": [
+  "club"
+ ],
+ "money bundle": [
+  "cash",
+  "money stack",
+  "stack of money"
+ ],
+ "gold bar": [
+  "gold ingot",
+  "gold bullion"
+ ],
+ "treasure pile": [
+  "gold hoard",
+  "treasure hoard",
+  "hoard"
+ ],
+ "loot sack": [
+  "loot bag"
+ ],
+ "bandit": [
+  "outlaw"
+ ],
+ "praying mantis": [
+  "mantis"
+ ],
+ "possum": [
+  "opossum"
+ ],
+ "roadblock": [
+  "road barrier",
+  "barricade"
+ ],
+ "tnt crate": [
+  "dynamite crate",
+  "tnt box"
+ ],
+ "speed boots": [
+  "speed shoes"
+ ],
+ "winged shoes": [
+  "winged sandals"
+ ]
+}

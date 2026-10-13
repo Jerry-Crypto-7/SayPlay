@@ -58,6 +58,7 @@ node D:/claude/_shared/gpu-lock.mjs -- uv run python batch.py --from <seznam> --
   `scripts/p37d/judge-sheet.mjs --precheck`, prázdný adresář, jen `sheet.png`) a 3D se generuje jen
   z obrázku, který soudce pozná (`top1`/`top3`). Odpovědi v `D:/caches/p45e/precheck/` (mimo repo).
   Bez odpovědi Codexu (limit, pád) obrázek projde jako `unavailable` – kartu to nezastaví.
+  `--judge claude` (P46F) se ptá Opus 5.5 přes `claude -p` místo Codexu, stejnou otázkou a schématem.
 - Mezipaměť je jedna na jméno: pro nové kolo nad jmény, která už v cache jsou, nastav `GEN3D_CACHE_DIR`.
 
 ## Rychlost

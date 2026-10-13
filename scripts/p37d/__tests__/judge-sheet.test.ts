@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { blindQuestion, catalogBatch, matches, verdictOf } from '../judge-sheet.mjs';
+import { blindQuestion, catalogBatch, claudeAnswer, CLAUDE_MODEL, matches, verdictOf } from '../judge-sheet.mjs';
 
 const answer = (name: string, alternatives: string[] = [], intact = true, recognizable = true) => ({ name, alternatives, intact, recognizable });
 
@@ -100,5 +100,53 @@ describe('blindQuestion (P37D T2)', () => {
     expect(path.dirname(cwd)).not.toBe(named);
     expect(args.join(' ')).not.toMatch(/gnome|garden|named/);
     expect(args.slice(args.indexOf('-i'), args.indexOf('-i') + 2)).toEqual(['-i', 'sheet.png']);
+  });
+
+  it('asks Opus from an empty directory with the sheet alone and Read as the only tool (P46F)', () => {
+    const named = mkdtempSync(path.join(os.tmpdir(), 'p46f-named-'));
+    dirs.push(named);
+    mkdirSync(path.join(named, 'sheets'));
+    const sheet = path.join(named, 'sheets', 'garden-gnome.png');
+    const schema = path.join(named, 'answer-schema.json');
+    writeFileSync(sheet, 'png');
+    writeFileSync(schema, '{"type":"object"}');
+
+    const { cwd, args } = blindQuestion(sheet, schema, 'Which object?', 'claude');
+    dirs.push(cwd);
+    expect(readdirSync(cwd)).toEqual(['sheet.png']);
+    expect(path.dirname(cwd)).not.toBe(named);
+    expect(args.join(' ')).not.toMatch(/gnome|garden|named/);
+    expect(args.slice(args.indexOf('--model'), args.indexOf('--model') + 2)).toEqual(['--model', CLAUDE_MODEL]);
+    expect(CLAUDE_MODEL).toBe('claude-opus-5-5');
+    expect(args.slice(args.indexOf('--tools'), args.indexOf('--tools') + 2)).toEqual(['--tools', 'Read']);
+    expect(args).toContain('--safe-mode');
+    expect(args.at(-1)).toMatch(/sheet\.png.*Which object\?$/);
+  });
+});
+
+describe('claudeAnswer (P46F T2)', () => {
+  const said = { name: 'fairy door', alternatives: ['door'], recognizable: true, intact: true };
+  const envelope = (fields: Record<string, unknown>) => JSON.stringify({ type: 'result', is_error: false, ...fields });
+
+  it('takes the structured output of claude -p', () => {
+    expect(claudeAnswer(0, envelope({ result: '', structured_output: said })).answer).toEqual(said);
+  });
+
+  it('finds the answer JSON inside text around it', () => {
+    const chatty = `Looking at the sheet: ${JSON.stringify(said)} – a small arched door {not json}.`;
+    expect(claudeAnswer(0, envelope({ result: chatty })).answer).toEqual(said);
+    expect(claudeAnswer(0, `Sure! ${JSON.stringify(said)}`).answer).toEqual(said);
+  });
+
+  it('gives no answer when the process failed, so the precheck reads unavailable', () => {
+    const limit = claudeAnswer(1, envelope({ is_error: true, result: "You've hit your limit · resets 3am" }));
+    expect(limit.answer).toBeUndefined();
+    expect(limit.error).toContain('resets 3am');
+    expect(claudeAnswer(0, envelope({ is_error: true, result: 'API Error: 529' })).answer).toBeUndefined();
+    expect(claudeAnswer(null, '').answer).toBeUndefined();
+  });
+
+  it('refuses JSON that is not the schema answer', () => {
+    expect(claudeAnswer(0, envelope({ result: '{"name":"door"}' })).answer).toBeUndefined();
   });
 });

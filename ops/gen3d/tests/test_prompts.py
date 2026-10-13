@@ -192,6 +192,21 @@ def test_precheck_rejects_what_the_judge_would_reject(monkeypatch, tmp_path):
             precheck.check("mole", tmp_path / "image.png")
 
 
+def test_precheck_asks_the_chosen_judge(monkeypatch, tmp_path):
+    # P46F: Opus 5.5 místo Codexu; bez volby zůstává Codex.
+    calls = []
+
+    def fake_run(args, **kwargs):
+        calls.append(args)
+        line = {"verdict": "top1", "answer": {"name": "mole"}}
+        return subprocess.CompletedProcess(args, 0, stdout=json.dumps(line), stderr="")
+
+    monkeypatch.setattr(precheck.subprocess, "run", fake_run)
+    precheck.check("mole", tmp_path / "image.png", judge="claude")
+    precheck.check("mole", tmp_path / "image.png")
+    assert [a[a.index("--judge") + 1] for a in calls] == ["claude", "codex"]
+
+
 def test_precheck_without_an_answer_lets_the_card_work_on(monkeypatch, tmp_path):
     # Vyčerpaný limit Codexu nesmí zastavit kartu; soud po 3D ho dožene (plán P45E).
     judge_answer(monkeypatch, {"verdict": "unavailable", "error": "codex exit 1"})

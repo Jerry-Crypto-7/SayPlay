@@ -1,0 +1,2112 @@
+{
+ "about": "P46F T3: the overnight list in the order it is generated, by impact on play – (1) bosses, one stream per P46B genre interleaved (runner chaser, driving machine over the track, platformer end boss, track-guarding machine), (2) things for P46A actions interleaved (weapons and projectiles, shields, power-ups, loot), (3) enemies and obstacles, (4) small creatures. Within a group by `sentences` (demand corpus, P37A dev set, P45 panel without its P30 rows; noun or alias), then by hand. Every name and alias is free of the class words of scripts/assets/p32-manifest.mjs, so a promoted model never changes the pinned src/play manifest; a foe, chaser or boss still picks it by catalog tag. class: scripts/p37d/gen-list.mjs entryOf (ray guns by hand). Features in ops/gen3d/features.toml. Rounds in D:/caches/p46f/round<n>/list.json; the loop writes round 2+ (a retry round with seeds a2,b2,a3 once 10 names wait for their one retry).",
+ "groups": {
+  "boss-runner": "boss běžce: pronásledovatel, který útočí (velký a hrozivý)",
+  "boss-air": "boss řízení: stroj nebo tvor nad tratí",
+  "boss-end": "boss skákačky: šéf na konci",
+  "boss-machine": "boss-stroj, který brání trať",
+  "action-weapon": "akce P46A: zbraň nebo střela (shoot, strike)",
+  "action-shield": "akce P46A: štít (shield)",
+  "action-powerup": "power-up P46A/P46C: rychlost, skok, štít, 2×",
+  "action-loot": "kořist ke krádeži a sběratelné poklady (grab)",
+  "enemy": "nepřítel, kterého věty jmenují",
+  "obstacle": "překážka nebo past",
+  "critter": "drobný tvor, kterého katalog nemá"
+ },
+ "held": {
+  "heroes": "chybějící hrdinové – nový hrdina je záznam manifestu src/play (pin COUNT = 261), patří do P46A/B; dnes v noci ne",
+  "class-word names": "police helicopter, giant spider, giant crab, mech, skeleton king, evil wizard, killer robot, ghost ship, guard dog, sea serpent, water balloon, rocket boots, fire jet, fly swatter – slovo třídy v jméně změní manifest src/play → --drop",
+  "catalog has it": "helicopter, kraken, minotaur, stone golem, dragon, ogre, yeti, griffin, ufo, drone, tank, monster truck, gorilla, spider, crab, scorpion, mace, spear, trident, crossbow, bow, blaster, ray gun, cannon, fireball, grenade, boomerang, magnet, lightning bolt, star, heart, potion, battery, jetpack, hourglass, money bag, crown, coin, trophy, key, bear trap, trampoline, saw blade, wrecking ball, boulder…",
+  "abominable snowman": "katalog má yeti – stejný tvor"
+ },
+ "nouns": [
+  {
+   "noun": "golem",
+   "class": "biped",
+   "flat": false,
+   "sentences": 2,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 1
+  },
+  {
+   "noun": "blimp",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 2
+  },
+  {
+   "noun": "frost giant",
+   "class": "prop",
+   "flat": false,
+   "sentences": 3,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 3
+  },
+  {
+   "noun": "cannon tower",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 4
+  },
+  {
+   "noun": "lava golem",
+   "class": "biped",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 5
+  },
+  {
+   "noun": "airship",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 6
+  },
+  {
+   "noun": "hydra",
+   "class": "prop",
+   "flat": false,
+   "sentences": 1,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 7
+  },
+  {
+   "noun": "laser turret",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 8
+  },
+  {
+   "noun": "angry bull",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 9
+  },
+  {
+   "noun": "gyrocopter",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 10
+  },
+  {
+   "noun": "necromancer",
+   "class": "prop",
+   "flat": false,
+   "sentences": 1,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 11
+  },
+  {
+   "noun": "tesla coil",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 12
+  },
+  {
+   "noun": "t rex",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 13
+  },
+  {
+   "noun": "storm cloud",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 14
+  },
+  {
+   "noun": "sorcerer",
+   "class": "prop",
+   "flat": false,
+   "sentences": 1,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 15
+  },
+  {
+   "noun": "sentry gun",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 16
+  },
+  {
+   "noun": "ice golem",
+   "class": "biped",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 17
+  },
+  {
+   "noun": "thunderbird",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 18
+  },
+  {
+   "noun": "kaiju",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 19
+  },
+  {
+   "noun": "gatling gun",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 20
+  },
+  {
+   "noun": "bigfoot",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 21
+  },
+  {
+   "noun": "pterodactyl",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 22
+  },
+  {
+   "noun": "wyvern",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 23
+  },
+  {
+   "noun": "trebuchet",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 24
+  },
+  {
+   "noun": "wild boar",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 25
+  },
+  {
+   "noun": "flying carpet",
+   "class": "flyer",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 26
+  },
+  {
+   "noun": "gargoyle",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 27
+  },
+  {
+   "noun": "siege tower",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 28
+  },
+  {
+   "noun": "locomotive",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 29
+  },
+  {
+   "noun": "harpy",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 30
+  },
+  {
+   "noun": "grim reaper",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 31
+  },
+  {
+   "noun": "battleship",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 32
+  },
+  {
+   "noun": "steamroller",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 33
+  },
+  {
+   "noun": "roc",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 34
+  },
+  {
+   "noun": "megalodon",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 35
+  },
+  {
+   "noun": "howitzer",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 36
+  },
+  {
+   "noun": "headless horseman",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 37
+  },
+  {
+   "noun": "vulture",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 38
+  },
+  {
+   "noun": "kraken tentacle",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 39
+  },
+  {
+   "noun": "chariot",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 40
+  },
+  {
+   "noun": "grizzly",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 41
+  },
+  {
+   "noun": "floating eye",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 42
+  },
+  {
+   "noun": "colossus",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 43
+  },
+  {
+   "noun": "combine harvester",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 44
+  },
+  {
+   "noun": "giant snowball",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 45
+  },
+  {
+   "noun": "hovercraft",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-air",
+   "rank": 1,
+   "order": 46
+  },
+  {
+   "noun": "medusa",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 47
+  },
+  {
+   "noun": "cement mixer",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-machine",
+   "rank": 1,
+   "order": 48
+  },
+  {
+   "noun": "sabertooth",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 49
+  },
+  {
+   "noun": "cerberus",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 50
+  },
+  {
+   "noun": "iron golem",
+   "class": "biped",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 51
+  },
+  {
+   "noun": "lich",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 52
+  },
+  {
+   "noun": "rock giant",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 53
+  },
+  {
+   "noun": "basilisk",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 54
+  },
+  {
+   "noun": "krampus",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 55
+  },
+  {
+   "noun": "manticore",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 56
+  },
+  {
+   "noun": "evil snowman",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 57
+  },
+  {
+   "noun": "chimera",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 58
+  },
+  {
+   "noun": "mud golem",
+   "class": "biped",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 59
+  },
+  {
+   "noun": "leviathan",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 60
+  },
+  {
+   "noun": "sand golem",
+   "class": "biped",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 61
+  },
+  {
+   "noun": "sandworm",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 62
+  },
+  {
+   "noun": "crystal golem",
+   "class": "biped",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 63
+  },
+  {
+   "noun": "oni",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 64
+  },
+  {
+   "noun": "scrap golem",
+   "class": "biped",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 65
+  },
+  {
+   "noun": "banshee",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 66
+  },
+  {
+   "noun": "warthog",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 67
+  },
+  {
+   "noun": "wraith",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 68
+  },
+  {
+   "noun": "bison",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 69
+  },
+  {
+   "noun": "ghoul",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 70
+  },
+  {
+   "noun": "buffalo",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 71
+  },
+  {
+   "noun": "gremlin",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 72
+  },
+  {
+   "noun": "rattlesnake",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 73
+  },
+  {
+   "noun": "chupacabra",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 74
+  },
+  {
+   "noun": "anaconda",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 75
+  },
+  {
+   "noun": "stone guardian",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 76
+  },
+  {
+   "noun": "tarantula",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-runner",
+   "rank": 1,
+   "order": 77
+  },
+  {
+   "noun": "giant hand",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 78
+  },
+  {
+   "noun": "venus flytrap",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 79
+  },
+  {
+   "noun": "mimic chest",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "boss-end",
+   "rank": 1,
+   "order": 80
+  },
+  {
+   "noun": "laser gun",
+   "class": "prop",
+   "flat": false,
+   "sentences": 1,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 81
+  },
+  {
+   "noun": "round shield",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-shield",
+   "rank": 2,
+   "order": 82
+  },
+  {
+   "noun": "speed boots",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 83
+  },
+  {
+   "noun": "treasure pile",
+   "class": "prop",
+   "flat": false,
+   "sentences": 3,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 84
+  },
+  {
+   "noun": "battle axe",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 85
+  },
+  {
+   "noun": "energy shield",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-shield",
+   "rank": 2,
+   "order": 86
+  },
+  {
+   "noun": "winged shoes",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 87
+  },
+  {
+   "noun": "cheese wheel",
+   "class": "prop",
+   "flat": false,
+   "sentences": 1,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 88
+  },
+  {
+   "noun": "katana",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 89
+  },
+  {
+   "noun": "kite shield",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-shield",
+   "rank": 2,
+   "order": 90
+  },
+  {
+   "noun": "stopwatch",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 91
+  },
+  {
+   "noun": "treasure chest",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 92
+  },
+  {
+   "noun": "war hammer",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 93
+  },
+  {
+   "noun": "tower shield",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-shield",
+   "rank": 2,
+   "order": 94
+  },
+  {
+   "noun": "four leaf clover",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 95
+  },
+  {
+   "noun": "gold bar",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 96
+  },
+  {
+   "noun": "bazooka",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 97
+  },
+  {
+   "noun": "riot shield",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-shield",
+   "rank": 2,
+   "order": 98
+  },
+  {
+   "noun": "power crystal",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 99
+  },
+  {
+   "noun": "ruby",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 100
+  },
+  {
+   "noun": "shuriken",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 101
+  },
+  {
+   "noun": "golden apple",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 102
+  },
+  {
+   "noun": "golden egg",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 103
+  },
+  {
+   "noun": "spiked club",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 104
+  },
+  {
+   "noun": "spring shoes",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 105
+  },
+  {
+   "noun": "money bundle",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 106
+  },
+  {
+   "noun": "flamethrower",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 107
+  },
+  {
+   "noun": "magic bean",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 108
+  },
+  {
+   "noun": "diamond ring",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 109
+  },
+  {
+   "noun": "freeze ray",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 110
+  },
+  {
+   "noun": "elixir",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 111
+  },
+  {
+   "noun": "emerald",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 112
+  },
+  {
+   "noun": "whip",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 113
+  },
+  {
+   "noun": "angel wings",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 114
+  },
+  {
+   "noun": "sapphire",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 115
+  },
+  {
+   "noun": "nunchaku",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 116
+  },
+  {
+   "noun": "halo",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 117
+  },
+  {
+   "noun": "safe",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 118
+  },
+  {
+   "noun": "scimitar",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 119
+  },
+  {
+   "noun": "invisibility cloak",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 120
+  },
+  {
+   "noun": "chalice",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 121
+  },
+  {
+   "noun": "harpoon",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 122
+  },
+  {
+   "noun": "pogo stick",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 123
+  },
+  {
+   "noun": "loot sack",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 124
+  },
+  {
+   "noun": "energy ball",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 125
+  },
+  {
+   "noun": "hoverboard",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 126
+  },
+  {
+   "noun": "pearl necklace",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 127
+  },
+  {
+   "noun": "flail",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 128
+  },
+  {
+   "noun": "hang glider",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 129
+  },
+  {
+   "noun": "tiara",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 130
+  },
+  {
+   "noun": "morning star",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 131
+  },
+  {
+   "noun": "feather",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 132
+  },
+  {
+   "noun": "vault door",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 133
+  },
+  {
+   "noun": "laser rifle",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 134
+  },
+  {
+   "noun": "grappling hook",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 135
+  },
+  {
+   "noun": "golden idol",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 136
+  },
+  {
+   "noun": "plasma gun",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 137
+  },
+  {
+   "noun": "spell book",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 138
+  },
+  {
+   "noun": "golden statue",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 139
+  },
+  {
+   "noun": "tomahawk",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 140
+  },
+  {
+   "noun": "rune stone",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-powerup",
+   "rank": 2,
+   "order": 141
+  },
+  {
+   "noun": "pocket watch",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 142
+  },
+  {
+   "noun": "throwing knife",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 143
+  },
+  {
+   "noun": "spyglass",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 144
+  },
+  {
+   "noun": "musket",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 145
+  },
+  {
+   "noun": "ancient scroll",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 146
+  },
+  {
+   "noun": "flintlock pistol",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 147
+  },
+  {
+   "noun": "music box",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 148
+  },
+  {
+   "noun": "water pistol",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 149
+  },
+  {
+   "noun": "purse",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 150
+  },
+  {
+   "noun": "bubble gun",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 151
+  },
+  {
+   "noun": "honey pot",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 152
+  },
+  {
+   "noun": "cream pie",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 153
+  },
+  {
+   "noun": "cookie jar",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 154
+  },
+  {
+   "noun": "magic orb",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 155
+  },
+  {
+   "noun": "pizza slice",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 156
+  },
+  {
+   "noun": "shrink ray",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 157
+  },
+  {
+   "noun": "chocolate bar",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 158
+  },
+  {
+   "noun": "power glove",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 159
+  },
+  {
+   "noun": "popsicle",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 160
+  },
+  {
+   "noun": "halberd",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 161
+  },
+  {
+   "noun": "sundae",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-loot",
+   "rank": 2,
+   "order": 162
+  },
+  {
+   "noun": "rapier",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 163
+  },
+  {
+   "noun": "machete",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 164
+  },
+  {
+   "noun": "sickle",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 165
+  },
+  {
+   "noun": "quiver",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "action-weapon",
+   "rank": 2,
+   "order": 166
+  },
+  {
+   "noun": "grave robber",
+   "class": "biped",
+   "flat": false,
+   "sentences": 2,
+   "group": "enemy",
+   "rank": 3,
+   "order": 167
+  },
+  {
+   "noun": "spiked ball",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 168
+  },
+  {
+   "noun": "lumberjack",
+   "class": "prop",
+   "flat": false,
+   "sentences": 1,
+   "group": "enemy",
+   "rank": 3,
+   "order": 169
+  },
+  {
+   "noun": "swinging axe",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 170
+  },
+  {
+   "noun": "bandit",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 171
+  },
+  {
+   "noun": "spike trap",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 172
+  },
+  {
+   "noun": "hyena",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 173
+  },
+  {
+   "noun": "explosive barrel",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 174
+  },
+  {
+   "noun": "panther",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 175
+  },
+  {
+   "noun": "banana peel",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 176
+  },
+  {
+   "noun": "cockroach",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 177
+  },
+  {
+   "noun": "crusher",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 178
+  },
+  {
+   "noun": "jaguar",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 179
+  },
+  {
+   "noun": "flame trap",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 180
+  },
+  {
+   "noun": "porcupine",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 181
+  },
+  {
+   "noun": "tnt crate",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 182
+  },
+  {
+   "noun": "electric eel",
+   "class": "swimmer",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 183
+  },
+  {
+   "noun": "landmine",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 184
+  },
+  {
+   "noun": "barracuda",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 185
+  },
+  {
+   "noun": "roadblock",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 186
+  },
+  {
+   "noun": "praying mantis",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 187
+  },
+  {
+   "noun": "thorn bush",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 188
+  },
+  {
+   "noun": "centipede",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 189
+  },
+  {
+   "noun": "spike wall",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 190
+  },
+  {
+   "noun": "stegosaurus",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 191
+  },
+  {
+   "noun": "giant gear",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 192
+  },
+  {
+   "noun": "killer tomato",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 193
+  },
+  {
+   "noun": "piston",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 194
+  },
+  {
+   "noun": "pumpkin head",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 195
+  },
+  {
+   "noun": "barbed wire",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 196
+  },
+  {
+   "noun": "bounty hunter",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 197
+  },
+  {
+   "noun": "electric fence",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 198
+  },
+  {
+   "noun": "coyote",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 199
+  },
+  {
+   "noun": "arrow trap",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 200
+  },
+  {
+   "noun": "badger",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 201
+  },
+  {
+   "noun": "spike pit",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 202
+  },
+  {
+   "noun": "moray eel",
+   "class": "swimmer",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 203
+  },
+  {
+   "noun": "quicksand",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 204
+  },
+  {
+   "noun": "hammerhead",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 205
+  },
+  {
+   "noun": "geyser",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 206
+  },
+  {
+   "noun": "ankylosaurus",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 207
+  },
+  {
+   "noun": "snow pile",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 208
+  },
+  {
+   "noun": "brontosaurus",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 209
+  },
+  {
+   "noun": "sandbag wall",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 210
+  },
+  {
+   "noun": "rooster",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 211
+  },
+  {
+   "noun": "turnstile",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 212
+  },
+  {
+   "noun": "giant slug",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 213
+  },
+  {
+   "noun": "haystack",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 214
+  },
+  {
+   "noun": "salamander",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "enemy",
+   "rank": 3,
+   "order": 215
+  },
+  {
+   "noun": "mousetrap",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 216
+  },
+  {
+   "noun": "beach ball",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 217
+  },
+  {
+   "noun": "domino",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 218
+  },
+  {
+   "noun": "totem pole",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "obstacle",
+   "rank": 3,
+   "order": 219
+  },
+  {
+   "noun": "possum",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 220
+  },
+  {
+   "noun": "armadillo",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 221
+  },
+  {
+   "noun": "iguana",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 222
+  },
+  {
+   "noun": "gecko",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 223
+  },
+  {
+   "noun": "toad",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 224
+  },
+  {
+   "noun": "meerkat",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 225
+  },
+  {
+   "noun": "lemur",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 226
+  },
+  {
+   "noun": "platypus",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 227
+  },
+  {
+   "noun": "ostrich",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 228
+  },
+  {
+   "noun": "turkey",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 229
+  },
+  {
+   "noun": "pelican",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 230
+  },
+  {
+   "noun": "puffin",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 231
+  },
+  {
+   "noun": "chipmunk",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "group": "critter",
+   "rank": 4,
+   "order": 232
+  }
+ ]
+}
