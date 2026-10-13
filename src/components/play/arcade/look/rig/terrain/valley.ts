@@ -18,8 +18,15 @@ import { UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { RUNNER } from '@/play/arcade/pieces/runner';
 
+import { groundPainter, groundPalette, hash, mix, noise, smooth } from '../../ground';
+
+/** Šum a míchání barev žijí u země (`look/ground.ts`); ostatní generátory terénu je berou odsud. */
+export { hash, mix, noise, smooth };
+
 /** Půl šířky dráhy (m): pruhy jádra. */
 export const LANE_HALF = (RUNNER.lanes * RUNNER.laneWidth) / UNIT / 2;
+/** Půl šířky cesty (m): pruhy a kus okraje, uvnitř rovné hrací plochy. Za ní začíná krajnice (P46G T3). */
+export const PATH_HALF = LANE_HALF + 0.8;
 /** Půl šířky hrací plochy (m): dráha, zubatý kraj ledu a rezerva na nejširší tělo. */
 export const PLAYABLE_HALF = LANE_HALF + 1.5;
 
@@ -35,8 +42,6 @@ export interface ValleyPalette {
   readonly rock: string;
 }
 
-export const mix = (from: string, to: string, t: number): string => `#${new Color(from).lerp(new Color(to), t).getHexString()}`;
-
 /** Barvy údolí: povrch je země sady, stín a skála z `look.terrain`, jinak odvozené. Dráhu kreslí pás cesty (P46G T2). */
 export function valleyPalette(look: Look): ValleyPalette {
   const surface = look.ground;
@@ -46,33 +51,6 @@ export function valleyPalette(look: Look): ValleyPalette {
     rock: look.terrain?.rock ?? mix(surface, '#57534e', 0.6),
   };
 }
-
-/** Celočíselný hash dvou souřadnic do [0, 1). Sdílí ho i ostatní generátory terénu (T9). */
-export function hash(x: number, y: number): number {
-  let h = Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263);
-  h = Math.imul(h ^ (h >>> 13), 1274126177);
-  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-}
-
-/** Hladký šum hodnot v [0, 1). */
-export function noise(x: number, y: number): number {
-  const xi = Math.floor(x);
-  const yi = Math.floor(y);
-  const fx = x - xi;
-  const fy = y - yi;
-  const u = fx * fx * (3 - 2 * fx);
-  const v = fy * fy * (3 - 2 * fy);
-  const a = hash(xi, yi);
-  const b = hash(xi + 1, yi);
-  const c = hash(xi, yi + 1);
-  const d = hash(xi + 1, yi + 1);
-  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-}
-
-export const smooth = (t: number): number => {
-  const c = Math.min(1, Math.max(0, t));
-  return c * c * (3 - 2 * c);
-};
 
 /** Výška vrcholu mimo hrací plochu: násep, svah do hor a hrbolatost, která s odstupem roste. */
 function reliefAt(x: number, z: number): number {
@@ -118,7 +96,8 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley {
   const h = (column: number, row: number): number => heights[row * XS.length + column]!;
 
   const palette = valleyPalette(look);
-  const colors = { surface:new Color(palette.surface), shade: new Color(palette.shade), rock: new Color(palette.rock) };
+  const colors = { shade: new Color(palette.shade), rock: new Color(palette.rock) };
+  const ground = groundPainter(groundPalette(look, palette.surface));
   const cells = rows * (XS.length - 1);
   const positions = new Float32Array(cells * 18);
   const tints = new Float32Array(cells * 18);
@@ -130,7 +109,7 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley {
     positions[at + 2] = zAt(column, row);
     at += 3;
   };
-  /** Barva trojúhelníku z posledních devíti souřadnic: led, sníh, stín nebo skála podle polohy a sklonu. */
+  /** Barva trojúhelníku z posledních devíti souřadnic: zem s kresbou (`ground.ts`), na svahu stín, na srázu skála. */
   const paint = (index: number): void => {
     const p = positions;
     const o = at - 9;
@@ -142,10 +121,11 @@ export function buildValley({ look, from, to }: ValleyOptions): Valley {
     const mx = (ax + bx + cx) / 3;
     const mz = (az + bz + cz) / 3;
     // Dráhu kreslí hladký pás nad údolím (P46G T2): zubatý kraj po trojúhelnících tu nechával schody.
+    // Krajnice se měří od kraje toho pásu, do strany zem tmavne (P46G T3).
     if (up < 0.5) face.copy(colors.rock);
-    else if (up < 0.78 || noise(mx * 0.2 + 50, mz * 0.2) > 0.72) face.copy(colors.shade);
-    else face.copy(colors.surface);
-    face.multiplyScalar(0.94 + 0.1 * hash(index, 17));
+    else if (up < 0.78) face.copy(colors.shade);
+    else ground(mx, mz, Math.abs(mx) - PATH_HALF, face);
+    face.multiplyScalar(0.96 + 0.06 * hash(index, 17));
     for (let k = o; k < at; k += 3) {
       tints[k] = face.r;
       tints[k + 1] = face.g;

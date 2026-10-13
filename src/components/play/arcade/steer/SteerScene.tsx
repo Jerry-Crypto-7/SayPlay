@@ -25,6 +25,7 @@ import type { HeroAction } from '@/play/spec';
 
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
+import { buildRoadGround } from '../look/ground';
 import { type IslandSpot, buildIslands, islandPalette } from '../look/rig/terrain/islands';
 import { hash } from '../look/rig/terrain/valley';
 import { roadGeometry } from '../look/road-strip';
@@ -239,12 +240,14 @@ function RoadBackdrop({ course, shape, length, look, sceneryFrom = 0 }: { readon
     return { ...built, barriers };
   }, [segments, shape, surface]);
   useEffect(() => () => { road?.surface.dispose(); road?.edges.dispose(); road?.marks?.dispose(); road?.walls?.dispose(); road?.barriers?.dispose(); }, [road]);
+  // Zem s odstíny, skvrnami, krajnicí podél cesty a tmavnutím do strany (P46G T3) – jedna síť místo roviny jedné barvy.
+  const ground = useMemo(() => buildRoadGround(look, segments.length > 0 ? segments : [{ near: -60, far: span, center: 0, width: half * 2 }], -60, span), [look, segments, span, half]);
+  useEffect(() => () => ground.dispose(), [ground]);
   const afloat = look.afloat === true;
   return (
     <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, span / 2 - 30]} renderOrder={UNDER_PANORAMA}>
-        <planeGeometry args={[160, span + 60]} />
-        <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
+      <mesh geometry={ground} position={[0, -0.03, 0]} renderOrder={UNDER_PANORAMA}>
+        <meshStandardMaterial vertexColors roughness={1} depthWrite={false} />
       </mesh>
       {road !== null && (
         <>

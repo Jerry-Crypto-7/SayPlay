@@ -17,6 +17,7 @@ import { type BufferGeometry, Color } from 'three';
 
 import type { Look } from '@/play/arcade/look';
 
+import { groundPainter, groundPalette } from '../../ground';
 import { Faces, type Vertex, capOf } from './islands';
 import { hash, mix, noise } from './valley';
 
@@ -171,6 +172,8 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
   const [floor, seam, land, wall, wallTop] = [palette.floor, palette.seam, palette.land, palette.wall, palette.wallTop].map((hex) => new Color(hex)) as [Color, Color, Color, Color, Color];
   const face = new Color();
   const shade = (color: Color, scale: number): Color => face.copy(color).multiplyScalar(scale);
+  // Souš s odstíny a skvrnami (P46G T3); za hranou krajnice u stěn a do dálky tmavne.
+  const earth = groundPainter(groundPalette(look, palette.land));
 
   // --- Podlaha ---
   const ground = new Faces();
@@ -188,20 +191,18 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
         return edge < 1.6 ? face.lerp(land, 1 - edge / 1.6) : face;
       }
       if (look.cover === 'sand') {
-        // Čeřiny: pruhy napříč, zvlněné šumem.
+        // Čeřiny: pruhy napříč, zvlněné šumem. Kresbu země písek nedostane – čeřiny by v ní zanikly.
         const ripple = Math.sin(x * 1.1 + z * 0.4 + noise(x * 0.08, z * 0.08) * 7);
         return ripple > 0.75 ? shade(seam, tone) : shade(floor, ripple < -0.75 ? tone * 0.93 : tone);
       }
-      // Tráva a skála: skvrny světlejší a tmavší plochy, u skály i praskliny.
-      const patch = noise(x * 0.2 + 9, z * 0.2);
+      // Tráva a skála: odstíny a skvrny země sady (P46G T3), u skály i praskliny.
       if (look.cover === 'rock' && hash(index, 7) < 0.05) return shade(seam, 1);
-      if (patch < 0.32) return shade(floor, tone).lerp(seam, 0.45);
-      return shade(floor, patch > 0.68 ? tone * 1.08 : tone);
+      return earth(x, z, null, face).multiplyScalar(tone);
     });
   }
-  // Zem za hranou: čtyři pásy kolem hrací plochy, hrubší mřížka.
+  // Zem za hranou: čtyři pásy kolem hrací plochy, hrubší mřížka; krajnice se měří od hrany arény.
   const outer = half + BEYOND;
-  const paintLand = (_x: number, _z: number, index: number): Color => shade(land, 0.92 + 0.12 * hash(index, 13));
+  const paintLand = (x: number, z: number, index: number): Color => earth(x, z, Math.max(Math.abs(x), Math.abs(z)) - half, face).multiplyScalar(0.96 + 0.06 * hash(index, 13));
   grid(ground, -outer, half, outer, outer, 3, 21, paintLand);
   grid(ground, -outer, -outer, outer, -half, 3, 22, paintLand);
   grid(ground, -outer, -half, -half, half, 3, 23, paintLand);
