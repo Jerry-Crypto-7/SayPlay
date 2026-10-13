@@ -27,63 +27,63 @@
    {
     "id": "s1",
     "genre": "steer",
-    "distance": 0.335
+    "distance": 0.5
    },
    {
     "id": "s2",
     "genre": "steer",
-    "distance": 0.145
+    "distance": 0.199
    },
    {
     "id": "s3",
     "genre": "steer",
-    "distance": 0.141
+    "distance": 0
    },
    {
     "id": "s4",
     "genre": "steer",
-    "distance": 0.186
+    "distance": 0
    },
    {
     "id": "p1",
     "genre": "platform",
-    "distance": 0.217
+    "distance": 0.14
    },
    {
     "id": "p2",
     "genre": "platform",
-    "distance": 0.243
+    "distance": 0.059
    },
    {
     "id": "p3",
     "genre": "platform",
-    "distance": 0.185
+    "distance": 0.41
    },
    {
     "id": "p4",
     "genre": "platform",
-    "distance": 0.246
+    "distance": 0.647
    }
   ],
   "handBuilt": 1
  },
  "summary": {
   "different": {
-   "all": 0.556,
+   "all": 1,
    "runner": 1,
-   "steer": 0.333,
-   "platform": 0.333
+   "steer": 1,
+   "platform": 1
   },
   "meanDistance": {
    "runner": 0.468,
-   "steer": 0.281,
-   "platform": 0.26
+   "steer": 0.453,
+   "platform": 0.618
   },
   "judgeDifferent": {
-   "all": 0.611,
+   "all": 0.889,
    "runner": 0.833,
-   "steer": 0.5,
-   "platform": 0.5
+   "steer": 0.833,
+   "platform": 1
   }
  },
  "rows": [
@@ -442,24 +442,25 @@
    "signature": {
     "genre": "steer",
     "forks": 0,
-    "chicanes": 1,
-    "narrowings": 1,
+    "chicanes": 2,
+    "narrowings": 2,
     "curve": [],
     "height": [],
     "motifs": [
-     "turbo-straight",
-     "sweep",
-     "turbo-straight",
-     "kink",
-     "turbo-straight",
+     "straight",
      "sweep",
      "turbo-straight",
      "chicane",
      "turbo-straight",
      "kink",
-     "turbo-straight",
-     "kink",
      "narrow",
+     "turbo-straight",
+     "sweep",
+     "turbo-straight",
+     "sweep",
+     "narrow",
+     "turbo-straight",
+     "chicane",
      "turbo-straight",
      "sweep",
      "turbo-straight"
@@ -474,22 +475,24 @@
    "issues": [],
    "signature": {
     "genre": "steer",
-    "forks": 0,
-    "chicanes": 1,
-    "narrowings": 0,
+    "forks": 2,
+    "chicanes": 0,
+    "narrowings": 2,
     "curve": [],
     "height": [],
     "motifs": [
      "straight",
      "sweep",
      "turbo-straight",
-     "chicane",
-     "turbo-straight",
+     "fork",
      "sweep",
      "turbo-straight",
-     "kink",
-     "turbo-straight",
      "sweep",
+     "narrow",
+     "turbo-straight",
+     "fork",
+     "sweep",
+     "narrow",
      "turbo-straight"
     ]
    }
@@ -502,8 +505,8 @@
    "issues": [],
    "signature": {
     "genre": "steer",
-    "forks": 1,
-    "chicanes": 1,
+    "forks": 0,
+    "chicanes": 0,
     "narrowings": 0,
     "curve": [],
     "height": [],
@@ -511,10 +514,15 @@
      "straight",
      "sweep",
      "turbo-straight",
-     "chicane",
+     "kink",
      "turbo-straight",
-     "fork",
      "sweep",
+     "turbo-straight",
+     "kink",
+     "turbo-straight",
+     "sweep",
+     "turbo-straight",
+     "kink",
      "turbo-straight",
      "sweep",
      "turbo-straight"
@@ -530,24 +538,19 @@
    "signature": {
     "genre": "steer",
     "forks": 0,
-    "chicanes": 2,
-    "narrowings": 1,
+    "chicanes": 0,
+    "narrowings": 0,
     "curve": [],
     "height": [],
     "motifs": [
-     "straight",
-     "sweep",
-     "turbo-straight",
-     "sweep",
-     "narrow",
-     "turbo-straight",
-     "kink",
      "turbo-straight",
      "sweep",
      "turbo-straight",
-     "chicane",
+     "sweep",
      "turbo-straight",
-     "chicane",
+     "sweep",
+     "turbo-straight",
+     "sweep",
      "turbo-straight"
     ]
    }
@@ -566,15 +569,28 @@
     "curve": [],
     "height": [],
     "motifs": [
+     "stairs",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
      "mixed",
      "rest",
      "mixed",
      "moving",
      "mixed",
-     "rest",
-     "mixed",
-     "moving",
      "spike-corridor",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "rest",
+     "mixed",
+     "stairs",
+     "gap-ramp",
      "mixed"
     ]
    }
@@ -593,14 +609,48 @@
     "curve": [],
     "height": [],
     "motifs": [
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "gap-ramp",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
      "mixed",
      "rest",
      "mixed",
-     "spike-corridor",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
      "mixed",
      "rest",
      "mixed",
-     "spike-corridor",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "moving",
      "mixed"
     ]
    }
@@ -619,16 +669,20 @@
     "curve": [],
     "height": [],
     "motifs": [
+     "spike-corridor",
+     "gap-ramp",
+     "spike-corridor",
+     "rest",
      "mixed",
      "spike-corridor",
+     "moving",
      "mixed",
+     "spike-corridor",
      "rest",
      "mixed",
      "moving",
      "mixed",
-     "rest",
-     "mixed",
-     "moving",
+     "gap-ramp",
      "spike-corridor",
      "mixed"
     ]
@@ -648,16 +702,18 @@
     "curve": [],
     "height": [],
     "motifs": [
-     "mixed",
-     "spike-corridor",
-     "mixed",
-     "spike-corridor",
+     "climb",
+     "stairs",
      "rest",
      "mixed",
-     "spike-corridor",
+     "stairs",
+     "mixed",
+     "stairs",
+     "rest",
+     "mixed",
+     "stairs",
      "moving",
-     "mixed",
-     "rest",
+     "spike-corridor",
      "mixed"
     ]
    }
@@ -710,215 +766,215 @@
    "a": "s1",
    "b": "s2",
    "genre": "steer",
-   "distance": 0.236,
-   "different": false
+   "distance": 0.39,
+   "different": true
   },
   {
    "a": "s1",
    "b": "s3",
    "genre": "steer",
-   "distance": 0.453,
+   "distance": 0.368,
    "different": true
   },
   {
    "a": "s1",
    "b": "s4",
    "genre": "steer",
-   "distance": 0.263,
-   "different": false
+   "distance": 0.489,
+   "different": true
   },
   {
    "a": "s2",
    "b": "s3",
    "genre": "steer",
-   "distance": 0.217,
-   "different": false
+   "distance": 0.519,
+   "different": true
   },
   {
    "a": "s2",
    "b": "s4",
    "genre": "steer",
-   "distance": 0.192,
-   "different": false
+   "distance": 0.567,
+   "different": true
   },
   {
    "a": "s3",
    "b": "s4",
    "genre": "steer",
-   "distance": 0.325,
+   "distance": 0.383,
    "different": true
   },
   {
    "a": "p1",
    "b": "p2",
    "genre": "platform",
-   "distance": 0.322,
+   "distance": 0.307,
    "different": true
   },
   {
    "a": "p1",
    "b": "p3",
    "genre": "platform",
-   "distance": 0.114,
-   "different": false
+   "distance": 0.621,
+   "different": true
   },
   {
    "a": "p1",
    "b": "p4",
    "genre": "platform",
-   "distance": 0.336,
+   "distance": 0.648,
    "different": true
   },
   {
    "a": "p2",
    "b": "p3",
    "genre": "platform",
-   "distance": 0.265,
-   "different": false
+   "distance": 0.738,
+   "different": true
   },
   {
    "a": "p2",
    "b": "p4",
    "genre": "platform",
-   "distance": 0.246,
-   "different": false
+   "distance": 0.787,
+   "different": true
   },
   {
    "a": "p3",
    "b": "p4",
    "genre": "platform",
-   "distance": 0.279,
-   "different": false
+   "distance": 0.607,
+   "different": true
   }
  ],
  "judge": {
-  "run": "after",
+  "run": "r2",
   "pairs": [
    {
     "a": "p1",
     "b": "p2",
     "genre": "platform",
-    "different": false,
-    "why": "Both games show a straight sequence of broad, flat platforms separated by short gaps, with scattered obstacles on top and no visible bends or forks."
+    "different": true,
+    "why": "Game A has a broad continuous platform followed by a gap, while Game B has a sequence of narrow separated platforms with repeated gaps."
    },
    {
     "a": "p1",
     "b": "p3",
     "genre": "platform",
-    "different": false,
-    "why": "Both games show a straight sequence of broad, flat platforms separated by gaps, with isolated obstacles on top and no visible forks, tunnels, or major bends."
+    "different": true,
+    "why": "Game A has a flat platform ending in a wide gap before the next ledge, while Game B has a continuous flat track with a tall central obstruction and smaller obstacles spaced across it."
    },
    {
     "a": "p1",
     "b": "p4",
     "genre": "platform",
     "different": true,
-    "why": "Game A has broad, flat platforms separated by open gaps, while Game B has staggered platform heights and a narrow sloping bridge connecting sections."
+    "why": "Game A has a broad, continuous flat platform leading to a gap, while Game B has a staggered series of smaller platforms separated by multiple gaps and connected farther back by a narrow bridge."
    },
    {
     "a": "p2",
     "b": "p3",
     "genre": "platform",
-    "different": false,
-    "why": "Both games show a straight, level route of broad platforms separated by open gaps, with isolated obstacles on the platforms."
+    "different": true,
+    "why": "Game A has separated platforms with frequent wide gaps, while Game B has a broad, mostly continuous flat track with obstacles placed along it."
    },
    {
     "a": "p2",
     "b": "p4",
     "genre": "platform",
     "different": true,
-    "why": "Game A has broad, flat platforms separated by open gaps, while Game B has staggered platforms with sloped edges and a narrow inclined bridge connecting sections."
+    "why": "Game A has a sequence of separated flat platforms with open gaps, while Game B has staggered platforms and a raised bridge connecting sections behind them."
    },
    {
     "a": "p3",
     "b": "p4",
     "genre": "platform",
     "different": true,
-    "why": "Game A has broad, flat platforms separated by open gaps, while Game B has uneven platforms connected by a narrow sloping bridge and a rising track."
+    "why": "Game A has a broad, mostly continuous flat track with scattered obstacles, while Game B has separated, staggered platforms with large gaps and a raised bridge connecting sections."
    },
    {
     "a": "r1",
     "b": "r2",
     "genre": "runner",
     "different": true,
-    "why": "Game A has a narrow recessed track crossed by broad horizontal barriers, while Game B has an open, wide road narrowing into the distance with scattered small obstacles and no spanning barriers."
+    "why": "Game A has a narrow, segmented course with repeated crosswise barriers and overhead frames, while Game B has a broad, continuous road with scattered small obstacles and no comparable spanning barriers."
    },
    {
     "a": "r1",
     "b": "r3",
     "genre": "runner",
     "different": true,
-    "why": "Game A has broad crosswise barriers spanning a recessed track, while Game B has an open straight track with separated block obstacles leaving side gaps."
+    "why": "Game A has a wide course divided by walls and multiple overhead crossbars forming low passages, while Game B has a narrower open, straight track with isolated blocks and gaps around them."
    },
    {
     "a": "r1",
     "b": "r4",
     "genre": "runner",
     "different": false,
-    "why": "Both games show a straight, broad track with successive horizontal barriers spanning the route and gaps beneath them, with no clearly different bends, hills, or forks."
+    "why": "Both games show a straight, flat track with repeated crosswise barriers and gaps between them, without clearly different bends, hills, forks or platform arrangements."
    },
    {
     "a": "r2",
     "b": "r3",
     "genre": "runner",
     "different": true,
-    "why": "Game A has a broad, mostly open track with small, isolated obstacles, while Game B has a narrower corridor with large staggered blocks that force passage through alternating gaps."
+    "why": "Game A has a broad, straight track with sparse small obstacles and wide openings, while Game B has a narrower straight track with large staggered blocks forcing passage through alternating gaps."
    },
    {
     "a": "r2",
     "b": "r4",
     "genre": "runner",
     "different": true,
-    "why": "Game A has a broad, open track narrowing into the distance with scattered small obstacles, while Game B has a constrained route crossed by wide walls with gaps between them."
+    "why": "Game A has a broad continuous track with sparse small obstacles, while Game B has repeated wide barriers spanning the roadway with gaps between them."
    },
    {
     "a": "r3",
     "b": "r4",
     "genre": "runner",
     "different": true,
-    "why": "Game A has a straight open track with isolated blocks leaving side passages, while Game B has successive wide transverse barriers and offset walls that divide the route into narrow openings."
+    "why": "Game A has an open straight track with isolated blocks and wide gaps around them, while Game B has repeated barriers spanning nearly the full road width with narrow openings between them."
    },
    {
     "a": "s1",
     "b": "s2",
     "genre": "steer",
-    "different": false,
-    "why": "Both games show a straight, flat road of similar width narrowing into the distance, with scattered obstacles and open gaps rather than distinct bends, forks, or platforms."
+    "different": true,
+    "why": "Game A has a narrow straight road with staggered barriers jutting in from either side, while Game B has a wider straight corridor with a central obstacle and open paths on both sides."
    },
    {
     "a": "s1",
     "b": "s3",
     "genre": "steer",
-    "different": true,
-    "why": "Game A has a straight, consistently tapered road with short transverse obstacle rows, while Game B has stepped changes in road width and paired lengthwise obstacles forming a central passage."
+    "different": false,
+    "why": "Both games show a straight, narrow track with raised side walls and staggered intrusions from either side that create alternating narrow gaps."
    },
    {
     "a": "s1",
     "b": "s4",
     "genre": "steer",
     "different": true,
-    "why": "Game A has a straight, constant-width road with short obstacle rows, while Game B has a straight road with stepped width changes and individually spaced obstacles."
+    "why": "Game A has a narrow straight road with repeated staggered barriers constricting the path, while Game B has a much wider straight road with broad side-wall indentations and an open center."
    },
    {
     "a": "s2",
     "b": "s3",
     "genre": "steer",
     "different": true,
-    "why": "Game A has a straight, flat road with continuous edges, while Game B has a straight, flat road with stepped width changes and paired obstacles leaving central gaps."
+    "why": "Game A has a wide, straight track with isolated central obstacles, while Game B has a narrower track with staggered wall sections that create offset passages."
    },
    {
     "a": "s2",
     "b": "s4",
     "genre": "steer",
-    "different": false,
-    "why": "Both games show a broad, straight, flat track with scattered obstacles and no visible bends, hills, forks, bridges, or platform gaps."
+    "different": true,
+    "why": "Game A has a straight, uniform-width road with a narrow central barrier, while Game B has a straight road with opposing side walls jutting inward to form a narrower passage."
    },
    {
     "a": "s3",
     "b": "s4",
     "genre": "steer",
-    "different": false,
-    "why": "Both games show a wide, straight, flat track with scattered obstacles and open gaps between them, without bends, forks, bridges, or platform gaps."
+    "different": true,
+    "why": "Game A has a narrow road with repeated staggered side-wall intrusions forming a zigzag corridor, while Game B has a broad straight road with a single paired narrowing and a long open stretch."
    }
   ]
  }

@@ -28,7 +28,7 @@ Se soudcem navíc server nad buildem webpack: `npm run build`, `node node_module
 - Skákačka: u všech čtyř vět stejná řada se dvěma checkpointy, chodbou s hroty kolem pohyblivé plošiny ve třetím úseku.
 - Slepý soudce (běh `baseline`): „liší se tvarem“ u 3 z 18 dvojic (17 %). Běžec 0/6, řízení 0/6, skákačka 3/6 – všechny tři jsou dvojice s p4 (hrad) a soudce u nich popisuje oblouk mostu, který je kulisa u hradu, ne tvar levelu. U ostatních píše „rovná široká trať, žádné zatáčky, rozcestí, mosty ani tunely“.
 
-## Po P46D (`after.json`, běh soudce `after`, větev P46D `6f3be970`)
+## Po P46D (běh soudce `after`, větev P46D `6f3be970`; tehdejší `after.json` je v gitu u `29cc066f`, dnešní přepsal R2)
 
 Cíl T7 (metrika ≥ 80 % dvojic nad prahem, soudce ≥ 70 % „liší se tvarem“) je splněný jen u běžce.
 
@@ -41,3 +41,17 @@ Cíl T7 (metrika ≥ 80 % dvojic nad prahem, soudce ≥ 70 % „liší se tvarem
 - **Zábava panelu P45** (`fun-after.json` proti `evals/play/p46/fun-baseline.json` z P46A): 40/40 hratelných. Medián mrtvého času 5,36 → 5,32 s, podíl her s finále 0,23 → 0,23, medián počtu chování 1 → 1, gradace 0,55 → 0,53. Gradace klesla o jednu větu: závod m03 má teď rovnoměrnou hustotu, protože turbo je na každé spojce.
 - **Telefon:** `e2e/p35-perf.spec.ts` 17/17 zelený (Pixel 7, 4× pomalejší procesor, server nad buildem této větve).
 - **Co dál:** řízení a skákačka jdou do úkolu R2 v plánu. T7 zůstává otevřený, sloučení čeká i na P46B v integrační větvi.
+
+## Po R2 (`after.json`, běh soudce `r2`, větev P46D `e202a6dd`)
+
+R2 dal řízení a skákačce styl podle prostředí (poušť = široké zatáčky s turbem, les = krátké klikaté, supermarket = rozcestí, město = šikany a zúžení; les = schody, bažina = lekníny, dálnice = desky s hroty, hrad = věž) a scéna řízení kreslí skutečnou šířku silnice. **Cíl T7 je splněný u všech tří žánrů.**
+
+- **Metrika:** nad prahem 0,3 je všech 18 dvojic (dřív 10/18). Běžec 6/6, řízení 6/6, skákačka 6/6. Nejtěsnější je p1–p2 (les proti bažině) s 0,307.
+- **Slepý soudce:** „liší se tvarem“ u 16 z 18 dvojic (89 %, dřív 61 %). Běžec 5/6, řízení 5/6, skákačka 6/6.
+  - „Stejné“ jsou r1–r4 („rovná trať s příčnými zábranami“ u obou) a s1–s3 (obě „úzká silnice se střídavými výběžky zdí“: s1 nemá prostředí a semínko mu vybralo šikany, s3 je les s klikatými zatáčkami).
+  - Skákačku soudce poprvé rozlišil i bez hradu: lekníny popisuje jako „řadu úzkých oddělených plošin“, dálnici jako „souvislou trať s překážkami“.
+- **Dvě semínka téže věty:** běžec 0,41–0,55, řízení 0–0,50, skákačka 0,06–0,65. U lesa (s3) a pouště (s4) dávají semínka **stejné pořadí vzorů**: na čtyřech semíncích publikace pokaždé tatáž řada (les: zatáčka, turbo, klikatá…; poušť: turbo a zatáčka střídavě). Věta teď tvar vybírá. Jestli se tyto tratě liší aspoň ohybem zatáček, měřidlo nečte (podpis řízení nemá křivku), ověřené to není.
+- **Scéna řízení na snímcích** (s1, s3, kontrola okem): souvislé mantinely, zúžení a šikany jsou vidět jako schodovité výběžky zdí, silnice nikde nemizí.
+- **Obtížnost:** se schody na váze 6 vyhrál začátečník v lese `jump.escape` 19 z 20 a `platformer.default` 15 z 20 (strop 14). Koruny teď schody ředí kyvadly a hroty: 11/20 a 10/20, intermediate 20/20. Řízení: 14/19 a s `+shoot` 7/16, v pásmu.
+- **Oprava po cestě:** styl bez chodby s ostny mohl vylosovat úroveň bez jediného hrotu (koruny se starými vahami 13 z 60 úrovní), takže nebezpečí z věty nemělo tělo (`platform-probe` semínka 8 a 19). Poslední deska teď dostane hrot, když úroveň žádný nemá.
+- **Zábava panelu a telefon** se po R2 znovu neměřily, patří k T7.
