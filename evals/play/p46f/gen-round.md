@@ -26,3 +26,4 @@ Psaný smyčkou `D:/caches/p46f/loop.mjs` po každém kole. **Model** = obrázek
 | 20 | action-weapon action-loot | 10 | 8 | 8/8 | 8 | – | bubble gun, cream pie, cookie jar, magic orb, pizza slice, chocolate bar, power glove, popsicle | – |
 | 21 (opakování) | action-powerup action-weapon action-loot | 10 | 9 | 6/9 | 5 | – | whip, scimitar, harpoon, laser rifle, golden idol | – |
 | 22 | action-weapon action-loot enemy obstacle | 10 | 9 | 7/9 | 7 | – | halberd, sundae, rapier, sickle, quiver, spiked ball, lumberjack | – |
+| 23 | enemy obstacle | 10 | 8 | 6/8 | 6 | – | bandit, spike trap, explosive barrel, banana peel, cockroach, jaguar | – |

@@ -26989,6 +26989,121 @@
           0.22632
         ]
       }
+    },
+    {
+      "assetId": "gen3d-bandit",
+      "tags": [
+        "bandit",
+        "outlaw"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bandit-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27334,
+          0,
+          -0.21131
+        ],
+        "max": [
+          0.27334,
+          0.99986,
+          0.21131
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spike-trap",
+      "tags": [
+        "spike trap"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spike-trap-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.41506,
+          0,
+          -1.37187
+        ],
+        "max": [
+          1.41506,
+          0.99477,
+          1.37187
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-explosive-barrel",
+      "tags": [
+        "explosive barrel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-explosive-barrel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38101,
+          0,
+          -0.38134
+        ],
+        "max": [
+          0.38101,
+          0.99993,
+          0.38134
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-banana-peel",
+      "tags": [
+        "banana peel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-banana-peel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49203,
+          0,
+          -0.49219
+        ],
+        "max": [
+          0.49203,
+          0.99542,
+          0.49219
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cockroach",
+      "tags": [
+        "cockroach"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cockroach-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.39287,
+          0,
+          -2.6015
+        ],
+        "max": [
+          1.39287,
+          0.99259,
+          2.6015
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-jaguar",
+      "tags": [
+        "jaguar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jaguar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.52802,
+          0,
+          -0.95054
+        ],
+        "max": [
+          0.52802,
+          0.99984,
+          0.95054
+        ]
+      }
     }
   ]
 }

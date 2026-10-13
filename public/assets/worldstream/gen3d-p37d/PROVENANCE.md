@@ -564,3 +564,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-quiver` | quiver | 4685 / 2176 |
 | `gen3d-spiked-ball` | spiked ball | 4460 / 2113 |
 | `gen3d-lumberjack` | lumberjack | 4479 / 2194 |
+| `gen3d-bandit` | bandit, outlaw | 4659 / 2271 |
+| `gen3d-spike-trap` | spike trap | 4737 / 2358 |
+| `gen3d-explosive-barrel` | explosive barrel | 4748 / 2374 |
+| `gen3d-banana-peel` | banana peel | 4496 / 2165 |
+| `gen3d-cockroach` | cockroach | 4681 / 2340 |
+| `gen3d-jaguar` | jaguar | 4513 / 2113 |

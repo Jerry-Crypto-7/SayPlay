@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "02afb72ffaa57f7fc041c4f15e20813c9e987c89b6f0bb0f6f87f6a4b5451a4a",
+ "catalogHash": "696849ddbca58f94a7c4bce498c896be44421b598a800f34f1a9388c96d2db5d",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1339,6 +1339,12 @@
   "gen3d-sickle": {"class":"prop"},
   "gen3d-quiver": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-spiked-ball": {"class":"prop"},
-  "gen3d-lumberjack": {"class":"prop"}
+  "gen3d-lumberjack": {"class":"prop"},
+  "gen3d-bandit": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-spike-trap": {"class":"prop"},
+  "gen3d-explosive-barrel": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-banana-peel": {"class":"prop"},
+  "gen3d-cockroach": {"class":"prop"},
+  "gen3d-jaguar": {"class":"prop"}
  }
 }
