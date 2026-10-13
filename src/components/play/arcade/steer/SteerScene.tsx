@@ -31,6 +31,7 @@ import { hash } from '../look/rig/terrain/valley';
 import { roadGeometry, stripCurve } from '../look/road-strip';
 import { buildWater } from '../look/rig/terrain/water';
 import { UNDER_PANORAMA } from '../look/under-panorama';
+import { HorizonBackdrop } from '../look/Backdrop';
 import { Scenery } from '../look/Scenery';
 import { Vegetation } from '../look/Vegetation';
 import type { ArcadeSession } from '../session';
@@ -298,6 +299,8 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
           ),
         )
       )}
+      {/* Kulisa za mlhou (P46G T6): průsek nejbližší vrstvy nad nejširším úsekem silnice. */}
+      <HorizonBackdrop look={look} seed={seed} length={length} clear={widest / 2 + SCENERY_MARGIN} />
     </>
   );
 }

@@ -20,6 +20,7 @@ import { type Look, SURFACES } from '@/play/arcade/look';
 
 import { type GhostPlacement, worldPlacement } from '../Ghost';
 import { type GhostPose, GhostSlot } from '../GhostSlot';
+import { HorizonBackdrop } from '../look/Backdrop';
 import { buildValley, PATH_HALF, PLAYABLE_HALF } from '../look/rig/terrain/valley';
 import { roadGeometry } from '../look/road-strip';
 import { Scenery } from '../look/Scenery';
@@ -58,6 +59,7 @@ function RunnerValley({ look, length, seed, terrain, path }: { readonly look: Lo
     return built;
   }, [surface, look.fog, length, path]);
   useEffect(() => () => { lane?.surface.dispose(); lane?.edges.dispose(); lane?.marks?.dispose(); }, [lane]);
+  const trackHeight = useMemo(() => (path === null ? undefined : (z: number) => path(z).y), [path]);
   return (
     <>
       {/* Stín jen přijímá: vlastní stín by se na rovné dráze odrážel jako akné. */}
@@ -80,9 +82,14 @@ function RunnerValley({ look, length, seed, terrain, path }: { readonly look: Lo
       )}
       {look.flora !== undefined && <Vegetation flora={look.flora} seed={seed} from={-BEHIND_M} to={length + look.fog[1] + 10} road={RUNNER_ROAD} clear={VEGETATION_CLEAR} ground={valley.heightAt} bend={path ?? undefined} />}
       <Scenery look={look} layout="sides" inner={PLAYABLE_HALF + 1.5} from={-10} to={length + 10} ground={valley.heightAt} cap={look.terrain?.cap} bend={path ?? undefined} vegetation />
+      {/* Kulisa za mlhou (P46G T6) na konci údolí; pata pod zemí kryje kopce trati. */}
+      <HorizonBackdrop look={look} seed={seed} length={length} clear={PLAYABLE_HALF + 1.5} skirt={RUNNER_SKIRT_M} ground={trackHeight} />
     </>
   );
 }
+
+/** Jak hluboko pata kulisy sahá pod zem v údolí (m): trať před kamerou klesne s kopci nejvýš o tolik. */
+const RUNNER_SKIRT_M = 4;
 
 export interface GroundGap {
   /** Svislá mezera (px) mezi spodní hranou těla a terénem pod ní: + visí, − boří se. */
