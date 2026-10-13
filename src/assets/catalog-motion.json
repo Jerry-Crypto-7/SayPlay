@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "c986bfdd9478e42829ca10d7ee6f747a5a54c45238e1cec38db5f5aebd916b64",
+ "catalogHash": "50e20e5f8fedab2d6cabceae66d24cfb2601eabd590a92f25d07773e7e396663",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1409,6 +1409,10 @@
   "gen3d-wooden-rope-bridge": {"class":"prop"},
   "gen3d-frozen-waterfall": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-castle-ruin-wall": {"class":"prop"},
-  "gen3d-stone-obelisk": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-stone-obelisk": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-lifeguard-tower": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-wooden-signpost": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-mossy-fallen-log": {"class":"prop"},
+  "gen3d-exposed-tree-root": {"class":"prop"}
  }
 }

@@ -28400,6 +28400,86 @@
           0.21969
         ]
       }
+    },
+    {
+      "assetId": "gen3d-lifeguard-tower",
+      "tags": [
+        "lifeguard tower",
+        "lifeguard stand",
+        "lifeguard hut"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lifeguard-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21349,
+          0,
+          -0.21334
+        ],
+        "max": [
+          0.21349,
+          0.99678,
+          0.21334
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-signpost",
+      "tags": [
+        "wooden signpost",
+        "direction sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-signpost-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35472,
+          0,
+          -0.05654
+        ],
+        "max": [
+          0.35472,
+          0.99994,
+          0.05654
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mossy-fallen-log",
+      "tags": [
+        "mossy fallen log",
+        "fallen tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mossy-fallen-log-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.44093,
+          0,
+          -0.68059
+        ],
+        "max": [
+          1.44093,
+          0.99476,
+          0.68059
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-exposed-tree-root",
+      "tags": [
+        "exposed tree root"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-exposed-tree-root-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.43993,
+          0,
+          -1.41981
+        ],
+        "max": [
+          1.43993,
+          0.99925,
+          1.41981
+        ]
+      }
     }
   ]
 }

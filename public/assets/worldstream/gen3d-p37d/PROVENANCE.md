@@ -634,3 +634,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-frozen-waterfall` | frozen waterfall, ice waterfall, icefall | 4282 / 2117 |
 | `gen3d-castle-ruin-wall` | castle ruin wall, castle ruin, ruined wall | 4237 / 2026 |
 | `gen3d-stone-obelisk` | stone obelisk, monolith | 4748 / 2374 |
+| `gen3d-lifeguard-tower` | lifeguard tower, lifeguard stand, lifeguard hut | 4630 / 2308 |
+| `gen3d-wooden-signpost` | wooden signpost, direction sign | 4750 / 2372 |
+| `gen3d-mossy-fallen-log` | mossy fallen log, fallen tree | 4685 / 2316 |
+| `gen3d-exposed-tree-root` | exposed tree root | 4748 / 2372 |
