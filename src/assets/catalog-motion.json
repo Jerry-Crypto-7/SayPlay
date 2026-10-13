@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "0122578cea78dccbc416598ca3d8b6925aff3971361914c8ae7704b8d6a069ef",
+ "catalogHash": "6190f4737065e3e0105c6ed0277c75c6da4c6923b8f7437c2b6ea97a9df99ae4",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1363,6 +1363,12 @@
   "gen3d-street-tree": {"class":"prop"},
   "gen3d-spruce-tree": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-monstera-plant": {"class":"prop"},
-  "gen3d-joshua-tree": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-joshua-tree": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-bare-winter-tree": {"class":"prop"},
+  "gen3d-wildflower-patch": {"class":"prop"},
+  "gen3d-kapok-tree": {"class":"prop"},
+  "gen3d-snowy-rock": {"class":"prop"},
+  "gen3d-tall-grass-tuft": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-sea-rock": {"class":"prop"}
  }
 }

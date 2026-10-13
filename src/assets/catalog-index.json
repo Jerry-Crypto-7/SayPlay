@@ -27464,6 +27464,132 @@
           0.32674
         ]
       }
+    },
+    {
+      "assetId": "gen3d-bare-winter-tree",
+      "tags": [
+        "bare winter tree",
+        "leafless tree",
+        "bare tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bare-winter-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43753,
+          0,
+          -0.06499
+        ],
+        "max": [
+          0.43753,
+          0.99938,
+          0.06499
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wildflower-patch",
+      "tags": [
+        "wildflower patch",
+        "wildflowers",
+        "wildflower meadow"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.88617,
+          0,
+          -1.90871
+        ],
+        "max": [
+          1.88617,
+          0.99408,
+          1.90871
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-kapok-tree",
+      "tags": [
+        "kapok tree",
+        "kapok",
+        "ceiba tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-kapok-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41027,
+          0,
+          -0.41062
+        ],
+        "max": [
+          0.41027,
+          1.00001,
+          0.41062
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowy-rock",
+      "tags": [
+        "snowy rock",
+        "snow-covered rock",
+        "snowy boulder"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.01456,
+          0,
+          -1.02371
+        ],
+        "max": [
+          1.01456,
+          1.00001,
+          1.02371
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tall-grass-tuft",
+      "tags": [
+        "tall grass tuft",
+        "tall grass",
+        "grass tuft"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tall-grass-tuft-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.185,
+          0,
+          -0.18461
+        ],
+        "max": [
+          0.185,
+          0.99935,
+          0.18461
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sea-rock",
+      "tags": [
+        "sea rock",
+        "coastal rock",
+        "sea stack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sea-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75026,
+          0,
+          -0.74989
+        ],
+        "max": [
+          0.75026,
+          0.99942,
+          0.74989
+        ]
+      }
     }
   ]
 }

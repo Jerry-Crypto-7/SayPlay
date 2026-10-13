@@ -588,3 +588,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-spruce-tree` | spruce tree, spruce | 4304 / 2010 |
 | `gen3d-monstera-plant` | monstera plant, monstera, swiss cheese plant | 4129 / 1983 |
 | `gen3d-joshua-tree` | joshua tree, yucca tree | 4748 / 2374 |
+| `gen3d-bare-winter-tree` | bare winter tree, leafless tree, bare tree | 4749 / 2369 |
+| `gen3d-wildflower-patch` | wildflower patch, wildflowers, wildflower meadow | 4673 / 2232 |
+| `gen3d-kapok-tree` | kapok tree, kapok, ceiba tree | 4224 / 2556 |
+| `gen3d-snowy-rock` | snowy rock, snow-covered rock, snowy boulder | 4750 / 2364 |
+| `gen3d-tall-grass-tuft` | tall grass tuft, tall grass, grass tuft | 4699 / 2337 |
+| `gen3d-sea-rock` | sea rock, coastal rock, sea stack | 4697 / 2294 |
