@@ -557,3 +557,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-harpoon` | harpoon | 4748 / 2374 |
 | `gen3d-laser-rifle` | laser rifle | 4744 / 2370 |
 | `gen3d-golden-idol` | golden idol | 4539 / 2232 |
+| `gen3d-halberd` | halberd | 4748 / 2374 |
+| `gen3d-sundae` | sundae | 4621 / 2272 |
+| `gen3d-rapier` | rapier | 4748 / 2372 |
+| `gen3d-sickle` | sickle | 4635 / 2254 |
+| `gen3d-quiver` | quiver | 4685 / 2176 |
+| `gen3d-spiked-ball` | spiked ball | 4460 / 2113 |
+| `gen3d-lumberjack` | lumberjack | 4479 / 2194 |

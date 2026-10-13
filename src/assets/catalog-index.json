@@ -26856,6 +26856,139 @@
           0.32292
         ]
       }
+    },
+    {
+      "assetId": "gen3d-halberd",
+      "tags": [
+        "halberd"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-halberd-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12154,
+          0,
+          -0.0414
+        ],
+        "max": [
+          0.12154,
+          0.99921,
+          0.0414
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sundae",
+      "tags": [
+        "sundae"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sundae-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1966,
+          0,
+          -0.19615
+        ],
+        "max": [
+          0.1966,
+          1.00001,
+          0.19615
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rapier",
+      "tags": [
+        "rapier"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rapier-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.10185,
+          0,
+          -0.06506
+        ],
+        "max": [
+          0.10185,
+          0.99961,
+          0.06506
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sickle",
+      "tags": [
+        "sickle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sickle-lod1.glb",
+      "bounds": {
+        "min": [
+          -4.19686,
+          0,
+          -4.43891
+        ],
+        "max": [
+          4.19686,
+          0.99236,
+          4.43891
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-quiver",
+      "tags": [
+        "quiver"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-quiver-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30274,
+          0,
+          -0.254
+        ],
+        "max": [
+          0.30274,
+          0.99796,
+          0.254
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spiked-ball",
+      "tags": [
+        "spiked ball"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spiked-ball-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49928,
+          0,
+          -0.49931
+        ],
+        "max": [
+          0.49928,
+          0.99933,
+          0.49931
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lumberjack",
+      "tags": [
+        "lumberjack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lumberjack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43181,
+          0,
+          -0.22632
+        ],
+        "max": [
+          0.43181,
+          0.99547,
+          0.22632
+        ]
+      }
     }
   ]
 }

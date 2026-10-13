@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "2f46dd71cdf59b2cf37bb9c353438269235a8f9a213667f75a306bbe705dbf41",
+ "catalogHash": "02afb72ffaa57f7fc041c4f15e20813c9e987c89b6f0bb0f6f87f6a4b5451a4a",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1332,6 +1332,13 @@
   "gen3d-scimitar": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-harpoon": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-laser-rifle": {"class":"prop"},
-  "gen3d-golden-idol": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-golden-idol": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-halberd": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-sundae": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-rapier": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-sickle": {"class":"prop"},
+  "gen3d-quiver": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-spiked-ball": {"class":"prop"},
+  "gen3d-lumberjack": {"class":"prop"}
  }
 }
