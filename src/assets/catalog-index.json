@@ -27104,6 +27104,87 @@
           0.95054
         ]
       }
+    },
+    {
+      "assetId": "gen3d-tnt-crate",
+      "tags": [
+        "tnt crate",
+        "dynamite crate",
+        "tnt box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tnt-crate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49231,
+          0,
+          -0.42545
+        ],
+        "max": [
+          0.49231,
+          0.97773,
+          0.42545
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-roadblock",
+      "tags": [
+        "roadblock",
+        "road barrier",
+        "barricade"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-roadblock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.89579,
+          0,
+          -0.33974
+        ],
+        "max": [
+          0.89579,
+          0.99994,
+          0.33974
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-praying-mantis",
+      "tags": [
+        "praying mantis",
+        "mantis"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-praying-mantis-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40702,
+          0,
+          -0.41852
+        ],
+        "max": [
+          0.40702,
+          0.99798,
+          0.41852
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-thorn-bush",
+      "tags": [
+        "thorn bush"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-thorn-bush-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.57611,
+          0,
+          -0.52615
+        ],
+        "max": [
+          0.57611,
+          0.9942,
+          0.52615
+        ]
+      }
     }
   ]
 }

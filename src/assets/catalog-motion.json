@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "696849ddbca58f94a7c4bce498c896be44421b598a800f34f1a9388c96d2db5d",
+ "catalogHash": "2a16551deeae6669fb876fe92242a7c2975ceab91b255a1c77aa03319758b373",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1345,6 +1345,10 @@
   "gen3d-explosive-barrel": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-banana-peel": {"class":"prop"},
   "gen3d-cockroach": {"class":"prop"},
-  "gen3d-jaguar": {"class":"prop"}
+  "gen3d-jaguar": {"class":"prop"},
+  "gen3d-tnt-crate": {"class":"prop"},
+  "gen3d-roadblock": {"class":"prop"},
+  "gen3d-praying-mantis": {"class":"prop"},
+  "gen3d-thorn-bush": {"class":"prop"}
  }
 }
