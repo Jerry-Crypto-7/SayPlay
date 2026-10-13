@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "47493ebf6003ead8a70b70731f68e8e16d4b4f1cb9dddef0bbbb23bb31323107",
+ "catalogHash": "8d6d3e67a0d8863d82e04017dd78a707ae4bb555f7b47528137f8e30aa6f4a5e",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1319,6 +1319,14 @@
   "gen3d-ancient-scroll": {"class":"prop"},
   "gen3d-flintlock-pistol": {"class":"prop"},
   "gen3d-music-box": {"class":"prop"},
-  "gen3d-purse": {"class":"prop"}
+  "gen3d-purse": {"class":"prop"},
+  "gen3d-bubble-gun": {"class":"prop"},
+  "gen3d-cream-pie": {"class":"prop"},
+  "gen3d-cookie-jar": {"class":"biped","regions":{"legY":0.247}},
+  "gen3d-magic-orb": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-pizza-slice": {"class":"prop"},
+  "gen3d-chocolate-bar": {"class":"prop"},
+  "gen3d-power-glove": {"class":"prop"},
+  "gen3d-popsicle": {"class":"biped","regions":{"legY":0.25}}
  }
 }

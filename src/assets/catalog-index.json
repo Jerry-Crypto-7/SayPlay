@@ -26609,6 +26609,158 @@
           0.23059
         ]
       }
+    },
+    {
+      "assetId": "gen3d-bubble-gun",
+      "tags": [
+        "bubble gun"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bubble-gun-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17923,
+          0,
+          -0.80123
+        ],
+        "max": [
+          0.17923,
+          1.00001,
+          0.80123
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cream-pie",
+      "tags": [
+        "cream pie"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cream-pie-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.97796,
+          0,
+          -0.9794
+        ],
+        "max": [
+          0.97796,
+          0.98614,
+          0.9794
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cookie-jar",
+      "tags": [
+        "cookie jar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cookie-jar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29395,
+          0,
+          -0.29261
+        ],
+        "max": [
+          0.29395,
+          0.98843,
+          0.29261
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-magic-orb",
+      "tags": [
+        "magic orb"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-magic-orb-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36388,
+          0,
+          -0.36813
+        ],
+        "max": [
+          0.36388,
+          0.99829,
+          0.36813
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pizza-slice",
+      "tags": [
+        "pizza slice"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pizza-slice-lod1.glb",
+      "bounds": {
+        "min": [
+          -4.393,
+          0,
+          -4.39019
+        ],
+        "max": [
+          4.393,
+          0.95857,
+          4.39019
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-chocolate-bar",
+      "tags": [
+        "chocolate bar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-chocolate-bar-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.15029,
+          0,
+          -0.22755
+        ],
+        "max": [
+          1.15029,
+          0.99813,
+          0.22755
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-power-glove",
+      "tags": [
+        "power glove"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-power-glove-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37737,
+          0,
+          -0.43144
+        ],
+        "max": [
+          0.37737,
+          0.99871,
+          0.43144
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-popsicle",
+      "tags": [
+        "popsicle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-popsicle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18054,
+          0,
+          -0.15089
+        ],
+        "max": [
+          0.18054,
+          0.99979,
+          0.15089
+        ]
+      }
     }
   ]
 }

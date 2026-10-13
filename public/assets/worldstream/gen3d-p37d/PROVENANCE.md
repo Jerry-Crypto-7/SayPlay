@@ -544,3 +544,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-flintlock-pistol` | flintlock pistol | 4729 / 2351 |
 | `gen3d-music-box` | music box | 4330 / 2039 |
 | `gen3d-purse` | purse | 4748 / 2369 |
+| `gen3d-bubble-gun` | bubble gun | 4533 / 2210 |
+| `gen3d-cream-pie` | cream pie | 4626 / 2263 |
+| `gen3d-cookie-jar` | cookie jar | 4171 / 2359 |
+| `gen3d-magic-orb` | magic orb | 4748 / 2374 |
+| `gen3d-pizza-slice` | pizza slice | 4742 / 2346 |
+| `gen3d-chocolate-bar` | chocolate bar | 4732 / 2348 |
+| `gen3d-power-glove` | power glove | 4464 / 2062 |
+| `gen3d-popsicle` | popsicle | 4748 / 2374 |
