@@ -1,0 +1,23 @@
+{
+ "note": "P46G T7: jedna věta na žánr arkády (scéna, kterou kreslí), kvůli zemi, vegetaci, náladě a kulise za mlhou ve všech žánrech. `control` je ovládání plochy (`data-control`): souboj aréna kreslí jako `fight`, ač spec říká `move_free`. Galerie e2e/play-scenery-gallery.spec.ts ověří ovládání a vyfotí; scripts/play-look-shots.mjs shots --set genres je vyfotí ve stejném tiku ukázky robota. Prostředí s vegetací (les, džungle, louka, poušť) tam, kde ji žánr kreslí; temná věta kvůli náladě. Sada před T7 je sentences.json a nemění se.",
+ "sentences": [
+  { "id": "g-runner", "genre": "runner", "control": "runner", "text": "A fox runs through a forest away from a bear" },
+  { "id": "g-race", "genre": "race", "control": "steer", "text": "A jeep races through the jungle" },
+  { "id": "g-platform", "genre": "platformer", "control": "platform", "text": "A squirrel jumps over logs in a forest" },
+  { "id": "g-arena", "genre": "arena", "control": "move_free", "text": "Collect ten acorns in a forest while avoiding a fox" },
+  { "id": "g-fight", "genre": "fight", "control": "fight", "text": "A bear fights three wolves in a dark forest" },
+  { "id": "g-quest", "genre": "quest", "control": "move_free", "text": "A knight lights the torches in a dark castle" },
+  { "id": "g-agar", "genre": "agar", "control": "move_free", "text": "like agar.io but you are a fish eating smaller fish" },
+  { "id": "g-walker", "genre": "walker", "control": "walker", "text": "A fox sneaks past guards in a forest to steal eggs" },
+  { "id": "g-glide", "genre": "glide", "control": "glide", "text": "A fish swims through a coral reef" },
+  { "id": "g-ball", "genre": "ball", "control": "ball", "text": "A dog plays football against a fox in a meadow" },
+  { "id": "g-flap", "genre": "flap", "control": "flap", "text": "like flappy bird but in a jungle" },
+  { "id": "g-shooter", "genre": "shooter", "control": "shooter", "text": "A ranger shoots zombies in a forest" },
+  { "id": "g-throw", "genre": "throw", "control": "throw", "text": "throw acorns at targets in a forest" },
+  { "id": "g-timing", "genre": "timing", "control": "timing", "text": "stack blocks as high as you can" },
+  { "id": "g-rhythm", "genre": "rhythm", "control": "rhythm", "text": "tap to the beat with glowing tiles" },
+  { "id": "g-duel", "genre": "duel", "control": "duel", "text": "Two knights duel in a castle" },
+  { "id": "g-voyage", "genre": "voyage", "control": "steer", "text": "A pirate ship dodges cannonballs while sailing between islands to find buried treasure" },
+  { "id": "g-lander", "genre": "lander", "control": "steer", "text": "A rocket lands on Mars" }
+ ]
+}

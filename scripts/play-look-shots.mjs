@@ -6,8 +6,9 @@
  * ukázky robota. Tik je tik simulace, ne čas: ruční hodiny sondy
  * (`__playShell.byHand`) odtikají `--ticks` tiků záznamu robota, pak hodiny
  * stojí a snímek čeká, až se dotáhnou modely. Plátno bez textu stránky.
+ * `--set genres` vezme místo nich jednu větu na žánr (`evals/play/p46g/genres.json`, P46G T7).
  *
- *   node scripts/play-look-shots.mjs shots --base http://127.0.0.1:3251 --out evals/play/p46g/before [--ticks 150] [--only forest-race,city-runner] [--gpu]
+ *   node scripts/play-look-shots.mjs shots --base http://127.0.0.1:3251 --out evals/play/p46g/before [--ticks 150] [--only forest-race,city-runner] [--gpu] [--set genres]
  *   node scripts/play-look-shots.mjs diff <dirA> <dirB>
  *   node scripts/play-look-shots.mjs perf --base http://127.0.0.1:3251 --out evals/play/p46g/perf-before.json [--repeats 3] [--only …]
  *
@@ -23,7 +24,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const SENTENCES = JSON.parse(readFileSync(join(ROOT, 'evals', 'play', 'p46g', 'sentences.json'), 'utf8')).sentences;
+/** Sada vět: `sentences` (12 vět T1, srovnání před a po) nebo `genres` (věta na žánr, T7). */
+const sentencesOf = (set = 'sentences') => JSON.parse(readFileSync(join(ROOT, 'evals', 'play', 'p46g', `${set}.json`), 'utf8')).sentences;
 export const TICKS = 150;
 /** Kanálový rozdíl, pod kterým se pixel bere jako stejný (šum vyhlazování hran). */
 const PIXEL_TOLERANCE = 8;
@@ -46,7 +48,7 @@ function args() {
 
 const chosen = (options) => {
   const only = typeof options.only === 'string' ? new Set(options.only.split(',')) : null;
-  return SENTENCES.filter((sentence) => only === null || only.has(sentence.id));
+  return sentencesOf(typeof options.set === 'string' ? options.set : undefined).filter((sentence) => only === null || only.has(sentence.id));
 };
 
 async function browserFor(gpu) {
@@ -120,9 +122,13 @@ async function shots(options) {
       await sleep(1500);
       await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
       await page.screenshot({ path: join(out, `${sentence.id}.png`) });
-      const row = { id: sentence.id, text: sentence.text, want: sentence.genre, ...game, tick: state?.tick ?? null, runState: state?.runState ?? null, meshes: render.meshes, calls: render.calls };
+      // Ovládání, které plocha opravdu kreslí: souboj má ve specu `move_free`, ve hře `fight`.
+      const stage = await page.getByTestId('arcade-stage').getAttribute('data-control').catch(() => null);
+      const row = { id: sentence.id, text: sentence.text, want: sentence.genre, ...game, stage, tick: state?.tick ?? null, runState: state?.runState ?? null, meshes: render.meshes, calls: render.calls };
       manifest.shots.push(row);
-      console.log(`${sentence.id}: ${game.genre}/${game.setting} tick ${row.tick} ${row.runState} – ${row.meshes} sítí, ${row.calls} volání${game.genre === sentence.genre ? '' : `  ! čekaný žánr ${sentence.genre}`}`);
+      // Sada `genres` čeká ovládání plochy (aréna, úkol i agar jsou `move_free`), sada T1 žánr.
+      const [got, wanted] = sentence.control === undefined ? [game.genre, sentence.genre] : [stage, sentence.control];
+      console.log(`${sentence.id}: ${game.genre}/${game.setting} tick ${row.tick} ${row.runState} – ${row.meshes} sítí, ${row.calls} volání${got === wanted ? '' : `  ! čekané ${wanted}`}`);
     }
   } finally {
     await browser.close();
