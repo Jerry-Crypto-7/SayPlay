@@ -25650,6 +25650,141 @@
           0.22816
         ]
       }
+    },
+    {
+      "assetId": "gen3d-stopwatch",
+      "tags": [
+        "stopwatch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stopwatch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41072,
+          0,
+          -0.12738
+        ],
+        "max": [
+          0.41072,
+          0.99998,
+          0.12738
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-war-hammer",
+      "tags": [
+        "war hammer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-war-hammer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16564,
+          0,
+          -0.16777
+        ],
+        "max": [
+          0.16564,
+          0.99985,
+          0.16777
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-four-leaf-clover",
+      "tags": [
+        "four leaf clover"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-four-leaf-clover-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44339,
+          0,
+          -0.09501
+        ],
+        "max": [
+          0.44339,
+          0.99845,
+          0.09501
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gold-bar",
+      "tags": [
+        "gold bar",
+        "gold ingot",
+        "gold bullion"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gold-bar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44971,
+          0,
+          -0.45007
+        ],
+        "max": [
+          0.44971,
+          1.00001,
+          0.45007
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bazooka",
+      "tags": [
+        "bazooka"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bazooka-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32058,
+          0,
+          -1.67749
+        ],
+        "max": [
+          0.32058,
+          0.99999,
+          1.67749
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-power-crystal",
+      "tags": [
+        "power crystal"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-power-crystal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16496,
+          0,
+          -0.14539
+        ],
+        "max": [
+          0.16496,
+          0.99954,
+          0.14539
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ruby",
+      "tags": [
+        "ruby"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ruby-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.66753,
+          0,
+          -0.66557
+        ],
+        "max": [
+          0.66753,
+          0.99066,
+          0.66557
+        ]
+      }
     }
   ]
 }

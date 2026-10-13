@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "c703c8ea0f6ff87688f35606ad84657b09d1d35fdfe248d4ef67a282b78a1660",
+ "catalogHash": "20aaadd5e5d7dad85a717f4b9cd0545238e09de8c2793c9f31de265a48acbcea",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1269,6 +1269,13 @@
   "gen3d-cheese-wheel": {"class":"prop"},
   "gen3d-kite-shield": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-sand-golem": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-banshee": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-banshee": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-stopwatch": {"class":"prop"},
+  "gen3d-war-hammer": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-four-leaf-clover": {"class":"prop"},
+  "gen3d-gold-bar": {"class":"prop"},
+  "gen3d-bazooka": {"class":"prop"},
+  "gen3d-power-crystal": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-ruby": {"class":"prop"}
  }
 }

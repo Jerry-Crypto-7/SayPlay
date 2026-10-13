@@ -494,3 +494,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-kite-shield` | kite shield | 4742 / 2370 |
 | `gen3d-sand-golem` | sand golem | 4344 / 2136 |
 | `gen3d-banshee` | banshee | 4678 / 2257 |
+| `gen3d-stopwatch` | stopwatch | 4479 / 2217 |
+| `gen3d-war-hammer` | war hammer | 4748 / 2374 |
+| `gen3d-four-leaf-clover` | four leaf clover | 4704 / 2351 |
+| `gen3d-gold-bar` | gold bar, gold ingot, gold bullion | 4748 / 2374 |
+| `gen3d-bazooka` | bazooka | 4750 / 2370 |
+| `gen3d-power-crystal` | power crystal | 4748 / 2374 |
+| `gen3d-ruby` | ruby | 4579 / 2271 |
