@@ -5,15 +5,17 @@
  * slitý 5, takže řada domů podél trati nestojí stovky kreslicích volání navíc.
  */
 
-import type { Bone, BufferGeometry, Material, Mesh, Object3D, Side, SkinnedMesh, TypedArray } from 'three';
-import { BufferAttribute, DoubleSide, Float32BufferAttribute, Group, Matrix4, Mesh as MeshClass, MeshStandardMaterial, SkinnedMesh as SkinnedMeshClass } from 'three';
+import type { Bone, Material, Mesh, Object3D, Side, SkinnedMesh, Texture, TypedArray } from 'three';
+import { Box3, BufferAttribute, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, FrontSide, Group, Matrix4, Mesh as MeshClass, MeshStandardMaterial, SRGBColorSpace, SkinnedMesh as SkinnedMeshClass, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
+import type { Flora } from '@/play/arcade/look';
 import { modelPath } from '@/play/arcade/models';
 
 import type { ToyPart } from '../toy/applyToy';
 import { type MotionPart, motionOf } from '../toy/body-class';
+import { plantPaint } from './vegetation-places';
 
 const modelCache = new Map<string, Promise<Object3D | null>>();
 
@@ -78,6 +80,126 @@ export function loadFlatModel(id: string): Promise<Object3D | null> {
     flatCache.set(id, pending);
   }
   return pending;
+}
+
+/**
+ * Rostlina vegetace (P46G T4): celý model jako jedna geometrie s barvou ve vrcholech,
+ * vysoká 1, pata v počátku. Jeden materiál pro všechny druhy, takže druh je jedna
+ * `InstancedMesh` a barvy listí sady (`plantPaint`) jdou přebarvit ve vrcholech.
+ */
+export interface PlantModel {
+  readonly geometry: BufferGeometry;
+  /** Zdroj byl oboustranný (gen3d, plochy trávy). */
+  readonly double: boolean;
+}
+
+/** Texely textury barvy v bodě UV. Paletová textura low-poly sady má na plochu jednu barvu, vrchol ji přečte celou. */
+function texelsOf(texture: Texture): ((u: number, v: number, target: Color) => Color) | null {
+  const image = texture.image as (CanvasImageSource & { readonly width: number; readonly height: number }) | null;
+  if (image === null || !(image.width > 0)) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  if (context === null) return null;
+  context.drawImage(image, 0, 0);
+  const { data, width, height } = context.getImageData(0, 0, image.width, image.height);
+  const wrap = (t: number, size: number): number => Math.min(size - 1, Math.floor((t - Math.floor(t)) * size));
+  return (u, v, target) => {
+    // glTF: v = 0 je horní řádek obrázku, textura se nepřevrací (`flipY = false`).
+    const row = texture.flipY ? height - 1 - wrap(v, height) : wrap(v, height);
+    const at = (row * width + wrap(u, width)) * 4;
+    return target.setRGB(data[at]! / 255, data[at + 1]! / 255, data[at + 2]! / 255, SRGBColorSpace);
+  };
+}
+
+/** Barva materiálu × COLOR_0 × textura do barvy vrcholů, sítě do jedné geometrie, výška 1 a pata ve středu. */
+function bakePlant(model: Object3D): PlantModel | null {
+  model.updateMatrixWorld(true);
+  const parts: BufferGeometry[] = [];
+  let double = false;
+  const color = new Color();
+  const factor = new Color();
+  model.traverse((node) => {
+    const mesh = node as Mesh;
+    if (mesh.isMesh !== true || Array.isArray(mesh.material)) return;
+    const material = mesh.material as MeshStandardMaterial;
+    double ||= material.side === DoubleSide;
+    const part = mesh.geometry.clone().applyMatrix4(mesh.matrixWorld);
+    const count = part.getAttribute('position').count;
+    const vertex = part.getAttribute('color');
+    const uv = part.getAttribute('uv');
+    const texels = material.map === null || uv === undefined ? null : texelsOf(material.map);
+    const colors = new Float32Array(count * 3);
+    for (let i = 0; i < count; i += 1) {
+      color.copy(material.color);
+      if (vertex !== undefined) color.multiply(factor.fromBufferAttribute(vertex as BufferAttribute, i));
+      if (texels !== null) color.multiply(texels(uv!.getX(i), uv!.getY(i), factor));
+      color.toArray(colors, i * 3);
+    }
+    for (const name of Object.keys(part.attributes)) if (name !== 'position' && name !== 'normal') part.deleteAttribute(name);
+    if (part.getAttribute('normal') === undefined) part.computeVertexNormals();
+    part.setAttribute('color', new Float32BufferAttribute(colors, 3));
+    parts.push(part);
+  });
+  if (parts.length === 0) return null;
+  // Slít jde jen všechno s indexy, nebo všechno bez nich.
+  const same = parts.every((part) => part.index !== null) ? parts : parts.map((part) => (part.index === null ? part : part.toNonIndexed()));
+  const geometry = same.length === 1 ? same[0]! : mergeGeometries(same);
+  if (geometry === null) return null;
+  const box = new Box3().setFromBufferAttribute(geometry.getAttribute('position') as BufferAttribute);
+  const center = box.getCenter(new Vector3());
+  const unit = 1 / Math.max(box.max.y - box.min.y, 1e-3);
+  geometry.translate(-center.x, -box.min.y, -center.z).scale(unit, unit, unit);
+  return { geometry, double };
+}
+
+const plantCache = new Map<string, Promise<PlantModel | null>>();
+const paintedCache = new Map<string, Promise<PlantModel | null>>();
+
+/**
+ * Rostlina `id` obarvená vegetací sady (`plantPaint`: listí, jehličí, podzim). Poloha,
+ * normály a indexy se sdílejí mezi sadami, barvy má každá vlastní. Cache jako modely – nic se neuvolňuje.
+ */
+export function paintedPlant(id: string, flora: Flora): Promise<PlantModel | null> {
+  const key = `${id}|${flora.leaf}|${flora.autumn === true}`;
+  let pending = paintedCache.get(key);
+  if (pending === undefined) {
+    let baked = plantCache.get(id);
+    if (baked === undefined) {
+      baked = loadModel(id).then((model) => (model === null ? null : bakePlant(model)));
+      plantCache.set(id, baked);
+    }
+    pending = baked.then((plant) => {
+      if (plant === null) return null;
+      const paint = plantPaint(id, flora);
+      const source = plant.geometry.getAttribute('color') as BufferAttribute;
+      const colors = new Float32Array(source.count * 3);
+      const color = new Color();
+      for (let i = 0; i < source.count; i += 1) paint(color.fromBufferAttribute(source, i)).toArray(colors, i * 3);
+      const geometry = new BufferGeometry();
+      geometry.setIndex(plant.geometry.index);
+      geometry.setAttribute('position', plant.geometry.getAttribute('position'));
+      geometry.setAttribute('normal', plant.geometry.getAttribute('normal'));
+      geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+      geometry.computeBoundingSphere();
+      return { geometry, double: plant.double };
+    });
+    paintedCache.set(key, pending);
+  }
+  return pending;
+}
+
+const plantMaterials = new Map<boolean, MeshStandardMaterial>();
+
+/** Materiál všech rostlin: barva z vrcholů (a z instance), oboustranný pro zdroje, které oboustranné byly. */
+export function plantMaterial(double: boolean): MeshStandardMaterial {
+  let material = plantMaterials.get(double);
+  if (material === undefined) {
+    material = new MeshStandardMaterial({ vertexColors: true, roughness: 0.9, side: double ? DoubleSide : FrontSide });
+    plantMaterials.set(double, material);
+  }
+  return material;
 }
 
 /** Mapy, které se do vrcholů rozepsat nedají – model s kteroukoli z nich zůstane, jak je. */

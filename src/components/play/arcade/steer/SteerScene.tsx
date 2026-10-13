@@ -28,10 +28,11 @@ import { isTyping } from '../input';
 import { buildRoadGround } from '../look/ground';
 import { type IslandSpot, buildIslands, islandPalette } from '../look/rig/terrain/islands';
 import { hash } from '../look/rig/terrain/valley';
-import { roadGeometry } from '../look/road-strip';
+import { roadGeometry, stripCurve } from '../look/road-strip';
 import { buildWater } from '../look/rig/terrain/water';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
+import { Vegetation } from '../look/Vegetation';
 import type { ArcadeSession } from '../session';
 import { FittedModel } from '../World';
 import { keySteer } from './key-steer';
@@ -196,7 +197,7 @@ export function SteerBackdrop({
   const shape = useMemo(() => roadShapeOf(session.world), [session.world]);
   return (
     <>
-      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} namedPad={namedPad} /> : <RoadBackdrop course={course} shape={shape} length={length} look={look} />}
+      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} namedPad={namedPad} /> : <RoadBackdrop course={course} shape={shape} length={length} look={look} seed={session.world.seed} />}
       {/* Slot ducha (P37-0 T3) pro silnici i plavbu. */}
       <GhostSlot ghost={ghost} session={session} />
     </>
@@ -220,13 +221,25 @@ function useVoyageSession(): { readonly session: ArcadeSession; readonly layout:
  * Silnice jako jeden pás po hladké křivce středů a šířek úseků (P46G T2):
  * povrch sady (asfalt se středovou čárou, hlína, písek, sníh, prkna), okraje
  * a mantinely po téže křivce, zem a kulisy sady prostředí (P27A T3) podél
- * každého úseku. Jen vzhled: jádro o nich neví, hash světa se nehne.
+ * každého úseku. Sada s vegetací (P46G T4) má místo nich vegetaci za volným
+ * pásem a jednu řídkou řadu kulis po ose celé cesty.
+ * Jen vzhled: jádro o nich neví, hash světa se nehne.
  */
-function RoadBackdrop({ course, shape, length, look, sceneryFrom = 0 }: { readonly course: SteerCourse | undefined; readonly shape?: RoadShape; readonly length: number; readonly look: Look; readonly sceneryFrom?: number }) {
+function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { readonly course: SteerCourse | undefined; readonly shape?: RoadShape; readonly length: number; readonly look: Look; readonly seed: number; readonly sceneryFrom?: number }) {
   const span = length + 80;
   const half = (course?.halfWidth ?? 5 * UNIT) / UNIT;
   // Silnice z mantinelů světa ve skutečné šířce (P46D R2); bez nich z osy trati v šířce prvního úseku.
   const segments = useMemo(() => (shape !== undefined && shape.segments.length > 0 ? shape.segments : segmentsOf(course).map((segment) => ({ ...segment, width: half * 2 }))), [shape, course, half]);
+  const strip = useMemo(() => (segments.length > 0 ? segments : [{ near: -60, far: span, center: 0, width: half * 2 }]), [segments, span, half]);
+  const roadAt = useMemo(() => {
+    const curve = stripCurve(strip);
+    return (z: number) => {
+      const { center, width } = curve(z);
+      return { center, half: width / 2 };
+    };
+  }, [strip]);
+  const centerAt = useMemo(() => (z: number) => ({ x: roadAt(z).center, y: 0 }), [roadAt]);
+  const widest = Math.max(...strip.map((segment) => segment.width));
   const surface = SURFACES[look.surface];
   // Pás, okraje, značení a mantinely po jedné síti: úsek po úseku to byly desítky volání kreslení na snímek (P32F T4, telefon).
   const road = useMemo(() => {
@@ -241,7 +254,7 @@ function RoadBackdrop({ course, shape, length, look, sceneryFrom = 0 }: { readon
   }, [segments, shape, surface]);
   useEffect(() => () => { road?.surface.dispose(); road?.edges.dispose(); road?.marks?.dispose(); road?.walls?.dispose(); road?.barriers?.dispose(); }, [road]);
   // Zem s odstíny, skvrnami, krajnicí podél cesty a tmavnutím do strany (P46G T3) – jedna síť místo roviny jedné barvy.
-  const ground = useMemo(() => buildRoadGround(look, segments.length > 0 ? segments : [{ near: -60, far: span, center: 0, width: half * 2 }], -60, span), [look, segments, span, half]);
+  const ground = useMemo(() => buildRoadGround(look, strip, -60, span), [look, strip, span]);
   useEffect(() => () => ground.dispose(), [ground]);
   const afloat = look.afloat === true;
   return (
@@ -270,16 +283,27 @@ function RoadBackdrop({ course, shape, length, look, sceneryFrom = 0 }: { readon
           )}
         </>
       )}
-      {segments.map((segment, i) =>
-        segment.far - segment.near < sceneryFrom ? null : (
-          <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>
-            <Scenery look={look} layout="sides" inner={segment.width / 2 + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
-          </group>
-        ),
+      {look.flora !== undefined ? (
+        <>
+          <Vegetation flora={look.flora} seed={seed} from={-60} to={span} road={roadAt} clear={VEGETATION_CLEAR} />
+          {/* Vedle vegetace jedna řídká řada kulis po ose celé cesty: řada na úsek by na krátkých úsecích kulisy zahustila. */}
+          <Scenery look={look} layout="sides" inner={widest / 2 + SCENERY_MARGIN} from={-10} to={span - 2} bend={centerAt} vegetation />
+        </>
+      ) : (
+        segments.map((segment, i) =>
+          segment.far - segment.near < sceneryFrom ? null : (
+            <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>
+              <Scenery look={look} layout="sides" inner={segment.width / 2 + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
+            </group>
+          ),
+        )
       )}
     </>
   );
 }
+
+/** Volný pás vegetace za krajem silnice (m): mantinel a kus krajnice, ať je na cestu vidět i v zatáčce. */
+const VEGETATION_CLEAR = BARRIER_W + 1;
 
 interface Segment {
   readonly near: number;
@@ -554,7 +578,7 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard, namedPad }
   return (
     <>
       {layout.terrain === 'buildings' ? (
-        <RoadBackdrop course={layout.course} length={length} look={look} sceneryFrom={STRAIGHT_M} />
+        <RoadBackdrop course={layout.course} length={length} look={look} seed={session.world.seed} sceneryFrom={STRAIGHT_M} />
       ) : water !== null ? (
         <mesh geometry={water.geometry} material={water.material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'water' }} />
       ) : (

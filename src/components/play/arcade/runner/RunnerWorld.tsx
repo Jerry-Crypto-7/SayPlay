@@ -23,6 +23,8 @@ import { type GhostPose, GhostSlot } from '../GhostSlot';
 import { buildValley, PATH_HALF, PLAYABLE_HALF } from '../look/rig/terrain/valley';
 import { roadGeometry } from '../look/road-strip';
 import { Scenery } from '../look/Scenery';
+import { Vegetation } from '../look/Vegetation';
+import type { RoadAt } from '../look/vegetation-places';
 import type { ArcadeSession } from '../session';
 import { type ToyTarget, applyToy, toyMotionOn } from '../toy/applyToy';
 import { bodyClassOf } from '../toy/body-class';
@@ -33,8 +35,13 @@ import { type Path, bendGeometry, runnerPathOf, slopeAt } from './path';
 /** Údolí začíná za kamerou úvodního záběru a končí za koncem mlhy po cíli. */
 const BEHIND_M = 40;
 
-/** Údolí ohnuté po křivce trati (P46D T3): dráha, svahy i kulisy jdou zatáčkou a kopcem spolu s těly. */
-function RunnerValley({ look, length, terrain, path }: { readonly look: Look; readonly length: number; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
+/** Cesta běžce před ohnutím po křivce: rovná, v ose (vegetaci ohne `bend` jako kulisy). */
+const RUNNER_ROAD = (): RoadAt => ({ center: 0, half: PATH_HALF });
+/** Volný pás vegetace za krajem cesty (m): celá hrací plocha a půl metru. */
+const VEGETATION_CLEAR = PLAYABLE_HALF - PATH_HALF + 0.5;
+
+/** Údolí ohnuté po křivce trati (P46D T3): dráha, svahy, kulisy i vegetace (P46G T4) jdou zatáčkou a kopcem spolu s těly. */
+function RunnerValley({ look, length, seed, terrain, path }: { readonly look: Look; readonly length: number; readonly seed: number; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
   const valley = useMemo(() => {
     const built = buildValley({ look, from: -BEHIND_M, to: length + look.fog[1] + 10 });
     if (path !== null) bendGeometry(built.geometry, path);
@@ -71,7 +78,8 @@ function RunnerValley({ look, length, terrain, path }: { readonly look: Look; re
           )}
         </>
       )}
-      <Scenery look={look} layout="sides" inner={PLAYABLE_HALF + 1.5} from={-10} to={length + 10} ground={valley.heightAt} cap={look.terrain?.cap} bend={path ?? undefined} />
+      {look.flora !== undefined && <Vegetation flora={look.flora} seed={seed} from={-BEHIND_M} to={length + look.fog[1] + 10} road={RUNNER_ROAD} clear={VEGETATION_CLEAR} ground={valley.heightAt} bend={path ?? undefined} />}
+      <Scenery look={look} layout="sides" inner={PLAYABLE_HALF + 1.5} from={-10} to={length + 10} ground={valley.heightAt} cap={look.terrain?.cap} bend={path ?? undefined} vegetation />
     </>
   );
 }
@@ -321,7 +329,7 @@ export function RunnerWorld(props: Omit<WorldProps, 'control' | 'backdrop'>) {
   );
   return (
     <>
-      <World {...props} control="runner" backdrop={<RunnerValley look={props.scene} length={length} terrain={terrain} path={path} />} />
+      <World {...props} control="runner" backdrop={<RunnerValley look={props.scene} length={length} seed={props.session.world.seed} terrain={terrain} path={path} />} />
       <GroundProbe terrain={terrain} />
       {/* Až po `World`: jeho snímek musí běžet dřív (viz `HeroPose`). */}
       <HeroPose session={props.session} hero={props.cast.player} rides={props.scene.ride === true} />

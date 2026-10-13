@@ -197,6 +197,130 @@ export const SURFACES = {
 } as const satisfies Record<string, Surface>;
 export type SurfaceKind = keyof typeof SURFACES;
 
+/** Druh vegetace (P46G T4): model katalogu a jeho výška (m) při velikosti 1. Opakované id = častější druh. */
+export interface PlantSpecies {
+  readonly id: string;
+  readonly height: number;
+}
+
+/**
+ * Vegetace sady ve třech vrstvách (P46G T4, `look/vegetation-places.ts`): u cesty
+ * drobnosti (keře, tráva, kameny, pařezy), uprostřed shluky stromů, v dálce
+ * souvislá linie. Vrstva bez druhů se nekreslí (poušť nemá linii stromů).
+ */
+export interface Flora {
+  readonly near: readonly PlantSpecies[];
+  readonly mid: readonly PlantSpecies[];
+  readonly far: readonly PlantSpecies[];
+  /** Barva listí: nahradí šedou, kterou mají listí, mech a kaktusy modelů katalogu z jeho palety. */
+  readonly leaf: string;
+  /** Násobek hustoty lesa. */
+  readonly density: number;
+  /** Podzim („autumn“, „fall“): listí oranžové a jehličí zůstane oranžové. Píše jen `sceneLook`. */
+  readonly autumn?: boolean;
+}
+
+const FOREST_FLORA: Flora = {
+  near: [
+    { id: 'cc0-bush', height: 1.1 },
+    { id: 'cc0-bush-berries', height: 1 },
+    { id: 'cc0-grass', height: 0.7 },
+    { id: 'cc0-grass', height: 0.7 },
+    { id: 'cc0-tree-stump', height: 0.55 },
+    { id: 'cc0-stump', height: 0.5 },
+    { id: 'cc0-rock-moss', height: 0.9 },
+    { id: 'gen3d-fallen-log', height: 0.6 },
+  ],
+  mid: [
+    { id: 'cc0-tree-pine', height: 7 },
+    { id: 'cc0-tree-pine', height: 7 },
+    { id: 'cc0-pine-tree', height: 7.5 },
+    { id: 'cc0-birch-tree', height: 6.5 },
+    { id: 'oak-tree', height: 6 },
+  ],
+  far: [
+    { id: 'cc0-tree-pine', height: 9 },
+    { id: 'cc0-tree-pine', height: 9 },
+    { id: 'oak-tree', height: 7.5 },
+  ],
+  leaf: '#3b7a3a',
+  density: 1,
+};
+
+const JUNGLE_FLORA: Flora = {
+  near: [
+    { id: 'cc0-bush-berries', height: 1.2 },
+    { id: 'cc0-bush', height: 1.3 },
+    { id: 'cc0-grass', height: 0.9 },
+    { id: 'cc0-grass', height: 0.9 },
+    { id: 'cc0-rock-moss', height: 1 },
+    { id: 'cc0-tree-stump', height: 0.6 },
+  ],
+  mid: [
+    { id: 'cc0-palm-tree', height: 6 },
+    { id: 'cc0-palm-tree', height: 6 },
+    { id: 'gen3d-mangrove-tree', height: 5 },
+    { id: 'oak-tree', height: 7 },
+  ],
+  far: [
+    { id: 'cc0-palm-tree', height: 7 },
+    { id: 'oak-tree', height: 8 },
+    { id: 'gen3d-mangrove-tree', height: 6 },
+  ],
+  leaf: '#2f8a3c',
+  density: 1.1,
+};
+
+const MEADOW_FLORA: Flora = {
+  near: [
+    { id: 'cc0-grass', height: 0.7 },
+    { id: 'cc0-grass', height: 0.7 },
+    { id: 'cc0-grass', height: 0.7 },
+    { id: 'cc0-bush', height: 1.1 },
+    { id: 'cc0-rock-moss', height: 0.7 },
+  ],
+  mid: [
+    { id: 'oak-tree', height: 6.5 },
+    { id: 'cc0-birch-tree', height: 6 },
+  ],
+  far: [
+    { id: 'oak-tree', height: 7 },
+    { id: 'cc0-birch-tree', height: 6.5 },
+  ],
+  leaf: '#4f9a3a',
+  density: 0.45,
+};
+
+const DESERT_FLORA: Flora = {
+  near: [
+    { id: 'cc0-rock-moss', height: 0.6 },
+    { id: 'cc0-grass', height: 0.5 },
+  ],
+  mid: [
+    { id: 'gen3d-cactus', height: 2.2 },
+    { id: 'cc0-cactus-flowers', height: 2.4 },
+  ],
+  far: [],
+  leaf: '#7f8f45',
+  density: 0.3,
+};
+
+/** Rekvizity z primitiv, které jsou rostlina: vedle vegetace je kulisa nekreslí. */
+const PLANT_PRIMITIVES: readonly SceneryKind[] = ['tree', 'pine', 'palm', 'cactus'];
+
+/** Id všech druhů vegetace sady. */
+export const floraIds = (flora: Flora): ReadonlySet<string> => new Set([...flora.near, ...flora.mid, ...flora.far].map((species) => species.id));
+
+/**
+ * Rekvizity sady ve scéně s vegetací (P46G T4): stromy a keře kreslí vegetace,
+ * v řadě kulis zůstanou stavby a věci. Sada bez vegetace má rekvizity celé.
+ */
+export function landmarks(look: Look): readonly SceneryKind[] {
+  if (look.flora === undefined) return look.props;
+  const plants = new Set<string>([...PLANT_PRIMITIVES, ...floraIds(look.flora)]);
+  return look.props.filter((prop) => !plants.has(prop));
+}
+
 export interface Look {
   /** Pozadí i barva mlhy. */
   readonly sky: string;
@@ -244,6 +368,8 @@ export interface Look {
   readonly land?: string;
   /** Povrch cesty závodu a běžce (P46G T2); slova místa ho přebijí v `sceneLook` (přístav = prkna). */
   readonly surface: SurfaceKind;
+  /** Vegetace podél cesty (P46G T4); bez ní má scéna jen řadu kulis. */
+  readonly flora?: Flora;
 }
 
 /** Slunce za kamerou vlevo nahoře – stín padá dopředu doprava, jako v ukázce B. */
@@ -252,15 +378,15 @@ const BEHIND_LEFT = [0.51, 0.81, -0.31] as const;
 const OVERHEAD = [0.2, 1, -0.15] as const;
 
 export const LOOKS: Readonly<Record<LookId, Look>> = {
-  meadow: { sky: '#bae6fd', fog: [30, 90], light: ['#e0f2fe', '#166534', 0.9], sun: 1.6, ground: '#15803d', track: '#334155', water: '#0284c7', props: ['tree', 'cc0-bench', 'cc0-bush', 'cc0-flower', 'gen3d-windmill', 'gen3d-sunflower'], tint: ['#16a34a', '#78716c'], skyTop: '#3a86d8', horizon: '#d7ecf8', sunColor: '#fff0d4', sunDir: BEHIND_LEFT, exposure: 1, glow: 1, cover: 'grass', surface: 'dirt' },
+  meadow: { sky: '#bae6fd', fog: [30, 90], light: ['#e0f2fe', '#166534', 0.9], sun: 1.6, ground: '#15803d', track: '#334155', water: '#0284c7', props: ['tree', 'cc0-bench', 'cc0-bush', 'cc0-flower', 'gen3d-windmill', 'gen3d-sunflower'], tint: ['#16a34a', '#78716c'], skyTop: '#3a86d8', horizon: '#d7ecf8', sunColor: '#fff0d4', sunDir: BEHIND_LEFT, exposure: 1, glow: 1, cover: 'grass', surface: 'dirt', flora: MEADOW_FLORA },
   city: { sky: '#cbd5e1', fog: [25, 80], light: ['#f1f5f9', '#475569', 0.9], sun: 1.4, ground: '#64748b', track: '#1f2937', water: '#0369a1', props: ['townhouse', 'cc0-car-taxi', 'lamp', 'cc0-fire-hydrant', 'building', 'gen3d-traffic-light', 'gen3d-bus-stop', 'gen3d-street-mailbox'], tint: ['#94a3b8', '#fbbf24'], skyTop: '#5b8fc7', horizon: '#dfe6ee', sunColor: '#fff1dc', sunDir: [0.45, 0.75, -0.5], exposure: 1, glow: 0.8, terrain: { lane: '#2b3036', shade: '#56606e', rock: '#8b9098' }, cover: 'paving', surface: 'asphalt' },
   mall: { sky: '#fef3c7', fog: [20, 70], light: ['#fffbeb', '#d6d3d1', 1.1], sun: 1.1, ground: '#e7e5e4', track: '#d6d3d1', water: '#38bdf8', props: ['potted-plant', 'cc0-bench', 'shopping-cart', 'shelf', 'lamp', 'gen3d-fountain', 'gen3d-vending-machine'], tint: ['#f97316', '#0ea5e9'], skyTop: '#f3e2b8', horizon: '#fef3c7', sunColor: '#fff7e6', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving' },
   supermarket: { sky: '#f1f5f9', fog: [20, 70], light: ['#ffffff', '#cbd5e1', 1.1], sun: 1.0, ground: '#e2e8f0', track: '#cbd5e1', water: '#38bdf8', props: ['cc0-cabinet-shelves', 'shopping-cart', 'cc0-can-fridge', 'shelf', 'gen3d-fruit-stand', 'gen3d-cash-register'], tint: ['#dc2626', '#16a34a'], skyTop: '#dfe5ec', horizon: '#f1f5f9', sunColor: '#ffffff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving' },
   living_room: { sky: '#fde68a', fog: [18, 60], light: ['#fff7ed', '#a16207', 1.0], sun: 1.1, ground: '#b45309', track: '#92400e', water: '#0ea5e9', props: ['cc0-couch', 'cc0-lamp-standing', 'cc0-armchair', 'potted-plant', 'gen3d-bookshelf', 'gen3d-television'], tint: ['#0f766e', '#f59e0b'], skyTop: '#f2d27e', horizon: '#fde68a', sunColor: '#ffe8c2', sunDir: [0.35, 0.9, -0.25], exposure: 1, glow: 0, cover: 'paving', surface: 'planks' },
   factory: { sky: '#a8a29e', fog: [20, 70], light: ['#e7e5e4', '#44403c', 0.8], sun: 1.3, ground: '#57534e', track: '#292524', water: '#155e75', props: ['steam-machine', 'cc0-barrel-stack', 'chimney', 'cc0-pallet', 'gen3d-crane', 'gen3d-container'], tint: ['#78716c', '#ea580c'], skyTop: '#86807a', horizon: '#b8b1aa', sunColor: '#ffe2c2', sunDir: [0.5, 0.7, -0.4], exposure: 1, glow: 0.5, cover: 'paving', surface: 'asphalt' },
-  forest: { sky: '#bbf7d0', fog: [20, 70], light: ['#dcfce7', '#14532d', 0.8], sun: 1.3, ground: '#166534', track: '#78350f', water: '#0e7490', props: ['cc0-tree-pine', 'tree', 'cc0-stump', 'cc0-log-stack', 'gen3d-treehouse', 'gen3d-large-boulder'], tint: ['#14532d', '#57534e'], skyTop: '#4f97c9', horizon: '#cfeedd', sunColor: '#fff2cf', sunDir: BEHIND_LEFT, exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt' },
-  jungle: { sky: '#a7f3d0', fog: [15, 60], light: ['#ecfdf5', '#064e3b', 0.9], sun: 1.2, ground: '#065f46', track: '#713f12', water: '#0f766e', props: ['cc0-palm-tree', 'cc0-bamboo', 'cc0-bush-berries', 'tree', 'gen3d-ruin'], tint: ['#15803d', '#65a30d'], skyTop: '#3f9fb0', horizon: '#c3f0dc', sunColor: '#fff5d0', sunDir: [0.4, 0.85, -0.3], exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt' },
-  desert: { sky: '#fde68a', fog: [40, 120], light: ['#fffbeb', '#b45309', 1.0], sun: 2.0, ground: '#d97706', track: '#b45309', water: '#0891b2', props: ['cc0-cactus-flowers', 'rock', 'cactus', 'gen3d-termite-hill', 'gen3d-camel'], tint: ['#65a30d', '#92400e'], skyTop: '#2f7dd1', horizon: '#fbe3a8', sunColor: '#ffe6b8', sunDir: [0.55, 0.7, -0.35], exposure: 0.95, glow: 1, terrain: { lane: '#e6c38c', shade: '#c47f33', rock: '#8f5530' }, cover: 'sand', surface: 'sand' },
+  forest: { sky: '#bbf7d0', fog: [20, 70], light: ['#dcfce7', '#14532d', 0.8], sun: 1.3, ground: '#166534', track: '#78350f', water: '#0e7490', props: ['cc0-tree-pine', 'tree', 'cc0-stump', 'cc0-log-stack', 'gen3d-treehouse', 'gen3d-large-boulder'], tint: ['#14532d', '#57534e'], skyTop: '#4f97c9', horizon: '#cfeedd', sunColor: '#fff2cf', sunDir: BEHIND_LEFT, exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: FOREST_FLORA },
+  jungle: { sky: '#a7f3d0', fog: [15, 60], light: ['#ecfdf5', '#064e3b', 0.9], sun: 1.2, ground: '#065f46', track: '#713f12', water: '#0f766e', props: ['cc0-palm-tree', 'cc0-bamboo', 'cc0-bush-berries', 'tree', 'gen3d-ruin'], tint: ['#15803d', '#65a30d'], skyTop: '#3f9fb0', horizon: '#c3f0dc', sunColor: '#fff5d0', sunDir: [0.4, 0.85, -0.3], exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: JUNGLE_FLORA },
+  desert: { sky: '#fde68a', fog: [40, 120], light: ['#fffbeb', '#b45309', 1.0], sun: 2.0, ground: '#d97706', track: '#b45309', water: '#0891b2', props: ['cc0-cactus-flowers', 'rock', 'cactus', 'gen3d-termite-hill', 'gen3d-camel'], tint: ['#65a30d', '#92400e'], skyTop: '#2f7dd1', horizon: '#fbe3a8', sunColor: '#ffe6b8', sunDir: [0.55, 0.7, -0.35], exposure: 0.95, glow: 1, terrain: { lane: '#e6c38c', shade: '#c47f33', rock: '#8f5530' }, cover: 'sand', surface: 'sand', flora: DESERT_FLORA },
   beach: { sky: '#7dd3fc', fog: [40, 120], light: ['#f0f9ff', '#fcd34d', 1.0], sun: 1.9, ground: '#fcd34d', track: '#fde68a', water: '#0ea5e9', props: ['cc0-palm-tree', 'rock', 'cc0-boat-row', 'gen3d-sandcastle', 'gen3d-surfboard', 'gen3d-lighthouse'], tint: ['#16a34a', '#a8a29e'], skyTop: '#1f8fe0', horizon: '#cdeefd', sunColor: '#fff0d0', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', surface: 'sand' },
   ocean: { sky: '#7dd3fc', fog: [30, 100], light: ['#f0f9ff', '#0369a1', 1.0], sun: 1.7, ground: '#0284c7', track: '#0c4a6e', water: '#0369a1', props: ['cc0-boat-row', 'buoy', 'rock', 'gen3d-sailboat', 'gen3d-lighthouse'], tint: ['#ef4444', '#64748b'], skyTop: '#1f7fd0', horizon: '#c2e6fb', sunColor: '#fff1d6', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', land: '#e9d29a', surface: 'planks' },
   // Pod vodou je nahoře světlejší hladina, ne tmavší zenit.
@@ -372,7 +498,10 @@ export function withKit(props: readonly SceneryKind[], kit: readonly KitModel[])
   return Array.from({ length: Math.max(kept.length, kit.length) }, (_, index) => [kit[index % kit.length]!, kept[index % kept.length]!]).flat();
 }
 
-/** Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem, rekvizity prostředí) a jízda hrdiny. */
+/** Podzim z věty (P46G T4): jen slovo, „waterfall“ ani „falling“ ne. */
+const AUTUMN = /\bautumn\w*|\bfall\b/;
+
+/** Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem, rekvizity prostředí, podzim) a jízda hrdiny. */
 export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay }): Look {
   const look = LOOKS[lookOf(theme)];
   const setting = theme.setting.toLowerCase();
@@ -381,7 +510,11 @@ export function sceneLook(theme: { readonly setting: string; readonly mood: stri
   const ride = theme.motion === 'ride';
   const kit = kitFor(setting);
   const surface = PLACE_SURFACES.find(([pattern]) => pattern.test(setting))?.[1] ?? look.surface;
-  const placed = ground === look.ground && !afloat && !ride && kit.length === 0 && surface === look.surface ? look : { ...look, ground, afloat, surface, props: withKit(look.props, kit), ...(ride ? { ride } : {}) };
+  const autumn = look.flora !== undefined && AUTUMN.test(`${setting} ${theme.mood.toLowerCase()}`);
+  const placed =
+    ground === look.ground && !afloat && !ride && kit.length === 0 && surface === look.surface && !autumn
+      ? look
+      : { ...look, ground, afloat, surface, props: withKit(look.props, kit), ...(ride ? { ride } : {}), ...(autumn ? { flora: { ...look.flora!, autumn } } : {}) };
   const time = theme.timeOfDay ?? timeOfDayFor(theme.setting);
   if (time === 'night') return { ...placed, sky: '#101d32', skyTop: '#050d1b', horizon: '#172c45', light: ['#92b9df', '#283747', 0.8], sun: 0.35, sunColor: '#bcdcff', glow: 0.12, exposure: Math.min(placed.exposure, 1) };
   if (time === 'dusk') return { ...placed, sky: '#785944', skyTop: '#233a51', horizon: '#d59461', light: ['#e3b28b', '#4c4137', 0.95], sun: 0.75, sunColor: '#ffd1a0', glow: 0.55 };
