@@ -73,13 +73,13 @@ export const CHUNK_SHAPE = {
   sinkSlab: 3500,
   /**
    * Schody: čtyři schody po 0,6–0,8 m (schod obtížnosti v těch mezích) s mezerou
-   * 1,16–1,2 m – užší by na schod 0,8 m nestačila (hrana se musí přeskočit při
-   * výstupu), širší už nejsou schody, ale skoky. Desky 3–4 m: celé schodiště je
-   * v jednom záběru boční kamery.
+   * 1,16–1,19 m – užší by na schod 0,8 m nestačila (hrana se musí přeskočit při
+   * výstupu), od 1,2 m už nejsou schody, ale skoky (hrany desek na půl jednotky
+   * mezeru o kus natáhnou). Desky 3–4 m: celé schodiště je v jednom záběru boční kamery.
    */
   stairs: 4,
   stairStep: [600, 800] as const,
-  stairGap: [1160, 1200] as const,
+  stairGap: [1160, 1190] as const,
   stairSlab: [3000, 4000] as const,
   /** Výstup: pět schodů po 0,5–0,7 m (dohromady aspoň 2,5 m) s mezerami 1,4–1,8 m, nejdřív sestup, když nahoře není místo. */
   climb: 5,
@@ -89,9 +89,9 @@ export const CHUNK_SHAPE = {
   /** Rostoucí mezery: tři krátké desky, mezera od nejužší obtížnosti roste po tolika. */
   rampSlab: 3000,
   rampGrowth: 400,
-  /** Lekníny: tři krátké desky nad vodou, mezera uprostřed rozsahu obtížnosti. */
+  /** Lekníny: tři krátké desky nad vodou, mezera v horní půlce rozsahu obtížnosti. */
   pads: 3,
-  padSlab: 3000,
+  padSlab: 2500,
 } as const;
 
 const repeat = (count: number, step: (index: number) => ChunkStep): ChunkStep[] => Array.from({ length: count }, (_, index) => step(index));
@@ -150,7 +150,7 @@ export const PLATFORM_CHUNK_LIBRARY: readonly PlatformChunk[] = [
     id: 'water',
     from: 0,
     weight: 2,
-    build: (rng) => repeat(CHUNK_SHAPE.pads, () => ({ gap: rng.int(40, 70), rise: 0, slab: { fixed: CHUNK_SHAPE.padSlab }, spikes: 0, water: true })),
+    build: (rng) => repeat(CHUNK_SHAPE.pads, () => ({ gap: rng.int(55, 85), rise: 0, slab: { fixed: CHUNK_SHAPE.padSlab }, spikes: 0, water: true })),
   },
   { id: 'rest', from: 0, weight: 1, build: () => [{ gap: 0, rise: 0, slab: { fixed: CHUNK_SHAPE.restSlab }, spikes: 0 }] },
 ];

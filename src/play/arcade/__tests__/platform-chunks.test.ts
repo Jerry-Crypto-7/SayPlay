@@ -13,7 +13,7 @@ import { arcadeWorldOf } from '../compile';
 import { type ArcadeLevel, type BodyInit } from '../contract';
 import { buildWorld } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { CHUNK_SHAPE, PLATFORM_CHUNKS, PLATFORM_CHUNK_LIBRARY, type PlatformChunkId, pickPlatformChunk } from '../pieces/platform-chunks';
+import { CHUNK_SHAPE, PLATFORM_CHUNKS, PLATFORM_CHUNK_LIBRARY, PLATFORM_STYLES, PLATFORM_STYLE_LIBRARY, type PlatformChunkId, pickPlatformChunk, platformStyleFor } from '../pieces/platform-chunks';
 import { PLATFORM, PLATFORM_DIFFICULTIES, type PlatformLevelParams, checkPlatformLevel, platformChunkLevel, platformControlRef, platformLevel, platformRules, platformSeconds } from '../pieces/platform';
 import { type BotProfile, runBot, verifyArcade } from '../verify';
 
@@ -67,6 +67,30 @@ describe('knihovna úseků skákačky', () => {
       }
     }
     expect(sequences.size).toBeGreaterThanOrEqual(6);
+  });
+
+  // P46D R2: les = schody, bažina = lekníny, město = desky s hroty, hrad = věž.
+  it('styl podle prostředí: jeho vzor otevírá první úsek a úroveň bere jen vzory stylu', () => {
+    expect([platformStyleFor('forest'), platformStyleFor('jungle'), platformStyleFor('city'), platformStyleFor('castle'), platformStyleFor(null)]).toEqual(['canopy', 'pads', 'runway', 'tower', undefined]);
+    for (const style of PLATFORM_STYLES) {
+      const own = PLATFORM_STYLE_LIBRARY[style];
+      for (let seed = 1; seed <= 8; seed += 1) {
+        const made = platformChunkLevel(seed, params({ style }));
+        expect(made.style).toBe(style);
+        expect(made.chunks[0], `${style}/${seed}`).toBe(own.signature);
+        for (const id of made.chunks) expect(own.weights[id], `${style}/${seed}: ${id}`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  // Měřidlo čte schody jen do mezery 1,2 m; hrany desek leží na půl jednotky a mezeru o kus natáhnou.
+  // Deska liché délky má hrany na půl jednotky: mezera vyjde o 0,5 delší, než o jakou schod požádal
+  // (věta „Jumping arcade game in the forest“ 13. 10.: 1200,5 při mezeře 1200 a schody měřidlo nepřečetlo).
+  it('schody mají mezeru nejvýš 1,2 m i s hranami desek na půl jednotky', () => {
+    expect(CHUNK_SHAPE.stairGap[1] + 0.5).toBeLessThanOrEqual(1200);
+    const slabs = platforms(platformChunkLevel(5, params({ style: 'canopy' })).level);
+    const gaps = slabs.slice(1, 5).map((slab, index) => slab.z - slab.d / 2 - ((slabs[index] as BodyInit).z + (slabs[index] as BodyInit).d / 2));
+    for (const gap of gaps) expect(gap).toBeLessThanOrEqual(1200);
   });
 
   it('nejlehčí úsek nebere pohyblivou plošinu, kry ani chodbu s ostny', () => {
