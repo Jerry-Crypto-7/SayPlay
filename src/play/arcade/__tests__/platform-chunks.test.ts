@@ -86,6 +86,16 @@ describe('knihovna úseků skákačky', () => {
   // Měřidlo čte schody jen do mezery 1,2 m; hrany desek leží na půl jednotky a mezeru o kus natáhnou.
   // Deska liché délky má hrany na půl jednotky: mezera vyjde o 0,5 delší, než o jakou schod požádal
   // (věta „Jumping arcade game in the forest“ 13. 10.: 1200,5 při mezeře 1200 a schody měřidlo nepřečetlo).
+  // R2: lekníny a koruny nemusí vylosovat chodbu s ostny; nebezpečí z věty se váže na hrot, takže hrot má každá úroveň.
+  it('každá úroveň každého stylu má aspoň jeden hrot', () => {
+    for (const style of PLATFORM_STYLES) for (const difficulty of PLATFORM_DIFFICULTIES) {
+      for (let seed = 1; seed <= 60; seed += 1) {
+        const bodies = platformChunkLevel(seed, params({ style, difficulty })).level.bodies;
+        expect(bodies.some((body) => body.kind === 'spikes'), `${style}/${difficulty}/${seed}`).toBe(true);
+      }
+    }
+  });
+
   it('schody mají mezeru nejvýš 1,2 m i s hranami desek na půl jednotky', () => {
     expect(CHUNK_SHAPE.stairGap[1] + 0.5).toBeLessThanOrEqual(1200);
     const slabs = platforms(platformChunkLevel(5, params({ style: 'canopy' })).level);

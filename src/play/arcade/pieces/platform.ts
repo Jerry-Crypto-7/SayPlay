@@ -519,7 +519,9 @@ function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number,
       }
     }
   });
-  lay({ gap: rng.int(0, 100), rise: 0, slab: { fixed: PLATFORM_LEVEL.finalSlab }, spikes: 0 }, TIERS[sectionDifficulty(params.difficulty, 2)], 0);
+  // Styl bez chodby s ostny (koruny, lekníny) může vylosovat úroveň bez hrotu; nebezpečí z věty pak nemá tělo. Hrot dostane poslední deska.
+  const spiked = extras.some((body) => body.kind === 'spikes');
+  lay({ gap: rng.int(0, 100), rise: 0, slab: { fixed: PLATFORM_LEVEL.finalSlab }, spikes: spiked ? 0 : 1 }, TIERS[sectionDifficulty(params.difficulty, 2)], 0);
 
   const lastSlab = slabs[slabs.length - 1] as BodyInit;
   const goalZ = lastSlab.z + lastSlab.d / 2 - 1500;
