@@ -638,3 +638,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wooden-signpost` | wooden signpost, direction sign | 4750 / 2372 |
 | `gen3d-mossy-fallen-log` | mossy fallen log, fallen tree | 4685 / 2316 |
 | `gen3d-exposed-tree-root` | exposed tree root | 4748 / 2372 |
+| `gen3d-volcanic-rock` | volcanic rock, lava rock, black rock | 4744 / 2364 |
+| `gen3d-log-cabin` | log cabin, wooden cabin | 4341 / 2145 |
+| `gen3d-oasis-well` | oasis well, desert well | 4748 / 2374 |
+| `gen3d-wooden-pier` | wooden pier, pier, jetty, dock | 4654 / 2283 |

@@ -28480,6 +28480,89 @@
           1.41981
         ]
       }
+    },
+    {
+      "assetId": "gen3d-volcanic-rock",
+      "tags": [
+        "volcanic rock",
+        "lava rock",
+        "black rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-volcanic-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.66681,
+          0,
+          -0.68256
+        ],
+        "max": [
+          0.66681,
+          0.99298,
+          0.68256
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-log-cabin",
+      "tags": [
+        "log cabin",
+        "wooden cabin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-log-cabin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.67453,
+          0,
+          -0.56367
+        ],
+        "max": [
+          0.67453,
+          0.99938,
+          0.56367
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-oasis-well",
+      "tags": [
+        "oasis well",
+        "desert well"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-oasis-well-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.46539,
+          0,
+          -1.46277
+        ],
+        "max": [
+          1.46539,
+          1.00001,
+          1.46277
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-pier",
+      "tags": [
+        "wooden pier",
+        "pier",
+        "jetty",
+        "dock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-pier-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.86318,
+          0,
+          -1.77129
+        ],
+        "max": [
+          2.86318,
+          0.99923,
+          1.77129
+        ]
+      }
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "50e20e5f8fedab2d6cabceae66d24cfb2601eabd590a92f25d07773e7e396663",
+ "catalogHash": "e0f48c38fe4309aa924ec1882e7d846381bdbd39c2b7a14e6bcbb227b9fdfc04",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1413,6 +1413,10 @@
   "gen3d-lifeguard-tower": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-wooden-signpost": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-mossy-fallen-log": {"class":"prop"},
-  "gen3d-exposed-tree-root": {"class":"prop"}
+  "gen3d-exposed-tree-root": {"class":"prop"},
+  "gen3d-volcanic-rock": {"class":"prop"},
+  "gen3d-log-cabin": {"class":"prop"},
+  "gen3d-oasis-well": {"class":"prop"},
+  "gen3d-wooden-pier": {"class":"prop"}
  }
 }
