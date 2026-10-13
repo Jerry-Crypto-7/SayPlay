@@ -401,7 +401,18 @@ export const shootStep: AddonBotStep =({ state, player, recent }, input, base) =
     px = now.x; py = now.y; pz = now.z;
   }
   const grounded = ((state[p + BODY.flags] as number) & FLAG.grounded) !== 0;
-  if (base.id === 'runner_bot' && (px % RUNNER.laneWidth !== 0 || recent.some((seen) => (seen.buttons & (BUTTON.LEFT | BUTTON.RIGHT)) !== 0))) return input;
+  if (base.id === 'runner_bot') {
+    // Přeběh pruhu dopočítá z vlastních stisků (jako ovládání běžce): nepřítel
+    // čeká v pruhu, do kterého robot přebíhá až před řadou, a robot se
+    // zpožděným pohledem by jinak vystřelil pozdě (R1).
+    let lane = state[p + BODY.aux0] as number;
+    for (const seen of [...recent, input]) {
+      if ((seen.buttons & BUTTON.LEFT) !== 0) lane = Math.max(-1, lane - 1);
+      if ((seen.buttons & BUTTON.RIGHT) !== 0) lane = Math.min(1, lane + 1);
+      px += Math.max(-RUNNER.laneSpeed, Math.min(RUNNER.laneSpeed, lane * RUNNER.laneWidth - px));
+    }
+    if (px !== lane * RUNNER.laneWidth) return input;
+  }
   if (base.id === 'platform_bot' && (!grounded || recent.some((seen) => (seen.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0))) return input;
   if (base.id === 'flap_bot') {
     let vy = state[p + BODY.vy] as number;

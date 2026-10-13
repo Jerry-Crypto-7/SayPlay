@@ -2,8 +2,8 @@
  * Brány obtížnosti na hrách s akcemi (P46A T6). Pásmo novice 0,3–0,7 dnes
  * nedrží ani hra bez akce (běžec 0/10, řízení 10/10), proto se každá buňka
  * soudí proti srovnatelné hře: stejné ovládání bez akce, střelba proti
- * doplňku `+shoot`. Akce nesmí hru zhoršit robotovi intermediate (pod 0,8
- * a pod srovnávací hru), novice nesmí vyhrávat víc než nad 0,7 a nad
+ * doplňku `+shoot`. Robot intermediate vyhraje aspoň 0,8 (běžec se střelbou
+ * do R1 jen 0,3, i bez akcí), novice nesmí vyhrávat víc než nad 0,7 a nad
  * srovnávací hru, a hráč, který nic nedělá, nevyhraje.
  */
 
@@ -61,7 +61,7 @@ describe.each(CONTROLS)('P46A difficulty gates with abilities on %s', (control) 
     const base = ratesOf(control, comparable(ability));
     const rates = ratesOf(control, { abilities: [ability] });
     expect(rates.idleWins, 'a player who does nothing wins').toBe(0);
-    expect(rates.intermediate, `intermediate, comparable game ${base.intermediate}`).toBeGreaterThanOrEqual(Math.min(0.8, base.intermediate));
+    expect(rates.intermediate, `intermediate, comparable game ${base.intermediate}`).toBeGreaterThanOrEqual(0.8);
     expect(rates.novice, `novice, comparable game ${base.novice}`).toBeLessThanOrEqual(Math.max(0.7, base.novice));
   }, 300_000);
 });
