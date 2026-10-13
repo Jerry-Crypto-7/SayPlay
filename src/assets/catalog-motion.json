@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "632fe4e4f296ec18eab5038adca3f93276cd76b022f3831a75547297317ed6a0",
+ "catalogHash": "40840a4ca740592919d26fb75630f027cab5261b8d6c22019f96cf60ff51b26d",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1413,7 +1413,6 @@
   "gen3d-lifeguard-tower": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-wooden-signpost": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-mossy-fallen-log": {"class":"prop"},
-  "gen3d-exposed-tree-root": {"class":"prop"},
   "gen3d-volcanic-rock": {"class":"prop"},
   "gen3d-log-cabin": {"class":"prop"},
   "gen3d-oasis-well": {"class":"prop"},
@@ -1424,6 +1423,10 @@
   "gen3d-aloe-plant": {"class":"prop"},
   "gen3d-park-bench": {"class":"prop"},
   "gen3d-brick-townhouse": {"class":"prop"},
-  "gen3d-white-picket-fence": {"class":"prop"}
+  "gen3d-white-picket-fence": {"class":"prop"},
+  "gen3d-cattail-reed": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-exposed-tree-root": {"class":"prop"},
+  "gen3d-dune-grass-clump": {"class":"prop"},
+  "gen3d-ice-block-pile": {"class":"prop"}
  }
 }

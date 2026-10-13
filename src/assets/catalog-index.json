@@ -28463,25 +28463,6 @@
       }
     },
     {
-      "assetId": "gen3d-exposed-tree-root",
-      "tags": [
-        "exposed tree root"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-exposed-tree-root-lod1.glb",
-      "bounds": {
-        "min": [
-          -1.43993,
-          0,
-          -1.41981
-        ],
-        "max": [
-          1.43993,
-          0.99925,
-          1.41981
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-volcanic-rock",
       "tags": [
         "volcanic rock",
@@ -28701,6 +28682,86 @@
           1.53561,
           0.99728,
           0.08652
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cattail-reed",
+      "tags": [
+        "cattail reed"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cattail-reed-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.06326,
+          0,
+          -0.06071
+        ],
+        "max": [
+          0.06326,
+          0.99996,
+          0.06071
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-exposed-tree-root",
+      "tags": [
+        "exposed tree root"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-exposed-tree-root-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.87213,
+          0,
+          -0.82026
+        ],
+        "max": [
+          0.87213,
+          0.99999,
+          0.82026
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dune-grass-clump",
+      "tags": [
+        "dune grass clump",
+        "dune grass",
+        "marram grass"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dune-grass-clump-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38369,
+          0,
+          -0.38566
+        ],
+        "max": [
+          0.38369,
+          0.99829,
+          0.38566
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-block-pile",
+      "tags": [
+        "ice block pile",
+        "ice blocks",
+        "ice chunks"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-block-pile-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.70403,
+          0,
+          -0.65915
+        ],
+        "max": [
+          0.70403,
+          0.99997,
+          0.65915
         ]
       }
     }

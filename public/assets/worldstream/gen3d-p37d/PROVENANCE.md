@@ -637,7 +637,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-lifeguard-tower` | lifeguard tower, lifeguard stand, lifeguard hut | 4630 / 2308 |
 | `gen3d-wooden-signpost` | wooden signpost, direction sign | 4750 / 2372 |
 | `gen3d-mossy-fallen-log` | mossy fallen log, fallen tree | 4685 / 2316 |
-| `gen3d-exposed-tree-root` | exposed tree root | 4748 / 2372 |
 | `gen3d-volcanic-rock` | volcanic rock, lava rock, black rock | 4744 / 2364 |
 | `gen3d-log-cabin` | log cabin, wooden cabin | 4341 / 2145 |
 | `gen3d-oasis-well` | oasis well, desert well | 4748 / 2374 |
@@ -649,3 +648,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-park-bench` | park bench | 4626 / 2271 |
 | `gen3d-brick-townhouse` | brick townhouse, row house | 4107 / 2027 |
 | `gen3d-white-picket-fence` | white picket fence, picket fence | 4731 / 2363 |
+| `gen3d-cattail-reed` | cattail reed | 4749 / 2370 |
+| `gen3d-exposed-tree-root` | exposed tree root | 4748 / 2374 |
+| `gen3d-dune-grass-clump` | dune grass clump, dune grass, marram grass | 4232 / 1931 |
+| `gen3d-ice-block-pile` | ice block pile, ice blocks, ice chunks | 3810 / 1801 |
