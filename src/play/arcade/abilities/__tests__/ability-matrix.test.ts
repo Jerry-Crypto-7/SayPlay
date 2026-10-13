@@ -11,7 +11,8 @@ import { type GenreSpec } from '@/play/genre/contract';
 import { compileGenre } from '@/play/genre/index';
 import { type ControlId, readGameSpec } from '../../../spec';
 import { arcadeWorldOf, preloadPhysics } from '../../compile';
-import { BUTTON } from '../../contract';
+import { BODY, BUTTON, HEADER, ROLE, UNIT, bodyBase } from '../../contract';
+import { STRIKE, inStrikeReach } from '../strike';
 import { loadRapier } from '../../physics/world';
 import { runBot, verifyArcade } from '../../verify';
 import flap from '../../__fixtures__/flap.json';
@@ -48,6 +49,21 @@ describe('P46A ability matrix', () => {
   it('every control that takes abilities has a fixture to prove them on', () => {
     const missing = (Object.keys(CAPABILITIES) as ControlId[]).filter((control) => CAPABILITIES[control].abilities.length > 0 && FIXTURES[control] === undefined);
     expect(missing).toEqual([]);
+  });
+
+  // Robot arény jde k pronásledovateli čelem, takže matice dosah za zády nevidí; hráč ho potřebuje.
+  it('top-down strike reaches a pursuer behind the hero', () => {
+    const read = readGameSpec({ ...(FIXTURES.move_free as object), abilities: ['strike'] });
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    const made = arcadeWorldOf(read.value, 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    expect(JSON.stringify(made.world.rules)).toContain('"verb":"strike","around":true');
+    const state = Int32Array.from(made.world.initial);
+    const chaser = Array.from({ length: state[HEADER.bodyCount] as number }, (_v, i) => i).find((i) => state[bodyBase(i) + BODY.role] === ROLE.chaser) as number;
+    state[bodyBase(chaser) + BODY.x] = state[bodyBase(0) + BODY.x] as number;
+    state[bodyBase(chaser) + BODY.z] = (state[bodyBase(0) + BODY.z] as number) - 2 * UNIT - STRIKE.back;
+    expect(inStrikeReach(state, 0, chaser, 0, true)).toBe(true);
+    expect(inStrikeReach(state, 0, chaser, 0, false)).toBe(false);
   });
 
   it.each(CELLS)('%s + %s: the bot presses it and the verb is proved', (control, ability) => {
