@@ -501,7 +501,107 @@ export function withKit(props: readonly SceneryKind[], kit: readonly KitModel[])
 /** Podzim z věty (P46G T4): jen slovo, „waterfall“ ani „falling“ ne. */
 const AUTUMN = /\bautumn\w*|\bfall\b/;
 
-/** Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem, rekvizity prostředí, podzim) a jízda hrdiny. */
+/** Nálada z věty (P46G T5): co věta řekne o světle, scéna ukáže. */
+export type Mood = 'spooky' | 'storm' | 'gloom' | 'fog' | 'bright' | 'dusk';
+
+/** Slova → nálada. Pořadí rozhoduje: strašidelný temný les je strašidelný, bouřka je tmavá i bez „dark“. */
+const MOOD_WORDS: readonly (readonly [Mood, RegExp])[] = [
+  ['spooky', /\b(?:spooky|haunted|creepy)\b/],
+  ['storm', /\b(?:storm|stormy|rain|rainy|raining)\b/],
+  ['gloom', /\b(?:dark|darkness|gloomy|shadowy)\b/],
+  ['fog', /\b(?:fog|foggy|mist|misty)\b/],
+  ['bright', /\b(?:sunny|bright)\b/],
+  ['dusk', /\b(?:sunset|dusk)\b/],
+];
+
+/** Nálada ze slov místa i nálady specu; `null` = věta o světle nic neřekne a sada zůstane, jaká byla. */
+export function moodFor(setting: string, mood: string): Mood | null {
+  const text = `${setting} ${mood}`.toLowerCase();
+  return MOOD_WORDS.find(([, pattern]) => pattern.test(text))?.[0] ?? null;
+}
+
+/**
+ * Úprava sady náladou: obloha, obzor (= barva mlhy) a polokoule zespodu jdou
+ * o `amount` k `tone`, světlo shora a slunce k `lightTone`; síla polokoule,
+ * slunce, záře a začátek a konec mlhy se násobí.
+ */
+interface MoodShift {
+  readonly tone: string;
+  readonly lightTone: string;
+  readonly amount: number;
+  readonly light: number;
+  readonly sun: number;
+  readonly glow: number;
+  readonly fog: readonly [near: number, far: number];
+}
+
+/*
+ * Tóny oblohy mají zelenou aspoň jako modrou: směs s rudou oblohou sopky tak
+ * jde přes šedou, ne přes fialovou.
+ */
+const MOOD_SHIFTS: Readonly<Record<Exclude<Mood, 'dusk'>, MoodShift>> = {
+  // Šero: tlumené světlo, tmavší mlha, studené barvy.
+  gloom: { tone: '#283a3a', lightTone: '#a9bdc8', amount: 0.65, light: 0.9, sun: 0.45, glow: 0.15, fog: [0.6, 0.8] },
+  // Strašidelno: šero do zelenomodra (ne do fialova) a hustší mlha.
+  spooky: { tone: '#1d3a37', lightTone: '#a3d6c8', amount: 0.7, light: 0.85, sun: 0.3, glow: 0.15, fog: [0.45, 0.65] },
+  // Bouřka: tmavé šedé nebe; déšť kreslí `Weather.tsx`.
+  storm: { tone: '#3a4a4a', lightTone: '#b0bcc4', amount: 0.7, light: 0.9, sun: 0.35, glow: 0.08, fog: [0.6, 0.8] },
+  // Mlha: světlá a blíž.
+  fog: { tone: '#c8d0d0', lightTone: '#e2e8ec', amount: 0.6, light: 1, sun: 0.6, glow: 0.4, fog: [0.3, 0.55] },
+  // Jasno: barvy sady, silnější slunce a dohled dál.
+  bright: { tone: '#ffffff', lightTone: '#ffffff', amount: 0, light: 1.1, sun: 1.2, glow: 1, fog: [1.25, 1.25] },
+};
+
+/** Noc nad sadou: slunce je měsíc – studené, slabé, záře nízko. */
+const NIGHT = { sky: '#101d32', skyTop: '#050d1b', horizon: '#172c45', light: ['#92b9df', '#283747', 0.8], sun: 0.35, sunColor: '#bcdcff', glow: 0.12 } as const;
+const DUSK = { sky: '#785944', skyTop: '#233a51', horizon: '#d59461', light: ['#e3b28b', '#4c4137', 0.95], sun: 0.75, sunColor: '#ffd1a0', glow: 0.55 } as const;
+
+/** Směs dvou `#rrggbb` po kanálech. */
+const mix = (from: string, to: string, t: number): string =>
+  `#${[1, 3, 5]
+    .map((at) => {
+      const a = Number.parseInt(from.slice(at, at + 2), 16);
+      return Math.round(a + (Number.parseInt(to.slice(at, at + 2), 16) - a) * t)
+        .toString(16)
+        .padStart(2, '0');
+    })
+    .join('')}`;
+
+/** Relativní jas `#rrggbb` (lineární sRGB). */
+function luminance(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((at) => {
+    const channel = Number.parseInt(hex.slice(at, at + 2), 16) / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** Světlo na matné ploše: polokoule shora a slunce. simplified: bez úhlů a ACES – stačí na srovnání nálady s nocí. */
+const brightness = (look: Pick<Look, 'light' | 'sun' | 'sunColor'>): number => look.light[2] * luminance(look.light[0]) + look.sun * luminance(look.sunColor);
+
+/** Sada v náladě. Světlo neklesne pod noc: hrdina a překážky zůstanou proti zemi čitelné aspoň jako v noci. */
+function withMood(look: Look, shift: MoodShift): Look {
+  const tone = (hex: string) => mix(hex, shift.tone, shift.amount);
+  const toLight = (hex: string) => mix(hex, shift.lightTone, shift.amount);
+  const moody = { light: [toLight(look.light[0]), tone(look.light[1]), look.light[2] * shift.light] as const, sun: look.sun * shift.sun, sunColor: toLight(look.sunColor) };
+  const lift = Math.max(1, brightness(NIGHT) / brightness(moody));
+  return {
+    ...look,
+    sky: tone(look.sky),
+    skyTop: tone(look.skyTop),
+    horizon: tone(look.horizon),
+    light: [moody.light[0], moody.light[1], moody.light[2] * lift],
+    sun: moody.sun * lift,
+    sunColor: moody.sunColor,
+    glow: look.glow * shift.glow,
+    fog: [look.fog[0] * shift.fog[0], look.fog[1] * shift.fog[1]],
+  };
+}
+
+/**
+ * Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem, rekvizity prostředí, podzim),
+ * jízda hrdiny, denní doba a nálada. Noc přebije náladu; věta bez slov nálady a denní doby má sadu beze změny.
+ */
 export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay }): Look {
   const look = LOOKS[lookOf(theme)];
   const setting = theme.setting.toLowerCase();
@@ -515,8 +615,9 @@ export function sceneLook(theme: { readonly setting: string; readonly mood: stri
     ground === look.ground && !afloat && !ride && kit.length === 0 && surface === look.surface && !autumn
       ? look
       : { ...look, ground, afloat, surface, props: withKit(look.props, kit), ...(ride ? { ride } : {}), ...(autumn ? { flora: { ...look.flora!, autumn } } : {}) };
-  const time = theme.timeOfDay ?? timeOfDayFor(theme.setting);
-  if (time === 'night') return { ...placed, sky: '#101d32', skyTop: '#050d1b', horizon: '#172c45', light: ['#92b9df', '#283747', 0.8], sun: 0.35, sunColor: '#bcdcff', glow: 0.12, exposure: Math.min(placed.exposure, 1) };
-  if (time === 'dusk') return { ...placed, sky: '#785944', skyTop: '#233a51', horizon: '#d59461', light: ['#e3b28b', '#4c4137', 0.95], sun: 0.75, sunColor: '#ffd1a0', glow: 0.55 };
-  return placed;
+  const mood = moodFor(theme.setting, theme.mood);
+  const time = theme.timeOfDay ?? timeOfDayFor(theme.setting) ?? (mood === 'dusk' ? 'dusk' : null);
+  if (time === 'night') return { ...placed, ...NIGHT, exposure: Math.min(placed.exposure, 1) };
+  const timed = time === 'dusk' ? { ...placed, ...DUSK } : placed;
+  return mood === null || mood === 'dusk' ? timed : withMood(timed, MOOD_SHIFTS[mood]);
 }
