@@ -1,0 +1,1066 @@
+{
+ "schema": "p45-fun.v1",
+ "set": "panel",
+ "compiler": "play-compiler-v11/arcade-v2",
+ "profile": "intermediate",
+ "summary": {
+  "n": 40,
+  "playable": 40,
+  "deadTimeMedianS": 5.32,
+  "risingShare": 0.53,
+  "behavioursMedian": 1,
+  "finaleShare": 0.23,
+  "eventsPerSMedian": 1.09,
+  "nearMissesMedian": 0,
+  "livesLostMedian": 0,
+  "targets": [
+   {
+    "metric": "deadTimeMedianS",
+    "goal": "<= 3",
+    "value": 5.32,
+    "met": false
+   },
+   {
+    "metric": "risingShare",
+    "goal": ">= 0.70",
+    "value": 0.53,
+    "met": false
+   },
+   {
+    "metric": "behavioursMedian",
+    "goal": ">= 2",
+    "value": 1,
+    "met": false
+   },
+   {
+    "metric": "finaleShare",
+    "goal": ">= 0.50",
+    "value": 0.23,
+    "met": false
+   }
+  ],
+  "met": false
+ },
+ "rows": [
+  {
+   "id": "f01",
+   "genre": "arena.collect",
+   "seed": 2029908878,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.98,
+    "longestGapS": 4.7,
+    "medianGapS": 0.39,
+    "intensityRatio": 1.25,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [
+     "chaser:chase+spawned"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "f02",
+   "genre": "duel",
+   "seed": 1765971460,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.06,
+    "longestGapS": 2.25,
+    "medianGapS": 0.95,
+    "intensityRatio": 1.38,
+    "rising": true,
+    "nearMisses": 1,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [
+     "enemy:static"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "f03",
+   "genre": "shooter",
+   "seed": 980376029,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 2.52,
+    "longestGapS": 5.83,
+    "medianGapS": 0.17,
+    "intensityRatio": 3.96,
+    "rising": true,
+    "nearMisses": 1,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 50,
+    "behaviours": [
+     "enemy:chase",
+     "enemy:chase+spawned",
+     "enemy:roam+spawned"
+    ],
+    "behaviourCount": 3,
+    "finale": {
+     "present": true,
+     "why": "boss"
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "f05",
+   "genre": "quest.spatial",
+   "seed": 21180790,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.37,
+    "longestGapS": 13.48,
+    "medianGapS": 1.41,
+    "intensityRatio": 0.1,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 1,
+    "playerDied": false,
+    "kills": 5,
+    "behaviours": [
+     "chaser:chase",
+     "chaser:chase+spawned"
+    ],
+    "behaviourCount": 2,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "f10",
+   "genre": "arena.fight",
+   "seed": 1596118451,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.64,
+    "longestGapS": 2.17,
+    "medianGapS": 0.56,
+    "intensityRatio": 1.1,
+    "rising": true,
+    "nearMisses": 30,
+    "livesLost": 5,
+    "playerDied": false,
+    "kills": 7,
+    "behaviours": [
+     "enemy:roam",
+     "enemy:roam+spawned",
+     "hazard:chase+spawned",
+     "hazard:roam+spawned"
+    ],
+    "behaviourCount": 4,
+    "finale": {
+     "present": true,
+     "why": "boss"
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "f12",
+   "genre": "control:glide",
+   "seed": 464079286,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.46,
+    "longestGapS": 2.15,
+    "medianGapS": 1.85,
+    "intensityRatio": 1,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "f17",
+   "genre": "flap",
+   "seed": 2115210011,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 2.25,
+    "longestGapS": 2.98,
+    "medianGapS": 0.41,
+    "intensityRatio": 1.71,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "f18",
+   "genre": "control:walker",
+   "seed": 307148749,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0,
+    "longestGapS": 26.73,
+    "medianGapS": 26.73,
+    "intensityRatio": null,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "m01",
+   "genre": "arena.escape",
+   "seed": 467943004,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.2,
+    "longestGapS": 16.67,
+    "medianGapS": 1.98,
+    "intensityRatio": 0.4,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 1,
+    "playerDied": false,
+    "kills": 2,
+    "behaviours": [
+     "chaser:chase+spawned",
+     "chaser:static"
+    ],
+    "behaviourCount": 2,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "m02",
+   "genre": "arena.collect",
+   "seed": 1608071755,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.13,
+    "longestGapS": 5.78,
+    "medianGapS": 0.53,
+    "intensityRatio": 0.89,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [
+     "chaser:chase+spawned"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "m03",
+   "genre": "control:steer",
+   "seed": 1219393165,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.54,
+    "longestGapS": 5.4,
+    "medianGapS": 1.07,
+    "intensityRatio": 1,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "m04",
+   "genre": "quest.station",
+   "seed": 71607569,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.21,
+    "longestGapS": 1.8,
+    "medianGapS": 0.5,
+    "intensityRatio": 0.93,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "m06",
+   "genre": "control:steer",
+   "seed": 1992089601,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.5,
+    "longestGapS": 5.68,
+    "medianGapS": 1.21,
+    "intensityRatio": 1.5,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "m07",
+   "genre": "control:walker",
+   "seed": 2062223603,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0,
+    "longestGapS": 21.92,
+    "medianGapS": 21.92,
+    "intensityRatio": null,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "m08",
+   "genre": "runner",
+   "seed": 971846864,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.21,
+    "longestGapS": 10,
+    "medianGapS": 0.26,
+    "intensityRatio": 7.86,
+    "rising": true,
+    "nearMisses": 3,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 14,
+    "behaviours": [
+     "hazard:chase+spawned",
+     "hazard:roam+spawned"
+    ],
+    "behaviourCount": 2,
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "m09",
+   "genre": "platformer",
+   "seed": 1611622728,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.26,
+    "longestGapS": 3.53,
+    "medianGapS": 0.43,
+    "intensityRatio": 0.83,
+    "rising": false,
+    "nearMisses": 16,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [
+     "hazard:static"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "m11",
+   "genre": "control:move_free",
+   "seed": 415905883,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.16,
+    "longestGapS": 6.32,
+    "medianGapS": 3.17,
+    "intensityRatio": null,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 1,
+    "behaviours": [
+     "enemy:roam"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "m16",
+   "genre": "platformer",
+   "seed": 14821989,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.11,
+    "longestGapS": 18.98,
+    "medianGapS": 6.18,
+    "intensityRatio": 1,
+    "rising": false,
+    "nearMisses": 18,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [
+     "hazard:static"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "n01",
+   "genre": "timing.stack",
+   "seed": 476065825,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.18,
+    "longestGapS": 1.02,
+    "medianGapS": 0.85,
+    "intensityRatio": 1.5,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "n02",
+   "genre": "arena.escape",
+   "seed": 459205541,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.23,
+    "longestGapS": 9.2,
+    "medianGapS": 4.03,
+    "intensityRatio": 0.4,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 2,
+    "playerDied": false,
+    "kills": 2,
+    "behaviours": [
+     "chaser:chase+spawned",
+     "chaser:static"
+    ],
+    "behaviourCount": 2,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "n04",
+   "genre": "timing.stack",
+   "seed": 1283607489,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.14,
+    "longestGapS": 1.9,
+    "medianGapS": 0.87,
+    "intensityRatio": 1.4,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "u01",
+   "genre": "rhythm",
+   "seed": 359369212,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.32,
+    "longestGapS": 4,
+    "medianGapS": 0.5,
+    "intensityRatio": 5.6,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "u02",
+   "genre": "rhythm",
+   "seed": 567995346,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.28,
+    "longestGapS": 4,
+    "medianGapS": 0.5,
+    "intensityRatio": 5.4,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "u03",
+   "genre": "quest.station",
+   "seed": 2101970384,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.19,
+    "longestGapS": 1.98,
+    "medianGapS": 0.5,
+    "intensityRatio": 0.93,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "u06",
+   "genre": "quest.spatial",
+   "seed": 1969247423,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.4,
+    "longestGapS": 17.38,
+    "medianGapS": 0.97,
+    "intensityRatio": 0.44,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 5,
+    "behaviours": [
+     "chaser:chase",
+     "chaser:chase+spawned"
+    ],
+    "behaviourCount": 2,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "d01",
+   "genre": "control:ball",
+   "seed": 1448805176,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.69,
+    "longestGapS": 3.27,
+    "medianGapS": 0.3,
+    "intensityRatio": 1,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 5,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "d03",
+   "genre": "quest.station",
+   "seed": 1279517972,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.25,
+    "longestGapS": 1.65,
+    "medianGapS": 0.5,
+    "intensityRatio": 1.06,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "d04",
+   "genre": "shooter",
+   "seed": 809519851,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 2.26,
+    "longestGapS": 5.5,
+    "medianGapS": 0.17,
+    "intensityRatio": 3.48,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 42,
+    "behaviours": [
+     "enemy:chase",
+     "enemy:chase+spawned"
+    ],
+    "behaviourCount": 2,
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "d09",
+   "genre": "timing.stack",
+   "seed": 1726936063,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.12,
+    "longestGapS": 2.65,
+    "medianGapS": 0.85,
+    "intensityRatio": 1.6,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "h02",
+   "genre": "control:steer",
+   "seed": 1227587564,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.51,
+    "longestGapS": 5.35,
+    "medianGapS": 1.25,
+    "intensityRatio": 1.4,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [
+     "enemy:chase"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "h03",
+   "genre": "throw",
+   "seed": 328920478,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.18,
+    "longestGapS": 2.27,
+    "medianGapS": 0.97,
+    "intensityRatio": 0.67,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 20,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "h05",
+   "genre": "duel",
+   "seed": 727311170,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.98,
+    "longestGapS": 2.27,
+    "medianGapS": 0.99,
+    "intensityRatio": 1.38,
+    "rising": true,
+    "nearMisses": 1,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [
+     "enemy:static"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "j01",
+   "genre": "arena.collect",
+   "seed": 1760529582,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.22,
+    "longestGapS": 4.55,
+    "medianGapS": 0.33,
+    "intensityRatio": 1.75,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [
+     "chaser:chase+spawned"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "j04",
+   "genre": "control:walker",
+   "seed": 936404094,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.08,
+    "longestGapS": 11.47,
+    "medianGapS": 6.02,
+    "intensityRatio": null,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "j05",
+   "genre": "quest.spatial",
+   "seed": 1823895065,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.45,
+    "longestGapS": 28.6,
+    "medianGapS": 0.63,
+    "intensityRatio": 0.57,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 8,
+    "behaviours": [
+     "chaser:chase",
+     "chaser:chase+spawned"
+    ],
+    "behaviourCount": 2,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "j08",
+   "genre": "arena.fight",
+   "seed": 1631427981,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.38,
+    "longestGapS": 11.62,
+    "medianGapS": 0.57,
+    "intensityRatio": 0.41,
+    "rising": false,
+    "nearMisses": 37,
+    "livesLost": 6,
+    "playerDied": false,
+    "kills": 7,
+    "behaviours": [
+     "enemy:roam",
+     "enemy:roam+spawned",
+     "hazard:chase+spawned",
+     "hazard:roam+spawned"
+    ],
+    "behaviourCount": 4,
+    "finale": {
+     "present": true,
+     "why": "boss"
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "s002",
+   "genre": "arena.escape",
+   "seed": 1291481298,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.8,
+    "longestGapS": 6.27,
+    "medianGapS": 0.02,
+    "intensityRatio": 1,
+    "rising": false,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 2,
+    "behaviours": [
+     "chaser:chase+spawned",
+     "chaser:static"
+    ],
+    "behaviourCount": 2,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "s003",
+   "genre": "runner",
+   "seed": 1924202525,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 0.8,
+    "longestGapS": 6.87,
+    "medianGapS": 0.17,
+    "intensityRatio": 1.08,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [
+     "chaser:roam"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "s021",
+   "genre": "platformer",
+   "seed": 292625551,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 1.17,
+    "longestGapS": 5.28,
+    "medianGapS": 0.18,
+    "intensityRatio": 0.55,
+    "rising": false,
+    "nearMisses": 19,
+    "livesLost": 1,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [
+     "hazard:static"
+    ],
+    "behaviourCount": 1,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  },
+  {
+   "id": "s035",
+   "genre": "flap",
+   "seed": 1363119617,
+   "playable": true,
+   "metrics": {
+    "eventsPerS": 2.22,
+    "longestGapS": 2.98,
+    "medianGapS": 0.4,
+    "intensityRatio": 1.8,
+    "rising": true,
+    "nearMisses": 0,
+    "livesLost": 0,
+    "playerDied": false,
+    "kills": 0,
+    "behaviours": [],
+    "behaviourCount": 0,
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   },
+   "issues": []
+  }
+ ]
+}
