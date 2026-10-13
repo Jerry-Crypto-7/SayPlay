@@ -27735,6 +27735,145 @@
           0.35492
         ]
       }
+    },
+    {
+      "assetId": "gen3d-dead-pine-tree",
+      "tags": [
+        "dead pine tree",
+        "dead tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dead-pine-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32723,
+          0,
+          -0.34883
+        ],
+        "max": [
+          0.32723,
+          0.99816,
+          0.34883
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bamboo-cluster",
+      "tags": [
+        "bamboo cluster"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bamboo-cluster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1545,
+          0,
+          -0.16442
+        ],
+        "max": [
+          0.1545,
+          1.00001,
+          0.16442
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-prickly-pear-cactus",
+      "tags": [
+        "prickly pear cactus",
+        "opuntia"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-prickly-pear-cactus-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29925,
+          0,
+          -0.27639
+        ],
+        "max": [
+          0.29925,
+          0.99913,
+          0.27639
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-scree-rock-pile",
+      "tags": [
+        "scree rock pile",
+        "rock pile"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-scree-rock-pile-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.25624,
+          0,
+          -1.22413
+        ],
+        "max": [
+          1.25624,
+          0.99991,
+          1.22413
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-layered-canyon-rock",
+      "tags": [
+        "layered canyon rock",
+        "butte",
+        "canyon rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-layered-canyon-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.89228,
+          0,
+          -0.55375
+        ],
+        "max": [
+          0.89228,
+          0.99893,
+          0.55375
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-poplar-tree",
+      "tags": [
+        "poplar tree",
+        "poplar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-poplar-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34532,
+          0,
+          -0.3349
+        ],
+        "max": [
+          0.34532,
+          0.99988,
+          0.3349
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-leaning-palm-tree",
+      "tags": [
+        "leaning palm tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-leaning-palm-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3139,
+          0,
+          -0.31959
+        ],
+        "max": [
+          0.3139,
+          1.00001,
+          0.31959
+        ]
+      }
     }
   ]
 }

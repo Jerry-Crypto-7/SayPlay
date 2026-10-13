@@ -601,3 +601,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-maple-tree` | maple tree, maple | 4488 / 2197 |
 | `gen3d-agave-plant` | agave plant, agave | 4609 / 2265 |
 | `gen3d-willow-tree` | willow tree, weeping willow, willow | 4487 / 2077 |
+| `gen3d-dead-pine-tree` | dead pine tree, dead tree | 4379 / 2028 |
+| `gen3d-bamboo-cluster` | bamboo cluster | 4728 / 2362 |
+| `gen3d-prickly-pear-cactus` | prickly pear cactus, opuntia | 4552 / 2222 |
+| `gen3d-scree-rock-pile` | scree rock pile, rock pile | 4424 / 2084 |
+| `gen3d-layered-canyon-rock` | layered canyon rock, butte, canyon rock | 4653 / 2311 |
+| `gen3d-poplar-tree` | poplar tree, poplar | 4741 / 2362 |
+| `gen3d-leaning-palm-tree` | leaning palm tree | 4321 / 2010 |
