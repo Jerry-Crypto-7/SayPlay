@@ -535,3 +535,12 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-spell-book` | spell book | 4684 / 2295 |
 | `gen3d-golden-statue` | golden statue | 4496 / 2162 |
 | `gen3d-tomahawk` | tomahawk | 4748 / 2374 |
+| `gen3d-rune-stone` | rune stone | 4644 / 2277 |
+| `gen3d-pocket-watch` | pocket watch | 4747 / 2354 |
+| `gen3d-throwing-knife` | throwing knife | 4750 / 2372 |
+| `gen3d-spyglass` | spyglass | 4748 / 2374 |
+| `gen3d-musket` | musket | 4746 / 2366 |
+| `gen3d-ancient-scroll` | ancient scroll | 4639 / 2256 |
+| `gen3d-flintlock-pistol` | flintlock pistol | 4729 / 2351 |
+| `gen3d-music-box` | music box | 4330 / 2039 |
+| `gen3d-purse` | purse | 4748 / 2369 |

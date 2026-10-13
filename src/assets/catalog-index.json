@@ -26438,6 +26438,177 @@
           0.0607
         ]
       }
+    },
+    {
+      "assetId": "gen3d-rune-stone",
+      "tags": [
+        "rune stone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rune-stone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16457,
+          0,
+          -0.16484
+        ],
+        "max": [
+          0.16457,
+          1.00001,
+          0.16484
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pocket-watch",
+      "tags": [
+        "pocket watch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pocket-watch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.62402,
+          0,
+          -0.4539
+        ],
+        "max": [
+          0.62402,
+          0.99941,
+          0.4539
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-throwing-knife",
+      "tags": [
+        "throwing knife"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-throwing-knife-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11105,
+          0,
+          -0.08499
+        ],
+        "max": [
+          0.11105,
+          0.99931,
+          0.08499
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spyglass",
+      "tags": [
+        "spyglass"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spyglass-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12556,
+          0,
+          -0.12562
+        ],
+        "max": [
+          0.12556,
+          1.00001,
+          0.12562
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-musket",
+      "tags": [
+        "musket"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-musket-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.82084,
+          0,
+          -0.15329
+        ],
+        "max": [
+          1.82084,
+          1.00001,
+          0.15329
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ancient-scroll",
+      "tags": [
+        "ancient scroll"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ancient-scroll-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42246,
+          0,
+          -0.09042
+        ],
+        "max": [
+          0.42246,
+          0.99971,
+          0.09042
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flintlock-pistol",
+      "tags": [
+        "flintlock pistol"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flintlock-pistol-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.01285,
+          0,
+          -0.14741
+        ],
+        "max": [
+          1.01285,
+          0.99137,
+          0.14741
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-music-box",
+      "tags": [
+        "music box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-music-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42395,
+          0,
+          -0.36097
+        ],
+        "max": [
+          0.42395,
+          0.99964,
+          0.36097
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-purse",
+      "tags": [
+        "purse"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-purse-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4527,
+          0,
+          -0.23059
+        ],
+        "max": [
+          0.4527,
+          0.99942,
+          0.23059
+        ]
+      }
     }
   ]
 }

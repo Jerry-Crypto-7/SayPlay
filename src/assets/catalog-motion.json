@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "8dfc00985ee41a84af834a339aca782da8f7a14fdc5916b39bf492474d80dca5",
+ "catalogHash": "47493ebf6003ead8a70b70731f68e8e16d4b4f1cb9dddef0bbbb23bb31323107",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1310,6 +1310,15 @@
   "gen3d-plasma-gun": {"class":"prop"},
   "gen3d-spell-book": {"class":"prop"},
   "gen3d-golden-statue": {"class":"prop"},
-  "gen3d-tomahawk": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-tomahawk": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-rune-stone": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-pocket-watch": {"class":"prop"},
+  "gen3d-throwing-knife": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-spyglass": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-musket": {"class":"prop"},
+  "gen3d-ancient-scroll": {"class":"prop"},
+  "gen3d-flintlock-pistol": {"class":"prop"},
+  "gen3d-music-box": {"class":"prop"},
+  "gen3d-purse": {"class":"prop"}
  }
 }
