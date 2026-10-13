@@ -27185,6 +27185,101 @@
           0.52615
         ]
       }
+    },
+    {
+      "assetId": "gen3d-stegosaurus",
+      "tags": [
+        "stegosaurus"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stegosaurus-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41728,
+          0,
+          -1.03659
+        ],
+        "max": [
+          0.41728,
+          0.99667,
+          1.03659
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-giant-gear",
+      "tags": [
+        "giant gear"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-giant-gear-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07699,
+          0,
+          -0.51127
+        ],
+        "max": [
+          0.07699,
+          0.99997,
+          0.51127
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-killer-tomato",
+      "tags": [
+        "killer tomato"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-killer-tomato-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46278,
+          0,
+          -0.45936
+        ],
+        "max": [
+          0.46278,
+          0.99828,
+          0.45936
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pumpkin-head",
+      "tags": [
+        "pumpkin head"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pumpkin-head-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35306,
+          0,
+          -0.16993
+        ],
+        "max": [
+          0.35306,
+          0.99997,
+          0.16993
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-barbed-wire",
+      "tags": [
+        "barbed wire"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-barbed-wire-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.81248,
+          0,
+          -0.61774
+        ],
+        "max": [
+          0.81248,
+          0.99843,
+          0.61774
+        ]
+      }
     }
   ]
 }

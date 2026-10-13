@@ -574,3 +574,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-roadblock` | roadblock, road barrier, barricade | 4713 / 2333 |
 | `gen3d-praying-mantis` | praying mantis, mantis | 4740 / 2361 |
 | `gen3d-thorn-bush` | thorn bush | 4347 / 2113 |
+| `gen3d-stegosaurus` | stegosaurus | 4748 / 2368 |
+| `gen3d-giant-gear` | giant gear | 4750 / 2372 |
+| `gen3d-killer-tomato` | killer tomato | 4369 / 2155 |
+| `gen3d-pumpkin-head` | pumpkin head | 4681 / 2224 |
+| `gen3d-barbed-wire` | barbed wire | 4699 / 2329 |

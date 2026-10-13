@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "2a16551deeae6669fb876fe92242a7c2975ceab91b255a1c77aa03319758b373",
+ "catalogHash": "afecab2c554eb075881af612449df23231a64d85fe4609a7d656e2f50be23a91",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1349,6 +1349,11 @@
   "gen3d-tnt-crate": {"class":"prop"},
   "gen3d-roadblock": {"class":"prop"},
   "gen3d-praying-mantis": {"class":"prop"},
-  "gen3d-thorn-bush": {"class":"prop"}
+  "gen3d-thorn-bush": {"class":"prop"},
+  "gen3d-stegosaurus": {"class":"prop"},
+  "gen3d-giant-gear": {"class":"prop"},
+  "gen3d-killer-tomato": {"class":"prop"},
+  "gen3d-pumpkin-head": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-barbed-wire": {"class":"prop"}
  }
 }
