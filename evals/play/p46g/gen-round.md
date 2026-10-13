@@ -12,3 +12,4 @@ Psaný smyčkou `D:/caches/p46g/loop.mjs` po každém kole. **Model** = obrázek
 | 6 | forest snow jungle desert meadow coast | 10 | 7 | 7/7 | 7 | – | dead pine tree, bamboo cluster, prickly pear cactus, scree rock pile, layered canyon rock, poplar tree, leaning palm tree | – |
 | 7 | forest jungle desert snow meadow | 10 | 0 | 0/0 | 0 | – | – | – |
 | 8 | coast jungle meadow forest desert snow | 10 | 5 | 5/5 | 4 | – | olive tree, larch tree, rubber tree, cholla cactus | timeouts alone under GPU load: src/assets/__tests__/external-import.test.ts |
+| 9 (opakování) | forest snow jungle desert meadow | 10 | 0 | 0/0 | 0 | – | – | – |
