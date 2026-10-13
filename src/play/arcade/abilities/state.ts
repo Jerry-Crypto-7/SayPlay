@@ -8,7 +8,7 @@
 
 import { z } from 'zod';
 
-import { ABILITIES, ABILITY_SLOTS, type AbilityId, ARCADE_HZ, ARCADE_LIMITS, BUTTON, bodyBase } from '../contract';
+import { ABILITIES, ABILITY_SLOTS, type AbilityId, ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, BUTTON, bodyBase } from '../contract';
 
 /** Cooldown a délka aktivního okna v tikách (60 Hz). */
 export const ABILITY_TIMING: Readonly<Record<AbilityId, { readonly cooldown: number; readonly active: number }>> = {
@@ -71,10 +71,21 @@ export const guardParams = z
   .object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), dash: z.int().min(0).max(1).optional(), shield: z.literal(true).optional() })
   .strict();
 
-/** Chrání hrdinu dash nebo nabitý štít? Pohlcení samo (zmizení těla, spotřebu náboje) dělají pravidla akcí. */
-export function guarded(state: Int32Array, guard: z.infer<typeof guardParams>): boolean {
-  if (guard.dash !== undefined && abilityActive(state, guard.keeper, guard.dash) > 0) return true;
-  return guard.shield === true && (state[bodyBase(guard.keeper) + ABILITY_SLOTS.shield] as number) > 0;
+/**
+ * Co hrdinu před nárazem chrání: dash (náraz nic nevezme), nabitý štít (náraz platí, jen
+ * když ho blok téhož tiku nepohltil – `ifAlive`), nebo nic. Pohlcení samo (zmizení těla,
+ * spotřebu náboje) dělají pravidla akcí.
+ */
+export function guardOf(state: Int32Array, guard: z.infer<typeof guardParams>): 'dash' | 'shield' | undefined {
+  if (guard.dash !== undefined && abilityActive(state, guard.keeper, guard.dash) > 0) return 'dash';
+  return guard.shield === true && (state[bodyBase(guard.keeper) + ABILITY_SLOTS.shield] as number) > 0 ? 'shield' : undefined;
+}
+
+/** Efekty nárazu do těla `other` pod ochranou `guard` (`hit`, `steer_crash`). */
+export function guardedHit(state: Int32Array, guard: z.infer<typeof guardParams> | undefined, other: number, effects: ArcadeEffect[]): ArcadeEffect[] {
+  const by = guard === undefined ? undefined : guardOf(state, guard);
+  if (by === 'dash') return [];
+  return by === 'shield' && effects.length > 0 ? [{ kind: 'ifAlive', body: other, effects }] : effects;
 }
 
 /** Zbývající aktivní tiky akce ve slotu `slot` (0 = A, 1 = B). */

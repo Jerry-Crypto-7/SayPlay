@@ -56,7 +56,7 @@ import {
   rampMarks,
   rampedSpeed,
 } from '../contract';
-import { guardParams, guarded } from '../abilities/state';
+import { guardParams, guardedHit } from '../abilities/state';
 import { GRAVITY } from '../kernel';
 
 export const STEER_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -838,8 +838,8 @@ export const steerCrash: RulePiece<{ guard?: z.infer<typeof guardParams> }> = {
   // `guard` = dash nebo štít hrdiny (P46A T5), jako u `hit`.
   id: 'steer_crash', params: z.object({ guard: guardParams.optional() }).strict(), roles: ['player', 'obstacle'],
   trigger: 'contact', cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, player, other }, params) => state[bodyBase(other) + BODY.role] !== ROLE.obstacle || graceOf(state, player) > 0 || (params.guard !== undefined && guarded(state, params.guard))
-    ? [] : [{ kind: 'damage', amount: 1, grace: 60 }],
+  fire: ({ state, player, other }, params) => state[bodyBase(other) + BODY.role] !== ROLE.obstacle || graceOf(state, player) > 0
+    ? [] : guardedHit(state, params.guard, other, [{ kind: 'damage', amount: 1, grace: 60 }]),
 };
 
 /** Width of the real segment ahead, only populated for opt-in varying-width roads. */

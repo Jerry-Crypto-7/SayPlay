@@ -83,8 +83,9 @@ function guardAbility(id: 'dash' | 'shield'): AbilityPiece {
       const rules = parts.rules.map((rule) =>
         isCrash(rule.id) ? { id: rule.id, params: { ...rule.params, guard: { ...((rule.params.guard as object | undefined) ?? {}), keeper: context.keeper, ...guard } } } : rule,
       );
-      const own = id === 'dash' ? { id: dashRule.id, params: { keeper: context.keeper, slot: context.slot, roles, verb: 'dash' } } : { id: shieldRule.id, params: { keeper: context.keeper, roles, verb: 'shield' } };
-      return { ...parts, rules: [...rules, own] };
+      if (id === 'dash') return { ...parts, rules: [...rules, { id: dashRule.id, params: { keeper: context.keeper, slot: context.slot, roles, verb: 'dash' } }] };
+      // Blok štítu se musí použít před nárazem téhož těla, jinak by `ifAlive` nárazu viděl tělo ještě živé.
+      return { ...parts, rules: [{ id: shieldRule.id, params: { keeper: context.keeper, roles, verb: 'shield' } }, ...rules] };
     },
   };
 }

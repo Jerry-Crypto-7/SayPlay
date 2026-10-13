@@ -588,10 +588,16 @@ export type ArcadeEffect =
    */
   | { readonly kind: 'combo'; readonly body: number; readonly multiplier: number }
   /**
-   * Akce hrdiny (P46A T5): počítadlo akcí `body` si zapíše `value` do slotu
-   * `slot` (`ABILITY_SLOTS`) – štít tak spotřebuje náboj. Pravidla stav nepíšou přímo.
+   * Štít hrdiny (P46A T5, R2): má-li počítadlo akcí `keeper` náboj a tělo `body` žije,
+   * náboj spadne na 0 a jádro efekt nahradí `despawn` těla. Rozhoduje se až při použití,
+   * takže druhý náraz téhož tiku najde náboj spotřebovaný. Pravidla stav nepíšou přímo.
    */
-  | { readonly kind: 'ability'; readonly body: number; readonly slot: number; readonly value: number }
+  | { readonly kind: 'block'; readonly keeper: number; readonly body: number }
+  /**
+   * Efekty `effects` platí, jen když tělo `body` při použití ještě žije – náraz, který štít
+   * téhož tiku pohltil, nic nevezme (P46A R2). Jádro obal nahradí vnořenými efekty, nebo ničím.
+   */
+  | { readonly kind: 'ifAlive'; readonly body: number; readonly effects: readonly ArcadeEffect[] }
   /**
    * Logika (P45B), indexy z deklarace `logic`: proměnná na hodnotu / o kolik (saturuje na
    * ±`LOGIC_LIMITS.varSaturation`), přechod do fáze, spuštění / zastavení časovače, vyslání

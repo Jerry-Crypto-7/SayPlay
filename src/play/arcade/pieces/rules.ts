@@ -5,8 +5,8 @@
 
 import { z } from 'zod';
 
-import { guardParams, guarded } from '../abilities/state';
-import { ARCADE_HZ, ARCADE_LIMITS, BODY, COMBO, COUNTER, FLAG, HEADER, ROLE, type RulePiece, type ScoreBonusParams, bodyBase, graceOf } from '../contract';
+import { guardParams, guardedHit } from '../abilities/state';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, BODY, COMBO, COUNTER, FLAG, HEADER, ROLE, type RulePiece, type ScoreBonusParams, bodyBase, graceOf } from '../contract';
 
 const roleOf = (state: Int32Array, body: number): number => state[bodyBase(body) + BODY.role] as number;
 
@@ -39,16 +39,19 @@ export const hit: RulePiece<z.infer<typeof hitParams>> = {
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, player, other }, params) => {
     if (roleOf(state, other) !== ROLE[params.role]) return [];
-    if (params.guard !== undefined && guarded(state, params.guard)) return [];
-    if (params.effect === 'lose') return [{ kind: 'lose' }];
-    const despawn = params.after !== 'respawn';
-    if (params.grace !== undefined && graceOf(state, player) > 0) return despawn && solidBody(state, other) ? [{ kind: 'despawn', body: other }] : [];
-    return [
-      params.grace === undefined ? { kind: 'damage', amount: 1 } : { kind: 'damage', amount: 1, grace: params.grace },
-      despawn ? { kind: 'despawn', body: other } : { kind: 'respawn' },
-    ];
+    return guardedHit(state, params.guard, other, crash(state, player, other, params));
   },
 };
+
+function crash(state: Int32Array, player: number, other: number, params: z.infer<typeof hitParams>): ArcadeEffect[] {
+  if (params.effect === 'lose') return [{ kind: 'lose' }];
+  const despawn = params.after !== 'respawn';
+  if (params.grace !== undefined && graceOf(state, player) > 0) return despawn && solidBody(state, other) ? [{ kind: 'despawn', body: other }] : [];
+  return [
+    params.grace === undefined ? { kind: 'damage', amount: 1 } : { kind: 'damage', amount: 1, grace: params.grace },
+    despawn ? { kind: 'despawn', body: other } : { kind: 'respawn' },
+  ];
+}
 
 const pickupParams = z
   .object({

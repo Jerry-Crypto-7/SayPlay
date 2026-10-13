@@ -73,19 +73,23 @@ function harms(world: ArcadeWorld, input: (tick: number) => ArcadeInput, until: 
 /** Tik, kdy test vrazí nebezpečné tělo do hrdiny – hrdina na vlastní pěst narazí jen na běžci. */
 const RAM_AT = 40;
 
-/** V ticích `at` přesune další živé nebezpečné tělo (role z pravidla dashe či štítu) přesně na hrdinu. */
+/**
+ * V ticích `at` přesune další živé nebezpečné tělo (role z pravidla dashe či štítu) přesně na hrdinu.
+ * Tik zapsaný vícekrát vrazí do hrdiny tolik těl naráz.
+ */
 function rams(world: ArcadeWorld, at: readonly number[]): Hook {
   const roles: number[] = world.rules.flatMap((rule) => ((rule.params as { roles?: string[] }).roles ?? []).map((role) => ROLE[role as keyof typeof ROLE]));
   return (state, tick) => {
-    const nth = at.indexOf(tick);
-    if (nth < 0) return;
     const player = bodyBase(state[HEADER.player] as number);
     const foes = Array.from({ length: state[HEADER.bodyCount] as number }, (_v, i) => i).filter(
       (i) => i !== (state[HEADER.player] as number) && roles.includes(state[bodyBase(i) + BODY.role] as number) && alive(state, i),
     );
-    const foe = bodyBase(foes[nth] as number);
-    for (const slot of [BODY.x, BODY.y, BODY.z]) state[foe + slot] = state[player + slot] as number;
-    for (const slot of [BODY.vx, BODY.vy, BODY.vz]) state[foe + slot] = 0;
+    at.forEach((when, nth) => {
+      if (when !== tick) return;
+      const foe = bodyBase(foes[nth] as number);
+      for (const slot of [BODY.x, BODY.y, BODY.z]) state[foe + slot] = state[player + slot] as number;
+      for (const slot of [BODY.vx, BODY.vy, BODY.vz]) state[foe + slot] = 0;
+    });
   };
 }
 
@@ -128,6 +132,28 @@ describe.each(CONTROLS)('P46A dash, shield and grab on %s', (control) => {
     expect(shielded.filter((tick) => tick >= RAM_AT && tick < second)).toEqual([]);
     expect(charge).toBe(0);
     expect(shielded.filter((tick) => tick >= second)).not.toEqual([]);
+  });
+
+  it('spends one shield charge on one of two hits in the same tick', () => {
+    const world = worldOf(control, { abilities: ['shield'] });
+    const keeper = (world.control.params as { abilities: { keeper: number } }).abilities.keeper;
+    const start = health(instantiate(world));
+    let charge = -1;
+    let wounded = false;
+    // Jeden náraz štít pohltí, druhý téhož tiku hrdinu zraní (na běžci bez životů je to prohra).
+    play(
+      world,
+      press([RAM_AT - 5], BUTTON.ACTION_A),
+      RAM_AT + 1,
+      (state, tick) => {
+        if (tick !== RAM_AT) return;
+        charge = state[bodyBase(keeper) + ABILITY_SLOTS.shield] as number;
+        wounded = hurt(state, start);
+      },
+      rams(world, [RAM_AT, RAM_AT]),
+    );
+    expect(wounded).toBe(true);
+    expect(charge).toBe(0);
   });
 
   it('grabs only what is in reach and counts it in items', () => {

@@ -38,8 +38,9 @@ export const dashRule: RulePiece<z.infer<typeof dashParams>> = {
 const shieldParams = z.object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), roles: harmful, verb: z.literal('shield') }).strict();
 
 /**
- * Nabitý štít pohltí jeden náraz: tělo zmizí a náboj spadne na 0. Dva nárazy
- * v témže tiku vidí týž náboj, takže je štít pohltí oba – jako jeden zásah.
+ * Nabitý štít pohltí jeden náraz: tělo zmizí a náboj spadne na 0. O náboji rozhodne
+ * jádro až při použití bloku (R2), takže z dvou nárazů téhož tiku pohltí jen první;
+ * náraz druhého (`hit` v `ifAlive`) projde. Pravidlo stojí před nárazy (`guardAbility`).
  */
 export const shieldRule: RulePiece<z.infer<typeof shieldParams>> = {
   id: 'ability_shield',
@@ -47,11 +48,6 @@ export const shieldRule: RulePiece<z.infer<typeof shieldParams>> = {
   roles: ['player', ...HARMFUL_ROLES],
   trigger: 'contact',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, other }, params) => {
-    if ((state[bodyBase(params.keeper) + ABILITY_SLOTS.shield] as number) === 0 || !isHarm(state, other, params.roles)) return [];
-    return [
-      { kind: 'despawn', body: other },
-      { kind: 'ability', body: params.keeper, slot: ABILITY_SLOTS.shield, value: 0 },
-    ];
-  },
+  fire: ({ state, other }, params) =>
+    (state[bodyBase(params.keeper) + ABILITY_SLOTS.shield] as number) === 0 || !isHarm(state, other, params.roles) ? [] : [{ kind: 'block', keeper: params.keeper, body: other }],
 };
