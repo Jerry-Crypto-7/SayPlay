@@ -54,4 +54,12 @@ R2 dal řízení a skákačce styl podle prostředí (poušť = široké zatáč
 - **Scéna řízení na snímcích** (s1, s3, kontrola okem): souvislé mantinely, zúžení a šikany jsou vidět jako schodovité výběžky zdí, silnice nikde nemizí.
 - **Obtížnost:** se schody na váze 6 vyhrál začátečník v lese `jump.escape` 19 z 20 a `platformer.default` 15 z 20 (strop 14). Koruny teď schody ředí kyvadly a hroty: 11/20 a 10/20, intermediate 20/20. Řízení: 14/19 a s `+shoot` 7/16, v pásmu.
 - **Oprava po cestě:** styl bez chodby s ostny mohl vylosovat úroveň bez jediného hrotu (koruny se starými vahami 13 z 60 úrovní), takže nebezpečí z věty nemělo tělo (`platform-probe` semínka 8 a 19). Poslední deska teď dostane hrot, když úroveň žádný nemá.
-- **Zábava panelu a telefon** se po R2 znovu neměřily, patří k T7.
+- **Zábava panelu P45** (`fun-after.json` přeměřený po R2 proti `fun-baseline.json` z P46A): 40/40 hratelných. Medián mrtvého času 5,36 → 4,98 s, gradace 0,55 → 0,60, podíl her s finále 0,23 → 0,23, medián počtu chování 1 → 1. Nic není horší.
+- **Telefon:** `e2e/p35-perf.spec.ts` 17/17 zelený (Pixel 7, server nad buildem `e202a6dd`).
+- **Celá sada** (13. 10., stroj vytížený jinými relacemi na ~65 %): 13 091 z 13 129. Samostatně zůstalo červené:
+  - `sections.test` – regrese R2 (lekníny s 8 mouchami stejně dlouhé jako se 3), opraveno `07180360`.
+  - `dare-board.test` 3 testy – test bere první startovní hru, která splní jen část jeho podmínek; P46D změnil, která to je. Úkol R4.
+  - `upgrade.test` „pod 3 s“ – rychlá publikace běžce trvá 3,0–3,6 s, na základu P46D projde. Ověření hry s křečkem trvá ~1010 ms místo ~720 ms. Úkol R5.
+  - `upgrade-action-lost.test` 2 testy – červené už na základu P46D (`491079b7`, P45), nejsou z P46D.
+  - `submission-check.test` – ve worktree chybí gitignorovaný `plans/P8-odevzdani.md`.
+  - Ostatní červené (limity 30 s a rychlostní meze) samostatně prošly.
