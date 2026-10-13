@@ -76,6 +76,27 @@ describe('track variety gauge', () => {
     expect(shapeDistance(plain, bent)).toBeGreaterThan(SHAPE_THRESHOLD);
   });
 
+  // P46D R2: styl úrovně a okruhu musí měřidlo přečíst jako jeho vzor, jinak dvě věty vypadají stejně.
+  it('reads each platform and steer sentence of the gauge as the pattern of its style', () => {
+    const want: Readonly<Record<string, string>> = { p1: 'stairs', p2: 'water', p3: 'spike-corridor', p4: 'climb', s2: 'fork', s3: 'kink', s4: 'turbo-straight' };
+    for (const sentence of varietySentences().filter((s) => want[s.id] !== undefined)) {
+      for (const seed of [11, 4242, 90_001]) {
+        const motifs = signatureOf(world(draftOf(sentence.text), seed), sentence.genre).motifs;
+        expect(motifs, `${sentence.id}/${seed}`).toContain(want[sentence.id]);
+      }
+    }
+  });
+
+  it('reads a pool under a gap as water, and not a pool under a slab or above the slab tops', () => {
+    const slab = (z: number, top = 4000): ShapeBody => ({ role: ROLE.platform, x: 0, y: top - 500, z, w: 2000, h: 500, d: 3000, kinematic: false });
+    const pool = (z: number, h = 3000): ShapeBody => ({ role: ROLE.obstacle, x: 0, y: 0, z, w: 2000, h, d: 2000, kinematic: false });
+    const pads = [slab(0), slab(5000), slab(10_000)];
+    expect(signatureOfBodies('platform', [...pads, pool(2500), pool(7500)], 12_000).motifs).toContain('water');
+    expect(signatureOfBodies('platform', pads, 12_000).motifs).not.toContain('water');
+    expect(signatureOfBodies('platform', [...pads, pool(5000)], 12_000).motifs).not.toContain('water');
+    expect(signatureOfBodies('platform', [...pads, pool(2500, 4200)], 12_000).motifs).not.toContain('water');
+  });
+
   it('reads the bend and lift the scene draws on a runner, in world units, and none on a platform level', () => {
     const made = world(draftOf(runners[0]!.text), 11);
     const shape = signatureOf(made, 'runner', trackPathOf(made));

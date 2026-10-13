@@ -340,6 +340,11 @@ function platformSignature(bodies: readonly ShapeBody[]): Pick<Signature, 'motif
   const events: Event[] = [];
   // Hrot mimo plošinu leží v mezeře: voda nebo jáma pod skokem.
   for (const hazard of hazards) if (!slabs.some((slab) => on(hazard, slab.near, slab.far, slab.top))) events.push({ z: hazard.z, motif: 'water' });
+  // Překážka (tůň) v mezeře pod vršky obou desek kolem je voda pod skokem taky.
+  for (const pool of bodies.filter((body) => body.role === ROLE.obstacle)) {
+    const next = slabs.findIndex((slab, k) => k > 0 && pool.z > (slabs[k - 1] as Slab).far && pool.z < slab.near);
+    if (next > 0 && pool.y + pool.h < Math.min((slabs[next - 1] as Slab).top, (slabs[next] as Slab).top)) events.push({ z: pool.z, motif: 'water' });
+  }
   for (const slab of slabs) {
     if (slab.moving) events.push({ z: slab.near, motif: 'moving' });
     if (slab.checkpoint) events.push({ z: slab.near, motif: 'rest' });
