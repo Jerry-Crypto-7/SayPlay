@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "6e8049163a487bf94342073f5202a0e5b015d484922b80108ac0f3e7ad0e752f",
+ "catalogHash": "c986bfdd9478e42829ca10d7ee6f747a5a54c45238e1cec38db5f5aebd916b64",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1403,6 +1403,12 @@
   "gen3d-red-barn": {"class":"prop"},
   "gen3d-wooden-watchtower": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-tribal-totem-pole": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-bedouin-tent": {"class":"prop"}
+  "gen3d-bedouin-tent": {"class":"prop"},
+  "gen3d-ski-lift-tower": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-old-stone-bridge": {"class":"prop"},
+  "gen3d-wooden-rope-bridge": {"class":"prop"},
+  "gen3d-frozen-waterfall": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-castle-ruin-wall": {"class":"prop"},
+  "gen3d-stone-obelisk": {"class":"biped","regions":{"legY":0.25}}
  }
 }

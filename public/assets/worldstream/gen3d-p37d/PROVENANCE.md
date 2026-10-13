@@ -628,3 +628,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wooden-watchtower` | wooden watchtower, lookout tower | 4517 / 2249 |
 | `gen3d-tribal-totem-pole` | tribal totem pole, totem pole, totem | 4744 / 2372 |
 | `gen3d-bedouin-tent` | bedouin tent, desert tent | 4736 / 2308 |
+| `gen3d-ski-lift-tower` | ski lift tower, ski lift, chairlift pylon | 4736 / 2354 |
+| `gen3d-old-stone-bridge` | old stone bridge | 4364 / 2104 |
+| `gen3d-wooden-rope-bridge` | wooden rope bridge, suspension bridge | 4576 / 2215 |
+| `gen3d-frozen-waterfall` | frozen waterfall, ice waterfall, icefall | 4282 / 2117 |
+| `gen3d-castle-ruin-wall` | castle ruin wall, castle ruin, ruined wall | 4237 / 2026 |
+| `gen3d-stone-obelisk` | stone obelisk, monolith | 4748 / 2374 |

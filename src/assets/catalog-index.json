@@ -28278,6 +28278,128 @@
           0.68947
         ]
       }
+    },
+    {
+      "assetId": "gen3d-ski-lift-tower",
+      "tags": [
+        "ski lift tower",
+        "ski lift",
+        "chairlift pylon"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ski-lift-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.191,
+          0,
+          -0.21392
+        ],
+        "max": [
+          0.191,
+          0.99819,
+          0.21392
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-old-stone-bridge",
+      "tags": [
+        "old stone bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-old-stone-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.55135,
+          0,
+          -0.71823
+        ],
+        "max": [
+          1.55135,
+          0.99439,
+          0.71823
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-rope-bridge",
+      "tags": [
+        "wooden rope bridge",
+        "suspension bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-rope-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.94962,
+          0,
+          -0.95419
+        ],
+        "max": [
+          0.94962,
+          0.99868,
+          0.95419
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-frozen-waterfall",
+      "tags": [
+        "frozen waterfall",
+        "ice waterfall",
+        "icefall"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-waterfall-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30932,
+          0,
+          -0.3433
+        ],
+        "max": [
+          0.30932,
+          0.99699,
+          0.3433
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-castle-ruin-wall",
+      "tags": [
+        "castle ruin wall",
+        "castle ruin",
+        "ruined wall"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-castle-ruin-wall-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.08525,
+          0,
+          -0.69045
+        ],
+        "max": [
+          1.08525,
+          0.99848,
+          0.69045
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stone-obelisk",
+      "tags": [
+        "stone obelisk",
+        "monolith"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-obelisk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18955,
+          0,
+          -0.21969
+        ],
+        "max": [
+          0.18955,
+          0.99934,
+          0.21969
+        ]
+      }
     }
   ]
 }
