@@ -413,6 +413,8 @@ export class WitnessRecorder {
       if (ref.id === 'arena_catch_contact' && code === ROLE.enemy && this.binding(other, state) !== undefined && this.binding(player, state) !== undefined && this.hasMoved(this.binding(other, state)!, state) && this.hasMoved(this.binding(player, state)!, state)) this.add('catch', player, other, tick, 'moving-prey-contact', state);
       if (ref.id === 'arena_eat' && code === ROLE.enemy) this.add('catch', player, other, tick, 'contact-consumed', state);
     }
+    // Akce Grab (P46A) bere věc v dosahu bez dotyku: věc hry je sebraná stejně jako dotykem.
+    if (ref.id === 'ability_grab' && effect.kind === 'despawn' && (roleAt(state, effect.body) === ROLE.collectible || this.binding(effect.body, state)?.roleKind === 'collectible')) this.add('collect', player, effect.body, tick, 'grabbed-ability', state);
     if (effect.kind === 'despawn' && effect.body === origin.held && other >= 0 && other !== origin.held && ref.id === 'rule_contact') this.add('deliver', player, origin.held, tick, 'carried-to-destination', state);
     if (effect.kind === 'hit' && effect.amount > 0) {
       if (effect.by === player) {

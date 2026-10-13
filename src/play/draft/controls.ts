@@ -32,6 +32,7 @@ import type { TimingMode, TimingSpeed } from '../arcade/pieces/timing';
 import { CAPABILITIES } from '../capabilities';
 // Z kontraktu arkády, ne ze `spec.ts`: `compose/compile` tenhle modul načte i v prohlížeči (arcade-bundle).
 import { ABILITIES, ADDONS, type AbilityId, type AddonId } from '../arcade/contract';
+import { negationScopes } from './lexicon';
 import type { ControlId } from '../spec';
 
 const RHYTHM_CUES: readonly RegExp[] = [
@@ -273,11 +274,12 @@ const ABILITY_CUES: Readonly<Record<AbilityId, RegExp>> = {
 /** Hrdina má nejvýš 2 akce (tlačítka A, B). */
 const MAX_ABILITIES = 2;
 
-/** Všechny akce, které věta hrdinovi říká, v pořadí věty. `text` je věta malými písmeny. */
+/** Všechny akce, které věta hrdinovi říká, v pořadí věty, bez sloves v záporu („doesn't shoot“). `text` je věta malými písmeny. */
 export function saidAbilities(text: string): AbilityId[] {
+  const scopes = negationScopes(text);
   return ABILITIES.flatMap((id) => {
-    const at = text.search(ABILITY_CUES[id]);
-    return at < 0 ? [] : [{ id, at }];
+    const hit = [...text.matchAll(new RegExp(ABILITY_CUES[id].source, 'g'))].find((match) => !scopes.some(([from, to]) => match.index >= from && match.index < to));
+    return hit === undefined ? [] : [{ id, at: hit.index }];
   })
     .sort((a, b) => a.at - b.at)
     .map(({ id }) => id);

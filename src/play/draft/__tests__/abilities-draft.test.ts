@@ -98,6 +98,12 @@ describe('abilities from the sentence verbs (P46A T8)', () => {
     expect(saidAbilities('a photo shoot under shooting stars')).toEqual([]);
   });
 
+  it('does not hear an action the sentence forbids, but keeps one said later', () => {
+    expect(saidAbilities("a fox runs through a forest but doesn't shoot")).toEqual([]);
+    expect(saidAbilities('a knight without fighting or stealing')).toEqual([]);
+    expect(saidAbilities("a fox doesn't shoot, then it shoots crows and dodges")).toEqual(['shoot', 'dash']);
+  });
+
   it('keeps a duel when the fight stays in place, not when the hero travels', () => {
     expect(draftGameSpec('boxing a kangaroo in the australian outback').control).toBe('duel');
     expect(draftGameSpec('A knight duels a dragon').control).toBe('duel');
