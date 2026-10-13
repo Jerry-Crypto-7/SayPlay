@@ -22,6 +22,7 @@ import { expect, it } from 'vitest';
 
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
 import { ARCADE_COMPILER_VERSION } from '@/play/arcade/compile';
+import type { ArcadeWorld } from '@/play/arcade/contract';
 
 import {
   SHAPE_THRESHOLD,
@@ -34,6 +35,7 @@ import {
   shapeDistance,
   signatureOf,
   signatureOfBodies,
+  trackPathOf,
   varietyPairs,
   varietySentences,
   worldOn,
@@ -141,17 +143,19 @@ it('measures the track variety of the P46D sentences', async () => {
   const out = process.env.P46D_OUT;
   if (out === undefined) throw new Error('p46d: set P46D_OUT=<file>');
   const sentences = varietySentences();
+  // Podpis s křivkou, kterou scéna kreslí: běžec ji má od T3, ostatní žánry žádnou.
+  const shapeOf = (world: ArcadeWorld, genre: VarietyGenre): Signature => signatureOf(world, genre, trackPathOf(world));
   const rows: { id: string; genre: VarietyGenre; seed: number | null; playable: boolean; issues: readonly string[]; signature: Signature | null }[] = [];
   for (const sentence of sentences) {
     const game = await publishedGame(sentence);
-    rows.push({ id: game.id, genre: game.genre, seed: game.seed, playable: game.playable, issues: game.issues, signature: game.world === null ? null : signatureOf(game.world, game.genre) });
+    rows.push({ id: game.id, genre: game.genre, seed: game.seed, playable: game.playable, issues: game.issues, signature: game.world === null ? null : shapeOf(game.world, game.genre) });
   }
   const pairs = varietyPairs(rows);
 
   // Kalibrace: první dvě semínka publikace téže věty (bez robota) a ručně různé tratě.
   const sameSentence = sentences.map((sentence) => {
     const [first, second] = derivedSeeds(seedFrom(sentence.text.trim())) as [number, number];
-    return { id: sentence.id, genre: sentence.genre, distance: shapeDistance(signatureOf(worldOn(sentence.text, first), sentence.genre), signatureOf(worldOn(sentence.text, second), sentence.genre)) };
+    return { id: sentence.id, genre: sentence.genre, distance: shapeDistance(shapeOf(worldOn(sentence.text, first), sentence.genre), shapeOf(worldOn(sentence.text, second), sentence.genre)) };
   });
   const hand = handBuiltRunners();
   const handBuilt = shapeDistance(signatureOfBodies('runner', hand.a, hand.length), signatureOfBodies('runner', hand.b, hand.length));

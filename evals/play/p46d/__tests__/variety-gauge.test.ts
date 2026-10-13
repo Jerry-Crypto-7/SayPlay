@@ -12,7 +12,7 @@ import { ROLE } from '@/play/arcade/contract';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import type { GameSpecV1 } from '@/play/spec';
 
-import { SHAPE_THRESHOLD, type ShapeBody, bodiesOf, draftOf, handBuiltRunners, shapeDistance, signatureOf, signatureOfBodies, varietySentences } from '../variety';
+import { SHAPE_THRESHOLD, type ShapeBody, bodiesOf, draftOf, handBuiltRunners, shapeDistance, signatureOf, signatureOfBodies, trackPathOf, varietySentences } from '../variety';
 
 /**
  * Dnešní běžec (P45, `491079b7`): parametry, které žánr Běžec píše bez počtů z věty.
@@ -74,5 +74,14 @@ describe('track variety gauge', () => {
     expect(bent.curve).toContain('L');
     expect(bent.height).toContain('U');
     expect(shapeDistance(plain, bent)).toBeGreaterThan(SHAPE_THRESHOLD);
+  });
+
+  it('reads the bend and lift the scene draws on a runner, in world units, and none on a platform level', () => {
+    const made = world(draftOf(runners[0]!.text), 11);
+    const shape = signatureOf(made, 'runner', trackPathOf(made));
+    expect(shape.curve.some((token) => token !== 'S')).toBe(true);
+    expect(shape.height.some((token) => token !== 'F')).toBe(true);
+    const platform = varietySentences().find((sentence) => sentence.genre === 'platform')!;
+    expect(trackPathOf(world(draftOf(platform.text), 11))).toBeUndefined();
   });
 });

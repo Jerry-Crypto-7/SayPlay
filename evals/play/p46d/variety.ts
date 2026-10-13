@@ -10,7 +10,7 @@
  *
  * - Běžec: řady překážek (které pruhy jsou volné a jak se překážka míjí – skok,
  *   skluz, jen jiným pruhem), dlouhé zdi (rozcestí, most, tunel), věci v řadě
- *   přes pruhy a volné úseky. Křivka a výška trati přijdou ze scény (T3).
+ *   přes pruhy a volné úseky. Křivka a výška trati ze scény (T3, `trackPathOf`).
  * - Řízení: úseky mezi mantinely – dlouhé a krátké zatáčky, šikany, zúžení,
  *   rozcestí a rovinky s turbem.
  * - Skákačka: kroky mezi plošinami – schody, výstup, rostoucí mezery, hroty,
@@ -25,6 +25,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
+import { runnerPathOf } from '@/components/play/arcade/runner/path';
 import { arcadeWorldOf, preloadPhysics } from '@/play/arcade/compile';
 import { type ArcadeWorld, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { instantiate } from '@/play/arcade/kernel';
@@ -77,6 +78,16 @@ export interface Signature {
 
 /** Bod osy trati v jednotkách světa (`x` do strany, `y` nahoru) – vizuální křivka běžce (T3). */
 export type TrackPath = (z: number) => { readonly x: number; readonly y: number };
+
+/** Křivka, kterou scéna kreslí (`runnerPathOf`, metry), v jednotkách světa; jiný žánr žádnou nemá. */
+export function trackPathOf(world: ArcadeWorld): TrackPath | undefined {
+  const path = runnerPathOf(world);
+  if (path === null) return undefined;
+  return (z) => {
+    const point = path(z / UNIT);
+    return { x: point.x * UNIT, y: point.y * UNIT };
+  };
+}
 
 /** Živá tělesa počátečního stavu. Mrtvé předlohy (spawn, boss) se do tvaru nepočítají. */
 export function bodiesOf(world: ArcadeWorld): ShapeBody[] {
