@@ -27,13 +27,20 @@ export function compileTemplated(assembly: RecipeAssembly): { readonly spec: Gam
 const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
 
 /**
+ * Generátory režimu, kde robot akce použije a ověření je dokáže (P46A T10, matice T9 a živé
+ * věty). Souboj (`fight`) chybí: robot s akcí nedohraje; ostatní generátory nikdo neměřil.
+ */
+const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth']);
+
+/**
  * Akce hrdiny ze sloves věty (P46A T8, `assemble`), jen akce, které ovládání bere, a jen hře,
- * která staví trať ovládáním (generátor režimu hraje chování sám, jako u `withEnemyAddon`).
- * Úder bije i díl souboje, takže nápověda k Attack ustoupí tlačítkům akcí.
+ * která staví trať ovládáním nebo generátorem z `ABILITY_GENERATORS`. `compose` ověří svět
+ * a akce, které robot nedokáže, zahodí. Úder bije i díl souboje, takže nápověda k Attack
+ * ustoupí tlačítkům akcí.
  */
 function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
   const generator = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
-  if (assembly.abilities === undefined || generator !== undefined || spec.control === undefined) return spec;
+  if (assembly.abilities === undefined || (generator !== undefined && !ABILITY_GENERATORS.has(generator)) || spec.control === undefined) return spec;
   const abilities = abilitiesOfControl(assembly.abilities, spec.control);
   if (abilities.length === 0) return spec;
   const own = abilities.includes('strike') ? spec.tutorial.controlsHint.replace(ATTACK_HINT, '') : spec.tutorial.controlsHint;

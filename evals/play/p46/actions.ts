@@ -93,7 +93,8 @@ export function presentActions(spec: GameSpecV1): ActionKind[] {
   const abilities = (spec as { abilities?: readonly string[] }).abilities ?? [];
   for (const ability of abilities) if ((ACTION_KINDS as readonly string[]).includes(ability)) present.add(ability as ActionKind);
   if (spec.addons?.includes('shoot') || spec.control === 'shooter') present.add('shoot');
-  if (spec.control === 'duel') present.add('strike');
+  // Souboj = ovládání duel i aréna v režimu souboje (generátor `fight`, úder na Attack, `fight_hits`).
+  if (spec.control === 'duel' || (spec.controlParams as { generator?: string } | undefined)?.generator === 'fight') present.add('strike');
   return [...present];
 }
 

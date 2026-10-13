@@ -27,8 +27,16 @@ const OWNER = [
   { text: 'A bee collects pollen in a garden', control: 'move_free' },
 ] as const;
 
+/** Hry generátoru režimu (P46A T10): aréna útěk/sběr a bludiště akce berou, souboj ne. */
+const GENERATED = [
+  { text: 'A raccoon grabs pizza slices while dodging trash trucks', control: 'move_free', abilities: ['grab', 'dash'] },
+  { text: 'A squirrel snatches acorns from crows in a windy forest', control: 'move_free', abilities: ['grab'] },
+  { text: 'A cat burglar sneaks through a museum and steals diamonds', control: 'walker', abilities: ['grab'] },
+  { text: 'a wizard defends a crystal tower from flying skeletons', control: 'move_free' },
+] as const;
+
 describe('abilities from the sentence verbs (P46A T8)', () => {
-  for (const line of OWNER) {
+  for (const line of [...OWNER, ...GENERATED]) {
     it(`${line.text} → ${line.control} ${'abilities' in line ? line.abilities.join('+') : 'without abilities'}`, async () => {
       const spec = draftGameSpec(line.text);
       expect(spec.control).toBe(line.control);
