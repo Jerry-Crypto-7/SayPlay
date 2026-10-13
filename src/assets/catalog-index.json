@@ -26286,6 +26286,158 @@
           1.8768
         ]
       }
+    },
+    {
+      "assetId": "gen3d-morning-star",
+      "tags": [
+        "morning star"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-morning-star-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17409,
+          0,
+          -0.15831
+        ],
+        "max": [
+          0.17409,
+          0.99937,
+          0.15831
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-feather",
+      "tags": [
+        "feather"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-feather-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20411,
+          0,
+          -0.0384
+        ],
+        "max": [
+          0.20411,
+          0.99986,
+          0.0384
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-vault-door",
+      "tags": [
+        "vault door"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-vault-door-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49564,
+          0,
+          -0.07512
+        ],
+        "max": [
+          0.49564,
+          0.99574,
+          0.07512
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-grappling-hook",
+      "tags": [
+        "grappling hook"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-grappling-hook-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16217,
+          0,
+          -0.03346
+        ],
+        "max": [
+          0.16217,
+          0.99802,
+          0.03346
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-plasma-gun",
+      "tags": [
+        "plasma gun"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-plasma-gun-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49626,
+          0,
+          -0.28358
+        ],
+        "max": [
+          0.49626,
+          0.9953,
+          0.28358
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spell-book",
+      "tags": [
+        "spell book"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spell-book-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44432,
+          0,
+          -0.1969
+        ],
+        "max": [
+          0.44432,
+          0.99933,
+          0.1969
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-golden-statue",
+      "tags": [
+        "golden statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-golden-statue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3838,
+          0,
+          -0.40282
+        ],
+        "max": [
+          0.3838,
+          1,
+          0.40282
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tomahawk",
+      "tags": [
+        "tomahawk"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tomahawk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19941,
+          0,
+          -0.0607
+        ],
+        "max": [
+          0.19941,
+          0.99955,
+          0.0607
+        ]
+      }
     }
   ]
 }

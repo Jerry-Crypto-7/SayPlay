@@ -527,3 +527,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-flail` | flail | 4478 / 2133 |
 | `gen3d-hang-glider` | hang glider | 4556 / 2242 |
 | `gen3d-tiara` | tiara | 4713 / 2256 |
+| `gen3d-morning-star` | morning star | 4746 / 2366 |
+| `gen3d-feather` | feather | 4694 / 2302 |
+| `gen3d-vault-door` | vault door | 4676 / 2283 |
+| `gen3d-grappling-hook` | grappling hook | 4716 / 2326 |
+| `gen3d-plasma-gun` | plasma gun | 4267 / 2029 |
+| `gen3d-spell-book` | spell book | 4684 / 2295 |
+| `gen3d-golden-statue` | golden statue | 4496 / 2162 |
+| `gen3d-tomahawk` | tomahawk | 4748 / 2374 |

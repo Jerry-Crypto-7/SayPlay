@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "4a93f4120e395a04bff450e34badb853d473805ad79557019e871bbcfb8e9644",
+ "catalogHash": "8dfc00985ee41a84af834a339aca782da8f7a14fdc5916b39bf492474d80dca5",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1302,6 +1302,14 @@
   "gen3d-pearl-necklace": {"class":"prop"},
   "gen3d-flail": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-hang-glider": {"class":"prop"},
-  "gen3d-tiara": {"class":"prop"}
+  "gen3d-tiara": {"class":"prop"},
+  "gen3d-morning-star": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-feather": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-vault-door": {"class":"prop"},
+  "gen3d-grappling-hook": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-plasma-gun": {"class":"prop"},
+  "gen3d-spell-book": {"class":"prop"},
+  "gen3d-golden-statue": {"class":"prop"},
+  "gen3d-tomahawk": {"class":"biped","regions":{"legY":0.25}}
  }
 }
