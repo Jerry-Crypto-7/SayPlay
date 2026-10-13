@@ -613,3 +613,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-larch-tree` | larch tree, larch | 4692 / 2268 |
 | `gen3d-rubber-tree` | rubber tree, ficus tree | 4748 / 2374 |
 | `gen3d-cholla-cactus` | cholla cactus | 4548 / 2254 |
+| `gen3d-strangler-fig-tree` | strangler fig tree, fig tree, banyan tree | 4672 / 2332 |
+| `gen3d-frozen-dead-tree` | frozen dead tree, icy tree | 4733 / 2362 |
+| `gen3d-beech-tree` | beech tree, beech | 4748 / 2374 |

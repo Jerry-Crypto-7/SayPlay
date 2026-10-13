@@ -27972,6 +27972,67 @@
           0.31874
         ]
       }
+    },
+    {
+      "assetId": "gen3d-strangler-fig-tree",
+      "tags": [
+        "strangler fig tree",
+        "fig tree",
+        "banyan tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-strangler-fig-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47119,
+          0,
+          -0.47448
+        ],
+        "max": [
+          0.47119,
+          0.9951,
+          0.47448
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-frozen-dead-tree",
+      "tags": [
+        "frozen dead tree",
+        "icy tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-dead-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38762,
+          0,
+          -0.31268
+        ],
+        "max": [
+          0.38762,
+          0.99902,
+          0.31268
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beech-tree",
+      "tags": [
+        "beech tree",
+        "beech"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beech-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36686,
+          0,
+          -0.36815
+        ],
+        "max": [
+          0.36686,
+          0.99922,
+          0.36815
+        ]
+      }
     }
   ]
 }

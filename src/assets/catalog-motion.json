@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "685441bf19a2e6203a0026cad6712398db2018b524bac4da141e886041e23a68",
+ "catalogHash": "0447969df0b0d039b9bbd5cb29ea76a941764a259d81804838d1e9f8795d389d",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1388,6 +1388,9 @@
   "gen3d-olive-tree": {"class":"prop"},
   "gen3d-larch-tree": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-rubber-tree": {"class":"prop"},
-  "gen3d-cholla-cactus": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-cholla-cactus": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-strangler-fig-tree": {"class":"prop"},
+  "gen3d-frozen-dead-tree": {"class":"prop"},
+  "gen3d-beech-tree": {"class":"biped","regions":{"legY":0.25}}
  }
 }
