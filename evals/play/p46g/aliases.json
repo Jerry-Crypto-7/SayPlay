@@ -404,5 +404,447 @@
  "sea rock": [
   "coastal rock",
   "sea stack"
+ ],
+ "tall pine tree": [
+  "pine",
+  "pine tree"
+ ],
+ "granite cliff wall": [
+  "cliff",
+  "rock wall",
+  "rock face"
+ ],
+ "coconut palm": [
+  "palm tree",
+  "coconut tree"
+ ],
+ "sandstone cliff wall": [
+  "cliff",
+  "canyon wall",
+  "rock wall"
+ ],
+ "snow covered pine": [
+  "snowy pine",
+  "pine tree"
+ ],
+ "mossy rock wall": [
+  "rock wall",
+  "cliff"
+ ],
+ "barrel cactus": [
+  "cactus"
+ ],
+ "oak tree": [
+  "oak"
+ ],
+ "coastal cliff": [
+  "sea cliff",
+  "cliff"
+ ],
+ "dead pine tree": [
+  "dead tree",
+  "bare tree"
+ ],
+ "ice cliff": [
+  "glacier wall",
+  "ice wall"
+ ],
+ "bamboo cluster": [
+  "bamboo"
+ ],
+ "prickly pear cactus": [
+  "cactus",
+  "opuntia"
+ ],
+ "twisted old oak": [
+  "old oak",
+  "oak tree",
+  "gnarled tree"
+ ],
+ "scree rock pile": [
+  "rock pile",
+  "rubble",
+  "rocks"
+ ],
+ "layered canyon rock": [
+  "mesa",
+  "butte",
+  "canyon rock"
+ ],
+ "small snowy fir": [
+  "snowy fir",
+  "fir tree"
+ ],
+ "poplar tree": [
+  "poplar"
+ ],
+ "leaning palm tree": [
+  "palm tree",
+  "palm"
+ ],
+ "young fir sapling": [
+  "sapling",
+  "small fir"
+ ],
+ "jungle rock wall with vines": [
+  "vine covered rock",
+  "rock wall",
+  "cliff"
+ ],
+ "dead desert tree": [
+  "dead tree",
+  "bare tree"
+ ],
+ "snowy rock ledge": [
+  "snowy cliff",
+  "rock ledge"
+ ],
+ "cherry blossom tree": [
+  "sakura tree",
+  "blossom tree"
+ ],
+ "river boulders": [
+  "boulders",
+  "rocks",
+  "stones"
+ ],
+ "strangler fig tree": [
+  "fig tree",
+  "banyan tree"
+ ],
+ "date palm": [
+  "palm tree",
+  "palm"
+ ],
+ "frozen dead tree": [
+  "dead tree",
+  "icy tree"
+ ],
+ "beech tree": [
+  "beech"
+ ],
+ "basalt column rocks": [
+  "basalt columns",
+  "rock columns"
+ ],
+ "tree fern": [
+  "fern tree"
+ ],
+ "olive tree": [
+  "olive"
+ ],
+ "limestone outcrop": [
+  "rock outcrop",
+  "rocks"
+ ],
+ "larch tree": [
+  "larch"
+ ],
+ "rubber tree": [
+  "ficus tree"
+ ],
+ "cholla cactus": [
+  "cactus"
+ ],
+ "snow covered bush": [
+  "snowy bush",
+  "frozen bush"
+ ],
+ "stone pillar rock": [
+  "hoodoo",
+  "rock pillar",
+  "rock spire"
+ ],
+ "juniper bush": [
+  "juniper"
+ ],
+ "cycad palm": [
+  "sago palm",
+  "cycad"
+ ],
+ "ocotillo": [
+  "ocotillo cactus"
+ ],
+ "hawthorn bush": [
+  "hawthorn",
+  "hedge bush"
+ ],
+ "pandanus tree": [
+  "screw pine"
+ ],
+ "volcanic rock": [
+  "lava rock",
+  "black rock"
+ ],
+ "rocky ridge": [
+  "mountain ridge",
+  "ridge"
+ ],
+ "hollow tree trunk": [
+  "hollow log",
+  "tree trunk"
+ ],
+ "elephant ear plant": [
+  "taro plant",
+  "alocasia"
+ ],
+ "ruined stone tower": [
+  "tower ruin",
+  "stone tower",
+  "ruin"
+ ],
+ "jungle temple ruin": [
+  "temple ruin",
+  "temple",
+  "ruin"
+ ],
+ "adobe house": [
+  "mud brick house",
+  "pueblo house"
+ ],
+ "log cabin": [
+  "wooden cabin",
+  "cabin"
+ ],
+ "stone idol head": [
+  "stone head",
+  "idol",
+  "statue head"
+ ],
+ "oasis well": [
+  "desert well",
+  "well"
+ ],
+ "snowy log cabin": [
+  "snowy cabin",
+  "cabin"
+ ],
+ "beach hut": [
+  "beach cabin",
+  "hut"
+ ],
+ "red barn": [
+  "barn"
+ ],
+ "wooden watchtower": [
+  "watchtower",
+  "lookout tower"
+ ],
+ "tribal totem pole": [
+  "totem pole",
+  "totem"
+ ],
+ "bedouin tent": [
+  "desert tent",
+  "tent"
+ ],
+ "ski lift tower": [
+  "ski lift",
+  "chairlift pylon"
+ ],
+ "wooden pier": [
+  "pier",
+  "jetty",
+  "dock"
+ ],
+ "old stone bridge": [
+  "stone bridge",
+  "bridge"
+ ],
+ "wooden rope bridge": [
+  "rope bridge",
+  "suspension bridge"
+ ],
+ "sandstone pyramid ruin": [
+  "pyramid",
+  "ruin"
+ ],
+ "frozen waterfall": [
+  "ice waterfall",
+  "icefall"
+ ],
+ "shipwreck": [
+  "wrecked ship",
+  "ship wreck"
+ ],
+ "water tower": [
+  "water tank tower"
+ ],
+ "castle ruin wall": [
+  "castle ruin",
+  "ruined wall"
+ ],
+ "stone obelisk": [
+  "obelisk",
+  "monolith"
+ ],
+ "lifeguard tower": [
+  "lifeguard stand",
+  "lifeguard hut"
+ ],
+ "stone well": [
+  "well",
+  "wishing well"
+ ],
+ "campfire with logs": [
+  "campfire",
+  "bonfire"
+ ],
+ "wooden signpost": [
+  "signpost",
+  "direction sign"
+ ],
+ "red toadstool mushroom": [
+  "toadstool",
+  "fly agaric",
+  "red mushroom"
+ ],
+ "mossy fallen log": [
+  "fallen log",
+  "fallen tree",
+  "log"
+ ],
+ "cattail reeds": [
+  "reeds",
+  "bulrush",
+  "cattails"
+ ],
+ "bleached cow skull": [
+  "cow skull",
+  "animal skull",
+  "skull"
+ ],
+ "mushroom cluster": [
+  "mushrooms",
+  "fungi"
+ ],
+ "exposed tree roots": [
+  "tree roots",
+  "roots"
+ ],
+ "sunflower cluster": [
+  "sunflowers",
+  "sunflower"
+ ],
+ "dry thornbush": [
+  "thorn bush",
+  "dry bush"
+ ],
+ "stacked firewood pile": [
+  "woodpile",
+  "firewood",
+  "log pile"
+ ],
+ "dune grass clump": [
+  "dune grass",
+  "marram grass"
+ ],
+ "ice block pile": [
+  "ice blocks",
+  "ice chunks"
+ ],
+ "lavender bush": [
+  "lavender"
+ ],
+ "bird of paradise plant": [
+  "strelitzia",
+  "bird of paradise flower"
+ ],
+ "mossy rock cluster": [
+  "mossy rocks",
+  "rocks"
+ ],
+ "coral rock": [
+  "coral",
+  "reef rock"
+ ],
+ "thistle plant": [
+  "thistle"
+ ],
+ "aloe plant": [
+  "aloe vera",
+  "aloe"
+ ],
+ "rowing boat": [
+  "rowboat",
+  "dinghy",
+  "boat"
+ ],
+ "wooden sled": [
+  "sled",
+  "sledge",
+  "toboggan"
+ ],
+ "wild berry bush": [
+  "berry bush"
+ ],
+ "beach umbrella": [
+  "parasol",
+  "sun umbrella"
+ ],
+ "pumpkin patch": [
+  "pumpkins"
+ ],
+ "park bench": [
+  "bench"
+ ],
+ "brick townhouse": [
+  "townhouse",
+  "row house",
+  "house"
+ ],
+ "bus stop shelter": [
+  "bus stop",
+  "bus shelter"
+ ],
+ "white picket fence": [
+  "picket fence",
+  "fence"
+ ],
+ "street trash can": [
+  "trash can",
+  "garbage bin",
+  "litter bin"
+ ],
+ "apartment block": [
+  "apartment building",
+  "tower block"
+ ],
+ "traffic cone": [
+  "cone"
+ ],
+ "red phone booth": [
+  "phone booth",
+  "telephone box"
+ ],
+ "park fountain": [
+  "fountain"
+ ],
+ "corner shop front": [
+  "shop",
+  "storefront",
+  "store"
+ ],
+ "trimmed hedge row": [
+  "hedge",
+  "hedgerow"
+ ],
+ "billboard sign": [
+  "billboard"
+ ],
+ "newspaper stand": [
+  "news stand",
+  "kiosk"
+ ],
+ "concrete planter with tree": [
+  "planter",
+  "street planter"
+ ],
+ "glass office tower": [
+  "skyscraper",
+  "office building"
+ ],
+ "parking meter": [
+  "meter"
  ]
 }
