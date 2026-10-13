@@ -379,9 +379,10 @@ function covered(state: Int32Array, target: number): boolean {
  * 90 tiků a bližší nepřítel v novém pruhu nesmí čekat, až dopadne. Pohled je
  * 8 tiků starý: běžec proto nestřílí při přebíhání, plošinovka jen ze země,
  * poletování dopočítá výšku z vlastních ťuků (jako jeho robot). Aréna
- * střílí ve směru pohybu na cokoli v ráně, jen když nic neletí.
+ * střílí ve směru pohybu na cokoli v ráně, jen když nic neletí. `owns` omezí
+ * cíle na nepřátele, které robot akcí přidělil střelbě (R4).
  */
-export const shootStep: AddonBotStep =({ state, player, recent }, input, base) => {
+export const shootStep = ({ state, player, recent }: ArcadeObservation, input: ArcadeInput, base: PieceRef, owns?: (body: number) => boolean): ArcadeInput => {
   if (recent.some((seen) => (seen.buttons & BUTTON.FIRE) !== 0)) return input;
   if (base.id === 'arena_bot' && census(state).projectiles > 0) return input;
   const p = bodyBase(player);
@@ -401,7 +402,26 @@ export const shootStep: AddonBotStep =({ state, player, recent }, input, base) =
     px = now.x; py = now.y; pz = now.z;
   }
   const grounded = ((state[p + BODY.flags] as number) & FLAG.grounded) !== 0;
-  if (base.id === 'runner_bot' && (px % RUNNER.laneWidth !== 0 || recent.some((seen) => (seen.buttons & (BUTTON.LEFT | BUTTON.RIGHT)) !== 0))) return input;
+  if (base.id === 'runner_bot') {
+    // Přeběh pruhu dopočítá z vlastních stisků (jako ovládání běžce): nepřítel
+    // čeká v pruhu, do kterého robot přebíhá až před řadou, a robot se
+    // zpožděným pohledem by jinak vystřelil pozdě (R1). Stejně skok (R4): po
+    // dopadu je na ránu málo času, starý pohled by ho ještě viděl ve vzduchu.
+    let lane = state[p + BODY.aux0] as number;
+    let vy = state[p + BODY.vy] as number;
+    let ground = ((state[p + BODY.flags] as number) & FLAG.grounded) !== 0;
+    for (const seen of [...recent, input]) {
+      if ((seen.buttons & BUTTON.LEFT) !== 0) lane = Math.max(-1, lane - 1);
+      if ((seen.buttons & BUTTON.RIGHT) !== 0) lane = Math.min(1, lane + 1);
+      px += Math.max(-RUNNER.laneSpeed, Math.min(RUNNER.laneSpeed, lane * RUNNER.laneWidth - px));
+      if (ground && (seen.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0) vy = RUNNER.jumpVy;
+      vy -= GRAVITY;
+      py += vy;
+      ground = py <= 0;
+      if (ground) [py, vy] = [0, 0];
+    }
+    if (px !== lane * RUNNER.laneWidth) return input;
+  }
   if (base.id === 'platform_bot' && (!grounded || recent.some((seen) => (seen.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0))) return input;
   if (base.id === 'flap_bot') {
     let vy = state[p + BODY.vy] as number;
@@ -418,6 +438,7 @@ export const shootStep: AddonBotStep =({ state, player, recent }, input, base) =
   for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
     const b = bodyBase(i);
     if (i === player || state[b + BODY.role] !== ROLE.enemy || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    if (owns !== undefined && !owns(i)) continue;
     // The moving race opponent is not a shooting target.
     if (base.id === 'glide_bot' && (state[b + BODY.flags]! & FLAG.kinematic)) continue;
     const ex = (state[b + BODY.x] as number) - from.x;
@@ -434,10 +455,24 @@ export const shootStep: AddonBotStep =({ state, player, recent }, input, base) =
     const y = state[b + BODY.y] as number;
     // Střela musí celá projít výškou nepřítele, ne ho jen škrtnout.
     if (from.y < y || from.y + SHOOTER.bulletSize > y + (state[b + BODY.h] as number)) continue;
-    if (!covered(state, i) && clearShot(state, player, from, i)) return { ...input, buttons: input.buttons | BUTTON.FIRE };
+    if (!covered(state, i) && clearShot(state, player, from, i) && (owns === undefined || !screened(state, from, i, owns))) return { ...input, buttons: input.buttons | BUTTON.FIRE };
   }
   return input;
 };
+
+/** Stojí mezi hráčem a cílem v dráze střely živý nepřítel, kterého střelba nevlastní (R4)? Střela by zabila jeho. */
+function screened(state: Int32Array, from: { x: number; y: number; z: number }, target: number, owns: (body: number) => boolean): boolean {
+  const tz = state[bodyBase(target) + BODY.z] as number;
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const b = bodyBase(i);
+    if (i === target || owns(i) || state[b + BODY.role] !== ROLE.enemy || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const z = state[b + BODY.z] as number;
+    if (z < from.z || z > tz || Math.abs((state[b + BODY.x] as number) - from.x) * 2 >= (state[b + BODY.w] as number) + SHOOTER.bulletSize) continue;
+    const y = state[b + BODY.y] as number;
+    if (from.y < y + (state[b + BODY.h] as number) && y < from.y + SHOOTER.bulletSize) return true;
+  }
+  return false;
+}
 
 /**
  * `+shoot`: nepřátelé v cestě (aréna má svoje), blaster a tlačítko střelby
@@ -715,8 +750,8 @@ const addonBotParams = z
   })
   .strict();
 
-/** Krok robota akcí (`abilities/bot.ts`); předává se zvenku kvůli kruhovému importu. */
-export type AbilityBotStep = (observation: ArcadeObservation, input: ArcadeInput, base: PieceRef, params: z.infer<typeof abilityBotParams>) => ArcadeInput;
+/** Krok robota akcí (`abilities/bot.ts`); předává se zvenku kvůli kruhovému importu. `fire` = svět má doplněk `+shoot`. */
+export type AbilityBotStep = (observation: ArcadeObservation, input: ArcadeInput, base: PieceRef, params: z.infer<typeof abilityBotParams>, fire: boolean) => ArcadeInput;
 
 /** Obalí robota `addon_bot` s akcemi, nebo jim doplní obal, který už tam je. */
 export function wrapBot(parts: ArcadeParts, abilities: z.infer<typeof abilityBotParams>): PieceRef {
@@ -750,7 +785,7 @@ export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>, abilityS
       const lanes = BUTTON.LEFT | BUTTON.RIGHT;
       const guarded = (input.buttons & lanes) === (decided.buttons & lanes) ? input : guardLanes(observation, params.base, input);
       // Akce hrdiny (P46A T6) až po plánovači pruhů: robot s připravenou akcí smí neuhnout.
-      return params.abilities === undefined || abilityStep === undefined ? guarded : abilityStep(observation, guarded, pacedBotBase(params.base, observation), params.abilities);
+      return params.abilities === undefined || abilityStep === undefined ? guarded : abilityStep(observation, guarded, pacedBotBase(params.base, observation), params.abilities, params.addons.includes('shoot'));
     },
   };
 }

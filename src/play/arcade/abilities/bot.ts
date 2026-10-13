@@ -61,6 +61,8 @@ interface Slot {
   readonly pressed: number;
   /** Je akce v tiku zmáčknutí (`recent.length`) připravená? */
   readonly ready: boolean;
+  /** Tik (od pozorování), od kterého půjde akce zmáčknout. */
+  readonly readyAt: number;
   /** Poslední tik (od pozorování), ve kterém je akce ještě aktivní. */
   readonly activeUntil: number;
 }
@@ -76,9 +78,9 @@ function slotsOf(observation: ArcadeObservation, params: AbilityBot): Slot[] {
     });
     const timing = ABILITY_TIMING[id];
     const cooldown = abilityCooldown(state, params.keeper, slot);
-    const ready = pressed < 0 ? cooldown <= n : pressed + timing.cooldown <= n;
+    const readyAt = pressed < 0 ? cooldown : pressed + timing.cooldown;
     const activeUntil = pressed >= 0 ? pressed + timing.active - 1 : abilityActive(state, params.keeper, slot) - 1;
-    return { id, button, pressed, ready, activeUntil };
+    return { id, button, pressed, ready: readyAt <= n, readyAt, activeUntil };
   });
 }
 
@@ -138,41 +140,111 @@ function seekAxis(state: Int32Array, player: number, roles: readonly number[]): 
 const STRUCK = [ROLE.enemy, ROLE.chaser];
 const LOOT = [ROLE.collectible, ROLE.enemy];
 
+/** Role těl, na která akce sahá: střelba na nepřátele, úder a krádež na své cíle, dash a štít na nárazy. */
+const rolesOf = (id: AbilityId, harm: readonly number[]): readonly number[] =>
+  id === 'shoot' ? [ROLE.enemy] : id === 'strike' ? STRUCK : id === 'grab' ? LOOT : harm;
+
+/** Těla, na která `keep` platí, a zbytek. */
+function partition(bodies: readonly number[], keep: (body: number) => boolean): [number[], number[]] {
+  const kept: number[] = [];
+  const rest: number[] = [];
+  for (const body of bodies) (keep(body) ? kept : rest).push(body);
+  return [kept, rest];
+}
+
+/** Tělo, na které smí každý uchazeč. */
+const SHARED = -1;
+
+/**
+ * Dvojice akcí (R4): z těl role, na kterou sahá víc uchazečů (nepřítel pro
+ * střelbu i úder, náraz pro dash i štít), dostane každá akce jedno výhradně –
+ * první tělo střelba (na řízení jde trefit jen nepřítele na úvodní rovince),
+ * další ostatní akce v pořadí tlačítek. Jinak první akce sebere druhé každou
+ * příležitost (střela zabije nepřítele dřív, než dojde na úder; štít s delším
+ * oknem pohltí náraz dřív než dash) a sloveso druhé se nedokáže. Doplněk
+ * `+shoot` (`fire`) sloveso dokazovat nemusí: tělo nedostane, jen ustoupí.
+ * Ostatní těla zůstávají všem, ať robot přežije jako s jednou akcí. Pořadí je
+ * podle indexu těla (i mrtvého), takže se mezi tiky nemění; pohyblivá těla
+ * (soupeřova auta) se nepočítají. Vrací slot akce, nebo `SHARED`.
+ */
+function ownerOf(state: Int32Array, ids: readonly AbilityId[], harm: readonly number[], fire: boolean): (body: number) => number {
+  const order = [...ids.keys()].sort((a, b) => Number(ids[b] === 'shoot') - Number(ids[a] === 'shoot'));
+  if (order.length + (fire ? 1 : 0) < 2) return () => SHARED;
+  const owners = new Map<number, number>();
+  const ranks = new Map<number, number>();
+  const byRole = new Map<number, number[]>();
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const b = bodyBase(i);
+    if (((state[b + BODY.flags] as number) & FLAG.kinematic) !== 0) continue;
+    const role = state[b + BODY.role] as number;
+    let mine = byRole.get(role);
+    if (mine === undefined) byRole.set(role, (mine = order.filter((slot) => rolesOf(ids[slot] as AbilityId, harm).includes(role))));
+    const rank = ranks.get(role) ?? 0;
+    const rivals = mine.length + (fire && role === ROLE.enemy && !ids.includes('shoot') ? 1 : 0);
+    if (rivals < 2 || rank >= mine.length) continue;
+    ranks.set(role, rank + 1);
+    owners.set(i, mine[rank] as number);
+  }
+  return (body) => owners.get(body) ?? SHARED;
+}
+
 /**
  * Krok akcí. `base` = základní robot pod obaly (podle něj se pozná, čím se uhýbá).
  * Vrací vstup s tlačítky akcí a bez úhybu, když robot nechává tělo přijít.
+ * `fire` = svět má i doplněk `+shoot`: jeho FIRE je další uchazeč o nepřátele.
  */
-export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, base: PieceRef, params: AbilityBot): ArcadeInput {
+export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, base: PieceRef, params: AbilityBot, fire = false): ArcadeInput {
   const { state, player, recent } = observation;
   const n = recent.length;
-  const harm = params.harm.map((role) => ROLE[role]);
   const steer = base.id === 'steer_bot';
+  // Překážky řízení jsou svodidla a kraj silnice: robot k nim nezatáčí, náraz mimo okno dashe stojí život (R4, a14).
+  const harm = params.harm.map((role) => ROLE[role]).filter((role) => !steer || role !== ROLE.obstacle);
   const around = AROUND_BOTS.includes(base.id);
+  const slots = slotsOf(observation, params);
+  const assigned = ownerOf(state, params.ids, harm, fire);
+  const horizon = steer ? STEER_COMMIT_TICKS : COMMIT_TICKS;
+  // Přidělení propadne, když vlastník do dotyku nebude připravený ani aktivní: tělo by prošlo bez obrany.
+  // Jen tehdy – úder, který jednou mine, to za cooldown zkusí znovu a tělo mu mezitím nesmí vzít druhá akce.
+  const owner = (body: number): number => {
+    const slot = slots[assigned(body)];
+    if (slot === undefined || slot.ready) return assigned(body);
+    const at = steer ? aheadAt(state, player, body, n, n + horizon) : contactAt(state, player, body, n, n + horizon);
+    return at < 0 || slot.activeUntil >= at || slot.readyAt < at ? assigned(body) : SHARED;
+  };
+  const mine = (slot: number) => (body: number) => owner(body) === slot || owner(body) === SHARED;
+  // Doplněk střílí na nepřátele akce střelby, když ji hra má; jinak (−1 = `SHARED`) jen na společné.
+  const blaster = params.ids.indexOf('shoot');
   let buttons = input.buttons;
+  if (fire && (buttons & BUTTON.FIRE) !== 0) {
+    const fired = shootStep(observation, { buttons: 0, axis: input.axis }, base, mine(blaster)).buttons & BUTTON.FIRE;
+    buttons = (buttons & ~BUTTON.FIRE) | fired;
+  }
   /** Tělo, kterému robot neuhne (−1 = uhýbá jako obvykle). */
   let hold = -1;
   /** Aréna: role, ke kterým robot s připravenou akcí půjde. */
   const seek: number[] = [];
-  for (const slot of slotsOf(observation, params)) {
+  for (const [index, slot] of slots.entries()) {
+    const owned = mine(index);
     // I v aktivním okně: robot, který po stisku zase uteče, by se štítem (40 tiků) nikdy nedotkl.
     if (base.id === 'arena_bot' && (slot.ready || slot.activeUntil >= n) && slot.id !== 'shoot' && slot.id !== 'grab') seek.push(...(slot.id === 'strike' ? STRUCK : harm));
     if (slot.id === 'shoot') {
       // Robot `+shoot` mačká FIRE; tady stejné rozhodnutí na tlačítko akce.
       const seen = { ...observation, recent: recent.map((r) => ((r.buttons & slot.button) !== 0 ? { ...r, buttons: r.buttons | BUTTON.FIRE } : r)) };
-      if ((shootStep(seen, { buttons: 0, axis: input.axis }, base).buttons & BUTTON.FIRE) !== 0) buttons |= slot.button;
+      if ((shootStep(seen, { buttons: 0, axis: input.axis }, base, owned).buttons & BUTTON.FIRE) !== 0) buttons |= slot.button;
       continue;
     }
     if (slot.id === 'strike' || slot.id === 'grab') {
-      const reach = bodiesOf(state, player, slot.id === 'strike' ? STRUCK : LOOT);
       const active = ABILITY_TIMING[slot.id].active;
-      const lands = reach.some((body) => Array.from({ length: active }, (_v, k) => n + k).some((t) => inStrikeReach(state, player, body, t, around)));
-      if (slot.ready && lands) buttons |= slot.button;
+      const hits = (body: number): boolean => Array.from({ length: active }, (_v, k) => n + k).some((t) => inStrikeReach(state, player, body, t, around));
+      const [reach, spoiled] = partition(bodiesOf(state, player, slot.id === 'strike' ? STRUCK : LOOT), owned);
+      // Úder a krádež berou všechno v dosahu: nezmáčknout, když by vzaly i tělo přidělené druhé akci.
+      if (slot.ready && reach.some(hits) && !spoiled.some(hits)) buttons |= slot.button;
       // Úder a krádež nepřítele chtějí, aby přišel: s připravenou akcí neuhnout tomu, co míří na hrdinu.
-      const threat = oncoming(observation, bodiesOf(state, player, slot.id === 'strike' ? STRUCK : [ROLE.enemy]), steer ? STEER_COMMIT_TICKS : COMMIT_TICKS, steer);
+      const threat = oncoming(observation, bodiesOf(state, player, slot.id === 'strike' ? STRUCK : [ROLE.enemy]).filter(owned), steer ? STEER_COMMIT_TICKS : COMMIT_TICKS, steer);
       if (threat !== null && (slot.ready || slot.activeUntil >= threat.at)) hold = threat.body;
       continue;
     }
-    const threat = oncoming(observation, bodiesOf(state, player, harm), steer ? STEER_COMMIT_TICKS : COMMIT_TICKS, steer);
+    const threat = oncoming(observation, bodiesOf(state, player, harm).filter(owned), steer ? STEER_COMMIT_TICKS : COMMIT_TICKS, steer);
     // Dash i štít (blok) chrání jen po okno: zmáčknout, až dotyk padne do jeho první půlky.
     // Náboj štítu spotřebovaný v posledních tikách robot ještě nevidí – riziko jednoho zásahu.
     const active = ABILITY_TIMING[slot.id].active;

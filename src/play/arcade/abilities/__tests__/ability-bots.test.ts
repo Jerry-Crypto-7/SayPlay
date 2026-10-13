@@ -48,3 +48,19 @@ describe.each(CONTROLS)('P46A bots use abilities on %s', (control) => {
     }
   });
 });
+
+const PAIRS = ABILITIES.flatMap((first, i) => ABILITIES.slice(i + 1).map((second) => [first, second] as const));
+
+// R4: s dvojicí akcí jedna nesmí druhé vzít všechny příležitosti (střela zabije nepřítele dřív
+// než úder, štít pohltí náraz dřív než dash) – robot světa vyhraje a dokáže obě slovesa.
+describe.each(CONTROLS.flatMap((control) => [[control, []], [control, ['shoot']]] as const))('P46A two abilities on %s with addons %j', (control, addons) => {
+  it.each(PAIRS)('%s + %s: the bot wins and proves both verbs', (first, second) => {
+    for (const seed of SEEDS) {
+      const read = readGameSpec({ ...(FIXTURES[control] as object), addons, abilities: [first, second] });
+      if (!read.ok) throw new Error(`${control}: ${read.issues.join('; ')}`);
+      const made = arcadeWorldOf(read.value, seed);
+      if (!made.ok) throw new Error(made.issues.join('; '));
+      expect(verifyArcade(made.world).failures, `seed ${seed}`).toEqual([]);
+    }
+  });
+});
