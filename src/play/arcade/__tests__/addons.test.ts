@@ -230,9 +230,16 @@ describe('+collect (P26D T4)', () => {
 
   it('a runner that reaches the finish without enough coins loses', () => {
     const world = worldOf(specOf(runner, ['collect']), 7);
-    // Základní robot bez obalu mince nehoní: trať proběhne, ale na pásce mu chybí.
+    // Základní robot bez obalu bere jen mince u své cesty (P46B R1) a na `need` nehledí: táž trať, o minci víc, než
+    // sebere – doběhne na pásku ve stejném tiku a prohraje.
     const plain = { ...world, bot: (world.bot.params as { base: ArcadeWorld['bot'] }).base };
-    expect(runBot(plain).outcome).toBe('lost');
+    const reached = runBot(plain);
+    expect(reached.outcome).toBe('won');
+    const need = (afterBot(plain)[HEADER.counters + COUNTER.items] as number) + 1;
+    const short = { ...plain, rules: plain.rules.map((rule) => (rule.id === 'finish_collected' ? { ...rule, params: { need } } : rule)) };
+    const run = runBot(short);
+    expect(run.outcome).toBe('lost');
+    expect(run.tick).toBe(reached.tick);
   });
 
   it('the level keeps coins even when the spec switched them off', () => {
