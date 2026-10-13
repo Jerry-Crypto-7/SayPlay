@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "f1d65aa54e4bfed9b5040d91f072ae241bf42f9bf22fd46f7c50b3e516c88bce",
+ "catalogHash": "6e8049163a487bf94342073f5202a0e5b015d484922b80108ac0f3e7ad0e752f",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1395,6 +1395,14 @@
   "gen3d-cycad-palm": {"class":"prop"},
   "gen3d-pandanus-tree": {"class":"prop"},
   "gen3d-hollow-tree-trunk": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-ruined-stone-tower": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-ruined-stone-tower": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-adobe-house": {"class":"prop"},
+  "gen3d-stone-idol-head": {"class":"prop"},
+  "gen3d-snowy-log-cabin": {"class":"prop"},
+  "gen3d-beach-hut": {"class":"prop"},
+  "gen3d-red-barn": {"class":"prop"},
+  "gen3d-wooden-watchtower": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-tribal-totem-pole": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-bedouin-tent": {"class":"prop"}
  }
 }

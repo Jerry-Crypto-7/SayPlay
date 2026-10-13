@@ -620,3 +620,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-pandanus-tree` | pandanus tree, screw pine | 4734 / 2362 |
 | `gen3d-hollow-tree-trunk` | hollow tree trunk, hollow log, tree trunk | 4704 / 2323 |
 | `gen3d-ruined-stone-tower` | ruined stone tower, tower ruin, stone tower | 4423 / 2209 |
+| `gen3d-adobe-house` | adobe house, mud brick house, pueblo house | 4574 / 2253 |
+| `gen3d-stone-idol-head` | stone idol head, stone head, idol | 4683 / 2336 |
+| `gen3d-snowy-log-cabin` | snowy log cabin, snowy cabin | 4227 / 1942 |
+| `gen3d-beach-hut` | beach hut, beach cabin | 4248 / 2056 |
+| `gen3d-red-barn` | red barn | 4463 / 2123 |
+| `gen3d-wooden-watchtower` | wooden watchtower, lookout tower | 4517 / 2249 |
+| `gen3d-tribal-totem-pole` | tribal totem pole, totem pole, totem | 4744 / 2372 |
+| `gen3d-bedouin-tent` | bedouin tent, desert tent | 4736 / 2308 |

@@ -28116,6 +28116,168 @@
           0.24815
         ]
       }
+    },
+    {
+      "assetId": "gen3d-adobe-house",
+      "tags": [
+        "adobe house",
+        "mud brick house",
+        "pueblo house"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-adobe-house-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71309,
+          0,
+          -0.94676
+        ],
+        "max": [
+          0.71309,
+          0.99898,
+          0.94676
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stone-idol-head",
+      "tags": [
+        "stone idol head",
+        "stone head",
+        "idol"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-idol-head-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35028,
+          0,
+          -0.47429
+        ],
+        "max": [
+          0.35028,
+          0.99431,
+          0.47429
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowy-log-cabin",
+      "tags": [
+        "snowy log cabin",
+        "snowy cabin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-log-cabin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.53928,
+          0,
+          -0.49635
+        ],
+        "max": [
+          0.53928,
+          0.99645,
+          0.49635
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-hut",
+      "tags": [
+        "beach hut",
+        "beach cabin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-hut-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.55394,
+          0,
+          -0.70181
+        ],
+        "max": [
+          0.55394,
+          0.99939,
+          0.70181
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-red-barn",
+      "tags": [
+        "red barn"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-red-barn-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46088,
+          0,
+          -0.45669
+        ],
+        "max": [
+          0.46088,
+          0.99806,
+          0.45669
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-watchtower",
+      "tags": [
+        "wooden watchtower",
+        "lookout tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-watchtower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22062,
+          0,
+          -0.21994
+        ],
+        "max": [
+          0.22062,
+          0.99996,
+          0.21994
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tribal-totem-pole",
+      "tags": [
+        "tribal totem pole",
+        "totem pole",
+        "totem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tribal-totem-pole-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11954,
+          0,
+          -0.07926
+        ],
+        "max": [
+          0.11954,
+          1.00001,
+          0.07926
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bedouin-tent",
+      "tags": [
+        "bedouin tent",
+        "desert tent"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bedouin-tent-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.69113,
+          0,
+          -0.68947
+        ],
+        "max": [
+          0.69113,
+          0.99524,
+          0.68947
+        ]
+      }
     }
   ]
 }
