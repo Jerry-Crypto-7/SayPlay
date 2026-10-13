@@ -301,7 +301,12 @@ export function assemblyParts(parts: ArcadeParts, spec: GameSpecV1, ruleLibrary:
   const exit = parts.level.bodies.find(body => body.role === 'goal');
   const mazeRoute = maze && exit ? walkerPath(maze, walkerCell(maze, player.x, player.z), walkerCell(maze, exit.x, exit.z)) : [];
   const flapPath = control === 'flap' ? parts.level.bodies.filter(body => body.role === 'collectible' && body.kind === 'gate').map(body => ({ x: body.x, y: Math.round(body.y + body.h / 2 - 600), z: body.z })) : [];
-  const path = explicitPath.success ? explicitPath.data : flapPath.length ? [{ x: player.x, y: player.y, z: player.z }, ...flapPath] : Array.from({ length: 21 }, (_, i) => {
+  // Úroveň skákačky ze vzorů (P46D T5) stoupá po schodech: kořist a soupeř jdou po vršcích desek, ne ve výšce startu,
+  // kde je hráč na koruně přeběhne nad hlavou. Uložené hry bez `chunks` staví tentýž svět.
+  const chunked = control === 'platform' && (spec.controlParams as { tuning?: { chunks?: number } } | undefined)?.tuning?.chunks === 1;
+  const slabPath = chunked ? parts.level.bodies.filter(body => body.role === 'platform' && body.solid && !body.kinematic).sort((a, b) => a.z - b.z)
+    .flatMap(body => [-1, 1].map(side => ({ x: Math.round(body.x), y: Math.round(body.y + body.h), z: Math.round(body.z + side * body.d / 2) }))) : [];
+  const path = explicitPath.success ? explicitPath.data : flapPath.length ? [{ x: player.x, y: player.y, z: player.z }, ...flapPath] : slabPath.length ? slabPath : Array.from({ length: 21 }, (_, i) => {
     const z = Math.round(length * i / 20);
     return { x: course.success ? centerAt(course.data, z) : player.x, y: player.y, z };
   });
