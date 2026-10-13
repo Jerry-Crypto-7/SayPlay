@@ -518,3 +518,12 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-treasure-chest` | treasure chest | 4162 / 3061 |
 | `gen3d-spring-shoe` | spring shoe | 4218 / 2082 |
 | `gen3d-magic-bean` | magic bean | 4748 / 2374 |
+| `gen3d-chalice` | chalice | 4746 / 2372 |
+| `gen3d-pogo-stick` | pogo stick | 4750 / 2326 |
+| `gen3d-loot-sack` | loot sack, loot bag | 4676 / 2238 |
+| `gen3d-energy-ball` | energy ball | 4627 / 2199 |
+| `gen3d-hoverboard` | hoverboard | 4458 / 2153 |
+| `gen3d-pearl-necklace` | pearl necklace | 4750 / 2374 |
+| `gen3d-flail` | flail | 4478 / 2133 |
+| `gen3d-hang-glider` | hang glider | 4556 / 2242 |
+| `gen3d-tiara` | tiara | 4713 / 2256 |

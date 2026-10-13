@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "e9373c4b7f714a36ca1348fc6d94446dd501c9fd67792859f73aca6235e82d7e",
+ "catalogHash": "4a93f4120e395a04bff450e34badb853d473805ad79557019e871bbcfb8e9644",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1293,6 +1293,15 @@
   "gen3d-katana": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-treasure-chest": {"class":"prop"},
   "gen3d-spring-shoe": {"class":"prop"},
-  "gen3d-magic-bean": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-magic-bean": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-chalice": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-pogo-stick": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-loot-sack": {"class":"prop"},
+  "gen3d-energy-ball": {"class":"prop"},
+  "gen3d-hoverboard": {"class":"prop"},
+  "gen3d-pearl-necklace": {"class":"prop"},
+  "gen3d-flail": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-hang-glider": {"class":"prop"},
+  "gen3d-tiara": {"class":"prop"}
  }
 }

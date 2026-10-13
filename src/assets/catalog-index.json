@@ -26114,6 +26114,178 @@
           0.15658
         ]
       }
+    },
+    {
+      "assetId": "gen3d-chalice",
+      "tags": [
+        "chalice"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-chalice-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24653,
+          0,
+          -0.24449
+        ],
+        "max": [
+          0.24653,
+          1,
+          0.24449
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pogo-stick",
+      "tags": [
+        "pogo stick"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pogo-stick-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23009,
+          0,
+          -0.2019
+        ],
+        "max": [
+          0.23009,
+          0.99911,
+          0.2019
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-loot-sack",
+      "tags": [
+        "loot sack",
+        "loot bag"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-loot-sack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42339,
+          0,
+          -0.43864
+        ],
+        "max": [
+          0.42339,
+          0.99906,
+          0.43864
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-energy-ball",
+      "tags": [
+        "energy ball"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-energy-ball-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46136,
+          0,
+          -0.49491
+        ],
+        "max": [
+          0.46136,
+          0.99917,
+          0.49491
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hoverboard",
+      "tags": [
+        "hoverboard"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hoverboard-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.26982,
+          0,
+          -0.68829
+        ],
+        "max": [
+          1.26982,
+          0.98968,
+          0.68829
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pearl-necklace",
+      "tags": [
+        "pearl necklace"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pearl-necklace-lod1.glb",
+      "bounds": {
+        "min": [
+          -3.87716,
+          0,
+          -3.91206
+        ],
+        "max": [
+          3.87716,
+          0.99912,
+          3.91206
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flail",
+      "tags": [
+        "flail"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flail-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22441,
+          0,
+          -0.2249
+        ],
+        "max": [
+          0.22441,
+          0.99938,
+          0.2249
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hang-glider",
+      "tags": [
+        "hang glider"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hang-glider-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.73951,
+          0,
+          -0.68715
+        ],
+        "max": [
+          0.73951,
+          0.99536,
+          0.68715
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tiara",
+      "tags": [
+        "tiara"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tiara-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.8738,
+          0,
+          -1.8768
+        ],
+        "max": [
+          1.8738,
+          0.98588,
+          1.8768
+        ]
+      }
     }
   ]
 }

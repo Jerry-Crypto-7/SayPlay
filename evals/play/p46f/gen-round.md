@@ -20,3 +20,4 @@ Psaný smyčkou `D:/caches/p46f/loop.mjs` po každém kole. **Model** = obrázek
 | 14 | action-weapon action-powerup action-loot | 10 | 9 | 8/9 | 8 | – | shuriken, golden apple, golden egg, spiked club, money bundle, flamethrower, diamond ring, freeze ray | – |
 | 15 | action-powerup action-loot action-weapon | 10 | 8 | 5/8 | 4 | – | emerald, nunchaku, safe, invisibility cloak | – |
 | 16 (opakování) | boss-end action-powerup action-shield action-weapon action-loot | 10 | 10 | 6/10 | 3 | – | katana, treasure chest, magic bean | – |
+| 17 | action-loot action-weapon action-powerup | 10 | 10 | 9/10 | 9 | – | chalice, pogo stick, loot sack, energy ball, hoverboard, pearl necklace, flail, hang glider, tiara | – |
