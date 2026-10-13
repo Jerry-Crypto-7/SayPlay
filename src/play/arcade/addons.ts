@@ -16,6 +16,7 @@ import { pacedBotBase } from './pieces/phase-pieces';
 import type { GameSpecV1 } from '@/play/spec';
 
 import {
+  ABILITY_SLOTS,
   ADDONS,
   ARCADE_LIMITS,
   type AddonId,
@@ -665,10 +666,15 @@ export function makeAddonControl(bases: Readonly<Record<string, ControlPiece>>):
       const base = bases[params.base.id];
       if (base === undefined) throw new Error(`arcade: unknown control ${params.base.id}`);
       base.step(state, player, input, paramsOf(base, params.base.params));
-      // Střelba jako akce hrdiny (P46A) spouští blaster i svým tlačítkem A nebo B.
-      const fire = params.abilities === undefined ? BUTTON.FIRE : BUTTON.FIRE | abilityButton(params.abilities.ids, 'shoot');
-      state[HEADER.counters + COUNTER.trigger] = (input.buttons & fire) !== 0 ? 1 : 0;
-      if (params.abilities !== undefined) tickAbilities(state, input.buttons, params.abilities);
+      let trigger = (input.buttons & BUTTON.FIRE) !== 0;
+      if (params.abilities !== undefined) {
+        // Střelba jako akce hrdiny (P46A) spouští blaster svým tlačítkem A nebo B, ale jen
+        // novým stiskem: `held` jsou tlačítka minulého tiku, `tickAbilities` je hned přepíše.
+        const held = state[bodyBase(params.abilities.keeper) + ABILITY_SLOTS.held] as number;
+        trigger ||= (input.buttons & ~held & abilityButton(params.abilities.ids, 'shoot')) !== 0;
+        tickAbilities(state, input.buttons, params.abilities);
+      }
+      state[HEADER.counters + COUNTER.trigger] = trigger ? 1 : 0;
       if (params.chase !== undefined) chase(state, player, params.chase);
     },
   };

@@ -122,6 +122,19 @@ describe.each(Object.keys(FIXTURES) as Control[])('P46A shoot and strike on %s',
     expect(census(twice.state).projectiles).toBe(1);
   });
 
+  it('fires once per press: holding the shoot button does not autofire', () => {
+    const world = worldOf(specOf(control, { abilities: ['shoot'] }));
+    const ammo = (state: Int32Array): number => state[HEADER.counters + COUNTER.ammo] as number;
+    const start = ammo(instantiate(world));
+    const held = (tick: number): boolean => tick >= 1 && tick <= 25;
+    const once = play(world, (tick) => (held(tick) ? { buttons: BUTTON.ACTION_A, axis: 0 } : NO_INPUT), (_s, tick) => tick === 32);
+    expect(once.tick).toBe(32);
+    expect(start - ammo(once.state)).toBe(1);
+    // Puštěno a znovu zmáčknuto: druhá rána.
+    const again = play(world, (tick) => (held(tick) || tick === 30 ? { buttons: BUTTON.ACTION_A, axis: 0 } : NO_INPUT), (_s, tick) => tick === 32);
+    expect(start - ammo(again.state)).toBe(2);
+  });
+
   it('holds the strike cooldown: a second press inside it does not restart the strike', () => {
     const world = worldOf(specOf(control, { abilities: ['shoot', 'strike'] }));
     const keeper = keeperOf(world);
