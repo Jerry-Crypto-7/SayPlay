@@ -21,6 +21,8 @@ const OWNER = [
   { text: 'Amanita mushrooms fight against bulls, flee from them, and shoot them.', control: 'runner', abilities: ['strike', 'shoot'] },
   { text: 'Racing car escaping and shooting enemies', control: 'steer', abilities: ['shoot'], addons: ['shoot', 'chaser'] },
   { text: 'racing car escapes police and shoots enemies', control: 'steer', abilities: ['shoot'], addons: ['shoot', 'chaser'] },
+  // a14: do R4 robot s dash+shoot na dálnici nevyhrál (zatáčel do svodidel) a návrh akce zahodil.
+  { text: 'A motorbike dodges cars on a highway and blasts drones', control: 'steer', abilities: ['dash', 'shoot'], addons: ['shoot'] },
   { text: 'Hamster escapes a supermarket Roomba', control: 'runner' },
   { text: 'Jumping arcade game in the forest', control: 'platform' },
   { text: 'A ninja frog jumps over logs', control: 'platform' },
@@ -58,7 +60,7 @@ describe('abilities from the sentence verbs (P46A T8)', () => {
   }
 
   it('drops abilities the bot cannot prove instead of returning an unverified game', async () => {
-    // Řízení `+shoot` s dash+shoot robot zatím nevyhraje (R4): návrh musí být ta hra, kterou compose ověřil.
+    // Návrh musí být ta hra, kterou compose ověřil. a14 akce od R4 drží; cestu bez akcí už nevynutí.
     const spec = draftGameSpec('A motorbike dodges cars on a highway and blasts drones');
     await preloadPhysics(spec, loadRapier);
     const made = arcadeWorldOf(spec, 1);
