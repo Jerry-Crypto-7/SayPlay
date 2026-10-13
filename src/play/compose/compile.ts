@@ -10,6 +10,7 @@ import { nativeSpec } from './native';
 import { timeOfDayFor } from '../arcade/look';
 import { BALL_DIFFICULTY } from './ball-difficulty';
 import { singular } from '../draft/lexicon';
+import { abilitiesOfControl, abilityHint } from '../draft/controls';
 import { RULE_TEMPLATES, type RuleTemplate, TEMPLATE_NAMES, type TemplateName, type TemplateSlot, says, templateParts, templatesFor } from '../arcade/rules/templates';
 
 /** Recipes select an assembly; existing piece builders retain their frozen output. */
@@ -19,7 +20,32 @@ export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
 
 /** `compileRecipe` and the rule template it attached (P45B T9); `null` = none. */
 export function compileTemplated(assembly: RecipeAssembly): { readonly spec: GameSpecV1; readonly template: TemplateName | null } {
-  return withTemplate(compileRecipeSpec(assembly), assembly);
+  const templated = withTemplate(compileRecipeSpec(assembly), assembly);
+  return { ...templated, spec: withAbilities(templated.spec, assembly) };
+}
+
+const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
+
+/**
+ * Generátory režimu, kde robot akce použije a ověření je dokáže (P46A T10, matice T9 a živé
+ * věty). Souboj (`fight`) chybí: robot s akcí nedohraje; ostatní generátory nikdo neměřil.
+ */
+const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth']);
+
+/**
+ * Akce hrdiny ze sloves věty (P46A T8, `assemble`), jen akce, které ovládání bere, a jen hře,
+ * která staví trať ovládáním nebo generátorem z `ABILITY_GENERATORS`. `compose` ověří svět
+ * a akce, které robot nedokáže, zahodí. Úder bije i díl souboje, takže nápověda k Attack
+ * ustoupí tlačítkům akcí.
+ */
+function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
+  const generator = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
+  if (assembly.abilities === undefined || (generator !== undefined && !ABILITY_GENERATORS.has(generator)) || spec.control === undefined) return spec;
+  const abilities = abilitiesOfControl(assembly.abilities, spec.control);
+  if (abilities.length === 0) return spec;
+  const own = abilities.includes('strike') ? spec.tutorial.controlsHint.replace(ATTACK_HINT, '') : spec.tutorial.controlsHint;
+  const hint = `${own} ${abilityHint(abilities)}`;
+  return { ...spec, abilities, tutorial: { ...spec.tutorial, controlsHint: hint.length <= 80 ? hint : own } };
 }
 
 /** Druhy rolí hry, které šablona dosadí do slotu – první volná role hry v pořadí `roles[]`. */

@@ -52,6 +52,7 @@ import {
   UNIT,
   bodyBase,
 } from '../contract';
+import { guardParams, guardedHit } from '../abilities/state';
 import { WAVE_LIMITS, WAVE_PLAN, collectClock, entrySpots, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
 
 export const ARENA_DENSITIES = ['sparse', 'normal', 'dense'] as const;
@@ -452,6 +453,8 @@ const eatParams = z
     grace: z.int().min(1).max(10 * ARCADE_HZ).optional(),
     /** Odhoz chyceného hráče od pronásledovatele, jednotek za tik (P36A T2); bez něj jako dřív. */
     knockback: z.int().min(1).max(ARENA.speed * 4).optional(),
+    /** Dash a štít hrdiny (P46A T9): chycení pronásledovatelem v ochraně nic nevezme. */
+    guard: guardParams.optional(),
   })
   .strict();
 
@@ -493,7 +496,7 @@ export const arenaEat: RulePiece<z.infer<typeof eatParams>> = {
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, player, other }, params): readonly ArcadeEffect[] => {
     const role = state[bodyBase(other) + BODY.role];
-    if (role === ROLE.chaser && params.grace !== undefined) return caught(state, player, other, params.effect, params.grace, params.knockback);
+    if (role === ROLE.chaser && params.grace !== undefined) return guardedHit(state, params.guard, other, [...caught(state, player, other, params.effect, params.grace, params.knockback)]);
     if (role !== ROLE.enemy && role !== ROLE.collectible) return [];
     const mine = state[bodyBase(player) + BODY.w] as number;
     const theirs = state[bodyBase(other) + BODY.w] as number;

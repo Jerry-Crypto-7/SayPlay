@@ -13,6 +13,7 @@
 import { hashHex } from '@/sim/hash';
 
 import {
+  ABILITY_SLOTS,
   ARCADE_LIMITS,
   ARCADE_RUNTIME_V2,
   ARCADE_RUNTIME_VERSION,
@@ -775,7 +776,7 @@ function logicPasses(state: ArcadeState, effects: ArcadeEffect[], owners: number
  * Použije efekty od `from`. Se stopou ohlásí pravidlo (`owners[i]`) jen za efekt,
  * který stav opravdu změnil – hod s prázdnou rukou ani přepnutí bez cíle sloveso nedokáže.
  */
-function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: number, end: TickEnd, owners?: readonly number[], trace?: RuleTrace): void {
+function apply(state: ArcadeState, effects: ArcadeEffect[], from: number, end: TickEnd, owners?: number[], trace?: RuleTrace): void {
   for (let i = from; i < effects.length; i += 1) {
     const effect = effects[i] as ArcadeEffect;
     let changed = true;
@@ -816,6 +817,23 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
       state[base + S.aux0] = effect.multiplier;
       state[base + S.aux1] = (state[HD.tick] as number) + 1;
       state[base + S.x] = state[HD.counters + CT.health] as number;
+    } else if (effect.kind === 'block' || effect.kind === 'ifAlive') {
+      // Rozhodne se až tady, ve chvíli použití (P46A R2): obal ustoupí efektům, které opravdu platí,
+      // a ty se použijí hned na jeho místě. Seznam, který vrací `step`, tak nese jen skutečné efekty.
+      let kept: readonly ArcadeEffect[] = [];
+      if (effect.kind === 'ifAlive') kept = alive(state, baseOf(effect.body)) ? effect.effects : [];
+      else {
+        const charge = baseOf(effect.keeper) + ABILITY_SLOTS.shield;
+        if (state[charge] !== 0 && alive(state, baseOf(effect.body))) {
+          state[charge] = 0;
+          kept = [{ kind: 'despawn', body: effect.body }];
+        }
+      }
+      const owner = owners?.[i] as number;
+      effects.splice(i, 1, ...kept);
+      owners?.splice(i, 1, ...kept.map(() => owner));
+      i -= 1;
+      continue;
     }
     // Předloha spawnu ani mrtvé tělo zásah nenese – kopie by zdědily jeho HP (revize P32-0 T4).
     else if ((effect.kind === 'hit' || effect.kind === 'stateChange') && !alive(state, baseOf(effect.body))) changed = false;

@@ -39,6 +39,12 @@ export const ICON_NAMES = [
   'heart',
   'flag',
   'eye-off',
+  // Akce hrdiny (P46A T7), dokreslené na mřížce kitu (`docs/brand/REPO-NOTES.md`).
+  'shoot',
+  'strike',
+  'dash',
+  'shield',
+  'grab',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

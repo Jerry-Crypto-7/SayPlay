@@ -127,6 +127,9 @@ function changeOf(effect: ArcadeEffect, after: ArcadeState, tick: number, prior:
     case 'lose':
     // Kombo je zápis počítadla k sebrání – změnu za slovesem dokládá skóre téhož pravidla.
     case 'combo':
+    // Blok štítu a podmíněný obal (P46A R2) jádro nahradí efekty, které platí, ještě před stopou.
+    case 'block':
+    case 'ifAlive':
       return null;
     case 'despawn':
       return effect.body >= 0 && effect.body < (after[HEADER.bodyCount] as number) && !alive(after, effect.body) ? `body ${String(effect.body)} gone ${at}` : null;

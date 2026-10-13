@@ -30,7 +30,10 @@ import type { SteerDifficulty } from '../arcade/pieces/steer';
 import { HOOP_CUES, TOWER_CUES, type ThrowDifficulty, type ThrowGoal } from '../arcade/pieces/throw';
 import type { TimingMode, TimingSpeed } from '../arcade/pieces/timing';
 import { CAPABILITIES } from '../capabilities';
-import { ADDONS, type AddonId } from '../spec';
+// Z kontraktu arkády, ne ze `spec.ts`: `compose/compile` tenhle modul načte i v prohlížeči (arcade-bundle).
+import { ABILITIES, ADDONS, type AbilityId, type AddonId } from '../arcade/contract';
+import { negationScopes } from './lexicon';
+import type { ControlId } from '../spec';
 
 const RHYTHM_CUES: readonly RegExp[] = [
   /\brhythm\b/,
@@ -255,21 +258,61 @@ const ADDON_CUES: Readonly<Record<AddonId, RegExp>> = {
   lives: /\b(?:\d+|two|three|four|five|a few|extra) (?:lives|hearts)\b/,
 };
 
+/**
+ * Akce hrdiny ze sloves věty (P46A T8). Krádež jen ze sloves krádeže a uchopení:
+ * „collect“ a „catch“ mají vlastní mechaniku (sběr dotykem, chycení v aréně),
+ * tlačítko Grab by přibylo každé hře s mincemi. „hit“ ne, když hrdinu něco trefí.
+ */
+const ABILITY_CUES: Readonly<Record<AbilityId, RegExp>> = {
+  shoot: /(?<!(?:photo|auto)[- ])\bshoot(?:s|ing)?\b(?! stars?)|\bblast(?:s|ing)? (?:the |at )?(?!off\b)\w+|\bfir(?:e|es|ing) (?:at|on|back)\b/,
+  strike: /\b(?:fight(?:s|ing)?|punch(?:es|ing)?|kick(?:s|ing)?|strike(?:s)?|striking|slash(?:es|ing)?|slap(?:s|ping)?|smash(?:es|ing)?|bash(?:es|ing)?|attack(?:s|ing)?|crush(?:es|ing)?)\b|(?<!\b(?:get|gets|getting|got|be|being|without|avoid|avoids|avoiding|not|never) )\bhit(?:s|ting)?\b(?! by\b)/,
+  dash: /\b(?:dash(?:es|ing)?|dodg(?:e|es|ing))\b|\bescap(?:e|es|ing) quickly\b/,
+  shield: /\b(?:block(?:s|ing)?|defend(?:s|ing)?|protect(?:s|ing)?|shield(?:s|ing)?)\b/,
+  grab: /\b(?:steal(?:s|ing)?|stole|grab(?:s|bing)?|snatch(?:es|ing)?)\b/,
+};
+
+/** Hrdina má nejvýš 2 akce (tlačítka A, B). */
+const MAX_ABILITIES = 2;
+
+/** Všechny akce, které věta hrdinovi říká, v pořadí věty, bez sloves v záporu („doesn't shoot“). `text` je věta malými písmeny. */
+export function saidAbilities(text: string): AbilityId[] {
+  const scopes = negationScopes(text);
+  return ABILITIES.flatMap((id) => {
+    const hit = [...text.matchAll(new RegExp(ABILITY_CUES[id].source, 'g'))].find((match) => !scopes.some(([from, to]) => match.index >= from && match.index < to));
+    return hit === undefined ? [] : [{ id, at: hit.index }];
+  })
+    .sort((a, b) => a.at - b.at)
+    .map(({ id }) => id);
+}
+
+/** Z akcí věty `said` ty, které ovládání bere, nejvýš 2 (první = A = J). */
+export const abilitiesOfControl = (said: readonly AbilityId[], control: ControlId): AbilityId[] =>
+  said.filter((id) => CAPABILITIES[control].abilities.includes(id)).slice(0, MAX_ABILITIES);
+
+export const abilitiesFor = (text: string, control: ControlId): AbilityId[] => abilitiesOfControl(saidAbilities(text), control);
+
+/** Akce na tlačítkách v nápovědě („J to strike, K to shoot.“). */
+export const abilityHint = (abilities: readonly AbilityId[]): string => `${abilities.map((id, slot) => `${slot === 0 ? 'J' : 'K'} to ${id}`).join(', ')}.`;
+
+// Pohyb ve větě: „fight“ s během, závodem nebo skokem je úder za jízdy, ne souboj na místě.
+const TRAVEL = /\b(?:run|runs|running|race|races|racing|jump|jumps|jumping|hop|hops|hopping|flee|flees|fleeing|drive|drives|driving)\b/;
+
 // „jump and shoot“, „run and collect“: dvě slovesa hráče – pohyb je základ, druhé
 // sloveso doplněk (jinak by vyhrála střelnice, a samotné „run“ běžce nedá).
 const MOVE_AND_VERB = /\b(jump|hop|run)\w*(?: \w+){0,5} and (?:shoot|collect|grab|gather|pick)|\bshoot\w* (?:and|while) (jump|hop|run)/;
 
 /** Ovládání ze slov (níž) a doplňky, které jeho tabulka schopností bere. */
-export type ControlPick = ControlChoice & { readonly addons?: readonly AddonId[] };
+export type ControlPick = ControlChoice & { readonly addons?: readonly AddonId[]; readonly abilities?: readonly AbilityId[] };
 
-/** `text` je věta malými písmeny. Klíč `addons` jen když věta nějaký doplněk řekla. */
+/** `text` je věta malými písmeny. Klíče `addons` a `abilities` jen když je věta řekla. */
 export function pickControl(text: string): ControlPick | null {
   const pair = MOVE_AND_VERB.exec(text);
   const choice = pickBase(text, pair !== null) ?? (pair === null ? null : moveOf(pair[1] ?? pair[2] ?? 'jump', text));
   if (choice === null) return null;
   const allowed = CAPABILITIES[choice.control].addons;
   const addons = ADDONS.filter((addon) => allowed.includes(addon) && ADDON_CUES[addon].test(text));
-  return addons.length === 0 ? choice : { ...choice, addons };
+  const abilities = abilitiesFor(text, choice.control);
+  return { ...choice, ...(addons.length === 0 ? {} : { addons }), ...(abilities.length === 0 ? {} : { abilities }) };
 }
 
 /**
@@ -300,7 +343,7 @@ const NEAREST_NOUNS: readonly (readonly [RegExp, ControlChoice['control']])[] = 
 export type NearestPick = { readonly choice: ControlChoice; readonly why: 'verb' | 'noun' | 'default' };
 
 export function nearestControl(text: string): NearestPick {
-  const byVerb = NEAREST_VERBS.find(([cue]) => cue.test(text))?.[1];
+  const byVerb = NEAREST_VERBS.find(([cue, control]) => cue.test(text) && (control !== 'duel' || !TRAVEL.test(text)))?.[1];
   if (byVerb !== undefined) return { choice: defaultChoice(byVerb, text), why: 'verb' };
   const byNoun = NEAREST_NOUNS.find(([cue]) => cue.test(text))?.[1];
   if (byNoun !== undefined) return { choice: defaultChoice(byNoun, text), why: 'noun' };
@@ -341,7 +384,7 @@ function pickBase(text: string, moveAndShoot: boolean): ControlChoice | null {
   if (RHYTHM_CUES.some((cue) => cue.test(text))) return { control: 'rhythm', density: level === 'hard' ? 'dense' : level === 'easy' ? 'sparse' : null };
   // Souboj zblízka před hodem a střelbou: „throw punches“ i „gun fight“ jsou souboj,
   // a narážky souboje jsou úzké (holé „fight“ mezi nimi není).
-  if (DUEL_CUES.some((cue) => cue.test(text))) return { control: 'duel', difficulty: level };
+  if (DUEL_CUES.some((cue) => cue.test(text)) && !TRAVEL.test(text)) return { control: 'duel', difficulty: level };
   // Výslovný žánr plošinovky přebije hod i střelbu („a tower defense platformer“).
   const platformer = /\bplatform(?:er| game)\b/.test(text) || moveAndShoot;
   if (!platformer && THROW_CUES.some((cue) => cue.test(text))) {

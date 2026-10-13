@@ -6297,7 +6297,7 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/brand/app-icon/favicon.ico** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
 - **public/brand/app-icon/favicon.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
 - **public/brand/app-icon/pwa-maskable-512.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
-- **public/brand/icons/sprite.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; UI icon sprite copied unchanged from docs/brand/icons/.
+- **public/brand/icons/sprite.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; UI icon sprite copied unchanged from docs/brand/icons/. Five hero-action icons (shoot, strike, dash, shield, grab) drawn by the project on the kit grid on 2026-10-13 and added to both sprites.
 - **public/brand/logo/logo-lockup-mono-ink.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
 - **public/brand/logo/logo-lockup-mono-white.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
 - **public/brand/logo/logo-lockup-on-dark.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.

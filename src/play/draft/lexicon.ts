@@ -324,6 +324,23 @@ const IRREGULAR: Readonly<Record<string, string>> = {
   uses: 'use', fuses: 'fuse', muses: 'muse', ruses: 'ruse', abuses: 'abuse', excuses: 'excuse', recluses: 'recluse',
 };
 
+/** Kde začíná zápor a kam sahá: „without guns“, „no shooting“, „doesn't jump“ – do konce klauze. */
+const NEGATION =
+  /(?<!\bsay(?:s|ing)? )\b(?:without|no|not|never|don'?t|doesn'?t|didn'?t|can'?t|cannot|won'?t|isn'?t|aren'?t|shouldn'?t|mustn'?t|do not|does not|did not|can not|must not|should not)\b(?!-)(?! (?:be |being |get |getting )?(?:seen|spotted|caught|noticed|detected|waking)\b)(?! (?:one|matter|more than|longer|way|only|stops?|stopping|give up|gives up|giving up|quits?|quitting)\b)/g;
+const NEGATION_END = /[,.;:!?]|\b(?:and|but|while|where|when|then|so|that|who|which|because|until|before|after|instead|with)\b/;
+
+/** Úseky věty v záporu `[od, do)` – čte je záměr věty (`intent/extract`) i akce hrdiny (`saidAbilities`). */
+export function negationScopes(text: string): (readonly [number, number])[] {
+  return [...text.matchAll(NEGATION)].map((match) => {
+    const from = match.index + match[0].length;
+    // A nominal colour exclusion does not prohibit the following purpose.
+    const nominalPurpose = /^\s+(?:red|blue|green|yellow|black|white|orange|purple|pink|brown|gr[ae]y)\s+to\s/.exec(text.slice(from));
+    if (nominalPurpose !== null) return [from, from + nominalPurpose[0].indexOf(' to ')] as const;
+    const end = NEGATION_END.exec(text.slice(from));
+    return [from, end === null ? text.length : from + end.index] as const;
+  });
+}
+
 /** Jednotná čísla na -s, která ho neztratí: „cyclops“ není množné číslo „cyclop“; jejich množné číslo je na -es. */
 const SINGULAR_S = new Set(['cyclops', 'lens', 'gas', 'atlas', 'iris', 'chaos', 'canvas', 'bias', 'alias', 'species', 'series', 'tennis', 'news', 'rhinoceros']);
 

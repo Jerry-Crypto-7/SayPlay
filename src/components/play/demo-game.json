@@ -12,6 +12,9 @@
   "addons": [
    "collect"
   ],
+  "abilities": [
+   "dash"
+  ],
   "title": "Fox Runs City Dodging",
   "archetype": "hazard_crossing",
   "targetDurationSec": 60,
@@ -53,7 +56,7 @@
   ],
   "tutorial": {
    "goalLine": "Reach the finish line. Jump, slide and switch lanes.",
-   "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+   "controlsHint": "Tap or Space to jump, swipe or arrows to change lane. J to dash."
   },
   "verification": [
    {
@@ -74,13 +77,24 @@
   "runtimeVersion": "arcade-v2",
   "seed": 1,
   "control": {
-   "id": "runner",
+   "id": "addon_control",
    "params": {
-    "speed": "normal",
-    "ramp": [
-     83333,
-     166666
-    ]
+    "base": {
+     "id": "runner",
+     "params": {
+      "speed": "normal",
+      "ramp": [
+       83333,
+       166666
+      ]
+     }
+    },
+    "abilities": {
+     "keeper": 73,
+     "ids": [
+      "dash"
+     ]
+    }
    }
   },
   "rules": [
@@ -88,7 +102,11 @@
     "id": "hit",
     "params": {
      "role": "obstacle",
-     "effect": "lose"
+     "effect": "lose",
+     "guard": {
+      "keeper": 73,
+      "dash": 0
+     }
     }
    },
    {
@@ -106,6 +124,17 @@
     "params": {
      "kind": 5
     }
+   },
+   {
+    "id": "ability_dash",
+    "params": {
+     "keeper": 73,
+     "slot": 0,
+     "roles": [
+      "obstacle"
+     ],
+     "verb": "dash"
+    }
    }
   ],
   "bot": {
@@ -117,7 +146,16 @@
     },
     "addons": [
      "collect"
-    ]
+    ],
+    "abilities": {
+     "keeper": 73,
+     "ids": [
+      "dash"
+     ],
+     "harm": [
+      "obstacle"
+     ]
+    }
    }
   },
   "kinds": [
@@ -133,9 +171,9 @@
   "initial": [
    0,
    0,
-   73,
+   74,
    0,
-   73,
+   74,
    0,
    0,
    0,
@@ -1167,6 +1205,20 @@
    1,
    4,
    6,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1,
+   1,
+   1,
+   0,
+   12,
+   0,
    0,
    0
   ]

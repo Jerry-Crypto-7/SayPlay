@@ -207,7 +207,9 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
       const recipe = { ...requested, parts: requested.parts?.slice(0, count), content: withoutPartNames(requested.content, requested.parts?.slice(count) ?? []) };
       // Šablona pravidel (P45B T9) jde první; neprojde-li, tentýž recept bez ní – teprve potom méně dílů.
       const { intent: _intent, ...untemplated } = recipe;
-      for (const attempt of [recipe, untemplated]) {
+      // Akce hrdiny (P46A T8), které robot neprokáže, ustoupí dřív než díly: věta nesmí kvůli tlačítku spadnout.
+      const { abilities: _abilities, ...plain } = untemplated;
+      for (const attempt of [recipe, untemplated, plain]) {
         try {
           const { spec, template } = compileTemplated(attempt);
           const key = JSON.stringify(spec);
@@ -221,7 +223,9 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
           const witnesses = verdict.witnesses;
           const unmet = essentialTriples(intent).filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
           // Bez šablony recept záměr nenese: `compileRecipe(composition.recipe)` (rychlý návrh) postaví tutéž hru.
-          const composition = { cellId: source.id, recipe: template === null ? untemplated : attempt, spec, unmet, witnesses, issues, template };
+          // Recept je ten pokus, který prošel (i bez akcí), jen bez záměru, když šablonu nedostal.
+          const bare = attempt === recipe ? untemplated : attempt;
+          const composition = { cellId: source.id, recipe: template === null ? bare : attempt, spec, unmet, witnesses, issues, template };
           if (compositions.size >= 64) compositions.delete(compositions.keys().next().value!);
           compositions.set(cacheKey, structuredClone(composition));
           return composition;
