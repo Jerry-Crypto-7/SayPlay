@@ -30,12 +30,15 @@ export function makePacedBot(bots: Readonly<Record<string, BotPiece>>): BotPiece
     } };
 }
 
+const parsedBases = new WeakMap<object, z.infer<typeof paramsSchema>>();
 /** Addon aiming must still see the native movement and its current speed. */
 export function pacedBotBase(ref: PieceRef, observation: ArcadeObservation): PieceRef {
   // Průběh hry (P45C) obalí robota fází; doplněk má vidět základního robota pod oběma.
   if (ref.id === 'pacing_bot') return pacedBotBase(ref.params.base as PieceRef, observation);
   if (ref.id !== 'phase_bot') return ref;
-  const params = paramsSchema.parse(ref.params), raw = params.base.params;
+  // Doplněk se ptá každý tik; parametry světa se během běhu nemění (P46B R4: zod ≈ 6 % běhu robota).
+  if (!parsedBases.has(ref.params)) parsedBases.set(ref.params, paramsSchema.parse(ref.params));
+  const params = parsedBases.get(ref.params)!, raw = params.base.params;
   const at = observation.state[bodyBase(observation.player) + BODY.z]!;
   const speed = (value: number) => phaseSpeed(value, at, params.length, params.phases);
   return { ...params.base, params: { ...raw, ...(typeof raw.topSpeed === 'number' ? { topSpeed: speed(raw.topSpeed) } : {}), ...(typeof raw.speed === 'number' ? { speed: speed(raw.speed) } : {}) } };
