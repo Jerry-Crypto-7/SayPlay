@@ -12,6 +12,6 @@ export const shootAbility: AbilityPiece = {
   apply: (parts, context) => {
     // Doplněk `+shoot` už blaster dal: akce ho jen převezme na své tlačítko.
     const armed = parts.rules.some((rule) => rule.id === 'blaster') ? parts : (shootAddon.apply?.(parts, {}, context) ?? parts);
-    return { ...armed, rules: armed.rules.map((rule) => (rule.id === 'shot_hit' ? { id: rule.id, params: { ...rule.params, verb: 'shoot' } } : rule)) };
+    return { ...armed, rules: armed.rules.map((rule) => (rule.id === 'shot_hit' || rule.id === 'glide_shot_hit' ? { id: rule.id, params: { ...rule.params, verb: 'shoot' } } : rule)) };
   },
 };

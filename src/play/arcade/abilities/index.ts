@@ -15,7 +15,7 @@ import { grabRule } from './grab';
 import { dashRule, shieldRule } from './guard';
 import { HARMFUL_ROLES } from './state';
 import { shootAbility } from './shoot';
-import { strikeRule } from './strike';
+import { AROUND_CONTROLS, strikeRule } from './strike';
 
 export interface AbilityContext extends AddonContext {
   /** Index těla-počítadla `abilityKeeper`. */
@@ -45,11 +45,14 @@ function addFoes(parts: ArcadeParts, context: AddonContext): ArcadeParts {
   };
 }
 
+/** Pohled shora: úder a krádež sahají kolem hrdiny (`AROUND_CONTROLS`). */
+const aroundOf = (parts: ArcadeParts): { around?: true } => (AROUND_CONTROLS.includes(baseControlOf(parts.control).id) ? { around: true } : {});
+
 export const strikeAbility: AbilityPiece = {
   id: 'strike',
   apply: (parts, context) => {
     const armed = withFoes(parts, context);
-    return { ...armed, rules: [...armed.rules, { id: strikeRule.id, params: { keeper: context.keeper, slot: context.slot, verb: 'strike' } }] };
+    return { ...armed, rules: [...armed.rules, { id: strikeRule.id, params: { keeper: context.keeper, slot: context.slot, verb: 'strike', ...aroundOf(parts) } }] };
   },
 };
 
@@ -59,16 +62,26 @@ export const grabAbility: AbilityPiece = {
   apply: (parts, context) => {
     const loot = parts.level.bodies.some((body) => body.role === 'collectible' && body.template !== true);
     const armed = loot ? parts : withFoes(parts, context);
-    return { ...armed, rules: [...armed.rules, { id: grabRule.id, params: { keeper: context.keeper, slot: context.slot, verb: 'grab' } }] };
+    return { ...armed, rules: [...armed.rules, { id: grabRule.id, params: { keeper: context.keeper, slot: context.slot, verb: 'grab', ...aroundOf(parts) } }] };
   },
 };
 
-/** Nárazy, které hrdinovi ublíží: `hit` a náraz do svodidel řízení. */
-const isCrash = (id: string): boolean => id === 'hit' || id === 'steer_crash';
+/** Nárazy, které hrdinovi ublíží: `hit`, náraz do svodidel řízení a chycení v aréně. */
+const isCrash = (id: string): boolean => id === 'hit' || id === 'steer_crash' || id === 'arena_eat';
 
-/** Role, které hrdinovi ublíží nárazem – ty dash prorazí a štít odrazí. */
+/**
+ * Role, které hrdinovi ublíží nárazem – ty dash prorazí a štít odrazí. V aréně jen pronásledovatel
+ * útěku (`arena_eat` s `grace`): buňka agaru je kořist i lovec podle velikosti, štít by blokoval i kořist.
+ */
 const harmOf = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
-  HARMFUL_ROLES.filter((role) => parts.rules.some((rule) => (rule.id === 'hit' && rule.params.role === role) || (rule.id === 'steer_crash' && role === 'obstacle')));
+  HARMFUL_ROLES.filter((role) =>
+    parts.rules.some(
+      (rule) =>
+        (rule.id === 'hit' && rule.params.role === role) ||
+        (rule.id === 'steer_crash' && role === 'obstacle') ||
+        (rule.id === 'arena_eat' && rule.params.grace !== undefined && role === 'chaser'),
+    ),
+  );
 
 /** Dash a štít: náraz dostane ochranu, pravidlo akce pohlcení provede. Úroveň bez nárazu dostane nepřátele jako u úderu. */
 function guardAbility(id: 'dash' | 'shield'): AbilityPiece {

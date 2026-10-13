@@ -244,7 +244,8 @@ export const finishCollected: RulePiece<z.infer<typeof needParams>> = {
 export const glideShotHit: RulePiece = {
   ...shotHit,
   id: 'glide_shot_hit',
-  params: noParams,
+  // Střelba jako akce hrdiny (P46A T9) nese sloveso jako `shot_hit`.
+  params: z.object({ verb: z.literal('shoot').optional() }).strict(),
   fire(ctx) {
     if (ctx.other < 0) return [];
     const at = bodyBase(ctx.other);

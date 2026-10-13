@@ -11,6 +11,7 @@
 
 import { shootStep } from '../addons';
 import { ABILITY_SLOTS, AXIS_MAX, type AbilityId, type ArcadeInput, type ArcadeObservation, BODY, BUTTON, FLAG, HEADER, type PieceRef, ROLE, UNIT, bodyBase } from '../contract';
+import { arenaAxis } from '../pieces/arena';
 import { ABILITY_BUTTONS, ABILITY_TIMING, type AbilityBot, abilityActive, abilityCooldown } from './state';
 import { inStrikeReach } from './strike';
 
@@ -112,6 +113,28 @@ function oncoming(observation: ArcadeObservation, targets: readonly number[], ho
   return best;
 }
 
+/** Roboti ovládání s pohledem shora (`AROUND_CONTROLS`): úder a krádež sahají kolem hrdiny. */
+const AROUND_BOTS: readonly string[] = ['arena_bot', 'walker_bot'];
+
+/** Aréna: s připravenou akcí proti pronásledovateli jde robot k nejbližšímu blíž než tohle. */
+const ARENA_SEEK = 8 * UNIT;
+
+/**
+ * Robot arény před pronásledovateli utíká, takže by úder, dash ani štít nikdy nepoužil.
+ * S připravenou akcí jde k nejbližšímu tělu rolí `roles` v dosahu `ARENA_SEEK`; jinak `undefined`.
+ */
+function seekAxis(state: Int32Array, player: number, roles: readonly number[]): number | undefined {
+  const p = bodyBase(player);
+  let best: { dx: number; dz: number; d: number } | undefined;
+  for (const body of bodiesOf(state, player, roles)) {
+    const dx = (state[bodyBase(body) + BODY.x] as number) - (state[p + BODY.x] as number);
+    const dz = (state[bodyBase(body) + BODY.z] as number) - (state[p + BODY.z] as number);
+    const d = Math.max(Math.abs(dx), Math.abs(dz));
+    if (d < ARENA_SEEK && (best === undefined || d < best.d)) best = { dx, dz, d };
+  }
+  return best === undefined ? undefined : arenaAxis(best.dx, best.dz);
+}
+
 const STRUCK = [ROLE.enemy, ROLE.chaser];
 const LOOT = [ROLE.collectible, ROLE.enemy];
 
@@ -124,10 +147,15 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   const n = recent.length;
   const harm = params.harm.map((role) => ROLE[role]);
   const steer = base.id === 'steer_bot';
+  const around = AROUND_BOTS.includes(base.id);
   let buttons = input.buttons;
   /** Tělo, kterému robot neuhne (−1 = uhýbá jako obvykle). */
   let hold = -1;
+  /** Aréna: role, ke kterým robot s připravenou akcí půjde. */
+  const seek: number[] = [];
   for (const slot of slotsOf(observation, params)) {
+    // I v aktivním okně: robot, který po stisku zase uteče, by se štítem (40 tiků) nikdy nedotkl.
+    if (base.id === 'arena_bot' && (slot.ready || slot.activeUntil >= n) && slot.id !== 'shoot' && slot.id !== 'grab') seek.push(...(slot.id === 'strike' ? STRUCK : harm));
     if (slot.id === 'shoot') {
       // Robot `+shoot` mačká FIRE; tady stejné rozhodnutí na tlačítko akce.
       const seen = { ...observation, recent: recent.map((r) => ((r.buttons & slot.button) !== 0 ? { ...r, buttons: r.buttons | BUTTON.FIRE } : r)) };
@@ -137,7 +165,7 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
     if (slot.id === 'strike' || slot.id === 'grab') {
       const reach = bodiesOf(state, player, slot.id === 'strike' ? STRUCK : LOOT);
       const active = ABILITY_TIMING[slot.id].active;
-      const lands = reach.some((body) => Array.from({ length: active }, (_v, k) => n + k).some((t) => inStrikeReach(state, player, body, t)));
+      const lands = reach.some((body) => Array.from({ length: active }, (_v, k) => n + k).some((t) => inStrikeReach(state, player, body, t, around)));
       if (slot.ready && lands) buttons |= slot.button;
       // Úder a krádež nepřítele chtějí, aby přišel: s připravenou akcí neuhnout tomu, co míří na hrdinu.
       const threat = oncoming(observation, bodiesOf(state, player, slot.id === 'strike' ? STRUCK : [ROLE.enemy]), steer ? STEER_COMMIT_TICKS : COMMIT_TICKS, steer);
@@ -151,6 +179,8 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
     if (threat !== null && slot.ready && threat.at >= n + 1 && threat.at <= n + Math.floor(active / 2)) buttons |= slot.button;
     if (threat !== null && (slot.ready || slot.activeUntil >= threat.at)) hold = threat.body;
   }
+  const toward = seek.length === 0 ? undefined : seekAxis(state, player, seek);
+  if (toward !== undefined) return { buttons, axis: toward };
   if (hold < 0) return { buttons, axis: input.axis };
   const evade = EVADE[base.id] ?? 0;
   if (!steer) return { buttons: buttons & ~evade, axis: input.axis };
