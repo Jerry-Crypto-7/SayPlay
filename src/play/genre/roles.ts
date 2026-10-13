@@ -65,19 +65,21 @@ interface PlaceRoles {
   readonly craft: string;
   readonly enemy: string;
   readonly collectible: string;
+  /** Překážka na trati a zeď okruhu (P46D T6), model z katalogu; bez ní výchozí žánru. */
+  readonly obstacle?: string;
 }
 
 /** Role podle sady prostředí (`arcade/look`); hrdinové jsou zvíře, pták, člověk nebo robot, ať sedí každému žánru kromě Plavby. */
 const PLACE_ROLES: Readonly<Record<LookId, PlaceRoles>> = {
   meadow: { hero: 'fox', craft: 'car', enemy: 'bee', collectible: 'flower' },
-  city: { hero: 'kid', craft: 'car', enemy: 'car', collectible: 'coin' },
+  city: { hero: 'kid', craft: 'car', enemy: 'car', collectible: 'coin', obstacle: 'traffic barrier' },
   mall: { hero: 'kid', craft: 'car', enemy: 'shopping cart', collectible: 'shopping bag' },
-  supermarket: { hero: 'mouse', craft: 'car', enemy: 'cat', collectible: 'cheese' },
+  supermarket: { hero: 'mouse', craft: 'car', enemy: 'cat', collectible: 'cheese', obstacle: 'shopping cart' },
   living_room: { hero: 'kid', craft: 'car', enemy: 'spider', collectible: 'toy block' },
   factory: { hero: 'robot', craft: 'car', enemy: 'saw blade', collectible: 'gear' },
-  forest: { hero: 'fox', craft: 'car', enemy: 'wolf', collectible: 'acorn' },
+  forest: { hero: 'fox', craft: 'car', enemy: 'wolf', collectible: 'acorn', obstacle: 'log' },
   jungle: { hero: 'monkey', craft: 'car', enemy: 'snake', collectible: 'banana' },
-  desert: { hero: 'fox', craft: 'car', enemy: 'scorpion', collectible: 'gem' },
+  desert: { hero: 'fox', craft: 'car', enemy: 'scorpion', collectible: 'gem', obstacle: 'cactus' },
   beach: { hero: 'turtle', craft: 'boat', enemy: 'crab', collectible: 'shell' },
   ocean: { hero: 'pirate', craft: 'boat', enemy: 'shark', collectible: 'pearl' },
   underwater: { hero: 'fish', craft: 'submarine', enemy: 'shark', collectible: 'pearl' },
@@ -119,11 +121,30 @@ export function defaultHero(setting: string, genre: GenreId, sentence: string): 
 /**
  * Nepřítel, když ho věta neříká (P39: položka obsazení). Jméno dává prostředí –
  * hrad → duch, moře → žralok, sníh → lední medvěd, les → vlk, město → auto,
- * vesmír → asteroid – a co dělá, žánr (`FOE_DOES`): plošinovka se vlkovi
- * vyhýbá, střílečka ho sestřelí, načasování ho má jen jako kulisu.
+ * vesmír → asteroid – a co dělá, žánr (`FOE_DOES`): střílečka vlka sestřelí,
+ * načasování ho má jen jako kulisu. Čemu se žánr jen vyhýbá, je překážka na
+ * trati, a tu dává prostředí, má-li vlastní (P46D T6): v lese kmen, ne vlk.
  */
 export function defaultFoe(setting: string, genre: GenreId): CastItem {
-  return { label: placeRoles(setting)?.enemy ?? GENRE_FOE[genre], does: FOE_DOES[genre] };
+  const place = placeRoles(setting);
+  const avoided = FOE_DOES[genre] === 'avoid' ? place?.obstacle : undefined;
+  return { label: avoided ?? place?.enemy ?? GENRE_FOE[genre], does: FOE_DOES[genre] };
+}
+
+/** Nepřítel prostředí bez ohledu na žánr (les → vlk): výchozí věc místa i tam, kde žánr dává překážku. */
+export function placeFoe(setting: string): string | undefined {
+  return placeRoles(setting)?.enemy;
+}
+
+/**
+ * Překážka trati, když ji obsazení nemá (P46D T6): v supermarketu vozík, v lese kmen, ve městě
+ * zábrana, v poušti kaktus. Sada je `palette`, jinak se hádá z místa („Hamster escapes a supermarket
+ * Roomba“ má místo `roomba` a sadu supermarket); místo bez vlastní překážky nedá nic a žánr
+ * nechá svou (kámen běžce, bodák skákačky, pneumatiky okruhu).
+ */
+export function defaultObstacle(spec: { readonly setting: string; readonly palette?: LookId }): string | undefined {
+  const look = spec.palette ?? lookFor(spec.setting);
+  return look === null ? undefined : PLACE_ROLES[look].obstacle;
 }
 
 /** Sbíraná věc, když ji věta neříká. */
@@ -143,7 +164,7 @@ export const BALL_PLAYER = 'player';
 
 /** Každý popisek, který smlouva rolí dává místo věty – pin „žádná role mimo větu a výchozí“. */
 export const DEFAULT_LABELS: ReadonlySet<string> = new Set([
-  ...[...Object.values(PLACE_ROLES), UNKNOWN_PLACE].flatMap((roles) => [roles.hero, roles.craft, roles.enemy, roles.collectible]),
+  ...[...Object.values(PLACE_ROLES), UNKNOWN_PLACE].flatMap((roles) => [roles.hero, roles.craft, roles.enemy, roles.collectible, ...(roles.obstacle === undefined ? [] : [roles.obstacle])]),
   ...Object.values(GENRE_FOE),
   ...Object.values(TARGET_DEFAULT),
   'star',

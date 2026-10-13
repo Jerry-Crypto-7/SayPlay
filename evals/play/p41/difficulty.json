@@ -129,7 +129,7 @@
           "chaser"
         ]
       },
-      "specHash": "fbd4b1d8d07d7cd52345cdb66ee2bee1c3e0b7cef53733b8f6e54d19a9005b48",
+      "specHash": "16c7b692db3645c1fccaa7f4ad3e9e4d678ccf3404f4c35ff3c634b22b7814af",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -157,7 +157,7 @@
           "chaser"
         ]
       },
-      "specHash": "8fbc0f6d9887347e36047052d7a0f59d25951ca95b262ac6c29ab70821c9eca6",
+      "specHash": "cbd9ce75828e2991e632c9a6e93c457cb6d0845fa4d84bb1afe3c1895a3bbd64",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -213,7 +213,7 @@
           "rival"
         ]
       },
-      "specHash": "45af56173443dfdfbabc4a1c9925731367badeb6b797dc7f677f28515c3ce84f",
+      "specHash": "fd9c45e1eb8995491406233c12f76cbe781e53a41fe13cff70863569fe8e3bb6",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -243,7 +243,7 @@
           "rival"
         ]
       },
-      "specHash": "3f2caa635c7cefc86d3598b8377071d0a425085a4958e86fbee4f72e16704e71",
+      "specHash": "76290b6a1dd01acd1611f35b3c1bf0268fdbda47d0d0ba86929fe3cccf5a7c9e",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -269,7 +269,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "7a36da457de1d831e57f55175842c6224a6a427e9809ed8e57e4a3f75d53b9e6",
+      "specHash": "09893f71f2edc5c812af829c1ce1f8c8d6111219bd975a822b1a3f6ced0c7ad2",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -297,7 +297,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "464d31720a7daccda00984414059067bc0826f1174665f976ad0b53bb8441c03",
+      "specHash": "50fabbcb5270a9a2f4ca21f7deca1f9022230a60c9e898e1c621bf9572c2ffb8",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -325,7 +325,7 @@
           "chaser"
         ]
       },
-      "specHash": "0de7095b82e0c01aec3d7bbcf88ec847f77e16f25f2469ec018894963ecf6e62",
+      "specHash": "0d5f7855025266430c3cea2b9493116bb0eb3f05dc3427c7e14386452dc4630a",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -355,7 +355,7 @@
           "chaser"
         ]
       },
-      "specHash": "b3836aaf84c29ffa8f5c6789a4a93b48651c75e9918e707c723b4dfffcb0fab8",
+      "specHash": "522443ca7112e302a6230afffc75ef5e8eeb68ab826a7973c00e47f5101ed6bf",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -383,7 +383,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "d50a0a6f7ddfac7b40e52cadb9e8de07f674c73a54ad9cdef5694a3117b2c6e3",
+      "specHash": "a638061d774a880fa08d3bcd6827d386f0afd4a1d6de7152cdaae6f56e94cf54",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -412,7 +412,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "4fee191be0da84dac0405b10fef36bc51b55a18ab1488ff95cea9ef5aa6c36f0",
+      "specHash": "ea28ef9abcd8bf69f08487348489bf3b7464dfea3ed125bec9103f41a493d031",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -438,7 +438,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "b4a0d302ab4da3da0eee89409fc34a68ba0afd22af8d26814a85c3840745cd38",
+      "specHash": "ddb5771b414d81173277fc5053c7896360c0e8dfa5446ee3b2fe2bf3fd5eb620",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -464,7 +464,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "d0b83f9e7870d5459add3323782bfae3fa3aca4e91a82b78c75da441f57daf6a",
+      "specHash": "d3864560316c2377de46b8178a1b4f5633e8391ff99398bfc62e021a8cbfd568",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -908,7 +908,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "b4e4453cd323b496b41c0f38d9ba0ca62ea7b84e73291ec2aea412553778fa88",
+      "specHash": "a6b05f213efd3c72f235592f58917e7260169414d8cc2eef1fd86ef6599275b8",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -936,7 +936,7 @@
           "chaser"
         ]
       },
-      "specHash": "4a8a7a76c3c62ebcca3a0456029ad8cb7564f5b7c49190937fb3f415018e902d",
+      "specHash": "03e85e6e2d9da412d48a831af67683c725983e0aab0656cb3806db0e2901673d",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -966,7 +966,7 @@
           "chaser"
         ]
       },
-      "specHash": "a27075d6f81eebef390bf87cb74ca070d9b929ccb525cade219b58a5be59cbbc",
+      "specHash": "daf6dcea2767535528dcc6dc13c452a48e33d303a7105da021f611dcb7751c47",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -994,7 +994,7 @@
         "objective": "reach",
         "threats": []
       },
-      "specHash": "aa712bca3f0ce60120e32f88662c19ade8b9a69d1007cadb1f2aacf2228bfa65",
+      "specHash": "007dab52294669a1a60efad631de472cd04c2cf7d11a81e1d0e554a6c1c4c365",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1022,7 +1022,7 @@
           "chaser"
         ]
       },
-      "specHash": "d2813bb644505722c169833f8b73dd16fc6abdced51e2c1737ede737ca0d885e",
+      "specHash": "ee3abe73269b4902930b1de3229b261dfac1a96fd2b580809860e14de30eec09",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -1052,7 +1052,7 @@
           "chaser"
         ]
       },
-      "specHash": "0c304e605f79c6cce7b1af672da2f81c937cb5268a94f28d252fc0dd4468faba",
+      "specHash": "f1d21e4a554bf5630749fa0abc28afbc5be8881c4f24c977264fdf139ae47d9e",
       "profiles": {
         "novice": {
           "runs": 20,

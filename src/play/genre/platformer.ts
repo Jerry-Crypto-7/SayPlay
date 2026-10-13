@@ -20,6 +20,7 @@ import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from '../arcade/pieces/platform
 import { nounPhrase, plural, singular } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, type GenreSpecOf, addonRoles, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { defaultObstacle } from './roles';
 
 /** Sloveso cíle, u kterého se vyhrává sebráním všech věcí. */
 const COLLECT_VERB = /^(?:collect|grab|gather|pick)/;
@@ -34,7 +35,8 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
   const collected = castFor(spec, 'collect');
   const collectible = collected?.label;
   // Bodák nese jméno toho, čemu se uhýbá; soupeř zblízka a terč hodu jsou taky jen nástraha (P39).
-  const hazard = castFor(spec, 'avoid', 'fight', 'throw_at')?.label;
+  // Bez ní překážka z prostředí (kaktus v poušti, P46D T6); jinde zůstává bodák, který jádro kreslí samo.
+  const hazard = castFor(spec, 'avoid', 'fight', 'throw_at')?.label ?? defaultObstacle(spec);
   // Bez cíle nese sbírací sloveso sama věc („gather 3 apples“): sebrat všechny a k vlajce.
   const verb = (target ?? collected)?.verb?.toLowerCase() ?? '';
   const collect = COLLECT_VERB.test(verb);

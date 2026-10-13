@@ -1,4 +1,5 @@
 import type { CastRole, GenreSpec } from '../genre/contract';
+import { defaultObstacle } from '../genre/roles';
 import type { GameRole, GameSpecV1 } from '../spec';
 import { recipeSchema, type Recipe } from './recipe';
 import { withAuthoredContent } from './content';
@@ -24,7 +25,8 @@ export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
   const destination = delivery ? 'delivery point' : label('reach', 'finish line');
   const roles: GameRole[] = [
     { id: 'player', kind: 'player', label: content.hero, count: 1 },
-    { id: 'barrier', kind: 'hazard', label: label('avoid', 'tire barrier'), count: 1 },
+    // Zeď okruhu z prostředí, když ji věta neříká: ve městě zábrana, v lese kmeny (P46D T6).
+    { id: 'barrier', kind: 'hazard', label: label('avoid', defaultObstacle(content) ?? 'tire barrier'), count: 1 },
     { id: 'turbo', kind: 'collectible', label: collect ? label('collect', 'crystal') : 'turbo', count: 1 },
     { id: 'finish', kind: 'exit', label: destination, count: 1 },
   ];

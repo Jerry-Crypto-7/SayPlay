@@ -1,6 +1,6 @@
 import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
-import { timeOfDayFor } from '../arcade/look';
+import { lookFor, timeOfDayFor } from '../arcade/look';
 import { matchesWitness, type ActionWitness } from '../arcade/witness';
 import { draftChoiceOrder, draftGenreFor } from '../draft/draft';
 import { nounPhrase, singular } from '../draft/lexicon';
@@ -178,7 +178,10 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
     intent.items.some(item => item.essential && item.axis !== 'threat' && item.actor === head(draft.hero));
   const hero = cell.recipe.move === 'ball' && intent.hero === null ? BALL_PLAYER : intent.hero !== null && head(draft.hero) !== intent.hero && !keepNamedHero ? intent.hero : draft.hero;
   const landingTarget = cell.recipe.objective === 'land' && intent.items.some(item => item.essential && item.verb === 'land' && item.object !== null);
-  return { ...draft, hero, setting, cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
+  // Místo, které sady neznají („a supermarket Roomba“ dá místo `roomba`), vezme sadu ze slov věty jako
+  // návrh žánru – scéna i překážka trati pak patří do supermarketu (P46D T6).
+  const palette = draft.palette ?? (lookFor(setting) === null ? (lookFor(intent.sentence) ?? undefined) : undefined);
+  return { ...draft, hero, setting, ...(palette === undefined ? {} : { palette }), cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
 }
 
 export function compose(intent: Intent, seed = 1, reading: Reading | null = null): Composition {
