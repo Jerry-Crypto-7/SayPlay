@@ -51,7 +51,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   const cast: CastItem[] = (draft.cast ?? []).map(item => {
     if (setting === draft.setting || !DEFAULT_LABELS.has(item.label) || words.includes(singular(item.label.split(' ').at(-1)!))) return item;
     if (item.does === 'collect') return { ...item, label: defaultCollectible(setting) };
-    if (['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(item.does)) return { ...item, label: defaultFoe(setting, draft.genre).label };
+    if (['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(item.does)) return { ...item, label: defaultFoe(setting, draft.genre, item.does).label };
     return item;
   });
   const spoken: string[] = [];
@@ -74,7 +74,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   for (const fallback of cell.preset.cast ?? []) {
     const roles = draft.genre === 'arena' && fallback.does === 'chase_me'
       ? ['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'] : [fallback.does];
-    if (!cast.some(item => roles.includes(item.does))) cast.push({ ...fallback, label: fallback.does === 'collect' ? defaultCollectible(setting) : ['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(fallback.does) ? defaultFoe(setting, draft.genre).label : fallback.label });
+    if (!cast.some(item => roles.includes(item.does))) cast.push({ ...fallback, label: fallback.does === 'collect' ? defaultCollectible(setting) : ['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(fallback.does) ? defaultFoe(setting, draft.genre, fallback.does).label : fallback.label });
   }
   const put = (label: string, does: CastItem['does']): void => {
     if (label === 'hero') return;
@@ -122,7 +122,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   if (projectiles.length > 0) {
     // The moving controls' shooting addon needs a target even when the request
     // only names ammunition. That default target keeps its own identity.
-    if (!cast.some(member => member.does === 'shoot_at')) cast.push({ label: defaultFoe(setting, draft.genre).label, does: 'shoot_at' });
+    if (!cast.some(member => member.does === 'shoot_at')) cast.push({ label: defaultFoe(setting, draft.genre, 'shoot_at').label, does: 'shoot_at' });
     for (const projectile of projectiles) {
       cast.push({ label: projectile.label, does: 'scenery', verb: 'shoot' });
       spoken.push(projectile.label);

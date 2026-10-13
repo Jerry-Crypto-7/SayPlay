@@ -94,6 +94,14 @@ describe('independent assembly gameplay', () => {
     expect(run.tick).toBeLessThanOrEqual(5400);
   });
 
+  it('a runner spec stored without controlParams still compiles', () => {
+    const { spec } = compose(extractIntent('escape from the forest'), 1);
+    expect(spec.control).toBe('runner');
+    expect(spec.assemblyParts?.length ?? 0).toBeGreaterThan(0);
+    const { controlParams: _dropped, ...old } = spec;
+    expect(arcadeWorldOf(old as typeof spec, 1).ok).toBe(true);
+  });
+
   it.each((['glide', 'flap', 'run', 'jump', 'drive', 'walk', 'ball', 'roam'] as const).flatMap(move => [1, 2, 3, 4, 5].map(seed => ({ move, seed }))))('$move seed $seed retains movement while catching prey', ({ move, seed }) => {
     const genre = move === 'glide' || move === 'drive' ? 'voyage' : move === 'flap' ? 'flap' : move === 'run' ? 'runner' : move === 'walk' ? 'quest' : move === 'ball' ? 'throw' : move === 'roam' ? 'arena' : 'platformer';
     const spec = compileRecipe({ preset: 'assembled', move, actions: [], objective: 'reach', threats: [],

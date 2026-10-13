@@ -306,7 +306,7 @@ export function assemblyParts(parts: ArcadeParts, spec: GameSpecV1, ruleLibrary:
     return { x: course.success ? centerAt(course.data, z) : player.x, y: player.y, z };
   });
   // Jen nová trať běžce: uložené hry bez `patterns` staví tentýž svět.
-  const patterned = control === 'runner' && (spec.controlParams as { patterns?: number }).patterns === 1;
+  const patterned = control === 'runner' && (spec.controlParams as { patterns?: number } | undefined)?.patterns === 1;
   const speed = control === 'runner' ? 60 : control === 'platform' ? 45 : control === 'flap' ? 35 : control === 'glide' ? 65 : control === 'steer' ? 100 : 45;
   const bodies: BodyInit[] = [...parts.level.bodies];
   const runtime: Part[] = spec.assemblyParts.map((part, i) => {

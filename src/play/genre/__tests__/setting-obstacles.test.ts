@@ -62,4 +62,14 @@ describe('překážky podle prostředí', () => {
     expect(defaultFoe('dark forest', 'arena').label).toBe('wolf');
     expect(defaultFoe('dark forest', 'shooter').label).toBe('wolf');
   });
+
+  it('terč střelby a pronásledovatel běžce zůstávají nepřítelem, ne překážkou trati', () => {
+    expect(defaultFoe('forest', 'runner').label).toBe('log');
+    expect(defaultFoe('forest', 'runner', 'shoot_at').label).toBe('wolf');
+    expect(defaultFoe('city', 'runner', 'chase_me').label).toBe('car');
+    for (const [sentence, obstacle] of [['A fox runs through the forest shooting fireballs', 'log'], ['A kid runs through the city and shoots', 'traffic barrier']] as const) {
+      const labels = draft(sentence).roles.map((role) => role.label);
+      expect(labels.filter((each) => each === obstacle).length, `${sentence}: ${labels.join(', ')}`).toBeLessThanOrEqual(1);
+    }
+  });
 });

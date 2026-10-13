@@ -124,10 +124,12 @@ export function defaultHero(setting: string, genre: GenreId, sentence: string): 
  * vesmír → asteroid – a co dělá, žánr (`FOE_DOES`): střílečka vlka sestřelí,
  * načasování ho má jen jako kulisu. Čemu se žánr jen vyhýbá, je překážka na
  * trati, a tu dává prostředí, má-li vlastní (P46D T6): v lese kmen, ne vlk.
+ * `does` je role, kterou věc ve hře dostane: terč střelby, pronásledovatel a
+ * soupeř zblízka zůstávají nepřítelem, i když se mu žánr jinak jen vyhýbá.
  */
-export function defaultFoe(setting: string, genre: GenreId): CastItem {
+export function defaultFoe(setting: string, genre: GenreId, does: CastItem['does'] = FOE_DOES[genre]): CastItem {
   const place = placeRoles(setting);
-  const avoided = FOE_DOES[genre] === 'avoid' ? place?.obstacle : undefined;
+  const avoided = FOE_DOES[genre] === 'avoid' && does === 'avoid' ? place?.obstacle : undefined;
   return { label: avoided ?? place?.enemy ?? GENRE_FOE[genre], does: FOE_DOES[genre] };
 }
 

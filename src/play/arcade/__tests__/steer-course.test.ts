@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import { draftGameSpecWithMeta } from '@/play/draft';
 
+import { baseControlOf } from '../addons';
 import { arcadeWorldOf } from '../compile';
 import { type ArcadeLevel, type ArcadeWorld } from '../contract';
 import { buildWorld } from '../kernel';
@@ -184,4 +185,18 @@ describe('hra závodu z návrhu', () => {
     expect(novice).toBeLessThanOrEqual(Math.max(0.7, before + slack));
     expect(wins(spec, 'intermediate')).toBeGreaterThanOrEqual(0.8);
   }, 300_000);
+
+  it('a stretched course keeps segment widths only when built from patterns; an old spec stretches as before', () => {
+    const spec = draftGameSpecWithMeta('A car races through the city', 1).spec;
+    const phases = [{ start: 0, speedPercent: 100 }, { start: 400, speedPercent: 125 }];
+    const courseKeys = (controlParams: Record<string, unknown>): string[] => {
+      const made = arcadeWorldOf({ ...spec, controlParams, phases }, 1);
+      if (!made.ok) throw new Error(made.issues.join('; '));
+      return Object.keys(baseControlOf(made.world.control).params.course as object);
+    };
+    const { patterns: _patterns, ...old }: Record<string, unknown> = { ...(spec.controlParams as Record<string, unknown>), roadWidth: 3600 };
+    expect(courseKeys({ ...old, patterns: 1 })).toEqual(expect.arrayContaining(['halfWidths', 'rivalLane']));
+    expect(courseKeys(old)).not.toContain('halfWidths');
+    expect(courseKeys(old)).not.toContain('rivalLane');
+  });
 });

@@ -20,7 +20,7 @@ function ordered(graph: readonly Dependency[]): Dependency[] {
 }
 
 /** `builtForPercent`: rychlost, pro kterou generátor trať postavil (průběh P45C ji předá za odebranou rampu žánru). */
-export function progressionParts(parts: ArcadeParts, spec: Pick<GameSpecV1, 'phases' | 'dependsOn' | 'roles' | 'rules'>, builtForPercent = 100): ArcadeParts {
+export function progressionParts(parts: ArcadeParts, spec: Pick<GameSpecV1, 'phases' | 'dependsOn' | 'roles' | 'rules' | 'controlParams'>, builtForPercent = 100): ArcadeParts {
   if (spec.phases === undefined && spec.dependsOn === undefined) return parts;
   if (spec.dependsOn && spec.rules?.some(rule => rule.do.some(effect => 'win' in effect))) return { ...parts, issues: ['A custom win rule would bypass objective dependencies'] };
   const control = parts.control.id;
@@ -53,7 +53,9 @@ export function progressionParts(parts: ArcadeParts, spec: Pick<GameSpecV1, 'pha
         }
         return { ...body, z: stretch(body.z), d: from === 0 || body.z > from ? Math.ceil(body.d * scale) : body.d };
       }), ...(parts.level.sectionStarts ? { sectionStarts: parts.level.sectionStarts.map(stretch) as [number, number] } : {}) };
-      const params = { ...parts.control.params, ...(control === 'steer' ? { course: { ...(parts.control.params.course as object | undefined), ...courseOf(level) } } : {}), ...(control === 'glide' ? { path: glidePathOf(level) } : {}), ...(Array.isArray(parts.control.params.ramp) ? { ramp: parts.control.params.ramp.map(stretch) } : {}) };
+      // Jen okruh ze vzorů (P46D T4) si po natažení nechá šířky úseků a pruh soupeřů; uložené hry bez `patterns` staví tentýž svět.
+      const keepCourse = control === 'steer' && (spec.controlParams as { patterns?: number } | undefined)?.patterns === 1;
+      const params = { ...parts.control.params, ...(control === 'steer' ? { course: keepCourse ? { ...(parts.control.params.course as object | undefined), ...courseOf(level) } : courseOf(level) } : {}), ...(control === 'glide' ? { path: glidePathOf(level) } : {}), ...(Array.isArray(parts.control.params.ramp) ? { ramp: parts.control.params.ramp.map(stretch) } : {}) };
       parts = { ...parts, level, control: { ...parts.control, params }, bot: { ...parts.bot, params: { ...parts.bot.params, ...(control === 'steer' || control === 'glide' ? params : {}), ...(control === 'flap' && Array.isArray(params.ramp) ? { ramp: params.ramp } : {}) } }, rules: parts.rules.map(rule => typeof rule.params.atZ === 'number' ? { ...rule, params: { ...rule.params, atZ: stretch(rule.params.atZ) } } : rule) };
     }
     const length = parts.level.length, course = control === 'steer' ? courseOf(parts.level) : undefined;
