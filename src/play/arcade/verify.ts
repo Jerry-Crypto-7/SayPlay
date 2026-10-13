@@ -608,7 +608,17 @@ export interface ArcadeVerdict {
 }
 
 /** S vazbami z `arcadeWorldOf` navíc změří trojice a samostatné sondy hrozeb; uložený svět ani publikační bránu nemění. */
-export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, roleBindings?: readonly RoleBinding[]): ArcadeVerdict {
+/** Běh robota z `compileArcade` (týž svět, výchozí volby): kontrola publikace ho nepouští podruhé (P46B R4, běžec ≈ 1 s). */
+const compiledRuns = new WeakMap<ArcadeWorld, BotRun>();
+export function rememberBotRun(world: ArcadeWorld, run: BotRun): void {
+  compiledRuns.set(world, run);
+}
+
+/**
+ * `pacingProbe`: které sondy průběhu pustit (výchozí všechny). Sonda přidá jen svědky, jejichž aktérem je vazba,
+ * kterou dostane – volající, který čte jen svědky některých aktérů (přiznání `honestyOf`), ostatní celé běhy ušetří.
+ */
+export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, roleBindings?: readonly RoleBinding[], options: { readonly pacingProbe?: (binding: RoleBinding) => boolean } = {}): ArcadeVerdict {
   const initial = instantiate(world);
   const bodies = initial[HEADER.bodyCount] as number;
   const withinLimits = bodies <= ARCADE_LIMITS.maxBodies && world.rules.length <= ARCADE_LIMITS.maxRules;
@@ -622,12 +632,17 @@ export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE
     probes.push(...probe.witnesses.filter(w => w.actor.roleId === binding.roleId));
   }
   // Průběh hry (P45C): první tělo každého chování a bosse má svou sondu – nepřítel, kterého sonda nevidí, by prošel jako kulisa.
-  for (const { body, behaviour } of pacingProbeBodies(world)) {
+  // Bez vazeb rolí (publikace, `reportFor`) sonda svědka nezapíše: každý svědek má hráče za aktéra nebo předmět a hráče
+  // by navázala jen vazba z `roleBindings`. Celý běh robota na sondu by byl zbytečný (P46B R4: 4 sondy běžce ≈ 2,5 s).
+  for (const { body, behaviour } of roleBindings === undefined ? [] : pacingProbeBodies(world)) {
     const binding: RoleBinding = { body, roleId: `pacing:${behaviour}`, label: behaviour, roleKind: 'hazard', player: false };
+    if (options.pacingProbe?.(binding) === false) continue;
     const probe = runBot(world, library, { roleBindings: [...(roleBindings ?? []), binding], probeBody: body, runId: `probe:${binding.roleId}` });
     probes.push(...probe.witnesses.filter(w => w.actor.roleId === binding.roleId));
   }
-  const bot = runBot(world, library, { roleBindings, threatProofs: probes });
+  // Bez vazeb nemá běh svědka ani sondy (výš), takže je to týž běh jako `runBot(world)` v kompilaci.
+  const known = roleBindings === undefined && library === ARCADE_LIBRARY ? compiledRuns.get(world) : undefined;
+  const bot = known ?? runBot(world, library, { roleBindings, threatProofs: probes });
   const first = replay(world, bot.inputs, library);
   const second = replay(world, bot.inputs, library);
   const replayEqual = first.hash === second.hash && first.hash === bot.hash;

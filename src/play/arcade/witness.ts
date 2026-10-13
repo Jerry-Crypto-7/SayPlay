@@ -66,10 +66,12 @@ const names = (name: string, binding: RoleBinding): boolean => name === 'hero' ?
   // target/actor renamed basketball. Specific ball identities remain distinct.
   noun(name) === 'ball' && binding.roleKind === 'item' && ['ball', 'physics_ball'].includes(binding.roleId) &&
   /^(?:basketball|football|soccer ball|golf ball)$/.test(binding.label.toLowerCase());
+/** Může vazba `binding` být aktérem trojice? Bez toho svědek s tímto aktérem trojici nepotvrdí (`matchesWitness`). */
+export const namesActor = (triple: IntentTriple, binding: RoleBinding): boolean => names(triple.actor, binding);
 export function matchesWitness(triple: IntentTriple, witness: ActionWitness): boolean {
   // Zachycení v sondě nesmí potvrdit cíl catch/escape/survive.
   if (witness.run === 'probe' && !['chaser', 'guard', 'hazard', 'obstacle', 'rival'].includes(triple.verb)) return false;
-  return triple.verb === witness.verb && names(triple.actor, witness.actor) && (triple.object === null || (witness.object !== null && names(triple.object, witness.object)));
+  return triple.verb === witness.verb && namesActor(triple, witness.actor) && (triple.object === null || (witness.object !== null && names(triple.object, witness.object)));
 }
 
 /** Sonda mění jen vstup hráče; svět, rychlosti i pravidla zůstávají stejné. */

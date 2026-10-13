@@ -16,7 +16,7 @@ import { ARCADE_LIBRARY } from '../library';
 import { BEHAVIOURS } from '../pieces/behaviours';
 import { bossBody } from '../pieces/behaviours/boss';
 import { GENRE_PACING, type GenrePacing, pacingProbeBodies } from '../pieces/pacing-parts';
-import { verifyArcade } from '../verify';
+import { runBot, verifyArcade } from '../verify';
 
 const GENRE = { id: 'arena', mode: 'collect', compilerVersion: GENRE_COMPILER_VERSION };
 
@@ -132,6 +132,16 @@ describe('verifyArcade probes every behaviour', () => {
     const verdict = verifyArcade(world, ARCADE_LIBRARY, roleBindings);
     for (const behaviour of behavioursOf(world)) {
       expect(verdict.witnesses.some((witness) => witness.run === 'probe' && witness.actor.roleId === `pacing:${behaviour}`), behaviour).toBe(true);
+    }
+    expect(behavioursOf(world)).toEqual(['flanker']);
+  });
+  // Publikace (`verifyArcade` bez vazeb) sondy průběhu nepouští (P46B R4); smí jen proto, že by nic nezapsaly.
+  it('records no witness in a probe without role bindings, so publication skips it', () => {
+    GENRE_PACING.arena = arena(false);
+    const { world } = built(read({ ...SURVIVE, genre: GENRE }));
+    for (const { body, behaviour } of pacingProbeBodies(world)) {
+      const binding = { body, roleId: `pacing:${behaviour}`, label: behaviour, roleKind: 'hazard' as const, player: false };
+      expect(runBot(world, ARCADE_LIBRARY, { roleBindings: [binding], probeBody: body, runId: 'probe' }).witnesses, behaviour).toEqual([]);
     }
     expect(behavioursOf(world)).toEqual(['flanker']);
   });
