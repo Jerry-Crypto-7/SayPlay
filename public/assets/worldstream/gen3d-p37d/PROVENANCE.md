@@ -616,3 +616,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-strangler-fig-tree` | strangler fig tree, fig tree, banyan tree | 4672 / 2332 |
 | `gen3d-frozen-dead-tree` | frozen dead tree, icy tree | 4733 / 2362 |
 | `gen3d-beech-tree` | beech tree, beech | 4748 / 2374 |
+| `gen3d-cycad-palm` | cycad palm, sago palm, cycad | 4746 / 2368 |
+| `gen3d-pandanus-tree` | pandanus tree, screw pine | 4734 / 2362 |
+| `gen3d-hollow-tree-trunk` | hollow tree trunk, hollow log, tree trunk | 4704 / 2323 |
+| `gen3d-ruined-stone-tower` | ruined stone tower, tower ruin, stone tower | 4423 / 2209 |

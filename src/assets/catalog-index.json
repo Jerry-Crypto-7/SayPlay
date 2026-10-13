@@ -28033,6 +28033,89 @@
           0.36815
         ]
       }
+    },
+    {
+      "assetId": "gen3d-cycad-palm",
+      "tags": [
+        "cycad palm",
+        "sago palm",
+        "cycad"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cycad-palm-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38926,
+          0,
+          -0.38962
+        ],
+        "max": [
+          0.38926,
+          0.99987,
+          0.38962
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pandanus-tree",
+      "tags": [
+        "pandanus tree",
+        "screw pine"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pandanus-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38718,
+          0,
+          -0.32746
+        ],
+        "max": [
+          0.38718,
+          0.99977,
+          0.32746
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hollow-tree-trunk",
+      "tags": [
+        "hollow tree trunk",
+        "hollow log",
+        "tree trunk"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hollow-tree-trunk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35803,
+          0,
+          -0.36957
+        ],
+        "max": [
+          0.35803,
+          0.99992,
+          0.36957
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ruined-stone-tower",
+      "tags": [
+        "ruined stone tower",
+        "tower ruin",
+        "stone tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ruined-stone-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25673,
+          0,
+          -0.24815
+        ],
+        "max": [
+          0.25673,
+          0.99905,
+          0.24815
+        ]
+      }
     }
   ]
 }
