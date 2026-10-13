@@ -133,15 +133,15 @@
       "profiles": {
         "novice": {
           "runs": 20,
-          "wins": 7,
-          "winRate": 0.35,
+          "wins": 6,
+          "winRate": 0.3,
           "errors": 0,
           "replayMismatches": 0
         },
         "intermediate": {
           "runs": 20,
-          "wins": 19,
-          "winRate": 0.95,
+          "wins": 17,
+          "winRate": 0.85,
           "errors": 0,
           "replayMismatches": 0
         }
@@ -442,8 +442,8 @@
       "profiles": {
         "novice": {
           "runs": 20,
-          "wins": 8,
-          "winRate": 0.4,
+          "wins": 9,
+          "winRate": 0.45,
           "errors": 0,
           "replayMismatches": 0
         },
@@ -912,8 +912,8 @@
       "profiles": {
         "novice": {
           "runs": 20,
-          "wins": 11,
-          "winRate": 0.55,
+          "wins": 12,
+          "winRate": 0.6,
           "errors": 0,
           "replayMismatches": 0
         },
@@ -940,8 +940,8 @@
       "profiles": {
         "novice": {
           "runs": 20,
-          "wins": 8,
-          "winRate": 0.4,
+          "wins": 9,
+          "winRate": 0.45,
           "errors": 0,
           "replayMismatches": 0
         },
@@ -970,8 +970,8 @@
       "profiles": {
         "novice": {
           "runs": 20,
-          "wins": 11,
-          "winRate": 0.55,
+          "wins": 12,
+          "winRate": 0.6,
           "errors": 0,
           "replayMismatches": 0
         },
@@ -2055,8 +2055,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2472,
-      "hash": "8f4d0f4d",
+      "tick": 2440,
+      "hash": "046efe8a",
       "replayEqual": true,
       "error": null
     },
@@ -2067,7 +2067,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2905,
-      "hash": "718e3916",
+      "hash": "cf4f717b",
       "replayEqual": true,
       "error": null
     },
@@ -2078,7 +2078,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2175,
-      "hash": "52ebd498",
+      "hash": "2f336015",
       "replayEqual": true,
       "error": null
     },
@@ -2089,7 +2089,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2175,
-      "hash": "17b7299e",
+      "hash": "1c441f4a",
       "replayEqual": true,
       "error": null
     },
@@ -2100,7 +2100,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2747,
-      "hash": "7d0e7ff6",
+      "hash": "fb4e63a3",
       "replayEqual": true,
       "error": null
     },
@@ -2111,7 +2111,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2747,
-      "hash": "e38c5b99",
+      "hash": "4abd737e",
       "replayEqual": true,
       "error": null
     },
@@ -2121,8 +2121,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2717,
-      "hash": "4d45e72c",
+      "tick": 2492,
+      "hash": "5584e38b",
       "replayEqual": true,
       "error": null
     },
@@ -2130,10 +2130,10 @@
       "cell": "run.escape",
       "seed": 4,
       "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2942,
-      "hash": "b4331281",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2497,
+      "hash": "79f39e88",
       "replayEqual": true,
       "error": null
     },
@@ -2144,7 +2144,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2017,
-      "hash": "9bee16bf",
+      "hash": "88213a3b",
       "replayEqual": true,
       "error": null
     },
@@ -2155,7 +2155,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2645,
-      "hash": "79c120d3",
+      "hash": "0d5d05b1",
       "replayEqual": true,
       "error": null
     },
@@ -2166,7 +2166,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2143,
-      "hash": "36a46fec",
+      "hash": "1849724a",
       "replayEqual": true,
       "error": null
     },
@@ -2177,7 +2177,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2143,
-      "hash": "1aee16d4",
+      "hash": "66105aef",
       "replayEqual": true,
       "error": null
     },
@@ -2188,7 +2188,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 1569,
-      "hash": "586b3d92",
+      "hash": "d911f6b1",
       "replayEqual": true,
       "error": null
     },
@@ -2199,7 +2199,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2132,
-      "hash": "94fbdbad",
+      "hash": "f0136670",
       "replayEqual": true,
       "error": null
     },
@@ -2210,7 +2210,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 1908,
-      "hash": "df3560e4",
+      "hash": "95df78f5",
       "replayEqual": true,
       "error": null
     },
@@ -2221,7 +2221,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2270,
-      "hash": "92772e2a",
+      "hash": "1f33ece5",
       "replayEqual": true,
       "error": null
     },
@@ -2232,7 +2232,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2610,
-      "hash": "7b93920e",
+      "hash": "0276c4b9",
       "replayEqual": true,
       "error": null
     },
@@ -2243,7 +2243,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2610,
-      "hash": "7fed53dc",
+      "hash": "3e4226a3",
       "replayEqual": true,
       "error": null
     },
@@ -2254,7 +2254,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2881,
-      "hash": "cc41ee73",
+      "hash": "73c27091",
       "replayEqual": true,
       "error": null
     },
@@ -2265,7 +2265,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2881,
-      "hash": "7b1eb4a4",
+      "hash": "8a16500d",
       "replayEqual": true,
       "error": null
     },
@@ -2276,7 +2276,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 1985,
-      "hash": "af6772af",
+      "hash": "e2ea64cb",
       "replayEqual": true,
       "error": null
     },
@@ -2287,7 +2287,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2403,
-      "hash": "f783f6d2",
+      "hash": "056bb054",
       "replayEqual": true,
       "error": null
     },
@@ -2298,7 +2298,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2148,
-      "hash": "c331e35f",
+      "hash": "0267e155",
       "replayEqual": true,
       "error": null
     },
@@ -2309,7 +2309,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2148,
-      "hash": "aa4aaeec",
+      "hash": "8f95f6cf",
       "replayEqual": true,
       "error": null
     },
@@ -2319,8 +2319,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 1947,
-      "hash": "4d5e2f2b",
+      "tick": 2092,
+      "hash": "60d137d9",
       "replayEqual": true,
       "error": null
     },
@@ -2331,7 +2331,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2174,
-      "hash": "e68fd199",
+      "hash": "603cb339",
       "replayEqual": true,
       "error": null
     },
@@ -2342,7 +2342,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 1555,
-      "hash": "efbb4df2",
+      "hash": "983da00e",
       "replayEqual": true,
       "error": null
     },
@@ -2353,7 +2353,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2275,
-      "hash": "14585515",
+      "hash": "928965db",
       "replayEqual": true,
       "error": null
     },
@@ -2363,8 +2363,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 1895,
-      "hash": "d38599b2",
+      "tick": 2363,
+      "hash": "f4ca46b8",
       "replayEqual": true,
       "error": null
     },
@@ -2375,7 +2375,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2471,
-      "hash": "300d69e7",
+      "hash": "5e7301c0",
       "replayEqual": true,
       "error": null
     },
@@ -2386,7 +2386,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 1813,
-      "hash": "0e3f7685",
+      "hash": "3401e3b3",
       "replayEqual": true,
       "error": null
     },
@@ -2394,10 +2394,10 @@
       "cell": "run.escape",
       "seed": 16,
       "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2161,
-      "hash": "b07ce70a",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1859,
+      "hash": "e7fe3661",
       "replayEqual": true,
       "error": null
     },
@@ -2408,7 +2408,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 1919,
-      "hash": "d28009a1",
+      "hash": "f0ff55b2",
       "replayEqual": true,
       "error": null
     },
@@ -2416,10 +2416,10 @@
       "cell": "run.escape",
       "seed": 17,
       "profile": "intermediate",
-      "won": true,
-      "outcome": "won",
-      "tick": 2673,
-      "hash": "e7c434e6",
+      "won": false,
+      "outcome": "lost",
+      "tick": 999,
+      "hash": "9025b014",
       "replayEqual": true,
       "error": null
     },
@@ -2429,8 +2429,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 1622,
-      "hash": "62af5215",
+      "tick": 1720,
+      "hash": "1ea65ff3",
       "replayEqual": true,
       "error": null
     },
@@ -2438,10 +2438,10 @@
       "cell": "run.escape",
       "seed": 18,
       "profile": "intermediate",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1622,
-      "hash": "62af5215",
+      "won": true,
+      "outcome": "won",
+      "tick": 2429,
+      "hash": "7a2d792c",
       "replayEqual": true,
       "error": null
     },
@@ -2451,8 +2451,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 1796,
-      "hash": "395b5c5a",
+      "tick": 1797,
+      "hash": "6775330a",
       "replayEqual": true,
       "error": null
     },
@@ -2463,7 +2463,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2617,
-      "hash": "329b01a3",
+      "hash": "8302483f",
       "replayEqual": true,
       "error": null
     },
@@ -2471,10 +2471,10 @@
       "cell": "run.escape",
       "seed": 20,
       "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 2719,
-      "hash": "af8bedb4",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1849,
+      "hash": "3ff17913",
       "replayEqual": true,
       "error": null
     },
@@ -2485,7 +2485,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2719,
-      "hash": "d46819ba",
+      "hash": "77cc0cf7",
       "replayEqual": true,
       "error": null
     },
@@ -6896,7 +6896,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2395,
-      "hash": "7f7d5953",
+      "hash": "d99a04b8",
       "replayEqual": true,
       "error": null
     },
@@ -6907,7 +6907,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2907,
-      "hash": "4885f145",
+      "hash": "efdb266d",
       "replayEqual": true,
       "error": null
     },
@@ -6918,7 +6918,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2019,
-      "hash": "fd0e6f79",
+      "hash": "b9fce2cb",
       "replayEqual": true,
       "error": null
     },
@@ -6929,7 +6929,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2167,
-      "hash": "697712d7",
+      "hash": "ee3b7c6e",
       "replayEqual": true,
       "error": null
     },
@@ -6939,8 +6939,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2536,
-      "hash": "402d59d9",
+      "tick": 2407,
+      "hash": "1f811545",
       "replayEqual": true,
       "error": null
     },
@@ -6951,7 +6951,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2684,
-      "hash": "29ed9071",
+      "hash": "5eae4918",
       "replayEqual": true,
       "error": null
     },
@@ -6962,7 +6962,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2919,
-      "hash": "f66b5242",
+      "hash": "b20ba6e0",
       "replayEqual": true,
       "error": null
     },
@@ -6973,7 +6973,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2917,
-      "hash": "7b4a72d3",
+      "hash": "46497e65",
       "replayEqual": true,
       "error": null
     },
@@ -6984,7 +6984,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2183,
-      "hash": "cb117aa2",
+      "hash": "c9d11bf2",
       "replayEqual": true,
       "error": null
     },
@@ -6995,7 +6995,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2634,
-      "hash": "70ba70bd",
+      "hash": "644d13ea",
       "replayEqual": true,
       "error": null
     },
@@ -7006,7 +7006,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2181,
-      "hash": "1a6336ab",
+      "hash": "f8d19688",
       "replayEqual": true,
       "error": null
     },
@@ -7017,7 +7017,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2180,
-      "hash": "63dcf59a",
+      "hash": "b1bbd426",
       "replayEqual": true,
       "error": null
     },
@@ -7028,7 +7028,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 1989,
-      "hash": "12957e59",
+      "hash": "9da687c6",
       "replayEqual": true,
       "error": null
     },
@@ -7039,7 +7039,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2131,
-      "hash": "c2195608",
+      "hash": "573e1262",
       "replayEqual": true,
       "error": null
     },
@@ -7049,8 +7049,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2255,
-      "hash": "bafaaca1",
+      "tick": 2254,
+      "hash": "03e89f11",
       "replayEqual": true,
       "error": null
     },
@@ -7061,7 +7061,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2254,
-      "hash": "4f86cedd",
+      "hash": "70b0b8bd",
       "replayEqual": true,
       "error": null
     },
@@ -7072,7 +7072,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2597,
-      "hash": "467416e2",
+      "hash": "e5e11b98",
       "replayEqual": true,
       "error": null
     },
@@ -7083,7 +7083,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2596,
-      "hash": "3443ff21",
+      "hash": "7dd513de",
       "replayEqual": true,
       "error": null
     },
@@ -7094,7 +7094,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2881,
-      "hash": "f0f4cbb5",
+      "hash": "6f7810ac",
       "replayEqual": true,
       "error": null
     },
@@ -7105,7 +7105,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2881,
-      "hash": "98b7f62e",
+      "hash": "9dea7285",
       "replayEqual": true,
       "error": null
     },
@@ -7116,7 +7116,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2259,
-      "hash": "561a7ffb",
+      "hash": "71653557",
       "replayEqual": true,
       "error": null
     },
@@ -7127,7 +7127,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2403,
-      "hash": "4b763bb4",
+      "hash": "b55accae",
       "replayEqual": true,
       "error": null
     },
@@ -7137,8 +7137,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2158,
-      "hash": "a30adec1",
+      "tick": 2159,
+      "hash": "270734b3",
       "replayEqual": true,
       "error": null
     },
@@ -7149,7 +7149,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2158,
-      "hash": "e8940e6b",
+      "hash": "cfbc19a0",
       "replayEqual": true,
       "error": null
     },
@@ -7160,7 +7160,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2143,
-      "hash": "a16722ad",
+      "hash": "fff12363",
       "replayEqual": true,
       "error": null
     },
@@ -7171,7 +7171,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2143,
-      "hash": "350351ad",
+      "hash": "fb0b82b8",
       "replayEqual": true,
       "error": null
     },
@@ -7181,8 +7181,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2073,
-      "hash": "d951d08c",
+      "tick": 1857,
+      "hash": "699a00db",
       "replayEqual": true,
       "error": null
     },
@@ -7193,7 +7193,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2298,
-      "hash": "d7953586",
+      "hash": "f5502329",
       "replayEqual": true,
       "error": null
     },
@@ -7204,7 +7204,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2109,
-      "hash": "89784f00",
+      "hash": "8de7921b",
       "replayEqual": true,
       "error": null
     },
@@ -7215,7 +7215,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2475,
-      "hash": "7a417c6c",
+      "hash": "ca757525",
       "replayEqual": true,
       "error": null
     },
@@ -7226,7 +7226,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2006,
-      "hash": "db8d3112",
+      "hash": "79a2e5e2",
       "replayEqual": true,
       "error": null
     },
@@ -7237,7 +7237,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2149,
-      "hash": "ab089c05",
+      "hash": "4c8a767a",
       "replayEqual": true,
       "error": null
     },
@@ -7248,7 +7248,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2160,
-      "hash": "46f7a0ef",
+      "hash": "bb2e0278",
       "replayEqual": true,
       "error": null
     },
@@ -7259,7 +7259,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2680,
-      "hash": "a252b0b9",
+      "hash": "8fb34440",
       "replayEqual": true,
       "error": null
     },
@@ -7269,8 +7269,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 1866,
-      "hash": "83f89a1f",
+      "tick": 1947,
+      "hash": "d5f418de",
       "replayEqual": true,
       "error": null
     },
@@ -7281,7 +7281,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2418,
-      "hash": "9651106d",
+      "hash": "f6065623",
       "replayEqual": true,
       "error": null
     },
@@ -7289,10 +7289,10 @@
       "cell": "runner.default",
       "seed": 19,
       "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 2258,
-      "hash": "9ccf1d93",
+      "won": true,
+      "outcome": "won",
+      "tick": 2617,
+      "hash": "e682b7f9",
       "replayEqual": true,
       "error": null
     },
@@ -7303,7 +7303,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2617,
-      "hash": "220dfaba",
+      "hash": "15812c76",
       "replayEqual": true,
       "error": null
     },
@@ -7314,7 +7314,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2690,
-      "hash": "bd5f8ef0",
+      "hash": "85ab9184",
       "replayEqual": true,
       "error": null
     },
@@ -7325,7 +7325,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2690,
-      "hash": "724d2e3c",
+      "hash": "78e9a30d",
       "replayEqual": true,
       "error": null
     },
@@ -14375,8 +14375,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2446,
-      "hash": "34b37702",
+      "tick": 2735,
+      "hash": "15a725c0",
       "replayEqual": true,
       "error": null
     },
@@ -14387,7 +14387,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2907,
-      "hash": "580060ec",
+      "hash": "dbae8239",
       "replayEqual": true,
       "error": null
     },
@@ -14398,7 +14398,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2175,
-      "hash": "129a9bb0",
+      "hash": "f6a22e49",
       "replayEqual": true,
       "error": null
     },
@@ -14409,7 +14409,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2175,
-      "hash": "9e8e3e55",
+      "hash": "f17242ba",
       "replayEqual": true,
       "error": null
     },
@@ -14419,8 +14419,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2187,
-      "hash": "6f48b529",
+      "tick": 2356,
+      "hash": "c4440d31",
       "replayEqual": true,
       "error": null
     },
@@ -14431,7 +14431,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2747,
-      "hash": "bf809cb7",
+      "hash": "c9c20216",
       "replayEqual": true,
       "error": null
     },
@@ -14441,8 +14441,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2716,
-      "hash": "fc48d49e",
+      "tick": 2492,
+      "hash": "9f7aac51",
       "replayEqual": true,
       "error": null
     },
@@ -14453,7 +14453,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2937,
-      "hash": "45ec0402",
+      "hash": "6d533168",
       "replayEqual": true,
       "error": null
     },
@@ -14464,7 +14464,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2609,
-      "hash": "d3abb006",
+      "hash": "7491905a",
       "replayEqual": true,
       "error": null
     },
@@ -14475,7 +14475,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2609,
-      "hash": "5da1f6b7",
+      "hash": "7dcea61c",
       "replayEqual": true,
       "error": null
     },
@@ -14483,10 +14483,10 @@
       "cell": "runner.default+shoot_at",
       "seed": 6,
       "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1968,
-      "hash": "357b22cc",
+      "won": true,
+      "outcome": "won",
+      "tick": 2143,
+      "hash": "7e1ee364",
       "replayEqual": true,
       "error": null
     },
@@ -14497,7 +14497,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2143,
-      "hash": "483f0f00",
+      "hash": "ebf255ae",
       "replayEqual": true,
       "error": null
     },
@@ -14508,7 +14508,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2178,
-      "hash": "32f070bc",
+      "hash": "1cb975e4",
       "replayEqual": true,
       "error": null
     },
@@ -14519,7 +14519,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2178,
-      "hash": "e95f86ad",
+      "hash": "87175532",
       "replayEqual": true,
       "error": null
     },
@@ -14530,7 +14530,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2274,
-      "hash": "cfc732b9",
+      "hash": "0b066f18",
       "replayEqual": true,
       "error": null
     },
@@ -14541,7 +14541,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2274,
-      "hash": "2ea4416c",
+      "hash": "ecac1100",
       "replayEqual": true,
       "error": null
     },
@@ -14551,8 +14551,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2064,
-      "hash": "631cd2b0",
+      "tick": 2213,
+      "hash": "ec5d3172",
       "replayEqual": true,
       "error": null
     },
@@ -14563,7 +14563,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2610,
-      "hash": "6cb29ba1",
+      "hash": "2d042572",
       "replayEqual": true,
       "error": null
     },
@@ -14574,7 +14574,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2881,
-      "hash": "27645171",
+      "hash": "25b26431",
       "replayEqual": true,
       "error": null
     },
@@ -14585,7 +14585,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2881,
-      "hash": "41f5a12d",
+      "hash": "29116372",
       "replayEqual": true,
       "error": null
     },
@@ -14596,7 +14596,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2187,
-      "hash": "545ceb89",
+      "hash": "59f006f5",
       "replayEqual": true,
       "error": null
     },
@@ -14607,7 +14607,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2432,
-      "hash": "dedaf480",
+      "hash": "3aaec659",
       "replayEqual": true,
       "error": null
     },
@@ -14618,7 +14618,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2148,
-      "hash": "d0ae3e3e",
+      "hash": "f9cf856f",
       "replayEqual": true,
       "error": null
     },
@@ -14629,7 +14629,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2148,
-      "hash": "d5e39ea9",
+      "hash": "ad608a8b",
       "replayEqual": true,
       "error": null
     },
@@ -14637,10 +14637,10 @@
       "cell": "runner.default+shoot_at",
       "seed": 13,
       "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1947,
-      "hash": "ee1e79f3",
+      "won": true,
+      "outcome": "won",
+      "tick": 2174,
+      "hash": "eacd166b",
       "replayEqual": true,
       "error": null
     },
@@ -14651,7 +14651,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2174,
-      "hash": "2fbf134f",
+      "hash": "339f68d3",
       "replayEqual": true,
       "error": null
     },
@@ -14662,7 +14662,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2275,
-      "hash": "fc307a49",
+      "hash": "87b58028",
       "replayEqual": true,
       "error": null
     },
@@ -14673,7 +14673,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2275,
-      "hash": "81f951b9",
+      "hash": "8a2d8793",
       "replayEqual": true,
       "error": null
     },
@@ -14684,7 +14684,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2363,
-      "hash": "fcafc7ee",
+      "hash": "b23bc778",
       "replayEqual": true,
       "error": null
     },
@@ -14695,7 +14695,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2471,
-      "hash": "9711e52d",
+      "hash": "ef7ab54b",
       "replayEqual": true,
       "error": null
     },
@@ -14706,7 +14706,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2161,
-      "hash": "f02cf166",
+      "hash": "97ed246c",
       "replayEqual": true,
       "error": null
     },
@@ -14717,7 +14717,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2161,
-      "hash": "f4b04b0b",
+      "hash": "e77edc81",
       "replayEqual": true,
       "error": null
     },
@@ -14728,7 +14728,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2634,
-      "hash": "a03f8d78",
+      "hash": "0c904074",
       "replayEqual": true,
       "error": null
     },
@@ -14739,7 +14739,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2634,
-      "hash": "a10ba9e9",
+      "hash": "49ab231e",
       "replayEqual": true,
       "error": null
     },
@@ -14750,7 +14750,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2399,
-      "hash": "adc3bfbf",
+      "hash": "3fe61b3e",
       "replayEqual": true,
       "error": null
     },
@@ -14761,7 +14761,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2399,
-      "hash": "d5647794",
+      "hash": "256686b7",
       "replayEqual": true,
       "error": null
     },
@@ -14771,8 +14771,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2240,
-      "hash": "69ce97c9",
+      "tick": 2376,
+      "hash": "3c1946fd",
       "replayEqual": true,
       "error": null
     },
@@ -14783,7 +14783,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2629,
-      "hash": "88dac6d3",
+      "hash": "18c1d73d",
       "replayEqual": true,
       "error": null
     },
@@ -14791,10 +14791,10 @@
       "cell": "runner.default+shoot_at",
       "seed": 20,
       "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 2719,
-      "hash": "15d464cc",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2226,
+      "hash": "9ada32de",
       "replayEqual": true,
       "error": null
     },
@@ -14805,7 +14805,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2719,
-      "hash": "684be67f",
+      "hash": "ea6cd7b8",
       "replayEqual": true,
       "error": null
     },
@@ -14816,7 +14816,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2395,
-      "hash": "3c5c040c",
+      "hash": "62f02287",
       "replayEqual": true,
       "error": null
     },
@@ -14827,7 +14827,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2907,
-      "hash": "abe3ef36",
+      "hash": "015b51d4",
       "replayEqual": true,
       "error": null
     },
@@ -14838,7 +14838,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2019,
-      "hash": "4e163ee2",
+      "hash": "4c918635",
       "replayEqual": true,
       "error": null
     },
@@ -14849,7 +14849,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2167,
-      "hash": "d70385a8",
+      "hash": "a7a8966f",
       "replayEqual": true,
       "error": null
     },
@@ -14859,8 +14859,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2536,
-      "hash": "a34a53b9",
+      "tick": 2407,
+      "hash": "e5922f7d",
       "replayEqual": true,
       "error": null
     },
@@ -14871,7 +14871,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2684,
-      "hash": "f85bc30d",
+      "hash": "0d7f18f3",
       "replayEqual": true,
       "error": null
     },
@@ -14882,7 +14882,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2919,
-      "hash": "b7d40a98",
+      "hash": "b583bb3e",
       "replayEqual": true,
       "error": null
     },
@@ -14893,7 +14893,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2917,
-      "hash": "5fe39490",
+      "hash": "2faa3584",
       "replayEqual": true,
       "error": null
     },
@@ -14904,7 +14904,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2183,
-      "hash": "b1dd28da",
+      "hash": "6c4525a6",
       "replayEqual": true,
       "error": null
     },
@@ -14915,7 +14915,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2634,
-      "hash": "b888223a",
+      "hash": "1d88bf69",
       "replayEqual": true,
       "error": null
     },
@@ -14926,7 +14926,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2181,
-      "hash": "ddcddaa0",
+      "hash": "12671ec5",
       "replayEqual": true,
       "error": null
     },
@@ -14937,7 +14937,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2180,
-      "hash": "6a9ed592",
+      "hash": "b0118a10",
       "replayEqual": true,
       "error": null
     },
@@ -14948,7 +14948,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 1989,
-      "hash": "b0c4371d",
+      "hash": "3586e1f0",
       "replayEqual": true,
       "error": null
     },
@@ -14959,7 +14959,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2131,
-      "hash": "4a9c3933",
+      "hash": "56615063",
       "replayEqual": true,
       "error": null
     },
@@ -14969,8 +14969,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2255,
-      "hash": "9748cba5",
+      "tick": 2254,
+      "hash": "d2f7d4a1",
       "replayEqual": true,
       "error": null
     },
@@ -14981,7 +14981,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2254,
-      "hash": "092d9003",
+      "hash": "ad8d346f",
       "replayEqual": true,
       "error": null
     },
@@ -14992,7 +14992,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2597,
-      "hash": "70cdebd9",
+      "hash": "84437e89",
       "replayEqual": true,
       "error": null
     },
@@ -15003,7 +15003,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2596,
-      "hash": "aa9418be",
+      "hash": "6b32c6df",
       "replayEqual": true,
       "error": null
     },
@@ -15014,7 +15014,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2881,
-      "hash": "e59cbb7b",
+      "hash": "e354176a",
       "replayEqual": true,
       "error": null
     },
@@ -15025,7 +15025,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2881,
-      "hash": "85a2b5ee",
+      "hash": "c2093d1f",
       "replayEqual": true,
       "error": null
     },
@@ -15036,7 +15036,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2259,
-      "hash": "51073992",
+      "hash": "98f3101e",
       "replayEqual": true,
       "error": null
     },
@@ -15047,7 +15047,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2403,
-      "hash": "b3ad6683",
+      "hash": "00f4599d",
       "replayEqual": true,
       "error": null
     },
@@ -15057,8 +15057,8 @@
       "profile": "novice",
       "won": true,
       "outcome": "won",
-      "tick": 2158,
-      "hash": "361459b4",
+      "tick": 2159,
+      "hash": "ba30fe13",
       "replayEqual": true,
       "error": null
     },
@@ -15069,7 +15069,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2158,
-      "hash": "268c4110",
+      "hash": "d1a6aa00",
       "replayEqual": true,
       "error": null
     },
@@ -15080,7 +15080,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2143,
-      "hash": "a727046c",
+      "hash": "e1daea3f",
       "replayEqual": true,
       "error": null
     },
@@ -15091,7 +15091,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2143,
-      "hash": "d4a329a8",
+      "hash": "3756bdbc",
       "replayEqual": true,
       "error": null
     },
@@ -15101,8 +15101,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2073,
-      "hash": "de327bdd",
+      "tick": 1857,
+      "hash": "58e633b6",
       "replayEqual": true,
       "error": null
     },
@@ -15113,7 +15113,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2298,
-      "hash": "a4f2792b",
+      "hash": "9efcfd18",
       "replayEqual": true,
       "error": null
     },
@@ -15124,7 +15124,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2109,
-      "hash": "f0bfb1e1",
+      "hash": "d2a5da84",
       "replayEqual": true,
       "error": null
     },
@@ -15135,7 +15135,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2475,
-      "hash": "a780e56a",
+      "hash": "54189305",
       "replayEqual": true,
       "error": null
     },
@@ -15146,7 +15146,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2006,
-      "hash": "3275211a",
+      "hash": "e9fd58c8",
       "replayEqual": true,
       "error": null
     },
@@ -15157,7 +15157,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2149,
-      "hash": "0ed41ae5",
+      "hash": "d709b4aa",
       "replayEqual": true,
       "error": null
     },
@@ -15168,7 +15168,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2160,
-      "hash": "2c09b085",
+      "hash": "05f2ed81",
       "replayEqual": true,
       "error": null
     },
@@ -15179,7 +15179,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2680,
-      "hash": "0387e410",
+      "hash": "67f7e62a",
       "replayEqual": true,
       "error": null
     },
@@ -15189,8 +15189,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 1866,
-      "hash": "d59e1a1b",
+      "tick": 1947,
+      "hash": "f3f731f2",
       "replayEqual": true,
       "error": null
     },
@@ -15201,7 +15201,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2418,
-      "hash": "00b58fc9",
+      "hash": "e7d52cf1",
       "replayEqual": true,
       "error": null
     },
@@ -15209,10 +15209,10 @@
       "cell": "runner.default+chase_me",
       "seed": 19,
       "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 2258,
-      "hash": "4a5a6aef",
+      "won": true,
+      "outcome": "won",
+      "tick": 2617,
+      "hash": "57e8a87c",
       "replayEqual": true,
       "error": null
     },
@@ -15223,7 +15223,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2617,
-      "hash": "d71a90af",
+      "hash": "b45f709e",
       "replayEqual": true,
       "error": null
     },
@@ -15234,7 +15234,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2690,
-      "hash": "9bf2b27e",
+      "hash": "18c788cc",
       "replayEqual": true,
       "error": null
     },
@@ -15245,7 +15245,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2690,
-      "hash": "00454d70",
+      "hash": "a52c92c5",
       "replayEqual": true,
       "error": null
     },
@@ -15255,8 +15255,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2446,
-      "hash": "020a37d7",
+      "tick": 2735,
+      "hash": "1dc07e62",
       "replayEqual": true,
       "error": null
     },
@@ -15267,7 +15267,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2907,
-      "hash": "24f44f41",
+      "hash": "63caf30c",
       "replayEqual": true,
       "error": null
     },
@@ -15278,7 +15278,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2175,
-      "hash": "aa3b0bc7",
+      "hash": "5735693b",
       "replayEqual": true,
       "error": null
     },
@@ -15289,7 +15289,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2175,
-      "hash": "3752cfa4",
+      "hash": "f93ba3b9",
       "replayEqual": true,
       "error": null
     },
@@ -15299,8 +15299,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2187,
-      "hash": "948a7072",
+      "tick": 2356,
+      "hash": "b1723a61",
       "replayEqual": true,
       "error": null
     },
@@ -15311,7 +15311,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2747,
-      "hash": "d538428b",
+      "hash": "de8c24cc",
       "replayEqual": true,
       "error": null
     },
@@ -15321,8 +15321,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2716,
-      "hash": "f79ea53c",
+      "tick": 2492,
+      "hash": "ba7da896",
       "replayEqual": true,
       "error": null
     },
@@ -15333,7 +15333,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2937,
-      "hash": "dae67c71",
+      "hash": "004be0a9",
       "replayEqual": true,
       "error": null
     },
@@ -15344,7 +15344,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2609,
-      "hash": "867df83d",
+      "hash": "e50affaf",
       "replayEqual": true,
       "error": null
     },
@@ -15355,7 +15355,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2609,
-      "hash": "ed194941",
+      "hash": "5ce0b718",
       "replayEqual": true,
       "error": null
     },
@@ -15363,10 +15363,10 @@
       "cell": "runner.default+chase_me+shoot_at",
       "seed": 6,
       "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1968,
-      "hash": "ee0274cb",
+      "won": true,
+      "outcome": "won",
+      "tick": 2143,
+      "hash": "17ccc874",
       "replayEqual": true,
       "error": null
     },
@@ -15377,7 +15377,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2143,
-      "hash": "34fb8ef0",
+      "hash": "21a9842d",
       "replayEqual": true,
       "error": null
     },
@@ -15388,7 +15388,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2178,
-      "hash": "29c05412",
+      "hash": "22ebac45",
       "replayEqual": true,
       "error": null
     },
@@ -15399,7 +15399,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2178,
-      "hash": "23aeedd3",
+      "hash": "bdc4d5d5",
       "replayEqual": true,
       "error": null
     },
@@ -15410,7 +15410,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2274,
-      "hash": "a0527bd6",
+      "hash": "aab0ed41",
       "replayEqual": true,
       "error": null
     },
@@ -15421,7 +15421,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2274,
-      "hash": "b41ef525",
+      "hash": "19f1b294",
       "replayEqual": true,
       "error": null
     },
@@ -15431,8 +15431,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2064,
-      "hash": "5c94f70f",
+      "tick": 2213,
+      "hash": "c898d7bd",
       "replayEqual": true,
       "error": null
     },
@@ -15443,7 +15443,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2610,
-      "hash": "60a732d7",
+      "hash": "d584017c",
       "replayEqual": true,
       "error": null
     },
@@ -15454,7 +15454,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2881,
-      "hash": "7460b08f",
+      "hash": "d10b9439",
       "replayEqual": true,
       "error": null
     },
@@ -15465,7 +15465,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2881,
-      "hash": "62428966",
+      "hash": "fa82b77b",
       "replayEqual": true,
       "error": null
     },
@@ -15476,7 +15476,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2187,
-      "hash": "42428378",
+      "hash": "6f9f22dc",
       "replayEqual": true,
       "error": null
     },
@@ -15487,7 +15487,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2432,
-      "hash": "7d003583",
+      "hash": "492dd1e6",
       "replayEqual": true,
       "error": null
     },
@@ -15498,7 +15498,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2148,
-      "hash": "9ef6c4d5",
+      "hash": "0eb27247",
       "replayEqual": true,
       "error": null
     },
@@ -15509,7 +15509,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2148,
-      "hash": "c6b8eef0",
+      "hash": "0a2b9725",
       "replayEqual": true,
       "error": null
     },
@@ -15517,10 +15517,10 @@
       "cell": "runner.default+chase_me+shoot_at",
       "seed": 13,
       "profile": "novice",
-      "won": false,
-      "outcome": "lost",
-      "tick": 1947,
-      "hash": "1b60c5ba",
+      "won": true,
+      "outcome": "won",
+      "tick": 2174,
+      "hash": "5ed8ae1f",
       "replayEqual": true,
       "error": null
     },
@@ -15531,7 +15531,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2174,
-      "hash": "c71cf76c",
+      "hash": "e794f74e",
       "replayEqual": true,
       "error": null
     },
@@ -15542,7 +15542,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2275,
-      "hash": "8a513415",
+      "hash": "9170766c",
       "replayEqual": true,
       "error": null
     },
@@ -15553,7 +15553,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2275,
-      "hash": "b532d78f",
+      "hash": "5d6110e8",
       "replayEqual": true,
       "error": null
     },
@@ -15564,7 +15564,7 @@
       "won": false,
       "outcome": "lost",
       "tick": 2363,
-      "hash": "b6f0fb10",
+      "hash": "b5e33704",
       "replayEqual": true,
       "error": null
     },
@@ -15575,7 +15575,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2471,
-      "hash": "ce2d6ddf",
+      "hash": "98903a82",
       "replayEqual": true,
       "error": null
     },
@@ -15586,7 +15586,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2161,
-      "hash": "07bcb5ef",
+      "hash": "5ec6c347",
       "replayEqual": true,
       "error": null
     },
@@ -15597,7 +15597,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2161,
-      "hash": "7ef14054",
+      "hash": "3733560c",
       "replayEqual": true,
       "error": null
     },
@@ -15608,7 +15608,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2634,
-      "hash": "7139f611",
+      "hash": "05b3fb31",
       "replayEqual": true,
       "error": null
     },
@@ -15619,7 +15619,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2634,
-      "hash": "097e064e",
+      "hash": "e0c247d5",
       "replayEqual": true,
       "error": null
     },
@@ -15630,7 +15630,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2399,
-      "hash": "57808517",
+      "hash": "c6e9c3ab",
       "replayEqual": true,
       "error": null
     },
@@ -15641,7 +15641,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2399,
-      "hash": "6dc9be55",
+      "hash": "aa3a1508",
       "replayEqual": true,
       "error": null
     },
@@ -15651,8 +15651,8 @@
       "profile": "novice",
       "won": false,
       "outcome": "lost",
-      "tick": 2240,
-      "hash": "d3871c63",
+      "tick": 2376,
+      "hash": "9cd80f93",
       "replayEqual": true,
       "error": null
     },
@@ -15663,7 +15663,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2629,
-      "hash": "ee851a5c",
+      "hash": "65a54b58",
       "replayEqual": true,
       "error": null
     },
@@ -15671,10 +15671,10 @@
       "cell": "runner.default+chase_me+shoot_at",
       "seed": 20,
       "profile": "novice",
-      "won": true,
-      "outcome": "won",
-      "tick": 2719,
-      "hash": "7418cec5",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2226,
+      "hash": "93902a86",
       "replayEqual": true,
       "error": null
     },
@@ -15685,7 +15685,7 @@
       "won": true,
       "outcome": "won",
       "tick": 2719,
-      "hash": "998bca58",
+      "hash": "23ba1f06",
       "replayEqual": true,
       "error": null
     },
