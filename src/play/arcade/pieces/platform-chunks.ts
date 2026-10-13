@@ -183,10 +183,12 @@ export interface PlatformStyle {
 /**
  * Koruny stromů (schody nahoru a dolů), lekníny nad vodou, dlouhé desky
  * s hroty a výstup na věž. Každý styl má od nejlehčího stupně aspoň dva vzory,
- * takže se vzor nikdy neopakuje hned po sobě.
+ * takže se vzor nikdy neopakuje hned po sobě. Schody jsou lehké (krátké mezery,
+ * bez hrotu), proto je koruny dál od startu ředí kyvadly a hroty: se schody
+ * na váze 6 vyhrál začátečník v lese 19 her z 20, s těmito vahami 11.
  */
 export const PLATFORM_STYLE_LIBRARY: Readonly<Record<PlatformStyleId, PlatformStyle>> = {
-  canopy: { id: 'canopy', signature: 'stairs', weights: { stairs: 6, widening: 2, climb: 1, water: 1, 'spike-run': 1, shuttle: 1, rest: 1 } },
+  canopy: { id: 'canopy', signature: 'stairs', weights: { stairs: 4, shuttle: 5, 'spike-run': 3, widening: 2, climb: 1, water: 1, rest: 1 } },
   pads: { id: 'pads', signature: 'water', weights: { water: 6, sinking: 3, widening: 2, shuttle: 1, rest: 1 } },
   runway: { id: 'runway', signature: 'spike-run', weights: { 'spike-run': 6, widening: 2, shuttle: 2, stairs: 1, rest: 1 } },
   tower: { id: 'tower', signature: 'climb', weights: { climb: 6, stairs: 2, widening: 1, 'spike-run': 1, shuttle: 1, rest: 1 } },

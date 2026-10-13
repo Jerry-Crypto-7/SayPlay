@@ -7,6 +7,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { createCompileRng } from '@/play/compile/rng';
+import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
+import { compileRecipe } from '@/play/compose/compile';
 import { draftGameSpecWithMeta } from '@/play/draft';
 
 import { arcadeWorldOf } from '../compile';
@@ -161,6 +163,25 @@ describe('hra Skákačky z návrhu', () => {
         if (runBot(made.world, ARCADE_LIBRARY, { profile }).outcome === 'won') won += 1;
       }
       return won / 60;
+    };
+    const novice = wins('novice');
+    expect(novice).toBeGreaterThanOrEqual(0.3);
+    expect(novice).toBeLessThanOrEqual(0.7);
+    expect(wins('intermediate')).toBeGreaterThanOrEqual(0.8);
+  }, 300_000);
+
+  // R2: buňky skákačky hrají les (koruny). Váhy vzorů nejsou ve specHash, takže `difficulty.json` jejich změnu nepozná.
+  it.each(['jump.escape', 'platformer.default'])('les v buňce %s: začátečník 0,3–0,7, intermediate aspoň 0,8 (semínka měření 1–20)', (id) => {
+    const spec = compileRecipe(assemblyOfCell(liveCells().find((cell) => cell.id === id)!));
+    expect((spec.controlParams as { tuning?: { style?: string } }).tuning?.style).toBe('canopy');
+    const wins = (profile: BotProfile) => {
+      let won = 0;
+      for (let seed = 1; seed <= 20; seed += 1) {
+        const made = arcadeWorldOf(spec, seed);
+        if (!made.ok) throw new Error(made.issues.join('; '));
+        if (runBot(made.world, undefined, { profile }).outcome === 'won') won += 1;
+      }
+      return won / 20;
     };
     const novice = wins('novice');
     expect(novice).toBeGreaterThanOrEqual(0.3);
