@@ -82,6 +82,8 @@ R1 (`0e091749`): robot běžce si zajede pro minci, když se stihne vrátit pře
 
 Skákačka má medián vyšší, protože do souhrnu nově vstupuje „obby“ (3,58 s). Věty se sbíráním všeho zůstávají na 9,5–15,5 s (viz T6).
 
+Zábava panelu P45 (40 her, `f0267b47`) proti `fun-baseline.json` P46A: mrtvý čas medián 5,36 → 3,78 s, `rising` 0,55 → 0,63, finále 0,23 → 0,38, události/s 1,09 → 1,18. Žádná věta horší (hratelnost, nejdelší mezera +0,5 s, ztracené stoupání, finále, počet chování, žánr).
+
 ### R2 – hry s díly: změřeno sondou, 20 semínek, robot intermediate / začátečník
 
 Sonda stavěla věty b02, b03, s003, s021 a recepty `assembled` se všemi 9 druhy dílů pro běžce i skákačku. Výsledky před → po:
