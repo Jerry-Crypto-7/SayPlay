@@ -223,7 +223,9 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
           const witnesses = verdict.witnesses;
           const unmet = essentialTriples(intent).filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
           // Bez šablony recept záměr nenese: `compileRecipe(composition.recipe)` (rychlý návrh) postaví tutéž hru.
-          const composition = { cellId: source.id, recipe: template === null ? untemplated : attempt, spec, unmet, witnesses, issues, template };
+          // Recept je ten pokus, který prošel (i bez akcí), jen bez záměru, když šablonu nedostal.
+          const bare = attempt === recipe ? untemplated : attempt;
+          const composition = { cellId: source.id, recipe: template === null ? bare : attempt, spec, unmet, witnesses, issues, template };
           if (compositions.size >= 64) compositions.delete(compositions.keys().next().value!);
           compositions.set(cacheKey, structuredClone(composition));
           return composition;

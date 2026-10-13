@@ -49,6 +49,16 @@ describe('abilities from the sentence verbs (P46A T8)', () => {
     }, 180_000);
   }
 
+  it('drops abilities the bot cannot prove instead of returning an unverified game', async () => {
+    // Řízení `+shoot` s dash+shoot robot zatím nevyhraje (R4): návrh musí být ta hra, kterou compose ověřil.
+    const spec = draftGameSpec('A motorbike dodges cars on a highway and blasts drones');
+    await preloadPhysics(spec, loadRapier);
+    const made = arcadeWorldOf(spec, 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    const verdict = verifyArcade(made.world, undefined, made.roleBindings);
+    expect(verdict.publishEligible, verdict.failures.join('; ')).toBe(true);
+  }, 180_000);
+
   it('names the buttons in the hint when it fits', () => {
     expect(draftGameSpec('A rabbit steals carrots and runs from a fox').tutorial.controlsHint).toMatch(/ J to grab\.$/);
     // Díl souboje bije i úder akce, takže nápověda k Attack ustoupí.
