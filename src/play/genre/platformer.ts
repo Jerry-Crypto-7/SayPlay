@@ -16,10 +16,13 @@
  * Referenční věta: „A frog jumps across lily pads to reach the island“.
  */
 
+import { lookFor } from '../arcade/look';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from '../arcade/pieces/platform';
+import { platformStyleFor } from '../arcade/pieces/platform-chunks';
 import { nounPhrase, plural, singular } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, type GenreSpecOf, addonRoles, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { defaultObstacle } from './roles';
 
 /** Sloveso cíle, u kterého se vyhrává sebráním všech věcí. */
 const COLLECT_VERB = /^(?:collect|grab|gather|pick)/;
@@ -34,7 +37,8 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
   const collected = castFor(spec, 'collect');
   const collectible = collected?.label;
   // Bodák nese jméno toho, čemu se uhýbá; soupeř zblízka a terč hodu jsou taky jen nástraha (P39).
-  const hazard = castFor(spec, 'avoid', 'fight', 'throw_at')?.label;
+  // Bez ní překážka z prostředí (kaktus v poušti, P46D T6); jinde zůstává bodák, který jádro kreslí samo.
+  const hazard = castFor(spec, 'avoid', 'fight', 'throw_at')?.label ?? defaultObstacle(spec);
   // Bez cíle nese sbírací sloveso sama věc („gather 3 apples“): sebrat všechny a k vlajce.
   const verb = (target ?? collected)?.verb?.toLowerCase() ?? '';
   const collect = COLLECT_VERB.test(verb);
@@ -45,6 +49,8 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
   const named = target === undefined || (collect && same(target.label, item)) ? null : target.label;
   const goal = named ?? 'flag';
   const count = spec.params?.items ?? (collect ? PLATFORM_LEVEL.collectCount : undefined);
+  // Styl úrovně podle prostředí (P46D R2): les = schody, bažina = lekníny…; neznámé místo nechá styl na semínku.
+  const style = platformStyleFor(spec.palette ?? lookFor(spec.setting));
   const line = collect ? `Collect ${String(count)} ${plural(singular(item), count!)} and reach the ${goal}.` : named === null ? null : `${verb.startsWith('find') ? 'Find' : 'Reach'} the ${goal}.`;
   return legacySpec(spec, {
     control: 'platform',
@@ -52,8 +58,9 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
       checkpoints: true,
       ...(spec.params?.difficulty === undefined ? {} : { difficulty: PLATFORM_DIFFICULTIES[spec.params.difficulty] }),
       ...(spec.params?.lengthM === undefined ? {} : { lengthM: spec.params.lengthM }),
-      // Tři úseky s rostoucí obtížností, checkpoint na začátku druhého a třetího, hodiny (P36A T4).
-      tuning: { feel: 2, sections: 3, ...(collect ? { collectAll: true, coinCount: count } : {}) },
+      // Tři úseky s rostoucí obtížností, checkpoint na začátku druhého a třetího, hodiny (P36A T4);
+      // úseky ze vzorů: schody, výstup, propadající se plošiny, voda… (P46D T5).
+      tuning: { feel: 2, sections: 3, chunks: 1, ...(style === undefined ? {} : { style }), ...(collect ? { collectAll: true, coinCount: count } : {}) },
     },
     archetype: 'hazard_crossing',
     title: `${titleCase(spec.hero)} Jump`,

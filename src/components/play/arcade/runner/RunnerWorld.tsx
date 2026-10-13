@@ -18,7 +18,8 @@ import { color } from '@/brand/tokens';
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 
-import { GhostSlot } from '../GhostSlot';
+import { type GhostPlacement, worldPlacement } from '../Ghost';
+import { type GhostPose, GhostSlot } from '../GhostSlot';
 import { buildValley, PLAYABLE_HALF } from '../look/rig/terrain/valley';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
@@ -26,12 +27,18 @@ import { type ToyTarget, applyToy, toyMotionOn } from '../toy/applyToy';
 import { bodyClassOf } from '../toy/body-class';
 import { World, type WorldProps, toyTargetOf } from '../World';
 import { type Ride, blinksOnHit, createHeroMotion, rideOf } from './heroMotion';
+import { type Path, bendGeometry, runnerPathOf, slopeAt } from './path';
 
 /** Údolí začíná za kamerou úvodního záběru a končí za koncem mlhy po cíli. */
 const BEHIND_M = 40;
 
-function RunnerValley({ look, length, terrain }: { readonly look: Look; readonly length: number; readonly terrain: RefObject<Mesh | null> }) {
-  const valley = useMemo(() => buildValley({ look, from: -BEHIND_M, to: length + look.fog[1] + 10 }), [look, length]);
+/** Údolí ohnuté po křivce trati (P46D T3): dráha, svahy i kulisy jdou zatáčkou a kopcem spolu s těly. */
+function RunnerValley({ look, length, terrain, path }: { readonly look: Look; readonly length: number; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
+  const valley = useMemo(() => {
+    const built = buildValley({ look, from: -BEHIND_M, to: length + look.fog[1] + 10 });
+    if (path !== null) bendGeometry(built.geometry, path);
+    return built;
+  }, [look, length, path]);
   const material = useMemo(() => new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), []);
   useEffect(() => () => valley.geometry.dispose(), [valley]);
   useEffect(() => () => material.dispose(), [material]);
@@ -39,7 +46,7 @@ function RunnerValley({ look, length, terrain }: { readonly look: Look; readonly
     <>
       {/* Stín jen přijímá: vlastní stín by se na rovné dráze odrážel jako akné. */}
       <mesh ref={terrain} geometry={valley.geometry} material={material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'valley' }} />
-      <Scenery look={look} layout="sides" inner={PLAYABLE_HALF + 1.5} from={-10} to={length + 10} ground={valley.heightAt} cap={look.terrain?.cap} />
+      <Scenery look={look} layout="sides" inner={PLAYABLE_HALF + 1.5} from={-10} to={length + 10} ground={valley.heightAt} cap={look.terrain?.cap} bend={path ?? undefined} />
     </>
   );
 }
@@ -191,6 +198,7 @@ function HeroPose({ session, hero, rides }: { readonly session: ArcadeSession; r
   const scene = useThree((three) => three.scene);
   const ride = useMemo(() => rideOf(hero, rides), [hero, rides]);
   const blinks = useMemo(() => blinksOnHit(hero), [hero]);
+  const path = useMemo(() => runnerPathOf(session.world), [session]);
   const motion = useMemo(() => createHeroMotion(session, ride, bodyClassOf(hero)), [session, ride, hero]);
   // Výška těla hrdiny (m) jako u `World` (`bodiesOf` při montáži): poskok a výpad hračkové pózy jsou v jejích podílech.
   const h = useMemo(() => {
@@ -217,8 +225,11 @@ function HeroPose({ session, hero, rides }: { readonly session: ArcadeSession; r
     if (group === null || blob === null) return;
     const pose = motion.sample(!toyMotionOn());
     blob.visible = group.visible;
+    // Zakřivená trať (P46D T3): `World` hrdinu na křivku posunul, tady se natočí po její tečně.
+    const at = path?.(group.position.z) ?? { x: 0, y: 0 };
+    const slope = path === null ? { x: 0, y: 0 } : slopeAt(path, group.position.z);
     // Úhyb kolem směru běhu (osa z), až po předklonu jízdy: pořadí ZYX.
-    group.rotation.set(pose.pitch, 0, pose.roll, 'ZYX');
+    group.rotation.set(pose.pitch, Math.atan(slope.x), pose.roll, 'ZYX');
     if (blinks && pose.flash > 0 && Math.floor(pose.flash * 6) % 2 === 1) group.visible = false;
     // Krok a skok podle třídy těla (P45D T8). `World` téže skupině v tomhle snímku zapsal hračkovou
     // pózu sám; `applyToy` píše polohu, natočení i měřítko celé, takže póza hrdiny tu jeho nahradí,
@@ -238,10 +249,11 @@ function HeroPose({ session, hero, rides }: { readonly session: ArcadeSession; r
     const dip = feet - box.min.y;
     if (dip > 0) group.position.y += dip;
 
-    // Stín zůstává na dráze pod půdorysem těla; se skokem se zmenší a vybledne.
-    const fade = 1 / (1 + Math.max(0, feet) * SHADOW_FADE);
+    // Stín zůstává na dráze pod půdorysem těla; se skokem se zmenší a vybledne. Na kopci leží ve sklonu dráhy.
+    const fade = 1 / (1 + Math.max(0, feet - at.y) * SHADOW_FADE);
     const spread = 0.6 + 0.4 * fade;
-    blob.position.set((box.min.x + box.max.x) / 2, SHADOW_Y, (box.min.z + box.max.z) / 2);
+    blob.position.set((box.min.x + box.max.x) / 2, SHADOW_Y + at.y, (box.min.z + box.max.z) / 2);
+    blob.rotation.x = -Math.PI / 2 - Math.atan(slope.y);
     blob.scale.set(Math.min(box.max.x - box.min.x, SHADOW_MAX_M) * spread, Math.min(box.max.z - box.min.z, SHADOW_MAX_M) * spread, 1);
     material.opacity = SHADOW_OPACITY * fade;
   });
@@ -269,13 +281,26 @@ function HeroPose({ session, hero, rides }: { readonly session: ArcadeSession; r
 export function RunnerWorld(props: Omit<WorldProps, 'control' | 'backdrop'>) {
   const terrain = useRef<Mesh>(null);
   const length = props.session.world.length / UNIT;
+  const path = useMemo(() => runnerPathOf(props.session.world), [props.session]);
+  // Duch dřívějšího běhu běží po téže křivce jako hrdina.
+  const ghostPlace = useMemo(
+    () =>
+      path === null
+        ? undefined
+        : (pose: GhostPose): GhostPlacement => {
+            const [x, y, z, yaw] = worldPlacement(pose);
+            const at = path(z);
+            return [x + at.x, y + at.y, z, yaw + Math.atan(slopeAt(path, z).x)];
+          },
+    [path],
+  );
   return (
     <>
-      <World {...props} control="runner" backdrop={<RunnerValley look={props.scene} length={length} terrain={terrain} />} />
+      <World {...props} control="runner" backdrop={<RunnerValley look={props.scene} length={length} terrain={terrain} path={path} />} />
       <GroundProbe terrain={terrain} />
       {/* Až po `World`: jeho snímek musí běžet dřív (viz `HeroPose`). */}
       <HeroPose session={props.session} hero={props.cast.player} rides={props.scene.ride === true} />
-      <GhostSlot ghost={props.ghost} session={props.session} />
+      <GhostSlot ghost={props.ghost} session={props.session} place={ghostPlace} />
     </>
   );
 }

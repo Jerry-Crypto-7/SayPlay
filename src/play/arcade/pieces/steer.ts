@@ -29,6 +29,7 @@
 
 import { z } from 'zod';
 
+import type { LookId } from '@/play/arcade/look';
 import { createCompileRng } from '@/play/compile/rng';
 
 import {
@@ -60,6 +61,9 @@ import { GRAVITY } from '../kernel';
 
 export const STEER_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type SteerDifficulty = (typeof STEER_DIFFICULTIES)[number];
+/** Styly okruhu ze vzorů (P46D R2), popsané u `STEER_STYLE_LIBRARY`. */
+export const STEER_STYLES = ['open', 'winding', 'aisles', 'streets'] as const;
+export type SteerStyleId = (typeof STEER_STYLES)[number];
 
 export const STEER = {
   /** Nejvyšší rychlost vpřed (18 m/s). */
@@ -232,15 +236,24 @@ export interface SteerSegment {
 /** Mantinely úseků: pneumatiky závodu, u plavby břehy ostrovů, skal nebo domů. */
 const WALL_KINDS: ReadonlySet<string> = new Set(['tire-barrier', 'island', 'rock', 'building']);
 
-export function steerSegments(level: ArcadeLevel): SteerSegment[] {
-  const pairs = new Map<string, BodyInit[]>();
+function wallGroups(level: ArcadeLevel): BodyInit[][] {
+  const groups = new Map<string, BodyInit[]>();
   for (const body of level.bodies) {
     if (body.role !== 'obstacle' || !WALL_KINDS.has(body.kind)) continue;
     const key = `${body.z}/${body.d}`;
-    pairs.set(key, [...(pairs.get(key) ?? []), body]);
+    groups.set(key, [...(groups.get(key) ?? []), body]);
   }
+  return [...groups.values()];
+}
+
+/** Ostrůvky rozcestí (P46D T4): osamělý mantinel bez dvojice. Starší tratě žádný nemají. */
+function dividersOf(level: ArcadeLevel): BodyInit[] {
+  return wallGroups(level).flatMap((walls) => (walls.length === 1 && walls[0]?.kind === 'tire-barrier' ? walls : []));
+}
+
+export function steerSegments(level: ArcadeLevel): SteerSegment[] {
   const segments: SteerSegment[] = [];
-  for (const walls of pairs.values()) {
+  for (const walls of wallGroups(level)) {
     if (walls.length !== 2) continue;
     const [a, b] = walls as [BodyInit, BodyInit];
     const [left, right] = a.x < b.x ? [a, b] : [b, a];
@@ -251,8 +264,25 @@ export function steerSegments(level: ArcadeLevel): SteerSegment[] {
   return segments.sort((p, q) => p.near - q.near);
 }
 
-export function courseOf(level: ArcadeLevel): SteerCourse {
+/**
+ * Trasa, kterou jedou robot a soupeři: úseky trati, jen na rozcestí místo
+ * celé šířky větev vedle ostrůvku (`side` 1 vpravo, -1 vlevo). Bez rozcestí
+ * jsou to úseky `steerSegments`.
+ */
+export function steerRoute(level: ArcadeLevel, side: 1 | -1 = 1): SteerSegment[] {
   const segments = steerSegments(level);
+  const dividers = dividersOf(level);
+  return segments.map((segment) => {
+    const divider = dividers.find((body) => body.z - body.d / 2 >= segment.near && body.z + body.d / 2 <= segment.far && Math.abs(body.x - segment.center) * 2 < segment.width);
+    if (divider === undefined) return segment;
+    const edge = divider.x + (side * divider.w) / 2;
+    const outer = segment.center + (side * segment.width) / 2;
+    return { ...segment, center: Math.floor((edge + outer) / 2), width: Math.abs(outer - edge) };
+  });
+}
+
+export function courseOf(level: ArcadeLevel): SteerCourse {
+  const segments = steerRoute(level);
   return { ends: segments.map((s) => s.far), centers: segments.map((s) => s.center), halfWidth: Math.floor((segments[0]?.width ?? 0) / 2) };
 }
 
@@ -445,6 +475,10 @@ const generatorParams = z
     // Optional: old worlds keep their exact serialized parameters.
     grip: z.int().min(4).max(20).optional(),
     brakeDrift: z.int().min(4).max(20).optional(),
+    /** Okruh ze vzorů (P46D T4). Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
+    patterns: z.literal(1).optional(),
+    /** Styl okruhu ze vzorů (P46D R2, `STEER_STYLE_LIBRARY`); žánr ho píše podle prostředí, bez něj ho vybere semínko. */
+    style: z.enum(STEER_STYLES).optional(),
   })
   .strict();
 export type SteerTrackParams = z.infer<typeof generatorParams>;
@@ -456,6 +490,254 @@ function walls(near: number, far: number, center: number, width: number): BodyIn
   return [wall(center - offset), wall(center + offset)];
 }
 
+// ---------------------------------------------------------------------------
+// Vzory okruhu (P46D T4)
+
+export const STEER_PATTERNS = ['sweep', 'kink', 'chicane', 'narrow', 'fork', 'turbo-straight'] as const;
+export type SteerPatternId = (typeof STEER_PATTERNS)[number];
+
+export interface SteerPattern {
+  readonly id: SteerPatternId;
+  /** Od které obtížnosti (index `STEER_DIFFICULTIES`) se vzor losuje. */
+  readonly from: number;
+  readonly weight: number;
+}
+
+/** Dlouhá a krátká zatáčka, šikana, zúžení, rozcestí se dvěma trasami a rovinka s turbem. */
+export const STEER_PATTERN_LIBRARY: readonly SteerPattern[] = [
+  { id: 'sweep', from: 0, weight: 5 },
+  { id: 'kink', from: 0, weight: 2 },
+  { id: 'chicane', from: 1, weight: 3 },
+  { id: 'narrow', from: 0, weight: 2 },
+  { id: 'fork', from: 0, weight: 2 },
+  { id: 'turbo-straight', from: 0, weight: 2 },
+];
+
+// Styl okruhu (P46D R2)
+
+export interface SteerStyle {
+  readonly id: SteerStyleId;
+  /** Vzor, který styl nese: přijde hned, jak ho trať dovolí (první vzor nesmí být užší než trať). */
+  readonly signature: SteerPatternId;
+  /** Váhy vzorů; vzor bez váhy se v tomhle stylu nelosuje (dlouhá zatáčka přijde vždy). */
+  readonly weights: Readonly<Partial<Record<SteerPatternId, number>>>;
+  /** Dlouhé zatáčky v plné šířce trati (otevřená krajina), jinak těsné. */
+  readonly wide?: true;
+}
+
+/**
+ * Otevřená krajina (široké dlouhé zatáčky a rovinky s turbem), klikatá
+ * lesní cesta (krátké zatáčky), uličky obchodu (rozcestí a zúžení) a ulice
+ * (šikany a zúžení). Každý styl má od nejlehčího stupně aspoň dva vzory,
+ * takže se vzor nikdy neopakuje hned po sobě.
+ */
+export const STEER_STYLE_LIBRARY: Readonly<Record<SteerStyleId, SteerStyle>> = {
+  open: { id: 'open', signature: 'turbo-straight', weights: { sweep: 5, 'turbo-straight': 4 }, wide: true },
+  winding: { id: 'winding', signature: 'kink', weights: { kink: 6, sweep: 3 } },
+  aisles: { id: 'aisles', signature: 'fork', weights: { fork: 6, narrow: 2, sweep: 1 } },
+  streets: { id: 'streets', signature: 'chicane', weights: { chicane: 4, narrow: 4, sweep: 1 } },
+};
+
+/**
+ * Styl podle sady prostředí: poušť, pláž, louka, oceán, sníh a vesmír =
+ * otevřená krajina, les, džungle, sopka, jeskyně a hřbitov = klikatá cesta,
+ * obchody, obývák a továrna = uličky, město, hrad a podmořský svět = ulice.
+ * Sada, kterou tabulka nezná, nechá styl na semínku.
+ */
+const STEER_STYLE_OF_LOOK: Readonly<Partial<Record<LookId, SteerStyleId>>> = {
+  desert: 'open',
+  beach: 'open',
+  meadow: 'open',
+  ocean: 'open',
+  snow: 'open',
+  space: 'open',
+  forest: 'winding',
+  jungle: 'winding',
+  volcano: 'winding',
+  cave: 'winding',
+  graveyard: 'winding',
+  supermarket: 'aisles',
+  mall: 'aisles',
+  living_room: 'aisles',
+  factory: 'aisles',
+  city: 'streets',
+  castle: 'streets',
+  underwater: 'streets',
+};
+
+export const steerStyleFor = (look: LookId | null): SteerStyleId | undefined => (look === null ? undefined : STEER_STYLE_OF_LOOK[look]);
+
+export const STEER_SHAPE = {
+  /** Spojka za každým vzorem: rovinka kratší než 30 m (tam turbo nestojí) a delší než 15 m (jinak by dvě krátké zatáčky četly jako šikana). */
+  link: [16 * UNIT, 26 * UNIT],
+  /** Turbo na každé spojce tolik před jejím koncem: zrychlení dojede do dalšího vzoru (začátečník tam nestíhá). */
+  linkTurbo: 8 * UNIT,
+  /** Těsné vzory (šikana, krátká a dlouhá zatáčka) nechají u vnitřního mantinelu jen tuhle rezervu (jako úzká silnice 3,6 m). */
+  tightPad: 40,
+  /** Krátká zatáčka a každá půlka šikany: počet úseků po 10 m. */
+  kinkSegments: [3, 4],
+  chicaneSegments: 3,
+  /**
+   * Rovinka s turbem vede rovnou do zatáčky (bez spojky) a turbo leží tolik
+   * před jejím koncem: zrychlení (~40 m) dojede do zatáčky. Dosah z konstrukce
+   * s turbem počítá (`fastest`).
+   */
+  turboStraight: [36 * UNIT, 56 * UNIT],
+  turboLead: [8 * UNIT, 14 * UNIT],
+  /** Šikana: rovinka mezi oběma zatáčkami – aspoň úsek zatáčky, takže na ni dosah stačí z konstrukce. */
+  chicaneGap: [10 * UNIT, 14 * UNIT],
+  /**
+   * Zúžení: šířka v procentech trati podle obtížnosti a počet úseků po 10 m.
+   * Nejméně 2,6 m – soupeř v něm jede vedle středu a nesmí se otřít o mantinel.
+   */
+  narrowPct: [70, 62, 55],
+  narrowMin: 2600,
+  narrowSegments: [4, 6],
+  /**
+   * Rozcestí: rovinka na přejetí do větve, úsek s ostrůvkem uprostřed a
+   * výjezd. Ostrůvek začíná kus za začátkem a končí 14 m před koncem úseku –
+   * robot i soupeř míří ~10 m před sebe a na konci už jedou ke středu. Trať
+   * se šířkou ze spec (úzká silnice) se na rozcestí rozšíří na `forkRoad`.
+   */
+  divider: 1600,
+  forkRoad: 7200,
+  forkLead: 20 * UNIT,
+  forkLength: [40 * UNIT, 50 * UNIT],
+  forkExit: 10 * UNIT,
+  forkOpen: 5 * UNIT,
+  forkClose: 14 * UNIT,
+  /** Pod tolik před cílovou rovinkou se nový vzor nezačne (delší vzor cíl o kus posune). */
+  room: 60 * UNIT,
+} as const;
+
+interface TrackPiece {
+  readonly near: number;
+  readonly far: number;
+  readonly center: number;
+  /** Jen zúžení; jinak šířka trati. */
+  readonly width?: number;
+  /** Jen rovinka s turbem: kde turbo leží; jinak se místo losuje. */
+  readonly turboAt?: number;
+}
+
+const TURNS: ReadonlySet<SteerPatternId> = new Set(['sweep', 'kink', 'chicane']);
+/** Vzory užší než trať (rozcestí má větve užší než silnice). */
+const NARROWED: ReadonlySet<SteerPatternId> = new Set(['kink', 'chicane', 'narrow', 'fork']);
+
+/**
+ * Okruh ze vzorů: za rozjezdem vzor, spojka, vzor… a rovinka do cíle. Dva
+ * stejné vzory nejdou po sobě a dlouhá zatáčka přijde vždy (kdo neřídí,
+ * narazí). Úseky bez vlastní šířky dostanou šířku trati (u `roadWidth` podle třetiny).
+ */
+function patternCourse(rng: ReturnType<typeof createCompileRng>, tier: Tier, params: SteerTrackParams, maxShift: number, library: readonly SteerPattern[], style: SteerStyle | undefined) {
+  const length = params.lengthM * UNIT;
+  const step = STEER_DIFFICULTIES.indexOf(params.difficulty);
+  const segments: TrackPiece[] = [{ near: -STEER_TRACK.startBack, far: STEER_TRACK.runIn, center: 0 }];
+  const straights: TrackPiece[] = [];
+  const dividers: BodyInit[] = [];
+  const patterns: SteerPatternId[] = [];
+  let z: number = STEER_TRACK.runIn;
+  let center = 0;
+  // Sudé délky: mantinel stojí středem v `z` a jeho hrany musí být celá čísla.
+  const even = (range: readonly [number, number]): number => 2 * rng.int(range[0] / 2, range[1] / 2);
+  const straight = (len: number, width?: number): TrackPiece => {
+    const piece = { near: z, far: z + len, center, ...(width === undefined ? {} : { width }) };
+    segments.push(piece);
+    z += len;
+    return piece;
+  };
+  const turn = (count: number, side: number, shift: number, width?: number): void => {
+    for (let k = 0; k < count; k += 1) {
+      center += side * shift;
+      segments.push({ near: z, far: z + STEER_TRACK.segment, center, ...(width === undefined ? {} : { width }) });
+      z += STEER_TRACK.segment;
+    }
+  };
+  const shiftOf = (): number => rng.int(Math.min(tier.shift[0], maxShift), maxShift);
+  const sideFor = (total: number): number => (Math.abs(center) + total > STEER_TRACK.maxCenter ? -Math.sign(center) : rng.int(0, 1) === 0 ? -1 : 1);
+
+  const usable = library.filter((pattern) => pattern.from <= step);
+  // Styl přepíše váhy; dlouhá zatáčka zůstává v `usable`, aby přišla vždy.
+  const weighted = style === undefined ? usable : usable.flatMap((pattern) => ((style.weights[pattern.id] ?? 0) === 0 ? [] : [{ ...pattern, weight: style.weights[pattern.id] as number }]));
+  const road = params.roadWidth ?? tier.width;
+  const narrowWidth = 2 * Math.floor(Math.max(STEER_SHAPE.narrowMin, (road * (STEER_SHAPE.narrowPct[step] as number)) / 100) / 2);
+  const forkWidth = params.roadWidth === undefined ? tier.width : STEER_SHAPE.forkRoad;
+  /**
+   * Šikana a krátká zatáčka jsou těsné (rozhodnutí 12. 10.): robot míří na
+   * střed dalšího úseku, a tak schod projede u vnitřního mantinelu bez rezervy
+   * navíc. Začátečníkovi tam vypadne vstup a smykem do mantinelu dojede.
+   */
+  const tight = (shift: number): number => Math.min(road, 2 * shift + STEER.carW + STEER_SHAPE.tightPad);
+  const ROOM = STEER_SHAPE.room;
+  // Nejdelší krok bez dlouhé zatáčky (rozcestí se spojkou): pokud by po něm smyčka skončila, dlouhá zatáčka přijde teď.
+  const longest = STEER_SHAPE.forkLead + STEER_SHAPE.forkLength[1] + STEER_SHAPE.forkExit + STEER_SHAPE.link[1];
+  while (z + ROOM + STEER_TRACK.finalStraight < length) {
+    const mustSweep = !patterns.includes('sweep') && usable.some((pattern) => pattern.id === 'sweep') && z + longest + ROOM + STEER_TRACK.finalStraight >= length;
+    // Za startem jede pole soupeřů vedle sebe: nic úzkého hned za rozjezdem, jinak je hráč nemá kudy předjet.
+    const previous = patterns[patterns.length - 1];
+    const fresh = (mustSweep ? usable : weighted).filter((pattern) => (mustSweep ? pattern.id === 'sweep' : pattern.id !== previous && (patterns.length > 0 || !NARROWED.has(pattern.id)) && (previous !== 'turbo-straight' || TURNS.has(pattern.id))));
+    const pool = fresh.length > 0 ? fresh : weighted;
+    // Vzor stylu přijde hned, jak ho trať dovolí: je vidět od prvního úseku.
+    const signature = style === undefined || patterns.includes(style.signature) ? undefined : fresh.find((pattern) => pattern.id === style.signature);
+    let roll = signature === undefined ? rng.int(0, pool.reduce((sum, pattern) => sum + pattern.weight, 0) - 1) : 0;
+    const pick = signature ?? (pool.find((pattern) => (roll -= pattern.weight) < 0) as SteerPattern);
+    patterns.push(pick.id);
+    switch (pick.id) {
+      case 'sweep': {
+        // Posun úseků do jedné strany, celkem víc než šířka trati.
+        const shift = shiftOf();
+        const count = Math.ceil((tier.width + STEER.carW) / shift) + rng.int(0, 1);
+        // První vzor jede vedle pole soupeřů a zůstává v šířce trati, otevřená krajina celá.
+        turn(count, sideFor(shift * count), shift, patterns.length > 1 && style?.wide !== true ? tight(shift) : undefined);
+        break;
+      }
+      case 'kink': {
+        const shift = shiftOf();
+        const count = rng.int(STEER_SHAPE.kinkSegments[0], STEER_SHAPE.kinkSegments[1]);
+        turn(count, sideFor(shift * count), shift, tight(shift));
+        break;
+      }
+      case 'chicane': {
+        const shift = shiftOf();
+        const side = sideFor(2 * shift);
+        turn(STEER_SHAPE.chicaneSegments, side, shift, tight(shift));
+        straight(even(STEER_SHAPE.chicaneGap), tight(shift));
+        turn(STEER_SHAPE.chicaneSegments, -side, shift, tight(shift));
+        break;
+      }
+      case 'narrow': {
+        // Zúžení uhýbá do strany o tolik, kolik průjezd mezi úseky ještě dovolí.
+        const count = rng.int(STEER_SHAPE.narrowSegments[0], STEER_SHAPE.narrowSegments[1]);
+        const shift = Math.min(maxShift, narrowWidth - STEER.carW - 2 * STEER.clearance);
+        turn(count, sideFor(shift * count), shift, narrowWidth);
+        break;
+      }
+      case 'fork': {
+        straight(STEER_SHAPE.forkLead, forkWidth);
+        const piece = straight(even(STEER_SHAPE.forkLength), forkWidth);
+        straight(STEER_SHAPE.forkExit, forkWidth);
+        const near = piece.near + STEER_SHAPE.forkOpen;
+        const far = piece.far - STEER_SHAPE.forkClose;
+        dividers.push({ role: 'obstacle', kind: 'tire-barrier', x: center, y: 0, z: (near + far) / 2, w: STEER_SHAPE.divider, h: STEER.wallH, d: far - near, solid: true });
+        break;
+      }
+      case 'turbo-straight': {
+        const piece = straight(even(STEER_SHAPE.turboStraight));
+        straights.push({ ...piece, turboAt: piece.far - even(STEER_SHAPE.turboLead) });
+        break;
+      }
+    }
+    if (pick.id !== 'turbo-straight') {
+      const link = straight(even(STEER_SHAPE.link));
+      straights.push({ ...link, turboAt: link.far - STEER_SHAPE.linkTurbo });
+    }
+  }
+  const last = { near: z, far: Math.max(length, z + STEER_TRACK.finalStraight) + STEER_TRACK.runOut, center };
+  segments.push(last);
+  straights.push(last);
+  return { segments, straights, dividers, patterns, center };
+}
+
 export const steerTrack: GeneratorPiece<SteerTrackParams> = {
   id: 'steer_track',
   params: generatorParams,
@@ -465,22 +747,30 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
     const pieces = Math.ceil((params.lengthM * UNIT) / (tier.straight[0] + STEER_TRACK.segment)) + 2;
     return { bodies: 2 + tier.rivals + pieces * 2 * 8 + STEER_TRACK.maxTurbos, rules: 3 + (params.crashBudget === undefined ? 0 : 2) };
   },
-  generate: (seed, params) => {
+  generate: (seed, params) => steerPatternTrack(seed, params).level,
+};
+
+/** Trať, pořadí vzorů a styl (jen `patterns: 1`); vlastní `library` zúží knihovnu a styl vypne (testy jednotlivých vzorů). */
+export function steerPatternTrack(seed: number, params: SteerTrackParams, own?: readonly SteerPattern[]): { readonly level: ArcadeLevel; readonly patterns: readonly SteerPatternId[]; readonly style: SteerStyleId | undefined } {
     const rng = createCompileRng(seed);
+    const style = params.patterns !== 1 || own !== undefined ? undefined : STEER_STYLE_LIBRARY[params.style ?? (STEER_STYLES[rng.int(0, STEER_STYLES.length - 1)] as SteerStyleId)];
     const tier = TIERS[params.difficulty];
     const length = params.lengthM * UNIT;
     const { width } = tier;
     const startWidth = params.roadWidth === undefined ? width : Math.min(width, Math.max(params.roadWidth, params.roadEntryWidth ?? params.roadWidth + 400));
     const half = startWidth / 2;
 
-    const segments: { near: number; far: number; center: number }[] = [{ near: -STEER_TRACK.startBack, far: STEER_TRACK.runIn, center: 0 }];
-    const straights: { near: number; far: number; center: number }[] = [];
+    let segments: TrackPiece[] = [{ near: -STEER_TRACK.startBack, far: STEER_TRACK.runIn, center: 0 }];
+    let straights: TrackPiece[] = [];
+    let dividers: BodyInit[] = [];
+    let patterns: SteerPatternId[] = [];
     let z: number = STEER_TRACK.runIn;
     let center = 0;
     // Posun úseku nesmí přerůst boční dosah při nejvyšší rychlosti (rychlejší
     // spec = mírnější zatáčky); počítá se s rychlostí za poslední značkou rampy.
     const maxShift = Math.min(tier.shift[1], params.roadWidth === undefined ? Infinity : params.roadWidth - STEER.carW - 2 * STEER.clearance, lateralReach(STEER_TRACK.segment, fastest(params.topSpeed, length, rampMarks(length))) - STEER.clearance);
-    for (;;) {
+    if (params.patterns === 1) ({ segments, straights, dividers, patterns, center } = patternCourse(rng, tier, params, maxShift, own ?? STEER_PATTERN_LIBRARY, style));
+    else for (;;) {
       // Zatáčka: posun úseků do jedné strany, celkem víc než šířka trati.
       const shift = rng.int(Math.min(tier.shift[0], maxShift), maxShift);
       const count = Math.ceil((width + STEER.carW) / shift) + rng.int(0, 1);
@@ -521,19 +811,21 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
     for (const segment of segments) {
       const section = Math.min(2, Math.floor(Math.max(0, segment.near) * 3 / finishZ));
       const laneWidth = params.roadWidth === undefined ? width : section === 0 ? startWidth : Math.min(width, params.roadWidth + (section === 1 ? 200 : 0));
-      bodies.push(...walls(segment.near, segment.far, segment.center, laneWidth));
+      bodies.push(...walls(segment.near, segment.far, segment.center, segment.width ?? laneWidth));
     }
+    bodies.push(...dividers);
     if (params.turbo) {
       const budget = Math.min(STEER_TRACK.maxTurbos, ARCADE_LIMITS.maxBodies - bodies.length - 1);
+      // Okruh ze vzorů sype turba po šířce silnice, ne po šířce startu: za ní by ležela v mantinelu.
+      const spread = params.patterns === 1 ? Math.min(half, (params.roadWidth ?? width) / 2) : half;
       const spots = straights
-        .filter((piece) => piece.far - piece.near >= 30 * UNIT && piece.near < finishZ - 20 * UNIT)
-        .map((piece) => ({ z: piece.near + rng.int(10 * UNIT, 20 * UNIT), x: piece.center + (params.centerCollectibles === true ? 0 : rng.int(-Math.floor(half / 2), Math.floor(half / 2))) }));
+        .filter((piece) => (piece.turboAt !== undefined || piece.far - piece.near >= 30 * UNIT) && piece.near < finishZ - 20 * UNIT)
+        .map((piece) => ({ z: piece.turboAt ?? piece.near + rng.int(10 * UNIT, 20 * UNIT), x: piece.center + (params.centerCollectibles === true ? 0 : rng.int(-Math.floor(spread / 2), Math.floor(spread / 2))) }));
       for (const spot of spots.slice(0, Math.max(0, budget))) bodies.push({ role: 'collectible', kind: 'turbo', x: spot.x, y: 0, z: spot.z, w: 1500, h: 300, d: 1500, solid: false });
     }
     bodies.push({ role: 'goal', kind: 'finish', x: center, y: 0, z: finishZ, w: width, h: 3 * UNIT, d: 400, solid: false });
-    return { bodies, length: finishZ };
-  },
-};
+    return { level: { bodies, length: finishZ }, patterns, style: style?.id };
+}
 
 // ---------------------------------------------------------------------------
 // Pravidla
@@ -593,14 +885,23 @@ export const rivalFinish: RulePiece<z.infer<typeof rivalFinishParams>> = {
   },
 };
 
+type CourseParams = Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'grip' | 'brakeDrift' | 'roadWidth' | 'patterns'>;
+
+/** Osa trati; šířku každého úseku nese jen trať se šířkou ze spec nebo ze vzorů (zúžení, větve rozcestí). */
+const courseFor = (level: ArcadeLevel, params: CourseParams): SteerCourse => ({
+  ...courseOf(level),
+  ...(params.roadWidth === undefined ? {} : { rivalLane: 600 }),
+  ...(params.roadWidth === undefined && params.patterns === undefined ? {} : { halfWidths: steerRoute(level).map(segment => Math.floor(segment.width / 2)) }),
+});
+
 /** Ovládání závodu i s osou trati pro soupeře. */
-export function steerControlRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'grip' | 'brakeDrift' | 'roadWidth'>): PieceRef {
-  return { id: 'steer', params: { topSpeed: params.topSpeed, drift: params.drift, ...(params.grip === undefined ? {} : { grip: params.grip }), ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }), course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length) } };
+export function steerControlRef(level: ArcadeLevel, params: CourseParams): PieceRef {
+  return { id: 'steer', params: { topSpeed: params.topSpeed, drift: params.drift, ...(params.grip === undefined ? {} : { grip: params.grip }), ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }), course: courseFor(level, params), ramp: rampMarks(level.length) } };
 }
 
 /** Robot řidiče (`steer-bot.ts`) s tou samou osou trati a rampou. */
-export function steerBotRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'grip' | 'brakeDrift' | 'roadWidth'>): PieceRef {
-  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, ...(params.grip === undefined ? {} : { grip: params.grip }), ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }), course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length) } };
+export function steerBotRef(level: ArcadeLevel, params: CourseParams): PieceRef {
+  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, ...(params.grip === undefined ? {} : { grip: params.grip }), ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }), course: courseFor(level, params), ramp: rampMarks(level.length) } };
 }
 
 /** Pravidla závodu: turbo, cíl, soupeř v cíli. */
@@ -629,22 +930,29 @@ export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.top
   const segments = steerSegments(level);
   const minPass = STEER.carW + 2 * STEER.clearance;
   if (segments.length === 0) return ['the track has no barriers'];
+  // Průjezd a dosah se počítají po trase – na rozcestí po obou větvích (P46D T4); mantinely po skutečných úsecích.
+  const routes = [steerRoute(level, 1), steerRoute(level, -1)];
 
   segments.forEach((segment, index) => {
     if (segment.width < minPass) issues.push(`track at ${m(segment.near)} is ${m(segment.width)} wide – narrower than the car`);
     const prev = segments[index - 1];
     if (prev === undefined) return;
     if (prev.far !== segment.near) issues.push(`barriers leave a hole between ${m(prev.far)} and ${m(segment.near)}`);
-    const shift = segment.center - prev.center;
-    // Průjezd: překryv šířek sousedních úseků.
-    const pass = Math.min(prev.center + prev.width / 2, segment.center + segment.width / 2) - Math.max(prev.center - prev.width / 2, segment.center - segment.width / 2);
-    if (pass < minPass) issues.push(`the bend at ${m(segment.near)} leaves a ${m(pass)} gap – too tight for the car`);
-    if (Math.abs(shift) >= STEER.wallW) issues.push(`the bend at ${m(segment.near)} moves ${m(shift)}, past the barrier thickness – the car could leave the track`);
-    // Obrat směru: boční rychlost míří na opačnou stranu a musí se nejdřív zrušit.
-    const before = segments[index - 2];
-    const reverse = before !== undefined && Math.sign(prev.center - before.center) === -Math.sign(shift) && shift !== 0;
-    const reach = lateralReach(prev.far - prev.near, speedAt(segment.near), reverse ? -STEER.latMax : 0) - STEER.clearance;
-    if (Math.abs(shift) > reach) issues.push(`the bend at ${m(segment.near)} moves ${m(shift)} but the car can steer only ${m(reach)} at full speed`);
+    routes.forEach((route, k) => {
+      const here = route[index] as SteerSegment;
+      const last = route[index - 1] as SteerSegment;
+      if (here.width !== segment.width && here.width < minPass) issues.push(`the fork at ${m(here.near)} leaves a ${m(here.width)} branch – narrower than the car`);
+      const shift = here.center - last.center;
+      // Průjezd: překryv šířek sousedních úseků.
+      const pass = Math.min(last.center + last.width / 2, here.center + here.width / 2) - Math.max(last.center - last.width / 2, here.center - here.width / 2);
+      if (pass < minPass) issues.push(`the bend at ${m(segment.near)} leaves a ${m(pass)} gap – too tight for the car`);
+      if (k === 0 && Math.abs(segment.center - prev.center) >= STEER.wallW) issues.push(`the bend at ${m(segment.near)} moves ${m(segment.center - prev.center)}, past the barrier thickness – the car could leave the track`);
+      // Obrat směru: boční rychlost míří na opačnou stranu a musí se nejdřív zrušit.
+      const before = route[index - 2];
+      const reverse = before !== undefined && Math.sign(last.center - before.center) === -Math.sign(shift) && shift !== 0;
+      const reach = lateralReach(last.far - last.near, speedAt(segment.near), reverse ? -STEER.latMax : 0) - STEER.clearance;
+      if (Math.abs(shift) > reach) issues.push(`the bend at ${m(segment.near)} moves ${m(shift)} but the car can steer only ${m(reach)} at full speed`);
+    });
   });
 
   const player = level.bodies[0];
@@ -655,7 +963,7 @@ export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.top
   if (goal === undefined || host === undefined || goal.z !== level.length || goal.w < host.width) issues.push('no finish across the track at its end');
 
   // Kdo neřídí, narazí: rovná čára ze startu musí skončit v mantinelu.
-  if (player !== undefined && !segments.some((s) => s.far > player.z && s.near < level.length && Math.abs(s.center - player.x) * 2 > s.width - STEER.carW)) issues.push('a car that never steers reaches the finish');
+  if (player !== undefined && !segments.some((s) => s.far > player.z && s.near < level.length && Math.abs(s.center - player.x) * 2 > s.width - STEER.carW) && !dividersOf(level).some((d) => d.z < level.length && Math.abs(d.x - player.x) * 2 < d.w + STEER.carW)) issues.push('a car that never steers reaches the finish');
 
   const ideal = idealTicks(level.length, topSpeed);
   for (const rival of level.bodies.filter((body) => body.role === 'enemy')) {
@@ -665,7 +973,8 @@ export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.top
     if (lane === undefined || Math.abs(rival.x - lane.center) * 2 > lane.width - STEER.carW) issues.push(`a rival at ${m(rival.z)} starts off the track`);
   }
   if (level.bodies.length > ARCADE_LIMITS.maxBodies) issues.push(`${level.bodies.length} bodies exceed the ${ARCADE_LIMITS.maxBodies} body limit`);
-  return issues;
+  // Mimo rozcestí jsou obě trasy totožné a hlásily by totéž dvakrát.
+  return [...new Set(issues)];
 }
 
 // ---------------------------------------------------------------------------

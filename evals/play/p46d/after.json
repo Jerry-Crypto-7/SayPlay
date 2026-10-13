@@ -1,0 +1,981 @@
+{
+ "schema": "p46d-variety.v1",
+ "compiler": "play-compiler-v11/arcade-v2",
+ "threshold": 0.3,
+ "calibration": {
+  "sameSentenceSeeds": [
+   {
+    "id": "r1",
+    "genre": "runner",
+    "distance": 0.508
+   },
+   {
+    "id": "r2",
+    "genre": "runner",
+    "distance": 0.531
+   },
+   {
+    "id": "r3",
+    "genre": "runner",
+    "distance": 0.554
+   },
+   {
+    "id": "r4",
+    "genre": "runner",
+    "distance": 0.405
+   },
+   {
+    "id": "s1",
+    "genre": "steer",
+    "distance": 0.5
+   },
+   {
+    "id": "s2",
+    "genre": "steer",
+    "distance": 0.199
+   },
+   {
+    "id": "s3",
+    "genre": "steer",
+    "distance": 0
+   },
+   {
+    "id": "s4",
+    "genre": "steer",
+    "distance": 0
+   },
+   {
+    "id": "p1",
+    "genre": "platform",
+    "distance": 0.14
+   },
+   {
+    "id": "p2",
+    "genre": "platform",
+    "distance": 0.059
+   },
+   {
+    "id": "p3",
+    "genre": "platform",
+    "distance": 0.41
+   },
+   {
+    "id": "p4",
+    "genre": "platform",
+    "distance": 0.647
+   }
+  ],
+  "handBuilt": 1
+ },
+ "summary": {
+  "different": {
+   "all": 1,
+   "runner": 1,
+   "steer": 1,
+   "platform": 1
+  },
+  "meanDistance": {
+   "runner": 0.468,
+   "steer": 0.453,
+   "platform": 0.618
+  },
+  "judgeDifferent": {
+   "all": 0.889,
+   "runner": 0.833,
+   "steer": 0.833,
+   "platform": 1
+  }
+ },
+ "rows": [
+  {
+   "id": "r1",
+   "genre": "runner",
+   "seed": 1447318805,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "runner",
+    "forks": 3,
+    "chicanes": 0,
+    "narrowings": 0,
+    "curve": [
+     "S",
+     "R",
+     "R",
+     "L",
+     "L",
+     "R",
+     "R",
+     "R",
+     "L",
+     "L",
+     "R",
+     "R",
+     "L",
+     "L",
+     "L",
+     "R",
+     "R",
+     "L",
+     "L",
+     "R",
+     "R",
+     "R",
+     "L",
+     "L"
+    ],
+    "height": [
+     "U",
+     "D",
+     "D",
+     "U",
+     "D",
+     "D",
+     "U",
+     "F",
+     "D",
+     "U",
+     "U",
+     "D",
+     "U",
+     "U",
+     "D",
+     "F",
+     "U",
+     "D",
+     "D",
+     "U",
+     "D",
+     "D",
+     "U",
+     "F"
+    ],
+    "motifs": [
+     "mixed",
+     "fork",
+     "tunnel",
+     "mixed",
+     "fork",
+     "trail",
+     "tunnel",
+     "trail",
+     "tunnel",
+     "trail",
+     "zigzag",
+     "tunnel",
+     "bridge",
+     "tunnel",
+     "mixed",
+     "fork",
+     "trail",
+     "bridge",
+     "jump-chain",
+     "mixed"
+    ]
+   }
+  },
+  {
+   "id": "r2",
+   "genre": "runner",
+   "seed": 733405828,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "runner",
+    "forks": 3,
+    "chicanes": 0,
+    "narrowings": 0,
+    "curve": [
+     "S",
+     "L",
+     "R",
+     "R",
+     "S",
+     "L",
+     "L",
+     "S",
+     "R",
+     "R",
+     "L",
+     "L",
+     "L",
+     "R",
+     "R",
+     "L",
+     "L",
+     "L",
+     "S",
+     "R",
+     "S",
+     "L",
+     "L",
+     "L"
+    ],
+    "height": [
+     "F",
+     "D",
+     "F",
+     "U",
+     "F",
+     "D",
+     "F",
+     "U",
+     "F",
+     "D",
+     "D",
+     "U",
+     "U",
+     "D",
+     "D",
+     "U",
+     "U",
+     "D",
+     "D",
+     "F",
+     "U",
+     "F",
+     "D",
+     "F"
+    ],
+    "motifs": [
+     "mixed",
+     "fork",
+     "tunnel",
+     "trail",
+     "mixed",
+     "fork",
+     "trail",
+     "tunnel",
+     "zigzag",
+     "fork",
+     "trail",
+     "bridge",
+     "tunnel",
+     "bridge",
+     "tunnel",
+     "bridge",
+     "tunnel",
+     "jump-chain",
+     "mixed"
+    ]
+   }
+  },
+  {
+   "id": "r3",
+   "genre": "runner",
+   "seed": 1907075196,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "runner",
+    "forks": 4,
+    "chicanes": 0,
+    "narrowings": 0,
+    "curve": [
+     "S",
+     "L",
+     "S",
+     "S",
+     "R",
+     "R",
+     "L",
+     "L",
+     "S",
+     "L",
+     "S",
+     "R",
+     "S",
+     "L",
+     "S",
+     "L",
+     "L",
+     "R",
+     "R",
+     "S",
+     "S",
+     "L",
+     "L",
+     "S"
+    ],
+    "height": [
+     "F",
+     "D",
+     "D",
+     "F",
+     "U",
+     "U",
+     "F",
+     "D",
+     "D",
+     "U",
+     "U",
+     "F",
+     "D",
+     "D",
+     "F",
+     "U",
+     "U",
+     "D",
+     "D",
+     "D",
+     "U",
+     "U",
+     "F",
+     "D"
+    ],
+    "motifs": [
+     "mixed",
+     "fork",
+     "trail",
+     "mixed",
+     "fork",
+     "trail",
+     "tunnel",
+     "trail",
+     "tunnel",
+     "mixed",
+     "fork",
+     "zigzag",
+     "mixed",
+     "fork",
+     "mixed"
+    ]
+   }
+  },
+  {
+   "id": "r4",
+   "genre": "runner",
+   "seed": 865737428,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "runner",
+    "forks": 4,
+    "chicanes": 0,
+    "narrowings": 0,
+    "curve": [
+     "S",
+     "L",
+     "S",
+     "R",
+     "R",
+     "S",
+     "L",
+     "L",
+     "R",
+     "R",
+     "S",
+     "L",
+     "L",
+     "R",
+     "R",
+     "S",
+     "L",
+     "L",
+     "S",
+     "R",
+     "S",
+     "L",
+     "L",
+     "S"
+    ],
+    "height": [
+     "F",
+     "F",
+     "U",
+     "F",
+     "D",
+     "U",
+     "F",
+     "D",
+     "F",
+     "U",
+     "F",
+     "D",
+     "U",
+     "U",
+     "D",
+     "F",
+     "U",
+     "F",
+     "D",
+     "U",
+     "U",
+     "D",
+     "F",
+     "U"
+    ],
+    "motifs": [
+     "mixed",
+     "fork",
+     "trail",
+     "tunnel",
+     "trail",
+     "tunnel",
+     "mixed",
+     "fork",
+     "trail",
+     "mixed",
+     "fork",
+     "trail",
+     "bridge",
+     "trail",
+     "tunnel",
+     "mixed",
+     "fork",
+     "tunnel",
+     "trail",
+     "bridge",
+     "jump-chain",
+     "mixed",
+     "zigzag",
+     "mixed"
+    ]
+   }
+  },
+  {
+   "id": "s1",
+   "genre": "steer",
+   "seed": 1693833043,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "steer",
+    "forks": 0,
+    "chicanes": 2,
+    "narrowings": 2,
+    "curve": [],
+    "height": [],
+    "motifs": [
+     "straight",
+     "sweep",
+     "turbo-straight",
+     "chicane",
+     "turbo-straight",
+     "kink",
+     "narrow",
+     "turbo-straight",
+     "sweep",
+     "turbo-straight",
+     "sweep",
+     "narrow",
+     "turbo-straight",
+     "chicane",
+     "turbo-straight",
+     "sweep",
+     "turbo-straight"
+    ]
+   }
+  },
+  {
+   "id": "s2",
+   "genre": "steer",
+   "seed": 1227587564,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "steer",
+    "forks": 2,
+    "chicanes": 0,
+    "narrowings": 2,
+    "curve": [],
+    "height": [],
+    "motifs": [
+     "straight",
+     "sweep",
+     "turbo-straight",
+     "fork",
+     "sweep",
+     "turbo-straight",
+     "sweep",
+     "narrow",
+     "turbo-straight",
+     "fork",
+     "sweep",
+     "narrow",
+     "turbo-straight"
+    ]
+   }
+  },
+  {
+   "id": "s3",
+   "genre": "steer",
+   "seed": 767882582,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "steer",
+    "forks": 0,
+    "chicanes": 0,
+    "narrowings": 0,
+    "curve": [],
+    "height": [],
+    "motifs": [
+     "straight",
+     "sweep",
+     "turbo-straight",
+     "kink",
+     "turbo-straight",
+     "sweep",
+     "turbo-straight",
+     "kink",
+     "turbo-straight",
+     "sweep",
+     "turbo-straight",
+     "kink",
+     "turbo-straight",
+     "sweep",
+     "turbo-straight"
+    ]
+   }
+  },
+  {
+   "id": "s4",
+   "genre": "steer",
+   "seed": 1380274116,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "steer",
+    "forks": 0,
+    "chicanes": 0,
+    "narrowings": 0,
+    "curve": [],
+    "height": [],
+    "motifs": [
+     "turbo-straight",
+     "sweep",
+     "turbo-straight",
+     "sweep",
+     "turbo-straight",
+     "sweep",
+     "turbo-straight",
+     "sweep",
+     "turbo-straight"
+    ]
+   }
+  },
+  {
+   "id": "p1",
+   "genre": "platform",
+   "seed": 813124240,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "platform",
+    "forks": 0,
+    "chicanes": 0,
+    "narrowings": 0,
+    "curve": [],
+    "height": [],
+    "motifs": [
+     "stairs",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "rest",
+     "mixed",
+     "moving",
+     "mixed",
+     "spike-corridor",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "rest",
+     "mixed",
+     "stairs",
+     "gap-ramp",
+     "mixed"
+    ]
+   }
+  },
+  {
+   "id": "p2",
+   "genre": "platform",
+   "seed": 355575549,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "platform",
+    "forks": 0,
+    "chicanes": 0,
+    "narrowings": 0,
+    "curve": [],
+    "height": [],
+    "motifs": [
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "gap-ramp",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "rest",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "rest",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "water",
+     "mixed",
+     "moving",
+     "mixed"
+    ]
+   }
+  },
+  {
+   "id": "p3",
+   "genre": "platform",
+   "seed": 14821989,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "platform",
+    "forks": 0,
+    "chicanes": 0,
+    "narrowings": 0,
+    "curve": [],
+    "height": [],
+    "motifs": [
+     "spike-corridor",
+     "gap-ramp",
+     "spike-corridor",
+     "rest",
+     "mixed",
+     "spike-corridor",
+     "moving",
+     "mixed",
+     "spike-corridor",
+     "rest",
+     "mixed",
+     "moving",
+     "mixed",
+     "gap-ramp",
+     "spike-corridor",
+     "mixed"
+    ]
+   }
+  },
+  {
+   "id": "p4",
+   "genre": "platform",
+   "seed": 2144902406,
+   "playable": true,
+   "issues": [],
+   "signature": {
+    "genre": "platform",
+    "forks": 0,
+    "chicanes": 0,
+    "narrowings": 0,
+    "curve": [],
+    "height": [],
+    "motifs": [
+     "climb",
+     "stairs",
+     "rest",
+     "mixed",
+     "stairs",
+     "mixed",
+     "stairs",
+     "rest",
+     "mixed",
+     "stairs",
+     "moving",
+     "spike-corridor",
+     "mixed"
+    ]
+   }
+  }
+ ],
+ "pairs": [
+  {
+   "a": "r1",
+   "b": "r2",
+   "genre": "runner",
+   "distance": 0.457,
+   "different": true
+  },
+  {
+   "a": "r1",
+   "b": "r3",
+   "genre": "runner",
+   "distance": 0.543,
+   "different": true
+  },
+  {
+   "a": "r1",
+   "b": "r4",
+   "genre": "runner",
+   "distance": 0.431,
+   "different": true
+  },
+  {
+   "a": "r2",
+   "b": "r3",
+   "genre": "runner",
+   "distance": 0.561,
+   "different": true
+  },
+  {
+   "a": "r2",
+   "b": "r4",
+   "genre": "runner",
+   "distance": 0.408,
+   "different": true
+  },
+  {
+   "a": "r3",
+   "b": "r4",
+   "genre": "runner",
+   "distance": 0.407,
+   "different": true
+  },
+  {
+   "a": "s1",
+   "b": "s2",
+   "genre": "steer",
+   "distance": 0.39,
+   "different": true
+  },
+  {
+   "a": "s1",
+   "b": "s3",
+   "genre": "steer",
+   "distance": 0.368,
+   "different": true
+  },
+  {
+   "a": "s1",
+   "b": "s4",
+   "genre": "steer",
+   "distance": 0.489,
+   "different": true
+  },
+  {
+   "a": "s2",
+   "b": "s3",
+   "genre": "steer",
+   "distance": 0.519,
+   "different": true
+  },
+  {
+   "a": "s2",
+   "b": "s4",
+   "genre": "steer",
+   "distance": 0.567,
+   "different": true
+  },
+  {
+   "a": "s3",
+   "b": "s4",
+   "genre": "steer",
+   "distance": 0.383,
+   "different": true
+  },
+  {
+   "a": "p1",
+   "b": "p2",
+   "genre": "platform",
+   "distance": 0.307,
+   "different": true
+  },
+  {
+   "a": "p1",
+   "b": "p3",
+   "genre": "platform",
+   "distance": 0.621,
+   "different": true
+  },
+  {
+   "a": "p1",
+   "b": "p4",
+   "genre": "platform",
+   "distance": 0.648,
+   "different": true
+  },
+  {
+   "a": "p2",
+   "b": "p3",
+   "genre": "platform",
+   "distance": 0.738,
+   "different": true
+  },
+  {
+   "a": "p2",
+   "b": "p4",
+   "genre": "platform",
+   "distance": 0.787,
+   "different": true
+  },
+  {
+   "a": "p3",
+   "b": "p4",
+   "genre": "platform",
+   "distance": 0.607,
+   "different": true
+  }
+ ],
+ "judge": {
+  "run": "r2",
+  "pairs": [
+   {
+    "a": "p1",
+    "b": "p2",
+    "genre": "platform",
+    "different": true,
+    "why": "Game A has a broad continuous platform followed by a gap, while Game B has a sequence of narrow separated platforms with repeated gaps."
+   },
+   {
+    "a": "p1",
+    "b": "p3",
+    "genre": "platform",
+    "different": true,
+    "why": "Game A has a flat platform ending in a wide gap before the next ledge, while Game B has a continuous flat track with a tall central obstruction and smaller obstacles spaced across it."
+   },
+   {
+    "a": "p1",
+    "b": "p4",
+    "genre": "platform",
+    "different": true,
+    "why": "Game A has a broad, continuous flat platform leading to a gap, while Game B has a staggered series of smaller platforms separated by multiple gaps and connected farther back by a narrow bridge."
+   },
+   {
+    "a": "p2",
+    "b": "p3",
+    "genre": "platform",
+    "different": true,
+    "why": "Game A has separated platforms with frequent wide gaps, while Game B has a broad, mostly continuous flat track with obstacles placed along it."
+   },
+   {
+    "a": "p2",
+    "b": "p4",
+    "genre": "platform",
+    "different": true,
+    "why": "Game A has a sequence of separated flat platforms with open gaps, while Game B has staggered platforms and a raised bridge connecting sections behind them."
+   },
+   {
+    "a": "p3",
+    "b": "p4",
+    "genre": "platform",
+    "different": true,
+    "why": "Game A has a broad, mostly continuous flat track with scattered obstacles, while Game B has separated, staggered platforms with large gaps and a raised bridge connecting sections."
+   },
+   {
+    "a": "r1",
+    "b": "r2",
+    "genre": "runner",
+    "different": true,
+    "why": "Game A has a narrow, segmented course with repeated crosswise barriers and overhead frames, while Game B has a broad, continuous road with scattered small obstacles and no comparable spanning barriers."
+   },
+   {
+    "a": "r1",
+    "b": "r3",
+    "genre": "runner",
+    "different": true,
+    "why": "Game A has a wide course divided by walls and multiple overhead crossbars forming low passages, while Game B has a narrower open, straight track with isolated blocks and gaps around them."
+   },
+   {
+    "a": "r1",
+    "b": "r4",
+    "genre": "runner",
+    "different": false,
+    "why": "Both games show a straight, flat track with repeated crosswise barriers and gaps between them, without clearly different bends, hills, forks or platform arrangements."
+   },
+   {
+    "a": "r2",
+    "b": "r3",
+    "genre": "runner",
+    "different": true,
+    "why": "Game A has a broad, straight track with sparse small obstacles and wide openings, while Game B has a narrower straight track with large staggered blocks forcing passage through alternating gaps."
+   },
+   {
+    "a": "r2",
+    "b": "r4",
+    "genre": "runner",
+    "different": true,
+    "why": "Game A has a broad continuous track with sparse small obstacles, while Game B has repeated wide barriers spanning the roadway with gaps between them."
+   },
+   {
+    "a": "r3",
+    "b": "r4",
+    "genre": "runner",
+    "different": true,
+    "why": "Game A has an open straight track with isolated blocks and wide gaps around them, while Game B has repeated barriers spanning nearly the full road width with narrow openings between them."
+   },
+   {
+    "a": "s1",
+    "b": "s2",
+    "genre": "steer",
+    "different": true,
+    "why": "Game A has a narrow straight road with staggered barriers jutting in from either side, while Game B has a wider straight corridor with a central obstacle and open paths on both sides."
+   },
+   {
+    "a": "s1",
+    "b": "s3",
+    "genre": "steer",
+    "different": false,
+    "why": "Both games show a straight, narrow track with raised side walls and staggered intrusions from either side that create alternating narrow gaps."
+   },
+   {
+    "a": "s1",
+    "b": "s4",
+    "genre": "steer",
+    "different": true,
+    "why": "Game A has a narrow straight road with repeated staggered barriers constricting the path, while Game B has a much wider straight road with broad side-wall indentations and an open center."
+   },
+   {
+    "a": "s2",
+    "b": "s3",
+    "genre": "steer",
+    "different": true,
+    "why": "Game A has a wide, straight track with isolated central obstacles, while Game B has a narrower track with staggered wall sections that create offset passages."
+   },
+   {
+    "a": "s2",
+    "b": "s4",
+    "genre": "steer",
+    "different": true,
+    "why": "Game A has a straight, uniform-width road with a narrow central barrier, while Game B has a straight road with opposing side walls jutting inward to form a narrower passage."
+   },
+   {
+    "a": "s3",
+    "b": "s4",
+    "genre": "steer",
+    "different": true,
+    "why": "Game A has a narrow road with repeated staggered side-wall intrusions forming a zigzag corridor, while Game B has a broad straight road with a single paired narrowing and a long open stretch."
+   }
+  ]
+ }
+}

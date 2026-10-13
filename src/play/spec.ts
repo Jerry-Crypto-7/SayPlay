@@ -44,7 +44,7 @@ import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from '.
 import { DUEL, DUEL_DIFFICULTIES } from './arcade/pieces/duel';
 import { RHYTHM, RHYTHM_DENSITIES } from './arcade/pieces/rhythm';
 import { SHOOTER_DIFFICULTIES, SHOOTER_RISE_MAX, SHOOTER_WAVE_SIZE_MAX } from './arcade/pieces/shooter';
-import { STEER_DIFFICULTIES, STEER_TRACK } from './arcade/pieces/steer';
+import { STEER_DIFFICULTIES, STEER_STYLES, STEER_TRACK } from './arcade/pieces/steer';
 import { THROW_DIFFICULTIES, THROW_GOALS } from './arcade/pieces/throw';
 import { TIMING, TIMING_MODES, TIMING_SPEEDS } from './arcade/pieces/timing';
 import { ARCHETYPES, MECHANICS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from './registry';
@@ -283,6 +283,8 @@ export const runnerParamsSchema = z
     feel: z.literal(2).optional(),
     /** Trať ze tří úseků s délkou podle obsahu (P36A T4); žánr Běžec ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
     sections: z.literal(3).optional(),
+    /** Úseky z knihovny vzorů (P46D T2); žánr Běžec ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
+    patterns: z.literal(1).optional(),
   })
   .strict();
 export type RunnerParams = z.infer<typeof runnerParamsSchema>;
@@ -360,6 +362,10 @@ export const steerParamsSchema = z
     drift: z.boolean().optional(),
     grip: z.int().min(4).max(20).optional(),
     brakeDrift: z.int().min(4).max(20).optional(),
+    /** Okruh ze vzorů (P46D T4); návrh závodu ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
+    patterns: z.literal(1).optional(),
+    /** Styl okruhu ze vzorů podle prostředí (P46D R2); bez něj ho vybere semínko. */
+    style: z.enum(STEER_STYLES).optional(),
   })
   .strict();
 export type SteerParams = z.infer<typeof steerParamsSchema>;

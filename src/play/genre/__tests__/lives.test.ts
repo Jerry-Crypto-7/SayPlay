@@ -34,6 +34,7 @@ import { type ArcadeProgram, buildWorld, instantiate, loadProgram, step } from '
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { graceLeft } from '@/play/arcade/pieces/arena';
 import { FIGHT, FIGHT_PHASE } from '@/play/arcade/pieces/fight';
+import { RUNNER } from '@/play/arcade/pieces/runner';
 import { readsMechanic, unreadItems } from '@/play/capabilities';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { SENTENCE_LIVES, readLives } from '@/play/draft/lexicon';
@@ -151,7 +152,8 @@ describe('runner – a crash costs a life and the run goes on', () => {
 
   it('two crashes leave one life and a running game, a crash inside the grace second costs nothing, the third crash loses', () => {
     const g = game('runner');
-    const [a, b, c, d] = bodiesOf(g, 'obstacle') as [number, number, number, number];
+    // Strop tunelu (P46D T2) visí nad hlavou: narazit se dá jen do překážky na zemi.
+    const [a, b, c, d] = bodiesOf(g, 'obstacle').filter((body) => at(g.state, body, 'y') < RUNNER.runH) as [number, number, number, number];
     crashInto(g, a);
     expect([lives(g), runState(g), aliveAt(g.state, a)]).toEqual([START_LIVES - 1, RUN_STATE.running, false]);
     expect(graceOf(g.state, PLAYER)).toBe(HIT_GRACE);

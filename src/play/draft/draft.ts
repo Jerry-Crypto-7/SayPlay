@@ -64,6 +64,7 @@ import { defaultCollectible, defaultFoe, defaultHero, defaultTarget, heroFits } 
 import { AMMO_VERB } from '../genre/throw';
 import { lookFor, lookWords } from '../arcade/look';
 import { modelOf } from '../arcade/models';
+import { steerStyleFor } from '../arcade/pieces/steer';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
 
 import { type ControlChoice, type ControlPick, nearestControl, pickControl } from './controls';
@@ -1023,7 +1024,9 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick, topic:
       ...(choice.doubleJump ? { doubleJump: true } : {}),
     };
   } else if (choice.control === 'steer') {
-    spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(choice.drift ? { drift: true } : {}) };
+    // Okruh ze vzorů: šikany, zúžení, rozcestí… (P46D T4) ve stylu podle prostředí (R2).
+    const style = steerStyleFor(spec.theme.look ?? lookFor(spec.theme.setting));
+    spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(choice.drift ? { drift: true } : {}), patterns: 1, ...(style === undefined ? {} : { style }) };
   } else if (choice.control === 'move_free') {
     if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
   } else if (choice.control === 'throw') {
@@ -1241,7 +1244,11 @@ function draftGenre(
   // Les dá vlka, jen když věta žádného protivníka nejmenuje. Skákačka a poletování mají vlastní překážku
   // (bodák, trubka), kterou protivník z prostředí nepřejmenuje – primitiv zůstává, kde věta nic neřekla.
   const ownHazard = choice.genre === 'platformer' || choice.genre === 'flap';
-  const foeLabel = enemy ?? saidFoe ?? (ownHazard ? null : spare(defaultFoe(setting, choice.genre).label, [singular(hero)]));
+  // P38: střelba na skoku nebo běhu – protivník bez slovesa se sestřelí a `compileWith` z toho udělá doplněk `shoot`.
+  const rideShot = ranking.ride === 'shoot' && (choice.genre === 'platformer' || choice.genre === 'runner');
+  const ownFoe: CastRole = rideShot ? 'shoot_at' : fight ? 'fight' : FOE_DOES[choice.genre];
+  // Protivník, kterého hra sestřelí, zůstává zvířetem prostředí; jen ten, kterému se uhýbá, je překážka trati (P46D T6).
+  const foeLabel = enemy ?? saidFoe ?? (ownHazard ? null : spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]));
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
   // Střílečka nic nesbírá a hod hází, co řekne věta, jinak míč – věc z prostředí by z mince udělala náboj.
@@ -1254,9 +1261,6 @@ function draftGenre(
   const params = Object.keys(depth).length === 0 ? own : { ...own, ...depth };
   // „Two knights duel“: počítaný podmět je hrdina i soupeř – číslovka říká, kolik jich je v souboji, ne kolik soupeřů.
   const counts = countsOf(sentence, reading, { enemy: foeLabel === pair ? null : foeLabel, collectible: itemLabel, target });
-  // P38: střelba na skoku nebo běhu – protivník bez slovesa se sestřelí a `compileWith` z toho udělá doplněk `shoot`.
-  const rideShot = ranking.ride === 'shoot' && (choice.genre === 'platformer' || choice.genre === 'runner');
-  const ownFoe: CastRole = rideShot ? 'shoot_at' : fight ? 'fight' : FOE_DOES[choice.genre];
   // Co věc dělá: sloveso u ní ve větě, pak doplněk modulu (čtení modelem), pak role, kterou žánr hraje sám.
   const doesOf = (label: string, own: CastRole): CastRole => spoken.find((item) => item.label === label)?.does ?? (fillFoe?.label === label ? fillFoe.does : own);
   // Sbírací sloveso, které doplněk modulu dal věci („gather 3 apples“ ve skákačce), zůstane u ní.
@@ -1272,7 +1276,7 @@ function draftGenre(
     ...(target === null ? [] : [{ label: target, does: thrown ? ('throw_at' as const) : ('reach' as const), verb: (filledTarget?.verb ?? verb).slice(0, 24), states: choice.mode === 'station' ? (3 as const) : (2 as const) }]),
   ], spoken.map((item) => ({ label: item.label, does: item.does ?? ownFoe })));
   // Střelba bez terče ve větě střílí do protivníka z prostředí.
-  const fallbackShot = rideShot && !cast.some((item) => item.does === 'shoot_at') ? spare(defaultFoe(setting, choice.genre).label, [singular(hero)]) : null;
+  const fallbackShot = rideShot && !cast.some((item) => item.does === 'shoot_at') ? spare(defaultFoe(setting, choice.genre, 'shoot_at').label, [singular(hero)]) : null;
   const candidate = {
     genre: choice.genre,
     mode: choice.mode,
