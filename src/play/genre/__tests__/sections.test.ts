@@ -197,7 +197,8 @@ describe('platformer sections (P36A T4)', () => {
     expect(starts).toHaveLength(2);
     for (const start of starts) expect(checkpoints).toContain(start + 800);
     const sectionOf = (z: number): number => (z >= starts[1]! ? 2 : z >= starts[0]! ? 1 : 0);
-    const slabs = list.filter((body) => body.role === 'platform').sort((a, b) => a.z - b.z);
+    // Římsa a jáma arény bosse (P46B R5) jsou pevný kus za schodem, ne plošiny úseku 3; schod stojí místo dřívější desky arény.
+    const slabs = list.filter((body) => body.role === 'platform').sort((a, b) => a.z - b.z).slice(0, -2);
     const gaps = (section: number): number[] =>
       slabs.flatMap((slab, i) => {
         const prev = slabs[i - 1];
