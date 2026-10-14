@@ -27934,6 +27934,125 @@
           0.29685
         ]
       }
+    },
+    {
+      "assetId": "gen3d-picnic-table",
+      "tags": [
+        "picnic table"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-picnic-table-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.8038,
+          0,
+          -1.43306
+        ],
+        "max": [
+          0.8038,
+          0.99987,
+          1.43306
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-telephone-pole",
+      "tags": [
+        "telephone pole",
+        "utility pole",
+        "power pole"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-telephone-pole-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18874,
+          0,
+          -0.0388
+        ],
+        "max": [
+          0.18874,
+          0.99925,
+          0.0388
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-claw-machine",
+      "tags": [
+        "claw machine",
+        "crane game",
+        "claw crane"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-claw-machine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25341,
+          0,
+          -0.31536
+        ],
+        "max": [
+          0.25341,
+          0.99757,
+          0.31536
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bread-rack",
+      "tags": [
+        "bread rack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bread-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.73639,
+          0,
+          -0.29914
+        ],
+        "max": [
+          0.73639,
+          0.99721,
+          0.29914
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wall-clock",
+      "tags": [
+        "wall clock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wall-clock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49985,
+          0,
+          -0.0773
+        ],
+        "max": [
+          0.49985,
+          1.00001,
+          0.0773
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gas-cylinder",
+      "tags": [
+        "gas cylinder",
+        "gas bottle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gas-cylinder-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15337,
+          0,
+          -0.15273
+        ],
+        "max": [
+          0.15337,
+          0.99997,
+          0.15273
+        ]
+      }
     }
   ]
 }

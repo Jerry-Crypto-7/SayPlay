@@ -2982,7 +2982,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Paid fallback of the director (gpt-6-astra): called only when the deployment sets WORLDSMITH_FALLBACK_ENDPOINT=openai:https://api.openai.com with the owner's key, under its own spend cap, and only after the primary director failed or stalled. Without that configuration the product never calls it. The game spec it returns is AI-generated output.
 
-## Vlastní, ne třetí strana (3476)
+## Vlastní, ne třetí strana (3494)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -3652,6 +3652,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-bread-oven-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-bread-oven-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-bread-oven.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-bread-rack-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-bread-rack-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-bread-rack.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-briefcase-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-briefcase-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-briefcase.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
@@ -3739,6 +3742,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-circus-cannon-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-circus-cannon-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-circus-cannon.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-claw-machine-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-claw-machine-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-claw-machine.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-clock-tower-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-clock-tower-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-clock-tower.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
@@ -4051,6 +4057,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-gargoyle-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-gargoyle-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-gargoyle.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-gas-cylinder-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-gas-cylinder-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-gas-cylinder.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-gas-pump-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-gas-pump-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-gas-pump.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
@@ -4642,6 +4651,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-picnic-basket-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-picnic-basket-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-picnic-basket.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-picnic-table-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-picnic-table-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-picnic-table.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-pie-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-pie-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-pie.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
@@ -5113,6 +5125,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-tavern-sign-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-tavern-sign-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-tavern-sign.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-telephone-pole-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-telephone-pole-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-telephone-pole.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-tennis-ball-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-tennis-ball-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-tennis-ball.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
@@ -5224,6 +5239,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d-p37d/gen3d-wagon-wheel-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-wagon-wheel.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-wagon.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-wall-clock-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-wall-clock-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d-p37d/gen3d-wall-clock.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-wallet-lod0.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-wallet-lod1.glb** (asset): Model generated locally by ops/gen3d from a noun jurors write, passed its quality gate and a blind four-view judge, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d-p37d/gen3d-wallet.png** (asset): Preview render or provenance table of the generated models, written by scripts/p37d/promote-batch.mjs.

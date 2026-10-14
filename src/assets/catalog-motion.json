@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "6bc9082ecf609f35d6dfe000a9d6ba86bfe3f7f0c3a1739129076b320b3db7b3",
+ "catalogHash": "97e5172ff20c416239fa810a910eefc0253e7f2568e27cd95e74da538d200fea",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1386,6 +1386,12 @@
   "gen3d-rafflesia": {"class":"prop"},
   "gen3d-navigation-buoy": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-snow-shovel": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-castle-tower": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-castle-tower": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-picnic-table": {"class":"prop"},
+  "gen3d-telephone-pole": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-claw-machine": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-bread-rack": {"class":"prop"},
+  "gen3d-wall-clock": {"class":"prop"},
+  "gen3d-gas-cylinder": {"class":"biped","regions":{"legY":0.25}}
  }
 }

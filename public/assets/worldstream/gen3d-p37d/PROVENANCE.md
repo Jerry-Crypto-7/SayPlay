@@ -611,3 +611,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-navigation-buoy` | navigation buoy, channel buoy, marker buoy | 4748 / 2374 |
 | `gen3d-snow-shovel` | snow shovel | 4748 / 2374 |
 | `gen3d-castle-tower` | castle tower | 4089 / 2158 |
+| `gen3d-picnic-table` | picnic table | 4385 / 2192 |
+| `gen3d-telephone-pole` | telephone pole, utility pole, power pole | 4742 / 2370 |
+| `gen3d-claw-machine` | claw machine, crane game, claw crane | 4304 / 2148 |
+| `gen3d-bread-rack` | bread rack | 4169 / 2064 |
+| `gen3d-wall-clock` | wall clock | 4748 / 2374 |
+| `gen3d-gas-cylinder` | gas cylinder, gas bottle | 4745 / 2366 |
