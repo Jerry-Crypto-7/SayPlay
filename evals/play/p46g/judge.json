@@ -1,6 +1,6 @@
 {
  "about": "P46G T9 blind judgement: the same game at the same demo tick, before P46G (T1 2c95c85c, evals/play/p46g/before) and after (evals/play/p46g/after), side by side without labels. See README.md.",
- "judgedAt": "2026-10-14T01:56:56.762Z",
+ "judgedAt": "2026-10-14T14:54:31.063Z",
  "judge": {
   "model": "claude-opus-5-5",
   "how": "claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once",
@@ -24,7 +24,7 @@
    "sentence": "A fox runs through a forest away from a bear",
    "afterSide": "RIGHT",
    "verdict": "RIGHT",
-   "reason": "a dense, believable forest with a clear dirt path and a fox that's easy to see",
+   "reason": "a dense, believable forest with a clear, natural dirt path and an easy-to-see fox",
    "afterWon": true,
    "asks": 1
   },
@@ -33,7 +33,7 @@
    "sentence": "A race car speeds through a dark forest",
    "afterSide": "RIGHT",
    "verdict": "RIGHT",
-   "reason": "dense, moody dark forest with a clearly readable track and car",
+   "reason": "dense, dim forest with a clear road and car matches \"dark forest\" far better than the left's bright, open field",
    "afterWon": true,
    "asks": 1
   },
@@ -42,7 +42,7 @@
    "sentence": "A squirrel jumps over logs in a forest",
    "afterSide": "LEFT",
    "verdict": "LEFT",
-   "reason": "Pine treeline, mountain, treehouse and log obstacle make it read as a forest, while the right has an empty horizon.",
+   "reason": "Dense, layered forest makes a believable woodland, while RIGHT is mostly open water and sky.",
    "afterWon": true,
    "asks": 1
   },
@@ -51,7 +51,7 @@
    "sentence": "A monkey runs through the jungle away from a tiger",
    "afterSide": "RIGHT",
    "verdict": "RIGHT",
-   "reason": "Dense, believable jungle with a clear, easy-to-follow path, while the left looks sparse and empty.",
+   "reason": "a dense, believable jungle around a clear, easy-to-read path",
    "afterWon": true,
    "asks": 1
   },
@@ -60,7 +60,7 @@
    "sentence": "A jeep races through the jungle",
    "afterSide": "LEFT",
    "verdict": "LEFT",
-   "reason": "dense jungle surrounds a readable dirt track, so it feels like racing through a real jungle.",
+   "reason": "dense jungle on both sides of a clear dirt track makes it feel like a real jungle",
    "afterWon": true,
    "asks": 1
   },
@@ -69,7 +69,7 @@
    "sentence": "A frog jumps between platforms in the jungle",
    "afterSide": "LEFT",
    "verdict": "LEFT",
-   "reason": "Denser jungle setting and the frog clearly sits on a bridge in the play space.",
+   "reason": "dense, misty jungle setting that feels immersive, with platforms and frog still readable",
    "afterWon": true,
    "asks": 1
   },
@@ -78,7 +78,7 @@
    "sentence": "A lizard runs through the desert away from a snake",
    "afterSide": "LEFT",
    "verdict": "LEFT",
-   "reason": "fuller, more convincing desert with a clearly outlined path",
+   "reason": "clearer path and richer, more believable desert scenery",
    "afterWon": true,
    "asks": 1
   },
@@ -87,7 +87,7 @@
    "sentence": "A buggy races across the desert",
    "afterSide": "RIGHT",
    "verdict": "RIGHT",
-   "reason": "richer, believable desert with dunes and rocks, and a sandy track that stands out clearly",
+   "reason": "sandy track stands out clearly and dunes, rocks and cacti make a believable desert",
    "afterWon": true,
    "asks": 1
   },
@@ -96,7 +96,7 @@
    "sentence": "A camel jumps over cactus in the desert",
    "afterSide": "LEFT",
    "verdict": "LEFT",
-   "reason": "dunes, pyramid and mesa make a more believable desert, and the path is just as clear.",
+   "reason": "A clear desert with dunes and cacti, and one easy-to-read camel on the path, while RIGHT's sea background and overlapping camels confuse the scene.",
    "afterWon": true,
    "asks": 1
   },
@@ -105,7 +105,7 @@
    "sentence": "A dog runs through the city away from a dogcatcher",
    "afterSide": "LEFT",
    "verdict": "LEFT",
-   "reason": "a clear asphalt street with lane lines and sidewalks makes a readable city path, unlike the right side's jagged black strip.",
+   "reason": "a clearly marked street with sidewalks makes the city path and the dog easy to read, while the right side's road is a jagged black void.",
    "afterWon": true,
    "asks": 1
   },
@@ -114,7 +114,7 @@
    "sentence": "A taxi races through the city streets",
    "afterSide": "LEFT",
    "verdict": "LEFT",
-   "reason": "city skyline and a lane-marked road make the street and taxi clear and believable.",
+   "reason": "City skyline and a lane-marked grey road make the taxi and the city setting clearer and more believable.",
    "afterWon": true,
    "asks": 1
   },
@@ -123,7 +123,7 @@
    "sentence": "A cat jumps across rooftops in the city",
    "afterSide": "LEFT",
    "verdict": "LEFT",
-   "reason": "the distant city skyline makes the rooftop setting feel like a real city",
+   "reason": "dense city skyline and a clear building rooftop make it believable as a cat running across city rooftops",
    "afterWon": true,
    "asks": 1
   }

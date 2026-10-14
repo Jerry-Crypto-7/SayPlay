@@ -16,7 +16,7 @@ node scripts/play-look-shots.mjs diff <dirA> <dirB>
 Rychlá verze přes `POST /api/play/games` (server bez režiséra), plátno 1280×800 bez textu stránky, SwiftShader. Ukázka robota se odtiká ručními hodinami sondy (`__playShell.byHand`) do tiku 150, pak hodiny stojí a snímek čeká, až se dotáhnou modely.
 
 - `before/` – build `17750622` (P46 + P46D, před P46G), 13. 10. 2026.
-- `after/` – build `005ac461` (P46G + znovu sloučený P46D), 14. 10. 2026, stejné volby (tik 150, SwiftShader, 1280×800). Hry jsou tytéž: všech 12 `versionId` v `after/manifest.json` se shoduje s `before/`.
+- `after/` – build `34cfac65` (integrační větev P46: A + B + D + G, k tomu břehy skákaček, domy a ulice města), 14. 10. 2026, stejné volby (tik 150, SwiftShader, 1280×800). Hry **nejsou** tytéž jako v `before/` (0 z 12 `versionId` shodných): P46B přidal novým hrám úseky a bosse, takže se změnil i spec. Snímek tedy srovnává celý P46 proti stavu před ním, ne jen vzhled. Předchozí běh nad `005ac461` (jen P46G + P46D, stejné hry) také vyhrál 12 z 12.
 - **`sheet-all.png`** – pro majitele: všech 12 dvojic vedle sebe s popisky „before“ / „after“ a větou (2560×2952 px).
 - **Cesta bez schodů** (prohlédnuto ručně, T9): ve všech 8 snímcích závodu a běžce je okraj cesty i zábradlí hladké, bez schodu. Před P46G mělo schody zábradlí v `forest-race`, `jungle-race` a `city-race`. Zbývá jedna vada, kterou P46G nezavedl: v `city-race` stojí domy vpravo přes zábradlí (stejně jako na snímku před).
 
@@ -29,7 +29,8 @@ node scripts/play-p46g-blind.mjs sheet
 
 Každá dvojice (před a po vedle sebe, bez popisků, strana losovaná ze seedu) jde jako `sheet.png` sama v prázdném adresáři soudci Opus 5.5 (`claude -p`, jen nástroj Read). Otázka: která strana vypadá víc jako uvěřitelné, pohlcující a čitelné herní místo pro tu větu.
 
-- **Výsledek: „po“ vyhrálo 12 z 12** (seed `46009`, hranice 10 z 12), jeden běh, žádné přeptání. Důvody soudce: hustší les a džungle, duny a skály v poušti, panorama města, čitelná cesta (`judge.json`).
+- **Výsledek: „po“ vyhrálo 12 z 12** (seed `46009`, hranice 10 z 12), jeden běh, žádné přeptání. Důvody soudce: hustší les a džungle, duny a skály v poušti, panorama města, čitelná cesta (`judge.json`). Přesnímáno 14. 10. nad `34cfac65`: znovu 12 z 12, navíc „střecha domu“ u kočky ve městě a jasná cesta u psa.
+- **Výkon telefonu:** A/B na PC 14. 10. nepoužitelné (stroj přetížený, nová strana 0,1–0,3 FPS = zamrzlý prohlížeč). Vodítkem jsou kreslicí volání z `after/manifest.json` (skákačky +2–14 % proti `005ac461`); skutečnou plynulost ověří majitel na telefonu.
 
 ## Výkon „po“
 
