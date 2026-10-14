@@ -63,3 +63,16 @@ R2 dal řízení a skákačce styl podle prostředí (poušť = široké zatáč
   - `upgrade-action-lost.test` 2 testy – červené už na základu P46D (`491079b7`, P45), nejsou z P46D.
   - `submission-check.test` – ve worktree chybí gitignorovaný `plans/P8-odevzdani.md`.
   - Ostatní červené (limity 30 s a rychlostní meze) samostatně prošly.
+
+## Sloučení s P46B (14. 10. 2026, integrační větev P46)
+
+P46D je v `features/P46-hratelnost-2026-10-12` sloučený commitem `2813b62b` (nad P46A a P46B). Nová hra řízení nese úseky P46B i okruh ze vzorů, nová skákačka úseky P46B i úroveň ze vzorů – jeden generátor, ne dva vedle sebe:
+
+- **Řízení:** šířky úseků P46B (rozjezd, úsek 2, úsek 3) vstupují do vzorů – těsná zatáčka je o přídavek úseku širší, zúžení zůstává podle silnice ze spec. Od 750 ‰ se nelosuje zúžení ani rozcestí (finále bosse). Shazovač neshazuje do silnice užší než 3,6 m od 15 m před místem do 12 m za ním a ne blíž než 20 m k cizímu nepřejetému shozu. Rychlosti úseků 95/110/125/125 %.
+- **Skákačka:** úroveň ze vzorů dostane rozvržení P46B – podíly a obtížnost úseků, jednu pohyblivou plošinu v úseku 2 (stavba dvakrát, plošina na 550 ‰), checkpointy uprostřed úseků, past v okně 450–650 ‰, arénu bosse místo poslední desky a pevný hrot mimo past i v úseku 3, když ho vzory nepoložily.
+- **Beze změny:** `stored.json`, `motion-hash`, `legacy-controls-hash`, `legacy-replay-v2`, `allowed` (59/59) zelené bez přezmrazení. Goldeny `genres`/`replays` přezmrazené jen u `runner.default` a `platformer.default` (38 z 323 variant), `difficulty.json` přeměřený.
+- **Červené po sloučení (cílené sady, samostatně):**
+  - skákačka s úseky na úrovni ze vzorů je moc lehká: začátečník 0,95–1,0 (strop 0,7) v `platform-pacing`, `platform-chunks` a `difficulty.test`; měřidlo T1 vidí 1 změnu úseku místo 2; `sections.test` hroty úseku 3 0,125 proti 0,143. Zkoušené a nepomohlo (20 semínek): obtížnost úseku 3 bez stropu, podíly P46D, dlouhá mezera pohyblivé plošiny, vzory pohyblivé plošiny zpátky, rychlosti fází, bez checkpointů uprostřed. Potřebuje kalibraci.
+  - `compose/drive.test` řízení se střelbou na široké silnici (8 případů): robot po uhnutí shozu narazí do zombie uprostřed zúžení.
+  - běžec (úseky ze vzorů P46D × boss P46B): `assembly-pacing` b02 semínko 4, `boss-abilities` úder na jednom semínku.
+  - `upgrade.test` „pod 3 s“ (3,9–6,5 s) a `swarm` výkon – stroj byl na 100 % CPU, neověřené.
