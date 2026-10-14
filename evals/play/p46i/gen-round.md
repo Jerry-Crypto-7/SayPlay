@@ -1,0 +1,7 @@
+# P46I – záznam noční smyčky po kolech
+
+Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek prošel předkontrolou a TRELLIS dal GLB, **soud** = slepý soudce Codex (top1/top3), **povýšeno** = v katalogu po kole, **kity ≥ 3** = prostředí s aspoň třemi rekvizitami v `setting-kits.json` této větve po kole.
+
+| kolo | skupiny | jmen | model | soud | povýšeno | vyřazeno | kity ≥ 3 | povýšená jména | poznámka |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | kit-1 | 10 | 10 | 7/10 | 7 | – | 55/84 | stone lantern, torii gate, bonsai tree, rain barrel, outhouse, feeding trough, water lily | – |

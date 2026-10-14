@@ -579,3 +579,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-killer-tomato` | killer tomato | 4369 / 2155 |
 | `gen3d-pumpkin-head` | pumpkin head | 4681 / 2224 |
 | `gen3d-barbed-wire` | barbed wire | 4699 / 2329 |
+| `gen3d-stone-lantern` | stone lantern, japanese stone lantern | 4748 / 2374 |
+| `gen3d-torii-gate` | torii gate, shinto gate, torii | 4728 / 2339 |
+| `gen3d-bonsai-tree` | bonsai tree, bonsai | 4448 / 2167 |
+| `gen3d-rain-barrel` | rain barrel, water butt | 4748 / 2372 |
+| `gen3d-outhouse` | outhouse, privy, outdoor toilet | 4399 / 2134 |
+| `gen3d-feeding-trough` | feeding trough, trough, hay trough | 4437 / 2210 |
+| `gen3d-water-lily` | water lily, lotus, lotus flower | 4458 / 2224 |

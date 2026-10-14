@@ -27280,6 +27280,150 @@
           0.61774
         ]
       }
+    },
+    {
+      "assetId": "gen3d-stone-lantern",
+      "tags": [
+        "stone lantern",
+        "japanese stone lantern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-lantern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25503,
+          0,
+          -0.25507
+        ],
+        "max": [
+          0.25503,
+          0.99726,
+          0.25507
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-torii-gate",
+      "tags": [
+        "torii gate",
+        "shinto gate",
+        "torii"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-torii-gate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.62735,
+          0,
+          -0.12913
+        ],
+        "max": [
+          0.62735,
+          1.00001,
+          0.12913
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bonsai-tree",
+      "tags": [
+        "bonsai tree",
+        "bonsai"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bonsai-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47101,
+          0,
+          -0.4103
+        ],
+        "max": [
+          0.47101,
+          1.00001,
+          0.4103
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rain-barrel",
+      "tags": [
+        "rain barrel",
+        "water butt"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rain-barrel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24094,
+          0,
+          -0.24107
+        ],
+        "max": [
+          0.24094,
+          0.99998,
+          0.24107
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-outhouse",
+      "tags": [
+        "outhouse",
+        "privy",
+        "outdoor toilet"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-outhouse-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29586,
+          0,
+          -0.27377
+        ],
+        "max": [
+          0.29586,
+          0.99986,
+          0.27377
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-feeding-trough",
+      "tags": [
+        "feeding trough",
+        "trough",
+        "hay trough"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-feeding-trough-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.99783,
+          0,
+          -0.49049
+        ],
+        "max": [
+          0.99783,
+          0.99529,
+          0.49049
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-water-lily",
+      "tags": [
+        "water lily",
+        "lotus",
+        "lotus flower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-water-lily-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.92766,
+          0,
+          -0.91265
+        ],
+        "max": [
+          0.92766,
+          0.99734,
+          0.91265
+        ]
+      }
     }
   ]
 }

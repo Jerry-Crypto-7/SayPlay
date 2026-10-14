@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "afecab2c554eb075881af612449df23231a64d85fe4609a7d656e2f50be23a91",
+ "catalogHash": "0f56d27db96004dcb406cb62a099cd6eb3e33d35adada7d9f25c70cb31bd647d",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1354,6 +1354,13 @@
   "gen3d-giant-gear": {"class":"prop"},
   "gen3d-killer-tomato": {"class":"prop"},
   "gen3d-pumpkin-head": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-barbed-wire": {"class":"prop"}
+  "gen3d-barbed-wire": {"class":"prop"},
+  "gen3d-stone-lantern": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-torii-gate": {"class":"prop"},
+  "gen3d-bonsai-tree": {"class":"prop"},
+  "gen3d-rain-barrel": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-outhouse": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-feeding-trough": {"class":"prop"},
+  "gen3d-water-lily": {"class":"prop"}
  }
 }
