@@ -607,3 +607,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wine-barrel` | wine barrel, wine cask, cask | 4602 / 2266 |
 | `gen3d-lily-bouquet` | lily bouquet, bouquet, flower bouquet | 4201 / 1989 |
 | `gen3d-wooden-pergola` | wooden pergola, pergola, arbor | 4281 / 1938 |
+| `gen3d-rafflesia` | rafflesia, corpse flower | 4271 / 2111 |
+| `gen3d-navigation-buoy` | navigation buoy, channel buoy, marker buoy | 4748 / 2374 |
+| `gen3d-snow-shovel` | snow shovel | 4748 / 2374 |
+| `gen3d-castle-tower` | castle tower | 4089 / 2158 |
