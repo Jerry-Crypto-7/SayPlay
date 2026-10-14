@@ -1,0 +1,571 @@
+{
+ "about": "P46G T9 perf A/B: the same client script against the T1 baseline build (:3252) and the P46G head build (:3251), run back to back, base first, set by set. Pass = no row worse than -10 %.",
+ "profile": "Pixel 7, CPU 4x, d3d11",
+ "repeats": 2,
+ "windowMs": 10000,
+ "measuredAt": "2026-10-14T02:48:00.561Z",
+ "note": "The base server died after the sentence set (genre base run: ECONNREFUSED); it was restarted from the same build and the genre set re-run on both sides, base first.",
+ "base": {
+  "commit": "2c95c85c"
+ },
+ "head": {
+  "commit": "005ac461"
+ },
+ "worst": [
+  {
+   "id": "city-race",
+   "deltaPct": -5.4
+  },
+  {
+   "id": "g-duel",
+   "deltaPct": -3.6
+  },
+  {
+   "id": "g-rhythm",
+   "deltaPct": -3.4
+  }
+ ],
+ "pass": true,
+ "rows": [
+  {
+   "id": "forest-runner",
+   "set": "sentences",
+   "genre": "runner",
+   "baseFps": 50.1,
+   "headFps": 52.3,
+   "deltaPct": 4.4,
+   "baseCalls": 48,
+   "headCalls": 59,
+   "baseSamples": [
+    50.2,
+    50
+   ],
+   "headSamples": [
+    52.6,
+    52
+   ]
+  },
+  {
+   "id": "forest-race",
+   "set": "sentences",
+   "genre": "race",
+   "baseFps": 40.1,
+   "headFps": 54,
+   "deltaPct": 34.7,
+   "baseCalls": 71,
+   "headCalls": 48,
+   "baseSamples": [
+    40,
+    40.2
+   ],
+   "headSamples": [
+    54.9,
+    53
+   ]
+  },
+  {
+   "id": "forest-platform",
+   "set": "sentences",
+   "genre": "platformer",
+   "baseFps": 53.5,
+   "headFps": 55,
+   "deltaPct": 2.8,
+   "baseCalls": 32,
+   "headCalls": 36,
+   "baseSamples": [
+    52.1,
+    54.8
+   ],
+   "headSamples": [
+    56.3,
+    53.7
+   ]
+  },
+  {
+   "id": "jungle-runner",
+   "set": "sentences",
+   "genre": "runner",
+   "baseFps": 46.3,
+   "headFps": 52.2,
+   "deltaPct": 12.7,
+   "baseCalls": 39,
+   "headCalls": 54,
+   "baseSamples": [
+    47.5,
+    45
+   ],
+   "headSamples": [
+    51.3,
+    53.2
+   ]
+  },
+  {
+   "id": "jungle-race",
+   "set": "sentences",
+   "genre": "race",
+   "baseFps": 48.1,
+   "headFps": 51.8,
+   "deltaPct": 7.7,
+   "baseCalls": 55,
+   "headCalls": 52,
+   "baseSamples": [
+    49.1,
+    47.1
+   ],
+   "headSamples": [
+    53.3,
+    50.3
+   ]
+  },
+  {
+   "id": "jungle-platform",
+   "set": "sentences",
+   "genre": "platformer",
+   "baseFps": 54.8,
+   "headFps": 56.2,
+   "deltaPct": 2.6,
+   "baseCalls": 30,
+   "headCalls": 33,
+   "baseSamples": [
+    56.8,
+    52.9
+   ],
+   "headSamples": [
+    56,
+    56.5
+   ]
+  },
+  {
+   "id": "desert-runner",
+   "set": "sentences",
+   "genre": "runner",
+   "baseFps": 48.5,
+   "headFps": 49.7,
+   "deltaPct": 2.5,
+   "baseCalls": 74,
+   "headCalls": 63,
+   "baseSamples": [
+    48.4,
+    48.6
+   ],
+   "headSamples": [
+    52.5,
+    47
+   ]
+  },
+  {
+   "id": "desert-race",
+   "set": "sentences",
+   "genre": "race",
+   "baseFps": 41.5,
+   "headFps": 54.7,
+   "deltaPct": 31.8,
+   "baseCalls": 83,
+   "headCalls": 58,
+   "baseSamples": [
+    42.8,
+    40.2
+   ],
+   "headSamples": [
+    54.1,
+    55.3
+   ]
+  },
+  {
+   "id": "desert-platform",
+   "set": "sentences",
+   "genre": "platformer",
+   "baseFps": 55.5,
+   "headFps": 56.4,
+   "deltaPct": 1.6,
+   "baseCalls": 65,
+   "headCalls": 32,
+   "baseSamples": [
+    56.9,
+    54
+   ],
+   "headSamples": [
+    56.7,
+    56
+   ]
+  },
+  {
+   "id": "city-runner",
+   "set": "sentences",
+   "genre": "runner",
+   "baseFps": 43.6,
+   "headFps": 44.3,
+   "deltaPct": 1.6,
+   "baseCalls": 81,
+   "headCalls": 87,
+   "baseSamples": [
+    42.7,
+    44.5
+   ],
+   "headSamples": [
+    45.8,
+    42.9
+   ]
+  },
+  {
+   "id": "city-race",
+   "set": "sentences",
+   "genre": "race",
+   "baseFps": 40.7,
+   "headFps": 38.5,
+   "deltaPct": -5.4,
+   "baseCalls": 99,
+   "headCalls": 103,
+   "baseSamples": [
+    43.7,
+    37.7
+   ],
+   "headSamples": [
+    37.3,
+    39.8
+   ]
+  },
+  {
+   "id": "city-platform",
+   "set": "sentences",
+   "genre": "platformer",
+   "baseFps": 53.5,
+   "headFps": 52.3,
+   "deltaPct": -2.2,
+   "baseCalls": 52,
+   "headCalls": 54,
+   "baseSamples": [
+    52.5,
+    54.5
+   ],
+   "headSamples": [
+    52.1,
+    52.5
+   ]
+  },
+  {
+   "id": "g-runner",
+   "set": "genres",
+   "genre": "runner",
+   "baseFps": 51.2,
+   "headFps": 51.5,
+   "deltaPct": 0.6,
+   "baseCalls": 47,
+   "headCalls": 59,
+   "baseSamples": [
+    51.4,
+    51
+   ],
+   "headSamples": [
+    51.1,
+    51.8
+   ]
+  },
+  {
+   "id": "g-race",
+   "set": "genres",
+   "genre": "race",
+   "baseFps": 43.9,
+   "headFps": 52.3,
+   "deltaPct": 19.1,
+   "baseCalls": 55,
+   "headCalls": 52,
+   "baseSamples": [
+    45.5,
+    42.3
+   ],
+   "headSamples": [
+    49,
+    55.5
+   ]
+  },
+  {
+   "id": "g-platform",
+   "set": "genres",
+   "genre": "platformer",
+   "baseFps": 56.6,
+   "headFps": 55.8,
+   "deltaPct": -1.4,
+   "baseCalls": 32,
+   "headCalls": 36,
+   "baseSamples": [
+    57.5,
+    55.8
+   ],
+   "headSamples": [
+    55.8,
+    55.9
+   ]
+  },
+  {
+   "id": "g-arena",
+   "set": "genres",
+   "genre": "move_free",
+   "baseFps": 54.8,
+   "headFps": 54.1,
+   "deltaPct": -1.3,
+   "baseCalls": 15,
+   "headCalls": 33,
+   "baseSamples": [
+    56.1,
+    53.6
+   ],
+   "headSamples": [
+    51.4,
+    56.8
+   ]
+  },
+  {
+   "id": "g-fight",
+   "set": "genres",
+   "genre": "move_free",
+   "baseFps": 57.1,
+   "headFps": 55.7,
+   "deltaPct": -2.5,
+   "baseCalls": 56,
+   "headCalls": 75,
+   "baseSamples": [
+    56.5,
+    57.7
+   ],
+   "headSamples": [
+    55.8,
+    55.6
+   ]
+  },
+  {
+   "id": "g-quest",
+   "set": "genres",
+   "genre": "move_free",
+   "baseFps": 48.7,
+   "headFps": 49.1,
+   "deltaPct": 0.8,
+   "baseCalls": 16,
+   "headCalls": 16,
+   "baseSamples": [
+    49.4,
+    48.1
+   ],
+   "headSamples": [
+    47.5,
+    50.7
+   ]
+  },
+  {
+   "id": "g-agar",
+   "set": "genres",
+   "genre": "move_free",
+   "baseFps": 58.3,
+   "headFps": 57.4,
+   "deltaPct": -1.5,
+   "baseCalls": 12,
+   "headCalls": 26,
+   "baseSamples": [
+    57.8,
+    58.7
+   ],
+   "headSamples": [
+    57.2,
+    57.6
+   ]
+  },
+  {
+   "id": "g-walker",
+   "set": "genres",
+   "genre": "walker",
+   "baseFps": 55.6,
+   "headFps": 55.4,
+   "deltaPct": -0.4,
+   "baseCalls": 36,
+   "headCalls": 31,
+   "baseSamples": [
+    56.9,
+    54.4
+   ],
+   "headSamples": [
+    53.9,
+    57
+   ]
+  },
+  {
+   "id": "g-glide",
+   "set": "genres",
+   "genre": "glide",
+   "baseFps": 58.5,
+   "headFps": 56.7,
+   "deltaPct": -3.1,
+   "baseCalls": 37,
+   "headCalls": 40,
+   "baseSamples": [
+    58.3,
+    58.7
+   ],
+   "headSamples": [
+    57.2,
+    56.2
+   ]
+  },
+  {
+   "id": "g-ball",
+   "set": "genres",
+   "genre": "ball",
+   "baseFps": 56.2,
+   "headFps": 55.5,
+   "deltaPct": -1.2,
+   "baseCalls": 48,
+   "headCalls": 68,
+   "baseSamples": [
+    57.4,
+    55.1
+   ],
+   "headSamples": [
+    55.2,
+    55.9
+   ]
+  },
+  {
+   "id": "g-flap",
+   "set": "genres",
+   "genre": "flap",
+   "baseFps": 54.3,
+   "headFps": 54,
+   "deltaPct": -0.6,
+   "baseCalls": 43,
+   "headCalls": 48,
+   "baseSamples": [
+    55.1,
+    53.5
+   ],
+   "headSamples": [
+    54.8,
+    53.2
+   ]
+  },
+  {
+   "id": "g-shooter",
+   "set": "genres",
+   "genre": "shooter",
+   "baseFps": 52.2,
+   "headFps": 53.6,
+   "deltaPct": 2.7,
+   "baseCalls": 30,
+   "headCalls": 46,
+   "baseSamples": [
+    52.8,
+    51.7
+   ],
+   "headSamples": [
+    54.8,
+    52.5
+   ]
+  },
+  {
+   "id": "g-throw",
+   "set": "genres",
+   "genre": "throw",
+   "baseFps": 58,
+   "headFps": 57.9,
+   "deltaPct": -0.2,
+   "baseCalls": 71,
+   "headCalls": 56,
+   "baseSamples": [
+    59.4,
+    56.6
+   ],
+   "headSamples": [
+    58.5,
+    57.2
+   ]
+  },
+  {
+   "id": "g-timing",
+   "set": "genres",
+   "genre": "timing",
+   "baseFps": 57.5,
+   "headFps": 56.4,
+   "deltaPct": -1.9,
+   "baseCalls": 62,
+   "headCalls": 65,
+   "baseSamples": [
+    58,
+    57
+   ],
+   "headSamples": [
+    56.9,
+    55.9
+   ]
+  },
+  {
+   "id": "g-rhythm",
+   "set": "genres",
+   "genre": "rhythm",
+   "baseFps": 56.6,
+   "headFps": 54.7,
+   "deltaPct": -3.4,
+   "baseCalls": 60,
+   "headCalls": 62,
+   "baseSamples": [
+    55.1,
+    58.1
+   ],
+   "headSamples": [
+    54.5,
+    55
+   ]
+  },
+  {
+   "id": "g-duel",
+   "set": "genres",
+   "genre": "duel",
+   "baseFps": 58.7,
+   "headFps": 56.6,
+   "deltaPct": -3.6,
+   "baseCalls": 14,
+   "headCalls": 55,
+   "baseSamples": [
+    58.8,
+    58.7
+   ],
+   "headSamples": [
+    56.2,
+    57.1
+   ]
+  },
+  {
+   "id": "g-voyage",
+   "set": "genres",
+   "genre": "race",
+   "baseFps": 45.5,
+   "headFps": 53.1,
+   "deltaPct": 16.7,
+   "baseCalls": 69,
+   "headCalls": 47,
+   "baseSamples": [
+    45.6,
+    45.4
+   ],
+   "headSamples": [
+    54.1,
+    52.1
+   ]
+  },
+  {
+   "id": "g-lander",
+   "set": "genres",
+   "genre": "race",
+   "baseFps": 57.3,
+   "headFps": 57.4,
+   "deltaPct": 0.2,
+   "baseCalls": 43,
+   "headCalls": 44,
+   "baseSamples": [
+    57.3,
+    57.2
+   ],
+   "headSamples": [
+    57.6,
+    57.1
+   ]
+  }
+ ]
+}
