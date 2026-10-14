@@ -617,3 +617,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-bread-rack` | bread rack | 4169 / 2064 |
 | `gen3d-wall-clock` | wall clock | 4748 / 2374 |
 | `gen3d-gas-cylinder` | gas cylinder, gas bottle | 4745 / 2366 |
+| `gen3d-fern` | fern | 4508 / 2185 |
+| `gen3d-sand-bucket` | sand bucket, beach bucket, sand pail | 4749 / 2370 |

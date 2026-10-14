@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "97e5172ff20c416239fa810a910eefc0253e7f2568e27cd95e74da538d200fea",
+ "catalogHash": "3ad4685da008033e94b48e3b4e3e403d13af4a788313625086550769c80664ab",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1392,6 +1392,8 @@
   "gen3d-claw-machine": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-bread-rack": {"class":"prop"},
   "gen3d-wall-clock": {"class":"prop"},
-  "gen3d-gas-cylinder": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-gas-cylinder": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-fern": {"class":"prop"},
+  "gen3d-sand-bucket": {"class":"prop"}
  }
 }

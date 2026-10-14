@@ -28053,6 +28053,46 @@
           0.15273
         ]
       }
+    },
+    {
+      "assetId": "gen3d-fern",
+      "tags": [
+        "fern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.64658,
+          0,
+          -0.66583
+        ],
+        "max": [
+          0.64658,
+          0.99731,
+          0.66583
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sand-bucket",
+      "tags": [
+        "sand bucket",
+        "beach bucket",
+        "sand pail"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sand-bucket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42096,
+          0,
+          -0.3856
+        ],
+        "max": [
+          0.42096,
+          1.00001,
+          0.3856
+        ]
+      }
     }
   ]
 }
