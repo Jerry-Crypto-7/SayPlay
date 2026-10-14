@@ -1,0 +1,17 @@
+{
+ "note": "P46G T1: 4 prostředí × 3 žánry (běžec, závod, skákačka). Snímky před a po stejné větě ve stejném tiku ukázky robota (scripts/play-look-shots.mjs).",
+ "sentences": [
+  { "id": "forest-runner", "setting": "forest", "genre": "runner", "text": "A fox runs through a forest away from a bear" },
+  { "id": "forest-race", "setting": "forest", "genre": "race", "text": "A race car speeds through a dark forest" },
+  { "id": "forest-platform", "setting": "forest", "genre": "platformer", "text": "A squirrel jumps over logs in a forest" },
+  { "id": "jungle-runner", "setting": "jungle", "genre": "runner", "text": "A monkey runs through the jungle away from a tiger" },
+  { "id": "jungle-race", "setting": "jungle", "genre": "race", "text": "A jeep races through the jungle" },
+  { "id": "jungle-platform", "setting": "jungle", "genre": "platformer", "text": "A frog jumps between platforms in the jungle" },
+  { "id": "desert-runner", "setting": "desert", "genre": "runner", "text": "A lizard runs through the desert away from a snake" },
+  { "id": "desert-race", "setting": "desert", "genre": "race", "text": "A buggy races across the desert" },
+  { "id": "desert-platform", "setting": "desert", "genre": "platformer", "text": "A camel jumps over cactus in the desert" },
+  { "id": "city-runner", "setting": "city", "genre": "runner", "text": "A dog runs through the city away from a dogcatcher" },
+  { "id": "city-race", "setting": "city", "genre": "race", "text": "A taxi races through the city streets" },
+  { "id": "city-platform", "setting": "city", "genre": "platformer", "text": "A cat jumps across rooftops in the city" }
+ ]
+}

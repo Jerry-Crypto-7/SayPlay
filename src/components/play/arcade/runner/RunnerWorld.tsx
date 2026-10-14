@@ -16,12 +16,16 @@ import { Box3, DataTexture, LinearFilter, type Mesh, MeshBasicMaterial, MeshStan
 
 import { color } from '@/brand/tokens';
 import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
-import type { Look } from '@/play/arcade/look';
+import { type Look, SURFACES } from '@/play/arcade/look';
 
 import { type GhostPlacement, worldPlacement } from '../Ghost';
 import { type GhostPose, GhostSlot } from '../GhostSlot';
-import { buildValley, PLAYABLE_HALF } from '../look/rig/terrain/valley';
+import { HorizonBackdrop } from '../look/Backdrop';
+import { buildValley, PATH_HALF, PLAYABLE_HALF } from '../look/rig/terrain/valley';
+import { roadGeometry } from '../look/road-strip';
 import { Scenery } from '../look/Scenery';
+import { Vegetation } from '../look/Vegetation';
+import type { RoadAt } from '../look/vegetation-places';
 import type { ArcadeSession } from '../session';
 import { type ToyTarget, applyToy, toyMotionOn } from '../toy/applyToy';
 import { bodyClassOf } from '../toy/body-class';
@@ -32,8 +36,13 @@ import { type Path, bendGeometry, runnerPathOf, slopeAt } from './path';
 /** Údolí začíná za kamerou úvodního záběru a končí za koncem mlhy po cíli. */
 const BEHIND_M = 40;
 
-/** Údolí ohnuté po křivce trati (P46D T3): dráha, svahy i kulisy jdou zatáčkou a kopcem spolu s těly. */
-function RunnerValley({ look, length, terrain, path }: { readonly look: Look; readonly length: number; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
+/** Cesta běžce před ohnutím po křivce: rovná, v ose (vegetaci ohne `bend` jako kulisy). */
+const RUNNER_ROAD = (): RoadAt => ({ center: 0, half: PATH_HALF });
+/** Volný pás vegetace za krajem cesty (m): celá hrací plocha a půl metru. */
+const VEGETATION_CLEAR = PLAYABLE_HALF - PATH_HALF + 0.5;
+
+/** Údolí ohnuté po křivce trati (P46D T3): dráha, svahy, kulisy i vegetace (P46G T4) jdou zatáčkou a kopcem spolu s těly. */
+function RunnerValley({ look, length, seed, terrain, path }: { readonly look: Look; readonly length: number; readonly seed: number; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
   const valley = useMemo(() => {
     const built = buildValley({ look, from: -BEHIND_M, to: length + look.fog[1] + 10 });
     if (path !== null) bendGeometry(built.geometry, path);
@@ -42,14 +51,45 @@ function RunnerValley({ look, length, terrain, path }: { readonly look: Look; re
   const material = useMemo(() => new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), []);
   useEffect(() => () => valley.geometry.dispose(), [valley]);
   useEffect(() => () => material.dispose(), [material]);
+  // Cesta jako jeden pás s hladkými okraji (P46G T2), ohnutý po křivce trati jako údolí; vedle ní krajnice údolí (T3).
+  const surface = SURFACES[look.surface];
+  const lane = useMemo(() => {
+    const built = roadGeometry([{ near: -BEHIND_M, far: length + look.fog[1] + 10, center: 0, width: 2 * PATH_HALF }], surface);
+    if (built !== null && path !== null) for (const geometry of [built.surface, built.edges, built.marks]) if (geometry !== null) bendGeometry(geometry, path);
+    return built;
+  }, [surface, look.fog, length, path]);
+  useEffect(() => () => { lane?.surface.dispose(); lane?.edges.dispose(); lane?.marks?.dispose(); }, [lane]);
+  const trackHeight = useMemo(() => (path === null ? undefined : (z: number) => path(z).y), [path]);
   return (
     <>
       {/* Stín jen přijímá: vlastní stín by se na rovné dráze odrážel jako akné. */}
       <mesh ref={terrain} geometry={valley.geometry} material={material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'valley' }} />
-      <Scenery look={look} layout="sides" inner={PLAYABLE_HALF + 1.5} from={-10} to={length + 10} ground={valley.heightAt} cap={look.terrain?.cap} bend={path ?? undefined} />
+      {lane !== null && (
+        <>
+          <mesh geometry={lane.surface} receiveShadow>
+            <meshStandardMaterial color={surface.color} roughness={0.95} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
+          </mesh>
+          <mesh geometry={lane.edges} receiveShadow>
+            <meshStandardMaterial color={surface.edge} roughness={0.95} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+          </mesh>
+          {/* Spáry prken ano, středová čára asfaltu ne: ta by vedla pod hrdinou prostředním pruhem. */}
+          {lane.marks !== null && 'marks' in surface && surface.marks.kind === 'seams' && (
+            <mesh geometry={lane.marks} receiveShadow>
+              <meshStandardMaterial color={surface.marks.color} roughness={0.95} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+            </mesh>
+          )}
+        </>
+      )}
+      {look.flora !== undefined && <Vegetation flora={look.flora} seed={seed} from={-BEHIND_M} to={length + look.fog[1] + 10} road={RUNNER_ROAD} clear={VEGETATION_CLEAR} ground={valley.heightAt} bend={path ?? undefined} />}
+      <Scenery look={look} layout="sides" inner={PLAYABLE_HALF + 1.5} from={-10} to={length + 10} ground={valley.heightAt} cap={look.terrain?.cap} bend={path ?? undefined} vegetation />
+      {/* Kulisa za mlhou (P46G T6) na konci údolí; pata pod zemí kryje kopce trati. */}
+      <HorizonBackdrop look={look} seed={seed} length={length} clear={PLAYABLE_HALF + 1.5} skirt={RUNNER_SKIRT_M} ground={trackHeight} />
     </>
   );
 }
+
+/** Jak hluboko pata kulisy sahá pod zem v údolí (m): trať před kamerou klesne s kopci nejvýš o tolik. */
+const RUNNER_SKIRT_M = 4;
 
 export interface GroundGap {
   /** Svislá mezera (px) mezi spodní hranou těla a terénem pod ní: + visí, − boří se. */
@@ -296,7 +336,7 @@ export function RunnerWorld(props: Omit<WorldProps, 'control' | 'backdrop'>) {
   );
   return (
     <>
-      <World {...props} control="runner" backdrop={<RunnerValley look={props.scene} length={length} terrain={terrain} path={path} />} />
+      <World {...props} control="runner" backdrop={<RunnerValley look={props.scene} length={length} seed={props.session.world.seed} terrain={terrain} path={path} />} />
       <GroundProbe terrain={terrain} />
       {/* Až po `World`: jeho snímek musí běžet dřív (viz `HeroPose`). */}
       <HeroPose session={props.session} hero={props.cast.player} rides={props.scene.ride === true} />

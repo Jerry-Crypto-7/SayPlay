@@ -22,6 +22,7 @@ import { type ArcadeWorld, BODY, HEADER, ROLE, UNIT, bodyBase } from '@/play/arc
 import type { Look } from '@/play/arcade/look';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 
+import { groundPainter, groundPalette } from '../../ground';
 import { hash, mix } from './valley';
 
 export type Vertex = readonly [x: number, y: number, z: number];
@@ -46,15 +47,15 @@ export class Faces {
   /**
    * Pás mezi horním a spodním prstencem se stejným počtem bodů, oba v pořadí
    * s kladnou plochou (`ccw`): normála míří ven. Úhlopříčka se střídá podle
-   * hashe, `paint` dostane index, y normály a výšku středu trojúhelníku.
+   * hashe, `paint` dostane index, y normály a střed trojúhelníku (y, x, z).
    */
-  band(upper: readonly Vertex[], lower: readonly Vertex[], seed: number, paint: (i: number, up: number, y: number) => Color): void {
+  band(upper: readonly Vertex[], lower: readonly Vertex[], seed: number, paint: (i: number, up: number, y: number, x: number, z: number) => Color): void {
     const n = upper.length;
     for (let i = 0; i < n; i += 1) {
       const j = (i + 1) % n;
       const [ui, uj, li, lj] = [upper[i]!, upper[j]!, lower[i]!, lower[j]!];
       const pair: readonly (readonly [Vertex, Vertex, Vertex])[] = hash(seed, i) < 0.5 ? [[ui, uj, li], [uj, lj, li]] : [[ui, uj, lj], [ui, lj, li]];
-      for (const [a, b, c] of pair) this.tri(a, b, c, paint(i, upOf(a, b, c), (a[1] + b[1] + c[1]) / 3));
+      for (const [a, b, c] of pair) this.tri(a, b, c, paint(i, upOf(a, b, c), (a[1] + b[1] + c[1]) / 3, (a[0] + b[0] + c[0]) / 3, (a[2] + b[2] + c[2]) / 3));
     }
   }
 
@@ -144,7 +145,9 @@ export interface IslandPalette {
  */
 export function islandPalette(look: Look): IslandPalette {
   const land = look.land ?? look.ground;
-  const rock = mix(look.terrain?.rock ?? look.block?.[0] ?? mix(land, '#8a8178', 0.7), '#d6d3d1', 0.3);
+  // Sady bez vlastní skály (les, džungle) mají hlínu, ne šedý kámen – šedé sloupy pod zelenou
+  // plochou na snímku P46G T9 nečetly jako les.
+  const rock = mix(look.terrain?.rock ?? look.block?.[0] ?? mix(land, '#7a5236', 0.8), '#d6d3d1', 0.2);
   const wet = mix(rock, '#1c1917', 0.35);
   // Sníh: čepička, pod ní pás ledu.
   if (look.cover === 'snow') return { top: look.terrain?.cap ?? land, rim: land, band: look.terrain?.lane ?? mix(land, look.water, 0.4), rock, wet };
@@ -262,11 +265,14 @@ export interface IslandsOptions {
   readonly islands: readonly IslandSpot[];
   /** Výška paty (m): u ostrůvků ve vodě hladina, tam je čára břehu. */
   readonly base: number;
+  /** Bez skály pod pásem: pod deskou stojí dům (`city-blocks.ts`), ostrůvek je jen střecha. */
+  readonly roofOnly?: boolean;
 }
 
-export function buildIslands({ look, islands, base }: IslandsOptions): Islands {
+export function buildIslands({ look, islands, base, roofOnly = false }: IslandsOptions): Islands {
   const palette = islandPalette(look);
-  const colors = { top: new Color(palette.top), rim: new Color(palette.rim), band: new Color(palette.band), rock: new Color(palette.rock), wet: new Color(palette.wet) };
+  const colors = { rim: new Color(palette.rim), band: new Color(palette.band), rock: new Color(palette.rock), wet: new Color(palette.wet) };
+  const ground = groundPainter(groundPalette(look, palette.top));
   const face = new Color();
   const tint = (color: Color, scale: number): Color => face.copy(color).multiplyScalar(scale);
   const faces = new Faces();
@@ -285,7 +291,7 @@ export function buildIslands({ look, islands, base }: IslandsOptions): Islands {
     const band = ring(() => BAND_IN, (i) => Math.max(base + 0.3 * (spot.top - base), spot.top - BAND * (0.8 + 0.4 * h(3, i))));
     // Skála: deska se ke dnu zužuje (a nikde nevyčnívá zpod lemu), kulatý ostrov se k vodě rozšiřuje.
     const flare = spot.round === true ? 0.22 * Math.min(spot.w, spot.d) : -Math.min(0.5, 0.15 * Math.min(spot.w, spot.d));
-    const levels = Math.max(1, Math.round((spot.top - BAND - base) / 1.7));
+    const levels = roofOnly ? 0 : Math.max(1, Math.round((spot.top - BAND - base) / 1.7));
     const rock: Vertex[][] = [band];
     for (let k = 1; k <= levels; k += 1) {
       const f = k / levels;
@@ -308,8 +314,14 @@ export function buildIslands({ look, islands, base }: IslandsOptions): Islands {
 
     const tris: number[] = [];
     faces.collect = tris;
-    // Horní plocha: vějíř ze středu, všechny vrcholy přesně ve výšce desky.
-    capOf(faces, [cx, spot.top, cz], top, (i) => tint(colors.top, 0.95 + 0.07 * h(40, i)));
+    // Horní plocha: vějíř ze středu a dva pásy ven, všechny vrcholy přesně ve výšce desky. Tráva (sníh, písek)
+    // má odstíny a skvrny země sady (P46G T3), kresba v měřítku 2,5×, ať se vejde i na ostrůvek o pár metrech.
+    const inset = (f: number): Vertex[] => top.map((v): Vertex => [cx + (v[0] - cx) * f, spot.top, cz + (v[2] - cz) * f]);
+    const [core, middle] = [inset(1 / 3), inset(2 / 3)];
+    const grass = (x: number, z: number, i: number): Color => ground(x * 2.5, z * 2.5, null, face).multiplyScalar(0.97 + 0.05 * h(40, i));
+    capOf(faces, [cx, spot.top, cz], core, (i) => grass((cx + core[i]![0] + core[(i + 1) % core.length]![0]) / 3, (cz + core[i]![2] + core[(i + 1) % core.length]![2]) / 3, i));
+    faces.band(core, middle, seed + 5, (i, _up, _y, x, z) => grass(x, z, i));
+    faces.band(middle, top, seed + 6, (i, _up, _y, x, z) => grass(x, z, i));
     faces.band(top, lip, seed + 1, (i) => tint(colors.rim, 0.92 + 0.1 * h(41, i)));
     // Pod lemem pás; tu a tam z lemu přetéká tráva, sníh nebo písek.
     faces.band(lip, band, seed + 2, (i) => (h(42, i) < 0.25 ? tint(colors.rim, 0.9) : tint(colors.band, 0.9 + 0.15 * h(43, i))));
@@ -321,7 +333,9 @@ export function buildIslands({ look, islands, base }: IslandsOptions): Islands {
         return tint(colors.rock, 0.82 + 0.25 * h(50 + k, i));
       });
     }
-    for (let i = 0; i < shore.length; i += 1) faces.tri([cx, base - FOOT, cz], shore[i]!, shore[(i + 1) % shore.length]!, colors.wet);
+    // Dno: u skály kužel pod hladinu, u střechy rovný podhled.
+    const bottom = roofOnly ? Math.min(...shore.map((v) => v[1])) : base - FOOT;
+    for (let i = 0; i < shore.length; i += 1) faces.tri([cx, bottom, cz], shore[i]!, shore[(i + 1) % shore.length]!, colors.wet);
     faces.collect = null;
     const waterline = shore.map((v): Point => [v[0], v[2]]);
     const corners: number[][] = [];

@@ -249,7 +249,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-planet-rover` | planet rover | 4350 / 2004 |
 | `gen3d-tiki-torch` | tiki torch | 4643 / 2244 |
 | `gen3d-medical-tent` | medical tent | 4387 / 2172 |
-| `gen3d-jungle-vine` | jungle vine | 4721 / 2338 |
 | `gen3d-mangrove-tree` | mangrove tree | 4147 / 1945 |
 | `gen3d-fruit-bowl` | fruit bowl | 4196 / 2625 |
 | `gen3d-pepper-mill` | pepper mill | 4748 / 2374 |
@@ -579,3 +578,92 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-killer-tomato` | killer tomato | 4369 / 2155 |
 | `gen3d-pumpkin-head` | pumpkin head | 4681 / 2224 |
 | `gen3d-barbed-wire` | barbed wire | 4699 / 2329 |
+| `gen3d-fir-tree` | fir tree, fir, fir conifer | 4748 / 2374 |
+| `gen3d-banana-plant` | banana plant, banana tree | 4647 / 2270 |
+| `gen3d-saguaro-cactus` | saguaro cactus, saguaro | 4748 / 2372 |
+| `gen3d-snowy-fir-tree` | snowy fir tree, snow-covered fir, snowy pine tree | 4748 / 2374 |
+| `gen3d-apple-tree` | apple tree, apple orchard tree | 4749 / 2371 |
+| `gen3d-street-tree` | street tree, sidewalk tree, park tree | 4750 / 2374 |
+| `gen3d-spruce-tree` | spruce tree, spruce | 4304 / 2010 |
+| `gen3d-monstera-plant` | monstera plant, monstera, swiss cheese plant | 4129 / 1983 |
+| `gen3d-joshua-tree` | joshua tree, yucca tree | 4748 / 2374 |
+| `gen3d-bare-winter-tree` | bare winter tree, leafless tree, bare tree | 4749 / 2369 |
+| `gen3d-wildflower-patch` | wildflower patch, wildflowers, wildflower meadow | 4673 / 2232 |
+| `gen3d-kapok-tree` | kapok tree, kapok, ceiba tree | 4224 / 2556 |
+| `gen3d-snowy-rock` | snowy rock, snow-covered rock, snowy boulder | 4750 / 2364 |
+| `gen3d-tall-grass-tuft` | tall grass tuft, tall grass, grass tuft | 4699 / 2337 |
+| `gen3d-sea-rock` | sea rock, coastal rock, sea stack | 4697 / 2294 |
+| `gen3d-frozen-shrub` | frozen shrub, frosted shrub, frosted bush | 4748 / 2374 |
+| `gen3d-mossy-stump` | mossy stump, moss-covered stump | 4748 / 2372 |
+| `gen3d-jungle-vine` | jungle vine, liana | 4712 / 2322 |
+| `gen3d-mossy-boulder` | mossy boulder, moss-covered boulder, mossy rock | 4631 / 2307 |
+| `gen3d-sandstone-rock` | sandstone rock, sandstone, red sandstone | 4748 / 2374 |
+| `gen3d-maple-tree` | maple tree, maple | 4488 / 2197 |
+| `gen3d-agave-plant` | agave plant, agave | 4609 / 2265 |
+| `gen3d-willow-tree` | willow tree, weeping willow, willow | 4487 / 2077 |
+| `gen3d-dead-pine-tree` | dead pine tree, dead tree | 4379 / 2028 |
+| `gen3d-bamboo-cluster` | bamboo cluster | 4728 / 2362 |
+| `gen3d-prickly-pear-cactus` | prickly pear cactus, opuntia | 4552 / 2222 |
+| `gen3d-scree-rock-pile` | scree rock pile, rock pile | 4424 / 2084 |
+| `gen3d-layered-canyon-rock` | layered canyon rock, butte, canyon rock | 4653 / 2311 |
+| `gen3d-poplar-tree` | poplar tree, poplar | 4741 / 2362 |
+| `gen3d-leaning-palm-tree` | leaning palm tree | 4321 / 2010 |
+| `gen3d-basalt-column-rock` | basalt column rock | 4748 / 2374 |
+| `gen3d-olive-tree` | olive tree, olive | 4450 / 2460 |
+| `gen3d-larch-tree` | larch tree, larch | 4692 / 2268 |
+| `gen3d-rubber-tree` | rubber tree, ficus tree | 4748 / 2374 |
+| `gen3d-cholla-cactus` | cholla cactus | 4548 / 2254 |
+| `gen3d-strangler-fig-tree` | strangler fig tree, fig tree, banyan tree | 4672 / 2332 |
+| `gen3d-frozen-dead-tree` | frozen dead tree, icy tree | 4733 / 2362 |
+| `gen3d-beech-tree` | beech tree, beech | 4748 / 2374 |
+| `gen3d-cycad-palm` | cycad palm, sago palm, cycad | 4746 / 2368 |
+| `gen3d-pandanus-tree` | pandanus tree, screw pine | 4734 / 2362 |
+| `gen3d-hollow-tree-trunk` | hollow tree trunk, hollow log, tree trunk | 4704 / 2323 |
+| `gen3d-ruined-stone-tower` | ruined stone tower, tower ruin, stone tower | 4423 / 2209 |
+| `gen3d-adobe-house` | adobe house, mud brick house, pueblo house | 4574 / 2253 |
+| `gen3d-stone-idol-head` | stone idol head, stone head, idol | 4683 / 2336 |
+| `gen3d-snowy-log-cabin` | snowy log cabin, snowy cabin | 4227 / 1942 |
+| `gen3d-beach-hut` | beach hut, beach cabin | 4248 / 2056 |
+| `gen3d-red-barn` | red barn | 4463 / 2123 |
+| `gen3d-wooden-watchtower` | wooden watchtower, lookout tower | 4517 / 2249 |
+| `gen3d-tribal-totem-pole` | tribal totem pole, totem pole, totem | 4744 / 2372 |
+| `gen3d-bedouin-tent` | bedouin tent, desert tent | 4736 / 2308 |
+| `gen3d-ski-lift-tower` | ski lift tower, ski lift, chairlift pylon | 4736 / 2354 |
+| `gen3d-old-stone-bridge` | old stone bridge | 4364 / 2104 |
+| `gen3d-wooden-rope-bridge` | wooden rope bridge, suspension bridge | 4576 / 2215 |
+| `gen3d-frozen-waterfall` | frozen waterfall, ice waterfall, icefall | 4282 / 2117 |
+| `gen3d-castle-ruin-wall` | castle ruin wall, castle ruin, ruined wall | 4237 / 2026 |
+| `gen3d-stone-obelisk` | stone obelisk, monolith | 4748 / 2374 |
+| `gen3d-lifeguard-tower` | lifeguard tower, lifeguard stand, lifeguard hut | 4630 / 2308 |
+| `gen3d-wooden-signpost` | wooden signpost, direction sign | 4750 / 2372 |
+| `gen3d-mossy-fallen-log` | mossy fallen log, fallen tree | 4685 / 2316 |
+| `gen3d-volcanic-rock` | volcanic rock, lava rock, black rock | 4744 / 2364 |
+| `gen3d-log-cabin` | log cabin, wooden cabin | 4341 / 2145 |
+| `gen3d-oasis-well` | oasis well, desert well | 4748 / 2374 |
+| `gen3d-wooden-pier` | wooden pier, pier, jetty, dock | 4654 / 2283 |
+| `gen3d-lavender-bush` | lavender bush, lavender | 4327 / 2766 |
+| `gen3d-coral-rock` | coral rock, reef rock | 4748 / 2374 |
+| `gen3d-thistle-plant` | thistle plant, thistle | 4722 / 2360 |
+| `gen3d-aloe-plant` | aloe plant, aloe vera, aloe | 4661 / 2294 |
+| `gen3d-park-bench` | park bench | 4626 / 2271 |
+| `gen3d-brick-townhouse` | brick townhouse, row house | 4107 / 2027 |
+| `gen3d-white-picket-fence` | white picket fence, picket fence | 4731 / 2363 |
+| `gen3d-cattail-reed` | cattail reed | 4749 / 2370 |
+| `gen3d-exposed-tree-root` | exposed tree root | 4748 / 2374 |
+| `gen3d-dune-grass-clump` | dune grass clump, dune grass, marram grass | 4232 / 1931 |
+| `gen3d-ice-block-pile` | ice block pile, ice blocks, ice chunks | 3810 / 1801 |
+| `gen3d-street-trash-can` | street trash can, garbage bin, litter bin | 3988 / 1979 |
+| `gen3d-traffic-cone` | traffic cone | 4748 / 2374 |
+| `gen3d-red-phone-booth` | red phone booth, phone booth, telephone box | 4670 / 2309 |
+| `gen3d-park-fountain` | park fountain | 4530 / 2256 |
+| `gen3d-billboard-sign` | billboard sign | 3970 / 1913 |
+| `gen3d-concrete-planter-with-tree` | concrete planter with tree, planter, street planter | 4229 / 2068 |
+| `gen3d-dead-desert-tree` | dead desert tree | 4592 / 2243 |
+| `gen3d-mossy-rock-cluster` | mossy rock cluster, mossy rocks | 4478 / 2168 |
+| `gen3d-beach-umbrella` | beach umbrella, parasol, sun umbrella | 4742 / 2352 |
+| `gen3d-apartment-block` | apartment block, apartment building, tower block | 4339 / 1956 |
+| `gen3d-glass-office-tower` | glass office tower, office building | 4350 / 2082 |
+| `gen3d-parking-meter` | parking meter, meter | 4416 / 2103 |
+| `gen3d-vine-covered-rock-wall` | vine covered rock wall, vine covered rock, rock wall, cliff | 4136 / 2094 |
+| `gen3d-cherry-blossom-tree` | cherry blossom tree, sakura tree, blossom tree | 4127 / 2115 |
+| `gen3d-river-boulder` | river boulder | 4748 / 2374 |

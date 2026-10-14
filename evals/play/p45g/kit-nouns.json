@@ -1445,6 +1445,478 @@
    "settings": [
     "zoo"
    ]
+  },
+  {
+   "noun": "glass office tower",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "downtown"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "street tree",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "park"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "apartment block",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "downtown"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "red phone booth",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "downtown"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "concrete planter with tree",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "downtown"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "billboard sign",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "downtown"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "parking meter",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "parking lot"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "park bench",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "park",
+    "town square"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "park fountain",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "park",
+    "town square"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "street trash can",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "downtown",
+    "park"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "traffic cone",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "construction site",
+    "parking lot"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "log cabin",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "forest",
+    "campsite",
+    "autumn forest"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "wooden watchtower",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "forest"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "ruined stone tower",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "forest",
+    "castle ruin"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "castle ruin wall",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "forest",
+    "castle ruin"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "wooden signpost",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "forest",
+    "campsite",
+    "farm",
+    "countryside"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "treehouse",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "forest"
+   ],
+   "source": "p46g-keep"
+  },
+  {
+   "noun": "maple tree",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "autumn forest"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "hollow tree trunk",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "forest path"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "exposed tree root",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "forest path"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "scree rock pile",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "cliff"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "stone idol head",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "jungle",
+    "jungle temple"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "tribal totem pole",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "jungle",
+    "jungle temple"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "wooden rope bridge",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "jungle",
+    "jungle river"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "vine covered rock wall",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "jungle",
+    "jungle temple"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "ruin",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "jungle"
+   ],
+   "source": "p46g-keep"
+  },
+  {
+   "noun": "cattail reed",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "pond",
+    "swamp"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "adobe house",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "desert",
+    "desert village"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "bedouin tent",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "desert",
+    "oasis"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "oasis well",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "desert",
+    "oasis",
+    "desert village"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "stone obelisk",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "desert"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "beach hut",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "beach"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "lifeguard tower",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "beach"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "beach umbrella",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "beach"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "wooden pier",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "beach",
+    "harbor"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "snowy log cabin",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "snow",
+    "snowy forest",
+    "snowy village",
+    "mountain village",
+    "ski resort"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "ski lift tower",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "snow",
+    "mountain village",
+    "ski resort"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "frozen waterfall",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "snow",
+    "glacier"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "ice igloo",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "snow"
+   ],
+   "source": "p46g-keep"
+  },
+  {
+   "noun": "red barn",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "farm",
+    "ranch",
+    "countryside"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "white picket fence",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "farm",
+    "ranch"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "old stone bridge",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "rocky river"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "monstera plant",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "living room"
+   ],
+   "source": "p46g"
+  },
+  {
+   "noun": "cherry blossom tree",
+   "class": "prop",
+   "flat": false,
+   "sentences": 0,
+   "settings": [
+    "cherry blossom",
+    "japanese garden"
+   ],
+   "source": "p46g"
   }
  ]
 }

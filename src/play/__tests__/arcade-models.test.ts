@@ -53,9 +53,9 @@ describe('arcade model choice from role labels', () => {
   });
 
   it('a thing the catalog lacks gets no category and keeps the role default', () => {
-    // Balónek má od e5b840b model z gen3d, věc bez modelu je teď vzducholoď.
-    expect(modelOf('zeppelin', true)).toBeUndefined();
-    expect(heroModel(withLabel(runner, 'player', 'zeppelin'))).toBe('explorer');
+    // Vzducholoď má od P46F model z gen3d (`gen3d-blimp`), věc bez modelu je teď periskop.
+    expect(modelOf('periscope', true)).toBeUndefined();
+    expect(heroModel(withLabel(runner, 'player', 'periscope'))).toBe('explorer');
     expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('gen3d-balloon');
     expect(enemyModel(withLabel(shooter, 'enemy', 'angry staplers'))).toBe('robot');
     // Zástupci (hydrant za kropítko) skončili v P30B T4: kropítko má vlastní model, věc bez modelu zůstane tělem jádra.
@@ -93,7 +93,8 @@ describe('arcade model choice from role labels', () => {
 
   it('props take only a direct catalog match, never a category or the core kind', () => {
     expect(propModels(withLabel(runner, 'coin', 'gems'))).toEqual({ coin: 'crystal' });
-    expect(propModels(withLabel(runner, 'obstacle', 'traffic cones'))).toEqual({});
+    // Kužel má od P46G vlastní model z gen3d, místo něj bedny: jádro role, žádný model navíc.
+    expect(propModels(withLabel(runner, 'obstacle', 'wooden crates'))).toEqual({});
     expect(propModels(withLabel(runner, 'obstacle', 'wild badgers'))).toEqual({});
     expect(propModels(withLabel(throwGame, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
   });

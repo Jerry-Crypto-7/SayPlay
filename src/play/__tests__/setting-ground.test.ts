@@ -33,7 +33,8 @@ describe('sceneLook', () => {
   });
 
   it('keeps the set untouched when the sentence names no place of its own', () => {
-    expect(sceneLook(theme('j04'))).toBe(LOOKS[lookOf(theme('j04'))]);
+    // „Along the beach“ (j04) má od P46G kit pláže, beze změny zůstává „On a volcano“.
+    expect(sceneLook(theme('h07'))).toBe(LOOKS[lookOf(theme('h07'))]);
   });
 
   it('s022 tower: castle scenery and stone platforms', () => {
