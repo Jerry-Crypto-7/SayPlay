@@ -23,6 +23,9 @@ import { PLATFORM } from '@/play/arcade/pieces/platform';
 
 import { GhostSlot } from '../GhostSlot';
 import { HorizonBackdrop } from '../look/Backdrop';
+import { FieldGround } from '../look/FieldGround';
+import { VegetationAround } from '../look/Vegetation';
+import { LAYERS, type Layer, type Side } from '../look/vegetation-places';
 import { buildIslands, platformIslands, platformSlabKeys, spotKey } from '../look/rig/terrain/islands';
 import { buildWater } from '../look/rig/terrain/water';
 import { Scenery } from '../look/Scenery';
@@ -59,15 +62,28 @@ function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; re
     <>
       <mesh geometry={water.geometry} material={water.material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'water' }} />
       <mesh ref={terrain} geometry={islands.geometry} material={material} castShadow receiveShadow userData={{ rigShadow: 'both', terrain: 'islands' }} />
-      <Scenery look={look} layout="behind" inner={11} from={-20} to={length + 20} y={WATER} size={1.6} />
-      {/* Kulisa za mlhou (P46G T7) z hladiny, za řadou kulis. Vegetace ne: ostrůvky jsou plochy skoků a pod nimi voda – strom by zakryl doskok i minci. */}
-      <HorizonBackdrop look={look} seed={world.seed} length={length} clear={0} ground={AT_WATER} beyond={BACKDROP_BEYOND} />
+      {/* Břeh za ostrůvky (+x, boční kamera stojí na −x) v barvách sady a na něm vegetace – jen za nimi, před kamerou nic, takže doskok ani minci nezakryje. */}
+      <FieldGround look={look} area={{ x0: BANK_FROM, x1: BACKDROP_BEYOND + 20, z0: -40, z1: length + 40 }} y={BANK} />
+      {look.flora !== undefined && (
+        <group position={[0, BANK, 0]}>
+          <VegetationAround flora={look.flora} seed={world.seed} box={{ x0: -SLAB_HALF, x1: SLAB_HALF, z0: -10, z1: length + 10 }} clear={BANK_FROM + 1 - SLAB_HALF} layers={BEHIND_ONLY} behind={30} />
+        </group>
+      )}
+      <Scenery look={look} layout="behind" inner={11} from={-20} to={length + 20} y={BANK} size={1.6} vegetation={look.flora !== undefined} />
+      {/* Kulisa za mlhou (P46G T7) z břehu, za řadou kulis a vegetací. */}
+      <HorizonBackdrop look={look} seed={world.seed} length={length} clear={0} ground={AT_BANK} beyond={BACKDROP_BEYOND} />
     </>
   );
 }
 
-/** Kulisa stojí na hladině, ne v y = 0 nad ní. */
-const AT_WATER = (): number => WATER;
+/** Břeh za ostrůvky (m): kousek nad hladinou, začíná 3 m za hranou desek. */
+const BANK = WATER + 0.25;
+const SLAB_HALF = PLATFORM.slabW / UNIT / 2;
+const BANK_FROM = SLAB_HALF + 3;
+/** Vegetace plošinovky jen za tratí: před kamerou (−x) a na koncích nic. */
+const BEHIND_ONLY: Readonly<Record<Side, readonly Layer[]>> = { '-x': [], '+x': LAYERS, '-z': [], '+z': [] };
+/** Kulisa stojí na břehu. */
+const AT_BANK = (): number => BANK;
 /** Nejbližší vrstva kulisy (m): boční kamera 10–18 m před ostrůvky, kulisy 11–17 m za nimi. */
 const BACKDROP_BEYOND = 36;
 

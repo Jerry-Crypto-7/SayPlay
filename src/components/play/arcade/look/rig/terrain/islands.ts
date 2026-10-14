@@ -145,7 +145,9 @@ export interface IslandPalette {
  */
 export function islandPalette(look: Look): IslandPalette {
   const land = look.land ?? look.ground;
-  const rock = mix(look.terrain?.rock ?? look.block?.[0] ?? mix(land, '#8a8178', 0.7), '#d6d3d1', 0.3);
+  // Sady bez vlastní skály (les, džungle) mají hlínu, ne šedý kámen – šedé sloupy pod zelenou
+  // plochou na snímku P46G T9 nečetly jako les.
+  const rock = mix(look.terrain?.rock ?? look.block?.[0] ?? mix(land, '#7a5236', 0.8), '#d6d3d1', 0.2);
   const wet = mix(rock, '#1c1917', 0.35);
   // Sníh: čepička, pod ní pás ledu.
   if (look.cover === 'snow') return { top: look.terrain?.cap ?? land, rim: land, band: look.terrain?.lane ?? mix(land, look.water, 0.4), rock, wet };
