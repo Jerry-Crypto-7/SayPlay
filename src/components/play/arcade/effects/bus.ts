@@ -121,6 +121,9 @@ function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: I
 /** Chování průběhu ve hře (P45C): odkazy z pravidla `pacing`; hra bez něj žádná nemá. */
 export const pacingRefsOf = (rules: readonly PieceRef[]): readonly BehaviourRef[] => (nativeRule(rules, 'pacing')?.params.behaviours ?? []) as readonly BehaviourRef[];
 
+/** Boss finále: poslední předloha chování pravidla `pacing` s finále `boss` (`withPacing`), jinak `undefined`. */
+export const pacingBossOf = (rules: readonly PieceRef[]): BehaviourRef | undefined => (nativeRule(rules, 'pacing')?.params.finale === 'boss' ? pacingRefsOf(rules).at(-1) : undefined);
+
 /** Blízké minutí: hrozba průběhu prošla kolem hráče nejvýš o tolik (1,5 m, mezera hran) a nezasáhla. */
 export const NEAR_MISS = (3 * UNIT) / 2;
 

@@ -143,7 +143,11 @@ function compileRecipeBase(assembly: RecipeAssembly): GameSpecV1 {
     if (escape) {
       // Getting caught ends this new course. Existing reach+chaser still retains its legacy health.
       const chaser = compiled.roles.find(role => role.kind === 'chaser')?.label ?? 'pursuer';
-      return { ...compiled, mechanics: compiled.mechanics.map(mechanic => mechanic.id === 'health' ? { id: 'health', params: { max: 1 } } : mechanic),
+      // One life gets no pacing (`GENRE_PACING.platform_level`), so no paced layout either: the course stays as it was.
+      const paced = (compiled.controlParams?.tuning as Record<string, unknown> | undefined)?.segments === true;
+      const { segments: _segments, ...tuning } = (compiled.controlParams?.tuning ?? {}) as Record<string, unknown>;
+      return { ...compiled, ...(paced ? { controlParams: { ...compiled.controlParams, tuning } } : {}),
+        mechanics: compiled.mechanics.map(mechanic => mechanic.id === 'health' ? { id: 'health', params: { max: 1 } } : mechanic),
         tutorial: { ...compiled.tutorial, goalLine: `Reach the finish without being caught by the ${chaser}.` },
         objective: { ...compiled.objective, description: `Escape the ${chaser} and reach the finish without being caught.` } };
     }
@@ -193,6 +197,9 @@ function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
       actions: recipe.actions.filter(action => ['shoot', 'collect', 'deliver'].includes(action)),
       threats: recipe.threats.filter(threat => ['rival', 'chaser', 'obstacle'].includes(threat)) },
     { ...content, params: { lengthM: 700, roadWidth: 3600, roadEntryWidth: 10000, crashBudget: 3, ...content.params } });
+    // A drive with parts gets no pacing (`GENRE_PACING.steer_track`), so no paced road or dodging bot either: the track stays as it was.
+    const { segments: _segments, ...road } = (base.controlParams ?? {}) as Record<string, unknown>;
+    if (parts.length > 0) base = { ...base, controlParams: road as GameSpecV1['controlParams'] };
   } else if (move === 'glide' && recipe.objective === 'land') {
     base = compileWith(GENRE_MODULES.voyage as GenreModule, { ...content, genre: 'voyage', mode: 'land', params: { touchdownSpeed: 19, gravityRisePct: 1, lives: 1, ...content.params } });
   } else if (['glide', 'walk', 'ball'].includes(move)) {

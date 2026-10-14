@@ -13,6 +13,7 @@ import { compileGenre } from '@/play/genre/index';
 import { readGameSpec } from '@/play/spec';
 
 import platformFixture from '../__fixtures__/platform.json';
+import { baseControlOf } from '../addons';
 import { arcadeWorldOf } from '../compile';
 import { type ArcadeInput, type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, FLAG, NO_INPUT, bodyBase } from '../contract';
 import { GRAVITY, buildWorld, instantiate, loadProgram, step } from '../kernel';
@@ -94,7 +95,8 @@ describe('feel: 2 reaches the platformer genre (P36A T6)', () => {
   };
 
   it('the genre world carries feel: 2 in its control', () => {
-    expect(genreWorld().control.params).toMatchObject({ feel: 2 });
+    // Pod obaly průběhu (P46B T6: `pacing_control`, `phase_control`).
+    expect(baseControlOf(genreWorld().control).params).toMatchObject({ feel: 2 });
   });
 
   it('a jump pressed 4 ticks after running off an edge jumps', () => {

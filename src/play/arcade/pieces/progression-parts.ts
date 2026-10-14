@@ -6,6 +6,7 @@ import { addPhaseBodies, type Dependency, phaseSpeed } from '../../compose/progr
 import { centerAt, courseOf, checkSteerLevel } from './steer';
 import { GLIDE, glidePathOf, checkGlideLevel } from './glide';
 import { FLAP } from './flap';
+import { PLATFORM } from './platform';
 import { walkerMapSchema, walkerPath, WALKER_CELL } from './walker';
 import type { ObjectiveNode } from './objective-order';
 
@@ -24,8 +25,9 @@ export function progressionParts(parts: ArcadeParts, spec: Pick<GameSpecV1, 'pha
   if (spec.phases === undefined && spec.dependsOn === undefined) return parts;
   if (spec.dependsOn && spec.rules?.some(rule => rule.do.some(effect => 'win' in effect))) return { ...parts, issues: ['A custom win rule would bypass objective dependencies'] };
   const control = parts.control.id;
-  // Plošinovka ne: robot (`platform-bot.ts`) plánuje skoky a hroty na plný běh `PLATFORM.maxRun` – s fázemi 90–125 % vyhrál 4/8 (P45C T11).
-  if (!['steer', 'glide', 'runner', 'walker', 'flap'].includes(control)) return { ...parts, issues: [`Progression is not implemented for ${control}`] };
+  // Plošinovka (P46B T6): robot plánuje skoky a hroty rychlostí běhu fáze (`speed`), ne plným `PLATFORM.maxRun` –
+  // s tím s fázemi 90–125 % vyhrál 4/8 (P45C T11).
+  if (!['steer', 'glide', 'runner', 'walker', 'flap', 'platform'].includes(control)) return { ...parts, issues: [`Progression is not implemented for ${control}`] };
   if (parts.control.params.land !== undefined) return { ...parts, issues: ['Pacing is not implemented for landing'] };
   // Poletování nemá bezpečný pruh vedle cesty: fáze mu mění jen rychlost.
   if (control === 'flap' && spec.phases?.some(phase => phase.add !== undefined)) return { ...parts, issues: ['Phase bodies are not implemented for flap'] };
@@ -34,12 +36,17 @@ export function progressionParts(parts: ArcadeParts, spec: Pick<GameSpecV1, 'pha
     if (spec.phases !== undefined && control === 'flap') {
       parts = { ...parts, control: { ...parts.control, params: { ...parts.control.params, speed: FLAP.speed } }, bot: { ...parts.bot, params: { ...parts.bot.params, speed: FLAP.speed } } };
     }
+    // Plošinovce škálují nejvyšší rychlost běhu `speed`; robot ji čte taky, takže skoky plánuje rychlostí úseku.
+    if (spec.phases !== undefined && control === 'platform') {
+      parts = { ...parts, control: { ...parts.control, params: { ...parts.control.params, speed: PLATFORM.maxRun } }, bot: { ...parts.bot, params: { ...parts.bot.params, speed: PLATFORM.maxRun } } };
+    }
     // Reserve longitudinal reaction/steering distance before adding faster phases.
     // Let drží kontrola úrovně (`checkGlideLevel`) na nejrychlejší fázi v každém bodě: natahuje se celý.
     // Řízení po odebrané rampě kontroluje každou zatáčku rychlostí její fáze (níže), takže stačí natažení nad vrchol rampy.
     const builtFor = control === 'glide' ? 100 : builtForPercent;
     const scale = Math.max(builtFor, ...(spec.phases?.map(phase => phase.speedPercent) ?? [])) / builtFor;
-    if (control !== 'walker' && scale > 1) {
+    // Plošinovka se nenatahuje: mezery staví generátor na dosah skoku a v pomalejším úseku by natažená byla za ním.
+    if (control !== 'walker' && control !== 'platform' && scale > 1) {
       // Trať postavená na vrchol rampy (průběh P45C) se natáhne jen od první fáze rychlejší než ten vrchol:
       // pomalejší úseky si nechají hustotu, pro kterou je generátor postavil (celé natažení dělalo závod i běžce snadnými).
       const fast = builtFor > 100 ? spec.phases?.find(phase => phase.speedPercent > builtFor) : undefined;

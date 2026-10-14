@@ -20,12 +20,15 @@ import { hashArcade } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { type BehaviourId, type TelegraphKind, behaviourBodies, behaviourPhaseOf, shotBodies, telegraphOf } from '@/play/arcade/pieces/behaviours';
 import { behaviourHarness, play, refsOf } from '@/play/arcade/pieces/behaviours/__tests__/harness';
-import { BOSS } from '@/play/arcade/pieces/behaviours/boss';
+import { BOSS, DROPPER } from '@/play/arcade/pieces/behaviours/boss';
+import { BRUTE } from '@/play/arcade/pieces/behaviours/brute';
 import { runBot } from '@/play/arcade/verify';
+import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
+import { compileRecipe } from '@/play/compose/compile';
 import { arenaGenre } from '@/play/genre/arena';
 import { compileGenre, readGenreSpec } from '@/play/genre/index';
 
-import { NEAR_MISS, type VisualEvent, createEffectsBus, createNearMissWatch, pacingRefsOf } from '../effects/bus';
+import { NEAR_MISS, type VisualEvent, createEffectsBus, createNearMissWatch, pacingBossOf, pacingRefsOf } from '../effects/bus';
 import { NEAR_MISS_FLASH_MS, type PacingCue, type PacingDrawing, createPacingDrawing, latestNearMiss, nearMissFlash } from '../effects/PacingFx';
 import { BUS_SFX } from '../effects/sound';
 import { TICK_MS, createArcadeSession } from '../session';
@@ -204,6 +207,34 @@ describe('pacing telegraphs in the scene', () => {
     // Boss přišel, dupal a ubíral se mu život.
     expect(rings).toBeGreaterThan(0);
     expect(hp.size).toBeGreaterThan(1);
+    drawing.dispose();
+  }, SLOW);
+
+  // P46B T7: boss řízení je shazovač a boss skákačky rváč – chování, které boss nemusí mít; soupeři úseků řízení jsou shazovači taky.
+  it.each([['drive.race', DROPPER.bossHp], ['platformer.default', BRUTE.hp]] as const)('%s: the finale boss carries its HP pips, segment foes of the same behaviour none', (id, max) => {
+    const cell = liveCells().find((candidate) => candidate.id === id)!;
+    const made = arcadeWorldOf(compileRecipe(assemblyOfCell(cell)), 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    const world = made.world;
+    const refs = pacingRefsOf(world.rules);
+    const boss = pacingBossOf(world.rules)!;
+    const drawing = createPacingDrawing(refs, boss);
+    const hp = new Set<number>();
+    let foes = 0;
+    play(world, bot(world), (state) => {
+      const drawn = drawing.update(frame(state));
+      const player = state[HEADER.player] as number;
+      expect(drawn.bosses.map((entry) => entry.body)).toEqual(behaviourBodies(state, player, [boss]));
+      for (const entry of drawn.bosses) {
+        expect(entry.max).toBe(max);
+        hp.add(entry.hp);
+      }
+      expect(drawing.root.children.filter((child) => child.visible && child.userData.bossHp !== undefined)).toHaveLength(drawn.bosses.length);
+      foes += behaviourBodies(state, player, refs.filter((ref) => ref !== boss)).length;
+    });
+    // Boss přišel a ubíral se mu život; u řízení byli na ploše i soupeři úseků – a pipy neměli.
+    expect(hp.size).toBeGreaterThan(1);
+    if (id === 'drive.race') expect(foes).toBeGreaterThan(0);
     drawing.dispose();
   }, SLOW);
 

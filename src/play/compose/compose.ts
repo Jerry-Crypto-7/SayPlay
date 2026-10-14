@@ -1,7 +1,7 @@
 import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
 import { timeOfDayFor } from '../arcade/look';
-import { matchesWitness, type ActionWitness } from '../arcade/witness';
+import { matchesWitness, namesActor, type ActionWitness, type RoleBinding } from '../arcade/witness';
 import { draftChoiceOrder, draftGenreFor } from '../draft/draft';
 import { nounPhrase, singular } from '../draft/lexicon';
 import { classifyGenre } from '../genre/classify';
@@ -192,6 +192,9 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
   const ranking = hasKnownAction ? classified.ranked : draftChoiceOrder(intent.sentence, classified, reading);
   const issues: string[] = [];
   const attempted = new Set<string>();
+  const triples = essentialTriples(intent);
+  // Svědka sondy průběhu („boss“, „swarm“) čte jen trojice, která ho jmenuje; ostatní sondy jsou celé běhy robota navíc (P46B R4).
+  const pacingProbe = (binding: RoleBinding) => triples.some(triple => namesActor(triple, binding));
   // A reading whose movement cannot play a requested action yields to a later reading
   // that can ("collect and shoot" is no shooting gallery); ties keep the rank.
   const sources = ranking.map((choice, rank) => {
@@ -218,10 +221,10 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
           const label = template === null ? source.id : `${source.id} + template ${template}`;
           const made = arcadeWorldOf(spec, seed);
           if (!made.ok) { issues.push(`${label}: ${made.issues.join('; ')}`); continue; }
-          const verdict = verifyArcade(made.world, undefined, made.roleBindings);
+          const verdict = verifyArcade(made.world, undefined, made.roleBindings, { pacingProbe });
           if (!verdict.publishEligible) { issues.push(`${label}: ${verdict.failures.join('; ')}`); continue; }
           const witnesses = verdict.witnesses;
-          const unmet = essentialTriples(intent).filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
+          const unmet = triples.filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
           // Bez šablony recept záměr nenese: `compileRecipe(composition.recipe)` (rychlý návrh) postaví tutéž hru.
           // Recept je ten pokus, který prošel (i bez akcí), jen bez záměru, když šablonu nedostal.
           const bare = attempt === recipe ? untemplated : attempt;

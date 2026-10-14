@@ -97,7 +97,7 @@ function flankPoint(view: BehaviourStep): { x: number; z: number } {
 export const laneOf = (x: number): number => Math.max(-1, Math.min(1, Math.round(x / RUNNER.laneWidth)));
 
 /** Vedlejší pruh hráče na straně, kde flanker je (u kraje ten druhý). */
-function sideLaneX(view: BehaviourView): number {
+export function sideLaneX(view: BehaviourView): number {
   const lane = laneOf(read(view.state, view.player, 'x'));
   const side = read(view.state, view.body, 'x') >= read(view.state, view.player, 'x') ? 1 : -1;
   return (Math.abs(lane + side) <= 1 ? lane + side : lane - side) * RUNNER.laneWidth;

@@ -108,6 +108,15 @@ export const STEER_TRACK = {
   maxTurbos: 12,
   /** Soupeř dojede nejdřív za tolikanásobek ideálního času hráče. */
   rivalMargin: 1.3,
+  /**
+   * Úseky nové hry (P46B T5, `segments`): konce rozjezdu a úseku 2 v promile cíle (`PACING.segments` –
+   * generátor ho nečte, `pacing.ts` čte tenhle soubor). Úsek 2 je o `segmentExtra` širší než trať
+   * (`roadWidth`), rozjezd ještě o tolik víc – každý úsek je o ≥ 10 % užší než předchozí.
+   */
+  segmentEnds: [200, 650],
+  segmentExtra: 400,
+  /** Turba rozjezdu na ose trati: tolik, po třetinách rozjezdu, poslední na jeho konci (herní události od první vteřiny). */
+  introTurbos: 3,
 } as const;
 
 interface Tier {
@@ -446,6 +455,11 @@ const generatorParams = z
     // Optional: old worlds keep their exact serialized parameters.
     grip: z.int().min(4).max(20).optional(),
     brakeDrift: z.int().min(4).max(20).optional(),
+    /**
+     * Nová hra s úseky (P46B T5): trať se zužuje po úsecích průběhu (`STEER_TRACK.segmentEnds`), rozjezd má turba
+     * na ose a `pacingParts` přidá soupeře úseků a bosse. Uložený spec bez pole staví tentýž svět jako dřív.
+     */
+    segments: z.literal(true).optional(),
   })
   .strict();
 export type SteerTrackParams = z.infer<typeof generatorParams>;
@@ -471,7 +485,10 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
     const tier = TIERS[params.difficulty];
     const length = params.lengthM * UNIT;
     const { width } = tier;
-    const startWidth = params.roadWidth === undefined ? width : Math.min(width, Math.max(params.roadWidth, params.roadEntryWidth ?? params.roadWidth + 400));
+    const entry = params.roadWidth === undefined ? width : Math.min(width, Math.max(params.roadWidth, params.roadEntryWidth ?? params.roadWidth + 400));
+    // Úseky: úsek 2 o `segmentExtra` širší než trať, rozjezd aspoň o další `segmentExtra` (každý úsek o ≥ 10 % užší).
+    const middle = params.roadWidth === undefined ? width : Math.min(width, params.roadWidth + (params.segments === true ? STEER_TRACK.segmentExtra : 200));
+    const startWidth = params.segments === true ? Math.min(width, Math.max(entry, middle + STEER_TRACK.segmentExtra)) : entry;
     const half = startWidth / 2;
 
     const segments: { near: number; far: number; center: number }[] = [{ near: -STEER_TRACK.startBack, far: STEER_TRACK.runIn, center: 0 }];
@@ -519,9 +536,12 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
         bodies.push({ role: 'enemy', kind: 'rival-car', x: rivalOffset(index, Math.floor(half), params.roadWidth === undefined ? 500 : 600), y: 0, z: z0, w: STEER.carW, h: STEER.carH, d: STEER.carD, solid: true, kinematic: true, vz: speed });
       }
     }
+    // Úsek mantinelu: třetiny cíle, s úseky (P46B T5) rozjezd | úsek 2 | zbytek podle `segmentEnds`.
+    const [introEnd, middleEnd] = STEER_TRACK.segmentEnds.map((permille) => Math.floor((finishZ * permille) / 1000)) as [number, number];
+    const sectionOf = (near: number): number => (params.segments === true ? (near < introEnd ? 0 : near < middleEnd ? 1 : 2) : Math.min(2, Math.floor(Math.max(0, near) * 3 / finishZ)));
     for (const segment of segments) {
-      const section = Math.min(2, Math.floor(Math.max(0, segment.near) * 3 / finishZ));
-      const laneWidth = params.roadWidth === undefined ? width : section === 0 ? startWidth : Math.min(width, params.roadWidth + (section === 1 ? 200 : 0));
+      const section = sectionOf(segment.near);
+      const laneWidth = params.roadWidth === undefined ? width : section === 0 ? startWidth : section === 1 ? middle : Math.min(width, params.roadWidth);
       bodies.push(...walls(segment.near, segment.far, segment.center, laneWidth));
     }
     if (params.turbo) {
@@ -529,7 +549,12 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
       const spots = straights
         .filter((piece) => piece.far - piece.near >= 30 * UNIT && piece.near < finishZ - 20 * UNIT)
         .map((piece) => ({ z: piece.near + rng.int(10 * UNIT, 20 * UNIT), x: piece.center + (params.centerCollectibles === true ? 0 : rng.int(-Math.floor(half / 2), Math.floor(half / 2))) }));
-      for (const spot of spots.slice(0, Math.max(0, budget))) bodies.push({ role: 'collectible', kind: 'turbo', x: spot.x, y: 0, z: spot.z, w: 1500, h: 300, d: 1500, solid: false });
+      // Rozjezd (úseky): turba na ose trati rovnoměrně do konce rozjezdu – hra má co dělat od první vteřiny.
+      const intro = params.segments === true ? Array.from({ length: STEER_TRACK.introTurbos }, (_, k) => {
+        const z = Math.floor((introEnd * (k + 1)) / STEER_TRACK.introTurbos);
+        return { z, x: (segments.find((segment) => z < segment.far) as { center: number }).center };
+      }) : [];
+      for (const spot of [...intro, ...spots].slice(0, Math.max(0, budget))) bodies.push({ role: 'collectible', kind: 'turbo', x: spot.x, y: 0, z: spot.z, w: 1500, h: 300, d: 1500, solid: false });
     }
     bodies.push({ role: 'goal', kind: 'finish', x: center, y: 0, z: finishZ, w: width, h: 3 * UNIT, d: 400, solid: false });
     return { bodies, length: finishZ };
@@ -599,9 +624,9 @@ export function steerControlRef(level: ArcadeLevel, params: Pick<SteerTrackParam
   return { id: 'steer', params: { topSpeed: params.topSpeed, drift: params.drift, ...(params.grip === undefined ? {} : { grip: params.grip }), ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }), course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length) } };
 }
 
-/** Robot řidiče (`steer-bot.ts`) s tou samou osou trati a rampou. */
-export function steerBotRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'grip' | 'brakeDrift' | 'roadWidth'>): PieceRef {
-  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, ...(params.grip === undefined ? {} : { grip: params.grip }), ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }), course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length) } };
+/** Robot řidiče (`steer-bot.ts`) s tou samou osou trati a rampou; nová hra s úseky uhýbá shozům (`dodge`). */
+export function steerBotRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'grip' | 'brakeDrift' | 'roadWidth' | 'segments'>): PieceRef {
+  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, ...(params.grip === undefined ? {} : { grip: params.grip }), ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }), course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length), ...(params.segments === true ? { dodge: true } : {}) } };
 }
 
 /** Pravidla závodu: turbo, cíl, soupeř v cíli. */

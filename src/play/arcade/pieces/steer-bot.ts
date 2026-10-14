@@ -93,8 +93,13 @@ const DODGE_TICKS = 2;
  * loď s ní překryje v `z`, poloha koule v něm dopočtená kyvadlem jádra
  * (`lead` tiků od viděného stavu dál) a zakázaný pás, kudy za tu dobu projde.
  * Míří na bližší volnou stranu pásu; když volná strana v kanálu není, brzdí.
+ *
+ * Pás se porovná s cílem v rámci silnice (P46B T5): osa v místě překážky proti ose
+ * tam, kam robot míří (`look` před ním). Mezi nimi může být zatáčka – v absolutním
+ * `x` by uhnutí k vnějšímu kraji vzdálené překážky narazilo do mantinelu schodu,
+ * na kterém vozidlo ještě je. Na rovince jsou obě osy tytéž a rámec nic nemění.
  */
-function dodgeAim(state: Int32Array, player: number, course: SteerCourse, now: { readonly x: number; readonly z: number; readonly vz: number }, lead: number, aim: number): { aim: number; brake: boolean } {
+function dodgeAim(state: Int32Array, player: number, course: SteerCourse, now: { readonly x: number; readonly z: number; readonly vz: number }, lead: number, aim: number, look: number): { aim: number; brake: boolean } {
   const count = state[HEADER.bodyCount] as number;
   let hazard = -1;
   let nearest = Number.POSITIVE_INFINITY;
@@ -136,14 +141,22 @@ function dodgeAim(state: Int32Array, player: number, course: SteerCourse, now: {
   }
   if (lead + t1 < 1) lo = hi = x;
   const band = (state[base + BODY.w] as number) / 2 + STEER.carW / 2 + DODGE_GAP;
-  lo -= band;
-  hi += band;
+  // Pás do rámce cíle: posun osy silnice mezi překážkou a místem, kam robot míří.
+  const ref = centerAt(course, now.z + look);
+  const shift = centerAt(course, nearest) - ref;
+  lo -= band + shift;
+  hi += band - shift;
   if (aim <= lo || aim >= hi) return { aim, brake: false };
-  const center = centerAt(course, nearest);
-  const room = course.halfWidth - STEER.carW / 2 - STEER.clearance;
-  const sides = [lo, hi].filter((side) => side >= center - room && side <= center + room);
+  // Šířka užšího z úseků s překážkou a s cílem (trať, která se zužuje); bez `halfWidths` šířka první jako dřív.
+  const room = Math.min(halfWidthAt(course, nearest), halfWidthAt(course, now.z + look)) - STEER.carW / 2 - STEER.clearance;
+  const sides = [lo, hi].filter((side) => side >= ref - room && side <= ref + room);
   if (sides.length === 0) return { aim, brake: true };
-  return { aim: sides.reduce((best, side) => (Math.abs(side - now.x) < Math.abs(best - now.x) ? side : best)), brake: false };
+  // Bližší strana k tomu, kde vozidlo je vůči ose svého úseku; dokud je vozidlo ve schodu zatáčky, jen v něm.
+  const own = centerAt(course, now.z);
+  const here = now.x - own + ref;
+  const side = sides.reduce((best, next) => (Math.abs(next - here) < Math.abs(best - here) ? next : best));
+  const inside = halfWidthAt(course, now.z) - STEER.carW / 2 - STEER.clearance;
+  return { aim: Math.max(own - inside, Math.min(own + inside, side)), brake: false };
 }
 
 // ---------------------------------------------------------------------------
@@ -227,7 +240,7 @@ export const steerBot: BotPiece<z.infer<typeof botParams>> = {
     const look = Math.max(STEER.carD * 2, now.vz * LOOK_TICKS) + STEER.carD;
     let aim = aimX(state, player, params.course, now.x, now.z, look);
     let dodgeBrake = false;
-    if (params.dodge === true) ({ aim, brake: dodgeBrake } = dodgeAim(state, player, params.course, now, recent.length, aim));
+    if (params.dodge === true) ({ aim, brake: dodgeBrake } = dodgeAim(state, player, params.course, now, recent.length, aim, look));
     const want = Math.max(-STEER.latMax, Math.min(STEER.latMax, Math.trunc((aim - now.x) / SETTLE_TICKS)));
     const axis = Math.trunc((want * AXIS_MAX) / STEER.latMax);
     // Brzda: boční cesta k cíli pohledu je delší, než stihne při dnešní rychlosti.

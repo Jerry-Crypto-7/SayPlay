@@ -1,0 +1,17 @@
+{
+  "about": "P46B T1: 12 nových vět, 4 na žánr (běžec, řízení, skákačka). Prvních šest jsou věty majitele z 12. 10. (docs/specs/2026-10-12-p46-hratelnost.md), zbytek doplňuje žánr. Měří se spolu s větami panelu P45 téhož žánru.",
+  "sentences": [
+    { "id": "b01", "cell": "runner", "text": "A rabbit steals carrots and runs from a fox" },
+    { "id": "b02", "cell": "runner", "text": "Amanita mushrooms fight bulls, flee and shoot them" },
+    { "id": "b03", "cell": "runner", "text": "A hamster escapes a supermarket while a Roomba hunts it" },
+    { "id": "b04", "cell": "runner", "text": "A squirrel runs through the forest grabbing acorns" },
+    { "id": "b05", "cell": "steer", "text": "Racing car escaping and shooting enemies" },
+    { "id": "b06", "cell": "steer", "text": "A monster truck races through a canyon" },
+    { "id": "b07", "cell": "steer", "text": "A tractor races across a muddy farm" },
+    { "id": "b08", "cell": "steer", "text": "A taxi weaves through traffic on a rainy night" },
+    { "id": "b09", "cell": "platformer", "text": "Jumping arcade game in the forest" },
+    { "id": "b10", "cell": "platformer", "text": "A ninja frog jumps across lily pads in a swamp" },
+    { "id": "b11", "cell": "platformer", "text": "A robot jumps between rooftops collecting batteries" },
+    { "id": "b12", "cell": "platformer", "text": "A monkey jumps across jungle platforms collecting bananas" }
+  ]
+}

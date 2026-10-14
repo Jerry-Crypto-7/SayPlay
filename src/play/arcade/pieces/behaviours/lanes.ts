@@ -19,7 +19,7 @@
 import { type ArcadeInput, type ArcadeObservation, type ArcadeState, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '../../contract';
 import { GRAVITY } from '../../kernel';
 import { RUNNER } from '../runner';
-import { JUMP_AT_TICKS, ROW_SPAN, SLIDE_AT_TICKS, obstacleAction } from '../runner-bot';
+import { HOSTILE, JUMP_AT_TICKS, NO_COINS, ROW_SPAN, SLIDE_AT_TICKS, footprintsOf, hostileLanes, laneChoice, lastCoins, obstacleAction } from '../runner-bot';
 
 /** Kvádr ve světě (střed spodní stěny, celé rozměry) – co v daném tiku zraní. */
 export interface Box {
@@ -59,7 +59,13 @@ interface Row {
   readonly passed: number;
   /** Co pruh −1, 0, 1 žádá (jako `nextRow`). */
   readonly lanes: readonly Need[];
+  /** Totéž jako stav pruhu robota běžce (`rankOf`) – plán ho čte každý krok. */
+  readonly ranks: readonly number[];
 }
+
+/** Stav pruhu, jak ho čte `laneChoice`: volno < skok či skluz < zavřeno. */
+const rankOf = (need: Need): number => (need === 'free' ? 0 : need === 'blocked' ? 2 : 1);
+const FREE_RANKS: readonly number[] = [0, 0, 0];
 
 interface Plan {
   readonly target: number;
@@ -194,7 +200,8 @@ export function planLanes(observation: ArcadeObservation, hazards: readonly Haza
     const z = (ahead[k] as Box).z;
     const row: Box[] = [];
     while (k < ahead.length && (ahead[k] as Box).z - z <= ROW_SPAN) row.push(ahead[k++] as Box);
-    rows.push({ z, passed: Math.max(...row.map((body) => body.z + (body.d + RUNNER.playerD) / 2)), lanes: needsOf(row) });
+    const lanes = needsOf(row);
+    rows.push({ z, passed: Math.max(...row.map((body) => body.z + (body.d + RUNNER.playerD) / 2)), lanes, ranks: lanes.map(rankOf) });
   }
   const crash: Box[][] = Array.from({ length: end }, (_, s) => ahead.filter((body) => Math.abs(body.z - zAt(s)) * 2 < body.d + pd));
   /** Řada, kterou pohled robota běžce (o `lag` starší) v kroku `s` má před sebou – nezávisí na tazích plánu. */
@@ -285,24 +292,37 @@ export function planLanes(observation: ArcadeObservation, hazards: readonly Haza
 
   // Tah robota běžce, když vydrží celý plán; jinak ostatní (zůstat, vlevo, vpravo) a ten, který vydrží nejdéle.
   const wanted = clampLane(now.target + pressOf(input.buttons)) - now.target;
-  // Nejčastěji stačí tah robota a dál jeho vlastní volba pruhu podle řad (jako `runnerBot`): jedna cesta místo prohledávání.
-  const rank = (need: Need | undefined): number => (need === 'free' ? 0 : need === 'blocked' ? 2 : 1);
-  const own = (plan: Plan, s: number): number => {
+  // Nejčastěji stačí tah robota a dál jeho vlastní volba pruhu (`laneChoice`, jako `runnerBot`): jedna cesta místo prohledávání.
+  // Mince a těla, která zraní, jak je robot běžce vidí v pozorování (pohyb těl během plánu nesleduje, hrozby chování ano).
+  const coins = footprintsOf(state, [ROLE.collectible]);
+  const hostile = footprintsOf(state, HOSTILE);
+  const own = (plan: Plan, s: number, collect: boolean): number => {
     const row = rowAt[s];
-    if (row === undefined) return 0;
-    let best = plan.target;
-    for (const lane of [-1, 0, 1]) {
-      const [a, b] = [rank(row.lanes[lane + 1]), rank(row.lanes[best + 1])];
-      if (a < b || (a === b && Math.abs(lane - plan.target) < Math.abs(best - plan.target))) best = lane;
-    }
-    return Math.sign(best - plan.target);
+    const rowZ = row?.z ?? Number.POSITIVE_INFINITY;
+    const seen = pz + vz * s;
+    const status = row === undefined ? FREE_RANKS : row.ranks;
+    const last = collect ? lastCoins(coins, seen, rowZ) : NO_COINS;
+    return Math.sign(laneChoice(status, plan.target, rowZ, seen, vz, lag, last, hostileLanes(hostile, seen, rowZ)) - plan.target);
   };
-  let straight: Plan | null = now;
-  for (let s = 0; s < end && straight !== null; s += 1) straight = step(straight, s === 0 ? wanted : own(straight, s), s);
-  if (straight !== null) return input;
-  // Při shodě vyhraje dřívější tah v pořadí: robota, zůstat, vlevo, vpravo.
-  const order = [...new Set([wanted, 0, -1, 1])].filter((press) => Math.abs(now.target + press) <= 1);
-  let chosen = wanted;
+  const holds = (first: number, collect: boolean): boolean => {
+    let plan: Plan | null = now;
+    for (let s = 0; s < end && plan !== null; s += 1) plan = step(plan, s === 0 ? first : own(plan, s, collect), s);
+    return plan !== null;
+  };
+  /** Vstup s tahem `press` místo tahu robota; zůstat = skok či skluz, který pruh žádá. */
+  const inputFor = (press: number): ArcadeInput => {
+    const lane = press < 0 ? BUTTON.LEFT : press > 0 ? BUTTON.RIGHT : 0;
+    const action = press === 0 ? actionAt(now.target, 0, now.y === 0 && now.vy === 0, now.slide > 0) : null;
+    const pressed = action === 'jump' ? BUTTON.TAP : action === 'slide' ? BUTTON.DOWN : 0;
+    return { buttons: (input.buttons & ~(LANE_BUTTONS | ACTION_BUTTONS)) | lane | pressed, axis: input.axis };
+  };
+  if (holds(wanted, true)) return input;
+  // Mince plán neunese (P46B R1): robot hraje, jako by je neviděl – tah k minci přes hrozbu nedělá ani napůl.
+  const plain = own(now, 0, false);
+  if (holds(plain, false)) return plain === wanted ? input : inputFor(plain);
+  // Při shodě vyhraje dřívější tah v pořadí: robota (bez mincí), zůstat, vlevo, vpravo.
+  const order = [...new Set([plain, 0, -1, 1])].filter((press) => Math.abs(now.target + press) <= 1);
+  let chosen = plain;
   let best = -2;
   for (const press of order) {
     const survived = lasted(press);
@@ -312,9 +332,5 @@ export function planLanes(observation: ArcadeObservation, hazards: readonly Haza
     }
     if (best === end - 1) break;
   }
-  if (chosen === wanted) return input;
-  const lane = chosen < 0 ? BUTTON.LEFT : chosen > 0 ? BUTTON.RIGHT : 0;
-  const action = chosen === 0 ? actionAt(now.target, 0, now.y === 0 && now.vy === 0, now.slide > 0) : null;
-  const pressed = action === 'jump' ? BUTTON.TAP : action === 'slide' ? BUTTON.DOWN : 0;
-  return { buttons: (input.buttons & ~(LANE_BUTTONS | ACTION_BUTTONS)) | lane | pressed, axis: input.axis };
+  return chosen === wanted ? input : inputFor(chosen);
 }

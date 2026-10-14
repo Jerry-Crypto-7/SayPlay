@@ -282,19 +282,39 @@ export function heroModel(spec: GameSpecV1): string {
   return heroChoice(spec.roles.find((role) => role.kind === 'player')?.label ?? '', spec.genre?.id, spec.control).model;
 }
 
-/** Nepřátelé střelnice: model z popisku role `enemy` (`heroChoice`), jinak robot. */
-export function enemyModel(spec: GameSpecV1): string {
+/** Popisek nepřítele střelnice (role `enemy`, kořist, hlídka, soupeř souboje), nebo prázdný. */
+function enemyLabel(spec: GameSpecV1): string {
   // B-R9: soupeř souboje žánru arény je role druhu `hazard` (`rival`), ne role `enemy`.
   const rival = spec.controlParams?.generator === 'fight' ? spec.roles.find((role) => role.kind === 'hazard') : undefined;
   const native = spec.control === 'walker' || spec.control === 'ball' ? spec.roles.find(role => role.kind === 'patrol') : undefined;
   const prey = spec.controlParams?.generator === 'arena_catch' ? spec.roles.find(role => role.id === 'prey') : undefined;
-  const label = spec.roles.find((role) => role.id === 'enemy')?.label ?? prey?.label ?? native?.label ?? rival?.label ?? '';
-  return heroChoice(label, undefined, spec.control, 'enemy').model;
+  return spec.roles.find((role) => role.id === 'enemy')?.label ?? prey?.label ?? native?.label ?? rival?.label ?? '';
+}
+
+/** Nepřátelé střelnice: model z popisku role `enemy` (`heroChoice`), jinak robot. */
+export function enemyModel(spec: GameSpecV1): string {
+  return heroChoice(enemyLabel(spec), undefined, spec.control, 'enemy').model;
+}
+
+/** Popisek a model pronásledovatele: role druhu `chaser`, když pro ni je model, jinak nepřítel. */
+function chaserChoice(spec: GameSpecV1): { readonly label: string; readonly model: string } {
+  const label = spec.roles.find((role) => role.kind === 'chaser')?.label ?? '';
+  const own = choose(label, ANY, { withClass: true, loose: true })?.model;
+  return own === undefined ? { label: enemyLabel(spec), model: enemyModel(spec) } : { label, model: own };
 }
 
 /** Pronásledovatel doplňku `+chaser` (P26D): model z popisku role druhu `chaser` („bear“), jinak jako nepřítel. */
 export function chaserModel(spec: GameSpecV1): string {
-  return choose(spec.roles.find((role) => role.kind === 'chaser')?.label ?? '', ANY, { withClass: true, loose: true })?.model ?? enemyModel(spec);
+  return chaserChoice(spec).model;
+}
+
+/**
+ * Jméno z věty pro tělo, které scéna kreslí modelem pronásledovatele (nepřátelé průběhu a boss, P46B T7):
+ * popisek role, ze které `chaserModel` model vzal; věta bez něj `undefined`.
+ */
+export function chaserName(spec: GameSpecV1): string | undefined {
+  const { label } = chaserChoice(spec);
+  return label === '' ? undefined : label;
 }
 
 /**

@@ -70,6 +70,15 @@ const { UPGRADE_DEADLINE_SLACK_MS } = await import('../_upgrade');
 const PENDING = { status: 'pending', deadlineAt: expect.stringMatching(/^\d{4}-\d\d-\d\dT/) };
 
 const SENTENCE = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
+/** Běžec bez dílů (P46B b04). */
+const PLAIN_RUNNER = 'A squirrel runs through the forest grabbing acorns';
+/**
+ * Publikace návrhu: hra bez dílů do 3 s. Hra s díly a průběhem (úseky a boss od P46B R2) ověřuje víc běhů robota
+ * a smí 2× tolik – rozhodnutí majitele 13. 10. (P46B R4, varianta a). Změřeno R4 za stejné zátěže: věta s křečkem
+ * 3,2–3,4 s, veverka 1,6–1,7 s.
+ */
+const PUBLISH_MS = 3000;
+const PUBLISH_WITH_PARTS_MS = 2 * PUBLISH_MS;
 const CALLER = { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.9' };
 
 /**
@@ -134,15 +143,23 @@ function holdDirector(): void {
 }
 
 describe('POST s větou: návrh hned, režisér na pozadí', () => {
-  it('odpoví návrhem dřív, než režisér doběhne, a pod 3 s', async () => {
+  it('odpoví návrhem dřív, než režisér doběhne, a pod 3 s (hra s díly pod 6 s)', async () => {
     holdDirector();
     // První publikace v procesu nese i načtení a JIT modulů návrhu (5 s pod vitestem); měří se ustálená cesta.
     await publish({ sentence: 'A frog jumps across a swamp.' });
     const started = performance.now();
     const created = await publish({ sentence: SENTENCE });
     const elapsed = performance.now() - started;
+    const plainStarted = performance.now();
+    const plain = await publish({ sentence: PLAIN_RUNNER });
+    const plainElapsed = performance.now() - plainStarted;
     expect(created.status).toBe(201);
-    expect(elapsed).toBeLessThan(3000);
+    expect(plain.status).toBe(201);
+    expect(elapsed).toBeLessThan(PUBLISH_WITH_PARTS_MS);
+    expect(plainElapsed).toBeLessThan(PUBLISH_MS);
+    // Až po měření, ať návrh navíc neohřeje měřenou cestu: věta s křečkem je hra s dílem, veverka bez dílů – každá má svůj limit.
+    expect(draftGameSpec(SENTENCE).assemblyParts?.length ?? 0).toBeGreaterThan(0);
+    expect(draftGameSpec(PLAIN_RUNNER).assemblyParts ?? []).toEqual([]);
     expect(created.body.upgrade).toBe(`/api/play/games/${created.body.versionId}/upgrade`);
     const draft = await game(created.body.versionId);
     expect(draft.spec).toEqual(draftGameSpec(SENTENCE));

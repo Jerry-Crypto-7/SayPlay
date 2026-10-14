@@ -13,7 +13,8 @@
  * - `cluster` (hejno): kruh kolem celého sevřeného hejna se zvýrazněným okrajem.
  * Pohyb podle `09-motion.md`: nápřah (nástup 160 ms), houstnutí k úderu (pás
  * sílí a kruh se plní se zrychlením), úder = konec varování, kdy kresba zmizí.
- * Boss a boss-terč mají nad hlavou pipy HP (jeden na život ze startu).
+ * Boss a boss-terč mají nad hlavou pipy HP (jeden na život ze startu), stejně boss finále jiného chování
+ * (shazovač řízení a rváč skákačky, P46B T7) – soupeři úseků stejného chování ne.
  *
  * Těla chování a bosse kreslí scéna, která kreslí jejich roli (`World` každé
  * tělo, aréna stylu B i agar těla role `hazard`); boss je větší jen svým AABB.
@@ -36,7 +37,7 @@ import { BOSS } from '@/play/arcade/pieces/behaviours/boss';
 import { GUARDIAN } from '@/play/arcade/pieces/behaviours/guardian';
 
 import { type ArcadeSession, TICK_MS } from '../session';
-import { type EffectsBus, type VisualEvent, pacingRefsOf } from './bus';
+import { type EffectsBus, type VisualEvent, pacingBossOf, pacingRefsOf } from './bus';
 import { reducedMotion } from './feel';
 import { renderHeld } from './render-feel';
 
@@ -146,9 +147,9 @@ function bodiesById(state: ArcadeState, refs: readonly BehaviourRef[]): [number,
 
 /**
  * Kresba varování nad světem `refs` – trojrozměrné kousky v jedné skupině, které
- * `update` každý snímek postaví podle stavu. Stav jen čte.
+ * `update` každý snímek postaví podle stavu; `boss` = předloha bosse finále (`pacingBossOf`). Stav jen čte.
  */
-export function createPacingDrawing(refs: readonly BehaviourRef[]): PacingDrawing {
+export function createPacingDrawing(refs: readonly BehaviourRef[], boss?: BehaviourRef): PacingDrawing {
   const root = new Group();
   root.name = 'pacing-fx';
   const geometries: BufferGeometry[] = [];
@@ -231,12 +232,13 @@ export function createPacingDrawing(refs: readonly BehaviourRef[]): PacingDrawin
       const bosses: { body: number; hp: number; max: number }[] = [];
       const flock: { body: number; x: number; z: number; r: number; p: number }[] = [];
       const telegraphing = new Set<number>();
+      const finaleBoss = boss === undefined ? [] : behaviourBodies(state, state[HEADER.player] as number, [boss]);
 
       for (const [body, id] of bodiesById(state, refs)) {
         const x = -at(body, 'x');
         const y = at(body, 'y');
         const z = at(body, 'z');
-        if (id === 'boss' || id === 'turret') {
+        if (id === 'boss' || id === 'turret' || finaleBoss.includes(body)) {
           const hp = bodyHp(state, body);
           const max = Math.max(topHp.get(body) ?? 0, hp);
           topHp.set(body, max);
@@ -357,7 +359,7 @@ export function createPacingDrawing(refs: readonly BehaviourRef[]): PacingDrawin
 export function PacingFx({ session, bus, surface }: { readonly session: ArcadeSession; readonly bus: RefObject<EffectsBus | null>; readonly surface: RefObject<HTMLDivElement | null> }) {
   const drawing = useMemo(() => {
     const refs = pacingRefsOf(session.world.rules);
-    return refs.length === 0 ? null : createPacingDrawing(refs);
+    return refs.length === 0 ? null : createPacingDrawing(refs, pacingBossOf(session.world.rules));
   }, [session]);
   useEffect(() => () => drawing?.dispose(), [drawing]);
   const edge = useRef<HTMLDivElement | null>(null);

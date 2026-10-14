@@ -59,7 +59,7 @@ describe('pacing bodies draw the sentence enemy, not fallback boxes', () => {
   const cells = pacedCells();
 
   it('every behaviour kind and the boss has no catalog model of its own and draws the sentence enemy', () => {
-    expect(PACING_KINDS).toEqual(new Set(['flanker', 'sniper', 'ambusher', 'guardian', 'swarm', 'boss']));
+    expect(PACING_KINDS).toEqual(new Set(['flanker', 'sniper', 'ambusher', 'guardian', 'swarm', 'boss', 'dropper']));
     expect([...PACING_KINDS].filter(exists)).toEqual([]);
     // Flanker a hejno živé buňky zatím nelosují (T12): pohled každého druhu s rolí nástrahy.
     const cast = cells[0]!.cast;
@@ -84,7 +84,8 @@ describe('pacing bodies draw the sentence enemy, not fallback boxes', () => {
   });
 
   it('every behaviour shot has no catalog model and draws as a bullet primitive, in every live cell that fires one', () => {
-    expect(PACING_SHOT_KINDS).toEqual(new Set(['sniper_shot', 'boss_shot', 'turret_shot']));
+    // `road_drop`: překážka, kterou shazovač řízení (P46B T5) hodí na silnici.
+    expect(PACING_SHOT_KINDS).toEqual(new Set(['sniper_shot', 'boss_shot', 'turret_shot', 'road_drop']));
     expect([...PACING_SHOT_KINDS].filter(exists)).toEqual([]);
     const shots = cells.flatMap((cell) => cell.shots.map((view) => [cell, view] as const));
     expect(shots.length).toBeGreaterThan(0);

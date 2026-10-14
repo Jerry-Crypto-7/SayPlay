@@ -54,7 +54,7 @@ import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/s
 import { throwField, throwParamsFor, throwParts } from './pieces/throw';
 import { timingParts } from './pieces/timing';
 import { type CompiledRule, compileRules, logicNames, rulesOwnGoal, yardParts } from './rules/compile';
-import { runBot } from './verify';
+import { rememberBotRun, runBot } from './verify';
 import { bindRoles, type RoleBinding } from './witness';
 
 /** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra, kterou svět nese (P45B: svět s logikou nebo vlnou je `arcade-v3`). */
@@ -105,7 +105,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
       bot: { id: 'platform_bot', params: {} },
       level,
       // Úroveň z úseků má hodiny: nečinný hráč na startu prohraje (P36A T4).
-      rules: platformRules(params, health, params.sections === undefined ? undefined : platformSeconds(level, params.difficulty)),
+      rules: platformRules(params, health, params.sections === undefined ? undefined : platformSeconds(level, params.difficulty, params.segments === true)),
     };
   }
   if (spec.control === 'steer') {
@@ -348,6 +348,7 @@ export function compileArcade(spec: GameSpecV1, seed: number): CompileGameResult
   // Bez načteného Rapieru by robot spadl na výjimce jádra; volající má zavolat `preloadPhysics`.
   if (worldHasPhysics(world) && rapierIfLoaded() === null) return { ok: false, reason: 'WORLD_REJECTED', issues: [PHYSICS_NOT_LOADED] };
   const bot = runBot(world);
+  rememberBotRun(world, bot);
   if (bot.outcome !== 'won') return { ok: false, reason: 'UNWINNABLE', issues: [`the bot ${bot.outcome === 'lost' ? 'lost' : 'did not finish'} at tick ${bot.tick}, ${bot.distanceM} m into the track`] };
   // Trať, kterou vyhraje i nečinný hráč, je vada rozvržení – dveře publikace
   // zkusí další semínko, místo aby `verifyArcade` hru až potom odmítl (R3).

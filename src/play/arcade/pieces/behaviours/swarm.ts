@@ -70,6 +70,11 @@ interface Flock {
  * se spočítá jednou za tik a stav. Bez toho 12 těl stojí 0,07 ms na tik.
  */
 let last: Flock | null = null;
+// Sloty jednou za modul: import pod vitestem čte každý přístup getterem a hejno jde přes všechna těla každý tik.
+const FIRST_BODY = bodyBase(0);
+const STRIDE = bodyBase(1) - FIRST_BODY;
+const { flags: FLAGS_SLOT, kind: KIND_SLOT, w: W_SLOT, x: X_SLOT, z: Z_SLOT } = BODY;
+const ALIVE = FLAG.alive;
 
 function flockOf(view: BehaviourView): Flock {
   const { state, body, player } = view;
@@ -80,12 +85,13 @@ function flockOf(view: BehaviourView): Flock {
   const bodies: number[] = [];
   let x = 0;
   let z = 0;
-  for (let other = 0; other < (state[HEADER.bodyCount] as number); other += 1) {
-    const base = bodyBase(other);
-    if (other === player || ((state[base + BODY.flags] as number) & FLAG.alive) === 0 || state[base + BODY.kind] !== kind || state[base + BODY.w] !== w) continue;
+  const count = state[HEADER.bodyCount] as number;
+  for (let other = 0; other < count; other += 1) {
+    const base = FIRST_BODY + other * STRIDE;
+    if (other === player || ((state[base + FLAGS_SLOT] as number) & ALIVE) === 0 || state[base + KIND_SLOT] !== kind || state[base + W_SLOT] !== w) continue;
     bodies.push(other);
-    x += state[base + BODY.x] as number;
-    z += state[base + BODY.z] as number;
+    x += state[base + X_SLOT] as number;
+    z += state[base + Z_SLOT] as number;
   }
   const center = { x: Math.trunc(x / bodies.length), z: Math.trunc(z / bodies.length) };
   const tight = bodies.every((other) => length(read(state, other, 'x') - center.x, read(state, other, 'z') - center.z) <= SWARM.plane.tight);

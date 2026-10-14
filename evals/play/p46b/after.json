@@ -1,0 +1,557 @@
+{
+ "schema": "p46b-segments.v1",
+ "compiler": "play-compiler-v11/arcade-v2",
+ "profile": "intermediate",
+ "cells": {
+  "runner": {
+   "sentences": 6,
+   "playable": 6,
+   "offGenre": [],
+   "deadTimeMedianS": 3.8,
+   "risingShare": 1,
+   "finaleShare": 1,
+   "behavioursMedian": 3,
+   "segmentChangesMedian": 2,
+   "segmentChanges2Share": 1
+  },
+  "steer": {
+   "sentences": 7,
+   "playable": 7,
+   "offGenre": [],
+   "deadTimeMedianS": 3.23,
+   "risingShare": 1,
+   "finaleShare": 1,
+   "behavioursMedian": 3,
+   "segmentChangesMedian": 2,
+   "segmentChanges2Share": 1
+  },
+  "platformer": {
+   "sentences": 7,
+   "playable": 7,
+   "offGenre": [],
+   "deadTimeMedianS": 3.58,
+   "risingShare": 1,
+   "finaleShare": 1,
+   "behavioursMedian": 3,
+   "segmentChangesMedian": 2,
+   "segmentChanges2Share": 1
+  }
+ },
+ "rows": [
+  {
+   "id": "m03",
+   "text": "Grandma kart",
+   "cell": "steer",
+   "genre": "control:steer",
+   "seed": 1219393165,
+   "playable": true,
+   "deadTimeS": 3.32,
+   "rising": true,
+   "finale": true,
+   "behaviours": 2,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:chase",
+     "foe:hazard:roam",
+     "foe:hazard:static",
+     "width:10->4",
+     "density:0->3.91"
+    ],
+    [
+     "speed:18.9->26.1",
+     "width:4->3.6",
+     "density:3.91->9.47"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "m06",
+   "text": "dragon taxi",
+   "cell": "steer",
+   "genre": "control:steer",
+   "seed": 1992089601,
+   "playable": true,
+   "deadTimeS": 3.28,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "foe:hazard:static",
+     "width:10->4",
+     "density:0->4.27"
+    ],
+    [
+     "foe:hazard:chase",
+     "speed:18.9->22.5",
+     "width:4->3.6",
+     "density:4.27->9.62"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "m08",
+   "text": "a pengiun tht slides down a mountin",
+   "cell": "runner",
+   "genre": "runner",
+   "seed": 971846864,
+   "playable": true,
+   "deadTimeS": 3.58,
+   "rising": true,
+   "finale": true,
+   "behaviours": 2,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:chase",
+     "foe:hazard:roam",
+     "speed:8.88->9.9",
+     "density:7.02->12.91"
+    ],
+    [
+     "speed:9.9->11.34",
+     "density:12.91->31.07"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "m09",
+   "text": "ninja cat jumpin on rooftops plz",
+   "cell": "platformer",
+   "genre": "platformer",
+   "seed": 1611622728,
+   "playable": true,
+   "deadTimeS": 2.28,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "terrain:platform:moving"
+    ],
+    [
+     "speed:3.96->5.22"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "m16",
+   "text": "a kangaroo jumps over cars then collects coins on the highway",
+   "cell": "platformer",
+   "genre": "platformer",
+   "seed": 14821989,
+   "playable": true,
+   "deadTimeS": 9.5,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "terrain:platform:moving"
+    ],
+    [
+     "speed:3.96->4.5"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "h02",
+   "text": "shopping cart race in a supermarket",
+   "cell": "steer",
+   "genre": "control:steer",
+   "seed": 1227587564,
+   "playable": true,
+   "deadTimeS": 3.28,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "foe:hazard:static",
+     "width:10->4",
+     "density:2.06->4.27"
+    ],
+    [
+     "speed:18.9->22.5",
+     "width:4->3.6",
+     "density:4.27->8.93"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "s003",
+   "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "cell": "runner",
+   "genre": "runner",
+   "seed": 1924202525,
+   "playable": true,
+   "deadTimeS": 3.98,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:chaser:chase",
+     "foe:hazard:chase",
+     "foe:hazard:roam",
+     "speed:8.1->9",
+     "density:7.98->17.13"
+    ],
+    [
+     "speed:9->10.32",
+     "density:17.13->30.54"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "s021",
+   "text": "obby game with lava and spinning bars",
+   "cell": "platformer",
+   "genre": "platformer",
+   "seed": 292625551,
+   "playable": true,
+   "deadTimeS": 3.58,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "terrain:platform:moving"
+    ],
+    [
+     "speed:3.36->4.86"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b01",
+   "text": "A rabbit steals carrots and runs from a fox",
+   "cell": "runner",
+   "genre": "runner",
+   "seed": 733405828,
+   "playable": true,
+   "deadTimeS": 3.73,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:chaser:chase",
+     "foe:hazard:chase",
+     "foe:hazard:roam",
+     "speed:8.88->9.9",
+     "density:7.01->14.65"
+    ],
+    [
+     "speed:9.9->11.34",
+     "density:14.65->26.01"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b02",
+   "text": "Amanita mushrooms fight bulls, flee and shoot them",
+   "cell": "runner",
+   "genre": "runner",
+   "seed": 20779725,
+   "playable": true,
+   "deadTimeS": 3.95,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:chase",
+     "foe:hazard:roam",
+     "speed:8.1->9",
+     "density:7.61->13.52"
+    ],
+    [
+     "foe:hazard:static",
+     "speed:9->10.32",
+     "density:13.52->36.89"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b03",
+   "text": "A hamster escapes a supermarket while a Roomba hunts it",
+   "cell": "runner",
+   "genre": "runner",
+   "seed": 2076206606,
+   "playable": true,
+   "deadTimeS": 3.87,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:chaser:chase",
+     "foe:hazard:chase",
+     "foe:hazard:roam",
+     "foe:hazard:static",
+     "speed:8.1->9",
+     "density:8.17->13.3"
+    ],
+    [
+     "speed:9->10.32",
+     "density:13.3->36.77"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b04",
+   "text": "A squirrel runs through the forest grabbing acorns",
+   "cell": "runner",
+   "genre": "runner",
+   "seed": 1890262350,
+   "playable": true,
+   "deadTimeS": 3.7,
+   "rising": true,
+   "finale": true,
+   "behaviours": 2,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "speed:8.88->9.9",
+     "density:6.7->13.38"
+    ],
+    [
+     "foe:hazard:chase",
+     "speed:9.9->11.34",
+     "density:13.38->32.38"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b05",
+   "text": "Racing car escaping and shooting enemies",
+   "cell": "steer",
+   "genre": "control:steer",
+   "seed": 1693833043,
+   "playable": true,
+   "deadTimeS": 2.33,
+   "rising": true,
+   "finale": true,
+   "behaviours": 4,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "foe:hazard:static",
+     "width:10->4",
+     "density:0.7->4.06"
+    ],
+    [
+     "speed:18.9->26.1",
+     "width:4->3.6",
+     "density:4.06->9.85"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b06",
+   "text": "A monster truck races through a canyon",
+   "cell": "steer",
+   "genre": "control:steer",
+   "seed": 1512982524,
+   "playable": true,
+   "deadTimeS": 3.22,
+   "rising": true,
+   "finale": true,
+   "behaviours": 4,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "foe:hazard:static",
+     "width:10->4",
+     "density:2.12->4.38"
+    ],
+    [
+     "foe:hazard:chase",
+     "speed:18.9->22.5",
+     "width:4->3.6",
+     "density:4.38->9.15"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b07",
+   "text": "A tractor races across a muddy farm",
+   "cell": "steer",
+   "genre": "control:steer",
+   "seed": 1400012369,
+   "playable": true,
+   "deadTimeS": 3.22,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "foe:hazard:static",
+     "width:10->4",
+     "density:2.11->4.37"
+    ],
+    [
+     "speed:18.9->22.5",
+     "width:4->3.6",
+     "density:4.37->9.14"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b08",
+   "text": "A taxi weaves through traffic on a rainy night",
+   "cell": "steer",
+   "genre": "control:steer",
+   "seed": 1557987310,
+   "playable": true,
+   "deadTimeS": 3.23,
+   "rising": true,
+   "finale": true,
+   "behaviours": 2,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "foe:hazard:static",
+     "width:10->4",
+     "density:0->4.34"
+    ],
+    [
+     "speed:18.9->22.5",
+     "width:4->3.6",
+     "density:4.34->9.78"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b09",
+   "text": "Jumping arcade game in the forest",
+   "cell": "platformer",
+   "genre": "platformer",
+   "seed": 813124240,
+   "playable": true,
+   "deadTimeS": 2.77,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "terrain:platform:moving"
+    ],
+    [
+     "speed:3.6->4.68"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b10",
+   "text": "A ninja frog jumps across lily pads in a swamp",
+   "cell": "platformer",
+   "genre": "platformer",
+   "seed": 355575549,
+   "playable": true,
+   "deadTimeS": 2.25,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "terrain:platform:moving"
+    ],
+    [
+     "speed:3.6->4.5"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b11",
+   "text": "A robot jumps between rooftops collecting batteries",
+   "cell": "platformer",
+   "genre": "platformer",
+   "seed": 1651463268,
+   "playable": true,
+   "deadTimeS": 15.55,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "terrain:platform:moving"
+    ],
+    [
+     "speed:3.6->4.68"
+    ]
+   ],
+   "issues": []
+  },
+  {
+   "id": "b12",
+   "text": "A monkey jumps across jungle platforms collecting bananas",
+   "cell": "platformer",
+   "genre": "platformer",
+   "seed": 917243165,
+   "playable": true,
+   "deadTimeS": 9.52,
+   "rising": true,
+   "finale": true,
+   "behaviours": 3,
+   "segmentChanges": 2,
+   "changes": [
+    [
+     "foe:hazard:roam",
+     "terrain:platform:moving",
+     "density:3.25->5.78"
+    ],
+    [
+     "speed:3.96->4.5"
+    ]
+   ],
+   "issues": []
+  }
+ ]
+}

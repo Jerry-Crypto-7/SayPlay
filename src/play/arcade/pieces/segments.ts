@@ -1,0 +1,107 @@
+/**
+ * Scénář úseků (P46B T3): co přinese úsek 2 a úsek 3 hry proti úseku před ním.
+ *
+ * Úseky jsou `PACING.segments`: rozjezd 0–200 ‰, úsek 2 200–650, úsek 3
+ * 650–850, finále 850–1000. Scénář je čistá funkce ze streamu `pacing` –
+ * `withPacing` ho losuje až za rozvrhem, takže kroky rozvrhu zůstanou, kde
+ * byly, a za běhu žádná náhoda. Každá změna je hratelná (nový nepřítel,
+ * rychlost, prostředí, hustota); nový vzhled téhož chování změna není.
+ */
+
+import type { CompileRng } from '@/play/compile/rng';
+
+import type { BehaviourId } from './behaviours';
+// Cyklus s `pacing.ts` (`withPacing` losuje scénář) je bezpečný: `PACING` se čte jen ve funkcích, ne při načtení.
+import { PACING } from './pacing';
+
+/** Žánry se scénářem úseků. */
+export type SegmentGenre = 'runner' | 'steer' | 'platform';
+
+export type SegmentChange =
+  | { readonly kind: 'newFoe'; readonly behaviour: BehaviourId }
+  | { readonly kind: 'speedTier'; readonly percent: number }
+  | { readonly kind: 'terrain'; readonly variant: string }
+  | { readonly kind: 'density'; readonly step: number };
+
+/** Úsek scénáře: od `at` ‰ do `until` ‰ postupu, přinese `changes` (prázdné = hra nemá čím úsek změnit). */
+export interface SegmentStep {
+  readonly at: number;
+  readonly until: number;
+  readonly changes: readonly SegmentChange[];
+}
+
+/** Co hra pro úseky má: nová chování (od kterého postupu smějí přijít), rychlost a hustota v rozjezdu a obou úsecích, druhy prostředí. */
+export interface SegmentCast {
+  readonly foes: readonly { readonly behaviour: BehaviourId; readonly from: number }[];
+  /** Rychlost trati v % na začátku rozjezdu, úseku 2 a úseku 3 (fáze světa); prázdné = trať bez fází. */
+  readonly speeds: readonly number[];
+  readonly terrain?: readonly string[];
+  readonly density?: readonly number[];
+  /** Volná šířka trati uprostřed rozjezdu, úseku 2 a úseku 3 (řízení: mezi mantinely); užší úsek = prostředí `narrow`. */
+  readonly widths?: readonly number[];
+  /**
+   * Druhy prostředí, které generátor postavil do rozjezdu, úseku 2 a úseku 3 (skákačka: `trap` = past, `moving` =
+   * pohyblivá plošina); každý, který dřívější úsek neměl, je změna úseku – bez losu, svět je hotový.
+   */
+  readonly places?: readonly (readonly string[])[];
+}
+
+/** Úseky 2 a 3 jako `[začátek, konec)` v promile postupu. */
+export const segmentSpans = (): readonly (readonly [number, number])[] => [
+  [PACING.segments.intro, PACING.segments.buildUp],
+  [PACING.segments.buildUp, PACING.segments.peak],
+];
+
+/**
+ * Které změny žánr unese. Běžec bez prostředí a hustoty: řady navíc by zavřely
+ * volný pruh (`GENRE_PACING.runner_track`), rychlost dávají fáze křivky. Řízení
+ * (T5): nový soupeř, rychlost a užší trať (`widths` – šířky staví generátor).
+ */
+const KINDS: Readonly<Record<SegmentGenre, readonly SegmentChange['kind'][]>> = {
+  runner: ['speedTier', 'newFoe'],
+  steer: ['speedTier', 'newFoe', 'terrain'],
+  // Skákačka (T6): nová past a pohyblivá plošina (`places` z generátoru) a rychlost; nepřítel je jen boss finále.
+  platform: ['speedTier', 'terrain'],
+};
+
+const rises = (values: readonly number[] | undefined, k: number): boolean =>
+  values !== undefined && (values[k] ?? 0) > (values[k - 1] ?? Infinity);
+const falls = (values: readonly number[] | undefined, k: number): boolean =>
+  values !== undefined && (values[k] ?? Infinity) < (values[k - 1] ?? 0);
+
+/**
+ * Scénář úseků 2 a 3: rychlost a hustota, když proti předchozímu úseku rostou,
+ * a losem nový nepřítel a nový druh prostředí, které žádný dřívější úsek neměl.
+ * Nepřítel úseku smí přijít nejdřív na jeho začátku (`from`); u běžce tak úsek 2
+ * otevře flanker nebo ostřelovač a úsek 3 hejno. Los jen tam, kde je z čeho vybrat.
+ */
+export function segmentScriptOf(rng: CompileRng, genre: SegmentGenre, cast: SegmentCast): SegmentStep[] {
+  const kinds = new Set(KINDS[genre]);
+  const used = new Set<string>();
+  return segmentSpans().map(([at, until], index) => {
+    const k = index + 1;
+    const changes: SegmentChange[] = [];
+    if (kinds.has('speedTier') && rises(cast.speeds, k)) changes.push({ kind: 'speedTier', percent: cast.speeds[k] as number });
+    if (kinds.has('density') && rises(cast.density, k)) changes.push({ kind: 'density', step: k });
+    const open = cast.foes.filter((foe) => foe.from <= at && !used.has(foe.behaviour));
+    // Přednost má nepřítel, který dřív přijít ani nesměl: jinak ho `withPacing` z dřívějších úseků vyjme a ubude jim útoků.
+    const fresh = open.filter((foe) => foe.from >= at);
+    const foes = [...new Set((fresh.length > 0 ? fresh : open).map((foe) => foe.behaviour))];
+    if (kinds.has('newFoe') && foes.length > 0) {
+      const behaviour = rng.pick(foes);
+      used.add(behaviour);
+      changes.push({ kind: 'newFoe', behaviour });
+    }
+    const terrain = (cast.terrain ?? []).filter((variant) => !used.has(`terrain:${variant}`));
+    const placed = (cast.places?.[k] ?? []).filter((variant) => !(cast.places ?? []).slice(0, k).some((earlier) => earlier.includes(variant)));
+    // Užší trať je změna každého úseku, který zúží – bez losu (šířky jsou ve světě hotové); stejně nový druh prostředí z generátoru.
+    if (kinds.has('terrain') && falls(cast.widths, k)) changes.push({ kind: 'terrain', variant: 'narrow' });
+    else if (kinds.has('terrain') && placed.length > 0) changes.push(...placed.map((variant) => ({ kind: 'terrain' as const, variant })));
+    else if (kinds.has('terrain') && terrain.length > 0) {
+      const variant = rng.pick(terrain);
+      used.add(`terrain:${variant}`);
+      changes.push({ kind: 'terrain', variant });
+    }
+    return { at, until, changes };
+  });
+}

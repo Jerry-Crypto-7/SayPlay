@@ -48,7 +48,11 @@ describe('allowed recipes', () => {
     expect(stageOf('unimplemented')).toBeNull();
   });
 
+  // run.escape may lose one of seeds 1–5: the runner bot's coin pace (P46B R1) costs it seed 4,
+  // publish picks a won seed. Owner's decision, plans/P46B-useky-a-boss-2026-10-12.md R3 (b).
+  const LOSSES_ALLOWED: Record<string, number> = { 'run.escape': 1 };
   for (const cell of ALLOWED.filter(cell => cell.preset !== null)) it(`${cell.id} plays every declared piece on seeds 1–5`, () => {
+    const lost: number[] = [];
     for (const seed of [1, 2, 3, 4, 5]) {
       const spec = compileRecipe(assemblyOfCell(cell));
       const made = arcadeWorldOf(spec, seed);
@@ -59,11 +63,12 @@ describe('allowed recipes', () => {
         expect(stage?.input).toBeTruthy();
       }
       const verdict = verifyArcade(made.world, undefined, made.roleBindings);
-      expect(verdict.bot.outcome, `${cell.id}/${seed}`).toBe('won');
       expect(verdict.replayEqual).toBe(true);
+      if (verdict.bot.outcome !== 'won') { lost.push(seed); continue; }
       const verbs = new Set(verdict.witnesses.map(w => w.verb));
       const pieces = [...cell.recipe.actions, cell.recipe.objective, ...cell.recipe.threats, ...(cell.recipe.move === 'stationary' ? [] : [cell.recipe.move])];
       for (const piece of pieces) expect(verbs.has(piece), `${cell.id}/${seed}: missing ${piece}; witnessed ${[...verbs]}`).toBe(true);
     }
+    expect(lost.length, `${cell.id} lost seeds ${lost}`).toBeLessThanOrEqual(LOSSES_ALLOWED[cell.id] ?? 0);
   });
 });
