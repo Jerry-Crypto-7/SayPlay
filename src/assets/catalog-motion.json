@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "3ad4685da008033e94b48e3b4e3e403d13af4a788313625086550769c80664ab",
+ "catalogHash": "91c23de2aacc45349f544453b8f33987eaefae8db7c95251f76d8ddbd2146b1a",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1394,6 +1394,13 @@
   "gen3d-wall-clock": {"class":"prop"},
   "gen3d-gas-cylinder": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-fern": {"class":"prop"},
-  "gen3d-sand-bucket": {"class":"prop"}
+  "gen3d-sand-bucket": {"class":"prop"},
+  "gen3d-oil-rig": {"class":"biped","regions":{"legY":0.244}},
+  "gen3d-kelp": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-frozen-log": {"class":"prop"},
+  "gen3d-steam-vent": {"class":"prop"},
+  "gen3d-battlement-wall": {"class":"prop"},
+  "gen3d-cemetery-gate": {"class":"prop"},
+  "gen3d-daisy": {"class":"biped","regions":{"legY":0.25}}
  }
 }

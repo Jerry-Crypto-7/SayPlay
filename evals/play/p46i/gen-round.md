@@ -12,3 +12,4 @@ Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek
 | 6 | scenery | 10 | 6 | 4/6 | 4 | – | 59/84 | rafflesia, navigation buoy, snow shovel, castle tower | – |
 | 7 | scenery | 10 | 8 | 6/8 | 6 | – | 59/84 | picnic table, telephone pole, claw machine, bread rack, wall clock, gas cylinder | – |
 | 8 (opakování) | kit-2 scenery | 10 | 6 | 3/6 | 2 | – | 59/84 | fern, sand bucket | – |
+| 9 | scenery | 10 | 8 | 7/8 | 7 | – | 59/84 | oil rig, kelp, frozen log, steam vent, battlement wall, cemetery gate, daisy | – |

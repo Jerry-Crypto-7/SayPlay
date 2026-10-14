@@ -619,3 +619,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-gas-cylinder` | gas cylinder, gas bottle | 4745 / 2366 |
 | `gen3d-fern` | fern | 4508 / 2185 |
 | `gen3d-sand-bucket` | sand bucket, beach bucket, sand pail | 4749 / 2370 |
+| `gen3d-oil-rig` | oil rig, oil platform | 4564 / 2165 |
+| `gen3d-kelp` | kelp | 4629 / 2284 |
+| `gen3d-frozen-log` | frozen log, snowy log | 4697 / 2285 |
+| `gen3d-steam-vent` | steam vent, fumarole | 4705 / 2294 |
+| `gen3d-battlement-wall` | battlement wall, castle wall | 4431 / 2174 |
+| `gen3d-cemetery-gate` | cemetery gate, graveyard gate | 4736 / 2367 |
+| `gen3d-daisy` | daisy | 4736 / 2346 |
