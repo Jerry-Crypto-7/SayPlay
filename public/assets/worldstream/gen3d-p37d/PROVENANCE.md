@@ -663,3 +663,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-beach-umbrella` | beach umbrella, parasol, sun umbrella | 4742 / 2352 |
 | `gen3d-apartment-block` | apartment block, apartment building, tower block | 4339 / 1956 |
 | `gen3d-glass-office-tower` | glass office tower, office building | 4350 / 2082 |
+| `gen3d-parking-meter` | parking meter, meter | 4416 / 2103 |
+| `gen3d-vine-covered-rock-wall` | vine covered rock wall, vine covered rock, rock wall, cliff | 4136 / 2094 |
+| `gen3d-cherry-blossom-tree` | cherry blossom tree, sakura tree, blossom tree | 4127 / 2115 |
+| `gen3d-river-boulder` | river boulder | 4748 / 2374 |

@@ -26,3 +26,4 @@ Psaný smyčkou `D:/caches/p46g/loop.mjs` po každém kole. **Model** = obrázek
 | 20 | city forest snow jungle desert | 10 | 5 | 1/5 | 1 | – | dead desert tree | – |
 | 21 | meadow forest | 2 | 0 | 0/0 | 0 | – | – | – |
 | 22 (opakování) | forest snow coast meadow city | 10 | 7 | 5/7 | 4 | – | mossy rock cluster, beach umbrella, apartment block, glass office tower | – |
+| 23 (opakování) | city forest snow jungle meadow | 10 | 6 | 4/6 | 3 | – | parking meter, vine covered rock wall, cherry blossom tree | – |

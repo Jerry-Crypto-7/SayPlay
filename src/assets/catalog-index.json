@@ -28985,6 +28985,88 @@
           0.15347
         ]
       }
+    },
+    {
+      "assetId": "gen3d-parking-meter",
+      "tags": [
+        "parking meter",
+        "meter"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-parking-meter-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26202,
+          0,
+          -0.12784
+        ],
+        "max": [
+          0.26202,
+          0.99632,
+          0.12784
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-vine-covered-rock-wall",
+      "tags": [
+        "vine covered rock wall",
+        "vine covered rock",
+        "rock wall",
+        "cliff"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-vine-covered-rock-wall-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.69576,
+          0,
+          -0.18726
+        ],
+        "max": [
+          0.69576,
+          0.9852,
+          0.18726
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cherry-blossom-tree",
+      "tags": [
+        "cherry blossom tree",
+        "sakura tree",
+        "blossom tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cherry-blossom-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43469,
+          0,
+          -0.43499
+        ],
+        "max": [
+          0.43469,
+          1.00001,
+          0.43499
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-river-boulder",
+      "tags": [
+        "river boulder"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-river-boulder-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58969,
+          0,
+          -0.58027
+        ],
+        "max": [
+          0.58969,
+          1,
+          0.58027
+        ]
+      }
     }
   ]
 }

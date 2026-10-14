@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "ae29a28d0db8d210e825497a2b57466d6566b0c4e11d3c7744745a2a25b5bff3",
+ "catalogHash": "53ab5de919cab04fc57d13e30edccd41602c63de75a0a2770feee82c4cc324f9",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1438,6 +1438,10 @@
   "gen3d-mossy-rock-cluster": {"class":"prop"},
   "gen3d-beach-umbrella": {"class":"prop"},
   "gen3d-apartment-block": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-glass-office-tower": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-glass-office-tower": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-parking-meter": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-vine-covered-rock-wall": {"class":"prop"},
+  "gen3d-cherry-blossom-tree": {"class":"prop"},
+  "gen3d-river-boulder": {"class":"prop"}
  }
 }
