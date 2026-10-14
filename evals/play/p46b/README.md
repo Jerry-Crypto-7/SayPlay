@@ -140,3 +140,8 @@ node --experimental-strip-types scripts/play-fidelity.mjs pairwise --a p46b-t8-a
 | s021 | A | „more often on broad, flat platforms, giving it a steadier pace and less visible buildup“ |
 
 Skákačka 2 ze 3 pro P46B (v T8 0 ze 3), celkem 6 z 8, `bShare` 0,75 (cíl ≥ 0,6). Odvozeno, neověřeno: s021 dál prohrává na plošinách před arénou, které R5 neměnila.
+
+**Po R5 (`42076825`), T8 před sloučením:**
+
+- Zábava panelu P45 (40 her) proti `fun-baseline.json` P46A: mrtvý čas medián 5,36 → 3,78 s, `rising` 0,55 → 0,63, finále 0,23 → 0,38, události/s 1,09 → 1,18. Žádná věta horší (hratelnost, nejdelší mezera +0,5 s, stoupání, finále, počet chování, žánr).
+- Celá sada samotná: 13 090 / 13 128. R5 shodila dva testy a oba jsou opravené: statistika mezer sekce 3 v `sections.test.ts` (římsa a jáma se do ní nepočítají, `c19c6817`) a zmrazené otisky skákačky P41 (`42076825`, jen řádky skákačky). Zbytek červených padá bez vztahu k P46B: časové limity pod zátěží sady (`upgrade`, `compile-report`, `golden`, `swarm`, chyby `STACK_TRACE_ERROR` na limitu), `upgrade-action-lost` stejně na základu `491079b7` a chybějící gitignorovaný `plans/P8-odevzdani.md` ve worktree.
