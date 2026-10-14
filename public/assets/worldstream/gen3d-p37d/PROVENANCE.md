@@ -626,3 +626,12 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-battlement-wall` | battlement wall, castle wall | 4431 / 2174 |
 | `gen3d-cemetery-gate` | cemetery gate, graveyard gate | 4736 / 2367 |
 | `gen3d-daisy` | daisy | 4736 / 2346 |
+| `gen3d-storefront` | storefront, shop front, shopfront | 4328 / 2060 |
+| `gen3d-magazine-rack` | magazine rack | 3940 / 2554 |
+| `gen3d-bean-bag-chair` | bean bag chair, bean bag, beanbag | 4748 / 2374 |
+| `gen3d-industrial-fan` | industrial fan, wall fan | 4444 / 2075 |
+| `gen3d-mushroom-cluster` | mushroom cluster | 4425 / 2107 |
+| `gen3d-heliconia` | heliconia | 4572 / 2274 |
+| `gen3d-clay-pot` | clay pot, terracotta pot | 4746 / 2370 |
+| `gen3d-driftwood` | driftwood | 4618 / 2263 |
+| `gen3d-floating-dock` | floating dock, pontoon | 4426 / 2162 |

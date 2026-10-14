@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "91c23de2aacc45349f544453b8f33987eaefae8db7c95251f76d8ddbd2146b1a",
+ "catalogHash": "7daa3cb1e0eac31d6a36b57a9d1dd4f6f918e365308a419ab0a6bcdd69cd2c9a",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1401,6 +1401,15 @@
   "gen3d-steam-vent": {"class":"prop"},
   "gen3d-battlement-wall": {"class":"prop"},
   "gen3d-cemetery-gate": {"class":"prop"},
-  "gen3d-daisy": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-daisy": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-storefront": {"class":"prop"},
+  "gen3d-magazine-rack": {"class":"prop"},
+  "gen3d-bean-bag-chair": {"class":"prop"},
+  "gen3d-industrial-fan": {"class":"prop"},
+  "gen3d-mushroom-cluster": {"class":"prop"},
+  "gen3d-heliconia": {"class":"prop"},
+  "gen3d-clay-pot": {"class":"prop"},
+  "gen3d-driftwood": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-floating-dock": {"class":"prop"}
  }
 }

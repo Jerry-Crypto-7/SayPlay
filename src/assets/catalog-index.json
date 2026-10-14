@@ -28231,6 +28231,184 @@
           0.2788
         ]
       }
+    },
+    {
+      "assetId": "gen3d-storefront",
+      "tags": [
+        "storefront",
+        "shop front",
+        "shopfront"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-storefront-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.54953,
+          0,
+          -0.45957
+        ],
+        "max": [
+          0.54953,
+          0.99999,
+          0.45957
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-magazine-rack",
+      "tags": [
+        "magazine rack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-magazine-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30727,
+          0,
+          -0.44128
+        ],
+        "max": [
+          0.30727,
+          0.99889,
+          0.44128
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bean-bag-chair",
+      "tags": [
+        "bean bag chair",
+        "bean bag",
+        "beanbag"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bean-bag-chair-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.68349,
+          0,
+          -0.7105
+        ],
+        "max": [
+          0.68349,
+          0.99904,
+          0.7105
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-industrial-fan",
+      "tags": [
+        "industrial fan",
+        "wall fan"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-industrial-fan-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.451,
+          0,
+          -0.30861
+        ],
+        "max": [
+          0.451,
+          1.00001,
+          0.30861
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mushroom-cluster",
+      "tags": [
+        "mushroom cluster"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mushroom-cluster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.56479,
+          0,
+          -0.53408
+        ],
+        "max": [
+          0.56479,
+          1.00001,
+          0.53408
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-heliconia",
+      "tags": [
+        "heliconia"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-heliconia-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38172,
+          0,
+          -0.47571
+        ],
+        "max": [
+          0.38172,
+          1.00001,
+          0.47571
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-clay-pot",
+      "tags": [
+        "clay pot",
+        "terracotta pot"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-clay-pot-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42425,
+          0,
+          -0.42517
+        ],
+        "max": [
+          0.42425,
+          0.99882,
+          0.42517
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-driftwood",
+      "tags": [
+        "driftwood"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-driftwood-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1841,
+          0,
+          -0.25847
+        ],
+        "max": [
+          0.1841,
+          1.00001,
+          0.25847
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-floating-dock",
+      "tags": [
+        "floating dock",
+        "pontoon"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-floating-dock-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.3078,
+          0,
+          -1.30357
+        ],
+        "max": [
+          1.3078,
+          0.99897,
+          1.30357
+        ]
+      }
     }
   ]
 }
