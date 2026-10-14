@@ -54,6 +54,18 @@
         {
           "id": "gen3d-checkout-counter",
           "height": 1.1
+        },
+        {
+          "id": "gen3d-cereal-box",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-milk-carton",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-deli-counter",
+          "height": 1.2
         }
       ]
     },
@@ -65,6 +77,14 @@
         {
           "id": "gen3d-sea-anemone",
           "height": 0.9
+        },
+        {
+          "id": "gen3d-pearl-oyster",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-sunken-cannon",
+          "height": 1
         }
       ]
     },
@@ -76,6 +96,14 @@
         {
           "id": "gen3d-diving-bell",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-deep-sea-diver",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-giant-squid",
+          "height": 2.5
         }
       ]
     },
@@ -110,6 +138,14 @@
         {
           "id": "gen3d-suit-of-armor",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-haunted-portrait",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-throne",
+          "height": 1.8
         }
       ]
     },
@@ -129,6 +165,10 @@
         {
           "id": "gen3d-clothing-rack",
           "height": 1.6
+        },
+        {
+          "id": "gen3d-mall-kiosk",
+          "height": 2.4
         }
       ]
     },
@@ -148,6 +188,10 @@
         {
           "id": "gen3d-bar-counter",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-chalice",
+          "height": 0.6
         }
       ]
     },
@@ -167,6 +211,10 @@
         {
           "id": "gen3d-dog-bowl",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-cat-tree",
+          "height": 1.8
         }
       ]
     },
@@ -186,6 +234,10 @@
         {
           "id": "gen3d-baguette",
           "height": 0.4
+        },
+        {
+          "id": "gen3d-bread-basket",
+          "height": 0.6
         }
       ]
     },
@@ -201,6 +253,10 @@
         {
           "id": "gen3d-charred-log",
           "height": 0.7
+        },
+        {
+          "id": "gen3d-burning-tree",
+          "height": 4.5
         }
       ]
     },
@@ -216,6 +272,10 @@
         {
           "id": "gen3d-burning-tree",
           "height": 4.5
+        },
+        {
+          "id": "gen3d-charred-log",
+          "height": 0.7
         }
       ]
     },
@@ -261,6 +321,14 @@
         {
           "id": "gen3d-portcullis",
           "height": 3
+        },
+        {
+          "id": "gen3d-castle-banner",
+          "height": 3
+        },
+        {
+          "id": "gen3d-drawbridge",
+          "height": 4
         }
       ]
     },
@@ -272,6 +340,14 @@
         {
           "id": "gen3d-cellar-door",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-potato-sack",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-oil-lamp",
+          "height": 0.8
         }
       ]
     },
@@ -283,6 +359,18 @@
         {
           "id": "gen3d-flagpole",
           "height": 6
+        },
+        {
+          "id": "gen3d-stone-column",
+          "height": 3
+        },
+        {
+          "id": "gen3d-ballot-box",
+          "height": 1
+        },
+        {
+          "id": "gen3d-marble-bust",
+          "height": 1.2
         }
       ]
     },
@@ -294,6 +382,10 @@
         {
           "id": "gen3d-rope-bridge",
           "height": 2
+        },
+        {
+          "id": "gen3d-trail-sign",
+          "height": 1.8
         }
       ]
     },
@@ -305,6 +397,10 @@
         {
           "id": "gen3d-rope-bridge",
           "height": 2
+        },
+        {
+          "id": "gen3d-water-wheel",
+          "height": 3
         }
       ]
     },
@@ -316,6 +412,18 @@
         {
           "id": "gen3d-cloud-castle",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-rainbow",
+          "height": 4
+        },
+        {
+          "id": "gen3d-floating-island",
+          "height": 3
+        },
+        {
+          "id": "gen3d-harp",
+          "height": 1.8
         }
       ]
     },
@@ -331,6 +439,14 @@
         {
           "id": "gen3d-lecture-podium",
           "height": 1.3
+        },
+        {
+          "id": "gen3d-globe",
+          "height": 1
+        },
+        {
+          "id": "gen3d-microscope",
+          "height": 0.8
         }
       ]
     },
@@ -342,6 +458,18 @@
         {
           "id": "gen3d-music-stand",
           "height": 1.4
+        },
+        {
+          "id": "gen3d-theater-seat",
+          "height": 1.1
+        },
+        {
+          "id": "gen3d-cello",
+          "height": 1.3
+        },
+        {
+          "id": "gen3d-piano",
+          "height": 1.5
         }
       ]
     },
@@ -368,6 +496,14 @@
         {
           "id": "gen3d-dentist-chair",
           "height": 1.4
+        },
+        {
+          "id": "gen3d-toothbrush",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-toothpaste-tube",
+          "height": 0.7
         }
       ]
     },
@@ -383,6 +519,14 @@
         {
           "id": "gen3d-obelisk",
           "height": 5
+        },
+        {
+          "id": "gen3d-scarab-statue",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-pharaoh-mask",
+          "height": 1.2
         }
       ]
     },
@@ -398,6 +542,14 @@
         {
           "id": "gen3d-griddle",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-jukebox",
+          "height": 1.7
+        },
+        {
+          "id": "gen3d-deep-fryer",
+          "height": 1.1
         }
       ]
     },
@@ -409,6 +561,14 @@
         {
           "id": "gen3d-garden-hose",
           "height": 0.8
+        },
+        {
+          "id": "gen3d-lawn-mower",
+          "height": 1
+        },
+        {
+          "id": "gen3d-recycling-bin",
+          "height": 1.1
         }
       ]
     },
@@ -424,6 +584,14 @@
         {
           "id": "gen3d-vegetable-basket",
           "height": 0.7
+        },
+        {
+          "id": "gen3d-market-stall",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-honey-jar",
+          "height": 0.6
         }
       ]
     },
@@ -439,6 +607,14 @@
         {
           "id": "gen3d-rocking-chair",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-firewood-basket",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-fireplace-screen",
+          "height": 1
         }
       ]
     },
@@ -454,6 +630,10 @@
         {
           "id": "gen3d-cattail",
           "height": 1.6
+        },
+        {
+          "id": "gen3d-lake-buoy",
+          "height": 1.2
         }
       ]
     },
@@ -465,6 +645,10 @@
         {
           "id": "gen3d-wooden-hut",
           "height": 3
+        },
+        {
+          "id": "gen3d-firewood-basket",
+          "height": 0.8
         }
       ]
     },
@@ -495,6 +679,10 @@
         {
           "id": "gen3d-forge-furnace",
           "height": 2.2
+        },
+        {
+          "id": "gen3d-forge-tong",
+          "height": 0.8
         }
       ]
     },
@@ -506,6 +694,14 @@
         {
           "id": "gen3d-funeral-wreath",
           "height": 1.4
+        },
+        {
+          "id": "gen3d-coffin",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-funeral-urn",
+          "height": 0.9
         }
       ]
     },
@@ -521,6 +717,10 @@
         {
           "id": "gen3d-car-jack",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-fuel-can",
+          "height": 0.6
         }
       ]
     },
@@ -532,6 +732,14 @@
         {
           "id": "gen3d-ice-cave",
           "height": 2.6
+        },
+        {
+          "id": "gen3d-icicle",
+          "height": 1.5
+        },
+        {
+          "id": "gen3d-iceberg",
+          "height": 3
         }
       ]
     },
@@ -547,6 +755,14 @@
         {
           "id": "gen3d-angel-statue",
           "height": 2.2
+        },
+        {
+          "id": "gen3d-gravestone",
+          "height": 1.3
+        },
+        {
+          "id": "gen3d-open-grave",
+          "height": 0.8
         }
       ]
     },
@@ -562,6 +778,14 @@
         {
           "id": "gen3d-laundry-cart",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-water-heater",
+          "height": 1.7
+        },
+        {
+          "id": "gen3d-washing-machine",
+          "height": 1.1
         }
       ]
     },
@@ -577,6 +801,14 @@
         {
           "id": "gen3d-hockey-goal",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-hockey-stick",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-hockey-puck",
+          "height": 0.3
         }
       ]
     },
@@ -588,6 +820,14 @@
         {
           "id": "gen3d-planet-rover",
           "height": 1.6
+        },
+        {
+          "id": "gen3d-moon-rock",
+          "height": 1
+        },
+        {
+          "id": "gen3d-ice-spike",
+          "height": 2
         }
       ]
     },
@@ -603,6 +843,14 @@
         {
           "id": "gen3d-tribal-drum",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-tiki-mask",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-flower-garland",
+          "height": 1
         }
       ]
     },
@@ -614,6 +862,18 @@
         {
           "id": "gen3d-medical-tent",
           "height": 2.4
+        },
+        {
+          "id": "gen3d-medical-stretcher",
+          "height": 1
+        },
+        {
+          "id": "gen3d-first-aid-kit",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-drip-stand",
+          "height": 1.8
         }
       ]
     },
@@ -644,6 +904,14 @@
         {
           "id": "gen3d-pepper-mill",
           "height": 0.9
+        },
+        {
+          "id": "gen3d-teapot",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-salt-shaker",
+          "height": 0.5
         }
       ]
     },
@@ -655,6 +923,10 @@
         {
           "id": "gen3d-coffee-table",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-record-player",
+          "height": 1
         }
       ]
     },
@@ -670,6 +942,14 @@
         {
           "id": "gen3d-potion-bottle",
           "height": 0.9
+        },
+        {
+          "id": "gen3d-crystal-ball",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-witch-cauldron",
+          "height": 1
         }
       ]
     },
@@ -681,6 +961,14 @@
         {
           "id": "gen3d-dandelion",
           "height": 1
+        },
+        {
+          "id": "gen3d-picnic-basket",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-birdhouse",
+          "height": 1.6
         }
       ]
     },
@@ -696,6 +984,14 @@
         {
           "id": "gen3d-pillory",
           "height": 2
+        },
+        {
+          "id": "gen3d-market-stall",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-wagon",
+          "height": 1.6
         }
       ]
     },
@@ -707,6 +1003,18 @@
         {
           "id": "gen3d-mining-helmet",
           "height": 0.6
+        },
+        {
+          "id": "gen3d-pickaxe",
+          "height": 1
+        },
+        {
+          "id": "gen3d-ore-crusher",
+          "height": 2.5
+        },
+        {
+          "id": "gen3d-mine-cart",
+          "height": 1.2
         }
       ]
     },
@@ -717,6 +1025,10 @@
       "props": [
         {
           "id": "gen3d-stone-bridge",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-sleigh",
           "height": 1.4
         }
       ]
@@ -737,6 +1049,10 @@
         {
           "id": "gen3d-velvet-rope",
           "height": 1
+        },
+        {
+          "id": "gen3d-marble-bust",
+          "height": 1.2
         }
       ]
     },
@@ -748,6 +1064,18 @@
         {
           "id": "gen3d-mushroom-house",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-mushroom-lantern",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-fairy-door",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-garden-snail",
+          "height": 0.6
         }
       ]
     },
@@ -763,6 +1091,10 @@
         {
           "id": "gen3d-emu",
           "height": 1.7
+        },
+        {
+          "id": "gen3d-kangaroo-sign",
+          "height": 2
         }
       ]
     },
@@ -774,6 +1106,18 @@
         {
           "id": "gen3d-grooming-table",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-grooming-dryer",
+          "height": 1.5
+        },
+        {
+          "id": "gen3d-pet-carrier",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-hairbrush",
+          "height": 0.6
         }
       ]
     },
@@ -789,6 +1133,14 @@
         {
           "id": "gen3d-medicine-cabinet",
           "height": 1.8
+        },
+        {
+          "id": "gen3d-mortar-and-pestle",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-pharmacy-sign",
+          "height": 2.2
         }
       ]
     },
@@ -800,6 +1152,18 @@
         {
           "id": "gen3d-playground-slide",
           "height": 2.2
+        },
+        {
+          "id": "gen3d-seesaw",
+          "height": 1
+        },
+        {
+          "id": "gen3d-merry-go-round",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-spring-rider",
+          "height": 1
         }
       ]
     },
@@ -815,6 +1179,14 @@
         {
           "id": "gen3d-parcel",
           "height": 0.7
+        },
+        {
+          "id": "gen3d-parcel-scale",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-sealed-letter",
+          "height": 0.4
         }
       ]
     },
@@ -841,6 +1213,14 @@
         {
           "id": "gen3d-planter-box",
           "height": 0.8
+        },
+        {
+          "id": "gen3d-watering-can",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-tomato-plant",
+          "height": 1.2
         }
       ]
     },
@@ -856,6 +1236,10 @@
         {
           "id": "gen3d-air-conditioner",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-antenna-tower",
+          "height": 5
         }
       ]
     },
@@ -867,6 +1251,10 @@
         {
           "id": "gen3d-snowshoe",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-snowy-stump",
+          "height": 0.7
         }
       ]
     },
@@ -878,6 +1266,14 @@
         {
           "id": "gen3d-snowy-lamppost",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-sleigh",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-frozen-fountain",
+          "height": 2
         }
       ]
     },
@@ -904,6 +1300,14 @@
         {
           "id": "gen3d-rope-ladder",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-treehouse",
+          "height": 6
+        },
+        {
+          "id": "gen3d-hammock",
+          "height": 1.2
         }
       ]
     },
@@ -915,6 +1319,18 @@
         {
           "id": "gen3d-snow-globe",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-christmas-tree",
+          "height": 3
+        },
+        {
+          "id": "gen3d-ice-lantern",
+          "height": 1
+        },
+        {
+          "id": "gen3d-gingerbread-house",
+          "height": 1.5
         }
       ]
     },
@@ -926,6 +1342,184 @@
         {
           "id": "gen3d-zoo-gate",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-kangaroo-sign",
+          "height": 2
+        }
+      ]
+    },
+    {
+      "setting": "construction site",
+      "pattern": "\\bconstruction[\\s-]+site(?:e?s)?\\b",
+      "look": "factory",
+      "props": [
+        {
+          "id": "gen3d-cement-mixer",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-wheelbarrow",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-hard-hat",
+          "height": 0.5
+        }
+      ]
+    },
+    {
+      "setting": "swamp",
+      "pattern": "\\bswamp(?:e?s)?\\b",
+      "look": "jungle",
+      "props": [
+        {
+          "id": "gen3d-stilt-hut",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-mangrove-tree",
+          "height": 4
+        }
+      ]
+    },
+    {
+      "setting": "harbor",
+      "pattern": "\\bharbor(?:e?s)?\\b",
+      "look": "ocean",
+      "props": [
+        {
+          "id": "gen3d-lifebuoy",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-anchor",
+          "height": 1.4
+        }
+      ]
+    },
+    {
+      "setting": "pond",
+      "pattern": "\\bpond(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-fishing",
+          "height": 1.4
+        }
+      ]
+    },
+    {
+      "setting": "desert village",
+      "pattern": "\\bdesert[\\s-]+village(?:e?s)?\\b",
+      "look": "desert",
+      "props": [
+        {
+          "id": "gen3d-market-stall",
+          "height": 2.6
+        }
+      ]
+    },
+    {
+      "setting": "parking lot",
+      "pattern": "\\bparking[\\s-]+lot(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-street-lamp",
+          "height": 4
+        }
+      ]
+    },
+    {
+      "setting": "campsite",
+      "pattern": "\\bcampsite(?:e?s)?\\b",
+      "look": "forest",
+      "props": [
+        {
+          "id": "gen3d-hiking-backpack",
+          "height": 0.9
+        }
+      ]
+    },
+    {
+      "setting": "autumn forest",
+      "pattern": "\\bautumn[\\s-]+forest(?:e?s)?\\b",
+      "look": "forest",
+      "props": [
+        {
+          "id": "gen3d-acorn",
+          "height": 0.5
+        }
+      ]
+    },
+    {
+      "setting": "castle ruin",
+      "pattern": "\\bcastle[\\s-]+ruin(?:e?s)?\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-ruin",
+          "height": 2.5
+        }
+      ]
+    },
+    {
+      "setting": "countryside",
+      "pattern": "\\bcountryside(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-weather-vane",
+          "height": 2.4
+        }
+      ]
+    },
+    {
+      "setting": "oasis",
+      "pattern": "\\boasis(?:e?s)?\\b",
+      "look": "desert",
+      "props": [
+        {
+          "id": "gen3d-camel",
+          "height": 2.2
+        }
+      ]
+    },
+    {
+      "setting": "ski resort",
+      "pattern": "\\bski[\\s-]+resort(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-ski",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-snowboard",
+          "height": 1.5
+        }
+      ]
+    },
+    {
+      "setting": "farm",
+      "pattern": "\\bfarm(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-pitchfork",
+          "height": 1.6
+        }
+      ]
+    },
+    {
+      "setting": "jungle temple",
+      "pattern": "\\bjungle[\\s-]+temple(?:e?s)?\\b",
+      "look": "jungle",
+      "props": [
+        {
+          "id": "gen3d-golden-idol",
+          "height": 1
         }
       ]
     }

@@ -1,0 +1,1526 @@
+{
+ "about": "P46I T1: setting → prop pairs read by scripts/p45h/build-setting-kits.mjs after evals/play/p45g/kit-nouns.json. `source: p46i-catalog` = a model the catalog already has (in setting-kits.json right away), `p46i-gen` = a name of the P46I overnight list (in setting-kits.json once promoted). `height` = scenery height in metres. Settings pinned by src/play/__tests__/look.test.ts (frozen lake, highway, supermarket, canyon, desert canyon, haunted mansion) get nothing; at most 4 props per setting, counted on the P46 integration branch.",
+ "nouns": [
+  {
+   "noun": "cereal box",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "grocery store"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "milk carton",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "grocery store"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "deli counter",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "grocery store"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "pearl oyster",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "underwater"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "sunken cannon",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "underwater"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "deep sea diver",
+   "class": "prop",
+   "flat": false,
+   "height": 1.8,
+   "settings": [
+    "deep sea"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "giant squid",
+   "class": "swimmer",
+   "flat": false,
+   "height": 2.5,
+   "settings": [
+    "deep sea"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "potato sack",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "cellar"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "oil lamp",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "cellar"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "stone column",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "city hall"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "ballot box",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "city hall"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "marble bust",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "city hall",
+    "museum hall"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "rainbow",
+   "class": "prop",
+   "flat": false,
+   "height": 4,
+   "settings": [
+    "cloud castle"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "floating island",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "cloud castle"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "harp",
+   "class": "prop",
+   "flat": false,
+   "height": 1.8,
+   "settings": [
+    "cloud castle"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "theater seat",
+   "class": "prop",
+   "flat": false,
+   "height": 1.1,
+   "settings": [
+    "concert hall"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "cello",
+   "class": "prop",
+   "flat": false,
+   "height": 1.3,
+   "settings": [
+    "concert hall"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "piano",
+   "class": "prop",
+   "flat": false,
+   "height": 1.5,
+   "settings": [
+    "concert hall"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "toothbrush",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "dentist office"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "toothpaste tube",
+   "class": "prop",
+   "flat": false,
+   "height": 0.7,
+   "settings": [
+    "dentist office"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "lawn mower",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "driveway"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "recycling bin",
+   "class": "prop",
+   "flat": false,
+   "height": 1.1,
+   "settings": [
+    "driveway"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "firewood basket",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "forest hut",
+    "fireplace"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "coffin",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "funeral"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "funeral urn",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "funeral"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "moon rock",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "icy moon"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "ice spike",
+   "class": "prop",
+   "flat": false,
+   "height": 2,
+   "settings": [
+    "icy moon"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "medical stretcher",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "jungle hospital"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "first aid kit",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "jungle hospital"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "drip stand",
+   "class": "prop",
+   "flat": false,
+   "height": 1.8,
+   "settings": [
+    "jungle hospital"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "picnic basket",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "meadow"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "birdhouse",
+   "class": "prop",
+   "flat": false,
+   "height": 1.6,
+   "settings": [
+    "meadow"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "pickaxe",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "mining colony"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "ore crusher",
+   "class": "prop",
+   "flat": false,
+   "height": 2.5,
+   "settings": [
+    "mining colony"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "mine cart",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "mining colony"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "mushroom lantern",
+   "class": "prop",
+   "flat": false,
+   "height": 1.6,
+   "settings": [
+    "mushroom village"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "fairy door",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "mushroom village"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "garden snail",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "mushroom village"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "grooming dryer",
+   "class": "prop",
+   "flat": false,
+   "height": 1.5,
+   "settings": [
+    "pet salon"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "pet carrier",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "pet salon"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "hairbrush",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "pet salon"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "seesaw",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "playground"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "merry go round",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "playground"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "spring rider",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "playground"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "watering can",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "rooftop garden"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "tomato plant",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "rooftop garden"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "treehouse",
+   "class": "prop",
+   "flat": false,
+   "height": 6,
+   "settings": [
+    "treetop"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "hammock",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "treetop"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "christmas tree",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "winter festival"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "ice lantern",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "winter festival"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "gingerbread house",
+   "class": "prop",
+   "flat": false,
+   "height": 1.5,
+   "settings": [
+    "winter festival"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "kangaroo sign",
+   "class": "prop",
+   "flat": false,
+   "height": 2,
+   "settings": [
+    "zoo",
+    "outback"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "cement mixer",
+   "class": "prop",
+   "flat": false,
+   "height": 2.2,
+   "settings": [
+    "construction site"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "wheelbarrow",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "construction site"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "hard hat",
+   "class": "prop",
+   "flat": false,
+   "height": 0.5,
+   "settings": [
+    "construction site"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "stilt hut",
+   "class": "prop",
+   "flat": false,
+   "height": 3.5,
+   "settings": [
+    "swamp"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "mangrove tree",
+   "class": "prop",
+   "flat": false,
+   "height": 4,
+   "settings": [
+    "swamp"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "lifebuoy",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "harbor"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "anchor",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "harbor"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "fishing",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "pond"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "haunted portrait",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "haunted castle"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "throne",
+   "class": "prop",
+   "flat": false,
+   "height": 1.8,
+   "settings": [
+    "haunted castle"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "burning tree",
+   "class": "prop",
+   "flat": false,
+   "height": 4.5,
+   "settings": [
+    "burned forest"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "charred log",
+   "class": "prop",
+   "flat": false,
+   "height": 0.7,
+   "settings": [
+    "burning tree"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "castle banner",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "castle gate"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "drawbridge",
+   "class": "prop",
+   "flat": false,
+   "height": 4,
+   "settings": [
+    "castle gate"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "trail sign",
+   "class": "prop",
+   "flat": false,
+   "height": 1.8,
+   "settings": [
+    "cliff"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "water wheel",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "rocky river"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "globe",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "college"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "microscope",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "college"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "scarab statue",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "desert temple"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "pharaoh mask",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "desert temple"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "jukebox",
+   "class": "prop",
+   "flat": false,
+   "height": 1.7,
+   "settings": [
+    "diner kitchen"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "deep fryer",
+   "class": "prop",
+   "flat": false,
+   "height": 1.1,
+   "settings": [
+    "diner kitchen"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "market stall",
+   "class": "prop",
+   "flat": false,
+   "height": 2.6,
+   "settings": [
+    "farm market",
+    "medieval town",
+    "desert village"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "honey jar",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "farm market"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "fireplace screen",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "fireplace"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "lake buoy",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "foggy lake"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "forge tong",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "forge"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "fuel can",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "garage"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "icicle",
+   "class": "prop",
+   "flat": false,
+   "height": 1.5,
+   "settings": [
+    "glacier"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "iceberg",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "glacier"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "gravestone",
+   "class": "prop",
+   "flat": false,
+   "height": 1.3,
+   "settings": [
+    "graveyard"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "open grave",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "graveyard"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "water heater",
+   "class": "prop",
+   "flat": false,
+   "height": 1.7,
+   "settings": [
+    "hotel basement"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "washing machine",
+   "class": "prop",
+   "flat": false,
+   "height": 1.1,
+   "settings": [
+    "hotel basement"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "hockey stick",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "ice rink"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "hockey puck",
+   "class": "prop",
+   "flat": false,
+   "height": 0.3,
+   "settings": [
+    "ice rink"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "tiki mask",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "jungle festival"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "flower garland",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "jungle festival"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "teapot",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "kitchen table"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "salt shaker",
+   "class": "prop",
+   "flat": false,
+   "height": 0.5,
+   "settings": [
+    "kitchen table"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "record player",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "living room"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "crystal ball",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "magic tower"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "witch cauldron",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "magic tower"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "wagon",
+   "class": "prop",
+   "flat": false,
+   "height": 1.6,
+   "settings": [
+    "medieval town"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "mortar and pestle",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "pharmacy"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "pharmacy sign",
+   "class": "prop",
+   "flat": false,
+   "height": 2.2,
+   "settings": [
+    "pharmacy"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "parcel scale",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "post office"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "sealed letter",
+   "class": "prop",
+   "flat": false,
+   "height": 0.4,
+   "settings": [
+    "post office"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "antenna tower",
+   "class": "prop",
+   "flat": false,
+   "height": 5,
+   "settings": [
+    "school rooftop"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "snowy stump",
+   "class": "prop",
+   "flat": false,
+   "height": 0.7,
+   "settings": [
+    "snowy forest"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "sleigh",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "snowy village",
+    "mountain village"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "frozen fountain",
+   "class": "prop",
+   "flat": false,
+   "height": 2,
+   "settings": [
+    "snowy village"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "street lamp",
+   "class": "prop",
+   "flat": false,
+   "height": 4,
+   "settings": [
+    "parking lot"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "hiking backpack",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "campsite"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "acorn",
+   "class": "prop",
+   "flat": false,
+   "height": 0.5,
+   "settings": [
+    "autumn forest"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "ruin",
+   "class": "prop",
+   "flat": false,
+   "height": 2.5,
+   "settings": [
+    "castle ruin"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "weather vane",
+   "class": "prop",
+   "flat": false,
+   "height": 2.4,
+   "settings": [
+    "countryside"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "camel",
+   "class": "prop",
+   "flat": false,
+   "height": 2.2,
+   "settings": [
+    "oasis"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "ski",
+   "class": "prop",
+   "flat": false,
+   "height": 1.6,
+   "settings": [
+    "ski resort"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "snowboard",
+   "class": "prop",
+   "flat": false,
+   "height": 1.5,
+   "settings": [
+    "ski resort"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "mall kiosk",
+   "class": "prop",
+   "flat": false,
+   "height": 2.4,
+   "settings": [
+    "mall"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "chalice",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "tavern"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "cat tree",
+   "class": "quadruped",
+   "flat": false,
+   "height": 1.8,
+   "settings": [
+    "animal shelter"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "bread basket",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "bakery"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "pitchfork",
+   "class": "prop",
+   "flat": false,
+   "height": 1.6,
+   "settings": [
+    "farm"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "golden idol",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "jungle temple"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "stone lantern",
+   "class": "prop",
+   "flat": false,
+   "height": 1.6,
+   "settings": [
+    "cherry blossom",
+    "japanese garden"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "torii gate",
+   "class": "prop",
+   "flat": false,
+   "height": 4,
+   "settings": [
+    "cherry blossom",
+    "japanese garden"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "paper lantern",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "cherry blossom"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "bonsai tree",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "japanese garden"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "rain barrel",
+   "class": "prop",
+   "flat": false,
+   "height": 1.1,
+   "settings": [
+    "forest hut"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "outhouse",
+   "class": "prop",
+   "flat": false,
+   "height": 2.4,
+   "settings": [
+    "forest hut"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "feeding trough",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "zoo"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "ticket booth",
+   "class": "prop",
+   "flat": false,
+   "height": 2.5,
+   "settings": [
+    "zoo"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "water lily",
+   "class": "prop",
+   "flat": false,
+   "height": 0.4,
+   "settings": [
+    "pond"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "brain coral",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "underwater"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "submersible",
+   "class": "prop",
+   "flat": false,
+   "height": 2.2,
+   "settings": [
+    "deep sea"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "wine barrel",
+   "class": "prop",
+   "flat": false,
+   "height": 1.1,
+   "settings": [
+    "cellar"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "giant tooth",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "dentist office"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "basketball hoop",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "driveway"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "lily bouquet",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "funeral"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "space probe",
+   "class": "prop",
+   "flat": false,
+   "height": 2,
+   "settings": [
+    "icy moon"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "wooden fence",
+   "class": "prop",
+   "flat": false,
+   "height": 1.1,
+   "settings": [
+    "meadow",
+    "countryside"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "wooden pergola",
+   "class": "prop",
+   "flat": false,
+   "height": 2.6,
+   "settings": [
+    "rooftop garden"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "rope swing",
+   "class": "prop",
+   "flat": false,
+   "height": 2.4,
+   "settings": [
+    "treetop"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "cypress tree",
+   "class": "prop",
+   "flat": false,
+   "height": 6,
+   "settings": [
+    "swamp"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "mooring bollard",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "harbor"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "smoldering stump",
+   "class": "prop",
+   "flat": false,
+   "height": 0.7,
+   "settings": [
+    "burned forest",
+    "burning tree"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "date palm tree",
+   "class": "prop",
+   "flat": false,
+   "height": 6,
+   "settings": [
+    "oasis",
+    "desert village"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "crooked lamppost",
+   "class": "prop",
+   "flat": false,
+   "height": 3.5,
+   "settings": [
+    "crooked tower"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "gazebo",
+   "class": "prop",
+   "flat": false,
+   "height": 3.2,
+   "settings": [
+    "foggy lake"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "tire stack",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "garage"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "eucalyptus tree",
+   "class": "prop",
+   "flat": false,
+   "height": 6,
+   "settings": [
+    "outback"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "solar panel",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "school rooftop"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "snow fort",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "snowy forest"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "ticket machine",
+   "class": "prop",
+   "flat": false,
+   "height": 1.6,
+   "settings": [
+    "parking lot"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "camping chair",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "campsite"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "leaf pile",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "autumn forest"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "broken column",
+   "class": "prop",
+   "flat": false,
+   "height": 2,
+   "settings": [
+    "castle ruin"
+   ],
+   "source": "p46i-gen"
+  }
+ ]
+}
