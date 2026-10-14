@@ -27670,6 +27670,89 @@
           0.16713
         ]
       }
+    },
+    {
+      "assetId": "gen3d-camping-chair",
+      "tags": [
+        "camping chair",
+        "folding chair",
+        "camp chair"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-camping-chair-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37507,
+          0,
+          -0.33667
+        ],
+        "max": [
+          0.37507,
+          0.99898,
+          0.33667
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-gate",
+      "tags": [
+        "wooden gate",
+        "farm gate",
+        "field gate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-gate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.10321,
+          0,
+          -0.92408
+        ],
+        "max": [
+          0.10321,
+          0.99911,
+          0.92408
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-side-table",
+      "tags": [
+        "side table",
+        "end table"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-side-table-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.56521,
+          0,
+          -0.56507
+        ],
+        "max": [
+          0.56521,
+          1.00002,
+          0.56507
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-smokestack",
+      "tags": [
+        "smokestack",
+        "factory chimney",
+        "smoke stack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-smokestack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.10393,
+          0,
+          -0.12916
+        ],
+        "max": [
+          0.10393,
+          1.00001,
+          0.12916
+        ]
+      }
     }
   ]
 }

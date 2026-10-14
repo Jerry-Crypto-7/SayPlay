@@ -598,3 +598,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-gazebo` | gazebo | 4298 / 2083 |
 | `gen3d-eucalyptus-tree` | eucalyptus tree, gum tree, eucalyptus | 4505 / 2188 |
 | `gen3d-ticket-machine` | ticket machine, parking machine, pay station | 4736 / 2304 |
+| `gen3d-camping-chair` | camping chair, folding chair, camp chair | 4560 / 2248 |
+| `gen3d-wooden-gate` | wooden gate, farm gate, field gate | 4748 / 2366 |
+| `gen3d-side-table` | side table, end table | 4748 / 2374 |
+| `gen3d-smokestack` | smokestack, factory chimney, smoke stack | 4734 / 2364 |

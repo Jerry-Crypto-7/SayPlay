@@ -1507,6 +1507,10 @@
         {
           "id": "gen3d-hiking-backpack",
           "height": 0.9
+        },
+        {
+          "id": "gen3d-camping-chair",
+          "height": 0.9
         }
       ]
     },

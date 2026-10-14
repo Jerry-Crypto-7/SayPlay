@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "cb4a070f7ccc1909e8f7698d08931f555374d8cd071bf7f10cfd4d0a747a7d70",
+ "catalogHash": "420f75eed553976f11e840603d84373b54cccd904bad58df16c46997e7c95983",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1373,6 +1373,10 @@
   "gen3d-crooked-lamppost": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-gazebo": {"class":"prop"},
   "gen3d-eucalyptus-tree": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-ticket-machine": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-ticket-machine": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-camping-chair": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-wooden-gate": {"class":"prop"},
+  "gen3d-side-table": {"class":"prop"},
+  "gen3d-smokestack": {"class":"biped","regions":{"legY":0.25}}
  }
 }
