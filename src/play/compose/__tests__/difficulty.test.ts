@@ -32,7 +32,9 @@ it('pins measured novice and intermediate bounds for every current live recipe',
       expect(result.replayMismatches, cell.id).toBe(0);
       expect(result.winRate, cell.id).toBe(result.wins / 20);
       expect(result.winRate, `${cell.id}/${profile}`).toBeGreaterThanOrEqual(profile === 'novice' ? 0.3 : 0.8);
-      expect(result.winRate, `${cell.id}/${profile}`).toBeLessThanOrEqual(profile === 'novice' ? 0.7 : 1);
+      // Běžec se střelbou (P46A) je lehčí záměrně: horní mez začátečníka bez něj (rozhodnutí majitele 14. 10., jako `runner-boss.test`).
+      const easyByChoice = cell.id.startsWith('runner.') && cell.id.includes('+shoot_at');
+      expect(result.winRate, `${cell.id}/${profile}`).toBeLessThanOrEqual(profile === 'novice' && !easyByChoice ? 0.7 : 1);
     }
   }
 });

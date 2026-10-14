@@ -16,7 +16,7 @@ import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import platformFixture from '../__fixtures__/platform.json';
 import { arcadeWorldOf, generatorOf } from '../compile';
-import { type ArcadeEffect, type ArcadeWorld, BODY, FLAG, HEADER, type InputEvent, type PieceRef, ROLE, bodyBase, nativeRule } from '../contract';
+import { type ArcadeEffect, type ArcadeWorld, BODY, type BodyInit, FLAG, HEADER, type InputEvent, type PieceRef, ROLE, bodyBase, nativeRule } from '../contract';
 import { instantiate, replay } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { BEHAVIOURS, TELEGRAPH_MIN, behaviourBodies, behaviourPhaseOf } from '../pieces/behaviours';
@@ -25,6 +25,7 @@ import { BRUTE } from '../pieces/behaviours/brute';
 import { PACING, type PacingRuleParams } from '../pieces/pacing';
 import { GENRE_PACING, PLATFORM_FOES } from '../pieces/pacing-parts';
 import { PLATFORM, PLATFORM_JUMP_PEAK, PLATFORM_SEGMENTS, checkPlatformLevel, platformLevel } from '../pieces/platform';
+import { CHUNK_SHAPE } from '../pieces/platform-chunks';
 import { segmentScriptOf, segmentSpans } from '../pieces/segments';
 import { funMetrics, traceRun } from '../telemetry';
 import { runBot } from '../verify';
@@ -200,6 +201,39 @@ describe('platform pacing', () => {
     expect(run.segmentChanges).toBe(2);
     expect(run.changes[0]).toEqual(expect.arrayContaining(['foe:hazard:roam', 'terrain:platform:moving']));
     expect(run.changes[1]!.some((change) => change.startsWith('speed:'))).toBe(true);
+  });
+
+  // P46H: jediné místo, kde P46D začátečník umíral, je pevný hrot na desce za pohyblivou plošinou – sloučení s P46B ho
+  // ztratilo (jedna plošina bez hrotu) a začátečník vyhrával 0,95–1,0. Hrot tam je zase, a pohyblivá past o rozestup chodby dál.
+  it('lands the moving platform on a slab with a fixed spike up front and the trap one spike-run pitch behind it', () => {
+    const spec = specOfCell('platformer.default');
+    const { tuning, ...own } = spec.controlParams as Record<string, unknown> & { tuning?: Record<string, unknown> };
+    const offsets = new Set<number>();
+    for (const seed of SEEDS) {
+      const level = platformLevel.generate(seed, platformLevel.params.parse({ ...own, ...tuning }));
+      const ride = level.bodies.find((body) => body.kind === 'platform-moving')!;
+      const reach = ride.z + (ride.vz ?? 0) * (ride.period ?? 0) + ride.d / 2;
+      const slab = level.bodies.filter((body) => body.role === 'platform' && body.kinematic !== true && body.z > reach).sort((a, b) => a.z - b.z)[0]!;
+      const near = slab.z - slab.d / 2;
+      const on = level.bodies.filter((body) => body.role === 'hazard' && Math.abs(body.z - slab.z) < slab.d / 2).sort((a, b) => a.z - b.z);
+      const [fixed, trap] = on as [BodyInit, BodyInit];
+      expect(on, `seed ${seed}`).toHaveLength(2);
+      expect(fixed.kinematic, `seed ${seed}: the landing spike stays put`).toBeUndefined();
+      // Druhý hrot je past, když leží v okně pasti (`trapFrom`–`trapUntil` ‰ cíle); za oknem zůstane pevný.
+      const goal = level.bodies.find((body) => body.role === 'goal')!;
+      const inTrap = trap.z * 1000 < goal.z * PLATFORM_SEGMENTS.trapUntil;
+      expect(trap.kinematic === true, `seed ${seed}: trap`).toBe(inTrap);
+      expect(fixed.y, `seed ${seed}: the fixed spike stands on the slab`).toBe(slab.y + slab.h);
+      expect(trap.z - fixed.z, `seed ${seed}`).toBe(CHUNK_SHAPE.spikePitch);
+      // Hrot v půlce desky, kterou by vzor dal na `landing` % rozsahu desek úseku 2 (normal: 4,5–7 m).
+      const offset = fixed.z - near;
+      expect(offset * 2, `seed ${seed}`).toBeGreaterThanOrEqual(4500 + 25 * PLATFORM_SEGMENTS.landing[0] - 1);
+      expect(offset * 2, `seed ${seed}`).toBeLessThanOrEqual(4500 + 25 * PLATFORM_SEGMENTS.landing[1] + 1);
+      expect(slab.d, `seed ${seed}`).toBe(2 * offset + CHUNK_SHAPE.spikePitch);
+      offsets.add(offset);
+    }
+    // Místo se losuje (prudká obtížnost, viz `PLATFORM_SEGMENTS.landing`), ne pevně.
+    expect(offsets.size).toBeGreaterThan(1);
   });
 
   it('ends in a boss pit: the boss stands twice the hero tall, its head is out of reach from the floor and the step, and only the ledge above the pit reaches it', () => {

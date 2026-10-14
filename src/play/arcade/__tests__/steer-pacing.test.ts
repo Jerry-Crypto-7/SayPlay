@@ -11,12 +11,13 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createCompileRng } from '@/play/compile/rng';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
+import { driveSpec } from '@/play/compose/drive';
 import { GENRE_COMPILER_VERSION } from '@/play/genre/contract';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import steerFixture from '../__fixtures__/steer.json';
 import { arcadeWorldOf } from '../compile';
-import { type ArcadeEffect, type ArcadeWorld, BODY, FLAG, HEADER, type InputEvent, type PieceRef, ROLE, bodyBase, nativeRule } from '../contract';
+import { type ArcadeEffect, type ArcadeWorld, BODY, type BodyInit, FLAG, HEADER, type InputEvent, type PieceRef, ROLE, UNIT, bodyBase, nativeRule } from '../contract';
 import { instantiate, replay } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { TELEGRAPH_MIN, behaviourBodies, behaviourPhaseOf } from '../pieces/behaviours';
@@ -24,7 +25,9 @@ import { play, refsOf } from '../pieces/behaviours/__tests__/harness';
 import { PACING, type PacingRuleParams, segmentWidths } from '../pieces/pacing';
 import { GENRE_PACING, STEER_FOES } from '../pieces/pacing-parts';
 import { segmentScriptOf, segmentSpans } from '../pieces/segments';
-import { STEER_TRACK, steerTrack } from '../pieces/steer';
+import { STEER_TRACK, steerRoute, steerTrack } from '../pieces/steer';
+import { DROPPER } from '../pieces/behaviours/boss';
+import { SHOOT } from '../addons';
 import { funMetrics, traceRun } from '../telemetry';
 import { runBot } from '../verify';
 import { segmentRun } from '../../../../evals/play/p46b/segments';
@@ -244,4 +247,57 @@ describe('steer pacing', () => {
     const sorted = [...gaps].sort((a, b) => a - b);
     expect((sorted[4]! + sorted[5]!) / 2, `${id}: dead time median ${sorted.join(',')}`).toBeLessThanOrEqual(4);
   }, 600_000);
+
+  // P46H: na okruhu ze vzorů robot narážel do cíle střelby, který stál v ústí zúžení nebo vedle shozu (drive.test, 8 her).
+  it('places drive targets on a pattern course clear of a narrowing mouth, with a third one in segment 2; a stored course keeps its two', () => {
+    const spec = specOf('drive.race+shoot');
+    expect((spec.controlParams as { patterns?: number }).patterns).toBe(1);
+    const targets = (world: ArcadeWorld): number[] => {
+      const state = instantiate(world);
+      // Cíle střelby, ne soupeři závodu (taky role `enemy`).
+      return Array.from({ length: state[HEADER.bodyCount] as number }, (_, body) => bodyBase(body)).filter((base) => state[base + BODY.role] === ROLE.enemy && world.kinds[state[base + BODY.kind] as number] === 'enemy').map((base) => state[base + BODY.z] as number);
+    };
+    for (const seed of SEEDS) {
+      const world = worldOf(spec, seed);
+      // Trasa z mantinelů hotového světa (fáze trať natáhnou), stejně jako ji čte `enemiesFor`.
+      const state = instantiate(world);
+      const bodies = Array.from({ length: state[HEADER.bodyCount] as number }, (_, body) => bodyBase(body)).filter((base) => ((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && state[base + BODY.role] === ROLE.obstacle).map((base) => ({ role: 'obstacle', kind: world.kinds[state[base + BODY.kind] as number], x: state[base + BODY.x], y: 0, z: state[base + BODY.z], w: state[base + BODY.w], h: 1, d: state[base + BODY.d], solid: true }) as BodyInit);
+      const route = steerRoute({ bodies, length: world.length });
+      const zs = targets(world);
+      expect(zs.length, `seed ${seed}`).toBe(1 + SHOOT.patternTargets.length);
+      expect(zs[0]).toBe(25 * UNIT);
+      SHOOT.patternTargets.forEach((permille, index) => expect(zs[index + 1], `seed ${seed}`).toBeGreaterThanOrEqual(Math.floor((world.length * permille) / 1000)));
+      for (const z of zs) {
+        const mouth = route.find((segment, index) => index > 0 && segment.width < route[index - 1]!.width && segment.near <= z && z < segment.near + SHOOT.settle);
+        expect(mouth, `seed ${seed}: target at ${z} sits in a narrowing mouth`).toBeUndefined();
+      }
+    }
+    // Uložená trať (bez `patterns`): cíle jako dřív, na rovince startu a v 55 % délky.
+    const { patterns: _patterns, ...stored } = spec.controlParams as Record<string, unknown>;
+    const world = worldOf({ ...spec, controlParams: stored });
+    expect(targets(world)).toEqual([25 * UNIT, Math.floor(world.length * 0.55)]);
+  });
+
+  it('never drops beside a shooting target or within DROPPER.targetClear.after past it while the target stands', () => {
+    // Věta z `compose/__tests__/drive.test.ts` (zombie a policie ve městě): na ní robot do cíle narážel.
+    const spec = driveSpec({ move: 'drive', objective: 'race', actions: ['shoot'], threats: ['rival'] }, { genre: 'voyage', mode: 'race', hero: 'car', setting: 'city', cast: [{ label: 'zombie', does: 'shoot_at' }, { label: 'police car', does: 'chase_me' }, { label: 'garage', does: 'reach' }] });
+    let drops = 0;
+    for (const seed of [2, 6, 15, 17, 19]) {
+      const world = worldOf(spec, seed);
+      play(world, runBot(world).inputs, (state, _tick, effects) => {
+        for (const effect of effects) {
+          if (effect.kind !== 'spawn' || world.kinds[state[bodyBase(effect.template) + BODY.kind] as number] !== 'road_drop') continue;
+          drops += 1;
+          for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+            const base = bodyBase(body);
+            if (state[base + BODY.role] !== ROLE.enemy || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+            const past = effect.z - (state[base + BODY.z] as number);
+            expect(past >= -DROPPER.targetClear.before && past <= DROPPER.targetClear.after, `seed ${seed}: drop ${past} past a target`).toBe(false);
+          }
+        }
+      });
+    }
+    // Shazovače dál shazují – pravidlo jen posune shoz za cíl.
+    expect(drops).toBeGreaterThan(5);
+  });
 });

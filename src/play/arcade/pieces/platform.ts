@@ -26,7 +26,7 @@ import { createCompileRng } from '@/play/compile/rng';
 
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeInput, type ArcadeLevel, AXIS_MAX, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HIT_GRACE, type PieceRef, UNIT, bodyBase } from '../contract';
 import { GRAVITY } from '../kernel';
-import { type ChunkStep, PLATFORM_STYLES, PLATFORM_STYLE_LIBRARY, type PlatformChunk, type PlatformChunkId, type PlatformStyleId, REST_CHUNK, pickPlatformChunk, styledChunks } from './platform-chunks';
+import { CHUNK_SHAPE, type ChunkStep, PLATFORM_STYLES, PLATFORM_STYLE_LIBRARY, type PlatformChunk, type PlatformChunkId, type PlatformStyleId, REST_CHUNK, pickPlatformChunk, styledChunks } from './platform-chunks';
 
 export const PLATFORM_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type PlatformDifficulty = (typeof PLATFORM_DIFFICULTIES)[number];
@@ -338,6 +338,14 @@ export const PLATFORM_SEGMENTS = {
   /** Past: hrot vyjede nejvýš `PLATFORM.spikeH` nad desku, polovinu cyklu je celý v ní; rychlost za tik. */
   piston: { speed: 25, hidden: PLATFORM.spikeH },
   bossTicks: 12 * ARCADE_HZ,
+  /**
+   * Úroveň ze vzorů: deska za pohyblivou plošinou (P46H). Pevný hrot na ní je jediné místo, kde P46D začátečník umíral
+   * (60 semínek: 30 ze 30 proher); hrot leží v půlce desky, kterou by vzor dal na `landing` % rozsahu desek obtížnosti.
+   * Prudké: každé procento je 25 mm; s pevnými 53 % vyhraje začátečník 0,55, s 54 % už 0,8. Proto se procento losuje
+   * z rozsahu (60 semínek: skákačka 0,47, s pronásledovatelem 0,42, lekníny 0,63; intermediate 1,0). Za hrotem je
+   * o rozestup chodby s ostny past úseku 2, takže okno pasti má hostitele i u leknínů s krátkými deskami.
+   */
+  landing: [49, 55] as const,
 } as const;
 
 /** Past úseku 2: hrot kyvadlem nahoru a dolů – nejníž `hidden` pod deskou, nejvýš `spikeH` nad ní. */
@@ -535,18 +543,19 @@ function sectionedLayout(seed: number, params: PlatformLevelParams, extra: numbe
 
 /** Bod v rozsahu: 0 = začátek, 100 = konec. */
 const within = (range: readonly [number, number], pct: number): number => range[0] + Math.floor(((range[1] - range[0]) * pct) / 100);
-
 type Spots = { coinSpots: Spot[]; runMids: Spot[]; runSides: Spot[] };
 
 /**
  * Hrot v úseku `inside`, když tam vzory žádný nepoložily (styly bez chodby s ostny – lekníny, koruny): dostane ho
  * nejdelší pevná deska úseku, na kterou se vejde s rozběhem i dopadem; mince nad ní se přesunou nad hrot. Jako
- * pravidlo P46D „hrot dostane poslední deska“, jen pro úsek. Mění `extras` a `spots` na místě.
+ * pravidlo P46D „hrot dostane poslední deska“, jen pro úsek. Hroty z `keep` se nepočítají a deska s hrotem
+ * hostitelem není. Mění `extras` a `spots` na místě.
  */
-function spikeIn(slabs: readonly BodyInit[], extras: BodyInit[], spots: Spots, inside: (z: number) => boolean): void {
-  if (extras.some((body) => body.kind === 'spikes' && inside(body.z))) return;
+function spikeIn(slabs: readonly BodyInit[], extras: BodyInit[], spots: Spots, inside: (z: number) => boolean, keep: ReadonlySet<BodyInit> = new Set()): void {
+  if (extras.some((body) => body.kind === 'spikes' && inside(body.z) && !keep.has(body))) return;
   const room = 2 * PLATFORM.spikeMargin + PLATFORM.spikeD;
-  const host = slabs.filter((body) => inside(body.z) && body.d >= room).reduce<BodyInit | undefined>((best, body) => (best === undefined || body.d > best.d ? body : best), undefined);
+  const bare = (slab: BodyInit): boolean => !extras.some((body) => body.kind === 'spikes' && Math.abs(body.z - slab.z) < slab.d / 2);
+  const host = slabs.filter((body) => inside(body.z) && body.d >= room && bare(body)).reduce<BodyInit | undefined>((best, body) => (best === undefined || body.d > best.d ? body : best), undefined);
   if (host === undefined) return;
   const z = Math.floor(host.z);
   const top = host.y + host.h;
@@ -561,11 +570,14 @@ function spikeIn(slabs: readonly BodyInit[], extras: BodyInit[], spots: Spots, i
  * Past úseku 2 na úrovni ze vzorů (P46B T6 × P46D): hroty od `trapFrom` do `trapUntil` ‰ trati vyjíždějí a
  * zajíždějí jako v `sectionedLayout`; okno bez hrotu ho dostane (`spikeIn`).
  */
-function trapSegment(slabs: readonly BodyInit[], extras: BodyInit[], spots: Spots, inside: (z: number) => boolean): void {
-  spikeIn(slabs, extras, spots, inside);
-  const pistons = extras.flatMap((body) => (body.kind === 'spikes' && inside(body.z) ? [pistonBody(body.z, body.y)] : []));
+function trapSegment(slabs: readonly BodyInit[], extras: BodyInit[], spots: Spots, inside: (z: number) => boolean, keep: ReadonlySet<BodyInit>): void {
+  spikeIn(slabs, extras, spots, inside, keep);
+  // Okno bez jiné desky pro past (krátké lekníny): pastí se stane hrot za pohyblivou plošinou.
+  const spare = extras.some((body) => body.kind === 'spikes' && inside(body.z) && !keep.has(body));
+  const trapped = (body: BodyInit): boolean => body.kind === 'spikes' && inside(body.z) && (!spare || !keep.has(body));
+  const pistons = extras.flatMap((body) => (trapped(body) ? [pistonBody(body.z, body.y)] : []));
   // Pasti až za pevné hroty: vazba nebezpečí z věty bere první hrot a sonda ho musí umět zasáhnout (jako voda P46D).
-  const rest = extras.filter((body) => !(body.kind === 'spikes' && inside(body.z)));
+  const rest = extras.filter((body) => !trapped(body));
   extras.splice(0, extras.length, ...rest, ...pistons);
 }
 
@@ -599,6 +611,9 @@ function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number,
   let section = 0;
   let lastSpikes = 0;
   let shuttled = shuttleZ === undefined;
+  /** Hrot dopadu z pohyblivé plošiny: pevný i v okně pasti. Místo z vlastního proudu – rozvržení se nehne. */
+  const landing = new Set<BodyInit>();
+  const landingPct = createCompileRng(seed, 'spawn').int(PLATFORM_SEGMENTS.landing[0], PLATFORM_SEGMENTS.landing[1]);
 
   const lay = (step: ChunkStep, tier: Tier, index: number): number => {
     const want = step.motion === 'shuttle' ? top : top + step.rise;
@@ -660,7 +675,13 @@ function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number,
         // Před odpočinkem, který úsek otevírá, patří plošina ještě předchozímu úseku: úsek pak dál začíná odpočinkem.
         if (!shuttled && far >= (shuttleZ as number)) {
           shuttled = true;
-          lastNear = lay({ gap: 0, rise: 0, slab: 50, spikes: 0, motion: 'shuttle' }, tier, index);
+          // Dopad z ní (P46D: hrot na desce za kyvadlem): pevný hrot `landing` za hranou, past o rozestup chodby s ostny dál.
+          const offset = Math.floor(within(tier.slab, landingPct) / 2);
+          lastNear = lay({ gap: 0, rise: 0, slab: { fixed: 2 * offset + CHUNK_SHAPE.spikePitch }, spikes: 0, motion: 'shuttle' }, tier, index);
+          const fixed = spikeBody(lastNear + offset, top);
+          extras.push(fixed, spikeBody(lastNear + offset + CHUNK_SHAPE.spikePitch, top));
+          landing.add(fixed);
+          lastSpikes = 2;
           if (!(section > 0 && index === 0)) index += 1;
         }
         lastNear = lay(step, tier, index);
@@ -702,7 +723,7 @@ function chunkedLayout(seed: number, params: PlatformLevelParams, extra: number,
     // Pevný hrot mimo past: sonda hrozby z věty (první hrot) zasáhne jen ten, který z desky nezajíždí.
     const trap = (z: number): boolean => z * 1000 >= goalZ * PLATFORM_SEGMENTS.trapFrom && z * 1000 < goalZ * PLATFORM_SEGMENTS.trapUntil;
     spikeIn(slabs.slice(1, -3), extras, spots, (z) => !trap(z));
-    trapSegment(slabs, extras, spots, trap);
+    trapSegment(slabs, extras, spots, trap, landing);
   }
   const bodies = [playerBody(), ...slabs, ...extras];
   placeCoins(bodies, params, spots);
