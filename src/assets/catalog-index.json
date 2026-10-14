@@ -20966,25 +20966,6 @@
       }
     },
     {
-      "assetId": "gen3d-jungle-vine",
-      "tags": [
-        "jungle vine"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-jungle-vine-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.29076,
-          0,
-          -0.29001
-        ],
-        "max": [
-          0.29076,
-          0.99758,
-          0.29001
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-mangrove-tree",
       "tags": [
         "mangrove tree"
@@ -27278,6 +27259,1812 @@
           0.81248,
           0.99843,
           0.61774
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fir-tree",
+      "tags": [
+        "fir tree",
+        "fir",
+        "fir conifer"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fir-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25547,
+          0,
+          -0.29543
+        ],
+        "max": [
+          0.25547,
+          0.99915,
+          0.29543
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-banana-plant",
+      "tags": [
+        "banana plant",
+        "banana tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-banana-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47741,
+          0,
+          -0.47927
+        ],
+        "max": [
+          0.47741,
+          1.00001,
+          0.47927
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-saguaro-cactus",
+      "tags": [
+        "saguaro cactus",
+        "saguaro"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-saguaro-cactus-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22194,
+          0,
+          -0.06452
+        ],
+        "max": [
+          0.22194,
+          0.99983,
+          0.06452
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowy-fir-tree",
+      "tags": [
+        "snowy fir tree",
+        "snow-covered fir",
+        "snowy pine tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-fir-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29942,
+          0,
+          -0.29354
+        ],
+        "max": [
+          0.29942,
+          0.99798,
+          0.29354
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-apple-tree",
+      "tags": [
+        "apple tree",
+        "apple orchard tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-apple-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39667,
+          0,
+          -0.38793
+        ],
+        "max": [
+          0.39667,
+          0.99994,
+          0.38793
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-street-tree",
+      "tags": [
+        "street tree",
+        "sidewalk tree",
+        "park tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-street-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37173,
+          0,
+          -0.38467
+        ],
+        "max": [
+          0.37173,
+          0.99984,
+          0.38467
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spruce-tree",
+      "tags": [
+        "spruce tree",
+        "spruce"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spruce-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31554,
+          0,
+          -0.36982
+        ],
+        "max": [
+          0.31554,
+          1.00001,
+          0.36982
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-monstera-plant",
+      "tags": [
+        "monstera plant",
+        "monstera",
+        "swiss cheese plant"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-monstera-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45723,
+          0,
+          -0.5002
+        ],
+        "max": [
+          0.45723,
+          0.99952,
+          0.5002
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-joshua-tree",
+      "tags": [
+        "joshua tree",
+        "yucca tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-joshua-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32461,
+          0,
+          -0.32674
+        ],
+        "max": [
+          0.32461,
+          0.99703,
+          0.32674
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bare-winter-tree",
+      "tags": [
+        "bare winter tree",
+        "leafless tree",
+        "bare tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bare-winter-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43753,
+          0,
+          -0.06499
+        ],
+        "max": [
+          0.43753,
+          0.99938,
+          0.06499
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wildflower-patch",
+      "tags": [
+        "wildflower patch",
+        "wildflowers",
+        "wildflower meadow"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wildflower-patch-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.88617,
+          0,
+          -1.90871
+        ],
+        "max": [
+          1.88617,
+          0.99408,
+          1.90871
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-kapok-tree",
+      "tags": [
+        "kapok tree",
+        "kapok",
+        "ceiba tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-kapok-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41027,
+          0,
+          -0.41062
+        ],
+        "max": [
+          0.41027,
+          1.00001,
+          0.41062
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowy-rock",
+      "tags": [
+        "snowy rock",
+        "snow-covered rock",
+        "snowy boulder"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.01456,
+          0,
+          -1.02371
+        ],
+        "max": [
+          1.01456,
+          1.00001,
+          1.02371
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tall-grass-tuft",
+      "tags": [
+        "tall grass tuft",
+        "tall grass",
+        "grass tuft"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tall-grass-tuft-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.185,
+          0,
+          -0.18461
+        ],
+        "max": [
+          0.185,
+          0.99935,
+          0.18461
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sea-rock",
+      "tags": [
+        "sea rock",
+        "coastal rock",
+        "sea stack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sea-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75026,
+          0,
+          -0.74989
+        ],
+        "max": [
+          0.75026,
+          0.99942,
+          0.74989
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-frozen-shrub",
+      "tags": [
+        "frozen shrub",
+        "frosted shrub",
+        "frosted bush"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-shrub-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35016,
+          0,
+          -0.36305
+        ],
+        "max": [
+          0.35016,
+          0.99916,
+          0.36305
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mossy-stump",
+      "tags": [
+        "mossy stump",
+        "moss-covered stump"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mossy-stump-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.20982,
+          0,
+          -0.98229
+        ],
+        "max": [
+          1.20982,
+          0.99988,
+          0.98229
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-jungle-vine",
+      "tags": [
+        "jungle vine",
+        "liana"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jungle-vine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28986,
+          0,
+          -0.2899
+        ],
+        "max": [
+          0.28986,
+          0.99932,
+          0.2899
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mossy-boulder",
+      "tags": [
+        "mossy boulder",
+        "moss-covered boulder",
+        "mossy rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mossy-boulder-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44247,
+          0,
+          -0.44926
+        ],
+        "max": [
+          0.44247,
+          0.99783,
+          0.44926
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sandstone-rock",
+      "tags": [
+        "sandstone rock",
+        "sandstone",
+        "red sandstone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sandstone-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.03997,
+          0,
+          -1.04505
+        ],
+        "max": [
+          1.03997,
+          1.00001,
+          1.04505
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-maple-tree",
+      "tags": [
+        "maple tree",
+        "maple"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-maple-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35714,
+          0,
+          -0.29017
+        ],
+        "max": [
+          0.35714,
+          1.00001,
+          0.29017
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-agave-plant",
+      "tags": [
+        "agave plant",
+        "agave"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-agave-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50615,
+          0,
+          -0.50697
+        ],
+        "max": [
+          0.50615,
+          0.99714,
+          0.50697
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-willow-tree",
+      "tags": [
+        "willow tree",
+        "weeping willow",
+        "willow"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-willow-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35693,
+          0,
+          -0.35492
+        ],
+        "max": [
+          0.35693,
+          1.00001,
+          0.35492
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dead-pine-tree",
+      "tags": [
+        "dead pine tree",
+        "dead tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dead-pine-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32723,
+          0,
+          -0.34883
+        ],
+        "max": [
+          0.32723,
+          0.99816,
+          0.34883
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bamboo-cluster",
+      "tags": [
+        "bamboo cluster"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bamboo-cluster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1545,
+          0,
+          -0.16442
+        ],
+        "max": [
+          0.1545,
+          1.00001,
+          0.16442
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-prickly-pear-cactus",
+      "tags": [
+        "prickly pear cactus",
+        "opuntia"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-prickly-pear-cactus-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29925,
+          0,
+          -0.27639
+        ],
+        "max": [
+          0.29925,
+          0.99913,
+          0.27639
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-scree-rock-pile",
+      "tags": [
+        "scree rock pile",
+        "rock pile"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-scree-rock-pile-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.25624,
+          0,
+          -1.22413
+        ],
+        "max": [
+          1.25624,
+          0.99991,
+          1.22413
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-layered-canyon-rock",
+      "tags": [
+        "layered canyon rock",
+        "butte",
+        "canyon rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-layered-canyon-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.89228,
+          0,
+          -0.55375
+        ],
+        "max": [
+          0.89228,
+          0.99893,
+          0.55375
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-poplar-tree",
+      "tags": [
+        "poplar tree",
+        "poplar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-poplar-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34532,
+          0,
+          -0.3349
+        ],
+        "max": [
+          0.34532,
+          0.99988,
+          0.3349
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-leaning-palm-tree",
+      "tags": [
+        "leaning palm tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-leaning-palm-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3139,
+          0,
+          -0.31959
+        ],
+        "max": [
+          0.3139,
+          1.00001,
+          0.31959
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-basalt-column-rock",
+      "tags": [
+        "basalt column rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-basalt-column-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42793,
+          0,
+          -0.44211
+        ],
+        "max": [
+          0.42793,
+          0.99986,
+          0.44211
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-olive-tree",
+      "tags": [
+        "olive tree",
+        "olive"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-olive-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38965,
+          0,
+          -0.40168
+        ],
+        "max": [
+          0.38965,
+          0.99152,
+          0.40168
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-larch-tree",
+      "tags": [
+        "larch tree",
+        "larch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-larch-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30194,
+          0,
+          -0.29402
+        ],
+        "max": [
+          0.30194,
+          0.99999,
+          0.29402
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rubber-tree",
+      "tags": [
+        "rubber tree",
+        "ficus tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rubber-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38231,
+          0,
+          -0.40754
+        ],
+        "max": [
+          0.38231,
+          0.99342,
+          0.40754
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cholla-cactus",
+      "tags": [
+        "cholla cactus"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cholla-cactus-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13527,
+          0,
+          -0.31874
+        ],
+        "max": [
+          0.13527,
+          0.99674,
+          0.31874
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-strangler-fig-tree",
+      "tags": [
+        "strangler fig tree",
+        "fig tree",
+        "banyan tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-strangler-fig-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47119,
+          0,
+          -0.47448
+        ],
+        "max": [
+          0.47119,
+          0.9951,
+          0.47448
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-frozen-dead-tree",
+      "tags": [
+        "frozen dead tree",
+        "icy tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-dead-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38762,
+          0,
+          -0.31268
+        ],
+        "max": [
+          0.38762,
+          0.99902,
+          0.31268
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beech-tree",
+      "tags": [
+        "beech tree",
+        "beech"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beech-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36686,
+          0,
+          -0.36815
+        ],
+        "max": [
+          0.36686,
+          0.99922,
+          0.36815
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cycad-palm",
+      "tags": [
+        "cycad palm",
+        "sago palm",
+        "cycad"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cycad-palm-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38926,
+          0,
+          -0.38962
+        ],
+        "max": [
+          0.38926,
+          0.99987,
+          0.38962
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pandanus-tree",
+      "tags": [
+        "pandanus tree",
+        "screw pine"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pandanus-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38718,
+          0,
+          -0.32746
+        ],
+        "max": [
+          0.38718,
+          0.99977,
+          0.32746
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hollow-tree-trunk",
+      "tags": [
+        "hollow tree trunk",
+        "hollow log",
+        "tree trunk"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hollow-tree-trunk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35803,
+          0,
+          -0.36957
+        ],
+        "max": [
+          0.35803,
+          0.99992,
+          0.36957
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ruined-stone-tower",
+      "tags": [
+        "ruined stone tower",
+        "tower ruin",
+        "stone tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ruined-stone-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25673,
+          0,
+          -0.24815
+        ],
+        "max": [
+          0.25673,
+          0.99905,
+          0.24815
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-adobe-house",
+      "tags": [
+        "adobe house",
+        "mud brick house",
+        "pueblo house"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-adobe-house-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71309,
+          0,
+          -0.94676
+        ],
+        "max": [
+          0.71309,
+          0.99898,
+          0.94676
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stone-idol-head",
+      "tags": [
+        "stone idol head",
+        "stone head",
+        "idol"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-idol-head-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35028,
+          0,
+          -0.47429
+        ],
+        "max": [
+          0.35028,
+          0.99431,
+          0.47429
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowy-log-cabin",
+      "tags": [
+        "snowy log cabin",
+        "snowy cabin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-log-cabin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.53928,
+          0,
+          -0.49635
+        ],
+        "max": [
+          0.53928,
+          0.99645,
+          0.49635
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-hut",
+      "tags": [
+        "beach hut",
+        "beach cabin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-hut-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.55394,
+          0,
+          -0.70181
+        ],
+        "max": [
+          0.55394,
+          0.99939,
+          0.70181
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-red-barn",
+      "tags": [
+        "red barn"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-red-barn-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46088,
+          0,
+          -0.45669
+        ],
+        "max": [
+          0.46088,
+          0.99806,
+          0.45669
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-watchtower",
+      "tags": [
+        "wooden watchtower",
+        "lookout tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-watchtower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22062,
+          0,
+          -0.21994
+        ],
+        "max": [
+          0.22062,
+          0.99996,
+          0.21994
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tribal-totem-pole",
+      "tags": [
+        "tribal totem pole",
+        "totem pole",
+        "totem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tribal-totem-pole-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11954,
+          0,
+          -0.07926
+        ],
+        "max": [
+          0.11954,
+          1.00001,
+          0.07926
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bedouin-tent",
+      "tags": [
+        "bedouin tent",
+        "desert tent"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bedouin-tent-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.69113,
+          0,
+          -0.68947
+        ],
+        "max": [
+          0.69113,
+          0.99524,
+          0.68947
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ski-lift-tower",
+      "tags": [
+        "ski lift tower",
+        "ski lift",
+        "chairlift pylon"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ski-lift-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.191,
+          0,
+          -0.21392
+        ],
+        "max": [
+          0.191,
+          0.99819,
+          0.21392
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-old-stone-bridge",
+      "tags": [
+        "old stone bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-old-stone-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.55135,
+          0,
+          -0.71823
+        ],
+        "max": [
+          1.55135,
+          0.99439,
+          0.71823
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-rope-bridge",
+      "tags": [
+        "wooden rope bridge",
+        "suspension bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-rope-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.94962,
+          0,
+          -0.95419
+        ],
+        "max": [
+          0.94962,
+          0.99868,
+          0.95419
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-frozen-waterfall",
+      "tags": [
+        "frozen waterfall",
+        "ice waterfall",
+        "icefall"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-waterfall-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30932,
+          0,
+          -0.3433
+        ],
+        "max": [
+          0.30932,
+          0.99699,
+          0.3433
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-castle-ruin-wall",
+      "tags": [
+        "castle ruin wall",
+        "castle ruin",
+        "ruined wall"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-castle-ruin-wall-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.08525,
+          0,
+          -0.69045
+        ],
+        "max": [
+          1.08525,
+          0.99848,
+          0.69045
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stone-obelisk",
+      "tags": [
+        "stone obelisk",
+        "monolith"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-obelisk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18955,
+          0,
+          -0.21969
+        ],
+        "max": [
+          0.18955,
+          0.99934,
+          0.21969
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lifeguard-tower",
+      "tags": [
+        "lifeguard tower",
+        "lifeguard stand",
+        "lifeguard hut"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lifeguard-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21349,
+          0,
+          -0.21334
+        ],
+        "max": [
+          0.21349,
+          0.99678,
+          0.21334
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-signpost",
+      "tags": [
+        "wooden signpost",
+        "direction sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-signpost-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35472,
+          0,
+          -0.05654
+        ],
+        "max": [
+          0.35472,
+          0.99994,
+          0.05654
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mossy-fallen-log",
+      "tags": [
+        "mossy fallen log",
+        "fallen tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mossy-fallen-log-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.44093,
+          0,
+          -0.68059
+        ],
+        "max": [
+          1.44093,
+          0.99476,
+          0.68059
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-volcanic-rock",
+      "tags": [
+        "volcanic rock",
+        "lava rock",
+        "black rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-volcanic-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.66681,
+          0,
+          -0.68256
+        ],
+        "max": [
+          0.66681,
+          0.99298,
+          0.68256
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-log-cabin",
+      "tags": [
+        "log cabin",
+        "wooden cabin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-log-cabin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.67453,
+          0,
+          -0.56367
+        ],
+        "max": [
+          0.67453,
+          0.99938,
+          0.56367
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-oasis-well",
+      "tags": [
+        "oasis well",
+        "desert well"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-oasis-well-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.46539,
+          0,
+          -1.46277
+        ],
+        "max": [
+          1.46539,
+          1.00001,
+          1.46277
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-pier",
+      "tags": [
+        "wooden pier",
+        "pier",
+        "jetty",
+        "dock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-pier-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.86318,
+          0,
+          -1.77129
+        ],
+        "max": [
+          2.86318,
+          0.99923,
+          1.77129
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lavender-bush",
+      "tags": [
+        "lavender bush",
+        "lavender"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lavender-bush-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46834,
+          0,
+          -0.46742
+        ],
+        "max": [
+          0.46834,
+          0.99101,
+          0.46742
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coral-rock",
+      "tags": [
+        "coral rock",
+        "reef rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.60486,
+          0,
+          -0.58679
+        ],
+        "max": [
+          0.60486,
+          0.99937,
+          0.58679
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-thistle-plant",
+      "tags": [
+        "thistle plant",
+        "thistle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-thistle-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23523,
+          0,
+          -0.20606
+        ],
+        "max": [
+          0.23523,
+          1.00001,
+          0.20606
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-aloe-plant",
+      "tags": [
+        "aloe plant",
+        "aloe vera",
+        "aloe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-aloe-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50975,
+          0,
+          -0.41227
+        ],
+        "max": [
+          0.50975,
+          1,
+          0.41227
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-park-bench",
+      "tags": [
+        "park bench"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-park-bench-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.81783,
+          0,
+          -0.43132
+        ],
+        "max": [
+          0.81783,
+          0.99823,
+          0.43132
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-brick-townhouse",
+      "tags": [
+        "brick townhouse",
+        "row house"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-brick-townhouse-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46394,
+          0,
+          -0.41489
+        ],
+        "max": [
+          0.46394,
+          1.00001,
+          0.41489
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-white-picket-fence",
+      "tags": [
+        "white picket fence",
+        "picket fence"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-white-picket-fence-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.53561,
+          0,
+          -0.08652
+        ],
+        "max": [
+          1.53561,
+          0.99728,
+          0.08652
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cattail-reed",
+      "tags": [
+        "cattail reed"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cattail-reed-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.06326,
+          0,
+          -0.06071
+        ],
+        "max": [
+          0.06326,
+          0.99996,
+          0.06071
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-exposed-tree-root",
+      "tags": [
+        "exposed tree root"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-exposed-tree-root-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.87213,
+          0,
+          -0.82026
+        ],
+        "max": [
+          0.87213,
+          0.99999,
+          0.82026
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dune-grass-clump",
+      "tags": [
+        "dune grass clump",
+        "dune grass",
+        "marram grass"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dune-grass-clump-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38369,
+          0,
+          -0.38566
+        ],
+        "max": [
+          0.38369,
+          0.99829,
+          0.38566
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-block-pile",
+      "tags": [
+        "ice block pile",
+        "ice blocks",
+        "ice chunks"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-block-pile-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.70403,
+          0,
+          -0.65915
+        ],
+        "max": [
+          0.70403,
+          0.99997,
+          0.65915
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-street-trash-can",
+      "tags": [
+        "street trash can",
+        "garbage bin",
+        "litter bin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-street-trash-can-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42243,
+          0,
+          -0.42215
+        ],
+        "max": [
+          0.42243,
+          0.99996,
+          0.42215
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-traffic-cone",
+      "tags": [
+        "traffic cone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-traffic-cone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37308,
+          0,
+          -0.39314
+        ],
+        "max": [
+          0.37308,
+          1.00001,
+          0.39314
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-red-phone-booth",
+      "tags": [
+        "red phone booth",
+        "phone booth",
+        "telephone box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-red-phone-booth-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22526,
+          0,
+          -0.22503
+        ],
+        "max": [
+          0.22526,
+          0.99157,
+          0.22503
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-park-fountain",
+      "tags": [
+        "park fountain"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-park-fountain-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.77204,
+          0,
+          -0.77236
+        ],
+        "max": [
+          0.77204,
+          0.99988,
+          0.77236
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-billboard-sign",
+      "tags": [
+        "billboard sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-billboard-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47947,
+          0,
+          -0.1978
+        ],
+        "max": [
+          0.47947,
+          0.99958,
+          0.1978
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-concrete-planter-with-tree",
+      "tags": [
+        "concrete planter with tree",
+        "planter",
+        "street planter"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-concrete-planter-with-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25646,
+          0,
+          -0.24758
+        ],
+        "max": [
+          0.25646,
+          0.99893,
+          0.24758
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dead-desert-tree",
+      "tags": [
+        "dead desert tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dead-desert-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48112,
+          0,
+          -0.4977
+        ],
+        "max": [
+          0.48112,
+          1.00001,
+          0.4977
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mossy-rock-cluster",
+      "tags": [
+        "mossy rock cluster",
+        "mossy rocks"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mossy-rock-cluster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75092,
+          0,
+          -0.71923
+        ],
+        "max": [
+          0.75092,
+          0.99466,
+          0.71923
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-umbrella",
+      "tags": [
+        "beach umbrella",
+        "parasol",
+        "sun umbrella"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-umbrella-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.51311,
+          0,
+          -0.51313
+        ],
+        "max": [
+          0.51311,
+          0.99908,
+          0.51313
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-apartment-block",
+      "tags": [
+        "apartment block",
+        "apartment building",
+        "tower block"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-apartment-block-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33495,
+          0,
+          -0.22954
+        ],
+        "max": [
+          0.33495,
+          0.99994,
+          0.22954
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-glass-office-tower",
+      "tags": [
+        "glass office tower",
+        "office building"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-glass-office-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15109,
+          0,
+          -0.15347
+        ],
+        "max": [
+          0.15109,
+          0.9995,
+          0.15347
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-parking-meter",
+      "tags": [
+        "parking meter",
+        "meter"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-parking-meter-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26202,
+          0,
+          -0.12784
+        ],
+        "max": [
+          0.26202,
+          0.99632,
+          0.12784
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-vine-covered-rock-wall",
+      "tags": [
+        "vine covered rock wall",
+        "vine covered rock",
+        "rock wall",
+        "cliff"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-vine-covered-rock-wall-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.69576,
+          0,
+          -0.18726
+        ],
+        "max": [
+          0.69576,
+          0.9852,
+          0.18726
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cherry-blossom-tree",
+      "tags": [
+        "cherry blossom tree",
+        "sakura tree",
+        "blossom tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cherry-blossom-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43469,
+          0,
+          -0.43499
+        ],
+        "max": [
+          0.43469,
+          1.00001,
+          0.43499
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-river-boulder",
+      "tags": [
+        "river boulder"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-river-boulder-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58969,
+          0,
+          -0.58027
+        ],
+        "max": [
+          0.58969,
+          1,
+          0.58027
         ]
       }
     }
