@@ -25,6 +25,7 @@ import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { GhostSlot } from '../GhostSlot';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
+import { mix } from '../look/ground';
 import { VegetationAround } from '../look/Vegetation';
 import { LAYERS, type Layer, type Side } from '../look/vegetation-places';
 import { type Block, buildBlocks, streetBlocks, urbanLook } from '../look/rig/terrain/city-blocks';
@@ -58,6 +59,9 @@ function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; re
     return mergeGeometries([buildBlocks(under, world.seed, ['-x', '-z', '+z'], false), buildBlocks(street, world.seed + 1, ['-x', '-z', '+z'], true)]);
   }, [urban, spots, length, world.seed]);
   useEffect(() => () => houses?.dispose(), [houses]);
+  // Písek: horní plocha desek je zem sady, břeh v téže barvě s nimi na snímku splýval – břeh je světlejší písek dun.
+  const bankLook = useMemo((): Look => (look.cover === 'sand' ? { ...look, ground: look.terrain?.lane ?? mix(look.ground, '#ffffff', 0.35) } : look), [look]);
+  const bankArea = useMemo(() => ({ x0: BANK_FROM, x1: BACKDROP_BEYOND + 20, z0: -40, z1: length + 40 }), [length]);
   const water = useMemo(() => buildWater({ look, half: 40, from: -30, to: length + 30, level: WATER, shore: islands.shoreDistance }), [look, length, islands]);
   const material = useMemo(() => new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), []);
   useEffect(() => () => islands.geometry.dispose(), [islands]);
@@ -76,7 +80,7 @@ function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; re
       <mesh ref={terrain} geometry={islands.geometry} material={material} castShadow receiveShadow userData={{ rigShadow: 'both', terrain: 'islands' }} />
       {houses !== null && <mesh geometry={houses} material={material} receiveShadow userData={{ rigShadow: 'receive' }} />}
       {/* Břeh za ostrůvky (+x, boční kamera stojí na −x) v barvách sady a na něm vegetace – jen za nimi, před kamerou nic, takže doskok ani minci nezakryje. */}
-      <FieldGround look={look} area={{ x0: BANK_FROM, x1: BACKDROP_BEYOND + 20, z0: -40, z1: length + 40 }} y={BANK} />
+      <FieldGround look={bankLook} area={bankArea} y={BANK} />
       {look.flora !== undefined && (
         <group position={[0, BANK, 0]}>
           <VegetationAround flora={look.flora} seed={world.seed} box={{ x0: -SLAB_HALF, x1: SLAB_HALF, z0: -10, z1: length + 10 }} clear={BANK_FROM + 1 - SLAB_HALF} layers={BEHIND_ONLY} behind={30} />
