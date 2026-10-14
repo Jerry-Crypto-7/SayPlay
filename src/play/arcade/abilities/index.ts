@@ -11,6 +11,7 @@
 
 import type { AbilityId, BodyInit } from '../contract';
 import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, hitParamsFor, wrapBot, wrapControl } from '../addons';
+import { type BossBeatParams, bossBeat, bossBeatHit } from '../pieces/boss';
 import { grabRule } from './grab';
 import { dashRule, shieldRule } from './guard';
 import { HARMFUL_ROLES } from './state';
@@ -48,11 +49,19 @@ function addFoes(parts: ArcadeParts, context: AddonContext): ArcadeParts {
 /** Pohled shora: úder a krádež sahají kolem hrdiny (`AROUND_CONTROLS`). */
 const aroundOf = (parts: ArcadeParts): { around?: true } => (AROUND_CONTROLS.includes(baseControlOf(parts.control).id) ? { around: true } : {});
 
+/** Boss finále (P46B): parametry jeho pravidla pádu (kořist), jinak jen předloha těla `boss`. */
+function bossOf(parts: ArcadeParts): { boss?: BossBeatParams } {
+  const beat = parts.rules.find((rule) => rule.id === bossBeat.id || rule.id === bossBeatHit.id);
+  if (beat !== undefined) return { boss: beat.params as BossBeatParams };
+  const template = parts.level.bodies.findIndex((body) => body.kind === 'boss' && body.template === true);
+  return template < 0 ? {} : { boss: { boss: template } };
+}
+
 export const strikeAbility: AbilityPiece = {
   id: 'strike',
   apply: (parts, context) => {
     const armed = withFoes(parts, context);
-    return { ...armed, rules: [...armed.rules, { id: strikeRule.id, params: { keeper: context.keeper, slot: context.slot, verb: 'strike', ...aroundOf(parts) } }] };
+    return { ...armed, rules: [...armed.rules, { id: strikeRule.id, params: { keeper: context.keeper, slot: context.slot, verb: 'strike', ...aroundOf(parts), ...bossOf(parts) } }] };
   },
 };
 

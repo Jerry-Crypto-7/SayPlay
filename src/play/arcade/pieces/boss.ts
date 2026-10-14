@@ -17,7 +17,7 @@ import { type ArcadeEffect, BODY, HIT_GRACE, type RuleContext, type RulePiece, b
 import { behaviourMemoOf, behaviourPhaseOf, matches } from './behaviours';
 import { bossOpen } from './behaviours/boss';
 
-const params = z
+export const bossBeatParams = z
   .object({
     /** Předloha bosse (index těla); boss se pozná podle jejího podpisu. */
     boss: z.int().min(1),
@@ -27,10 +27,10 @@ const params = z
     score: z.int().min(1).optional(),
   })
   .strict();
-export type BossBeatParams = z.infer<typeof params>;
+export type BossBeatParams = z.infer<typeof bossBeatParams>;
 
-/** Úder do bosse v okně; poslední HP = boss zmizí a vydá kořist. */
-function blow(state: Int32Array, boss: number, by: number, p: BossBeatParams): ArcadeEffect[] {
+/** Úder do bosse v okně (i úder akcí hrdiny, P46B T8); poslední HP = boss zmizí a vydá kořist. */
+export function blow(state: Int32Array, boss: number, by: number, p: BossBeatParams): ArcadeEffect[] {
   const effects: ArcadeEffect[] = [{ kind: 'hit', body: boss, by, amount: 1 }];
   if (bodyHp(state, boss) > 1) return effects;
   effects.push({ kind: 'despawn', body: boss });
@@ -55,7 +55,7 @@ function fire({ state, player, other, source }: RuleContext, p: BossBeatParams):
   return source < 0 && phase === 'act' ? [{ kind: 'damage', amount: 1, grace: HIT_GRACE }] : [];
 }
 
-export const bossBeat: RulePiece<BossBeatParams> = { id: 'boss_beat', trigger: 'contact', params, roles: [], cost: () => ({ bodies: 0, rules: 1 }), fire };
+export const bossBeat: RulePiece<BossBeatParams> = { id: 'boss_beat', trigger: 'contact', params: bossBeatParams, roles: [], cost: () => ({ bodies: 0, rules: 1 }), fire };
 
 /** Totéž pro žánry se střelbou: projektil hráče, který bosse zasáhl. Projektil končí jen na terči, nepříteli nebo pevném tělese – boss střelnice musí mít takovou roli. */
 export const bossBeatHit: RulePiece<BossBeatParams> = { ...bossBeat, id: 'boss_beat_hit', trigger: 'hit' };

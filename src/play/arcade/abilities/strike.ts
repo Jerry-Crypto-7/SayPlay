@@ -7,8 +7,10 @@
 
 import { z } from 'zod';
 
-import { ARCADE_LIMITS, type ArcadeEffect, BODY, FLAG, HEADER, ROLE, type RulePiece, UNIT, bodyBase } from '../contract';
-import { abilityActive } from './state';
+import { ARCADE_LIMITS, type ArcadeEffect, BODY, FLAG, HEADER, ROLE, type RulePiece, UNIT, bodyBase, bodyHp } from '../contract';
+import { blow, bossBeatParams } from '../pieces/boss';
+import { matches } from '../pieces/behaviours';
+import { ABILITY_TIMING, abilityActive } from './state';
 
 export const STRIKE = {
   /** Dosah před hrdinou (osa z). */
@@ -30,6 +32,8 @@ const strikeParams = z
     slot: z.int().min(0).max(1),
     verb: z.literal('strike'),
     around: z.literal(true).optional(),
+    /** Boss finále (P46B T8): předloha a kořist jako u jeho pravidla pádu. */
+    boss: bossBeatParams.optional(),
   })
   .strict();
 
@@ -91,13 +95,19 @@ export const strikeRule: RulePiece<z.infer<typeof strikeParams>> = {
   trigger: 'tick',
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, player }, params) => {
-    if (abilityActive(state, params.keeper, params.slot) === 0) return [];
+    const active = abilityActive(state, params.keeper, params.slot);
+    if (active === 0) return [];
+    // Boss nezmizí naráz: jeden úder = jeden život, počítá se jen první tik okna (P46B T8).
+    const boss = active === ABILITY_TIMING.strike.active ? params.boss : undefined;
     const effects: ArcadeEffect[] = [];
     for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
       const b = bodyBase(i);
-      if (i === player || !isStruck(state[b + BODY.role] as number) || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+      if (i === player || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+      const struck = isStruck(state[b + BODY.role] as number);
+      if (!struck && (boss === undefined || bodyHp(state, i) === 0 || !matches(state, i, boss.boss))) continue;
       if (!inStrikeReach(state, player, i, 0, params.around)) continue;
-      effects.push({ kind: 'score', amount: 1 }, { kind: 'despawn', body: i });
+      if (struck) effects.push({ kind: 'score', amount: 1 }, { kind: 'despawn', body: i });
+      else if (boss !== undefined) effects.push(...blow(state, i, player, boss));
     }
     return effects;
   },
