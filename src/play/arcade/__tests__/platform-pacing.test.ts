@@ -19,12 +19,12 @@ import { arcadeWorldOf, generatorOf } from '../compile';
 import { type ArcadeEffect, type ArcadeWorld, BODY, FLAG, HEADER, type InputEvent, type PieceRef, ROLE, bodyBase, nativeRule } from '../contract';
 import { instantiate, replay } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { TELEGRAPH_MIN, behaviourBodies, behaviourPhaseOf } from '../pieces/behaviours';
+import { BEHAVIOURS, TELEGRAPH_MIN, behaviourBodies, behaviourPhaseOf } from '../pieces/behaviours';
 import { play, refsOf } from '../pieces/behaviours/__tests__/harness';
 import { BRUTE } from '../pieces/behaviours/brute';
 import { PACING, type PacingRuleParams } from '../pieces/pacing';
 import { GENRE_PACING, PLATFORM_FOES } from '../pieces/pacing-parts';
-import { PLATFORM, PLATFORM_SEGMENTS, checkPlatformLevel, platformLevel } from '../pieces/platform';
+import { PLATFORM, PLATFORM_JUMP_PEAK, PLATFORM_SEGMENTS, checkPlatformLevel, platformLevel } from '../pieces/platform';
 import { segmentScriptOf, segmentSpans } from '../pieces/segments';
 import { funMetrics, traceRun } from '../telemetry';
 import { runBot } from '../verify';
@@ -69,6 +69,8 @@ interface BossRun {
   readonly lastHit: number;
   /** Tiky varování před každým náběhem. */
   readonly warnings: readonly number[];
+  /** Odkud hráč na hlavu skočil: výška poslední země mimo hlavu bosse nad dnem jámy, u každého zásahu. */
+  readonly takeoffs: readonly number[];
 }
 
 /** Přehraje vstupy a sleduje bosse (jediná předloha chování): zásahy, kde u nich stál hráč, zmizení a varování. */
@@ -82,6 +84,8 @@ function bossRun(world: ArcadeWorld, inputs: readonly InputEvent[]): BossRun {
   let lastHit = -1;
   let warned = 0;
   const warnings: number[] = [];
+  let ground = 0;
+  const takeoffs: number[] = [];
   play(world, inputs, (state, tick, effects: readonly ArcadeEffect[]) => {
     end = tick;
     const player = state[HEADER.player] as number;
@@ -95,16 +99,18 @@ function bossRun(world: ArcadeWorld, inputs: readonly InputEvent[]): BossRun {
       warned = 0;
     }
     const at = (b: number, slot: keyof typeof BODY): number => state[bodyBase(b) + BODY[slot]] as number;
+    if ((at(player, 'flags') & FLAG.grounded) !== 0 && at(player, 'y') !== at(body, 'y') + at(body, 'h')) ground = at(player, 'y');
     for (const effect of effects) {
       if (effect.kind !== 'hit' || effect.body !== body) continue;
       hits += 1;
       lastHit = tick;
+      takeoffs.push(ground - at(body, 'y'));
       const standing = ((at(player, 'flags') & FLAG.grounded) !== 0) && at(player, 'y') === at(body, 'y') + at(body, 'h') && Math.abs(at(player, 'z') - at(body, 'z')) * 2 < at(player, 'd') + at(body, 'd');
       if (!standing) offHead += 1;
     }
     if (effects.some((effect) => effect.kind === 'despawn' && effect.body === body)) gone = tick;
   });
-  return { end, hits, offHead, gone, lastHit, warnings };
+  return { end, hits, offHead, gone, lastHit, warnings, takeoffs };
 }
 
 const STORED_ENTRY = GENRE_PACING.platform_level;
@@ -196,6 +202,46 @@ describe('platform pacing', () => {
     expect(run.changes[1]!.some((change) => change.startsWith('speed:'))).toBe(true);
   });
 
+  it('ends in a boss pit: the boss stands twice the hero tall, its head is out of reach from the floor and the step, and only the ledge above the pit reaches it', () => {
+    const boss = BEHAVIOURS.brute.body;
+    expect(boss.h).toBeGreaterThanOrEqual(2 * PLATFORM.playerH);
+    expect(boss.h).toBeGreaterThan(boss.w);
+    expect(boss.h).toBeGreaterThan(boss.d);
+    const spec = specOfCell('platformer.default');
+    const { tuning, ...own } = spec.controlParams as Record<string, unknown> & { tuning?: Record<string, unknown> };
+    for (const seed of SEEDS) {
+      const level = platformLevel.generate(seed, platformLevel.params.parse({ ...own, ...tuning }));
+      const slabs = level.bodies.filter((body) => body.role === 'platform' && body.kinematic !== true).map((body) => ({ near: body.z - body.d / 2, far: body.z + body.d / 2, top: body.y + body.h })).sort((a, b) => a.near - b.near);
+      const goal = level.bodies.find((body) => body.role === 'goal')!;
+      const [step, ledge, pit] = slabs.slice(-3) as [(typeof slabs)[0], (typeof slabs)[0], (typeof slabs)[0]];
+      expect(goal.y, `seed ${seed}: goal on the pit floor`).toBe(pit.top);
+      expect(goal.z).toBeGreaterThan(pit.near);
+      expect(ledge.far, `seed ${seed}: the pit opens under the ledge`).toBe(pit.near);
+      expect(ledge.top - pit.top).toBe(PLATFORM_SEGMENTS.pit);
+      expect(step.top - pit.top).toBe(PLATFORM_SEGMENTS.pit / 2);
+      const head = pit.top + boss.h;
+      expect(head - pit.top, `seed ${seed}: floor`).toBeGreaterThan(PLATFORM_JUMP_PEAK);
+      expect(head - step.top, `seed ${seed}: step`).toBeGreaterThan(PLATFORM_JUMP_PEAK);
+      expect(head - ledge.top, `seed ${seed}: ledge`).toBeLessThan(PLATFORM_JUMP_PEAK);
+      // Boss stojí v jámě a římsu nepřečnívá: z římsy se na něj skáče, ne vchází.
+      const world = worldOf(spec, seed);
+      const run = runBot(world, undefined, { profile: 'intermediate' });
+      let lowest = Number.POSITIVE_INFINITY;
+      let highest = Number.NEGATIVE_INFINITY;
+      const refs = refsOf(world);
+      play(world, run.inputs, (state) => {
+        for (const body of behaviourBodies(state, state[HEADER.player] as number, refs)) {
+          const base = bodyBase(body);
+          if ((state[base + BODY.y] as number) !== pit.top) continue;
+          lowest = Math.min(lowest, (state[base + BODY.z] as number) - boss.d / 2);
+          highest = Math.max(highest, (state[base + BODY.z] as number) + boss.d / 2);
+        }
+      });
+      expect(lowest, `seed ${seed}: boss stays off the ledge`).toBeGreaterThan(ledge.far);
+      expect(highest, `seed ${seed}: boss leaves the goal free`).toBeLessThan(goal.z);
+    }
+  });
+
   it.each(PACED.map((cell) => cell.id))('keeps %s lossless with the boss: playable, idle never wins, replay exact, novice 0.3–0.7, intermediate ≥ 0.8, every win beats the boss on its head before the finish; dead time ≤ 4 s, warnings ≥ TELEGRAPH_MIN', (id) => {
     const spec = specOfCell(id);
     const wins = { bot: 0, novice: 0, intermediate: 0 };
@@ -220,6 +266,8 @@ describe('platform pacing', () => {
       expect(boss.hits, `${id}/${seed}: boss hits`).toBe(BRUTE.hp);
       // Padne právě třetím zásahem, ne dřív ani o doskok později.
       expect(boss.gone, `${id}/${seed}: boss gone with the last hit`).toBe(boss.lastHit);
+      // Na hlavu se skáče z římsy nad jámou (R5), odrazy z hlavy se nepočítají.
+      expect(boss.takeoffs, `${id}/${seed}: takeoffs`).toEqual(Array(BRUTE.hp).fill(PLATFORM_SEGMENTS.pit));
       expect(boss.gone, `${id}/${seed}: boss falls before the finish`).toBeLessThan(boss.end);
       expect(metrics.finale.why).toBe('boss');
       expect(run.tick).toBeGreaterThan(boss.gone);

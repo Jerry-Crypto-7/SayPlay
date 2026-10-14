@@ -299,7 +299,9 @@ export const PLATFORM_SECTIONS = {
  * - Rozjezd o stupeň lehčí než `difficulty`, úsek 2 a 3 v ní – úsek 3 přidá jen rychlost (fáze průběhu).
  * - Úsek 2 od `trapFrom` ‰ přinese past (hrot, který vyjíždí ze země a zajíždí, `piston`) a pohyblivou
  *   plošinu: obojí až za 40 m zorného pole měřidla T1 od konce rozjezdu, takže je hráč poprvé vidí v úseku 2.
- * - Konec je aréna bosse: rovná deska `arena` s checkpointem na začátku a cílem na konci.
+ * - Konec je aréna bosse `arena` (R5): schod a římsa o `pit` nad dnem jámy, za římsou jáma s cílem na konci. Boss
+ *   je dvakrát vyšší než hrdina, ze dna ani ze schodu mu na hlavu nikdo nedoskočí – jen z římsy (checkpoint).
+ *   Aréna je dlouhá jako dřív rovná deska, takže úroveň i hranice úseků v ‰ zůstaly, kde byly.
  * `share` = podíl plošin bez arény v rozjezdu, úseku 2 a úseku 3; `shuttleAt` = kde v úseku 2 (podíl jeho plošin)
  * jezdí pohyblivá plošina. `bossTicks` = co boss přidá k odhadu robota (hodiny úrovně).
  */
@@ -308,9 +310,11 @@ export const PLATFORM_SEGMENTS = {
   shuttleAt: 0.7,
   trapFrom: 450,
   trapUntil: 650,
+  /** Dno jámy pod římsou; schod je v půlce. Oba kroky nahoru ≤ `PLATFORM.maxRise`. */
+  pit: 1800,
+  /** Mezera mezi schodem a římsou, délka schodu a římsy; jáma začíná hned za římsou a vyplní zbytek arény. */
+  stairs: { gap: 1500, step: 2500, ledge: 4000 },
   arena: 20 * UNIT,
-  /** Mince v aréně před domovem bosse, po 1,5 m od checkpointu. */
-  arenaCoins: 4,
   /** Checkpoint i na každé tolikáté plošině úseku 2 a 3 (lichá – bez hrotu). */
   checkpointEvery: 4,
   /** Mezera s pohyblivou plošinou: kratší než bez průběhu – cyklus plošiny 2,8–3,9 s, čekání na ni není mrtvý čas. */
@@ -446,17 +450,33 @@ function sectionedLayout(seed: number, params: PlatformLevelParams, extra: numbe
         // Úseky průběhu: mince u hrany, kde se na plošinu čeká, a mince, která jede s ní – čekání není mrtvý čas.
         if (paced && params.coins && params.collectAll !== true) extras.push(coin(far - 600, top + 300), { ...coin(ride.z, top + 300), kinematic: true, vz: ride.vz, period: ride.period });
         far += gap;
-      } else far += Math.min(rng.int(tier.gap[0], tier.gap[1]), maxGap(nextTop - top));
+      }
+      const from = far;
+      if (!shuttle) far += Math.min(rng.int(tier.gap[0], tier.gap[1]), maxGap(nextTop - top));
 
+      if (last && paced) {
+        // Aréna bosse: schod a římsa (checkpoint – zásah bosse vrátí hráče sem, ne na začátek úseku 3), pak jáma o
+        // `pit` níž. Schod stojí ve výšce, kterou by měla rovná deska (`nextTop`), takže skok do arény je stejný jako
+        // před R5; dno drží celou jámu v mezích výšek. Konec arény je tam, kde byl konec rovné desky: délka úrovně a
+        // hranice úseků se nehnou.
+        const { pit, stairs } = PLATFORM_SEGMENTS;
+        const floor = Math.max(PLATFORM.minTop, Math.min(PLATFORM.maxTop - pit, nextTop - pit / 2));
+        const step = { near: from + Math.min(far - from, maxGap(floor + pit / 2 - top)), top: floor + pit / 2 };
+        const ledge = { near: step.near + stairs.step + stairs.gap, top: floor + pit };
+        slabs.push(slab(step.near, step.near + stairs.step, step.top), slab(ledge.near, ledge.near + stairs.ledge, ledge.top));
+        const near = ledge.near + stairs.ledge;
+        far += PLATFORM_SEGMENTS.arena;
+        top = floor;
+        slabs.push(slab(near, far, top));
+        if (params.checkpoints) extras.push(checkpointBody(ledge.near + 800, ledge.top));
+        // Mince na schodu a římse; poslední na dně jámy za dosahem bosse, 3 m před cílem.
+        if (params.coins && params.collectAll !== true) extras.push(coin(step.near + stairs.step / 2, step.top + 300), coin(ledge.near + 1800, ledge.top + 300), coin(ledge.near + 3000, ledge.top + 300), coin(far - 3000, top + 300));
+        break;
+      }
       const near = far;
-      far = near + (last ? (paced ? PLATFORM_SEGMENTS.arena : finalSlab) : rng.int(tier.slab[0], tier.slab[1]));
+      far = near + (last ? finalSlab : rng.int(tier.slab[0], tier.slab[1]));
       top = nextTop;
       slabs.push(slab(near, far, top));
-      if (last && paced) {
-        // Aréna bosse začíná checkpointem (zásah bosse vrátí hráče k ní, ne na začátek úseku 3) a mincemi před bossem.
-        if (params.checkpoints) extras.push(checkpointBody(near + 800, top));
-        if (params.coins && params.collectAll !== true) for (let c = 1; c <= PLATFORM_SEGMENTS.arenaCoins; c += 1) extras.push(coin(near + 800 + c * 1500, top + 300));
-      }
       if (last) break;
 
       const mid = Math.floor((near + far) / 2);
@@ -629,7 +649,8 @@ export function checkPlatformLevel(level: ArcadeLevel): string[] {
     const to = next.span.near;
     const gap = to - from;
     const dh = next.span.top - span.top;
-    if (Math.abs(dh) > PLATFORM.maxRise) issues.push(`step of ${m(dh)} at ${m(to)} is higher than a jump allows`);
+    // Seskok smí být hlubší – do jámy bosse (R5) se z římsy padá o `pit`.
+    if (dh > PLATFORM.maxRise || -dh > Math.max(PLATFORM.maxRise, PLATFORM_SEGMENTS.pit)) issues.push(`step of ${m(dh)} at ${m(to)} is higher than a jump allows`);
     if (gap > maxGap(dh)) issues.push(`gap of ${m(gap)} at ${m(from)} is wider than a jump (${m(maxGap(dh))})`);
     if (dh > 0 && gap >= PLATFORM.playerD && riseTicks(dh) * PLATFORM.maxRun > gap - PLATFORM.playerD) issues.push(`ledge at ${m(to)} is too high to clear over a ${m(gap)} gap`);
   });

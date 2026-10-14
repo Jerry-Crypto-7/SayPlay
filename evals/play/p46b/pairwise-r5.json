@@ -1,0 +1,71 @@
+{
+ "schema": "pairwise.v1",
+ "a": {
+  "run": "p46b-t8-a",
+  "commit": null
+ },
+ "b": {
+  "run": "p46b-t8-b",
+  "commit": null
+ },
+ "seed": 45045,
+ "order": "pure-rand xoroshiro128plus(45045), uniformInt(0, 1) per pair in id order: 0 = a on the left (column A), 1 = b",
+ "pairs": [
+  {
+   "id": "h02",
+   "left": "a",
+   "winner": "b",
+   "why": "Game B has more happening near the player: orange animals crowd the road, with yellow pickups and red hazards adding variety later on. Game A shows similar scenery but more open stretches, while B sustains a busier, more threatening sequence before the final clearing."
+  },
+  {
+   "id": "m03",
+   "left": "a",
+   "winner": "b",
+   "why": "Game B has more cyan road pads early, orange pickups later, and rocks passing closer to the car as it visibly swerves, giving it more activity and danger. Game A has similar scenery and rock obstacles, but the car stays mostly centered and the middle stretch looks more repetitive; both end near large windmills."
+  },
+  {
+   "id": "m06",
+   "left": "b",
+   "winner": "b",
+   "why": "Game A has cyan pickups followed by orange objects and yellow projectiles among the bats, with large bats coming very close to the car as the action builds. Game B introduces bats earlier, but its later scenes repeat similar bat formations with fewer new things happening."
+  },
+  {
+   "id": "m08",
+   "left": "b",
+   "winner": "a",
+   "why": "Game B has repeated coin trails and robots coming very close to the player by the middle rows, giving it more frequent activity and immediate danger. Game A stays relatively sparse longer; both build toward rocks, orange rings, and groups of robots near the end."
+  },
+  {
+   "id": "m09",
+   "left": "b",
+   "winner": "b",
+   "why": "Game A shows more frequent airborne action across varied gaps and platforms, with red spikes and glowing danger rings close to the robot in the later scenes. Game B has similar obstacles, but more snapshots show the robot on broad platforms, giving it a less intense pace and weaker buildup."
+  },
+  {
+   "id": "m16",
+   "left": "a",
+   "winner": "b",
+   "why": "Game B moves through gaps, orange platforms, and nearby red hazards before introducing a large orange robot late in the run, giving it more variety and buildup. Game A has frequent jumps and small hazards, but its later scenes become sparse and end on a quiet platform."
+  },
+  {
+   "id": "s003",
+   "left": "b",
+   "winner": "b",
+   "why": "Game A builds toward clusters of red-edged hazards close to the player, with more obstacles and glowing effects in the later scenes. Game B has similar scenery and collectible trails, but its later stretch looks clearer and less threatening, giving A a stronger sense of escalating action."
+  },
+  {
+   "id": "s021",
+   "left": "a",
+   "winner": "a",
+   "why": "Game A shows more frequent airborne jumps across wide gaps, with spikes near landings and small isolated platforms that make the later scenes feel riskier. Game B has similar coins and spikes, but the player is more often on broad, flat platforms, giving it a steadier pace and less visible buildup."
+  }
+ ],
+ "summary": {
+  "n": 8,
+  "aWins": 2,
+  "bWins": 6,
+  "ties": 0,
+  "bShare": 0.75,
+  "leftWinShare": 0.5
+ }
+}

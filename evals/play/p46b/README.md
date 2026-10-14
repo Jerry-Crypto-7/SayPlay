@@ -122,3 +122,21 @@ node --experimental-strip-types scripts/play-fidelity.mjs pairwise --a p46b-t8-a
 - Konflikt jen v `phase-pieces.ts`: P46A i P46B tam nezávisle udělaly stejnou optimalizaci (parametry fáze jednou za svět). Bere se strana integrační větve.
 - `npx vitest run src/play/arcade/__tests__/runner-boss.test.ts src/play/arcade/abilities`: 144/145. Padá pásmo obtížnosti `runner.default+shoot_at`: začátečník vyhraje 10/10 (pásmo 0,3–0,7). Střílející běžec má po P46A akci střelby a začátečník s ní bosse i hrozby sestřelí. Běžec bez střelby v pásmu.
 - Přečteno z kódu, během zatím neověřeno: úder P46A bosse běžce nezasáhne. `ability_strike` bere jen role `enemy` a `chaser` (`abilities/strike.ts`, `isStruck`), boss běžce má roli `hazard` (`behaviours/boss.ts` `bossBody(flanker.body)`), stejně shazovač řízení a `brute` skákačky (1,6 × 1,3 × 2 m). Test `boss-abilities.test.ts` z AC tedy po sloučení bez úpravy úderu neprojde. Návrh testu (gitignorovaný `plans/P46B-T8-boss-abilities.draft.ts`) na úder zatím nedošel: robot akcí plánuje s úderem, takže jeho pohyb bez jeho stisků prohraje, a pohyb robota bez akcí na světě s akcí taky prohraje (svět s akcí je jiný).
+
+## R5 – finále skákačky jako souboj s bossem (14. 10.) – cíl splněn
+
+- **Boss a aréna.** `brute` je vysoký 3,2 m (dvakrát hrdina, `2 * PLATFORM.playerH`), dřív 1,3 m. Aréna už není rovná deska: schod (+0,9 m nad dnem), mezera 1,5 m, římsa (+1,8 m, checkpoint), za ní jáma 12 m s bossem a cílem na dně. Na hlavu bosse dosáhne jen skok z římsy, ze dna ani ze schodu ne. Aréna je dlouhá jako dřív rovná deska, takže délka úrovně a hranice úseků v ‰ zůstaly.
+- **Schod ve výšce rovné desky.** Schod stojí ve výšce, kterou generátor losuje pro poslední desku (`nextTop`). První verze ho dávala do výšky předchozí desky: ze skoku do arény zmizel seskok (u semínka 1 o 0,64 m), začátečník na něm padal 8× místo 5×, na bosse mu nezbyl čas a `chase_me` spadl na 2/8 (pásmo od 0,3).
+- **Robot.** V jámě se odráží z římsy (místo odrazu podle doletu skoku, na hraně římsy brzdí). Dopad na hlavu, který robot kvůli zpoždění ještě nevidí, ho hnal větví „nedopadni bossovi k boku“ dopředu, takže z hlavy sešel za bosse a vyhrál po 2 zásazích (semínko 1). Nad hlavou teď míří dál na její střed.
+- **Měřeno:** pin `platform-pacing.test.ts` 8/8 (tvar jámy, každý zásah skokem z římsy, boss padne třetím zásahem před cílem). `p41/difficulty.json` skákačky: intermediate 20/20 ve všech 4 buňkách, začátečník 0,5 / 0,5 / 0,4 / 0,4 (před R5 0,45 / 0,45 / 0,35 / 0,35). `after.json` beze změny: skákačka mrtvý čas 3,58 s, `rising`, finále a `segmentChanges ≥ 2` 1. Sada arcade + compose + golden + p46b 2655/2657, výkon `swarm` a časový limit golden padly jen pod zátěží, samotné zelené.
+- **Delší varianta zamítnuta:** mezera 1,5 m napevno místo losované prodloužila úroveň o ~1,5 m. Soud dopadl stejně, ale hranice úseků se posunuly a u m16 zmizela změna rychlosti v úseku 3 (`segmentChanges2Share` skákačky 0,86).
+
+**Párový soud jen nad 3 větami skákačky.** Klipy B natočené znovu na této variantě (stejný příkaz jako v T8, `--only m09,m16,s021`), jejich `*.answer.json` smazané, strana A beze změny. Výstup doslova: `pairwise-r5.json`.
+
+| Věta | Vítěz | Soudce o P46B |
+|---|---|---|
+| m09 | B | „more frequent airborne action across varied gaps and platforms, with red spikes and glowing danger rings close to the robot in the later scenes“ |
+| m16 | B | „introducing a large orange robot late in the run, giving it more variety and buildup“ |
+| s021 | A | „more often on broad, flat platforms, giving it a steadier pace and less visible buildup“ |
+
+Skákačka 2 ze 3 pro P46B (v T8 0 ze 3), celkem 6 z 8, `bShare` 0,75 (cíl ≥ 0,6). Odvozeno, neověřeno: s021 dál prohrává na plošinách před arénou, které R5 neměnila.
