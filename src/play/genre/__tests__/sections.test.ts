@@ -15,7 +15,7 @@ import { describe, expect, it } from 'vitest';
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
 import { compileArcade } from '@/play/arcade/compile';
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, type ArcadeRole, type ArcadeWorld, BODY, HEADER, type PieceRef, ROLE, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, type ArcadeRole, type ArcadeWorld, BODY, FLAG, HEADER, type PieceRef, ROLE, bodyBase } from '@/play/arcade/contract';
 import { type Phase, phaseSpeed } from '@/play/compose/progression';
 import { replay } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
@@ -54,6 +54,8 @@ interface Body {
   readonly z: number;
   readonly h: number;
   readonly d: number;
+  /** Mrtvá předloha (boss průběhu P46B čeká na spawn v z = 0) v úrovni není. */
+  readonly alive: boolean;
 }
 
 const ROLE_NAME = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name])) as Record<number, ArcadeRole>;
@@ -63,7 +65,7 @@ function bodies(world: ArcadeWorld): Body[] {
   return Array.from({ length: state[HEADER.bodyCount] as number }, (_, i) => {
     const base = bodyBase(i);
     const at = (slot: keyof typeof BODY): number => state[base + BODY[slot]] as number;
-    return { role: ROLE_NAME[at('role')] as ArcadeRole, x: at('x'), y: at('y'), z: at('z'), h: at('h'), d: at('d') };
+    return { role: ROLE_NAME[at('role')] as ArcadeRole, x: at('x'), y: at('y'), z: at('z'), h: at('h'), d: at('d'), alive: (at('flags') & FLAG.alive) !== 0 };
   });
 }
 
@@ -205,7 +207,8 @@ describe('platformer sections (P36A T4)', () => {
         if (prev === undefined || sectionOf(slab.z - slab.d / 2) !== section) return [];
         return [slab.z - slab.d / 2 - (prev.z + prev.d / 2)];
       });
-    const spikes = (section: number): number => list.filter((body) => body.role === 'hazard' && sectionOf(body.z) === section).length;
+    // Jen hroty úrovně: předloha bosse (P46B) leží mrtvá v z = 0 a rozjezdu by přičetla hrot, který tam není.
+    const spikes = (section: number): number => list.filter((body) => body.role === 'hazard' && body.alive && sectionOf(body.z) === section).length;
     const platforms = (section: number): number => slabs.filter((slab) => sectionOf(slab.z - slab.d / 2) === section).length;
     expect(mean(gaps(2))).toBeGreaterThan(mean(gaps(0)));
     expect(spikes(2) / platforms(2)).toBeGreaterThan(spikes(0) / platforms(0));
