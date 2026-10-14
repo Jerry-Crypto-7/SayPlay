@@ -1349,6 +1349,17 @@
       ]
     },
     {
+      "setting": "treasure cave",
+      "pattern": "\\btreasure[\\s-]+cave(?:e?s)?\\b",
+      "look": "cave",
+      "props": [
+        {
+          "id": "gen3d-stalagmite",
+          "height": 1.2
+        }
+      ]
+    },
+    {
       "setting": "treetop",
       "pattern": "\\btreetop(?:e?s)?\\b",
       "look": "meadow",

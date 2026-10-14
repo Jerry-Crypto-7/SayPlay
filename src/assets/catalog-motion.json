@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "7daa3cb1e0eac31d6a36b57a9d1dd4f6f918e365308a419ab0a6bcdd69cd2c9a",
+ "catalogHash": "ccba93675ed8bf7cfeb2a871ae8af53231fcb0c04f04eb21487e755a62d8d0c9",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1410,6 +1410,9 @@
   "gen3d-heliconia": {"class":"prop"},
   "gen3d-clay-pot": {"class":"prop"},
   "gen3d-driftwood": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-floating-dock": {"class":"prop"}
+  "gen3d-floating-dock": {"class":"prop"},
+  "gen3d-stalagmite": {"class":"prop"},
+  "gen3d-lunar-crater": {"class":"prop"},
+  "gen3d-pitcher-plant": {"class":"biped","regions":{"legY":0.25}}
  }
 }

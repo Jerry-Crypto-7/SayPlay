@@ -28409,6 +28409,65 @@
           1.30357
         ]
       }
+    },
+    {
+      "assetId": "gen3d-stalagmite",
+      "tags": [
+        "stalagmite"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stalagmite-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38949,
+          0,
+          -0.38
+        ],
+        "max": [
+          0.38949,
+          0.99691,
+          0.38
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lunar-crater",
+      "tags": [
+        "lunar crater",
+        "crater",
+        "moon crater"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lunar-crater-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.48991,
+          0,
+          -1.48744
+        ],
+        "max": [
+          1.48991,
+          0.9994,
+          1.48744
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pitcher-plant",
+      "tags": [
+        "pitcher plant"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pitcher-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22838,
+          0,
+          -0.18616
+        ],
+        "max": [
+          0.22838,
+          0.9998,
+          0.18616
+        ]
+      }
     }
   ]
 }

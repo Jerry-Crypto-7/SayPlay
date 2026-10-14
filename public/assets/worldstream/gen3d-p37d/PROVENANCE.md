@@ -635,3 +635,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-clay-pot` | clay pot, terracotta pot | 4746 / 2370 |
 | `gen3d-driftwood` | driftwood | 4618 / 2263 |
 | `gen3d-floating-dock` | floating dock, pontoon | 4426 / 2162 |
+| `gen3d-stalagmite` | stalagmite | 4658 / 2224 |
+| `gen3d-lunar-crater` | lunar crater, crater, moon crater | 4703 / 2329 |
+| `gen3d-pitcher-plant` | pitcher plant | 4748 / 2374 |
