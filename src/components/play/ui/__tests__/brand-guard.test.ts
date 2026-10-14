@@ -39,6 +39,8 @@ const SCENE_FILES = new Set([
   'arcade/arena/ArenaScene.tsx',
   'arcade/duel/DuelScene.tsx',
   'arcade/look/Scenery.tsx',
+  // Scéna skákačky (P46G): břeh v písku míchá zem s bílou jako ostatní terén (`islands.ts`, `water.ts`).
+  'arcade/platform/PlatformWorld.tsx',
   'arcade/rhythm/RhythmScene.tsx',
   'arcade/shooter/ShooterRig.tsx',
   'arcade/shooter/primitives.tsx',
