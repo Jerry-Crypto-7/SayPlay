@@ -76,3 +76,23 @@ P46D je v `features/P46-hratelnost-2026-10-12` sloučený commitem `2813b62b` (n
   - `compose/drive.test` řízení se střelbou na široké silnici (8 případů): robot po uhnutí shozu narazí do zombie uprostřed zúžení.
   - běžec (úseky ze vzorů P46D × boss P46B): `assembly-pacing` b02 semínko 4, `boss-abilities` úder na jednom semínku.
   - `upgrade.test` „pod 3 s“ (3,9–6,5 s) a `swarm` výkon – stroj byl na 100 % CPU, neověřené.
+
+## Kalibrace po sloučení (P46H, 14. 10. 2026)
+
+Tři červené ze sloučení opravené rozvržením, ne robotem (`difficulty.json` přeměřený, semínka 1–20):
+
+| Buňka | začátečník | intermediate |
+|---|---|---|
+| `platformer.default` (i `+shoot_at`) | 0,40 (dřív 0,95) | 1,0 |
+| `platformer.default+chase_me` (i `+shoot_at`) | 0,40 (dřív 0,90) | 1,0 |
+| `drive.race`, `drive.reach`, `drive.escape`, `drive.reach+deliver` | 0,65 | 1,0 |
+| `drive.*+shoot` (race, reach, escape) | 0,50 (dřív 0,65) | 0,80 |
+| `drive.reach+shoot+collect` | 0,50 | 0,85 |
+| `runner.default`, `+chase_me` | 0,50 | 1,0 |
+| `runner.default+shoot_at` (i `+chase_me`) | 1,0 (beze změny, strop zrušen v `64833e9a`) | 1,0 |
+
+- **Skákačka:** v čistých úrovních P46D (`dbb9faaa`) začátečník prohrál 30 z 30 her vždy na pevném hrotu desky hned za pohyblivou plošinou. Úseky P46B nechaly jedinou plošinu bez hrotu a hroty okna pasti udělaly pohyblivé. Teď za plošinou leží deska s pevným hrotem a o rozestup chodby s ostny dál pastí. Obtížnost je na místě hrotu prudká (53 % → 0,55, 54 % → 0,8), proto se místo losuje z 49–55 % vlastním proudem. 60 semínek: skákačka 0,47, s pronásledovatelem 0,42, lekníny 0,63; intermediate 1,0.
+- **Řízení se střelbou:** robot střílí jen do své stopy. Zombie v ústí zúžení a shoz vedle ní nebo do 25 m za ní ho vyhnaly ze stopy. Shazovač tam teď neshazuje, cíl stojí aspoň 15 m za zúžením a třetí cíl v 350 ‰ vrací střelbě obtížnost, kterou předtím dělal jen nefér shoz (60 semínek `drive.race+shoot`: začátečník 0,48, intermediate 0,87).
+- **Běžec:** nepřítel ve volném pruhu stál ve finále tam, kudy útočí boss. Úder na něj vybil akci v jediném okně bosse a v b02 dav ve finále vzal třetí život. Ve finále bosse (od 760 ‰) teď trať ze vzorů nepřátele k úderu ani střelbě nemá.
+- **Telemetrie:** slot, který v jednom tiku uvolní střela a obsadí boss, teď začne novou stopu (dřív `finale.why` null u skákačky se střelbou).
+- **Goldeny:** `genres`/`replays` přezmrazené jen u `platformer.default` (76 řádků variant) a u `runner.default` se střelbou a akcemi (8 řádků). `stored.json`, `motion-hash`, `legacy-controls-hash`, `legacy-replay-v2`, `allowed` beze změny.
