@@ -145,3 +145,16 @@ Skákačka 2 ze 3 pro P46B (v T8 0 ze 3), celkem 6 z 8, `bShare` 0,75 (cíl ≥ 
 
 - Zábava panelu P45 (40 her) proti `fun-baseline.json` P46A: mrtvý čas medián 5,36 → 3,78 s, `rising` 0,55 → 0,63, finále 0,23 → 0,38, události/s 1,09 → 1,18. Žádná věta horší (hratelnost, nejdelší mezera +0,5 s, stoupání, finále, počet chování, žánr).
 - Celá sada samotná: 13 090 / 13 128. R5 shodila dva testy a oba jsou opravené: statistika mezer sekce 3 v `sections.test.ts` (římsa a jáma se do ní nepočítají, `c19c6817`) a zmrazené otisky skákačky P41 (`42076825`, jen řádky skákačky). Zbytek červených padá bez vztahu k P46B: časové limity pod zátěží sady (`upgrade`, `compile-report`, `golden`, `swarm`, chyby `STACK_TRACE_ERROR` na limitu), `upgrade-action-lost` stejně na základu `491079b7` a chybějící gitignorovaný `plans/P8-odevzdani.md` ve worktree.
+
+## Sloučení do `features/P46-hratelnost-2026-10-12` (14. 10.)
+
+- **Sloučeno** (`66e87638`): konflikt jen v `phase-pieces.ts` (obě větve tam samostatně udělaly stejnou mezipaměť parametrů fáze), bere se strana integrační větve.
+- **Úder bere bosse** (`77a94b7b`): úder P46A zasáhne i bosse finále (boss běžce, shazovač řízení, `brute` skákačky). Jeden úder = jeden život. Počítá se jen první tik 6tikového okna a zásah jde přes pravidlo pádu bosse (`blow`), takže kořist padá jako dřív. `boss-abilities.test.ts` 6/6: boss je v dosahu ≥ 2 tiky okna a ubyde mu právě jeden život, údery ho srazí dřív a hra je dál vyhraná (semínka 1–3). Mutace: zásah v každém tiku okna → 3/6 červené; úder bez bosse → 6/6 červené.
+- **Cílená sada z AC** (`src/play/arcade`, `compose`, `draft`, `src/app/api/play`, `evals/play/regression`): 3266 / 3273, `tsc` 0. Červené: (1) pásmo `runner.default+shoot_at` (níže); (2) `upgrade-action-lost` ×2, stejné jako na základu; (3) `upgrade.test.ts` a výkon `swarm`: časové limity a `STACK_TRACE_ERROR`, při sériovém opakování padají jiné testy téhož souboru (na stroji běželo 48 procesů node).
+
+**Pásmo `runner.default+shoot_at` zůstává červené: začátečník vyhrává 10/10, pásmo je 0,3–0,7.** Měřeno na semínkách 1–10 na integrační větvi:
+
+- Boss běžce ve střelbě nepadá střelami. Všechny jeho zásahy jsou uhnuté útoky (`stray` 0) a střela hráče hazard neprorazí. Předpoklad „začátečník bosse sestřelí“ neplatí.
+- **Odolnější boss nepomáhá.** S 5 životy místo 3 přišel začátečník o životy přesně ve stejných ticích na všech 10 semínkách a vyhrál dál 10/10. Robot intermediate pak bosse nestihl porazit před cílem (`boss gone` −1) a delší boj by srazil varování pod `TELEGRAPH_MIN` (36 − 3 × 4 = 24 < 30). Vráceno, necommitnuto.
+- Začátečník ve střelbě přijde o 0–2 z 5 životů (`score_bonus.lives` 5, bez střelby 3) a uhne každému útoku bosse. Bez střelby na stejných semínkách přijde o 3 životy, většinou v boji s bossem. Plánovač pruhů v obalu doplňků (`guardLanes`) za tím není: s vypnutým plánovačem stejné výsledky.
+- **Odvozeno, neověřeno:** trať se střelbou je pro začátečníka lehčí mimo bosse (nepřátelé místo části překážek, 5 životů). Pásmo P46B ji před sloučením drželo, takže to posunula až změna robota střelby v P46A (`4c7c6b3e` a další), ne boss.
