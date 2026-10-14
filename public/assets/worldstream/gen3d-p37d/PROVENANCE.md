@@ -638,3 +638,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-stalagmite` | stalagmite | 4658 / 2224 |
 | `gen3d-lunar-crater` | lunar crater, crater, moon crater | 4703 / 2329 |
 | `gen3d-pitcher-plant` | pitcher plant | 4748 / 2374 |
+| `gen3d-staghorn-coral` | staghorn coral | 4750 / 2374 |
+| `gen3d-glowing-mushroom` | glowing mushroom, glowing fungus | 4277 / 2049 |
+| `gen3d-wooden-barricade` | wooden barricade, stake barricade | 4519 / 2097 |
+| `gen3d-iron-fence` | iron fence, wrought iron fence | 4734 / 2319 |
+| `gen3d-street-bollard` | street bollard, traffic bollard | 4463 / 2108 |
+| `gen3d-coat-rack` | coat rack, coat stand, hat stand | 4750 / 2372 |

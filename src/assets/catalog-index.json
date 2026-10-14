@@ -28468,6 +28468,126 @@
           0.18616
         ]
       }
+    },
+    {
+      "assetId": "gen3d-staghorn-coral",
+      "tags": [
+        "staghorn coral"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-staghorn-coral-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47197,
+          0,
+          -0.35367
+        ],
+        "max": [
+          0.47197,
+          0.99667,
+          0.35367
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-glowing-mushroom",
+      "tags": [
+        "glowing mushroom",
+        "glowing fungus"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-glowing-mushroom-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49998,
+          0,
+          -0.5005
+        ],
+        "max": [
+          0.49998,
+          0.99767,
+          0.5005
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-barricade",
+      "tags": [
+        "wooden barricade",
+        "stake barricade"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-barricade-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.01766,
+          0,
+          -1.10233
+        ],
+        "max": [
+          1.01766,
+          0.99995,
+          1.10233
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-iron-fence",
+      "tags": [
+        "iron fence",
+        "wrought iron fence"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-iron-fence-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71733,
+          0,
+          -0.56701
+        ],
+        "max": [
+          0.71733,
+          0.9978,
+          0.56701
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-street-bollard",
+      "tags": [
+        "street bollard",
+        "traffic bollard"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-street-bollard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.10277,
+          0,
+          -0.10285
+        ],
+        "max": [
+          0.10277,
+          1.00001,
+          0.10285
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coat-rack",
+      "tags": [
+        "coat rack",
+        "coat stand",
+        "hat stand"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coat-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1518,
+          0,
+          -0.10896
+        ],
+        "max": [
+          0.1518,
+          1.00001,
+          0.10896
+        ]
+      }
     }
   ]
 }

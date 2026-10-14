@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "ccba93675ed8bf7cfeb2a871ae8af53231fcb0c04f04eb21487e755a62d8d0c9",
+ "catalogHash": "761e78c82303f7061addc787dec5cfa7f02fcdbe79a7ceea3dfaa01785d0e9c3",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1413,6 +1413,12 @@
   "gen3d-floating-dock": {"class":"prop"},
   "gen3d-stalagmite": {"class":"prop"},
   "gen3d-lunar-crater": {"class":"prop"},
-  "gen3d-pitcher-plant": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-pitcher-plant": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-staghorn-coral": {"class":"prop"},
+  "gen3d-glowing-mushroom": {"class":"prop"},
+  "gen3d-wooden-barricade": {"class":"prop"},
+  "gen3d-iron-fence": {"class":"prop"},
+  "gen3d-street-bollard": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-coat-rack": {"class":"biped","regions":{"legY":0.25}}
  }
 }
