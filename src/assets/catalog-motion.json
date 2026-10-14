@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "420f75eed553976f11e840603d84373b54cccd904bad58df16c46997e7c95983",
+ "catalogHash": "2200a7ec6352df88c5fd4c4ef175f4f45db1d8f2803487c2bc2f815969b5ac92",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1377,6 +1377,11 @@
   "gen3d-camping-chair": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-wooden-gate": {"class":"prop"},
   "gen3d-side-table": {"class":"prop"},
-  "gen3d-smokestack": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-smokestack": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-paper-lantern": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-ticket-booth": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-wine-barrel": {"class":"prop"},
+  "gen3d-lily-bouquet": {"class":"prop"},
+  "gen3d-wooden-pergola": {"class":"prop"}
  }
 }

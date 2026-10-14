@@ -27753,6 +27753,108 @@
           0.12916
         ]
       }
+    },
+    {
+      "assetId": "gen3d-paper-lantern",
+      "tags": [
+        "paper lantern",
+        "chinese lantern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-paper-lantern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37565,
+          0,
+          -0.37641
+        ],
+        "max": [
+          0.37565,
+          0.99628,
+          0.37641
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ticket-booth",
+      "tags": [
+        "ticket booth"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ticket-booth-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31298,
+          0,
+          -0.15423
+        ],
+        "max": [
+          0.31298,
+          1,
+          0.15423
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wine-barrel",
+      "tags": [
+        "wine barrel",
+        "wine cask",
+        "cask"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wine-barrel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4111,
+          0,
+          -0.53419
+        ],
+        "max": [
+          0.4111,
+          1.00001,
+          0.53419
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lily-bouquet",
+      "tags": [
+        "lily bouquet",
+        "bouquet",
+        "flower bouquet"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lily-bouquet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39543,
+          0,
+          -0.35138
+        ],
+        "max": [
+          0.39543,
+          0.99438,
+          0.35138
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-pergola",
+      "tags": [
+        "wooden pergola",
+        "pergola",
+        "arbor"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-pergola-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.54026,
+          0,
+          -0.51714
+        ],
+        "max": [
+          0.54026,
+          0.98322,
+          0.51714
+        ]
+      }
     }
   ]
 }

@@ -356,6 +356,10 @@
         {
           "id": "gen3d-oil-lamp",
           "height": 0.8
+        },
+        {
+          "id": "gen3d-wine-barrel",
+          "height": 1.1
         }
       ]
     },
@@ -734,6 +738,10 @@
         {
           "id": "gen3d-funeral-urn",
           "height": 0.9
+        },
+        {
+          "id": "gen3d-lily-bouquet",
+          "height": 0.8
         }
       ]
     },
@@ -1265,6 +1273,10 @@
         {
           "id": "gen3d-tomato-plant",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-wooden-pergola",
+          "height": 2.6
         }
       ]
     },
@@ -1385,6 +1397,10 @@
       "props": [
         {
           "id": "gen3d-zoo-gate",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-ticket-booth",
           "height": 1.2
         },
         {
@@ -1615,6 +1631,10 @@
         {
           "id": "gen3d-torii-gate",
           "height": 4
+        },
+        {
+          "id": "gen3d-paper-lantern",
+          "height": 0.9
         }
       ]
     },
