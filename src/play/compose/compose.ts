@@ -1,6 +1,6 @@
 import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
-import { timeOfDayFor } from '../arcade/look';
+import { lookFor, timeOfDayFor } from '../arcade/look';
 import { matchesWitness, namesActor, type ActionWitness, type RoleBinding } from '../arcade/witness';
 import { draftChoiceOrder, draftGenreFor } from '../draft/draft';
 import { nounPhrase, singular } from '../draft/lexicon';
@@ -51,7 +51,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   const cast: CastItem[] = (draft.cast ?? []).map(item => {
     if (setting === draft.setting || !DEFAULT_LABELS.has(item.label) || words.includes(singular(item.label.split(' ').at(-1)!))) return item;
     if (item.does === 'collect') return { ...item, label: defaultCollectible(setting) };
-    if (['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(item.does)) return { ...item, label: defaultFoe(setting, draft.genre).label };
+    if (['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(item.does)) return { ...item, label: defaultFoe(setting, draft.genre, item.does).label };
     return item;
   });
   const spoken: string[] = [];
@@ -74,7 +74,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   for (const fallback of cell.preset.cast ?? []) {
     const roles = draft.genre === 'arena' && fallback.does === 'chase_me'
       ? ['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'] : [fallback.does];
-    if (!cast.some(item => roles.includes(item.does))) cast.push({ ...fallback, label: fallback.does === 'collect' ? defaultCollectible(setting) : ['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(fallback.does) ? defaultFoe(setting, draft.genre).label : fallback.label });
+    if (!cast.some(item => roles.includes(item.does))) cast.push({ ...fallback, label: fallback.does === 'collect' ? defaultCollectible(setting) : ['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(fallback.does) ? defaultFoe(setting, draft.genre, fallback.does).label : fallback.label });
   }
   const put = (label: string, does: CastItem['does']): void => {
     if (label === 'hero') return;
@@ -122,7 +122,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   if (projectiles.length > 0) {
     // The moving controls' shooting addon needs a target even when the request
     // only names ammunition. That default target keeps its own identity.
-    if (!cast.some(member => member.does === 'shoot_at')) cast.push({ label: defaultFoe(setting, draft.genre).label, does: 'shoot_at' });
+    if (!cast.some(member => member.does === 'shoot_at')) cast.push({ label: defaultFoe(setting, draft.genre, 'shoot_at').label, does: 'shoot_at' });
     for (const projectile of projectiles) {
       cast.push({ label: projectile.label, does: 'scenery', verb: 'shoot' });
       spoken.push(projectile.label);
@@ -178,7 +178,10 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
     intent.items.some(item => item.essential && item.axis !== 'threat' && item.actor === head(draft.hero));
   const hero = cell.recipe.move === 'ball' && intent.hero === null ? BALL_PLAYER : intent.hero !== null && head(draft.hero) !== intent.hero && !keepNamedHero ? intent.hero : draft.hero;
   const landingTarget = cell.recipe.objective === 'land' && intent.items.some(item => item.essential && item.verb === 'land' && item.object !== null);
-  return { ...draft, hero, setting, cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
+  // Místo, které sady neznají („a supermarket Roomba“ dá místo `roomba`), vezme sadu ze slov věty jako
+  // návrh žánru – scéna i překážka trati pak patří do supermarketu (P46D T6).
+  const palette = draft.palette ?? (lookFor(setting) === null ? (lookFor(intent.sentence) ?? undefined) : undefined);
+  return { ...draft, hero, setting, ...(palette === undefined ? {} : { palette }), cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
 }
 
 export function compose(intent: Intent, seed = 1, reading: Reading | null = null): Composition {

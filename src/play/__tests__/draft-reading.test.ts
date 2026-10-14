@@ -112,5 +112,6 @@ describe('draft from the local reading', () => {
       return meta.readBy !== 'model' || meta.fellBack || !compiled.ok || !reportFor(compiled.value).publishEligible;
     });
     expect(unwinnable.map((entry) => entry.id)).toEqual([]);
-  });
+    // 20 publikací s ověřením robotem: samotný běh 31 s (P46D T2), výchozích 30 s nestačí.
+  }, 90_000);
 });

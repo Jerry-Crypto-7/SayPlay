@@ -56,7 +56,8 @@ function predict(state: Int32Array, player: number, recent: readonly ArcadeInput
 /** Kam mířit do strany: střed trati před sebou, nebo vedle soupeře, který je v cestě. */
 function aimX(state: Int32Array, player: number, course: SteerCourse, x: number, z: number, look: number): number {
   const center = centerAt(course, z + look);
-  const room = halfWidthAt(course, z + look) - STEER.carW / 2 - STEER.clearance;
+  // Místo do strany podle užšího z obou míst: objíždění ještě v zúžení nesmí vést do mantinelu.
+  const room = Math.min(halfWidthAt(course, z), halfWidthAt(course, z + look)) - STEER.carW / 2 - STEER.clearance;
   let aim = center;
   const count = state[HEADER.bodyCount] as number;
   let nearest = Number.POSITIVE_INFINITY;

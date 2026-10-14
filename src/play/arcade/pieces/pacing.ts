@@ -417,13 +417,26 @@ function segmentSpeeds(control: PieceRef): number[] {
   return [0, ...segmentSpans().map(([at]) => at)].map((at) => [...phases].reverse().find((phase) => phase.start <= at)?.speedPercent ?? 100);
 }
 
-/** Šířka silnice řízení (mezi mantinely) uprostřed rozjezdu a úseků scénáře; trať bez mantinelů = prázdné. */
-function segmentWidths(level: ArcadeParts['level']): number[] {
+/**
+ * Šířka silnice řízení (mezi mantinely) v rozjezdu a úsecích scénáře: ta, která v úseku vede nejdelší kus trati;
+ * trať bez mantinelů = prázdné. Okruh ze vzorů (P46D) má v každém úseku zúžení, šikany i rozcestí – jeden bod
+ * uprostřed úseku by padl na kterýkoli z nich. Na trati se šířkou po úsecích je to šířka úseku. Šířky čte jen
+ * scénář (změna `narrow`) a nápis úseku, svět ne.
+ */
+export function segmentWidths(level: ArcadeParts['level']): number[] {
   const walls = steerSegments(level);
   if (walls.length === 0) return [];
   return [[0, PACING.segments.intro] as const, ...segmentSpans()].map(([from, to]) => {
-    const z = Math.floor((level.length * (from + to)) / 2000);
-    return (walls.find((segment) => z < segment.far) ?? (walls[walls.length - 1] as (typeof walls)[number])).width;
+    const [near, far] = [Math.floor((level.length * from) / 1000), Math.floor((level.length * to) / 1000)];
+    const spans = new Map<number, number>();
+    for (const wall of walls) {
+      const overlap = Math.min(far, wall.far) - Math.max(near, wall.near);
+      if (overlap > 0) spans.set(wall.width, (spans.get(wall.width) ?? 0) + overlap);
+    }
+    let best = (walls[walls.length - 1] as (typeof walls)[number]).width;
+    let most = 0;
+    for (const [width, span] of spans) if (span > most) [best, most] = [width, span];
+    return best;
   });
 }
 

@@ -36,6 +36,7 @@ import { type BehaviourId, type BehaviourRef, type TelegraphKind, behaviourBodie
 import { BOSS } from '@/play/arcade/pieces/behaviours/boss';
 import { GUARDIAN } from '@/play/arcade/pieces/behaviours/guardian';
 
+import { type Path, runnerPathOf } from '../runner/path';
 import { type ArcadeSession, TICK_MS } from '../session';
 import { type EffectsBus, type VisualEvent, pacingBossOf, pacingRefsOf } from './bus';
 import { reducedMotion } from './feel';
@@ -149,7 +150,8 @@ function bodiesById(state: ArcadeState, refs: readonly BehaviourRef[]): [number,
  * Kresba varování nad světem `refs` – trojrozměrné kousky v jedné skupině, které
  * `update` každý snímek postaví podle stavu; `boss` = předloha bosse finále (`pacingBossOf`). Stav jen čte.
  */
-export function createPacingDrawing(refs: readonly BehaviourRef[], boss?: BehaviourRef): PacingDrawing {
+/** `path` = zakřivená trať běžce (P46D T3): značky stojí nad tělem tam, kde ho scéna kreslí. */
+export function createPacingDrawing(refs: readonly BehaviourRef[], boss?: BehaviourRef, path: Path | null = null): PacingDrawing {
   const root = new Group();
   root.name = 'pacing-fx';
   const geometries: BufferGeometry[] = [];
@@ -235,9 +237,10 @@ export function createPacingDrawing(refs: readonly BehaviourRef[], boss?: Behavi
       const finaleBoss = boss === undefined ? [] : behaviourBodies(state, state[HEADER.player] as number, [boss]);
 
       for (const [body, id] of bodiesById(state, refs)) {
-        const x = -at(body, 'x');
-        const y = at(body, 'y');
         const z = at(body, 'z');
+        const bend = path?.(z);
+        const x = -at(body, 'x') + (bend?.x ?? 0);
+        const y = at(body, 'y') + (bend?.y ?? 0);
         if (id === 'boss' || id === 'turret' || finaleBoss.includes(body)) {
           const hp = bodyHp(state, body);
           const max = Math.max(topHp.get(body) ?? 0, hp);
@@ -359,7 +362,7 @@ export function createPacingDrawing(refs: readonly BehaviourRef[], boss?: Behavi
 export function PacingFx({ session, bus, surface }: { readonly session: ArcadeSession; readonly bus: RefObject<EffectsBus | null>; readonly surface: RefObject<HTMLDivElement | null> }) {
   const drawing = useMemo(() => {
     const refs = pacingRefsOf(session.world.rules);
-    return refs.length === 0 ? null : createPacingDrawing(refs, pacingBossOf(session.world.rules));
+    return refs.length === 0 ? null : createPacingDrawing(refs, pacingBossOf(session.world.rules), runnerPathOf(session.world));
   }, [session]);
   useEffect(() => () => drawing?.dispose(), [drawing]);
   const edge = useRef<HTMLDivElement | null>(null);

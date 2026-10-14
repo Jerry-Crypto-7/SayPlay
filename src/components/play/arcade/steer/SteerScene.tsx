@@ -13,7 +13,7 @@ import { renderHeld } from '../effects/render-feel';
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { type Camera, Color, Frustum, type InstancedMesh, Matrix4, MeshBasicMaterial, MeshStandardMaterial, type Object3D, type PerspectiveCamera, Plane, PlaneGeometry, Raycaster, Vector2, Vector3 } from 'three';
+import { BoxGeometry, type Camera, Color, Frustum, type InstancedMesh, Matrix4, MeshBasicMaterial, MeshStandardMaterial, type Object3D, type PerspectiveCamera, Plane, PlaneGeometry, Raycaster, Vector2, Vector3 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import { color } from '@/brand/tokens';
@@ -33,6 +33,7 @@ import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { FittedModel } from '../World';
 import { keySteer } from './key-steer';
+import { roadShapeOf } from './road-shape';
 import { type DriveInputMode, driveInput } from './drive-input';
 import { VoyageHero } from './VoyageHero';
 import { type VoyageLayout, centerOf, nearShotsInView, voyageLayoutOf } from './voyageLayout';
@@ -190,9 +191,10 @@ export function SteerBackdrop({
   readonly namedPad?: string;
 }) {
   const voyage = useVoyageSession();
+  const shape = useMemo(() => roadShapeOf(session.world), [session.world]);
   return (
     <>
-      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} namedPad={namedPad} /> : <RoadBackdrop course={course} length={length} look={look} />}
+      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} namedPad={namedPad} /> : <RoadBackdrop course={course} shape={shape} length={length} look={look} />}
       {/* Slot ducha (P37-0 T3) pro silnici i plavbu. */}
       <GhostSlot ghost={ghost} session={session} />
     </>
@@ -217,21 +219,24 @@ function useVoyageSession(): { readonly session: ArcadeSession; readonly layout:
  * kulisy sady prostředí (P27A T3) podél každého úseku. Kulisy jsou jen vzhled:
  * jádro o nich neví, hash světa se nehne.
  */
-function RoadBackdrop({ course, length, look, sceneryFrom = 0 }: { readonly course: SteerCourse | undefined; readonly length: number; readonly look: Look; readonly sceneryFrom?: number }) {
+function RoadBackdrop({ course, shape, length, look, sceneryFrom = 0 }: { readonly course: SteerCourse | undefined; readonly shape?: RoadShape; readonly length: number; readonly look: Look; readonly sceneryFrom?: number }) {
   const span = length + 80;
   const half = (course?.halfWidth ?? 5 * UNIT) / UNIT;
-  const segments = useMemo(() => segmentsOf(course), [course]);
-  // Asfalt a okraje všech úseků po jedné síti: úsek po úseku to byly desítky volání kreslení na snímek (P32F T4, telefon).
+  // Silnice z mantinelů světa ve skutečné šířce (P46D R2); bez nich z osy trati v šířce prvního úseku.
+  const segments = useMemo(() => (shape !== undefined && shape.segments.length > 0 ? shape.segments : segmentsOf(course).map((segment) => ({ ...segment, width: half * 2 }))), [shape, course, half]);
+  // Asfalt, okraje a mantinely všech úseků po jedné síti: úsek po úseku to byly desítky volání kreslení na snímek (P32F T4, telefon).
   const road = useMemo(() => {
     if (segments.length === 0) return null;
     const strip = (w: number, d: number, x: number, y: number, z: number) => new PlaneGeometry(w, d).rotateX(-Math.PI / 2).translate(x, y, z);
     const mid = (segment: Segment) => (segment.near + segment.far) / 2;
+    const wallH = STEER.wallH / UNIT;
     return {
-      asphalt: mergeGeometries(segments.map((segment) => strip(half * 2, segment.far - segment.near + 0.05, segment.center, -0.01, mid(segment)))),
-      edges: mergeGeometries(segments.flatMap((segment) => [-1, 1].map((side) => strip(0.12, segment.far - segment.near, segment.center + side * (half - 0.15), 0, mid(segment))))),
+      asphalt: mergeGeometries(segments.map((segment) => strip(segment.width, segment.far - segment.near + 0.05, segment.center, -0.01, mid(segment)))),
+      edges: mergeGeometries(segments.flatMap((segment) => [-1, 1].map((side) => strip(0.12, segment.far - segment.near, segment.center + side * (segment.width / 2 - 0.15), 0, mid(segment))))),
+      barriers: shape === undefined || shape.barriers.length === 0 ? null : mergeGeometries(shape.barriers.map((barrier) => new BoxGeometry(barrier.w, wallH, barrier.d).translate(barrier.x, wallH / 2, barrier.z))),
     };
-  }, [segments, half]);
-  useEffect(() => () => { road?.asphalt.dispose(); road?.edges.dispose(); }, [road]);
+  }, [segments, shape]);
+  useEffect(() => () => { road?.asphalt.dispose(); road?.edges.dispose(); road?.barriers?.dispose(); }, [road]);
   return (
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, span / 2 - 30]} renderOrder={UNDER_PANORAMA}>
@@ -247,12 +252,17 @@ function RoadBackdrop({ course, length, look, sceneryFrom = 0 }: { readonly cour
           <mesh geometry={road.edges}>
             <meshBasicMaterial color="#e2e8f0" />
           </mesh>
+          {road.barriers !== null && (
+            <mesh geometry={road.barriers} castShadow receiveShadow>
+              <meshStandardMaterial color={color.tomato} roughness={0.7} />
+            </mesh>
+          )}
         </>
       )}
       {segments.map((segment, i) =>
         segment.far - segment.near < sceneryFrom ? null : (
           <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>
-            <Scenery look={look} layout="sides" inner={half + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
+            <Scenery look={look} layout="sides" inner={segment.width / 2 + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
           </group>
         ),
       )}
@@ -265,6 +275,8 @@ interface Segment {
   readonly far: number;
   readonly center: number;
 }
+
+type RoadShape = ReturnType<typeof roadShapeOf>;
 
 /** Úseky trati ve scéně (m): od konce předchozího (první 20 m před startem) do svého konce, střed zrcadlený. */
 function segmentsOf(course: SteerCourse | undefined): Segment[] {

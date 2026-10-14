@@ -7,6 +7,7 @@ import { abilityButton, abilityIdsOf } from '../abilities/state';
 import { AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp, graceOf, targetStateOf,
   type ArcadeEffect, type BodyInit, type BotPiece, type ControlPiece, type PieceRef, type RulePiece, type RuleTrigger } from '../contract';
 import { arenaAxis } from './arena';
+import { RUNNER, RUNNER_STRUCTURE_D } from './runner';
 import { centerAt, courseSchema } from './steer';
 import { GLIDE } from './glide';
 import { WALKER_CELL, walkerCell, walkerMapSchema, walkerPath, walkerVelocity, walkerWaypoint } from './walker';
@@ -264,7 +265,11 @@ export function makeAssemblyBot(bots: Readonly<Record<string, BotPiece>>): BotPi
         let danger = false;
         for (let i = 0; i < state[HEADER.bodyCount]!; i++) {
           const q = bodyBase(i), ahead = state[q + BODY.z]! - state[p + BODY.z]!;
-          if (state[q + BODY.role] === ROLE.obstacle && alive(state, i) && ahead > -800 && ahead < 3000) danger = true;
+          // Stavba trati ze vzorů (P46D T2) je dlouhá desítky metrů: blízko je její kraj, ne střed; strop tunelu nad hlavou nehrozí.
+          const long = state[q + BODY.d]! >= RUNNER_STRUCTURE_D;
+          if (long && state[q + BODY.y]! >= RUNNER.runH) continue;
+          const reach = long ? state[q + BODY.d]! / 2 : 0;
+          if (state[q + BODY.role] === ROLE.obstacle && alive(state, i) && ahead + reach > -800 && ahead - reach < 3000) danger = true;
         }
         if (!danger && Math.abs(dx) > 600) input = { ...input, buttons: (input.buttons & ~(BUTTON.LEFT | BUTTON.RIGHT)) | (dx > 0 ? BUTTON.RIGHT : BUTTON.LEFT) };
       }
@@ -272,6 +277,17 @@ export function makeAssemblyBot(bots: Readonly<Record<string, BotPiece>>): BotPi
       if (target.kind === 'interact' || target.kind === 'deliver') input = { ...input, buttons: input.buttons | BUTTON.INTERACT };
       return input;
     } };
+}
+
+/** Střed volné mezery trati běžce, ve které `z` leží; uvnitř překážky střed mezery za ní. */
+function runnerGapZ(bodies: readonly BodyInit[], z: number, length: number): number {
+  let from = 0;
+  for (const body of bodies.filter(b => b.role === 'obstacle').sort((a, b) => a.z - a.d / 2 - (b.z - b.d / 2))) {
+    const near = body.z - body.d / 2;
+    if (near > z) return Math.round((from + near) / 2);
+    from = Math.max(from, body.z + body.d / 2);
+  }
+  return Math.round((from + length) / 2);
 }
 
 /** Compilation is deterministic and leaves games without parts byte-for-byte alone. */
@@ -287,15 +303,24 @@ export function assemblyParts(parts: ArcadeParts, spec: GameSpecV1, ruleLibrary:
   const exit = parts.level.bodies.find(body => body.role === 'goal');
   const mazeRoute = maze && exit ? walkerPath(maze, walkerCell(maze, player.x, player.z), walkerCell(maze, exit.x, exit.z)) : [];
   const flapPath = control === 'flap' ? parts.level.bodies.filter(body => body.role === 'collectible' && body.kind === 'gate').map(body => ({ x: body.x, y: Math.round(body.y + body.h / 2 - 600), z: body.z })) : [];
-  const path = explicitPath.success ? explicitPath.data : flapPath.length ? [{ x: player.x, y: player.y, z: player.z }, ...flapPath] : Array.from({ length: 21 }, (_, i) => {
+  // Úroveň skákačky ze vzorů (P46D T5) stoupá po schodech: kořist a soupeř jdou po vršcích desek, ne ve výšce startu,
+  // kde je hráč na koruně přeběhne nad hlavou. Uložené hry bez `chunks` staví tentýž svět.
+  const chunked = control === 'platform' && (spec.controlParams as { tuning?: { chunks?: number } } | undefined)?.tuning?.chunks === 1;
+  const slabPath = chunked ? parts.level.bodies.filter(body => body.role === 'platform' && body.solid && !body.kinematic).sort((a, b) => a.z - b.z)
+    .flatMap(body => [-1, 1].map(side => ({ x: Math.round(body.x), y: Math.round(body.y + body.h), z: Math.round(body.z + side * body.d / 2) }))) : [];
+  const path = explicitPath.success ? explicitPath.data : flapPath.length ? [{ x: player.x, y: player.y, z: player.z }, ...flapPath] : slabPath.length ? slabPath : Array.from({ length: 21 }, (_, i) => {
     const z = Math.round(length * i / 20);
     return { x: course.success ? centerAt(course.data, z) : player.x, y: player.y, z };
   });
+  // Jen nová trať běžce: uložené hry bez `patterns` staví tentýž svět.
+  const patterned = control === 'runner' && (spec.controlParams as { patterns?: number } | undefined)?.patterns === 1;
   const speed = control === 'runner' ? 60 : control === 'platform' ? 45 : control === 'flap' ? 35 : control === 'glide' ? 65 : control === 'steer' ? 100 : 45;
   const bodies: BodyInit[] = [...parts.level.bodies];
   const runtime: Part[] = spec.assemblyParts.map((part, i) => {
     let z = part.kind === 'rival' ? player.z : part.kind === 'chaser' ? player.z + (['runner', 'flap', 'platform'].includes(control) ? 8000 : -4000) : Math.max(player.z + 2400, Math.round(length * (0.12 + 0.035 * i + part.phase * 0.35)));
     if (control === 'glide' && part.kind === 'hazard') z = Math.round((player.z + path[0]!.z) / 2);
+    // Trať ze vzorů (P46D T2) má stavby přes desítky metrů: věc jde doprostřed volné mezery, ne do zdi ani těsně za řadu.
+    if (patterned && part.kind !== 'rival' && part.kind !== 'chaser') z = runnerGapZ(parts.level.bodies, z, length);
     let point = pointAt(path, z);
     if (maze && mazeRoute.length) {
       const cell = mazeRoute[Math.min(mazeRoute.length - 1, Math.max(2, Math.round(mazeRoute.length * (0.12 + i * 0.06))))]!;

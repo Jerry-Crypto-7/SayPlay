@@ -383,6 +383,19 @@ export const DROPPER = {
   after: 6 * UNIT, before: 12 * UNIT,
   /** Shoz u kraje jen, když místo do stopy nezačne do `wait` dál (jinak by do stopy padal zřídka). */
   wait: 30 * UNIT,
+  /**
+   * Nejužší půlka silnice, kam smí shoz – od `narrowBack` před místem do `before` za ním. 1,8 m = nejužší silnice ze
+   * spec (3,6 m), na které obtížnost změřil P46B T5. Zúžení okruhu ze vzorů (P46D T4, 2,6 m) by po shozu nechalo
+   * průjezd jen pro přesný slalom: robot intermediate do shozu narazil v 5 z 10 her (sloučení P46B × P46D). Shoz 7 m
+   * za koncem zúžení robot bez chyb v zúžení zabrzdil a zůstal stát – proto 15 m zpátky.
+   */
+  minHalf: 1800,
+  narrowBack: 15 * UNIT,
+  /**
+   * Shoz aspoň tak daleko od místa shozu jiného shazovače, které hráč ještě neminul: dva shozy 3,8 m od sebe na
+   * opačných stranách osy nestihl ani robot bez chyb (sloučení P46B × P46D, buňky jízdy se střelbou).
+   */
+  spacing: 20 * UNIT,
   /** HP soupeře úseku (dva uhnuté shozy) a bosse (tři – měřidlo finále chce ≥ 3 zásahy). */
   hp: 2, bossHp: 3,
 } as const;
@@ -443,7 +456,12 @@ export const dropper: Behaviour = {
     const passed = (aim: BehaviourView['aim']): boolean => pz > aim.z + DROPPER.clear;
     if (view.road === undefined || ahead < from || ahead > from + 2 * DROPPER.slack || !passed(view.aim) || (view.peers ?? []).some((peer) => peer.phase === 'telegraph')) return false;
     const at = Math.trunc(z / AIM_GRID.z) * AIM_GRID.z;
-    return onStraight(view.road, at) || !straightSoon(view.road, at);
+    if ((view.peers ?? []).some((peer) => !passed(peer.aim) && Math.abs(peer.aim.z - at) < DROPPER.spacing)) return false;
+    // V zúžení ani těsně za ním se neshazuje (`minHalf`, `narrowBack`): shazovač počká, až bude silnice zas dost široká.
+    const { road } = view;
+    const narrowest = Math.min(halfWidthAt(road, at - DROPPER.narrowBack), halfWidthAt(road, at - DROPPER.narrowBack / 2), halfWidthAt(road, at), halfWidthAt(road, at + DROPPER.before));
+    if (narrowest < DROPPER.minHalf) return false;
+    return onStraight(road, at) || !straightSoon(road, at);
   },
 
   aim(view) {

@@ -21,10 +21,10 @@ import { instantiate, replay } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { TELEGRAPH_MIN, behaviourBodies, behaviourPhaseOf } from '../pieces/behaviours';
 import { play, refsOf } from '../pieces/behaviours/__tests__/harness';
-import { PACING, type PacingRuleParams } from '../pieces/pacing';
+import { PACING, type PacingRuleParams, segmentWidths } from '../pieces/pacing';
 import { GENRE_PACING, STEER_FOES } from '../pieces/pacing-parts';
 import { segmentScriptOf, segmentSpans } from '../pieces/segments';
-import { STEER_TRACK, steerSegments, steerTrack } from '../pieces/steer';
+import { STEER_TRACK, steerTrack } from '../pieces/steer';
 import { funMetrics, traceRun } from '../telemetry';
 import { runBot } from '../verify';
 import { segmentRun } from '../../../../evals/play/p46b/segments';
@@ -57,14 +57,12 @@ const read = (raw: unknown): GameSpecV1 => {
   return spec.value;
 };
 
-/** Šířka silnice uprostřed rozjezdu a úseků 2 a 3 (mantinely generátoru, bez natažení fází). */
-function segmentWidths(spec: GameSpecV1, seed: number): number[] {
-  const level = steerTrack.generate(seed, steerTrack.params.parse(spec.controlParams));
-  const walls = steerSegments(level);
-  return [[0, segmentSpans()[0]![0]] as const, ...segmentSpans()].map(([from, to]) => {
-    const z = Math.floor((level.length * (from + to)) / 2000);
-    return walls.find((wall) => z < wall.far)!.width;
-  });
+/**
+ * Šířka silnice rozjezdu a úseků 2 a 3 (mantinely generátoru, bez natažení fází): ta, která v úseku vede nejdelší kus
+ * trati (`segmentWidths` – okruh ze vzorů P46D má v úseku i zúžení a rozcestí).
+ */
+function widthsOf(spec: GameSpecV1, seed: number): number[] {
+  return segmentWidths(steerTrack.generate(seed, steerTrack.params.parse(spec.controlParams)));
 }
 
 interface SteerRun {
@@ -190,7 +188,7 @@ describe('steer pacing', () => {
     expect(STEER_TRACK.segmentEnds).toEqual([PACING.segments.intro, PACING.segments.buildUp]);
     const spec = specOf('drive.race');
     for (const seed of [1, 2, 3]) {
-      const widths = segmentWidths(spec, seed);
+      const widths = widthsOf(spec, seed);
       // Každý úsek o ≥ 10 % užší než předchozí (měřidlo T1 počítá změnu šířky od 10 %).
       expect(widths[1]! * 11, `seed ${seed}: ${widths.join('/')}`).toBeLessThanOrEqual(widths[0]! * 10);
       expect(widths[2]! * 11, `seed ${seed}: ${widths.join('/')}`).toBeLessThanOrEqual(widths[1]! * 10);

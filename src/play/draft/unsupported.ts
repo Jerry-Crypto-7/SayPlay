@@ -17,7 +17,7 @@ import type { PublishedGame, VersionStore } from '../version';
 import { noVerbTopic } from './draft';
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
 import { loadRapier } from '../arcade/physics/world';
-import { verifyArcade } from '../arcade/verify';
+import { witnessRuns } from '../arcade/verify';
 import { bindRoles, matchesWitness, namesActor, type RoleBinding } from '../arcade/witness';
 import type { ArcadeWorld } from '../arcade/contract';
 import { essentialTriples, type IntentTriple } from '../intent/contract';
@@ -200,7 +200,9 @@ async function measureHonesty(sentence: string, spec: GameSpecV1, seed: number, 
   const made = publishedWorld === undefined ? arcadeWorldOf(spec, seed) : { ok: true as const, world: publishedWorld, roleBindings: bindRoles(spec, publishedWorld) };
   // Svědek sondy průběhu má za aktéra chování („boss“, „swarm“): trojici potvrdí, jen když ho věta jmenuje (P46B R4: 4 sondy běžce ≈ 3 s).
   const pacingProbe = (binding: RoleBinding) => triples.some(triple => namesActor(triple, binding));
-  const witnesses = made.ok ? verifyArcade(made.world, undefined, made.roleBindings, { pacingProbe }).witnesses : [];
+  // Přiznání čte jen svědky (sondy a vítězný běh); přehrání a nečinný hráč z `verifyArcade` by jen stály čas odpovědi.
+  const runs = made.ok ? witnessRuns(made.world, undefined, made.roleBindings, { pacingProbe }) : null;
+  const witnesses = runs === null ? [] : [...runs.bot.witnesses, ...runs.probes];
   const unmet = triples.filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
   // P44C: sloveso přiblížené tabulkou se jmenuje slovem z věty, ne kanonickým kusem.
   const mapped = intent.items.filter(item => item.mapped === true && item.essential);

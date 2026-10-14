@@ -22,7 +22,7 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { type BehaviourRef, behaviourBodies } from '@/play/arcade/pieces/behaviours';
 import { play } from '@/play/arcade/pieces/behaviours/__tests__/harness';
 import { duelControl, enragedAfter } from '@/play/arcade/pieces/duel';
-import { FINALES, NEWS_LEAD, type PacingBeat, type PacingRuleParams, SEGMENT_NEWS, type SegmentNews, pacingBeatOf, reachedOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
+import { FINALES, NEWS_LEAD, PACING, type PacingBeat, type PacingRuleParams, SEGMENT_NEWS, type SegmentNews, pacingBeatOf, reachedOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
 import { THROW_ROUND_COUNTER } from '@/play/arcade/pieces/throw';
 import { waveOf } from '@/play/arcade/pieces/waves';
@@ -356,8 +356,13 @@ describe('segment announcements – what the world really changes', () => {
           expect(run.speed[from]!, where).toBeGreaterThan(Math.max(...run.speed.slice(0, from)));
         } else if (claim === 'narrow') {
           const ahead = road.filter((piece) => piece.far > z && piece.near <= z + NEWS_LEAD + UNIT);
-          const driven = road.filter((piece) => piece.near <= z);
-          expect(Math.min(...ahead.map((piece) => piece.width)), where).toBeLessThan(Math.min(...driven.map((piece) => piece.width)));
+          // Užší než silnice předchozího úseku – ta, která v něm vede nejdelší kus trati: okruh ze vzorů (P46D) má
+          // zúžení i v úseku 2, takže proti nejužšímu kusu za hráčem by úsek 3 užší být nemusel.
+          const [near, far] = (beat === 'segment2' ? [0, PACING.segments.intro] : [PACING.segments.intro, PACING.segments.buildUp]).map((permille) => Math.floor((world.length * permille) / 1000)) as [number, number];
+          const spans = new Map<number, number>();
+          for (const piece of road) spans.set(piece.width, (spans.get(piece.width) ?? 0) + Math.max(0, Math.min(far, piece.far) - Math.max(near, piece.near)));
+          const lane = [...spans].reduce((best, entry) => (entry[1] > best[1] ? entry : best))[0];
+          expect(Math.min(...ahead.map((piece) => piece.width)), where).toBeLessThan(lane);
         } else {
           // Nová past či pohyblivá plošina: první kinematická na trati, nejvýš `NEWS_LEAD` před hráčem.
           const fronts = movers(world, claim === 'trap' ? ROLE.hazard : ROLE.platform);

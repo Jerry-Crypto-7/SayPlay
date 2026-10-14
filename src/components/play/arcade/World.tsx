@@ -22,7 +22,8 @@ import { renderHeld } from './effects/render-feel';
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Box3, type Group, type Object3D, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, BoxGeometry, type BufferGeometry, type Group, type Object3D, type PerspectiveCamera, PlaneGeometry, Vector3 } from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import { ARCADE_HZ, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { baseControlOf } from '@/play/arcade/addons';
@@ -32,6 +33,7 @@ import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcad
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
+import { STRUCTURE_KINDS } from '@/play/arcade/pieces/runner-sections';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
@@ -48,6 +50,7 @@ import { HeroActionBody } from './hero-action/HeroActionBody';
 import { type Ink, InkOutline } from './look/rig/InkOutline';
 import { Scenery } from './look/Scenery';
 import { RiggedModel } from './RiggedModel';
+import { type Path, bendGeometry, bridgesOverChasm, runnerPathOf, slopeAt } from './runner/path';
 import type { ArcadeSession } from './session';
 import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
 import { ShooterRig } from './shooter/ShooterRig';
@@ -79,7 +82,7 @@ const FALLBACK_COLOR: Readonly<Record<string, string>> = {
 const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name]));
 
 /** Id modelu, který katalog nemá – kreslí se primitivem (objednávka modelů pro P25F je ve Findings plánu). */
-const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', 'turbo', ...SHOT_PRIMITIVES]);
+const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', 'turbo', 'pool', ...SHOT_PRIMITIVES]);
 
 /** Modely z popisků rolí (`@/play/arcade/models`): hrdina, nepřítel střelnice a rekvizity. */
 export interface Cast {
@@ -220,7 +223,7 @@ export function FittedModel({ id, w, h, d, fallback, character = false, fill = f
  * Tělesa bez modelu: plošina (hlína + tráva, nebo hmota sady), řada hrotů,
  * trubka, strop, ptáček. Pohyblivá plošina si barvu nechává: hráč z ní čte pohyb.
  */
-function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: Look['block'] }) {
+function Primitive({ id, w, h, d, block, water }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: Look['block']; readonly water?: string }) {
   if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} block={block?.[1]} />;
   if (id === 'turbo') return <mesh position={[0, h / 2, 0]}>
     <boxGeometry args={[w, h, d]} />
@@ -256,6 +259,11 @@ function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: nu
       </>
     );
   }
+  // Voda pod mezerou skákačky (P46D T5): hladina těsně pod hranou pádu.
+  if (id === 'pool') return <mesh position={[0, h / 2, 0]}>
+    <boxGeometry args={[w * 3, h, d]} />
+    <meshStandardMaterial color={water ?? '#0284c7'} roughness={0.15} metalness={0.2} transparent opacity={0.8} />
+  </mesh>;
   if (id === 'bird') {
     const r = Math.min(w, h, d) / 2;
     return (
@@ -280,6 +288,84 @@ function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: nu
       <boxGeometry args={[w, h, d]} />
       <meshStandardMaterial color={id === 'pipe' ? '#16a34a' : '#334155'} roughness={0.6} />
     </mesh>
+  );
+}
+
+const RUNNER_STRUCTURES: ReadonlySet<string> = new Set(STRUCTURE_KINDS);
+const BRIDGE = { deck: '#a16207', rail: '#57534e', chasm: '#0f172a', posts: 2 } as const;
+/** Žebra tunelu: rozteč a hloubka (m) – mezi nimi kamera nad stropem hrdinu pořád vidí. */
+const TUNNEL = { ribEvery: 2.5, ribDepth: 0.35, wall: 0.5 } as const;
+
+interface StructurePart {
+  readonly geometry: BufferGeometry;
+  readonly color: string;
+}
+
+interface StructureShape {
+  readonly w: number;
+  readonly h: number;
+  readonly d: number;
+  readonly z: number;
+  readonly lift: number;
+  readonly side: number;
+  readonly path: Path;
+  readonly look: Look;
+  readonly chasm: boolean;
+}
+
+/**
+ * Sítě stavby běžce (P46D T3) ohnuté po křivce trati: zeď rozcestí, půlka mostu nad vodou
+ * či propastí (každé těleso vody kreslí svou stranu – hladinu ven do údolí, zábradlí a půlku
+ * mostovky ke středu) a tunel ze stěn a žeber. `side` = strana tělesa ve scéně (−1, 0, 1),
+ * `lift` = výška spodku tělesa nad dráhou (m).
+ */
+function structureParts(kind: string, { w, h, d, z, lift, side, path, look, chasm }: StructureShape): StructurePart[] {
+  const segments = Math.max(1, Math.ceil(d));
+  const box = (bw: number, bh: number, bd: number, x: number, y: number, at = 0): BufferGeometry =>
+    bendGeometry(new BoxGeometry(bw, bh, bd, 1, 1, bd >= 1 ? segments : 1).translate(x, y, at), path, z);
+  const [stone, cap] = look.block ?? ['#78716c', '#a8a29e'];
+  const along = (every: number): number[] => Array.from({ length: Math.max(1, Math.floor(d / every)) }, (_, i) => -d / 2 + every / 2 + i * every);
+  if (kind === 'divider') return [{ geometry: box(w, h, d, 0, h / 2), color: stone }, { geometry: box(w + 0.16, 0.12, d, 0, h + 0.06), color: cap }];
+  if (kind === 'water') {
+    const inner = -side * (w / 2);
+    const surface = new PlaneGeometry(15, d, 1, segments).rotateX(-Math.PI / 2).translate(inner + side * 7.5, 0.03, 0);
+    return [
+      { geometry: bendGeometry(surface, path, z), color: chasm ? BRIDGE.chasm : look.water },
+      { geometry: box(w / 2, 0.06, d, inner - (side * w) / 4, 0.03), color: BRIDGE.deck },
+      { geometry: box(0.08, 0.08, d, inner, 0.95), color: BRIDGE.rail },
+      { geometry: box(0.08, 0.08, d, inner, 0.5), color: BRIDGE.rail },
+      ...along(BRIDGE.posts).map((at) => ({ geometry: box(0.1, 0.95, 0.1, inner, 0.475, at), color: BRIDGE.rail })),
+    ];
+  }
+  // Strop tunelu visí ve výšce těla (`lift`): stěny sahají od dráhy po jeho vršek.
+  const ground = -lift;
+  return [
+    ...[-1, 1].map((edge) => ({ geometry: box(TUNNEL.wall, h - ground, d, edge * (w / 2 + TUNNEL.wall / 2), (h + ground) / 2), color: stone })),
+    ...along(TUNNEL.ribEvery).map((at) => ({ geometry: box(w + 2 * TUNNEL.wall, h, TUNNEL.ribDepth, 0, h / 2, at), color: cap })),
+  ];
+}
+
+function RunnerStructure({ kind, w, h, d, z, lift, side, path, look, chasm }: { readonly kind: string } & StructureShape) {
+  // Díly jedné barvy slité do jedné sítě: sloupky zábradlí a žebra tunelu nestojí volání kreslení každý zvlášť.
+  const parts = useMemo(() => {
+    const byColor = new Map<string, BufferGeometry[]>();
+    for (const part of structureParts(kind, { w, h, d, z, lift, side, path, look, chasm })) byColor.set(part.color, [...(byColor.get(part.color) ?? []), part.geometry]);
+    return [...byColor].map(([color, geometries]): StructurePart => {
+      if (geometries.length === 1) return { color, geometry: geometries[0]! };
+      const geometry = mergeGeometries(geometries)!;
+      geometries.forEach((source) => source.dispose());
+      return { color, geometry };
+    });
+  }, [kind, w, h, d, z, lift, side, path, look, chasm]);
+  useEffect(() => () => parts.forEach((part) => part.geometry.dispose()), [parts]);
+  return (
+    <>
+      {parts.map((part, index) => (
+        <mesh key={index} geometry={part.geometry}>
+          <meshStandardMaterial color={part.color} roughness={0.85} />
+        </mesh>
+      ))}
+    </>
   );
 }
 
@@ -367,6 +453,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
   const rigged = useMemo(() => views.map((view) => riggedCharacter(modelIdOf(view, cast))), [views, cast]);
   const clips = useRef<ClipState[]>([]);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
+  // Zakřivená trať běžce (P46D T3): těla, stavby i kamera jdou po křivce; jádro dál běží rovně.
+  const path = useMemo(() => (control === 'runner' ? runnerPathOf(session.world) : null), [control, session]);
   const look = useMemo(() => new Vector3(), []);
   const projected = useMemo(() => new Vector3(), []);
   const followY = useRef<number | null>(null);
@@ -486,6 +574,13 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
           z,
         );
       }
+      if (path !== null) {
+        const at = path(z);
+        group.position.x += at.x;
+        group.position.y += at.y;
+        // Překážka stojí napříč zatáčkou; stavbu ohýbá síť, minci točí scéna, hrdinu natočí `HeroPose`.
+        if (view.role !== ROLE.player && view.role !== ROLE.collectible && !RUNNER_STRUCTURES.has(view.kind)) group.rotation.y = Math.atan(slopeAt(path, z).x);
+      }
       // Skluz snižuje tělo – model se přikrčí stejně.
       if (view.role === ROLE.player) group.scale.y = (state[base + BODY.h] as number) / UNIT / view.h;
       if (view.role === ROLE.collectible) group.rotation.y += delta * 3;
@@ -520,7 +615,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       } else if (control === 'shooter' || control === 'throw') {
         // Kameru střelnice a hřiště staví jejich scéna (`ShooterRig`, `ThrowRig`).
       } else {
-        placeRunner(camera, look, x, z);
+        // Hrdina je už na křivce; kamera chce jeho pruh a křivku zvlášť.
+        placeRunner(camera, look, path === null ? x : x - path(z).x, z, path ?? undefined);
       }
       if (control !== 'shooter' && control !== 'throw') applyIntro(camera, look, introLeft(introClock()));
       camera.updateMatrixWorld();
@@ -548,8 +644,21 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
             {/* Činnost hrdiny (P37B T2): ostatní těla a `none` dostanou model beze změny stromu. */}
             <HeroActionBody action={view.role === ROLE.player ? heroAction : 'none'} session={session} h={view.h}>
-            {PRIMITIVE.has(modelIdOf(view, cast)) ? (
-              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} />
+            {path !== null && RUNNER_STRUCTURES.has(view.kind) ? (
+              <RunnerStructure
+                kind={view.kind}
+                w={view.w}
+                h={view.h}
+                d={view.d}
+                z={(session.world.initial[bodyBase(view.index) + BODY.z] as number) / UNIT}
+                lift={(session.world.initial[bodyBase(view.index) + BODY.y] as number) / UNIT}
+                side={-Math.sign(session.world.initial[bodyBase(view.index) + BODY.x] as number)}
+                path={path}
+                look={scene}
+                chasm={bridgesOverChasm(session.world.seed)}
+              />
+            ) : PRIMITIVE.has(modelIdOf(view, cast)) ? (
+              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} water={scene.water} />
             ) : rigged[view.index] !== undefined ? (
               // Riggovaná postava hraje klipy – poskok a zmáčknutí statických modelů by se s nimi praly.
               <RiggedModel

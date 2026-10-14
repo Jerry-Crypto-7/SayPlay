@@ -280,9 +280,10 @@ const FOOT = 0.7;
  * podle `userData.scenery` smí kulisy za koncem mlhy vypnout – bez R3F tady,
  * stránka mřížky tenhle soubor importuje staticky (viz `Panorama` výš).
  * `ground` = výška terénu pod kulisou (údolí běžce, P32A T3), `cap` = barva sněhové čepičky,
- * `tallest` = strop výšky řady v popředí (v metrech scény, už se `size`).
+ * `tallest` = strop výšky řady v popředí (v metrech scény, už se `size`), `bend` = posun po
+ * zakřivené trati běžce (P46D T3, `runner/path.ts`): kulisa stojí vedle zatáčky, ne v ní.
  */
-export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap, tallest }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string; readonly tallest?: SceneryCap }) {
+export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap, tallest, bend }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string; readonly tallest?: SceneryCap; readonly bend?: (z: number) => { readonly x: number; readonly y: number } }) {
   const side = tallest?.side;
   const height = tallest === undefined ? undefined : tallest.height / size;
   const places = useMemo(() => sceneryPlaces(look.props, layout, inner, from, to, side === undefined || height === undefined ? undefined : { side, height }), [look.props, layout, inner, from, to, side, height]);
@@ -305,7 +306,7 @@ export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground
   return (
     <group ref={root} userData={{ scenery: true }}>
       {places.map((place, index) => (
-        <group key={index} position={[place.x, heights[index]!, place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
+        <group key={index} position={[place.x + (bend?.(place.z).x ?? 0), heights[index]! + (bend?.(place.z).y ?? 0), place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
           {isSceneryModel(place.kind) ? <SceneryModelProp id={place.kind} cap={cap} /> : <Prop kind={place.kind} tint={look.tint} />}
         </group>
       ))}

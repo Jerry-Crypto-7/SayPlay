@@ -22,7 +22,7 @@ import { QUEST } from './quest';
 import { checkRhythmLevel, rhythmLevel } from './rhythm';
 import { RUNNER } from './runner';
 import { type GunParams, marchedRange, shooterWaves } from './shooter';
-import { courseOf, steerSegments } from './steer';
+import { courseOf, steerRoute } from './steer';
 import { THROW_SWING, throwField, throwParamsFor, throwParts } from './throw';
 import { type TimingLevelParams, checkTimingLevel, timingLevel, timingLevelAtSpeeds, timingSpeedOf } from './timing';
 import type { WaveParams } from './waves';
@@ -129,6 +129,10 @@ const track = (rows: number, rampLevel = false, foes = false): GenrePacing => (p
  * byly bez události (mrtvý čas závodu 4,07 s); od 810 ‰ mrtvý čas ≤ 3,35 s a boss padl v každé výhře. Rychlosti
  * křivky (90/100/115/125 %) daly novice 0,9–1,0 bez střelby: soupeř shoz vidí od začátku varování a uhne; obtížnost
  * dělá rychlost v úzkých zatáčkách. S 95/105/125/125 novice 0,55–0,65, se střelbou 0,35–0,5, intermediate ≥ 0,85.
+ * Na okruhu ze vzorů (sloučení s P46D): shazovač mimo zúžení a těsně za ním (`DROPPER.minHalf`, `narrowBack`), shozy
+ * dvou shazovačů aspoň `DROPPER.spacing` od sebe, finále bez zúžení (`STEER_TRACK.calmFrom`). S 95/105 tam začátečník
+ * bez střelby vyhrál 0,8 (semínka 1–10 brány), s 95/110/125/125 brána `steer-pacing` i `allowed` drží. Systém je na
+ * 10 semínkách chaotický (95/108 i 95/105/120 dalo novice 0,8–0,9), číslo je změřené, ne odvozené.
  */
 export const STEER_FOES = {
   scout: BEHAVIOURS.dropper.body,
@@ -140,12 +144,15 @@ export const STEER_FOES = {
   room: 3 + 1 + PACING.maxActors + PACING.maxShots,
   spare: 48,
   /** Rychlost úseků v % (rozjezd, úsek 2, úsek 3, finále) místo `CURVE_SPEEDS`. */
-  speeds: [95, 105, 125, 125] as readonly number[],
+  speeds: [95, 110, 125, 125] as readonly number[],
 } as const;
 
-/** Silnice řízení s úseky: osa, šířka každého úseku a stopa soupeřů jako `steerControlRef` – fáze (`progressionParts`) je natažením zahodí. */
+/**
+ * Silnice řízení s úseky: osa, šířka každého úseku a stopa soupeřů jako `steerControlRef` – fáze (`progressionParts`) je
+ * natažením zahodí. Šířky po trase (`steerRoute`): na rozcestí okruhu ze vzorů (P46D) šířka větve, jinak úseku.
+ */
 function withRoad(parts: ArcadeParts): ArcadeParts {
-  const course = { ...courseOf(parts.level), rivalLane: 600, halfWidths: steerSegments(parts.level).map((segment) => Math.floor(segment.width / 2)) };
+  const course = { ...courseOf(parts.level), rivalLane: 600, halfWidths: steerRoute(parts.level).map((segment) => Math.floor(segment.width / 2)) };
   const road = (ref: PieceRef): PieceRef => {
     if (ref.id === 'steer' || ref.id === 'steer_bot') return { ...ref, params: { ...ref.params, course } };
     const base = ref.params.base as PieceRef | undefined;
