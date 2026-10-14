@@ -16,6 +16,7 @@ import { renderHeld } from '../effects/render-feel';
 import { useFrame, useThree } from '@react-three/fiber';
 import { type RefObject, useEffect, useMemo, useRef } from 'react';
 import { Box3, type Mesh, MeshStandardMaterial, type Object3D, Raycaster, Vector3 } from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 import { type ArcadeWorld, UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
@@ -26,6 +27,7 @@ import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
 import { VegetationAround } from '../look/Vegetation';
 import { LAYERS, type Layer, type Side } from '../look/vegetation-places';
+import { type Block, buildBlocks, streetBlocks, urbanLook } from '../look/rig/terrain/city-blocks';
 import { buildIslands, platformIslands, platformSlabKeys, spotKey } from '../look/rig/terrain/islands';
 import { buildWater } from '../look/rig/terrain/water';
 import { Scenery } from '../look/Scenery';
@@ -45,7 +47,17 @@ declare global {
 
 function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; readonly look: Look; readonly terrain: RefObject<Mesh | null> }) {
   const length = world.length / UNIT;
-  const islands = useMemo(() => buildIslands({ look, islands: platformIslands(world), base: WATER }), [look, world]);
+  const urban = urbanLook(look);
+  const spots = useMemo(() => platformIslands(world), [world]);
+  const islands = useMemo(() => buildIslands({ look, islands: spots, base: WATER, roofOnly: urban }), [look, spots, urban]);
+  // Město (P46G doplněk): desky jsou střechy domů, za břehem ulice.
+  const houses = useMemo(() => {
+    if (!urban) return null;
+    const under = spots.map((s): Block => ({ x0: s.x - s.w / 2 + HOUSE_IN, x1: s.x + s.w / 2 - HOUSE_IN, z0: s.z - s.d / 2 + HOUSE_IN, z1: s.z + s.d / 2 - HOUSE_IN, base: WATER - 0.5, top: s.top - 0.3 }));
+    const street = streetBlocks({ from: -30, to: length + 30, x0: STREET_X, base: BANK, seed: world.seed });
+    return mergeGeometries([buildBlocks(under, world.seed, ['-x', '-z', '+z'], false), buildBlocks(street, world.seed + 1, ['-x', '-z', '+z'], true)]);
+  }, [urban, spots, length, world.seed]);
+  useEffect(() => () => houses?.dispose(), [houses]);
   const water = useMemo(() => buildWater({ look, half: 40, from: -30, to: length + 30, level: WATER, shore: islands.shoreDistance }), [look, length, islands]);
   const material = useMemo(() => new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), []);
   useEffect(() => () => islands.geometry.dispose(), [islands]);
@@ -62,6 +74,7 @@ function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; re
     <>
       <mesh geometry={water.geometry} material={water.material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'water' }} />
       <mesh ref={terrain} geometry={islands.geometry} material={material} castShadow receiveShadow userData={{ rigShadow: 'both', terrain: 'islands' }} />
+      {houses !== null && <mesh geometry={houses} material={material} receiveShadow userData={{ rigShadow: 'receive' }} />}
       {/* Břeh za ostrůvky (+x, boční kamera stojí na −x) v barvách sady a na něm vegetace – jen za nimi, před kamerou nic, takže doskok ani minci nezakryje. */}
       <FieldGround look={look} area={{ x0: BANK_FROM, x1: BACKDROP_BEYOND + 20, z0: -40, z1: length + 40 }} y={BANK} />
       {look.flora !== undefined && (
@@ -82,6 +95,10 @@ const SLAB_HALF = PLATFORM.slabW / UNIT / 2;
 const BANK_FROM = SLAB_HALF + 3;
 /** Vegetace plošinovky jen za tratí: před kamerou (−x) a na koncích nic. */
 const BEHIND_ONLY: Readonly<Record<Side, readonly Layer[]>> = { '-x': [], '+x': LAYERS, '-z': [], '+z': [] };
+/** Dům pod deskou o kousek uvnitř její hrany (m) – zezadu ho kryje pás pod lemem střechy. */
+const HOUSE_IN = 0.05;
+/** Přední stěna ulice (m): za řadou pouličních kulis (`Scenery` 11–17 m). */
+const STREET_X = 18;
 /** Kulisa stojí na břehu. */
 const AT_BANK = (): number => BANK;
 /** Nejbližší vrstva kulisy (m): boční kamera 10–18 m před ostrůvky, kulisy 11–17 m za nimi. */

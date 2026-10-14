@@ -265,9 +265,11 @@ export interface IslandsOptions {
   readonly islands: readonly IslandSpot[];
   /** Výška paty (m): u ostrůvků ve vodě hladina, tam je čára břehu. */
   readonly base: number;
+  /** Bez skály pod pásem: pod deskou stojí dům (`city-blocks.ts`), ostrůvek je jen střecha. */
+  readonly roofOnly?: boolean;
 }
 
-export function buildIslands({ look, islands, base }: IslandsOptions): Islands {
+export function buildIslands({ look, islands, base, roofOnly = false }: IslandsOptions): Islands {
   const palette = islandPalette(look);
   const colors = { rim: new Color(palette.rim), band: new Color(palette.band), rock: new Color(palette.rock), wet: new Color(palette.wet) };
   const ground = groundPainter(groundPalette(look, palette.top));
@@ -289,7 +291,7 @@ export function buildIslands({ look, islands, base }: IslandsOptions): Islands {
     const band = ring(() => BAND_IN, (i) => Math.max(base + 0.3 * (spot.top - base), spot.top - BAND * (0.8 + 0.4 * h(3, i))));
     // Skála: deska se ke dnu zužuje (a nikde nevyčnívá zpod lemu), kulatý ostrov se k vodě rozšiřuje.
     const flare = spot.round === true ? 0.22 * Math.min(spot.w, spot.d) : -Math.min(0.5, 0.15 * Math.min(spot.w, spot.d));
-    const levels = Math.max(1, Math.round((spot.top - BAND - base) / 1.7));
+    const levels = roofOnly ? 0 : Math.max(1, Math.round((spot.top - BAND - base) / 1.7));
     const rock: Vertex[][] = [band];
     for (let k = 1; k <= levels; k += 1) {
       const f = k / levels;
@@ -331,7 +333,9 @@ export function buildIslands({ look, islands, base }: IslandsOptions): Islands {
         return tint(colors.rock, 0.82 + 0.25 * h(50 + k, i));
       });
     }
-    for (let i = 0; i < shore.length; i += 1) faces.tri([cx, base - FOOT, cz], shore[i]!, shore[(i + 1) % shore.length]!, colors.wet);
+    // Dno: u skály kužel pod hladinu, u střechy rovný podhled.
+    const bottom = roofOnly ? Math.min(...shore.map((v) => v[1])) : base - FOOT;
+    for (let i = 0; i < shore.length; i += 1) faces.tri([cx, bottom, cz], shore[i]!, shore[(i + 1) % shore.length]!, colors.wet);
     faces.collect = null;
     const waterline = shore.map((v): Point => [v[0], v[2]]);
     const corners: number[][] = [];
