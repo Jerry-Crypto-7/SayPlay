@@ -10,7 +10,7 @@
  */
 
 import type { AbilityId, BodyInit } from '../contract';
-import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, hitParamsFor, wrapBot, wrapControl } from '../addons';
+import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
 import { type BossBeatParams, bossBeat, bossBeatHit } from '../pieces/boss';
 import { grabRule } from './grab';
 import { dashRule, shieldRule } from './guard';
@@ -37,7 +37,10 @@ function withFoes(parts: ArcadeParts, context: AddonContext): ArcadeParts {
 
 /** Nepřátelé ovládání a jejich náraz (`hit`). */
 function addFoes(parts: ArcadeParts, context: AddonContext): ArcadeParts {
-  const foes = enemiesFor(baseControlOf(parts.control).id, parts.level);
+  const control = baseControlOf(parts.control).id;
+  // Řízení akcí nechává cíle jako dřív; běžec ze vzorů jen bez nepřátel ve finále bosse (`finaleFrom`).
+  const { finaleFrom } = enemyOptions(context.spec, control);
+  const foes = enemiesFor(control, parts.level, { finaleFrom });
   if (foes.length === 0) return { ...parts, issues: [...(parts.issues ?? []), 'abilities: the level has no place for an enemy to strike'] };
   return {
     ...parts,

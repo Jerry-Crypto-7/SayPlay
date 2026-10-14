@@ -17,6 +17,7 @@ import { instantiate, loadProgram, outcomeOf, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { loadRapier } from '../physics/world';
 import { matches } from '../pieces/behaviours';
+import { RUNNER_FOES } from '../pieces/pacing-parts';
 import { refsOf } from '../pieces/behaviours/__tests__/harness';
 import { runBot } from '../verify';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
@@ -120,6 +121,27 @@ describe('runner boss and the strike ability', () => {
     const idle = window(false);
     expect(struck.reach, 'the boss stays in reach for more than the first tick of the window').toBeGreaterThanOrEqual(2);
     expect(struck.hp).toBe(idle.hp - 1);
+  });
+
+  // P46H: nepřítel k úderu ve finále stál v pruhu, kudy boss útočí, a úder na něj vybil akci v jediném okně bosse.
+  it('leaves the boss finale of a pattern runner free of foes to strike; a stored runner keeps them', () => {
+    const foesOf = (world: ArcadeWorld): number[] => {
+      const state = instantiate(world);
+      return Array.from({ length: state[HEADER.bodyCount] as number }, (_, body) => body).filter((body) => alive(state, body) && world.kinds[state[bodyBase(body) + BODY.kind] as number] === 'enemy').map((body) => state[bodyBase(body) + BODY.z] as number);
+    };
+    for (const seed of SEEDS) {
+      const world = worldOf(seed);
+      const foes = foesOf(world);
+      expect(foes.length, `seed ${seed}`).toBeGreaterThan(0);
+      for (const z of foes) expect(z * 1000, `seed ${seed}`).toBeLessThan(world.length * RUNNER_FOES.bossAt);
+    }
+    // Uložený běžec (bez `patterns`) má nepřátele po celé trati jako dřív, i v posledních čtvrtinách.
+    const { patterns: _patterns, ...stored } = withStrike().controlParams as Record<string, unknown>;
+    const read = readGameSpec({ ...withStrike(), controlParams: stored });
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    const made = arcadeWorldOf(read.value, 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    expect(foesOf(made.world).some((z) => z * 1000 >= made.world.length * RUNNER_FOES.bossAt)).toBe(true);
   });
 
   it.each(SEEDS)('strikes bring the boss down sooner and the game is still won (seed %i)', (seed) => {

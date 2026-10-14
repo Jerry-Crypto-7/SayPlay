@@ -43,6 +43,7 @@ import { ARENA } from './pieces/arena';
 import { FLAP } from './pieces/flap';
 import { GLIDE, glideControlParams, glidePathOf, glideVelocity } from './pieces/glide';
 import { centerAt, courseOf, courseSchema, type SteerCourse, type SteerSegment, steerRoute } from './pieces/steer';
+import { RUNNER_FOES } from './pieces/pacing-parts';
 import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
@@ -319,6 +320,18 @@ function settledZ(route: readonly SteerSegment[], from: number): number {
   return z;
 }
 
+export interface EnemyOptions {
+  readonly patterned?: boolean;
+  readonly finaleFrom?: number;
+}
+
+/** Nová hra se vzory (P46D, značka `patterns` ve spec): řízení i běžec; uložená hra dostane nepřátele jako dřív. */
+export function enemyOptions(spec: GameSpecV1, control: string): EnemyOptions {
+  if ((spec.controlParams as { patterns?: unknown } | undefined)?.patterns !== 1) return {};
+  // Čte se až při volání: `pacing-parts` a doplňky se navzájem importují.
+  return control === 'runner' ? { finaleFrom: RUNNER_FOES.bossAt } : { patterned: true };
+}
+
 /** Řady překážek běžce: z → obsazené pruhy. */
 function runnerRows(level: ArcadeLevel): Map<number, Set<number>> {
   const rows = new Map<number, Set<number>>();
@@ -332,9 +345,11 @@ function runnerRows(level: ArcadeLevel): Map<number, Set<number>> {
 /**
  * Nepřátelé tam, kudy hráč musí: běžci do pruhu, který příští řada nechává
  * volný (za mince), plošinovce na vzdálený konec desky, poletování do
- * mezery trubky. Každý druhý úsek, ať mezi nimi zbude čas. `patterned` = řízení na okruhu ze vzorů (P46D).
+ * mezery trubky. Každý druhý úsek, ať mezi nimi zbude čas. Nová hra (`enemyOptions`): `patterned` = řízení
+ * na okruhu ze vzorů (P46D), `finaleFrom` = od kolika ‰ trati běžce patří finále bossovi (bez nepřátel).
  */
-export function enemiesFor(control: string, level: ArcadeLevel, patterned = false): BodyInit[] {
+export function enemiesFor(control: string, level: ArcadeLevel, options: EnemyOptions = {}): BodyInit[] {
+  const { patterned = false } = options;
   if (control === 'glide') {
     // Actual XYZ ring apertures, not a floor-level track: there is enough time
     // to settle into the next ring's lane and fire before reaching its target.
@@ -359,6 +374,9 @@ export function enemiesFor(control: string, level: ArcadeLevel, patterned = fals
       const free = [0, -1, 1].filter((lane) => !(rows.get(to) as Set<number>).has(lane));
       if (index % 2 === 1 || free.length === 0) return [];
       const z = Math.min(Math.floor((from + to) / 2) + 2500, to - 2000);
+      // Finále bosse (P46H): nepřítel ve volném pruhu stojí tam, kudy boss útočí, a úder na něj vybije akci právě
+      // v jediném okně, kdy je boss v dosahu (`boss-abilities.test`, semínko 1).
+      if (options.finaleFrom !== undefined && z * 1000 >= level.length * options.finaleFrom) return [];
       return [enemy((free[0] as number) * RUNNER.laneWidth, 0, z)];
     });
   }
@@ -521,8 +539,7 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
   params: noParams,
   apply: (parts, _params, { health, spec }) => {
     const control = baseControl(parts).id;
-    // Okruh ze vzorů (P46D T4, značka `patterns` nové hry řízení) dostane cíle podle zúžení (`settledZ`).
-    const enemies = enemiesFor(control, parts.level, (spec.controlParams as { patterns?: unknown } | undefined)?.patterns === 1);
+    const enemies = enemiesFor(control, parts.level, enemyOptions(spec, control));
     // Nová těla jen na konec: index modelu (`kinds`), který si dřívější doplněk zapsal, se tak nepohne.
     const bodies = [...parts.level.bodies, ...enemies];
     const template = bodies.length;
