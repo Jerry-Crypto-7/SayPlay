@@ -33,9 +33,16 @@ export interface ActionWitness {
   readonly evidence: string;
 }
 
-const roleAt = (state: ArrayLike<number>, body: number): number => state[bodyBase(body) + BODY.role]!;
-const live = (state: ArrayLike<number>, body: number): boolean => (state[bodyBase(body) + BODY.flags]! & FLAG.alive) !== 0;
-const kindAt = (world: ArcadeWorld, state: ArrayLike<number>, body: number): string => world.kinds[state[bodyBase(body) + BODY.kind]!] ?? '';
+// Sloty jednou za modul: import pod vitestem čte každý přístup getterem a svědek prochází všechna těla každý tik.
+const FIRST_BODY = bodyBase(0);
+const STRIDE = bodyBase(1) - FIRST_BODY;
+const { role: ROLE_SLOT, flags: FLAGS_SLOT, kind: KIND_SLOT, x: X_SLOT, y: Y_SLOT, z: Z_SLOT } = BODY;
+const BODY_COUNT = HEADER.bodyCount;
+const ALIVE = FLAG.alive;
+const MOVED_SQUARED = UNIT * UNIT;
+const roleAt = (state: ArrayLike<number>, body: number): number => state[FIRST_BODY + body * STRIDE + ROLE_SLOT]!;
+const live = (state: ArrayLike<number>, body: number): boolean => (state[FIRST_BODY + body * STRIDE + FLAGS_SLOT]! & ALIVE) !== 0;
+const kindAt = (world: ArcadeWorld, state: ArrayLike<number>, body: number): string => world.kinds[state[FIRST_BODY + body * STRIDE + KIND_SLOT]!] ?? '';
 
 /** Bez hádání mezi více kandidáty. Neobsazené tělo nemůže dokazovat jméno z věty. */
 export function bindRoles(spec: GameSpecV1, world: ArcadeWorld): readonly RoleBinding[] {
@@ -291,7 +298,7 @@ export class WitnessRecorder {
   }
 
   private binding(body: number, state: ArcadeState): RoleBinding | undefined {
-    if (body < 0 || body >= state[HEADER.bodyCount]!) return undefined;
+    if (body < 0 || body >= state[BODY_COUNT]!) return undefined;
     const code = roleAt(state, body);
     const kind = kindAt(this.world, state, body);
     const cached = this.resolved.get(body);
@@ -525,8 +532,8 @@ export class WitnessRecorder {
     if (this.moved.get(binding.roleId)?.has(binding.body)) return true;
     const start = this.positions.get(binding.body);
     if (start === undefined || start.roleId !== binding.roleId) return false;
-    const base = bodyBase(binding.body);
-    return (state[base + BODY.x]! - start.x) ** 2 + (state[base + BODY.y]! - start.y) ** 2 + (state[base + BODY.z]! - start.z) ** 2 >= UNIT * UNIT;
+    const base = FIRST_BODY + binding.body * STRIDE;
+    return (state[base + X_SLOT]! - start.x) ** 2 + (state[base + Y_SLOT]! - start.y) ** 2 + (state[base + Z_SLOT]! - start.z) ** 2 >= MOVED_SQUARED;
   }
 
   afterTick(before: ArcadeState, state: ArcadeState, tick: number): void {
@@ -552,7 +559,7 @@ export class WitnessRecorder {
     if (state[HEADER.runState] === RUN_STATE.lost) for (const loss of this.pendingLosses) this.harm(loss.body, player, tick, loss.evidence, state);
     this.pendingLosses.length = 0;
     const p = bodyBase(player);
-    for (let body = 0; body < state[HEADER.bodyCount]!; body += 1) {
+    for (let body = 0; body < state[BODY_COUNT]!; body += 1) {
       const binding = this.binding(body, state);
       if (binding === undefined) continue;
       if (!live(state, body)) {

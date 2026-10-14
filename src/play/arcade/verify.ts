@@ -52,6 +52,8 @@ export interface BotRun {
   readonly outcome: ArcadeOutcome;
   readonly tick: number;
   readonly hash: string;
+  /** Čítač skóre na konci běhu; s `replayEqual` týž jako u `scoredReplay` jeho vstupů – par bez dalšího přehrání. */
+  readonly score: number;
   /** Kde hráč skončil (metry trati) – pro důvod prohry. */
   readonly distanceM: number;
   /** Tik prvního výstřelu každého pravidla světa (index jako `world.rules`), −1 = nevystřelilo (P29A). */
@@ -529,6 +531,7 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
     outcome: outcomeOf(state),
     tick: state[HEADER.tick] as number,
     hash: hashArcade(state),
+    score: state[HEADER.counters + COUNTER.score] as number,
     distanceM: Math.round((state[bodyBase(player) + BODY.z] as number) / UNIT),
     firstFired,
     changes,
@@ -607,11 +610,11 @@ export interface ArcadeVerdict {
   readonly publishEligible: boolean;
 }
 
-/** S vazbami z `arcadeWorldOf` navíc změří trojice a samostatné sondy hrozeb; uložený svět ani publikační bránu nemění. */
-export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, roleBindings?: readonly RoleBinding[]): ArcadeVerdict {
-  const initial = instantiate(world);
-  const bodies = initial[HEADER.bodyCount] as number;
-  const withinLimits = bodies <= ARCADE_LIMITS.maxBodies && world.rules.length <= ARCADE_LIMITS.maxRules;
+/**
+ * Běhy, ze kterých jsou svědci hry: samostatné sondy hrozeb a vítězný běh robota s jejich důkazy. Kdo chce jen
+ * svědky (přiznání u věty), nepouští přehrání ani nečinného hráče `verifyArcade` – na trati ze vzorů (P46D) dvě třetiny času.
+ */
+export function witnessRuns(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, roleBindings?: readonly RoleBinding[]): { readonly bot: BotRun; readonly probes: readonly ActionWitness[] } {
   const probes: ActionWitness[] = [];
   const probed = new Set<string>();
   for (const binding of roleBindings ?? []) {
@@ -627,7 +630,15 @@ export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE
     const probe = runBot(world, library, { roleBindings: [...(roleBindings ?? []), binding], probeBody: body, runId: `probe:${binding.roleId}` });
     probes.push(...probe.witnesses.filter(w => w.actor.roleId === binding.roleId));
   }
-  const bot = runBot(world, library, { roleBindings, threatProofs: probes });
+  return { bot: runBot(world, library, { roleBindings, threatProofs: probes }), probes };
+}
+
+/** S vazbami z `arcadeWorldOf` navíc změří trojice a samostatné sondy hrozeb; uložený svět ani publikační bránu nemění. */
+export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, roleBindings?: readonly RoleBinding[]): ArcadeVerdict {
+  const initial = instantiate(world);
+  const bodies = initial[HEADER.bodyCount] as number;
+  const withinLimits = bodies <= ARCADE_LIMITS.maxBodies && world.rules.length <= ARCADE_LIMITS.maxRules;
+  const { bot, probes } = witnessRuns(world, library, roleBindings);
   const first = replay(world, bot.inputs, library);
   const second = replay(world, bot.inputs, library);
   const replayEqual = first.hash === second.hash && first.hash === bot.hash;
