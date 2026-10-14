@@ -257,6 +257,10 @@
         {
           "id": "gen3d-burning-tree",
           "height": 4.5
+        },
+        {
+          "id": "gen3d-smoldering-stump",
+          "height": 0.7
         }
       ]
     },
@@ -275,6 +279,10 @@
         },
         {
           "id": "gen3d-charred-log",
+          "height": 0.7
+        },
+        {
+          "id": "gen3d-smoldering-stump",
           "height": 0.7
         }
       ]
@@ -485,6 +493,10 @@
         {
           "id": "gen3d-crooked-house",
           "height": 4.5
+        },
+        {
+          "id": "gen3d-crooked-lamppost",
+          "height": 3.5
         }
       ]
     },
@@ -642,6 +654,10 @@
         {
           "id": "gen3d-lake-buoy",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-gazebo",
+          "height": 3.2
         }
       ]
     },
@@ -1119,6 +1135,10 @@
         {
           "id": "gen3d-kangaroo-sign",
           "height": 2
+        },
+        {
+          "id": "gen3d-eucalyptus-tree",
+          "height": 6
         }
       ]
     },
@@ -1427,6 +1447,10 @@
         {
           "id": "gen3d-anchor",
           "height": 1.4
+        },
+        {
+          "id": "gen3d-mooring-bollard",
+          "height": 0.8
         }
       ]
     },
@@ -1453,6 +1477,10 @@
         {
           "id": "gen3d-market-stall",
           "height": 2.6
+        },
+        {
+          "id": "gen3d-date-palm-tree",
+          "height": 6
         }
       ]
     },
@@ -1464,6 +1492,10 @@
         {
           "id": "gen3d-street-lamp",
           "height": 4
+        },
+        {
+          "id": "gen3d-ticket-machine",
+          "height": 1.6
         }
       ]
     },
@@ -1523,6 +1555,10 @@
         {
           "id": "gen3d-camel",
           "height": 2.2
+        },
+        {
+          "id": "gen3d-date-palm-tree",
+          "height": 6
         }
       ]
     },

@@ -591,3 +591,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-space-probe` | space probe, probe | 4727 / 2328 |
 | `gen3d-wooden-fence` | wooden fence, rail fence | 4748 / 2372 |
 | `gen3d-cypress-tree` | cypress tree, bald cypress, swamp cypress | 4513 / 2069 |
+| `gen3d-mooring-bollard` | mooring bollard, dock bollard, mooring post | 4709 / 2328 |
+| `gen3d-smoldering-stump` | smoldering stump, burning stump, charred stump | 4748 / 2374 |
+| `gen3d-date-palm-tree` | date palm tree, date palm | 4601 / 2257 |
+| `gen3d-crooked-lamppost` | crooked lamppost, bent lamppost | 4748 / 2374 |
+| `gen3d-gazebo` | gazebo | 4298 / 2083 |
+| `gen3d-eucalyptus-tree` | eucalyptus tree, gum tree, eucalyptus | 4505 / 2188 |
+| `gen3d-ticket-machine` | ticket machine, parking machine, pay station | 4736 / 2304 |

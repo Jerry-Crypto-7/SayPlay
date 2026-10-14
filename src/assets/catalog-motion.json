@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "3c5a07a2d167f4a3cc1f69e62bd81de4176de78d74082c3b0dca5bb3a951059a",
+ "catalogHash": "cb4a070f7ccc1909e8f7698d08931f555374d8cd071bf7f10cfd4d0a747a7d70",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1366,6 +1366,13 @@
   "gen3d-basketball-hoop": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-space-probe": {"class":"prop"},
   "gen3d-wooden-fence": {"class":"prop"},
-  "gen3d-cypress-tree": {"class":"biped","regions":{"legY":0.248}}
+  "gen3d-cypress-tree": {"class":"biped","regions":{"legY":0.248}},
+  "gen3d-mooring-bollard": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-smoldering-stump": {"class":"prop"},
+  "gen3d-date-palm-tree": {"class":"prop"},
+  "gen3d-crooked-lamppost": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-gazebo": {"class":"prop"},
+  "gen3d-eucalyptus-tree": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-ticket-machine": {"class":"biped","regions":{"legY":0.25}}
  }
 }

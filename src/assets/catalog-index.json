@@ -27527,6 +27527,149 @@
           0.33515
         ]
       }
+    },
+    {
+      "assetId": "gen3d-mooring-bollard",
+      "tags": [
+        "mooring bollard",
+        "dock bollard",
+        "mooring post"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mooring-bollard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20378,
+          0,
+          -0.20285
+        ],
+        "max": [
+          0.20378,
+          0.99998,
+          0.20285
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-smoldering-stump",
+      "tags": [
+        "smoldering stump",
+        "burning stump",
+        "charred stump"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-smoldering-stump-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.77696,
+          0,
+          -0.75664
+        ],
+        "max": [
+          0.77696,
+          0.99841,
+          0.75664
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-date-palm-tree",
+      "tags": [
+        "date palm tree",
+        "date palm"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-date-palm-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40072,
+          0,
+          -0.39448
+        ],
+        "max": [
+          0.40072,
+          0.99979,
+          0.39448
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crooked-lamppost",
+      "tags": [
+        "crooked lamppost",
+        "bent lamppost"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-crooked-lamppost-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16552,
+          0,
+          -0.08257
+        ],
+        "max": [
+          0.16552,
+          0.99804,
+          0.08257
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gazebo",
+      "tags": [
+        "gazebo"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gazebo-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46636,
+          0,
+          -0.4665
+        ],
+        "max": [
+          0.46636,
+          0.97908,
+          0.4665
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-eucalyptus-tree",
+      "tags": [
+        "eucalyptus tree",
+        "gum tree",
+        "eucalyptus"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-eucalyptus-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24409,
+          0,
+          -0.27385
+        ],
+        "max": [
+          0.24409,
+          0.9987,
+          0.27385
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ticket-machine",
+      "tags": [
+        "ticket machine",
+        "parking machine",
+        "pay station"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ticket-machine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17872,
+          0,
+          -0.16713
+        ],
+        "max": [
+          0.17872,
+          0.99989,
+          0.16713
+        ]
+      }
     }
   ]
 }
