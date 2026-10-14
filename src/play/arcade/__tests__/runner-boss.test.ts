@@ -155,7 +155,8 @@ describe('runner boss', () => {
       }
       expect(wins.intermediate / SEEDS.length, `${id}: intermediate`).toBeGreaterThanOrEqual(0.8);
       expect(wins.novice / SEEDS.length, `${id}: novice`).toBeGreaterThanOrEqual(0.3);
-      expect(wins.novice / SEEDS.length, `${id}: novice`).toBeLessThanOrEqual(0.7);
+      // Se střelbou (P46A) je hra lehčí záměrně: horní mez začátečníka jen bez ní (rozhodnutí majitele 14. 10., P46B T8 varianta a).
+      if (id === 'runner.default') expect(wins.novice / SEEDS.length, `${id}: novice`).toBeLessThanOrEqual(0.7);
     }
   }, 600_000);
 });
