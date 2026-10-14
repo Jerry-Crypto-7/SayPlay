@@ -94,3 +94,31 @@ Sonda stavěla věty b02, b03, s003, s021 a recepty `assembled` se všemi 9 druh
 - **Skákačka s dílem `chaser` průběh nedostane.** Pronásledovatel dílu vyběhne hráči naproti a v první sekundě mu vezme život. Past a boss se pak hrají na dva životy a začátečník spadl z 0,5 na 0,25 (pod pásmem 0,3–0,7).
 
 **Nalezeno, nevyřešeno – začátečník běžce z vět vyhrává 5–10 %.** Platí s díly i bez nich (b01, b04, m08 0,1), před R2 i na základu P45 `491079b7`. Takže to nezpůsobil P46B. Buňky P41 dávají začátečníkovi 0,45–0,6, protože nesou ladění obtížnosti `legacy-difficulty.ts` (`fullRowPct` 50, tedy polovina řad s volným pruhem). Věta z návrhu ani recept `assembled` ho nemají. Změřeno: začátečník přijde o životy nárazy (`hit`) v poslední pětině trati. Odvozeno, neověřeno: jde o plné řady, protože spec věty se od buňky liší jen chybějícím `fullRowPct`. Oprava patří k obtížnosti návrhu, ne k úsekům.
+
+## T8 – párový soud proti P45 (14. 10., `1ea5bfac`) – cíl nesplněn
+
+Slepý soud P45A jen nad 8 větami panelu tří žánrů (běžec m08, s003; řízení m03, m06, h02; skákačka m09, m16, s021), ne nad celým panelem: jiné žánry P46B nemění a remízy by podíl jen táhly k 0,5. **A** = `features/P45-demo-2026-10-12` `491079b7` (dočasný worktree `p46b-base-491079b7`, port 3218), **B** = tato větev (3217), obě strany bez `.env.local` a s prázdným `PLAY_STORE_DIR`:
+
+```
+node --experimental-strip-types scripts/play-fidelity.mjs run --set p45-panel --only m03,m06,m08,m09,m16,h02,s003,s021 --base http://127.0.0.1:<port> --run p46b-t8-<a|b> --pace-clip --draft-only --gpu
+node --experimental-strip-types scripts/play-fidelity.mjs pairwise --a p46b-t8-a --b p46b-t8-b --out evals/play/fidelity/runs/p46b-t8-pairwise.json --concurrency 1   # --ignore-budget
+```
+
+`pairwise-t8.json` = výstup soudu doslova (páry se zdůvodněním). 8 volání soudce; první běh se dvěma vlákny dostal od Codexu 429 po čtyřech párech, zbytek prošel po jednom.
+
+| Žánr | Pro B | Pro A | Remíza |
+|---|---|---|---|
+| řízení | 3 | 0 | 0 |
+| běžec | 1 (s003) | 1 (m08) | 0 |
+| skákačka | 0 | 3 | 0 |
+| **celkem** | **4** | **4** | **0** – `bShare` 0,5, cíl ≥ 0,6 |
+
+Šum na 8 párech je ~0,18, rozhoduje směr: řízení lepší, skákačka horší ve všech třech.
+
+**Proč skákačka prohrává (snímky `m16`, `s021`, zdůvodnění soudce):** úroveň P46B končí dlouhou plochou arénou bosse a boss `brute` je na snímku malá postavička velikosti hráče. Soudce bosse nevidí a arénu čte jako „broad flat stretch, ends sooner“ (m16), „more time on broad, safe platforms, the ending looks less demanding“ (s021). Tvar plošin před arénou je na obou stranách stejný. Odvozeno, neověřeno: robot P46B (skáče podle rychlosti úseku) je na snímcích častěji na zemi než robot P45, který je ve vzduchu skoro na každém snímku. Běžec m08 prohrál, protože u P46B je trať do půlky řidší („stays relatively sparse longer“).
+
+**Zkušební sloučení do `features/P46-hratelnost-2026-10-12` `e290df5c`** (dočasný worktree, nic necommitnuto):
+
+- Konflikt jen v `phase-pieces.ts`: P46A i P46B tam nezávisle udělaly stejnou optimalizaci (parametry fáze jednou za svět). Bere se strana integrační větve.
+- `npx vitest run src/play/arcade/__tests__/runner-boss.test.ts src/play/arcade/abilities`: 144/145. Padá pásmo obtížnosti `runner.default+shoot_at`: začátečník vyhraje 10/10 (pásmo 0,3–0,7). Střílející běžec má po P46A akci střelby a začátečník s ní bosse i hrozby sestřelí. Běžec bez střelby v pásmu.
+- Přečteno z kódu, během zatím neověřeno: úder P46A bosse běžce nezasáhne. `ability_strike` bere jen role `enemy` a `chaser` (`abilities/strike.ts`, `isStruck`), boss běžce má roli `hazard` (`behaviours/boss.ts` `bossBody(flanker.body)`), stejně shazovač řízení a `brute` skákačky (1,6 × 1,3 × 2 m). Test `boss-abilities.test.ts` z AC tedy po sloučení bez úpravy úderu neprojde. Návrh testu (gitignorovaný `plans/P46B-T8-boss-abilities.draft.ts`) na úder zatím nedošel: robot akcí plánuje s úderem, takže jeho pohyb bez jeho stisků prohraje, a pohyb robota bez akcí na světě s akcí taky prohraje (svět s akcí je jiný).
