@@ -34,6 +34,8 @@ const SCENE_FILES = new Set([
   // Varování průběhu (P45C T15): barvy z `colorHex`, ale geometrie položená na zem (`rotateX`) – `rotate` three.js, ne CSS.
   'arcade/effects/PacingFx.tsx',
   'arcade/World.tsx',
+  // Podklad vyčleněný z `World.tsx` (P46G T7) – čáry drah nesou barvu přímo jako dřív.
+  'arcade/WorldBackdrop.tsx',
   'arcade/arena/ArenaScene.tsx',
   'arcade/duel/DuelScene.tsx',
   'arcade/look/Scenery.tsx',

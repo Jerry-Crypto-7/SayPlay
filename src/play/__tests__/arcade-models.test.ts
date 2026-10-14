@@ -93,7 +93,8 @@ describe('arcade model choice from role labels', () => {
 
   it('props take only a direct catalog match, never a category or the core kind', () => {
     expect(propModels(withLabel(runner, 'coin', 'gems'))).toEqual({ coin: 'crystal' });
-    expect(propModels(withLabel(runner, 'obstacle', 'traffic cones'))).toEqual({});
+    // Kužel má od P46G vlastní model z gen3d, místo něj bedny: jádro role, žádný model navíc.
+    expect(propModels(withLabel(runner, 'obstacle', 'wooden crates'))).toEqual({});
     expect(propModels(withLabel(runner, 'obstacle', 'wild badgers'))).toEqual({});
     expect(propModels(withLabel(throwGame, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
   });
