@@ -396,6 +396,12 @@ export const DROPPER = {
    * opačných stranách osy nestihl ani robot bez chyb (sloučení P46B × P46D, buňky jízdy se střelbou).
    */
   spacing: 20 * UNIT,
+  /**
+   * Žádný shoz vedle cíle střelby (`before` před ním) ani do `after` za ním (P46H). Varování shozu za cílem řidič vidí
+   * jako překážku dřív, než k cíli dojede: uhne z jeho stopy, nevystřelí a do cíle na ose zúženého okruhu P46D narazí
+   * (`drive.test` se střelbou, semínka 2, 6, 15, 17, 19; robot střílí jen do své stopy).
+   */
+  targetClear: { before: 2 * UNIT, after: 25 * UNIT },
   /** HP soupeře úseku (dva uhnuté shozy) a bosse (tři – měřidlo finále chce ≥ 3 zásahy). */
   hp: 2, bossHp: 3,
 } as const;
@@ -424,6 +430,17 @@ function straightSoon(road: SteerCourse, z: number): boolean {
     const near = road.ends[at - 1] as number;
     if (near + DROPPER.after > z + DROPPER.wait) return false;
     if ((road.ends[at] as number) - near > STEER_TRACK.segment && (road.ends[at] as number) - Math.max(z, near + DROPPER.after) >= DROPPER.before) return true;
+  }
+  return false;
+}
+
+/** Padl by shoz do `z` vedle živého cíle střelby (role `enemy`, doplněk `+shoot`) nebo do `targetClear.after` za ním? */
+function targetNear(state: ArcadeState, z: number): boolean {
+  for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+    const base = bodyBase(body);
+    if (state[base + BODY.role] !== ROLE.enemy || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const past = z - (state[base + BODY.z] as number);
+    if (past >= -DROPPER.targetClear.before && past <= DROPPER.targetClear.after) return true;
   }
   return false;
 }
@@ -461,6 +478,8 @@ export const dropper: Behaviour = {
     const { road } = view;
     const narrowest = Math.min(halfWidthAt(road, at - DROPPER.narrowBack), halfWidthAt(road, at - DROPPER.narrowBack / 2), halfWidthAt(road, at), halfWidthAt(road, at + DROPPER.before));
     if (narrowest < DROPPER.minHalf) return false;
+    // Ani vedle cíle střelby a těsně za ním (`targetClear`): řidič by uhnul z jeho stopy a nevystřelil.
+    if (targetNear(state, at)) return false;
     return onStraight(road, at) || !straightSoon(road, at);
   },
 

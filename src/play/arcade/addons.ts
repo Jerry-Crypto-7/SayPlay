@@ -42,7 +42,7 @@ import { GRAVITY } from './kernel';
 import { ARENA } from './pieces/arena';
 import { FLAP } from './pieces/flap';
 import { GLIDE, glideControlParams, glidePathOf, glideVelocity } from './pieces/glide';
-import { centerAt, courseOf, courseSchema, type SteerCourse } from './pieces/steer';
+import { centerAt, courseOf, courseSchema, type SteerCourse, type SteerSegment, steerRoute } from './pieces/steer';
 import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
@@ -277,6 +277,14 @@ export const SHOOT = {
   spareAmmo: 10,
   /** Střel ve vzduchu naráz: život střely / rozestup ran. */
   spawnSlots: Math.ceil(BULLET_LIFETIME / SHOOTER.fireInterval) + 1,
+  /** Cíl řízení stojí aspoň tolik za místem, kde se silnice zúží (`settledZ`). */
+  settle: 15 * UNIT,
+  /**
+   * Cíle řízení na okruhu ze vzorů za cílem na rovince startu, v ‰ délky. Třetí cíl (350 ‰, P46H) vrací střelbě
+   * obtížnost, kterou po sloučení P46B × P46D dělal jen shoz vedle cíle (`DROPPER.targetClear`): bez něj začátečník
+   * vyhrál 0,72, s ním 0,48, intermediate 0,92 → 0,87 (`drive.race+shoot`, 60 semínek).
+   */
+  patternTargets: [550, 350] as const,
 } as const;
 
 const enemy = (x: number, y: number, z: number, size?: number): BodyInit => ({
@@ -291,6 +299,26 @@ const enemy = (x: number, y: number, z: number, size?: number): BodyInit => ({
   solid: false,
 });
 
+/**
+ * Cíl řízení ne hned za zúžením (P46H): okruh ze vzorů P46D zúží silnici kdekoli a cíl na ose zúžení robot nestihne
+ * po vjezdu do něj srovnat a trefit (`drive.test` se střelbou, semínko 16). Cíl se posune na první místo aspoň
+ * `SHOOT.settle` za každým zúžením. Jen okruh ze vzorů (`patterns`), uložené hry staví cíle jako dřív.
+ */
+function settledZ(route: readonly SteerSegment[], from: number): number {
+  let z = from;
+  for (let moved = true; moved; ) {
+    moved = false;
+    route.forEach((segment, index) => {
+      const narrows = index > 0 && segment.width < (route[index - 1] as SteerSegment).width;
+      if (narrows && segment.near <= z && z < segment.near + SHOOT.settle) {
+        z = segment.near + SHOOT.settle;
+        moved = true;
+      }
+    });
+  }
+  return z;
+}
+
 /** Řady překážek běžce: z → obsazené pruhy. */
 function runnerRows(level: ArcadeLevel): Map<number, Set<number>> {
   const rows = new Map<number, Set<number>>();
@@ -304,9 +332,9 @@ function runnerRows(level: ArcadeLevel): Map<number, Set<number>> {
 /**
  * Nepřátelé tam, kudy hráč musí: běžci do pruhu, který příští řada nechává
  * volný (za mince), plošinovce na vzdálený konec desky, poletování do
- * mezery trubky. Každý druhý úsek, ať mezi nimi zbude čas.
+ * mezery trubky. Každý druhý úsek, ať mezi nimi zbude čas. `patterned` = řízení na okruhu ze vzorů (P46D).
  */
-export function enemiesFor(control: string, level: ArcadeLevel): BodyInit[] {
+export function enemiesFor(control: string, level: ArcadeLevel, patterned = false): BodyInit[] {
   if (control === 'glide') {
     // Actual XYZ ring apertures, not a floor-level track: there is enough time
     // to settle into the next ring's lane and fire before reaching its target.
@@ -318,7 +346,10 @@ export function enemiesFor(control: string, level: ArcadeLevel): BodyInit[] {
     const course = courseOf(level);
     // A target on the opening straight gives the driver a clear forward shot;
     // later targets use the actual track center, never an off-road decoration.
-    return [25 * UNIT, Math.floor(level.length * 0.55)].map(z => enemy(centerAt(course, z), 0, z));
+    if (!patterned) return [25 * UNIT, Math.floor(level.length * 0.55)].map(z => enemy(centerAt(course, z), 0, z));
+    // Okruh ze vzorů (P46D, nová hra): cíle mimo ústí zúžení a třetí cíl v úseku 2 (`SHOOT.patternTargets`).
+    const route = steerRoute(level);
+    return [25 * UNIT, ...SHOOT.patternTargets.map((permille) => settledZ(route, Math.floor((level.length * permille) / 1000)))].map(z => enemy(centerAt(course, z), 0, z));
   }
   if (control === 'runner') {
     const rows = runnerRows(level);
@@ -488,9 +519,10 @@ function screened(state: Int32Array, from: { x: number; y: number; z: number }, 
 export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
   id: 'shoot',
   params: noParams,
-  apply: (parts, _params, { health }) => {
+  apply: (parts, _params, { health, spec }) => {
     const control = baseControl(parts).id;
-    const enemies = enemiesFor(control, parts.level);
+    // Okruh ze vzorů (P46D T4, značka `patterns` nové hry řízení) dostane cíle podle zúžení (`settledZ`).
+    const enemies = enemiesFor(control, parts.level, (spec.controlParams as { patterns?: unknown } | undefined)?.patterns === 1);
     // Nová těla jen na konec: index modelu (`kinds`), který si dřívější doplněk zapsal, se tak nepohne.
     const bodies = [...parts.level.bodies, ...enemies];
     const template = bodies.length;
