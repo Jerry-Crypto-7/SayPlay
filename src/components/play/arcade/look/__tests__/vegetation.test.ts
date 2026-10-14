@@ -10,7 +10,7 @@ import { Color, type HSL, SRGBColorSpace } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import catalog from '@/assets/catalog-index.json';
-import { type Flora, floraIds, landmarks, LOOK_IDS, LOOKS, sceneLook } from '@/play/arcade/look';
+import { FLORA_SPECIES, type Flora, floraIds, landmarks, LOOK_IDS, LOOKS, sceneLook } from '@/play/arcade/look';
 
 import { type StripSegment, stripCurve } from '../road-strip';
 import { type AroundOptions, LAYERS, LOW_TOWARD_CAMERA, NONE_TOWARD_CAMERA, PHONE_SHARE, type Plant, type RoadAt, type VegetationOptions, placeAround, placeVegetation, plantPaint } from '../vegetation-places';
@@ -55,8 +55,9 @@ const hueOf = (hex: string | Color): number => {
 };
 
 describe('rozmístění vegetace', () => {
-  it('sady s vegetací jsou les, džungle, louka a poušť', () => {
-    expect(FLORAS.map(([id]) => id)).toEqual(['meadow', 'forest', 'jungle', 'desert']);
+  it('sady s vegetací jsou les, džungle, louka, poušť, pláž a sníh', () => {
+    // Pláž a sníh od P46G T8; město ne – řada domů vedle vegetace by zřídla na jeden dům za 24 m.
+    expect(FLORAS.map(([id]) => id)).toEqual(['meadow', 'forest', 'jungle', 'desert', 'beach', 'snow']);
   });
 
   it('tatáž hra dá tutéž vegetaci, jiné semínko jinou', () => {
@@ -193,6 +194,11 @@ describe('druhy a barvy', () => {
     expect(FLORAS.flatMap(([, flora]) => [...floraIds(flora)].filter((id) => !ids.has(id)))).toEqual([]);
     expect(floraIds(FOREST).size).toBeGreaterThanOrEqual(6);
     expect(new Set(placeVegetation(optionsOf(FOREST)).map((plant) => plant.id)).size).toBeGreaterThanOrEqual(6);
+  });
+
+  it.each(FLORAS)('%s: nejvýš FLORA_SPECIES druhů (kreslicí volání na telefonu) a každý stojí ve scéně', (_, flora) => {
+    expect(floraIds(flora).size).toBeLessThanOrEqual(FLORA_SPECIES);
+    expect(new Set(placeVegetation(optionsOf(flora)).map((plant) => plant.id))).toEqual(floraIds(flora));
   });
 
   it('jehličnany v lese jsou zelené, oranžové jen na podzim', () => {

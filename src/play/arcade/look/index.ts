@@ -206,7 +206,7 @@ export interface PlantSpecies {
 /**
  * Vegetace sady ve třech vrstvách (P46G T4, `look/vegetation-places.ts`): u cesty
  * drobnosti (keře, tráva, kameny, pařezy), uprostřed shluky stromů, v dálce
- * souvislá linie. Vrstva bez druhů se nekreslí (poušť nemá linii stromů).
+ * souvislá linie. Vrstva bez druhů se nekreslí.
  */
 export interface Flora {
   readonly near: readonly PlantSpecies[];
@@ -220,27 +220,38 @@ export interface Flora {
   readonly autumn?: boolean;
 }
 
+/*
+ * Druhy z gen3d (P46G T8) mají barvy ve vrcholech a výšku 1 v katalogu: výška tady je
+ * jejich skutečná velikost. Drobnost u cesty je nižší než 1,4 m (× velikost 1,4 < 2 m,
+ * přes ni kamera arény vidí na paty hrdiny). Sada nese nejvýš `FLORA_SPECIES` druhů –
+ * každý druh je jedno kreslicí volání navíc. Do vegetace nejdou modely v květináči
+ * (monstera, agáve, aloe), fialové (levandule, bodlák), podzimní javor ani hrubé sítě.
+ */
 const FOREST_FLORA: Flora = {
   near: [
     { id: 'cc0-bush', height: 1.1 },
     { id: 'cc0-bush-berries', height: 1 },
     { id: 'cc0-grass', height: 0.7 },
     { id: 'cc0-grass', height: 0.7 },
-    { id: 'cc0-tree-stump', height: 0.55 },
     { id: 'cc0-stump', height: 0.5 },
+    { id: 'gen3d-mossy-stump', height: 0.6 },
     { id: 'cc0-rock-moss', height: 0.9 },
-    { id: 'gen3d-fallen-log', height: 0.6 },
+    { id: 'gen3d-mossy-boulder', height: 0.9 },
+    { id: 'gen3d-mossy-fallen-log', height: 0.55 },
   ],
   mid: [
     { id: 'cc0-tree-pine', height: 7 },
-    { id: 'cc0-tree-pine', height: 7 },
+    { id: 'gen3d-fir-tree', height: 7 },
+    { id: 'gen3d-fir-tree', height: 7 },
     { id: 'cc0-pine-tree', height: 7.5 },
+    { id: 'gen3d-larch-tree', height: 7.5 },
     { id: 'cc0-birch-tree', height: 6.5 },
     { id: 'oak-tree', height: 6 },
   ],
   far: [
     { id: 'cc0-tree-pine', height: 9 },
-    { id: 'cc0-tree-pine', height: 9 },
+    { id: 'gen3d-fir-tree', height: 9 },
+    { id: 'gen3d-larch-tree', height: 9.5 },
     { id: 'oak-tree', height: 7.5 },
   ],
   leaf: '#3b7a3a',
@@ -254,17 +265,24 @@ const JUNGLE_FLORA: Flora = {
     { id: 'cc0-grass', height: 0.9 },
     { id: 'cc0-grass', height: 0.9 },
     { id: 'cc0-rock-moss', height: 1 },
+    { id: 'gen3d-mossy-rock-cluster', height: 0.9 },
     { id: 'cc0-tree-stump', height: 0.6 },
   ],
   mid: [
     { id: 'cc0-palm-tree', height: 6 },
-    { id: 'cc0-palm-tree', height: 6 },
+    { id: 'gen3d-banana-plant', height: 4 },
+    { id: 'gen3d-banana-plant', height: 4 },
+    { id: 'gen3d-kapok-tree', height: 8 },
     { id: 'gen3d-mangrove-tree', height: 5 },
-    { id: 'oak-tree', height: 7 },
+    { id: 'gen3d-bamboo-cluster', height: 5 },
+    { id: 'gen3d-rubber-tree', height: 5.5 },
+    { id: 'gen3d-strangler-fig-tree', height: 7 },
+    { id: 'gen3d-cycad-palm', height: 3.5 },
   ],
   far: [
+    { id: 'gen3d-kapok-tree', height: 9 },
+    { id: 'gen3d-strangler-fig-tree', height: 8 },
     { id: 'cc0-palm-tree', height: 7 },
-    { id: 'oak-tree', height: 8 },
     { id: 'gen3d-mangrove-tree', height: 6 },
   ],
   leaf: '#2f8a3c',
@@ -275,17 +293,22 @@ const MEADOW_FLORA: Flora = {
   near: [
     { id: 'cc0-grass', height: 0.7 },
     { id: 'cc0-grass', height: 0.7 },
-    { id: 'cc0-grass', height: 0.7 },
+    { id: 'gen3d-tall-grass-tuft', height: 0.9 },
+    { id: 'gen3d-wildflower-patch', height: 0.45 },
     { id: 'cc0-bush', height: 1.1 },
     { id: 'cc0-rock-moss', height: 0.7 },
   ],
   mid: [
     { id: 'oak-tree', height: 6.5 },
     { id: 'cc0-birch-tree', height: 6 },
+    { id: 'gen3d-apple-tree', height: 5 },
+    { id: 'gen3d-willow-tree', height: 6.5 },
+    { id: 'gen3d-olive-tree', height: 5 },
   ],
   far: [
     { id: 'oak-tree', height: 7 },
     { id: 'cc0-birch-tree', height: 6.5 },
+    { id: 'gen3d-poplar-tree', height: 9 },
   ],
   leaf: '#4f9a3a',
   density: 0.45,
@@ -293,17 +316,70 @@ const MEADOW_FLORA: Flora = {
 
 const DESERT_FLORA: Flora = {
   near: [
-    { id: 'cc0-rock-moss', height: 0.6 },
+    { id: 'gen3d-sandstone-rock', height: 0.7 },
     { id: 'cc0-grass', height: 0.5 },
+    { id: 'gen3d-prickly-pear-cactus', height: 1.1 },
   ],
   mid: [
     { id: 'gen3d-cactus', height: 2.2 },
     { id: 'cc0-cactus-flowers', height: 2.4 },
+    { id: 'gen3d-saguaro-cactus', height: 4 },
+    { id: 'gen3d-cholla-cactus', height: 1.8 },
+    { id: 'gen3d-dead-desert-tree', height: 3.2 },
+    { id: 'gen3d-layered-canyon-rock', height: 2.5 },
   ],
+  // Bez linie stromů; skály v dálce stály souvislou zdí (vrstva v dálce je hustá), proto jsou ve shlucích uprostřed.
   far: [],
   leaf: '#7f8f45',
   density: 0.3,
 };
+
+/** Pláž (P46G T8): palmy, duny trávy a kameny u moře, řídce. */
+const BEACH_FLORA: Flora = {
+  near: [
+    { id: 'gen3d-dune-grass-clump', height: 0.9 },
+    { id: 'gen3d-dune-grass-clump', height: 0.9 },
+    { id: 'gen3d-sea-rock', height: 0.8 },
+    { id: 'gen3d-sandstone-rock', height: 0.7 },
+  ],
+  mid: [
+    { id: 'cc0-palm-tree', height: 6 },
+    { id: 'gen3d-leaning-palm-tree', height: 6.5 },
+    { id: 'gen3d-pandanus-tree', height: 4.5 },
+  ],
+  far: [
+    { id: 'cc0-palm-tree', height: 7 },
+    { id: 'gen3d-leaning-palm-tree', height: 7.5 },
+  ],
+  leaf: '#3f9a3c',
+  density: 0.4,
+};
+
+/** Sníh (P46G T8): zasněžené jedle a holé stromy jednotlivě, kameny a led – sněžná pláň zůstane otevřená. */
+const SNOW_FLORA: Flora = {
+  near: [
+    { id: 'gen3d-snowy-rock', height: 0.8 },
+    { id: 'gen3d-river-boulder', height: 0.7 },
+    { id: 'gen3d-ice-block-pile', height: 0.8 },
+    { id: 'gen3d-frozen-shrub', height: 1.1 },
+  ],
+  mid: [
+    { id: 'gen3d-snowy-fir-tree', height: 6 },
+    { id: 'gen3d-snowy-fir-tree', height: 6 },
+    { id: 'gen3d-bare-winter-tree', height: 5 },
+    { id: 'gen3d-frozen-dead-tree', height: 4.5 },
+  ],
+  far: [
+    { id: 'gen3d-snowy-fir-tree', height: 8 },
+    { id: 'gen3d-snowy-fir-tree', height: 8 },
+    { id: 'gen3d-bare-winter-tree', height: 6 },
+  ],
+  leaf: '#4f7d5a',
+  density: 0.35,
+};
+
+/** Nejvýš tolik druhů vegetace na sadu: každý druh je jedna `InstancedMesh`, tedy kreslicí volání (P46G T8). */
+export const FLORA_SPECIES = 14;
 
 /** Rekvizity z primitiv, které jsou rostlina: vedle vegetace je kulisa nekreslí. */
 const PLANT_PRIMITIVES: readonly SceneryKind[] = ['tree', 'pine', 'palm', 'cactus'];
@@ -406,12 +482,12 @@ export const LOOKS: Readonly<Record<LookId, Look>> = {
   forest: { sky: '#bbf7d0', fog: [20, 70], light: ['#dcfce7', '#14532d', 0.8], sun: 1.3, ground: '#166534', track: '#78350f', water: '#0e7490', props: ['cc0-tree-pine', 'tree', 'cc0-stump', 'cc0-log-stack', 'gen3d-treehouse', 'gen3d-large-boulder'], tint: ['#14532d', '#57534e'], skyTop: '#4f97c9', horizon: '#cfeedd', sunColor: '#fff2cf', sunDir: BEHIND_LEFT, exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: FOREST_FLORA, skyline: { layers: ['peaks', 'crowns', 'pines'], tone: '#3f6e4c' } },
   jungle: { sky: '#a7f3d0', fog: [15, 60], light: ['#ecfdf5', '#064e3b', 0.9], sun: 1.2, ground: '#065f46', track: '#713f12', water: '#0f766e', props: ['cc0-palm-tree', 'cc0-bamboo', 'cc0-bush-berries', 'tree', 'gen3d-ruin'], tint: ['#15803d', '#65a30d'], skyTop: '#3f9fb0', horizon: '#c3f0dc', sunColor: '#fff5d0', sunDir: [0.4, 0.85, -0.3], exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: JUNGLE_FLORA, skyline: { layers: ['hills', 'crowns', 'crowns'], tone: '#3c7a4e' } },
   desert: { sky: '#fde68a', fog: [40, 120], light: ['#fffbeb', '#b45309', 1.0], sun: 2.0, ground: '#d97706', track: '#b45309', water: '#0891b2', props: ['cc0-cactus-flowers', 'rock', 'cactus', 'gen3d-termite-hill', 'gen3d-camel'], tint: ['#65a30d', '#92400e'], skyTop: '#2f7dd1', horizon: '#fbe3a8', sunColor: '#ffe6b8', sunDir: [0.55, 0.7, -0.35], exposure: 0.95, glow: 1, terrain: { lane: '#e6c38c', shade: '#c47f33', rock: '#8f5530' }, cover: 'sand', surface: 'sand', flora: DESERT_FLORA, skyline: { layers: ['mesas', 'dunes', 'dunes'], tone: '#d09a5e' } },
-  beach: { sky: '#7dd3fc', fog: [40, 120], light: ['#f0f9ff', '#fcd34d', 1.0], sun: 1.9, ground: '#fcd34d', track: '#fde68a', water: '#0ea5e9', props: ['cc0-palm-tree', 'rock', 'cc0-boat-row', 'gen3d-sandcastle', 'gen3d-surfboard', 'gen3d-lighthouse'], tint: ['#16a34a', '#a8a29e'], skyTop: '#1f8fe0', horizon: '#cdeefd', sunColor: '#fff0d0', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', surface: 'sand', skyline: { layers: ['hills', 'coast'], tone: '#9fae8c' } },
+  beach: { sky: '#7dd3fc', fog: [40, 120], light: ['#f0f9ff', '#fcd34d', 1.0], sun: 1.9, ground: '#fcd34d', track: '#fde68a', water: '#0ea5e9', props: ['cc0-palm-tree', 'rock', 'cc0-boat-row', 'gen3d-sandcastle', 'gen3d-surfboard', 'gen3d-lighthouse'], tint: ['#16a34a', '#a8a29e'], skyTop: '#1f8fe0', horizon: '#cdeefd', sunColor: '#fff0d0', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', surface: 'sand', flora: BEACH_FLORA, skyline: { layers: ['hills', 'coast'], tone: '#9fae8c' } },
   ocean: { sky: '#7dd3fc', fog: [30, 100], light: ['#f0f9ff', '#0369a1', 1.0], sun: 1.7, ground: '#0284c7', track: '#0c4a6e', water: '#0369a1', props: ['cc0-boat-row', 'buoy', 'rock', 'gen3d-sailboat', 'gen3d-lighthouse'], tint: ['#ef4444', '#64748b'], skyTop: '#1f7fd0', horizon: '#c2e6fb', sunColor: '#fff1d6', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', land: '#e9d29a', surface: 'planks', skyline: { layers: ['coast', 'coast'], tone: '#8aa0a8' } },
   // Pod vodou je nahoře světlejší hladina, ne tmavší zenit.
   underwater: { sky: '#0e7490', fog: [8, 45], light: ['#67e8f9', '#164e63', 1.0], sun: 0.8, ground: '#155e75', track: '#0f766e', water: '#083344', props: ['coral', 'cc0-clownfish', 'seaweed', 'cc0-tang', 'rock', 'gen3d-jellyfish', 'gen3d-seahorse', 'gen3d-octopus'], tint: ['#fb7185', '#22c55e'], skyTop: '#3fb6cf', horizon: '#0e7490', sunColor: '#bff4ff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'sand', surface: 'sand', skyline: { layers: ['hills', 'crowns'], tone: '#2f6f73' } },
   // Ukázka B (`D:/caches/p32-style/page.html`, `renderVariant('B')`): obloha, polokoule, slunce 2,2 a expozice 0,9.
-  snow: { sky: '#e0f2fe', fog: [25, 80], light: ['#bcd6ff', '#7d8ea8', 0.9], sun: 2.2, ground: '#f8fafc', track: '#cbd5e1', water: '#7dd3fc', props: ['pine', 'penguin', 'iceblock', 'cc0-sled', 'gen3d-ice-igloo', 'gen3d-snowman-with-hat', 'gen3d-iceberg'], tint: ['#e2e8f0', '#7dd3fc'], block: ['#cbd5e1', '#f8fafc'], skyTop: '#3d7bd9', horizon: '#e4eef8', sunColor: '#ffe9cc', sunDir: BEHIND_LEFT, exposure: 0.9, glow: 1, terrain: { lane: '#a7cde4', shade: '#c7d5e6', rock: '#66727f', cap: '#f4f8fc' }, cover: 'snow', surface: 'snow', skyline: { layers: ['peaks', 'peaks', 'pines'], tone: '#9fb4cc' } },
+  snow: { sky: '#e0f2fe', fog: [25, 80], light: ['#bcd6ff', '#7d8ea8', 0.9], sun: 2.2, ground: '#f8fafc', track: '#cbd5e1', water: '#7dd3fc', props: ['pine', 'penguin', 'iceblock', 'cc0-sled', 'gen3d-ice-igloo', 'gen3d-snowman-with-hat', 'gen3d-iceberg'], tint: ['#e2e8f0', '#7dd3fc'], block: ['#cbd5e1', '#f8fafc'], skyTop: '#3d7bd9', horizon: '#e4eef8', sunColor: '#ffe9cc', sunDir: BEHIND_LEFT, exposure: 0.9, glow: 1, terrain: { lane: '#a7cde4', shade: '#c7d5e6', rock: '#66727f', cap: '#f4f8fc' }, cover: 'snow', surface: 'snow', flora: SNOW_FLORA, skyline: { layers: ['peaks', 'peaks', 'pines'], tone: '#9fb4cc' } },
   cave: { sky: '#1c1917', fog: [8, 40], light: ['#a8a29e', '#0c0a09', 0.8], sun: 0.7, ground: '#44403c', track: '#292524', water: '#155e75', props: ['rock', 'crystal', 'cc0-torch-lit', 'cc0-rock-moss', 'gen3d-crystal-cluster', 'gen3d-mine-cart'], tint: ['#2dd4bf', '#57534e'], block: ['#292524', '#57534e'], skyTop: '#0c0a09', horizon: '#292524', sunColor: '#ffd9a8', sunDir: OVERHEAD, exposure: 1.05, glow: 0, cover: 'rock', surface: 'dirt', skyline: { layers: ['peaks', 'peaks'], tone: '#6b625a' } },
   volcano: { sky: '#7c2d12', fog: [15, 60], light: ['#fdba74', '#450a0a', 0.9], sun: 1.2, ground: '#292524', track: '#44403c', water: '#ea580c', props: ['volcano', 'rock', 'crystal', 'gen3d-volcano', 'gen3d-crystal-cluster'], tint: ['#1c1917', '#f97316'], skyTop: '#2a0e0a', horizon: '#a4431d', sunColor: '#ffb27a', sunDir: [0.4, 0.7, -0.45], exposure: 1, glow: 0.6, cover: 'rock', surface: 'dirt', skyline: { layers: ['peaks', 'hills'], tone: '#5a3a2e' } },
   space: { sky: '#020617', fog: [40, 140], light: ['#e2e8f0', '#7f1d1d', 0.7], sun: 1.6, ground: '#b45309', track: '#7c2d12', water: '#0f172a', props: ['cc0-asteroid', 'crystal', 'rocket', 'rock', 'gen3d-moon-lander', 'gen3d-satellite-radar-dish', 'gen3d-space-colony-dome'], tint: ['#22d3ee', '#78350f'], skyTop: '#01030c', horizon: '#0b1730', sunColor: '#fff6e8', sunDir: [0.6, 0.55, -0.5], exposure: 1, glow: 1, cover: 'rock', surface: 'dirt', skyline: { layers: ['peaks', 'mesas'], tone: '#8a6a50' } },

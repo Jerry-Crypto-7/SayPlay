@@ -116,6 +116,52 @@ const HEIGHTS = {
   'wagon wheel': 1.3,
   'planter box': 0.8,
   'air conditioner': 1.2,
+  // P46G T8: stavby a věci z generování vegetace; široké tak, ať půdorys nepřesáhne ~5,5 m (dům `townhouse` 7 m má 5,4 m).
+  'glass office tower': 12,
+  'street tree': 5,
+  'apartment block': 8,
+  'red phone booth': 2.6,
+  'concrete planter with tree': 2.4,
+  'billboard sign': 4.5,
+  'parking meter': 1.4,
+  'park bench': 1,
+  'park fountain': 2.2,
+  'street trash can': 1.1,
+  'traffic cone': 0.8,
+  'log cabin': 3.6,
+  'wooden watchtower': 6,
+  'ruined stone tower': 6,
+  'castle ruin wall': 2.4,
+  'wooden signpost': 1.8,
+  'maple tree': 6,
+  'hollow tree trunk': 1.2,
+  'exposed tree root': 0.8,
+  'scree rock pile': 1.4,
+  'stone idol head': 2.6,
+  'tribal totem pole': 3.5,
+  'wooden rope bridge': 2.4,
+  'vine covered rock wall': 2.6,
+  'cattail reed': 1.6,
+  'adobe house': 2.8,
+  'bedouin tent': 3,
+  'oasis well': 1.1,
+  'stone obelisk': 5,
+  'beach hut': 3.2,
+  'lifeguard tower': 4,
+  'beach umbrella': 2.4,
+  'wooden pier': 0.9,
+  'snowy log cabin': 3.6,
+  'ski lift tower': 7,
+  'frozen waterfall': 5,
+  'red barn': 5,
+  'white picket fence': 1.1,
+  'old stone bridge': 1.6,
+  'monstera plant': 1.4,
+  'cherry blossom tree': 5,
+  // Kulisy sad, které obecný kit prostředí (les, džungle, sníh) jinak vytlačí z lichých míst; výška jako `SCENERY_MODELS`.
+  'treehouse': 6,
+  'ruin': 2.5,
+  'ice igloo': 2.2,
 };
 
 /** Výška jména, které v `HEIGHTS` chybí (nový model z dalšího kola). */
@@ -137,6 +183,10 @@ const ALIASES = {
   'museum hall': ['\\bmuseums?\\b'],
   'pharmacy': ['\\bpharmacies\\b', '\\bdrugstores?\\b'],
   'farm market': ["\\bfarmers'?[\\s-]+markets?\\b"],
+  // Obecné „city“ kit nemá: kit nahradí polovinu rekvizit sady a dům `townhouse` je lepší než domy z gen3d (P46G T8).
+  'downtown': ['\\bskyscrapers?\\b'],
+  // Slova přístavu jako `PLACE_SURFACES` v `look/index.ts`: přístav jde po prknech a má molo.
+  'harbor': ['\\bharbours?\\b', '\\bdocks?\\b', '\\bpiers?\\b', '\\bboardwalks?\\b', '\\bwharf\\b', '\\bmarinas?\\b', '\\bjett(?:y|ies)\\b'],
 };
 
 /** Nejbližší sada pro prostředí, které `lookFor` nepozná (podklad, barva, počasí). */
@@ -156,6 +206,8 @@ const NEAREST = {
   'pharmacy': 'supermarket',
   'playground': 'meadow',
   'ranch': 'meadow',
+  'ski resort': 'snow',
+  'parking lot': 'city',
 };
 
 const normalize = (text) => text.trim().replace(/\s+/g, ' ');

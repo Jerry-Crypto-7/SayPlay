@@ -294,6 +294,10 @@
         {
           "id": "gen3d-rope-bridge",
           "height": 2
+        },
+        {
+          "id": "gen3d-scree-rock-pile",
+          "height": 1.4
         }
       ]
     },
@@ -305,6 +309,10 @@
         {
           "id": "gen3d-rope-bridge",
           "height": 2
+        },
+        {
+          "id": "gen3d-old-stone-bridge",
+          "height": 1.6
         }
       ]
     },
@@ -480,6 +488,14 @@
         {
           "id": "gen3d-hiking-backpack",
           "height": 0.9
+        },
+        {
+          "id": "gen3d-hollow-tree-trunk",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-exposed-tree-root",
+          "height": 0.8
         }
       ]
     },
@@ -532,6 +548,10 @@
         {
           "id": "gen3d-ice-cave",
           "height": 2.6
+        },
+        {
+          "id": "gen3d-frozen-waterfall",
+          "height": 5
         }
       ]
     },
@@ -629,6 +649,10 @@
         {
           "id": "gen3d-mangrove-tree",
           "height": 4
+        },
+        {
+          "id": "gen3d-wooden-rope-bridge",
+          "height": 2.4
         }
       ]
     },
@@ -655,6 +679,10 @@
         {
           "id": "gen3d-coffee-table",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-monstera-plant",
+          "height": 1.4
         }
       ]
     },
@@ -718,6 +746,14 @@
         {
           "id": "gen3d-stone-bridge",
           "height": 1.4
+        },
+        {
+          "id": "gen3d-snowy-log-cabin",
+          "height": 3.6
+        },
+        {
+          "id": "gen3d-ski-lift-tower",
+          "height": 7
         }
       ]
     },
@@ -830,6 +866,14 @@
         {
           "id": "gen3d-horseshoe",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-red-barn",
+          "height": 5
+        },
+        {
+          "id": "gen3d-white-picket-fence",
+          "height": 1.1
         }
       ]
     },
@@ -867,6 +911,10 @@
         {
           "id": "gen3d-snowshoe",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-snowy-log-cabin",
+          "height": 3.6
         }
       ]
     },
@@ -878,6 +926,10 @@
         {
           "id": "gen3d-snowy-lamppost",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-snowy-log-cabin",
+          "height": 3.6
         }
       ]
     },
@@ -893,6 +945,14 @@
         {
           "id": "gen3d-notice-board",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-park-bench",
+          "height": 1
+        },
+        {
+          "id": "gen3d-park-fountain",
+          "height": 2.2
         }
       ]
     },
@@ -926,6 +986,411 @@
         {
           "id": "gen3d-zoo-gate",
           "height": 1.2
+        }
+      ]
+    },
+    {
+      "setting": "downtown",
+      "pattern": "\\bdowntown(?:e?s)?\\b|\\bskyscrapers?\\b",
+      "look": "city",
+      "props": [
+        {
+          "id": "gen3d-glass-office-tower",
+          "height": 12
+        },
+        {
+          "id": "gen3d-apartment-block",
+          "height": 8
+        },
+        {
+          "id": "gen3d-red-phone-booth",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-concrete-planter-with-tree",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-billboard-sign",
+          "height": 4.5
+        },
+        {
+          "id": "gen3d-street-trash-can",
+          "height": 1.1
+        }
+      ]
+    },
+    {
+      "setting": "park",
+      "pattern": "\\bpark(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-street-tree",
+          "height": 5
+        },
+        {
+          "id": "gen3d-park-bench",
+          "height": 1
+        },
+        {
+          "id": "gen3d-park-fountain",
+          "height": 2.2
+        },
+        {
+          "id": "gen3d-street-trash-can",
+          "height": 1.1
+        }
+      ]
+    },
+    {
+      "setting": "parking lot",
+      "pattern": "\\bparking[\\s-]+lot(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-parking-meter",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-traffic-cone",
+          "height": 0.8
+        }
+      ]
+    },
+    {
+      "setting": "construction site",
+      "pattern": "\\bconstruction[\\s-]+site(?:e?s)?\\b",
+      "look": "factory",
+      "props": [
+        {
+          "id": "gen3d-traffic-cone",
+          "height": 0.8
+        }
+      ]
+    },
+    {
+      "setting": "forest",
+      "pattern": "\\bforest(?:e?s)?\\b",
+      "look": "forest",
+      "props": [
+        {
+          "id": "gen3d-log-cabin",
+          "height": 3.6
+        },
+        {
+          "id": "gen3d-wooden-watchtower",
+          "height": 6
+        },
+        {
+          "id": "gen3d-ruined-stone-tower",
+          "height": 6
+        },
+        {
+          "id": "gen3d-castle-ruin-wall",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-wooden-signpost",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-treehouse",
+          "height": 6
+        }
+      ]
+    },
+    {
+      "setting": "campsite",
+      "pattern": "\\bcampsite(?:e?s)?\\b",
+      "look": "forest",
+      "props": [
+        {
+          "id": "gen3d-log-cabin",
+          "height": 3.6
+        },
+        {
+          "id": "gen3d-wooden-signpost",
+          "height": 1.8
+        }
+      ]
+    },
+    {
+      "setting": "autumn forest",
+      "pattern": "\\bautumn[\\s-]+forest(?:e?s)?\\b",
+      "look": "forest",
+      "props": [
+        {
+          "id": "gen3d-log-cabin",
+          "height": 3.6
+        },
+        {
+          "id": "gen3d-maple-tree",
+          "height": 6
+        }
+      ]
+    },
+    {
+      "setting": "castle ruin",
+      "pattern": "\\bcastle[\\s-]+ruin(?:e?s)?\\b",
+      "look": "castle",
+      "props": [
+        {
+          "id": "gen3d-ruined-stone-tower",
+          "height": 6
+        },
+        {
+          "id": "gen3d-castle-ruin-wall",
+          "height": 2.4
+        }
+      ]
+    },
+    {
+      "setting": "farm",
+      "pattern": "\\bfarm(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-wooden-signpost",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-red-barn",
+          "height": 5
+        },
+        {
+          "id": "gen3d-white-picket-fence",
+          "height": 1.1
+        }
+      ]
+    },
+    {
+      "setting": "countryside",
+      "pattern": "\\bcountryside(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-wooden-signpost",
+          "height": 1.8
+        },
+        {
+          "id": "gen3d-red-barn",
+          "height": 5
+        }
+      ]
+    },
+    {
+      "setting": "jungle",
+      "pattern": "\\bjungle(?:e?s)?\\b",
+      "look": "jungle",
+      "props": [
+        {
+          "id": "gen3d-stone-idol-head",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-tribal-totem-pole",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-wooden-rope-bridge",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-vine-covered-rock-wall",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-ruin",
+          "height": 2.5
+        }
+      ]
+    },
+    {
+      "setting": "jungle temple",
+      "pattern": "\\bjungle[\\s-]+temple(?:e?s)?\\b",
+      "look": "jungle",
+      "props": [
+        {
+          "id": "gen3d-stone-idol-head",
+          "height": 2.6
+        },
+        {
+          "id": "gen3d-tribal-totem-pole",
+          "height": 3.5
+        },
+        {
+          "id": "gen3d-vine-covered-rock-wall",
+          "height": 2.6
+        }
+      ]
+    },
+    {
+      "setting": "pond",
+      "pattern": "\\bpond(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-cattail-reed",
+          "height": 1.6
+        }
+      ]
+    },
+    {
+      "setting": "swamp",
+      "pattern": "\\bswamp(?:e?s)?\\b",
+      "look": "jungle",
+      "props": [
+        {
+          "id": "gen3d-cattail-reed",
+          "height": 1.6
+        }
+      ]
+    },
+    {
+      "setting": "desert",
+      "pattern": "\\bdesert(?:e?s)?\\b",
+      "look": "desert",
+      "props": [
+        {
+          "id": "gen3d-adobe-house",
+          "height": 2.8
+        },
+        {
+          "id": "gen3d-bedouin-tent",
+          "height": 3
+        },
+        {
+          "id": "gen3d-oasis-well",
+          "height": 1.1
+        },
+        {
+          "id": "gen3d-stone-obelisk",
+          "height": 5
+        }
+      ]
+    },
+    {
+      "setting": "desert village",
+      "pattern": "\\bdesert[\\s-]+village(?:e?s)?\\b",
+      "look": "desert",
+      "props": [
+        {
+          "id": "gen3d-adobe-house",
+          "height": 2.8
+        },
+        {
+          "id": "gen3d-oasis-well",
+          "height": 1.1
+        }
+      ]
+    },
+    {
+      "setting": "oasis",
+      "pattern": "\\boasis(?:e?s)?\\b",
+      "look": "desert",
+      "props": [
+        {
+          "id": "gen3d-bedouin-tent",
+          "height": 3
+        },
+        {
+          "id": "gen3d-oasis-well",
+          "height": 1.1
+        }
+      ]
+    },
+    {
+      "setting": "beach",
+      "pattern": "\\bbeach(?:e?s)?\\b",
+      "look": "beach",
+      "props": [
+        {
+          "id": "gen3d-beach-hut",
+          "height": 3.2
+        },
+        {
+          "id": "gen3d-lifeguard-tower",
+          "height": 4
+        },
+        {
+          "id": "gen3d-beach-umbrella",
+          "height": 2.4
+        },
+        {
+          "id": "gen3d-wooden-pier",
+          "height": 0.9
+        }
+      ]
+    },
+    {
+      "setting": "harbor",
+      "pattern": "\\bharbor(?:e?s)?\\b|\\bharbours?\\b|\\bdocks?\\b|\\bpiers?\\b|\\bboardwalks?\\b|\\bwharf\\b|\\bmarinas?\\b|\\bjett(?:y|ies)\\b",
+      "look": "ocean",
+      "props": [
+        {
+          "id": "gen3d-wooden-pier",
+          "height": 0.9
+        }
+      ]
+    },
+    {
+      "setting": "snow",
+      "pattern": "\\bsnow(?:e?s)?\\b",
+      "look": "snow",
+      "props": [
+        {
+          "id": "gen3d-snowy-log-cabin",
+          "height": 3.6
+        },
+        {
+          "id": "gen3d-ski-lift-tower",
+          "height": 7
+        },
+        {
+          "id": "gen3d-frozen-waterfall",
+          "height": 5
+        },
+        {
+          "id": "gen3d-ice-igloo",
+          "height": 2.2
+        }
+      ]
+    },
+    {
+      "setting": "ski resort",
+      "pattern": "\\bski[\\s-]+resort(?:e?s)?\\b",
+      "look": "snow",
+      "props": [
+        {
+          "id": "gen3d-snowy-log-cabin",
+          "height": 3.6
+        },
+        {
+          "id": "gen3d-ski-lift-tower",
+          "height": 7
+        }
+      ]
+    },
+    {
+      "setting": "cherry blossom",
+      "pattern": "\\bcherry[\\s-]+blossom(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-cherry-blossom-tree",
+          "height": 5
+        }
+      ]
+    },
+    {
+      "setting": "japanese garden",
+      "pattern": "\\bjapanese[\\s-]+garden(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-cherry-blossom-tree",
+          "height": 5
         }
       ]
     }

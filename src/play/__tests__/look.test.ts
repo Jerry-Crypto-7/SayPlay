@@ -109,7 +109,11 @@ describe('rekvizity prostředí (P45H T3)', () => {
     ['Haunted Mansion at midnight', ['gen3d-candelabra', 'gen3d-grandfather-clock', 'gen3d-chandelier']],
     // Návrh z „escape the haunted mansion“ píše místo jen „mansion“.
     ['mansion', ['gen3d-candelabra', 'gen3d-grandfather-clock', 'gen3d-chandelier']],
-    ['a dog runs in a park', []],
+    // P46G T8: stavby a věci z generování vegetace i v obecných prostředích sad.
+    ['A buggy races across the desert', ['gen3d-adobe-house', 'gen3d-bedouin-tent', 'gen3d-oasis-well', 'gen3d-stone-obelisk']],
+    ['a harbour at dawn', ['gen3d-wooden-pier']],
+    ['a dog runs in a park', ['gen3d-street-tree', 'gen3d-park-bench', 'gen3d-park-fountain', 'gen3d-street-trash-can']],
+    ['a dog runs in a field', []],
     ['a completely different place', []],
   ] as const)('%s → %j', (setting, props) => {
     expect(kitFor(setting)).toEqual(props);
@@ -119,8 +123,8 @@ describe('rekvizity prostředí (P45H T3)', () => {
   const kinds = (props: Parameters<typeof sceneryPlaces>[0], layout: 'sides' | 'behind') => sceneryPlaces(props, layout, 6, 0, 120).map((place) => place.kind);
 
   it('věta bez kitu má sadu beze změny', () => {
-    expect(sceneLook(theme('a dog runs in a park'))).toBe(LOOKS.meadow);
-    // Obývák má od modelů P45I vlastní kit (konferenční stolek), proto tu už není.
+    expect(sceneLook(theme('a dog runs in a field'))).toBe(LOOKS.meadow);
+    // Obývák má od modelů P45I vlastní kit (konferenční stolek), park od P46G T8, proto tu už nejsou.
     expect(sceneLook({ ...theme('busy city traffic'), look: 'city' }).props).toBe(LOOKS.city.props);
   });
 
@@ -130,6 +134,13 @@ describe('rekvizity prostředí (P45H T3)', () => {
     ['a cat runs through a shopping mall', 'mall'],
     ['race cars on the highway', 'city'],
     ['a canyon', 'desert'],
+    // Obecná prostředí sad (P46G T8): kit délky 7 by z řady kroku 7 nechal jen dvě rekvizity.
+    ['a fox runs through a forest', 'forest'],
+    ['a jeep races through the jungle', 'jungle'],
+    ['a buggy races across the desert', 'desert'],
+    ['a taxi races downtown', 'city'],
+    ['a crab runs on the beach', 'beach'],
+    ['a penguin slides through the snow', 'snow'],
   ] as const)('%s: kit stojí místo části sady, kulis není víc (%s)', (setting, look) => {
     const kit = kitFor(setting);
     const props = sceneLook(theme(setting)).props;
@@ -201,10 +212,12 @@ describe('nálada z věty (P46G T5)', () => {
   });
 
   it('věta bez slov nálady má sadu beze změny', () => {
+    // Světlo sady; rekvizity smí změnit kit prostředí (P46G T8: les, džungle, poušť).
+    const light = ({ sky, skyTop, horizon, light: hemisphere, sun, sunColor, glow, fog, exposure }: Look) => ({ sky, skyTop, horizon, hemisphere, sun, sunColor, glow, fog, exposure });
     // Dnešní věty P46G kromě „dark forest“ a nálady, které píšou žánry a režisér.
     for (const sentence of p46g.sentences.filter((entry) => entry.id !== 'forest-race')) {
       const theme = draftGameSpecWithMeta(sentence.text).spec.theme;
-      expect(sceneLook(theme), sentence.text).toBe(LOOKS[lookOf(theme)]);
+      expect(light(sceneLook(theme)), sentence.text).toEqual(light(LOOKS[lookOf(theme)]));
     }
     for (const mood of ['energetic', 'fast', 'playful', 'tense', 'adventurous', 'cheerful', 'cozy', 'curious', 'calm', 'eerie', 'dreamy', 'electric']) {
       expect(moodFor('a forest', mood)).toBeNull();
