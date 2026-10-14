@@ -644,3 +644,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-iron-fence` | iron fence, wrought iron fence | 4734 / 2319 |
 | `gen3d-street-bollard` | street bollard, traffic bollard | 4463 / 2108 |
 | `gen3d-coat-rack` | coat rack, coat stand, hat stand | 4750 / 2372 |
+| `gen3d-control-panel` | control panel | 4615 / 2267 |
+| `gen3d-forest-shrine` | forest shrine, wayside shrine | 4689 / 2332 |
+| `gen3d-bamboo-hut` | bamboo hut | 4533 / 2204 |
+| `gen3d-volleyball-net` | volleyball net | 4748 / 2338 |
+| `gen3d-sea-arch` | sea arch | 4696 / 2310 |
