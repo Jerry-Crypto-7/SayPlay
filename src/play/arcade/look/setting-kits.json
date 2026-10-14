@@ -504,6 +504,10 @@
         {
           "id": "gen3d-toothpaste-tube",
           "height": 0.7
+        },
+        {
+          "id": "gen3d-giant-tooth",
+          "height": 1
         }
       ]
     },
@@ -569,6 +573,10 @@
         {
           "id": "gen3d-recycling-bin",
           "height": 1.1
+        },
+        {
+          "id": "gen3d-basketball-hoop",
+          "height": 3
         }
       ]
     },
@@ -836,6 +844,10 @@
         {
           "id": "gen3d-ice-spike",
           "height": 2
+        },
+        {
+          "id": "gen3d-space-probe",
+          "height": 2
         }
       ]
     },
@@ -977,6 +989,10 @@
         {
           "id": "gen3d-birdhouse",
           "height": 1.6
+        },
+        {
+          "id": "gen3d-wooden-fence",
+          "height": 1.1
         }
       ]
     },
@@ -1392,6 +1408,10 @@
         {
           "id": "gen3d-mangrove-tree",
           "height": 4
+        },
+        {
+          "id": "gen3d-cypress-tree",
+          "height": 6
         }
       ]
     },
@@ -1488,6 +1508,10 @@
         {
           "id": "gen3d-weather-vane",
           "height": 2.4
+        },
+        {
+          "id": "gen3d-wooden-fence",
+          "height": 1.1
         }
       ]
     },

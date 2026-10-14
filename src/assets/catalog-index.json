@@ -27424,6 +27424,109 @@
           0.91265
         ]
       }
+    },
+    {
+      "assetId": "gen3d-giant-tooth",
+      "tags": [
+        "giant tooth",
+        "tooth",
+        "molar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-giant-tooth-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39205,
+          0,
+          -0.38363
+        ],
+        "max": [
+          0.39205,
+          1.00001,
+          0.38363
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-basketball-hoop",
+      "tags": [
+        "basketball hoop",
+        "basketball net",
+        "basketball goal"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-basketball-hoop-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1817,
+          0,
+          -0.10166
+        ],
+        "max": [
+          0.1817,
+          0.99992,
+          0.10166
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-space-probe",
+      "tags": [
+        "space probe",
+        "probe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-space-probe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.91729,
+          0,
+          -0.30894
+        ],
+        "max": [
+          0.91729,
+          0.99941,
+          0.30894
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-fence",
+      "tags": [
+        "wooden fence",
+        "rail fence"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-fence-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.28904,
+          0,
+          -0.10363
+        ],
+        "max": [
+          1.28904,
+          0.99995,
+          0.10363
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cypress-tree",
+      "tags": [
+        "cypress tree",
+        "bald cypress",
+        "swamp cypress"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cypress-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33454,
+          0,
+          -0.33515
+        ],
+        "max": [
+          0.33454,
+          0.99251,
+          0.33515
+        ]
+      }
     }
   ]
 }

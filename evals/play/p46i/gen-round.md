@@ -5,3 +5,4 @@ Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek
 | kolo | skupiny | jmen | model | soud | povýšeno | vyřazeno | kity ≥ 3 | povýšená jména | poznámka |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | kit-1 | 10 | 10 | 7/10 | 7 | – | 55/84 | stone lantern, torii gate, bonsai tree, rain barrel, outhouse, feeding trough, water lily | – |
+| 2 | kit-1 | 10 | 9 | 6/9 | 5 | – | 56/84 | giant tooth, basketball hoop, space probe, wooden fence, cypress tree | – |

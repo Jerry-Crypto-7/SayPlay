@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "0f56d27db96004dcb406cb62a099cd6eb3e33d35adada7d9f25c70cb31bd647d",
+ "catalogHash": "3c5a07a2d167f4a3cc1f69e62bd81de4176de78d74082c3b0dca5bb3a951059a",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1361,6 +1361,11 @@
   "gen3d-rain-barrel": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-outhouse": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-feeding-trough": {"class":"prop"},
-  "gen3d-water-lily": {"class":"prop"}
+  "gen3d-water-lily": {"class":"prop"},
+  "gen3d-giant-tooth": {"class":"prop"},
+  "gen3d-basketball-hoop": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-space-probe": {"class":"prop"},
+  "gen3d-wooden-fence": {"class":"prop"},
+  "gen3d-cypress-tree": {"class":"biped","regions":{"legY":0.248}}
  }
 }

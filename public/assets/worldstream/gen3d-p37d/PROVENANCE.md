@@ -586,3 +586,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-outhouse` | outhouse, privy, outdoor toilet | 4399 / 2134 |
 | `gen3d-feeding-trough` | feeding trough, trough, hay trough | 4437 / 2210 |
 | `gen3d-water-lily` | water lily, lotus, lotus flower | 4458 / 2224 |
+| `gen3d-giant-tooth` | giant tooth, tooth, molar | 4748 / 2374 |
+| `gen3d-basketball-hoop` | basketball hoop, basketball net, basketball goal | 4748 / 2364 |
+| `gen3d-space-probe` | space probe, probe | 4727 / 2328 |
+| `gen3d-wooden-fence` | wooden fence, rail fence | 4748 / 2372 |
+| `gen3d-cypress-tree` | cypress tree, bald cypress, swamp cypress | 4513 / 2069 |
