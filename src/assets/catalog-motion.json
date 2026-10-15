@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "54a3a18e3d99f521633961fffcc18b5676fab554dbc2300edc785543bfb2d965",
+ "catalogHash": "400edbed12633414ea75c0032e6b891162c10615c035d3b83de1498af8a96e23",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1633,6 +1633,7 @@
   "gen3d-sunken-crate": {"class":"prop"},
   "gen3d-ginger-flower": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-wanted-poster": {"class":"prop"},
-  "gen3d-ice-slide": {"class":"prop"}
+  "gen3d-ice-slide": {"class":"prop"},
+  "gen3d-armor-rack": {"class":"prop"}
  }
 }

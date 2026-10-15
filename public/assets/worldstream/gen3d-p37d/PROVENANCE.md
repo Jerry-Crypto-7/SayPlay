@@ -858,3 +858,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-ginger-flower` | ginger flower | 4651 / 2259 |
 | `gen3d-wanted-poster` | wanted poster | 4480 / 2085 |
 | `gen3d-ice-slide` | ice slide | 4722 / 2341 |
+| `gen3d-armor-rack` | armor rack | 4506 / 2170 |

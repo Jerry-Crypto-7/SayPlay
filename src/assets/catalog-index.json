@@ -32813,6 +32813,25 @@
           0.79743
         ]
       }
+    },
+    {
+      "assetId": "gen3d-armor-rack",
+      "tags": [
+        "armor rack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-armor-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42574,
+          0,
+          -0.19258
+        ],
+        "max": [
+          0.42574,
+          0.99909,
+          0.19258
+        ]
+      }
     }
   ]
 }
