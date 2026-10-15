@@ -30034,6 +30034,123 @@
           0.52209
         ]
       }
+    },
+    {
+      "assetId": "gen3d-yucca-plant",
+      "tags": [
+        "yucca plant",
+        "yucca"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-yucca-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30895,
+          0,
+          -0.31485
+        ],
+        "max": [
+          0.30895,
+          0.99845,
+          0.31485
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-graffiti-wall",
+      "tags": [
+        "graffiti wall"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-graffiti-wall-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.64953,
+          0,
+          -0.17555
+        ],
+        "max": [
+          0.64953,
+          0.99966,
+          0.17555
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-cabana",
+      "tags": [
+        "beach cabana",
+        "cabana"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-cabana-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43568,
+          0,
+          -0.43454
+        ],
+        "max": [
+          0.43568,
+          1.00001,
+          0.43454
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sunken-bell",
+      "tags": [
+        "sunken bell",
+        "bronze bell"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sunken-bell-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36056,
+          0,
+          -0.36134
+        ],
+        "max": [
+          0.36056,
+          0.99772,
+          0.36134
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-buried-statue-head",
+      "tags": [
+        "buried statue head"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-buried-statue-head-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.54631,
+          0,
+          -0.54629
+        ],
+        "max": [
+          0.54631,
+          0.99996,
+          0.54629
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-arch",
+      "tags": [
+        "ice arch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-arch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.68921,
+          0,
+          -0.25186
+        ],
+        "max": [
+          0.68921,
+          0.99765,
+          0.25186
+        ]
+      }
     }
   ]
 }

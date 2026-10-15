@@ -718,3 +718,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wedding-arch` | wedding arch | 4464 / 2132 |
 | `gen3d-standing-stone` | standing stone, menhir | 4736 / 2368 |
 | `gen3d-bromeliad` | bromeliad | 4431 / 2208 |
+| `gen3d-yucca-plant` | yucca plant, yucca | 4650 / 2260 |
+| `gen3d-graffiti-wall` | graffiti wall | 4545 / 2098 |
+| `gen3d-beach-cabana` | beach cabana, cabana | 4512 / 2118 |
+| `gen3d-sunken-bell` | sunken bell, bronze bell | 4604 / 2266 |
+| `gen3d-buried-statue-head` | buried statue head | 4465 / 2161 |
+| `gen3d-ice-arch` | ice arch | 4744 / 2368 |

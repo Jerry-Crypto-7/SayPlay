@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "9d519ac5fa3c371d9f7267d16ba06799064ed23f0a63ea57318f3d6f77678a6b",
+ "catalogHash": "1a728f8d730b216e80d78e63d88dc326fa93e71e628b6d190ba8bfb255c6166b",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1493,6 +1493,12 @@
   "gen3d-rusty-fridge": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-wedding-arch": {"class":"prop"},
   "gen3d-standing-stone": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-bromeliad": {"class":"prop"}
+  "gen3d-bromeliad": {"class":"prop"},
+  "gen3d-yucca-plant": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-graffiti-wall": {"class":"prop"},
+  "gen3d-beach-cabana": {"class":"prop"},
+  "gen3d-sunken-bell": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-buried-statue-head": {"class":"prop"},
+  "gen3d-ice-arch": {"class":"prop"}
  }
 }
