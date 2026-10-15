@@ -30958,6 +30958,82 @@
           3.48072
         ]
       }
+    },
+    {
+      "assetId": "gen3d-mossy-ruin-pillar",
+      "tags": [
+        "mossy ruin pillar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mossy-ruin-pillar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18524,
+          0,
+          -0.15338
+        ],
+        "max": [
+          0.18524,
+          0.99995,
+          0.15338
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tribal-shield",
+      "tags": [
+        "tribal shield"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tribal-shield-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28616,
+          0,
+          -0.06763
+        ],
+        "max": [
+          0.28616,
+          0.9956,
+          0.06763
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-magma-rock",
+      "tags": [
+        "magma rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-magma-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.0852,
+          0,
+          -1.056
+        ],
+        "max": [
+          1.0852,
+          1.00001,
+          1.056
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-moon-flag",
+      "tags": [
+        "moon flag"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-moon-flag-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32593,
+          0,
+          -0.32604
+        ],
+        "max": [
+          0.32593,
+          0.99791,
+          0.32604
+        ]
+      }
     }
   ]
 }

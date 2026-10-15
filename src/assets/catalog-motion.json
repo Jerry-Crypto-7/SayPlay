@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "6abebe6439656ae19bcb936408d3cd0e9cbc184068fe0383e92c3aae09dad605",
+ "catalogHash": "22f88fb32911369fba4484c4eaba00cec2142dd0e1ac5b4fea309945ac0bda8e",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1541,6 +1541,10 @@
   "gen3d-fire-alarm-box": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-sunscreen-bottle": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-water-canteen": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-manhole-cover": {"class":"prop"}
+  "gen3d-manhole-cover": {"class":"prop"},
+  "gen3d-mossy-ruin-pillar": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-tribal-shield": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-magma-rock": {"class":"prop"},
+  "gen3d-moon-flag": {"class":"biped","regions":{"legY":0.249}}
  }
 }

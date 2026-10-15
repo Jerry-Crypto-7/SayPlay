@@ -766,3 +766,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-sunscreen-bottle` | sunscreen bottle | 4739 / 2360 |
 | `gen3d-water-canteen` | water canteen | 4464 / 2164 |
 | `gen3d-manhole-cover` | manhole cover | 4383 / 2062 |
+| `gen3d-mossy-ruin-pillar` | mossy ruin pillar | 4750 / 2368 |
+| `gen3d-tribal-shield` | tribal shield | 4730 / 2293 |
+| `gen3d-magma-rock` | magma rock | 4284 / 2140 |
+| `gen3d-moon-flag` | moon flag | 4748 / 2372 |
