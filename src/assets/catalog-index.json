@@ -29897,6 +29897,44 @@
           0.56801
         ]
       }
+    },
+    {
+      "assetId": "gen3d-gecko",
+      "tags": [
+        "gecko"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gecko-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71966,
+          0,
+          -0.96716
+        ],
+        "max": [
+          0.71966,
+          0.9912,
+          0.96716
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-toad",
+      "tags": [
+        "toad"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-toad-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.64035,
+          0,
+          -0.74567
+        ],
+        "max": [
+          0.64035,
+          0.99641,
+          0.74567
+        ]
+      }
     }
   ]
 }

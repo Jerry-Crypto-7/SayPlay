@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "361ff49aaf56e7a40167fe9f7712bcb06685d17e3e7d35ab501da385135c34bc",
+ "catalogHash": "4cbc8c12216a6cd9acb3c3c2d65689fb4668a6c01b5076982402beca315dddd8",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1486,6 +1486,8 @@
   "gen3d-flame-trap": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-centipede": {"class":"prop"},
   "gen3d-spike-wall": {"class":"prop"},
-  "gen3d-coyote": {"class":"prop"}
+  "gen3d-coyote": {"class":"prop"},
+  "gen3d-gecko": {"class":"prop"},
+  "gen3d-toad": {"class":"prop"}
  }
 }

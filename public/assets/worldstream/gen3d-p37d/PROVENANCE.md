@@ -711,3 +711,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-centipede` | centipede | 4726 / 2358 |
 | `gen3d-spike-wall` | spike wall | 4638 / 2272 |
 | `gen3d-coyote` | coyote | 4396 / 2087 |
+| `gen3d-gecko` | gecko | 4363 / 2047 |
+| `gen3d-toad` | toad | 4298 / 2083 |
