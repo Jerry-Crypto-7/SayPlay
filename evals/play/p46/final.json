@@ -1,0 +1,30 @@
+{
+ "schema": "p46-final.v1",
+ "set": "p45-sealed",
+ "openedOnce": "evals/play/p45/sealed-opened.json",
+ "a": { "branch": "features/P45-demo-2026-10-12", "commit": "491079b7", "run": "p46-final-a" },
+ "b": { "branch": "features/P46-hratelnost-2026-10-12", "commit": "5867439d", "run": "p46-final-b" },
+ "sources": {
+  "pairwise": "evals/play/p45/result-p46-final.json",
+  "actions": "evals/play/p46/final-actions.json"
+ },
+ "targets": {
+  "pairwiseB": { "goal": ">= 0.70", "value": 0.805, "met": true, "detail": "B 69, A 8, ties 23 of 100" },
+  "deadTimeMedianS": { "goal": "<= 3", "value": 4.6, "met": false },
+  "deadTimeRunnerS": { "goal": "<= 4", "value": 5.44, "met": false, "n": 8 },
+  "deadTimeDrivingS": { "goal": "<= 4", "value": 3.22, "met": true, "n": 10 },
+  "deadTimePlatformS": { "goal": "<= 4", "value": null, "met": null, "note": "no sealed sentence lands on the platformer" },
+  "risingShare": { "goal": ">= 0.70", "value": 0.65, "met": false },
+  "finaleShare": { "goal": ">= 0.80", "value": 0.38, "met": false },
+  "behavioursMedian": { "goal": ">= 2", "value": 1, "met": false },
+  "hasAction": { "goal": ">= 0.85", "value": 0.72, "met": false, "n": 18 },
+  "botUsed": { "goal": ">= 0.85", "value": 0.67, "met": false, "n": 18 },
+  "verbFired": { "goal": ">= 0.85", "value": 0.67, "met": false, "n": 18 }
+ },
+ "finaleByGenre": {
+  "arena.fight": "9/9", "runner": "8/8", "control:steer": "10/10", "shooter": "2/2", "rhythm": "3/3",
+  "arena.collect": "5/33", "quest.station": "0/8", "duel": "0/6", "quest.spatial": "0/5", "throw": "0/4",
+  "control:walker": "1/3", "arena.escape": "0/3", "control:glide": "0/3", "control:move_free": "0/2", "timing.stack": "0/1"
+ },
+ "met": false
+}
