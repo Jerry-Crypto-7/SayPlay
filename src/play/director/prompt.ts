@@ -17,7 +17,9 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { liveCells } from '../compose/allowed';
+import { ABILITIES, BOSS_ATTACKS } from '../arcade/contract';
 import { LOOK_IDS } from '../arcade/look';
+import { SEGMENT_NEWS } from '../arcade/pieces/pacing';
 import { sentenceChecklist } from '../fidelity/checklist';
 import { CAST_MAX, CAST_ROLES, COUNT_PARAMS, COUNT_ROLES, type CastRole, type GenreModule, type GenreSpec } from '../genre/contract';
 import { DEPTH_PARAM_BOUNDS, GENRE_MODULES } from '../genre/index';
@@ -133,6 +135,7 @@ export function genrePromptLines(): string {
     ...new Set(liveCells().map(cell => `- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`)),
     'LEGACY GENRES (compatibility format; recipe answers omit genre/mode):',
     ...genres,
+    `NEW IN YOUR VERSION (else null): boss {role: cast label of the foe that comes last, name: what the player sees, attack: ${BOSS_ATTACKS.join('|')}}; abilities: 1–2 hero actions on buttons the sentence implies (${ABILITIES.join('|')}); segments: exactly 3 changes the run brings in order (${SEGMENT_NEWS.join('|')}). EXAMPLE: {"boss":{"role":"police car","name":"police helicopter","attack":"drop"},"abilities":["shoot","dash"],"segments":["newFoe","narrow","faster"]}`,
     'Preserve all essential movement, actions, goals and threats together; driving + racing + shooting cannot become stationary shooting.',
     'hero: 1-3 English words naming the player ("pirate ship", "wizard"); choose compatible movement.',
     // P39: obsazení místo jednoho `enemy` – každá věc věty a co s ní dělá její sloveso.

@@ -131,7 +131,9 @@ describe('the director answer schema offers logic in strict form', () => {
 describe('the director prompt describes logic within budget', () => {
   it('grows by at most 1 500 characters over main, with one grammar line and one example of a phase, a timer and a wave', () => {
     const system = directorSystemPrompt();
-    const growth = system.length - MAIN_SYSTEM_PROMPT_CHARS;
+    // Řádek novinek AI verze (P46E T3) má vlastní rozpočet v dalším testu; tenhle hlídá logiku P45B.
+    const extras = system.split('\n').filter((line) => line.startsWith('NEW IN YOUR VERSION'));
+    const growth = system.length - extras.reduce((sum, line) => sum + line.length + 1, 0) - MAIN_SYSTEM_PROMPT_CHARS;
     expect(growth).toBeGreaterThan(0);
     expect(growth).toBeLessThanOrEqual(1_500);
     const lines = system.split('\n');
@@ -141,6 +143,13 @@ describe('the director prompt describes logic within budget', () => {
     for (const piece of ['"phases"', '"startTimer"', '"wave"']) expect(example[0]).toContain(piece);
     // Dnešní příklad klíče a dveří zůstává vedle.
     expect(lines.some((line) => line.startsWith('RULE EXAMPLE: '))).toBe(true);
+  });
+
+  it('adds boss, abilities and segments in one line of at most 500 characters with one example (P46E T3)', () => {
+    const extras = directorSystemPrompt().split('\n').filter((line) => line.startsWith('NEW IN YOUR VERSION'));
+    expect(extras).toHaveLength(1);
+    expect(extras[0]!.length).toBeLessThanOrEqual(500);
+    for (const piece of ['"boss"', '"abilities"', '"segments"', 'EXAMPLE: ']) expect(extras[0]).toContain(piece);
   });
 
   it('the prompt version hashes the new prompt, the schema and the course line, so the cache keyed by it is invalidated', () => {

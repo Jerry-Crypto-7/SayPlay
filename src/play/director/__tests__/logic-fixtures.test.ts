@@ -138,16 +138,24 @@ describe('the phase-entry repair of the read path', () => {
   }, 120_000);
 });
 
+/**
+ * Prompt, se kterým P45B sadu nahrála. Od P46E T3 se prompt pohnul (novinky AI verze) a sada zůstává
+ * přehráním starých odpovědí: bez nových polí se musí přečíst se stejným výsledkem jako dřív.
+ */
+const P45B_PROMPTS = { compact: '3cf3f465', director: 'dff25958' } as const;
+
 describe('recorded gpt-oss-20b logic answers', () => {
-  it('one fixture per chosen sentence, each written by the measurement with today\'s prompt', () => {
+  it('one fixture per chosen sentence, all written by the measurement with the P45B prompt', () => {
     const recorded = fixtures();
     expect(recorded.map((fixture) => fixture.id).sort()).toEqual(SENTENCES.map((sentence) => sentence.id).sort());
     for (const fixture of recorded) {
       expect(fixture.sentence, fixture.id).toBe(SENTENCES.find((sentence) => sentence.id === fixture.id)?.text);
       expect(fixture.model, fixture.id).toBe('gpt-oss-20b');
-      expect(fixture.promptVersion, `${fixture.id}: recorded with another compact prompt – re-record`).toBe(COMPACT_PROMPT_VERSION);
-      expect(fixture.directorPromptVersion, `${fixture.id}: recorded with another director prompt – re-record`).toBe(DIRECTOR_PROMPT_VERSION);
+      expect(fixture.promptVersion, `${fixture.id}: recorded with another compact prompt`).toBe(P45B_PROMPTS.compact);
+      expect(fixture.directorPromptVersion, `${fixture.id}: recorded with another director prompt`).toBe(P45B_PROMPTS.director);
     }
+    // Dnešní prompt (P46E T3: boss, akce, úseky) je jiný; jeho odpovědi nahrává T5 do `p46-answers`.
+    expect([COMPACT_PROMPT_VERSION, DIRECTOR_PROMPT_VERSION]).not.toEqual([P45B_PROMPTS.compact, P45B_PROMPTS.director]);
   });
 
   it('each answer passes raw and repaired exactly as director-logic.json records (target 20/25 missed – README)', async () => {

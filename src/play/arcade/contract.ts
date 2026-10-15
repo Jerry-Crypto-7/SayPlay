@@ -373,6 +373,14 @@ export const ABILITIES = ['shoot', 'strike', 'dash', 'shield', 'grab'] as const;
 export type AbilityId = (typeof ABILITIES)[number];
 
 /**
+ * Útok bosse finále, jak ho režisér pojmenuje (P46E T3): útoky chování z P46B a P45C (`pieces/behaviours/boss.ts`,
+ * `brute.ts`). `charge` = rozběh na hráče (boss běžce, brute skákačky), `throw` = hod překážky do pruhu (boss běžce),
+ * `drop` = shoz překážky do silnice (dropper řízení), `stomp` = dupnutí (boss v rovině), `shoot` = salva (boss v rovině, věž).
+ */
+export const BOSS_ATTACKS = ['charge', 'throw', 'drop', 'stomp', 'shoot'] as const;
+export type BossAttack = (typeof BOSS_ATTACKS)[number];
+
+/**
  * Stav akcí (P46A T1, `.claude/debate/p46a-ability-state.md`) nese tělo-počítadlo
  * `abilityKeeper` jako kombo: mrtvá předloha za tělesy úrovně, jen ve světě
  * s `abilities`, takže hash starých her se nepohne. Cooldown a aktivní okno

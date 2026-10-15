@@ -12,7 +12,7 @@ import type { CompileRng } from '@/play/compile/rng';
 
 import type { BehaviourId } from './behaviours';
 // Cyklus s `pacing.ts` (`withPacing` losuje scénář) je bezpečný: `PACING` se čte jen ve funkcích, ne při načtení.
-import { PACING } from './pacing';
+import { PACING, type SegmentNews } from './pacing';
 
 /** Žánry se scénářem úseků. */
 export type SegmentGenre = 'runner' | 'steer' | 'platform';
@@ -62,6 +62,16 @@ const KINDS: Readonly<Record<SegmentGenre, readonly SegmentChange['kind'][]>> = 
   steer: ['speedTier', 'newFoe', 'terrain'],
   // Skákačka (T6): nová past a pohyblivá plošina (`places` z generátoru) a rychlost; nepřítel je jen boss finále.
   platform: ['speedTier', 'terrain'],
+};
+
+/**
+ * Změny úseků, které žánr unese, slovy oznámení (`SEGMENT_NEWS`): totéž co `KINDS`, prostředí rozepsané na druhy,
+ * které generátor žánru staví (řízení užší trať, skákačka past a pohyblivou plošinu). Čte je režisér (P46E T3).
+ */
+export const SEGMENT_NEWS_OF: Readonly<Record<SegmentGenre, readonly SegmentNews[]>> = {
+  runner: ['newFoe', 'faster'],
+  steer: ['newFoe', 'narrow', 'faster'],
+  platform: ['trap', 'moving', 'faster'],
 };
 
 const rises = (values: readonly number[] | undefined, k: number): boolean =>

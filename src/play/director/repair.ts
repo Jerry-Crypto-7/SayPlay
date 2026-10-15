@@ -27,7 +27,9 @@ import delivery from '../__fixtures__/delivery.json';
 import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
+import { type SegmentGenre, SEGMENT_NEWS_OF } from '../arcade/pieces/segments';
 import { CAPABILITIES, controlOf, generatorOfSpec, readsMechanic } from '../capabilities';
+import { abilitiesOfControl } from '../draft/controls';
 import { draftGenreFor } from '../draft/draft';
 import { classifyGenre } from '../genre/classify';
 import { CAST_MAX, COUNT_PARAMS, type CastItem, type CastRole, type CountRole, type GenreSpec, castFor, rulesYard } from '../genre/contract';
@@ -124,6 +126,19 @@ function fixAddons(spec: Loose, applied: string[]): boolean {
   if (kept.length === 0) delete spec.addons;
   else spec.addons = kept;
   return true;
+}
+
+/**
+ * Akce a změny úseků z odpovědi, které ovládání hry nebere, vypadnou (P46E T3, jako `fixAddons`): akce podle
+ * `CAPABILITIES[control].abilities`, nejvýš dvě v pořadí odpovědi; změny podle žánru úseků (`SEGMENT_NEWS_OF`),
+ * hra bez scénáře úseků žádné. Boss zůstane – kam patří, rozhodne skládání hry.
+ */
+export function fitDirectorExtras(genre: GenreSpec, control: ControlId | undefined): GenreSpec {
+  const { abilities, segments, ...rest } = genre;
+  const kept = abilities === undefined || control === undefined ? [] : abilitiesOfControl(abilities, control);
+  const plays: readonly string[] = control !== undefined && control in SEGMENT_NEWS_OF ? SEGMENT_NEWS_OF[control as SegmentGenre] : [];
+  const changes = (segments ?? []).filter((news) => plays.includes(news));
+  return { ...rest, ...(kept.length === 0 ? {} : { abilities: kept }), ...(changes.length === 0 ? {} : { segments: changes }) } as GenreSpec;
 }
 
 function fixMechanics(spec: Loose, applied: string[]): boolean {
