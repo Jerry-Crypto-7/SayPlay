@@ -691,3 +691,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-beach-ball` | beach ball | 4748 / 2374 |
 | `gen3d-domino` | domino | 4748 / 2372 |
 | `gen3d-possum` | possum, opossum | 4564 / 2239 |
+| `gen3d-armadillo` | armadillo | 4409 / 2110 |
+| `gen3d-iguana` | iguana | 4730 / 2350 |
+| `gen3d-meerkat` | meerkat | 4748 / 2372 |
+| `gen3d-lemur` | lemur | 4516 / 2072 |
+| `gen3d-ostrich` | ostrich | 4702 / 2295 |
+| `gen3d-turkey` | turkey | 4426 / 2127 |
+| `gen3d-pelican` | pelican | 4401 / 2180 |

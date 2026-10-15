@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "42c861d6718c98f107f48d78b58ca854322062108c8a622b8add9232d389f823",
+ "catalogHash": "5a506a25c2469ecef4dc89b8153443f829f1837e898c16645413c7a7902b7e7b",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1466,6 +1466,13 @@
   "gen3d-salamander": {"class":"prop"},
   "gen3d-beach-ball": {"class":"prop"},
   "gen3d-domino": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-possum": {"class":"prop"}
+  "gen3d-possum": {"class":"prop"},
+  "gen3d-armadillo": {"class":"prop"},
+  "gen3d-iguana": {"class":"prop"},
+  "gen3d-meerkat": {"class":"prop"},
+  "gen3d-lemur": {"class":"prop"},
+  "gen3d-ostrich": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-turkey": {"class":"prop"},
+  "gen3d-pelican": {"class":"prop"}
  }
 }

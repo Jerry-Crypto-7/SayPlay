@@ -25,3 +25,4 @@ Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek
 | 19 (opakování) | scenery | 10 | 6 | 3/6 | 3 | – | 59/85 | candy display, orchid, barnacle rock | – |
 | 20 | scenery p46f-queue | 10 | 8 | 6/8 | 0 | badger, spike pit, geyser, ankylosaurus, snow pile | 59/85 | – | red alone: src/play/arcade/__tests__/hero-choice.test.ts; dropped the round's models |
 | 21 | p46f-queue | 10 | 10 | 8/10 | 8 | – | 59/85 | sandbag wall, rooster, giant slug, haystack, salamander, beach ball, domino, possum | – |
+| 22 | p46f-queue | 10 | 8 | 7/8 | 7 | – | 59/85 | armadillo, iguana, meerkat, lemur, ostrich, turkey, pelican | – |

@@ -29515,6 +29515,139 @@
           1.14698
         ]
       }
+    },
+    {
+      "assetId": "gen3d-armadillo",
+      "tags": [
+        "armadillo"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-armadillo-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41752,
+          0,
+          -1.03046
+        ],
+        "max": [
+          0.41752,
+          0.99515,
+          1.03046
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-iguana",
+      "tags": [
+        "iguana"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-iguana-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38484,
+          0,
+          -1.1921
+        ],
+        "max": [
+          0.38484,
+          0.99506,
+          1.1921
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-meerkat",
+      "tags": [
+        "meerkat"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-meerkat-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21602,
+          0,
+          -0.40711
+        ],
+        "max": [
+          0.21602,
+          0.99989,
+          0.40711
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lemur",
+      "tags": [
+        "lemur"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lemur-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.57198,
+          0,
+          -0.49916
+        ],
+        "max": [
+          0.57198,
+          0.9888,
+          0.49916
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ostrich",
+      "tags": [
+        "ostrich"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ostrich-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12542,
+          0,
+          -0.34013
+        ],
+        "max": [
+          0.12542,
+          0.99849,
+          0.34013
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-turkey",
+      "tags": [
+        "turkey"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-turkey-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.57135,
+          0,
+          -0.45422
+        ],
+        "max": [
+          0.57135,
+          0.9912,
+          0.45422
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pelican",
+      "tags": [
+        "pelican"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pelican-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24086,
+          0,
+          -0.42834
+        ],
+        "max": [
+          0.24086,
+          0.99629,
+          0.42834
+        ]
+      }
     }
   ]
 }
