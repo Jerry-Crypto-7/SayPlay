@@ -31,7 +31,8 @@ function comboAt(state: Int32Array, multiplier: number, pickedAt: number): Int32
   return state;
 }
 
-const dashOffset = (markup: string): number => Number(/stroke-dashoffset="([^"]+)"/.exec(markup)?.[1]);
+/** Viditelný oblouk prstence: první číslo `stroke-dasharray`. */
+const arc = (markup: string): number => Number(/stroke-dasharray="([^" ]+)/.exec(markup)?.[1]);
 
 describe('PowerupBadge', () => {
   it('drains the ring as the remaining ticks drop', () => {
@@ -42,12 +43,12 @@ describe('PowerupBadge', () => {
     expect(fractions[1]).toBeLessThan(fractions[0]!);
     expect(fractions[2]).toBeLessThan(fractions[1]!);
     expect(fractions[2]).toBeGreaterThan(0);
-    // Prstenec v markupu: víc odsazení čárky = kratší viditelný oblouk.
-    const offsets = readings.map((reading) => dashOffset(renderToStaticMarkup(<PowerupBadge {...reading} />)));
-    expect(offsets[0]).toBeCloseTo(0);
-    expect(offsets[1]).toBeGreaterThan(offsets[0]!);
-    expect(offsets[2]).toBeGreaterThan(offsets[1]!);
-    expect(offsets[2]).toBeLessThan(RING_LENGTH);
+    // Prstenec v markupu: oblouk se zkracuje se zbytkem.
+    const arcs = readings.map((reading) => arc(renderToStaticMarkup(<PowerupBadge {...reading} />)));
+    expect(arcs[0]).toBeCloseTo(RING_LENGTH);
+    expect(arcs[1]).toBeLessThan(arcs[0]!);
+    expect(arcs[2]).toBeLessThan(arcs[1]!);
+    expect(arcs[2]).toBeGreaterThan(0);
     expect(renderToStaticMarkup(<PowerupBadge {...readings[0]!} />)).toContain('data-power="magnet"');
   });
 

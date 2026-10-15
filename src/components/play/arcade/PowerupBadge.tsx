@@ -89,7 +89,8 @@ export function PowerupBadge({ power, fraction, multiplier }: BoostReading) {
       {power !== null && (
         <span className="play-boost" data-testid="hud-counter-powerup" data-power={power} data-count={Math.round(fraction * 100)} title={FACES[power].label}>
           <svg className="play-boost-ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-            <circle cx="24" cy="24" r={RING_R} strokeDasharray={RING_LENGTH} strokeDashoffset={RING_LENGTH * (1 - fraction)} />
+            {/* Oblouk délky zbytku začíná nahoře: odsazení o čtvrt obvodu místo otočení, které kit mimo nakloněné třídy nedovolí. */}
+            <circle cx="24" cy="24" r={RING_R} strokeDasharray={`${RING_LENGTH * fraction} ${RING_LENGTH * (1 - fraction)}`} strokeDashoffset={RING_LENGTH / 4} />
           </svg>
           <Icon name={FACES[power].icon} />
           <span className="play-sr-only">{FACES[power].label}</span>
