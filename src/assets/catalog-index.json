@@ -30691,6 +30691,140 @@
           0.13329
         ]
       }
+    },
+    {
+      "assetId": "gen3d-stone-cairn",
+      "tags": [
+        "stone cairn",
+        "cairn"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-cairn-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.82139,
+          0,
+          -0.81576
+        ],
+        "max": [
+          0.82139,
+          0.99654,
+          0.81576
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hotel-sign",
+      "tags": [
+        "hotel sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hotel-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11849,
+          0,
+          -0.10737
+        ],
+        "max": [
+          0.11849,
+          0.9969,
+          0.10737
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-avalanche-fence",
+      "tags": [
+        "avalanche fence"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-avalanche-fence-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.1977,
+          0,
+          -0.24195
+        ],
+        "max": [
+          1.1977,
+          0.99966,
+          0.24195
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coconut-stall",
+      "tags": [
+        "coconut stall"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coconut-stall-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.59352,
+          0,
+          -0.33445
+        ],
+        "max": [
+          0.59352,
+          0.99548,
+          0.33445
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-taro-plant",
+      "tags": [
+        "taro plant"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-taro-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40994,
+          0,
+          -0.44785
+        ],
+        "max": [
+          0.40994,
+          0.99945,
+          0.44785
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hitching-post",
+      "tags": [
+        "hitching post"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hitching-post-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42505,
+          0,
+          -0.04811
+        ],
+        "max": [
+          0.42505,
+          1,
+          0.04811
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowy-mailbox",
+      "tags": [
+        "snowy mailbox"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-mailbox-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24752,
+          0,
+          -0.26906
+        ],
+        "max": [
+          0.24752,
+          0.99946,
+          0.26906
+        ]
+      }
     }
   ]
 }

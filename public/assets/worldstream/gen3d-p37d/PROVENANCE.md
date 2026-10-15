@@ -752,3 +752,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-coral-pillar` | coral pillar | 4579 / 2232 |
 | `gen3d-mesquite-tree` | mesquite tree | 4254 / 2108 |
 | `gen3d-city-map-board` | city map board | 4399 / 2152 |
+| `gen3d-stone-cairn` | stone cairn, cairn | 4669 / 2321 |
+| `gen3d-hotel-sign` | hotel sign | 4509 / 2178 |
+| `gen3d-avalanche-fence` | avalanche fence | 4670 / 2286 |
+| `gen3d-coconut-stall` | coconut stall | 4454 / 2178 |
+| `gen3d-taro-plant` | taro plant | 4746 / 2356 |
+| `gen3d-hitching-post` | hitching post | 4748 / 2374 |
+| `gen3d-snowy-mailbox` | snowy mailbox | 4470 / 2196 |

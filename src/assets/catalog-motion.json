@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "431f4f008fa483defb3efce7bc66a790e26b9deb74e494624c68049b0aa0fa05",
+ "catalogHash": "ab08251a4f048102d990fc99d749f4f4ba3e7e94ecef7b063282d71b585cc1e3",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1527,6 +1527,13 @@
   "gen3d-pier-lamp": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-coral-pillar": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-mesquite-tree": {"class":"prop"},
-  "gen3d-city-map-board": {"class":"prop"}
+  "gen3d-city-map-board": {"class":"prop"},
+  "gen3d-stone-cairn": {"class":"prop"},
+  "gen3d-hotel-sign": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-avalanche-fence": {"class":"prop"},
+  "gen3d-coconut-stall": {"class":"prop"},
+  "gen3d-taro-plant": {"class":"prop"},
+  "gen3d-hitching-post": {"class":"prop"},
+  "gen3d-snowy-mailbox": {"class":"biped","regions":{"legY":0.25}}
  }
 }
