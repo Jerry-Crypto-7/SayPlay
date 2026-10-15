@@ -32350,6 +32350,104 @@
           0.32604
         ]
       }
+    },
+    {
+      "assetId": "gen3d-mystery-box",
+      "tags": [
+        "mystery box",
+        "lucky box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mystery-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.80821,
+          0,
+          -0.72621
+        ],
+        "max": [
+          0.80821,
+          0.99951,
+          0.72621
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-question-block",
+      "tags": [
+        "question block",
+        "question mark block"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-question-block-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49088,
+          0,
+          -0.49454
+        ],
+        "max": [
+          0.49088,
+          1,
+          0.49454
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-silver-coin",
+      "tags": [
+        "silver coin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-silver-coin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49884,
+          0,
+          -0.09747
+        ],
+        "max": [
+          0.49884,
+          0.99663,
+          0.09747
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-golden-horseshoe",
+      "tags": [
+        "golden horseshoe",
+        "lucky horseshoe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-golden-horseshoe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49616,
+          0,
+          -0.0816
+        ],
+        "max": [
+          0.49616,
+          0.99793,
+          0.0816
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-energy-capsule",
+      "tags": [
+        "energy capsule"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-energy-capsule-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19253,
+          0,
+          -0.19236
+        ],
+        "max": [
+          0.19253,
+          1,
+          0.19236
+        ]
+      }
     }
   ]
 }

@@ -834,3 +834,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-tribal-shield` | tribal shield | 4730 / 2293 |
 | `gen3d-magma-rock` | magma rock | 4284 / 2140 |
 | `gen3d-moon-flag` | moon flag | 4748 / 2372 |
+| `gen3d-mystery-box` | mystery box, lucky box | 4460 / 2149 |
+| `gen3d-question-block` | question block, question mark block | 4419 / 2181 |
+| `gen3d-silver-coin` | silver coin | 4743 / 2370 |
+| `gen3d-golden-horseshoe` | golden horseshoe, lucky horseshoe | 4746 / 2360 |
+| `gen3d-energy-capsule` | energy capsule | 4746 / 2370 |

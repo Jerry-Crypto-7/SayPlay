@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "7af8c4c42b43599045853f5c2e219cd6fa5e88f6c9028a500f52b4ce4a3a129b",
+ "catalogHash": "5dbb9e2e11c01b30eec3fa9dc0d93007d10d085ab724e8c1d17623c358373e9f",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1609,6 +1609,11 @@
   "gen3d-mossy-ruin-pillar": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-tribal-shield": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-magma-rock": {"class":"prop"},
-  "gen3d-moon-flag": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-moon-flag": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-mystery-box": {"class":"prop"},
+  "gen3d-question-block": {"class":"prop"},
+  "gen3d-silver-coin": {"class":"prop"},
+  "gen3d-golden-horseshoe": {"class":"prop"},
+  "gen3d-energy-capsule": {"class":"biped","regions":{"legY":0.25}}
  }
 }
