@@ -38,6 +38,7 @@ import { ALL_GENRE_MODES, GENRES, GENRE_MODES, isGenreMode } from './genre/contr
 import { heroActionSchema } from './hero-action';
 
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
+import { SEGMENT_NEWS } from './arcade/pieces/pacing';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
@@ -516,6 +517,13 @@ export const gameSpecSchema = z
     addons: z.array(z.enum(ADDONS)).max(3).optional(),
     /** Akce hrdiny na dvou tlačítkách (P46A). Bez výchozí hodnoty: spec bez nich má stejný hash jako dřív. */
     abilities: z.array(z.enum(ABILITIES)).max(2).optional(),
+    /**
+     * Boss finále od režiséra (P46E T4): `name` ukáže banner, `role` = popisek věci obsazení, jejíž model boss
+     * dostane. Chování a útok zůstávají žánru (`pacingParts`). Bez výchozí hodnoty: hash rychlé verze se nemění.
+     */
+    boss: z.object({ name: text.max(40), role: text.max(40) }).strict().optional(),
+    /** Scénář úseků od režiséra (P46E T4, `segmentScriptOf`): změna úseku 2, pak úseku 3 slovy `SEGMENT_NEWS`. */
+    segments: z.array(z.enum(SEGMENT_NEWS)).min(1).max(3).optional(),
     /**
      * Žánr, ze kterého spec vznikl (P32, `genre/contract.ts`). Bez výchozí
      * hodnoty, jako `control`: spec bez něj má stejný `gameSpecHash` jako dřív.

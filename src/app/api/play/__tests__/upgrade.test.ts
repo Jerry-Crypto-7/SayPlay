@@ -37,7 +37,11 @@ vi.mock('../_director', async (importOriginal) => {
   return {
     // `DIRECTOR_BUDGET_MS` a spol. zůstávají skutečné: z rozpočtu se počítá `deadlineAt`.
     ...(await importOriginal<typeof import('../_director')>()),
-    getDirector: (_startedAt: number, _caller: string, check?: DirectorDeps['check']) => async (sentence: string) => {
+    // Druhý pokus s pokynem (P46E T4, `nudge`) patří k témuž běhu upgradu: `calls` počítá běhy, `branch` drží první.
+    // Tady model na pokyn neodpoví (rychlý výpadek, platí první verze): pokyn zkouší `upgrade-adds.test.ts`, a druhé
+    // ověření robotem by každý případ zdvojilo nad časový limit.
+    getDirector: (_startedAt: number, _caller: string, check?: DirectorDeps['check'], nudge?: string) => async (sentence: string) => {
+      if (nudge !== undefined) return { ...(await direct(sentence, { branch: branchOf([]), now: Date.now, check, nudge })), callerLimited: false };
       director.calls += 1;
       await director.gate;
       if (director.callerLimited) return { ...(await direct(sentence, { branch: branchOf([]), now: Date.now, check })), callerLimited: true };
@@ -355,7 +359,9 @@ describe('GET …/upgrade', () => {
     const created = await publish({ sentence: SENTENCE });
     const first = await settled(created.body.versionId);
     __resetUpgrades();
-    expect(await upgrade(created.body.versionId)).toEqual(first);
+    // Úložiště zná dítě, ne co přidalo (`adds` nese jen výsledek běhu, P46E T4).
+    const { adds: _adds, ...stored } = first as { adds?: unknown };
+    expect(await upgrade(created.body.versionId)).toEqual(stored);
     expect(director.calls).toBe(1);
   });
 

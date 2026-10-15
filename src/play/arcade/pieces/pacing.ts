@@ -408,6 +408,8 @@ export interface PacingSetup {
    * rozvrhu a dřív ne – úsek 2 i 3 tak vždy přinese chování, které hráč ještě neviděl.
    */
   readonly segments?: SegmentGenre;
+  /** Scénář úseků od režiséra (P46E T4, `spec.segments`): přepíše los `segmentScriptOf`. */
+  readonly script?: readonly SegmentNews[];
 }
 
 /** Rychlost fází (`phase_control`) v % na začátku rozjezdu a úseků scénáře; trať bez fází = prázdné. */
@@ -489,9 +491,11 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
     widths: setup.segments === 'steer' ? segmentWidths(parts.level) : [],
     ...(setup.segments === 'platform' ? { places: segmentPlaces(parts.level) } : {}),
   };
-  const script = setup.segments === undefined ? [] : segmentScriptOf(rng, setup.segments, cast);
+  const script = setup.segments === undefined ? [] : segmentScriptOf(rng, setup.segments, cast, setup.script);
   const arrivals = script.flatMap((step) => step.changes.flatMap((change) => (change.kind === 'newFoe' ? [{ ...step, index: behaviours.findIndex((actor) => actor.behaviour === change.behaviour) }] : [])));
-  const fromOf = (index: number): number => Math.max(behaviours[index]?.from ?? 0, arrivals.find((arrival) => arrival.index === index)?.at ?? 0);
+  // Úsek režiséra bez nového nepřítele (P46E T4): nepřítel bez příchodu přijde až za posledním takovým úsekem.
+  const hold = setup.script === undefined ? 0 : Math.max(0, ...script.filter((step) => !step.changes.some((change) => change.kind === 'newFoe')).map((step) => step.until));
+  const fromOf = (index: number): number => Math.max(behaviours[index]?.from ?? 0, arrivals.find((arrival) => arrival.index === index)?.at ?? hold);
   // Předloha, která ještě nesmí (`from`), předá krok jiné z těch, které už smí – bez dalšího losu, stream zůstane.
   const picked = raw.map((entry) => {
     const ready = behaviours.flatMap((_actor, index) => (fromOf(index) <= entry.atPermille ? [index] : []));
@@ -659,6 +663,13 @@ export function segmentNewsOf(world: BeatWorld): readonly SegmentAnnouncement[] 
   let known = news.get(world);
   if (known === undefined) news.set(world, (known = segmentNewsOfWorld(world)));
   return known;
+}
+
+/** Druh těla bosse finále (poslední předloha chování pravidla `pacing`, P46E T4); `null` = hra bez bosse. */
+export function bossKindOf(world: Pick<ArcadeWorld, 'rules' | 'initial' | 'kinds'>): string | null {
+  const params = nativeRule(world.rules, 'pacing')?.params as { readonly finale?: string; readonly behaviours?: readonly { readonly template: number }[] } | undefined;
+  const template = params?.finale === 'boss' ? params.behaviours?.at(-1)?.template : undefined;
+  return template === undefined ? null : (world.kinds[world.initial[bodyBase(template) + BODY.kind] as number] ?? null);
 }
 
 /** Kus ovládání `id` v řetězu obalů (`params.base`: doplňky, průběh, fáze, skládání). */

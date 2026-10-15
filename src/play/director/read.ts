@@ -16,10 +16,13 @@
  */
 
 import { arcadeWorldOf } from '../arcade/compile';
+import { SEGMENT_NEWS } from '../arcade/pieces/pacing';
 import { logicSchema, rulesSchema, withPhaseEntries, withStartedTimers } from '../arcade/rules/schema';
 import { liveCells } from '../compose/allowed';
 import { recipeKey } from '../compose/recipe';
 import { recipeAnswerSchema, nativeRecipeParams, type RecipeAnswer } from './answer-schema';
+// Cyklus s `repair.ts` je bezpečný: `fitDirectorExtras` se volá jen ve funkci, ne při načtení.
+import { fitDirectorExtras } from './repair';
 
 import { draftGenreFor, twistGoalFor } from '../draft/draft';
 import { singular } from '../draft/lexicon';
@@ -133,7 +136,7 @@ export type RecipeRead = { readonly ok: true; readonly value: RecipeAnswer } | E
 export function readRecipeAnswer(body: unknown): RecipeRead {
   if (!isRecord(body)) return { ok: false, reason: 'NOT_AN_OBJECT', detail: `answer is ${Array.isArray(body) ? 'an array' : typeof body}` };
   const raw = answerSpec(body);
-  const cleaned = withoutNulls(raw) as Record<string, unknown>;
+  const cleaned = withKnownSegments(withoutNulls(raw)) as Record<string, unknown>;
   // In a triple null means untargeted, not an omitted field.
   if (Array.isArray(raw.unmet)) cleaned.unmet = raw.unmet.map(triple => isRecord(triple) ? { ...triple } : triple);
   const parsed = recipeAnswerSchema.safeParse(cleaned);
@@ -158,14 +161,21 @@ export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MOD
   const raw = answerSpec(body);
   const foreign = WORLD_DOC_KEYS.filter((key) => key in raw);
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
-  const read = readGenreSpec(withoutNulls(raw));
+  const read = readGenreSpec(withKnownSegments(withoutNulls(raw)));
   if (!read.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: read.issues.join('; ') };
   const genre = sentence === undefined ? singularRoles(read.value) : ammoOfSentence(goalOfSentence(rideOfSentence(singularRoles(read.value), sentence), sentence, reading, modules), sentence, reading, modules);
   const game = compileGenreSpec(genre, modules);
   if (!game.ok) return game;
   // Věta mimo hry (P37A T5): AI verze řekne cíl slovy věty jako návrh („Dodge the long queues!“).
   const goal = sentence === undefined ? null : twistGoalFor(sentence, genre, reading, modules);
-  return { ok: true, spec: goal === null ? game.spec : { ...game.spec, tutorial: { ...game.spec.tutorial, goalLine: goal } }, genre };
+  return { ok: true, spec: goal === null ? game.spec : { ...game.spec, tutorial: { ...game.spec.tutorial, goalLine: goal } }, genre: fitDirectorExtras(genre, game.spec.control) };
+}
+
+/** Změny úseků mimo slovník (`SEGMENT_NEWS`) pryč – neznámá změna je zahozená, ne důvod odmítnout odpověď (P46E T3). */
+function withKnownSegments(value: unknown): unknown {
+  if (!isRecord(value) || !Array.isArray(value.segments)) return value;
+  const known: readonly unknown[] = SEGMENT_NEWS;
+  return { ...value, segments: value.segments.filter((news) => known.includes(news)) };
 }
 
 /**

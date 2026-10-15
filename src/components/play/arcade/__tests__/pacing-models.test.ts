@@ -117,3 +117,13 @@ it('every power-up draws a model that exists', () => {
     expect(model !== undefined && exists(model), `${id} → ${String(model)}`).toBe(true);
   }
 });
+
+// P46E T6: věc pravidel režiséra bez modelu z popisku – demo auta hlásilo 404 na `thing:turbo-lod1.glb`.
+it('a rule thing without a cast model draws its named shape or a crystal, never its kind', () => {
+  const cast = { player: 'car', enemy: 'robot', chaser: 'robot', props: {}, things: { fish: 'fish' } };
+  const view = (id: string): BodyView => ({ index: 1, kind: `thing:${id}`, role: 128, w: 1, h: 1, d: 1 });
+  expect(modelIdOf(view('fish'), cast)).toBe('fish');
+  expect(modelIdOf(view('turbo'), cast)).toBe('turbo');
+  expect(modelIdOf(view('storm_cloud'), cast)).toBe('crystal');
+  expect(exists('crystal')).toBe(true);
+});

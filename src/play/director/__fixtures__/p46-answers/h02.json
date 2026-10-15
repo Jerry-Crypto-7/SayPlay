@@ -1,0 +1,249 @@
+{
+ "id": "h02",
+ "sentence": "shopping cart race in a supermarket",
+ "axis": "control:steer",
+ "model": "gpt-oss-20b",
+ "promptVersion": "4ff1d2c9",
+ "directorPromptVersion": "0cf0988c",
+ "recordedAt": "2026-10-15T15:37:51.115Z",
+ "ms": 11507,
+ "answer": {
+  "plan": "Create a voyage‑race game where a shopping cart races through a supermarket, avoiding obstacles and collecting items while a timer drives the progression of phases.",
+  "spec": {
+   "genre": "voyage",
+   "mode": "race",
+   "hero": "shopping cart",
+   "cast": [],
+   "heroAction": "none",
+   "setting": "supermarket",
+   "palette": "supermarket",
+   "params": null,
+   "ruleRoles": [],
+   "things": [],
+   "rules": [
+    {
+     "id": "startPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "phase1",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase1Timer",
+     "verb": "wait",
+     "when": {
+      "timer": "phase1"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "phase2"
+      },
+      {
+       "wave": {
+        "role": "obstacle",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase2",
+     "verb": "wait",
+     "when": {
+      "phase": "phase2"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "phase2",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase2Timer",
+     "verb": "wait",
+     "when": {
+      "timer": "phase2"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "phase3"
+      },
+      {
+       "wave": {
+        "role": "collectible",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase3",
+     "verb": "wait",
+     "when": {
+      "phase": "phase3"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "phase3",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase3Timer",
+     "verb": "wait",
+     "when": {
+      "timer": "phase3"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "phase4"
+      },
+      {
+       "wave": {
+        "role": "obstacle",
+        "count": 4,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase4",
+     "verb": "wait",
+     "when": {
+      "phase": "phase4"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "phase4",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase4Timer",
+     "verb": "wait",
+     "when": {
+      "timer": "phase4"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "phase5"
+      },
+      {
+       "wave": {
+        "role": "collectible",
+        "count": 6,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase5",
+     "verb": "wait",
+     "when": {
+      "phase": "phase5"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "phase5",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "phase5Timer",
+     "verb": "wait",
+     "when": {
+      "timer": "phase5"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "end"
+      }
+     ]
+    },
+    {
+     "id": "end",
+     "verb": "wait",
+     "when": {
+      "phase": "end"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "phase1"
+     },
+     {
+      "id": "phase2"
+     },
+     {
+      "id": "phase3"
+     },
+     {
+      "id": "phase4"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "phase2"
+     },
+     {
+      "id": "phase3"
+     },
+     {
+      "id": "phase4"
+     }
+    ],
+    "events": null
+   },
+   "boss": null,
+   "abilities": [],
+   "segments": null
+  }
+ },
+ "failure": null
+}

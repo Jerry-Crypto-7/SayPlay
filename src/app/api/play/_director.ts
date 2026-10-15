@@ -326,7 +326,7 @@ export async function callDirectorModel(startedAt: number, caller: string, reque
  *
  * `startedAt` je příchod požadavku (`Date.now()`), jehož `maxDuration` režii drží.
  */
-export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check']): Director {
+export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check'], nudge?: string): Director {
   return async (sentence) => {
     const deadline = startedAt + DIRECTOR_BUDGET_MS;
     const cache = directorCacheFromEnv(process.env);
@@ -342,7 +342,7 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
       const compact = process.env.PLAY_DIRECTOR_MODE !== 'full';
       // P30A T8: ověřené příklady jen na objednávku, dokud T10 nezměří, jestli pomáhají.
       const examples = process.env.PLAY_DIRECTOR_EXAMPLES === 'on';
-      return { ...(await direct(sentence, { branch, cache, now: Date.now, check, compact, examples })), callerLimited };
+      return { ...(await direct(sentence, { branch, cache, now: Date.now, check, compact, examples, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
     } finally {
       releaseSlot('play');
     }

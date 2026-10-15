@@ -1,0 +1,123 @@
+{
+ "id": "o05",
+ "sentence": "Hamster escapes a supermarket Roomba",
+ "axis": "runner",
+ "model": "gpt-oss-20b",
+ "promptVersion": "4ff1d2c9",
+ "directorPromptVersion": "0cf0988c",
+ "recordedAt": "2026-10-15T15:36:01.492Z",
+ "ms": 8575,
+ "answer": {
+  "plan": "Arena escape with a hamster evading a supermarket Roomba, using a simple two‑phase timer logic to spawn the Roomba and trigger a chase.",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "hamster",
+   "cast": [
+    {
+     "label": "supermarket roomba",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": null,
+   "setting": "supermarket",
+   "palette": "supermarket",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "roomba",
+     "kind": "chaser",
+     "label": "supermarket roomba",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "start_wave",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "roomba_spawn",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_roomba",
+     "verb": "spawn",
+     "when": {
+      "timer": "roomba_spawn"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "roomba",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "chase_phase",
+     "verb": "wait",
+     "when": {
+      "phase": "chase"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "end"
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "roomba_spawn"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "chase"
+     },
+     {
+      "id": "end"
+     }
+    ],
+    "events": null
+   },
+   "boss": {
+    "role": "supermarket roomba",
+    "name": "Roomba Rumble",
+    "attack": "charge"
+   },
+   "abilities": [],
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
+  }
+ },
+ "failure": null
+}

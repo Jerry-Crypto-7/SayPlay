@@ -1,0 +1,289 @@
+{
+ "schema": "p46e-live-v1",
+ "measuredAt": "2026-10-15T17:39:30.849Z",
+ "baseUrl": "http://127.0.0.1:3046",
+ "director": {
+  "endpoint": "see server env",
+  "slots": 2
+ },
+ "targets": {
+  "ready": ">= 8/10",
+  "lostRules": 0,
+  "aiSecUnder": 270,
+  "adds": "waived by owner 15 Oct 2026 (arena has no boss/segments) – recorded only"
+ },
+ "summary": {
+  "ready": "9/10",
+  "adds": "8/9",
+  "lostRules": 0,
+  "lostLogic": 0,
+  "maxAiSec": 148.3,
+  "overBudget": []
+ },
+ "rows": [
+  {
+   "id": "o01",
+   "axis": "runner",
+   "sentence": "A rabbit steals carrots and runs from a fox",
+   "seed": 85602856,
+   "ackSec": 3.1,
+   "quickId": "3604ad196d0a623e42463fdb77be6c9a",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 79.2,
+   "overBudget": false,
+   "aiId": "e7c04a46dca26f78defc4eab4079fc3b",
+   "aiUrl": "/play/e7c04a46dca26f78defc4eab4079fc3b",
+   "adds": [
+    "boss"
+   ],
+   "control": {
+    "quick": "runner",
+    "ai": "runner"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Big Bad Fox"
+  },
+  {
+   "id": "o02",
+   "axis": "runner",
+   "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
+   "seed": 85602857,
+   "ackSec": 47.2,
+   "quickId": null,
+   "status": "error",
+   "reason": "POST 422: {\"error\":{\"code\":\"NOT_PUBLISHABLE\",\"message\":\"the game did not pass its own checks\",\"keypoints\":[\"verbs_proved\"]}}"
+  },
+  {
+   "id": "o03",
+   "axis": "control:steer",
+   "sentence": "Racing car escaping and shooting enemies",
+   "seed": 85602858,
+   "ackSec": 1.2,
+   "quickId": "d891617c0090cc31891a98c547716f4d",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 68.2,
+   "overBudget": false,
+   "aiId": "cd0fb9a06e7e3787a71138c3b360ed4b",
+   "aiUrl": "/play/cd0fb9a06e7e3787a71138c3b360ed4b",
+   "adds": [
+    "boss",
+    "action"
+   ],
+   "control": {
+    "quick": "steer",
+    "ai": "steer"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Enemy Pursuit Leader"
+  },
+  {
+   "id": "o04",
+   "axis": "control:steer",
+   "sentence": "racing car escapes police and shoots enemies",
+   "seed": 85602859,
+   "ackSec": 1,
+   "quickId": "ad1f443068894fc3e3b7a9b0311f73ef",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 58.3,
+   "overBudget": false,
+   "aiId": "4fdb5ec1cd0cbeb8e323663f9c7f1e99",
+   "aiUrl": "/play/4fdb5ec1cd0cbeb8e323663f9c7f1e99",
+   "adds": [
+    "boss"
+   ],
+   "control": {
+    "quick": "steer",
+    "ai": "steer"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Enemy Commander"
+  },
+  {
+   "id": "o05",
+   "axis": "runner",
+   "sentence": "Hamster escapes a supermarket Roomba",
+   "seed": 85602860,
+   "ackSec": 2.6,
+   "quickId": "93611635818a9cad20c2fca84ada1f26",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 78.9,
+   "overBudget": false,
+   "aiId": "331377abee058e968404411bb4efd6e7",
+   "aiUrl": "/play/331377abee058e968404411bb4efd6e7",
+   "adds": [
+    "boss"
+   ],
+   "control": {
+    "quick": "runner",
+    "ai": "runner"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Roomba"
+  },
+  {
+   "id": "o06",
+   "axis": "platformer",
+   "sentence": "Jumping arcade game in the forest",
+   "seed": 85602861,
+   "ackSec": 0.8,
+   "quickId": "2eb9c9aaa0f45aa9fe28df6c487b7630",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 62.8,
+   "overBudget": false,
+   "aiId": "303878aa819a1f46dfb9b62787a9114c",
+   "aiUrl": "/play/303878aa819a1f46dfb9b62787a9114c",
+   "adds": [
+    "boss",
+    "action"
+   ],
+   "control": {
+    "quick": "platform",
+    "ai": "platform"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Giant Forest Snake"
+  },
+  {
+   "id": "o07",
+   "axis": "platformer",
+   "sentence": "A ninja frog jumps across lily pads in a swamp",
+   "seed": 85602862,
+   "ackSec": 0.8,
+   "quickId": "e74c33c742d856bd4cd6fdec255689eb",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 41.9,
+   "overBudget": false,
+   "aiId": "3fc04a67e42a5940152ff2c7f1e6c0f2",
+   "aiUrl": "/play/3fc04a67e42a5940152ff2c7f1e6c0f2",
+   "adds": [
+    "boss",
+    "action"
+   ],
+   "control": {
+    "quick": "platform",
+    "ai": "platform"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Swamp Python"
+  },
+  {
+   "id": "o08",
+   "axis": "arena",
+   "sentence": "A bee gathers honey in a windy meadow before the storm hits",
+   "seed": 85602863,
+   "ackSec": 0.3,
+   "quickId": "51ec51eaaa2a36710ae4da6b2b8d18d5",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 148.3,
+   "overBudget": false,
+   "aiId": "ae71ea6edd5c3fff976e7fddd1273563",
+   "aiUrl": "/play/ae71ea6edd5c3fff976e7fddd1273563",
+   "adds": [],
+   "control": {
+    "quick": "move_free",
+    "ai": "move_free"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": null
+  },
+  {
+   "id": "n01",
+   "axis": "new",
+   "sentence": "A squirrel collects acorns while hawks dive at it",
+   "seed": 85602864,
+   "ackSec": 0.1,
+   "quickId": "3f2b041bb6198053adae46691cbc8591",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 61.2,
+   "overBudget": false,
+   "aiId": "1c3f2dec4085c831e85f2d56844fbe96",
+   "aiUrl": "/play/1c3f2dec4085c831e85f2d56844fbe96",
+   "adds": [
+    "boss"
+   ],
+   "control": {
+    "quick": "glide",
+    "ai": "move_free"
+   },
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Hawk"
+  },
+  {
+   "id": "n02",
+   "axis": "new",
+   "sentence": "A pirate ship sails through a storm firing cannons at sea monsters",
+   "seed": 85602865,
+   "ackSec": 0.6,
+   "quickId": "a5b95a51b6d9d0ae09d663a7205fa15b",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 70.6,
+   "overBudget": false,
+   "aiId": "78ec5c4c321bc86e004e242a88d1e2c4",
+   "aiUrl": "/play/78ec5c4c321bc86e004e242a88d1e2c4",
+   "adds": [
+    "boss",
+    "segments"
+   ],
+   "control": {
+    "quick": "steer",
+    "ai": "steer"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Giant Sea Monster"
+  }
+ ]
+}

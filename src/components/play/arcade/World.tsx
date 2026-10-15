@@ -87,6 +87,8 @@ export interface Cast {
   readonly enemy: string;
   /** Pronásledovatel doplňku `+chaser`. */
   readonly chaser: string;
+  /** Boss od režiséra (P46E T4): tělo druhu `kind` kreslí model jeho věci z obsazení místo pronásledovatele. */
+  readonly boss?: { readonly kind: string; readonly model: string };
   readonly props: Partial<Record<PropRole, string>>;
   readonly things?: Readonly<Record<string, string>>;
   readonly objectives?: Readonly<Record<number, string>>;
@@ -98,8 +100,13 @@ const SWAPPABLE_OBSTACLES: ReadonlySet<string> = new Set(['hurdle', 'cone', 'cra
 /** Id těla → id modelu v katalogu. Hráč, nepřítel, mince, překážka a terč berou model z popisku role, když ho katalog má. */
 export function modelIdOf(view: BodyView, cast: Cast): string {
   if (cast.objectives?.[view.index] !== undefined) return cast.objectives[view.index]!;
-  if (view.kind.startsWith('thing:') && cast.things?.[view.kind.slice(6)] !== undefined) return cast.things[view.kind.slice(6)]!;
+  if (view.kind.startsWith('thing:')) {
+    const id = view.kind.slice(6);
+    // Věc pravidel bez modelu z popisku (P46E T6, demo: `thing:turbo` auta → 404 na `thing:turbo-lod1.glb`): tvar svého jména, jinak krystal.
+    return cast.things?.[id] ?? (PRIMITIVE.has(id) ? id : 'crystal');
+  }
   if (view.role === ROLE.player) return cast.player;
+  if (cast.boss !== undefined && view.kind === cast.boss.kind) return cast.boss.model;
   if (PACING_KINDS.has(view.kind)) return cast.chaser;
   if (PACING_SHOT_KINDS.has(view.kind)) return 'bullet';
   // P35 T3: cíl skákačky z věty („moon“, „battery“); bez modelu v katalogu vlajka.

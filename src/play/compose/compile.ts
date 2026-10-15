@@ -21,7 +21,16 @@ export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
 /** `compileRecipe` and the rule template it attached (P45B T9); `null` = none. */
 export function compileTemplated(assembly: RecipeAssembly): { readonly spec: GameSpecV1; readonly template: TemplateName | null } {
   const templated = withTemplate(compileRecipeSpec(assembly), assembly);
-  return { ...templated, spec: withAbilities(templated.spec, assembly) };
+  return { ...templated, spec: withDirectorExtras(withAbilities(templated.spec, assembly), assembly.content) };
+}
+
+/**
+ * Boss a scénář úseků z odpovědi režiséra (P46E T4) jdou do specu beze změny; co z nich hra unese, rozhodne
+ * průběh (`pacingParts`) a ověření robotem v `direct()`. Obsah rychlé verze je nenese, její spec se nemění.
+ */
+function withDirectorExtras(spec: GameSpecV1, content: GenreSpec): GameSpecV1 {
+  const { boss, segments } = content;
+  return { ...spec, ...(boss === undefined ? {} : { boss: { name: boss.name, role: boss.role } }), ...(segments === undefined || segments.length === 0 ? {} : { segments: [...segments] }) };
 }
 
 const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
@@ -40,8 +49,10 @@ const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_
  */
 function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
   const generator = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
-  if (assembly.abilities === undefined || (generator !== undefined && !ABILITY_GENERATORS.has(generator)) || spec.control === undefined) return spec;
-  const abilities = abilitiesOfControl(assembly.abilities, spec.control);
+  // Akce z odpovědi režiséra (P46E T4) za akcemi věty; dvě tlačítka bere `abilitiesOfControl`.
+  const said = [...new Set([...(assembly.abilities ?? []), ...(assembly.content.abilities ?? [])])];
+  if (said.length === 0 || (generator !== undefined && !ABILITY_GENERATORS.has(generator)) || spec.control === undefined) return spec;
+  const abilities = abilitiesOfControl(said, spec.control);
   if (abilities.length === 0) return spec;
   const own = abilities.includes('strike') ? spec.tutorial.controlsHint.replace(ATTACK_HINT, '') : spec.tutorial.controlsHint;
   const hint = `${own} ${abilityHint(abilities)}`;

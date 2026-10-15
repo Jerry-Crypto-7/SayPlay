@@ -1,0 +1,134 @@
+{
+ "id": "f01",
+ "sentence": "a dragon guards its gold hoard from greedy knights inside a volcano",
+ "axis": "arena.collect",
+ "model": "gpt-oss-20b",
+ "promptVersion": "4ff1d2c9",
+ "directorPromptVersion": "0cf0988c",
+ "recordedAt": "2026-10-15T15:36:26.031Z",
+ "ms": 7251,
+ "answer": {
+  "plan": "Create an arena‑style dragon‑vs‑knights volcano game with timed waves and a protected gold hoard.",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "dragon",
+   "cast": [
+    {
+     "label": "knight",
+     "does": "chase_me",
+     "verb": "attack",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "gold",
+     "does": "reach",
+     "verb": "protect",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "volcano",
+   "palette": "volcano",
+   "params": null,
+   "counts": {
+    "enemy": 2,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "knight",
+     "kind": "chaser",
+     "label": "knight",
+     "count": null
+    },
+    {
+     "id": "gold",
+     "kind": "target",
+     "label": "gold hoard",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "start_wave",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "wave_timer",
+        "ticks": 120
+       }
+      }
+     ]
+    },
+    {
+     "id": "wave_spawn",
+     "verb": "wait",
+     "when": {
+      "timer": "wave_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "knight",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "protect_gold",
+     "verb": "wait",
+     "when": {
+      "phase": "protect"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "wave_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "protect"
+     }
+    ],
+    "events": null
+   },
+   "boss": {
+    "role": "knight",
+    "name": "Vicious Knight",
+    "attack": "charge"
+   },
+   "abilities": [],
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
+  }
+ },
+ "failure": null
+}

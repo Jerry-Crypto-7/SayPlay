@@ -1,0 +1,161 @@
+{
+ "id": "s002",
+ "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+ "axis": "arena.escape",
+ "model": "gpt-oss-20b",
+ "promptVersion": "4ff1d2c9",
+ "directorPromptVersion": "0cf0988c",
+ "recordedAt": "2026-10-15T15:38:10.786Z",
+ "ms": 6391,
+ "answer": {
+  "plan": "Create an arena‑escape game where a knight collects three keys while ghosts chase him in a haunted castle.",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "knight",
+   "cast": [
+    {
+     "label": "key",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "ghost",
+     "does": "avoid",
+     "verb": "chase",
+     "states": null,
+     "patrol": true
+    }
+   ],
+   "heroAction": "none",
+   "setting": "haunted castle",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": 3
+   },
+   "ruleRoles": [
+    {
+     "id": "key1",
+     "kind": "collectible",
+     "label": "key",
+     "count": null
+    },
+    {
+     "id": "key2",
+     "kind": "collectible",
+     "label": "key",
+     "count": null
+    },
+    {
+     "id": "key3",
+     "kind": "collectible",
+     "label": "key",
+     "count": null
+    },
+    {
+     "id": "ghost1",
+     "kind": "chaser",
+     "label": "ghost",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "spawn_keys",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "key1",
+        "at": "player"
+       }
+      },
+      {
+       "spawn": {
+        "role": "key2",
+        "at": "player"
+       }
+      },
+      {
+       "spawn": {
+        "role": "key3",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "ghost_wave",
+     "verb": "wave",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "ghost1",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "ghost_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "ghost1"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "phase_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "mid"
+     }
+    ],
+    "events": null
+   },
+   "boss": {
+    "role": "ghost",
+    "name": "Haunted Specter",
+    "attack": "charge"
+   },
+   "abilities": [],
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
+  }
+ },
+ "failure": null
+}

@@ -13,7 +13,8 @@
 
 import { z } from 'zod';
 
-import { START_LIVES } from '../arcade/contract';
+import { ABILITIES, BOSS_ATTACKS, START_LIVES } from '../arcade/contract';
+import { SEGMENT_NEWS } from '../arcade/pieces/pacing';
 import { LOOK_IDS } from '../arcade/look';
 import { THINGS_MAX, type Rule, logicSchema, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { readRoles } from '../draft/lexicon';
@@ -148,6 +149,13 @@ const variant = <G extends GenreId>(genre: G) =>
       rules: modelRulesSchema.optional(),
       /** Stav pro pravidla (P45B): proměnné, časovače, fáze, události; překlad ho propíše beze změny. */
       logic: logicSchema.optional(),
+      /**
+       * Novinky AI verze (P46E T3): boss finále (`role` = popisek věci z obsazení, `name` = co hráč vidí), akce hrdiny
+       * a scénář úseků. Čtečka unese víc akcí, než hra vezme; co ovládání nebere, zahodí `fitDirectorExtras`.
+       */
+      boss: z.object({ role: label, name: label, attack: z.enum(BOSS_ATTACKS) }).strict().optional(),
+      abilities: z.array(z.enum(ABILITIES)).max(ABILITIES.length).optional(),
+      segments: z.array(z.enum(SEGMENT_NEWS)).max(3).optional(),
     })
     .strict();
 
