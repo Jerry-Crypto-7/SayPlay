@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "088d326e92d8553c5d546b98e3a36d95857e1e854994721feffcf4cbc2658f3d",
+ "catalogHash": "42c861d6718c98f107f48d78b58ca854322062108c8a622b8add9232d389f823",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1458,6 +1458,14 @@
   "gen3d-flower-box": {"class":"prop"},
   "gen3d-candy-display": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-orchid": {"class":"prop"},
-  "gen3d-barnacle-rock": {"class":"prop"}
+  "gen3d-barnacle-rock": {"class":"prop"},
+  "gen3d-sandbag-wall": {"class":"prop"},
+  "gen3d-rooster": {"class":"prop"},
+  "gen3d-giant-slug": {"class":"prop"},
+  "gen3d-haystack": {"class":"prop"},
+  "gen3d-salamander": {"class":"prop"},
+  "gen3d-beach-ball": {"class":"prop"},
+  "gen3d-domino": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-possum": {"class":"prop"}
  }
 }

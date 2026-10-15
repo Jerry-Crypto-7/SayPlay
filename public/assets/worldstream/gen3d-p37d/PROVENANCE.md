@@ -683,3 +683,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-candy-display` | candy display, candy stand | 4268 / 2095 |
 | `gen3d-orchid` | orchid | 4642 / 2280 |
 | `gen3d-barnacle-rock` | barnacle rock | 4571 / 2199 |
+| `gen3d-sandbag-wall` | sandbag wall | 4612 / 2177 |
+| `gen3d-rooster` | rooster | 4529 / 2155 |
+| `gen3d-giant-slug` | giant slug | 4659 / 2289 |
+| `gen3d-haystack` | haystack | 4746 / 2372 |
+| `gen3d-salamander` | salamander | 4746 / 2368 |
+| `gen3d-beach-ball` | beach ball | 4748 / 2374 |
+| `gen3d-domino` | domino | 4748 / 2372 |
+| `gen3d-possum` | possum, opossum | 4564 / 2239 |

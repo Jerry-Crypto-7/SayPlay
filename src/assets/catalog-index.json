@@ -29362,6 +29362,159 @@
           0.60499
         ]
       }
+    },
+    {
+      "assetId": "gen3d-sandbag-wall",
+      "tags": [
+        "sandbag wall"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sandbag-wall-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.67959,
+          0,
+          -0.98128
+        ],
+        "max": [
+          1.67959,
+          0.9956,
+          0.98128
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rooster",
+      "tags": [
+        "rooster"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rooster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22663,
+          0,
+          -0.51646
+        ],
+        "max": [
+          0.22663,
+          0.99944,
+          0.51646
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-giant-slug",
+      "tags": [
+        "giant slug"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-giant-slug-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47329,
+          0,
+          -0.47312
+        ],
+        "max": [
+          0.47329,
+          0.99426,
+          0.47312
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-haystack",
+      "tags": [
+        "haystack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-haystack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48779,
+          0,
+          -0.47399
+        ],
+        "max": [
+          0.48779,
+          0.99995,
+          0.47399
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-salamander",
+      "tags": [
+        "salamander"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-salamander-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.9526,
+          0,
+          -3.19559
+        ],
+        "max": [
+          0.9526,
+          0.99264,
+          3.19559
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-ball",
+      "tags": [
+        "beach ball"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-ball-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48939,
+          0,
+          -0.48814
+        ],
+        "max": [
+          0.48939,
+          0.99966,
+          0.48814
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-domino",
+      "tags": [
+        "domino"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-domino-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25862,
+          0,
+          -0.06113
+        ],
+        "max": [
+          0.25862,
+          0.9999,
+          0.06113
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-possum",
+      "tags": [
+        "possum",
+        "opossum"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-possum-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39109,
+          0,
+          -1.14698
+        ],
+        "max": [
+          0.39109,
+          0.99888,
+          1.14698
+        ]
+      }
     }
   ]
 }
