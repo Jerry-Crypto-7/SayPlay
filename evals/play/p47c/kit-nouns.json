@@ -1,0 +1,417 @@
+{
+ "about": "P47C T1: setting → prop pairs read by scripts/p45h/build-setting-kits.mjs after the P45G and P46I files. p47c-catalog = a model the catalog already has (in setting-kits.json right away), p47c-gen = a name of the P47C overnight list (in setting-kits.json once promoted). height in metres. Only settings under 4 props, none pinned by look.test.ts.",
+ "nouns": [
+  {
+   "noun": "unicycle",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "tightrope"
+   ],
+   "source": "p47c-catalog"
+  },
+  {
+   "noun": "sunken bell",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "sunken city"
+   ],
+   "source": "p47c-catalog"
+  },
+  {
+   "noun": "rain barrel",
+   "class": "prop",
+   "flat": false,
+   "height": 1.1,
+   "settings": [
+    "forest hut"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "cypress tree",
+   "class": "prop",
+   "flat": false,
+   "height": 6,
+   "settings": [
+    "swamp"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "ticket machine",
+   "class": "prop",
+   "flat": false,
+   "height": 1.6,
+   "settings": [
+    "parking lot"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "tire pile",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "junkyard garage",
+    "garage"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "engine block",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "junkyard garage"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "hubcap",
+   "class": "prop",
+   "flat": false,
+   "height": 0.4,
+   "settings": [
+    "junkyard garage"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "junk tower",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "junkyard garage"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "trapeze",
+   "class": "prop",
+   "flat": false,
+   "height": 3.5,
+   "settings": [
+    "tightrope"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "safety net",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "tightrope"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "circus drum",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "tightrope"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "sunken pillar",
+   "class": "prop",
+   "flat": false,
+   "height": 1.5,
+   "settings": [
+    "sunken city"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "sunken arch",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "sunken city"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "sunken lamp post",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "sunken city"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "shipwreck hull",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "sunken city",
+    "deep sea"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "kelp forest",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "underwater"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "giant shell",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "underwater"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "bubble vent",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "deep sea"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "treasure chest pile",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "treasure island"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "driftwood log",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "rocky river"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "cannonball pile",
+   "class": "prop",
+   "flat": false,
+   "height": 0.7,
+   "settings": [
+    "treasure island"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "plank bridge",
+   "class": "prop",
+   "flat": false,
+   "height": 1.5,
+   "settings": [
+    "treetop"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "log pile",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "forest hut"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "berry bush",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "autumn forest"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "forest mushroom ring",
+   "class": "prop",
+   "flat": false,
+   "height": 0.4,
+   "settings": [
+    "mushroom hill"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "fallen log bridge",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "autumn forest"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "toadstool house",
+   "class": "prop",
+   "flat": false,
+   "height": 2,
+   "settings": [
+    "mushroom hill"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "bamboo grove",
+   "class": "prop",
+   "flat": false,
+   "height": 5,
+   "settings": [
+    "jungle river"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "jungle vine bridge",
+   "class": "prop",
+   "flat": false,
+   "height": 2,
+   "settings": [
+    "jungle river"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "snow lantern",
+   "class": "prop",
+   "flat": false,
+   "height": 1.4,
+   "settings": [
+    "snowy forest"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "ice pillar",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "snow fort"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "polar flag",
+   "class": "prop",
+   "flat": false,
+   "height": 2.5,
+   "settings": [
+    "snow fort"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "air conditioner unit",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "school rooftop"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "water tower",
+   "class": "prop",
+   "flat": false,
+   "height": 6,
+   "settings": [
+    "school rooftop"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "potted fern",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "living room"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "rug",
+   "class": "prop",
+   "flat": false,
+   "height": 0.05,
+   "settings": [
+    "living room"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "weapon rack",
+   "class": "prop",
+   "flat": false,
+   "height": 1.8,
+   "settings": [
+    "forge"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "banner pole",
+   "class": "prop",
+   "flat": false,
+   "height": 4,
+   "settings": [
+    "castle ruin"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "torch sconce",
+   "class": "prop",
+   "flat": false,
+   "height": 1.5,
+   "settings": [
+    "crooked tower"
+   ],
+   "source": "p47c-gen"
+  },
+  {
+   "noun": "swing set",
+   "class": "prop",
+   "flat": false,
+   "height": 2.5,
+   "settings": [
+    "lawn"
+   ],
+   "source": "p47c-gen"
+  }
+ ]
+}

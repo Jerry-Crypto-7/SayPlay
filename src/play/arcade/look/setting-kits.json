@@ -2162,6 +2162,10 @@
         {
           "id": "gen3d-circus-cannon",
           "height": 2
+        },
+        {
+          "id": "gen3d-unicycle",
+          "height": 1.4
         }
       ]
     },
@@ -2173,6 +2177,10 @@
         {
           "id": "gen3d-coral-covered-archway",
           "height": 3
+        },
+        {
+          "id": "gen3d-sunken-bell",
+          "height": 1.2
         }
       ]
     }
