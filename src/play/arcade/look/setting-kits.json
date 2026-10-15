@@ -1356,6 +1356,18 @@
         {
           "id": "gen3d-stalagmite",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-crystal-cluster",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-treasure-pile",
+          "height": 1
+        },
+        {
+          "id": "gen3d-gold-bar",
+          "height": 0.5
         }
       ]
     },
@@ -1421,6 +1433,59 @@
         {
           "id": "gen3d-feeding-trough",
           "height": 0.8
+        }
+      ]
+    },
+    {
+      "setting": "lawn",
+      "pattern": "\\blawn(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-lawn-mower",
+          "height": 1
+        },
+        {
+          "id": "gen3d-watering-can",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-garden-gnome",
+          "height": 0.9
+        }
+      ]
+    },
+    {
+      "setting": "mushroom hill",
+      "pattern": "\\bmushroom[\\s-]+hill(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-mushroom-lantern",
+          "height": 1.6
+        },
+        {
+          "id": "gen3d-mushroom-house",
+          "height": 3
+        }
+      ]
+    },
+    {
+      "setting": "snow fort",
+      "pattern": "\\bsnow[\\s-]+fort(?:e?s)?\\b",
+      "look": "snow",
+      "props": [
+        {
+          "id": "gen3d-ice-lantern",
+          "height": 1
+        },
+        {
+          "id": "gen3d-white-snowball",
+          "height": 0.8
+        },
+        {
+          "id": "gen3d-snowman-with-hat",
+          "height": 1.7
         }
       ]
     },
@@ -1665,6 +1730,85 @@
         {
           "id": "gen3d-bonsai-tree",
           "height": 1
+        }
+      ]
+    },
+    {
+      "setting": "birthday party",
+      "pattern": "\\bbirthday[\\s-]+party(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-birthday-cake",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-party-hat",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-gift-box",
+          "height": 0.8
+        }
+      ]
+    },
+    {
+      "setting": "treasure island",
+      "pattern": "\\btreasure[\\s-]+island(?:e?s)?\\b",
+      "look": "beach",
+      "props": [
+        {
+          "id": "gen3d-treasure-map",
+          "height": 0.6
+        },
+        {
+          "id": "gen3d-treasure-chest",
+          "height": 1
+        },
+        {
+          "id": "gen3d-message-in-a-bottle",
+          "height": 0.6
+        }
+      ]
+    },
+    {
+      "setting": "junkyard garage",
+      "pattern": "\\bjunkyard[\\s-]+garage(?:e?s)?\\b",
+      "look": "factory",
+      "props": [
+        {
+          "id": "gen3d-oil-drum",
+          "height": 1.1
+        }
+      ]
+    },
+    {
+      "setting": "wedding",
+      "pattern": "\\bwedding(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-wedding-cake",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-champagne-tower",
+          "height": 1.2
+        }
+      ]
+    },
+    {
+      "setting": "tightrope",
+      "pattern": "\\btightrope(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-circus-tent",
+          "height": 4
+        },
+        {
+          "id": "gen3d-circus-cannon",
+          "height": 2
         }
       ]
     }

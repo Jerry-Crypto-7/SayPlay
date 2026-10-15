@@ -5,7 +5,12 @@
   "kit-2": "rekvizita prostředí, které má dnes 2 rekvizity",
   "scenery": "scenérie základní sady vzhledu (look/index.ts), kterou katalog nemá – jen model, zapojení navrhne T3",
   "p46f-queue": "zbytek P46F: jméno fronty, které P46F nezkusila (nepřátelé, překážky, tvorové)",
-  "p46f-retry": "zbytek P46F: jméno, které v P46F neprošlo a čeká na jedno opakování (semínka a2,b2,a3)"
+  "p46f-retry": "zbytek P46F: jméno, které v P46F neprošlo a čeká na jedno opakování (semínka a2,b2,a3)",
+  "w2-kit-under3": "druhá vlna: prostředí, které má pořád méně než 3 rekvizity",
+  "w2-kit-missing": "druhá vlna: prostředí z evals/play/p45d/missing.json, které tabulka nemá (3 rekvizity)",
+  "w2-scenery": "druhá vlna: scenérie základních sad – les, džungle, poušť, město, sníh, pláž, pod vodou přednostně",
+  "w2-obstacle": "druhá vlna: překážka nebo past žánru bez slova třídy",
+  "w2-pickup": "druhá vlna: sběratelná věc nebo power-up bez slova třídy"
  },
  "pinned": [
   "frozen lake",
@@ -1645,6 +1650,1332 @@
    "p46fGroup": "obstacle",
    "retry": true,
    "order": 192
+  },
+  {
+   "noun": "giant toadstool",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-kit-missing",
+   "wave": 2,
+   "settings": [
+    "mushroom hill"
+   ],
+   "order": 193
+  },
+  {
+   "noun": "scrap metal pile",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-kit-missing",
+   "wave": 2,
+   "settings": [
+    "junkyard garage"
+   ],
+   "order": 194
+  },
+  {
+   "noun": "rusty fridge",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-kit-missing",
+   "wave": 2,
+   "settings": [
+    "junkyard garage"
+   ],
+   "order": 195
+  },
+  {
+   "noun": "sunken statue",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-kit-missing",
+   "wave": 2,
+   "settings": [
+    "sunken city"
+   ],
+   "order": 196
+  },
+  {
+   "noun": "coral covered archway",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-kit-missing",
+   "wave": 2,
+   "settings": [
+    "sunken city"
+   ],
+   "order": 197
+  },
+  {
+   "noun": "sunken temple",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-kit-missing",
+   "wave": 2,
+   "settings": [
+    "sunken city"
+   ],
+   "order": 198
+  },
+  {
+   "noun": "wedding arch",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-kit-missing",
+   "wave": 2,
+   "settings": [
+    "wedding"
+   ],
+   "order": 199
+  },
+  {
+   "noun": "circus pedestal",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-kit-missing",
+   "wave": 2,
+   "settings": [
+    "tightrope"
+   ],
+   "order": 200
+  },
+  {
+   "noun": "standing stone",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "forest",
+   "order": 201
+  },
+  {
+   "noun": "bromeliad",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 202
+  },
+  {
+   "noun": "yucca plant",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 203
+  },
+  {
+   "noun": "graffiti wall",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 204
+  },
+  {
+   "noun": "ski chalet",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 205
+  },
+  {
+   "noun": "beach cabana",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 206
+  },
+  {
+   "noun": "sunken bell",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 207
+  },
+  {
+   "noun": "bramble bush",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "forest",
+   "order": 208
+  },
+  {
+   "noun": "stone face carving",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 209
+  },
+  {
+   "noun": "buried statue head",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 210
+  },
+  {
+   "noun": "fire station",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 211
+  },
+  {
+   "noun": "ice arch",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 212
+  },
+  {
+   "noun": "surf rack",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 213
+  },
+  {
+   "noun": "helm wheel",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 214
+  },
+  {
+   "noun": "pine sapling",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "forest",
+   "order": 215
+  },
+  {
+   "noun": "jaguar statue",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 216
+  },
+  {
+   "noun": "western saloon",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 217
+  },
+  {
+   "noun": "cinema marquee",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 218
+  },
+  {
+   "noun": "snow sculpture",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 219
+  },
+  {
+   "noun": "beach cooler",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 220
+  },
+  {
+   "noun": "tube coral",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 221
+  },
+  {
+   "noun": "chopping stump",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "forest",
+   "order": 222
+  },
+  {
+   "noun": "giant leaf",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 223
+  },
+  {
+   "noun": "mud brick wall",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 224
+  },
+  {
+   "noun": "flower stall",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 225
+  },
+  {
+   "noun": "polar research hut",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 226
+  },
+  {
+   "noun": "coconut drink",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 227
+  },
+  {
+   "noun": "coral throne",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 228
+  },
+  {
+   "noun": "birch sapling",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "forest",
+   "order": 229
+  },
+  {
+   "noun": "cacao pod",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 230
+  },
+  {
+   "noun": "old windpump",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 231
+  },
+  {
+   "noun": "coffee kiosk",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 232
+  },
+  {
+   "noun": "snow cannon",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 233
+  },
+  {
+   "noun": "flip flop",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 234
+  },
+  {
+   "noun": "sunken propeller",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 235
+  },
+  {
+   "noun": "log bench",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "forest",
+   "order": 236
+  },
+  {
+   "noun": "anthurium",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 237
+  },
+  {
+   "noun": "desert rose rock",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 238
+  },
+  {
+   "noun": "bank building",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 239
+  },
+  {
+   "noun": "ice wall",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 240
+  },
+  {
+   "noun": "snorkel mask",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 241
+  },
+  {
+   "noun": "sea pen",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 242
+  },
+  {
+   "noun": "wild strawberry plant",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "forest",
+   "order": 243
+  },
+  {
+   "noun": "jade statue",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 244
+  },
+  {
+   "noun": "abandoned mine entrance",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 245
+  },
+  {
+   "noun": "parking garage",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 246
+  },
+  {
+   "noun": "weather station",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 247
+  },
+  {
+   "noun": "beach flag",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 248
+  },
+  {
+   "noun": "sunken mast",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 249
+  },
+  {
+   "noun": "ivy covered stone",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "forest",
+   "order": 250
+  },
+  {
+   "noun": "banana leaf hut",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 251
+  },
+  {
+   "noun": "desert signpost",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 252
+  },
+  {
+   "noun": "shop sign",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 253
+  },
+  {
+   "noun": "snowy bench",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 254
+  },
+  {
+   "noun": "pier lamp",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 255
+  },
+  {
+   "noun": "coral pillar",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 256
+  },
+  {
+   "noun": "fallen palm trunk",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 257
+  },
+  {
+   "noun": "mesquite tree",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 258
+  },
+  {
+   "noun": "city map board",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 259
+  },
+  {
+   "noun": "fir wreath",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 260
+  },
+  {
+   "noun": "beach shower",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 261
+  },
+  {
+   "noun": "sunken crate",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 262
+  },
+  {
+   "noun": "strangler vine",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 263
+  },
+  {
+   "noun": "stone cairn",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 264
+  },
+  {
+   "noun": "hotel sign",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 265
+  },
+  {
+   "noun": "avalanche fence",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 266
+  },
+  {
+   "noun": "coconut stall",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 267
+  },
+  {
+   "noun": "sea lily",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 268
+  },
+  {
+   "noun": "taro plant",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 269
+  },
+  {
+   "noun": "hitching post",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 270
+  },
+  {
+   "noun": "pizzeria sign",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 271
+  },
+  {
+   "noun": "snowy mailbox",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 272
+  },
+  {
+   "noun": "pool float",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 273
+  },
+  {
+   "noun": "underwater lantern",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "underwater",
+   "order": 274
+  },
+  {
+   "noun": "ginger flower",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 275
+  },
+  {
+   "noun": "wanted poster",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 276
+  },
+  {
+   "noun": "fire alarm box",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 277
+  },
+  {
+   "noun": "ice slide",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 278
+  },
+  {
+   "noun": "sunscreen bottle",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 279
+  },
+  {
+   "noun": "hidden temple door",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 280
+  },
+  {
+   "noun": "water canteen",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "desert",
+   "order": 281
+  },
+  {
+   "noun": "manhole cover",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "city",
+   "order": 282
+  },
+  {
+   "noun": "frozen signpost",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "snow",
+   "order": 283
+  },
+  {
+   "noun": "tide pool rock",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 284
+  },
+  {
+   "noun": "vine curtain",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 285
+  },
+  {
+   "noun": "boardwalk",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "beach",
+   "order": 286
+  },
+  {
+   "noun": "mossy ruin pillar",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 287
+  },
+  {
+   "noun": "tribal shield",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "jungle",
+   "order": 288
+  },
+  {
+   "noun": "magma rock",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "volcano",
+   "order": 289
+  },
+  {
+   "noun": "ore vein",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "cave",
+   "order": 290
+  },
+  {
+   "noun": "moon flag",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "space",
+   "order": 291
+  },
+  {
+   "noun": "castle catapult",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "castle",
+   "order": 292
+  },
+  {
+   "noun": "haunted tree",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "graveyard",
+   "order": 293
+  },
+  {
+   "noun": "wooden swing",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "meadow",
+   "order": 294
+  },
+  {
+   "noun": "steel beam",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "factory",
+   "order": 295
+  },
+  {
+   "noun": "channel marker",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "ocean",
+   "order": 296
+  },
+  {
+   "noun": "lava geyser",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "volcano",
+   "order": 297
+  },
+  {
+   "noun": "cave bridge",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "cave",
+   "order": 298
+  },
+  {
+   "noun": "plasma generator",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "space",
+   "order": 299
+  },
+  {
+   "noun": "armor rack",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "castle",
+   "order": 300
+  },
+  {
+   "noun": "broken gravestone",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "graveyard",
+   "order": 301
+  },
+  {
+   "noun": "ash tree",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "volcano",
+   "order": 302
+  },
+  {
+   "noun": "rope pulley",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "cave",
+   "order": 303
+  },
+  {
+   "noun": "moon base antenna",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "space",
+   "order": 304
+  },
+  {
+   "noun": "tournament tent",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "castle",
+   "order": 305
+  },
+  {
+   "noun": "bone pile",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "graveyard",
+   "order": 306
+  },
+  {
+   "noun": "volcanic bomb",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "volcano",
+   "order": 307
+  },
+  {
+   "noun": "jousting lance",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "castle",
+   "order": 308
+  },
+  {
+   "noun": "tournament banner",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-scenery",
+   "wave": 2,
+   "look": "castle",
+   "order": 309
+  },
+  {
+   "noun": "laser gate",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 310
+  },
+  {
+   "noun": "mystery box",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 311
+  },
+  {
+   "noun": "rolling log",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 312
+  },
+  {
+   "noun": "question block",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 313
+  },
+  {
+   "noun": "falling rock",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 314
+  },
+  {
+   "noun": "golden ring",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 315
+  },
+  {
+   "noun": "fire pit",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 316
+  },
+  {
+   "noun": "silver coin",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 317
+  },
+  {
+   "noun": "swinging log",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 318
+  },
+  {
+   "noun": "crystal shard",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 319
+  },
+  {
+   "noun": "spike roller",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 320
+  },
+  {
+   "noun": "shield orb",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 321
+  },
+  {
+   "noun": "electric orb",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 322
+  },
+  {
+   "noun": "golden horseshoe",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 323
+  },
+  {
+   "noun": "toxic barrel",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 324
+  },
+  {
+   "noun": "key card",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 325
+  },
+  {
+   "noun": "steam pipe",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 326
+  },
+  {
+   "noun": "golden ticket",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 327
+  },
+  {
+   "noun": "crumbling block",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 328
+  },
+  {
+   "noun": "energy capsule",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 329
+  },
+  {
+   "noun": "pinball bumper",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 330
+  },
+  {
+   "noun": "golden bell",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 331
+  },
+  {
+   "noun": "electric pylon",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 332
+  },
+  {
+   "noun": "bonus token",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 333
+  },
+  {
+   "noun": "fire wall",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 334
+  },
+  {
+   "noun": "clover coin",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-pickup",
+   "wave": 2,
+   "order": 335
+  },
+  {
+   "noun": "spike log",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 336
+  },
+  {
+   "noun": "rotating hammer",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 337
+  },
+  {
+   "noun": "spinning bar",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 338
+  },
+  {
+   "noun": "spring trap",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 339
+  },
+  {
+   "noun": "tripwire",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 340
+  },
+  {
+   "noun": "pressure plate",
+   "class": "prop",
+   "flat": false,
+   "group": "w2-obstacle",
+   "wave": 2,
+   "order": 341
   }
- ]
+ ],
+ "about2": "Second wave (15. 10. 05:20, after the first 192 names ran out at round 27): `wave: 2` names appended in the order (1) settings still under 3 props, (2) settings from evals/play/p45d/missing.json no table had, 3 props each, (3) base-look scenery with forest, jungle, desert, city, snow, beach and underwater first, (4) genre obstacles and pickups interleaved. Same rules as the first wave."
 }

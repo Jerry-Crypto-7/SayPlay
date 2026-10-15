@@ -208,7 +208,8 @@
    "flat": false,
    "height": 1,
    "settings": [
-    "driveway"
+    "driveway",
+    "lawn"
    ],
    "source": "p46i-catalog"
   },
@@ -359,7 +360,8 @@
    "flat": false,
    "height": 1.6,
    "settings": [
-    "mushroom village"
+    "mushroom village",
+    "mushroom hill"
    ],
    "source": "p46i-catalog"
   },
@@ -449,7 +451,8 @@
    "flat": false,
    "height": 0.6,
    "settings": [
-    "rooftop garden"
+    "rooftop garden",
+    "lawn"
    ],
    "source": "p46i-catalog"
   },
@@ -499,7 +502,8 @@
    "flat": false,
    "height": 1,
    "settings": [
-    "winter festival"
+    "winter festival",
+    "snow fort"
    ],
    "source": "p46i-catalog"
   },
@@ -1519,6 +1523,266 @@
    "height": 2,
    "settings": [
     "castle ruin"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "crystal cluster",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "treasure cave"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "treasure pile",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "treasure cave"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "gold bar",
+   "class": "prop",
+   "flat": false,
+   "height": 0.5,
+   "settings": [
+    "treasure cave"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "birthday cake",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "birthday party"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "party hat",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "birthday party"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "gift box",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "birthday party"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "garden gnome",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "lawn"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "mushroom house",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "mushroom hill"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "treasure map",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "treasure island"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "treasure chest",
+   "class": "prop",
+   "flat": false,
+   "height": 1,
+   "settings": [
+    "treasure island"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "message in a bottle",
+   "class": "prop",
+   "flat": false,
+   "height": 0.6,
+   "settings": [
+    "treasure island"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "oil drum",
+   "class": "prop",
+   "flat": false,
+   "height": 1.1,
+   "settings": [
+    "junkyard garage"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "wedding cake",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "wedding"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "champagne tower",
+   "class": "prop",
+   "flat": false,
+   "height": 1.2,
+   "settings": [
+    "wedding"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "circus tent",
+   "class": "prop",
+   "flat": false,
+   "height": 4,
+   "settings": [
+    "tightrope"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "circus cannon",
+   "class": "prop",
+   "flat": false,
+   "height": 2,
+   "settings": [
+    "tightrope"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "white snowball",
+   "class": "prop",
+   "flat": false,
+   "height": 0.8,
+   "settings": [
+    "snow fort"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "snowman with hat",
+   "class": "prop",
+   "flat": false,
+   "height": 1.7,
+   "settings": [
+    "snow fort"
+   ],
+   "source": "p46i-catalog"
+  },
+  {
+   "noun": "giant toadstool",
+   "class": "prop",
+   "flat": false,
+   "height": 2,
+   "settings": [
+    "mushroom hill"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "scrap metal pile",
+   "class": "prop",
+   "flat": false,
+   "height": 1.6,
+   "settings": [
+    "junkyard garage"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "rusty fridge",
+   "class": "prop",
+   "flat": false,
+   "height": 1.8,
+   "settings": [
+    "junkyard garage"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "sunken statue",
+   "class": "prop",
+   "flat": false,
+   "height": 1.6,
+   "settings": [
+    "sunken city"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "coral covered archway",
+   "class": "prop",
+   "flat": false,
+   "height": 3,
+   "settings": [
+    "sunken city"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "sunken temple",
+   "class": "prop",
+   "flat": false,
+   "height": 4,
+   "settings": [
+    "sunken city"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "wedding arch",
+   "class": "prop",
+   "flat": false,
+   "height": 2.6,
+   "settings": [
+    "wedding"
+   ],
+   "source": "p46i-gen"
+  },
+  {
+   "noun": "circus pedestal",
+   "class": "prop",
+   "flat": false,
+   "height": 0.9,
+   "settings": [
+    "tightrope"
    ],
    "source": "p46i-gen"
   }

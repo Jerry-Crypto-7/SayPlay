@@ -620,5 +620,134 @@
  ],
  "grave lantern": [
   "cemetery lantern"
+ ],
+ "giant toadstool": [
+  "red toadstool"
+ ],
+ "scrap metal pile": [
+  "scrap heap",
+  "junk pile"
+ ],
+ "rusty fridge": [
+  "old fridge",
+  "rusty refrigerator"
+ ],
+ "sunken temple": [
+  "underwater temple"
+ ],
+ "coral covered archway": [
+  "coral archway"
+ ],
+ "standing stone": [
+  "menhir"
+ ],
+ "bramble bush": [
+  "blackberry bush",
+  "bramble"
+ ],
+ "chopping stump": [
+  "chopping block"
+ ],
+ "log bench": [
+  "log seat"
+ ],
+ "stone face carving": [
+  "stone face"
+ ],
+ "banana leaf hut": [
+  "leaf hut"
+ ],
+ "yucca plant": [
+  "yucca"
+ ],
+ "western saloon": [
+  "saloon"
+ ],
+ "old windpump": [
+  "windpump",
+  "wind pump"
+ ],
+ "stone cairn": [
+  "cairn"
+ ],
+ "mud brick wall": [
+  "adobe wall"
+ ],
+ "cinema marquee": [
+  "movie theater",
+  "cinema"
+ ],
+ "fire station": [
+  "firehouse"
+ ],
+ "coffee kiosk": [
+  "coffee stand"
+ ],
+ "parking garage": [
+  "parking deck"
+ ],
+ "ski chalet": [
+  "chalet"
+ ],
+ "snow cannon": [
+  "snow machine"
+ ],
+ "polar research hut": [
+  "research hut"
+ ],
+ "beach cabana": [
+  "cabana"
+ ],
+ "beach cooler": [
+  "cooler box"
+ ],
+ "flip flop": [
+  "sandal"
+ ],
+ "snorkel mask": [
+  "snorkel"
+ ],
+ "surf rack": [
+  "surfboard rack"
+ ],
+ "sunken bell": [
+  "bronze bell"
+ ],
+ "helm wheel": [
+  "steering wheel"
+ ],
+ "castle catapult": [
+  "trebuchet catapult"
+ ],
+ "jousting lance": [
+  "lance"
+ ],
+ "laser gate": [
+  "laser barrier"
+ ],
+ "fire pit": [
+  "firepit"
+ ],
+ "spike roller": [
+  "spiked roller"
+ ],
+ "toxic barrel": [
+  "toxic waste barrel"
+ ],
+ "mystery box": [
+  "lucky box"
+ ],
+ "question block": [
+  "question mark block"
+ ],
+ "key card": [
+  "keycard",
+  "access card"
+ ],
+ "shield orb": [
+  "shield bubble"
+ ],
+ "golden horseshoe": [
+  "lucky horseshoe"
  ]
 }
