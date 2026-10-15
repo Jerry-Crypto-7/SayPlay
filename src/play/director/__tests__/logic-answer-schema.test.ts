@@ -145,11 +145,13 @@ describe('the director prompt describes logic within budget', () => {
     expect(lines.some((line) => line.startsWith('RULE EXAMPLE: '))).toBe(true);
   });
 
-  it('adds boss, abilities and segments in one line of at most 500 characters with one example (P46E T3)', () => {
+  // T3 měl jeden příklad do 500 znaků a „else null“: gpt-oss-20b pak bosse vyplnil 0× z 25 (P46E T5), proto příklad na žánr.
+  it('adds boss, abilities and segments in one line of at most 1 000 characters with a runner, driving and platformer example (P46E T5)', () => {
     const extras = directorSystemPrompt().split('\n').filter((line) => line.startsWith('NEW IN YOUR VERSION'));
     expect(extras).toHaveLength(1);
-    expect(extras[0]!.length).toBeLessThanOrEqual(500);
-    for (const piece of ['"boss"', '"abilities"', '"segments"', 'EXAMPLE: ']) expect(extras[0]).toContain(piece);
+    expect(extras[0]!.length).toBeLessThanOrEqual(1_000);
+    expect(extras[0]).not.toContain('else null');
+    for (const piece of ['"boss"', '"abilities"', '"segments"', 'EXAMPLES: ', 'runner "', 'driving "', 'platformer "']) expect(extras[0]).toContain(piece);
   });
 
   it('the prompt version hashes the new prompt, the schema and the course line, so the cache keyed by it is invalidated', () => {
