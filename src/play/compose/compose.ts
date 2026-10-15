@@ -214,10 +214,18 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
       // Šablona pravidel (P45B T9) jde první; neprojde-li, tentýž recept bez ní – teprve potom méně dílů.
       const { intent: _intent, ...untemplated } = recipe;
       // Akce hrdiny (P46A T8), které robot neprokáže, ustoupí dřív než díly: věta nesmí kvůli tlačítku spadnout.
+      // Po šabloně nejdřív jen akce, kterou robot nedokázal (P47B T7), teprve pak všechny.
       const { abilities: _abilities, ...plain } = untemplated;
-      for (const attempt of [recipe, untemplated, plain]) {
+      const unproved = new Set<string>();
+      const provable = (): RecipeAssembly => ({
+        ...untemplated,
+        abilities: untemplated.abilities?.filter(id => !unproved.has(id)),
+        content: { ...untemplated.content, abilities: untemplated.content.abilities?.filter(id => !unproved.has(id)) },
+      });
+      for (const attempt of [() => recipe, () => untemplated, provable, () => plain]) {
         try {
-          const { spec, template } = compileTemplated(attempt);
+          const candidate = attempt();
+          const { spec, template } = compileTemplated(candidate);
           const key = JSON.stringify(spec);
           if (attempted.has(key)) continue;
           attempted.add(key);
@@ -225,13 +233,17 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
           const made = arcadeWorldOf(spec, seed);
           if (!made.ok) { issues.push(`${label}: ${made.issues.join('; ')}`); continue; }
           const verdict = verifyArcade(made.world, undefined, made.roleBindings, { pacingProbe });
-          if (!verdict.publishEligible) { issues.push(`${label}: ${verdict.failures.join('; ')}`); continue; }
+          if (!verdict.publishEligible) {
+            for (const proof of verdict.verbs) if (!proof.fired || !proof.changed) unproved.add(proof.verb);
+            issues.push(`${label}: ${verdict.failures.join('; ')}`);
+            continue;
+          }
           const witnesses = verdict.witnesses;
           const unmet = triples.filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
           // Bez šablony recept záměr nenese: `compileRecipe(composition.recipe)` (rychlý návrh) postaví tutéž hru.
           // Recept je ten pokus, který prošel (i bez akcí), jen bez záměru, když šablonu nedostal.
-          const bare = attempt === recipe ? untemplated : attempt;
-          const composition = { cellId: source.id, recipe: template === null ? bare : attempt, spec, unmet, witnesses, issues, template };
+          const bare = candidate === recipe ? untemplated : candidate;
+          const composition = { cellId: source.id, recipe: template === null ? bare : candidate, spec, unmet, witnesses, issues, template };
           if (compositions.size >= 64) compositions.delete(compositions.keys().next().value!);
           compositions.set(cacheKey, structuredClone(composition));
           return composition;
