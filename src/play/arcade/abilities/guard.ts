@@ -12,19 +12,23 @@
 import { z } from 'zod';
 
 import { ABILITY_SLOTS, ARCADE_LIMITS, BODY, FLAG, ROLE, type RulePiece, bodyBase } from '../contract';
-import { HARMFUL_ROLES, abilityActive } from './state';
+import { HARMFUL_ROLES, abilityActive, partBodies } from './state';
 
 const harmful = z.array(z.enum(HARMFUL_ROLES)).min(1).max(HARMFUL_ROLES.length);
 
-const isHarm = (state: Int32Array, body: number, roles: readonly string[]): boolean =>
-  roles.some((role) => ROLE[role as (typeof HARMFUL_ROLES)[number]] === state[bodyBase(body) + BODY.role]) &&
+/** Ublíží tělo `body`? Role z `roles`, nebo díl složené hry z `parts` (P47B T4) – ten má roli věci a zná se po indexu. */
+const isHarm = (state: Int32Array, body: number, roles: readonly string[], parts?: readonly number[]): boolean =>
+  (roles.some((role) => ROLE[role as (typeof HARMFUL_ROLES)[number]] === state[bodyBase(body) + BODY.role]) || parts?.includes(body) === true) &&
   ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
 
 const dashParams = z
-  .object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), slot: z.int().min(0).max(1), roles: harmful, verb: z.literal('dash') })
+  .object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), slot: z.int().min(0).max(1), roles: harmful, parts: partBodies.optional(), verb: z.literal('dash') })
   .strict();
 
-/** V aktivním dashi hrdina prorazí, do čeho narazí: tělo zmizí a náraz (`hit` s `guard`) nic nevezme. */
+/**
+ * V aktivním dashi hrdina prorazí, do čeho narazí: tělo zmizí a náraz (`hit` či díl `assembly_part` s `guard`) nic nevezme.
+ * Díl složené hry je při dotyku už hotový (`assembly-parts.ts` `done`): padá z výšky a do hrdiny dorazí až po metru cesty.
+ */
 export const dashRule: RulePiece<z.infer<typeof dashParams>> = {
   id: 'ability_dash',
   params: dashParams,
@@ -32,11 +36,13 @@ export const dashRule: RulePiece<z.infer<typeof dashParams>> = {
   trigger: 'contact',
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, other }, params) =>
-    abilityActive(state, params.keeper, params.slot) > 0 && isHarm(state, other, params.roles) ? [{ kind: 'despawn', body: other }] : [],
+    abilityActive(state, params.keeper, params.slot) > 0 && isHarm(state, other, params.roles, params.parts) ? [{ kind: 'despawn', body: other }] : [],
 };
 
 // Bez slovesa jen štít power-upu (P46C): hra ho neslíbila, ověření ho tedy nedokazuje.
-const shieldParams = z.object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), roles: harmful, verb: z.literal('shield').optional() }).strict();
+const shieldParams = z
+  .object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), roles: harmful, parts: partBodies.optional(), verb: z.literal('shield').optional() })
+  .strict();
 
 /**
  * Nabitý štít pohltí jeden náraz: tělo zmizí a náboj spadne na 0. O náboji rozhodne
@@ -50,5 +56,5 @@ export const shieldRule: RulePiece<z.infer<typeof shieldParams>> = {
   trigger: 'contact',
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, other }, params) =>
-    (state[bodyBase(params.keeper) + ABILITY_SLOTS.shield] as number) === 0 || !isHarm(state, other, params.roles) ? [] : [{ kind: 'block', keeper: params.keeper, body: other }],
+    (state[bodyBase(params.keeper) + ABILITY_SLOTS.shield] as number) === 0 || !isHarm(state, other, params.roles, params.parts) ? [] : [{ kind: 'block', keeper: params.keeper, body: other }],
 };

@@ -9,12 +9,12 @@
  * tagem `p46a-api`; staví na něm power-upy P46C a režisér P46E.
  */
 
-import type { AbilityId, BodyInit, PieceRef } from '../contract';
+import { type AbilityId, type BodyInit, type PieceRef, mapUnderlying, nativeRule } from '../contract';
 import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
 import { type BossBeatParams, bossBeat, bossBeatHit } from '../pieces/boss';
 import { grabRule } from './grab';
 import { dashRule, shieldRule } from './guard';
-import { HARMFUL_ROLES } from './state';
+import { HARMFUL_PARTS, HARMFUL_ROLES, abilityIdsOf } from './state';
 import { shootAbility } from './shoot';
 import { AROUND_CONTROLS, strikeRule } from './strike';
 
@@ -78,8 +78,18 @@ export const grabAbility: AbilityPiece = {
   },
 };
 
-/** Nárazy, které hrdinovi ublíží: `hit`, náraz do svodidel řízení a chycení v aréně. */
-const isCrash = (id: string): boolean => id === 'hit' || id === 'steer_crash' || id === 'arena_eat';
+/** Tělo dílu složené hry, který hrdinovi ublíží vlastní větví `assembly_part` (`HARMFUL_PARTS`, P47B T4); jinak `undefined`. */
+function partOf(rule: PieceRef): number | undefined {
+  if (rule.id !== 'assembly_part') return undefined;
+  const { kind, body } = rule.params.part as { readonly kind: string; readonly body: number };
+  return HARMFUL_PARTS.includes(kind) ? body : undefined;
+}
+
+/** Nárazy, které hrdinovi ublíží: `hit`, náraz do svodidel řízení, chycení v aréně a díl složené hry, který zraní. */
+const isCrash = (rule: PieceRef): boolean => rule.id === 'hit' || rule.id === 'steer_crash' || rule.id === 'arena_eat' || partOf(rule) !== undefined;
+
+/** Těla dílů složené hry, které hrdinovi ublíží – role jim `harmOf` dát nemůže, mají kód role věci. */
+const harmfulParts = (rules: readonly PieceRef[]): number[] => rules.flatMap((rule) => partOf(rule) ?? []);
 
 /**
  * Role, které hrdinovi ublíží nárazem – ty dash prorazí a štít odrazí. V aréně jen pronásledovatel
@@ -111,7 +121,7 @@ function guardAbility(id: 'dash' | 'shield'): AbilityPiece {
 }
 
 const guarded = (rules: readonly PieceRef[], keeper: number, guard: { dash: number } | { shield: true }): PieceRef[] =>
-  rules.map((rule) => (isCrash(rule.id) ? { id: rule.id, params: { ...rule.params, guard: { ...((rule.params.guard as object | undefined) ?? {}), keeper, ...guard } } } : rule));
+  rules.map((rule) => (isCrash(rule) ? { id: rule.id, params: { ...rule.params, guard: { ...((rule.params.guard as object | undefined) ?? {}), keeper, ...guard } } } : rule));
 
 /**
  * Štít akce i power-upu štítu (P46C): nárazy dostanou ochranu nábojem počítadla `keeper` a blok
@@ -123,6 +133,33 @@ export function shieldParts(parts: ArcadeParts, keeper: number, promised = true)
   if (roles.length === 0 || parts.rules.some((rule) => rule.id === shieldRule.id)) return parts;
   // Blok štítu se musí použít před nárazem téhož těla, jinak by `ifAlive` nárazu viděl tělo ještě živé.
   return { ...parts, rules: [{ id: shieldRule.id, params: { keeper, roles, ...(promised ? { verb: 'shield' } : {}) } }, ...guarded(parts.rules, keeper, { shield: true })] };
+}
+
+/**
+ * Robot akcí (`addon_bot` z `applyAbilities`) pod obalem složené hry dostane těla dílů, které zraní (`parts`),
+ * ať jim nastaví dash a štít jako nárazu.
+ */
+function botWithParts(bot: PieceRef, bodies: readonly number[]): PieceRef {
+  const params = bot.params as { readonly base: PieceRef; readonly abilities: object };
+  if (bot.id === 'addon_bot') return { ...bot, params: { ...bot.params, abilities: { ...params.abilities, parts: [...bodies] } } };
+  return bot.id === 'assembly_bot' ? { ...bot, params: { ...bot.params, base: botWithParts(params.base, bodies) } } : bot;
+}
+
+/**
+ * Díly složené hry (P47B T4) se skládají až po akcích (`assemblyParts`), proto ochranu dostanou tady:
+ * pravidlo dílu, který zraní, `guard` jako náraz `hit`, dash a štít jeho tělo v `parts` a robot akcí taky.
+ * Hra bez akcí zůstane bajt po bajtu, jak je – i se štítem power-upu.
+ */
+export function guardParts(parts: ArcadeParts): ArcadeParts {
+  const bodies = harmfulParts(parts.rules);
+  const dash = nativeRule(parts.rules, dashRule.id);
+  const shield = nativeRule(parts.rules, shieldRule.id);
+  const keeper = (dash ?? shield)?.params.keeper as number | undefined;
+  if (bodies.length === 0 || keeper === undefined || abilityIdsOf(parts.control).length === 0) return parts;
+  const dashed = dash === undefined ? parts.rules : guarded(parts.rules, keeper, { dash: dash.params.slot as number });
+  const rules = shield === undefined ? dashed : guarded(dashed, keeper, { shield: true });
+  const protect = (native: PieceRef): PieceRef => (native.id === dashRule.id || native.id === shieldRule.id ? { ...native, params: { ...native.params, parts: bodies } } : native);
+  return { ...parts, rules: rules.map((rule) => mapUnderlying(rule, protect)), bot: botWithParts(parts.bot, bodies) };
 }
 
 export const ABILITY_PIECES: Readonly<Record<AbilityId, AbilityPiece>> = {

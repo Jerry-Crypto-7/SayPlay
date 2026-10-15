@@ -9,7 +9,8 @@
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { readGameSpec } from '../../spec';
+import { draftGameSpecWithMeta } from '../../draft';
+import { type GameSpecV1, readGameSpec } from '../../spec';
 import { arcadeWorldOf, preloadPhysics } from '../compile';
 import { ABILITIES, type AbilityId } from '../contract';
 import { replay } from '../kernel';
@@ -32,13 +33,17 @@ interface Rates {
 }
 
 function ratesOf(control: Control, extra: Record<string, unknown>): Rates {
+  const read = readGameSpec({ ...(FIXTURES[control] as object), ...extra });
+  if (!read.ok) throw new Error(read.issues.join('; '));
+  return ratesOfSpec(read.value);
+}
+
+function ratesOfSpec(spec: GameSpecV1): Rates {
   let novice = 0;
   let intermediate = 0;
   let idleWins = 0;
   for (const seed of SEEDS) {
-    const read = readGameSpec({ ...(FIXTURES[control] as object), ...extra });
-    if (!read.ok) throw new Error(read.issues.join('; '));
-    const made = arcadeWorldOf(read.value, seed);
+    const made = arcadeWorldOf(spec, seed);
     if (!made.ok) throw new Error(made.issues.join('; '));
     if (runBot(made.world, undefined, { profile: 'novice' }).outcome === 'won') novice += 1;
     if (runBot(made.world, undefined, { profile: 'intermediate' }).outcome === 'won') intermediate += 1;
@@ -50,18 +55,43 @@ function ratesOf(control: Control, extra: Record<string, unknown>): Rates {
 const comparable = (ability: AbilityId): Record<string, unknown> => (ability === 'shoot' ? { addons: ['shoot'] } : {});
 
 beforeAll(async () => {
+  // Návrh věty ověřuje svět robotem: fyzika načtená dřív, jako na živé cestě.
+  await loadRapier();
   for (const control of CONTROLS) {
     const read = readGameSpec(FIXTURES[control]);
     if (read.ok) await preloadPhysics(read.value, loadRapier);
   }
 });
 
+function expectGates(rates: Rates, base: Rates): void {
+  expect(rates.idleWins, 'a player who does nothing wins').toBe(0);
+  expect(rates.intermediate, `intermediate, comparable game ${base.intermediate}`).toBeGreaterThanOrEqual(0.8);
+  expect(rates.novice, `novice, comparable game ${base.novice}`).toBeLessThanOrEqual(Math.max(0.7, base.novice));
+}
+
 describe.each(CONTROLS)('P46A difficulty gates with abilities on %s', (control) => {
   it.each([...ABILITIES])('%s keeps the gates of the comparable game', (ability) => {
-    const base = ratesOf(control, comparable(ability));
-    const rates = ratesOf(control, { abilities: [ability] });
-    expect(rates.idleWins, 'a player who does nothing wins').toBe(0);
-    expect(rates.intermediate, `intermediate, comparable game ${base.intermediate}`).toBeGreaterThanOrEqual(0.8);
-    expect(rates.novice, `novice, comparable game ${base.novice}`).toBeLessThanOrEqual(Math.max(0.7, base.novice));
+    expectGates(ratesOf(control, { abilities: [ability] }), ratesOf(control, comparable(ability)));
+  }, 300_000);
+});
+
+/**
+ * Složená hra s padajícími díly (P47B T4): věta si dash či štít nechá a ochrana bere i díly.
+ * Srovnávací hra = táž věta bez akce. Běžec s dashem („a squirrel runs and dodges falling
+ * acorns“) chybí: novice vyhraje 8/10 proti 5/10 bez akce, a stejně 8/10 i se zrušenou
+ * ochranou dílů – dash P46A přes překážky trati, ne T4.
+ */
+const ASSEMBLED = [
+  ['runner', 'shield', 'a squirrel runs and blocks falling acorns'],
+  ['platform', 'dash', 'a frog jumps and dashes through falling coconuts'],
+  ['platform', 'shield', 'a frog jumps and blocks falling coconuts'],
+] as const;
+
+describe('P47B T4 difficulty gates on assembled games with falling parts', () => {
+  it.each(ASSEMBLED)('%s %s ("%s") keeps the gates of the same sentence without the action', (_control, ability, text) => {
+    const { spec } = draftGameSpecWithMeta(text, 1);
+    expect(spec.abilities).toEqual([ability]);
+    const { abilities: _abilities, ...plain } = spec;
+    expectGates(ratesOfSpec(spec), ratesOfSpec(plain as GameSpecV1));
   }, 300_000);
 });

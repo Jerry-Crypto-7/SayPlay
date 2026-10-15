@@ -38,8 +38,16 @@ export type AbilityControl = z.infer<typeof abilityControlParams>;
 /** Role, které hrdinovi ublíží nárazem – ty dash prorazí a štít odrazí. */
 export const HARMFUL_ROLES = ['obstacle', 'chaser', 'hazard', 'enemy'] as const;
 
-/** Robot akcí (P46A T6): totéž co obal ovládání a role, před kterými dash a štít chrání. */
-export const abilityBotParams = abilityControlParams.extend({ harm: z.array(z.enum(HARMFUL_ROLES)).max(HARMFUL_ROLES.length) });
+/**
+ * Díly složené hry (P47B T4), které hrdinovi ublíží vlastní větví `assembly_part`, ne nárazem `hit`:
+ * padající či letící nebezpečí a pronásledovatel. Jejich tělo je věc s vlastním kódem role, proto je
+ * dash, štít i robot znají po indexu těla (`parts`).
+ */
+export const HARMFUL_PARTS: readonly string[] = ['hazard', 'chaser'];
+export const partBodies = z.array(z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1)).min(1);
+
+/** Robot akcí (P46A T6): totéž co obal ovládání a role, před kterými dash a štít chrání; `parts` = těla dílů, která zraní (P47B T4). */
+export const abilityBotParams = abilityControlParams.extend({ harm: z.array(z.enum(HARMFUL_ROLES)).max(HARMFUL_ROLES.length), parts: partBodies.optional() });
 export type AbilityBot = z.infer<typeof abilityBotParams>;
 
 /** Obaly ovládání, pod kterými může ležet obal akcí (`baseControlOf` v `addons.ts`). */
@@ -83,7 +91,7 @@ export function tickAbilities(state: Int32Array, buttons: number, params: Abilit
   state[k + ABILITY_SLOTS.held] = buttons & (BUTTON.ACTION_A | BUTTON.ACTION_B);
 }
 
-/** Ochrana nárazu (`hit`, `steer_crash`) dashem ve slotu `dash` nebo štítem (P46A T5). */
+/** Ochrana nárazu (`hit`, `steer_crash`, díl složené hry) dashem ve slotu `dash` nebo štítem (P46A T5). */
 export const guardParams = z
   .object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), dash: z.int().min(0).max(1).optional(), shield: z.literal(true).optional() })
   .strict();
@@ -98,7 +106,7 @@ export function guardOf(state: Int32Array, guard: z.infer<typeof guardParams>): 
   return guard.shield === true && (state[bodyBase(guard.keeper) + ABILITY_SLOTS.shield] as number) > 0 ? 'shield' : undefined;
 }
 
-/** Efekty nárazu do těla `other` pod ochranou `guard` (`hit`, `steer_crash`). */
+/** Efekty nárazu do těla `other` pod ochranou `guard` (`hit`, `steer_crash`, `assembly_part`). */
 export function guardedHit(state: Int32Array, guard: z.infer<typeof guardParams> | undefined, other: number, effects: ArcadeEffect[]): ArcadeEffect[] {
   const by = guard === undefined ? undefined : guardOf(state, guard);
   if (by === 'dash') return [];
