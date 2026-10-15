@@ -25,6 +25,7 @@ import { join } from 'node:path';
 
 import { after } from 'next/server';
 
+import { withDraftRules } from '@/play/director';
 import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
@@ -242,18 +243,33 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
     for (const seed of seeds) if (lostActions(intent, before, await actionEvidence(spec, seed)).length === 0) kept.push(seed);
     return kept;
   };
-  let upgraded = directed.spec;
-  let preservingSeeds = await preserving(upgraded);
-  if (preservingSeeds.length === 0) {
-    // Režisér často vybere jiný žánr a akci z věty ztratí (demo 12. 10.: 12 z 22 nahraných odpovědí).
-    // Druhý pokus: hra rychlé verze s pravidly, logikou a vzhledem od režiséra (9 z 12 pak projde).
-    const grafted = onQuickGame(draft.spec, directed.spec);
-    if (grafted !== null && gameSpecHash(grafted) !== gameSpecHash(draft.spec) && playabilityIssues(grafted, seeds).length === 0) {
-      const kept = await preserving(grafted);
-      if (kept.length > 0) [upgraded, preservingSeeds] = [grafted, kept];
+  // Režisér často vybere jiný žánr a akci z věty ztratí (demo 12. 10.: 12 z 22 nahraných odpovědí).
+  // Druhý pokus: hra rychlé verze s pravidly, logikou a vzhledem od režiséra (9 z 12 pak projde).
+  // AI verze s méně pravidly nebo bez logiky rychlé verze (P46E T2, demo 12. 10.: křeček a auta) jde až
+  // za kandidáty, které je drží: hra režiséra s pravidly rychlé verze, pak rychlá hra se vzhledem režiséra.
+  const quickRules = draft.spec.rules?.length ?? 0;
+  const loses = (spec: GameSpecV1) => (spec.rules?.length ?? 0) < quickRules || (draft.spec.logic !== undefined && spec.logic === undefined);
+  const { rules: _rules, ...withoutOwnRules } = directed.spec;
+  const candidates = loses(directed.spec)
+    ? [withDraftRules(draft.spec, directed.spec), onQuickGame(draft.spec, withoutOwnRules), directed.spec, onQuickGame(draft.spec, directed.spec)]
+    : [directed.spec, onQuickGame(draft.spec, directed.spec)];
+  // Roub, který rychlou verzi jen přejmenuje, AI verze není (auto, které ztratí závod i střelbu, zůstane ACTION_LOST).
+  const renamedQuick = (spec: GameSpecV1) => gameSpecHash({ ...spec, title: draft.spec.title }) === gameSpecHash(draft.spec);
+  let upgraded: GameSpecV1 | null = null;
+  let preservingSeeds: number[] = [];
+  const tried = new Set([gameSpecHash(draft.spec)]);
+  for (const candidate of candidates) {
+    if (candidate === null || tried.has(gameSpecHash(candidate))) continue;
+    tried.add(gameSpecHash(candidate));
+    // Spec režiséra ověřil robot už v `direct()`; složený kandidát ještě ne.
+    if (candidate !== directed.spec && (renamedQuick(candidate) || playabilityIssues(candidate, seeds).length > 0)) continue;
+    const kept = await preserving(candidate);
+    if (kept.length > 0) {
+      [upgraded, preservingSeeds] = [candidate, kept];
+      break;
     }
   }
-  if (preservingSeeds.length === 0) return final('ACTION_LOST', { stage: 'upgrade', reason: 'ACTION_LOST', detail: 'No candidate seed preserves all essential actions witnessed in the published quick version.', raw: directed.spec });
+  if (upgraded === null) return final('ACTION_LOST', { stage: 'upgrade', reason: 'ACTION_LOST', detail: 'No candidate seed preserves all essential actions witnessed in the published quick version.', raw: directed.spec });
 
   const published = await publishReadSpec(versions, upgraded, preservingSeeds, draftId, {
     relation: 'upgrade',

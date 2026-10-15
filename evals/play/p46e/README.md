@@ -26,3 +26,9 @@ Bez proměnných čte `src/play/director/__fixtures__/logic-answers` (25 nahran�
 - **AI verze vyjde u 20 z 25** (80 %). `direct()` dá hru z odpovědi u 23 z 25. Commit `aed3ebee` psal „22 z 25 před bránou upgradu“; dnešní obdoba je těch 23. Rozdíl je jedna věta a vznikl až po `aed3ebee` (P46A–I změnily hry, které robot ověřuje). Za branou upgradu padnou 3 (`ACTION_LOST`: h09 nemocnice, s003 křeček, u47 plavčík) a 2 odpovědi se nedají přečíst (`MALFORMED`: d20 jednorožec, s056 skútr).
 - **Pravidla drží 15 z 20 `ready` (75 %), logiku 14 z 20 (70 %).** Bez pravidel vyjdou pa-017, pa-018 (vesmírná loď), s002 (rytíř a klíče), s008 (banán) a si-018 (poušť). U m10 (hasič) zůstane jedno pravidlo ze dvou a logika zmizí. Pravidla ztrácí `direct()` (záloha bez pravidel, nebo odpověď bez nich a `read.ts` zahodí logiku); roub `onQuickGame` pravidla rychlé verze drží, když AI žádná nenapsala (z kódu, po větách neověřeno).
 - **Novinku, kterou hráč hraje, přidá 1 z 20** (5 %): boss u s002. Akce ani vlastní úseky nepřidá žádná. Jen postavy přidá 10 z 20 a zbylých 9 nepřidá nic.
+
+## Po T2 (pravidla rychlé verze místo hry bez pravidel; tytéž nahrávky, `baseline.json` nepřepsaný)
+
+- **AI verze vyjde u 23 z 25** (92 %). h09, s003 a u47 už nepadnou na `ACTION_LOST`: hra režiséra s pravidly rychlé verze akci z věty drží. Nečitelné zůstávají d20 a s056.
+- **Pravidla i logiku drží 23 z 23 `ready` (100 %).** Bez pravidel nevyjde žádná, m10 má obě pravidla.
+- **Novinku, kterou hráč hraje, nepřidá žádná** (0 z 23). Boss u s002 byl jen ve hře bez pravidel; s pravidly rychlé verze zmizí. Bosse režiséra přinese T4 jako vlastní pole odpovědi. Jen postavy přidá 12 z 23.

@@ -77,6 +77,11 @@ export type DirectedGame = DirectorResult & {
   readonly authoredBy?: string;
   /** Computed from this final version, never accepted from a model declaration. */
   readonly unmet?: readonly IntentTriple[];
+  /**
+   * Odkud jsou pravidla hry, když ta z odpovědi robot neověřil (P46E T2): `draft` = pravidla, věci a logika
+   * návrhu ze slov, `none` = ani ta neprošla a hra je bez pravidel. Chybí = pravidla odpovědi (nebo žádná nebyla).
+   */
+  readonly rulesFrom?: 'draft' | 'none';
 };
 
 export interface DirectorDeps {
@@ -305,14 +310,18 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     // Vlny a fáze z pravidel umí hru přitížit tak, že ji robot neprojde (demo 12. 10.: 6 z 25 nahraných
     // odpovědí, bez pravidel 5 z nich vyhraje) – hra bez pravidel je pořád AI verze s obsazením z odpovědi.
     const unplayable = (verified.issues.length > 0 || blockingIssues(critique(nativeSpec)).length > 0) && (nativeSpec.rules?.length ?? 0) > 0;
+    let rulesFrom: DirectedGame['rulesFrom'];
     if (ruleFailures.length > 0 || unplayable) {
       const unproved = new Set(unprovedVerbs(ruleFailures));
-      for (const candidate of [withoutRules(nativeSpec, rule => unproved.has(rule.verb)), withoutRules(nativeSpec, () => true)]) {
+      // Hra bez pravidel až po pravidlech rychlé verze (P46E T2): demo 12. 10. křečkovi zmizela pravidla.
+      const bare = withoutRules(nativeSpec, () => true);
+      const candidates = [[withoutRules(nativeSpec, rule => unproved.has(rule.verb)), undefined], [bare === null ? null : withDraftRules(draft, bare), 'draft'], [bare, 'none']] as const;
+      for (const [candidate, from] of candidates) {
         if (candidate === null || blockingIssues(critique(candidate)).length > 0) continue;
         const checked = deps.check === undefined ? [] : verbIssues(deps.check(candidate), candidate);
         const played = await verifyDirectorSpec(candidate, intent, deps.seed ?? 1);
         if (checked.length > 0 || played.issues.length > 0) continue;
-        nativeSpec = candidate; verified = played; ruleBlocks = []; issues = issuesOf();
+        nativeSpec = candidate; verified = played; ruleBlocks = []; issues = issuesOf(); rulesFrom = from;
         break;
       }
     }
@@ -324,7 +333,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     if (verified.complete && !incomplete && !byFallback) await deps.cache?.write(key, nativeSpec, authoredBy);
     return { ok: true, spec: nativeSpec, source: 'authored', repairRounds: rounds, fallbackReason: incomplete ? 'VERB_UNPROVED' : null,
       ...(!incomplete ? {} : { failure: { stage: 'critic' as const, reason: issues.some(issue => issue.code === 'ACTION_LOST') ? 'ACTION_LOST' : 'VERB_UNPROVED', detail: [...issues.map(issue => `${issue.code}: ${issue.evidence}`), ...(dropped.length === 0 ? [] : [...originalRuleIssues.map(issue => `${issue.code}: ${issue.evidence}`), `rule verbs dropped: ${dropped.join(', ')}`])].join('; '), raw: nativeSpec } }),
-      unmet: verified.unmet, warnings: warningsOf(nativeSpec), ms: deps.now() - started, calls, ...(authoredBy === null ? {} : { authoredBy }) };
+      unmet: verified.unmet, warnings: warningsOf(nativeSpec), ms: deps.now() - started, calls, ...(authoredBy === null ? {} : { authoredBy }), ...(rulesFrom === undefined ? {} : { rulesFrom }) };
   }
 
   // Hru skládá modul žánru – co se nepřečte nebo nepřeloží, oprava tabulkou nespraví.
@@ -411,10 +420,11 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   if (ruleFailed && (blocks.length > 0 || checked.length > 0)) {
     const failure: DirectorFailure = { stage: 'critic', reason: 'VERB_UNPROVED', detail: ruleFailure.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; ') || checked.map((issue) => issue.code).join('; '), raw: spec };
     const unproved = new Set(unprovedVerbs(checked));
-    const candidates = [withoutRules(spec, (rule) => unproved.has(rule.verb)), withoutRules(spec, () => true)];
-    for (const candidate of candidates) {
+    const bare = withoutRules(spec, () => true);
+    const candidates = [[withoutRules(spec, (rule) => unproved.has(rule.verb)), undefined], [bare === null ? null : withDraftRules(draft, bare), 'draft'], [bare, 'none']] as const;
+    for (const [candidate, from] of candidates) {
       if (candidate === null || blockingIssues(critique(candidate)).length > 0 || checkOf(candidate).length > 0) continue;
-      return { ok: true, spec: candidate, source: 'authored', repairRounds, fallbackReason: 'VERB_UNPROVED', failure, warnings: warningsOf(candidate), ms: deps.now() - started, calls };
+      return { ok: true, spec: candidate, source: 'authored', repairRounds, fallbackReason: 'VERB_UNPROVED', failure, warnings: warningsOf(candidate), ms: deps.now() - started, calls, ...(from === undefined ? {} : { rulesFrom: from }) };
     }
     return fallback('VERB_UNPROVED', failure);
   }
@@ -450,6 +460,27 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
 function withoutRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rules']>[number]) => boolean): GameSpecV1 | null {
   const candidate = droppedRules(spec, drop);
   return candidate !== null && readGameSpec(candidate).ok ? candidate : null;
+}
+
+/**
+ * Hra `spec` s pravidly, věcmi a logikou návrhu (P46E T2, vzor `onQuickGame` v `_upgrade.ts`). Bez vlastní logiky si
+ * `spec` nechá svá pravidla a věci za těmi z návrhu; s vlastní logikou je návrh nahradí, protože dva průběhy fází
+ * vedle sebe neběží. `null` = návrh pravidla nemá, nebo výsledek `readGameSpec` odmítne (např. role, kterou pravidlo
+ * návrhu volá, ve hře `spec` není).
+ */
+export function withDraftRules(draft: GameSpecV1, spec: GameSpecV1): GameSpecV1 | null {
+  const rules = draft.rules ?? [];
+  if (rules.length === 0) return null;
+  const { rules: own = [], things: ownThings = [], logic, ...rest } = spec;
+  const merge = logic === undefined;
+  const things = [...(draft.things ?? []), ...(merge ? ownThings.filter((thing) => !(draft.things ?? []).some((each) => each.role === thing.role)) : [])];
+  const read = readGameSpec({
+    ...rest,
+    rules: [...rules, ...(merge ? own.filter((rule) => !rules.some((each) => each.id === rule.id)) : [])],
+    ...(things.length === 0 ? {} : { things }),
+    ...(draft.logic === undefined ? {} : { logic: draft.logic }),
+  });
+  return read.ok ? read.value : null;
 }
 
 /** Spec bez pravidel, která `drop` vybere; `things` jen když žádné pravidlo nezbylo. `null` = nebylo co odebrat. */
