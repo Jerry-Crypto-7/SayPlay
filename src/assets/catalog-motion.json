@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "e6bb7aa39a23e80ac9af24355af700c0ba33cecc832e6c879cb93368a51687cc",
+ "catalogHash": "668384489916db3baa94bbb0f02d85f18e4dbbbdff5f40d5514389e869510fcc",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1645,6 +1645,12 @@
   "gen3d-blue-ribbon": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-boxing-ring": {"class":"prop"},
   "gen3d-gong": {"class":"prop"},
-  "gen3d-arena-gate": {"class":"prop"}
+  "gen3d-arena-gate": {"class":"prop"},
+  "gen3d-bullseye-target": {"class":"prop"},
+  "gen3d-carnival-target": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-carnival-booth": {"class":"prop"},
+  "gen3d-prize-wheel": {"class":"prop"},
+  "gen3d-orb-pedestal": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-crystal-pedestal": {"class":"biped","regions":{"legY":0.25}}
  }
 }

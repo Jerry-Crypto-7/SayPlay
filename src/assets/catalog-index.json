@@ -33050,6 +33050,124 @@
           0.12177
         ]
       }
+    },
+    {
+      "assetId": "gen3d-bullseye-target",
+      "tags": [
+        "bullseye target",
+        "archery target"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bullseye-target-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41071,
+          0,
+          -0.18075
+        ],
+        "max": [
+          0.41071,
+          0.99455,
+          0.18075
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-carnival-target",
+      "tags": [
+        "carnival target",
+        "shooting gallery target"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-carnival-target-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34111,
+          0,
+          -0.17905
+        ],
+        "max": [
+          0.34111,
+          0.99713,
+          0.17905
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-carnival-booth",
+      "tags": [
+        "carnival booth"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-carnival-booth-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3985,
+          0,
+          -0.19109
+        ],
+        "max": [
+          0.3985,
+          0.99727,
+          0.19109
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-prize-wheel",
+      "tags": [
+        "prize wheel",
+        "wheel of fortune",
+        "spinning wheel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-prize-wheel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38513,
+          0,
+          -0.24009
+        ],
+        "max": [
+          0.38513,
+          0.99989,
+          0.24009
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-orb-pedestal",
+      "tags": [
+        "orb pedestal"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-orb-pedestal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21891,
+          0,
+          -0.22874
+        ],
+        "max": [
+          0.21891,
+          0.99715,
+          0.22874
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crystal-pedestal",
+      "tags": [
+        "crystal pedestal"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-crystal-pedestal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15785,
+          0,
+          -0.15789
+        ],
+        "max": [
+          0.15785,
+          0.99873,
+          0.15789
+        ]
+      }
     }
   ]
 }

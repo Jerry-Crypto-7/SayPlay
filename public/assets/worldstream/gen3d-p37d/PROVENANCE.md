@@ -870,3 +870,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-boxing-ring` | boxing ring, wrestling ring | 4719 / 2351 |
 | `gen3d-gong` | gong, bronze gong | 4716 / 2348 |
 | `gen3d-arena-gate` | arena gate | 4494 / 2176 |
+| `gen3d-bullseye-target` | bullseye target, archery target | 4498 / 2139 |
+| `gen3d-carnival-target` | carnival target, shooting gallery target | 4436 / 2194 |
+| `gen3d-carnival-booth` | carnival booth | 4507 / 2199 |
+| `gen3d-prize-wheel` | prize wheel, wheel of fortune, spinning wheel | 4498 / 2145 |
+| `gen3d-orb-pedestal` | orb pedestal | 4748 / 2374 |
+| `gen3d-crystal-pedestal` | crystal pedestal | 4748 / 2374 |
