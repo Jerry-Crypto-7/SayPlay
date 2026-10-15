@@ -29745,6 +29745,101 @@
           0.39819
         ]
       }
+    },
+    {
+      "assetId": "gen3d-honey-pot",
+      "tags": [
+        "honey pot"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-honey-pot-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.52833,
+          0,
+          -0.43544
+        ],
+        "max": [
+          0.52833,
+          0.99565,
+          0.43544
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-machete",
+      "tags": [
+        "machete"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-machete-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.55774,
+          0,
+          -0.09461
+        ],
+        "max": [
+          0.55774,
+          0.99989,
+          0.09461
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-swinging-axe",
+      "tags": [
+        "swinging axe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-swinging-axe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07895,
+          0,
+          -0.18172
+        ],
+        "max": [
+          0.07895,
+          0.99828,
+          0.18172
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-panther",
+      "tags": [
+        "panther"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-panther-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33217,
+          0,
+          -0.80254
+        ],
+        "max": [
+          0.33217,
+          0.98992,
+          0.80254
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flame-trap",
+      "tags": [
+        "flame trap"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flame-trap-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33805,
+          0,
+          -0.33589
+        ],
+        "max": [
+          0.33805,
+          0.99997,
+          0.33589
+        ]
+      }
     }
   ]
 }

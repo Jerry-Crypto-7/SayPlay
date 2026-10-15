@@ -703,3 +703,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-turnstile` | turnstile | 4738 / 2366 |
 | `gen3d-mousetrap` | mousetrap | 4732 / 2359 |
 | `gen3d-puffin` | puffin | 4702 / 2350 |
+| `gen3d-honey-pot` | honey pot | 4369 / 2183 |
+| `gen3d-machete` | machete | 4744 / 2359 |
+| `gen3d-swinging-axe` | swinging axe | 4748 / 2366 |
+| `gen3d-panther` | panther | 4686 / 2304 |
+| `gen3d-flame-trap` | flame trap | 4449 / 2044 |
