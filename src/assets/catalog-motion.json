@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "842813665c8452f1459b24677fef5bb4ed66bac67f8c383fe0257fdf1692a2f3",
+ "catalogHash": "6abebe6439656ae19bcb936408d3cd0e9cbc184068fe0383e92c3aae09dad605",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1536,6 +1536,11 @@
   "gen3d-hitching-post": {"class":"prop"},
   "gen3d-snowy-mailbox": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-jade-statue": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-sunken-mast": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-sunken-mast": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-underwater-lantern": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-fire-alarm-box": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-sunscreen-bottle": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-water-canteen": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-manhole-cover": {"class":"prop"}
  }
 }

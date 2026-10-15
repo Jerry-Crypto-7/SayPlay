@@ -30863,6 +30863,101 @@
           0.3021
         ]
       }
+    },
+    {
+      "assetId": "gen3d-underwater-lantern",
+      "tags": [
+        "underwater lantern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-underwater-lantern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24749,
+          0,
+          -0.23182
+        ],
+        "max": [
+          0.24749,
+          0.99818,
+          0.23182
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fire-alarm-box",
+      "tags": [
+        "fire alarm box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fire-alarm-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19512,
+          0,
+          -0.20072
+        ],
+        "max": [
+          0.19512,
+          1,
+          0.20072
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sunscreen-bottle",
+      "tags": [
+        "sunscreen bottle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sunscreen-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17809,
+          0,
+          -0.16479
+        ],
+        "max": [
+          0.17809,
+          0.99969,
+          0.16479
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-water-canteen",
+      "tags": [
+        "water canteen"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-water-canteen-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28627,
+          0,
+          -0.31621
+        ],
+        "max": [
+          0.28627,
+          0.99992,
+          0.31621
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-manhole-cover",
+      "tags": [
+        "manhole cover"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-manhole-cover-lod1.glb",
+      "bounds": {
+        "min": [
+          -3.4664,
+          0,
+          -3.48072
+        ],
+        "max": [
+          3.4664,
+          0.99969,
+          3.48072
+        ]
+      }
     }
   ]
 }

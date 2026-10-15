@@ -761,3 +761,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-snowy-mailbox` | snowy mailbox | 4470 / 2196 |
 | `gen3d-jade-statue` | jade statue | 4454 / 2225 |
 | `gen3d-sunken-mast` | sunken mast | 4733 / 2363 |
+| `gen3d-underwater-lantern` | underwater lantern | 4601 / 2294 |
+| `gen3d-fire-alarm-box` | fire alarm box | 4744 / 2367 |
+| `gen3d-sunscreen-bottle` | sunscreen bottle | 4739 / 2360 |
+| `gen3d-water-canteen` | water canteen | 4464 / 2164 |
+| `gen3d-manhole-cover` | manhole cover | 4383 / 2062 |
