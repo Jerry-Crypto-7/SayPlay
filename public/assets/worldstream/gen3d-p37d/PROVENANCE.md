@@ -854,3 +854,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-steel-beam` | steel beam | 4748 / 2374 |
 | `gen3d-broken-gravestone` | broken gravestone | 4503 / 2242 |
 | `gen3d-tournament-banner` | tournament banner | 4748 / 2374 |
+| `gen3d-sunken-crate` | sunken crate | 4354 / 2137 |
+| `gen3d-ginger-flower` | ginger flower | 4651 / 2259 |
+| `gen3d-wanted-poster` | wanted poster | 4480 / 2085 |
+| `gen3d-ice-slide` | ice slide | 4722 / 2341 |

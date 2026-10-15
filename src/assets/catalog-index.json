@@ -32737,6 +32737,82 @@
           0.02827
         ]
       }
+    },
+    {
+      "assetId": "gen3d-sunken-crate",
+      "tags": [
+        "sunken crate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sunken-crate-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.19582,
+          0,
+          -1.19179
+        ],
+        "max": [
+          1.19582,
+          0.99396,
+          1.19179
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ginger-flower",
+      "tags": [
+        "ginger flower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ginger-flower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13321,
+          0,
+          -0.13439
+        ],
+        "max": [
+          0.13321,
+          0.99781,
+          0.13439
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wanted-poster",
+      "tags": [
+        "wanted poster"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wanted-poster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42003,
+          0,
+          -0.01131
+        ],
+        "max": [
+          0.42003,
+          0.99996,
+          0.01131
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-slide",
+      "tags": [
+        "ice slide"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-slide-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38318,
+          0,
+          -0.79743
+        ],
+        "max": [
+          0.38318,
+          0.99903,
+          0.79743
+        ]
+      }
     }
   ]
 }
