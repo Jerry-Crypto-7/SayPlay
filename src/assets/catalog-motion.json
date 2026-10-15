@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "ab08251a4f048102d990fc99d749f4f4ba3e7e94ecef7b063282d71b585cc1e3",
+ "catalogHash": "842813665c8452f1459b24677fef5bb4ed66bac67f8c383fe0257fdf1692a2f3",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1534,6 +1534,8 @@
   "gen3d-coconut-stall": {"class":"prop"},
   "gen3d-taro-plant": {"class":"prop"},
   "gen3d-hitching-post": {"class":"prop"},
-  "gen3d-snowy-mailbox": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-snowy-mailbox": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-jade-statue": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-sunken-mast": {"class":"biped","regions":{"legY":0.25}}
  }
 }

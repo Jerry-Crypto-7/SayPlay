@@ -41,3 +41,4 @@ Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek
 | 35 (opakování) | w2-scenery | 10 | 6 | 1/6 | 1 | – | 66/94 | jaguar statue | – |
 | 36 | w2-scenery | 10 | 8 | 7/8 | 6 | – | 66/94 | shop sign, snowy bench, pier lamp, coral pillar, mesquite tree, city map board | – |
 | 37 | w2-scenery | 10 | 8 | 7/8 | 7 | – | 66/94 | stone cairn, hotel sign, avalanche fence, coconut stall, taro plant, hitching post, snowy mailbox | – |
+| 38 (opakování) | w2-scenery | 10 | 6 | 2/6 | 2 | – | 66/94 | jade statue, sunken mast | – |

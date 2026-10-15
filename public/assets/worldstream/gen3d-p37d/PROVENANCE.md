@@ -759,3 +759,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-taro-plant` | taro plant | 4746 / 2356 |
 | `gen3d-hitching-post` | hitching post | 4748 / 2374 |
 | `gen3d-snowy-mailbox` | snowy mailbox | 4470 / 2196 |
+| `gen3d-jade-statue` | jade statue | 4454 / 2225 |
+| `gen3d-sunken-mast` | sunken mast | 4733 / 2363 |

@@ -30825,6 +30825,44 @@
           0.26906
         ]
       }
+    },
+    {
+      "assetId": "gen3d-jade-statue",
+      "tags": [
+        "jade statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jade-statue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3009,
+          0,
+          -0.30099
+        ],
+        "max": [
+          0.3009,
+          1.00001,
+          0.30099
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sunken-mast",
+      "tags": [
+        "sunken mast"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sunken-mast-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30536,
+          0,
+          -0.3021
+        ],
+        "max": [
+          0.30536,
+          0.99895,
+          0.3021
+        ]
+      }
     }
   ]
 }
