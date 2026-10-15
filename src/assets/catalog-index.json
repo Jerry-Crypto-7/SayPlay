@@ -33364,6 +33364,140 @@
           0.49366
         ]
       }
+    },
+    {
+      "assetId": "gen3d-haunted-crown",
+      "tags": [
+        "haunted crown"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-haunted-crown-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.92485,
+          0,
+          -0.90775
+        ],
+        "max": [
+          0.92485,
+          0.99463,
+          0.90775
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-trident-statue",
+      "tags": [
+        "trident statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-trident-statue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20894,
+          0,
+          -0.17695
+        ],
+        "max": [
+          0.20894,
+          0.99396,
+          0.17695
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-golden-acorn",
+      "tags": [
+        "golden acorn"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-golden-acorn-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2947,
+          0,
+          -0.29425
+        ],
+        "max": [
+          0.2947,
+          0.99853,
+          0.29425
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-golden-gear",
+      "tags": [
+        "golden gear"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-golden-gear-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49946,
+          0,
+          -0.08538
+        ],
+        "max": [
+          0.49946,
+          0.99903,
+          0.08538
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hot-cocoa-mug",
+      "tags": [
+        "hot cocoa mug",
+        "hot chocolate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hot-cocoa-mug-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.55913,
+          0,
+          -0.31251
+        ],
+        "max": [
+          0.55913,
+          0.99495,
+          0.31251
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-subway-token",
+      "tags": [
+        "subway token"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-subway-token-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49969,
+          0,
+          -0.04351
+        ],
+        "max": [
+          0.49969,
+          1.00001,
+          0.04351
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-candy-bar",
+      "tags": [
+        "candy bar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-candy-bar-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.15121,
+          0,
+          -0.39444
+        ],
+        "max": [
+          1.15121,
+          0.99846,
+          0.39444
+        ]
+      }
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "02bc7d1c956cb58427813544f1665118143c971c1e8ed97cf086ad2788dbbca1",
+ "catalogHash": "09e0a10e7ae32d156c6d75336653d13bfdb36f5dea81961885549b1c5a0f86d8",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1661,6 +1661,13 @@
   "gen3d-fire-crown": {"class":"prop"},
   "gen3d-bone-pile": {"class":"prop"},
   "gen3d-jousting-lance": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-fencing-mask": {"class":"prop"}
+  "gen3d-fencing-mask": {"class":"prop"},
+  "gen3d-haunted-crown": {"class":"prop"},
+  "gen3d-trident-statue": {"class":"biped","regions":{"legY":0.248}},
+  "gen3d-golden-acorn": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-golden-gear": {"class":"prop"},
+  "gen3d-hot-cocoa-mug": {"class":"prop"},
+  "gen3d-subway-token": {"class":"prop"},
+  "gen3d-candy-bar": {"class":"prop"}
  }
 }

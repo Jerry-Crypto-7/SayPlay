@@ -886,3 +886,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-bone-pile` | bone pile | 4306 / 2103 |
 | `gen3d-jousting-lance` | jousting lance, lance | 4748 / 2374 |
 | `gen3d-fencing-mask` | fencing mask, fencing helmet | 4516 / 2147 |
+| `gen3d-haunted-crown` | haunted crown | 4510 / 2191 |
+| `gen3d-trident-statue` | trident statue | 4726 / 2358 |
+| `gen3d-golden-acorn` | golden acorn | 4748 / 2374 |
+| `gen3d-golden-gear` | golden gear | 4748 / 2374 |
+| `gen3d-hot-cocoa-mug` | hot cocoa mug, hot chocolate | 4450 / 2176 |
+| `gen3d-subway-token` | subway token | 4748 / 2374 |
+| `gen3d-candy-bar` | candy bar | 4726 / 2301 |
