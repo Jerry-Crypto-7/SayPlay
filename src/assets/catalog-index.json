@@ -33168,6 +33168,143 @@
           0.15789
         ]
       }
+    },
+    {
+      "assetId": "gen3d-map-piece",
+      "tags": [
+        "map piece",
+        "map fragment"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-map-piece-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46969,
+          0,
+          -0.01549
+        ],
+        "max": [
+          0.46969,
+          1.00001,
+          0.01549
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-magic-fountain",
+      "tags": [
+        "magic fountain"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-magic-fountain-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.69941,
+          0,
+          -0.69868
+        ],
+        "max": [
+          0.69941,
+          1.00001,
+          0.69868
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wishing-well",
+      "tags": [
+        "wishing well"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wishing-well-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36563,
+          0,
+          -0.36392
+        ],
+        "max": [
+          0.36563,
+          0.99912,
+          0.36392
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sword-in-the-stone",
+      "tags": [
+        "sword in the stone",
+        "sword in stone",
+        "excalibur"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sword-in-the-stone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32686,
+          0,
+          -0.35151
+        ],
+        "max": [
+          0.32686,
+          0.99873,
+          0.35151
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-holy-grail",
+      "tags": [
+        "holy grail",
+        "grail"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-holy-grail-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29879,
+          0,
+          -0.29858
+        ],
+        "max": [
+          0.29879,
+          0.99991,
+          0.29858
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-throne",
+      "tags": [
+        "ice throne"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-throne-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29766,
+          0,
+          -0.2769
+        ],
+        "max": [
+          0.29766,
+          0.99998,
+          0.2769
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fire-crown",
+      "tags": [
+        "fire crown"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fire-crown-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.56523,
+          0,
+          -0.58217
+        ],
+        "max": [
+          0.56523,
+          0.98876,
+          0.58217
+        ]
+      }
     }
   ]
 }

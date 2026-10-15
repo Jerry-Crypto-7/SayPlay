@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "668384489916db3baa94bbb0f02d85f18e4dbbbdff5f40d5514389e869510fcc",
+ "catalogHash": "991b941475a3e1be9f43c477c509afa9a75eee78fcd70715c5baf251134cd69d",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1651,6 +1651,13 @@
   "gen3d-carnival-booth": {"class":"prop"},
   "gen3d-prize-wheel": {"class":"prop"},
   "gen3d-orb-pedestal": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-crystal-pedestal": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-crystal-pedestal": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-map-piece": {"class":"prop"},
+  "gen3d-magic-fountain": {"class":"prop"},
+  "gen3d-wishing-well": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-sword-in-the-stone": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-holy-grail": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-ice-throne": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-fire-crown": {"class":"prop"}
  }
 }

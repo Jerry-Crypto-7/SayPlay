@@ -16,3 +16,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 10 (opakování) | p46i-retry | 7 | 4 | 3/4 | 3 | – | 94/101 | frozen signpost, vine curtain, castle catapult | – |
 | 11 | goal | 10 | 8 | 8/8 | 8 | – | 94/101 | victory podium, star trophy, finish banner, laurel wreath, blue ribbon, boxing ring, gong, arena gate | – |
 | 12 | goal | 10 | 8 | 6/8 | 6 | – | 94/101 | bullseye target, carnival target, carnival booth, prize wheel, orb pedestal, crystal pedestal | – |
+| 13 | goal | 10 | 9 | 7/9 | 7 | – | 94/101 | map piece, magic fountain, wishing well, sword in the stone, holy grail, ice throne, fire crown | red under load, green alone: src/assets/__tests__/external-import.test.ts |

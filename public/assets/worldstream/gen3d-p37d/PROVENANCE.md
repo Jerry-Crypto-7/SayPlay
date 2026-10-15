@@ -876,3 +876,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-prize-wheel` | prize wheel, wheel of fortune, spinning wheel | 4498 / 2145 |
 | `gen3d-orb-pedestal` | orb pedestal | 4748 / 2374 |
 | `gen3d-crystal-pedestal` | crystal pedestal | 4748 / 2374 |
+| `gen3d-map-piece` | map piece, map fragment | 4743 / 2370 |
+| `gen3d-magic-fountain` | magic fountain | 4332 / 2075 |
+| `gen3d-wishing-well` | wishing well | 4015 / 1960 |
+| `gen3d-sword-in-the-stone` | sword in the stone, sword in stone, excalibur | 4738 / 2366 |
+| `gen3d-holy-grail` | holy grail, grail | 4750 / 2372 |
+| `gen3d-ice-throne` | ice throne | 4391 / 2121 |
+| `gen3d-fire-crown` | fire crown | 4482 / 2217 |
