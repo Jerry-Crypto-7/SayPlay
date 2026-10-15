@@ -138,7 +138,8 @@ describe('věta: rychlá verze a AI verze', () => {
     expect(created.status).toBe(201);
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'BLOCKED' });
     expect(await store().childrenOf(created.body.versionId)).toEqual([]);
-    expect(director.calls).toBe(1);
+    // Odpověď a druhý pokus s pokynem (P46E T4), protože první nic nepřidala.
+    expect(director.calls).toBe(2);
   });
 
   it('čistá AI verze dál projde jako ready', async () => {

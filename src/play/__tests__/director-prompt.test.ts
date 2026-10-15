@@ -129,7 +129,8 @@ describe('director prompt', () => {
   // P38: 9 254 B – výchozí bod je odhad, ne kostra; dvě činnosti věty (skok + střelba); věta v jiném jazyce.
   // P39 T11: 10 082 B – obsazení místo `enemy`/`enemyMoves`/`collectible`/`target`: tvar položky a řádek na každé `does`.
   // P45B T10: +1 500 B na průběh hry (`logic`) – řádek gramatiky a příklad s fází, časovačem a vlnou; strop 14 200 B.
-  it('stays under 14 200 bytes for all forty golden sentences, with examples and the complete intent', () => {
+  // P46E T3: řádek novinek AI verze (boss, akce, úseky) s příkladem na každý hlavní žánr – 14 964 B; strop 15 000 B.
+  it('stays under 15 000 bytes for all forty golden sentences, with examples and the complete intent', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(entry.prompt).genre;
@@ -139,10 +140,10 @@ describe('director prompt', () => {
         max = Math.max(max, Buffer.byteLength(request.system + request.user + fullIntent));
       }
     }
-    expect(max).toBeLessThanOrEqual(14_200);
+    expect(max).toBeLessThanOrEqual(15_000);
     // P41 adds a live recipe table and all essential triples; the historical
     // 10,082 B observation was not the 12,700 B budget. Report both channels.
-    if (process.env.P41_PROMPT_REPORT) writeFileSync(process.env.P41_PROMPT_REPORT, JSON.stringify({ maxPromptBytes: max, outputSchemaBytes: Buffer.byteLength(JSON.stringify(GENRE_ANSWER_SCHEMA)), includesFullIntent: true, budgetBytes: 14_200 }, null, 2));
+    if (process.env.P41_PROMPT_REPORT) writeFileSync(process.env.P41_PROMPT_REPORT, JSON.stringify({ maxPromptBytes: max, outputSchemaBytes: Buffer.byteLength(JSON.stringify(GENRE_ANSWER_SCHEMA)), includesFullIntent: true, budgetBytes: 15_000 }, null, 2));
     // Čtyřicet návrhů s ověřením robotem: arénu od P45C T12 ověřují i sondy nových chování (samotný test ~21 s).
   }, 90_000);
 

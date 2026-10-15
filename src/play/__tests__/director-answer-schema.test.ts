@@ -209,6 +209,10 @@ describe('director answer schema for a GenreSpec', () => {
         rules: null,
         // P45B T10: blok logiky – v přísném režimu povinný, bez průběhu null.
         logic: null,
+        // P46E T3: novinky AI verze, v přísném režimu povinné.
+        boss: null,
+        abilities: null,
+        segments: null,
       },
     };
     expect(validate(GENRE_ANSWER_SCHEMA, answer)).toEqual([]);
@@ -259,7 +263,7 @@ describe('director answer schema for a GenreSpec', () => {
 
   it('refuses a mode of another genre, a param out of bounds and a GameSpec in its place', () => {
     const params = { entryDistance: null, chaseLead: null, pursuitCeiling: null, itemSizePct: null, seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null, lives: null, targetScore: null, timeLimit: null };
-    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', cast: [{ label: 'wolf', does: 'chase_me', verb: null, states: null, patrol: null }], heroAction: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null, logic: null };
+    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', cast: [{ label: 'wolf', does: 'chase_me', verb: null, states: null, patrol: null }], heroAction: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null, logic: null, boss: null, abilities: null, segments: null };
     expect(validate(GENRE_SPEC, ok)).toEqual([]);
     // Počty (B-R4): jen role, které Aréna počítá, v mezích parametru, do kterého jdou.
     expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 3, collectible: null } })).toEqual([]);

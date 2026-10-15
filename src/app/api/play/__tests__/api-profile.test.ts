@@ -113,7 +113,9 @@ describe('final API profile over a provider double (D1)', () => {
     upstream.script = [genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', cast: [], setting: 'supermarket', palette: 'supermarket' })];
     const { versionId, outcome, seen } = await create();
     expect(outcome.status).toBe('ready');
-    expect(upstream.requests).toHaveLength(1);
+    // Hra bez novinky dostane jeden druhý pokus s pokynem (P46E T4); skript je prázdný, publikuje se první.
+    expect(upstream.requests).toHaveLength(2);
+    expect(upstream.requests[1].body).toContain('add a boss or an ability');
     const [request] = upstream.requests;
     expect(request.url).toBe(API.WORLDSMITH_MODEL_ENDPOINT);
     expect(request.headers.get('x-api-key')).toBe(KEY);
@@ -132,7 +134,8 @@ describe('final API profile over a provider double (D1)', () => {
     upstream.script = [faithful, [{ op: 'replace', path: '/title', value: 'Repaired Hamster Run' }]];
     const { outcome } = await create();
     expect(outcome.status).toBe('ready');
-    expect(upstream.requests).toHaveLength(2);
+    // Odpověď, opravné kolo a druhý pokus s pokynem (P46E T4).
+    expect(upstream.requests).toHaveLength(3);
     expect(upstream.requests[1].body).toContain('KEYPOINT_FAILED');
   });
 
