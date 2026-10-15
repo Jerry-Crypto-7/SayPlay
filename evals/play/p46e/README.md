@@ -63,4 +63,6 @@ node D:/claude/_shared/gpu-lock.mjs -- powershell -NoProfile -ExecutionPolicy By
 - Akce režiséra robot ve výsledné hře nepoužije, nebo s ní nevyhraje – `action` 0 z 25.
 - **Odvozeno, neověřeno:** největší páka je přenést bosse, akce a úseky odpovědi i na roub `onQuickGame` a zapsat do řádku měřidla, který kandidát vyhrál. Hra rychlé verze (běžec, řízení, skákačka) je umí postavit a robot ji vyhrává.
 
+**Po přenosu bosse a úseků na roub (15. 10. večer, po sloučení P46C; `after.json` přepsaný):** `onQuickGame` má nově před sebou kandidáta s bossem a scénářem úseků odpovědi (`withAiExtras`). **`adds` 6 z 25 (24 %)**, nově králík (o01) a muchomůrky (o02) s bossem. Úseky přidá pořád 0 a akce 0. Strop téhle cesty je 15 z 25: 10 odpovědí je aréna, která průběh (boss, úseky) nemá. Cíl 80 % bez bosse v aréně splnit nejde.
+
 **Oprava cestou** (`_upgrade.ts`): kandidát ověřený na prvním seedu se publikuje na prvním seedu, který drží akci věty. Když se liší, ověří se znovu i roub. Králík s touto nahrávkou předtím skončil `NOT_PLAYABLE` při publikaci.

@@ -8,9 +8,9 @@
   "readyShare": 1,
   "keptRules": 1,
   "keptLogic": 1,
-  "adds": 0.16,
+  "adds": 0.24,
   "onlyCharacters": 10,
-  "boss": 4,
+  "boss": 6,
   "action": 0,
   "segments": 0,
   "actionLost": 0,
@@ -292,7 +292,9 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "boss"
+   ],
    "actionLost": false
   },
   {
@@ -308,7 +310,9 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "boss"
+   ],
    "actionLost": false
   },
   {

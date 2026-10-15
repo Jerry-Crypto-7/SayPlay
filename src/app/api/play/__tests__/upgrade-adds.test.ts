@@ -107,12 +107,15 @@ describe('the AI version adds what the quick version lacks (P46E T4)', () => {
     expect(nudges).toEqual([undefined]);
   }, 180_000);
 
-  it('drops a recorded ability the robot cannot win with instead of losing the AI version', async () => {
+  // Do P46C robot se střelbou prohrál na 465 m a akce šla pryč („did not win with the shoot ability“). S kombem a
+  // power-upy P46C vyhraje, takže střelba zůstane. Větev „nevyhrál s akcí“ dnes žádná nahrávka nespustí (zkoušeno
+  // s008, si-018, f22 × shoot/strike/dash/shield, 15. 10.).
+  it('keeps a recorded ability once the robot wins with it (s008 shoot after P46C)', async () => {
     const { outcome, child, results } = await upgrade(s008.sentence, [withExtras(s008.answer, { abilities: ['shoot'] })]);
     expect(results[0]!.source).toBe('authored');
-    expect(results[0]!.failure?.detail).toContain('did not win with the "shoot" ability');
-    expect(outcome).toMatchObject({ status: 'ready' });
-    expect(child!.spec.abilities ?? []).not.toContain('shoot');
+    expect(results[0]!.failure?.detail ?? '').not.toContain('"shoot" ability');
+    expect(outcome).toMatchObject({ status: 'ready', adds: ['action'] });
+    expect(child!.spec.abilities).toEqual(['shoot']);
   }, 180_000);
 
   // Na téže nahrávce dřív „never used the grab ability“: robot krade, jen to svědci záměru neukázali.

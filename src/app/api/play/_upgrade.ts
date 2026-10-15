@@ -332,9 +332,14 @@ async function upgradeCandidate(draft: PublishedGame, ai: GameSpecV1, seeds: rea
   const quickRules = draft.spec.rules?.length ?? 0;
   const loses = (spec: GameSpecV1) => (spec.rules?.length ?? 0) < quickRules || (draft.spec.logic !== undefined && spec.logic === undefined);
   const { rules: _rules, ...withoutOwnRules } = directed.spec;
+  // Rychlá hra nejdřív s bossem a úseky režiséra (P46E T5: 15 z 25 odpovědí bosse má, roub ho zahodil – adds 4/25).
+  const onQuick = (ai: GameSpecV1) => {
+    const plain = onQuickGame(draft.spec, ai);
+    return [withAiExtras(plain, directed.spec), plain];
+  };
   const candidates = loses(directed.spec)
-    ? [withDraftRules(draft.spec, directed.spec), onQuickGame(draft.spec, withoutOwnRules), directed.spec, onQuickGame(draft.spec, directed.spec)]
-    : [directed.spec, onQuickGame(draft.spec, directed.spec)];
+    ? [withDraftRules(draft.spec, directed.spec), ...onQuick(withoutOwnRules), directed.spec, ...onQuick(directed.spec)]
+    : [directed.spec, ...onQuick(directed.spec)];
   // Roub, který rychlou verzi jen přejmenuje, AI verze není (auto, které ztratí závod i střelbu, zůstane ACTION_LOST).
   const renamedQuick = (spec: GameSpecV1) => gameSpecHash({ ...spec, title: draft.spec.title }) === gameSpecHash(draft.spec);
   const tried = new Set([gameSpecHash(draft.spec)]);
@@ -352,6 +357,13 @@ async function upgradeCandidate(draft: PublishedGame, ai: GameSpecV1, seeds: rea
     if (made.ok) return { spec: candidate, seeds: kept, played: { spec: candidate, world: made.world, witnesses } };
   }
   return null;
+}
+
+/** `spec` s bossem a scénářem úseků režiséra `ai`; `null` = nemá je, nebo je `readGameSpec` odmítne. */
+function withAiExtras(spec: GameSpecV1 | null, ai: GameSpecV1): GameSpecV1 | null {
+  if (spec === null || (ai.boss === undefined && ai.segments === undefined)) return null;
+  const read = readGameSpec({ ...spec, ...(ai.boss === undefined ? {} : { boss: ai.boss }), ...(ai.segments === undefined ? {} : { segments: ai.segments }) });
+  return read.ok ? read.value : null;
 }
 
 /**
