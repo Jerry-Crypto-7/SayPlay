@@ -106,7 +106,7 @@ describe('power-up placement', () => {
       for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
         const base = bodyBase(i);
         const role = (Object.keys(ROLE) as (keyof typeof ROLE)[]).find((name) => ROLE[name] === state[base + BODY.role]) ?? 'thing';
-        bodies.push({ role, x: state[base + BODY.x] as number, y: state[base + BODY.y] as number, z: state[base + BODY.z] as number, w: state[base + BODY.w] as number, h: state[base + BODY.h] as number, d: state[base + BODY.d] as number, solid: ((state[base + BODY.flags] as number) & FLAG.solid) !== 0, kind: 'x' });
+        bodies.push({ role, x: state[base + BODY.x] as number, y: state[base + BODY.y] as number, z: state[base + BODY.z] as number, w: state[base + BODY.w] as number, h: state[base + BODY.h] as number, d: state[base + BODY.d] as number, solid: ((state[base + BODY.flags] as number) & FLAG.solid) !== 0, kind: world.kinds[state[base + BODY.kind] as number] as string });
       }
       const course = courseOf({ bodies, length: world.length } as never);
       for (const body of powerupsOf(state)) expect(state[bodyBase(body) + BODY.x], `seed ${seed}`).toBe(centerAt(course, state[bodyBase(body) + BODY.z] as number));

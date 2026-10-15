@@ -14,7 +14,7 @@ import { type ArcadeParts, baseControlOf } from '../addons';
 import { ARCADE_LIMITS, type BodyInit, type PowerupId, UNIT } from '../contract';
 import { ARENA } from '../pieces/arena';
 import { RUNNER } from '../pieces/runner';
-import { centerAt, courseOf } from '../pieces/steer';
+import { centerAt, courseOf, steerRoute } from '../pieces/steer';
 import { POWERUP_SIZE, type PlacedPowerup, applyPowerups } from '.';
 
 /** Verze překladu žánru, od které hra power-upy má (`GENRE_COMPILER_VERSION`); uložené starší hrají jako dřív. */
@@ -81,8 +81,10 @@ function platformSpots(parts: ArcadeParts, count: number, rng: Rng): Spot[] {
 function steerSpots(parts: ArcadeParts, count: number, rng: Rng): Spot[] {
   const { length } = parts.level;
   const course = courseOf(parts.level);
-  // Mantinely a dělicí pásy (`tire-barrier`) lemují celou trať – ty místo neberou, jen co leží na silnici.
-  const risky = live(parts.level.bodies).filter((body) => body.kind !== 'tire-barrier' && (body.role === 'obstacle' || body.role === 'hazard' || body.role === 'enemy' || body.role === 'collectible'));
+  const route = steerRoute(parts.level);
+  // Místo berou jen tělesa, která zasahují na trasu; mantinely, břehy a ostrůvky rozcestí ji jen lemují.
+  const onRoute = (body: BodyInit): boolean => route.some((segment) => body.z >= segment.near && body.z < segment.far && Math.abs(body.x - segment.center) * 2 < segment.width + body.w);
+  const risky = live(parts.level.bodies).filter((body) => (body.role === 'obstacle' || body.role === 'hazard' || body.role === 'enemy' || body.role === 'collectible') && onRoute(body));
   const candidates: Spot[] = [];
   for (let z = Math.floor(0.15 * length); z <= 0.8 * length; z += 2000) {
     if (risky.every((body) => Math.abs(body.z - z) >= body.d / 2 + 4 * UNIT)) candidates.push({ x: centerAt(course, z), y: 0, z, size: STEER_PAD });
