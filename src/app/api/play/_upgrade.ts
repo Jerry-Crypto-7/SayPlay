@@ -30,7 +30,8 @@ import { arcadeWorldOf } from '@/play/arcade/compile';
 import { ABILITIES, type ArcadeWorld } from '@/play/arcade/contract';
 import { bossKindOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
 import type { ActionWitness } from '@/play/arcade/witness';
-import { withDraftRules } from '@/play/director';
+import type { DirectorSource } from '@/play/contracts';
+import { type DirectorFailure, withDraftRules } from '@/play/director';
 import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
@@ -237,20 +238,26 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
   // Neprošlý keypoint jde modelu k opravě dřív, než publikace hru odmítne (P26 T10a).
   const check = (spec: GameSpecV1) => playabilityIssues(spec, seeds);
   const directed = await director(request.startedAt, request.caller, check)(request.sentence);
-  if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
-  if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: directed.spec });
+  // Hra režiséra, kterou kontrola odmítla (demo 15. 10., 4 z 10: běžec ani auto nehrají honičku a zóny), nese pořád
+  // bosse, úseky a vzhled – zkusí se už jen roub na rychlou hru, sama hra režiséra ne.
+  const rejected = directed.source === 'draft' ? rejectedSpecOf(directed.failure) : null;
+  const declined = (): UpgradeOutcome => final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
+  if (directed.source === 'draft' && rejected === null) return declined();
+  const aiSpec = rejected ?? directed.spec;
+  if (gameSpecHash(aiSpec) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: aiSpec });
   // Ovládání smí AI vyměnit (P26 T4, ruší R1 z P25A): návrh ze slov žánr jen
   // odhaduje a nová hra projde tímtéž ověřením robotem jako každá jiná.
 
   const intent = extractIntent(request.sentence);
   const before = await actionEvidence(draft.spec, draft.version.seed, draft.arcade);
   const quick: PlayedGame = { spec: draft.spec, world: draft.arcade!, witnesses: before };
-  const picked = await upgradeCandidate(draft, directed.spec, seeds, intent, before);
+  const picked = await upgradeCandidate(draft, aiSpec, seeds, intent, before, rejected !== null);
+  if (picked === null && rejected !== null) return declined();
   if (picked === null) return final('ACTION_LOST', { stage: 'upgrade', reason: 'ACTION_LOST', detail: 'No candidate seed preserves all essential actions witnessed in the published quick version.', raw: directed.spec });
   let upgraded = picked.spec;
   let preservingSeeds = picked.seeds;
   let adds = upgradeAddsOf(quick, picked.played);
-  let source = directed.source;
+  let source: DirectorSource = rejected === null ? directed.source : 'authored';
   // AI verze bez novinky, kterou hráč hraje (P46E T4): jeden druhý pokus s pokynem. Ani ten nic nepřidá, nebo
   // nevyjde – publikuje se první; `adds: []` ho ukáže.
   if (adds.length === 0) {
@@ -312,7 +319,7 @@ export function upgradeAddsOf(quick: PlayedGame, ai: PlayedGame): UpgradeAdd[] {
  * Kandidát AI verze ze specu režiséra, který drží akce rychlé verze, a semínka, na kterých je drží; `null` = žádný.
  * `played` = kandidát na prvním z nich, jak ho porovná `upgradeAddsOf`.
  */
-async function upgradeCandidate(draft: PublishedGame, ai: GameSpecV1, seeds: readonly number[], intent: ReturnType<typeof extractIntent>, before: readonly ActionWitness[]): Promise<{ readonly spec: GameSpecV1; readonly seeds: number[]; readonly played: PlayedGame } | null> {
+async function upgradeCandidate(draft: PublishedGame, ai: GameSpecV1, seeds: readonly number[], intent: ReturnType<typeof extractIntent>, before: readonly ActionWitness[], graftOnly = false): Promise<{ readonly spec: GameSpecV1; readonly seeds: number[]; readonly played: PlayedGame } | null> {
   const preserving = async (spec: GameSpecV1): Promise<{ kept: number[]; witnesses: readonly ActionWitness[] }> => {
     const kept: number[] = [];
     let witnesses: readonly ActionWitness[] = [];
@@ -337,8 +344,11 @@ async function upgradeCandidate(draft: PublishedGame, ai: GameSpecV1, seeds: rea
     const plain = onQuickGame(draft.spec, ai);
     return [withAiExtras(plain, directed.spec), plain];
   };
-  const candidates = loses(directed.spec)
-    ? [withDraftRules(draft.spec, directed.spec), ...onQuick(withoutOwnRules), directed.spec, ...onQuick(directed.spec)]
+  // `graftOnly`: hru režiséra odmítla kontrola – jen roub, nejdřív s pravidly rychlé verze.
+  const candidates = graftOnly
+    ? [...onQuick(withoutOwnRules), ...onQuick(directed.spec)]
+    : loses(directed.spec)
+    ?[withDraftRules(draft.spec, directed.spec), ...onQuick(withoutOwnRules), directed.spec, ...onQuick(directed.spec)]
     : [directed.spec, ...onQuick(directed.spec)];
   // Roub, který rychlou verzi jen přejmenuje, AI verze není (auto, které ztratí závod i střelbu, zůstane ACTION_LOST).
   const renamedQuick = (spec: GameSpecV1) => gameSpecHash({ ...spec, title: draft.spec.title }) === gameSpecHash(draft.spec);
@@ -357,6 +367,13 @@ async function upgradeCandidate(draft: PublishedGame, ai: GameSpecV1, seeds: rea
     if (made.ok) return { spec: candidate, seeds: kept, played: { spec: candidate, world: made.world, witnesses } };
   }
   return null;
+}
+
+/** Hra režiséra, kterou odmítla kontrola (`UNREPAIRED`, `VERB_UNPROVED`); `null` = není, nebo se nepřečte. */
+function rejectedSpecOf(failure: DirectorFailure | undefined): GameSpecV1 | null {
+  if (failure?.reason !== 'UNREPAIRED' && failure?.reason !== 'VERB_UNPROVED') return null;
+  const read = readGameSpec(failure.raw);
+  return read.ok ? read.value : null;
 }
 
 /** `spec` s bossem a scénářem úseků režiséra `ai`; `null` = nemá je, nebo je `readGameSpec` odmítne. */

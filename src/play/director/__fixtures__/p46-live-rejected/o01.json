@@ -1,0 +1,230 @@
+{
+ "sentence": "A rabbit steals carrots and runs from a fox",
+ "failure": {
+  "stage": "critic",
+  "reason": "UNREPAIRED",
+  "detail": "UNSUPPORTED: control runner does not play mechanic chaser; UNSUPPORTED: control runner does not play mechanic zone_trigger; ACTION_LOST: rabbit escape fox has no action witness",
+  "raw": {
+   "schema": "gamespec.v1",
+   "control": "runner",
+   "controlParams": {
+    "fullRowPct": 25,
+    "obstacles": [
+     "hurdle",
+     "cone",
+     "crate"
+    ],
+    "feel": 2,
+    "sections": 3
+   },
+   "addons": [
+    "chaser"
+   ],
+   "abilities": [
+    "grab",
+    "dash"
+   ],
+   "boss": {
+    "name": "Big Bad Fox",
+    "role": "fox"
+   },
+   "segments": [
+    "newFoe",
+    "narrow",
+    "faster"
+   ],
+   "genre": {
+    "id": "runner",
+    "mode": "default",
+    "compilerVersion": "genre.v3"
+   },
+   "title": "Rabbit Run",
+   "archetype": "chase_escape",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "forest trail",
+    "mood": "energetic",
+    "look": "forest"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Escape the fox and reach the finish without being caught.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 1
+     }
+    },
+    {
+     "id": "chaser",
+     "params": {
+      "role": "fox",
+      "speed": "normal",
+      "catchEffect": "lose"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "role": "finish",
+      "when": "enter",
+      "effect": "win"
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "rabbit",
+     "count": 1
+    },
+    {
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "log",
+     "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "carrot",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line",
+     "count": 1
+    },
+    {
+     "id": "chaser",
+     "kind": "chaser",
+     "label": "fox",
+     "count": 1
+    },
+    {
+     "id": "carrot",
+     "kind": "collectible",
+     "label": "carrot",
+     "count": 1
+    },
+    {
+     "id": "fox",
+     "kind": "chaser",
+     "label": "fox",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Reach the finish without being caught by the fox.",
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane. J to grab, K to dash."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "rules": [
+    {
+     "id": "steal_carrot",
+     "verb": "steal",
+     "when": {
+      "contact": [
+       "player",
+       "carrot"
+      ]
+     },
+     "do": [
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      },
+      {
+       "despawn": "other"
+      }
+     ]
+    },
+    {
+     "id": "begin_chase",
+     "verb": "run",
+     "when": {
+      "phase": "trail"
+     },
+     "do": [
+      {
+       "startTimer": {
+        "timer": "pursuit",
+        "ticks": 900
+       }
+      }
+     ]
+    },
+    {
+     "id": "intensify_chase",
+     "verb": "chase",
+     "when": {
+      "timer": "pursuit"
+     },
+     "do": [
+      {
+       "goPhase": "deep_forest"
+      },
+      {
+       "wave": {
+        "role": "fox",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "forest_carrot",
+     "verb": "steal",
+     "when": {
+      "phase": "deep_forest"
+     },
+     "do": [
+      {
+       "spawn": {
+        "role": "carrot",
+        "at": "player"
+       }
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "timers": [
+     {
+      "id": "pursuit"
+     }
+    ],
+    "phases": [
+     {
+      "id": "trail"
+     },
+     {
+      "id": "deep_forest"
+     }
+    ]
+   },
+   "scoring": {}
+  }
+ }
+}
