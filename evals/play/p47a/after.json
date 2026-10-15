@@ -12,11 +12,11 @@
     "reasons": {
      "assembly": 3
     },
-    "finaleShare": 0.37,
-    "bossShare": 0.3,
-    "behavioursMedian": 2,
+    "finaleShare": 0.53,
+    "bossShare": 0.47,
+    "behavioursMedian": 2.5,
     "deadTimeMedianS": 4.89,
-    "risingShare": 0.6
+    "risingShare": 0.73
    },
    "genres": {
     "arena.collect": {
@@ -63,11 +63,11 @@
      "playable": 5,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0,
-     "bossShare": 0,
+     "finaleShare": 1,
+     "bossShare": 1,
      "behavioursMedian": 3,
-     "deadTimeMedianS": 9.58,
-     "risingShare": 0.2
+     "deadTimeMedianS": 9.27,
+     "risingShare": 1
     },
     "quest.station": {
      "sentences": 4,
@@ -105,11 +105,11 @@
      "entry": 6,
      "assembly": 2
     },
-    "finaleShare": 0.48,
-    "bossShare": 0.35,
+    "finaleShare": 0.55,
+    "bossShare": 0.43,
     "behavioursMedian": 1.5,
     "deadTimeMedianS": 4,
-    "risingShare": 0.73
+    "risingShare": 0.78
    },
    "genres": {
     "arena.collect": {
@@ -260,11 +260,11 @@
      "playable": 3,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0,
-     "bossShare": 0,
-     "behavioursMedian": 2,
-     "deadTimeMedianS": 10.32,
-     "risingShare": 0.33
+     "finaleShare": 1,
+     "bossShare": 1,
+     "behavioursMedian": 3,
+     "deadTimeMedianS": 9.83,
+     "risingShare": 1
     },
     "quest.station": {
      "sentences": 3,
@@ -352,11 +352,11 @@
      "assembly": 5,
      "entry": 6
     },
-    "finaleShare": 0.43,
-    "bossShare": 0.33,
+    "finaleShare": 0.54,
+    "bossShare": 0.44,
     "behavioursMedian": 2,
     "deadTimeMedianS": 4.63,
-    "risingShare": 0.67
+    "risingShare": 0.76
    },
    "genres": {
     "arena.collect": {
@@ -507,11 +507,11 @@
      "playable": 8,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0,
-     "bossShare": 0,
-     "behavioursMedian": 2.5,
-     "deadTimeMedianS": 9.95,
-     "risingShare": 0.25
+     "finaleShare": 1,
+     "bossShare": 1,
+     "behavioursMedian": 3,
+     "deadTimeMedianS": 9.43,
+     "risingShare": 1
     },
     "quest.station": {
      "sentences": 7,
@@ -901,15 +901,15 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 3,
     "behaviours": [
      "chaser:chase",
-     "chaser:chase+spawned",
+     "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
     "longestGapS": 9.58,
-    "rising": false
+    "rising": true
    },
    {
     "id": "q02",
@@ -922,11 +922,11 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 4,
     "behaviours": [
      "chaser:chase",
-     "chaser:chase+spawned",
+     "hazard:chase+spawned",
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
@@ -944,14 +944,15 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
-    "behaviourCount": 2,
+    "finale": "boss",
+    "behaviourCount": 3,
     "behaviours": [
      "chaser:chase",
+     "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 9.17,
-    "rising": false
+    "longestGapS": 9.27,
+    "rising": true
    },
    {
     "id": "q04",
@@ -964,16 +965,16 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 4,
     "behaviours": [
      "chaser:chase",
-     "chaser:chase+spawned",
+     "hazard:chase+spawned",
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 14.92,
-    "rising": false
+    "longestGapS": 9.23,
+    "rising": true
    },
    {
     "id": "q05",
@@ -986,14 +987,15 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
-    "behaviourCount": 2,
+    "finale": "boss",
+    "behaviourCount": 3,
     "behaviours": [
      "chaser:chase",
+     "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
     "longestGapS": 8.47,
-    "rising": false
+    "rising": true
    },
    {
     "id": "s01",
@@ -1263,16 +1265,16 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 4,
     "behaviours": [
      "chaser:chase",
-     "chaser:chase+spawned",
+     "hazard:chase+spawned",
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
     "longestGapS": 8.73,
-    "rising": false
+    "rising": true
    },
    {
     "id": "f10",
@@ -1660,14 +1662,15 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
-    "behaviourCount": 2,
+    "finale": "boss",
+    "behaviourCount": 3,
     "behaviours": [
      "chaser:chase",
+     "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
     "longestGapS": 11.43,
-    "rising": false
+    "rising": true
    },
    {
     "id": "d01",
@@ -1846,13 +1849,14 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
-    "behaviourCount": 2,
+    "finale": "boss",
+    "behaviourCount": 3,
     "behaviours": [
      "chaser:chase",
+     "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 10.32,
+    "longestGapS": 9.83,
     "rising": true
    },
    {

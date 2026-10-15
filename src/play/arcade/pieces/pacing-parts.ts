@@ -290,6 +290,12 @@ export const FIELD = {
   /** Boss sběru bez věcí poslední vlny (`genre.v4`) vydá tolik bodů – jako jedna věc, cíl `grow_to` se nemění. */
   bossScore: 1,
   /**
+   * HP bosse úkolu v prostoru (`genre.v4`, P47A T4). Na 20 semínkách (intermediate / novice) buňka `quest.spatial`
+   * se 4 HP 20 / 14, s 5 HP 20 / 8; věty P47A q03 a q05 se 4 HP 20 / 15, s 5 HP 20 / 13 (strážce v3: 19 / 10).
+   * Se 4 HP byl začátečník na horní mezi pásma 0,3–0,7 a nad ní.
+   */
+  questBossHp: 5,
+  /**
    * Závěrečný déšť mincí přežití (`genre.v4`, P47A T3): `count` mincí `lead` tiků před koncem hodin, na místech
    * vstupu nejdál od hráče. Život nevezme – robot útěku mince sebere, jen když k nim má volno (`arena-bot.ts`).
    * Změřeno na 20 semínkách (intermediate / novice / climax ve výhrách, v závorce bez deště): buňka `arena.escape`
@@ -461,6 +467,11 @@ export const GUARDIAN_BOSS: BodyInit = { ...BEHAVIOURS.guardian.body, w: (BEHAVI
  * a přejde k dalšímu, takže poslední cíl kola hlídá vždy. Nové `win` ani obal výhry nepřidá: výhru vydá
  * dál `interact`, až jsou hotové všechny cíle posledního kola. Hodiny = časovač specu. Úkol v jednom kole
  * (bez `arena_waves`, např. s hodinami z věty) průběh nedostane – nemá druhé kolo ani poslední.
+ *
+ * Ve `genre.v4` (P47A T4) je finále boss v rovině, který jde porazit (`boss_beat`): nese všechny cíle posledního
+ * kola (`drop` s předlohou cíle kol), poslední kolo je samo nepoloží a padlý boss je vydá na místě. Všechny, ne
+ * jen jeden: `interact` vyhrává se všemi živými cíli, takže cíl položený před pádem by dal výhru s živým bossem.
+ * S bossem pronásledovatelé odejdou a poslední kolo žádné nepřivede (jako boss sběru).
  */
 const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
   const waves = ruleOf(parts, 'arena_waves')?.params as WaveParams | undefined;
@@ -468,6 +479,12 @@ const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
   const count = waves.waves.length + 1;
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd?: string } | undefined;
   const clock = timer?.onEnd === 'lose' ? timer.seconds : undefined;
+  const at = waveStart(count - 1, count);
+  const lastTargets = (waves.waves.at(-1)?.items?.length ?? 0) / 2;
+  const carrier = genreAtLeast(spec, FINALE_GENRE_VERSION) && waves.item !== undefined && lastTargets > 0;
+  const boss = carrier
+    ? { body: { ...BEHAVIOURS.boss.body, hp: FIELD.questBossHp }, at, drop: { template: waves.item as number, count: lastTargets }, clears: 'chaser' as const }
+    : { body: GUARDIAN_BOSS, at, behaviour: 'guardian' as const };
   return {
     goal: { by: 'wave', need: count, limit: clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock * ARCADE_HZ) },
     space: 'plane',
@@ -477,9 +494,17 @@ const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
     budget: foes.budget,
     from: waveStart(1, count),
     finale: 'boss',
-    boss: { body: GUARDIAN_BOSS, at: waveStart(count - 1, count), behaviour: 'guardian' },
+    boss,
     ...(foes.steady === true ? { steady: true } : {}),
-    adjust: (own) => flatten(own, foes.step),
+    adjust: (own, template) => {
+      const flat = flatten(own, foes.step);
+      if (!carrier || template === undefined) return flat;
+      // Poslední kolo bez cílů (nese je boss) a bez nových pronásledovatelů.
+      return withRule(flat, 'arena_waves', (params) => {
+        const later = (params as WaveParams).waves;
+        return { ...params, waves: later.map((wave, index) => (index < later.length - 1 ? wave : (({ items: _items, ...rest }) => ({ ...rest, chasers: 0 }))(wave))) };
+      });
+    },
   };
 };
 
@@ -874,7 +899,7 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
   // Výhra čeká na bosse (`grow_to.boss`, sběr ve v4): robot ví, od kterého skóre už jde jen o něj.
   const gate = ruleOf(built, 'grow_to')?.params as { readonly points: number; readonly boss?: number } | undefined;
   const paced = gate?.boss === undefined ? built : { ...built, bot: { ...built.bot, params: { ...built.bot.params, points: gate.points } } };
-  // Zásah a pád (`boss_beat`) má jen boss a boss-terč; strážce úkolu se neporáží, jen hlídá poslední věc.
+  // Zásah a pád (`boss_beat`) má jen boss a boss-terč; strážce úkolu (uložené hry do `genre.v3`) se neporáží, jen hlídá poslední věc.
   const beatId = boss?.beat ?? ((boss?.behaviour ?? 'boss') === 'boss' ? 'boss_beat' : undefined);
   if (boss === undefined || bossTemplate === undefined || beatId === undefined || (paced.issues?.length ?? 0) > 0) return paced;
   const dropped = carried.length > 0 ? { template: carried[0] as number, count: carried.length } : boss.drop;

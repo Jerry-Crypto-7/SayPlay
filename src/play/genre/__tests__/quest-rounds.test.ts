@@ -112,9 +112,18 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
   });
 
   it('spatial: the win comes only in the last round, every round lays fresh targets elsewhere and brings more or faster chasers', () => {
-    const game = publish('light five candles before the ghost catches you');
-    const planned = tuningOf(game.spec).rounds as number;
+    const sentence = 'light five candles before the ghost catches you';
+    // Ve `genre.v4` (P47A T4) nese cíle posledního kola boss a pronásledovatelé s ním odejdou (`quest-boss.test.ts`):
+    // kolo začne bez cílů. Kola, jak je staví generátor, měří táž hra uložená jako `genre.v3`.
+    const fresh = publish(sentence);
+    const planned = tuningOf(fresh.spec).rounds as number;
     expect(planned).toBeGreaterThanOrEqual(2);
+    const boss = roundsOf(fresh.world);
+    expect(boss.rounds).toHaveLength(planned);
+    expect(boss.wonInRound).toBe(planned - 1);
+    expect(boss.rounds.at(-1)!.targets).toHaveLength(0);
+    expect((fresh.world.rules.find((rule) => rule.id === 'boss_beat')?.params as { drop?: { count: number } } | undefined)?.drop?.count).toBe(5);
+    const game = publish(sentence, (spec) => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v3' } }));
     const { rounds, wonInRound } = roundsOf(game.world);
     expect(rounds).toHaveLength(planned);
     expect(wonInRound).toBe(planned - 1);

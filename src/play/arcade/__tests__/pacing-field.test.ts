@@ -342,13 +342,15 @@ describe('open-field genres are paced (arena, fight and spatial quest)', () => {
 
 describe('spatial quest is paced (P45C T12 part B)', () => {
   const QUEST_CELL = 'quest.spatial';
+  // Strážce jako boss mají uložené hry do `genre.v3`; ve v4 je finále boss, který jde porazit (`quest-boss.test.ts`, P47A T4).
+  const guardedOf = (spec: GameSpecV1): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v3' } });
   const lastRound = (world: ArcadeWorld): number => {
     const count = wavesOf(world).waves.length + 1;
     return Math.floor(((count - 1) * 1000) / count);
   };
 
   it('the finale is the guardian as a boss: it comes with the last round, has no boss_beat, the rounds stay and the chasers keep a flat speed', () => {
-    const spec = cellSpec(QUEST_CELL);
+    const spec = guardedOf(cellSpec(QUEST_CELL));
     for (const seed of SEEDS) {
       const world = worldOf(spec, seed);
       const boss = finaleRef(world);
@@ -369,7 +371,7 @@ describe('spatial quest is paced (P45C T12 part B)', () => {
   });
 
   it('the guardian boss guards the last target and the bot still finishes it before the quest clock (pin)', () => {
-    const spec = cellSpec(QUEST_CELL);
+    const spec = guardedOf(cellSpec(QUEST_CELL));
     let beaten = 0;
     for (const seed of SEEDS) {
       const world = worldOf(spec, seed);
