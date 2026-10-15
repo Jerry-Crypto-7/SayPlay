@@ -1865,6 +1865,84 @@ button.play-version-switch__item:not(:disabled) {
   color: var(--sp-primary);
 }
 
+/* Power-up a kombo (P46C T5, `PowerupBadge.tsx`): vlevo pod pilulkou postupu, tedy u skóre.
+ * Tlačítka akcí stojí vpravo dole, takže se s nimi na telefonu nepotkají. Popisek, ne ovladač:
+ * ťuk projde na scénu. Kolo s ikonou má inkoustový prstenec, který ubývá se zbylým časem. */
+.play-boosts {
+  position: absolute;
+  top: calc(var(--_top) + var(--sp-size-hud-pill) + var(--sp-space-3));
+  left: var(--_side-l);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-space-2);
+  pointer-events: none;
+  transition: top var(--sp-duration-base) var(--sp-ease-standard);
+}
+
+/* Prvních 4 s hry stojí pod pilulkou řádek cíle – odznak se posune o řádek níž. */
+.play-shell:has(.play-hud-goal[data-shown='true']) .play-boosts {
+  top: calc(var(--_top) + var(--sp-size-hud-pill) + var(--sp-size-touch-min) + var(--sp-space-4));
+}
+
+.play-shell:has(> .play-result) .play-boosts {
+  visibility: hidden;
+}
+
+.play-boost {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sp-size-hud-pill);
+  height: var(--sp-size-hud-pill);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: 50%;
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  box-shadow: var(--sp-shadow-sm);
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
+.play-boost > .sp-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.play-boost-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.play-boost-ring circle {
+  fill: none;
+  stroke: var(--sp-outline);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.play-boost-combo {
+  line-height: 1;
+  letter-spacing: var(--sp-text-hud-num-tracking);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-boosts {
+    transition: none;
+  }
+
+  .play-boost,
+  .play-boost-combo {
+    animation: none;
+  }
+}
+
 /* Prohra (P36C T7, `effects/feel.ts` LOSE_FADE_MS): scéna se za 0,6 s odbarví a ztmaví.
  * Jen plátno – karta konce a HUD nad ním zůstávají v barvě. Restart atribut smaže. */
 .play-stage canvas {

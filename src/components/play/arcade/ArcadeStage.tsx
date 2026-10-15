@@ -35,6 +35,7 @@ import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
+import { HudBoosts, boostKeepers } from './PowerupBadge';
 import { RhythmScene } from './rhythm/RhythmScene';
 import { RiggedModel } from './RiggedModel';
 import { RunnerWorld } from './runner/RunnerWorld';
@@ -787,6 +788,8 @@ export default function ArcadeStage({
   // Úder a použití (P32-0 T5) jen ve světě, který je čte.
   // Akce hrdiny (P46A T7): J/K patří tlačítkům A/B, úder a použití starých her je bez nich mají dál.
   const abilities = useMemo(() => abilitiesOf(session.world), [session]);
+  // Power-up a kombo v HUD (P46C T5) jen ve světě, který je má.
+  const keepers = useMemo(() => boostKeepers(session.world), [session]);
   // Díl souboje bere i úder akce (P46A T8), takže tlačítko Attack by bylo navíc.
   const actions = useMemo(() => actionsOf(session.world).filter((action) => action !== 'attack' || !abilities.includes('strike')), [session, abilities]);
   const hasAbilities = abilities.length > 0;
@@ -826,6 +829,7 @@ export default function ArcadeStage({
       <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
+      {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
       {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} />}
       {enabled && (control === 'move_free' || control === 'fight') && <TouchStick surface={surface} />}

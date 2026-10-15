@@ -24,6 +24,11 @@ export const BUS_SFX: Readonly<Record<VisualEventKind, SfxPreset>> = {
   spawn: 'spawn',
   // Blízké minutí (P45C T15): krátký „whoosh“ – šum skluzu, který hrozba nechala za sebou.
   nearMiss: 'slide',
+  // Juice (P46C T4): zásah akcí zní úderem akce, power-up, pád bosse a růst komba vlastním presetem.
+  ability: 'strike',
+  powerup: 'powerup',
+  bossDefeat: 'bossDown',
+  comboUp: 'comboUp',
 };
 
 /** Zvuk jedné události: zásah jiného těla než hráče je úder, ne bolest hráče. */
