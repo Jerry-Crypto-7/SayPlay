@@ -39,7 +39,7 @@ const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
  * Generátory režimu, kde robot akce použije a ověření je dokáže (P46A T10, matice T9 a živé
  * věty). Souboj (`fight`) chybí: robot s akcí nedohraje; ostatní generátory nikdo neměřil.
  */
-const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth']);
+export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth']);
 
 /**
  * Akce hrdiny ze sloves věty (P46A T8, `assemble`), jen akce, které ovládání bere, a jen hře,

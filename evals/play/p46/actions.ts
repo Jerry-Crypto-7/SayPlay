@@ -50,6 +50,8 @@ const ACTION_BUTTONS = BUTTON.FIRE | BUTTON.ATTACK | BUTTON.INTERACT | (1 << 9) 
 export interface ActionSentence {
   readonly id: string;
   readonly text: string;
+  /** Ruční štítek (panel P47B) – přebije `wantedActions`; věty P46 ho nemají. */
+  readonly wants?: readonly ActionKind[];
 }
 
 export interface ActionRow {
@@ -113,7 +115,7 @@ export function firedActions(world: ArcadeWorld, firstFired: readonly number[]):
 
 /** Řádek nad hotovým specem – měřidlo i test jím projdou stejně. */
 export async function actionRowOf(sentence: ActionSentence, spec: GameSpecV1): Promise<ActionRow> {
-  const wanted = wantedActions(sentence.text);
+  const wanted = sentence.wants === undefined ? wantedActions(sentence.text) : [...sentence.wants];
   const present = presentActions(spec);
   const base = { id: sentence.id, control: spec.control ?? null, wanted, present, wantsAction: wanted.length > 0, hasAction: wanted.length > 0 && wanted.every((kind) => present.includes(kind)) };
   const dead = (issues: readonly string[]): ActionRow => ({ ...base, botUsed: false, verbFired: false, playable: false, issues });
@@ -149,7 +151,7 @@ export async function actionRowOf(sentence: ActionSentence, spec: GameSpecV1): P
 
 export const actionRow = (sentence: ActionSentence): Promise<ActionRow> => actionRowOf(sentence, draftGameSpecWithMeta(sentence.text, 1).spec);
 
-const readSentences = (path: string): ActionSentence[] =>
+export const readSentences = (path: string): ActionSentence[] =>
   (JSON.parse(readFileSync(path, 'utf8')) as { sentences: ActionSentence[] }).sentences.map(({ id, text }) => ({ id, text }));
 
 /** Panel P45 (40 vět) a 20 vět se slovesy akce. */
