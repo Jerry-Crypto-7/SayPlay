@@ -8,3 +8,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 2 | p46i-pickup p46i-obstacle | 10 | 5 | 2/5 | 2 | – | 94/101 | golden bell, fire pit | – |
 | 3 | p46i-obstacle | 10 | 5 | 1/5 | 1 | – | 94/101 | toxic barrel | – |
 | 4 (opakování) | p46i-pickup p46i-obstacle | 10 | 7 | 5/7 | 5 | – | 94/101 | golden ring, shield orb, clover coin, laser gate, rolling log | – |
+| 5 (opakování) | p46i-obstacle | 10 | 2 | 1/2 | 1 | – | 94/101 | steam pipe | – |

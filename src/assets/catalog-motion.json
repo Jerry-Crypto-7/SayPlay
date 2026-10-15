@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "8b864ea2feda5b43ea722333a7ef04b802201f4789bc43b10803bf8578f1b83d",
+ "catalogHash": "93567d395b496ddbeafc03ee2e603ce7b3ea876b0ec449df44c19dc069574f06",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1622,6 +1622,7 @@
   "gen3d-shield-orb": {"class":"prop"},
   "gen3d-clover-coin": {"class":"prop"},
   "gen3d-laser-gate": {"class":"prop"},
-  "gen3d-rolling-log": {"class":"prop"}
+  "gen3d-rolling-log": {"class":"prop"},
+  "gen3d-steam-pipe": {"class":"biped","regions":{"legY":0.249}}
  }
 }

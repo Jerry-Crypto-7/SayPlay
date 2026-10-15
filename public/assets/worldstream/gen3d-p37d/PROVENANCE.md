@@ -847,3 +847,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-clover-coin` | clover coin | 4748 / 2374 |
 | `gen3d-laser-gate` | laser gate, laser barrier | 4702 / 2350 |
 | `gen3d-rolling-log` | rolling log | 4575 / 2244 |
+| `gen3d-steam-pipe` | steam pipe | 4746 / 2368 |

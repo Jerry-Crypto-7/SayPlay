@@ -32604,6 +32604,25 @@
           0.45788
         ]
       }
+    },
+    {
+      "assetId": "gen3d-steam-pipe",
+      "tags": [
+        "steam pipe"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-steam-pipe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12126,
+          0,
+          -0.13262
+        ],
+        "max": [
+          0.12126,
+          0.99664,
+          0.13262
+        ]
+      }
     }
   ]
 }
