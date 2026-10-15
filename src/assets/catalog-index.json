@@ -30463,6 +30463,101 @@
           0.22489
         ]
       }
+    },
+    {
+      "assetId": "gen3d-wild-strawberry-plant",
+      "tags": [
+        "wild strawberry plant"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wild-strawberry-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.59072,
+          0,
+          -0.62134
+        ],
+        "max": [
+          0.59072,
+          0.99992,
+          0.62134
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-abandoned-mine-entrance",
+      "tags": [
+        "abandoned mine entrance"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-abandoned-mine-entrance-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.72793,
+          0,
+          -0.67676
+        ],
+        "max": [
+          0.72793,
+          0.98756,
+          0.67676
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-weather-station",
+      "tags": [
+        "weather station"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-weather-station-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2205,
+          0,
+          -0.11617
+        ],
+        "max": [
+          0.2205,
+          0.99917,
+          0.11617
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-flag",
+      "tags": [
+        "beach flag"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-flag-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46414,
+          0,
+          -0.35845
+        ],
+        "max": [
+          0.46414,
+          0.99769,
+          0.35845
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-desert-signpost",
+      "tags": [
+        "desert signpost"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-desert-signpost-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44374,
+          0,
+          -0.44314
+        ],
+        "max": [
+          0.44374,
+          0.99991,
+          0.44314
+        ]
+      }
     }
   ]
 }

@@ -740,3 +740,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-log-bench` | log bench, log seat | 4671 / 2273 |
 | `gen3d-anthurium` | anthurium | 4650 / 2298 |
 | `gen3d-snorkel-mask` | snorkel mask, snorkel | 4616 / 2181 |
+| `gen3d-wild-strawberry-plant` | wild strawberry plant | 4489 / 2211 |
+| `gen3d-abandoned-mine-entrance` | abandoned mine entrance | 4536 / 2261 |
+| `gen3d-weather-station` | weather station | 4730 / 2360 |
+| `gen3d-beach-flag` | beach flag | 4727 / 2345 |
+| `gen3d-desert-signpost` | desert signpost | 4748 / 2374 |

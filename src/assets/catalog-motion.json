@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "70630fa54a9d891ce153e1540da9c3caabf75f47acf505466aa3a08ed53c294e",
+ "catalogHash": "4de12d43acbf57755baaa50ea0e71ebf3f19732e8439cd392e788fb9cfa5e07d",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1515,6 +1515,11 @@
   "gen3d-sunken-propeller": {"class":"prop"},
   "gen3d-log-bench": {"class":"prop"},
   "gen3d-anthurium": {"class":"prop"},
-  "gen3d-snorkel-mask": {"class":"prop"}
+  "gen3d-snorkel-mask": {"class":"prop"},
+  "gen3d-wild-strawberry-plant": {"class":"prop"},
+  "gen3d-abandoned-mine-entrance": {"class":"prop"},
+  "gen3d-weather-station": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-beach-flag": {"class":"prop"},
+  "gen3d-desert-signpost": {"class":"prop"}
  }
 }
