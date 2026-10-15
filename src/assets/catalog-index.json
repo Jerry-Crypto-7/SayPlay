@@ -32699,6 +32699,44 @@
           1.1713
         ]
       }
+    },
+    {
+      "assetId": "gen3d-broken-gravestone",
+      "tags": [
+        "broken gravestone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-broken-gravestone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40807,
+          0,
+          -0.24655
+        ],
+        "max": [
+          0.40807,
+          0.99739,
+          0.24655
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tournament-banner",
+      "tags": [
+        "tournament banner"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tournament-banner-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17123,
+          0,
+          -0.02827
+        ],
+        "max": [
+          0.17123,
+          0.99855,
+          0.02827
+        ]
+      }
     }
   ]
 }

@@ -852,3 +852,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-haunted-tree` | haunted tree | 4742 / 2368 |
 | `gen3d-wooden-swing` | wooden swing | 4748 / 2374 |
 | `gen3d-steel-beam` | steel beam | 4748 / 2374 |
+| `gen3d-broken-gravestone` | broken gravestone | 4503 / 2242 |
+| `gen3d-tournament-banner` | tournament banner | 4748 / 2374 |

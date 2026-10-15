@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "2d8af0940bdfc0423c99a0fc5c3e0020e17feb6e5d6e44a526e7a0b803dad837",
+ "catalogHash": "5978d1826379da4eac7183fa6803ffa9e15a3126e617a89c6793eb7e2a06ed06",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1627,6 +1627,8 @@
   "gen3d-tripwire": {"class":"prop"},
   "gen3d-haunted-tree": {"class":"prop"},
   "gen3d-wooden-swing": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-steel-beam": {"class":"prop"}
+  "gen3d-steel-beam": {"class":"prop"},
+  "gen3d-broken-gravestone": {"class":"prop"},
+  "gen3d-tournament-banner": {"class":"biped","regions":{"legY":0.25}}
  }
 }
