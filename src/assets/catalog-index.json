@@ -29726,6 +29726,25 @@
           0.15202
         ]
       }
+    },
+    {
+      "assetId": "gen3d-puffin",
+      "tags": [
+        "puffin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-puffin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30301,
+          0,
+          -0.39819
+        ],
+        "max": [
+          0.30301,
+          0.99999,
+          0.39819
+        ]
+      }
     }
   ]
 }

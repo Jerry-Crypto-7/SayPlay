@@ -27,3 +27,4 @@ Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek
 | 21 | p46f-queue | 10 | 10 | 8/10 | 8 | – | 59/85 | sandbag wall, rooster, giant slug, haystack, salamander, beach ball, domino, possum | – |
 | 22 | p46f-queue | 10 | 8 | 7/8 | 7 | – | 59/85 | armadillo, iguana, meerkat, lemur, ostrich, turkey, pelican | – |
 | 23 (opakování) | scenery p46f-queue | 10 | 9 | 4/9 | 4 | – | 59/85 | pay phone, brontosaurus, turnstile, mousetrap | – |
+| 24 | p46f-queue | 2 | 2 | 1/2 | 1 | – | 59/85 | puffin | – |

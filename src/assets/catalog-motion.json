@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "a0baac6756b3f06c5509b141001975a3937c2acfe609bc08474d859a508f02c5",
+ "catalogHash": "ff00b7505e0254870a09846d1a390d31830f402658a8982d5c4708710f5239b7",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1477,6 +1477,7 @@
   "gen3d-pay-phone": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-brontosaurus": {"class":"prop"},
   "gen3d-turnstile": {"class":"prop"},
-  "gen3d-mousetrap": {"class":"prop"}
+  "gen3d-mousetrap": {"class":"prop"},
+  "gen3d-puffin": {"class":"prop"}
  }
 }

@@ -702,3 +702,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-brontosaurus` | brontosaurus | 4456 / 2160 |
 | `gen3d-turnstile` | turnstile | 4738 / 2366 |
 | `gen3d-mousetrap` | mousetrap | 4732 / 2359 |
+| `gen3d-puffin` | puffin | 4702 / 2350 |
