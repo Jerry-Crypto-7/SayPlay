@@ -49,6 +49,7 @@ import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
 import { census, shotHit } from './pieces/shots';
 import { abilityBotParams, abilityButton, abilityControlParams, tickAbilities } from './abilities/state';
+import { powerupControlParams, tickPowerup } from './powerups/state';
 
 // Sloty jednou za modul: import pod vitestem čte každý přístup getterem a pronásledovatel jde přes všechna těla každý tik.
 const FIRST_BODY = bodyBase(0);
@@ -737,6 +738,8 @@ const wrappedControlParams = z
     chase: z.object({ along: z.int().min(1), across: z.int().min(0), oncoming: z.boolean().optional(), commit: z.int().min(0).optional(), course: courseSchema.optional() }).strict().optional(),
     /** Akce hrdiny (P46A): počítadlo a akce v pořadí tlačítek A, B. */
     abilities: abilityControlParams.optional(),
+    /** Power-up (P46C): počítadlo a zrychlení žánru. */
+    powerups: powerupControlParams.optional(),
   })
   .strict();
 
@@ -768,6 +771,7 @@ export function makeAddonControl(bases: Readonly<Record<string, ControlPiece>>):
         trigger ||= (input.buttons & ~held & abilityButton(params.abilities.ids, 'shoot')) !== 0;
         tickAbilities(state, input.buttons, params.abilities);
       }
+      if (params.powerups !== undefined) tickPowerup(state, player, params.powerups, params.abilities);
       state[HEADER.counters + COUNTER.trigger] = trigger ? 1 : 0;
       if (params.chase !== undefined) chase(state, player, params.chase);
     },

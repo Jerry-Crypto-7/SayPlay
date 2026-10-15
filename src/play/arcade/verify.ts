@@ -129,6 +129,8 @@ function changeOf(effect: ArcadeEffect, after: ArcadeState, tick: number, prior:
     case 'lose':
     // Kombo je zápis počítadla k sebrání – změnu za slovesem dokládá skóre téhož pravidla.
     case 'combo':
+    // Power-up (P46C) totéž – sebrání dokládá zmizení tělesa téhož pravidla.
+    case 'powerup':
     // Blok štítu a podmíněný obal (P46A R2) jádro nahradí efekty, které platí, ještě před stopou.
     case 'block':
     case 'ifAlive':

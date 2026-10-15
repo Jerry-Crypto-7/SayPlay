@@ -6,7 +6,25 @@
 import { z } from 'zod';
 
 import { guardParams, guardedHit } from '../abilities/state';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, BODY, COMBO, COUNTER, FLAG, HEADER, ROLE, type RulePiece, type ScoreBonusParams, bodyBase, graceOf } from '../contract';
+import {
+  ARCADE_HZ,
+  ARCADE_LIMITS,
+  type ArcadeEffect,
+  BODY,
+  COMBO,
+  COUNTER,
+  FLAG,
+  HEADER,
+  POWERUPS,
+  POWERUP_TICKS,
+  ROLE,
+  type RulePiece,
+  type ScoreBonusParams,
+  bodyBase,
+  graceOf,
+  powerupCode,
+} from '../contract';
+import { scoreFactor } from '../powerups/double';
 
 const roleOf = (state: Int32Array, body: number): number => state[bodyBase(body) + BODY.role] as number;
 
@@ -58,6 +76,16 @@ const pickupParams = z
     points: z.int().min(1).max(100).default(1),
     /** Index těla-počítadla komba (P36A T5, `COMBO`); bez něj body bez násobiče jako dřív. */
     combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+    /** Power-upy (P46C): počítadlo a druh každého tělesa role `powerup` podle indexu; bez nich jako dřív. */
+    powerup: z
+      .object({
+        keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1),
+        at: z.array(z.tuple([z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), z.enum(POWERUPS)])).min(1).max(8),
+      })
+      .strict()
+      .optional(),
+    /** `false` = sbírá jen power-upy: věci světa sbírá jiné pravidlo (aréna `arena_eat`). */
+    items: z.literal(false).optional(),
   })
   .strict();
 
@@ -73,24 +101,37 @@ export function nextMultiplier(state: Int32Array, keeper: number): number {
   return inRow ? Math.min(COMBO.max, Math.max(1, state[base + BODY.aux0] as number) + 1) : 1;
 }
 
-/** Sebraný předmět → body a předmět zmizí. S `combo` body krát násobič a počítadlo si sebrání zapíše. */
+/**
+ * Sebraný předmět → body a předmět zmizí. S `combo` body krát násobič a počítadlo si sebrání zapíše.
+ * Power-up (P46C) zapíše časovaný stav do počítadla; aktivní 2× zdvojí body vedle komba.
+ */
 export const pickup: RulePiece<z.infer<typeof pickupParams>> = {
   id: 'pickup',
   params: pickupParams,
-  roles: ['player', 'collectible'],
+  roles: ['player', 'collectible', 'powerup'],
   trigger: 'contact',
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, other }, params) => {
-    if (roleOf(state, other) !== ROLE.collectible) return [];
+    const role = roleOf(state, other);
+    if (role === ROLE.powerup && params.powerup !== undefined) {
+      const id = params.powerup.at.find(([body]) => body === other)?.[1];
+      if (id === undefined) return [];
+      return [
+        { kind: 'powerup', keeper: params.powerup.keeper, power: powerupCode(id), ticks: POWERUP_TICKS[id] },
+        { kind: 'despawn', body: other },
+      ];
+    }
+    if (role !== ROLE.collectible || params.items === false) return [];
+    const factor = scoreFactor(state, params.powerup?.keeper);
     if (params.combo === undefined) {
       return [
-        { kind: 'score', amount: params.points },
+        { kind: 'score', amount: params.points * factor },
         { kind: 'despawn', body: other },
       ];
     }
     const multiplier = nextMultiplier(state, params.combo);
     return [
-      { kind: 'score', amount: params.points * multiplier },
+      { kind: 'score', amount: params.points * multiplier * factor },
       { kind: 'despawn', body: other },
       { kind: 'combo', body: params.combo, multiplier },
     ];
