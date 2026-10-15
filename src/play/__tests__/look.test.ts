@@ -111,7 +111,8 @@ describe('rekvizity prostředí (P45H T3)', () => {
     ['mansion', ['gen3d-candelabra', 'gen3d-grandfather-clock', 'gen3d-chandelier']],
     // P46G T8: stavby a věci z generování vegetace i v obecných prostředích sad.
     ['A buggy races across the desert', ['gen3d-adobe-house', 'gen3d-bedouin-tent', 'gen3d-oasis-well', 'gen3d-stone-obelisk']],
-    ['a harbour at dawn', ['gen3d-wooden-pier']],
+    // P46I: přístav dostal k molu záchranný kruh, kotvu a uvazovací patník.
+    ['a harbour at dawn', ['gen3d-wooden-pier', 'gen3d-lifebuoy', 'gen3d-anchor', 'gen3d-mooring-bollard']],
     ['a dog runs in a park', ['gen3d-street-tree', 'gen3d-park-bench', 'gen3d-park-fountain', 'gen3d-street-trash-can']],
     ['a dog runs in a field', []],
     ['a completely different place', []],
