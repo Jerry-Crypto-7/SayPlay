@@ -1823,6 +1823,17 @@
           "height": 2
         }
       ]
+    },
+    {
+      "setting": "sunken city",
+      "pattern": "\\bsunken[\\s-]+city(?:e?s)?\\b",
+      "look": "underwater",
+      "props": [
+        {
+          "id": "gen3d-coral-covered-archway",
+          "height": 3
+        }
+      ]
     }
   ]
 }

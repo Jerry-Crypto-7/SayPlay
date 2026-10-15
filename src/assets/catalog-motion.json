@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "31156ed725556fb6c91ee1c585307c24ed71fb1606d0ccd65af92d725c9707e9",
+ "catalogHash": "30df830fd5566ea0847767f909b1468fee50e581a18db35ac79af3386242d89c",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1509,6 +1509,7 @@
   "gen3d-coconut-drink": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-coral-throne": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-birch-sapling": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-cacao-pod": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-cacao-pod": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-coral-covered-archway": {"class":"prop"}
  }
 }

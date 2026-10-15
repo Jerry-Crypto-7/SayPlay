@@ -30345,6 +30345,26 @@
           0.26862
         ]
       }
+    },
+    {
+      "assetId": "gen3d-coral-covered-archway",
+      "tags": [
+        "coral covered archway",
+        "coral archway"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-covered-archway-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48737,
+          0,
+          -0.18148
+        ],
+        "max": [
+          0.48737,
+          0.99976,
+          0.18148
+        ]
+      }
     }
   ]
 }

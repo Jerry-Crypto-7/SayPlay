@@ -734,3 +734,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-coral-throne` | coral throne | 4664 / 2329 |
 | `gen3d-birch-sapling` | birch sapling | 4744 / 2360 |
 | `gen3d-cacao-pod` | cacao pod | 4669 / 2324 |
+| `gen3d-coral-covered-archway` | coral covered archway, coral archway | 4342 / 1939 |
