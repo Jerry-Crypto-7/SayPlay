@@ -745,3 +745,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-weather-station` | weather station | 4730 / 2360 |
 | `gen3d-beach-flag` | beach flag | 4727 / 2345 |
 | `gen3d-desert-signpost` | desert signpost | 4748 / 2374 |
+| `gen3d-jaguar-statue` | jaguar statue | 4043 / 1887 |

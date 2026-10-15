@@ -30558,6 +30558,25 @@
           0.44314
         ]
       }
+    },
+    {
+      "assetId": "gen3d-jaguar-statue",
+      "tags": [
+        "jaguar statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jaguar-statue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39261,
+          0,
+          -0.48354
+        ],
+        "max": [
+          0.39261,
+          0.99254,
+          0.48354
+        ]
+      }
     }
   ]
 }
