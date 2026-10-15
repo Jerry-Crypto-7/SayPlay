@@ -839,3 +839,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-silver-coin` | silver coin | 4743 / 2370 |
 | `gen3d-golden-horseshoe` | golden horseshoe, lucky horseshoe | 4746 / 2360 |
 | `gen3d-energy-capsule` | energy capsule | 4746 / 2370 |
+| `gen3d-golden-bell` | golden bell | 4686 / 2276 |
+| `gen3d-fire-pit` | fire pit, firepit | 4722 / 2352 |

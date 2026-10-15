@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "5dbb9e2e11c01b30eec3fa9dc0d93007d10d085ab724e8c1d17623c358373e9f",
+ "catalogHash": "c428676b8f08c385db4b97af9070509aab03ec01a590ea5f024925ba3a73958c",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1614,6 +1614,8 @@
   "gen3d-question-block": {"class":"prop"},
   "gen3d-silver-coin": {"class":"prop"},
   "gen3d-golden-horseshoe": {"class":"prop"},
-  "gen3d-energy-capsule": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-energy-capsule": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-golden-bell": {"class":"prop"},
+  "gen3d-fire-pit": {"class":"prop"}
  }
 }
