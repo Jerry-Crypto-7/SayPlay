@@ -746,3 +746,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-beach-flag` | beach flag | 4727 / 2345 |
 | `gen3d-desert-signpost` | desert signpost | 4748 / 2374 |
 | `gen3d-jaguar-statue` | jaguar statue | 4043 / 1887 |
+| `gen3d-shop-sign` | shop sign | 4717 / 2355 |
+| `gen3d-snowy-bench` | snowy bench | 4586 / 2284 |
+| `gen3d-pier-lamp` | pier lamp | 4750 / 2366 |
+| `gen3d-coral-pillar` | coral pillar | 4579 / 2232 |
+| `gen3d-mesquite-tree` | mesquite tree | 4254 / 2108 |
+| `gen3d-city-map-board` | city map board | 4399 / 2152 |

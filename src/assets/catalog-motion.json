@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "67f4761c4e4a0d070700a3d837f843720d335b3a662228ead40feba26ac3e553",
+ "catalogHash": "431f4f008fa483defb3efce7bc66a790e26b9deb74e494624c68049b0aa0fa05",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1521,6 +1521,12 @@
   "gen3d-weather-station": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-beach-flag": {"class":"prop"},
   "gen3d-desert-signpost": {"class":"prop"},
-  "gen3d-jaguar-statue": {"class":"prop"}
+  "gen3d-jaguar-statue": {"class":"prop"},
+  "gen3d-shop-sign": {"class":"prop"},
+  "gen3d-snowy-bench": {"class":"prop"},
+  "gen3d-pier-lamp": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-coral-pillar": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-mesquite-tree": {"class":"prop"},
+  "gen3d-city-map-board": {"class":"prop"}
  }
 }

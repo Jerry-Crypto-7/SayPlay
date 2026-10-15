@@ -30577,6 +30577,120 @@
           0.48354
         ]
       }
+    },
+    {
+      "assetId": "gen3d-shop-sign",
+      "tags": [
+        "shop sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-shop-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.84126,
+          0,
+          -0.08213
+        ],
+        "max": [
+          0.84126,
+          0.99417,
+          0.08213
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowy-bench",
+      "tags": [
+        "snowy bench"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowy-bench-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.91012,
+          0,
+          -0.4316
+        ],
+        "max": [
+          0.91012,
+          0.99836,
+          0.4316
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pier-lamp",
+      "tags": [
+        "pier lamp"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pier-lamp-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11388,
+          0,
+          -0.08833
+        ],
+        "max": [
+          0.11388,
+          0.99749,
+          0.08833
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coral-pillar",
+      "tags": [
+        "coral pillar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-pillar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13519,
+          0,
+          -0.13284
+        ],
+        "max": [
+          0.13519,
+          0.99775,
+          0.13284
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mesquite-tree",
+      "tags": [
+        "mesquite tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mesquite-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5554,
+          0,
+          -0.54883
+        ],
+        "max": [
+          0.5554,
+          0.99957,
+          0.54883
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-city-map-board",
+      "tags": [
+        "city map board"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-city-map-board-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58399,
+          0,
+          -0.13329
+        ],
+        "max": [
+          0.58399,
+          0.99718,
+          0.13329
+        ]
+      }
     }
   ]
 }
