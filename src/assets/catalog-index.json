@@ -28840,6 +28840,86 @@
           0.47029
         ]
       }
+    },
+    {
+      "assetId": "gen3d-gumball-machine",
+      "tags": [
+        "gumball machine",
+        "gum machine"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gumball-machine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30937,
+          0,
+          -0.3458
+        ],
+        "max": [
+          0.30937,
+          0.99383,
+          0.3458
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-poppy-flower",
+      "tags": [
+        "poppy flower",
+        "poppy"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-poppy-flower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24322,
+          0,
+          -0.25623
+        ],
+        "max": [
+          0.24322,
+          0.99885,
+          0.25623
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-canned-soup",
+      "tags": [
+        "canned soup",
+        "soup can",
+        "tin can"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-canned-soup-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45538,
+          0,
+          -0.45474
+        ],
+        "max": [
+          0.45538,
+          1.00001,
+          0.45474
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sea-sponge",
+      "tags": [
+        "sea sponge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sea-sponge-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.68218,
+          0,
+          -0.68634
+        ],
+        "max": [
+          0.68218,
+          0.99942,
+          0.68634
+        ]
+      }
     }
   ]
 }

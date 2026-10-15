@@ -657,3 +657,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-cooling-tower` | cooling tower | 4472 / 2184 |
 | `gen3d-adobe-oven` | adobe oven, mud oven | 4695 / 2334 |
 | `gen3d-beach-chair` | beach chair | 4172 / 2000 |
+| `gen3d-gumball-machine` | gumball machine, gum machine | 4192 / 2329 |
+| `gen3d-poppy-flower` | poppy flower, poppy | 4616 / 2277 |
+| `gen3d-canned-soup` | canned soup, soup can, tin can | 4385 / 2145 |
+| `gen3d-sea-sponge` | sea sponge | 4412 / 2204 |
