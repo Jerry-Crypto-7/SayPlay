@@ -65,12 +65,26 @@ export const ANSWER_SCHEMA = {
   },
 };
 
-/** Jméno dávky a odpověď soudce: všechna slova jména v odpovědi, nebo stejná hlava. */
+/**
+ * Slova, která jen popisují vzhled (barva, materiál, velikost, stáří) – „wooden bench“ smí být
+ * „snowy bench“, „dog statue“ „jaguar statue“ ne (P47C, ~25 sporných přijetí P46I).
+ */
+const LOOK_WORDS = new Set(('red green blue yellow orange purple pink brown black white grey gray gold golden silver '
+  + 'wooden wood stone metal metallic iron steel plastic glass rock clay brick concrete marble bronze copper leather '
+  + 'small large big tall short giant huge tiny little old ancient rusty broken toy cartoon simple round square mossy '
+  + 'snowy frozen icy wet dry dark bright colorful colourful painted carved decorative ornate rustic vintage antique '
+  + 'stylized low poly lowpoly 3d model miniature').split(' '));
+
+/**
+ * Jméno dávky a odpověď soudce: všechna slova jména v odpovědi, nebo stejná hlava, když
+ * ostatní slova odpovědi jsou ze jména nebo jen popisují vzhled.
+ */
 export function matches(noun, guess) {
   const want = wordsOf(noun.replaceAll('-', ' '));
   const got = wordsOf(guess.replaceAll('-', ' '));
   if (want.length === 0 || got.length === 0) return false;
-  return want.every((word) => got.includes(word)) || want.at(-1) === got.at(-1);
+  if (want.every((word) => got.includes(word))) return true;
+  return want.at(-1) === got.at(-1) && got.slice(0, -1).every((word) => want.includes(word) || LOOK_WORDS.has(word));
 }
 
 /**
