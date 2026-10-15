@@ -1,0 +1,224 @@
+{
+ "schema": "p46e-live-v1",
+ "measuredAt": "2026-10-15T17:14:46.453Z",
+ "baseUrl": "http://127.0.0.1:3046",
+ "director": {
+  "endpoint": "see server env",
+  "slots": 2
+ },
+ "targets": {
+  "ready": ">= 8/10",
+  "lostRules": 0,
+  "aiSecUnder": 270,
+  "adds": "waived by owner 15 Oct 2026 (arena has no boss/segments) – recorded only"
+ },
+ "summary": {
+  "ready": "5/10",
+  "adds": "4/5",
+  "lostRules": 0,
+  "lostLogic": 0,
+  "maxAiSec": 155.7,
+  "overBudget": []
+ },
+ "rows": [
+  {
+   "id": "o01",
+   "axis": "runner",
+   "sentence": "A rabbit steals carrots and runs from a fox",
+   "seed": 84139061,
+   "ackSec": 1.5,
+   "quickId": "e8c4334ff2c44e19ed0fb4afc111ecf0",
+   "status": "draft-final",
+   "reason": "UNREPAIRED",
+   "aiSec": 72.3,
+   "overBudget": false
+  },
+  {
+   "id": "o02",
+   "axis": "runner",
+   "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
+   "seed": 84139062,
+   "ackSec": 37.3,
+   "quickId": null,
+   "status": "error",
+   "reason": "POST 422: {\"error\":{\"code\":\"NOT_PUBLISHABLE\",\"message\":\"the game did not pass its own checks\",\"keypoints\":[\"verbs_proved\"]}}"
+  },
+  {
+   "id": "o03",
+   "axis": "control:steer",
+   "sentence": "Racing car escaping and shooting enemies",
+   "seed": 84139063,
+   "ackSec": 0.6,
+   "quickId": "899a091472bdf0c9d164ab27d658142a",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 51.1,
+   "overBudget": false,
+   "aiId": "fdba98726af507ff7acb1d325e8a1620",
+   "aiUrl": "/play/fdba98726af507ff7acb1d325e8a1620",
+   "adds": [
+    "boss",
+    "action"
+   ],
+   "control": {
+    "quick": "steer",
+    "ai": "steer"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Enemy Leader"
+  },
+  {
+   "id": "o04",
+   "axis": "control:steer",
+   "sentence": "racing car escapes police and shoots enemies",
+   "seed": 84139064,
+   "ackSec": 0.5,
+   "quickId": "9c83c52cf05def97a45c5c5f323605d2",
+   "status": "draft-final",
+   "reason": "UNREPAIRED",
+   "aiSec": 68.4,
+   "overBudget": false
+  },
+  {
+   "id": "o05",
+   "axis": "runner",
+   "sentence": "Hamster escapes a supermarket Roomba",
+   "seed": 84139065,
+   "ackSec": 1.4,
+   "quickId": "e7e5ef9a40e4672c1e90c403499a5704",
+   "status": "draft-final",
+   "reason": "UNREPAIRED",
+   "aiSec": 73.3,
+   "overBudget": false
+  },
+  {
+   "id": "o06",
+   "axis": "platformer",
+   "sentence": "Jumping arcade game in the forest",
+   "seed": 84139066,
+   "ackSec": 0.5,
+   "quickId": "91e462e44cd5ab66090f46d04f8768a8",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 51,
+   "overBudget": false,
+   "aiId": "60f7ad114c87f6591d1fd3051aac808b",
+   "aiUrl": "/play/60f7ad114c87f6591d1fd3051aac808b",
+   "adds": [
+    "boss",
+    "action"
+   ],
+   "control": {
+    "quick": "platform",
+    "ai": "platform"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Giant Forest Snake"
+  },
+  {
+   "id": "o07",
+   "axis": "platformer",
+   "sentence": "A ninja frog jumps across lily pads in a swamp",
+   "seed": 84139067,
+   "ackSec": 0.5,
+   "quickId": "559d19901b3b85a0beb70a08d8257b24",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 60.9,
+   "overBudget": false,
+   "aiId": "7ad9289ee02afaf72000552a38c4984f",
+   "aiUrl": "/play/7ad9289ee02afaf72000552a38c4984f",
+   "adds": [
+    "boss",
+    "action"
+   ],
+   "control": {
+    "quick": "platform",
+    "ai": "platform"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": "Giant Swamp Snake"
+  },
+  {
+   "id": "o08",
+   "axis": "arena",
+   "sentence": "A bee gathers honey in a windy meadow before the storm hits",
+   "seed": 84139068,
+   "ackSec": 0.2,
+   "quickId": "a7e8dd02de8be2d4abaea8c02df246b0",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 155.7,
+   "overBudget": false,
+   "aiId": "c938997107f4ce3621f6caaf8a94e0fd",
+   "aiUrl": "/play/c938997107f4ce3621f6caaf8a94e0fd",
+   "adds": [],
+   "control": {
+    "quick": "move_free",
+    "ai": "move_free"
+   },
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": null
+  },
+  {
+   "id": "n01",
+   "axis": "new",
+   "sentence": "A squirrel collects acorns while hawks dive at it",
+   "seed": 84139069,
+   "ackSec": 0.1,
+   "quickId": "0a955da618329f6471fca1772cb80fad",
+   "status": "ready",
+   "reason": null,
+   "aiSec": 24.8,
+   "overBudget": false,
+   "aiId": "26696f03bb0379745156f224124bb04d",
+   "aiUrl": "/play/26696f03bb0379745156f224124bb04d",
+   "adds": [
+    "action"
+   ],
+   "control": {
+    "quick": "glide",
+    "ai": "move_free"
+   },
+   "rules": [
+    0,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "boss": null
+  },
+  {
+   "id": "n02",
+   "axis": "new",
+   "sentence": "A pirate ship sails through a storm firing cannons at sea monsters",
+   "seed": 84139070,
+   "ackSec": 0.3,
+   "quickId": "f347c3550ac18b5d27b80ee9ece4e02f",
+   "status": "draft-final",
+   "reason": "UNREPAIRED",
+   "aiSec": 57.6,
+   "overBudget": false
+  }
+ ]
+}
