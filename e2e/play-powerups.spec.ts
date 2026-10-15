@@ -12,7 +12,9 @@ import { HUD_COUNTER_LABELS } from './hud-labels';
  * práce P46C zapne.
  */
 
-const SENTENCE = 'A bee gathers honey in a windy meadow before the storm hits';
+// Skákačka `genre.v3` z panelu P45 (m16): robot sebere 3 power-upy a kombo dojde k ×5
+// (`evals/play/p46c/after.json`). Včela je dnes hra mimo žánr, power-upy nemá.
+const SENTENCE = 'a kangaroo jumps over cars then collects coins on the highway';
 
 interface BoostProbe {
   start(): void;
@@ -35,6 +37,9 @@ async function publish(request: APIRequestContext): Promise<string> {
 function watchErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  page.on('response', (response) => {
+    if (response.status() >= 400) errors.push(`HTTP ${String(response.status())} ${response.url()}`);
+  });
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
@@ -100,7 +105,9 @@ test.describe('power-up badge and combo meter', () => {
   });
 
   test.describe('phone', () => {
-    test.use({ ...devices['Pixel 7'] });
+    // Bez `defaultBrowserType` – ten v describe vynutí nový worker a Playwright ho odmítne.
+    const { defaultBrowserType: _browser, ...pixel7 } = devices['Pixel 7'];
+    test.use(pixel7);
 
     test('Pixel 7: badge and combo stay clear of the action buttons', async ({ page, request }) => {
       test.setTimeout(180_000);
@@ -110,6 +117,7 @@ test.describe('power-up badge and combo meter', () => {
       await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
       expect(await playUntilBoosted(page)).toBe(true);
       await expectBoosts(page);
+      await page.screenshot({ path: test.info().outputPath('pixel7-boosts.png') });
       const boosts = await page.locator('.play-boosts').boundingBox();
       expect(boosts).not.toBeNull();
       const buttons = await page.locator('.play-fire').evaluateAll((nodes) =>
