@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "ff6d3708cd7479b9510dd80e6e8ba58a1576e151493c137e66882df0cbc81156",
+ "catalogHash": "60f74343144b6a94656a5527f716784f4f8ff78552136250e46015ba2307436e",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1447,6 +1447,14 @@
   "gen3d-fuel-silo": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-crosswalk-sign": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-deli-scale": {"class":"prop"},
-  "gen3d-gramophone": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-gramophone": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-jungle-waterfall": {"class":"prop"},
+  "gen3d-wooden-stile": {"class":"prop"},
+  "gen3d-atm-machine": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-hazard-sign": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-stele": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-food-kiosk": {"class":"prop"},
+  "gen3d-electric-generator": {"class":"prop"},
+  "gen3d-flower-box": {"class":"prop"}
  }
 }

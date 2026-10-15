@@ -672,3 +672,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-crosswalk-sign` | crosswalk sign, pedestrian signal, walk signal | 4740 / 2370 |
 | `gen3d-deli-scale` | deli scale, weighing scale | 4566 / 2273 |
 | `gen3d-gramophone` | gramophone, phonograph | 4638 / 2294 |
+| `gen3d-jungle-waterfall` | jungle waterfall, waterfall | 4133 / 1969 |
+| `gen3d-wooden-stile` | wooden stile, stile | 4748 / 2374 |
+| `gen3d-atm-machine` | atm machine, atm, cash machine, cash dispenser | 4664 / 2309 |
+| `gen3d-hazard-sign` | hazard sign, warning sign | 4748 / 2374 |
+| `gen3d-stele` | stele, stone tablet, stela | 4438 / 2117 |
+| `gen3d-food-kiosk` | food kiosk, snack kiosk, food stand | 4074 / 2020 |
+| `gen3d-electric-generator` | electric generator | 4633 / 2291 |
+| `gen3d-flower-box` | flower box, window box | 4286 / 1970 |

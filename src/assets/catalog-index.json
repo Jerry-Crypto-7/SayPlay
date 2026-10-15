@@ -29141,6 +29141,169 @@
           0.32267
         ]
       }
+    },
+    {
+      "assetId": "gen3d-jungle-waterfall",
+      "tags": [
+        "jungle waterfall",
+        "waterfall"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jungle-waterfall-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.61401,
+          0,
+          -0.67631
+        ],
+        "max": [
+          0.61401,
+          0.98218,
+          0.67631
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-stile",
+      "tags": [
+        "wooden stile",
+        "stile"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-stile-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.61916,
+          0,
+          -1.47301
+        ],
+        "max": [
+          0.61916,
+          0.99113,
+          1.47301
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-atm-machine",
+      "tags": [
+        "atm machine",
+        "atm",
+        "cash machine",
+        "cash dispenser"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-atm-machine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21683,
+          0,
+          -0.21534
+        ],
+        "max": [
+          0.21683,
+          1,
+          0.21534
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hazard-sign",
+      "tags": [
+        "hazard sign",
+        "warning sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hazard-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28634,
+          0,
+          -0.04448
+        ],
+        "max": [
+          0.28634,
+          0.99992,
+          0.04448
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stele",
+      "tags": [
+        "stele",
+        "stone tablet",
+        "stela"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stele-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26232,
+          0,
+          -0.24288
+        ],
+        "max": [
+          0.26232,
+          1.00001,
+          0.24288
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-food-kiosk",
+      "tags": [
+        "food kiosk",
+        "snack kiosk",
+        "food stand"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-food-kiosk-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35379,
+          0,
+          -0.52426
+        ],
+        "max": [
+          0.35379,
+          0.97926,
+          0.52426
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-electric-generator",
+      "tags": [
+        "electric generator"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-electric-generator-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75514,
+          0,
+          -0.38106
+        ],
+        "max": [
+          0.75514,
+          0.99126,
+          0.38106
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flower-box",
+      "tags": [
+        "flower box",
+        "window box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.78583,
+          0,
+          -0.47217
+        ],
+        "max": [
+          0.78583,
+          0.99573,
+          0.47217
+        ]
+      }
     }
   ]
 }
