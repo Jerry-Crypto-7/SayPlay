@@ -16,7 +16,8 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
-import { chaserModel, chaserName, enemyModel, heroModel, propModels, sceneModelOf } from '@/play/arcade/models';
+import { chaserModel, chaserName, enemyModel, heroModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
+import { bossKindOf } from '@/play/arcade/pieces/pacing';
 import { targetModelOf } from '@/play/arcade/target-model';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setMusicTension, setSoundLook, vibrateFor } from '@/play/audio';
@@ -393,14 +394,18 @@ function ArcadePlayGame({
       const target = targetModelOf(spec);
       if (target !== undefined) props.target = target;
     }
+    // Boss od režiséra (P46E T4) dostane model své věci z obsazení, když ji katalog má.
+    const bossKind = spec.boss === undefined ? null : bossKindOf(arcade);
+    const bossModel = spec.boss === undefined ? undefined : (riggedModelOf(spec.boss.role) ?? sceneModelOf(spec.boss.role, true));
     return { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props,
+    ...(bossKind === null || bossModel === undefined ? {} : { boss: { kind: bossKind, model: bossModel } }),
     things: Object.fromEntries(spec.roles.flatMap(role => {
       if (role.id === 'pad' && role.label === 'landing pad') return [];
       const model = sceneModelOf(role.label, false);
       return model === undefined ? [] : [[role.id, model]];
     })),
     };
-  }, [spec]);
+  }, [spec, arcade]);
   // Jméno nepřítele a bosse v banneru průběhu (P46B T7): popisek role, jejíž model je kreslí.
   const foe = useMemo(() => chaserName(spec), [spec]);
   const running = snapshot.runState === 'running';
@@ -878,7 +883,7 @@ function ArcadePlayGame({
             )}
             {/* Sloveso, které hra hraje (P43 T7), první tři vteřiny po prvním tahu. Cílovou větu doplňuje, nenahrazuje. */}
             {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null) && <VerbLine line={verb} />}
-            <PacingBanner session={session} enabled={running && active} foe={foe} />
+            <PacingBanner session={session} enabled={running && active} foe={foe} boss={spec.boss?.name} />
           </>
         }
       />

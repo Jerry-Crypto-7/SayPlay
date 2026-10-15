@@ -84,11 +84,16 @@ const falls = (values: readonly number[] | undefined, k: number): boolean =>
  * a losem nový nepřítel a nový druh prostředí, které žádný dřívější úsek neměl.
  * Nepřítel úseku smí přijít nejdřív na jeho začátku (`from`); u běžce tak úsek 2
  * otevře flanker nebo ostřelovač a úsek 3 hejno. Los jen tam, kde je z čeho vybrat.
+ *
+ * Scénář režiséra (`script`, P46E T4) ho přepíše: úsek 2 nese první změnu, úsek 3 ostatní, a úsek dostane jen
+ * změny, které režisér jmenoval a hra má. Úsek bez „newFoe“ nového nepřítele nepřinese (`withPacing` podrží
+ * nepřátele bez příchodu za ním).
  */
-export function segmentScriptOf(rng: CompileRng, genre: SegmentGenre, cast: SegmentCast): SegmentStep[] {
-  const kinds = new Set(KINDS[genre]);
+export function segmentScriptOf(rng: CompileRng, genre: SegmentGenre, cast: SegmentCast, script?: readonly SegmentNews[]): SegmentStep[] {
   const used = new Set<string>();
   return segmentSpans().map(([at, until], index) => {
+    const named = script === undefined ? null : index === 0 ? script.slice(0, 1) : script.slice(1);
+    const kinds = new Set(KINDS[genre].filter((kind) => named === null || named.some((news) => NEWS_KINDS[news] === kind)));
     const k = index + 1;
     const changes: SegmentChange[] = [];
     if (kinds.has('speedTier') && rises(cast.speeds, k)) changes.push({ kind: 'speedTier', percent: cast.speeds[k] as number });
@@ -112,6 +117,10 @@ export function segmentScriptOf(rng: CompileRng, genre: SegmentGenre, cast: Segm
       used.add(`terrain:${variant}`);
       changes.push({ kind: 'terrain', variant });
     }
-    return { at, until, changes };
+    // Prostředí scénáře režiséra jen jmenovaného druhu: past ano, pohyblivá plošina ne.
+    return { at, until, changes: named === null ? changes : changes.filter((change) => change.kind !== 'terrain' || (named as readonly string[]).includes(change.variant)) };
   });
 }
+
+/** Druh změny scénáře, kterou slovo režiséra jmenuje. */
+const NEWS_KINDS: Readonly<Record<SegmentNews, SegmentChange['kind']>> = { newFoe: 'newFoe', faster: 'speedTier', narrow: 'terrain', trap: 'terrain', moving: 'terrain' };

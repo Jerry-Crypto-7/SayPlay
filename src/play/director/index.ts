@@ -21,6 +21,8 @@
 import type { GenerationBranch } from '@/server/pipeline';
 
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
+import { bossKindOf, segmentNewsOf } from '../arcade/pieces/pacing';
+import { abilityHint } from '../draft/controls';
 import { loadRapier } from '../arcade/physics/world';
 import { LOGIC_LIMITS } from '../arcade/contract';
 import { phaseEntryOf, readsLogic, rulesTouching } from '../arcade/rules/schema';
@@ -105,6 +107,8 @@ export interface DirectorDeps {
   readonly examples?: boolean;
   /** Moduly žánrů pro draft, čtení odpovědi a kontrolu věrnosti; testy sem dávají dvojníky (`genre/__tests__/doubles.ts`). */
   readonly modules?: GenreModules;
+  /** Pokyn modelu za zadáním (P46E T4: upgrade, který nic nepřidal, požádá o bosse nebo akci). */
+  readonly nudge?: string;
 }
 
 function warningsOf(spec: GameSpecV1): CriticIssue[] {
@@ -182,11 +186,31 @@ async function verifyDirectorSpec(spec: GameSpecV1, intent: Intent, seed: number
   await preloadPhysics(spec, loadRapier);
   const made = arcadeWorldOf(spec, seed);
   const triples = essentialTriples(intent);
-  if (!made.ok) return { complete: false, unmet: triples, actions: actionIssues(spec, intent, seed, []), issues: [{ code: 'NOT_PLAYABLE', path: '/', evidence: made.issues.join('; '), repairHint: 'Choose a playable live recipe.' }] };
+  if (!made.ok) return { complete: false, unmet: triples, actions: actionIssues(spec, intent, seed, []), issues: [{ code: 'NOT_PLAYABLE', path: '/', evidence: made.issues.join('; '), repairHint: 'Choose a playable live recipe.' }], verbs: [] as string[], boss: false, segmented: false };
   const verdict = verifyArcade(made.world, undefined, made.roleBindings);
   const unmet = triples.filter(triple => !verdict.witnesses.some(witness => matchesWitness(triple, witness)));
   const issues = verdict.publishEligible ? [] : verbIssues(verdict.failures.map(failure => ({ code: 'NOT_PLAYABLE', path: '/', evidence: failure, repairHint: 'The actual bot must win, idle must not win, and replay must match.' })), spec);
-  return { complete: verdict.publishEligible && unmet.length === 0, unmet, actions: actionIssues(spec, intent, seed, verdict.witnesses), issues };
+  // Novinky režiséra (P46E T4): co robot udělal, jestli hra má bosse finále a scénář úseků.
+  const verbs = verdict.witnesses.map(witness => witness.verb);
+  return { complete: verdict.publishEligible && unmet.length === 0, unmet, actions: actionIssues(spec, intent, seed, verdict.witnesses), issues, verbs, boss: bossKindOf(made.world) !== null, segmented: segmentNewsOf(made.world).length > 0 };
+}
+
+/**
+ * Akce od režiséra, které robot neudělal (P46E T4), tlačítko nedostanou: spec bez nich a nápověda ovládání
+ * bez jejich kláves. Akce rychlé verze zůstanou – ty ověřilo skládání.
+ */
+function withoutAbilities(spec: GameSpecV1, idle: readonly string[]): GameSpecV1 {
+  const { abilities = [], ...rest } = spec;
+  const kept = abilities.filter(ability => !idle.includes(ability));
+  const said = ` ${abilityHint(abilities)}`;
+  const own = spec.tutorial.controlsHint.endsWith(said) ? spec.tutorial.controlsHint.slice(0, -said.length) : spec.tutorial.controlsHint;
+  return { ...rest, ...(kept.length === 0 ? {} : { abilities: kept }), tutorial: { ...spec.tutorial, controlsHint: kept.length === 0 ? own : `${own} ${abilityHint(kept)}` } };
+}
+
+/** Boss a scénář úseků od režiséra, které hra nepostavila (aréna s pravidly průběh nemá), ze specu pryč. */
+function withBuiltExtras(spec: GameSpecV1, played: { readonly boss: boolean; readonly segmented: boolean }): GameSpecV1 {
+  const { boss, segments, ...rest } = spec;
+  return { ...rest, ...(boss === undefined || !played.boss ? {} : { boss }), ...(segments === undefined || !played.segmented ? {} : { segments }) };
 }
 
 export async function direct(sentence: string, deps: DirectorDeps): Promise<DirectedGame> {
@@ -220,10 +244,12 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   // Slovesa, která tabulka P44C přiblížila („stabs“ → fight), režisér vidí jmenovitě – stejně jako je návrh přizná.
   const approximations = intent.items.filter((item) => item.mapped === true).map((item) => ({ said: item.said, as: item.verb }));
   const fullIntent = { sentence, essential: essentialTriples(intent), negated: intent.negated, ...(approximations.length > 0 ? { approximations } : {}) };
-  const request = deps.modules === undefined ? { ...startingRequest, user: `${startingRequest.user}\n\nFULL INTENT:\n${JSON.stringify(fullIntent)}` } : startingRequest;
+  const intended = deps.modules === undefined ? { ...startingRequest, user: `${startingRequest.user}\n\nFULL INTENT:\n${JSON.stringify(fullIntent)}` } : startingRequest;
+  // Pokyn navíc (P46E T4, druhý pokus upgradu bez novinky) jde za zadání a má vlastní klíč cache.
+  const request = deps.nudge === undefined ? intended : { ...intended, user: `${intended.user}\n\n${deps.nudge}` };
   // Hra psaná s příklady má vlastní klíč cache: měření s nimi a bez nich si hry nepůjčí. Totéž jiná tabulka sloves.
   const vocab = vocabVersion();
-  const promptVersion = `${compact ? (examples ? `${COMPACT_PROMPT_VERSION}+examples:${EXAMPLES_VERSION}` : COMPACT_PROMPT_VERSION) : DIRECTOR_PROMPT_VERSION}${vocab === null ? '' : `+vocab:${vocab}`}`;
+  const promptVersion = `${compact ? (examples ? `${COMPACT_PROMPT_VERSION}+examples:${EXAMPLES_VERSION}` : COMPACT_PROMPT_VERSION) : DIRECTOR_PROMPT_VERSION}${vocab === null ? '' : `+vocab:${vocab}`}${deps.nudge === undefined ? '' : '+nudge'}`;
   const key = directorKey({ sentence, promptVersion, model: request.model, endpoint: deps.branch.id });
   const cached = deps.cache === undefined ? null : await deps.cache.read(key);
   // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.
@@ -309,13 +335,26 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     const ruleFailures = issues.filter(issue => issue.code === 'RULE_INVALID' || issue.code === 'VERB_UNPROVED');
     // Vlny a fáze z pravidel umí hru přitížit tak, že ji robot neprojde (demo 12. 10.: 6 z 25 nahraných
     // odpovědí, bez pravidel 5 z nich vyhraje) – hra bez pravidel je pořád AI verze s obsazením z odpovědi.
-    const unplayable = (verified.issues.length > 0 || blockingIssues(critique(nativeSpec)).length > 0) && (nativeSpec.rules?.length ?? 0) > 0;
+    // Scénář úseků a akce od režiséra (P46E T4) mění, kdy nepřátelé přijdou a co hrdina umí: hru, kterou robot
+    // neprojde, zkusí nejdřív bez scénáře, pak i bez akcí (běžec se střelbou od režiséra prohrál na 465 m).
+    const quickAbilities: readonly string[] = draft.abilities ?? [];
+    const ownAbilities = (nativeSpec.abilities ?? []).filter(ability => !quickAbilities.includes(ability));
+    const { segments: script, ...unscripted } = nativeSpec;
+    const plain = ownAbilities.length === 0 ? null : withoutAbilities(unscripted, ownAbilities);
+    const unplayable = (verified.issues.length > 0 || blockingIssues(critique(nativeSpec)).length > 0) && ((nativeSpec.rules?.length ?? 0) > 0 || script !== undefined || plain !== null);
     let rulesFrom: DirectedGame['rulesFrom'];
     if (ruleFailures.length > 0 || unplayable) {
       const unproved = new Set(unprovedVerbs(ruleFailures));
       // Hra bez pravidel až po pravidlech rychlé verze (P46E T2): demo 12. 10. křečkovi zmizela pravidla.
-      const bare = withoutRules(nativeSpec, () => true);
-      const candidates = [[withoutRules(nativeSpec, rule => unproved.has(rule.verb)), undefined], [bare === null ? null : withDraftRules(draft, bare), 'draft'], [bare, 'none']] as const;
+      const ruleCandidates = (base: GameSpecV1): (readonly [GameSpecV1 | null, DirectedGame['rulesFrom']])[] => {
+        const bare = withoutRules(base, () => true);
+        return [[withoutRules(base, rule => unproved.has(rule.verb)), undefined], [bare === null ? null : withDraftRules(draft, bare), 'draft'], [bare, 'none']];
+      };
+      // Pravidla zkouší i nad hrou bez akcí režiséra: s008 se střelbou prohrál s pravidly odpovědi i bez nich.
+      const candidates: (readonly [GameSpecV1 | null, DirectedGame['rulesFrom']])[] = [
+        ...(verified.issues.length === 0 ? [] : [...(script === undefined ? [] : [[unscripted, undefined] as const]), ...(plain === null ? [] : [[plain, undefined] as const])]),
+        ...ruleCandidates(nativeSpec), ...(plain === null || verified.issues.length === 0 ? [] : ruleCandidates(plain)),
+      ];
       for (const [candidate, from] of candidates) {
         if (candidate === null || blockingIssues(critique(candidate)).length > 0) continue;
         const checked = deps.check === undefined ? [] : verbIssues(deps.check(candidate), candidate);
@@ -324,6 +363,20 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
         nativeSpec = candidate; verified = played; ruleBlocks = []; issues = issuesOf(); rulesFrom = from;
         break;
       }
+    }
+    // Novinky režiséra jen ty, které hra unese (P46E T4): akce, kterou robot neudělal, tlačítko nedostane a je
+    // VERB_UNPROVED; boss a úseky, které hra nepostavila, ze specu pryč. Boss je boss žánru – projde jím každá výhra.
+    const idle = (nativeSpec.abilities ?? []).filter(ability => !quickAbilities.includes(ability) && !verified.verbs.includes(ability));
+    // Akce, se kterými robot nevyhrál (kandidát bez nich), jsou neprokázané stejně jako ty, které nepoužil.
+    const kept: readonly string[] = nativeSpec.abilities ?? [];
+    const lost = ownAbilities.filter(ability => !kept.includes(ability));
+    const unbuilt = (nativeSpec.boss !== undefined && !verified.boss) || (nativeSpec.segments !== undefined && !verified.segmented);
+    if (verified.issues.length === 0 && (idle.length > 0 || lost.length > 0 || unbuilt)) {
+      const candidate = withBuiltExtras(idle.length === 0 ? nativeSpec : withoutAbilities(nativeSpec, idle), verified);
+      const played = idle.length === 0 ? verified : await verifyDirectorSpec(candidate, intent, deps.seed ?? 1);
+      if (played.issues.length === 0 && blockingIssues(critique(candidate)).length === 0) { nativeSpec = candidate; verified = played; }
+      const unproved = (ability: string, evidence: string): CriticIssue => ({ code: 'VERB_UNPROVED', severity: 'block', path: '/abilities', evidence, repairHint: `give the hero a reason to ${ability} on the way to the win, or leave the ability out` });
+      issues = [...issuesOf(), ...lost.map(ability => unproved(ability, `the robot did not win with the "${ability}" ability`)), ...idle.map(ability => unproved(ability, `the robot never used the "${ability}" ability`))];
     }
     // Final verification is for the exact version after every accepted repair.
     if (verified.issues.length > 0 || blockingIssues(critique(nativeSpec)).length > 0) return { ...fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: issues.map(issue => `${issue.code}: ${issue.evidence}`).join('; '), raw: nativeSpec }), repairRounds: rounds };

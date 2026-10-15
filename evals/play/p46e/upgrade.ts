@@ -16,11 +16,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { derivedSeeds, publishReadSpec, seedFrom } from '@/app/api/play/_publish';
-import { directUpgrade } from '@/app/api/play/_upgrade';
-import { abilityIdsOf } from '@/play/arcade/abilities/state';
-import { ABILITIES, type ArcadeWorld, BODY, bodyBase, nativeRule } from '@/play/arcade/contract';
-import { segmentNewsOf } from '@/play/arcade/pieces/pacing';
-import type { ActionWitness } from '@/play/arcade/witness';
+import { type PlayedGame, type UpgradeAdd as PlayedAdd, directUpgrade, upgradeAddsOf } from '@/app/api/play/_upgrade';
 import { type DirectedGame, direct } from '@/play/director';
 import { answered, failed, fakeBranch } from '@/play/director/__fixtures__/branch';
 import type { LogicAnswerFixture } from '@/play/director/__fixtures__/logic-answers';
@@ -32,7 +28,7 @@ import { memoryVersionStore, type PublishedGame } from '@/play/version';
 export const P46E_DIR = 'evals/play/p46e';
 
 /** Co AI verze přidala proti rychlé verzi. `characters` jediné není novinka ve hře. */
-export type UpgradeAdd = 'boss' | 'action' | 'segments' | 'characters';
+export type UpgradeAdd = PlayedAdd | 'characters';
 export const PLAYED_ADDS: readonly UpgradeAdd[] = ['boss', 'action', 'segments'];
 
 export interface UpgradeRow {
@@ -61,36 +57,11 @@ export const recordedAnswers = (dir: string): LogicAnswerFixture[] =>
     .sort()
     .map((file) => JSON.parse(readFileSync(join(dir, file), 'utf8')) as LogicAnswerFixture);
 
-/** Model bosse finále (poslední předloha chování pravidla `pacing`); `null` = hra bez bosse. */
-function bossOf(world: ArcadeWorld): string | null {
-  const params = nativeRule(world.rules, 'pacing')?.params as { readonly finale?: string; readonly behaviours?: readonly { readonly template: number }[] } | undefined;
-  const template = params?.finale === 'boss' ? params.behaviours?.at(-1)?.template : undefined;
-  return template === undefined ? null : (world.kinds[world.initial[bodyBase(template) + BODY.kind] as number] ?? '');
-}
+export type Played = PlayedGame;
 
-const ACTIONS: ReadonlySet<string> = new Set(ABILITIES);
-
-/** Akce hrdiny: tlačítka akcí (P46A) a akce, kterou robot ve hře opravdu udělal. */
-const actionsOf = (world: ArcadeWorld, witnesses: readonly ActionWitness[]): Set<string> =>
-  new Set([...abilityIdsOf(world.control), ...witnesses.map((witness) => witness.verb).filter((verb) => ACTIONS.has(verb))]);
-
-const segmentsOf = (world: ArcadeWorld): string[] => segmentNewsOf(world).map((item) => `${item.beat}:${item.news}`);
-
-export interface Played {
-  readonly spec: GameSpecV1;
-  readonly world: ArcadeWorld;
-  readonly witnesses: readonly ActionWitness[];
-}
-
-/** Novinky AI verze proti rychlé: jiný nebo nový boss, nová akce, jiný neprázdný scénář úseků, nová jména rolí. */
+/** Novinky AI verze proti rychlé: co hráč hraje (`upgradeAddsOf`, brána upgradu od T4) a nová jména rolí. */
 export function addsOf(quick: Played, ai: Played): UpgradeAdd[] {
-  const adds: UpgradeAdd[] = [];
-  const boss = bossOf(ai.world);
-  if (boss !== null && boss !== bossOf(quick.world)) adds.push('boss');
-  const had = actionsOf(quick.world, quick.witnesses);
-  if ([...actionsOf(ai.world, ai.witnesses)].some((action) => !had.has(action))) adds.push('action');
-  const segments = segmentsOf(ai.world);
-  if (segments.length > 0 && segments.join() !== segmentsOf(quick.world).join()) adds.push('segments');
+  const adds: UpgradeAdd[] = upgradeAddsOf(quick, ai);
   const labels = new Set(quick.spec.roles.map((role) => role.label.toLowerCase()));
   if (ai.spec.roles.some((role) => !labels.has(role.label.toLowerCase()))) adds.push('characters');
   return adds;
@@ -117,10 +88,12 @@ export async function upgradeRow(fixture: Pick<LogicAnswerFixture, 'id' | 'sente
   if (!quick.ok) throw new Error(`${fixture.id}: the quick version did not publish: ${JSON.stringify(quick.issues)}`);
   const draft = quick.value.game;
   let directed: DirectedGame | null = null;
-  const outcome = await directUpgrade(store, draft, { sentence, seed: null, ackMs: null, draftReadyMs: null, startedAt: Date.now(), caller: 'p46e-gauge' }, (_startedAt, _caller, check) => async (said) => {
-    const branch = fakeBranch([fixture.answer === null ? failed('UPSTREAM_UNAVAILABLE', fixture.failure ?? 'no answer') : answered(fixture.answer)]);
-    directed = await direct(said, { branch, now: Date.now, check, compact: true, maxRepairRounds: 0 });
-    return { ...directed, callerLimited: false };
+  const outcome = await directUpgrade(store, draft, { sentence, seed: null, ackMs: null, draftReadyMs: null, startedAt: Date.now(), caller: 'p46e-gauge' }, (_startedAt, _caller, check, nudge) => async (said) => {
+    // Druhý pokus s pokynem (T4) nahrávka nemá: větev bez odpovědi, AI verze zůstane první.
+    const branch = fakeBranch([fixture.answer === null || nudge !== undefined ? failed('UPSTREAM_UNAVAILABLE', fixture.failure ?? 'no answer') : answered(fixture.answer)]);
+    const result = await direct(said, { branch, now: Date.now, check, compact: true, maxRepairRounds: 0, ...(nudge === undefined ? {} : { nudge }) });
+    if (nudge === undefined) directed = result;
+    return { ...result, callerLimited: false };
   });
   const head = { id: fixture.id, sentence, directed: (directed as DirectedGame | null)?.source ?? 'none', directedReason: (directed as DirectedGame | null)?.fallbackReason ?? null };
   const quickRules = draft.spec.rules?.length ?? 0;

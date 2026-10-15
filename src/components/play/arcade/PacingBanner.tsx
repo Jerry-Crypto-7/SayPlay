@@ -53,13 +53,14 @@ export const newsOf = (world: BeatWorld, beat: PacingBeat): SegmentNews | undefi
 /** Jméno z věty jako začátek nápisu: „police helicopter“ → „Police helicopter“. */
 const named = (name: string): string => `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
 
-/** Nápis chvíle: nový nepřítel a boss se jménem z věty (`foe`), bez něj pevný nápis. */
-export function pacingBannerLabel(world: BeatWorld, beat: PacingBeat, foe?: string): string {
+/** Nápis chvíle: nový nepřítel a boss se jménem z věty (`foe`), boss režiséra se svým (`boss`, P46E T4), bez nich pevný nápis. */
+export function pacingBannerLabel(world: BeatWorld, beat: PacingBeat, foe?: string, boss?: string): string {
   if (beat === 'segment2' || beat === 'segment3') {
     const news = newsOf(world, beat) as SegmentNews;
     return news === 'newFoe' && foe !== undefined ? `New foe: ${named(foe)}` : SEGMENT_NEWS_LABELS[news];
   }
-  return beat === 'boss' && foe !== undefined ? `Boss: ${named(foe)}` : PACING_BANNER_LABELS[beat];
+  const name = boss ?? foe;
+  return beat === 'boss' && name !== undefined ? `Boss: ${named(name)}` : PACING_BANNER_LABELS[beat];
 }
 
 export interface PacingBannerWatch {
@@ -89,14 +90,14 @@ export function createPacingBannerWatch(world: BeatWorld): PacingBannerWatch {
   };
 }
 
-export function PacingBanner({ session, enabled, foe }: { readonly session: Pick<ArcadeSession, 'world' | 'state' | 'subscribe'>; readonly enabled: boolean; readonly foe?: string | undefined }) {
+export function PacingBanner({ session, enabled, foe, boss }: { readonly session: Pick<ArcadeSession, 'world' | 'state' | 'subscribe'>; readonly enabled: boolean; readonly foe?: string | undefined; readonly boss?: string | undefined }) {
   const [watch] = useState(() => createPacingBannerWatch(session.world));
   const read = (): PacingBeat | null => watch.see(session.state());
   const beat = useSyncExternalStore(session.subscribe, read, read);
   if (!enabled || beat === null) return null;
   return (
     <p key={beat} className="sp-world-tag play-pacing-banner" data-testid="play-pacing-banner" data-beat={beat} data-news={newsOf(session.world, beat)} role="status">
-      {pacingBannerLabel(session.world, beat, foe)}
+      {pacingBannerLabel(session.world, beat, foe, boss)}
     </p>
   );
 }

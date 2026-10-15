@@ -25,6 +25,11 @@ import { join } from 'node:path';
 
 import { after } from 'next/server';
 
+import { abilityIdsOf } from '@/play/arcade/abilities/state';
+import { arcadeWorldOf } from '@/play/arcade/compile';
+import { ABILITIES, type ArcadeWorld } from '@/play/arcade/contract';
+import { bossKindOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
+import type { ActionWitness } from '@/play/arcade/witness';
 import { withDraftRules } from '@/play/director';
 import { type GameSpecV1, gameSpecHash, readGameSpec } from '@/play/spec';
 import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
@@ -49,7 +54,8 @@ export type DraftFinalReason =
   | 'FAILED';
 
 export type UpgradeOutcome =
-  | { readonly status: 'ready'; readonly versionId: string }
+  /** `adds` (P46E T4): co AI verze přidala, jak to spočítal `directUpgrade`; dítě z úložiště ho nenese. */
+  | { readonly status: 'ready'; readonly versionId: string; readonly adds?: readonly UpgradeAdd[] }
   | { readonly status: 'draft-final'; readonly reason: DraftFinalReason };
 
 /** `deadlineAt` (ISO): do kdy se má klient ptát – start práce + rozpočet režie + rezerva (P27C T1). */
@@ -229,8 +235,8 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   const directorStarted = performance.now();
   // Neprošlý keypoint jde modelu k opravě dřív, než publikace hru odmítne (P26 T10a).
-  const directed = await director(request.startedAt, request.caller, (spec) => playabilityIssues(spec, seeds))(request.sentence);
-  const directorMs = performance.now() - directorStarted;
+  const check = (spec: GameSpecV1) => playabilityIssues(spec, seeds);
+  const directed = await director(request.startedAt, request.caller, check)(request.sentence);
   if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
   if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: directed.spec });
   // Ovládání smí AI vyměnit (P26 T4, ruší R1 z P25A): návrh ze slov žánr jen
@@ -238,11 +244,87 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
 
   const intent = extractIntent(request.sentence);
   const before = await actionEvidence(draft.spec, draft.version.seed, draft.arcade);
-  const preserving = async (spec: GameSpecV1): Promise<number[]> => {
+  const quick: PlayedGame = { spec: draft.spec, world: draft.arcade!, witnesses: before };
+  const picked = await upgradeCandidate(draft, directed.spec, seeds, intent, before);
+  if (picked === null) return final('ACTION_LOST', { stage: 'upgrade', reason: 'ACTION_LOST', detail: 'No candidate seed preserves all essential actions witnessed in the published quick version.', raw: directed.spec });
+  let upgraded = picked.spec;
+  let preservingSeeds = picked.seeds;
+  let adds = upgradeAddsOf(quick, picked.played);
+  let source = directed.source;
+  // AI verze bez novinky, kterou hráč hraje (P46E T4): jeden druhý pokus s pokynem. Ani ten nic nepřidá, nebo
+  // nevyjde – publikuje se první; `adds: []` ho ukáže.
+  if (adds.length === 0) {
+    const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE)(request.sentence);
+    const again = nudged.source === 'draft' ? null : await upgradeCandidate(draft, nudged.spec, seeds, intent, before);
+    const added = again === null ? [] : upgradeAddsOf(quick, again.played);
+    if (again !== null && added.length > 0 && nudged.source !== 'draft') [upgraded, preservingSeeds, adds, source] = [again.spec, again.seeds, added, nudged.source];
+  }
+  const directorMs = performance.now() - directorStarted;
+
+  const published = await publishReadSpec(versions, upgraded, preservingSeeds, draftId, {
+    relation: 'upgrade',
+    timings: { ackMs: request.ackMs, draftReadyMs: request.draftReadyMs, directorMs, source },
+  });
+  if (!published.ok) {
+    const reason = published.issues?.[0] === 'CONTENT_REJECTED' ? 'BLOCKED' : (REFUSAL_REASON[published.response.status] ?? 'FAILED');
+    return final(reason, { stage: 'publish', reason: published.issues?.[0] ?? String(published.response.status), detail: (published.issues ?? []).slice(1).join('; '), raw: upgraded });
+  }
+  return { status: 'ready', versionId: published.value.game.version.versionId, adds };
+}
+
+/** Pokyn druhého pokusu upgradu, který nic nepřidal (P46E T4). */
+export const ADD_NUDGE = 'YOUR VERSION ADDS NOTHING THE QUICK VERSION LACKS: add a boss or an ability – a boss the run ends with, or 1–2 hero abilities the sentence implies.';
+
+/** Novinka AI verze, kterou hráč hraje (P46E T4): boss finále, akce hrdiny, vlastní scénář úseků. */
+export type UpgradeAdd = 'boss' | 'action' | 'segments';
+
+/** Hra, jak ji hráč hraje: spec, svět a co v něm robot udělal. */
+export interface PlayedGame {
+  readonly spec: GameSpecV1;
+  readonly world: ArcadeWorld;
+  readonly witnesses: readonly ActionWitness[];
+}
+
+const ABILITY_IDS: ReadonlySet<string> = new Set(ABILITIES);
+
+/** Akce hrdiny: tlačítka akcí (P46A) a akce, kterou robot ve hře opravdu udělal. */
+const actionsOf = (game: PlayedGame): Set<string> =>
+  new Set([...abilityIdsOf(game.world.control), ...game.witnesses.map((witness) => witness.verb).filter((verb) => ABILITY_IDS.has(verb))]);
+
+const segmentsOf = (world: ArcadeWorld): string => segmentNewsOf(world).map((item) => `${item.beat}:${item.news}`).join();
+
+/**
+ * Co AI verze přidala proti rychlé (P46E T1 měřidlo, od T4 brána upgradu): boss finále, který rychlá verze nemá,
+ * nebo má jiný (druh těla, jméno od režiséra); akce, kterou rychlá verze nemá; jiný neprázdný scénář úseků.
+ */
+export function upgradeAddsOf(quick: PlayedGame, ai: PlayedGame): UpgradeAdd[] {
+  const adds: UpgradeAdd[] = [];
+  const boss = bossKindOf(ai.world);
+  if (boss !== null && (boss !== bossKindOf(quick.world) || (ai.spec.boss !== undefined && ai.spec.boss.name !== quick.spec.boss?.name))) adds.push('boss');
+  const had = actionsOf(quick);
+  if ([...actionsOf(ai)].some((action) => !had.has(action))) adds.push('action');
+  const segments = segmentsOf(ai.world);
+  if (segments !== '' && segments !== segmentsOf(quick.world)) adds.push('segments');
+  return adds;
+}
+
+/**
+ * Kandidát AI verze ze specu režiséra, který drží akce rychlé verze, a semínka, na kterých je drží; `null` = žádný.
+ * `played` = kandidát na prvním z nich, jak ho porovná `upgradeAddsOf`.
+ */
+async function upgradeCandidate(draft: PublishedGame, ai: GameSpecV1, seeds: readonly number[], intent: ReturnType<typeof extractIntent>, before: readonly ActionWitness[]): Promise<{ readonly spec: GameSpecV1; readonly seeds: number[]; readonly played: PlayedGame } | null> {
+  const preserving = async (spec: GameSpecV1): Promise<{ kept: number[]; witnesses: readonly ActionWitness[] }> => {
     const kept: number[] = [];
-    for (const seed of seeds) if (lostActions(intent, before, await actionEvidence(spec, seed)).length === 0) kept.push(seed);
-    return kept;
+    let witnesses: readonly ActionWitness[] = [];
+    for (const seed of seeds) {
+      const evidence = await actionEvidence(spec, seed);
+      if (lostActions(intent, before, evidence).length > 0) continue;
+      if (kept.length === 0) witnesses = evidence;
+      kept.push(seed);
+    }
+    return { kept, witnesses };
   };
+  const directed = { spec: ai };
   // Režisér často vybere jiný žánr a akci z věty ztratí (demo 12. 10.: 12 z 22 nahraných odpovědí).
   // Druhý pokus: hra rychlé verze s pravidly, logikou a vzhledem od režiséra (9 z 12 pak projde).
   // AI verze s méně pravidly nebo bez logiky rychlé verze (P46E T2, demo 12. 10.: křeček a auta) jde až
@@ -255,31 +337,18 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
     : [directed.spec, onQuickGame(draft.spec, directed.spec)];
   // Roub, který rychlou verzi jen přejmenuje, AI verze není (auto, které ztratí závod i střelbu, zůstane ACTION_LOST).
   const renamedQuick = (spec: GameSpecV1) => gameSpecHash({ ...spec, title: draft.spec.title }) === gameSpecHash(draft.spec);
-  let upgraded: GameSpecV1 | null = null;
-  let preservingSeeds: number[] = [];
   const tried = new Set([gameSpecHash(draft.spec)]);
   for (const candidate of candidates) {
     if (candidate === null || tried.has(gameSpecHash(candidate))) continue;
     tried.add(gameSpecHash(candidate));
     // Spec režiséra ověřil robot už v `direct()`; složený kandidát ještě ne.
     if (candidate !== directed.spec && (renamedQuick(candidate) || playabilityIssues(candidate, seeds).length > 0)) continue;
-    const kept = await preserving(candidate);
-    if (kept.length > 0) {
-      [upgraded, preservingSeeds] = [candidate, kept];
-      break;
-    }
+    const { kept, witnesses } = await preserving(candidate);
+    if (kept.length === 0) continue;
+    const made = arcadeWorldOf(candidate, kept[0]!);
+    if (made.ok) return { spec: candidate, seeds: kept, played: { spec: candidate, world: made.world, witnesses } };
   }
-  if (upgraded === null) return final('ACTION_LOST', { stage: 'upgrade', reason: 'ACTION_LOST', detail: 'No candidate seed preserves all essential actions witnessed in the published quick version.', raw: directed.spec });
-
-  const published = await publishReadSpec(versions, upgraded, preservingSeeds, draftId, {
-    relation: 'upgrade',
-    timings: { ackMs: request.ackMs, draftReadyMs: request.draftReadyMs, directorMs, source: directed.source },
-  });
-  if (!published.ok) {
-    const reason = published.issues?.[0] === 'CONTENT_REJECTED' ? 'BLOCKED' : (REFUSAL_REASON[published.response.status] ?? 'FAILED');
-    return final(reason, { stage: 'publish', reason: published.issues?.[0] ?? String(published.response.status), detail: (published.issues ?? []).slice(1).join('; '), raw: upgraded });
-  }
-  return { status: 'ready', versionId: published.value.game.version.versionId };
+  return null;
 }
 
 /**
