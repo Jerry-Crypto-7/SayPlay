@@ -842,3 +842,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-golden-bell` | golden bell | 4686 / 2276 |
 | `gen3d-fire-pit` | fire pit, firepit | 4722 / 2352 |
 | `gen3d-toxic-barrel` | toxic barrel, toxic waste barrel | 4557 / 2218 |
+| `gen3d-golden-ring` | golden ring | 4702 / 2336 |
+| `gen3d-shield-orb` | shield orb, shield bubble | 4746 / 2372 |
+| `gen3d-clover-coin` | clover coin | 4748 / 2374 |
+| `gen3d-laser-gate` | laser gate, laser barrier | 4702 / 2350 |
+| `gen3d-rolling-log` | rolling log | 4575 / 2244 |

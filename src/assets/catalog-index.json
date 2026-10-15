@@ -32507,6 +32507,103 @@
           0.35293
         ]
       }
+    },
+    {
+      "assetId": "gen3d-golden-ring",
+      "tags": [
+        "golden ring"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-golden-ring-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45806,
+          0,
+          -0.1154
+        ],
+        "max": [
+          0.45806,
+          0.99957,
+          0.1154
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-shield-orb",
+      "tags": [
+        "shield orb",
+        "shield bubble"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-shield-orb-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48597,
+          0,
+          -0.48591
+        ],
+        "max": [
+          0.48597,
+          0.99428,
+          0.48591
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-clover-coin",
+      "tags": [
+        "clover coin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-clover-coin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4998,
+          0,
+          -0.0684
+        ],
+        "max": [
+          0.4998,
+          0.99481,
+          0.0684
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-laser-gate",
+      "tags": [
+        "laser gate",
+        "laser barrier"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-laser-gate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.76229,
+          0,
+          -0.1486
+        ],
+        "max": [
+          0.76229,
+          1,
+          0.1486
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rolling-log",
+      "tags": [
+        "rolling log"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rolling-log-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.56749,
+          0,
+          -0.45788
+        ],
+        "max": [
+          0.56749,
+          0.99867,
+          0.45788
+        ]
+      }
     }
   ]
 }

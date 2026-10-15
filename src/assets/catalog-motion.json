@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "d6c2e35b37a9a818cd0d87c5935c79b6ea52f2b26c4c8e0c479231c7d1739bad",
+ "catalogHash": "8b864ea2feda5b43ea722333a7ef04b802201f4789bc43b10803bf8578f1b83d",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1617,6 +1617,11 @@
   "gen3d-energy-capsule": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-golden-bell": {"class":"prop"},
   "gen3d-fire-pit": {"class":"prop"},
-  "gen3d-toxic-barrel": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-toxic-barrel": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-golden-ring": {"class":"prop"},
+  "gen3d-shield-orb": {"class":"prop"},
+  "gen3d-clover-coin": {"class":"prop"},
+  "gen3d-laser-gate": {"class":"prop"},
+  "gen3d-rolling-log": {"class":"prop"}
  }
 }
