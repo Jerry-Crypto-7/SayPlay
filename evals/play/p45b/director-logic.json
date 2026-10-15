@@ -1,18 +1,18 @@
 {
  "about": "P45B T11: first answers of the compact director on local gpt-oss-20b for evals/play/p45b/director-sentences.json, judged offline by judgeLogicAnswer (src/play/director/__fixtures__/logic-answers.ts) – raw without and repaired with the phase-entry repair of the read path (withPhaseEntries). Target: >= 20/25 repaired write logic and pass with logic_proved. See evals/play/p45b/README.md.",
  "recordedAt": "2026-10-09T11:42:16.491Z",
- "judgedAt": "2026-10-12T09:41:37.254Z",
- "commit": "c47d908b",
+ "judgedAt": "2026-10-15T10:30:00.000Z",
+ "commit": "41159424",
  "model": "gpt-oss-20b",
  "endpoint": "http://127.0.0.1:8792",
  "promptVersion": "3cf3f465",
  "directorPromptVersion": "dff25958",
  "raw": {
-  "hit": 2,
+  "hit": 1,
   "of": 25
  },
  "repaired": {
-  "hit": 3,
+  "hit": 2,
   "of": 25
  },
  "before": {
@@ -248,11 +248,11 @@
   },
   {
    "id": "s008",
-   "passed": true,
-   "rawPassed": true,
+   "passed": false,
+   "rawPassed": false,
    "phasesEntered": [],
    "wroteLogic": true,
-   "why": null,
+   "why": "the game does not keep the answer's logic (timer:escape, phase:first, phase:second): bot_wins: the bot lost at tick 3326, 557 m into the track",
    "fallbackReason": null,
    "axis": "escape",
    "ms": 15067

@@ -165,6 +165,7 @@ describe('recorded gpt-oss-20b logic answers', () => {
     // Demo 12. 10.: vstup dostane i fáze, kterou nikdo nečte, takže oprava sáhne na většinu odpovědí.
     expect(verdicts.filter((verdict) => verdict.phasesEntered.length > 0).map((verdict) => verdict.id)).toEqual(expect.arrayContaining(['h09', 'j08', 's003', 's188']));
     // T12a záznam 5: číslo pevně – nový záznam, který ho pohne, musí přepsat i README. Demo 12. 10.: 1/1 → 2/3.
-    expect([summary.raw.hit, summary.repaired.hit]).toEqual([2, 3]);
+    // P46D/H 15. 10.: delší a těžší trať, robot s008 prohraje v 557. metru → 1/2 (rozhodnutí majitele: přijmout).
+    expect([summary.raw.hit, summary.repaired.hit]).toEqual([1, 2]);
   }, 600_000);
 });
