@@ -29648,6 +29648,84 @@
           0.42834
         ]
       }
+    },
+    {
+      "assetId": "gen3d-pay-phone",
+      "tags": [
+        "pay phone",
+        "payphone",
+        "public phone"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pay-phone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37985,
+          0,
+          -0.2283
+        ],
+        "max": [
+          0.37985,
+          0.99582,
+          0.2283
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-brontosaurus",
+      "tags": [
+        "brontosaurus"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-brontosaurus-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28798,
+          0,
+          -0.56459
+        ],
+        "max": [
+          0.28798,
+          0.99674,
+          0.56459
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-turnstile",
+      "tags": [
+        "turnstile"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-turnstile-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.51329,
+          0,
+          -0.17892
+        ],
+        "max": [
+          0.51329,
+          0.99986,
+          0.17892
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mousetrap",
+      "tags": [
+        "mousetrap"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-mousetrap-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38949,
+          0,
+          -0.15202
+        ],
+        "max": [
+          0.38949,
+          1.00001,
+          0.15202
+        ]
+      }
     }
   ]
 }

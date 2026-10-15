@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "5a506a25c2469ecef4dc89b8153443f829f1837e898c16645413c7a7902b7e7b",
+ "catalogHash": "a0baac6756b3f06c5509b141001975a3937c2acfe609bc08474d859a508f02c5",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1473,6 +1473,10 @@
   "gen3d-lemur": {"class":"prop"},
   "gen3d-ostrich": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-turkey": {"class":"prop"},
-  "gen3d-pelican": {"class":"prop"}
+  "gen3d-pelican": {"class":"prop"},
+  "gen3d-pay-phone": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-brontosaurus": {"class":"prop"},
+  "gen3d-turnstile": {"class":"prop"},
+  "gen3d-mousetrap": {"class":"prop"}
  }
 }

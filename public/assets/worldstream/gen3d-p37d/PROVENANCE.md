@@ -698,3 +698,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-ostrich` | ostrich | 4702 / 2295 |
 | `gen3d-turkey` | turkey | 4426 / 2127 |
 | `gen3d-pelican` | pelican | 4401 / 2180 |
+| `gen3d-pay-phone` | pay phone, payphone, public phone | 4586 / 2264 |
+| `gen3d-brontosaurus` | brontosaurus | 4456 / 2160 |
+| `gen3d-turnstile` | turnstile | 4738 / 2366 |
+| `gen3d-mousetrap` | mousetrap | 4732 / 2359 |
