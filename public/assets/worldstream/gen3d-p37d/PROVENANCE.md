@@ -862,3 +862,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-frozen-signpost` | frozen signpost | 4718 / 2292 |
 | `gen3d-vine-curtain` | vine curtain | 4496 / 2243 |
 | `gen3d-castle-catapult` | castle catapult, trebuchet catapult | 4628 / 2284 |
+| `gen3d-victory-podium` | victory podium, winners podium | 4738 / 2368 |
+| `gen3d-star-trophy` | star trophy | 4497 / 2206 |
+| `gen3d-finish-banner` | finish banner, finish line, finish arch | 4742 / 2365 |
+| `gen3d-laurel-wreath` | laurel wreath | 4654 / 2214 |
+| `gen3d-blue-ribbon` | blue ribbon, prize ribbon, rosette, award ribbon | 4706 / 2328 |
+| `gen3d-boxing-ring` | boxing ring, wrestling ring | 4719 / 2351 |
+| `gen3d-gong` | gong, bronze gong | 4716 / 2348 |
+| `gen3d-arena-gate` | arena gate | 4494 / 2176 |

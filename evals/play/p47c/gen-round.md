@@ -14,3 +14,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 8 (opakování) | p46i-retry | 10 | 7 | 4/7 | 4 | – | 94/101 | sunken crate, ginger flower, wanted poster, ice slide | – |
 | 9 (opakování) | p46i-obstacle p46i-scenery | 10 | 3 | 1/3 | 1 | – | 94/101 | armor rack | – |
 | 10 (opakování) | p46i-retry | 7 | 4 | 3/4 | 3 | – | 94/101 | frozen signpost, vine curtain, castle catapult | – |
+| 11 | goal | 10 | 8 | 8/8 | 8 | – | 94/101 | victory podium, star trophy, finish banner, laurel wreath, blue ribbon, boxing ring, gong, arena gate | – |

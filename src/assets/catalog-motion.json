@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "c2e507cb1b479951794f5beb49299909b85d144393e8f2c86e5f54660a637029",
+ "catalogHash": "e6bb7aa39a23e80ac9af24355af700c0ba33cecc832e6c879cb93368a51687cc",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1637,6 +1637,14 @@
   "gen3d-armor-rack": {"class":"prop"},
   "gen3d-frozen-signpost": {"class":"prop"},
   "gen3d-vine-curtain": {"class":"prop"},
-  "gen3d-castle-catapult": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-castle-catapult": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-victory-podium": {"class":"prop"},
+  "gen3d-star-trophy": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-finish-banner": {"class":"prop"},
+  "gen3d-laurel-wreath": {"class":"prop"},
+  "gen3d-blue-ribbon": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-boxing-ring": {"class":"prop"},
+  "gen3d-gong": {"class":"prop"},
+  "gen3d-arena-gate": {"class":"prop"}
  }
 }

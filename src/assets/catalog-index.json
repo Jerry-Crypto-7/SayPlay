@@ -32890,6 +32890,166 @@
           0.32497
         ]
       }
+    },
+    {
+      "assetId": "gen3d-victory-podium",
+      "tags": [
+        "victory podium",
+        "winners podium"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-victory-podium-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5233,
+          0,
+          -1.38359
+        ],
+        "max": [
+          0.5233,
+          1.00001,
+          1.38359
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-star-trophy",
+      "tags": [
+        "star trophy"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-star-trophy-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26475,
+          0,
+          -0.20966
+        ],
+        "max": [
+          0.26475,
+          1.00001,
+          0.20966
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-finish-banner",
+      "tags": [
+        "finish banner",
+        "finish line",
+        "finish arch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-finish-banner-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.74569,
+          0,
+          -0.06619
+        ],
+        "max": [
+          0.74569,
+          0.99976,
+          0.06619
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-laurel-wreath",
+      "tags": [
+        "laurel wreath"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-laurel-wreath-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50427,
+          0,
+          -0.04791
+        ],
+        "max": [
+          0.50427,
+          0.99866,
+          0.04791
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-blue-ribbon",
+      "tags": [
+        "blue ribbon",
+        "prize ribbon",
+        "rosette",
+        "award ribbon"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-blue-ribbon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29904,
+          0,
+          -0.06249
+        ],
+        "max": [
+          0.29904,
+          0.99873,
+          0.06249
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-boxing-ring",
+      "tags": [
+        "boxing ring",
+        "wrestling ring"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-boxing-ring-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.02411,
+          0,
+          -1.02412
+        ],
+        "max": [
+          1.02411,
+          0.99892,
+          1.02412
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gong",
+      "tags": [
+        "gong",
+        "bronze gong"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gong-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4358,
+          0,
+          -0.06773
+        ],
+        "max": [
+          0.4358,
+          0.99774,
+          0.06773
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-arena-gate",
+      "tags": [
+        "arena gate"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-arena-gate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.54952,
+          0,
+          -0.12177
+        ],
+        "max": [
+          0.54952,
+          1,
+          0.12177
+        ]
+      }
     }
   ]
 }
