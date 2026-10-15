@@ -9,7 +9,7 @@
  * tagem `p46a-api`; staví na něm power-upy P46C a režisér P46E.
  */
 
-import type { AbilityId, BodyInit } from '../contract';
+import type { AbilityId, BodyInit, PieceRef } from '../contract';
 import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
 import { type BossBeatParams, bossBeat, bossBeatHit } from '../pieces/boss';
 import { grabRule } from './grab';
@@ -85,7 +85,7 @@ const isCrash = (id: string): boolean => id === 'hit' || id === 'steer_crash' ||
  * Role, které hrdinovi ublíží nárazem – ty dash prorazí a štít odrazí. V aréně jen pronásledovatel
  * útěku (`arena_eat` s `grace`): buňka agaru je kořist i lovec podle velikosti, štít by blokoval i kořist.
  */
-const harmOf = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
+export const harmOf = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
   HARMFUL_ROLES.filter((role) =>
     parts.rules.some(
       (rule) =>
@@ -102,17 +102,27 @@ function guardAbility(id: 'dash' | 'shield'): AbilityPiece {
     apply: (start, context) => {
       // Soupeři řízení jsou `enemy` bez nárazu, proto nepřátele přidat i vedle nich (jako `+shoot`).
       const parts = harmOf(start).length === 0 ? addFoes(start, context) : start;
+      if (id === 'shield') return shieldParts(parts, context.keeper);
       const roles = harmOf(parts);
       if (roles.length === 0) return parts;
-      const guard = id === 'dash' ? { dash: context.slot } : { shield: true };
-      const rules = parts.rules.map((rule) =>
-        isCrash(rule.id) ? { id: rule.id, params: { ...rule.params, guard: { ...((rule.params.guard as object | undefined) ?? {}), keeper: context.keeper, ...guard } } } : rule,
-      );
-      if (id === 'dash') return { ...parts, rules: [...rules, { id: dashRule.id, params: { keeper: context.keeper, slot: context.slot, roles, verb: 'dash' } }] };
-      // Blok štítu se musí použít před nárazem téhož těla, jinak by `ifAlive` nárazu viděl tělo ještě živé.
-      return { ...parts, rules: [{ id: shieldRule.id, params: { keeper: context.keeper, roles, verb: 'shield' } }, ...rules] };
+      return { ...parts, rules: [...guarded(parts.rules, context.keeper, { dash: context.slot }), { id: dashRule.id, params: { keeper: context.keeper, slot: context.slot, roles, verb: 'dash' } }] };
     },
   };
+}
+
+const guarded = (rules: readonly PieceRef[], keeper: number, guard: { dash: number } | { shield: true }): PieceRef[] =>
+  rules.map((rule) => (isCrash(rule.id) ? { id: rule.id, params: { ...rule.params, guard: { ...((rule.params.guard as object | undefined) ?? {}), keeper, ...guard } } } : rule));
+
+/**
+ * Štít akce i power-upu štítu (P46C): nárazy dostanou ochranu nábojem počítadla `keeper` a blok
+ * štítu jde před ně. Úroveň bez nárazu, nebo se štítem už zapojeným, zůstane, jak je. Sloveso
+ * `shield` dostane jen akce, kterou hra slíbila; power-up ho nemá (`promised: false`).
+ */
+export function shieldParts(parts: ArcadeParts, keeper: number, promised = true): ArcadeParts {
+  const roles = harmOf(parts);
+  if (roles.length === 0 || parts.rules.some((rule) => rule.id === shieldRule.id)) return parts;
+  // Blok štítu se musí použít před nárazem téhož těla, jinak by `ifAlive` nárazu viděl tělo ještě živé.
+  return { ...parts, rules: [{ id: shieldRule.id, params: { keeper, roles, ...(promised ? { verb: 'shield' } : {}) } }, ...guarded(parts.rules, keeper, { shield: true })] };
 }
 
 export const ABILITY_PIECES: Readonly<Record<AbilityId, AbilityPiece>> = {

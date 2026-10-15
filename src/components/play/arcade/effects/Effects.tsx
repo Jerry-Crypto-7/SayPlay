@@ -46,7 +46,7 @@ import { type QualityTier, QUALITY_TIERS } from '../look/rig/quality';
 import { runnerPathOf } from '../runner/path';
 import type { ArcadeSession } from '../session';
 import { type EffectsBus, type VisualEvent, type VisualEventKind, createEffectsBus } from './bus';
-import { installRenderFeel, renderHeld } from './render-feel';
+import { installRenderFeel, renderHeld, renderTimeScale } from './render-feel';
 import { FeelCues } from './FeelCues';
 import { PacingFx } from './PacingFx';
 import { reducedMotion, shakeAmount, winTimeScale, winZoom } from './feel';
@@ -228,7 +228,8 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     clock.current += delta * 1000;
     const reduced = reducedMotion();
     const sinceWin = clock.current - wonAt.current;
-    batch.update((renderHeld(session) ? 0 : delta) * winTimeScale(sinceWin, reduced));
+    // Zpomalení výhry a pádu bosse / konce finále (P46C T4): platí to pomalejší.
+    batch.update((renderHeld(session) ? 0 : delta) * Math.min(winTimeScale(sinceWin, reduced), renderTimeScale(session)));
     if (renderHeld(session)) return;
     // Přiblížení po výhře drží do restartu; jinak zoom 1 (i po restartu, který `wonAt` vrátí).
     const zoom = winZoom(sinceWin, reduced);

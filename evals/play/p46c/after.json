@@ -1,0 +1,334 @@
+{
+ "schema": "p46c-powerups.v1",
+ "set": "panel",
+ "profile": "intermediate",
+ "summary": {
+  "n": 40,
+  "playable": 40,
+  "withPowerups": 11,
+  "pickedShare": 0.2,
+  "bestMultiplierMedian": 0
+ },
+ "rows": [
+  {
+   "id": "f01",
+   "genre": "arena.collect",
+   "playable": true,
+   "placed": 4,
+   "picked": 1,
+   "bestMultiplier": 1
+  },
+  {
+   "id": "f02",
+   "genre": "duel",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "f03",
+   "genre": "shooter",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 5
+  },
+  {
+   "id": "f05",
+   "genre": "quest.spatial",
+   "playable": true,
+   "placed": 3,
+   "picked": 2,
+   "bestMultiplier": 1
+  },
+  {
+   "id": "f10",
+   "genre": "arena.fight",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "f12",
+   "genre": "control:glide",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "f17",
+   "genre": "flap",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 5
+  },
+  {
+   "id": "f18",
+   "genre": "control:walker",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "m01",
+   "genre": "arena.escape",
+   "playable": true,
+   "placed": 2,
+   "picked": 0,
+   "bestMultiplier": 1
+  },
+  {
+   "id": "m02",
+   "genre": "arena.collect",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "m03",
+   "genre": "control:steer",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "m04",
+   "genre": "quest.station",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "m06",
+   "genre": "control:steer",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "m07",
+   "genre": "control:walker",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "m08",
+   "genre": "runner",
+   "playable": true,
+   "placed": 2,
+   "picked": 1,
+   "bestMultiplier": 4
+  },
+  {
+   "id": "m09",
+   "genre": "platformer",
+   "playable": true,
+   "placed": 3,
+   "picked": 3,
+   "bestMultiplier": 5
+  },
+  {
+   "id": "m11",
+   "genre": "control:move_free",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "m16",
+   "genre": "platformer",
+   "playable": true,
+   "placed": 3,
+   "picked": 3,
+   "bestMultiplier": 5
+  },
+  {
+   "id": "n01",
+   "genre": "timing.stack",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "n02",
+   "genre": "arena.escape",
+   "playable": true,
+   "placed": 2,
+   "picked": 0,
+   "bestMultiplier": 1
+  },
+  {
+   "id": "n04",
+   "genre": "timing.stack",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "u01",
+   "genre": "rhythm",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "u02",
+   "genre": "rhythm",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "u03",
+   "genre": "quest.station",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "u06",
+   "genre": "quest.spatial",
+   "playable": true,
+   "placed": 3,
+   "picked": 3,
+   "bestMultiplier": 1
+  },
+  {
+   "id": "d01",
+   "genre": "control:ball",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "d03",
+   "genre": "quest.station",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "d04",
+   "genre": "shooter",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 5
+  },
+  {
+   "id": "d09",
+   "genre": "timing.stack",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "h02",
+   "genre": "control:steer",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "h03",
+   "genre": "throw",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 2
+  },
+  {
+   "id": "h05",
+   "genre": "duel",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "j01",
+   "genre": "arena.collect",
+   "playable": true,
+   "placed": 2,
+   "picked": 0,
+   "bestMultiplier": 1
+  },
+  {
+   "id": "j04",
+   "genre": "control:walker",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "j05",
+   "genre": "quest.spatial",
+   "playable": true,
+   "placed": 4,
+   "picked": 4,
+   "bestMultiplier": 1
+  },
+  {
+   "id": "j08",
+   "genre": "arena.fight",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 0
+  },
+  {
+   "id": "s002",
+   "genre": "arena.escape",
+   "playable": true,
+   "placed": 3,
+   "picked": 1,
+   "bestMultiplier": 1
+  },
+  {
+   "id": "s003",
+   "genre": "runner",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 5
+  },
+  {
+   "id": "s021",
+   "genre": "platformer",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 5
+  },
+  {
+   "id": "s035",
+   "genre": "flap",
+   "playable": true,
+   "placed": 0,
+   "picked": 0,
+   "bestMultiplier": 5
+  }
+ ]
+}

@@ -45,6 +45,7 @@ import {
   HP_SHIFT,
   type InputEvent,
   NO_INPUT,
+  POWERUP_SLOTS,
   PROJECTILE_LIFETIME,
   type PieceRef,
   ROLE,
@@ -64,6 +65,7 @@ import {
   setTargetState,
   stateSize,
   targetStateOf,
+  powerupCode,
   underlyingRule,
 } from './contract';
 import { releasePhysics, stepPhysics } from './physics/step';
@@ -810,7 +812,13 @@ function apply(state: ArcadeState, effects: ArcadeEffect[], from: number, end: T
     else if (effect.kind === 'push') changed = push(state, effect.body);
     else if (effect.kind === 'toggle') changed = toggle(state, effect.role);
     else if (isLogicEffect(effect)) changed = applyLogic(state, effect);
-    else if (effect.body < 0 || effect.body >= (state[HD.bodyCount] as number)) changed = false;
+    else if (effect.kind === 'powerup') {
+      // Power-up (P46C): nový nahradí starý, odpočet a konec drží obal ovládání (`tickPowerup`).
+      const base = baseOf(effect.keeper);
+      state[base + POWERUP_SLOTS.kind] = effect.power;
+      state[base + POWERUP_SLOTS.left] = effect.ticks;
+      if (effect.power === powerupCode('shield')) state[base + ABILITY_SLOTS.shield] = 1;
+    } else if (effect.body < 0 || effect.body >= (state[HD.bodyCount] as number)) changed = false;
     else if (effect.kind === 'combo') {
       // Počítadlo komba (P36A T5): násobič, tik sebrání + 1 a životy v tu chvíli.
       const base = baseOf(effect.body);

@@ -82,6 +82,24 @@ export function burstsOf(event: VisualEvent, look: BurstLook): Burst[] {
       return CONFETTI.map((colors) => ({ kind: 'confetti' as const, at: [x, y + 2.2, z] as const, count: 60, colors, life: [1.4, 2], speed: [3, 6], size: [0.08, 0.14], gravity: 5, glow: false }));
     case 'land':
       return [{ kind: 'dust', at: [x, y + 0.05, z], count: 12, colors: [look.land, '#ffffff'], life: [0.3, 0.5], speed: [0.8, 1.8], size: [0.12, 0.24], gravity: 2, glow: false }];
+    // Juice (P46C T4). Zásah akcí: k úlomkům zásahu svítivé jiskry úderu.
+    case 'ability':
+      return [{ kind: 'sparks', at: [x, y + 0.6, z], count: 20, colors: [brand['sun-soft'], brand.tomato], life: [0.2, 0.4], speed: [3, 6], size: [0.08, 0.14], gravity: 6, glow: true }];
+    // Power-up: záblesk v místě věci a tyrkysové jiskry.
+    case 'powerup':
+      return [
+        { kind: 'flash', at: [x, y + 0.5, z], count: 2, colors: [brand.paper, brand.sky], life: [0.16, 0.22], speed: [0, 0.2], size: [1.6, 2.2], gravity: 0, glow: true },
+        { kind: 'sparks', at: [x, y + 0.5, z], count: 28, colors: [brand['sky-deep'], brand.paper], life: [0.35, 0.6], speed: [2, 4.5], size: [0.08, 0.16], gravity: -1, glow: true },
+      ];
+    // Padlý boss: velký záblesk a déšť úlomků.
+    case 'bossDefeat':
+      return [
+        { kind: 'flash', at: [x, y + 1.2, z], count: 4, colors: [brand.paper, brand['sun-soft']], life: [0.2, 0.3], speed: [0, 0.3], size: [2.4, 3.2], gravity: 0, glow: true },
+        { kind: 'debris', at: [x, y + 1, z], count: 40, colors: [look.debris, brand.ink], life: [0.6, 1.1], speed: [4, 8], size: [0.14, 0.3], gravity: 12, glow: false },
+      ];
+    // Růst komba: zlaté jiskry nad hrdinou.
+    case 'comboUp':
+      return [{ kind: 'sparks', at: [x, y + 1.6, z], count: 10, colors: [brand.sun, brand.paper], life: [0.25, 0.4], speed: [1, 2.5], size: [0.06, 0.12], gravity: -2, glow: true }];
     default:
       return [];
   }

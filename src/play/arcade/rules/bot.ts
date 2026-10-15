@@ -33,6 +33,7 @@ import {
   HEADER,
   LOGIC_SLOTS,
   NO_INPUT,
+  type PieceRef,
   ROLE,
   bodyBase,
   logicBase,
@@ -516,12 +517,21 @@ export interface RulesPlanner {
   decide(observation: ArcadeObservation): ArcadeInput;
 }
 
+const POWERUP_ONLY = new Set(['base', 'powerups', 'trigger']);
+
+/**
+ * Ovládání, jak ho zná robot pravidel: power-upy (P46C) obalí volný pohyb do `addon_control`, který
+ * pohyb nemění, takže ho robot vidí jako dřív. Jiné obaly nechá, jak jsou – uložené hry hraje beze změny.
+ */
+const plainControl = (control: PieceRef): PieceRef =>
+  control.id === 'addon_control' && Object.keys(control.params).every((key) => POWERUP_ONLY.has(key)) ? (control.params as { readonly base: PieceRef }).base : control;
+
 /**
  * Plánovač pro svět, kde výhru nesou pravidla specu a hráč chodí volně
  * (dvorek z `rules/compile.ts`); jinak null a hraje robot světa.
  */
 export function rulesPlanner(world: ArcadeWorld): RulesPlanner | null {
-  if (world.control.id !== 'move_free') return null;
+  if (plainControl(world.control).id !== 'move_free') return null;
   const rules = specRules(world);
   const planner = plannerFor(rules, rules.filter((rule) => has(rule, 'win')));
   // Ve světě s logikou (P45B) robot čeká na časovač či fázi mezi tělesy prohry (i z vlny): obchází je
@@ -586,7 +596,7 @@ function losingRoles(rules: readonly CompiledRule[]): Set<number> {
  * bez takových pravidel dostane robota tak, jak je.
  */
 export function avoidingLosses(world: ArcadeWorld, decide: (observation: ArcadeObservation) => ArcadeInput): (observation: ArcadeObservation) => ArcadeInput {
-  const roles = world.control.id === 'move_free' ? losingRoles(specRules(world)) : new Set<number>();
+  const roles = plainControl(world.control).id === 'move_free' ? losingRoles(specRules(world)) : new Set<number>();
   if (roles.size === 0) return decide;
   return (observation) => {
     const input = decide(observation);
@@ -633,7 +643,7 @@ export function avoidingLosses(world: ArcadeWorld, decide: (observation: ArcadeO
  * jako plánovač výhry; null = není co hledat.
  */
 export function lossPlanner(world: ArcadeWorld, verbs: ReadonlySet<string>): RulesPlanner | null {
-  if (world.control.id !== 'move_free') return null;
+  if (plainControl(world.control).id !== 'move_free') return null;
   const rules = specRules(world);
   const losing = losingIn(rules);
   return plannerFor(rules, rules.filter((rule) => losing(rule) && verbs.has(rule.verb)));

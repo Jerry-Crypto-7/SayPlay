@@ -24,7 +24,7 @@ export const PLAY_SFX = true;
  * jen ze ZzFX (P36C T3) a zvuky událostí sběrnice efektů, které dřív bylo jen vidět (P37B T5):
  * dopad, zánik nepřítele, zrod těla, změna stavu cíle a zásah jiného těla než hráče.
  */
-export type SfxPreset = SoundEvent | 'lane' | 'slide' | 'shoot' | 'swing' | 'combo' | 'land' | 'pop' | 'spawn' | 'chime' | 'strike';
+export type SfxPreset = SoundEvent | 'lane' | 'slide' | 'shoot' | 'swing' | 'combo' | 'land' | 'pop' | 'spawn' | 'chime' | 'strike' | 'powerup' | 'bossDown' | 'comboUp';
 
 const FILE_EVENTS: readonly SoundEvent[] = ['jump', 'pickup', 'hit', 'win', 'lose'];
 const hasFile = (preset: SfxPreset): preset is SoundEvent => (FILE_EVENTS as readonly SfxPreset[]).includes(preset);
@@ -49,6 +49,10 @@ export const SFX_PRESETS: Readonly<Record<SfxPreset, ZzfxParams>> = {
   spawn: [0.25, 0, 300, 0.03, 0.05, 0.1, 0, 1, 8],
   chime: [0.4, 0, 659, 0, 0.05, 0.25, 0, 1, 0, 0, 330, 0.06],
   strike: [0.45, 0, 220, 0, 0.03, 0.1, 4, 1, -6, 0, 0, 0, 0, 0.5],
+  // Juice (P46C T4): power-up stoupá dvěma skoky, padlý boss dlouze zaduní, kombo o tón výš cinkne.
+  powerup: [0.55, 0, 523, 0.01, 0.08, 0.18, 1, 1, 0, 0, 262, 0.05, 0.05],
+  bossDown: [0.75, 0, 110, 0.01, 0.12, 0.45, 4, 1, -2, 0, 0, 0, 0, 0.7],
+  comboUp: [0.45, 0, 988, 0, 0.03, 0.1, 1, 1, 0, 0, 494, 0.03],
 };
 
 /**

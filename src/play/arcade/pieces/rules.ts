@@ -6,7 +6,25 @@
 import { z } from 'zod';
 
 import { guardParams, guardedHit } from '../abilities/state';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, BODY, COMBO, COUNTER, FLAG, HEADER, ROLE, type RulePiece, type ScoreBonusParams, bodyBase, graceOf } from '../contract';
+import {
+  ARCADE_HZ,
+  ARCADE_LIMITS,
+  type ArcadeEffect,
+  BODY,
+  COMBO,
+  COUNTER,
+  FLAG,
+  HEADER,
+  POWERUPS,
+  POWERUP_TICKS,
+  ROLE,
+  type RulePiece,
+  type ScoreBonusParams,
+  bodyBase,
+  graceOf,
+  powerupCode,
+} from '../contract';
+import { scoreFactor } from '../powerups/double';
 
 const roleOf = (state: Int32Array, body: number): number => state[bodyBase(body) + BODY.role] as number;
 
@@ -58,6 +76,16 @@ const pickupParams = z
     points: z.int().min(1).max(100).default(1),
     /** Index těla-počítadla komba (P36A T5, `COMBO`); bez něj body bez násobiče jako dřív. */
     combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+    /** Power-upy (P46C): počítadlo a druh každého tělesa role `powerup` podle indexu; bez nich jako dřív. */
+    powerup: z
+      .object({
+        keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1),
+        at: z.array(z.tuple([z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), z.enum(POWERUPS)])).min(1).max(8),
+      })
+      .strict()
+      .optional(),
+    /** `false` = sbírá jen power-upy: věci světa sbírá jiné pravidlo (aréna `arena_eat`). */
+    items: z.literal(false).optional(),
   })
   .strict();
 
@@ -65,32 +93,45 @@ const pickupParams = z
  * Násobič dalšího sebrání: o 1 výš, když předchozí přišlo nejvýš `COMBO.window`
  * tiků zpátky a hráč mezitím nepřišel o život, jinak ×1. Čte ho i zásah střelou (`shot_hit`).
  */
-export function nextMultiplier(state: Int32Array, keeper: number): number {
+export function nextMultiplier(state: Int32Array, keeper: number, window: number = COMBO.window): number {
   const base = bodyBase(keeper);
   const last = state[base + BODY.aux1] as number;
   const health = state[HEADER.counters + COUNTER.health] as number;
-  const inRow = last > 0 && (state[HEADER.tick] as number) + 1 - last <= COMBO.window && health >= (state[base + BODY.x] as number);
+  const inRow = last > 0 && (state[HEADER.tick] as number) + 1 - last <= window && health >= (state[base + BODY.x] as number);
   return inRow ? Math.min(COMBO.max, Math.max(1, state[base + BODY.aux0] as number) + 1) : 1;
 }
 
-/** Sebraný předmět → body a předmět zmizí. S `combo` body krát násobič a počítadlo si sebrání zapíše. */
+/**
+ * Sebraný předmět → body a předmět zmizí. S `combo` body krát násobič a počítadlo si sebrání zapíše.
+ * Power-up (P46C) zapíše časovaný stav do počítadla; aktivní 2× zdvojí body vedle komba.
+ */
 export const pickup: RulePiece<z.infer<typeof pickupParams>> = {
   id: 'pickup',
   params: pickupParams,
-  roles: ['player', 'collectible'],
+  roles: ['player', 'collectible', 'powerup'],
   trigger: 'contact',
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, other }, params) => {
-    if (roleOf(state, other) !== ROLE.collectible) return [];
+    const role = roleOf(state, other);
+    if (role === ROLE.powerup && params.powerup !== undefined) {
+      const id = params.powerup.at.find(([body]) => body === other)?.[1];
+      if (id === undefined) return [];
+      return [
+        { kind: 'powerup', keeper: params.powerup.keeper, power: powerupCode(id), ticks: POWERUP_TICKS[id] },
+        { kind: 'despawn', body: other },
+      ];
+    }
+    if (role !== ROLE.collectible || params.items === false) return [];
+    const factor = scoreFactor(state, params.powerup?.keeper);
     if (params.combo === undefined) {
       return [
-        { kind: 'score', amount: params.points },
+        { kind: 'score', amount: params.points * factor },
         { kind: 'despawn', body: other },
       ];
     }
     const multiplier = nextMultiplier(state, params.combo);
     return [
-      { kind: 'score', amount: params.points * multiplier },
+      { kind: 'score', amount: params.points * multiplier * factor },
       { kind: 'despawn', body: other },
       { kind: 'combo', body: params.combo, multiplier },
     ];
@@ -195,14 +236,30 @@ export const fallOut: RulePiece<z.infer<typeof fallOutParams>> = {
   },
 };
 
-/** Dotek checkpointu → místo návratu je na něm. */
-export const checkpoint: RulePiece<z.infer<typeof noParams>> = {
+const checkpointParams = z
+  .object({
+    /** Počítadlo komba (P46C T3): nový checkpoint bez ztráty života od minulého zvedá násobič, bez časového okna. */
+    combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+  })
+  .strict();
+
+/** Dotek checkpointu → místo návratu je na něm. S `combo` první dotek nového checkpointu dá body krát násobič čisté jízdy. */
+export const checkpoint: RulePiece<z.infer<typeof checkpointParams>> = {
   id: 'checkpoint',
-  params: noParams,
+  params: checkpointParams,
   roles: ['player', 'checkpoint'],
   trigger: 'contact',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, other }) => (roleOf(state, other) === ROLE.checkpoint ? [{ kind: 'checkpoint', body: other }] : []),
+  fire: ({ state, other }, params) => {
+    if (roleOf(state, other) !== ROLE.checkpoint) return [];
+    const reached: ArcadeEffect = { kind: 'checkpoint', body: other };
+    const base = bodyBase(other);
+    // Dotek trvá víc tiků: počítá se jen checkpoint, který ještě není místem návratu.
+    const fresh = state[HEADER.respawnX] !== state[base + BODY.x] || state[HEADER.respawnZ] !== state[base + BODY.z];
+    if (params.combo === undefined || !fresh) return [reached];
+    const multiplier = nextMultiplier(state, params.combo, ARCADE_LIMITS.maxTicks);
+    return [reached, { kind: 'score', amount: multiplier }, { kind: 'combo', body: params.combo, multiplier }];
+  },
 };
 
 export const RULES = { hit, pickup, finish, out_of_health: outOfHealth, time_limit: timeLimit, fall_out: fallOut, checkpoint, score_bonus: scoreBonus } as const;

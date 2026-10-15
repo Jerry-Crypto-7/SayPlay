@@ -215,7 +215,8 @@ describe('stored arena games without waves', () => {
     const { scoring: _scoring, ...spec } = legacySpec(sentence);
     const { tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly tuning: Record<string, unknown> };
     const { waves: _waves, ...old } = tuning;
-    const compiled = compileArcade({ ...spec, controlParams: { ...own, tuning: old } as GameSpecV1['controlParams'] }, seed);
+    // Uložená hra je `genre.v2`, bez power-upů (P46C).
+    const compiled = compileArcade({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v2' }, controlParams: { ...own, tuning: old } as GameSpecV1['controlParams'] }, seed);
     expect(compiled.ok).toBe(true);
     if (!compiled.ok) return;
     expect(compiled.value.winsAtTick).toBe(ticks);

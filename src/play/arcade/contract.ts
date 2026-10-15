@@ -327,6 +327,8 @@ export const ROLE = {
   thing: 12,
   /** Logické tělo (P45B): mrtvé, nulového rozměru, nese stav logiky (`LOGIC_SLOTS`). */
   logic: 13,
+  /** Power-up (P46C): sebrání (`pickup` s `powerup`) nastaví časovaný stav v `POWERUP_SLOTS`. */
+  powerup: 14,
 } as const;
 export type ArcadeRole = keyof typeof ROLE;
 export type ArcadeRoleCode = (typeof ROLE)[ArcadeRole];
@@ -387,6 +389,24 @@ export const ABILITY_SLOTS = {
   shield: BODY.vy,
   held: BODY.vz,
 } as const;
+
+/**
+ * Power-upy (P46C): naráz je aktivní nejvýš jeden, nový nahradí starý. Stav nese
+ * počítadlo akcí (`abilityKeeper`) ve volných `aux0`/`aux1`; svět s power-upy a bez
+ * akcí dostane totéž tělo-počítadlo jen pro ně. Kód druhu = index v `POWERUPS` + 1.
+ */
+export const POWERUPS = ['magnet', 'shield', 'speed', 'double'] as const;
+export type PowerupId = (typeof POWERUPS)[number];
+export const POWERUP_SLOTS = { kind: BODY.aux0, left: BODY.aux1 } as const;
+/** Trvání v tikách; štít skončí i prvním pohlceným zásahem. */
+export const POWERUP_TICKS: Readonly<Record<PowerupId, number>> = { magnet: 5 * ARCADE_HZ, shield: 8 * ARCADE_HZ, speed: 4 * ARCADE_HZ, double: 6 * ARCADE_HZ };
+export const powerupCode = (id: PowerupId): number => POWERUPS.indexOf(id) + 1;
+
+/** Aktivní power-up v počítadle `keeper`, nebo `undefined`. */
+export function powerupOf(state: Int32Array, keeper: number): PowerupId | undefined {
+  const base = HEADER_SIZE + keeper * BODY_STRIDE;
+  return (state[base + POWERUP_SLOTS.left] as number) > 0 ? POWERUPS[(state[base + POWERUP_SLOTS.kind] as number) - 1] : undefined;
+}
 
 /**
  * Celý stav instance: `HEADER_SIZE` slotů hlavičky, pak `maxBodies × BODY_STRIDE`
@@ -593,6 +613,11 @@ export type ArcadeEffect =
    * takže druhý náraz téhož tiku najde náboj spotřebovaný. Pravidla stav nepíšou přímo.
    */
   | { readonly kind: 'block'; readonly keeper: number; readonly body: number }
+  /**
+   * Sebraný power-up (P46C): počítadlo `keeper` si zapíše druh `power` (`powerupCode`) a `ticks`
+   * trvání; štít nabije náboj akce štítu (`ABILITY_SLOTS.shield`). Zároveň zpráva pro scénu.
+   */
+  | { readonly kind: 'powerup'; readonly keeper: number; readonly power: number; readonly ticks: number }
   /**
    * Efekty `effects` platí, jen když tělo `body` při použití ještě žije – náraz, který štít
    * téhož tiku pohltil, nic nevezme (P46A R2). Jádro obal nahradí vnořenými efekty, nebo ničím.
