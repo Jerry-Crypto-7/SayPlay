@@ -30231,6 +30231,120 @@
           0.45242
         ]
       }
+    },
+    {
+      "assetId": "gen3d-giant-leaf",
+      "tags": [
+        "giant leaf"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-giant-leaf-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22145,
+          0,
+          -0.03428
+        ],
+        "max": [
+          0.22145,
+          1.00001,
+          0.03428
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-flower-stall",
+      "tags": [
+        "flower stall"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-flower-stall-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40009,
+          0,
+          -0.33107
+        ],
+        "max": [
+          0.40009,
+          0.99928,
+          0.33107
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coconut-drink",
+      "tags": [
+        "coconut drink"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coconut-drink-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33394,
+          0,
+          -0.28962
+        ],
+        "max": [
+          0.33394,
+          0.99988,
+          0.28962
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coral-throne",
+      "tags": [
+        "coral throne"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-throne-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3233,
+          0,
+          -0.28266
+        ],
+        "max": [
+          0.3233,
+          0.99862,
+          0.28266
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-birch-sapling",
+      "tags": [
+        "birch sapling"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-birch-sapling-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.14649,
+          0,
+          -0.15058
+        ],
+        "max": [
+          0.14649,
+          0.99774,
+          0.15058
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cacao-pod",
+      "tags": [
+        "cacao pod"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cacao-pod-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19409,
+          0,
+          -0.26862
+        ],
+        "max": [
+          0.19409,
+          0.99716,
+          0.26862
+        ]
+      }
     }
   ]
 }

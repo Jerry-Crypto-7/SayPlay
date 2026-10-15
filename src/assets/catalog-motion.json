@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "9558dfcf2ba55af5b12ccde8eafc008464e1a9d41f7bc5cca84dedb6d887fe8a",
+ "catalogHash": "31156ed725556fb6c91ee1c585307c24ed71fb1606d0ccd65af92d725c9707e9",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1503,6 +1503,12 @@
   "gen3d-surf-rack": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-helm-wheel": {"class":"prop"},
   "gen3d-western-saloon": {"class":"prop"},
-  "gen3d-beach-cooler": {"class":"prop"}
+  "gen3d-beach-cooler": {"class":"prop"},
+  "gen3d-giant-leaf": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-flower-stall": {"class":"prop"},
+  "gen3d-coconut-drink": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-coral-throne": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-birch-sapling": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-cacao-pod": {"class":"biped","regions":{"legY":0.249}}
  }
 }

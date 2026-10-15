@@ -728,3 +728,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-helm-wheel` | helm wheel, steering wheel | 4463 / 2134 |
 | `gen3d-western-saloon` | western saloon, saloon | 4245 / 2056 |
 | `gen3d-beach-cooler` | beach cooler, cooler box | 4291 / 2001 |
+| `gen3d-giant-leaf` | giant leaf | 4746 / 2358 |
+| `gen3d-flower-stall` | flower stall | 4332 / 2033 |
+| `gen3d-coconut-drink` | coconut drink | 4712 / 2336 |
+| `gen3d-coral-throne` | coral throne | 4664 / 2329 |
+| `gen3d-birch-sapling` | birch sapling | 4744 / 2360 |
+| `gen3d-cacao-pod` | cacao pod | 4669 / 2324 |

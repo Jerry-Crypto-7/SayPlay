@@ -34,3 +34,4 @@ Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek
 | 28 | w2-kit-missing w2-scenery | 10 | 7 | 6/7 | 5 | – | 66/93 | giant toadstool, rusty fridge, wedding arch, standing stone, bromeliad | – |
 | 29 | w2-scenery | 10 | 8 | 6/8 | 6 | – | 66/93 | yucca plant, graffiti wall, beach cabana, sunken bell, buried statue head, ice arch | – |
 | 30 | w2-scenery | 10 | 7 | 4/7 | 4 | – | 66/93 | surf rack, helm wheel, western saloon, beach cooler | – |
+| 31 | w2-scenery | 10 | 9 | 6/9 | 6 | – | 66/93 | giant leaf, flower stall, coconut drink, coral throne, birch sapling, cacao pod | – |
