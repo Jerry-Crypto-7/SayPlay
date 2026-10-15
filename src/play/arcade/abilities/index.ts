@@ -13,7 +13,7 @@ import { type AbilityId, type BodyInit, type PieceRef, mapUnderlying, nativeRule
 import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
 import { type BossBeatParams, bossBeat, bossBeatHit } from '../pieces/boss';
 import { grabRule } from './grab';
-import { dashRule, shieldRule } from './guard';
+import { dashRule, fightGuardRule, shieldRule } from './guard';
 import { HARMFUL_PARTS, HARMFUL_ROLES, abilityIdsOf } from './state';
 import { shootAbility } from './shoot';
 import { AROUND_CONTROLS, strikeRule } from './strike';
@@ -112,11 +112,30 @@ export const harmOf = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
 const metHarm = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
   harmOf(parts).filter((role) => role !== 'obstacle' || baseControlOf(parts.control).id !== 'steer');
 
+/** Základní ovládání pod obaly (`baseControlOf`) upravené `edit`; obaly zůstanou. */
+const withBaseControl = (control: PieceRef, edit: (base: PieceRef) => PieceRef): PieceRef =>
+  baseControlOf(control) === control ? edit(control) : { ...control, params: { ...control.params, base: withBaseControl(control.params.base as PieceRef, edit) } };
+
+/**
+ * Souboj v aréně (P47B T6): úder soupeře rozhoduje ovládání souboje, ne náraz – ochranu (`guard`) dostane ono
+ * a sloveso pravidlo odraženého úderu (`fightGuardRule`). Dash bere úder dřív než štít, proto štít zná jeho slot.
+ */
+function fightGuard(parts: ArcadeParts, context: AbilityContext, id: 'dash' | 'shield'): ArcadeParts {
+  const known = baseControlOf(parts.control).params.guard as { readonly dash?: number } | undefined;
+  const dash = id === 'dash' ? context.slot : known?.dash;
+  const control = withBaseControl(parts.control, (fight) => ({
+    ...fight,
+    params: { ...fight.params, guard: { ...((fight.params.guard as object | undefined) ?? {}), keeper: context.keeper, ...(id === 'dash' ? { dash: context.slot } : { shield: true }) } },
+  }));
+  return { ...parts, control, rules: [...parts.rules, { id: fightGuardRule.id, params: { keeper: context.keeper, verb: id, ...(dash === undefined ? {} : { dash }) } }] };
+}
+
 /** Dash a štít: náraz dostane ochranu, pravidlo akce pohlcení provede. Úroveň bez nárazu, na který robot najede, dostane nepřátele jako u úderu. */
 function guardAbility(id: 'dash' | 'shield'): AbilityPiece {
   return {
     id,
     apply: (start, context) => {
+      if (baseControlOf(start.control).id === 'fight') return fightGuard(start, context, id);
       // Soupeři řízení jsou `enemy` bez nárazu, proto nepřátele přidat i vedle nich (jako `+shoot`); svodidla řízení je nenahradí.
       const parts = metHarm(start).length === 0 ? addFoes(start, context) : start;
       if (id === 'shield') return shieldParts(parts, context.keeper);
@@ -177,7 +196,7 @@ export const ABILITY_PIECES: Readonly<Record<AbilityId, AbilityPiece>> = {
   shield: guardAbility('shield'),
 };
 
-export const ABILITY_RULES = { [strikeRule.id]: strikeRule, [grabRule.id]: grabRule, [dashRule.id]: dashRule, [shieldRule.id]: shieldRule } as const;
+export const ABILITY_RULES = { [strikeRule.id]: strikeRule, [grabRule.id]: grabRule, [dashRule.id]: dashRule, [shieldRule.id]: shieldRule, [fightGuardRule.id]: fightGuardRule } as const;
 
 /** Pořadí skládání: kdo přidává nepřátele (střelba, úder, krádež), jde před dashem a štítem, které chrání před jejich nárazy. */
 const APPLY_ORDER: readonly AbilityId[] = ['shoot', 'strike', 'grab', 'dash', 'shield'];

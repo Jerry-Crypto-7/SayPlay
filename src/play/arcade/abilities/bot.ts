@@ -12,6 +12,7 @@
 import { shootStep } from '../addons';
 import { ABILITY_SLOTS, AXIS_MAX, type AbilityId, type ArcadeInput, type ArcadeObservation, BODY, BUTTON, FLAG, HEADER, type PieceRef, ROLE, UNIT, bodyBase } from '../contract';
 import { arenaAxis } from '../pieces/arena';
+import { fightMove, fightSight } from '../pieces/fight-bot';
 import { RUNNER } from '../pieces/runner';
 import { ABILITY_BUTTONS, ABILITY_TIMING, type AbilityBot, abilityActive, abilityCooldown } from './state';
 import { inStrikeReachWithin } from './strike';
@@ -220,6 +221,30 @@ function partLane(state: Int32Array, player: number, recent: readonly ArcadeInpu
   return target > lane ? BUTTON.RIGHT : target < lane ? BUTTON.LEFT : 0;
 }
 
+/**
+ * Souboj v aréně (P47B T6): dash a štít berou úder soupeře, který telegrafuje (`fightSight`). Akci zmáčkne, až úder
+ * padne do první půlky jejího okna; když akce úder pokryje, robot neuhne a zůstane stát (`fightMove` s `braced`).
+ * Jen připravená akce úhyb nezruší: s ní novice vyhrál 7/10, s vkročením pod úder 8/10 (bez akce 6/10). Běžící štít chrání, jen když
+ * robot stisk ještě vidí v `recent`, nebo náboj ve stavu – jinak ho mohl vzít dřívější úder. Uhnutí průběhu před
+ * tělem chování robot nepřepíše: v ochraně mění jen tah, který je beze změny tahem robota souboje.
+ */
+function fightStep(observation: ArcadeObservation, input: ArcadeInput, slots: readonly Slot[], keeper: number): ArcadeInput {
+  const { threat } = fightSight(observation);
+  if (threat === null) return input;
+  const n = observation.recent.length;
+  // Úder padne v ovládání posledního tiku telegrafu: od pozorování za `n + left − 1` tiků.
+  const at = n + threat.left - 1;
+  const guards = slots.filter((slot) => slot.id === 'dash' || slot.id === 'shield');
+  const charged = (slot: Slot): boolean => slot.id === 'dash' || slot.pressed >= 0 || (observation.state[bodyBase(keeper) + ABILITY_SLOTS.shield] as number) > 0;
+  const braced = guards.some((slot) => slot.activeUntil >= at && charged(slot));
+  // Dvojice dash a štít: úder, který jedna akce už kryje, druhá nebere – zůstane na další (jako přidělení `ownerOf`).
+  const press = braced ? undefined : guards.find((slot) => slot.ready && at >= n + 1 && at <= n + Math.floor(ABILITY_TIMING[slot.id].active / 2));
+  const buttons = input.buttons | (press?.button ?? 0);
+  if (!braced || input.axis !== fightMove(observation).axis) return { buttons, axis: input.axis };
+  const move = fightMove(observation, true);
+  return { buttons: (buttons & ~BUTTON.ATTACK) | move.buttons, axis: move.axis };
+}
+
 const STRUCK = [ROLE.enemy, ROLE.chaser];
 const LOOT = [ROLE.collectible, ROLE.enemy];
 const ENEMY = [ROLE.enemy];
@@ -277,6 +302,7 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   const harm = params.harm.map((role) => ROLE[role]).filter((role) => !steer || role !== ROLE.obstacle);
   const around = AROUND_BOTS.includes(base.id);
   const slots = slotsOf(observation, params);
+  if (base.id === 'fight_bot') return fightStep(observation, input, slots, params.keeper);
   let living: Map<number, number[]> | undefined;
   const lists = new Map<readonly number[], readonly number[]>();
   const of = (roles: readonly number[]): readonly number[] => {

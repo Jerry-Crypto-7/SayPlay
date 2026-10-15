@@ -51,7 +51,10 @@ describe('P47B action gauge', () => {
     const dodge = 'A rabbit runs and dodges logs';
     expect(dropReason('dash', RUNNER, { spec })).toBe('lexicon misses the verb');
     expect(dropReason('dash', dodge, { spec: { ...spec, control: 'shooter' } })).toBe('control shooter takes no dash');
-    expect(dropReason('dash', dodge, { spec: { ...spec, control: 'move_free', controlParams: { generator: 'fight' } } as typeof spec })).toBe('generator fight takes no abilities');
+    const fight = { ...spec, control: 'move_free', controlParams: { generator: 'fight' } } as typeof spec;
+    expect(dropReason('strike', 'A boxer punches a giant', { spec: fight })).toBe('generator fight takes no strike');
+    expect(dropReason('dash', dodge, { spec: fight })).toBe('dropped without a recorded reason');
+    expect(dropReason('dash', dodge, { spec: { ...fight, controlParams: { generator: 'agar' } } as typeof spec })).toBe('generator agar takes no dash');
   });
 
   it('summarises p95 draft time and keeps the holdout shut without the flag', () => {

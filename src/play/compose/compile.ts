@@ -1,4 +1,4 @@
-import { ARCADE_HZ, ARCADE_LIMITS, type AddonId } from '../arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type AbilityId, type AddonId } from '../arcade/contract';
 import { CAPABILITIES } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
@@ -37,9 +37,16 @@ const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
 
 /**
  * Generátory režimu, kde robot akce použije a ověření je dokáže (P46A T10, matice T9 a živé
- * věty). Souboj (`fight`) chybí: robot s akcí nedohraje; ostatní generátory nikdo neměřil.
+ * věty); souboj (`fight`) od P47B T6 jen s akcemi `FIGHT_ABILITIES`. Ostatní generátory nikdo neměřil.
  */
-export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth']);
+export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth', 'fight']);
+
+/** Souboj má vlastní úder (Attack) a nic ke krádeži: bere jen dash a štít proti úderu soupeře (P47B T6). */
+export const FIGHT_ABILITIES: readonly AbilityId[] = ['dash', 'shield'];
+
+/** Bere hra generátoru `generator` (bez generátoru staví trať ovládání) akci `id`? Čte i měřidlo P47B. */
+export const generatorTakes = (generator: string | undefined, id: AbilityId): boolean =>
+  generator === undefined || (ABILITY_GENERATORS.has(generator) && (generator !== 'fight' || FIGHT_ABILITIES.includes(id)));
 
 /**
  * Akce hrdiny ze sloves věty (P46A T8, `assemble`), jen akce, které ovládání bere, a jen hře,
@@ -50,8 +57,8 @@ export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 
 function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
   const generator = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
   // Akce z odpovědi režiséra (P46E T4) za akcemi věty; dvě tlačítka bere `abilitiesOfControl`.
-  const said = [...new Set([...(assembly.abilities ?? []), ...(assembly.content.abilities ?? [])])];
-  if (said.length === 0 || (generator !== undefined && !ABILITY_GENERATORS.has(generator)) || spec.control === undefined) return spec;
+  const said = [...new Set([...(assembly.abilities ?? []), ...(assembly.content.abilities ?? [])])].filter((id) => generatorTakes(generator, id));
+  if (said.length === 0 || spec.control === undefined) return spec;
   const abilities = abilitiesOfControl(said, spec.control);
   if (abilities.length === 0) return spec;
   const own = abilities.includes('strike') ? spec.tutorial.controlsHint.replace(ATTACK_HINT, '') : spec.tutorial.controlsHint;

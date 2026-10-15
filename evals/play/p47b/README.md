@@ -26,3 +26,5 @@ Spuštění: `P47B_SET=dev|p46a P47B_OUT=<soubor> npx vitest run --config vitest
 - **Zábava panelu P45** (`fun-baseline.json`): hratelných 40/40, mrtvý čas medián 4 s, gradace 0,63, chování medián 1, finále 0,38.
 
 ## Rozhodnutí
+
+- **T6 – souboj v aréně bere dash i štít, výchozí řešení z „Co nevíme“ nebylo potřeba.** Robot intermediate s akcí vyhraje 10/10 (štít, dash, oba), sloveso dokázané 4/4. Úder a krádež souboj nebere (`FIGHT_ABILITIES`): úder má vlastní Attack, krást není co. Novice: bez akce 6/10, štít 5/10, dash 6/10, **oba naráz 1/10** – robot novice s dvěma akcemi častěji stojí a čeká na blok, který mu pozdní reakce nevyjde. Brána hlídá jen horní mez (hra nesmí zlehčit); dvojice dash + štít ve větě o souboji je vzácná, proto zůstává zapsaná, ne opravená.

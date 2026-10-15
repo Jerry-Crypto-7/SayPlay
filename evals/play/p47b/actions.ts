@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import { loadRapier } from '@/play/arcade/physics/world';
 import { CAPABILITIES } from '@/play/capabilities';
-import { ABILITY_GENERATORS } from '@/play/compose/compile';
+import { generatorTakes } from '@/play/compose/compile';
 import { type DraftMeta, draftGameSpecWithMeta } from '@/play/draft';
 import { saidAbilities } from '@/play/draft/controls';
 
@@ -55,7 +55,7 @@ export function dropReason(action: ActionKind, text: string, meta: Pick<DraftMet
   if (control === undefined || control === 'tap_go') return 'grid fallback';
   if (!CAPABILITIES[control].abilities.includes(action)) return `control ${control} takes no ${action}`;
   const generator = (meta.spec.controlParams as { generator?: string } | undefined)?.generator;
-  if (generator !== undefined && !ABILITY_GENERATORS.has(generator)) return `generator ${generator} takes no abilities`;
+  if (!generatorTakes(generator, action)) return `generator ${generator} takes no ${action}`;
   return 'dropped without a recorded reason';
 }
 

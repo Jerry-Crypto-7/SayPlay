@@ -91,7 +91,7 @@ export function tickAbilities(state: Int32Array, buttons: number, params: Abilit
   state[k + ABILITY_SLOTS.held] = buttons & (BUTTON.ACTION_A | BUTTON.ACTION_B);
 }
 
-/** Ochrana nárazu (`hit`, `steer_crash`, díl složené hry) dashem ve slotu `dash` nebo štítem (P46A T5). */
+/** Ochrana nárazu (`hit`, `steer_crash`, díl složené hry, úder souboje) dashem ve slotu `dash` nebo štítem (P46A T5). */
 export const guardParams = z
   .object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), dash: z.int().min(0).max(1).optional(), shield: z.literal(true).optional() })
   .strict();
@@ -111,6 +111,26 @@ export function guardedHit(state: Int32Array, guard: z.infer<typeof guardParams>
   const by = guard === undefined ? undefined : guardOf(state, guard);
   if (by === 'dash') return [];
   return by === 'shield' && effects.length > 0 ? [{ kind: 'ifAlive', body: other, effects }] : effects;
+}
+
+/**
+ * Úder soupeře v souboji (P47B T6), který by hrdinu zasáhl: dash ho propustí, nabitý štít odrazí a spotřebuje
+ * náboj. Volá ho ovládání souboje v tiku úderu (jen ovládání smí psát stav), ještě před odpočtem obalu akcí –
+ * dash proto bere úder, jen když mu zbývají aspoň 2 tiky okna; pravidlo slovesa po odpočtu pozná totéž (`fightDashed`).
+ */
+export function blowGuarded(state: Int32Array, guard: z.infer<typeof guardParams> | undefined): boolean {
+  if (guard === undefined) return false;
+  if (guard.dash !== undefined && abilityActive(state, guard.keeper, guard.dash) > 1) return true;
+  const charge = bodyBase(guard.keeper) + ABILITY_SLOTS.shield;
+  if (guard.shield !== true || (state[charge] as number) === 0) return false;
+  state[charge] = 0;
+  return true;
+}
+
+/** Vzal úder tohoto tiku dash (po odpočtu obalu)? Okno 1 až délka − 1 – čerstvý stisk má plnou délku a úder nebral. */
+export function fightDashed(state: Int32Array, keeper: number, slot: number): boolean {
+  const left = abilityActive(state, keeper, slot);
+  return left > 0 && left < ABILITY_TIMING.dash.active;
 }
 
 /** Zbývající aktivní tiky akce ve slotu `slot` (0 = A, 1 = B). */

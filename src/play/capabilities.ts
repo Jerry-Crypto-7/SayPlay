@@ -59,8 +59,9 @@ const ALL_ABILITIES: readonly AbilityId[] = ['shoot', 'strike', 'dash', 'shield'
  * - walker: jen krádež – bludiště nemá místo pro nepřítele a v útěku bludištěm robot pronásledovatele
  *   do dosahu nepustí (úder, dash, štít VERB_UNPROVED 4/4).
  * - move_free: střelba zůstává doplňkem `+shoot` (akce střelby v aréně sloveso nedokáže); dash a štít
- *   jen v útěku, kde pronásledovatel chytá (`arena_eat` s `grace`) – agar takovou hru odmítne a rychlá
- *   verze akci zahodí.
+ *   v útěku, kde pronásledovatel chytá (`arena_eat` s `grace`), a v souboji (`fight`, P47B T6), kde
+ *   berou úder soupeře – souboj jen je (`FIGHT_ABILITIES`): úder má vlastní Attack a krást není co.
+ *   Agar takovou hru odmítne a rychlá verze akci zahodí.
  * - shooter, ball, throw, timing, rhythm: tlačítko je samo mechanika (rána, hod, stop, nota), druhé by s ním soupeřilo.
  * - duel: úder a blok má souboj vlastní (ATTACK, INTERACT). tap_go: mřížka bez hrdiny s fyzikou arkády.
  */

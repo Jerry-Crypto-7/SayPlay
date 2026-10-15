@@ -47,6 +47,7 @@ import {
   bodyHp,
   graceOf,
 } from '../contract';
+import { blowGuarded, guardParams } from '../abilities/state';
 import { ARENA, DIRECTIONS, directionOfAxis, directionToward } from './arena';
 import { matches } from './behaviours';
 import { WAVE_LIMITS, entrySpots, waveOf } from './waves';
@@ -104,7 +105,7 @@ export type FightPhase = (typeof FIGHT_PHASE)[keyof typeof FIGHT_PHASE];
 const PHASE_MASK = 0xf;
 const DIRECTION_SHIFT = 4;
 /** Úder, který právě začal, hráče zasáhl. */
-const LANDED = 1 << 9;
+export const LANDED = 1 << 9;
 
 export const phaseOf = (state: ArcadeState, body: number): FightPhase => ((state[bodyBase(body) + BODY.aux0] as number) & PHASE_MASK) as FightPhase;
 /** Směr úderu zamčený na začátku telegrafu (0..31). */
@@ -177,7 +178,7 @@ function swing(state: ArcadeState, player: number, enemies: readonly number[]): 
 }
 
 /** Jeden tik nepřítele `i` (ne toho, kterého hráč právě zasáhl). */
-function stepEnemy(state: ArcadeState, i: number, player: number, enemies: readonly number[], speed: number): void {
+function stepEnemy(state: ArcadeState, i: number, player: number, enemies: readonly number[], speed: number, guard?: z.infer<typeof guardParams>): void {
   const base = bodyBase(i);
   const p = bodyBase(player);
   const x = state[base + BODY.x] as number;
@@ -235,7 +236,7 @@ function stepEnemy(state: ArcadeState, i: number, player: number, enemies: reado
       return;
     }
     // Úder: zasáhne hráče, který teď stojí v zamčeném oblouku a dosahu.
-    const landed = inArc(dx, dz, locked, FIGHT.strikeReach, FIGHT.strikeArc);
+    const landed = inArc(dx, dz, locked, FIGHT.strikeReach, FIGHT.strikeArc) && !blowGuarded(state, guard);
     setPhase(state, i, FIGHT_PHASE.strike, FIGHT.strike, locked, landed);
     setVelocity(state, i, locked, FIGHT.lunge);
     if (landed) setVelocity(state, player, locked, FIGHT.playerKnockback);
@@ -270,6 +271,8 @@ const controlParams = z
     enemySpeed: z.int().min(FIGHT.enemySpeed.min).max(FIGHT.enemySpeed.max).default(FIGHT.enemySpeed.default),
     /** Vlny (P36A T4): o kolik každá další vlna (`waveOf`) zrychlí soupeře, nejvýš na strop `FIGHT.enemySpeed`. */
     step: z.int().min(1).max(FIGHT.enemySpeed.max - FIGHT.enemySpeed.min).optional(),
+    /** Dash a štít hrdiny (P47B T6, `blowGuarded`): úder soupeře propustí či odrazí. */
+    guard: guardParams.optional(),
   })
   .strict();
 export type FightControlParams = z.infer<typeof controlParams>;
@@ -303,7 +306,7 @@ export const fightControl: ControlPiece<FightControlParams> = {
 
     const speed = params.step === undefined ? params.enemySpeed : Math.min(FIGHT.enemySpeed.max, params.enemySpeed + params.step * waveOf(state));
     for (const i of enemies) {
-      if (!(swung && phaseOf(state, i) === FIGHT_PHASE.stagger && phaseTicksLeft(state, i) === FIGHT.stagger)) stepEnemy(state, i, player, enemies, speed);
+      if (!(swung && phaseOf(state, i) === FIGHT_PHASE.stagger && phaseTicksLeft(state, i) === FIGHT.stagger)) stepEnemy(state, i, player, enemies, speed, params.guard);
       keepInside(state, i, params.half);
     }
     keepInside(state, player, params.half);

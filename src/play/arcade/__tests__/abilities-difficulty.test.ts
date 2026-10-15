@@ -80,7 +80,8 @@ describe.each(CONTROLS)('P46A difficulty gates with abilities on %s', (control) 
  * Srovnávací hra = táž věta bez akce. Běžec s dashem („a squirrel runs and dodges falling
  * acorns“) chybí: novice vyhraje 8/10 proti 5/10 bez akce, a stejně 8/10 i se zrušenou
  * ochranou dílů – dash P46A přes překážky trati, ne T4. Závod a sběr mušlí (T5): štít proti
- * nepřátelům na trati, které závod dostal, a proti pronásledovatelům vln arény.
+ * nepřátelům na trati, které závod dostal, a proti pronásledovatelům vln arény. Souboj v aréně
+ * (T6): štít proti úderům soupeře.
  */
 const ASSEMBLED = [
   ['runner', 'shield', 'a squirrel runs and blocks falling acorns'],
@@ -88,9 +89,10 @@ const ASSEMBLED = [
   ['platform', 'shield', 'a frog jumps and blocks falling coconuts'],
   ['steer', 'shield', 'a car races and blocks rivals'],
   ['move_free', 'shield', 'a kid shields herself while collecting shells'],
+  ['move_free', 'shield', 'a mouse defends its cheese from a hungry cat'],
 ] as const;
 
-describe('P47B T4/T5 difficulty gates on assembled games with dash or shield', () => {
+describe('P47B T4–T6 difficulty gates on assembled games with dash or shield', () => {
   it.each(ASSEMBLED)('%s %s ("%s") keeps the gates of the same sentence without the action', (_control, ability, text) => {
     const { spec } = draftGameSpecWithMeta(text, 1);
     expect(spec.abilities).toEqual([ability]);
