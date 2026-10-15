@@ -30151,6 +30151,86 @@
           0.25186
         ]
       }
+    },
+    {
+      "assetId": "gen3d-surf-rack",
+      "tags": [
+        "surf rack",
+        "surfboard rack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-surf-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35558,
+          0,
+          -0.15002
+        ],
+        "max": [
+          0.35558,
+          0.99739,
+          0.15002
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-helm-wheel",
+      "tags": [
+        "helm wheel",
+        "steering wheel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-helm-wheel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48672,
+          0,
+          -0.08915
+        ],
+        "max": [
+          0.48672,
+          0.99817,
+          0.08915
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-western-saloon",
+      "tags": [
+        "western saloon",
+        "saloon"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-western-saloon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.70568,
+          0,
+          -0.69938
+        ],
+        "max": [
+          0.70568,
+          0.99969,
+          0.69938
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-cooler",
+      "tags": [
+        "beach cooler",
+        "cooler box"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-cooler-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58426,
+          0,
+          -0.45242
+        ],
+        "max": [
+          0.58426,
+          0.98843,
+          0.45242
+        ]
+      }
     }
   ]
 }

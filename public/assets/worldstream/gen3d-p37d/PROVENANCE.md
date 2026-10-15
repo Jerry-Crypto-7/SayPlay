@@ -724,3 +724,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-sunken-bell` | sunken bell, bronze bell | 4604 / 2266 |
 | `gen3d-buried-statue-head` | buried statue head | 4465 / 2161 |
 | `gen3d-ice-arch` | ice arch | 4744 / 2368 |
+| `gen3d-surf-rack` | surf rack, surfboard rack | 4736 / 2368 |
+| `gen3d-helm-wheel` | helm wheel, steering wheel | 4463 / 2134 |
+| `gen3d-western-saloon` | western saloon, saloon | 4245 / 2056 |
+| `gen3d-beach-cooler` | beach cooler, cooler box | 4291 / 2001 |

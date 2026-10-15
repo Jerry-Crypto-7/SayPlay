@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "1a728f8d730b216e80d78e63d88dc326fa93e71e628b6d190ba8bfb255c6166b",
+ "catalogHash": "9558dfcf2ba55af5b12ccde8eafc008464e1a9d41f7bc5cca84dedb6d887fe8a",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1499,6 +1499,10 @@
   "gen3d-beach-cabana": {"class":"prop"},
   "gen3d-sunken-bell": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-buried-statue-head": {"class":"prop"},
-  "gen3d-ice-arch": {"class":"prop"}
+  "gen3d-ice-arch": {"class":"prop"},
+  "gen3d-surf-rack": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-helm-wheel": {"class":"prop"},
+  "gen3d-western-saloon": {"class":"prop"},
+  "gen3d-beach-cooler": {"class":"prop"}
  }
 }
