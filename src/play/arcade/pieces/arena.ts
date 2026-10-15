@@ -532,9 +532,29 @@ function wakeChasers(state: Int32Array): ArcadeEffect[] {
   return effects;
 }
 
-const growToParams = z.object({ points: z.int().min(1).max(100), wake: z.literal(true).optional() }).strict();
+const growToParams = z
+  .object({
+    points: z.int().min(1).max(100),
+    wake: z.literal(true).optional(),
+    /** Boss finále (P47A T3, index předlohy, vzor `fight_end.boss`): dokud stojí jeho kopie, výhra počká. Bez něj jako dřív. */
+    boss: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+  })
+  .strict();
 
-/** Skóre (= velikost, v útěku sebrané věci) dosáhlo cíle → výhra. S `wake` probouzí pronásledovatele. */
+/** Podpis těla jako `matches` chování (role, model, rozměry); vlastní kopie – `behaviours` importují arénu. */
+const SIGNATURE = [BODY.role, BODY.kind, BODY.w, BODY.h, BODY.d] as const;
+
+/** Stojí živá kopie předlohy bosse (týž podpis)? */
+function bossStands(state: Int32Array, template: number): boolean {
+  const own = bodyBase(template);
+  for (let i = state[HEADER.spawnBase] as number; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const base = bodyBase(i);
+    if (((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && SIGNATURE.every((slot) => state[base + slot] === state[own + slot])) return true;
+  }
+  return false;
+}
+
+/** Skóre (= velikost, v útěku sebrané věci) dosáhlo cíle → výhra, s `boss` až po jeho pádu. S `wake` probouzí pronásledovatele. */
 export const growTo: RulePiece<z.infer<typeof growToParams>> = {
   id: 'grow_to',
   params: growToParams,
@@ -543,7 +563,8 @@ export const growTo: RulePiece<z.infer<typeof growToParams>> = {
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state }, params) => {
     const woken = params.wake === true ? wakeChasers(state) : [];
-    return (state[HEADER.counters + COUNTER.score] as number) >= params.points ? [...woken, { kind: 'win' }] : woken;
+    if ((state[HEADER.counters + COUNTER.score] as number) < params.points) return woken;
+    return params.boss !== undefined && bossStands(state, params.boss) ? woken : [...woken, { kind: 'win' }];
   },
 };
 

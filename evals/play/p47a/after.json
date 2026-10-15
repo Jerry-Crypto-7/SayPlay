@@ -12,8 +12,8 @@
     "reasons": {
      "assembly": 3
     },
-    "finaleShare": 0.27,
-    "bossShare": 0.27,
+    "finaleShare": 0.3,
+    "bossShare": 0.3,
     "behavioursMedian": 2,
     "deadTimeMedianS": 4.89,
     "risingShare": 0.53
@@ -27,8 +27,8 @@
      "reasons": {
       "assembly": 3
      },
-     "finaleShare": 0.6,
-     "bossShare": 0.6,
+     "finaleShare": 0.7,
+     "bossShare": 0.7,
      "behavioursMedian": 3,
      "deadTimeMedianS": 5.15,
      "risingShare": 0.7
@@ -352,8 +352,8 @@
      "assembly": 5,
      "entry": 6
     },
-    "finaleShare": 0.36,
-    "bossShare": 0.31,
+    "finaleShare": 0.37,
+    "bossShare": 0.33,
     "behavioursMedian": 2,
     "deadTimeMedianS": 4.66,
     "risingShare": 0.61
@@ -367,8 +367,8 @@
      "reasons": {
       "assembly": 4
      },
-     "finaleShare": 0.62,
-     "bossShare": 0.62,
+     "finaleShare": 0.69,
+     "bossShare": 0.69,
      "behavioursMedian": 3,
      "deadTimeMedianS": 5.43,
      "risingShare": 0.69
@@ -664,7 +664,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 4,
     "behaviours": [
      "chaser:chase+spawned",

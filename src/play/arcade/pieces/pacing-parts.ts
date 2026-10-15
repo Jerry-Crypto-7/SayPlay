@@ -286,6 +286,8 @@ export const FIELD = {
   lastHp: 6,
   /** Boss nese nejvýš tolik věcí poslední vlny (`boss_beat.drop.count`). */
   carry: 8,
+  /** Boss sběru bez věcí poslední vlny (`genre.v4`) vydá tolik bodů – jako jedna věc, cíl `grow_to` se nemění. */
+  bossScore: 1,
 };
 
 const ruleOf = (parts: ArcadeParts, id: string): PieceRef | undefined => parts.rules.find((rule) => rule.id === id);
@@ -322,8 +324,12 @@ const waveStart = (index: number, count: number): number => Math.floor((index * 
  * T12; když zůstanou, 0/20). Únik z nich dokáže svědek i tak (`witness.ts`:
  * lovec odvolaný pravidlem `pacing` je přečkaný). `limit` = hodiny sběru, bez
  * nich horizont.
+ *
+ * Ve `genre.v4` (P47A T3) výhra `grow_to` počká na pád bosse: overlay šablona (`treasure_rush`) jinak přinese
+ * věci navíc a robot dosáhl cíle bez věcí bosse (boss padl v 7/8, u hry se čtyřmi vlnami ve 3/8 semínek).
+ * Poslední vlna bez věcí nebo bez předlohy věci: boss vydá `score` místo věcí (ve v3 finále vlna, bez bosse).
  */
-const itemField = (foes: FieldFoes): GenrePacing => (parts) => {
+const itemField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
   const waves = ruleOf(parts, 'arena_waves')?.params as WaveParams | undefined;
   const points = (ruleOf(parts, 'grow_to')?.params as { readonly points: number } | undefined)?.points;
   if (waves === undefined || points === undefined || waves.until !== 'items') return null;
@@ -331,7 +337,10 @@ const itemField = (foes: FieldFoes): GenrePacing => (parts) => {
   const clock = (ruleOf(parts, 'time_limit')?.params as { readonly seconds: number } | undefined)?.seconds;
   const lastItems = waves.waves.at(-1)?.items ?? [];
   const carried = Math.min(FIELD.carry, lastItems.length / 2);
-  const boss = carried > 0 && waves.item !== undefined ? { body: BEHAVIOURS.boss.body, at: waveStart(count - 1, count), drop: { template: waves.item, count: carried }, clears: 'chaser' as const } : undefined;
+  const gated = genreAtLeast(spec, FINALE_GENRE_VERSION);
+  const at = waveStart(count - 1, count);
+  const loot = carried > 0 && waves.item !== undefined ? { drop: { template: waves.item, count: carried } } : gated ? { score: FIELD.bossScore } : undefined;
+  const boss = loot === undefined ? undefined : { body: BEHAVIOURS.boss.body, at, ...loot, clears: 'chaser' as const };
   return {
     goal: { by: 'score', need: points, limit: clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock * ARCADE_HZ) },
     space: 'plane',
@@ -345,15 +354,16 @@ const itemField = (foes: FieldFoes): GenrePacing => (parts) => {
     adjust: (own, template) => {
       const flat = flatten(own, foes.step);
       if (template === undefined) return flat;
-      // Poslední vlna bez věcí, které nese boss (zbytek nad `carry` přinese dál).
-      return withRule(flat, 'arena_waves', (params) => {
+      const waiting = gated ? withRule(flat, 'grow_to', (params) => ({ ...params, boss: template })) : flat;
+      // Poslední vlna bez věcí, které nese boss (zbytek nad `carry` přinese dál); boss se skóre jí věci nechá.
+      return withRule(waiting, 'arena_waves', (params) => {
         const later = (params as WaveParams).waves;
         return { ...params, waves: later.map((wave, index) => {
           if (index < later.length - 1) return wave;
           const { items: _items, ...own } = wave;
           // S bossem nepřiběhnou noví pronásledovatelé – ti dřívější s ním odejdou (`clears`).
           const rest = { ...own, chasers: 0 };
-          const kept = lastItems.slice(0, lastItems.length - 2 * carried);
+          const kept = boss?.drop === undefined ? lastItems : lastItems.slice(0, lastItems.length - 2 * carried);
           return kept.length === 0 ? rest : { ...rest, items: kept };
         }) };
       });
@@ -825,7 +835,7 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
   // Úklid role s bossem jen, když boss zůstal; odchod chování jen, když chování jsou.
   const clear = [...(boss?.clears === undefined ? [] : [{ role: boss.clears, at: boss.at }]), ...(moving ? (setup.clear ?? []) : [])];
   const level = carried.length === 0 ? adjusted.level : { ...adjusted.level, bodies: adjusted.level.bodies.map((body, index) => (carried.includes(index) ? { ...body, template: true } : body)) };
-  const paced = withPacing({ ...adjusted, level }, {
+  const built = withPacing({ ...adjusted, level }, {
     seed, goal: setup.goal, space: setup.space, spots: setup.spots,
     behaviours: moving ? setup.behaviours : [], budget: moving ? setup.budget : 0,
     ...(moving && setup.pick !== undefined ? { pick: setup.pick } : {}),
@@ -838,6 +848,9 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
     ...(setup.extra === undefined ? {} : { extra: setup.extra }),
     ...(setup.segments === undefined ? {} : { segments: setup.segments, ...(spec.segments === undefined ? {} : { script: spec.segments }) }),
   });
+  // Výhra čeká na bosse (`grow_to.boss`, sběr ve v4): robot ví, od kterého skóre už jde jen o něj.
+  const gate = ruleOf(built, 'grow_to')?.params as { readonly points: number; readonly boss?: number } | undefined;
+  const paced = gate?.boss === undefined ? built : { ...built, bot: { ...built.bot, params: { ...built.bot.params, points: gate.points } } };
   // Zásah a pád (`boss_beat`) má jen boss a boss-terč; strážce úkolu se neporáží, jen hlídá poslední věc.
   const beatId = boss?.beat ?? ((boss?.behaviour ?? 'boss') === 'boss' ? 'boss_beat' : undefined);
   if (boss === undefined || bossTemplate === undefined || beatId === undefined || (paced.issues?.length ?? 0) > 0) return paced;

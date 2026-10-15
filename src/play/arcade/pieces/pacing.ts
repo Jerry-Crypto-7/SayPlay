@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 
 import type { ArcadeParts } from '../addons';
-import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeLevel, type ArcadeRole, type ArcadeWorld, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, UNIT, bodyBase, nativeRule } from '../contract';
+import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeLevel, type ArcadeObservation, type ArcadeRole, type ArcadeWorld, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, UNIT, bodyBase, nativeRule } from '../contract';
 import { ESCAPE } from './arena';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef, type BehaviourSpace, behaviourBodies, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, seenByBase, stepBehaviours } from './behaviours';
 import { duelControl, enragedAfter } from './duel';
@@ -184,7 +184,13 @@ const refSchema = z.object({ id: z.string(), params: z.record(z.string(), z.unkn
 const behaviourRefs = z.array(behaviourRefSchema).min(1).max(8);
 /** `steady`: knoflíky žánru (`PACING_KNOBS`) se neškálují – křivka jen rozvrhuje spawny a finále. */
 const controlParams = z.object({ base: refSchema, goal: pacingGoalSchema, keeper: z.int().min(1), behaviours: behaviourRefs.optional(), space: z.enum(['plane', 'track']).optional(), steady: z.literal(true).optional() }).strict();
-const botParams = z.object({ base: refSchema, control: z.string(), keeper: z.int().min(1), behaviours: behaviourRefs.optional(), steady: z.literal(true).optional() }).strict();
+const botParams = z
+  .object({
+    base: refSchema, control: z.string(), keeper: z.int().min(1), behaviours: behaviourRefs.optional(), steady: z.literal(true).optional(),
+    /** Skóre, od kterého výhra čeká už jen na pád bosse (`grow_to.boss`, P47A T3): robot pak věci na zemi nevidí a jde na bosse. */
+    points: z.int().min(1).optional(),
+  })
+  .strict();
 
 const parsed = new WeakMap<object, unknown>();
 /** Parametry základního kusu přečtené schématem jednou (výchozí hodnoty doplní zod). */
@@ -258,6 +264,20 @@ export function makePacingControl(controls: Readonly<Record<string, ControlPiece
   };
 }
 
+/**
+ * Pohled bez věcí na zemi: cíl skóre je splněný a výhra čeká na bosse – věc navíc nic nepřidá a boss je poslední
+ * krok (`behaviours/boss.ts`, `lastStep`). Bez toho robot bez profilu kroužil kolem věci, ke které ho nečinný boss
+ * nepustil, až do konce hodin (sběr pod šablonou `treasure_rush`, 2/40 semínek).
+ */
+function withoutItems(observation: ArcadeObservation): ArcadeObservation {
+  const state = observation.state.slice();
+  for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+    const base = bodyBase(body);
+    if (state[base + BODY.role] === ROLE.collectible) state[base + BODY.flags] = (state[base + BODY.flags] as number) & ~FLAG.alive;
+  }
+  return { ...observation, state };
+}
+
 /** `pacing_bot`: základní robot rozhoduje se stejně škálovanými parametry, jaké vidí ovládání; před těly chování uhne. */
 export function makePacingBot(bots: Readonly<Record<string, BotPiece>>): BotPiece<z.infer<typeof botParams>> {
   return {
@@ -265,7 +285,8 @@ export function makePacingBot(bots: Readonly<Record<string, BotPiece>>): BotPiec
     decide(observation, params) {
       const native = bots[params.base.id];
       if (native === undefined) throw new Error(`arcade: unknown paced bot ${params.base.id}`);
-      const seen = params.behaviours === undefined ? observation : seenByBase(observation, params.behaviours);
+      const goal = params.points !== undefined && (observation.state[HEADER.counters + COUNTER.score] as number) >= params.points ? withoutItems(observation) : observation;
+      const seen = params.behaviours === undefined ? goal : seenByBase(goal, params.behaviours);
       const own = parseOnce(native, params.base.params);
       const input = native.decide(seen, params.steady === true ? own : scaledOnce(params.control, own, intensityOf(observation.state, params.keeper)));
       return params.behaviours === undefined ? input : dodge(observation, params.behaviours, params.control, input);
