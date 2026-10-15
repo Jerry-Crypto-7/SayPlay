@@ -708,3 +708,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-swinging-axe` | swinging axe | 4748 / 2366 |
 | `gen3d-panther` | panther | 4686 / 2304 |
 | `gen3d-flame-trap` | flame trap | 4449 / 2044 |
+| `gen3d-centipede` | centipede | 4726 / 2358 |
+| `gen3d-spike-wall` | spike wall | 4638 / 2272 |
+| `gen3d-coyote` | coyote | 4396 / 2087 |

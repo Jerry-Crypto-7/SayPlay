@@ -29840,6 +29840,63 @@
           0.33589
         ]
       }
+    },
+    {
+      "assetId": "gen3d-centipede",
+      "tags": [
+        "centipede"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-centipede-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.11768,
+          0,
+          -2.13617
+        ],
+        "max": [
+          1.11768,
+          0.9905,
+          2.13617
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spike-wall",
+      "tags": [
+        "spike wall"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spike-wall-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19842,
+          0,
+          -0.66195
+        ],
+        "max": [
+          0.19842,
+          0.9995,
+          0.66195
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coyote",
+      "tags": [
+        "coyote"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coyote-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21321,
+          0,
+          -0.56801
+        ],
+        "max": [
+          0.21321,
+          1.00001,
+          0.56801
+        ]
+      }
     }
   ]
 }
