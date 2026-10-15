@@ -15,6 +15,7 @@ import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { type ArcadeParts, addonControlParams, addonLives, applyAddons, baseControlOf, mapUnderlying, underlyingRule } from './addons';
 import { applyAbilities } from './abilities';
+import { placePowerups, wantsPowerups } from './powerups/placement';
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
@@ -220,7 +221,10 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   const lives = 'health' in own ? own.health : health;
   // Akce hrdiny (P46A) po doplňcích: střelba převezme blaster, který `+shoot` už dal.
   const addonContext = { spec, seed, health: lives };
-  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(applyAbilities(applyAddons(own, addonContext), addonContext), spec, ARCADE_LIBRARY.rules);
+  const armed = applyAbilities(applyAddons(own, addonContext), addonContext);
+  // Power-upy (P46C) po akcích: štít sdílí jejich počítadlo. Jen nová hra žánru, uložené hrají jako dřív.
+  const powered = wantsPowerups(spec) ? placePowerups(armed, spec, seed) : armed;
+  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(powered, spec, ARCADE_LIBRARY.rules);
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
   // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění. Volný pohyb má
   // čtvercovou podlahu (dvorek, aréna) – její okraj je místo vlny `edge` (P45B).
@@ -248,7 +252,10 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   }
   rules.push(...ruled.rules.map((ref) => (ungated(ref) ? ref : gate(ref))));
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: limitSeconds(timer.seconds) } });
-  const scored = spec.scoring === undefined ? { level, rules } : withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0, gate);
+  // Kombo (P46C T3) má každá nová hra žánru, i bez `scoring`; bez cílového skóre jen násobí body. Uložené hrají jako dřív.
+  // Úder zvedá kombo jen v nové hře: uložená hra se `scoring` a úderem musí mít týž hash.
+  const sources = wantsPowerups(spec) ? COMBO_SOURCES : LEGACY_COMBO_SOURCES;
+  const scored = spec.scoring !== undefined ? withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0, gate, sources) : wantsPowerups(spec) ? withCombo(level, rules, sources) : { level, rules };
   if (scored.rules.length > ARCADE_LIMITS.maxRules) {
     return { ok: false, issues: [`rules: this ${spec.control} game with scoring uses ${scored.rules.length} rules, over the ${ARCADE_LIMITS.maxRules} limit – merge or drop rules`] };
   }
@@ -278,18 +285,30 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
  * k cíli (`grow_to`) – kombo by cíl zkrátilo, takže tam jen bonus na konci.
  * `gate` obalí `score_bonus` složené hry (P42), ať dosažený cíl nevyhraje před díly.
  */
-function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: number, target: number, gate: (ref: PieceRef) => PieceRef): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
+function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: number, target: number, gate: (ref: PieceRef) => PieceRef, sources: readonly string[]): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
+  const combo = withCombo(level, rules, sources);
+  const clock = rules.map(underlyingRule).find((ref) => ref.id === 'time_limit' || ref.id === 'survive_time')?.params as { readonly seconds: number } | undefined;
+  const limit = clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock.seconds * ARCADE_HZ);
+  return { level: combo.level, rules: [...combo.rules, gate({ id: 'score_bonus', params: { lives, limit, target } })] };
+}
+
+/** Pravidla, jejichž zásah nebo sebrání zvedá kombo nové hry (P46C T3). */
+const COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit', 'ability_strike', 'checkpoint'];
+/** Totéž pro uložené hry se `scoring` (P36A): bez úderu. */
+const LEGACY_COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit'];
+
+/**
+ * Kombo bez cílového skóre: počítadlo komba za tělesa úrovně (mrtvá předloha s modelem
+ * hráče) a `pickup` se `shot_hit` s ním – série sebrání a zásahů zvedá násobič ×1–×5,
+ * ztracený život ho shodí (`nextMultiplier`). Aréna sbírá přes `arena_eat`, tam násobí jen zásahy.
+ */
+function withCombo(level: ArcadeLevel, rules: readonly PieceRef[], sources: readonly string[]): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
   const keeper = level.bodies.length;
   const hero = level.bodies[0] as BodyInit;
   const counter: BodyInit = { role: 'thing', kind: hero.kind, x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true };
-  const clock = rules.map(underlyingRule).find((ref) => ref.id === 'time_limit' || ref.id === 'survive_time')?.params as { readonly seconds: number } | undefined;
-  const limit = clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock.seconds * ARCADE_HZ);
   return {
     level: { ...level, bodies: [...level.bodies, counter] },
-    rules: [
-      ...rules.map((ref) => mapUnderlying(ref, (native) => (native.id === 'pickup' || native.id === 'shot_hit' ? { id: native.id, params: { ...native.params, combo: keeper } } : native))),
-      gate({ id: 'score_bonus', params: { lives, limit, target } }),
-    ],
+    rules: rules.map((ref) => mapUnderlying(ref, (native) => (sources.includes(native.id) ? { id: native.id, params: { ...native.params, combo: keeper } } : native))),
   };
 }
 

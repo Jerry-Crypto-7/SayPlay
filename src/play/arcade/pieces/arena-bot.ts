@@ -67,6 +67,8 @@ function escapeDecide(state: Int32Array, player: number, recent: readonly Arcade
   const lag = recent.length;
   const asleep = Math.max(0, graceLeft(state) - lag);
   const chasers: { x: number; z: number; reach: number }[] = [];
+  // Power-upy (P46C) útěk nevidí, sebere je jen v cestě: každá zacházka k nim prohrála hry, které
+  // stará verze vyhrála (arena.escape i s mincemi, hra s logikou z režiséra na semínku 1).
   const items: { x: number; z: number }[] = [];
   for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
     const base = bodyBase(i);
@@ -163,12 +165,13 @@ export const arenaBot: BotPiece<z.infer<typeof botParams>> = {
       const base = bodyBase(i);
       if (((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
       const role = state[base + BODY.role];
-      if (role !== ROLE.enemy && role !== ROLE.collectible && role !== ROLE.chaser) continue;
+      if (role !== ROLE.enemy && role !== ROLE.collectible && role !== ROLE.chaser && role !== ROLE.powerup) continue;
       const w = state[base + BODY.w] as number;
       const at = { x: (state[base + BODY.x] as number) + (state[base + BODY.vx] as number) * lag, z: (state[base + BODY.z] as number) + (state[base + BODY.vz] as number) * lag, w };
       // Pronásledovatel doplňku `+chaser` (P26D) se sníst nedá, ať je hráč jakkoli velký.
       if ((w > size && role === ROLE.enemy) || role === ROLE.chaser) threats.push(at);
-      else if (w < size) food.push(at);
+      // Power-up (P46C) se sebere při každé velikosti.
+      else if (w < size || role === ROLE.powerup) food.push(at);
     }
 
     // Útěk: součet vektorů od blízkých větších buněk, vážený blízkostí, + odpor stěn.

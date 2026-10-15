@@ -687,10 +687,6 @@
           "height": 0.8
         },
         {
-          "id": "gen3d-rain-barrel",
-          "height": 1.1
-        },
-        {
           "id": "gen3d-outhouse",
           "height": 2.4
         }
@@ -1585,10 +1581,6 @@
         {
           "id": "gen3d-street-lamp",
           "height": 4
-        },
-        {
-          "id": "gen3d-ticket-machine",
-          "height": 1.6
         }
       ]
     },
@@ -1838,10 +1830,6 @@
         {
           "id": "gen3d-mangrove-tree",
           "height": 4
-        },
-        {
-          "id": "gen3d-cypress-tree",
-          "height": 6
         }
       ]
     },

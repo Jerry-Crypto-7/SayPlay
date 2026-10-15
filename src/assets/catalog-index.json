@@ -29130,26 +29130,6 @@
       }
     },
     {
-      "assetId": "gen3d-rain-barrel",
-      "tags": [
-        "rain barrel",
-        "water butt"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-rain-barrel-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.24094,
-          0,
-          -0.24107
-        ],
-        "max": [
-          0.24094,
-          0.99998,
-          0.24107
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-outhouse",
       "tags": [
         "outhouse",
@@ -29295,27 +29275,6 @@
       }
     },
     {
-      "assetId": "gen3d-cypress-tree",
-      "tags": [
-        "cypress tree",
-        "bald cypress",
-        "swamp cypress"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-cypress-tree-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.33454,
-          0,
-          -0.33515
-        ],
-        "max": [
-          0.33454,
-          0.99251,
-          0.33515
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-mooring-bollard",
       "tags": [
         "mooring bollard",
@@ -29434,27 +29393,6 @@
           0.24409,
           0.9987,
           0.27385
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-ticket-machine",
-      "tags": [
-        "ticket machine",
-        "parking machine",
-        "pay station"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-ticket-machine-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.17872,
-          0,
-          -0.16713
-        ],
-        "max": [
-          0.17872,
-          0.99989,
-          0.16713
         ]
       }
     },
@@ -29685,25 +29623,6 @@
       }
     },
     {
-      "assetId": "gen3d-snow-shovel",
-      "tags": [
-        "snow shovel"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-snow-shovel-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.25673,
-          0,
-          -0.25671
-        ],
-        "max": [
-          0.25673,
-          1.00001,
-          0.25671
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-castle-tower",
       "tags": [
         "castle tower"
@@ -29759,27 +29678,6 @@
           0.18874,
           0.99925,
           0.0388
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-claw-machine",
-      "tags": [
-        "claw machine",
-        "crane game",
-        "claw crane"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-claw-machine-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.25341,
-          0,
-          -0.31536
-        ],
-        "max": [
-          0.25341,
-          0.99757,
-          0.31536
         ]
       }
     },
@@ -30020,27 +29918,6 @@
       }
     },
     {
-      "assetId": "gen3d-storefront",
-      "tags": [
-        "storefront",
-        "shop front",
-        "shopfront"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-storefront-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.54953,
-          0,
-          -0.45957
-        ],
-        "max": [
-          0.54953,
-          0.99999,
-          0.45957
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-magazine-rack",
       "tags": [
         "magazine rack"
@@ -30213,27 +30090,6 @@
           0.38949,
           0.99691,
           0.38
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-lunar-crater",
-      "tags": [
-        "lunar crater",
-        "crater",
-        "moon crater"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-lunar-crater-lod1.glb",
-      "bounds": {
-        "min": [
-          -1.48991,
-          0,
-          -1.48744
-        ],
-        "max": [
-          1.48991,
-          0.9994,
-          1.48744
         ]
       }
     },
@@ -30435,25 +30291,6 @@
       }
     },
     {
-      "assetId": "gen3d-volleyball-net",
-      "tags": [
-        "volleyball net"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-volleyball-net-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.87078,
-          0,
-          -0.03056
-        ],
-        "max": [
-          0.87078,
-          0.99882,
-          0.03056
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-sea-arch",
       "tags": [
         "sea arch"
@@ -30571,25 +30408,6 @@
       }
     },
     {
-      "assetId": "gen3d-cooling-tower",
-      "tags": [
-        "cooling tower"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-cooling-tower-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.38224,
-          0,
-          -0.38221
-        ],
-        "max": [
-          0.38224,
-          0.99998,
-          0.38221
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-adobe-oven",
       "tags": [
         "adobe oven",
@@ -30665,27 +30483,6 @@
           0.24322,
           0.99885,
           0.25623
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-canned-soup",
-      "tags": [
-        "canned soup",
-        "soup can",
-        "tin can"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-canned-soup-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.45538,
-          0,
-          -0.45474
-        ],
-        "max": [
-          0.45538,
-          1.00001,
-          0.45474
         ]
       }
     },
@@ -30766,25 +30563,6 @@
           0.44577,
           0.9988,
           0.21705
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-lava-lamp",
-      "tags": [
-        "lava lamp"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-lava-lamp-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.24202,
-          0,
-          -0.24311
-        ],
-        "max": [
-          0.24202,
-          1.00001,
-          0.24311
         ]
       }
     },
@@ -31012,27 +30790,6 @@
       }
     },
     {
-      "assetId": "gen3d-stele",
-      "tags": [
-        "stele",
-        "stone tablet",
-        "stela"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-stele-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.26232,
-          0,
-          -0.24288
-        ],
-        "max": [
-          0.26232,
-          1.00001,
-          0.24288
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-food-kiosk",
       "tags": [
         "food kiosk",
@@ -31050,25 +30807,6 @@
           0.35379,
           0.97926,
           0.52426
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-electric-generator",
-      "tags": [
-        "electric generator"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-electric-generator-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.75514,
-          0,
-          -0.38106
-        ],
-        "max": [
-          0.75514,
-          0.99126,
-          0.38106
         ]
       }
     },
@@ -31515,25 +31253,6 @@
       }
     },
     {
-      "assetId": "gen3d-puffin",
-      "tags": [
-        "puffin"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-puffin-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.30301,
-          0,
-          -0.39819
-        ],
-        "max": [
-          0.30301,
-          0.99999,
-          0.39819
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-honey-pot",
       "tags": [
         "honey pot"
@@ -31663,25 +31382,6 @@
           0.19842,
           0.9995,
           0.66195
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-coyote",
-      "tags": [
-        "coyote"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-coyote-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.21321,
-          0,
-          -0.56801
-        ],
-        "max": [
-          0.21321,
-          1.00001,
-          0.56801
         ]
       }
     },
@@ -32347,25 +32047,6 @@
       }
     },
     {
-      "assetId": "gen3d-jaguar-statue",
-      "tags": [
-        "jaguar statue"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-jaguar-statue-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.39261,
-          0,
-          -0.48354
-        ],
-        "max": [
-          0.39261,
-          0.99254,
-          0.48354
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-shop-sign",
       "tags": [
         "shop sign"
@@ -32423,25 +32104,6 @@
       }
     },
     {
-      "assetId": "gen3d-coral-pillar",
-      "tags": [
-        "coral pillar"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-pillar-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.13519,
-          0,
-          -0.13284
-        ],
-        "max": [
-          0.13519,
-          0.99775,
-          0.13284
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-mesquite-tree",
       "tags": [
         "mesquite tree"
@@ -32457,25 +32119,6 @@
           0.5554,
           0.99957,
           0.54883
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-city-map-board",
-      "tags": [
-        "city map board"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-city-map-board-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.58399,
-          0,
-          -0.13329
-        ],
-        "max": [
-          0.58399,
-          0.99718,
-          0.13329
         ]
       }
     },
@@ -32519,25 +32162,6 @@
       }
     },
     {
-      "assetId": "gen3d-avalanche-fence",
-      "tags": [
-        "avalanche fence"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-avalanche-fence-lod1.glb",
-      "bounds": {
-        "min": [
-          -1.1977,
-          0,
-          -0.24195
-        ],
-        "max": [
-          1.1977,
-          0.99966,
-          0.24195
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-coconut-stall",
       "tags": [
         "coconut stall"
@@ -32557,44 +32181,6 @@
       }
     },
     {
-      "assetId": "gen3d-taro-plant",
-      "tags": [
-        "taro plant"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-taro-plant-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.40994,
-          0,
-          -0.44785
-        ],
-        "max": [
-          0.40994,
-          0.99945,
-          0.44785
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-hitching-post",
-      "tags": [
-        "hitching post"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-hitching-post-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.42505,
-          0,
-          -0.04811
-        ],
-        "max": [
-          0.42505,
-          1,
-          0.04811
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-snowy-mailbox",
       "tags": [
         "snowy mailbox"
@@ -32610,25 +32196,6 @@
           0.24752,
           0.99946,
           0.26906
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-jade-statue",
-      "tags": [
-        "jade statue"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-jade-statue-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.3009,
-          0,
-          -0.30099
-        ],
-        "max": [
-          0.3009,
-          1.00001,
-          0.30099
         ]
       }
     },
@@ -32690,25 +32257,6 @@
       }
     },
     {
-      "assetId": "gen3d-sunscreen-bottle",
-      "tags": [
-        "sunscreen bottle"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-sunscreen-bottle-lod1.glb",
-      "bounds": {
-        "min": [
-          -0.17809,
-          0,
-          -0.16479
-        ],
-        "max": [
-          0.17809,
-          0.99969,
-          0.16479
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-water-canteen",
       "tags": [
         "water canteen"
@@ -32724,25 +32272,6 @@
           0.28627,
           0.99992,
           0.31621
-        ]
-      }
-    },
-    {
-      "assetId": "gen3d-manhole-cover",
-      "tags": [
-        "manhole cover"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-manhole-cover-lod1.glb",
-      "bounds": {
-        "min": [
-          -3.4664,
-          0,
-          -3.48072
-        ],
-        "max": [
-          3.4664,
-          0.99969,
-          3.48072
         ]
       }
     },

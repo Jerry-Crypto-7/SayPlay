@@ -8,7 +8,7 @@
 
 import { z } from 'zod';
 
-import { ABILITIES, ABILITY_SLOTS, type AbilityId, ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, BUTTON, type PieceRef, bodyBase } from '../contract';
+import { ABILITIES, ABILITY_SLOTS, type AbilityId, ARCADE_HZ, ARCADE_LIMITS, type ArcadeEffect, BUTTON, type PieceRef, bodyBase, powerupOf } from '../contract';
 
 /** Cooldown a délka aktivního okna v tikách (60 Hz). */
 export const ABILITY_TIMING: Readonly<Record<AbilityId, { readonly cooldown: number; readonly active: number }>> = {
@@ -73,7 +73,8 @@ export function tickAbilities(state: Int32Array, buttons: number, params: Abilit
     if ((state[cooldown] as number) > 0) state[cooldown] = (state[cooldown] as number) - 1;
     if ((state[active] as number) > 0) state[active] = (state[active] as number) - 1;
     // Štít: náboj platí jen v okně; spotřebuje ho zásah (pravidlo `ability_shield`), nebo konec okna.
-    if (id === 'shield' && (state[active] as number) === 0) state[k + ABILITY_SLOTS.shield] = 0;
+    // Power-up štít (P46C) sdílí týž náboj a drží ho po své trvání.
+    if (id === 'shield' && (state[active] as number) === 0 && powerupOf(state, params.keeper) !== 'shield') state[k + ABILITY_SLOTS.shield] = 0;
     if ((buttons & (ABILITY_BUTTONS[slot] as number)) === 0 || (state[cooldown] as number) > 0) return;
     state[active] = ABILITY_TIMING[id].active;
     state[cooldown] = ABILITY_TIMING[id].cooldown;

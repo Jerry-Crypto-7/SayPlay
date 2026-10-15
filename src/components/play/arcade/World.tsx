@@ -113,6 +113,8 @@ export function modelIdOf(view: BodyView, cast: Cast): string {
   // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
   if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
   if (view.kind === 'turbo') return cast.props.turbo ?? view.kind;
+  // P46C: power-up (`powerup_magnet` …) vlastní model nemá – krystal, ne 404 na `powerup_shield-lod1.glb`.
+  if (view.role === ROLE.powerup) return 'crystal';
   if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;

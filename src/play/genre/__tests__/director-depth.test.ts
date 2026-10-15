@@ -13,6 +13,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { baseControlOf } from '@/play/arcade/addons';
 import { arcadeWorldOf, compileArcade } from '@/play/arcade/compile';
 import { type ArcadeWorld, BODY, BODY_STRIDE, COUNTER, GRACE_MASK, GRACE_SHIFT, HEADER, HEADER_SIZE, HIT_GRACE, NO_INPUT, bodyBase } from '@/play/arcade/contract';
 import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
@@ -48,8 +49,8 @@ function world(spec: GameSpecV1): ArcadeWorld {
 
 /** Parametry pronásledování z ovládání jádra (i pod obalem doplňků). */
 function chaseOf(arcade: ArcadeWorld): { readonly patrol?: number } | undefined {
-  const params = arcade.control.params as { readonly chase?: { readonly patrol?: number }; readonly base?: { readonly params: { readonly chase?: { readonly patrol?: number } } } };
-  return params.chase ?? params.base?.params.chase;
+  const own = (arcade.control.params as { readonly chase?: { readonly patrol?: number } }).chase;
+  return own ?? (baseControlOf(arcade.control).params as { readonly chase?: { readonly patrol?: number } }).chase;
 }
 
 describe('depth fields in the director answer (P36A T8)', () => {

@@ -35,7 +35,8 @@ export const dashRule: RulePiece<z.infer<typeof dashParams>> = {
     abilityActive(state, params.keeper, params.slot) > 0 && isHarm(state, other, params.roles) ? [{ kind: 'despawn', body: other }] : [],
 };
 
-const shieldParams = z.object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), roles: harmful, verb: z.literal('shield') }).strict();
+// Bez slovesa jen štít power-upu (P46C): hra ho neslíbila, ověření ho tedy nedokazuje.
+const shieldParams = z.object({ keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), roles: harmful, verb: z.literal('shield').optional() }).strict();
 
 /**
  * Nabitý štít pohltí jeden náraz: tělo zmizí a náboj spadne na 0. O náboji rozhodne

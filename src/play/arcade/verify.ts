@@ -28,6 +28,7 @@ import {
   LOGIC_VAR_SLOTS,
   type LogicNames,
   NO_INPUT,
+  ROLE,
   UNIT,
   bodyBase,
   bodyHp,
@@ -129,6 +130,8 @@ function changeOf(effect: ArcadeEffect, after: ArcadeState, tick: number, prior:
     case 'lose':
     // Kombo je zápis počítadla k sebrání – změnu za slovesem dokládá skóre téhož pravidla.
     case 'combo':
+    // Power-up (P46C) totéž – sebrání dokládá zmizení tělesa téhož pravidla.
+    case 'powerup':
     // Blok štítu a podmíněný obal (P46A R2) jádro nahradí efekty, které platí, ještě před stopou.
     case 'block':
     case 'ifAlive':
@@ -574,7 +577,8 @@ function withLossProofs(world: ArcadeWorld, library: ArcadeLibrary, verbs: VerbP
   const losing = losingVerbs(world);
   const seek = new Set(verbs.filter((proof) => !proof.changed && losing.has(proof.verb)).map((proof) => proof.verb));
   if (seek.size === 0 || lossPlanner(world, seek) === null) return { verbs, probe: null };
-  const probe = runBot(world, library, { seek });
+  // Bez power-upů jako sondy hrozeb: štít sebraný cestou by pohltil náraz, který má prohru dokázat.
+  const probe = runBot(withoutPowerups(world), library, { seek });
   const found = new Map(verbsOf(world, probe.firstFired, probe.changes).map((proof) => [proof.verb, proof]));
   return {
     verbs: verbs.map((proof) => {
@@ -628,17 +632,34 @@ export interface WitnessOptions {
 }
 
 /**
+ * Sonda dokazuje, že hrozba hráči ublíží; štít z power-upu (P46C), který by po cestě sebrala, by zásah
+ * pohltil. Hraje proto bez power-upů – svět bez nich (i každý uložený) dostane zpět sám sebe.
+ */
+function withoutPowerups(world: ArcadeWorld): ArcadeWorld {
+  if ((world.runtimeVersion as string) === 'arcade-v1') return world;
+  const initial = [...world.initial];
+  let found = false;
+  for (let body = 0; body < (initial[HEADER.bodyCount] as number); body += 1) {
+    if (initial[bodyBase(body) + BODY.role] !== ROLE.powerup) continue;
+    initial[bodyBase(body) + BODY.flags] = (initial[bodyBase(body) + BODY.flags] as number) & ~FLAG.alive;
+    found = true;
+  }
+  return found ? { ...world, initial } : world;
+}
+
+/**
  * Běhy, ze kterých jsou svědci hry: samostatné sondy hrozeb a vítězný běh robota s jejich důkazy. Kdo chce jen
  * svědky (přiznání u věty), nepouští přehrání ani nečinného hráče `verifyArcade` – na trati ze vzorů (P46D) dvě třetiny času.
  */
 export function witnessRuns(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, roleBindings?: readonly RoleBinding[], options: WitnessOptions = {}): { readonly bot: BotRun; readonly probes: readonly ActionWitness[] } {
   const probes: ActionWitness[] = [];
   const probed = new Set<string>();
+  const probeWorld = withoutPowerups(world);
   for (const binding of roleBindings ?? []) {
     // Jedna sonda na roli; v neúspěchu se žádná hrozba nepředpokládá.
     if (binding.player || !['hazard', 'chaser', 'patrol'].includes(binding.roleKind) || probed.has(binding.roleId)) continue;
     probed.add(binding.roleId);
-    const probe = runBot(world, library, { roleBindings, probeBody: binding.body, runId: `probe:${binding.roleId}` });
+    const probe = runBot(probeWorld, library, { roleBindings, probeBody: binding.body, runId: `probe:${binding.roleId}` });
     probes.push(...probe.witnesses.filter(w => w.actor.roleId === binding.roleId));
   }
   // Průběh hry (P45C): první tělo každého chování a bosse má svou sondu – nepřítel, kterého sonda nevidí, by prošel jako kulisa.
@@ -647,7 +668,7 @@ export function witnessRuns(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_
   for (const { body, behaviour } of roleBindings === undefined ? [] : pacingProbeBodies(world)) {
     const binding: RoleBinding = { body, roleId: `pacing:${behaviour}`, label: behaviour, roleKind: 'hazard', player: false };
     if (options.pacingProbe?.(binding) === false) continue;
-    const probe = runBot(world, library, { roleBindings: [...(roleBindings ?? []), binding], probeBody: body, runId: `probe:${binding.roleId}` });
+    const probe = runBot(probeWorld, library, { roleBindings: [...(roleBindings ?? []), binding], probeBody: body, runId: `probe:${binding.roleId}` });
     probes.push(...probe.witnesses.filter(w => w.actor.roleId === binding.roleId));
   }
   // Bez vazeb nemá běh svědka ani sondy (výš), takže je to týž běh jako `runBot(world)` v kompilaci.

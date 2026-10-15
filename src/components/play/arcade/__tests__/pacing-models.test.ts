@@ -11,10 +11,11 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf } from '@/play/arcade/compile';
-import { ROLE, nativeRule } from '@/play/arcade/contract';
+import { POWERUPS, ROLE, nativeRule } from '@/play/arcade/contract';
 import { instantiate } from '@/play/arcade/kernel';
 import { chaserModel, enemyModel, heroModel, modelPath, riggedCharacter } from '@/play/arcade/models';
 import type { BehaviourRef } from '@/play/arcade/pieces/behaviours';
+import { powerupKind } from '@/play/arcade/powerups';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
 
@@ -106,4 +107,13 @@ describe('pacing bodies draw the sentence enemy, not fallback boxes', () => {
     }
     expect(bosses).toBeGreaterThan(0);
   });
+});
+
+// P46C: `powerup_<id>-lod1.glb` neleží nikde – e2e power-upů hlásilo 404 v konzoli.
+it('every power-up draws a model that exists', () => {
+  const cast = { player: 'kangaroo', enemy: 'goblin', chaser: 'goblin', props: {} };
+  for (const id of POWERUPS) {
+    const model = modelIdOf({ index: 1, kind: powerupKind(id), role: ROLE.powerup, w: 0.8, h: 0.8, d: 0.8 }, cast);
+    expect(model !== undefined && exists(model), `${id} → ${String(model)}`).toBe(true);
+  }
 });

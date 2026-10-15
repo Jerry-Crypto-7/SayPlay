@@ -9,6 +9,7 @@ import { z } from 'zod';
 
 import { ARCADE_LIMITS, type ArcadeEffect, BODY, FLAG, HEADER, ROLE, type RulePiece, UNIT, bodyBase, bodyHp } from '../contract';
 import { blow, bossBeatParams } from '../pieces/boss';
+import { nextMultiplier } from '../pieces/rules';
 import { matches } from '../pieces/behaviours';
 import { ABILITY_TIMING, abilityActive } from './state';
 
@@ -34,6 +35,8 @@ const strikeParams = z
     around: z.literal(true).optional(),
     /** Boss finále (P46B T8): předloha a kořist jako u jeho pravidla pádu. */
     boss: bossBeatParams.optional(),
+    /** Počítadlo komba (P46C T3): úder v sérii bere násobič jako zásah střelou. */
+    combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
   })
   .strict();
 
@@ -100,15 +103,18 @@ export const strikeRule: RulePiece<z.infer<typeof strikeParams>> = {
     // Boss nezmizí naráz: jeden úder = jeden život, počítá se jen první tik okna (P46B T8).
     const boss = active === ABILITY_TIMING.strike.active ? params.boss : undefined;
     const effects: ArcadeEffect[] = [];
+    // Jeden násobič na tik: všechny zásahy téhož úderu berou stejný, série roste o úder.
+    const multiplier = params.combo === undefined ? 1 : nextMultiplier(state, params.combo);
     for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
       const b = bodyBase(i);
       if (i === player || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
       const struck = isStruck(state[b + BODY.role] as number);
       if (!struck && (boss === undefined || bodyHp(state, i) === 0 || !matches(state, i, boss.boss))) continue;
       if (!inStrikeReach(state, player, i, 0, params.around)) continue;
-      if (struck) effects.push({ kind: 'score', amount: 1 }, { kind: 'despawn', body: i });
+      if (struck) effects.push({ kind: 'score', amount: multiplier }, { kind: 'despawn', body: i });
       else if (boss !== undefined) effects.push(...blow(state, i, player, boss));
     }
+    if (params.combo !== undefined && effects.some((effect) => effect.kind === 'despawn')) effects.push({ kind: 'combo', body: params.combo, multiplier });
     return effects;
   },
 };

@@ -96,6 +96,36 @@ describe('kulisy z katalogu', () => {
     const unknown = LOOK_IDS.flatMap((id) => LOOKS[id].props.filter((prop) => !(PROP_KINDS as readonly string[]).includes(prop) && !Object.hasOwn(SCENERY_MODELS, prop)));
     expect(unknown).toEqual([]);
   });
+
+  // P46J: scenérie z P46I stojí v sadách místo primitiv a starších kulis; rostliny jdou do vegetace.
+  it.each([
+    ['meadow', ['gen3d-picnic-table', 'gen3d-wooden-stile', 'gen3d-wooden-gate'], ['gen3d-poppy-flower', 'gen3d-buttercup']],
+    ['forest', ['gen3d-forest-shrine', 'gen3d-standing-stone'], ['gen3d-fern', 'gen3d-mushroom-cluster', 'gen3d-wild-strawberry-plant']],
+    ['jungle', ['gen3d-bamboo-hut', 'gen3d-jungle-waterfall'], ['gen3d-heliconia', 'gen3d-pitcher-plant', 'gen3d-rafflesia']],
+    ['desert', ['gen3d-western-saloon', 'gen3d-buried-statue-head', 'gen3d-abandoned-mine-entrance'], ['gen3d-desert-shrub', 'gen3d-yucca-plant', 'gen3d-mesquite-tree']],
+    ['beach', ['gen3d-beach-chair', 'gen3d-surf-rack'], []],
+    ['snow', ['gen3d-snowy-bench', 'gen3d-ice-arch'], []],
+    ['underwater', ['gen3d-staghorn-coral', 'gen3d-kelp', 'gen3d-barnacle-rock'], []],
+    ['city', ['gen3d-telephone-pole', 'gen3d-flower-stall'], []],
+    ['ocean', ['gen3d-navigation-buoy', 'gen3d-floating-dock'], []],
+    ['factory', ['gen3d-smokestack', 'gen3d-industrial-fan'], []],
+    ['living_room', ['gen3d-gramophone'], []],
+    ['supermarket', ['gen3d-bread-rack'], []],
+    ['mall', ['gen3d-gumball-machine'], []],
+    ['volcano', ['gen3d-magma-rock', 'gen3d-steam-vent'], []],
+    ['cave', ['gen3d-stalagmite', 'gen3d-crystal-geode', 'gen3d-glowing-mushroom'], []],
+    ['space', ['gen3d-fuel-silo', 'gen3d-moon-flag'], []],
+    ['castle', ['gen3d-castle-tower', 'gen3d-stone-gatehouse'], []],
+    ['graveyard', ['gen3d-iron-fence', 'gen3d-grave-lantern'], []],
+  ] as const)('%s nese scenérii P46I (P46J)', (id, props, plants) => {
+    const look = LOOKS[id];
+    expect(props.filter((prop) => !(look.props as readonly string[]).includes(prop))).toEqual([]);
+    const flora = new Set([...(look.flora?.near ?? []), ...(look.flora?.mid ?? []), ...(look.flora?.far ?? [])].map((species) => species.id));
+    expect(plants.filter((plant) => !flora.has(plant))).toEqual([]);
+    // Sporné modely P46I (soudce je poznal jen přes poslední slovo nebo alternativu) v katalogu nejsou.
+    const ids = new Set(catalog.assets.map((asset) => asset.assetId));
+    expect(['gen3d-claw-machine', 'gen3d-coral-pillar', 'gen3d-cypress-tree'].filter((dropped) => ids.has(dropped))).toEqual([]);
+  });
 });
 
 describe('rekvizity prostředí (P45H T3)', () => {
