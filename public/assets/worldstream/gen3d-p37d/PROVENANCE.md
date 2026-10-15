@@ -661,3 +661,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-poppy-flower` | poppy flower, poppy | 4616 / 2277 |
 | `gen3d-canned-soup` | canned soup, soup can, tin can | 4385 / 2145 |
 | `gen3d-sea-sponge` | sea sponge | 4412 / 2204 |
+| `gen3d-harbor-crane` | harbor crane, container crane, dock crane | 4717 / 2336 |
+| `gen3d-crystal-geode` | crystal geode, geode | 4327 / 2126 |
+| `gen3d-garden-arch` | garden arch, rose arch | 4420 / 2074 |
+| `gen3d-lava-lamp` | lava lamp | 4637 / 2300 |
+| `gen3d-chain-hoist` | chain hoist, crane hook | 4745 / 2360 |

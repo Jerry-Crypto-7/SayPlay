@@ -19,3 +19,4 @@ Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek
 | 13 | scenery | 10 | 8 | 5/8 | 5 | – | 59/85 | control panel, forest shrine, bamboo hut, volleyball net, sea arch | – |
 | 14 | scenery | 10 | 10 | 9/10 | 8 | – | 59/85 | stone gatehouse, grave lantern, buttercup, neon sign, umbrella stand, cooling tower, adobe oven, beach chair | – |
 | 15 (opakování) | scenery | 10 | 9 | 4/9 | 4 | – | 59/85 | gumball machine, poppy flower, canned soup, sea sponge | – |
+| 16 | scenery | 10 | 9 | 5/9 | 5 | – | 59/85 | harbor crane, crystal geode, garden arch, lava lamp, chain hoist | – |

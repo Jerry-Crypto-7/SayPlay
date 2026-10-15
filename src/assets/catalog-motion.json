@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "ffdced495270c37ee5d779245824a369bdf9d297a1c929fbefb0aba16b4e19b2",
+ "catalogHash": "5b06ff6bd2c1472b3c995fe034c789b992eb3f3b0dc0a56c1cc114db2b51abd5",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1436,6 +1436,11 @@
   "gen3d-gumball-machine": {"class":"biped","regions":{"legY":0.248}},
   "gen3d-poppy-flower": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-canned-soup": {"class":"prop"},
-  "gen3d-sea-sponge": {"class":"prop"}
+  "gen3d-sea-sponge": {"class":"prop"},
+  "gen3d-harbor-crane": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-crystal-geode": {"class":"prop"},
+  "gen3d-garden-arch": {"class":"prop"},
+  "gen3d-lava-lamp": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-chain-hoist": {"class":"prop"}
  }
 }

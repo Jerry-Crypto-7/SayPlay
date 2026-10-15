@@ -28920,6 +28920,106 @@
           0.68634
         ]
       }
+    },
+    {
+      "assetId": "gen3d-harbor-crane",
+      "tags": [
+        "harbor crane",
+        "container crane",
+        "dock crane"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-harbor-crane-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23929,
+          0,
+          -0.15125
+        ],
+        "max": [
+          0.23929,
+          0.99978,
+          0.15125
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crystal-geode",
+      "tags": [
+        "crystal geode",
+        "geode"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-crystal-geode-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58485,
+          0,
+          -0.57902
+        ],
+        "max": [
+          0.58485,
+          0.99933,
+          0.57902
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-garden-arch",
+      "tags": [
+        "garden arch",
+        "rose arch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-garden-arch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44577,
+          0,
+          -0.21705
+        ],
+        "max": [
+          0.44577,
+          0.9988,
+          0.21705
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-lava-lamp",
+      "tags": [
+        "lava lamp"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-lava-lamp-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24202,
+          0,
+          -0.24311
+        ],
+        "max": [
+          0.24202,
+          1.00001,
+          0.24311
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-chain-hoist",
+      "tags": [
+        "chain hoist",
+        "crane hook"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-chain-hoist-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49248,
+          0,
+          -0.0755
+        ],
+        "max": [
+          0.49248,
+          0.9982,
+          0.0755
+        ]
+      }
     }
   ]
 }
