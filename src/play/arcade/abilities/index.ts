@@ -105,13 +105,20 @@ export const harmOf = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
     ),
   );
 
-/** Dash a štít: náraz dostane ochranu, pravidlo akce pohlcení provede. Úroveň bez nárazu dostane nepřátele jako u úderu. */
+/**
+ * Nárazy, na které robot akcí opravdu najede: na řízení ne svodidla (`steer_crash`) – ta objíždí jako kraj
+ * silnice (`abilityStep`), takže by dash ani štít v závodě nikdy nic nezastavil (P47B T5).
+ */
+const metHarm = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
+  harmOf(parts).filter((role) => role !== 'obstacle' || baseControlOf(parts.control).id !== 'steer');
+
+/** Dash a štít: náraz dostane ochranu, pravidlo akce pohlcení provede. Úroveň bez nárazu, na který robot najede, dostane nepřátele jako u úderu. */
 function guardAbility(id: 'dash' | 'shield'): AbilityPiece {
   return {
     id,
     apply: (start, context) => {
-      // Soupeři řízení jsou `enemy` bez nárazu, proto nepřátele přidat i vedle nich (jako `+shoot`).
-      const parts = harmOf(start).length === 0 ? addFoes(start, context) : start;
+      // Soupeři řízení jsou `enemy` bez nárazu, proto nepřátele přidat i vedle nich (jako `+shoot`); svodidla řízení je nenahradí.
+      const parts = metHarm(start).length === 0 ? addFoes(start, context) : start;
       if (id === 'shield') return shieldParts(parts, context.keeper);
       const roles = harmOf(parts);
       if (roles.length === 0) return parts;
