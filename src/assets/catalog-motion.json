@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "e211d72cf9b880d613c12be60c0d0fb0781ab72801b406617c636d7322452b01",
+ "catalogHash": "f34548bc1c710f101f601ee1464b4a944a34a6033db2bdd7acf9fd1b82bdcd52",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1424,6 +1424,14 @@
   "gen3d-forest-shrine": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-bamboo-hut": {"class":"prop"},
   "gen3d-volleyball-net": {"class":"prop"},
-  "gen3d-sea-arch": {"class":"prop"}
+  "gen3d-sea-arch": {"class":"prop"},
+  "gen3d-stone-gatehouse": {"class":"prop"},
+  "gen3d-grave-lantern": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-buttercup": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-neon-sign": {"class":"prop"},
+  "gen3d-umbrella-stand": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-cooling-tower": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-adobe-oven": {"class":"prop"},
+  "gen3d-beach-chair": {"class":"prop"}
  }
 }

@@ -28684,6 +28684,162 @@
           0.8737
         ]
       }
+    },
+    {
+      "assetId": "gen3d-stone-gatehouse",
+      "tags": [
+        "stone gatehouse",
+        "gatehouse"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-stone-gatehouse-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49961,
+          0,
+          -0.17621
+        ],
+        "max": [
+          0.49961,
+          0.99937,
+          0.17621
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-grave-lantern",
+      "tags": [
+        "grave lantern",
+        "cemetery lantern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-grave-lantern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16231,
+          0,
+          -0.16225
+        ],
+        "max": [
+          0.16231,
+          0.99944,
+          0.16225
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-buttercup",
+      "tags": [
+        "buttercup"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-buttercup-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30666,
+          0,
+          -0.31494
+        ],
+        "max": [
+          0.30666,
+          0.99769,
+          0.31494
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-neon-sign",
+      "tags": [
+        "neon sign",
+        "open sign"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-neon-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.62491,
+          0,
+          -0.04715
+        ],
+        "max": [
+          1.62491,
+          1.00001,
+          0.04715
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-umbrella-stand",
+      "tags": [
+        "umbrella stand"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-umbrella-stand-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18759,
+          0,
+          -0.1608
+        ],
+        "max": [
+          0.18759,
+          0.99635,
+          0.1608
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cooling-tower",
+      "tags": [
+        "cooling tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cooling-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38224,
+          0,
+          -0.38221
+        ],
+        "max": [
+          0.38224,
+          0.99998,
+          0.38221
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-adobe-oven",
+      "tags": [
+        "adobe oven",
+        "mud oven"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-adobe-oven-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.81357,
+          0,
+          -0.74898
+        ],
+        "max": [
+          0.81357,
+          0.99837,
+          0.74898
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-chair",
+      "tags": [
+        "beach chair"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-chair-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30968,
+          0,
+          -0.47029
+        ],
+        "max": [
+          0.30968,
+          0.99627,
+          0.47029
+        ]
+      }
     }
   ]
 }

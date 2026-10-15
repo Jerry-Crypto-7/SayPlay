@@ -649,3 +649,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-bamboo-hut` | bamboo hut | 4533 / 2204 |
 | `gen3d-volleyball-net` | volleyball net | 4748 / 2338 |
 | `gen3d-sea-arch` | sea arch | 4696 / 2310 |
+| `gen3d-stone-gatehouse` | stone gatehouse, gatehouse | 4127 / 2253 |
+| `gen3d-grave-lantern` | grave lantern, cemetery lantern | 4749 / 2374 |
+| `gen3d-buttercup` | buttercup | 4740 / 2350 |
+| `gen3d-neon-sign` | neon sign, open sign | 4720 / 2346 |
+| `gen3d-umbrella-stand` | umbrella stand | 4588 / 2292 |
+| `gen3d-cooling-tower` | cooling tower | 4472 / 2184 |
+| `gen3d-adobe-oven` | adobe oven, mud oven | 4695 / 2334 |
+| `gen3d-beach-chair` | beach chair | 4172 / 2000 |

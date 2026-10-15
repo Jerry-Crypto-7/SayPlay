@@ -17,3 +17,4 @@ Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek
 | 11 (opakování) | scenery | 10 | 8 | 3/8 | 3 | – | 59/85 | stalagmite, lunar crater, pitcher plant | – |
 | 12 | scenery | 10 | 9 | 6/9 | 6 | – | 59/85 | staghorn coral, glowing mushroom, wooden barricade, iron fence, street bollard, coat rack | – |
 | 13 | scenery | 10 | 8 | 5/8 | 5 | – | 59/85 | control panel, forest shrine, bamboo hut, volleyball net, sea arch | – |
+| 14 | scenery | 10 | 10 | 9/10 | 8 | – | 59/85 | stone gatehouse, grave lantern, buttercup, neon sign, umbrella stand, cooling tower, adobe oven, beach chair | – |
