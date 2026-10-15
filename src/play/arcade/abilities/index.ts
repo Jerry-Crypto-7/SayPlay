@@ -85,7 +85,7 @@ const isCrash = (id: string): boolean => id === 'hit' || id === 'steer_crash' ||
  * Role, které hrdinovi ublíží nárazem – ty dash prorazí a štít odrazí. V aréně jen pronásledovatel
  * útěku (`arena_eat` s `grace`): buňka agaru je kořist i lovec podle velikosti, štít by blokoval i kořist.
  */
-const harmOf = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
+export const harmOf = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
   HARMFUL_ROLES.filter((role) =>
     parts.rules.some(
       (rule) =>

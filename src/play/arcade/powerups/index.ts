@@ -21,6 +21,8 @@ export interface PlacedPowerup {
   readonly x: number;
   readonly y: number;
   readonly z: number;
+  /** Šířka a hloubka podložky (řízení: jako turbo); výchozí `POWERUP_SIZE`. */
+  readonly size?: number;
 }
 
 /** Krychle, kterou hrdina sebere průchodem; `kind` vybírá model scény. */
@@ -47,7 +49,8 @@ export function applyPowerups(parts: ArcadeParts, placed: readonly PlacedPowerup
     bodies.push({ role: 'thing', kind: hero.kind, x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true });
   }
   const at: [number, PowerupId][] = placed.map((item) => {
-    bodies.push({ role: 'powerup', kind: powerupKind(item.id), x: item.x, y: item.y, z: item.z, w: POWERUP_SIZE, h: POWERUP_SIZE, d: POWERUP_SIZE, solid: false });
+    const size = item.size ?? POWERUP_SIZE;
+    bodies.push({ role: 'powerup', kind: powerupKind(item.id), x: item.x, y: item.y, z: item.z, w: size, h: POWERUP_SIZE, d: size, solid: false });
     return [bodies.length - 1, item.id];
   });
   const powerup = { keeper, at };

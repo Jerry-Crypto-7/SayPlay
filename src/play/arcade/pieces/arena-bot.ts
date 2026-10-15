@@ -73,7 +73,7 @@ function escapeDecide(state: Int32Array, player: number, recent: readonly Arcade
     if (i === player || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
     const role = state[base + BODY.role];
     if (role === ROLE.chaser) chasers.push({ x: (state[base + BODY.x] as number) + (state[base + BODY.vx] as number) * lag, z: (state[base + BODY.z] as number) + (state[base + BODY.vz] as number) * lag, reach: ((state[base + BODY.w] as number) + size) / 2 });
-    else if (role === ROLE.collectible) items.push({ x: state[base + BODY.x] as number, z: state[base + BODY.z] as number });
+    else if (role === ROLE.collectible || role === ROLE.powerup) items.push({ x: state[base + BODY.x] as number, z: state[base + BODY.z] as number });
   }
   const limit = half - Math.ceil(size / 2);
   const clamp = (value: number): number => Math.max(-limit, Math.min(limit, value));
@@ -163,12 +163,13 @@ export const arenaBot: BotPiece<z.infer<typeof botParams>> = {
       const base = bodyBase(i);
       if (((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
       const role = state[base + BODY.role];
-      if (role !== ROLE.enemy && role !== ROLE.collectible && role !== ROLE.chaser) continue;
+      if (role !== ROLE.enemy && role !== ROLE.collectible && role !== ROLE.chaser && role !== ROLE.powerup) continue;
       const w = state[base + BODY.w] as number;
       const at = { x: (state[base + BODY.x] as number) + (state[base + BODY.vx] as number) * lag, z: (state[base + BODY.z] as number) + (state[base + BODY.vz] as number) * lag, w };
       // Pronásledovatel doplňku `+chaser` (P26D) se sníst nedá, ať je hráč jakkoli velký.
       if ((w > size && role === ROLE.enemy) || role === ROLE.chaser) threats.push(at);
-      else if (w < size) food.push(at);
+      // Power-up (P46C) se sebere při každé velikosti.
+      else if (w < size || role === ROLE.powerup) food.push(at);
     }
 
     // Útěk: součet vektorů od blízkých větších buněk, vážený blízkostí, + odpor stěn.

@@ -214,7 +214,8 @@ export const runnerBot: BotPiece<z.infer<typeof botParams>> = {
     const pz = read(state, p, 'z');
     // Hrozby chování robot nevidí – tah do pruhu s mincí přebije plánovač pruhů (`planLanes`). Stojící hráč (start)
     // čas k řadě nezná: mince až v pohybu.
-    const last = read(state, p, 'vz') > 0 ? lastCoins(footprintsOf(state, [RL.collectible]), pz, row.z) : NO_COINS;
+    // Power-up (P46C) bere jako minci; svět bez power-upů je nemá, takže volba se nepohne.
+    const last = read(state, p, 'vz') > 0 ? lastCoins(footprintsOf(state, [RL.collectible, RL.powerup]), pz, row.z) : NO_COINS;
     const avoid = hostileLanes(footprintsOf(state, HOSTILE), pz, row.z);
     const best = laneChoice(row.lanes.map((l) => l.status), lane, row.z, pz, vz, recent.length, last, avoid);
     if (best < lane) return { buttons: BUTTON.LEFT, axis: 0 };

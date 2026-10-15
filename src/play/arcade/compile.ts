@@ -15,6 +15,7 @@ import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { type ArcadeParts, addonControlParams, addonLives, applyAddons, baseControlOf, mapUnderlying, underlyingRule } from './addons';
 import { applyAbilities } from './abilities';
+import { placePowerups, wantsPowerups } from './powerups/placement';
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
@@ -220,7 +221,10 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   const lives = 'health' in own ? own.health : health;
   // Akce hrdiny (P46A) po doplňcích: střelba převezme blaster, který `+shoot` už dal.
   const addonContext = { spec, seed, health: lives };
-  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(applyAbilities(applyAddons(own, addonContext), addonContext), spec, ARCADE_LIBRARY.rules);
+  const armed = applyAbilities(applyAddons(own, addonContext), addonContext);
+  // Power-upy (P46C) po akcích: štít sdílí jejich počítadlo. Jen nová hra žánru, uložené hrají jako dřív.
+  const powered = wantsPowerups(spec) ? placePowerups(armed, spec, seed) : armed;
+  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(powered, spec, ARCADE_LIBRARY.rules);
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
   // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění. Volný pohyb má
   // čtvercovou podlahu (dvorek, aréna) – její okraj je místo vlny `edge` (P45B).
