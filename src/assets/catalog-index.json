@@ -32623,6 +32623,82 @@
           0.13262
         ]
       }
+    },
+    {
+      "assetId": "gen3d-tripwire",
+      "tags": [
+        "tripwire"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tripwire-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.91548,
+          0,
+          -0.19027
+        ],
+        "max": [
+          0.91548,
+          0.9997,
+          0.19027
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-haunted-tree",
+      "tags": [
+        "haunted tree"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-haunted-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49687,
+          0,
+          -0.25291
+        ],
+        "max": [
+          0.49687,
+          0.99937,
+          0.25291
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-swing",
+      "tags": [
+        "wooden swing"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wooden-swing-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38271,
+          0,
+          -0.16962
+        ],
+        "max": [
+          0.38271,
+          0.99976,
+          0.16962
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-steel-beam",
+      "tags": [
+        "steel beam"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-steel-beam-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.36336,
+          0,
+          -1.1713
+        ],
+        "max": [
+          2.36336,
+          0.99973,
+          1.1713
+        ]
+      }
     }
   ]
 }

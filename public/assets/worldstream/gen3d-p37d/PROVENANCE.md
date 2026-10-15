@@ -848,3 +848,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-laser-gate` | laser gate, laser barrier | 4702 / 2350 |
 | `gen3d-rolling-log` | rolling log | 4575 / 2244 |
 | `gen3d-steam-pipe` | steam pipe | 4746 / 2368 |
+| `gen3d-tripwire` | tripwire | 4742 / 2368 |
+| `gen3d-haunted-tree` | haunted tree | 4742 / 2368 |
+| `gen3d-wooden-swing` | wooden swing | 4748 / 2374 |
+| `gen3d-steel-beam` | steel beam | 4748 / 2374 |
