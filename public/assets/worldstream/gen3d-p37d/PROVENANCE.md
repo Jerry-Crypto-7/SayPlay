@@ -883,3 +883,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-holy-grail` | holy grail, grail | 4750 / 2372 |
 | `gen3d-ice-throne` | ice throne | 4391 / 2121 |
 | `gen3d-fire-crown` | fire crown | 4482 / 2217 |
+| `gen3d-bone-pile` | bone pile | 4306 / 2103 |
+| `gen3d-jousting-lance` | jousting lance, lance | 4748 / 2374 |
+| `gen3d-fencing-mask` | fencing mask, fencing helmet | 4516 / 2147 |

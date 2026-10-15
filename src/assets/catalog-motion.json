@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "991b941475a3e1be9f43c477c509afa9a75eee78fcd70715c5baf251134cd69d",
+ "catalogHash": "02bc7d1c956cb58427813544f1665118143c971c1e8ed97cf086ad2788dbbca1",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1658,6 +1658,9 @@
   "gen3d-sword-in-the-stone": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-holy-grail": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-ice-throne": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-fire-crown": {"class":"prop"}
+  "gen3d-fire-crown": {"class":"prop"},
+  "gen3d-bone-pile": {"class":"prop"},
+  "gen3d-jousting-lance": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-fencing-mask": {"class":"prop"}
  }
 }
