@@ -42,6 +42,8 @@ if (!process.env.VITEST) await import('../ts-paths.mjs');
 const { lookFor } = await import('../../src/play/arcade/look/index.ts');
 
 export const OUT = 'src/play/arcade/look/setting-kits.json';
+/** Vstupy v pořadí: P45G a pozdější kola; pořadí prostředí i rekvizit drží první výskyt. */
+export const KIT_NOUNS = ['evals/play/p45g/kit-nouns.json', 'evals/play/p46i/kit-nouns.json'];
 
 /** Výška kulisy v metrech podle jména z `kit-nouns.json`. */
 const HEIGHTS = {
@@ -231,8 +233,8 @@ export function settingKits({ kitNouns, catalog }) {
   for (const entry of kitNouns.nouns) {
     const id = modelId(entry.noun);
     if (!known.has(id)) continue;
-    const height = HEIGHTS[entry.noun] ?? CLASS_HEIGHTS[entry.class] ?? CLASS_HEIGHTS.prop;
-    if (HEIGHTS[entry.noun] === undefined && entry.settings.length > 0) guessed.push(entry.noun);
+    const height = HEIGHTS[entry.noun] ?? entry.height ?? CLASS_HEIGHTS[entry.class] ?? CLASS_HEIGHTS.prop;
+    if (HEIGHTS[entry.noun] === undefined && entry.height === undefined && entry.settings.length > 0) guessed.push(entry.noun);
     for (const setting of entry.settings.map(normalize)) {
       const kit = kits.get(setting) ?? { setting, pattern: patternOf(setting), look: lookFor(setting) ?? NEAREST[setting] ?? 'meadow', props: [] };
       if (!kit.props.some((prop) => prop.id === id)) kit.props.push({ id, height });
@@ -249,7 +251,9 @@ export function render(kits) {
 
 if (isMain) {
   const read = (file) => JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
-  const { kits, guessed } = settingKits({ kitNouns: read('evals/play/p45g/kit-nouns.json'), catalog: read('src/assets/catalog.json') });
+  // P46I: další páry prostředí → rekvizita (s vlastní výškou `height`) leží v evals/play/p46i/kit-nouns.json.
+  const kitNouns = { nouns: KIT_NOUNS.flatMap((file) => read(file).nouns) };
+  const { kits, guessed } = settingKits({ kitNouns, catalog: read('src/assets/catalog.json') });
   writeFileSync(path.join(ROOT, OUT), render(kits));
   const props = new Set(kits.flatMap((kit) => kit.props.map((prop) => prop.id)));
   console.log(`${OUT}: ${kits.length} prostředí, ${props.size} modelů, ${kits.filter((kit) => kit.props.length >= 2).length} prostředí se ≥ 2 rekvizitami`);
