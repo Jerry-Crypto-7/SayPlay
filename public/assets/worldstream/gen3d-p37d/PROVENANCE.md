@@ -841,3 +841,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-energy-capsule` | energy capsule | 4746 / 2370 |
 | `gen3d-golden-bell` | golden bell | 4686 / 2276 |
 | `gen3d-fire-pit` | fire pit, firepit | 4722 / 2352 |
+| `gen3d-toxic-barrel` | toxic barrel, toxic waste barrel | 4557 / 2218 |

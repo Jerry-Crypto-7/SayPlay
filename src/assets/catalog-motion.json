@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "c428676b8f08c385db4b97af9070509aab03ec01a590ea5f024925ba3a73958c",
+ "catalogHash": "d6c2e35b37a9a818cd0d87c5935c79b6ea52f2b26c4c8e0c479231c7d1739bad",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1616,6 +1616,7 @@
   "gen3d-golden-horseshoe": {"class":"prop"},
   "gen3d-energy-capsule": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-golden-bell": {"class":"prop"},
-  "gen3d-fire-pit": {"class":"prop"}
+  "gen3d-fire-pit": {"class":"prop"},
+  "gen3d-toxic-barrel": {"class":"biped","regions":{"legY":0.25}}
  }
 }

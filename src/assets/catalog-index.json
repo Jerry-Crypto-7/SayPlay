@@ -32487,6 +32487,26 @@
           0.89458
         ]
       }
+    },
+    {
+      "assetId": "gen3d-toxic-barrel",
+      "tags": [
+        "toxic barrel",
+        "toxic waste barrel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-toxic-barrel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35067,
+          0,
+          -0.35293
+        ],
+        "max": [
+          0.35067,
+          0.99997,
+          0.35293
+        ]
+      }
     }
   ]
 }

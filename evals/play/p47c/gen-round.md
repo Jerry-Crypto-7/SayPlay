@@ -6,3 +6,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | p46i-pickup | 10 | 8 | 5/8 | 5 | – | 94/101 | mystery box, question block, silver coin, golden horseshoe, energy capsule | – |
 | 2 | p46i-pickup p46i-obstacle | 10 | 5 | 2/5 | 2 | – | 94/101 | golden bell, fire pit | – |
+| 3 | p46i-obstacle | 10 | 5 | 1/5 | 1 | – | 94/101 | toxic barrel | – |
