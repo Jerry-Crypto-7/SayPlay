@@ -32,7 +32,9 @@ import type { TimingMode, TimingSpeed } from '../arcade/pieces/timing';
 import { CAPABILITIES } from '../capabilities';
 // Z kontraktu arkády, ne ze `spec.ts`: `compose/compile` tenhle modul načte i v prohlížeči (arcade-bundle).
 import { ABILITIES, ADDONS, type AbilityId, type AddonId } from '../arcade/contract';
-import { negationScopes } from './lexicon';
+import type { Intent } from '../intent/contract';
+import { extractIntent } from '../intent/extract';
+import { negationScopes, singular } from './lexicon';
 import type { ControlId } from '../spec';
 
 const RHYTHM_CUES: readonly RegExp[] = [
@@ -264,25 +266,90 @@ const ADDON_CUES: Readonly<Record<AddonId, RegExp>> = {
  * tlačítko Grab by přibylo každé hře s mincemi. „hit“ ne, když hrdinu něco trefí.
  */
 const ABILITY_CUES: Readonly<Record<AbilityId, RegExp>> = {
-  shoot: /(?<!(?:photo|auto)[- ])\bshoot(?:s|ing)?\b(?! stars?)|\bblast(?:s|ing)? (?:the |at )?(?!off\b)\w+|\bfir(?:e|es|ing) (?:at|on|back)\b/,
-  strike: /\b(?:fight(?:s|ing)?|punch(?:es|ing)?|kick(?:s|ing)?|strike(?:s)?|striking|slash(?:es|ing)?|slap(?:s|ping)?|smash(?:es|ing)?|bash(?:es|ing)?|attack(?:s|ing)?|crush(?:es|ing)?)\b|(?<!\b(?:get|gets|getting|got|be|being|without|avoid|avoids|avoiding|not|never) )\bhit(?:s|ting)?\b(?! by\b)/,
-  dash: /\b(?:dash(?:es|ing)?|dodg(?:e|es|ing))\b|\bescap(?:e|es|ing) quickly\b/,
-  shield: /\b(?:block(?:s|ing)?|defend(?:s|ing)?|protect(?:s|ing)?|shield(?:s|ing)?)\b/,
-  grab: /\b(?:steal(?:s|ing)?|stole|grab(?:s|bing)?|snatch(?:es|ing)?)\b/,
+  shoot: /(?<!(?:photo|auto)[- ])\bshoot(?:s|ing)?\b(?! stars?)|\bblast(?:s|ing)? (?:the |at )?(?!off\b)\w+|\bfir(?:e|es|ing) (?:at|on|back)\b|\bfir(?:e|es|ing) (?:[a-z]+ ){1,2}at\b|\bbreath(?:e|es|ing) fire\b|\blaser(?:s|ing)?\b|\bzap(?:s|ping)?\b|\bsnip(?:e|es|ing)\b|\bspit(?:s|ting)? (?:[a-z]+ ){0,2}at\b/,
+  strike: /\b(?:fight(?:s|ing)?|punch(?:es|ing)?|kick(?:s|ing)?|strike(?:s)?|striking|slash(?:es|ing)?|slap(?:s|ping)?|smash(?:es|ing)?|bash(?:es|ing)?|attack(?:s|ing)?|crush(?:es|ing)?)\b|(?<!\b(?:get|gets|getting|got|be|being|without|avoid|avoids|avoiding|not|never) )\bhit(?:s|ting)?\b(?! by\b)|\b(?:bit(?:e|es|ing)|peck(?:s|ing)?|sting(?:s|ing)?|pinch(?:es|ing)?|swat(?:s|ting)?|chop(?:s|ping)?|stab(?:s|bing)?|whack(?:s|ing)?|tackl(?:e|es|ing)|ram(?:s|ming)?|headbutt(?:s|ing)?|shov(?:e|es|ing))\b/,
+  dash: /\b(?:dash(?:es|ing)?|dodg(?:e|es|ing)|duck(?:s|ing)?|evad(?:e|es|ing)|swerv(?:e|es|ing)|sidestep(?:s|ping)?)\b|\bzip(?:s|ping)? (?:past|around|between|through)\b|\bweav(?:e|es|ing) (?:through|between|around|past)\b|\b(?:leap|leaps|leaping|jump|jumps|jumping|dart|darts|darting) aside\b|\bescap(?:e|es|ing) quickly\b/,
+  shield: /\b(?:block(?:s|ing)?|defend(?:s|ing)?|protect(?:s|ing)?|shield(?:s|ing)?|guard(?:s|ing)?|deflect(?:s|ing)?|parr(?:y|ies|ying)|shelter(?:s|ing)?)\b/,
+  grab: /\b(?:steal(?:s|ing)?|stole|grab(?:s|bing)?|snatch(?:es|ing)?|swip(?:e|es|ing)|loot(?:s|ing)?|rob(?:s|bing)?|pickpocket(?:s|ing)?|nab(?:s|bing)?|pilfer(?:s|ing)?)\b/,
 };
+
+/** Úder a střelba ze záměru věty (P47B T3): osa akce `extractIntent`, i slovesa otevřeného slovníku P44C („shoves“ → kick, „zaps“ → shoot). */
+const INTENT_ABILITY: Readonly<Record<string, AbilityId>> = { shoot: 'shoot', fight: 'strike', kick: 'strike' };
+
+/**
+ * Slova mezi podmětem a slovesem, za kterými sloveso patří hrdinovi z předchozí klauze
+ * („runs and dodges“, „it shoots“, „tries to steal“). Čárka taky: „shoots, punches, steals“.
+ */
+const LINKERS = new Set([',', 'and', 'or', 'then', 'to', 'can', 'will', 'must', 'also', 'just', 'still', 'even', 'always', 'who', 'that', 'he', 'she', 'it', 'they', 'you', 'i', 'we', 'by']);
+/** Spojky, za kterými přichází nový podmět; hrdinovi patří jen tvar na -ing („while dodging“). */
+const SUBORDINATORS = new Set(['while', 'as', 'when', 'whenever', 'until', 'before', 'after', 'because']);
+/** Odmítnutí, které `negationScopes` nečte: „refuses to shoot“. */
+const REFUSAL = /\brefus(?:e|es|ing) to $/;
+/** Úder na věc, která nepřítel není: míč, nástroj, bedna sokobanu („kicks a football“, „hits the drums“, „pushes crates“). */
+const NOT_A_FOE = /^ (?:a |an |the |his |her |its |their |some |\d+ )?(?:[a-z]+ )?(?:balls?|football|drums?|notes?|keys|piano|bells?|gongs?|crates?|box(?:es)?|blocks?|carts?|buttons?|levers?|switch(?:es)?)\b/;
+
+/**
+ * Patří sloveso na `[at, end)` hrdinovi? Ano, když před ním stojí hrdina (podmět první klauze)
+ * nebo spojovací slovo. Ne, když před ním je člen, číslovka, „of“, přídavné jméno nebo jiné
+ * podstatné jméno – to je podstatné jméno („wooden blocks“, „a shield“) nebo sloveso nepřítele
+ * („while sharks bite“, „the ghosts shoot back“, „cars blocking“).
+ */
+function heroDoes(text: string, at: number, end: number, hero: ReadonlySet<string>, id: AbilityId): boolean {
+  if (REFUSAL.test(text.slice(0, at))) return false;
+  if (id === 'strike' && NOT_A_FOE.test(text.slice(end))) return false;
+  const before = text.slice(0, at).match(/[a-z']+|,/g) ?? [];
+  while (before.length > 0 && /ly$/.test(before[before.length - 1]!)) before.pop();
+  const prev = before[before.length - 1];
+  if (prev === undefined) return false;
+  if (SUBORDINATORS.has(prev)) return /ing\b/.test(text.slice(at, end));
+  if (LINKERS.has(prev)) return true;
+  if (!hero.has(prev) && !hero.has(singular(prev))) return false;
+  // Po jednotném čísle má sloveso -s: „a photo shoot“ je podstatné jméno, „a fox shoots“ sloveso.
+  return /s$/.test(prev) || /(?:s|ing|ed)$/.test(text.slice(at, end).split(' ')[0]!);
+}
+
+/**
+ * Slova podmětu první klauze pro `heroDoes`. Záměr dá první slovo hrdiny („amanita“ z „amanita
+ * mushrooms“), proto i slovo hned za ním na začátku věty. Bez hrdiny ze záměru slovo před první
+ * akcí, stojí-li na začátku věty („a mother hen shelters“). Slovo, které záměr čte jako
+ * sloveso („a toddler stacks blocks“), podmět není.
+ */
+function heroOf(text: string, intent: Pick<Intent, 'hero' | 'items'>, first: number | undefined): Set<string> {
+  const verbs = new Set(intent.items.map((item) => item.said.toLowerCase()));
+  const words = text.match(/[a-z']+/g) ?? [];
+  const words4 = words.slice(0, 4);
+  const head = intent.hero?.split(' ').pop();
+  const at = head === undefined ? -1 : words4.findIndex((word) => word === head || singular(word) === head);
+  const fallback = head === undefined && first !== undefined ? (text.slice(0, first).match(/[a-z']+/g) ?? []) : [];
+  // Hrdina ze záměru zůstává, i když nese pohyb („a motorbike“ → jízda); slova kolem něj jen nejsou-li sloveso.
+  const near = [at < 0 ? undefined : words4[at + 1], fallback.length <= 4 ? fallback[fallback.length - 1] : undefined];
+  return new Set([head, ...near.filter((word) => word === undefined || !verbs.has(word))].filter((word): word is string => word !== undefined));
+}
 
 /** Hrdina má nejvýš 2 akce (tlačítka A, B). */
 const MAX_ABILITIES = 2;
 
-/** Všechny akce, které věta hrdinovi říká, v pořadí věty, bez sloves v záporu („doesn't shoot“). `text` je věta malými písmeny. */
-export function saidAbilities(text: string): AbilityId[] {
+/**
+ * Všechny akce, které věta hrdinovi říká, v pořadí věty, bez sloves v záporu („doesn't shoot“)
+ * a bez sloves, která dělá někdo jiný. `text` je věta malými písmeny; `intent` její záměr
+ * (`assemble` ho předá, jinak se přečte).
+ */
+export function saidAbilities(text: string, intent: Pick<Intent, 'hero' | 'items'> = extractIntent(text)): AbilityId[] {
   const scopes = negationScopes(text);
-  return ABILITIES.flatMap((id) => {
-    const hit = [...text.matchAll(new RegExp(ABILITY_CUES[id].source, 'g'))].find((match) => !scopes.some(([from, to]) => match.index >= from && match.index < to));
-    return hit === undefined ? [] : [{ id, at: hit.index }];
-  })
-    .sort((a, b) => a.at - b.at)
-    .map(({ id }) => id);
+  const found: { id: AbilityId; at: number; end: number }[] = [];
+  for (const id of ABILITIES)
+    for (const match of text.matchAll(new RegExp(ABILITY_CUES[id].source, 'g'))) found.push({ id, at: match.index, end: match.index + match[0].length });
+  for (const item of intent.items) {
+    const id = item.axis === 'action' && item.essential ? INTENT_ABILITY[item.verb] : undefined;
+    const at = id === undefined ? -1 : text.indexOf(item.said.toLowerCase());
+    // Ruční seznam má přednost: „parries“ je štít, i když ho slovník P44C přiblíží k úderu.
+    if (id !== undefined && at >= 0 && !found.some((cue) => cue.at === at)) found.push({ id, at, end: at + item.said.length });
+  }
+  const live = found.filter(({ at }) => !scopes.some(([from, to]) => at >= from && at < to)).sort((a, b) => a.at - b.at);
+  const hero = heroOf(text, intent, live[0]?.at);
+  const ordered: AbilityId[] = [];
+  for (const { id, at, end } of live) if (!ordered.includes(id) && heroDoes(text, at, end, hero, id)) ordered.push(id);
+  return ordered;
 }
 
 /** Z akcí věty `said` ty, které ovládání bere, nejvýš 2 (první = A = J). */

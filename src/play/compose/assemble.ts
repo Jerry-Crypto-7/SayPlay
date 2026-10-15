@@ -114,6 +114,6 @@ export function assemble(intent: Intent, source: AssemblySource, content: GenreS
   // The sentence goes with the recipe: `compileRecipe` picks its rule template by it (P45B T9).
   const words = intent.sentence.toLowerCase().match(/[a-z]+/g) ?? [];
   // Akce hrdiny (P46A T8) jdou s receptem i bez šablony – recept bez šablony `intent` nenese.
-  const abilities = saidAbilities(intent.sentence.toLowerCase());
+  const abilities = saidAbilities(intent.sentence.toLowerCase(), intent);
   return { ...source.recipe, preset: 'assembled', content, parts, intent: { words, unplayed: unplayedActions(source) }, ...(abilities.length === 0 ? {} : { abilities }) };
 }
