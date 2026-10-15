@@ -190,8 +190,9 @@ async function verifyDirectorSpec(spec: GameSpecV1, intent: Intent, seed: number
   const verdict = verifyArcade(made.world, undefined, made.roleBindings);
   const unmet = triples.filter(triple => !verdict.witnesses.some(witness => matchesWitness(triple, witness)));
   const issues = verdict.publishEligible ? [] : verbIssues(verdict.failures.map(failure => ({ code: 'NOT_PLAYABLE', path: '/', evidence: failure, repairHint: 'The actual bot must win, idle must not win, and replay must match.' })), spec);
-  // Novinky režiséra (P46E T4): co robot udělal, jestli hra má bosse finále a scénář úseků.
-  const verbs = verdict.witnesses.map(witness => witness.verb);
+  // Novinky režiséra (P46E T4): co robot udělal, jestli hra má bosse finále a scénář úseků. Akce nese pravidlo se
+  // slovesem akce (`abilities/index.ts`), takže ji dokazuje `verbs` jako matice P46A; svědci záměru ji nenesou.
+  const verbs = verdict.verbs.filter(proof => proof.changed).map(proof => proof.verb);
   return { complete: verdict.publishEligible && unmet.length === 0, unmet, actions: actionIssues(spec, intent, seed, verdict.witnesses), issues, verbs, boss: bossKindOf(made.world) !== null, segmented: segmentNewsOf(made.world).length > 0 };
 }
 

@@ -53,6 +53,7 @@ async function upgrade(sentence: string, answers: readonly unknown[]) {
 
 const s008 = fixture('s008');
 const f22 = fixture('f22');
+const si018 = fixture('si-018');
 
 describe('the AI version adds what the quick version lacks (P46E T4)', () => {
   it('composes a recorded boss into the published game and shows its name', async () => {
@@ -95,6 +96,17 @@ describe('the AI version adds what the quick version lacks (P46E T4)', () => {
     expect(child!.spec.boss?.name).toBe('Monkey King');
   }, 180_000);
 
+  // Akci dokazuje pravidlo se slovesem akce (`verdict.verbs`), ne svědek záměru: dřív padala každá jako „never used“.
+  it('gives the hero a recorded ability the robot uses and reports adds: action', async () => {
+    const { draft, outcome, child, results, nudges } = await upgrade(si018.sentence, [withExtras(si018.answer, { abilities: ['dash'] })]);
+    expect(results[0]!.failure).toBeUndefined();
+    expect(outcome).toMatchObject({ status: 'ready', adds: ['action'] });
+    expect(draft.spec.abilities ?? []).not.toContain('dash');
+    expect(child!.spec.abilities).toEqual(['dash']);
+    expect(child!.spec.tutorial.controlsHint).toMatch(/J to dash\.$/);
+    expect(nudges).toEqual([undefined]);
+  }, 180_000);
+
   it('drops a recorded ability the robot cannot win with instead of losing the AI version', async () => {
     const { outcome, child, results } = await upgrade(s008.sentence, [withExtras(s008.answer, { abilities: ['shoot'] })]);
     expect(results[0]!.source).toBe('authored');
@@ -103,13 +115,13 @@ describe('the AI version adds what the quick version lacks (P46E T4)', () => {
     expect(child!.spec.abilities ?? []).not.toContain('shoot');
   }, 180_000);
 
-  it('drops a recorded ability the robot never uses and reports VERB_UNPROVED', async () => {
-    const { child, results } = await upgrade(s008.sentence, [withExtras(s008.answer, { abilities: ['grab'] })]);
-    expect(results[0]!.fallbackReason).toBe('VERB_UNPROVED');
-    expect(results[0]!.failure?.detail).toContain('never used the "grab" ability');
-    expect(results[0]!.spec.abilities ?? []).not.toContain('grab');
-    expect(results[0]!.spec.tutorial.controlsHint).not.toMatch(/to grab/);
-    expect(child?.spec.abilities ?? []).not.toContain('grab');
+  // Na téže nahrávce dřív „never used the grab ability“: robot krade, jen to svědci záměru neukázali.
+  it('keeps a recorded ability the runner robot uses on the same answer that used to drop it', async () => {
+    const { outcome, child, results } = await upgrade(s008.sentence, [withExtras(s008.answer, { abilities: ['grab'] })]);
+    expect(results[0]!.failure?.detail ?? '').not.toContain('"grab" ability');
+    expect(outcome).toMatchObject({ status: 'ready', adds: ['action'] });
+    expect(child!.spec.abilities).toEqual(['grab']);
+    expect(child!.spec.tutorial.controlsHint).toMatch(/J to grab\.$/);
   }, 180_000);
 
   it('keeps the first AI version when the nudged call fails', async () => {
@@ -117,5 +129,14 @@ describe('the AI version adds what the quick version lacks (P46E T4)', () => {
     expect(nudges).toEqual([undefined, ADD_NUDGE]);
     expect(outcome).toMatchObject({ status: 'ready', adds: [] });
     expect(child!.spec.boss).toBeUndefined();
+  }, 180_000);
+
+  // `direct()` ověří první seed, publikace první seed, který drží akci věty: dřív publikace hru se strike odmítla
+  // (verbs_proved) a z upgradu zbyla jen rychlá verze.
+  it('keeps the AI version when its ability is proved only on a seed it is not published on', async () => {
+    const { outcome, child, results } = await upgrade(s008.sentence, [withExtras(s008.answer, { abilities: ['strike'] })]);
+    expect(results[0]!.spec.abilities).toContain('strike');
+    expect(outcome).toMatchObject({ status: 'ready' });
+    expect(child!.spec.abilities ?? []).not.toContain('strike');
   }, 180_000);
 });
