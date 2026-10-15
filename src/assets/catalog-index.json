@@ -32832,6 +32832,64 @@
           0.19258
         ]
       }
+    },
+    {
+      "assetId": "gen3d-frozen-signpost",
+      "tags": [
+        "frozen signpost"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-signpost-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45281,
+          0,
+          -0.07926
+        ],
+        "max": [
+          0.45281,
+          1.00001,
+          0.07926
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-vine-curtain",
+      "tags": [
+        "vine curtain"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-vine-curtain-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39984,
+          0,
+          -0.16161
+        ],
+        "max": [
+          0.39984,
+          0.99335,
+          0.16161
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-castle-catapult",
+      "tags": [
+        "castle catapult",
+        "trebuchet catapult"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-castle-catapult-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34604,
+          0,
+          -0.32497
+        ],
+        "max": [
+          0.34604,
+          1.00001,
+          0.32497
+        ]
+      }
     }
   ]
 }

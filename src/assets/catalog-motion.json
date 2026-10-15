@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "400edbed12633414ea75c0032e6b891162c10615c035d3b83de1498af8a96e23",
+ "catalogHash": "c2e507cb1b479951794f5beb49299909b85d144393e8f2c86e5f54660a637029",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1634,6 +1634,9 @@
   "gen3d-ginger-flower": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-wanted-poster": {"class":"prop"},
   "gen3d-ice-slide": {"class":"prop"},
-  "gen3d-armor-rack": {"class":"prop"}
+  "gen3d-armor-rack": {"class":"prop"},
+  "gen3d-frozen-signpost": {"class":"prop"},
+  "gen3d-vine-curtain": {"class":"prop"},
+  "gen3d-castle-catapult": {"class":"biped","regions":{"legY":0.25}}
  }
 }

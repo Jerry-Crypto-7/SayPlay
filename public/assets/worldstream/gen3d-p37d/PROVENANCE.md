@@ -859,3 +859,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wanted-poster` | wanted poster | 4480 / 2085 |
 | `gen3d-ice-slide` | ice slide | 4722 / 2341 |
 | `gen3d-armor-rack` | armor rack | 4506 / 2170 |
+| `gen3d-frozen-signpost` | frozen signpost | 4718 / 2292 |
+| `gen3d-vine-curtain` | vine curtain | 4496 / 2243 |
+| `gen3d-castle-catapult` | castle catapult, trebuchet catapult | 4628 / 2284 |

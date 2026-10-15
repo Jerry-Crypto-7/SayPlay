@@ -13,3 +13,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 7 | p46i-scenery | 9 | 5 | 3/5 | 2 | – | 94/101 | broken gravestone, tournament banner | red under load, green alone: src/assets/__tests__/external-import.test.ts |
 | 8 (opakování) | p46i-retry | 10 | 7 | 4/7 | 4 | – | 94/101 | sunken crate, ginger flower, wanted poster, ice slide | – |
 | 9 (opakování) | p46i-obstacle p46i-scenery | 10 | 3 | 1/3 | 1 | – | 94/101 | armor rack | – |
+| 10 (opakování) | p46i-retry | 7 | 4 | 3/4 | 3 | – | 94/101 | frozen signpost, vine curtain, castle catapult | – |
