@@ -36,6 +36,15 @@ interface HandProbe {
   tickByHand(): { readonly runState: string; readonly tick: number };
 }
 
+interface ControlPiece {
+  readonly id?: string;
+  readonly params?: { readonly base?: ControlPiece; readonly abilities?: { readonly ids?: readonly string[] } };
+}
+
+/** Akce hrdiny z obalů ovládání (`addon_control.params.abilities.ids`) po celé cestě k základnímu ovládání. */
+const abilitiesOf = (piece: ControlPiece | undefined): string[] =>
+  piece === undefined ? [] : [...(piece.params?.abilities?.ids ?? []), ...abilitiesOf(piece.params?.base)];
+
 const rows: readonly LiveRow[] = existsSync(LIVE) ? (JSON.parse(readFileSync(LIVE, 'utf8')) as { rows: LiveRow[] }).rows : [];
 const ready = (ids: readonly string[]): LiveRow | undefined => ids.map((id) => rows.find((row) => row.id === id)).find((row) => row?.status === 'ready');
 
@@ -109,9 +118,12 @@ test.describe('/play/[id] – AI versions made live by the director (P46E T6)', 
       await expect(stage).toBeVisible({ timeout: 60_000 });
       await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
       const control = (await stage.getAttribute('data-control')) ?? '';
+      // Každá akce hrdiny, kterou uložený svět nese, má vidět své tlačítko. Hra bez akcí (křeček „escapes“ je jen
+      // běžec) tlačítko mít nemusí – rozhoduje svět ze serveru, ne odhad z věty.
+      const saved = (await (await page.request.get(`/api/play/games/${row!.aiUrl!.split('/').at(-1)!}`)).json()) as { arcade: { control: ControlPiece } };
+      for (const ability of abilitiesOf(saved.arcade.control)) await expect(page.getByTestId(`arcade-ability-${ability}`)).toBeVisible({ timeout: 30_000 });
       // Střelba (`arcade-fire`), akce věty (`arcade-<action>`) i akce hrdiny (`arcade-ability-*`) nesou `.play-fire`.
       const actions = page.locator('.play-fire');
-      await expect(actions.first()).toBeVisible({ timeout: 30_000 });
       const labels = await actions.evaluateAll((buttons) => buttons.map((button) => button.getAttribute('data-testid') ?? ''));
       await page.screenshot({ path: join(SHOTS, `${game.name}-start.png`) });
 
