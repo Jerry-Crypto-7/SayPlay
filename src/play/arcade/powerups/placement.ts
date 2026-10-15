@@ -20,9 +20,12 @@ import { POWERUP_SIZE, type PlacedPowerup, applyPowerups } from '.';
 /** Verze překladu žánru, od které hra power-upy má (`GENRE_COMPILER_VERSION`); uložené starší hrají jako dřív. */
 export const POWERUP_GENRE_VERSION = 'genre.v3';
 
-/** Druhy power-upů podle základního ovládání (generátory téhož ovládání sdílí tvar úrovně); ovládání mimo tabulku je nemá. */
+/**
+ * Druhy power-upů podle základního ovládání (generátory téhož ovládání sdílí tvar úrovně); ovládání mimo tabulku je nemá.
+ * Běžec nemá zrychlení: začátečník s ním narazí dřív a run.escape spadl z 6/20 na 5/20 (pod pásmo 0,3) – power-up hru ztížil.
+ */
 export const POWERUP_KINDS: Readonly<Record<string, readonly PowerupId[]>> = {
-  runner: ['magnet', 'shield', 'speed', 'double'],
+  runner: ['magnet', 'shield', 'double'],
   platform: ['magnet', 'shield', 'double'],
   steer: ['shield', 'double'],
   move_free: ['magnet', 'shield'],
