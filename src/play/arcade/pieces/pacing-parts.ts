@@ -12,6 +12,7 @@
 import { type Phase, phasesFromCurve } from '../../compose/progression';
 import type { GameSpecV1 } from '../../spec';
 import type { ArcadeParts } from '../addons';
+import { RULE_TEMPLATES, type TemplateName } from '../rules/templates';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRef, RAMP_STEP_PCT, ROLE, UNIT } from '../contract';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef } from './behaviours';
 import { BOSS, DROPPER, TURRET } from './behaviours/boss';
@@ -670,7 +671,26 @@ const throwPaced: GenrePacing = (parts, spec, seed) => {
  * - složená hra (díly P42, `assemblyParts`): pronásledovatel či překážka dílu u bosse, který nese poslední
  *   věci, robota shodili (aréna + díl `chaser` semínka 1–3 prohrál) – jako boss s pronásledovatelem.
  */
-const ownShape = (spec: GameSpecV1): boolean => (spec.rules?.length ?? 0) > 0 || (spec.things?.length ?? 0) > 0 || spec.assemblyParts !== undefined;
+const ownShape = (spec: GameSpecV1, overlays = false): boolean =>
+  ((spec.rules?.length ?? 0) > 0 && !(overlays && overlayOnly(spec))) || (spec.things?.length ?? 0) > 0 || spec.assemblyParts !== undefined;
+
+/** Verze překladu žánru, od které hra dostane průběh pod overlay šablonou a finále podle žánru (P47A, `GENRE_COMPILER_VERSION`). */
+export const FINALE_GENRE_VERSION = 'genre.v4';
+
+const genreVersion = (version: string): number => Number(/^genre\.v(\d+)$/.exec(version)?.[1] ?? 0);
+
+/** Je hra žánru přeložená verzí `version` nebo novější? Spec bez žánru ne. */
+export const genreAtLeast = (spec: GameSpecV1, version: string): boolean => spec.genre !== undefined && genreVersion(spec.genre.compilerVersion) >= genreVersion(version);
+
+/**
+ * Overlay šablony P45B T9, které ve `genre.v4` průběh nevypnou (P47A T2, varianta A): přidávají jen vlny po okraji
+ * podlahy a fáze, žádné věci ani výhru, takže robot pravidel nemá co plánovat a šablona zůstane pod průběhem.
+ * Podpis = `id:verb` pravidel v pořadí šablony; pravidlo navíc nebo jiné pořadí = vlastní tvar hry.
+ */
+const PACED_OVERLAYS: readonly TemplateName[] = ['treasure_rush', 'waves_survive', 'reinforcements'];
+const signatureOf = (rules: readonly { readonly id: string; readonly verb: string }[]): string => rules.map((rule) => `${rule.id}:${rule.verb}`).join(',');
+const OVERLAY_SIGNATURES = new Set(PACED_OVERLAYS.map((name) => signatureOf(RULE_TEMPLATES[name].rules)));
+const overlayOnly = (spec: GameSpecV1): boolean => genreAtLeast(spec, FINALE_GENRE_VERSION) && spec.rules !== undefined && OVERLAY_SIGNATURES.has(signatureOf(spec.rules));
 
 /**
  * Souboj s nejvýš dvěma životy a sběr s jediným průběh nedostanou (vzor závodu s jedinou havárií, T11):
@@ -716,8 +736,10 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   // Závod do prvního nárazu (`crashBudget` 1) si nechá rampu – odchylka P45C T11: vrchol křivky 115 % jede pod vrcholem rampy 120 %
   // a rychlejší finále bez natažení zatáček kontrola neunese; začátečník pak vyhrál 0,79 (80 semínek) proti 0,63 bez průběhu.
   voyage_race: (parts, spec, seed) => (parts.health === 1 ? null : track(3)(parts, spec, seed)),
-  arena_collect: (parts, spec, seed) => (ownShape(spec) || livesAtMost(spec, 1) ? null : itemField(FIELD.collect)(parts, spec, seed)),
-  arena_escape: (parts, spec, seed) => (ownShape(spec) ? null : (ruleOf(parts, 'survive_time') === undefined ? itemField(FIELD.escape) : survivalField(FIELD.survival))(parts, spec, seed)),
+  // Sběr a útěk (P47A T2, varianta A): ve `genre.v4` průběh i pod overlay šablonou P45B (`overlayOnly`). Quest v prostoru
+  // ji ve v4 nedostane vůbec (varianta B, `withTemplate` v `compose/compile.ts`).
+  arena_collect: (parts, spec, seed) => (ownShape(spec, true) || livesAtMost(spec, 1) ? null : itemField(FIELD.collect)(parts, spec, seed)),
+  arena_escape: (parts, spec, seed) => (ownShape(spec, true) ? null : (ruleOf(parts, 'survive_time') === undefined ? itemField(FIELD.escape) : survivalField(FIELD.survival))(parts, spec, seed)),
   fight: (parts, spec, seed) => (ownShape(spec) || livesAtMost(spec, 2) ? null : fightField(FIELD.fight)(parts, spec, seed)),
   quest_spatial: (parts, spec, seed) => (ownShape(spec) ? null : questField(FIELD.quest)(parts, spec, seed)),
   duel_arena: (parts, spec, seed) => (ownShape(spec) ? null : duelPaced(parts, spec, seed)),

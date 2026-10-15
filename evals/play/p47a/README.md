@@ -44,3 +44,12 @@ Z běhu robota `intermediate` na semínku publikace pak finále podle telemetrie
 - **Díly P42:** 3/30 vět dev (aréna se sbíráním) a 2/40 panelu – dohromady 5/70 = 7 % < 10 %, takže T3 je nezkouší (Co nevíme, plán).
 
 ## Rozhodnutí
+
+- **T2 – průběh pod šablonou: A pro sběr a útěk, B pro quest v prostoru.** Měřeno na 16 větách dev sady bez dílů P42 × 8 semínek (`genre.v4`, robot intermediate / začátečník). Sběr s šablonou pod průběhem (A) 8/8 / 7–8/8, útěk 7–8/8 / 5–8/8 – bez ztráty proti v3 bez průběhu (sběr 8/8 / 8/8, útěk 7–8/8 / 5–8/8). Quest pod průběhem s šablonou jen 6–7/8 (brána ≥ 0,8 neprošla, v3 bez průběhu 6/8), bez šablony (B) 8/8 / 3–5/8 – v pásmu. Útěk bez šablony by začátečníka shodil na 2/8 (e01, e02), proto A tam zůstává. Začátečník ve sběru 7–8/8 je nad pásmem 0,7 už na `abe38f04` (8/8), P47A ho nezhoršila. Uložené `genre.v3` hry se šablonou staví týž svět (`pacing-template.test.ts`, specy zmrazené nad `abe38f04`).
+
+## Průběh plánu (`after.json` = poslední měření)
+
+| Po úloze | Dev: průběh | Dev: finále | Dev: chování (medián) | Dev: mrtvý čas | Panel: finále |
+|---|---|---|---|---|---|
+| výchozí | 0,37 | 0 | 1 | 4,7 s | 0,38 |
+| T2 | 0,9 (bez dílů P42 1,0) | 0,27 | 2 | 4,9 s | 0,43 |

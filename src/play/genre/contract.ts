@@ -26,8 +26,10 @@ import type { ControlId, GameRole, GameSpecV1 } from '../spec';
  * Verze překladu `GenreSpec → GameSpecV1`; zapisuje se do `spec.genre`.
  * `genre.v2` (P45C T11): hra dostane průběh (`pacingParts`); uložené `genre.v1` hrají jako dřív.
  * `genre.v3` (P46C T2): hra dostane power-upy (`placePowerups`); uložené `genre.v2` hrají jako dřív.
+ * `genre.v4` (P47A T2): průběh i pod overlay šablonou P45B a finále podle žánru (`FINALE_GENRE_VERSION`); uložené `genre.v3` hrají jako dřív.
+ * Kontroly verze jsou „tahle a novější“ (`genreAtLeast`), nikdy rovnost s jednou verzí.
  */
-export const GENRE_COMPILER_VERSION = 'genre.v3';
+export const GENRE_COMPILER_VERSION = 'genre.v4';
 
 /**
  * Životy hry žánru (P36A T2): mechanika `health` se třemi životy. Čte ji

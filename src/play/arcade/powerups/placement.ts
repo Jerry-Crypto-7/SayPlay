@@ -12,6 +12,7 @@ import type { GameSpecV1 } from '@/play/spec';
 import { harmOf } from '../abilities';
 import { type ArcadeParts, baseControlOf } from '../addons';
 import { ARCADE_LIMITS, type BodyInit, type PowerupId, UNIT } from '../contract';
+import { genreAtLeast } from '../pieces/pacing-parts';
 import { ARENA } from '../pieces/arena';
 import { RUNNER } from '../pieces/runner';
 import { centerAt, courseOf, steerRoute } from '../pieces/steer';
@@ -43,7 +44,7 @@ const PLATFORM_MOST = 3;
 const SALT = 0x9e37;
 
 /** Má hra power-upy? Jen nová hra žánru, ne složená (díly P42). */
-export const wantsPowerups = (spec: GameSpecV1): boolean => spec.genre?.compilerVersion === POWERUP_GENRE_VERSION && spec.assemblyParts === undefined;
+export const wantsPowerups = (spec: GameSpecV1): boolean => genreAtLeast(spec, POWERUP_GENRE_VERSION) && spec.assemblyParts === undefined;
 
 type Rng = ReturnType<typeof createCompileRng>;
 type Spot = Omit<PlacedPowerup, 'id'> & { readonly size?: number };
