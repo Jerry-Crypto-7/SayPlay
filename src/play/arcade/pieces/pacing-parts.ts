@@ -14,6 +14,7 @@ import type { GameSpecV1 } from '../../spec';
 import type { ArcadeParts } from '../addons';
 import { RULE_TEMPLATES, type TemplateName } from '../rules/templates';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRef, RAMP_STEP_PCT, ROLE, UNIT } from '../contract';
+import { ESCAPE } from './arena';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef } from './behaviours';
 import { BOSS, DROPPER, TURRET } from './behaviours/boss';
 import { DUEL_ENRAGE } from './duel';
@@ -288,6 +289,14 @@ export const FIELD = {
   carry: 8,
   /** Boss sběru bez věcí poslední vlny (`genre.v4`) vydá tolik bodů – jako jedna věc, cíl `grow_to` se nemění. */
   bossScore: 1,
+  /**
+   * Závěrečný déšť mincí přežití (`genre.v4`, P47A T3): `count` mincí `lead` tiků před koncem hodin, na místech
+   * vstupu nejdál od hráče. Život nevezme – robot útěku mince sebere, jen když k nim má volno (`arena-bot.ts`).
+   * Změřeno na 20 semínkách (intermediate / novice / climax ve výhrách, v závorce bez deště): buňka `arena.escape`
+   * 18 / 11 / 18 (18 / 10 / 0), dev věty P47A e03 20 / 20 / 20 (20 / 20 / 0) a e04 20 / 20 / 20 (19 / 19 / 0);
+   * posledních 10 s nese 10–13 událostí proti 0–3.
+   */
+  shower: { lead: 9 * ARCADE_HZ, count: 8 },
 };
 
 const ruleOf = (parts: ArcadeParts, id: string): PieceRef | undefined => parts.rules.find((rule) => rule.id === id);
@@ -371,13 +380,26 @@ const itemField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
   };
 };
 
-/** Přežití: postup = čas, nová chování od druhé vlny, finále = poslední vlna ve vrcholu křivky. */
-const survivalField = (foes: FieldFoes): GenrePacing => (parts) => {
+/** Mince deště přežití: tělo věci útěku (`arena.ts`), scéna arény ji kreslí jako minci. */
+const SHOWER_COIN: BodyInit = { role: 'collectible', kind: 'item', x: 0, y: 0, z: 0, w: ESCAPE.itemSize, h: 200, d: ESCAPE.itemSize, solid: false };
+
+/**
+ * Přežití: postup = čas, nová chování od druhé vlny, finále = poslední vlna ve vrcholu křivky.
+ *
+ * Ve `genre.v4` (P47A T3) přinese poslední vlna `FIELD.shower.lead` tiků před koncem hodin déšť mincí
+ * (`PacingSetup.extra`, místa vstupu nejdál od hráče): chování odešla se začátkem poslední vlny a posledních
+ * 10 s neslo 0–2 události, telemetrie finále (`climax`) neuznala v žádné výhře. Mince jsou vznik a sebrání,
+ * život nevezmou. Nápor ostřelovačů tamtéž dal climax taky, ale buňce s jedním životem (`arena.escape`) vzal
+ * pásma (intermediate 14/20 místo 18/20).
+ */
+const survivalField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
   const waves = ruleOf(parts, 'arena_waves')?.params as WaveParams | undefined;
   const seconds = (ruleOf(parts, 'survive_time')?.params as { readonly seconds: number } | undefined)?.seconds;
   if (waves === undefined || seconds === undefined || waves.until !== 'ticks') return null;
   const ticks = Math.min(ARCADE_LIMITS.maxTicks, seconds * ARCADE_HZ);
   const count = waves.waves.length + 1;
+  const last = waveStart(count - 1, count);
+  const shower = { body: SHOWER_COIN, at: Math.max(last, Math.ceil(((ticks - FIELD.shower.lead) * 1000) / ticks)), count: FIELD.shower.count };
   return {
     goal: { by: 'time', need: ticks, limit: ticks },
     space: 'plane',
@@ -386,9 +408,10 @@ const survivalField = (foes: FieldFoes): GenrePacing => (parts) => {
     pick: foes.pick,
     budget: foes.budget,
     from: waveStart(1, count),
-    ...leaving(foes, waveStart(count - 1, count)),
+    ...leaving(foes, last),
     finale: 'wave',
     ...(foes.steady === true ? { steady: true } : {}),
+    ...(genreAtLeast(spec, FINALE_GENRE_VERSION) ? { extra: shower } : {}),
     adjust: (own) => flatten(own, foes.step),
   };
 };

@@ -65,6 +65,9 @@ const bossRef = (world: ArcadeWorld): BehaviourRef | undefined => pacedRefs(worl
 const finaleRef = (world: ArcadeWorld): BehaviourRef | undefined => ((ruleOf(world, 'pacing')?.params as { finale?: string } | undefined)?.finale === 'boss' ? pacedRefs(world).at(-1) : undefined);
 const wavesOf = (world: ArcadeWorld): WaveParams => ruleOf(world, 'arena_waves')!.params as WaveParams;
 const scheduleOf = (world: ArcadeWorld): { atPermille: number; template: number }[] => (ruleOf(world, 'pacing')!.params as { schedule: { atPermille: number; template: number }[] }).schedule;
+/** Kroky rozvrhu s chováním: bez bosse a bez mincí deště přežití (`FIELD.shower`, `genre.v4` – `field-finale.test.ts`). */
+const foeSteps = (world: ArcadeWorld): { atPermille: number; template: number }[] =>
+  scheduleOf(world).filter((step) => step.template !== finaleRef(world)?.template && world.initial[bodyBase(step.template) + BODY.role] !== ROLE.collectible);
 
 /** Tik, kdy se boss poprvé objevil a kdy zmizel (−1 = nikdy), a tik konce běhu. */
 function bossTrace(world: ArcadeWorld, inputs: Parameters<typeof play>[1]): { seen: number; fell: number; end: number } {
@@ -123,7 +126,7 @@ describe('open-field genres are paced (arena, fight and spatial quest)', () => {
         expect(foes.length, cell.id).toBeGreaterThanOrEqual(1);
         expect(foes.length, cell.id).toBeLessThanOrEqual(2);
         const second = Math.floor(1000 / (wavesOf(world).waves.length + 1));
-        const spawns = scheduleOf(world).filter((step) => step.template !== finaleRef(world)?.template);
+        const spawns = foeSteps(world);
         expect(spawns.length, cell.id).toBeGreaterThan(0);
         for (const entry of spawns) expect(entry.atPermille, `${cell.id} seed ${seed}`).toBeGreaterThanOrEqual(second);
         draws.add(spawns.map((step) => foes.find((foe) => foe.body === step.template)!.behaviour).join('+'));
@@ -223,7 +226,7 @@ describe('open-field genres are paced (arena, fight and spatial quest)', () => {
         const pacing = ruleOf(world, 'pacing')!.params as { clear: unknown };
         // Těla chování a jejich výstřely jsou `hazard`; boss souboje přijde v témže tiku až po úklidu.
         expect(pacing.clear, `${id} seed ${seed}`).toEqual([{ role: ROLE.hazard, at: last }]);
-        const foes = scheduleOf(world).filter((step) => step.template !== bossRef(world)?.template);
+        const foes = foeSteps(world);
         expect(foes.length, `${id} seed ${seed}`).toBeGreaterThan(0);
         // Souboj postupuje po vlnách skokem: spawn musí přijít nejpozději se začátkem předposlední vlny.
         const until = id === 'arena.fight' ? Math.floor(((count - 2) * 1000) / count) : last - 1;

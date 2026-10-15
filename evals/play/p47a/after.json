@@ -12,11 +12,11 @@
     "reasons": {
      "assembly": 3
     },
-    "finaleShare": 0.3,
+    "finaleShare": 0.37,
     "bossShare": 0.3,
     "behavioursMedian": 2,
     "deadTimeMedianS": 4.89,
-    "risingShare": 0.53
+    "risingShare": 0.6
    },
    "genres": {
     "arena.collect": {
@@ -29,7 +29,7 @@
      },
      "finaleShare": 0.7,
      "bossShare": 0.7,
-     "behavioursMedian": 3,
+     "behavioursMedian": 3.5,
      "deadTimeMedianS": 5.15,
      "risingShare": 0.7
     },
@@ -39,11 +39,11 @@
      "playable": 4,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0.5,
+     "finaleShare": 1,
      "bossShare": 0.5,
      "behavioursMedian": 4.5,
-     "deadTimeMedianS": 14,
-     "risingShare": 0.5
+     "deadTimeMedianS": 11.01,
+     "risingShare": 1
     },
     "duel": {
      "sentences": 4,
@@ -105,11 +105,11 @@
      "entry": 6,
      "assembly": 2
     },
-    "finaleShare": 0.43,
+    "finaleShare": 0.48,
     "bossShare": 0.35,
     "behavioursMedian": 1.5,
     "deadTimeMedianS": 4,
-    "risingShare": 0.68
+    "risingShare": 0.73
    },
    "genres": {
     "arena.collect": {
@@ -123,7 +123,7 @@
      "finaleShare": 0.67,
      "bossShare": 0.67,
      "behavioursMedian": 3,
-     "deadTimeMedianS": 5.78,
+     "deadTimeMedianS": 5.43,
      "risingShare": 0.67
     },
     "arena.escape": {
@@ -132,11 +132,11 @@
      "playable": 3,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0.33,
+     "finaleShare": 1,
      "bossShare": 0.33,
      "behavioursMedian": 4,
      "deadTimeMedianS": 8,
-     "risingShare": 0.33
+     "risingShare": 1
     },
     "arena.fight": {
      "sentences": 2,
@@ -352,11 +352,11 @@
      "assembly": 5,
      "entry": 6
     },
-    "finaleShare": 0.37,
+    "finaleShare": 0.43,
     "bossShare": 0.33,
     "behavioursMedian": 2,
-    "deadTimeMedianS": 4.66,
-    "risingShare": 0.61
+    "deadTimeMedianS": 4.63,
+    "risingShare": 0.67
    },
    "genres": {
     "arena.collect": {
@@ -370,7 +370,7 @@
      "finaleShare": 0.69,
      "bossShare": 0.69,
      "behavioursMedian": 3,
-     "deadTimeMedianS": 5.43,
+     "deadTimeMedianS": 5.18,
      "risingShare": 0.69
     },
     "arena.escape": {
@@ -379,11 +379,11 @@
      "playable": 7,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0.43,
+     "finaleShare": 1,
      "bossShare": 0.43,
      "behavioursMedian": 4,
      "deadTimeMedianS": 8,
-     "risingShare": 0.43
+     "risingShare": 1
     },
     "arena.fight": {
      "sentences": 2,
@@ -623,12 +623,13 @@
     "paced": true,
     "reason": null,
     "finale": "boss",
-    "behaviourCount": 2,
+    "behaviourCount": 3,
     "behaviours": [
      "hazard:chase+spawned",
-     "hazard:roam+spawned"
+     "hazard:roam+spawned",
+     "hazard:static+spawned"
     ],
-    "longestGapS": 7.33,
+    "longestGapS": 5.97,
     "rising": true
    },
    {
@@ -650,7 +651,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 4.67,
+    "longestGapS": 4.38,
     "rising": true
    },
    {
@@ -856,7 +857,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "climax",
     "behaviourCount": 4,
     "behaviours": [
      "chaser:chase+spawned",
@@ -865,7 +866,7 @@
      "hazard:roam+spawned"
     ],
     "longestGapS": 8,
-    "rising": false
+    "rising": true
    },
    {
     "id": "e04",
@@ -878,7 +879,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "climax",
     "behaviourCount": 4,
     "behaviours": [
      "chaser:chase+spawned",
@@ -886,8 +887,8 @@
      "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 20,
-    "rising": false
+    "longestGapS": 14.02,
+    "rising": true
    },
    {
     "id": "q01",
@@ -1357,7 +1358,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "climax",
     "behaviourCount": 4,
     "behaviours": [
      "chaser:chase+spawned",
@@ -1366,7 +1367,7 @@
      "hazard:roam+spawned"
     ],
     "longestGapS": 8,
-    "rising": false
+    "rising": true
    },
    {
     "id": "m02",
@@ -1570,7 +1571,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "climax",
     "behaviourCount": 3,
     "behaviours": [
      "chaser:chase+spawned",
@@ -1578,7 +1579,7 @@
      "hazard:static+spawned"
     ],
     "longestGapS": 8,
-    "rising": false
+    "rising": true
    },
    {
     "id": "n04",
@@ -1814,7 +1815,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 6.15,
+    "longestGapS": 5.18,
     "rising": true
    },
    {

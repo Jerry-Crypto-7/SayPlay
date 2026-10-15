@@ -5,7 +5,8 @@
  * bosse (boss padl v 7/8 semínek, hra se čtyřmi vlnami ve 3/8). Ve v4 výhra počká na pád bosse (`grow_to.boss`,
  * vzor `fight_end.boss`) a robot od dosaženého skóre jde jen na bosse (`pacing_bot.points`); poslední vlna bez
  * věcí dá bosse se skóre (`boss_beat.score`) místo věcí. Rozpočet pravidel bosse nevyhodí ani u největší overlay
- * šablony. Finále přežití T3 nedodala (`evals/play/p47a/README.md`, Rozhodnutí).
+ * šablony. Přežití dostane v posledních 10 s déšť mincí (`FIELD.shower`): posledních 10 s vyhraného běhu je
+ * ≥ 1,5× hustších než běh a telemetrie uzná finále `climax`.
  *
  * Uložené `genre.v3` hry staví týž svět (hashe v `pacing-template.test.ts`, replay brána).
  */
@@ -13,7 +14,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf } from '../compile';
-import { type ArcadeEffect, type ArcadeWorld, BODY, BODY_STRIDE, COUNTER, FLAG, HEADER, type PieceRef, bodyBase, underlyingRule } from '../contract';
+import { ARCADE_HZ, type ArcadeEffect, type ArcadeWorld, BODY, BODY_STRIDE, COUNTER, FLAG, HEADER, type PieceRef, ROLE, bodyBase, underlyingRule } from '../contract';
 import { instantiate } from '../kernel';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from '../library';
 import type { ArcadeParts } from '../addons';
@@ -24,7 +25,7 @@ import { FIELD, FINALE_GENRE_VERSION, pacingParts } from '../pieces/pacing-parts
 import type { WaveParams } from '../pieces/waves';
 import { loadRapier } from '../physics/world';
 import { RULE_TEMPLATES, templateParts } from '../rules/templates';
-import { funMetrics, traceRun } from '../telemetry';
+import { CLIMAX_FACTOR, CLIMAX_TICKS, funMetrics, traceRun } from '../telemetry';
 import { runBot } from '../verify';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
@@ -200,4 +201,79 @@ describe('collect and item escape: the boss is the last step to the win (genre.v
       expect((ruleOf(world, 'grow_to')!.params as { boss?: number }).boss, id).toBe(bossRef(world)!.template);
     }
   });
+});
+
+/** Přežití: buňka s jedním životem bez šablony a věty dev sady P47A se šablonou (tři životy). */
+const SURVIVAL_GAMES: readonly [string, () => GameSpecV1][] = [
+  ['cell arena.escape', () => cellSpec('arena.escape')],
+  ['e03 graveyard', () => draft('Survive a horde of skeletons in a graveyard until sunrise')],
+  ['e04 factory', () => draft('Survive the robot uprising in a factory for one minute')],
+];
+
+/** Kroky rozvrhu pravidla `pacing`, jejichž předloha je věc (mince deště), ne chování. */
+function showerOf(world: ArcadeWorld): { atPermille: number; template: number; count: number }[] {
+  const schedule = (ruleOf(world, 'pacing')!.params as { schedule: { atPermille: number; template: number; count: number }[] }).schedule;
+  return schedule.filter((step) => world.initial[bodyBase(step.template) + BODY.role] === ROLE.collectible);
+}
+
+/** Herní události posledních `CLIMAX_TICKS` a celého běhu, jak je počítá telemetrie (bez konce běhu a skóre v tiku jiné události). */
+function densityOf(world: ArcadeWorld, inputs: Parameters<typeof traceRun>[1]): { late: number; all: number; ticks: number } {
+  const trace = traceRun(world, inputs);
+  const busy = new Set(trace.events.filter((e) => e.kind !== 'score' && e.kind !== 'win' && e.kind !== 'lose').map((e) => e.tick));
+  const ticks = trace.events.filter((e) => e.kind !== 'win' && e.kind !== 'lose' && !(e.kind === 'score' && busy.has(e.tick))).map((e) => e.tick);
+  return { late: ticks.filter((tick) => tick >= trace.ticks - CLIMAX_TICKS).length, all: ticks.length, ticks: trace.ticks };
+}
+
+describe('survival: the last wave ends with a coin shower the telemetry sees (genre.v4)', () => {
+  it('a v4 survival game gets the shower in its last 10 s, after the last wave starts; the same game stored as v3 does not', () => {
+    for (const [id, make] of SURVIVAL_GAMES) {
+      const spec = make();
+      expect(spec.genre?.compilerVersion, id).toBe(FINALE_GENRE_VERSION);
+      for (const seed of SEEDS.slice(0, 3)) {
+        const world = worldOf(spec, seed);
+        expect((ruleOf(world, 'pacing')!.params as { finale: string }).finale, id).toBe('wave');
+        const ticks = (ruleOf(world, 'survive_time')!.params as { seconds: number }).seconds * ARCADE_HZ;
+        const count = (ruleOf(world, 'arena_waves')!.params as WaveParams).waves.length + 1;
+        const shower = showerOf(world);
+        expect(shower.length, `${id} seed ${seed}`).toBe(1);
+        const [step] = shower as [(typeof shower)[number]];
+        expect(step.count, id).toBe(FIELD.shower.count);
+        expect(step.atPermille, id).toBeGreaterThanOrEqual(Math.floor(((count - 1) * 1000) / count));
+        // Postup podle času: krok přijde v tiku, kdy podíl uběhlého času dojde na `atPermille` – v okně finále telemetrie.
+        const arrives = Math.ceil((step.atPermille * ticks) / 1000);
+        expect(arrives, id).toBeGreaterThanOrEqual(ticks - CLIMAX_TICKS);
+        expect(arrives, id).toBeLessThanOrEqual(ticks - FIELD.shower.lead + Math.ceil(ticks / 1000));
+        // Mince nikoho nezraní: věc, ne hrozba, a `arena_eat` ji hráči dá za skóre.
+        expect(world.initial[bodyBase(step.template) + BODY.role], id).toBe(ROLE.collectible);
+      }
+      // Uložená v3: buňka má průběh bez deště, věty se šablonou průběh nemají vůbec (T2).
+      const stored = worldOf(withVersion(spec, 'genre.v3'));
+      if (ruleOf(stored, 'pacing') !== undefined) expect(showerOf(stored), `${id} v3`).toEqual([]);
+      else expect(id.startsWith('cell'), `${id} v3`).toBe(false);
+    }
+  });
+
+  it('every intermediate win has a last 10 s at least 1.5x denser than the run (climax); the bands hold', () => {
+    for (const [id, make] of SURVIVAL_GAMES) {
+      const spec = make();
+      let wins = 0;
+      let novice = 0;
+      for (const seed of SEEDS) {
+        const world = worldOf(spec, seed);
+        const bot = runBot(world, ARCADE_LIBRARY, { profile: 'intermediate' });
+        if (runBot(world, ARCADE_LIBRARY, { profile: 'novice' }).outcome === 'won') novice += 1;
+        if (bot.outcome !== 'won') continue;
+        wins += 1;
+        const { late, all, ticks } = densityOf(world, bot.inputs);
+        expect(late * ticks, `${id} seed ${seed}: ${late} of ${all} events in the last 10 s of ${ticks} ticks`).toBeGreaterThanOrEqual(CLIMAX_FACTOR * all * CLIMAX_TICKS);
+        expect(funMetrics(traceRun(world, bot.inputs)).finale.why, `${id} seed ${seed}`).toBe('climax');
+      }
+      expect(wins, `${id}: intermediate wins`).toBeGreaterThanOrEqual(7);
+      // Pásmo začátečníka v živé buňce (semínka 1–8: 5/8 jako bez deště); věty dev sady přežití jsou nad 0,7 už bez něj.
+      if (id.startsWith('cell')) {
+        expect(novice, `${id}: novice wins`).toBeGreaterThanOrEqual(3);
+        expect(novice, `${id}: novice wins`).toBeLessThanOrEqual(6);
+      }
+    }
+  }, 600_000);
 });
