@@ -133,7 +133,9 @@ describe('track genres are paced', () => {
   });
 
   it('keeps the ramp in a race lost on the first crash (deviation T11)', () => {
-    const spec = compileRecipe(assemblyOfCell(CELLS.find((candidate) => candidate.id === 'voyage.race')!));
+    const recipe = compileRecipe(assemblyOfCell(CELLS.find((candidate) => candidate.id === 'voyage.race')!));
+    // `genre.v2`: průběh bez power-upů (P46C), ty závod mění samy.
+    const spec = { ...recipe, genre: { ...recipe.genre!, compilerVersion: 'genre.v2' } };
     const world = worldOf(spec);
     expect(chain(world.control).map((ref) => ref.id)).not.toContain('pacing_control');
     expect(world).toEqual(worldOf(storedOf(spec)));

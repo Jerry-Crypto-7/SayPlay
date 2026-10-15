@@ -17,7 +17,7 @@ import { ARCADE_LIBRARY } from '../../library';
 import { ARENA } from '../../pieces/arena';
 import { RUNNER } from '../../pieces/runner';
 import { centerAt, courseOf } from '../../pieces/steer';
-import { runBot } from '../../verify';
+import { runBot, verifyArcade } from '../../verify';
 import { POWERUP_GENRE_VERSION } from '../placement';
 import golden from '../../../../../evals/play/p41/golden/genres.json';
 
@@ -58,6 +58,8 @@ function taken(world: ArcadeWorld, profile: 'novice' | 'intermediate'): { readon
   const picked = powerupsOf(state).filter((body) => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) === 0).length;
   return { picked, won: run.outcome === 'won' };
 }
+
+const unproved = (world: ArcadeWorld): string[] => verifyArcade(world).failures.filter((failure) => failure.startsWith('verbs_proved'));
 
 /** Leží power-up tam, kam hráč žánru dosáhne? */
 function reachable(id: string, world: ArcadeWorld, state: Int32Array, body: number): boolean {
@@ -127,6 +129,8 @@ describe('bots take power-ups and the difficulty stays in band', () => {
       const old = worldOf(id, 'genre.v2', seed);
       if (runBot(old, undefined, { profile: 'intermediate' }).outcome === 'won') rates.baseIntermediate += 1;
       if (runBot(old, undefined, { profile: 'novice' }).outcome === 'won') rates.baseNovice += 1;
+      // Power-up nic neslibuje: publikační brána nesmí chtít důkaz slovesa, který hra bez něj nechtěla (štít).
+      expect(unproved(world), `${id} seed ${seed}`).toEqual(unproved(old));
     }
     const n = SEEDS.length;
     expect(picked / n, `${id}: games where the intermediate bot took a power-up`).toBeGreaterThanOrEqual(0.8);

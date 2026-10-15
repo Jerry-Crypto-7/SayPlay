@@ -6,7 +6,6 @@
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { GENRE_COMPILER_VERSION } from '@/play/genre/contract';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import arenaFixture from '../__fixtures__/arena.json';
@@ -18,7 +17,8 @@ import { bossBody } from '../pieces/behaviours/boss';
 import { GENRE_PACING, type GenrePacing, pacingProbeBodies } from '../pieces/pacing-parts';
 import { runBot, verifyArcade } from '../verify';
 
-const GENRE = { id: 'arena', mode: 'collect', compilerVersion: GENRE_COMPILER_VERSION };
+// `genre.v2`: průběh bez power-upů (P46C), ty obalí ovládání do `addon_control`.
+const GENRE = { id: 'arena', mode: 'collect', compilerVersion: 'genre.v2' };
 
 function read(extra: Record<string, unknown>): GameSpecV1 {
   const spec = readGameSpec({ ...arenaFixture, ...extra });

@@ -62,9 +62,10 @@ describe('drawn bodies', () => {
     const views = bodiesOf(createArcadeSession(built.world));
     const hidden = views.filter(drawsNothing);
     // Logická těla (P45B – věta dostane šablonu s logikou) jsou skrytá taky; drží je test níž.
-    // Zbytek: počítadlo průběhu P45C (běžec je nová hra s křivkou) a za ním počítadlo komba.
-    expect(hidden.filter((view) => view.role !== ROLE.logic)).toEqual([expect.objectContaining({ role: ROLE.obstacle, kind: 'player', w: 1 / UNIT }), expect.objectContaining({ role: ROLE.thing, kind: 'player' })]);
+    // Zbytek: počítadlo průběhu P45C (běžec je nová hra s křivkou), počítadlo power-upů P46C a za nimi počítadlo komba.
+    expect(hidden.filter((view) => view.role !== ROLE.logic)).toEqual([expect.objectContaining({ role: ROLE.obstacle, kind: 'player', w: 1 / UNIT }), expect.objectContaining({ role: ROLE.thing, kind: 'player' }), expect.objectContaining({ role: ROLE.thing, kind: 'player' })]);
     expect(views.filter((view) => !drawsNothing(view)).map((view) => view.role)).toContain(ROLE.player);
+    expect(views.filter((view) => !drawsNothing(view)).map((view) => view.role)).toContain(ROLE.powerup);
   });
 
   it('the logic body of an arcade-v3 world draws nothing, so no player model mounts for it (P45B R2)', () => {

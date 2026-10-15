@@ -8,7 +8,7 @@
 
 import { shieldParts } from '../abilities';
 import { type ArcadeParts, wrapControl } from '../addons';
-import { type BodyInit, type PieceRef, type PowerupId, UNIT } from '../contract';
+import { type BodyInit, type PieceRef, type PowerupId, UNIT, underlyingRule } from '../contract';
 import type { SpeedParams } from './speed';
 
 export { scoreFactor } from './double';
@@ -21,7 +21,7 @@ export interface PlacedPowerup {
   readonly x: number;
   readonly y: number;
   readonly z: number;
-  /** Šířka a hloubka podložky (řízení: jako turbo); výchozí `POWERUP_SIZE`. */
+  /** Šířka a hloubka podložky (řízení: jako turbo, čistý útěk: širší); výchozí `POWERUP_SIZE`. */
   readonly size?: number;
 }
 
@@ -60,6 +60,8 @@ export function applyPowerups(parts: ArcadeParts, placed: readonly PlacedPowerup
       ? [...parts.rules, { id: 'pickup', params: { items: false, powerup } }]
       : parts.rules.map((rule, i) => (i === index ? { id: rule.id, params: { ...rule.params, powerup } } : rule));
   let next: ArcadeParts = { ...parts, level: { ...parts.level, bodies }, rules };
-  if (placed.some((item) => item.id === 'shield')) next = shieldParts(next, keeper);
-  return { ...next, control: wrapControl(next, { powerups: { keeper, ...(speed === undefined ? {} : { speed }) } }) };
+  if (placed.some((item) => item.id === 'shield')) next = shieldParts(next, keeper, false);
+  // Bez blasteru čítač `trigger` patří rozdělané práci `interact`: obal ho nesmí nulovat.
+  const trigger = next.rules.some((rule) => underlyingRule(rule).id === 'blaster') ? {} : { trigger: false as const };
+  return { ...next, control: wrapControl(next, { powerups: { keeper, ...(speed === undefined ? {} : { speed }) }, ...trigger }) };
 }

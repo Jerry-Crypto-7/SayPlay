@@ -32,6 +32,10 @@ export const POWERUP_KINDS: Readonly<Record<string, readonly PowerupId[]>> = {
 const RUNNER_SPEED = { pct: 25 } as const;
 /** Podložka řízení je široká jako turbo: auto ji na ose trati nemine. */
 const STEER_PAD = 1500;
+/** Podložka v čistém útěku: robot jen utíká, širší ji sebere v 19 z 20 her, 0,8 m v 15 (arena.escape/base). */
+const ESCAPE_PAD = 2 * UNIT;
+/** Skákačka nejvýš 3 power-upy: se čtyřmi vyhrál začátečník 0,72 (žába, 60 semínek), nad pásmem 0,7. */
+const PLATFORM_MOST = 3;
 
 const SALT = 0x9e37;
 
@@ -96,6 +100,8 @@ function arenaSpots(parts: ArcadeParts, count: number, rng: Rng): Spot[] {
   const half = (baseControlOf(parts.control).params as { readonly half?: number }).half ?? ARENA.half;
   const hero = parts.level.bodies[0] as BodyInit;
   const others = live(parts.level.bodies);
+  // Čistý útěk (bez mincí): robot k power-upu neodbočí, sebere ho jen v cestě – proto širší podložka.
+  const pad = parts.level.bodies.some((body) => body.role === 'collectible' && body.template !== true) ? {} : { size: ESCAPE_PAD };
   const reach = Math.floor(0.6 * half);
   const spots: Spot[] = [];
   for (let tries = 0; tries < 40 && spots.length < count; tries += 1) {
@@ -103,7 +109,7 @@ function arenaSpots(parts: ArcadeParts, count: number, rng: Rng): Spot[] {
     const z = rng.int(-reach, reach);
     const apart = (ax: number, az: number, gap: number): boolean => (ax - x) ** 2 + (az - z) ** 2 >= gap ** 2;
     const far = apart(hero.x, hero.z, 5 * UNIT) && spots.every((spot) => apart(spot.x, spot.z, 6 * UNIT));
-    if (far && clear(others, x, z, 2 * UNIT, 2 * UNIT)) spots.push({ x, y: 0, z });
+    if (far && clear(others, x, z, 2 * UNIT, 2 * UNIT)) spots.push({ x, y: 0, z, ...pad });
   }
   return spots;
 }
@@ -133,7 +139,7 @@ export function placePowerups(parts: ArcadeParts, spec: GameSpecV1, seed: number
   const usable = kinds.filter((id) => (id === 'shield' ? room >= 1 && harmOf(parts).length > 0 : id === 'magnet' || id === 'double' ? items : true));
   if (room < 0 || usable.length === 0) return parts;
   const rng = createCompileRng(seed ^ SALT, 'layout');
-  const spots = spotsOf(parts, rng.int(2, 4), rng);
+  const spots = spotsOf(parts, rng.int(2, control === 'platform' ? PLATFORM_MOST : 4), rng);
   if (spots.length === 0) return parts;
   const placed = spots.map((spot) => ({ ...spot, id: usable[rng.int(0, usable.length - 1)] as PowerupId }));
   return applyPowerups(parts, placed, control === 'runner' ? RUNNER_SPEED : undefined);

@@ -67,13 +67,15 @@ function escapeDecide(state: Int32Array, player: number, recent: readonly Arcade
   const lag = recent.length;
   const asleep = Math.max(0, graceLeft(state) - lag);
   const chasers: { x: number; z: number; reach: number }[] = [];
+  // Power-upy (P46C) útěk nevidí, sebere je jen v cestě: každá zacházka k nim prohrála hry, které
+  // stará verze vyhrála (arena.escape i s mincemi, hra s logikou z režiséra na semínku 1).
   const items: { x: number; z: number }[] = [];
   for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
     const base = bodyBase(i);
     if (i === player || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
     const role = state[base + BODY.role];
     if (role === ROLE.chaser) chasers.push({ x: (state[base + BODY.x] as number) + (state[base + BODY.vx] as number) * lag, z: (state[base + BODY.z] as number) + (state[base + BODY.vz] as number) * lag, reach: ((state[base + BODY.w] as number) + size) / 2 });
-    else if (role === ROLE.collectible || role === ROLE.powerup) items.push({ x: state[base + BODY.x] as number, z: state[base + BODY.z] as number });
+    else if (role === ROLE.collectible) items.push({ x: state[base + BODY.x] as number, z: state[base + BODY.z] as number });
   }
   const limit = half - Math.ceil(size / 2);
   const clamp = (value: number): number => Math.max(-limit, Math.min(limit, value));

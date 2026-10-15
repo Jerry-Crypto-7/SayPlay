@@ -740,6 +740,11 @@ const wrappedControlParams = z
     abilities: abilityControlParams.optional(),
     /** Power-up (P46C): počítadlo a zrychlení žánru. */
     powerups: powerupControlParams.optional(),
+    /**
+     * `false` (P46C, jen svět s power-upy bez blasteru): obal čítač `trigger` nepřepisuje – drží v něm
+     * rozdělanou práci `interact`. Bez klíče ho zapisuje každý tik jako dřív (hash uložených her).
+     */
+    trigger: z.literal(false).optional(),
   })
   .strict();
 
@@ -772,7 +777,7 @@ export function makeAddonControl(bases: Readonly<Record<string, ControlPiece>>):
         tickAbilities(state, input.buttons, params.abilities);
       }
       if (params.powerups !== undefined) tickPowerup(state, player, params.powerups, params.abilities);
-      state[HEADER.counters + COUNTER.trigger] = trigger ? 1 : 0;
+      if (params.trigger !== false) state[HEADER.counters + COUNTER.trigger] = trigger ? 1 : 0;
       if (params.chase !== undefined) chase(state, player, params.chase);
     },
   };

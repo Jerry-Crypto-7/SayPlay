@@ -311,7 +311,8 @@ describe('open-field genres are paced (arena, fight and spatial quest)', () => {
 
   it('no finale adds a win rule or a win wrapper: the paced rules are the stored ones plus pacing (and boss_beat), and neither wins', () => {
     for (const cell of CELLS) {
-      const spec = cellSpec(cell.id);
+      // `genre.v2`: průběh bez power-upů (P46C), ty připíší svá pravidla (`pickup`, štít) a žádné nevyhrává.
+      const spec = { ...cellSpec(cell.id), genre: { ...cellSpec(cell.id).genre!, compilerVersion: 'genre.v2' } };
       const paced = worldOf(spec);
       const stored = worldOf(storedOf(spec));
       // Stejná pravidla ve stejném pořadí a stejně obalená (vnější id) – průběh jen připíše svá dvě.

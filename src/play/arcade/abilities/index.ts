@@ -115,13 +115,14 @@ const guarded = (rules: readonly PieceRef[], keeper: number, guard: { dash: numb
 
 /**
  * Štít akce i power-upu štítu (P46C): nárazy dostanou ochranu nábojem počítadla `keeper` a blok
- * štítu jde před ně. Úroveň bez nárazu, nebo se štítem už zapojeným, zůstane, jak je.
+ * štítu jde před ně. Úroveň bez nárazu, nebo se štítem už zapojeným, zůstane, jak je. Sloveso
+ * `shield` dostane jen akce, kterou hra slíbila; power-up ho nemá (`promised: false`).
  */
-export function shieldParts(parts: ArcadeParts, keeper: number): ArcadeParts {
+export function shieldParts(parts: ArcadeParts, keeper: number, promised = true): ArcadeParts {
   const roles = harmOf(parts);
   if (roles.length === 0 || parts.rules.some((rule) => rule.id === shieldRule.id)) return parts;
   // Blok štítu se musí použít před nárazem téhož těla, jinak by `ifAlive` nárazu viděl tělo ještě živé.
-  return { ...parts, rules: [{ id: shieldRule.id, params: { keeper, roles, verb: 'shield' } }, ...guarded(parts.rules, keeper, { shield: true })] };
+  return { ...parts, rules: [{ id: shieldRule.id, params: { keeper, roles, ...(promised ? { verb: 'shield' } : {}) } }, ...guarded(parts.rules, keeper, { shield: true })] };
 }
 
 export const ABILITY_PIECES: Readonly<Record<AbilityId, AbilityPiece>> = {

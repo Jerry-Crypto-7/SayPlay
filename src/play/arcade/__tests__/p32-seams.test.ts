@@ -16,6 +16,7 @@ import { compileGenre } from '@/play/genre/index';
 import { CONTROL_PARAMS, type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import duelFixture from '../__fixtures__/duel.json';
+import { baseControlOf } from '../addons';
 import { arcadeWorldOf, compileArcade, generatorOf } from '../compile';
 import { type ArcadeLevel, BODY, BUTTON, FLAG, HEADER, HP_MAX, NO_INPUT, type RulePiece, TARGET_STATE_MAX, bodyBase, bodyHp, targetStateOf } from '../contract';
 import { type ArcadeLibrary, buildWorld, instantiate, loadProgram, step } from '../kernel';
@@ -121,7 +122,7 @@ describe('P32-0 T4 kernel seams', () => {
     // Od P36A T6 pocit dojde až k ovládání (dřív stub bez účinku): bez `tuning` je to jiný svět.
     const { tuning: _tuning, ...untuned } = plain.controlParams as Record<string, unknown>;
     const before = arcadeWorldOf(read({ ...plain, controlParams: untuned }), 1);
-    expect(made.ok && made.world.control.params).toMatchObject({ feel: 2 });
+    expect(made.ok && baseControlOf(made.world.control).params).toMatchObject({ feel: 2 });
     expect(made.ok && before.ok && canonicalHash(made.world)).not.toBe(before.ok && canonicalHash(before.world));
     const wrong = arcadeWorldOf(read(delegate(plain, { tuning: { feel: 3 } })), 1);
     expect(!wrong.ok && wrong.issues.join(' ')).toMatch(/feel.*platform_level/);
