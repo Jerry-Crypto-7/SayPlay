@@ -23,3 +23,4 @@ Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek
 | 17 | scenery | 10 | 6 | 6/6 | 6 | – | 59/85 | desert shrub, coral arch, fuel silo, crosswalk sign, deli scale, gramophone | – |
 | 18 | scenery | 10 | 10 | 8/10 | 8 | – | 59/85 | jungle waterfall, wooden stile, atm machine, hazard sign, stele, food kiosk, electric generator, flower box | – |
 | 19 (opakování) | scenery | 10 | 6 | 3/6 | 3 | – | 59/85 | candy display, orchid, barnacle rock | – |
+| 20 | scenery p46f-queue | 10 | 8 | 6/8 | 0 | badger, spike pit, geyser, ankylosaurus, snow pile | 59/85 | – | red alone: src/play/arcade/__tests__/hero-choice.test.ts; dropped the round's models |
