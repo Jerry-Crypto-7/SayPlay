@@ -29020,6 +29020,127 @@
           0.0755
         ]
       }
+    },
+    {
+      "assetId": "gen3d-desert-shrub",
+      "tags": [
+        "desert shrub",
+        "sagebrush"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-desert-shrub-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.53591,
+          0,
+          -0.50574
+        ],
+        "max": [
+          0.53591,
+          0.99454,
+          0.50574
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coral-arch",
+      "tags": [
+        "coral arch",
+        "coral reef"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-arch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.63178,
+          0,
+          -0.23419
+        ],
+        "max": [
+          0.63178,
+          1,
+          0.23419
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fuel-silo",
+      "tags": [
+        "fuel silo",
+        "silo"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fuel-silo-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19671,
+          0,
+          -0.19666
+        ],
+        "max": [
+          0.19671,
+          0.99896,
+          0.19666
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crosswalk-sign",
+      "tags": [
+        "crosswalk sign",
+        "pedestrian signal",
+        "walk signal"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-crosswalk-sign-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18627,
+          0,
+          -0.05479
+        ],
+        "max": [
+          0.18627,
+          0.9999,
+          0.05479
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-deli-scale",
+      "tags": [
+        "deli scale",
+        "weighing scale"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-deli-scale-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.05475,
+          0,
+          -1.05478
+        ],
+        "max": [
+          1.05475,
+          0.9998,
+          1.05478
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gramophone",
+      "tags": [
+        "gramophone",
+        "phonograph"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gramophone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34884,
+          0,
+          -0.32267
+        ],
+        "max": [
+          0.34884,
+          1,
+          0.32267
+        ]
+      }
     }
   ]
 }

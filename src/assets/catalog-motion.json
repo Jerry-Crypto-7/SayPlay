@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "5b06ff6bd2c1472b3c995fe034c789b992eb3f3b0dc0a56c1cc114db2b51abd5",
+ "catalogHash": "ff6d3708cd7479b9510dd80e6e8ba58a1576e151493c137e66882df0cbc81156",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1441,6 +1441,12 @@
   "gen3d-crystal-geode": {"class":"prop"},
   "gen3d-garden-arch": {"class":"prop"},
   "gen3d-lava-lamp": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-chain-hoist": {"class":"prop"}
+  "gen3d-chain-hoist": {"class":"prop"},
+  "gen3d-desert-shrub": {"class":"prop"},
+  "gen3d-coral-arch": {"class":"prop"},
+  "gen3d-fuel-silo": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-crosswalk-sign": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-deli-scale": {"class":"prop"},
+  "gen3d-gramophone": {"class":"biped","regions":{"legY":0.25}}
  }
 }

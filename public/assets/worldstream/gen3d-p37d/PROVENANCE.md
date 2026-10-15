@@ -666,3 +666,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-garden-arch` | garden arch, rose arch | 4420 / 2074 |
 | `gen3d-lava-lamp` | lava lamp | 4637 / 2300 |
 | `gen3d-chain-hoist` | chain hoist, crane hook | 4745 / 2360 |
+| `gen3d-desert-shrub` | desert shrub, sagebrush | 4406 / 2056 |
+| `gen3d-coral-arch` | coral arch, coral reef | 4563 / 2164 |
+| `gen3d-fuel-silo` | fuel silo, silo | 4712 / 2307 |
+| `gen3d-crosswalk-sign` | crosswalk sign, pedestrian signal, walk signal | 4740 / 2370 |
+| `gen3d-deli-scale` | deli scale, weighing scale | 4566 / 2273 |
+| `gen3d-gramophone` | gramophone, phonograph | 4638 / 2294 |
