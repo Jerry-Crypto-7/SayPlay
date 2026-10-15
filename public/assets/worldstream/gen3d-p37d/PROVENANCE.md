@@ -670,7 +670,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-stone-lantern` | stone lantern, japanese stone lantern | 4748 / 2374 |
 | `gen3d-torii-gate` | torii gate, shinto gate, torii | 4728 / 2339 |
 | `gen3d-bonsai-tree` | bonsai tree, bonsai | 4448 / 2167 |
-| `gen3d-rain-barrel` | rain barrel, water butt | 4748 / 2372 |
 | `gen3d-outhouse` | outhouse, privy, outdoor toilet | 4399 / 2134 |
 | `gen3d-feeding-trough` | feeding trough, trough, hay trough | 4437 / 2210 |
 | `gen3d-water-lily` | water lily, lotus, lotus flower | 4458 / 2224 |
@@ -678,14 +677,12 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-basketball-hoop` | basketball hoop, basketball net, basketball goal | 4748 / 2364 |
 | `gen3d-space-probe` | space probe, probe | 4727 / 2328 |
 | `gen3d-wooden-fence` | wooden fence, rail fence | 4748 / 2372 |
-| `gen3d-cypress-tree` | cypress tree, bald cypress, swamp cypress | 4513 / 2069 |
 | `gen3d-mooring-bollard` | mooring bollard, dock bollard, mooring post | 4709 / 2328 |
 | `gen3d-smoldering-stump` | smoldering stump, burning stump, charred stump | 4748 / 2374 |
 | `gen3d-date-palm-tree` | date palm tree, date palm | 4601 / 2257 |
 | `gen3d-crooked-lamppost` | crooked lamppost, bent lamppost | 4748 / 2374 |
 | `gen3d-gazebo` | gazebo | 4298 / 2083 |
 | `gen3d-eucalyptus-tree` | eucalyptus tree, gum tree, eucalyptus | 4505 / 2188 |
-| `gen3d-ticket-machine` | ticket machine, parking machine, pay station | 4736 / 2304 |
 | `gen3d-camping-chair` | camping chair, folding chair, camp chair | 4560 / 2248 |
 | `gen3d-wooden-gate` | wooden gate, farm gate, field gate | 4748 / 2366 |
 | `gen3d-side-table` | side table, end table | 4748 / 2374 |
@@ -697,11 +694,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wooden-pergola` | wooden pergola, pergola, arbor | 4281 / 1938 |
 | `gen3d-rafflesia` | rafflesia, corpse flower | 4271 / 2111 |
 | `gen3d-navigation-buoy` | navigation buoy, channel buoy, marker buoy | 4748 / 2374 |
-| `gen3d-snow-shovel` | snow shovel | 4748 / 2374 |
 | `gen3d-castle-tower` | castle tower | 4089 / 2158 |
 | `gen3d-picnic-table` | picnic table | 4385 / 2192 |
 | `gen3d-telephone-pole` | telephone pole, utility pole, power pole | 4742 / 2370 |
-| `gen3d-claw-machine` | claw machine, crane game, claw crane | 4304 / 2148 |
 | `gen3d-bread-rack` | bread rack | 4169 / 2064 |
 | `gen3d-wall-clock` | wall clock | 4748 / 2374 |
 | `gen3d-gas-cylinder` | gas cylinder, gas bottle | 4745 / 2366 |
@@ -714,7 +709,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-battlement-wall` | battlement wall, castle wall | 4431 / 2174 |
 | `gen3d-cemetery-gate` | cemetery gate, graveyard gate | 4736 / 2367 |
 | `gen3d-daisy` | daisy | 4736 / 2346 |
-| `gen3d-storefront` | storefront, shop front, shopfront | 4328 / 2060 |
 | `gen3d-magazine-rack` | magazine rack | 3940 / 2554 |
 | `gen3d-bean-bag-chair` | bean bag chair, bean bag, beanbag | 4748 / 2374 |
 | `gen3d-industrial-fan` | industrial fan, wall fan | 4444 / 2075 |
@@ -724,7 +718,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-driftwood` | driftwood | 4618 / 2263 |
 | `gen3d-floating-dock` | floating dock, pontoon | 4426 / 2162 |
 | `gen3d-stalagmite` | stalagmite | 4658 / 2224 |
-| `gen3d-lunar-crater` | lunar crater, crater, moon crater | 4703 / 2329 |
 | `gen3d-pitcher-plant` | pitcher plant | 4748 / 2374 |
 | `gen3d-staghorn-coral` | staghorn coral | 4750 / 2374 |
 | `gen3d-glowing-mushroom` | glowing mushroom, glowing fungus | 4277 / 2049 |
@@ -735,24 +728,20 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-control-panel` | control panel | 4615 / 2267 |
 | `gen3d-forest-shrine` | forest shrine, wayside shrine | 4689 / 2332 |
 | `gen3d-bamboo-hut` | bamboo hut | 4533 / 2204 |
-| `gen3d-volleyball-net` | volleyball net | 4748 / 2338 |
 | `gen3d-sea-arch` | sea arch | 4696 / 2310 |
 | `gen3d-stone-gatehouse` | stone gatehouse, gatehouse | 4127 / 2253 |
 | `gen3d-grave-lantern` | grave lantern, cemetery lantern | 4749 / 2374 |
 | `gen3d-buttercup` | buttercup | 4740 / 2350 |
 | `gen3d-neon-sign` | neon sign, open sign | 4720 / 2346 |
 | `gen3d-umbrella-stand` | umbrella stand | 4588 / 2292 |
-| `gen3d-cooling-tower` | cooling tower | 4472 / 2184 |
 | `gen3d-adobe-oven` | adobe oven, mud oven | 4695 / 2334 |
 | `gen3d-beach-chair` | beach chair | 4172 / 2000 |
 | `gen3d-gumball-machine` | gumball machine, gum machine | 4192 / 2329 |
 | `gen3d-poppy-flower` | poppy flower, poppy | 4616 / 2277 |
-| `gen3d-canned-soup` | canned soup, soup can, tin can | 4385 / 2145 |
 | `gen3d-sea-sponge` | sea sponge | 4412 / 2204 |
 | `gen3d-harbor-crane` | harbor crane, container crane, dock crane | 4717 / 2336 |
 | `gen3d-crystal-geode` | crystal geode, geode | 4327 / 2126 |
 | `gen3d-garden-arch` | garden arch, rose arch | 4420 / 2074 |
-| `gen3d-lava-lamp` | lava lamp | 4637 / 2300 |
 | `gen3d-chain-hoist` | chain hoist, crane hook | 4745 / 2360 |
 | `gen3d-desert-shrub` | desert shrub, sagebrush | 4406 / 2056 |
 | `gen3d-coral-arch` | coral arch, coral reef | 4563 / 2164 |
@@ -764,9 +753,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wooden-stile` | wooden stile, stile | 4748 / 2374 |
 | `gen3d-atm-machine` | atm machine, atm, cash machine, cash dispenser | 4664 / 2309 |
 | `gen3d-hazard-sign` | hazard sign, warning sign | 4748 / 2374 |
-| `gen3d-stele` | stele, stone tablet, stela | 4438 / 2117 |
 | `gen3d-food-kiosk` | food kiosk, snack kiosk, food stand | 4074 / 2020 |
-| `gen3d-electric-generator` | electric generator | 4633 / 2291 |
 | `gen3d-flower-box` | flower box, window box | 4286 / 1970 |
 | `gen3d-candy-display` | candy display, candy stand | 4268 / 2095 |
 | `gen3d-orchid` | orchid | 4642 / 2280 |
@@ -790,7 +777,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-brontosaurus` | brontosaurus | 4456 / 2160 |
 | `gen3d-turnstile` | turnstile | 4738 / 2366 |
 | `gen3d-mousetrap` | mousetrap | 4732 / 2359 |
-| `gen3d-puffin` | puffin | 4702 / 2350 |
 | `gen3d-honey-pot` | honey pot | 4369 / 2183 |
 | `gen3d-machete` | machete | 4744 / 2359 |
 | `gen3d-swinging-axe` | swinging axe | 4748 / 2366 |
@@ -798,7 +784,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-flame-trap` | flame trap | 4449 / 2044 |
 | `gen3d-centipede` | centipede | 4726 / 2358 |
 | `gen3d-spike-wall` | spike wall | 4638 / 2272 |
-| `gen3d-coyote` | coyote | 4396 / 2087 |
 | `gen3d-gecko` | gecko | 4363 / 2047 |
 | `gen3d-toad` | toad | 4298 / 2083 |
 | `gen3d-giant-toadstool` | giant toadstool, red toadstool | 4748 / 2374 |
@@ -833,27 +818,18 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-weather-station` | weather station | 4730 / 2360 |
 | `gen3d-beach-flag` | beach flag | 4727 / 2345 |
 | `gen3d-desert-signpost` | desert signpost | 4748 / 2374 |
-| `gen3d-jaguar-statue` | jaguar statue | 4043 / 1887 |
 | `gen3d-shop-sign` | shop sign | 4717 / 2355 |
 | `gen3d-snowy-bench` | snowy bench | 4586 / 2284 |
 | `gen3d-pier-lamp` | pier lamp | 4750 / 2366 |
-| `gen3d-coral-pillar` | coral pillar | 4579 / 2232 |
 | `gen3d-mesquite-tree` | mesquite tree | 4254 / 2108 |
-| `gen3d-city-map-board` | city map board | 4399 / 2152 |
 | `gen3d-stone-cairn` | stone cairn, cairn | 4669 / 2321 |
 | `gen3d-hotel-sign` | hotel sign | 4509 / 2178 |
-| `gen3d-avalanche-fence` | avalanche fence | 4670 / 2286 |
 | `gen3d-coconut-stall` | coconut stall | 4454 / 2178 |
-| `gen3d-taro-plant` | taro plant | 4746 / 2356 |
-| `gen3d-hitching-post` | hitching post | 4748 / 2374 |
 | `gen3d-snowy-mailbox` | snowy mailbox | 4470 / 2196 |
-| `gen3d-jade-statue` | jade statue | 4454 / 2225 |
 | `gen3d-sunken-mast` | sunken mast | 4733 / 2363 |
 | `gen3d-underwater-lantern` | underwater lantern | 4601 / 2294 |
 | `gen3d-fire-alarm-box` | fire alarm box | 4744 / 2367 |
-| `gen3d-sunscreen-bottle` | sunscreen bottle | 4739 / 2360 |
 | `gen3d-water-canteen` | water canteen | 4464 / 2164 |
-| `gen3d-manhole-cover` | manhole cover | 4383 / 2062 |
 | `gen3d-mossy-ruin-pillar` | mossy ruin pillar | 4750 / 2368 |
 | `gen3d-tribal-shield` | tribal shield | 4730 / 2293 |
 | `gen3d-magma-rock` | magma rock | 4284 / 2140 |

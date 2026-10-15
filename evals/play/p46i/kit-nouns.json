@@ -1234,16 +1234,6 @@
    "source": "p46i-gen"
   },
   {
-   "noun": "rain barrel",
-   "class": "prop",
-   "flat": false,
-   "height": 1.1,
-   "settings": [
-    "forest hut"
-   ],
-   "source": "p46i-gen"
-  },
-  {
    "noun": "outhouse",
    "class": "prop",
    "flat": false,
@@ -1385,16 +1375,6 @@
    "source": "p46i-gen"
   },
   {
-   "noun": "cypress tree",
-   "class": "prop",
-   "flat": false,
-   "height": 6,
-   "settings": [
-    "swamp"
-   ],
-   "source": "p46i-gen"
-  },
-  {
    "noun": "mooring bollard",
    "class": "prop",
    "flat": false,
@@ -1483,16 +1463,6 @@
    "height": 1.4,
    "settings": [
     "snowy forest"
-   ],
-   "source": "p46i-gen"
-  },
-  {
-   "noun": "ticket machine",
-   "class": "prop",
-   "flat": false,
-   "height": 1.6,
-   "settings": [
-    "parking lot"
    ],
    "source": "p46i-gen"
   },
