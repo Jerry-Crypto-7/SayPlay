@@ -30,7 +30,11 @@ import type { GenerationBranch, GenerationOutcome } from '@/server/pipeline';
 import { upstreamBranch, type UpstreamConfig } from '@/server/upstream';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const OUT = join(ROOT, 'evals', 'play', 'p45b', 'director-logic.json');
+// Jiná sada vět, složka nahrávek a souhrn (P46E T5: `evals/play/p46e/sentences.json` → `p46-answers`):
+// P45B_SENTENCES, P45B_ANSWERS a P45B_OUT, cesty od kořene repa. Bez nich sada P45B.
+const OUT = join(ROOT, process.env.P45B_OUT ?? 'evals/play/p45b/director-logic.json');
+const ANSWERS = process.env.P45B_ANSWERS ?? LOGIC_ANSWERS_DIR;
+const SENTENCES = process.env.P45B_SENTENCES ?? 'evals/play/p45b/director-sentences.json';
 
 interface Sentence {
   readonly id: string;
@@ -101,7 +105,7 @@ it('records gpt-oss-20b logic answers and writes evals/play/p45b/director-logic.
   const endpoint = process.env.P45B_DIRECTOR_ENDPOINT ?? 'http://127.0.0.1:8792';
   const model = process.env.P45B_DIRECTOR_MODEL ?? 'gpt-oss-20b';
   if (process.env.P45B_JUDGE_ONLY === '1') {
-    const dir = join(ROOT, LOGIC_ANSWERS_DIR);
+    const dir = join(ROOT, ANSWERS);
     const stored = readdirSync(dir).filter((file) => file.endsWith('.json')).map((file) => JSON.parse(readFileSync(join(dir, file), 'utf8')) as LogicAnswerFixture);
     await writeSummary(stored, endpoint);
     return;
@@ -120,8 +124,8 @@ it('records gpt-oss-20b logic answers and writes evals/play/p45b/director-logic.
     callCap: null,
   };
   await loadRapier();
-  const sentences = (JSON.parse(readFileSync(join(ROOT, 'evals', 'play', 'p45b', 'director-sentences.json'), 'utf8')) as { sentences: Sentence[] }).sentences;
-  mkdirSync(join(ROOT, LOGIC_ANSWERS_DIR), { recursive: true });
+  const sentences = (JSON.parse(readFileSync(join(ROOT, SENTENCES), 'utf8')) as { sentences: Sentence[] }).sentences;
+  mkdirSync(join(ROOT, ANSWERS), { recursive: true });
 
   const fixtures: LogicAnswerFixture[] = [];
   for (const sentence of sentences) {
@@ -147,7 +151,7 @@ it('records gpt-oss-20b logic answers and writes evals/play/p45b/director-logic.
       answer: first?.ok === true ? first.body : null,
       failure: first === null ? 'no call' : first.ok ? null : `${first.reason}: ${first.detail}`,
     };
-    writeFileSync(join(ROOT, LOGIC_ANSWERS_DIR, `${sentence.id}.json`), `${JSON.stringify(fixture, null, 1)}\n`);
+    writeFileSync(join(ROOT, ANSWERS, `${sentence.id}.json`), `${JSON.stringify(fixture, null, 1)}\n`);
     fixtures.push(fixture);
     console.log(`${sentence.id} ${String(fixture.ms)} ms ${fixture.failure ?? 'answered'}`);
   }

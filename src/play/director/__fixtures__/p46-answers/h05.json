@@ -1,0 +1,124 @@
+{
+ "id": "h05",
+ "sentence": "boxing a kangaroo in the australian outback",
+ "axis": "duel",
+ "model": "gpt-oss-20b",
+ "promptVersion": "4ff1d2c9",
+ "directorPromptVersion": "0cf0988c",
+ "recordedAt": "2026-10-15T15:37:56.410Z",
+ "ms": 5294,
+ "answer": {
+  "plan": "arena fight with a kangaroo in the Australian outback",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "fox",
+   "cast": [
+    {
+     "label": "kangaroo",
+     "does": "fight",
+     "verb": "duel",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "australian outback",
+   "palette": "desert",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "kangaroo",
+     "kind": "chaser",
+     "label": "kangaroo",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "spawn_kangaroo",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "kangaroo",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "kangaroo_wave",
+     "verb": "wave",
+     "when": {
+      "phase": "fight"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "kangaroo",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "kangaroo_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "kangaroo"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "fight_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "fight"
+     }
+    ],
+    "events": null
+   },
+   "boss": {
+    "role": "kangaroo",
+    "name": "Roo Rumble",
+    "attack": "charge"
+   },
+   "abilities": [],
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
+  }
+ },
+ "failure": null
+}

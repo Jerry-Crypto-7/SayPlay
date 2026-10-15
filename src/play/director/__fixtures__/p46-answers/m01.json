@@ -1,0 +1,100 @@
+{
+ "id": "m01",
+ "sentence": "toaster tornado",
+ "axis": "arena.escape",
+ "model": "gpt-oss-20b",
+ "promptVersion": "4ff1d2c9",
+ "directorPromptVersion": "0cf0988c",
+ "recordedAt": "2026-10-15T15:36:51.683Z",
+ "ms": 6328,
+ "answer": {
+  "plan": "Create an arena escape game where a toaster must evade a tornado in a meadow.",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "toaster",
+   "cast": [
+    {
+     "label": "tornado",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": null,
+   "setting": "meadow",
+   "palette": "meadow",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "tornado",
+     "kind": "chaser",
+     "label": "tornado",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "start_wave",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "tornado",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "tornado_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "tornado"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "phase_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "active"
+     }
+    ],
+    "events": null
+   },
+   "boss": null,
+   "abilities": null,
+   "segments": null
+  }
+ },
+ "failure": null
+}

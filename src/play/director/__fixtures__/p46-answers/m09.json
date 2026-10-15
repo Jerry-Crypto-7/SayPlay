@@ -1,0 +1,115 @@
+{
+ "id": "m09",
+ "sentence": "ninja cat jumpin on rooftops plz",
+ "axis": "platformer",
+ "model": "gpt-oss-20b",
+ "promptVersion": "4ff1d2c9",
+ "directorPromptVersion": "0cf0988c",
+ "recordedAt": "2026-10-15T15:37:12.151Z",
+ "ms": 6200,
+ "answer": {
+  "plan": "Create a platformer where a ninja cat jumps across rooftops, collecting coins and avoiding hazards.",
+  "spec": {
+   "genre": "platformer",
+   "mode": "default",
+   "hero": "ninja cat",
+   "cast": [
+    {
+     "label": "coin",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": null
+    },
+    {
+     "label": "rock",
+     "does": "avoid",
+     "verb": "jump over",
+     "states": null,
+     "patrol": null
+    },
+    {
+     "label": "enemy cat",
+     "does": "fight",
+     "verb": "duel",
+     "states": null,
+     "patrol": null
+    }
+   ],
+   "heroAction": "none",
+   "setting": "rooftops",
+   "palette": "city",
+   "params": null,
+   "counts": {
+    "collectible": 5
+   },
+   "ruleRoles": [
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 5
+    },
+    {
+     "id": "rock",
+     "kind": "hazard",
+     "label": "rock",
+     "count": null
+    },
+    {
+     "id": "enemy",
+     "kind": "chaser",
+     "label": "enemy cat",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "collect_coin",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "coin"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "score": 10
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "phase1"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "mid"
+     }
+    ],
+    "events": null
+   },
+   "boss": null,
+   "abilities": [],
+   "segments": null
+  }
+ },
+ "failure": null
+}

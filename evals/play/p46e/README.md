@@ -32,3 +32,35 @@ Bez proměnných čte `src/play/director/__fixtures__/logic-answers` (25 nahran�
 - **AI verze vyjde u 23 z 25** (92 %). h09, s003 a u47 už nepadnou na `ACTION_LOST`: hra režiséra s pravidly rychlé verze akci z věty drží. Nečitelné zůstávají d20 a s056.
 - **Pravidla i logiku drží 23 z 23 `ready` (100 %).** Bez pravidel nevyjde žádná, m10 má obě pravidla.
 - **Novinku, kterou hráč hraje, nepřidá žádná** (0 z 23). Boss u s002 byl jen ve hře bez pravidel; s pravidly rychlé verze zmizí. Bosse režiséra přinese T4 jako vlastní pole odpovědi. Jen postavy přidá 12 z 23.
+
+## Po T5 (nové nahrávky s bossem, akcemi a úseky; `after.json`)
+
+**Věty** (`sentences.json`): 8 her majitele z 12. 10. (o01–o08; přesné znění včely se nezapsalo, stojí za ni věta včely z P46C) a 17 vět panelu P45. Žádná ze zapečetěné sady.
+
+**Nahrávky** (`src/play/director/__fixtures__/p46-answers/`): gpt-oss-20b lokálně (stejný model jako režisér dema na Groq), jedna první odpověď na větu, 4–16 s. Nahrát znovu (pod zámkem GPU):
+
+```
+node D:/claude/_shared/gpu-lock.mjs -- powershell -NoProfile -ExecutionPolicy Bypass -File ops/llm/start.ps1 -Role fallback -Fallback gpt-oss-20b -Then evals/play/p46e/record.cmd
+```
+
+`record.cmd` pouští nahrávač P45B s jinou sadou (`P45B_SENTENCES`, `P45B_ANSWERS`, `P45B_OUT`). Vedlejší `director-logic.json` je soud logiky P45B nad týmiž odpověďmi (logiku s `logic_proved` napíše 4 z 25). Měření: `P46E_ANSWERS=src/play/director/__fixtures__/p46-answers P46E_OUT=evals/play/p46e/after.json` a příkaz výš. Offline přehrání hlídá `src/play/director/__tests__/p46-fixtures.test.ts` (každá nahrávka dá svůj řádek `after.json`).
+
+**První nahrávka s promptem T3** (řádek „NEW IN YOUR VERSION (else null)“, jeden příklad): model klíče napsal, ale skoro vždy prázdné – boss 0 z 25, akce 2, úseky 2. Proto podle plánu příklad na každý ze 3 hlavních žánrů (běžec, řízení, skákačka) a bez „else null“. Druhá úprava promptu se nedělá.
+
+**S novým promptem** model vyplní bosse u 15 z 25, úseky u 16 a akce u 6. Výsledek (`after.json`):
+
+| Cíl | Hodnota | Splněno |
+|---|---|---|
+| `ready` ≥ 80 % | 25 z 25 (100 %) | ano |
+| `keptRules` / `keptLogic` 100 % | 100 % / 100 % | ano |
+| králík (o01) a muchomůrky (o02) ready | obě ready | ano |
+| `adds` ≥ 80 % z ready | 4 z 25 (16 %) – jen boss (f03, f10, j08, s021) | **ne** |
+
+**Proč se novinky ztratí** (sonda nad o01–o04, fakta z `direct()`):
+
+- Hra režiséra ztrácí akci věty (`ACTION_LOST: rabbit escape fox has no action witness`) nebo její pravidla neprojdou (`RULE_INVALID: no rule enters phase mid` u obou aut). Upgrade pak vezme kandidáta s pravidly rychlé verze (`withDraftRules`, novinky odpovědi nese) nebo roub na rychlou hru (`onQuickGame` staví z rychlé verze, bosse, akce ani úseky odpovědi nenese). Který kandidát u které věty vyhrál, měřidlo nezapisuje.
+- Aréna (10 z 25 odpovědí) průběh nemá, takže boss a úseky se v ní nepostaví (T4, `withBuiltExtras`).
+- Akce režiséra robot ve výsledné hře nepoužije, nebo s ní nevyhraje – `action` 0 z 25.
+- **Odvozeno, neověřeno:** největší páka je přenést bosse, akce a úseky odpovědi i na roub `onQuickGame` a zapsat do řádku měřidla, který kandidát vyhrál. Hra rychlé verze (běžec, řízení, skákačka) je umí postavit a robot ji vyhrává.
+
+**Oprava cestou** (`_upgrade.ts`): kandidát ověřený na prvním seedu se publikuje na prvním seedu, který drží akci věty. Když se liší, ověří se znovu i roub. Králík s touto nahrávkou předtím skončil `NOT_PLAYABLE` při publikaci.

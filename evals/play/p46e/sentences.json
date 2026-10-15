@@ -1,0 +1,30 @@
+{
+ "about": "P46E T5: 25 sentences for re-recorded director answers with boss, abilities and segments. o01-o08 are the owner's 8 games from 12 Oct 2026 (docs/specs/2026-10-12-p46-hratelnost.md; wording from evals/play/p46/action-sentences.json and evals/play/p46d/sentences.json; the bee's exact wording was not recorded, the P46C bee sentence stands in). The other 17 come from the P45 panel (evals/play/p45/panel.json), id kept. None is from the P45 sealed set or test-200.",
+ "sentences": [
+  { "id": "o01", "axis": "runner", "text": "A rabbit steals carrots and runs from a fox" },
+  { "id": "o02", "axis": "runner", "text": "Amanita mushrooms fight against bulls, flee from them, and shoot them." },
+  { "id": "o03", "axis": "control:steer", "text": "Racing car escaping and shooting enemies" },
+  { "id": "o04", "axis": "control:steer", "text": "racing car escapes police and shoots enemies" },
+  { "id": "o05", "axis": "runner", "text": "Hamster escapes a supermarket Roomba" },
+  { "id": "o06", "axis": "platformer", "text": "Jumping arcade game in the forest" },
+  { "id": "o07", "axis": "platformer", "text": "A ninja frog jumps across lily pads in a swamp" },
+  { "id": "o08", "axis": "arena", "text": "A bee gathers honey in a windy meadow before the storm hits" },
+  { "id": "f01", "axis": "arena.collect", "text": "a dragon guards its gold hoard from greedy knights inside a volcano" },
+  { "id": "f03", "axis": "shooter", "text": "An elf archer shoots goblins from the treetops." },
+  { "id": "f10", "axis": "arena.fight", "text": "a stone golem crushes grave robbers in an ancient desert temple" },
+  { "id": "f17", "axis": "flap", "text": "a phoenix rises from the ashes over a burning desert" },
+  { "id": "m01", "axis": "arena.escape", "text": "toaster tornado" },
+  { "id": "m03", "axis": "control:steer", "text": "Grandma kart" },
+  { "id": "m08", "axis": "runner", "text": "a pengiun tht slides down a mountin" },
+  { "id": "m09", "axis": "platformer", "text": "ninja cat jumpin on rooftops plz" },
+  { "id": "m11", "axis": "control:move_free", "text": "my dog chasing the mailman,around the backyard lol" },
+  { "id": "m16", "axis": "platformer", "text": "a kangaroo jumps over cars then collects coins on the highway" },
+  { "id": "d01", "axis": "control:ball", "text": "a hedgehog rolls down a mushroom hill avoiding foxes" },
+  { "id": "d04", "axis": "shooter", "text": "shoot down paper planes over a school playground" },
+  { "id": "h02", "axis": "control:steer", "text": "shopping cart race in a supermarket" },
+  { "id": "h05", "axis": "duel", "text": "boxing a kangaroo in the australian outback" },
+  { "id": "j08", "axis": "arena.fight", "text": "a wizard defends a crystal tower from flying skeletons" },
+  { "id": "s002", "axis": "arena.escape", "text": "A knight must collect three keys in a haunted castle while dodging ghosts." },
+  { "id": "s021", "axis": "platformer", "text": "obby game with lava and spinning bars" }
+ ]
+}

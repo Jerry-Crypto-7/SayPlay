@@ -1,0 +1,123 @@
+{
+ "id": "f03",
+ "sentence": "An elf archer shoots goblins from the treetops.",
+ "axis": "shooter",
+ "model": "gpt-oss-20b",
+ "promptVersion": "4ff1d2c9",
+ "directorPromptVersion": "0cf0988c",
+ "recordedAt": "2026-10-15T15:36:32.510Z",
+ "ms": 6478,
+ "answer": {
+  "plan": "Create a shooter game where an elf archer battles goblins perched on treetops, with timed waves and a simple phase‑based logic system.",
+  "spec": {
+   "genre": "shooter",
+   "mode": "default",
+   "hero": "elf archer",
+   "cast": [
+    {
+     "label": "goblin",
+     "does": "shoot_at",
+     "verb": "shoot",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "forest clearing",
+   "palette": "forest",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "target": null
+   },
+   "ruleRoles": [
+    {
+     "id": "goblin",
+     "kind": "chaser",
+     "label": "goblin",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "start_wave",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "wave_timer",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "wave_spawn",
+     "verb": "wait",
+     "when": {
+      "timer": "wave_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "goblin",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "next_phase",
+     "verb": "wait",
+     "when": {
+      "timer": "wave_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "wave_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "first"
+     },
+     {
+      "id": "second"
+     }
+    ],
+    "events": null
+   },
+   "boss": {
+    "role": "goblin",
+    "name": "Goblin Horde",
+    "attack": "shoot"
+   },
+   "abilities": [
+    "shoot"
+   ],
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
+  }
+ },
+ "failure": null
+}
