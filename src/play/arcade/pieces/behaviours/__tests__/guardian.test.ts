@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { type ArcadeWorld, type BodyInit, FLAG, type InputEvent, UNIT } from '../../../contract';
-import { replay } from '../../../kernel';
+import { type ArcadeWorld, BODY, type BodyInit, FLAG, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase } from '../../../contract';
+import { instantiate, loadProgram, replay, step } from '../../../kernel';
 import { ARCADE_LIBRARY } from '../../../library';
 import { runBot } from '../../../verify';
-import { ARENA } from '../../arena';
+import { ARENA, arenaAxis } from '../../arena';
 import { GUARDIAN } from '../guardian';
-import { behaviourMemoOf } from '../index';
-import { HEALTH, behaviourHarness, healthAfter, play, read, telegraphCheck } from './harness';
+import { behaviourMemoOf, dodge } from '../index';
+import { HEALTH, behaviourHarness, healthAfter, play, read, refsOf, telegraphCheck } from './harness';
 
 const SEEDS = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -76,6 +76,32 @@ describe('guardian', () => {
         expect(seen.farthest).toBeLessThanOrEqual(6 * UNIT);
       }
     }
+  });
+
+  it('(f) the bot waits beside a circling guardian, but not for one pinned against the wall', () => {
+    const { world, body } = guard(1);
+    const state = instantiate(world);
+    // Po prvním tiku si strážce vybral věc; tu posuneme ke stěně a strážce na kruh kolem ní na straně hráče.
+    step(state, NO_INPUT, loadProgram(world, ARCADE_LIBRARY));
+    const item = behaviourMemoOf(state, body) - 1;
+    expect(item).toBeGreaterThan(0);
+    const player = state[HEADER.player] as number;
+    const put = (at: number, x: number, z: number, vx = 0): void => {
+      for (const [slot, value] of [['x', x], ['z', z], ['vx', vx], ['vz', 0]] as const) state[bodyBase(at) + BODY[slot]] = value;
+    };
+    const wall = ARENA.half - Math.ceil(read(state, body, 'w') / 2);
+    put(item, wall - 150, 0);
+    put(body, wall, -GUARDIAN.radius);
+    // Za dosahem výpadu (3,5 m), ale do čekací vzdálenosti (+ 1 m), na blízké straně věci.
+    put(player, wall - 4 * UNIT, -GUARDIAN.radius);
+    const observation = { state, player, tick: 1, recent: [] };
+    const toItem = { buttons: 0, axis: arenaAxis(1000, 0) };
+    // Obíhající strážce: robot počká, až přejde na druhou stranu věci.
+    put(body, wall, -GUARDIAN.radius, -GUARDIAN.orbit);
+    expect(dodge(observation, refsOf(world), 'move_free', toItem).axis).toBe(0);
+    // Přišpendlený (oběh ho tlačí do stěny, stojí): na druhou stranu nepřejde, robot jde k věci.
+    put(body, wall, -GUARDIAN.radius);
+    expect(dodge(observation, refsOf(world), 'move_free', toItem)).toEqual(toItem);
   });
 
   it('(e) replays the bot record to the same hash', () => {

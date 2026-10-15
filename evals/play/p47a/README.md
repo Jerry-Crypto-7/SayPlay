@@ -52,6 +52,11 @@ Z běhu robota `intermediate` na semínku publikace pak finále podle telemetrie
 - **T3 – rozpočet pravidel na dev nikdy neváže, room ≈ 8** (`rulesBesides`); aby ustoupila šablona, musel by se měnit `arcade/compile.ts`, proto jen test, že boss zůstane i pod největší overlay šablonou `waves_survive` (4 pravidla).
 - **T3 – sběr s jedním životem zůstává bez průběhu:** s průběhem (8 semínek; hra žánru s mincemi a věty c02, c03, c06, c08 s jedním životem) intermediate 4–7/8 a začátečník 0–4/8, bez průběhu 8/8 a 8/8.
 - **T3 – finále přežití nedodáno, cíl útěku/přežití 0,75 nesplněn (0,5: e01/e02 boss, e03/e04 nic).** Nápor ostřelovačů v posledních 10 s (ve v4 obě chování poolu) dal climax v každé výhře, ale na 20 semínkách buňky `arena.escape` (jeden život) neudrží pásma: 2 ostřelovači vedle pronásledovatelů intermediate 14/20 (bez náporu 18/20); pronásledovatelé s náporem odejdou – intermediate 17/20, ale začátečník 17/20 (nad 0,7, bez náporu 10/20); 3 ostřelovači s odchodem intermediate 5/20; 1 ostřelovač dal climax jen ve 3/7 výhrách e03. Na semínkách 1–8 dva ostřelovači prošli (7/8, začátečník 4/8) – na útes jednoho života je 8 semínek málo. Další kolo: nápor, který život nebere (jen vznik těl, např. přepadníci), nebo nápor jen pro přežití se ≥ 2 životy (e03 20/20, e04 17/20 s odchodem pronásledovatelů).
+- **T3 – robot nečeká na strážce přišpendleného ke stěně.** Strážce věci u stěny, kterého oběh tlačí ven, stojí; robot čekal, až přejde na druhou stranu věci, do konce hodin (`genre/__tests__/waves.test.ts`, „Collect five glowing mushrooms…“, semínko 19 ze 40 – červené od T2, která dala šabloně `treasure_rush` průběh a se strážcem). Oprava je jen v robotovi (`guardian.botStep`), ne v chování: uložené hry hrají stejně. Pásma se strážcem na 20 semínkách (intermediate / začátečník) beze změny: `quest.spatial` 19 / 10 s opravou i bez ní, `arena.collect` 20 / 13 a `arena.escape+collect` 20 / 12 jako po T3.
+
+## Známé červené pro T11
+
+- `src/play/compose/__tests__/difficulty.test.ts` – otisk specu `run.escape` (a dalších buněk žánru) neodpovídá `evals/play/p41/difficulty.json` od T2: `GENRE_COMPILER_VERSION` `genre.v4` mění otisk každého specu žánru; řádky přeměřit v T11.
 
 ## Průběh plánu (`after.json` = poslední měření)
 

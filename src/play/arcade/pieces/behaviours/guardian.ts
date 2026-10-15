@@ -126,6 +126,9 @@ export const guardian: Behaviour = {
     // Okno: strážce se vrací, nebo je na druhé straně věci. Jinak kousek za dosahem počkat.
     const item = guardedOf(view);
     if (view.phase !== 'idle' || view.space !== 'plane' || item < 0) return input;
+    // Strážce věci u stěny, kterého oběh tlačí ven, stojí přišpendlený (P47A): na druhou stranu nepřejde a robot
+    // by čekal do konce hodin (sběr pod šablonou `treasure_rush`, semínko 19 ze 40). Jde se k věci a výpadu se uhne.
+    if (Math.abs(read(state, body, 'vx')) + Math.abs(read(state, body, 'vz')) < GUARDIAN.orbit / 2) return input;
     const ix = read(state, item, 'x');
     const iz = read(state, item, 'z');
     const px = read(state, player, 'x');
