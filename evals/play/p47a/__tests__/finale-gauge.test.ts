@@ -18,6 +18,8 @@ import type { GameSpecV1 } from '@/play/spec';
 import { type FinaleRow, gaugeOf, genreSummary, summaryOf, unpacedReason, worldOf } from '../finale';
 
 const paced = (spec: GameSpecV1): boolean => nativeRule(worldOf(spec).rules, 'pacing') !== undefined;
+/** Tatáž hra uložená před P47A T2 (`genre.v3`): overlay šablona P45B ji nechá bez průběhu. */
+const storedV3 = (spec: GameSpecV1): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v3' } });
 
 let collect: GameSpecV1;
 /** Věta dev sady, jejíž rychlý návrh nese pravidla šablony P45B (bez dílů P42). */
@@ -40,11 +42,17 @@ describe('unpacedReason', () => {
     expect(unpacedReason(collect, worldOf(collect))).toBeNull();
   });
 
-  it('names the template rules, and the same game without them gets pacing', () => {
+  it('names the template rules of a game stored before T2 and own-shape rules in v4; the v4 overlay template is paced', () => {
     expect(templated.assemblyParts).toBeUndefined();
     expect(templated.rules?.length).toBeGreaterThan(0);
-    expect(unpacedReason(templated, worldOf(templated))).toBe('rules');
-    expect(paced({ ...templated, rules: undefined })).toBe(true);
+    // P47A T2: ve `genre.v4` overlay šablona P45B (`treasure_rush`) průběh nevypne.
+    expect(unpacedReason(templated, worldOf(templated))).toBeNull();
+    const stored = storedV3(templated);
+    expect(unpacedReason(stored, worldOf(stored))).toBe('rules');
+    expect(paced({ ...stored, rules: undefined })).toBe(true);
+    // Jiné pořadí pravidel šablony = vlastní tvar hry: průběh nedostane ani ve v4.
+    const own = { ...templated, rules: [...templated.rules!].reverse() };
+    expect(unpacedReason(own, worldOf(own))).toBe('rules');
   });
 
   it('names P42 parts before rules, and a stored game version as the entry', () => {
@@ -66,8 +74,11 @@ describe('unpacedReason', () => {
   });
 
   it('falls through things and then the rule budget in the order of the switch', () => {
-    const unpacedWorld = worldOf(templated);
-    const bare = { ...templated, rules: undefined };
+    // Hra bez průběhu kvůli pravidlům: od T2 jen uložená v3 (v4 šablonu pod průběh vezme).
+    const stored = storedV3(templated);
+    const unpacedWorld = worldOf(stored);
+    expect(paced(stored)).toBe(false);
+    const bare = { ...stored, rules: undefined };
     expect(unpacedReason({ ...bare, things: [{} as NonNullable<GameSpecV1['things']>[number]] }, unpacedWorld)).toBe('things');
     expect(unpacedReason(bare, unpacedWorld)).toBe('budget');
   });
