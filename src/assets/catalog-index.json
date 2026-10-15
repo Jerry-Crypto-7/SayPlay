@@ -30365,6 +30365,104 @@
           0.18148
         ]
       }
+    },
+    {
+      "assetId": "gen3d-snow-cannon",
+      "tags": [
+        "snow cannon",
+        "snow machine"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snow-cannon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22881,
+          0,
+          -0.53283
+        ],
+        "max": [
+          0.22881,
+          1.00001,
+          0.53283
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sunken-propeller",
+      "tags": [
+        "sunken propeller"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sunken-propeller-lod1.glb",
+      "bounds": {
+        "min": [
+          -3.42688,
+          0,
+          -1.3437
+        ],
+        "max": [
+          3.42688,
+          0.99947,
+          1.3437
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-log-bench",
+      "tags": [
+        "log bench",
+        "log seat"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-log-bench-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.19765,
+          0,
+          -0.44849
+        ],
+        "max": [
+          1.19765,
+          0.99875,
+          0.44849
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-anthurium",
+      "tags": [
+        "anthurium"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-anthurium-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42032,
+          0,
+          -0.37401
+        ],
+        "max": [
+          0.42032,
+          0.999,
+          0.37401
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snorkel-mask",
+      "tags": [
+        "snorkel mask",
+        "snorkel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snorkel-mask-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39149,
+          0,
+          -0.22489
+        ],
+        "max": [
+          0.39149,
+          0.99906,
+          0.22489
+        ]
+      }
     }
   ]
 }

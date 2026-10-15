@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "30df830fd5566ea0847767f909b1468fee50e581a18db35ac79af3386242d89c",
+ "catalogHash": "70630fa54a9d891ce153e1540da9c3caabf75f47acf505466aa3a08ed53c294e",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1510,6 +1510,11 @@
   "gen3d-coral-throne": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-birch-sapling": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-cacao-pod": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-coral-covered-archway": {"class":"prop"}
+  "gen3d-coral-covered-archway": {"class":"prop"},
+  "gen3d-snow-cannon": {"class":"prop"},
+  "gen3d-sunken-propeller": {"class":"prop"},
+  "gen3d-log-bench": {"class":"prop"},
+  "gen3d-anthurium": {"class":"prop"},
+  "gen3d-snorkel-mask": {"class":"prop"}
  }
 }

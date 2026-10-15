@@ -735,3 +735,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-birch-sapling` | birch sapling | 4744 / 2360 |
 | `gen3d-cacao-pod` | cacao pod | 4669 / 2324 |
 | `gen3d-coral-covered-archway` | coral covered archway, coral archway | 4342 / 1939 |
+| `gen3d-snow-cannon` | snow cannon, snow machine | 4439 / 2145 |
+| `gen3d-sunken-propeller` | sunken propeller | 4746 / 2372 |
+| `gen3d-log-bench` | log bench, log seat | 4671 / 2273 |
+| `gen3d-anthurium` | anthurium | 4650 / 2298 |
+| `gen3d-snorkel-mask` | snorkel mask, snorkel | 4616 / 2181 |
