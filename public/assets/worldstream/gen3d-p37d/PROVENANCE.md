@@ -680,3 +680,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-food-kiosk` | food kiosk, snack kiosk, food stand | 4074 / 2020 |
 | `gen3d-electric-generator` | electric generator | 4633 / 2291 |
 | `gen3d-flower-box` | flower box, window box | 4286 / 1970 |
+| `gen3d-candy-display` | candy display, candy stand | 4268 / 2095 |
+| `gen3d-orchid` | orchid | 4642 / 2280 |
+| `gen3d-barnacle-rock` | barnacle rock | 4571 / 2199 |

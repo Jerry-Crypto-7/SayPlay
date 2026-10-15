@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "60f74343144b6a94656a5527f716784f4f8ff78552136250e46015ba2307436e",
+ "catalogHash": "088d326e92d8553c5d546b98e3a36d95857e1e854994721feffcf4cbc2658f3d",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1455,6 +1455,9 @@
   "gen3d-stele": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-food-kiosk": {"class":"prop"},
   "gen3d-electric-generator": {"class":"prop"},
-  "gen3d-flower-box": {"class":"prop"}
+  "gen3d-flower-box": {"class":"prop"},
+  "gen3d-candy-display": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-orchid": {"class":"prop"},
+  "gen3d-barnacle-rock": {"class":"prop"}
  }
 }

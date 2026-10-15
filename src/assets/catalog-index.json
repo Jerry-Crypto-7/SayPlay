@@ -29304,6 +29304,64 @@
           0.47217
         ]
       }
+    },
+    {
+      "assetId": "gen3d-candy-display",
+      "tags": [
+        "candy display",
+        "candy stand"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-candy-display-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3394,
+          0,
+          -0.15106
+        ],
+        "max": [
+          0.3394,
+          0.99996,
+          0.15106
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-orchid",
+      "tags": [
+        "orchid"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-orchid-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45381,
+          0,
+          -0.18796
+        ],
+        "max": [
+          0.45381,
+          0.99776,
+          0.18796
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-barnacle-rock",
+      "tags": [
+        "barnacle rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-barnacle-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6067,
+          0,
+          -0.60499
+        ],
+        "max": [
+          0.6067,
+          0.99495,
+          0.60499
+        ]
+      }
     }
   ]
 }
