@@ -345,9 +345,9 @@ async function upgradeCandidate(draft: PublishedGame, ai: GameSpecV1, seeds: rea
     if (candidate !== directed.spec && (renamedQuick(candidate) || playabilityIssues(candidate, seeds).length > 0)) continue;
     const { kept, witnesses } = await preserving(candidate);
     if (kept.length === 0) continue;
-    // `direct()` ověřil první seed; publikuje se na prvním, který drží akci věty. Když jsou různé, ověřit znovu
+    // Ověřeno je na prvním seedu; publikuje se na prvním, který drží akci věty. Když jsou různé, ověřit znovu
     // (P46E T4: s008 s akcí strike prošel na seedu 1 a publikace ho na druhém odmítla – AI verze se ztratila).
-    if (candidate === directed.spec && kept[0] !== seeds[0] && playabilityIssues(candidate, kept).length > 0) continue;
+    if (kept[0] !== seeds[0] && playabilityIssues(candidate, kept).length > 0) continue;
     const made = arcadeWorldOf(candidate, kept[0]!);
     if (made.ok) return { spec: candidate, seeds: kept, played: { spec: candidate, world: made.world, witnesses } };
   }
