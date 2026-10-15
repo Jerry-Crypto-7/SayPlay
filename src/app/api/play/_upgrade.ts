@@ -208,7 +208,8 @@ export function recordUpgradeFailure(draftId: string, sentence: string, reason: 
   }
 }
 
-async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<UpgradeOutcome> {
+/** `director` mimo produkt jen pro měřidlo P46E (`evals/play/p46e/upgrade.ts`): nahraná odpověď místo živé větve. */
+export async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest, director: typeof getDirector = getDirector): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const final = (reason: DraftFinalReason, failure?: UpgradeFailure): UpgradeOutcome => {
     if (failure !== undefined) recordUpgradeFailure(draftId, request.sentence, reason, failure);
@@ -227,7 +228,7 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   const directorStarted = performance.now();
   // Neprošlý keypoint jde modelu k opravě dřív, než publikace hru odmítne (P26 T10a).
-  const directed = await getDirector(request.startedAt, request.caller, (spec) => playabilityIssues(spec, seeds))(request.sentence);
+  const directed = await director(request.startedAt, request.caller, (spec) => playabilityIssues(spec, seeds))(request.sentence);
   const directorMs = performance.now() - directorStarted;
   if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
   if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: directed.spec });
