@@ -713,3 +713,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-coyote` | coyote | 4396 / 2087 |
 | `gen3d-gecko` | gecko | 4363 / 2047 |
 | `gen3d-toad` | toad | 4298 / 2083 |
+| `gen3d-giant-toadstool` | giant toadstool, red toadstool | 4748 / 2374 |
+| `gen3d-rusty-fridge` | rusty fridge, old fridge, rusty refrigerator | 4473 / 2192 |
+| `gen3d-wedding-arch` | wedding arch | 4464 / 2132 |
+| `gen3d-standing-stone` | standing stone, menhir | 4736 / 2368 |
+| `gen3d-bromeliad` | bromeliad | 4431 / 2208 |

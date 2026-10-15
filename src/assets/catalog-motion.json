@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "4cbc8c12216a6cd9acb3c3c2d65689fb4668a6c01b5076982402beca315dddd8",
+ "catalogHash": "9d519ac5fa3c371d9f7267d16ba06799064ed23f0a63ea57318f3d6f77678a6b",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1488,6 +1488,11 @@
   "gen3d-spike-wall": {"class":"prop"},
   "gen3d-coyote": {"class":"prop"},
   "gen3d-gecko": {"class":"prop"},
-  "gen3d-toad": {"class":"prop"}
+  "gen3d-toad": {"class":"prop"},
+  "gen3d-giant-toadstool": {"class":"prop"},
+  "gen3d-rusty-fridge": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-wedding-arch": {"class":"prop"},
+  "gen3d-standing-stone": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-bromeliad": {"class":"prop"}
  }
 }

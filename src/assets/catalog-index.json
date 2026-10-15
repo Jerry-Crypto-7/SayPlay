@@ -29935,6 +29935,105 @@
           0.74567
         ]
       }
+    },
+    {
+      "assetId": "gen3d-giant-toadstool",
+      "tags": [
+        "giant toadstool",
+        "red toadstool"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-giant-toadstool-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45205,
+          0,
+          -0.44647
+        ],
+        "max": [
+          0.45205,
+          0.996,
+          0.44647
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rusty-fridge",
+      "tags": [
+        "rusty fridge",
+        "old fridge",
+        "rusty refrigerator"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rusty-fridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3088,
+          0,
+          -0.28918
+        ],
+        "max": [
+          0.3088,
+          0.99762,
+          0.28918
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wedding-arch",
+      "tags": [
+        "wedding arch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-wedding-arch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.62693,
+          0,
+          -0.26861
+        ],
+        "max": [
+          0.62693,
+          0.99896,
+          0.26861
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-standing-stone",
+      "tags": [
+        "standing stone",
+        "menhir"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-standing-stone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29297,
+          0,
+          -0.29264
+        ],
+        "max": [
+          0.29297,
+          0.99663,
+          0.29264
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bromeliad",
+      "tags": [
+        "bromeliad"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bromeliad-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.52055,
+          0,
+          -0.52209
+        ],
+        "max": [
+          0.52055,
+          0.99938,
+          0.52209
+        ]
+      }
     }
   ]
 }

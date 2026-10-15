@@ -31,3 +31,4 @@ Psaný smyčkou `D:/caches/p46i/loop.mjs` po každém kole. **Model** = obrázek
 | 25 (opakování) | p46f-retry | 10 | 7 | 6/7 | 5 | – | 59/85 | honey pot, machete, swinging axe, panther, flame trap | – |
 | 26 (opakování) | p46f-retry | 10 | 6 | 4/6 | 3 | – | 59/85 | centipede, spike wall, coyote | – |
 | 27 (opakování) | p46f-queue | 4 | 3 | 2/3 | 2 | – | 59/85 | gecko, toad | – |
+| 28 | w2-kit-missing w2-scenery | 10 | 7 | 6/7 | 5 | – | 66/93 | giant toadstool, rusty fridge, wedding arch, standing stone, bromeliad | – |

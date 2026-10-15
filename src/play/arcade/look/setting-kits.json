@@ -1391,6 +1391,25 @@
       ]
     },
     {
+      "setting": "wedding",
+      "pattern": "\\bwedding(?:e?s)?\\b",
+      "look": "meadow",
+      "props": [
+        {
+          "id": "gen3d-wedding-arch",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-wedding-cake",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-champagne-tower",
+          "height": 1.2
+        }
+      ]
+    },
+    {
       "setting": "winter festival",
       "pattern": "\\bwinter[\\s-]+festival(?:e?s)?\\b",
       "look": "snow",
@@ -1467,6 +1486,10 @@
         {
           "id": "gen3d-mushroom-house",
           "height": 3
+        },
+        {
+          "id": "gen3d-giant-toadstool",
+          "height": 2
         }
       ]
     },
@@ -1779,21 +1802,10 @@
         {
           "id": "gen3d-oil-drum",
           "height": 1.1
-        }
-      ]
-    },
-    {
-      "setting": "wedding",
-      "pattern": "\\bwedding(?:e?s)?\\b",
-      "look": "meadow",
-      "props": [
-        {
-          "id": "gen3d-wedding-cake",
-          "height": 1.2
         },
         {
-          "id": "gen3d-champagne-tower",
-          "height": 1.2
+          "id": "gen3d-rusty-fridge",
+          "height": 1.8
         }
       ]
     },
