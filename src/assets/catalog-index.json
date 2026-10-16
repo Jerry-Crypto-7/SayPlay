@@ -34184,6 +34184,125 @@
           0.08507
         ]
       }
+    },
+    {
+      "assetId": "gen3d-vinyl-record",
+      "tags": [
+        "vinyl record"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-vinyl-record-lod1.glb",
+      "bounds": {
+        "min": [
+          -11.29593,
+          0,
+          -11.25658
+        ],
+        "max": [
+          11.29593,
+          0.99178,
+          11.25658
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fossil",
+      "tags": [
+        "fossil",
+        "ammonite"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fossil-lod1.glb",
+      "bounds": {
+        "min": [
+          -3.66904,
+          0,
+          -3.27155
+        ],
+        "max": [
+          3.66904,
+          0.99894,
+          3.27155
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-candy-apple",
+      "tags": [
+        "candy apple",
+        "toffee apple",
+        "caramel apple"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-candy-apple-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22495,
+          0,
+          -0.22475
+        ],
+        "max": [
+          0.22495,
+          0.99996,
+          0.22475
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crystal-heart",
+      "tags": [
+        "crystal heart",
+        "heart crystal"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-crystal-heart-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.54124,
+          0,
+          -0.21413
+        ],
+        "max": [
+          0.54124,
+          0.99958,
+          0.21413
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snowflake-token",
+      "tags": [
+        "snowflake token",
+        "snowflake coin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snowflake-token-lod1.glb",
+      "bounds": {
+        "min": [
+          -6.28585,
+          0,
+          -6.27664
+        ],
+        "max": [
+          6.28585,
+          1.00001,
+          6.27664
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-watermelon-slice",
+      "tags": [
+        "watermelon slice"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-watermelon-slice-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.59079,
+          0,
+          -0.11535
+        ],
+        "max": [
+          0.59079,
+          0.99706,
+          0.11535
+        ]
+      }
     }
   ]
 }

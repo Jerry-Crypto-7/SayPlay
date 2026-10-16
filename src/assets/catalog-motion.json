@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "2b186a13b06c5c3c0dcca1ba7c1889ae7aa9ec5c1cfd2ddc5f84b76582f9bfa1",
+ "catalogHash": "13622a7a31cc013b67b87313aec6b9c42affbc4c149445779a61f3c841b515d5",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1703,6 +1703,12 @@
   "gen3d-magma-crystal": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-ice-key": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-bone-key": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-arcade-token": {"class":"prop"}
+  "gen3d-arcade-token": {"class":"prop"},
+  "gen3d-vinyl-record": {"class":"prop"},
+  "gen3d-fossil": {"class":"prop"},
+  "gen3d-candy-apple": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-crystal-heart": {"class":"prop"},
+  "gen3d-snowflake-token": {"class":"prop"},
+  "gen3d-watermelon-slice": {"class":"prop"}
  }
 }

@@ -928,3 +928,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-ice-key` | ice key | 4744 / 2372 |
 | `gen3d-bone-key` | bone key | 4742 / 2360 |
 | `gen3d-arcade-token` | arcade token | 4700 / 2304 |
+| `gen3d-vinyl-record` | vinyl record | 4626 / 2276 |
+| `gen3d-fossil` | fossil, ammonite | 4750 / 2372 |
+| `gen3d-candy-apple` | candy apple, toffee apple, caramel apple | 4748 / 2372 |
+| `gen3d-crystal-heart` | crystal heart, heart crystal | 4748 / 2374 |
+| `gen3d-snowflake-token` | snowflake token, snowflake coin | 4744 / 2372 |
+| `gen3d-watermelon-slice` | watermelon slice | 4690 / 2293 |
