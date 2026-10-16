@@ -5,7 +5,7 @@ Plán `plans/P47A-finale-a-nepratele-2026-10-15.md` (necommitovaný). Větev `fe
 ## Sady
 
 - **`dev.json`** – 30 nových vět pro šest žánrů plánu (aréna se sbíráním 10, útěk/přežití 4, quest v prostoru 5, stanoviště 4, duel 4, hod 3). `cell` = žánr, který rychlý návrh postavil na semínku 1 (`genreOf` v `p45/fun.ts`); test to drží. Na dev sadě a panelu P45 se ladí a diagnostikuje.
-- **`holdout.json`** – 60 vět, které napsal nezávislý subagent bez přístupu ke kódu, plánům a sadám. Dostal jen pravidla seznamu z `evals/play/fidelity/corpus.json` (2–4 podstatná jména, právě 1 sloveso se seznamem ovládání), tvar záznamu a rozložení skupin P45 (threat 24, everyday 15, fantasy 12, non-game 9). **SHA-256 nad LF bajty: `7f62855dd8f45ad6ab1f050aea403ad76030b5c9163c6bedef643cdddbd9bd79`** (hlídá `__tests__/sets.test.ts`). Kromě testu otisku ho do konečného měření (T12) nic nečte.
+- **`holdout.json`** – 60 vět, které napsal nezávislý subagent bez přístupu ke kódu, plánům a sadám. Dostal jen pravidla seznamu z `evals/play/fidelity/corpus.json` (2–4 podstatná jména, právě 1 sloveso se seznamem ovládání), tvar záznamu a rozložení skupin P45 (threat 24, everyday 15, fantasy 12, non-game 9). **SHA-256 nad LF bajty: `7f62855dd8f45ad6ab1f050aea403ad76030b5c9163c6bedef643cdddbd9bd79`** (hlídá `__tests__/sets.test.ts`). Otevřený poprvé v T12 (`2026-10-16T09:05:17.553Z`); čte ho jen test otisku, měřidlo s `P47A_HOLDOUT=1` a pin konečného měření `__tests__/final.test.ts`.
 - Žádná věta dev ani holdoutu se po `normalizeSentence` neshoduje s jinou sadou `evals/play/**` (soubory do 1 MB) ani mezi sebou.
 - Zapečetěná sada P45 je otevřená (`p45/sealed-opened.json`) a tady se na ní neladí ani nediagnostikuje.
 
@@ -24,7 +24,7 @@ Plán `plans/P47A-finale-a-nepratele-2026-10-15.md` (necommitovaný). Větev `fe
 
 Z běhu robota `intermediate` na semínku publikace pak finále podle telemetrie P45A (`boss` / `climax` / žádné), počet chování, nejdelší mezeru a stoupání. Souhrn po žánrech, které hra opravdu postavila: podíl průběhu ze všech postavených her, čísla zábavy jen z hratelných (jako `p45/fun.ts`).
 
-`P47A_OUT=baseline|after npx vitest run --config vitest.measure.mts evals/play/p47a/finale.measure.ts` (~1 min) zapíše `<out>.json` (dev, panel P45 a obojí).
+`P47A_OUT=baseline|after npx vitest run --config vitest.measure.mts evals/play/p47a/finale.measure.ts` (~1 min) zapíše `<out>.json` (dev, panel P45 a obojí). S `P47A_HOLDOUT=1` (~2 min) přidá holdout: otisk ověří dřív, než věty přečte, a zapíše ho do výstupu (`holdoutSha256`).
 
 ## Výchozí stav (`baseline.json`, `abe38f04`)
 
@@ -113,6 +113,11 @@ Z běhu robota `intermediate` na semínku publikace pak finále podle telemetrie
   - `evals/play/p46e/after.json`: poslední soupeř souboje je od `genre.v4` záměrně boss, a proto fixtura h05 (box s klokanem) nově přidává bosse; souhrn 6 → 7 bossů, jiné fixtury beze změny.
   - `evals/play/p46e/__tests__/upgrade-gauge.test.ts`: ARENA „Collect five acorns…“ má ve `genre.v4` bosse (T3), takže „rychlá verze bez bosse“ je teď tentýž návrh označený `genre.v3`; jinak test kontroluje totéž.
 - **T11 – P47B verzi nezvyšuje (odpověď na „Co nevíme“):** `git diff abe38f04 features/P47B-akce-z-vety-2026-10-15 -- src/play/genre/contract.ts` je 16. 10. prázdný, `genre.v4` po sloučení zavede jen P47A.
+- **T12 – A i B měří totéž měřidlo:** A je samostatný worktree s `src/` přesně na `abe38f04` a `evals/` z HEAD, takže rozdíl dělá jen kód hry; A dává na dev i panelu tatáž čísla jako `baseline.json`, B jako `after.json`. Holdout čte `finale.measure.ts` jen s `P47A_HOLDOUT=1` a až po shodě otisku; čas otevření je chvíle ověření otisku před prvním čtením obsahu.
+- **T12 – cíle se hodnotí na celém holdoutu (60 vět), šest žánrů vedle:** plán chce čísla holdoutu a „Co nevíme“ žádá rozpis, když žánry mimo rozsah stáhnou celek – finále celku 0,72 nesplnilo, šest žánrů (25 vět) 0,88 ano; ostatní tři cíle splnily obojí (`final.md`).
+- **T12 – „horší finále“ na panelu = v A finále (boss nebo climax), v B žádné;** boss → climax se počítá zvlášť (0 vět), mezera se srovnává po větách (nejdelší mezera B − A > 1 s) a navíc se hlídá ztráta hratelnosti. Porušení 0 ze 40.
+- **T12 – `final.json` nese řádky A a B po větách holdoutu i panelu,** surové výstupy obou běhů se necommitují; pin `__tests__/final.test.ts` z těch řádků přepočítá cíle přes `summaryOf` a kontroluje otisk a seznam vět holdoutu (namířený na `dev.json` červený).
+- **T12 – odpovědi na „Co nevíme“:** do šesti žánrů padne 25/60 vět holdoutu (zapečetěná sada 63/100); díly P42 má 4/60 = 6,7 % vět holdoutu (pod 10 %, v šesti žánrech 3/25), takže zůstávají bez průběhu podle T1/T3 a jsou jediné věty šesti žánrů bez finále.
 
 ## Známé červené (T11, celá sada samotná 16. 10. na `44c47600`)
 
@@ -137,3 +142,4 @@ Celá sada 14 180/14 224, 38 červených ve 20 souborech; stroj byl vytížený 
 | T9 (tep pole) | 0,9 (bez dílů P42 1,0) | 0,87 (quest v prostoru 1,0 → 0,8: q01 na semínku publikace prohrál) | 2,5 | 2,5 s (útěk/přežití 11,0 → 4,2 s, quest v prostoru 9,3 → 2,5 s, sběr 5,15 s beze změny; panel 4,0 → 3,1 s) | 0,68 |
 | T9 (sběr) | 0,9 (bez dílů P42 1,0) | 0,87 (beze změny; sběr a útěk s věcmi boss v každé výhře) | 2,5 | 2,45 s (sběr 5,15 → 2,45 s, útěk/přežití 4,17 → 2,5 s: e01 21,3 → 2,5 s, e02 5,8 → 2,5 s; panel 3,1 → 2,76 s) | 0,68 |
 | T11 (brány) | 0,9 (bez dílů P42 1,0) | 0,87 (q01 dál prohrává na semínku publikace) | 2,5 | 2,45 s (sběr 2,45, útěk 2,5, quest 2,5 s beze změny) | – (neměřeno, T12) |
+| T12 (konečné, `final.md`) | 0,9 (bez dílů P42 1,0) | 0,87; holdout B celek 0,72 (A 0,37), šest žánrů 0,88 (A 0,04) | 2,5; holdout 2,5 (A 1) | 2,45 s; holdout 2,99 s (A 4,47 s), šest žánrů 2,5 s | 0,68 (A 0,38; 0 vět horších) |

@@ -1,0 +1,4150 @@
+{
+ "schema": "p47a-final.v1",
+ "set": "p47a-holdout",
+ "holdout": {
+  "path": "evals/play/p47a/holdout.json",
+  "sha256": "7f62855dd8f45ad6ab1f050aea403ad76030b5c9163c6bedef643cdddbd9bd79",
+  "verifiedBeforeRead": true,
+  "openedAt": "2026-10-16T09:05:17.553Z",
+  "sentences": 60
+ },
+ "a": {
+  "commit": "abe38f04",
+  "note": "src at abe38f04 (branch base), measurement harness from B",
+  "compiler": "genre.v3"
+ },
+ "b": {
+  "branch": "features/P47A-finale-a-nepratele-2026-10-15",
+  "commit": "4e806213",
+  "compiler": "genre.v4"
+ },
+ "profile": "intermediate",
+ "seed": "publication seed (publishedWorld, p45/fun.ts)",
+ "gauge": "evals/play/p47a/finale.measure.ts (P47A_HOLDOUT=1)",
+ "targets": {
+  "finaleShare": {
+   "goal": ">= 0.8",
+   "a": 0.37,
+   "value": 0.72,
+   "met": false
+  },
+  "behavioursMedian": {
+   "goal": ">= 2",
+   "a": 1,
+   "value": 2.5,
+   "met": true
+  },
+  "deadTimeMedianS": {
+   "goal": "<= 3",
+   "a": 4.47,
+   "value": 2.99,
+   "met": true
+  },
+  "risingShare": {
+   "goal": ">= 0.7",
+   "a": 0.53,
+   "value": 0.78,
+   "met": true
+  }
+ },
+ "targetsSixGenres": {
+  "finaleShare": {
+   "goal": ">= 0.8",
+   "a": 0.04,
+   "value": 0.88,
+   "met": true
+  },
+  "behavioursMedian": {
+   "goal": ">= 2",
+   "a": 1,
+   "value": 3,
+   "met": true
+  },
+  "deadTimeMedianS": {
+   "goal": "<= 3",
+   "a": 5.35,
+   "value": 2.5,
+   "met": true
+  },
+  "risingShare": {
+   "goal": ">= 0.7",
+   "a": 0.28,
+   "value": 0.88,
+   "met": true
+  }
+ },
+ "sixGenres": [
+  "arena.collect",
+  "arena.escape",
+  "quest.spatial",
+  "quest.station",
+  "duel",
+  "throw"
+ ],
+ "byGenre": {
+  "arena.collect": {
+   "inScope": true,
+   "sentences": 12,
+   "playable": 12,
+   "a": {
+    "finaleShare": 0.08,
+    "deadTimeMedianS": 4.96,
+    "behavioursMedian": 1,
+    "risingShare": 0.5
+   },
+   "b": {
+    "finaleShare": 0.75,
+    "bossShare": 0.75,
+    "deadTimeMedianS": 2.49,
+    "behavioursMedian": 3.5,
+    "risingShare": 0.92
+   }
+  },
+  "arena.escape": {
+   "inScope": true,
+   "sentences": 6,
+   "playable": 6,
+   "a": {
+    "finaleShare": 0,
+    "deadTimeMedianS": 11.89,
+    "behavioursMedian": 2,
+    "risingShare": 0
+   },
+   "b": {
+    "finaleShare": 1,
+    "bossShare": 0.5,
+    "deadTimeMedianS": 2.5,
+    "behavioursMedian": 4,
+    "risingShare": 1
+   }
+  },
+  "arena.fight": {
+   "inScope": false,
+   "sentences": 3,
+   "playable": 3,
+   "a": {
+    "finaleShare": 1,
+    "deadTimeMedianS": 3.25,
+    "behavioursMedian": 4,
+    "risingShare": 0.67
+   },
+   "b": {
+    "finaleShare": 1,
+    "bossShare": 1,
+    "deadTimeMedianS": 3.25,
+    "behavioursMedian": 4,
+    "risingShare": 0.67
+   }
+  },
+  "control:ball": {
+   "inScope": false,
+   "sentences": 2,
+   "playable": 2,
+   "a": {
+    "finaleShare": 0,
+    "deadTimeMedianS": 3.42,
+    "behavioursMedian": 1,
+    "risingShare": 0
+   },
+   "b": {
+    "finaleShare": 0,
+    "bossShare": 0,
+    "deadTimeMedianS": 3.42,
+    "behavioursMedian": 1,
+    "risingShare": 0
+   }
+  },
+  "control:glide": {
+   "inScope": false,
+   "sentences": 5,
+   "playable": 5,
+   "a": {
+    "finaleShare": 0,
+    "deadTimeMedianS": 2.15,
+    "behavioursMedian": 0,
+    "risingShare": 0.2
+   },
+   "b": {
+    "finaleShare": 0,
+    "bossShare": 0,
+    "deadTimeMedianS": 2.15,
+    "behavioursMedian": 0,
+    "risingShare": 0.2
+   }
+  },
+  "control:move_free": {
+   "inScope": false,
+   "sentences": 1,
+   "playable": 1,
+   "a": {
+    "finaleShare": 0,
+    "deadTimeMedianS": 9.35,
+    "behavioursMedian": 1,
+    "risingShare": 1
+   },
+   "b": {
+    "finaleShare": 0,
+    "bossShare": 0,
+    "deadTimeMedianS": 9.35,
+    "behavioursMedian": 1,
+    "risingShare": 1
+   }
+  },
+  "control:steer": {
+   "inScope": false,
+   "sentences": 6,
+   "playable": 6,
+   "a": {
+    "finaleShare": 1,
+    "deadTimeMedianS": 3.22,
+    "behavioursMedian": 2,
+    "risingShare": 1
+   },
+   "b": {
+    "finaleShare": 1,
+    "bossShare": 1,
+    "deadTimeMedianS": 3.22,
+    "behavioursMedian": 2,
+    "risingShare": 1
+   }
+  },
+  "control:walker": {
+   "inScope": false,
+   "sentences": 4,
+   "playable": 4,
+   "a": {
+    "finaleShare": 0,
+    "deadTimeMedianS": 15.64,
+    "behavioursMedian": 0,
+    "risingShare": 0.25
+   },
+   "b": {
+    "finaleShare": 0,
+    "bossShare": 0,
+    "deadTimeMedianS": 15.64,
+    "behavioursMedian": 0,
+    "risingShare": 0.25
+   }
+  },
+  "duel": {
+   "inScope": true,
+   "sentences": 1,
+   "playable": 1,
+   "a": {
+    "finaleShare": 0,
+    "deadTimeMedianS": 2.35,
+    "behavioursMedian": 1,
+    "risingShare": 1
+   },
+   "b": {
+    "finaleShare": 1,
+    "bossShare": 1,
+    "deadTimeMedianS": 2.35,
+    "behavioursMedian": 1,
+    "risingShare": 1
+   }
+  },
+  "platformer": {
+   "inScope": false,
+   "sentences": 3,
+   "playable": 3,
+   "a": {
+    "finaleShare": 1,
+    "deadTimeMedianS": 2.1,
+    "behavioursMedian": 3,
+    "risingShare": 1
+   },
+   "b": {
+    "finaleShare": 1,
+    "bossShare": 1,
+    "deadTimeMedianS": 2.1,
+    "behavioursMedian": 3,
+    "risingShare": 1
+   }
+  },
+  "quest.spatial": {
+   "inScope": true,
+   "sentences": 2,
+   "playable": 2,
+   "a": {
+    "finaleShare": 0,
+    "deadTimeMedianS": 20.59,
+    "behavioursMedian": 2,
+    "risingShare": 0
+   },
+   "b": {
+    "finaleShare": 1,
+    "bossShare": 1,
+    "deadTimeMedianS": 2.5,
+    "behavioursMedian": 4,
+    "risingShare": 1
+   }
+  },
+  "quest.station": {
+   "inScope": true,
+   "sentences": 2,
+   "playable": 2,
+   "a": {
+    "finaleShare": 0,
+    "deadTimeMedianS": 1.74,
+    "behavioursMedian": 0,
+    "risingShare": 0
+   },
+   "b": {
+    "finaleShare": 1,
+    "bossShare": 0,
+    "deadTimeMedianS": 1.74,
+    "behavioursMedian": 0,
+    "risingShare": 1
+   }
+  },
+  "rhythm": {
+   "inScope": false,
+   "sentences": 3,
+   "playable": 3,
+   "a": {
+    "finaleShare": 1,
+    "deadTimeMedianS": 4,
+    "behavioursMedian": 0,
+    "risingShare": 1
+   },
+   "b": {
+    "finaleShare": 1,
+    "bossShare": 0,
+    "deadTimeMedianS": 4,
+    "behavioursMedian": 0,
+    "risingShare": 1
+   }
+  },
+  "runner": {
+   "inScope": false,
+   "sentences": 5,
+   "playable": 5,
+   "a": {
+    "finaleShare": 0.8,
+    "deadTimeMedianS": 5.07,
+    "behavioursMedian": 3,
+    "risingShare": 1
+   },
+   "b": {
+    "finaleShare": 0.8,
+    "bossShare": 0.8,
+    "deadTimeMedianS": 5.07,
+    "behavioursMedian": 3,
+    "risingShare": 1
+   }
+  },
+  "shooter": {
+   "inScope": false,
+   "sentences": 2,
+   "playable": 2,
+   "a": {
+    "finaleShare": 1,
+    "deadTimeMedianS": 5.98,
+    "behavioursMedian": 3,
+    "risingShare": 1
+   },
+   "b": {
+    "finaleShare": 1,
+    "bossShare": 1,
+    "deadTimeMedianS": 5.98,
+    "behavioursMedian": 3,
+    "risingShare": 1
+   }
+  },
+  "throw": {
+   "inScope": true,
+   "sentences": 2,
+   "playable": 2,
+   "a": {
+    "finaleShare": 0,
+    "deadTimeMedianS": 2.25,
+    "behavioursMedian": 0,
+    "risingShare": 0
+   },
+   "b": {
+    "finaleShare": 1,
+    "bossShare": 1,
+    "deadTimeMedianS": 2.25,
+    "behavioursMedian": 1,
+    "risingShare": 0
+   }
+  },
+  "timing.stack": {
+   "inScope": false,
+   "sentences": 1,
+   "playable": 1,
+   "a": {
+    "finaleShare": 0,
+    "deadTimeMedianS": 2.75,
+    "behavioursMedian": 0,
+    "risingShare": 1
+   },
+   "b": {
+    "finaleShare": 0,
+    "bossShare": 0,
+    "deadTimeMedianS": 2.75,
+    "behavioursMedian": 0,
+    "risingShare": 1
+   }
+  }
+ },
+ "panel": {
+  "summary": {
+   "a": {
+    "all": {
+     "sentences": 40,
+     "built": 40,
+     "playable": 40,
+     "pacedShare": 0.6,
+     "reasons": {
+      "rules": 8,
+      "entry": 6,
+      "assembly": 2
+     },
+     "finaleShare": 0.38,
+     "bossShare": 0.28,
+     "behavioursMedian": 1,
+     "deadTimeMedianS": 4,
+     "risingShare": 0.63,
+     "segmentChanges2Share": 0.28
+    },
+    "genres": {
+     "arena.collect": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 0,
+      "reasons": {
+       "rules": 2,
+       "assembly": 1
+      },
+      "finaleShare": 0.33,
+      "bossShare": 0,
+      "behavioursMedian": 1,
+      "deadTimeMedianS": 4.7,
+      "risingShare": 0.67,
+      "segmentChanges2Share": 0
+     },
+     "arena.escape": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 0,
+      "reasons": {
+       "rules": 3
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 2,
+      "deadTimeMedianS": 9.2,
+      "risingShare": 0,
+      "segmentChanges2Share": 0
+     },
+     "arena.fight": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 4,
+      "deadTimeMedianS": 6.9,
+      "risingShare": 0.5,
+      "segmentChanges2Share": 1
+     },
+     "control:ball": {
+      "sentences": 1,
+      "built": 1,
+      "playable": 1,
+      "pacedShare": 0,
+      "reasons": {
+       "entry": 1
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 3.27,
+      "risingShare": 0,
+      "segmentChanges2Share": 0
+     },
+     "control:glide": {
+      "sentences": 1,
+      "built": 1,
+      "playable": 1,
+      "pacedShare": 0,
+      "reasons": {
+       "entry": 1
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 2.15,
+      "risingShare": 0,
+      "segmentChanges2Share": 0
+     },
+     "control:move_free": {
+      "sentences": 1,
+      "built": 1,
+      "playable": 1,
+      "pacedShare": 0,
+      "reasons": {
+       "entry": 1
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 1,
+      "deadTimeMedianS": 6.32,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     },
+     "control:steer": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 2,
+      "deadTimeMedianS": 3.22,
+      "risingShare": 1,
+      "segmentChanges2Share": 1
+     },
+     "control:walker": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 0,
+      "reasons": {
+       "entry": 3
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 21.92,
+      "risingShare": 0.33,
+      "segmentChanges2Share": 0
+     },
+     "duel": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 1,
+      "deadTimeMedianS": 2.26,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     },
+     "flap": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 2.98,
+      "risingShare": 1,
+      "segmentChanges2Share": 1
+     },
+     "platformer": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 3,
+      "deadTimeMedianS": 2.87,
+      "risingShare": 1,
+      "segmentChanges2Share": 0.67
+     },
+     "quest.spatial": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 0,
+      "reasons": {
+       "rules": 3
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 2,
+      "deadTimeMedianS": 17.38,
+      "risingShare": 0,
+      "segmentChanges2Share": 0
+     },
+     "quest.station": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 0.67,
+      "reasons": {
+       "assembly": 1
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 1.8,
+      "risingShare": 0.33,
+      "segmentChanges2Share": 0
+     },
+     "rhythm": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 4,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     },
+     "runner": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 2.5,
+      "deadTimeMedianS": 5.23,
+      "risingShare": 1,
+      "segmentChanges2Share": 1
+     },
+     "shooter": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 0.5,
+      "behavioursMedian": 2,
+      "deadTimeMedianS": 5.67,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     },
+     "throw": {
+      "sentences": 1,
+      "built": 1,
+      "playable": 1,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 2.27,
+      "risingShare": 0,
+      "segmentChanges2Share": 0
+     },
+     "timing.stack": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 1.9,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     }
+    }
+   },
+   "b": {
+    "all": {
+     "sentences": 40,
+     "built": 40,
+     "playable": 40,
+     "pacedShare": 0.8,
+     "reasons": {
+      "entry": 6,
+      "assembly": 2
+     },
+     "finaleShare": 0.68,
+     "bossShare": 0.5,
+     "behavioursMedian": 1.5,
+     "deadTimeMedianS": 2.76,
+     "risingShare": 0.83,
+     "segmentChanges2Share": 0.43
+    },
+    "genres": {
+     "arena.collect": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 0.67,
+      "reasons": {
+       "assembly": 1
+      },
+      "finaleShare": 0.67,
+      "bossShare": 0.67,
+      "behavioursMedian": 3,
+      "deadTimeMedianS": 2.5,
+      "risingShare": 0.67,
+      "segmentChanges2Share": 0.67
+     },
+     "arena.escape": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 0.33,
+      "behavioursMedian": 4,
+      "deadTimeMedianS": 2.5,
+      "risingShare": 1,
+      "segmentChanges2Share": 0.67
+     },
+     "arena.fight": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 4,
+      "deadTimeMedianS": 6.9,
+      "risingShare": 0.5,
+      "segmentChanges2Share": 1
+     },
+     "control:ball": {
+      "sentences": 1,
+      "built": 1,
+      "playable": 1,
+      "pacedShare": 0,
+      "reasons": {
+       "entry": 1
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 3.27,
+      "risingShare": 0,
+      "segmentChanges2Share": 0
+     },
+     "control:glide": {
+      "sentences": 1,
+      "built": 1,
+      "playable": 1,
+      "pacedShare": 0,
+      "reasons": {
+       "entry": 1
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 2.15,
+      "risingShare": 0,
+      "segmentChanges2Share": 0
+     },
+     "control:move_free": {
+      "sentences": 1,
+      "built": 1,
+      "playable": 1,
+      "pacedShare": 0,
+      "reasons": {
+       "entry": 1
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 1,
+      "deadTimeMedianS": 6.32,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     },
+     "control:steer": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 2,
+      "deadTimeMedianS": 3.22,
+      "risingShare": 1,
+      "segmentChanges2Share": 1
+     },
+     "control:walker": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 0,
+      "reasons": {
+       "entry": 3
+      },
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 21.92,
+      "risingShare": 0.33,
+      "segmentChanges2Share": 0
+     },
+     "duel": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 1,
+      "deadTimeMedianS": 2.26,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     },
+     "flap": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 2.98,
+      "risingShare": 1,
+      "segmentChanges2Share": 1
+     },
+     "platformer": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 3,
+      "deadTimeMedianS": 2.87,
+      "risingShare": 1,
+      "segmentChanges2Share": 0.67
+     },
+     "quest.spatial": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 3,
+      "deadTimeMedianS": 2.5,
+      "risingShare": 1,
+      "segmentChanges2Share": 0.33
+     },
+     "quest.station": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 0.67,
+      "reasons": {
+       "assembly": 1
+      },
+      "finaleShare": 0.67,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 1.8,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     },
+     "rhythm": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 4,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     },
+     "runner": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 2.5,
+      "deadTimeMedianS": 5.23,
+      "risingShare": 1,
+      "segmentChanges2Share": 1
+     },
+     "shooter": {
+      "sentences": 2,
+      "built": 2,
+      "playable": 2,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 0.5,
+      "behavioursMedian": 2,
+      "deadTimeMedianS": 5.67,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     },
+     "throw": {
+      "sentences": 1,
+      "built": 1,
+      "playable": 1,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 1,
+      "bossShare": 1,
+      "behavioursMedian": 1,
+      "deadTimeMedianS": 2.27,
+      "risingShare": 0,
+      "segmentChanges2Share": 1
+     },
+     "timing.stack": {
+      "sentences": 3,
+      "built": 3,
+      "playable": 3,
+      "pacedShare": 1,
+      "reasons": {},
+      "finaleShare": 0,
+      "bossShare": 0,
+      "behavioursMedian": 0,
+      "deadTimeMedianS": 1.9,
+      "risingShare": 1,
+      "segmentChanges2Share": 0
+     }
+    }
+   }
+  },
+  "violations": [],
+  "bossToClimax": []
+ },
+ "dev": {
+  "a": {
+   "all": {
+    "sentences": 30,
+    "built": 30,
+    "playable": 30,
+    "pacedShare": 0.37,
+    "reasons": {
+     "assembly": 3,
+     "rules": 16
+    },
+    "finaleShare": 0,
+    "bossShare": 0,
+    "behavioursMedian": 1,
+    "deadTimeMedianS": 4.67,
+    "risingShare": 0.33,
+    "segmentChanges2Share": 0
+   },
+   "genres": {
+    "arena.collect": {
+     "sentences": 10,
+     "built": 10,
+     "playable": 10,
+     "pacedShare": 0,
+     "reasons": {
+      "assembly": 3,
+      "rules": 7
+     },
+     "finaleShare": 0,
+     "bossShare": 0,
+     "behavioursMedian": 1,
+     "deadTimeMedianS": 4.76,
+     "risingShare": 0.4,
+     "segmentChanges2Share": 0
+    },
+    "arena.escape": {
+     "sentences": 4,
+     "built": 4,
+     "playable": 4,
+     "pacedShare": 0,
+     "reasons": {
+      "rules": 4
+     },
+     "finaleShare": 0,
+     "bossShare": 0,
+     "behavioursMedian": 2,
+     "deadTimeMedianS": 15.1,
+     "risingShare": 0,
+     "segmentChanges2Share": 0
+    },
+    "duel": {
+     "sentences": 4,
+     "built": 4,
+     "playable": 4,
+     "pacedShare": 1,
+     "reasons": {},
+     "finaleShare": 0,
+     "bossShare": 0,
+     "behavioursMedian": 1,
+     "deadTimeMedianS": 2.24,
+     "risingShare": 1,
+     "segmentChanges2Share": 0
+    },
+    "quest.spatial": {
+     "sentences": 5,
+     "built": 5,
+     "playable": 5,
+     "pacedShare": 0,
+     "reasons": {
+      "rules": 5
+     },
+     "finaleShare": 0,
+     "bossShare": 0,
+     "behavioursMedian": 2,
+     "deadTimeMedianS": 11.12,
+     "risingShare": 0,
+     "segmentChanges2Share": 0
+    },
+    "quest.station": {
+     "sentences": 4,
+     "built": 4,
+     "playable": 4,
+     "pacedShare": 1,
+     "reasons": {},
+     "finaleShare": 0,
+     "bossShare": 0,
+     "behavioursMedian": 0,
+     "deadTimeMedianS": 1.74,
+     "risingShare": 0.5,
+     "segmentChanges2Share": 0
+    },
+    "throw": {
+     "sentences": 3,
+     "built": 3,
+     "playable": 3,
+     "pacedShare": 1,
+     "reasons": {},
+     "finaleShare": 0,
+     "bossShare": 0,
+     "behavioursMedian": 0,
+     "deadTimeMedianS": 2.35,
+     "risingShare": 0,
+     "segmentChanges2Share": 0
+    }
+   }
+  },
+  "b": {
+   "all": {
+    "sentences": 30,
+    "built": 30,
+    "playable": 30,
+    "pacedShare": 0.9,
+    "reasons": {
+     "assembly": 3
+    },
+    "finaleShare": 0.87,
+    "bossShare": 0.67,
+    "behavioursMedian": 2.5,
+    "deadTimeMedianS": 2.45,
+    "risingShare": 0.8,
+    "segmentChanges2Share": 0.57
+   },
+   "genres": {
+    "arena.collect": {
+     "sentences": 10,
+     "built": 10,
+     "playable": 10,
+     "pacedShare": 0.7,
+     "reasons": {
+      "assembly": 3
+     },
+     "finaleShare": 0.7,
+     "bossShare": 0.7,
+     "behavioursMedian": 3.5,
+     "deadTimeMedianS": 2.45,
+     "risingShare": 0.7,
+     "segmentChanges2Share": 0.7
+    },
+    "arena.escape": {
+     "sentences": 4,
+     "built": 4,
+     "playable": 4,
+     "pacedShare": 1,
+     "reasons": {},
+     "finaleShare": 1,
+     "bossShare": 0.5,
+     "behavioursMedian": 4.5,
+     "deadTimeMedianS": 2.5,
+     "risingShare": 1,
+     "segmentChanges2Share": 1
+    },
+    "duel": {
+     "sentences": 4,
+     "built": 4,
+     "playable": 4,
+     "pacedShare": 1,
+     "reasons": {},
+     "finaleShare": 1,
+     "bossShare": 1,
+     "behavioursMedian": 1,
+     "deadTimeMedianS": 2.24,
+     "risingShare": 1,
+     "segmentChanges2Share": 0
+    },
+    "quest.spatial": {
+     "sentences": 5,
+     "built": 5,
+     "playable": 5,
+     "pacedShare": 1,
+     "reasons": {},
+     "finaleShare": 0.8,
+     "bossShare": 0.8,
+     "behavioursMedian": 4,
+     "deadTimeMedianS": 2.5,
+     "risingShare": 1,
+     "segmentChanges2Share": 0.6
+    },
+    "quest.station": {
+     "sentences": 4,
+     "built": 4,
+     "playable": 4,
+     "pacedShare": 1,
+     "reasons": {},
+     "finaleShare": 1,
+     "bossShare": 0,
+     "behavioursMedian": 0,
+     "deadTimeMedianS": 1.74,
+     "risingShare": 1,
+     "segmentChanges2Share": 0
+    },
+    "throw": {
+     "sentences": 3,
+     "built": 3,
+     "playable": 3,
+     "pacedShare": 1,
+     "reasons": {},
+     "finaleShare": 1,
+     "bossShare": 1,
+     "behavioursMedian": 1,
+     "deadTimeMedianS": 2.35,
+     "risingShare": 0,
+     "segmentChanges2Share": 1
+    }
+   }
+  }
+ },
+ "pairJudge": null,
+ "met": false,
+ "rows": {
+  "holdout": [
+   {
+    "id": "h001",
+    "text": "a skateboarding grandma escapes a swarm of angry bees through the park",
+    "a": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1037264350,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 4.4,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1037264350,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 4.4,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h002",
+    "text": "flip pancakes for a line of hungry customers before they walk out",
+    "a": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 343297126,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 19.37,
+     "rising": false,
+     "segmentChanges": 1
+    },
+    "b": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 343297126,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 19.37,
+     "rising": false,
+     "segmentChanges": 1
+    }
+   },
+   {
+    "id": "h003",
+    "text": "a baby dragon learns to fly over a misty valley",
+    "a": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 1851746318,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 1851746318,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h004",
+    "text": "a boxing kangaroo fights a crocodile in a muddy ring",
+    "a": {
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1752876990,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.25,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1752876990,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.25,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h005",
+    "text": "finish the quarterly report and email it to my boss",
+    "a": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1987783330,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 10.25,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1987783330,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 5,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h006",
+    "text": "fight off zombies with a frying pan in an empty supermarket",
+    "a": {
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 33245667,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 4.15,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 33245667,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 4.15,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h007",
+    "text": "catch the last bus before it pulls away from the stop",
+    "a": {
+     "genre": "control:move_free",
+     "generator": "arena_catch",
+     "seed": 1990212102,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 9.35,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:move_free",
+     "generator": "arena_catch",
+     "seed": 1990212102,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 9.35,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h008",
+    "text": "a delivery drone flies through a thunderstorm dodging lightning bolts",
+    "a": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 934836394,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.87,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 934836394,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.87,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h009",
+    "text": "a wizard hurls fireballs at skeletons in a dusty crypt",
+    "a": {
+     "genre": "throw",
+     "generator": "throw_field",
+     "seed": 1993009718,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.4,
+     "rising": false,
+     "segmentChanges": 1
+    },
+    "b": {
+     "genre": "throw",
+     "generator": "throw_field",
+     "seed": 1993009718,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "longestGapS": 2.4,
+     "rising": false,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h010",
+    "text": "walk the dog around the block without letting it eat trash",
+    "a": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 47231103,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 16.93,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 47231103,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 16.93,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h011",
+    "text": "collect seashells on the beach before the giant crabs pinch you",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 370075681,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 4.57,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 370075681,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.4,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h012",
+    "text": "buy milk, bread and batteries on the way home",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 878581285,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 4.65,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 878581285,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h013",
+    "text": "jump across melting ice floes to get away from a walrus",
+    "a": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1862686056,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 1.97,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1862686056,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 1.97,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h014",
+    "text": "a mermaid swims through a sunken city collecting pearls",
+    "a": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 2139752127,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 2139752127,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h015",
+    "text": "chop vegetables to the beat of the kitchen radio",
+    "a": {
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 245909763,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 3.5,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 245909763,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 3.5,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h016",
+    "text": "a tiny mouse sneaks past sleeping guard dogs to grab the cheese",
+    "a": {
+     "genre": "control:walker",
+     "generator": "walker_stealth",
+     "seed": 452891230,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 14.12,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "control:walker",
+     "generator": "walker_stealth",
+     "seed": 452891230,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 14.12,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h017",
+    "text": "an office worker races to the printer before the big meeting starts",
+    "a": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 188201665,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 188201665,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h018",
+    "text": "outrun an avalanche on skis all the way down the mountain",
+    "a": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1962307884,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 5.07,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1962307884,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 5.07,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h019",
+    "text": "a robot astronaut hops between tiny floating moons",
+    "a": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1945881979,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 3.83,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1945881979,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 3.83,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h020",
+    "text": "I just want a quiet evening with hot tea and a good book",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 268533686,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 5.35,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 268533686,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.13,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h021",
+    "text": "a kid steals cookies from the kitchen while mom is on the phone",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1647114936,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 4.38,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1647114936,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h022",
+    "text": "defend your treehouse from raccoons using only a water pistol",
+    "a": {
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 184454311,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 5.98,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 184454311,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 5.98,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h023",
+    "text": "a cyborg samurai duels a holographic ninja on a neon rooftop",
+    "a": {
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 1704158682,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 2.35,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 1704158682,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "longestGapS": 2.35,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h024",
+    "text": "escape the bank vault before the security robots wake up",
+    "a": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1836168639,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 4,
+     "longestGapS": 5.97,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1836168639,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 4,
+     "longestGapS": 5.97,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h025",
+    "text": "race a shark to the lighthouse in a little rowing boat",
+    "a": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1741973755,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1741973755,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h026",
+    "text": "remind me to call the dentist about my broken tooth",
+    "a": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 786760488,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 13.52,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 786760488,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 5,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1
+    }
+   },
+   {
+    "id": "h027",
+    "text": "mow the lawn in neat stripes without running over the flowerbeds",
+    "a": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 343488129,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 6.47,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 343488129,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 6.47,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h028",
+    "text": "pop the balloons carrying spiders before they land on the picnic",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1450678974,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 8.02,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1450678974,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 8.02,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h029",
+    "text": "a grumpy troll stops goats from crossing his wooden bridge",
+    "a": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1052616995,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 9.15,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1052616995,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 5,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h030",
+    "text": "a student bikes to school dodging puddles and buses",
+    "a": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 675451595,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 675451595,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h031",
+    "text": "a mail carrier delivers letters down the street while angry geese chase her",
+    "a": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 727890808,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 4.83,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 727890808,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 4.83,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h032",
+    "text": "beat the rival dance crew in a showdown on the subway platform",
+    "a": {
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 1799638652,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 1799638652,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h033",
+    "text": "clean out the garage and take the old boxes to recycling",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 661491229,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 5.65,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 661491229,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.13,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h034",
+    "text": "a firefly fairy lights paper lanterns for the forest festival",
+    "a": {
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 2068420266,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 27.45,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 2068420266,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h035",
+    "text": "toss crumpled paper balls into the trash can from your desk",
+    "a": {
+     "genre": "throw",
+     "generator": "throw_field",
+     "seed": 770202760,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.1,
+     "rising": false,
+     "segmentChanges": 1
+    },
+    "b": {
+     "genre": "throw",
+     "generator": "throw_field",
+     "seed": 770202760,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "longestGapS": 2.1,
+     "rising": false,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h036",
+    "text": "survive one night in a haunted hospital while a ghost nurse hunts you",
+    "a": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 354357466,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 9.45,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 354357466,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 3,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h037",
+    "text": "catch falling apples in a basket under the old orchard trees",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 793658876,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 8.9,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 793658876,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 8.9,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h038",
+    "text": "pilot a spaceship through an asteroid field to reach an alien planet",
+    "a": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 186080494,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 186080494,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h039",
+    "text": "steer a little submarine through the deep ocean away from a hungry squid",
+    "a": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 2013649930,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 2013649930,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h040",
+    "text": "schedule a meeting with the design team for Thursday afternoon",
+    "a": {
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 1763606337,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.98,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 1763606337,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 1.98,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h041",
+    "text": "a firefighter rescues kittens from a burning apartment building",
+    "a": {
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1428743112,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 13.72,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1428743112,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h042",
+    "text": "a centaur archer shoots a pumpkin off a sleeping giant's head",
+    "a": {
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 440124690,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 5.97,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 440124690,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 5.97,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h043",
+    "text": "pack the grocery bag so the eggs don't get crushed",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1563426333,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 4.58,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1563426333,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.1,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h044",
+    "text": "dodge falling rocks while climbing up the side of a volcano",
+    "a": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 657490976,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.1,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 657490976,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.1,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h045",
+    "text": "translate this paragraph into Spanish for our new client",
+    "a": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1834025896,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 16.67,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1834025896,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 3,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h046",
+    "text": "throw snowballs at the neighbor kids hiding behind their snow fort",
+    "a": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 1022692373,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 14.35,
+     "rising": false,
+     "segmentChanges": 1
+    },
+    "b": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 1022692373,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 14.35,
+     "rising": false,
+     "segmentChanges": 1
+    }
+   },
+   {
+    "id": "h047",
+    "text": "a waiter carries a wobbly tower of plates through a crowded restaurant",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1246923272,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 5.22,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1246923272,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 5.22,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h048",
+    "text": "guide a family of ducklings across a busy highway without getting squashed",
+    "a": {
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 617650848,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.38,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 617650848,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.38,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h049",
+    "text": "a unicorn gallops along rainbow bridges high above the clouds",
+    "a": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1444066392,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1444066392,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h050",
+    "text": "a lizard scurries across the desert avoiding hungry hawks",
+    "a": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1340441374,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 16.67,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1340441374,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 3,
+     "longestGapS": 3.23,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h051",
+    "text": "help grandpa find his glasses somewhere in the messy living room",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 378441387,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": "climax",
+     "behaviourCount": 1,
+     "longestGapS": 4.7,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 378441387,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.28,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h052",
+    "text": "rainy Sunday, feeling sleepy, all I need is coffee and a blanket",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1852581399,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 5.95,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1852581399,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h053",
+    "text": "a goalkeeper stops penalty shots from a robot striker",
+    "a": {
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 204079494,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 3.55,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 204079494,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 3.55,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h054",
+    "text": "a little witch stirs potions in time with a spooky drum",
+    "a": {
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 829128890,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 4.12,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 829128890,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 4.12,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h055",
+    "text": "park the car in a tight spot outside the busy mall",
+    "a": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1799171474,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.45,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1799171474,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.45,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h056",
+    "text": "a hedgehog rolls through the forest dodging foxes and owls",
+    "a": {
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 130670755,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 3.28,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 130670755,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 3.28,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h057",
+    "text": "knock the pirates overboard before they steal the gold from your ship",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1347782298,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 4.53,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1347782298,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.47,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h058",
+    "text": "a phoenix soars over a jungle temple chasing the sunrise",
+    "a": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 682447383,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 682447383,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h059",
+    "text": "renew my passport before the summer trip in June",
+    "a": {
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 646012337,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.75,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 646012337,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.75,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h060",
+    "text": "sort the dirty laundry into the right baskets as fast as you can",
+    "a": {
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 1650522240,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.5,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 1650522240,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 1.5,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   }
+  ],
+  "panel": [
+   {
+    "id": "f01",
+    "text": "a dragon guards its gold hoard from greedy knights inside a volcano",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 2029908878,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": "climax",
+     "behaviourCount": 1,
+     "longestGapS": 4.7,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 2029908878,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.3,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "f02",
+    "text": "an ogre arm wrestles a frost giant in a smoky mountain tavern",
+    "a": {
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 1765971460,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 2.25,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 1765971460,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "longestGapS": 2.25,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "f03",
+    "text": "An elf archer shoots goblins from the treetops.",
+    "a": {
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 980376029,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 5.83,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 980376029,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 5.83,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "f05",
+    "text": "a fairy lights lanterns along a moonlit forest path",
+    "a": {
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 21180790,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 13.48,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 21180790,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.33,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "f10",
+    "text": "a stone golem crushes grave robbers in an ancient desert temple",
+    "a": {
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1596118451,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.17,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1596118451,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 2.17,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "f12",
+    "text": "a baby dragon learns to fly over a medieval town",
+    "a": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 464079286,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 464079286,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "f17",
+    "text": "a phoenix rises from the ashes over a burning desert",
+    "a": {
+     "genre": "flap",
+     "generator": "flap_track",
+     "seed": 2115210011,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.98,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "flap",
+     "generator": "flap_track",
+     "seed": 2115210011,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.98,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "f18",
+    "text": "a halfling sneaks past a sleeping dragon into its treasure cave",
+    "a": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 307148749,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 26.73,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 307148749,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 26.73,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "m01",
+    "text": "toaster tornado",
+    "a": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 467943004,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 16.67,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 467943004,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 4,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1
+    }
+   },
+   {
+    "id": "m02",
+    "text": "cat lasers",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1608071755,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 5.78,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1608071755,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 5.78,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "m03",
+    "text": "Grandma kart",
+    "a": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1219393165,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1219393165,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "m04",
+    "text": "bake cookies",
+    "a": {
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 71607569,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.8,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 71607569,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 1.8,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "m06",
+    "text": "dragon taxi",
+    "a": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1992089601,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1992089601,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "m07",
+    "text": "walk the dog",
+    "a": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 2062223603,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 21.92,
+     "rising": false,
+     "segmentChanges": 1
+    },
+    "b": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 2062223603,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 21.92,
+     "rising": false,
+     "segmentChanges": 1
+    }
+   },
+   {
+    "id": "m08",
+    "text": "a pengiun tht slides down a mountin",
+    "a": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 971846864,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 5.13,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 971846864,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "longestGapS": 5.13,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "m09",
+    "text": "ninja cat jumpin on rooftops plz",
+    "a": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1611622728,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.87,
+     "rising": true,
+     "segmentChanges": 1
+    },
+    "b": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1611622728,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.87,
+     "rising": true,
+     "segmentChanges": 1
+    }
+   },
+   {
+    "id": "m11",
+    "text": "my dog chasing the mailman,around the backyard lol",
+    "a": {
+     "genre": "control:move_free",
+     "generator": "arena_catch",
+     "seed": 415905883,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 6.32,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:move_free",
+     "generator": "arena_catch",
+     "seed": 415905883,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 6.32,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "m16",
+    "text": "a kangaroo jumps over cars then collects coins on the highway",
+    "a": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 14821989,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 13.13,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 14821989,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 13.13,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "n01",
+    "text": "file my expense report with a pile of crumpled receipts",
+    "a": {
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 476065825,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.02,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 476065825,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.02,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "n02",
+    "text": "me trying to fall asleep in bed the night before a big exam",
+    "a": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 459205541,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 9.2,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 459205541,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 3,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "n04",
+    "text": "Renew my passport at city hall.",
+    "a": {
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 1283607489,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.9,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 1283607489,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.9,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "u01",
+    "text": "a grandma cat knits a giant scarf by the fireplace",
+    "a": {
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 359369212,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 359369212,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "u02",
+    "text": "A tailor mouse sews buttons onto tiny coats before the royal parade.",
+    "a": {
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 567995346,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 567995346,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "u03",
+    "text": "a penguin chef stirs a huge pot of fish soup on an iceberg",
+    "a": {
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 2101970384,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.98,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 2101970384,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "longestGapS": 1.98,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "u06",
+    "text": "a gardener waters thirsty sunflowers on a rooftop garden",
+    "a": {
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1969247423,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 17.38,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1969247423,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1
+    }
+   },
+   {
+    "id": "d01",
+    "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+    "a": {
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 1448805176,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 3.27,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 1448805176,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 3.27,
+     "rising": false,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "d03",
+    "text": "a witch brews potions in a crooked tower during a thunderstorm",
+    "a": {
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 1279517972,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.65,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 1279517972,
+     "playable": true,
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 1.65,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "d04",
+    "text": "shoot down paper planes over a school playground",
+    "a": {
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 809519851,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 2,
+     "longestGapS": 5.5,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 809519851,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 2,
+     "longestGapS": 5.5,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "d09",
+    "text": "stack cheese wheels into a wobbly tower at a farm market",
+    "a": {
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 1726936063,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.65,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 1726936063,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.65,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "h02",
+    "text": "shopping cart race in a supermarket",
+    "a": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1227587564,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1227587564,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h03",
+    "text": "defend a castle from dragons by throwing snowballs",
+    "a": {
+     "genre": "throw",
+     "generator": "throw_field",
+     "seed": 328920478,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.27,
+     "rising": false,
+     "segmentChanges": 1
+    },
+    "b": {
+     "genre": "throw",
+     "generator": "throw_field",
+     "seed": 328920478,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "longestGapS": 2.27,
+     "rising": false,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "h05",
+    "text": "boxing a kangaroo in the australian outback",
+    "a": {
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 727311170,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 2.27,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 727311170,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "longestGapS": 2.27,
+     "rising": true,
+     "segmentChanges": 0
+    }
+   },
+   {
+    "id": "j01",
+    "text": "Explain quantum physics to my grandma.",
+    "a": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1760529582,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 1,
+     "longestGapS": 4.55,
+     "rising": true,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1760529582,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "j04",
+    "text": "walk my dog along the beach while eating an ice cream",
+    "a": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 936404094,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 11.47,
+     "rising": true,
+     "segmentChanges": 1
+    },
+    "b": {
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 936404094,
+     "playable": true,
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 11.47,
+     "rising": true,
+     "segmentChanges": 1
+    }
+   },
+   {
+    "id": "j05",
+    "text": "pop ten balloons at a birthday party",
+    "a": {
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1823895065,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 28.6,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1823895065,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1
+    }
+   },
+   {
+    "id": "j08",
+    "text": "a wizard defends a crystal tower from flying skeletons",
+    "a": {
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1631427981,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 11.62,
+     "rising": false,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1631427981,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "longestGapS": 11.62,
+     "rising": false,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "s002",
+    "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+    "a": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1291481298,
+     "playable": true,
+     "paced": false,
+     "reason": "rules",
+     "finale": null,
+     "behaviourCount": 2,
+     "longestGapS": 4.68,
+     "rising": false,
+     "segmentChanges": 0
+    },
+    "b": {
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1291481298,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 5,
+     "longestGapS": 2.35,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "s003",
+    "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+    "a": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1924202525,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 5.33,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1924202525,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 5.33,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "s021",
+    "text": "obby game with lava and spinning bars",
+    "a": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 292625551,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.03,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 292625551,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "longestGapS": 2.03,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   },
+   {
+    "id": "s035",
+    "text": "like flappy bird but underwater",
+    "a": {
+     "genre": "flap",
+     "generator": "flap_track",
+     "seed": 1363119617,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.98,
+     "rising": true,
+     "segmentChanges": 2
+    },
+    "b": {
+     "genre": "flap",
+     "generator": "flap_track",
+     "seed": 1363119617,
+     "playable": true,
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "longestGapS": 2.98,
+     "rising": true,
+     "segmentChanges": 2
+    }
+   }
+  ]
+ }
+}
