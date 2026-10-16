@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "529e4b81a7df04f3d13e80329382b974fc7dfc44bfc67326168a432cb549831f",
+ "catalogHash": "ecb852a19262f881e32cdeafff310f2669d139cdbf853c8bf7c995980897f4a4",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1724,6 +1724,8 @@
   "gen3d-puffin": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-rafflesia": {"class":"prop"},
   "gen3d-tire-pile": {"class":"prop"},
-  "gen3d-engine-block": {"class":"prop"}
+  "gen3d-engine-block": {"class":"prop"},
+  "gen3d-circus-drum": {"class":"prop"},
+  "gen3d-sunken-lamp-post": {"class":"biped","regions":{"legY":0.25}}
  }
 }

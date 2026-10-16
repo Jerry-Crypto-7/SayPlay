@@ -949,3 +949,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-rafflesia` | rafflesia, corpse flower | 4562 / 2256 |
 | `gen3d-tire-pile` | tire pile, tire stack | 4088 / 2837 |
 | `gen3d-engine-block` | engine block | 3805 / 1861 |
+| `gen3d-circus-drum` | circus drum, circus podium, circus pedestal | 4353 / 2087 |
+| `gen3d-sunken-lamp-post` | sunken lamp post | 4724 / 2342 |

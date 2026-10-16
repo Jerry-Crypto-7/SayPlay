@@ -2182,6 +2182,10 @@
         {
           "id": "gen3d-unicycle",
           "height": 1.4
+        },
+        {
+          "id": "gen3d-circus-drum",
+          "height": 0.8
         }
       ]
     },
@@ -2197,6 +2201,10 @@
         {
           "id": "gen3d-sunken-bell",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-sunken-lamp-post",
+          "height": 3
         }
       ]
     }

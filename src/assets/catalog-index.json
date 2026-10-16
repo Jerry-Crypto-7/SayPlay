@@ -34592,6 +34592,46 @@
           0.78614
         ]
       }
+    },
+    {
+      "assetId": "gen3d-circus-drum",
+      "tags": [
+        "circus drum",
+        "circus podium",
+        "circus pedestal"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-circus-drum-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.34415,
+          0,
+          -1.34327
+        ],
+        "max": [
+          1.34415,
+          0.9982,
+          1.34327
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sunken-lamp-post",
+      "tags": [
+        "sunken lamp post"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sunken-lamp-post-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25013,
+          0,
+          -0.24839
+        ],
+        "max": [
+          0.25013,
+          0.99954,
+          0.24839
+        ]
+      }
     }
   ]
 }
