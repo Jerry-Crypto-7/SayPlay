@@ -34028,6 +34028,143 @@
           0.36519
         ]
       }
+    },
+    {
+      "assetId": "gen3d-cotton-candy",
+      "tags": [
+        "cotton candy",
+        "candy floss"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cotton-candy-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25535,
+          0,
+          -0.25177
+        ],
+        "max": [
+          0.25535,
+          0.99861,
+          0.25177
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-oil-can",
+      "tags": [
+        "oil can",
+        "oiler"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-oil-can-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32085,
+          0,
+          -0.2235
+        ],
+        "max": [
+          0.32085,
+          0.99895,
+          0.2235
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-power-core",
+      "tags": [
+        "power core",
+        "reactor core",
+        "energy core"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-power-core-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44843,
+          0,
+          -0.4485
+        ],
+        "max": [
+          0.44843,
+          0.99989,
+          0.4485
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-jade-skull",
+      "tags": [
+        "jade skull"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jade-skull-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34329,
+          0,
+          -0.47393
+        ],
+        "max": [
+          0.34329,
+          0.99471,
+          0.47393
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-magma-crystal",
+      "tags": [
+        "magma crystal"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-magma-crystal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31898,
+          0,
+          -0.31174
+        ],
+        "max": [
+          0.31898,
+          0.99529,
+          0.31174
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-key",
+      "tags": [
+        "ice key"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ice-key-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19067,
+          0,
+          -0.05352
+        ],
+        "max": [
+          0.19067,
+          0.99988,
+          0.05352
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bone-key",
+      "tags": [
+        "bone key"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bone-key-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21257,
+          0,
+          -0.08065
+        ],
+        "max": [
+          0.21257,
+          0.99738,
+          0.08065
+        ]
+      }
     }
   ]
 }

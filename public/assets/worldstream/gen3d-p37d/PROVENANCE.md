@@ -920,3 +920,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-gift-bag` | gift bag | 4620 / 2236 |
 | `gen3d-firefly-jar` | firefly jar | 4523 / 2165 |
 | `gen3d-cactus-fruit` | cactus fruit, prickly pear | 4748 / 2374 |
+| `gen3d-cotton-candy` | cotton candy, candy floss | 4714 / 2354 |
+| `gen3d-oil-can` | oil can, oiler | 4729 / 2346 |
+| `gen3d-power-core` | power core, reactor core, energy core | 4160 / 1972 |
+| `gen3d-jade-skull` | jade skull | 4350 / 2077 |
+| `gen3d-magma-crystal` | magma crystal | 4487 / 2217 |
+| `gen3d-ice-key` | ice key | 4744 / 2372 |
+| `gen3d-bone-key` | bone key | 4742 / 2360 |

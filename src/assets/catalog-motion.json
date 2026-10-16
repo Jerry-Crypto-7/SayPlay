@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "e755d0a8d05f1dd4f4af1ded61ecc42d4bea66552da15acb4f06baeff35bd262",
+ "catalogHash": "7b2cfd1c566f3a934c9733e1f147369fcc938de9cda10b2f274cf6cf0d7e5fb0",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1695,6 +1695,13 @@
   "gen3d-jester-hat": {"class":"prop"},
   "gen3d-gift-bag": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-firefly-jar": {"class":"prop"},
-  "gen3d-cactus-fruit": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-cactus-fruit": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-cotton-candy": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-oil-can": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-power-core": {"class":"prop"},
+  "gen3d-jade-skull": {"class":"prop"},
+  "gen3d-magma-crystal": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-ice-key": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-bone-key": {"class":"biped","regions":{"legY":0.249}}
  }
 }
