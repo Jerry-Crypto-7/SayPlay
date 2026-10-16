@@ -14,7 +14,7 @@ import { ABILITY_SLOTS, AXIS_MAX, type AbilityId, type ArcadeInput, type ArcadeO
 import { arenaAxis } from '../pieces/arena';
 import { fightMove, fightSight } from '../pieces/fight-bot';
 import { RUNNER } from '../pieces/runner';
-import { ABILITY_BUTTONS, ABILITY_TIMING, type AbilityBot, abilityActive, abilityCooldown } from './state';
+import { ABILITY_BUTTONS, ABILITY_TIMING, type AbilityBot, abilityActive, abilityCooldown, cooldownOf } from './state';
 import { inStrikeReachWithin } from './strike';
 
 /** Jak daleko dopředu (tiky po zmáčknutí) robot hlídá tělo, kvůli kterému neuhne. */
@@ -133,10 +133,9 @@ function slotsOf(observation: ArcadeObservation, params: AbilityBot): Slot[] {
     recent.forEach((seen, j) => {
       if ((seen.buttons & button) !== 0) pressed = j;
     });
-    const timing = ABILITY_TIMING[id];
     const cooldown = abilityCooldown(state, params.keeper, slot);
-    const readyAt = pressed < 0 ? cooldown : pressed + timing.cooldown;
-    const activeUntil = pressed >= 0 ? pressed + timing.active - 1 : abilityActive(state, params.keeper, slot) - 1;
+    const readyAt = pressed < 0 ? cooldown : pressed + cooldownOf(params, id);
+    const activeUntil = pressed >= 0 ? pressed + ABILITY_TIMING[id].active - 1 : abilityActive(state, params.keeper, slot) - 1;
     return { id, button, pressed, ready: readyAt <= n, readyAt, activeUntil };
   });
 }

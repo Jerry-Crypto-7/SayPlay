@@ -31,9 +31,15 @@ export const abilityControlParams = z
   .object({
     keeper: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1),
     ids: z.array(z.enum(ABILITIES)).min(1).max(2),
+    /** Cooldown dashe místo `ABILITY_TIMING` – běžec s díly složené hry (`guardParts`, P47B T4-R1). */
+    dashCooldown: z.int().min(1).max(10 * ARCADE_HZ).optional(),
   })
   .strict();
 export type AbilityControl = z.infer<typeof abilityControlParams>;
+
+/** Cooldown akce `id` v tikách: `ABILITY_TIMING`, u dashe přebitý `dashCooldown` hry. */
+export const cooldownOf = (params: AbilityControl, id: AbilityId): number =>
+  id === 'dash' && params.dashCooldown !== undefined ? params.dashCooldown : ABILITY_TIMING[id].cooldown;
 
 /** Role, které hrdinovi ublíží nárazem – ty dash prorazí a štít odrazí. */
 export const HARMFUL_ROLES = ['obstacle', 'chaser', 'hazard', 'enemy'] as const;
@@ -85,7 +91,7 @@ export function tickAbilities(state: Int32Array, buttons: number, params: Abilit
     if (id === 'shield' && (state[active] as number) === 0 && powerupOf(state, params.keeper) !== 'shield') state[k + ABILITY_SLOTS.shield] = 0;
     if ((buttons & (ABILITY_BUTTONS[slot] as number)) === 0 || (state[cooldown] as number) > 0) return;
     state[active] = ABILITY_TIMING[id].active;
-    state[cooldown] = ABILITY_TIMING[id].cooldown;
+    state[cooldown] = cooldownOf(params, id);
     if (id === 'shield') state[k + ABILITY_SLOTS.shield] = 1;
   });
   state[k + ABILITY_SLOTS.held] = buttons & (BUTTON.ACTION_A | BUTTON.ACTION_B);

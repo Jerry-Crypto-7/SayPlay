@@ -91,12 +91,13 @@ describe.each(Object.keys(FLYING) as (keyof typeof FLYING)[])('P47B T9 difficult
 /**
  * Složená hra s padajícími díly (P47B T4): věta si dash či štít nechá a ochrana bere i díly.
  * Srovnávací hra = táž věta bez akce. Běžec s dashem („a squirrel runs and dodges falling
- * acorns“) chybí: novice vyhraje 8/10 proti 5/10 bez akce, a stejně 8/10 i se zrušenou
- * ochranou dílů – dash P46A přes překážky trati, ne T4. Závod a sběr mušlí (T5): štít proti
+ * acorns“, T4-R1): s cooldownem 1 s prorazil každou řadu husté pasáže a novice vyhrál 8/10
+ * proti 5/10 bez akce; s 1,5 s běžce s díly (`guardParts`) 6/10. Závod a sběr mušlí (T5): štít proti
  * nepřátelům na trati, které závod dostal, a proti pronásledovatelům vln arény. Souboj v aréně
  * (T6): štít proti úderům soupeře.
  */
 const ASSEMBLED = [
+  ['runner', 'dash', 'a squirrel runs and dodges falling acorns'],
   ['runner', 'shield', 'a squirrel runs and blocks falling acorns'],
   ['platform', 'dash', 'a frog jumps and dashes through falling coconuts'],
   ['platform', 'shield', 'a frog jumps and blocks falling coconuts'],

@@ -169,15 +169,20 @@ export function shieldParts(parts: ArcadeParts, keeper: number, promised = true)
   return { ...parts, rules: [{ id: shieldRule.id, params: { keeper, roles, ...(promised ? { verb: 'shield' } : {}) } }, ...guarded(parts.rules, keeper, { shield: true })] };
 }
 
-/**
- * Robot akcí (`addon_bot` z `applyAbilities`) pod obalem složené hry dostane těla dílů, které zraní (`parts`),
- * ať jim nastaví dash a štít jako nárazu.
- */
-function botWithParts(bot: PieceRef, bodies: readonly number[]): PieceRef {
-  const params = bot.params as { readonly base: PieceRef; readonly abilities: object };
-  if (bot.id === 'addon_bot') return { ...bot, params: { ...bot.params, abilities: { ...params.abilities, parts: [...bodies] } } };
-  return bot.id === 'assembly_bot' ? { ...bot, params: { ...bot.params, base: botWithParts(params.base, bodies) } } : bot;
+/** Obal akcí (`addon_control`, `addon_bot` z `applyAbilities`) pod obalem složené hry s parametry akcí doplněnými o `extra`. */
+function withAbilityParams(ref: PieceRef, extra: object): PieceRef {
+  const params = ref.params as { readonly base: PieceRef; readonly abilities: object };
+  if (ref.id === 'addon_control' || ref.id === 'addon_bot') return { ...ref, params: { ...ref.params, abilities: { ...params.abilities, ...extra } } };
+  return ref.id === 'assembly_control' || ref.id === 'assembly_bot' ? { ...ref, params: { ...ref.params, base: withAbilityParams(params.base, extra) } } : ref;
 }
+
+/**
+ * Cooldown dashe běžce se složenými díly (P47B T4-R1): 1,5 s místo 1 s. Řady trati jdou 60–100 tiků po sobě
+ * (`GAP_TICKS` v `runner.ts`) a dash s cooldownem 60 prorazil každou řadu husté pasáže (~75 tiků) – „a squirrel
+ * runs and dodges falling acorns“: novice 8/10 proti 5/10 bez akce. S 90 tiky dvě takové řady po sobě nevezme:
+ * novice 6/10, intermediate 10/10. Běžec bez dílů zůstává na 1 s (fixtura P46A novice 1/10 proti 0/10).
+ */
+const RUNNER_PARTS_DASH_COOLDOWN = 90;
 
 /**
  * Díly složené hry (P47B T4) se skládají až po akcích (`assemblyParts`), proto ochranu dostanou tady:
@@ -193,7 +198,13 @@ export function guardParts(parts: ArcadeParts): ArcadeParts {
   const dashed = dash === undefined ? parts.rules : guarded(parts.rules, keeper, { dash: dash.params.slot as number });
   const rules = shield === undefined ? dashed : guarded(dashed, keeper, { shield: true });
   const protect = (native: PieceRef): PieceRef => (native.id === dashRule.id || native.id === shieldRule.id ? { ...native, params: { ...native.params, parts: bodies } } : native);
-  return { ...parts, rules: rules.map((rule) => mapUnderlying(rule, protect)), bot: botWithParts(parts.bot, bodies) };
+  const slow = dash !== undefined && baseControlOf(parts.control).id === 'runner' ? { dashCooldown: RUNNER_PARTS_DASH_COOLDOWN } : undefined;
+  return {
+    ...parts,
+    rules: rules.map((rule) => mapUnderlying(rule, protect)),
+    ...(slow === undefined ? {} : { control: withAbilityParams(parts.control, slow) }),
+    bot: withAbilityParams(parts.bot, { parts: bodies, ...slow }),
+  };
 }
 
 export const ABILITY_PIECES: Readonly<Record<AbilityId, AbilityPiece>> = {
