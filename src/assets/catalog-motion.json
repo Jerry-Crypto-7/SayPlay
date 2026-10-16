@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "13622a7a31cc013b67b87313aec6b9c42affbc4c149445779a61f3c841b515d5",
+ "catalogHash": "b7c816170ed0fffa9a9e4b48fc097e50101ed76c569e1e403950d0c4b380b760",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1709,6 +1709,14 @@
   "gen3d-candy-apple": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-crystal-heart": {"class":"prop"},
   "gen3d-snowflake-token": {"class":"prop"},
-  "gen3d-watermelon-slice": {"class":"prop"}
+  "gen3d-watermelon-slice": {"class":"prop"},
+  "gen3d-shell-necklace": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-pumpkin-lantern": {"class":"prop"},
+  "gen3d-spinning-top": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-maple-leaf": {"class":"prop"},
+  "gen3d-golden-scarab": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-macaron": {"class":"prop"},
+  "gen3d-canopic-jar": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-egg-tray": {"class":"prop"}
  }
 }

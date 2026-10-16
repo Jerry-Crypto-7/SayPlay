@@ -934,3 +934,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-crystal-heart` | crystal heart, heart crystal | 4748 / 2374 |
 | `gen3d-snowflake-token` | snowflake token, snowflake coin | 4744 / 2372 |
 | `gen3d-watermelon-slice` | watermelon slice | 4690 / 2293 |
+| `gen3d-shell-necklace` | shell necklace | 4746 / 2370 |
+| `gen3d-pumpkin-lantern` | pumpkin lantern | 4703 / 2332 |
+| `gen3d-spinning-top` | spinning top | 4748 / 2374 |
+| `gen3d-maple-leaf` | maple leaf | 4748 / 2374 |
+| `gen3d-golden-scarab` | golden scarab | 4594 / 2238 |
+| `gen3d-macaron` | macaron | 4463 / 2114 |
+| `gen3d-canopic-jar` | canopic jar | 4748 / 2374 |
+| `gen3d-egg-tray` | egg tray, egg carton | 4322 / 2252 |

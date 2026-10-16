@@ -34303,6 +34303,159 @@
           0.11535
         ]
       }
+    },
+    {
+      "assetId": "gen3d-shell-necklace",
+      "tags": [
+        "shell necklace"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-shell-necklace-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37353,
+          0,
+          -0.0925
+        ],
+        "max": [
+          0.37353,
+          0.99841,
+          0.0925
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pumpkin-lantern",
+      "tags": [
+        "pumpkin lantern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-pumpkin-lantern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42594,
+          0,
+          -0.42559
+        ],
+        "max": [
+          0.42594,
+          0.99904,
+          0.42559
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-spinning-top",
+      "tags": [
+        "spinning top"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-spinning-top-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2983,
+          0,
+          -0.29883
+        ],
+        "max": [
+          0.2983,
+          0.99979,
+          0.29883
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-maple-leaf",
+      "tags": [
+        "maple leaf"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-maple-leaf-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4323,
+          0,
+          -0.04914
+        ],
+        "max": [
+          0.4323,
+          0.99916,
+          0.04914
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-golden-scarab",
+      "tags": [
+        "golden scarab"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-golden-scarab-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31845,
+          0,
+          -0.16909
+        ],
+        "max": [
+          0.31845,
+          0.9979,
+          0.16909
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-macaron",
+      "tags": [
+        "macaron"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-macaron-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.84046,
+          0,
+          -0.83656
+        ],
+        "max": [
+          0.84046,
+          0.99902,
+          0.83656
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-canopic-jar",
+      "tags": [
+        "canopic jar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-canopic-jar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25958,
+          0,
+          -0.26264
+        ],
+        "max": [
+          0.25958,
+          0.99961,
+          0.26264
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-egg-tray",
+      "tags": [
+        "egg tray",
+        "egg carton"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-egg-tray-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.02749,
+          0,
+          -0.7396
+        ],
+        "max": [
+          1.02749,
+          1.00001,
+          0.7396
+        ]
+      }
     }
   ]
 }
