@@ -12,7 +12,9 @@
 import { shootStep } from '../addons';
 import { ABILITY_SLOTS, AXIS_MAX, type AbilityId, type ArcadeInput, type ArcadeObservation, BODY, BUTTON, FLAG, HEADER, type PieceRef, ROLE, UNIT, bodyBase } from '../contract';
 import { arenaAxis } from '../pieces/arena';
-import { ABILITY_BUTTONS, ABILITY_TIMING, type AbilityBot, abilityActive, abilityCooldown } from './state';
+import { fightMove, fightSight } from '../pieces/fight-bot';
+import { RUNNER } from '../pieces/runner';
+import { ABILITY_BUTTONS, ABILITY_TIMING, type AbilityBot, abilityActive, abilityCooldown, cooldownOf } from './state';
 import { inStrikeReachWithin } from './strike';
 
 /** Jak daleko dopředu (tiky po zmáčknutí) robot hlídá tělo, kvůli kterému neuhne. */
@@ -42,17 +44,44 @@ function apart(state: Int32Array, p: number, b: number, axis: number, speed: num
   return least * 2 >= (state[p + size] as number) + (state[b + size] as number);
 }
 
-/** První tik v `from..to` (od pozorování), kdy se hrdina a tělo dotknou, když oba letí dál svou rychlostí; jinak −1. */
-export function contactAt(state: Int32Array, player: number, body: number, from: number, to: number): number {
+/**
+ * První tik v `from..to` (od pozorování), kdy se hrdina a tělo dotknou, když oba letí dál svou rychlostí; jinak −1.
+ * `anyHeight` (poletování, P47B T9): výšku nesrovnávat – ptáka ťuk přehodí o metr a pohled je 8 tiků starý.
+ */
+export function contactAt(state: Int32Array, player: number, body: number, from: number, to: number, anyHeight = false): number {
   const p = bodyBase(player);
   const b = bodyBase(body);
   const py = state[p + BODY.y] as number;
   const by = state[b + BODY.y] as number;
-  if (!(py < by + (state[b + BODY.h] as number) && by < py + (state[p + BODY.h] as number))) return -1;
+  if (!anyHeight && !(py < by + (state[b + BODY.h] as number) && by < py + (state[p + BODY.h] as number))) return -1;
   // R5: robot se ptá u každého těla trati v každém tiku – vzdálená těla vyřadí dřív než smyčka.
   if (apart(state, p, b, BODY.x, BODY.vx, BODY.w, from, to) || apart(state, p, b, BODY.z, BODY.vz, BODY.d, from, to)) return -1;
   const at = (base: number, axis: number, speed: number, t: number): number => (state[base + axis] as number) + (state[base + speed] as number) * t;
   for (let t = from; t <= to; t += 1) {
+    const dx = Math.abs(at(b, BODY.x, BODY.vx, t) - at(p, BODY.x, BODY.vx, t));
+    const dz = Math.abs(at(b, BODY.z, BODY.vz, t) - at(p, BODY.z, BODY.vz, t));
+    if (dx * 2 < (state[p + BODY.w] as number) + (state[b + BODY.w] as number) && dz * 2 < (state[p + BODY.d] as number) + (state[b + BODY.d] as number)) return t;
+  }
+  return -1;
+}
+
+/**
+ * Dotyk s dílem složené hry (P47B T4) jako `contactAt`, jen díl smí padat: jeho výška v tiku t jde
+ * rychlostí, nejníž na zem hrdiny, kde dopadne a leží. Hrdina výšku drží – jeho skok robot nepředpovídá.
+ */
+export function partContactAt(state: Int32Array, player: number, body: number, from: number, to: number): number {
+  const p = bodyBase(player);
+  const b = bodyBase(body);
+  const vy = state[b + BODY.vy] as number;
+  if (vy >= 0) return contactAt(state, player, body, from, to);
+  if (apart(state, p, b, BODY.x, BODY.vx, BODY.w, from, to) || apart(state, p, b, BODY.z, BODY.vz, BODY.d, from, to)) return -1;
+  const py = state[p + BODY.y] as number;
+  const by = state[b + BODY.y] as number;
+  const ground = Math.min(by, py);
+  const at = (base: number, axis: number, speed: number, t: number): number => (state[base + axis] as number) + (state[base + speed] as number) * t;
+  for (let t = from; t <= to; t += 1) {
+    const y = Math.max(ground, by + vy * t);
+    if (!(py < y + (state[b + BODY.h] as number) && y < py + (state[p + BODY.h] as number))) continue;
     const dx = Math.abs(at(b, BODY.x, BODY.vx, t) - at(p, BODY.x, BODY.vx, t));
     const dz = Math.abs(at(b, BODY.z, BODY.vz, t) - at(p, BODY.z, BODY.vz, t));
     if (dx * 2 < (state[p + BODY.w] as number) + (state[b + BODY.w] as number) && dz * 2 < (state[p + BODY.d] as number) + (state[b + BODY.d] as number)) return t;
@@ -104,10 +133,9 @@ function slotsOf(observation: ArcadeObservation, params: AbilityBot): Slot[] {
     recent.forEach((seen, j) => {
       if ((seen.buttons & button) !== 0) pressed = j;
     });
-    const timing = ABILITY_TIMING[id];
     const cooldown = abilityCooldown(state, params.keeper, slot);
-    const readyAt = pressed < 0 ? cooldown : pressed + timing.cooldown;
-    const activeUntil = pressed >= 0 ? pressed + timing.active - 1 : abilityActive(state, params.keeper, slot) - 1;
+    const readyAt = pressed < 0 ? cooldown : pressed + cooldownOf(params, id);
+    const activeUntil = pressed >= 0 ? pressed + ABILITY_TIMING[id].active - 1 : abilityActive(state, params.keeper, slot) - 1;
     return { id, button, pressed, ready: readyAt <= n, readyAt, activeUntil };
   });
 }
@@ -166,6 +194,59 @@ function seekAxis(state: Int32Array, player: number, roles: readonly number[]): 
   return best === undefined ? undefined : arenaAxis(best.dx, best.dz);
 }
 
+/** Běžec: jak daleko před hrdinou díl, do jehož pruhu robot s připravenou ochranou přejede (P47B T4). */
+const PART_SEEK = 5 * UNIT;
+
+/**
+ * Padající díl běžce leží v krajním pruhu a robot, který jede jinudy, ho mine – ochranu by nikdy
+ * nepoužil. S připravenou akcí přejede do pruhu nejbližšího dílu do `PART_SEEK` před sebou, který
+ * ještě neminul. Vrací tlačítko pruhu (0 = zůstat), nebo `undefined`, když žádný díl nečeká.
+ */
+function partLane(state: Int32Array, player: number, recent: readonly ArcadeInput[], parts: readonly number[]): number | undefined {
+  const p = bodyBase(player);
+  // Pruh, kam hrdina míří, i se stisky, které robot ještě nevidí (jako `runner_bot`).
+  let lane = state[p + BODY.aux0] as number;
+  for (const seen of recent) {
+    if ((seen.buttons & BUTTON.LEFT) !== 0) lane = Math.max(-1, lane - 1);
+    if ((seen.buttons & BUTTON.RIGHT) !== 0) lane = Math.min(1, lane + 1);
+  }
+  let target: number | undefined;
+  let nearest = Number.POSITIVE_INFINITY;
+  for (const body of parts) {
+    const b = bodyBase(body);
+    const dz = (state[b + BODY.z] as number) - (state[p + BODY.z] as number);
+    if (dz * 2 <= -((state[b + BODY.d] as number) + (state[p + BODY.d] as number)) || dz > PART_SEEK || dz >= nearest) continue;
+    nearest = dz;
+    target = Math.max(-1, Math.min(1, Math.round((state[b + BODY.x] as number) / RUNNER.laneWidth)));
+  }
+  if (target === undefined) return undefined;
+  return target > lane ? BUTTON.RIGHT : target < lane ? BUTTON.LEFT : 0;
+}
+
+/**
+ * Souboj v aréně (P47B T6): dash a štít berou úder soupeře, který telegrafuje (`fightSight`). Akci zmáčkne, až úder
+ * padne do první půlky jejího okna; když akce úder pokryje, robot neuhne a zůstane stát (`fightMove` s `braced`).
+ * Jen připravená akce úhyb nezruší: s ní novice vyhrál 7/10, s vkročením pod úder 8/10 (bez akce 6/10). Běžící štít chrání, jen když
+ * robot stisk ještě vidí v `recent`, nebo náboj ve stavu – jinak ho mohl vzít dřívější úder. Uhnutí průběhu před
+ * tělem chování robot nepřepíše: v ochraně mění jen tah, který je beze změny tahem robota souboje.
+ */
+function fightStep(observation: ArcadeObservation, input: ArcadeInput, slots: readonly Slot[], keeper: number): ArcadeInput {
+  const { threat } = fightSight(observation);
+  if (threat === null) return input;
+  const n = observation.recent.length;
+  // Úder padne v ovládání posledního tiku telegrafu: od pozorování za `n + left − 1` tiků.
+  const at = n + threat.left - 1;
+  const guards = slots.filter((slot) => slot.id === 'dash' || slot.id === 'shield');
+  const charged = (slot: Slot): boolean => slot.id === 'dash' || slot.pressed >= 0 || (observation.state[bodyBase(keeper) + ABILITY_SLOTS.shield] as number) > 0;
+  const braced = guards.some((slot) => slot.activeUntil >= at && charged(slot));
+  // Dvojice dash a štít: úder, který jedna akce už kryje, druhá nebere – zůstane na další (jako přidělení `ownerOf`).
+  const press = braced ? undefined : guards.find((slot) => slot.ready && at >= n + 1 && at <= n + Math.floor(ABILITY_TIMING[slot.id].active / 2));
+  const buttons = input.buttons | (press?.button ?? 0);
+  if (!braced || input.axis !== fightMove(observation).axis) return { buttons, axis: input.axis };
+  const move = fightMove(observation, true);
+  return { buttons: (buttons & ~BUTTON.ATTACK) | move.buttons, axis: move.axis };
+}
+
 const STRUCK = [ROLE.enemy, ROLE.chaser];
 const LOOT = [ROLE.collectible, ROLE.enemy];
 const ENEMY = [ROLE.enemy];
@@ -219,10 +300,14 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   const { state, player, recent } = observation;
   const n = recent.length;
   const steer = base.id === 'steer_bot';
+  const flap = base.id === 'flap_bot';
   // Překážky řízení jsou svodidla a kraj silnice: robot k nim nezatáčí, náraz mimo okno dashe stojí život (R4, a14).
-  const harm = params.harm.map((role) => ROLE[role]).filter((role) => !steer || role !== ROLE.obstacle);
+  // Trubky poletování (P47B T9) robot proletí mezerou: dotyk s nimi, který vidí bez výšky, by akci vybil před nepřítelem.
+  // Útes klouzání (P47B T11) robot obletí taky: přímka k němu vybila štít a nepřítel v další obruči přišel v cooldownu.
+  const harm = params.harm.map((role) => ROLE[role]).filter((role) => !(steer || flap || base.id === 'glide_bot') || role !== ROLE.obstacle);
   const around = AROUND_BOTS.includes(base.id);
   const slots = slotsOf(observation, params);
+  if (base.id === 'fight_bot') return fightStep(observation, input, slots, params.keeper);
   let living: Map<number, number[]> | undefined;
   const lists = new Map<readonly number[], readonly number[]>();
   const of = (roles: readonly number[]): readonly number[] => {
@@ -237,11 +322,17 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   let assignment: ((body: number) => number) | undefined;
   const assigned = (body: number): number => (assignment ??= ownerOf(state, params.ids, harm, fire))(body);
   const horizon = steer ? STEER_COMMIT_TICKS : COMMIT_TICKS;
+  // Živé díly složené hry, které zraní (P47B T4): dash a štít je berou jako náraz.
+  const parts = (params.parts ?? []).filter((body) => alive(state, body));
   // Tik dotyku a vlastník se v jednom tiku robota nemění: každé tělo se spočítá jednou (R5).
   const contacts = new Map<number, number>();
   const contact = (body: number): number => {
     let at = contacts.get(body);
-    if (at === undefined) contacts.set(body, (at = steer ? aheadAt(state, player, body, n, n + horizon) : contactAt(state, player, body, n, n + horizon)));
+    if (at === undefined) {
+      // Díl padá a je pohyblivý: řízení ho odhadem `aheadAt` nevidí, dotyk se počítá i s pádem.
+      at = parts.includes(body) ? partContactAt(state, player, body, n, n + horizon) : steer ? aheadAt(state, player, body, n, n + horizon) : contactAt(state, player, body, n, n + horizon, flap);
+      contacts.set(body, at);
+    }
     return at;
   };
   // Přidělení propadne, když vlastník do dotyku nebude připravený ani aktivní: tělo by prošlo bez obrany.
@@ -268,6 +359,8 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   let hold = -1;
   /** Aréna: role, ke kterým robot s připravenou akcí půjde. */
   const seek: number[] = [];
+  /** Dash nebo štít je připravený či aktivní – běžec jde do pruhu dílu (`partLane`). */
+  let guarding = false;
   for (const [index, slot] of slots.entries()) {
     const owned = mine(index);
     // I v aktivním okně: robot, který po stisku zase uteče, by se štítem (40 tiků) nikdy nedotkl.
@@ -291,15 +384,20 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
       if (threat !== null && (slot.ready || slot.activeUntil >= threat.at)) hold = threat.body;
       continue;
     }
-    const threat = oncoming(of(harm), contact, owned);
+    const threat = oncoming(parts.length === 0 ? of(harm) : [...of(harm), ...parts], contact, owned);
     // Dash i štít (blok) chrání jen po okno: zmáčknout, až dotyk padne do jeho první půlky.
     // Náboj štítu spotřebovaný v posledních tikách robot ještě nevidí – riziko jednoho zásahu.
     const active = ABILITY_TIMING[slot.id].active;
     if (threat !== null && slot.ready && threat.at >= n + 1 && threat.at <= n + Math.floor(active / 2)) buttons |= slot.button;
     if (threat !== null && (slot.ready || slot.activeUntil >= threat.at)) hold = threat.body;
+    if (slot.ready || slot.activeUntil >= n) guarding = true;
   }
   const toward = seek.length === 0 ? undefined : seekAxis(state, player, seek);
   if (toward !== undefined) return { buttons, axis: toward };
+  if (hold < 0 && guarding && base.id === 'runner_bot' && parts.length > 0) {
+    const lane = partLane(state, player, recent, parts);
+    if (lane !== undefined) return { buttons: (buttons & ~(BUTTON.LEFT | BUTTON.RIGHT)) | lane, axis: input.axis };
+  }
   if (hold < 0) return { buttons, axis: input.axis };
   const evade = EVADE[base.id] ?? 0;
   if (!steer) return { buttons: buttons & ~evade, axis: input.axis };

@@ -16,7 +16,15 @@ import { devices, expect, test, type APIRequestContext, type Locator, type Page 
  * telefonu ťukem na tlačítko Grab.
  */
 
+const ACTION_A = 1 << 9;
 const ACTION_B = 1 << 10;
+
+/**
+ * Sloveso věty na tlačítku (P47B T10): „dodges“ dá akci dash slovo Dodge. Rychlá verze z věty je běžec
+ * s padajícími žaludy (díl `hazard`); první dash, který robot chce, je žalud nad hrdinou (změřeno 15. 10.,
+ * semínka 1–5: `thing:part_0` 0,5–1,5 m před hrdinou a padá).
+ */
+const SQUIRREL = 'A squirrel runs and dodges falling acorns';
 
 const RABBIT = {
   fixture: 'runner.json',
@@ -52,7 +60,7 @@ interface HandProbe {
   botWants(): { readonly axis: number; readonly buttons: number } | null;
   hold(axis: number): void;
   press(buttons: number): void;
-  tickByHand(): { readonly runState: string; readonly items: number };
+  tickByHand(): { readonly runState: string; readonly items: number; readonly health: number };
   inputs(): readonly { readonly buttons: number }[];
 }
 
@@ -65,6 +73,65 @@ async function publish(request: APIRequestContext, game: Game): Promise<string> 
   const response = await request.post('/api/play/games', { data: { spec }, headers: { 'x-forwarded-for': `198.51.100.${String(160 + (people += 1))}` } });
   expect(response.status(), await response.text()).toBeLessThan(300);
   return ((await response.json()) as { url: string }).url;
+}
+
+/** Hra z věty rychlou verzí, jako ji pošle domovská obrazovka. */
+async function publishSentence(request: APIRequestContext, sentence: string): Promise<string> {
+  const response = await request.post('/api/play/games', { data: { sentence }, headers: { 'x-forwarded-for': `198.51.100.${String(160 + (people += 1))}` } });
+  expect(response.status(), await response.text()).toBeLessThan(300);
+  return ((await response.json()) as { url: string }).url;
+}
+
+/**
+ * Robot hraje rukou až do chvíle, kdy chce dash (akce A) – žalud padá na hrdinu; tehdy stiskne `press`
+ * (nebo nic) a dalších 40 tiků hraje robot bez dashe. Vrátí zdraví před tou chvílí, nejnižší zdraví potom
+ * a zda hra dostala bit akce A.
+ */
+async function throughAcorn(page: Page, press: (() => Promise<void>) | null): Promise<{ readonly before: number; readonly after: number; readonly pressed: boolean }> {
+  const before = await page.evaluate((wanted) => {
+    const shell = window.__playShell as unknown as HandProbe;
+    shell.start();
+    shell.byHand(true);
+    let health = -1;
+    for (let tick = 0; tick < 5400; tick += 1) {
+      const wants = shell.botWants() ?? { axis: 0, buttons: 0 };
+      shell.hold(wants.axis);
+      shell.press(wants.buttons & ~wanted);
+      if ((wants.buttons & wanted) !== 0) return health;
+      const now = shell.tickByHand();
+      if (now.runState !== 'running') return null;
+      health = now.health;
+    }
+    return null;
+  }, ACTION_A);
+  expect(before, 'robot nikdy nechtěl dash').not.toBeNull();
+  if (press !== null) await press();
+  const after = await page.evaluate((wanted) => {
+    const shell = window.__playShell as unknown as HandProbe;
+    // Tik stisku: pohyb robota už zapsal `throughAcorn`, stisk akce test (nebo nic).
+    let health = shell.tickByHand().health;
+    for (let tick = 1; tick < 40; tick += 1) {
+      const wants = shell.botWants() ?? { axis: 0, buttons: 0 };
+      shell.hold(wants.axis);
+      shell.press(wants.buttons & ~wanted);
+      const now = shell.tickByHand();
+      health = Math.min(health, now.health);
+      if (now.runState !== 'running') break;
+    }
+    return { health, pressed: shell.inputs().some((input) => (input.buttons & wanted) !== 0) };
+  }, ACTION_A);
+  return { before: before!, after: after.health, pressed: after.pressed };
+}
+
+/** Bez stisku žalud hrdinu zasáhne (kontrola), se stiskem `press` jím projde bez ztráty života. */
+async function expectDodgeThroughAcorn(page: Page, url: string, press: () => Promise<void>): Promise<void> {
+  const hit = await throughAcorn(page, null);
+  expect(hit.pressed).toBe(false);
+  expect(hit.after, 'bez dashe žalud vezme život').toBeLessThan(hit.before);
+  await openGame(page, url);
+  const dodged = await throughAcorn(page, press);
+  expect(dodged.pressed, 'stisk došel do hry jako akce A').toBe(true);
+  expect(dodged.after, 'dash projde žaludem bez ztráty života').toBe(dodged.before);
 }
 
 function watchErrors(page: Page): string[] {
@@ -186,7 +253,21 @@ test.describe('/play/[id] – hero action buttons on desktop', () => {
     const errors = watchErrors(page);
     await openGame(page, ((await response.json()) as { url: string }).url);
     await expect(page.getByTestId('arcade-ability-strike')).toHaveAttribute('aria-keyshortcuts', 'J');
+    // Sloveso věty na tlačítku (P47B T10): „punches“ → Punch.
+    await expect(page.getByTestId('arcade-ability-strike')).toHaveText('Punch');
     await expect(page.getByTestId('arcade-attack')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+
+  test('the squirrel game shows Dodge, and J passes through a falling acorn', async ({ page, request }) => {
+    test.setTimeout(180_000);
+    const url = await publishSentence(request, SQUIRREL);
+    const errors = watchErrors(page);
+    await openGame(page, url);
+    const dodge = page.getByTestId('arcade-ability-dash');
+    await expect(dodge).toHaveText('Dodge');
+    await expect(dodge).toHaveAttribute('aria-keyshortcuts', 'J');
+    await expectDodgeThroughAcorn(page, url, () => page.keyboard.press('j'));
     expect(errors).toEqual([]);
   });
 
@@ -231,5 +312,18 @@ test.describe('/play/[id] – hero action buttons on a phone', () => {
     for (const ability of await abilities.all()) expect(overlaps((await ability.boundingBox())!, fire)).toBe(false);
     await expectClearOfControls(page, abilities);
     await info.attach('gunner-phone', { body: await page.screenshot(), contentType: 'image/png' });
+  });
+
+  test('the squirrel game shows Dodge, and a tap on it passes through a falling acorn', async ({ page, request }, info) => {
+    test.setTimeout(180_000);
+    const url = await publishSentence(request, SQUIRREL);
+    const errors = watchErrors(page);
+    await openGame(page, url);
+    const dodge = page.getByTestId('arcade-ability-dash');
+    await expect(dodge).toHaveText('Dodge');
+    await expectClearOfControls(page, page.locator('[data-testid^="arcade-ability-"]'));
+    await info.attach('squirrel-phone', { body: await page.screenshot(), contentType: 'image/png' });
+    await expectDodgeThroughAcorn(page, url, () => page.getByTestId('arcade-ability-dash').tap());
+    expect(errors).toEqual([]);
   });
 });

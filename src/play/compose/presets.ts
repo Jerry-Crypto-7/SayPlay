@@ -1,4 +1,5 @@
 import type { AbilityId } from '../arcade/contract';
+import type { AbilityWord } from '../draft/controls';
 import type { GenreSpec } from '../genre/contract';
 import { recipeKey, type Recipe } from './recipe';
 import type { AssemblyPart } from './parts';
@@ -35,7 +36,15 @@ export interface RecipeIntent {
 
 /** Content retains cast/parameter order, including the frozen legacy addon order. */
 // `abilities`: akce hrdiny, které věta řekla, v jejím pořadí (P46A T8); ovládání si z nich vezme, co bere.
-export type RecipeAssembly = Recipe & { readonly preset: string; readonly content: GenreSpec; readonly parts?: readonly (AssemblyPart & { readonly label: string })[]; readonly intent?: RecipeIntent; readonly abilities?: readonly AbilityId[] };
+// `saidWords`: sloveso věty pro akci ze seznamu `ABILITY_WORDS` (P47B T10) – popisek tlačítka, svět ho nečte.
+export type RecipeAssembly = Recipe & {
+  readonly preset: string;
+  readonly content: GenreSpec;
+  readonly parts?: readonly (AssemblyPart & { readonly label: string })[];
+  readonly intent?: RecipeIntent;
+  readonly abilities?: readonly AbilityId[];
+  readonly saidWords?: Readonly<Partial<Record<AbilityId, AbilityWord>>>;
+};
 
 /** Native tracks have distinct names; the legacy voyage recipes stay frozen. */
 export const DRIVE_PRESETS: Readonly<Record<string, Recipe>> = { ...Object.fromEntries(

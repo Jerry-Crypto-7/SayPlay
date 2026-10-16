@@ -4,7 +4,7 @@ import { heroClass } from '../genre/roles';
 import { PRESETS, type RecipeAssembly } from './presets';
 import type { Recipe } from './recipe';
 import type { AssemblyPart } from './parts';
-import { saidAbilities } from '../draft/controls';
+import { saidAbilities, saidAbilityWords } from '../draft/controls';
 
 export interface AssemblySource {
   id: string;
@@ -114,6 +114,11 @@ export function assemble(intent: Intent, source: AssemblySource, content: GenreS
   // The sentence goes with the recipe: `compileRecipe` picks its rule template by it (P45B T9).
   const words = intent.sentence.toLowerCase().match(/[a-z]+/g) ?? [];
   // Akce hrdiny (P46A T8) jdou s receptem i bez šablony – recept bez šablony `intent` nenese.
-  const abilities = saidAbilities(intent.sentence.toLowerCase());
-  return { ...source.recipe, preset: 'assembled', content, parts, intent: { words, unplayed: unplayedActions(source) }, ...(abilities.length === 0 ? {} : { abilities }) };
+  const abilities = saidAbilities(intent.sentence.toLowerCase(), intent);
+  // Sloveso věty pro tlačítko (P47B T10): i pro akci, kterou dodá až režisér.
+  const saidWords = saidAbilityWords(intent.sentence.toLowerCase(), intent);
+  return {
+    ...source.recipe, preset: 'assembled', content, parts, intent: { words, unplayed: unplayedActions(source) },
+    ...(abilities.length === 0 ? {} : { abilities }), ...(Object.keys(saidWords).length === 0 ? {} : { saidWords }),
+  };
 }

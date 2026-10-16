@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { ALL_ABILITY_WORDS } from '../src/play/draft/controls';
+
 /**
  * Oracle T27r — **rozhraní na demo cestě je anglicky.**
  *
@@ -89,4 +91,24 @@ test('hra z věty mluví anglicky', async ({ page }) => {
   await expect(page.locator('.play-shell')).toBeVisible({ timeout: 60_000 });
 
   await expectEnglish(page, 'hra');
+});
+
+/**
+ * Sloveso věty na tlačítku akce (P47B T10) je text, který píše věta, ne autor rozhraní – proto
+ * uzavřený seznam `ABILITY_WORDS`: na tlačítko smí jen anglické slovo z něj.
+ */
+test('tlačítko akce nese anglické sloveso věty z uzavřeného seznamu', async ({ page }) => {
+  test.setTimeout(120_000);
+
+  await page.goto('/play');
+  await page.getByLabel('Say it in one sentence').fill('A squirrel runs and dodges falling acorns');
+  await page.getByTestId('play-create').click();
+  await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
+  const buttons = page.locator('[data-testid^="arcade-ability-"]');
+  await expect(buttons.first()).toBeVisible({ timeout: 60_000 });
+
+  const words = await buttons.allInnerTexts();
+  expect(words).toContain('Dodge');
+  for (const word of words) expect(ALL_ABILITY_WORDS as readonly string[], `${word} mimo seznam`).toContain(word.trim());
+  await expectEnglish(page, 'hra s tlačítkem akce');
 });

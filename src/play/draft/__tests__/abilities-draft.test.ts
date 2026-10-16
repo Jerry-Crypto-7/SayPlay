@@ -29,12 +29,14 @@ const OWNER = [
   { text: 'A bee collects pollen in a garden', control: 'move_free' },
 ] as const;
 
-/** Hry generátoru režimu (P46A T10): aréna útěk/sběr a bludiště akce berou, souboj ne. */
+/** Hry generátoru režimu (P46A T10): aréna útěk/sběr a bludiště akce berou, souboj od P47B T6 jen dash a štít, let od P47B T11. */
 const GENERATED = [
+  { text: 'a swallow dodges hailstones while flying between mountain peaks', control: 'glide', abilities: ['dash'] },
+  { text: 'an owl blocks falling acorns while flying through the forest', control: 'glide', abilities: ['shield'] },
   { text: 'A raccoon grabs pizza slices while dodging trash trucks', control: 'move_free', abilities: ['grab', 'dash'] },
   { text: 'A squirrel snatches acorns from crows in a windy forest', control: 'move_free', abilities: ['grab'] },
   { text: 'A cat burglar sneaks through a museum and steals diamonds', control: 'walker', abilities: ['grab'] },
-  { text: 'a wizard defends a crystal tower from flying skeletons', control: 'move_free' },
+  { text: 'a wizard defends a crystal tower from flying skeletons', control: 'move_free', abilities: ['shield'] },
 ] as const;
 
 describe('abilities from the sentence verbs (P46A T8)', () => {
@@ -70,9 +72,10 @@ describe('abilities from the sentence verbs (P46A T8)', () => {
   }, 180_000);
 
   it('names the buttons in the hint when it fits', () => {
-    expect(draftGameSpec('A rabbit steals carrots and runs from a fox').tutorial.controlsHint).toMatch(/ J to grab\.$/);
+    // Sloveso věty (P47B T10): „steals“ → steal, „punches“ → punch.
+    expect(draftGameSpec('A rabbit steals carrots and runs from a fox').tutorial.controlsHint).toMatch(/ J to steal\.$/);
     // Díl souboje bije i úder akce, takže nápověda k Attack ustoupí.
-    expect(draftGameSpec('A knight runs through a castle and punches goblins').tutorial.controlsHint).toBe('Arrows dodge. Space jumps. J to strike.');
+    expect(draftGameSpec('A knight runs through a castle and punches goblins').tutorial.controlsHint).toBe('Arrows dodge. Space jumps. J to punch.');
   });
 
   it('lets the strike button hit a fight part and shows it under the part wrapper', async () => {
@@ -90,7 +93,8 @@ describe('abilities from the sentence verbs (P46A T8)', () => {
   it('keeps sentence order, at most two, and only what the control takes', () => {
     expect(saidAbilities('a ninja dashes over rooftops and kicks robot guards')).toEqual(['dash', 'strike']);
     expect(abilitiesFor('the hero shoots, punches, steals and dodges', 'runner')).toEqual(['shoot', 'strike']);
-    expect(abilitiesFor('a fox steals eggs and punches a bear', 'duel')).toEqual([]);
+    // Duel (P47B T8) bere úder, dash a štít vlastní mechanikou, krádež ne.
+    expect(abilitiesFor('a fox steals eggs and punches a bear', 'duel')).toEqual(['strike']);
   });
 
   it('does not hear an action in being hit, collecting or catching', () => {

@@ -26,7 +26,7 @@ import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, type ArcadeState, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, HEADER, UNIT, bodyBase, bodyHp, setBodyHp } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, type ArcadeState, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, HEADER, type RulePiece, UNIT, bodyBase, bodyHp, setBodyHp } from '../contract';
 import { judgeRules } from './timing';
 
 export const DUEL_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -68,8 +68,11 @@ export const DUEL_ENRAGE = { warn: 12, faster: 4 } as const;
 
 /** Fáze soupeře v `aux0`. */
 export const DUEL_PHASE = { ready: 0, windup: 1, open: 2, struck: 3 } as const;
-/** Sloty čítačů: životy soupeře a pořadí útoku. */
-export const DUEL_COUNTER = { foeHealth: 2, attack: 3 } as const;
+/**
+ * Sloty čítačů: životy soupeře, pořadí útoku a úhyb, který v tomto tiku vyšel (P47B T8, jen s `dodges`;
+ * slot sběru – duel nic nesbírá a HUD ho ukáže jen hře s cílem sběru).
+ */
+export const DUEL_COUNTER = { foeHealth: 2, attack: 3, dodged: 5 } as const;
 /** Index soupeře. */
 export const DUEL_FOE = 1;
 
@@ -97,6 +100,8 @@ const controlParams = z
      * `judge` (`champion`). Bez hodnoty tělo soupeře HP nemá.
      */
     champion: z.object({ body: z.int().min(DUEL_FOE + 1).max(ARCADE_LIMITS.maxBodies - 1) }).strict().optional(),
+    /** Úhyb jako sloveso věty (P47B T8): úder, kterému hráč uhnul, zapíše `DUEL_COUNTER.dodged`. Bez hodnoty nic. */
+    dodges: z.literal(true).optional(),
   })
   .strict();
 export type DuelControlParams = z.infer<typeof controlParams>;
@@ -111,6 +116,18 @@ function crown(state: ArcadeState, template: number, hp: number): void {
   for (const slot of [S.kind, S.w, S.h, S.d]) state[foe + slot] = state[from + slot] as number;
   setBodyHp(state, DUEL_FOE, hp);
 }
+
+const dodgeParams = z.object({ verb: z.enum(['dash', 'shield']) }).strict();
+
+/** Úhyb, který v tomto tiku vyšel (`dodges`), je dash nebo štít věty (P47B T8): bod a sloveso pro důkaz. */
+export const duelDodgeRule: RulePiece<z.infer<typeof dodgeParams>> = {
+  id: 'duel_dodge',
+  params: dodgeParams,
+  roles: ['player'],
+  trigger: 'tick',
+  cost: () => ({ bodies: 0, rules: 1 }),
+  fire: ({ state }) => ((state[HEADER.counters + DUEL_COUNTER.dodged] as number) === 1 ? [{ kind: 'score', amount: 1 }] : []),
+};
 
 /** Útok vzorce u soupeře `round` (od 0): o `rise` tiků za soupeře kratší, ne pod mez – co už pod ní je, zůstane. */
 export function duelAttackAt(move: DuelAttack, round: number, rise: number): DuelAttack {
@@ -145,6 +162,7 @@ export const duelControl: ControlPiece<DuelControlParams> = {
     const p = bodyBase(player);
     const foe = bodyBase(DUEL_FOE);
     state[p + S.aux0] = 0;
+    if (params.dodges) state[HEADER.counters + DUEL_COUNTER.dodged] = 0;
 
     // Časovač úhybu: uhýbání dojde do zotavení, zotavení a potácení dojdou k nule.
     let timer = state[p + S.aux1] as number;
@@ -179,6 +197,7 @@ export const duelControl: ControlPiece<DuelControlParams> = {
         if (phase === DUEL_PHASE.windup) {
           // Úder: kdo zrovna neuhýbá, přijde o život.
           if (timer <= 0) state[p + S.aux0] = -1;
+          else if (params.dodges) state[HEADER.counters + DUEL_COUNTER.dodged] = 1;
           const index = (state[HEADER.counters + DUEL_COUNTER.attack] as number) % params.pattern.length;
           phase = DUEL_PHASE.open;
           left = moveAt(index).recover;

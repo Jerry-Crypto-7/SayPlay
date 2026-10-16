@@ -9,12 +9,12 @@
  * tagem `p46a-api`; staví na něm power-upy P46C a režisér P46E.
  */
 
-import type { AbilityId, BodyInit, PieceRef } from '../contract';
+import { type AbilityId, type BodyInit, type PieceRef, mapUnderlying, nativeRule } from '../contract';
 import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
 import { type BossBeatParams, bossBeat, bossBeatHit } from '../pieces/boss';
 import { grabRule } from './grab';
-import { dashRule, shieldRule } from './guard';
-import { HARMFUL_ROLES } from './state';
+import { dashRule, fightGuardRule, shieldRule } from './guard';
+import { HARMFUL_PARTS, HARMFUL_ROLES, abilityIdsOf } from './state';
 import { shootAbility } from './shoot';
 import { AROUND_CONTROLS, strikeRule } from './strike';
 
@@ -35,12 +35,12 @@ function withFoes(parts: ArcadeParts, context: AddonContext): ArcadeParts {
   return parts.level.bodies.some((body) => body.role === 'enemy' || body.role === 'chaser') ? parts : addFoes(parts, context);
 }
 
-/** Nepřátelé ovládání a jejich náraz (`hit`). */
-function addFoes(parts: ArcadeParts, context: AddonContext): ArcadeParts {
+/** Nepřátelé ovládání a jejich náraz (`hit`); `every` = jen každý tolikátý z nich (štít poletování, P47B T9). */
+function addFoes(parts: ArcadeParts, context: AddonContext, every = 1): ArcadeParts {
   const control = baseControlOf(parts.control).id;
   // Řízení akcí nechává cíle jako dřív; běžec ze vzorů jen bez nepřátel ve finále bosse (`finaleFrom`).
   const { finaleFrom } = enemyOptions(context.spec, control);
-  const foes = enemiesFor(control, parts.level, { finaleFrom });
+  const foes = enemiesFor(control, parts.level, { finaleFrom }).filter((_foe, index) => index % every === 0);
   if (foes.length === 0) return { ...parts, issues: [...(parts.issues ?? []), 'abilities: the level has no place for an enemy to strike'] };
   return {
     ...parts,
@@ -78,8 +78,18 @@ export const grabAbility: AbilityPiece = {
   },
 };
 
-/** Nárazy, které hrdinovi ublíží: `hit`, náraz do svodidel řízení a chycení v aréně. */
-const isCrash = (id: string): boolean => id === 'hit' || id === 'steer_crash' || id === 'arena_eat';
+/** Tělo dílu složené hry, který hrdinovi ublíží vlastní větví `assembly_part` (`HARMFUL_PARTS`, P47B T4); jinak `undefined`. */
+function partOf(rule: PieceRef): number | undefined {
+  if (rule.id !== 'assembly_part') return undefined;
+  const { kind, body } = rule.params.part as { readonly kind: string; readonly body: number };
+  return HARMFUL_PARTS.includes(kind) ? body : undefined;
+}
+
+/** Nárazy, které hrdinovi ublíží: `hit`, náraz do svodidel řízení, chycení v aréně a díl složené hry, který zraní. */
+const isCrash = (rule: PieceRef): boolean => rule.id === 'hit' || rule.id === 'steer_crash' || rule.id === 'arena_eat' || partOf(rule) !== undefined;
+
+/** Těla dílů složené hry, které hrdinovi ublíží – role jim `harmOf` dát nemůže, mají kód role věci. */
+const harmfulParts = (rules: readonly PieceRef[]): number[] => rules.flatMap((rule) => partOf(rule) ?? []);
 
 /**
  * Role, které hrdinovi ublíží nárazem – ty dash prorazí a štít odrazí. V aréně jen pronásledovatel
@@ -95,13 +105,47 @@ export const harmOf = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
     ),
   );
 
-/** Dash a štít: náraz dostane ochranu, pravidlo akce pohlcení provede. Úroveň bez nárazu dostane nepřátele jako u úderu. */
+/**
+ * Nárazy, na které robot akcí opravdu najede: na řízení ne svodidla (`steer_crash`) – ta objíždí jako kraj
+ * silnice (`abilityStep`), takže by dash ani štít v závodě nikdy nic nezastavil (P47B T5). Let (P47B T9) proletí
+ * mezerou trubek a obručí útesu, soupeř a pronásledovatel klouzání jedou vedle či za ním: platí jen role,
+ * kterou nese stojící tělo úrovně – pravidlo `hit` klouzání je tam i bez těla.
+ */
+function metHarm(parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] {
+  const control = baseControlOf(parts.control).id;
+  if (control !== 'flap' && control !== 'glide') return harmOf(parts).filter((role) => role !== 'obstacle' || control !== 'steer');
+  return harmOf(parts).filter((role) => role !== 'obstacle' && parts.level.bodies.some((body) => body.role === role && body.template !== true && body.kinematic !== true));
+}
+
+/** Základní ovládání pod obaly (`baseControlOf`) upravené `edit`; obaly zůstanou. */
+const withBaseControl = (control: PieceRef, edit: (base: PieceRef) => PieceRef): PieceRef =>
+  baseControlOf(control) === control ? edit(control) : { ...control, params: { ...control.params, base: withBaseControl(control.params.base as PieceRef, edit) } };
+
+/**
+ * Souboj v aréně (P47B T6): úder soupeře rozhoduje ovládání souboje, ne náraz – ochranu (`guard`) dostane ono
+ * a sloveso pravidlo odraženého úderu (`fightGuardRule`). Dash bere úder dřív než štít, proto štít zná jeho slot.
+ */
+function fightGuard(parts: ArcadeParts, context: AbilityContext, id: 'dash' | 'shield'): ArcadeParts {
+  const known = baseControlOf(parts.control).params.guard as { readonly dash?: number } | undefined;
+  const dash = id === 'dash' ? context.slot : known?.dash;
+  const control = withBaseControl(parts.control, (fight) => ({
+    ...fight,
+    params: { ...fight.params, guard: { ...((fight.params.guard as object | undefined) ?? {}), keeper: context.keeper, ...(id === 'dash' ? { dash: context.slot } : { shield: true }) } },
+  }));
+  return { ...parts, control, rules: [...parts.rules, { id: fightGuardRule.id, params: { keeper: context.keeper, verb: id, ...(dash === undefined ? {} : { dash }) } }] };
+}
+
+/** Dash a štít: náraz dostane ochranu, pravidlo akce pohlcení provede. Úroveň bez nárazu, na který robot najede, dostane nepřátele jako u úderu. */
 function guardAbility(id: 'dash' | 'shield'): AbilityPiece {
   return {
     id,
     apply: (start, context) => {
-      // Soupeři řízení jsou `enemy` bez nárazu, proto nepřátele přidat i vedle nich (jako `+shoot`).
-      const parts = harmOf(start).length === 0 ? addFoes(start, context) : start;
+      const control = baseControlOf(start.control).id;
+      if (control === 'fight') return fightGuard(start, context, id);
+      // Soupeři řízení jsou `enemy` bez nárazu, proto nepřátele přidat i vedle nich (jako `+shoot`); svodidla řízení je nenahradí.
+      // Let (P47B T9): nepřítel v každé druhé mezeře trubek (obruči) křižuje dráhu. Nepřátelé poletování jsou ~110 tiků
+      // od sebe a štít se nabíjí 120 – dostane jen každého druhého, jinak by na dalšího nebyl nabitý (robot 0/10).
+      const parts = metHarm(start).length === 0 ? addFoes(start, context, id === 'shield' && control === 'flap' ? 2 : 1) : start;
       if (id === 'shield') return shieldParts(parts, context.keeper);
       const roles = harmOf(parts);
       if (roles.length === 0) return parts;
@@ -111,7 +155,7 @@ function guardAbility(id: 'dash' | 'shield'): AbilityPiece {
 }
 
 const guarded = (rules: readonly PieceRef[], keeper: number, guard: { dash: number } | { shield: true }): PieceRef[] =>
-  rules.map((rule) => (isCrash(rule.id) ? { id: rule.id, params: { ...rule.params, guard: { ...((rule.params.guard as object | undefined) ?? {}), keeper, ...guard } } } : rule));
+  rules.map((rule) => (isCrash(rule) ? { id: rule.id, params: { ...rule.params, guard: { ...((rule.params.guard as object | undefined) ?? {}), keeper, ...guard } } } : rule));
 
 /**
  * Štít akce i power-upu štítu (P46C): nárazy dostanou ochranu nábojem počítadla `keeper` a blok
@@ -125,6 +169,44 @@ export function shieldParts(parts: ArcadeParts, keeper: number, promised = true)
   return { ...parts, rules: [{ id: shieldRule.id, params: { keeper, roles, ...(promised ? { verb: 'shield' } : {}) } }, ...guarded(parts.rules, keeper, { shield: true })] };
 }
 
+/** Obal akcí (`addon_control`, `addon_bot` z `applyAbilities`) pod obalem složené hry s parametry akcí doplněnými o `extra`. */
+function withAbilityParams(ref: PieceRef, extra: object): PieceRef {
+  const params = ref.params as { readonly base: PieceRef; readonly abilities: object };
+  if (ref.id === 'addon_control' || ref.id === 'addon_bot') return { ...ref, params: { ...ref.params, abilities: { ...params.abilities, ...extra } } };
+  return ref.id === 'assembly_control' || ref.id === 'assembly_bot' ? { ...ref, params: { ...ref.params, base: withAbilityParams(params.base, extra) } } : ref;
+}
+
+/**
+ * Cooldown dashe běžce se složenými díly (P47B T4-R1): 1,5 s místo 1 s. Řady trati jdou 60–100 tiků po sobě
+ * (`GAP_TICKS` v `runner.ts`) a dash s cooldownem 60 prorazil každou řadu husté pasáže (~75 tiků) – „a squirrel
+ * runs and dodges falling acorns“: novice 8/10 proti 5/10 bez akce. S 90 tiky dvě takové řady po sobě nevezme:
+ * novice 6/10, intermediate 10/10. Běžec bez dílů zůstává na 1 s (fixtura P46A novice 1/10 proti 0/10).
+ */
+const RUNNER_PARTS_DASH_COOLDOWN = 90;
+
+/**
+ * Díly složené hry (P47B T4) se skládají až po akcích (`assemblyParts`), proto ochranu dostanou tady:
+ * pravidlo dílu, který zraní, `guard` jako náraz `hit`, dash a štít jeho tělo v `parts` a robot akcí taky.
+ * Hra bez akcí zůstane bajt po bajtu, jak je – i se štítem power-upu.
+ */
+export function guardParts(parts: ArcadeParts): ArcadeParts {
+  const bodies = harmfulParts(parts.rules);
+  const dash = nativeRule(parts.rules, dashRule.id);
+  const shield = nativeRule(parts.rules, shieldRule.id);
+  const keeper = (dash ?? shield)?.params.keeper as number | undefined;
+  if (bodies.length === 0 || keeper === undefined || abilityIdsOf(parts.control).length === 0) return parts;
+  const dashed = dash === undefined ? parts.rules : guarded(parts.rules, keeper, { dash: dash.params.slot as number });
+  const rules = shield === undefined ? dashed : guarded(dashed, keeper, { shield: true });
+  const protect = (native: PieceRef): PieceRef => (native.id === dashRule.id || native.id === shieldRule.id ? { ...native, params: { ...native.params, parts: bodies } } : native);
+  const slow = dash !== undefined && baseControlOf(parts.control).id === 'runner' ? { dashCooldown: RUNNER_PARTS_DASH_COOLDOWN } : undefined;
+  return {
+    ...parts,
+    rules: rules.map((rule) => mapUnderlying(rule, protect)),
+    ...(slow === undefined ? {} : { control: withAbilityParams(parts.control, slow) }),
+    bot: withAbilityParams(parts.bot, { parts: bodies, ...slow }),
+  };
+}
+
 export const ABILITY_PIECES: Readonly<Record<AbilityId, AbilityPiece>> = {
   shoot: shootAbility,
   strike: strikeAbility,
@@ -133,7 +215,18 @@ export const ABILITY_PIECES: Readonly<Record<AbilityId, AbilityPiece>> = {
   shield: guardAbility('shield'),
 };
 
-export const ABILITY_RULES = { [strikeRule.id]: strikeRule, [grabRule.id]: grabRule, [dashRule.id]: dashRule, [shieldRule.id]: shieldRule } as const;
+export const ABILITY_RULES = { [strikeRule.id]: strikeRule, [grabRule.id]: grabRule, [dashRule.id]: dashRule, [shieldRule.id]: shieldRule, [fightGuardRule.id]: fightGuardRule } as const;
+
+/**
+ * Duel (P47B T8) hraje úder (Tap) a úhyb (Down) vlastní mechanikou: žádné tlačítko ani tělo akcí, jen
+ * sloveso – úder na zásahu soupeře (`judge`), dash a štít na úhybu, který vyšel (`duel_dodge`).
+ */
+function duelVerbs(parts: ArcadeParts, ids: readonly AbilityId[]): ArcadeParts {
+  const dodges = ids.filter((id): id is 'dash' | 'shield' => id === 'dash' || id === 'shield');
+  const rules = parts.rules.map((rule) => mapUnderlying(rule, (native) => (native.id === 'judge' && ids.includes('strike') ? { ...native, params: { ...native.params, verb: 'strike' } } : native)));
+  const control = dodges.length === 0 ? parts.control : withBaseControl(parts.control, (duel) => ({ ...duel, params: { ...duel.params, dodges: true } }));
+  return { ...parts, control, rules: [...rules, ...dodges.map((verb) => ({ id: 'duel_dodge', params: { verb } }))] };
+}
 
 /** Pořadí skládání: kdo přidává nepřátele (střelba, úder, krádež), jde před dashem a štítem, které chrání před jejich nárazy. */
 const APPLY_ORDER: readonly AbilityId[] = ['shoot', 'strike', 'grab', 'dash', 'shield'];
@@ -146,6 +239,7 @@ const APPLY_ORDER: readonly AbilityId[] = ['shoot', 'strike', 'grab', 'dash', 's
 export function applyAbilities(parts: ArcadeParts, context: AddonContext): ArcadeParts {
   const ids = context.spec.abilities ?? [];
   if (ids.length === 0) return parts;
+  if (baseControlOf(parts.control).id === 'duel') return duelVerbs(parts, ids);
   const keeper = parts.level.bodies.length;
   const hero = parts.level.bodies[0] as BodyInit;
   // Mrtvá předloha jako počítadlo komba: nic ji nekreslí ani nesrazí.

@@ -22,7 +22,7 @@ import type { GenerationBranch } from '@/server/pipeline';
 
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
 import { bossKindOf, segmentNewsOf } from '../arcade/pieces/pacing';
-import { abilityHint } from '../draft/controls';
+import { abilityHint, abilityWordsOf } from '../draft/controls';
 import { loadRapier } from '../arcade/physics/world';
 import { LOGIC_LIMITS } from '../arcade/contract';
 import { phaseEntryOf, readsLogic, rulesTouching } from '../arcade/rules/schema';
@@ -201,11 +201,13 @@ async function verifyDirectorSpec(spec: GameSpecV1, intent: Intent, seed: number
  * bez jejich kláves. Akce rychlé verze zůstanou – ty ověřilo skládání.
  */
 function withoutAbilities(spec: GameSpecV1, idle: readonly string[]): GameSpecV1 {
-  const { abilities = [], ...rest } = spec;
+  const { abilities = [], abilityWords, ...rest } = spec;
   const kept = abilities.filter(ability => !idle.includes(ability));
-  const said = ` ${abilityHint(abilities)}`;
-  const own = spec.tutorial.controlsHint.endsWith(said) ? spec.tutorial.controlsHint.slice(0, -said.length) : spec.tutorial.controlsHint;
-  return { ...rest, ...(kept.length === 0 ? {} : { abilities: kept }), tutorial: { ...spec.tutorial, controlsHint: kept.length === 0 ? own : `${own} ${abilityHint(kept)}` } };
+  // Slova tlačítek (P47B T10) jdou s akcemi: zahozená akce bere své slovo s sebou.
+  const keptWords = abilityWordsOf(kept, Object.fromEntries((abilityWords ?? []).map((word, slot) => [abilities[slot]!, word])));
+  const said = [` ${abilityHint(abilities, abilityWords)}`, ` ${abilityHint(abilities)}`].find(line => spec.tutorial.controlsHint.endsWith(line));
+  const own = said === undefined ? spec.tutorial.controlsHint : spec.tutorial.controlsHint.slice(0, -said.length);
+  return { ...rest, ...(kept.length === 0 ? {} : { abilities: kept }), ...(keptWords === undefined ? {} : { abilityWords: keptWords }), tutorial: { ...spec.tutorial, controlsHint: kept.length === 0 ? own : `${own} ${abilityHint(kept, keptWords)}` } };
 }
 
 /** Boss a scénář úseků od režiséra, které hra nepostavila (aréna s pravidly průběh nemá), ze specu pryč. */

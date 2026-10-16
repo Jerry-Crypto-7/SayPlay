@@ -1,0 +1,10 @@
+{
+ "dataset": "evals/play/p47b/verb-holdout.json",
+ "openedAt": "2026-10-16T03:53:12Z",
+ "commit": "1593ad902c44391864f7cdcfae7bd1179cd7257c",
+ "sha256": "f163a2855669b843e4a6120cd503343cca8ab698be4af9076ee1902874b01913",
+ "lineEndings": "LF (CRLF normalized before hashing)",
+ "matchesSeal": true,
+ "runs": 1,
+ "output": "evals/play/p47b/holdout.json"
+}

@@ -11,7 +11,7 @@
   "adds": 0.28,
   "onlyCharacters": 10,
   "boss": 7,
-  "action": 0,
+  "action": 1,
   "segments": 0,
   "actionLost": 0,
   "reasons": {}
@@ -59,8 +59,8 @@
    "status": "ready",
    "reason": null,
    "rules": [
-    3,
-    3
+    0,
+    0
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -173,6 +173,7 @@
    "keptLogic": true,
    "adds": [
     "boss",
+    "action",
     "characters"
    ],
    "actionLost": false

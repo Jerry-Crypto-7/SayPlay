@@ -1,4 +1,4 @@
-import { ARCADE_HZ, ARCADE_LIMITS, type AddonId } from '../arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type AbilityId, type AddonId } from '../arcade/contract';
 import { CAPABILITIES } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
@@ -10,7 +10,7 @@ import { nativeSpec } from './native';
 import { timeOfDayFor } from '../arcade/look';
 import { BALL_DIFFICULTY } from './ball-difficulty';
 import { singular } from '../draft/lexicon';
-import { abilitiesOfControl, abilityHint } from '../draft/controls';
+import { type AbilityWord, abilitiesOfControl, abilityHint, abilityWordsOf } from '../draft/controls';
 import { RULE_TEMPLATES, type RuleTemplate, TEMPLATE_NAMES, type TemplateName, type TemplateSlot, says, templateParts, templatesFor } from '../arcade/rules/templates';
 import { FINALE_GENRE_VERSION, genreAtLeast } from '../arcade/pieces/pacing-parts';
 
@@ -38,26 +38,55 @@ const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
 
 /**
  * Generátory režimu, kde robot akce použije a ověření je dokáže (P46A T10, matice T9 a živé
- * věty). Souboj (`fight`) chybí: robot s akcí nedohraje; ostatní generátory nikdo neměřil.
+ * věty); souboj (`fight`) od P47B T6 jen s akcemi `FIGHT_ABILITIES`, let (`glide_course`, matice P47B T9) všechny.
+ * Ostatní generátory nikdo neměřil.
  */
-const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth']);
+export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth', 'fight', 'glide_course']);
+
+/** Souboj má vlastní úder (Attack) a nic ke krádeži: bere jen dash a štít proti úderu soupeře (P47B T6). */
+export const FIGHT_ABILITIES: readonly AbilityId[] = ['dash', 'shield'];
+
+/** Bere hra generátoru `generator` (bez generátoru staví trať ovládání) akci `id`? Čte i měřidlo P47B. */
+export const generatorTakes = (generator: string | undefined, id: AbilityId): boolean =>
+  generator === undefined || (ABILITY_GENERATORS.has(generator) && (generator !== 'fight' || FIGHT_ABILITIES.includes(id)));
 
 /**
  * Akce hrdiny ze sloves věty (P46A T8, `assemble`), jen akce, které ovládání bere, a jen hře,
  * která staví trať ovládáním nebo generátorem z `ABILITY_GENERATORS`. `compose` ověří svět
  * a akce, které robot nedokáže, zahodí. Úder bije i díl souboje, takže nápověda k Attack
- * ustoupí tlačítkům akcí.
+ * ustoupí tlačítkům akcí. Sloveso věty (P47B T10, `saidWords`) dá tlačítku i nápovědě své
+ * slovo („J to dodge.“); svět ho nečte.
  */
 function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
   const generator = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
   // Akce z odpovědi režiséra (P46E T4) za akcemi věty; dvě tlačítka bere `abilitiesOfControl`.
-  const said = [...new Set([...(assembly.abilities ?? []), ...(assembly.content.abilities ?? [])])];
-  if (said.length === 0 || (generator !== undefined && !ABILITY_GENERATORS.has(generator)) || spec.control === undefined) return spec;
+  const said = [...new Set([...(assembly.abilities ?? []), ...(assembly.content.abilities ?? [])])].filter((id) => generatorTakes(generator, id));
+  if (said.length === 0 || spec.control === undefined) return spec;
   const abilities = abilitiesOfControl(said, spec.control);
   if (abilities.length === 0) return spec;
+  const heard = assembly.saidWords ?? {};
+  const words = abilityWordsOf(abilities, heard);
+  const labelled = { ...spec, abilities, ...(words === undefined ? {} : { abilityWords: words }) };
+  // Duel hraje akce vlastním úderem a úhybem (P47B T8): tlačítko J nemá, jeho nápověda řekne sloveso věty.
+  if (spec.control === 'duel') return { ...labelled, tutorial: { ...spec.tutorial, controlsHint: duelHint(spec.tutorial.controlsHint, abilities, heard) } };
   const own = abilities.includes('strike') ? spec.tutorial.controlsHint.replace(ATTACK_HINT, '') : spec.tutorial.controlsHint;
-  const hint = `${own} ${abilityHint(abilities)}`;
-  return { ...spec, abilities, tutorial: { ...spec.tutorial, controlsHint: hint.length <= 80 ? hint : own } };
+  // Delší slovo nápovědu nepřetáhne: nevejde-li se, platí obecná slovesa jako dřív.
+  const hint = [abilityHint(abilities, words), abilityHint(abilities)].map((buttons) => `${own} ${buttons}`).find((line) => line.length <= 80) ?? own;
+  return { ...labelled, tutorial: { ...spec.tutorial, controlsHint: hint } };
+}
+
+/**
+ * Nápověda souboje se slovesy věty (P47B T10): „to strike“ dostane slovo úderu, „to dodge“ slovo
+ * dashe nebo štítu („Tap right or Space to shove, tap left or Down to dodge.“). Akce bez slova věty
+ * nechá obecné sloveso; nad 80 znaků zůstane nápověda žánru.
+ */
+function duelHint(hint: string, abilities: readonly AbilityId[], heard: Readonly<Partial<Record<AbilityId, AbilityWord>>>): string {
+  const strike = abilities.includes('strike') ? heard.strike : undefined;
+  const dodge = abilities.filter((id) => id === 'dash' || id === 'shield').map((id) => heard[id]).find((word) => word !== undefined);
+  let said = hint;
+  if (strike !== undefined) said = said.replace(/\bto strike\b/, `to ${strike.toLowerCase()}`);
+  if (dodge !== undefined) said = said.replace(/\bto dodge\b/, `to ${dodge.toLowerCase()}`);
+  return said.length <= 80 ? said : hint;
 }
 
 /** Druhy rolí hry, které šablona dosadí do slotu – první volná role hry v pořadí `roles[]`. */

@@ -11,7 +11,7 @@
 
 import { z } from 'zod';
 
-import { type ArcadeInput, BODY, BUTTON, type BotPiece, bodyBase, bodyHp } from '../contract';
+import { type ArcadeInput, type ArcadeObservation, BODY, BUTTON, type BotPiece, bodyBase, bodyHp } from '../contract';
 import { ARENA, DIRECTIONS, arenaAxis } from './arena';
 import { predict } from './arena-bot';
 import { FIGHT, FIGHT_PHASE, attackCooldownOf, enemiesOf, inArc, phaseOf, phaseTicksLeft, strikeDirectionOf } from './fight';
@@ -28,6 +28,71 @@ const HOLD = { near: FIGHT.engage + 400, far: FIGHT.engage + 1000 } as const;
 
 const botParams = z.object({}).strict();
 
+/** Telegrafující soupeř, jehož úder by hrdinu zasáhl: kde je od předpovězeného hrdiny, tiky do konce telegrafu od teď a zamčený směr. */
+export interface FightThreat {
+  readonly dx: number;
+  readonly dz: number;
+  readonly gap: number;
+  readonly left: number;
+  readonly locked: number;
+}
+
+/** Předpovězený hrdina, nejbližší soupeř a hrozba s nejkratším telegrafem, jak je robot souboje vidí (`reactionTicks` staré). */
+export function fightSight({ state, player, recent }: ArcadeObservation): {
+  readonly me: { readonly x: number; readonly z: number };
+  readonly nearest: { dx: number; dz: number; gap: number } | null;
+  readonly threat: FightThreat | null;
+} {
+  const me = predict(state, player, recent);
+  const lag = recent.length;
+  let nearest: { dx: number; dz: number; gap: number } | null = null;
+  let threat: FightThreat | null = null;
+  for (const i of enemiesOf(state)) {
+    if (bodyHp(state, i) === 0) continue;
+    const base = bodyBase(i);
+    const phase = phaseOf(state, i);
+    // Stojí-li (telegraf), je tam i teď; jinak ho posunout o rychlost za reakci.
+    const moves = phase !== FIGHT_PHASE.telegraph;
+    const dx = (state[base + BODY.x] as number) + (moves ? (state[base + BODY.vx] as number) * lag : 0) - me.x;
+    const dz = (state[base + BODY.z] as number) + (moves ? (state[base + BODY.vz] as number) * lag : 0) - me.z;
+    const gap = Math.hypot(dx, dz);
+    if (nearest === null || gap < nearest.gap) nearest = { dx, dz, gap };
+    if (phase !== FIGHT_PHASE.telegraph) continue;
+    const locked = strikeDirectionOf(state, i);
+    const left = phaseTicksLeft(state, i) - lag;
+    if (!inArc(-dx, -dz, locked, FIGHT.strikeReach + THREAT_MARGIN, 0)) continue;
+    if (threat === null || left < threat.left) threat = { dx, dz, gap, left, locked };
+  }
+  return { me, nearest, threat };
+}
+
+/**
+ * Tah robota souboje. `braced` (P47B T6): úder hrozby odrazí dash či štít hrdiny – robot místo úhybu
+ * zůstane stát, ať ho ochrana vezme.
+ */
+export function fightMove(observation: ArcadeObservation, braced = false): ArcadeInput {
+  const { state, player, recent } = observation;
+  const ready = attackCooldownOf(state, player) <= recent.length && recent.every((input) => (input.buttons & BUTTON.ATTACK) === 0);
+  const strike = (dx: number, dz: number): ArcadeInput => ({ buttons: BUTTON.ATTACK, axis: arenaAxis(dx, dz) });
+  const { me, nearest, threat } = fightSight(observation);
+  if (nearest === null) return { buttons: 0, axis: 0 };
+
+  if (threat !== null) {
+    if (ready && threat.gap <= FIGHT.attackReach - REACH_MARGIN) return strike(threat.dx, threat.dz);
+    // Dojde-li do dosahu dřív, než úder padne, vkročí mu pod něj.
+    if (ready && threat.left > (threat.gap - FIGHT.attackReach + REACH_MARGIN) / ARENA.speed + STEP_IN) return { buttons: 0, axis: arenaAxis(threat.dx, threat.dz) };
+    if (braced) return { buttons: 0, axis: 0 };
+    // Uhnout: kolmo na zamčený směr, na stranu blíž středu, a přitom od nepřítele.
+    const dir = DIRECTIONS[threat.locked]!;
+    const side = -me.x * dir.dz + me.z * dir.dx >= 0 ? 1 : -1;
+    return { buttons: 0, axis: arenaAxis(side * dir.dz + dir.dx, -side * dir.dx + dir.dz) };
+  }
+  if (ready) return nearest.gap <= FIGHT.attackReach - REACH_MARGIN ? strike(nearest.dx, nearest.dz) : { buttons: 0, axis: arenaAxis(nearest.dx, nearest.dz) };
+  if (nearest.gap > HOLD.far) return { buttons: 0, axis: arenaAxis(nearest.dx, nearest.dz) };
+  if (nearest.gap < HOLD.near) return { buttons: 0, axis: arenaAxis(-nearest.dx, -nearest.dz) };
+  return { buttons: 0, axis: 0 };
+}
+
 export const fightBot: BotPiece<z.infer<typeof botParams>> = {
   id: 'fight_bot',
   params: botParams,
@@ -35,44 +100,5 @@ export const fightBot: BotPiece<z.infer<typeof botParams>> = {
   // Obal doplňků (`addon_bot`) počítá s 8 tiky u každého základního robota.
   reactionTicks: REACTION,
   cost: () => ({ bodies: 0, rules: 0 }),
-  decide: ({ state, player, recent }) => {
-    const me = predict(state, player, recent);
-    const lag = recent.length;
-    const ready = attackCooldownOf(state, player) <= lag && recent.every((input) => (input.buttons & BUTTON.ATTACK) === 0);
-    const strike = (dx: number, dz: number): ArcadeInput => ({ buttons: BUTTON.ATTACK, axis: arenaAxis(dx, dz) });
-
-    let nearest: { dx: number; dz: number; gap: number } | null = null;
-    let threat: { dx: number; dz: number; gap: number; left: number; locked: number } | null = null;
-    for (const i of enemiesOf(state)) {
-      if (bodyHp(state, i) === 0) continue;
-      const base = bodyBase(i);
-      const phase = phaseOf(state, i);
-      // Stojí-li (telegraf), je tam i teď; jinak ho posunout o rychlost za reakci.
-      const moves = phase !== FIGHT_PHASE.telegraph;
-      const dx = (state[base + BODY.x] as number) + (moves ? (state[base + BODY.vx] as number) * lag : 0) - me.x;
-      const dz = (state[base + BODY.z] as number) + (moves ? (state[base + BODY.vz] as number) * lag : 0) - me.z;
-      const gap = Math.hypot(dx, dz);
-      if (nearest === null || gap < nearest.gap) nearest = { dx, dz, gap };
-      if (phase !== FIGHT_PHASE.telegraph) continue;
-      const locked = strikeDirectionOf(state, i);
-      const left = phaseTicksLeft(state, i) - lag;
-      if (!inArc(-dx, -dz, locked, FIGHT.strikeReach + THREAT_MARGIN, 0)) continue;
-      if (threat === null || left < threat.left) threat = { dx, dz, gap, left, locked };
-    }
-    if (nearest === null) return { buttons: 0, axis: 0 };
-
-    if (threat !== null) {
-      if (ready && threat.gap <= FIGHT.attackReach - REACH_MARGIN) return strike(threat.dx, threat.dz);
-      // Dojde-li do dosahu dřív, než úder padne, vkročí mu pod něj.
-      if (ready && threat.left > (threat.gap - FIGHT.attackReach + REACH_MARGIN) / ARENA.speed + STEP_IN) return { buttons: 0, axis: arenaAxis(threat.dx, threat.dz) };
-      // Uhnout: kolmo na zamčený směr, na stranu blíž středu, a přitom od nepřítele.
-      const dir = DIRECTIONS[threat.locked]!;
-      const side = -me.x * dir.dz + me.z * dir.dx >= 0 ? 1 : -1;
-      return { buttons: 0, axis: arenaAxis(side * dir.dz + dir.dx, -side * dir.dx + dir.dz) };
-    }
-    if (ready) return nearest.gap <= FIGHT.attackReach - REACH_MARGIN ? strike(nearest.dx, nearest.dz) : { buttons: 0, axis: arenaAxis(nearest.dx, nearest.dz) };
-    if (nearest.gap > HOLD.far) return { buttons: 0, axis: arenaAxis(nearest.dx, nearest.dz) };
-    if (nearest.gap < HOLD.near) return { buttons: 0, axis: arenaAxis(-nearest.dx, -nearest.dz) };
-    return { buttons: 0, axis: 0 };
-  },
+  decide: (observation) => fightMove(observation),
 };
