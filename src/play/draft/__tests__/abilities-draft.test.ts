@@ -29,8 +29,10 @@ const OWNER = [
   { text: 'A bee collects pollen in a garden', control: 'move_free' },
 ] as const;
 
-/** Hry generátoru režimu (P46A T10): aréna útěk/sběr a bludiště akce berou, souboj od P47B T6 jen dash a štít. */
+/** Hry generátoru režimu (P46A T10): aréna útěk/sběr a bludiště akce berou, souboj od P47B T6 jen dash a štít, let od P47B T11. */
 const GENERATED = [
+  { text: 'a swallow dodges hailstones while flying between mountain peaks', control: 'glide', abilities: ['dash'] },
+  { text: 'an owl blocks falling acorns while flying through the forest', control: 'glide', abilities: ['shield'] },
   { text: 'A raccoon grabs pizza slices while dodging trash trucks', control: 'move_free', abilities: ['grab', 'dash'] },
   { text: 'A squirrel snatches acorns from crows in a windy forest', control: 'move_free', abilities: ['grab'] },
   { text: 'A cat burglar sneaks through a museum and steals diamonds', control: 'walker', abilities: ['grab'] },

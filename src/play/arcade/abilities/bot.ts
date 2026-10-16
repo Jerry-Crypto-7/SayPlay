@@ -304,7 +304,8 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   const flap = base.id === 'flap_bot';
   // Překážky řízení jsou svodidla a kraj silnice: robot k nim nezatáčí, náraz mimo okno dashe stojí život (R4, a14).
   // Trubky poletování (P47B T9) robot proletí mezerou: dotyk s nimi, který vidí bez výšky, by akci vybil před nepřítelem.
-  const harm = params.harm.map((role) => ROLE[role]).filter((role) => !(steer || flap) || role !== ROLE.obstacle);
+  // Útes klouzání (P47B T11) robot obletí taky: přímka k němu vybila štít a nepřítel v další obruči přišel v cooldownu.
+  const harm = params.harm.map((role) => ROLE[role]).filter((role) => !(steer || flap || base.id === 'glide_bot') || role !== ROLE.obstacle);
   const around = AROUND_BOTS.includes(base.id);
   const slots = slotsOf(observation, params);
   if (base.id === 'fight_bot') return fightStep(observation, input, slots, params.keeper);

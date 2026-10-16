@@ -338,12 +338,15 @@ function heroDoes(text: string, at: number, end: number, hero: ReadonlySet<strin
   if (prev === undefined) return false;
   if (SUBORDINATORS.has(prev)) return /ing\b/.test(text.slice(at, end));
   if (LINKERS.has(prev)) return true;
-  // „through the city dodging“ ano, „past the cars blocking“ ne: množné číslo je podmět, místo ne.
-  const [preposition, article] = before.slice(-3, -1);
-  if (/ing\b/.test(text.slice(at, end)) && PLACE_PREPOSITIONS.has(preposition!) && (article === 'the' || article === 'a') && singular(prev) === prev) return true;
+  // Místo s předložkou a jednotným číslem: „through the city dodging“ (tvar na -ing) a hrdina s místem před slovesem
+  // na -s („a thief on a skateboard grabs“). „past the cars blocking“ ne: množné číslo je podmět, místo ne.
+  const [subject, preposition, article] = before.slice(-4, -1);
+  const said = text.slice(at, end).split(' ')[0]!;
+  const place = PLACE_PREPOSITIONS.has(preposition!) && (article === 'the' || article === 'a') && singular(prev) === prev;
+  if (place && (/ing$/.test(said) || (hero.has(subject!) && /s$/.test(said)))) return true;
   if (!hero.has(prev) && !hero.has(singular(prev))) return false;
   // Po jednotném čísle má sloveso -s: „a photo shoot“ je podstatné jméno, „a fox shoots“ sloveso.
-  return /s$/.test(prev) || /(?:s|ing|ed)$/.test(text.slice(at, end).split(' ')[0]!);
+  return /s$/.test(prev) || /(?:s|ing|ed)$/.test(said);
 }
 
 /**

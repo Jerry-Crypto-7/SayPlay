@@ -47,10 +47,13 @@ describe('sentence verbs as hero actions', () => {
     expect(said('a girl climbs the tower while the guards block the stairs')).toEqual([]);
   });
 
-  it('keeps an -ing verb after a place phrase with the hero, not after a plural subject', () => {
+  it('keeps a verb after a place phrase with the hero, not after a plural subject', () => {
     expect(said('A fox runs through the city dodging taxis and collecting coins.')).toEqual(['dash']);
     expect(said('a knight rides across the bridge blocking arrows')).toEqual(['shield']);
     expect(said('a fox runs past the cars blocking the road')).toEqual([]);
+    // Hrdina s místem před slovesem (P46A a18).
+    expect(said('a monkey on a scooter snatches bananas from the tourists')).toEqual(['grab']);
+    expect(said('a kid jumps over the fence and the dog on the porch bites')).toEqual([]);
   });
 
   it('reads block and shield as nouns after an article, a number, an adjective or of', () => {

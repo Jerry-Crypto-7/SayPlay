@@ -77,6 +77,10 @@ describe('P46A ability matrix', () => {
     ['escape', 'dash'],
     ['escape', 'shield'],
   ] as const)('glide %s + %s: the moving rival does not stand in for a foe', (mode, ability) => expectProved('glide', ability, { controlParams: { mode } }));
+
+  // P47B T11: let rychlé verze (úzké útesy) – robot obletí útes sám, štít nechá na nepřítele v další obruči.
+  it('glide reach + shield: the bot does not spend it on a reef it flies around', () =>
+    expectProved('glide', 'shield', { controlParams: { mode: 'reach', clearancePermille: 275, clearanceRisePermille: 10, lengthM: 160, topSpeed: 180 } }));
 });
 
 /** Robot intermediate akci zmáčkne a ověření dokáže sloveso na 4 semínkách; `extra` přepíše položky hry ovládání. */
