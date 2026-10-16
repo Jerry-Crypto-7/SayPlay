@@ -34165,6 +34165,25 @@
           0.08065
         ]
       }
+    },
+    {
+      "assetId": "gen3d-arcade-token",
+      "tags": [
+        "arcade token"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-arcade-token-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49946,
+          0,
+          -0.08507
+        ],
+        "max": [
+          0.49946,
+          0.99675,
+          0.08507
+        ]
+      }
     }
   ]
 }

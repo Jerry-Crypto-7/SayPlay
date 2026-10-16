@@ -25,3 +25,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 19 | collect | 10 | 10 | 8/10 | 8 | – | 94/101 | perfume bottle, toy block, ankh, cake slice, microchip, space helmet, tribal mask, fire gem | timeouts alone under GPU load: src/assets/__tests__/external-import.test.ts |
 | 20 | collect | 10 | 8 | 5/8 | 5 | – | 94/101 | grocery bag, jester hat, gift bag, firefly jar, cactus fruit | – |
 | 21 | collect | 10 | 10 | 7/10 | 7 | – | 94/101 | cotton candy, oil can, power core, jade skull, magma crystal, ice key, bone key | – |
+| 22 (opakování) | collect | 10 | 9 | 2/9 | 1 | – | 94/101 | arcade token | – |

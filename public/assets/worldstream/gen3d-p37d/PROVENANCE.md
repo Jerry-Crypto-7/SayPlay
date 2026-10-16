@@ -927,3 +927,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-magma-crystal` | magma crystal | 4487 / 2217 |
 | `gen3d-ice-key` | ice key | 4744 / 2372 |
 | `gen3d-bone-key` | bone key | 4742 / 2360 |
+| `gen3d-arcade-token` | arcade token | 4700 / 2304 |

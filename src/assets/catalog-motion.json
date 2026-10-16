@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "7b2cfd1c566f3a934c9733e1f147369fcc938de9cda10b2f274cf6cf0d7e5fb0",
+ "catalogHash": "2b186a13b06c5c3c0dcca1ba7c1889ae7aa9ec5c1cfd2ddc5f84b76582f9bfa1",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1702,6 +1702,7 @@
   "gen3d-jade-skull": {"class":"prop"},
   "gen3d-magma-crystal": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-ice-key": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-bone-key": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-bone-key": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-arcade-token": {"class":"prop"}
  }
 }
