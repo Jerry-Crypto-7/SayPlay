@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "b3a449f593f2674aa71daa7d44d363d2bfebddaab8a917830ffd9ba83595a246",
+ "catalogHash": "e755d0a8d05f1dd4f4af1ded61ecc42d4bea66552da15acb4f06baeff35bd262",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1690,6 +1690,11 @@
   "gen3d-microchip": {"class":"prop"},
   "gen3d-space-helmet": {"class":"prop"},
   "gen3d-tribal-mask": {"class":"biped","regions":{"legY":0.248}},
-  "gen3d-fire-gem": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-fire-gem": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-grocery-bag": {"class":"prop"},
+  "gen3d-jester-hat": {"class":"prop"},
+  "gen3d-gift-bag": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-firefly-jar": {"class":"prop"},
+  "gen3d-cactus-fruit": {"class":"biped","regions":{"legY":0.249}}
  }
 }

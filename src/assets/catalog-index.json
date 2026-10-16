@@ -33930,6 +33930,104 @@
           0.32114
         ]
       }
+    },
+    {
+      "assetId": "gen3d-grocery-bag",
+      "tags": [
+        "grocery bag",
+        "paper bag"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-grocery-bag-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35816,
+          0,
+          -0.3937
+        ],
+        "max": [
+          0.35816,
+          0.99385,
+          0.3937
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-jester-hat",
+      "tags": [
+        "jester hat",
+        "jester cap"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jester-hat-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.79357,
+          0,
+          -0.52582
+        ],
+        "max": [
+          0.79357,
+          0.9973,
+          0.52582
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gift-bag",
+      "tags": [
+        "gift bag"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gift-bag-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32827,
+          0,
+          -0.16768
+        ],
+        "max": [
+          0.32827,
+          0.99733,
+          0.16768
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-firefly-jar",
+      "tags": [
+        "firefly jar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-firefly-jar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6171,
+          0,
+          -0.27239
+        ],
+        "max": [
+          0.6171,
+          0.99952,
+          0.27239
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cactus-fruit",
+      "tags": [
+        "cactus fruit",
+        "prickly pear"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cactus-fruit-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3527,
+          0,
+          -0.36519
+        ],
+        "max": [
+          0.3527,
+          0.99483,
+          0.36519
+        ]
+      }
     }
   ]
 }

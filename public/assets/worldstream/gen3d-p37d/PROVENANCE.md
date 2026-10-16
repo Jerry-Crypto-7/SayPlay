@@ -915,3 +915,8 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-space-helmet` | space helmet | 4513 / 2236 |
 | `gen3d-tribal-mask` | tribal mask | 4435 / 2143 |
 | `gen3d-fire-gem` | fire gem | 4680 / 2320 |
+| `gen3d-grocery-bag` | grocery bag, paper bag | 4500 / 2183 |
+| `gen3d-jester-hat` | jester hat, jester cap | 4716 / 2355 |
+| `gen3d-gift-bag` | gift bag | 4620 / 2236 |
+| `gen3d-firefly-jar` | firefly jar | 4523 / 2165 |
+| `gen3d-cactus-fruit` | cactus fruit, prickly pear | 4748 / 2374 |
