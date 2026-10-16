@@ -190,8 +190,11 @@ const refSchema = z.object({ id: z.string(), params: z.record(z.string(), z.unkn
 /** Chování nepřátel ve hře (P45C T4): předlohy, podle jejichž podpisu se těla poznají. */
 const behaviourRefs = z.array(behaviourRefSchema).min(1).max(8);
 /** `steady`: knoflíky žánru (`PACING_KNOBS`) se neškálují – křivka jen rozvrhuje spawny a finále. */
-/** `pulse`: tělo-počítadlo tepu a předloha jeho mince (`markPulse`), jen hry pole ve `genre.v4`. */
-const pulseRef = z.object({ keeper: z.int().min(1), template: z.int().min(1) }).strict();
+/**
+ * `pulse`: tělo-počítadlo tepu a předloha jeho mince (`markPulse`), jen hry pole ve `genre.v4`. `spark` (sběr a útěk
+ * s věcmi, P47A T9): mince je jiskra (`isSpark`) – strážci ji nehlídají.
+ */
+const pulseRef = z.object({ keeper: z.int().min(1), template: z.int().min(1), spark: z.literal(true).optional() }).strict();
 const controlParams = z.object({ base: refSchema, goal: pacingGoalSchema, keeper: z.int().min(1), behaviours: behaviourRefs.optional(), space: z.enum(['plane', 'track']).optional(), steady: z.literal(true).optional(), pulse: pulseRef.optional() }).strict();
 const botParams = z
   .object({
@@ -332,7 +335,7 @@ export function makePacingControl(controls: Readonly<Record<string, ControlPiece
       const own = parseOnce(native, params.base.params);
       const intensity = intensityOf(state, params.keeper);
       native.step(state, player, input, params.steady === true ? own : scaledOnce(params.base.id, own, intensity));
-      if (params.behaviours !== undefined) stepBehaviours(state, player, params.behaviours, params.space ?? 'plane', intensity, typeof own.half === 'number' ? own.half : undefined, roadOf(params.base));
+      if (params.behaviours !== undefined) stepBehaviours(state, player, params.behaviours, params.space ?? 'plane', intensity, typeof own.half === 'number' ? own.half : undefined, roadOf(params.base), params.pulse?.spark === true ? params.pulse.template : undefined);
     },
   };
 }
@@ -542,6 +545,11 @@ export interface PacingSetup {
   readonly script?: readonly SegmentNews[];
   /** Tep pole (P47A T9): předloha mince, která přijde po `PACING.heartbeat` tikách bez události (`heartbeatOf`). */
   readonly pulse?: BodyInit;
+  /**
+   * Mince tepu je jiskra (P47A T9, sběr a útěk s věcmi, `isSpark`): strážci ji nehlídají; `arena_eat` ji sebere bez
+   * bodu a vlna věcí na ni nečeká (předlohu jim dá `pacingParts`).
+   */
+  readonly spark?: true;
 }
 
 /** Rychlost fází (`phase_control`) v % na začátku rozjezdu a úseků scénáře; trať bez fází = prázdné. */
@@ -709,7 +717,7 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const steady = setup.steady === true ? { steady: true as const } : {};
   return {
     ...parts,
-    control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper, ...moved, ...(refs.length === 0 ? {} : { space: setup.space }), ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1 } }) } },
+    control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper, ...moved, ...(refs.length === 0 ? {} : { space: setup.space }), ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1, ...(setup.spark === true ? { spark: true } : {}) } }) } },
     bot: { id: 'pacing_bot', params: { base: parts.bot, control: nativeControlId(parts.control), keeper, ...moved, ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1 } }) } },
     level: { ...parts.level, bodies, spawnSlots: (parts.level.spawnSlots ?? 0) + slots },
     rules: rule === null ? parts.rules : [...parts.rules, rule],

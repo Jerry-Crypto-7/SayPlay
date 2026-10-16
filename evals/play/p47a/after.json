@@ -15,7 +15,7 @@
     "finaleShare": 0.87,
     "bossShare": 0.67,
     "behavioursMedian": 2.5,
-    "deadTimeMedianS": 2.5,
+    "deadTimeMedianS": 2.45,
     "risingShare": 0.8,
     "segmentChanges2Share": 0.47
    },
@@ -31,7 +31,7 @@
      "finaleShare": 0.7,
      "bossShare": 0.7,
      "behavioursMedian": 3.5,
-     "deadTimeMedianS": 5.15,
+     "deadTimeMedianS": 2.45,
      "risingShare": 0.7,
      "segmentChanges2Share": 0.7
     },
@@ -44,7 +44,7 @@
      "finaleShare": 1,
      "bossShare": 0.5,
      "behavioursMedian": 4.5,
-     "deadTimeMedianS": 4.17,
+     "deadTimeMedianS": 2.5,
      "risingShare": 1,
      "segmentChanges2Share": 1
     },
@@ -115,7 +115,7 @@
     "finaleShare": 0.68,
     "bossShare": 0.5,
     "behavioursMedian": 1.5,
-    "deadTimeMedianS": 3.1,
+    "deadTimeMedianS": 2.76,
     "risingShare": 0.83,
     "segmentChanges2Share": 0.4
    },
@@ -131,7 +131,7 @@
      "finaleShare": 0.67,
      "bossShare": 0.67,
      "behavioursMedian": 3,
-     "deadTimeMedianS": 5.18,
+     "deadTimeMedianS": 2.5,
      "risingShare": 0.67,
      "segmentChanges2Share": 0.67
     },
@@ -381,7 +381,7 @@
     "finaleShare": 0.76,
     "bossShare": 0.57,
     "behavioursMedian": 2,
-    "deadTimeMedianS": 2.78,
+    "deadTimeMedianS": 2.5,
     "risingShare": 0.81,
     "segmentChanges2Share": 0.43
    },
@@ -397,7 +397,7 @@
      "finaleShare": 0.69,
      "bossShare": 0.69,
      "behavioursMedian": 3,
-     "deadTimeMedianS": 5.18,
+     "deadTimeMedianS": 2.5,
      "risingShare": 0.69,
      "segmentChanges2Share": 0.69
     },
@@ -679,7 +679,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 5.97,
+    "longestGapS": 2.4,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -711,7 +711,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 4.38,
+    "longestGapS": 2.3,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -744,7 +744,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 4.6,
+    "longestGapS": 2.3,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -775,7 +775,7 @@
      "hazard:chase+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 5.48,
+    "longestGapS": 2.3,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -806,7 +806,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 5.12,
+    "longestGapS": 2.4,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -838,7 +838,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 4.65,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -871,7 +871,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 8.17,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -880,7 +880,6 @@
       "foe:hazard:roam"
      ],
      [
-      "foe:hazard:chase",
       "foe:hazard:static"
      ]
     ]
@@ -953,7 +952,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 21.33,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -986,7 +985,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 5.83,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -1498,7 +1497,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 5.12,
+    "longestGapS": 2.3,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -2343,7 +2342,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 5.18,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -2460,7 +2459,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 4.67,
+    "longestGapS": 2.35,
     "rising": true,
     "segmentChanges": 2,
     "changes": [

@@ -53,7 +53,7 @@ import {
   bodyBase,
 } from '../contract';
 import { guardParams, guardedHit } from '../abilities/state';
-import { WAVE_LIMITS, WAVE_PLAN, collectClock, entrySpots, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
+import { WAVE_LIMITS, WAVE_PLAN, collectClock, entrySpots, isSpark, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
 
 export const ARENA_DENSITIES = ['sparse', 'normal', 'dense'] as const;
 export type ArenaDensity = (typeof ARENA_DENSITIES)[number];
@@ -455,6 +455,8 @@ const eatParams = z
     knockback: z.int().min(1).max(ARENA.speed * 4).optional(),
     /** Dash a štít hrdiny (P46A T9): chycení pronásledovatelem v ochraně nic nevezme. */
     guard: guardParams.optional(),
+    /** Předloha jiskry tepu (P47A T9, `isSpark`): dotek ji sebere bez bodu – cíl skóre se nehne. Bez ní jako dřív. */
+    spark: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
   })
   .strict();
 
@@ -498,6 +500,7 @@ export const arenaEat: RulePiece<z.infer<typeof eatParams>> = {
     const role = state[bodyBase(other) + BODY.role];
     if (role === ROLE.chaser && params.grace !== undefined) return guardedHit(state, params.guard, other, [...caught(state, player, other, params.effect, params.grace, params.knockback)]);
     if (role !== ROLE.enemy && role !== ROLE.collectible) return [];
+    if (isSpark(state, other, params.spark)) return [{ kind: 'despawn', body: other }];
     const mine = state[bodyBase(player) + BODY.w] as number;
     const theirs = state[bodyBase(other) + BODY.w] as number;
     if (theirs < mine) {

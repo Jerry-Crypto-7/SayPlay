@@ -394,6 +394,7 @@ const itemField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
     from: waveStart(1, count),
     finale: boss === undefined ? 'wave' : 'boss',
     ...(boss === undefined ? {} : { boss }),
+    ...heartbeat(spec, true),
     adjust: (own, template) => {
       const flat = flatten(own, foes.step);
       if (template === undefined) return flat;
@@ -422,11 +423,17 @@ const SHOWER_COIN: BodyInit = { role: 'collectible', kind: 'item', x: 0, y: 0, z
  */
 export const HEARTBEAT_COIN: BodyInit = { ...SHOWER_COIN, w: (ESCAPE.itemSize * 4) / 5, h: 150, d: (ESCAPE.itemSize * 4) / 5 };
 /**
- * Tep jen pro `genre.v4` (uložené hry stavějí týž svět) a jen přežití a úkol v prostoru. Sběr a útěk s věcmi tep
- * nemají: mince je pro jádro věc jako každá jiná – strážci ji hlídají místo věcí vlny, vlna věcí čeká, až ji někdo
- * sebere, a bod za ni posune cíl skóre (věta c08 „castle“ 8/8 → 4/8, boss od 36. s do konce hodin živý).
+ * Jiskra tepu sběru a útěku s věcmi (`genre.v4`, P47A T9, `isSpark`): mince tepu s vlastním modelem `spark`, kterou
+ * věci hry nepočítají – `arena_eat` ji sebere bez bodu, vlna věcí na ni nečeká a strážci ji nehlídají. Mince
+ * s modelem věci (`HEARTBEAT_COIN`) tam byla věc jako každá jiná: bod za ni posunul cíl skóre, vlna čekala, až ji
+ * někdo sebere, a strážci hlídali ji místo věci vlny (věta c08 „castle“ 8/8 → 4/8).
  */
-const heartbeat = (spec: GameSpecV1): Pick<GenrePacingSetup, 'pulse'> => (genreAtLeast(spec, FINALE_GENRE_VERSION) ? { pulse: HEARTBEAT_COIN } : {});
+export const HEARTBEAT_SPARK: BodyInit = { ...HEARTBEAT_COIN, kind: 'spark' };
+/** Tep jen pro `genre.v4` (uložené hry stavějí týž svět): přežití a úkol v prostoru mincí, sběr a útěk s věcmi jiskrou. */
+const heartbeat = (spec: GameSpecV1, spark = false): Pick<GenrePacingSetup, 'pulse' | 'spark'> => {
+  if (!genreAtLeast(spec, FINALE_GENRE_VERSION)) return {};
+  return spark ? { pulse: HEARTBEAT_SPARK, spark: true } : { pulse: HEARTBEAT_COIN };
+};
 
 /**
  * Přežití: postup = čas, nová chování od druhé vlny, finále = poslední vlna ve vrcholu křivky.
@@ -1025,11 +1032,15 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
     ...(setup.steady === true ? { steady: true } : {}),
     ...(setup.extra === undefined ? {} : { extra: setup.extra }),
     ...(setup.pulse === undefined ? {} : { pulse: setup.pulse }),
+    ...(setup.spark === true ? { spark: true } : {}),
     ...(setup.segments === undefined ? {} : { segments: setup.segments, ...(spec.segments === undefined ? {} : { script: spec.segments }) }),
   });
+  // Jiskra tepu (P47A T9): sběr ji sebere bez bodu a vlna věcí na ni nečeká – obě pravidla dostanou její předlohu.
+  const spark = setup.spark === true ? (built.control.params.pulse as { readonly template: number } | undefined)?.template : undefined;
+  const sparked = spark === undefined ? built : withRule(withRule(built, 'arena_eat', (params) => ({ ...params, spark })), 'arena_waves', (params) => ({ ...params, spark }));
   // Výhra čeká na bosse (`grow_to.boss`, sběr ve v4): robot ví, od kterého skóre už jde jen o něj.
-  const gate = ruleOf(built, 'grow_to')?.params as { readonly points: number; readonly boss?: number } | undefined;
-  const paced = gate?.boss === undefined ? built : { ...built, bot: { ...built.bot, params: { ...built.bot.params, points: gate.points } } };
+  const gate = ruleOf(sparked, 'grow_to')?.params as { readonly points: number; readonly boss?: number } | undefined;
+  const paced = gate?.boss === undefined ? sparked : { ...sparked, bot: { ...sparked.bot, params: { ...sparked.bot.params, points: gate.points } } };
   // Zásah a pád (`boss_beat`) má jen boss a boss-terč; strážce úkolu (uložené hry do `genre.v3`) se neporáží, jen hlídá poslední věc.
   const beatId = boss?.beat ?? ((boss?.behaviour ?? 'boss') === 'boss' ? 'boss_beat' : undefined);
   if (boss === undefined || bossTemplate === undefined || beatId === undefined || (paced.issues?.length ?? 0) > 0) return paced;

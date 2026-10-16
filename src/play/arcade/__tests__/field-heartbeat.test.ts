@@ -1,30 +1,34 @@
 /**
- * Tep pole (P47A T9): ve `genre.v4` přežití a quest v prostoru nemají ve vyhraném běhu robota intermediate mezeru
- * bez události delší než 3 s. Po `heartbeatAt` tikách ticha (2,5 s v úvodu, ke konci kratší) přijde mince na
- * nejbližším volném místě vstupu; s plnou plochou tep odvolá minci nejdál od hráče. Sběr a útěk s věcmi tep nemají
- * (strážci hlídají minci jako věc, vlna věcí na ni čeká – README „Rozhodnutí“). Quest v prostoru má cíle a kameny
- * stažené ke středu (`FIELD.questReach`). Uložené hry (`genre.v3`) tep nemají.
+ * Tep pole (P47A T9): ve `genre.v4` hry pole (přežití, quest v prostoru, sběr, útěk s věcmi) nemají ve vyhraném běhu
+ * robota intermediate mezeru bez události delší než 3 s. Po `heartbeatAt` tikách ticha (2,5 s v úvodu, ke konci
+ * kratší) přijde mince na nejbližším volném místě vstupu; s plnou plochou tep odvolá minci nejdál od hráče. Sběr
+ * a útěk s věcmi dostanou jiskru (`HEARTBEAT_SPARK`, `isSpark`): `arena_eat` ji sebere bez bodu, vlna věcí na ni
+ * nečeká a strážce ji nehlídá. Quest v prostoru má cíle a kameny stažené ke středu (`FIELD.questReach`). Uložené
+ * hry (`genre.v3`) tep nemají.
  */
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf } from '../compile';
-import { ARCADE_HZ, type ArcadeEffect, type ArcadeWorld, BODY, BODY_STRIDE, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '../contract';
+import { ARCADE_HZ, type ArcadeEffect, type ArcadeWorld, BODY, BODY_STRIDE, FLAG, HEADER, type PieceRef, ROLE, bodyBase, nativeRule } from '../contract';
 import { instantiate } from '../kernel';
 import { loadRapier } from '../physics/world';
+import { arenaEat } from '../pieces/arena';
+import { BEHAVIOURS, type BehaviourRef, type BehaviourStep } from '../pieces/behaviours';
 import { PACING, type PacingRuleParams, TENSION_CURVE, heartbeatAt, pacingRule } from '../pieces/pacing';
-import { FIELD, FINALE_GENRE_VERSION, HEARTBEAT_COIN } from '../pieces/pacing-parts';
+import { FIELD, FINALE_GENRE_VERSION, HEARTBEAT_COIN, HEARTBEAT_SPARK } from '../pieces/pacing-parts';
 import { QUEST } from '../pieces/quest';
-import type { WaveParams } from '../pieces/waves';
+import { type WaveParams, arenaWaves, isSpark } from '../pieces/waves';
 import { funMetrics, traceRun } from '../telemetry';
 import { runBot } from '../verify';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
 import type { GameSpecV1 } from '@/play/spec';
 
-/** Buňky s tepem; sběr a útěk s věcmi jen hlídáme, že tep nemají. */
-const CELLS = ['arena.escape', 'quest.spatial'] as const;
+/** Buňky pole s tepem; sběr a útěk s věcmi s jiskrou. */
+const COIN_CELLS = ['arena.escape', 'quest.spatial'] as const;
 const ITEM_CELLS = ['arena.collect', 'arena.escape+collect'] as const;
+const CELLS = [...COIN_CELLS, ...ITEM_CELLS] as const;
 const SEEDS = Array.from({ length: 10 }, (_, index) => index + 1);
 /** Cíl AC: žádná mezera bez události delší než 3 s. */
 const MAX_GAP_S = 3;
@@ -41,13 +45,31 @@ function worldOf(spec: GameSpecV1, seed: number): ArcadeWorld {
 const pacingOf = (world: ArcadeWorld): PacingRuleParams => nativeRule(world.rules, 'pacing')!.params as PacingRuleParams;
 const fire = (state: Int32Array, params: PacingRuleParams): readonly ArcadeEffect[] =>
   pacingRule.fire({ state, player: state[HEADER.player] as number, other: -1, source: -1 } as never, params);
+const chain = (ref: PieceRef): PieceRef[] => {
+  const base = ref.params.base as PieceRef | undefined;
+  return base === undefined ? [ref] : [ref, ...chain(base)];
+};
+const pacedControl = (world: ArcadeWorld): PieceRef => chain(world.control).find((ref) => ref.id === 'pacing_control')!;
+
+/** Živá kopie předlohy `template` ve slotu `slot` na `x`, `z`. */
+function place(state: Int32Array, template: number, slot: number, x: number, z: number): void {
+  const at = bodyBase(slot);
+  state.copyWithin(at, bodyBase(template), bodyBase(template) + BODY_STRIDE);
+  state[at + BODY.flags] = (state[at + BODY.flags] as number) | FLAG.alive;
+  state[at + BODY.x] = x;
+  state[at + BODY.z] = z;
+  state[HEADER.bodyCount] = Math.max(state[HEADER.bodyCount] as number, slot + 1);
+}
+
+const alive = (state: Int32Array, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
+const bodies = (state: Int32Array): number[] => Array.from({ length: state[HEADER.bodyCount] as number }, (_, body) => body);
 
 beforeAll(async () => {
   await loadRapier();
 });
 
 describe('field heartbeat (genre.v4)', () => {
-  it('no won intermediate run of survival or the spatial quest has a gap without an event over 3 s (10 seeds × 2 cells)', () => {
+  it('no won intermediate run of a field game has a gap without an event over 3 s (10 seeds × 4 cells)', () => {
     const failures: string[] = [];
     for (const id of CELLS) {
       const spec = cellSpec(id);
@@ -65,7 +87,7 @@ describe('field heartbeat (genre.v4)', () => {
       expect(wins, id).toBeGreaterThanOrEqual(8);
     }
     expect(failures).toEqual([]);
-  }, 600_000);
+  }, 1_200_000);
 
   it('the beat is at most 2.5 s in the intro and only gets shorter towards the finale', () => {
     const beats = TENSION_CURVE.map(([at]) => heartbeatAt(PACING.heartbeat, at));
@@ -102,17 +124,62 @@ describe('field heartbeat (genre.v4)', () => {
     // Plná plocha: tři živé mince tepu – žádná nová, odejde ta nejdál od hráče.
     const slot = state[HEADER.spawnBase] as number;
     const placed = [[2000, 0], [9000, 9000], [0, -4000]] as const;
-    for (const [k, [x, z]] of placed.entries()) {
-      const at = bodyBase(slot + k);
-      state.copyWithin(at, t, t + BODY_STRIDE);
-      state[at + BODY.flags] = (state[at + BODY.flags] as number) | FLAG.alive;
-      state[at + BODY.x] = (state[p + BODY.x] as number) + x;
-      state[at + BODY.z] = (state[p + BODY.z] as number) + z;
-    }
-    state[HEADER.bodyCount] = Math.max(state[HEADER.bodyCount] as number, slot + placed.length);
+    for (const [k, [x, z]] of placed.entries()) place(state, pulse.template, slot + k, (state[p + BODY.x] as number) + x, (state[p + BODY.z] as number) + z);
     const full = fire(state, params);
     expect(coinsIn(full)).toEqual([]);
     expect(full.filter((effect) => effect.kind === 'despawn')).toEqual([{ kind: 'despawn', body: slot + 1 }]);
+  });
+
+  it('collect and item escape: arena_eat takes the spark without a point, the item wave does not wait for it, the guardian does not guard it', () => {
+    for (const id of ITEM_CELLS) {
+      const world = worldOf(cellSpec(id), 1);
+      const template = pacingOf(world).pulse!.template;
+      const state = instantiate(world);
+      const player = state[HEADER.player] as number;
+      expect(state[bodyBase(template) + BODY.role], id).toBe(ROLE.collectible);
+      const items = bodies(state).filter((body) => body !== player && alive(state, body) && state[bodyBase(body) + BODY.role] === ROLE.collectible);
+      expect(items.length, id).toBeGreaterThan(0);
+      expect(items.some((body) => isSpark(state, body, template)), id).toBe(false);
+      const slot = state[HEADER.spawnBase] as number;
+      const item = items[0] as number;
+      const ix = state[bodyBase(item) + BODY.x] as number;
+      const iz = state[bodyBase(item) + BODY.z] as number;
+      place(state, template, slot, ix + 6000, iz);
+      expect(isSpark(state, slot, template), id).toBe(true);
+      // Sběr: věc dá bod, jiskra jen zmizí.
+      const eat = nativeRule(world.rules, 'arena_eat')!.params as Parameters<typeof arenaEat.fire>[1];
+      expect(eat.spark, id).toBe(template);
+      const touch = (other: number, params = eat): readonly ArcadeEffect[] => arenaEat.fire({ state, player, other, source: -1 } as never, params);
+      expect(touch(slot), id).toEqual([{ kind: 'despawn', body: slot }]);
+      expect(touch(item).some((effect) => effect.kind === 'score'), id).toBe(true);
+      // Strážce u jiskry (1 m) a dál od věci: hlídá věc; bez předlohy jiskry by hlídal jiskru.
+      const ref = (pacedControl(world).params.behaviours as BehaviourRef[]).find((candidate) => candidate.id === 'guardian')!;
+      expect(ref, id).toBeDefined();
+      place(state, ref.template, slot + 1, ix + 5000, iz);
+      const guarded = (spark: number | undefined): number => {
+        let memo = 0;
+        const view: BehaviourStep = {
+          state, body: slot + 1, player, space: 'plane', phase: 'idle', ticksLeft: 0, aim: { x: 0, z: 0 }, memo: 0, intensity: 1000,
+          ...(spark === undefined ? {} : { spark }), remember: (value) => { memo = value; },
+        };
+        BEHAVIOURS.guardian.move(view);
+        return memo - 1;
+      };
+      const kept = guarded(template);
+      expect(kept, id).toBeGreaterThanOrEqual(0);
+      expect(isSpark(state, kept, template), id).toBe(false);
+      expect(guarded(undefined), id).toBe(slot);
+      // Vlna věcí: s živou jiskrou a bez věcí přijde; s živou věcí počká; bez předlohy jiskry by čekala na jiskru.
+      const waves = nativeRule(world.rules, 'arena_waves')!.params as WaveParams;
+      expect(waves.until, id).toBe('items');
+      expect(waves.spark, id).toBe(template);
+      const next = (params: WaveParams): readonly ArcadeEffect[] => arenaWaves.fire({ state, player, other: -1, source: -1 } as never, params);
+      expect(next(waves), `${id}: a live item holds the wave`).toEqual([]);
+      for (const body of items) state[bodyBase(body) + BODY.flags] = (state[bodyBase(body) + BODY.flags] as number) & ~FLAG.alive;
+      expect(next(waves).some((effect) => effect.kind === 'count'), `${id}: only the spark is left`).toBe(true);
+      const { spark: _spark, ...plain } = waves;
+      expect(next(plain), id).toEqual([]);
+    }
   });
 
   it('v4 quest targets of every round lie within questReach of the centre (≤ 2.4 s apart); stored v3 keeps the generator ring', () => {
@@ -140,16 +207,24 @@ describe('field heartbeat (genre.v4)', () => {
     expect(wider).toBeGreaterThan(0);
   });
 
-  it('stored genre.v3 field games and v4 item games have no heartbeat', () => {
-    const pulseOf = (world: ArcadeWorld): unknown => (nativeRule(world.rules, 'pacing')?.params as PacingRuleParams | undefined)?.pulse;
-    for (const id of [...CELLS, ...ITEM_CELLS]) {
+  it('stored genre.v3 field games have no heartbeat; v4 item games beat with the spark, survival and quest with the coin', () => {
+    const pulseOf = (world: ArcadeWorld): PacingRuleParams['pulse'] => (nativeRule(world.rules, 'pacing')?.params as PacingRuleParams | undefined)?.pulse;
+    for (const id of CELLS) {
       for (const seed of SEEDS.slice(0, 3)) {
         const stored = worldOf(storedV3(cellSpec(id)), seed);
         expect(pulseOf(stored), `${id}#${seed}`).toBeUndefined();
-        expect(JSON.stringify([stored.control, stored.bot]).includes('"pulse"'), `${id}#${seed}`).toBe(false);
+        expect(JSON.stringify([stored.rules, stored.control, stored.bot]).match(/"(pulse|spark)"/), `${id}#${seed}`).toBeNull();
+        expect(stored.kinds.includes(HEARTBEAT_SPARK.kind), `${id}#${seed}`).toBe(false);
         const current = worldOf(cellSpec(id), seed);
-        if ((ITEM_CELLS as readonly string[]).includes(id)) expect(JSON.stringify([current.rules, current.control, current.bot]).includes('"pulse"'), `${id}#${seed}`).toBe(false);
-        else expect(pulseOf(current), `${id}#${seed}`).toBeDefined();
+        const pulse = pulseOf(current);
+        expect(pulse, `${id}#${seed}`).toBeDefined();
+        const state = instantiate(current);
+        const kind = current.kinds[state[bodyBase(pulse!.template) + BODY.kind] as number];
+        const item = (ITEM_CELLS as readonly string[]).includes(id);
+        expect(kind, `${id}#${seed}`).toBe(item ? HEARTBEAT_SPARK.kind : HEARTBEAT_COIN.kind);
+        // Jiskru věci hry nepočítají jen tam, kde je: přežití a quest pravidla bez `spark`.
+        const sparked = [nativeRule(current.rules, 'arena_eat')?.params.spark, nativeRule(current.rules, 'arena_waves')?.params.spark, (pacedControl(current).params.pulse as { spark?: true }).spark];
+        expect(sparked, `${id}#${seed}`).toEqual(item ? [pulse!.template, pulse!.template, true] : [undefined, undefined, undefined]);
       }
     }
   });

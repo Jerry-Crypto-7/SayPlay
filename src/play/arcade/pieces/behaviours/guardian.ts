@@ -12,6 +12,7 @@
 
 import { type ArcadeState, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, targetStateOf } from '../../contract';
 import { ARENA } from '../arena';
+import { isSpark } from '../waves';
 import { dodgeLane, dodgeLine, headTo, inside, laneOf, length, read, set } from './flanker';
 import type { Behaviour, BehaviourStep, BehaviourView } from './index';
 
@@ -37,26 +38,26 @@ const GUARDED: ReadonlySet<number> = new Set([ROLE.collectible, ROLE.goal]);
 /**
  * Věc ke hlídání: živá věc ke sběru nebo cíl, a v úkolu (P45C T12) cíl, na kterém hráč ještě nezačal
  * (stav 0) – hotový cíl zůstává živý, strážce pak přejde k dalšímu. Kolik stavů cíl má, strážce neví:
- * u cíle se třemi stavy hlídá jen první krok.
+ * u cíle se třemi stavy hlídá jen první krok. Jiskru tepu (P47A T9, `spark`) nehlídá: je to bonus, ne věc hry.
  */
-const isItem = (state: ArcadeState, body: number): boolean => {
-  if (((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) === 0) return false;
+const isItem = (state: ArcadeState, body: number, spark?: number): boolean => {
+  if (((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) === 0 || isSpark(state, body, spark)) return false;
   const role = state[bodyBase(body) + BODY.role] as number;
   return GUARDED.has(role) || (role === ROLE.target && targetStateOf(state, body) === 0);
 };
 
 /** Hlídaná věc z paměti, nebo -1 (sebraná, ještě nepřidělená). */
-const guardedOf = (view: BehaviourView): number => (view.memo > 0 && isItem(view.state, view.memo - 1) ? view.memo - 1 : -1);
+const guardedOf = (view: BehaviourView & { readonly spark?: number }): number => (view.memo > 0 && isItem(view.state, view.memo - 1, view.spark) ? view.memo - 1 : -1);
 
 const gapTo = (state: ArcadeState, a: number, b: number): number => length(read(state, a, 'x') - read(state, b, 'x'), read(state, a, 'z') - read(state, b, 'z'));
 
 /** Nejbližší živá věc ke strážci, nebo -1. */
-function nearestItem(view: BehaviourView): number {
+function nearestItem(view: BehaviourStep): number {
   const { state, body } = view;
   let found = -1;
   let best = Number.POSITIVE_INFINITY;
   for (let item = 0; item < (state[HEADER.bodyCount] as number); item += 1) {
-    if (item === body || !isItem(state, item)) continue;
+    if (item === body || !isItem(state, item, view.spark)) continue;
     const gap = gapTo(state, body, item);
     if (gap < best) [found, best] = [item, gap];
   }

@@ -90,6 +90,8 @@ export interface BehaviourStep extends BehaviourView {
   readonly road?: SteerCourse;
   /** Jen v `idle` (pro `ready`): ostatní živá těla téhož chování – shazovače se střídají (P46B T5). */
   readonly peers?: readonly BehaviourView[];
+  /** Předloha jiskry tepu (P47A T9, `isSpark`): strážce její kopie nehlídá. */
+  readonly spark?: number;
   /** Zapíše paměť chování (`memo` od dalšího tiku). */
   remember(memo: number): void;
 }
@@ -316,12 +318,12 @@ function trackHazards(state: ArcadeState, player: number, found: readonly Actor[
  * už běží, nezavře hráči všechny pruhy; jinak tělo počká. Hejno rozhodne jednou za tik pro všechna svá těla, přes
  * celou svou délku (`group`), ať se řada neroztrhne.
  */
-export function stepBehaviours(state: ArcadeState, player: number, refs: readonly BehaviourRef[], space: BehaviourSpace, intensity: number, half?: number, road?: SteerCourse): void {
+export function stepBehaviours(state: ArcadeState, player: number, refs: readonly BehaviourRef[], space: BehaviourSpace, intensity: number, half?: number, road?: SteerCourse, spark?: number): void {
   const found = actors(state, player, refs);
   let live: Hazard[] | null = null;
   let verdicts: Map<BehaviourRef, boolean> | null = null;
   // Plocha a silnice jednou za tik, ne pro každý krok každého těla.
-  const ground = { ...(half === undefined ? {} : { half }), ...(road === undefined ? {} : { road }) };
+  const ground = { ...(half === undefined ? {} : { half }), ...(road === undefined ? {} : { road }), ...(spark === undefined ? {} : { spark }) };
   for (const [body, behaviour, code, ref] of found) {
     const ticks = behaviour.ticks[space];
     const before = viewOf(state, body, player);

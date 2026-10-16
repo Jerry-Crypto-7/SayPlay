@@ -149,7 +149,10 @@ describe('open-field genres are paced (arena, fight and spatial quest)', () => {
       expect((own.waves.at(-1)!.items ?? []).length).toBe(lastBefore.length - 2 * carried);
       // Vlny a jejich čítače zůstávají: stejné vstupy, pravidlo, počet vln a věci dřívějších vln.
       expect(own.waves.slice(0, -1)).toEqual(before.waves.slice(0, -1));
-      expect({ ...own, waves: [] }).toEqual({ ...before, waves: [] });
+      // Navíc jen předloha jiskry tepu (P47A T9): vlna věcí na její kopie nečeká.
+      const { spark, ...plain } = own;
+      expect(spark).toBe((ruleOf(paced, 'pacing')!.params as { pulse: { template: number } }).pulse.template);
+      expect({ ...plain, waves: [] }).toEqual({ ...before, waves: [] });
       // Boss přijde se začátkem poslední vlny; pronásledovatelé s ním odejdou a poslední vlna žádné nepřivede.
       const count = before.waves.length + 1;
       const at = Math.floor(((count - 1) * 1000) / count);
