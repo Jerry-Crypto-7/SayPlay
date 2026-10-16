@@ -775,15 +775,18 @@ const stationPaced: GenrePacing = (parts, spec) => {
  * stejné jako bez průběhu, kol tolik, kolik se s bonusovými terči vejde do rozpočtu; terče se hýbou čím dál
  * rychleji (rychlost kola z křivky), finále = bonusový terč posledního kola, poslední krok k výhře. Postup =
  * čas proti rozpočtu práce kol: kolo ani skóre (kombo) postup neměří a rychlosti stojí v úrovni. Jen hra po kolech.
+ * Ve `genre.v4` je bonusový terč posledního kola terč-boss se 3 HP (`THROW_BOSS`, P47A T7): `shot_hit.tough` mu
+ * zásahem ubere HP a kolo s výhrou čeká na jeho pád.
  */
 const throwPaced: GenrePacing = (parts, spec, seed) => {
   const params = throwField.params.safeParse(generatorParams(spec));
   if (parts.control.id !== 'throw' || !params.success || ruleOf(parts, 'throw_rounds') === undefined) return null;
   const clock = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   const fitted = throwParamsFor(params.data, clock);
-  const built = throwParts(seed, { ...fitted, swing: true });
+  const built = throwParts(seed, { ...fitted, swing: true, ...(genreAtLeast(spec, FINALE_GENRE_VERSION) ? { boss: true as const } : {}) });
   const rounds = built.rules.find((rule) => rule.id === 'throw_rounds');
   if (rounds === undefined || fitted.budget === undefined) return null;
+  const tough = built.rules.find((rule) => rule.id === 'shot_hit')?.params.tough;
   // Rozpočet práce kol (s), ne viditelné hodiny: kratší hodiny (`paceBudgetPct`) svět jinak nemění.
   const ticks = Math.min(ARCADE_LIMITS.maxTicks, fitted.budget * ARCADE_HZ);
   return {
@@ -792,7 +795,7 @@ const throwPaced: GenrePacing = (parts, spec, seed) => {
       ...own,
       control: { ...own.control, params: { ...own.control.params, swing: THROW_SWING.amplitude } },
       level: built.level,
-      rules: own.rules.map((rule) => (rule.id === 'throw_rounds' ? rounds : rule)),
+      rules: own.rules.map((rule) => (rule.id === 'throw_rounds' ? rounds : rule.id === 'shot_hit' && tough !== undefined ? { ...rule, params: { ...rule.params, tough } } : rule)),
     }),
   };
 };

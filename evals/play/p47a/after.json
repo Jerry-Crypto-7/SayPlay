@@ -12,8 +12,8 @@
     "reasons": {
      "assembly": 3
     },
-    "finaleShare": 0.8,
-    "bossShare": 0.6,
+    "finaleShare": 0.9,
+    "bossShare": 0.7,
     "behavioursMedian": 2.5,
     "deadTimeMedianS": 4.89,
     "risingShare": 0.8
@@ -87,9 +87,9 @@
      "playable": 3,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0,
-     "bossShare": 0,
-     "behavioursMedian": 0,
+     "finaleShare": 1,
+     "bossShare": 1,
+     "behavioursMedian": 1,
      "deadTimeMedianS": 2.35,
      "risingShare": 0
     }
@@ -105,8 +105,8 @@
      "entry": 6,
      "assembly": 2
     },
-    "finaleShare": 0.65,
-    "bossShare": 0.48,
+    "finaleShare": 0.68,
+    "bossShare": 0.5,
     "behavioursMedian": 1.5,
     "deadTimeMedianS": 4,
     "risingShare": 0.83
@@ -322,9 +322,9 @@
      "playable": 1,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0,
-     "bossShare": 0,
-     "behavioursMedian": 0,
+     "finaleShare": 1,
+     "bossShare": 1,
+     "behavioursMedian": 1,
      "deadTimeMedianS": 2.27,
      "risingShare": 0
     },
@@ -352,8 +352,8 @@
      "assembly": 5,
      "entry": 6
     },
-    "finaleShare": 0.71,
-    "bossShare": 0.53,
+    "finaleShare": 0.77,
+    "bossShare": 0.59,
     "behavioursMedian": 2,
     "deadTimeMedianS": 4.63,
     "risingShare": 0.81
@@ -569,9 +569,9 @@
      "playable": 4,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0,
-     "bossShare": 0,
-     "behavioursMedian": 0,
+     "finaleShare": 1,
+     "bossShare": 1,
+     "behavioursMedian": 1,
      "deadTimeMedianS": 2.31,
      "risingShare": 0
     },
@@ -1152,9 +1152,11 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
-    "behaviourCount": 0,
-    "behaviours": [],
+    "finale": "boss",
+    "behaviourCount": 1,
+    "behaviours": [
+     "enemy:roam+spawned"
+    ],
     "longestGapS": 2.15,
     "rising": false
    },
@@ -1169,9 +1171,11 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
-    "behaviourCount": 0,
-    "behaviours": [],
+    "finale": "boss",
+    "behaviourCount": 1,
+    "behaviours": [
+     "enemy:roam+spawned"
+    ],
     "longestGapS": 2.35,
     "rising": false
    },
@@ -1186,9 +1190,11 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
-    "behaviourCount": 0,
-    "behaviours": [],
+    "finale": "boss",
+    "behaviourCount": 1,
+    "behaviours": [
+     "enemy:roam+spawned"
+    ],
     "longestGapS": 2.68,
     "rising": false
    }
@@ -1775,9 +1781,11 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
-    "behaviourCount": 0,
-    "behaviours": [],
+    "finale": "boss",
+    "behaviourCount": 1,
+    "behaviours": [
+     "enemy:roam+spawned"
+    ],
     "longestGapS": 2.27,
     "rising": false
    },

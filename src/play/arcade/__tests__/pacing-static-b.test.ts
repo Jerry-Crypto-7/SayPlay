@@ -82,8 +82,10 @@ function genrePressure(world: ArcadeWorld): (state: ArcadeState) => number {
     return (state) => bodies(state).filter((body) => body > 0 && alive(state, body) && (state[bodyBase(body) + BODY.z] as number) >= 0 && (state[bodyBase(body) + BODY.z] as number) < RHYTHM.noteSpeed * 3 * ARCADE_HZ).length;
   }
   if (control === 'throw') {
+    // Kývající se terče: bonusové a ve `genre.v4` terč-boss posledního kola (role nepřítele, P47A T7).
+    const swinging = (role: number): boolean => role === ROLE.target || role === ROLE.enemy;
     return (state) =>
-      Math.max(0, ...bodies(state).filter((body) => alive(state, body) && state[bodyBase(body) + BODY.role] === ROLE.target && ((state[bodyBase(body) + BODY.flags] as number) & FLAG.kinematic) !== 0).map((body) => Math.abs(state[bodyBase(body) + BODY.vx] as number)));
+      Math.max(0, ...bodies(state).filter((body) => alive(state, body) && swinging(state[bodyBase(body) + BODY.role] as number) && ((state[bodyBase(body) + BODY.flags] as number) & FLAG.kinematic) !== 0).map((body) => Math.abs(state[bodyBase(body) + BODY.vx] as number)));
   }
   const boil = ruleOf(world, 'boil_over')!.params as unknown as BoilParams;
   return (state) => 1000 / boilLimit(boil, waveOf(state));
@@ -288,7 +290,9 @@ describe('static genres B are paced (throw, timing, rhythm, station quest; landi
   }
 
   it('throw: every round brings a swinging bonus target, faster with the curve; the last one is the last step to the win', () => {
-    const spec = cellSpec('throw.default');
+    // Uložená hra `genre.v3`: ve `genre.v4` je poslední kolo terč-boss se 3 HP (`throw-boss.test.ts`, P47A T7).
+    const cell = cellSpec('throw.default');
+    const spec: GameSpecV1 = { ...cell, genre: { ...cell.genre!, compilerVersion: 'genre.v3' } };
     for (const seed of SEEDS) {
       const world = worldOf(spec, seed);
       expect((ruleOf(world, 'pacing')!.params as { finale: string }).finale).toBe('bonus');

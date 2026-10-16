@@ -61,11 +61,13 @@ type BotPlan = ThrowPlan & { readonly swing?: { readonly body: number; readonly 
 
 /**
  * Plán na první cíl, který jde trefit: stojící cíle (věž shora dolů, pak zepředu dozadu), pohyblivý terč až
- * nakonec – plán na něj míří na čáru hodu (`x` 0) a nese tik, kdy ho let potká.
+ * nakonec – plán na něj míří na čáru hodu (`x` 0) a nese tik, kdy ho let potká. Pohyblivý terč je i terč-boss
+ * role nepřítele (P47A T7); stojící nepřítel v hodu není.
  */
 function planOf(state: Int32Array, player: number): BotPlan | null {
   const boxes = boxesOfState(state, player);
-  const targets = boxes.filter((box) => state[bodyBase(box.index) + S.role] === ROLE.target).sort((a, b) => b.y - a.y || a.z - b.z);
+  const aimed = (body: number): boolean => state[bodyBase(body) + S.role] === ROLE.target || (state[bodyBase(body) + S.role] === ROLE.enemy && swinging(state, body));
+  const targets = boxes.filter((box) => aimed(box.index)).sort((a, b) => b.y - a.y || a.z - b.z);
   for (const target of targets) {
     if (swinging(state, target.index)) continue;
     const plan = solveThrow(boxes, target.index);

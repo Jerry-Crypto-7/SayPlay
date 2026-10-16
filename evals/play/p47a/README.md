@@ -64,6 +64,12 @@ Z běhu robota `intermediate` na semínku publikace pak finále podle telemetrie
 - **T6 – zásah zapisuje `judge`** (`champion: { body, after }`, `after` = 5 × 8 = 40): trefa, která porazila předposledního soupeře, šampiona nezasáhne (začínal by o 1 HP níž než čítač), po knockoutu šampion leží jako živé tělo s HP 0 a rozzuření `DUEL_ENRAGE` zůstává.
 - **T6 – hratelnost se nemění:** buňka `duel.default` na 20 semínkách intermediate 20/20 a začátečník 8/20 se šampionem i bez něj (`genre.v3`), boss podle telemetrie ve 20/20 výhrách; gauge duel finále 0 → 1,0 (dev 4/4, panel 2/2), chování 1 a mrtvý čas 2,24 s beze změny.
 - **T6 – scéna šampiona zatím neukazuje:** `DuelScene` kreslí soupeře z počátečních rozměrů a modelu věty, větší tělo a `kind` `boss` za běhu ukáže až T10 (banner „Champion!“ v tiku, kdy čítač zásahů dosáhne 40, a pipy HP z čítače).
+- **T7 – terč-boss nahradí v posledním kole bonusový terč a 3 nejvyšší cíle (věž shora), ne kolo navíc:** boss ke všem cílům kola prohrál buňce `throw.default` na hodiny 52 s (intermediate 15/20, hodiny došly bossovi s 1–2 HP), o kolo kratší hra s bossem dala začátečníkovi 20/20 a kolo jen s bossem zkrátilo hody na věž pod 30 s (22–23 s); takhle kolo bosse trvá jako kolo, které nahradilo, a buňka má na 20 semínkách intermediate 20/20 (boss padl ve 20/20 výhrách) a začátečník 11/20 jako `genre.v3`.
+- **T7 – tělo bosse je `bossBody` bonusového terče:** role `enemy`, `kind` `boss` (hod nemá nepřítele věty – terč věty má roli `target`), 2250 × 2250 × 675 (9/4 bonusového terče 1000 × 1000 × 300), HP 3, kýve se rychlostí posledního kola z křivky jako bonusový terč, kterého nahradil (buňka, semínko 2: 105 jednotek za tik, horní mez `THROW_SWING.speed`) a stojí za cíli kola jako on.
+- **T7 – zásah zapisuje `shot_hit.tough`, ne `boss_beat_hit`:** `boss_beat_hit` bere HP jen v okně `recover` chování `boss` a hod chování nemá; `tough` (předloha bosse) dá každým míčem efekt `hit` za 1 HP a teprve třetí míč bosse sebere s bodem skóre. Rozsah navíc: `pieces/shots.ts` (parametr `tough`), `pieces/throw-bot.ts` (robot míří i na kývajícího se nepřítele) a `__tests__/pacing-static-b.test.ts` (test bonusových terčů na uložené `genre.v3`, měřidlo tlaku vidí i bosse).
+- **T7 – rezerva munice 2 hody:** kolo bosse má hodů za zbylé cíle + 3 na bosse + hody navíc kola jako v3 + 2; roboti nemíjejí (bez rezervy pásma stejná), rezerva je pro člověka, aby poslední míč nebyl útes – bez ní hlídá test `throw-boss.test.ts` (přesný počet hodů).
+- **T7 – věty dev sady t01–t03 jsou bez hodin:** začátečník 20/20 se bossem i bez něj (výchozí stav), pásmo 0,3–0,7 platí pro buňku P41; stoupání hodu zůstává 0 (kolo bosse nese 3 zásahy a 1 pád místo 3 pádů a bonusu).
+- **T7 – scéna terč-bosse zatím neukazuje jinak:** banner „Boss target!“ s posledním kolem (čítač kola `trigger` dosáhne počtu kol, kdy `throw_rounds` bosse vyšle) a pipy HP z těla bosse (`kind` `boss`, role `enemy`) dodá T10.
 
 ## Známé červené pro T11
 
@@ -80,3 +86,4 @@ Z běhu robota `intermediate` na semínku publikace pak finále podle telemetrie
 | T4 (quest v prostoru) | 0,9 (bez dílů P42 1,0) | 0,53 (quest v prostoru 0 → 1,0, mrtvý čas 9,6 → 9,3 s) | 2,5 | 4,9 s | 0,55 |
 | T5 (stanoviště) | 0,9 (bez dílů P42 1,0) | 0,67 (stanoviště 0 → 1,0, stoupání 0,5 → 1,0) | 2,5 | 4,9 s | 0,6 |
 | T6 (duel) | 0,9 (bez dílů P42 1,0) | 0,8 (duel 0 → 1,0, boss) | 2,5 | 4,9 s | 0,65 |
+| T7 (hod) | 0,9 (bez dílů P42 1,0) | 0,9 (hod 0 → 1,0, boss; chování hodu 0 → 1) | 2,5 | 4,9 s | 0,68 |
