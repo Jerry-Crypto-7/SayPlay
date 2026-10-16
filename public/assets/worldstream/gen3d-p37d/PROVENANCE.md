@@ -961,3 +961,5 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-rock-pool` | rock pool, tide pool | 4619 / 2266 |
 | `gen3d-beach-bonfire` | beach bonfire | 4695 / 2316 |
 | `gen3d-driftwood-log` | driftwood log | 4746 / 2372 |
+| `gen3d-junk-tower` | junk tower, junk pile, scrap pile | 4208 / 1926 |
+| `gen3d-bubble-vent` | bubble vent, hydrothermal vent | 4748 / 2372 |

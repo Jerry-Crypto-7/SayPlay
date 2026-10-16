@@ -104,6 +104,10 @@
         {
           "id": "gen3d-giant-squid",
           "height": 2.5
+        },
+        {
+          "id": "gen3d-bubble-vent",
+          "height": 1
         }
       ]
     },
@@ -2167,6 +2171,10 @@
         {
           "id": "gen3d-engine-block",
           "height": 0.9
+        },
+        {
+          "id": "gen3d-junk-tower",
+          "height": 3
         }
       ]
     },

@@ -34824,6 +34824,47 @@
           0.34613
         ]
       }
+    },
+    {
+      "assetId": "gen3d-junk-tower",
+      "tags": [
+        "junk tower",
+        "junk pile",
+        "scrap pile"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-junk-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2219,
+          0,
+          -0.18652
+        ],
+        "max": [
+          0.2219,
+          0.9981,
+          0.18652
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bubble-vent",
+      "tags": [
+        "bubble vent",
+        "hydrothermal vent"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bubble-vent-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32538,
+          0,
+          -0.32502
+        ],
+        "max": [
+          0.32538,
+          0.99978,
+          0.32502
+        ]
+      }
     }
   ]
 }

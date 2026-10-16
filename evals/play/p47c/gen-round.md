@@ -36,3 +36,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 30 (opakování) | p46j-redo | 10 | 8 | 3/8 | 0 | cypress tree, canned soup, lunar crater | 96/101 | – | red alone: src/play/__tests__/look.test.ts; dropped the round's models |
 | 31 | scenery | 10 | 9 | 5/9 | 4 | – | 96/101 | sunken anchor, coral reef rock, crater rock, radar tower | – |
 | 32 | scenery | 10 | 7 | 6/7 | 6 | – | 96/101 | crystal spire, cave crystal cluster, beach towel, rock pool, beach bonfire, driftwood log | red under load, green alone: src/assets/__tests__/external-import.test.ts |
+| 33 (opakování) | sparse-setting scenery | 10 | 5 | 2/5 | 2 | – | 96/101 | junk tower, bubble vent | – |
