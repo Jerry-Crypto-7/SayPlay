@@ -899,3 +899,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-berry-basket` | berry basket, basket of berries | 4290 / 2641 |
 | `gen3d-bolt` | bolt, nut and bolt | 4748 / 2374 |
 | `gen3d-energy-crystal` | energy crystal | 4453 / 2179 |
+| `gen3d-banana-bunch` | banana bunch | 4554 / 2265 |
+| `gen3d-obsidian-shard` | obsidian shard | 4748 / 2374 |
+| `gen3d-treasure-sack` | treasure sack, sack of gold, coin bag | 4283 / 2616 |
+| `gen3d-sleigh-bell` | sleigh bell, jingle bell | 4744 / 2369 |
+| `gen3d-cheese-wedge` | cheese wedge | 4576 / 2184 |
+| `gen3d-gold-doubloon` | gold doubloon, gold coin, doubloon | 4745 / 2362 |
+| `gen3d-enchanted-sword` | enchanted sword, magic sword | 4748 / 2374 |

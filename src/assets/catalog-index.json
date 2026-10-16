@@ -33616,6 +33616,145 @@
           0.21331
         ]
       }
+    },
+    {
+      "assetId": "gen3d-banana-bunch",
+      "tags": [
+        "banana bunch"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-banana-bunch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49569,
+          0,
+          -0.47125
+        ],
+        "max": [
+          0.49569,
+          0.99865,
+          0.47125
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-obsidian-shard",
+      "tags": [
+        "obsidian shard"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-obsidian-shard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22056,
+          0,
+          -0.20972
+        ],
+        "max": [
+          0.22056,
+          0.99985,
+          0.20972
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-treasure-sack",
+      "tags": [
+        "treasure sack",
+        "sack of gold",
+        "coin bag"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-treasure-sack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46838,
+          0,
+          -0.47185
+        ],
+        "max": [
+          0.46838,
+          0.99328,
+          0.47185
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sleigh-bell",
+      "tags": [
+        "sleigh bell",
+        "jingle bell"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sleigh-bell-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25921,
+          0,
+          -0.25904
+        ],
+        "max": [
+          0.25921,
+          0.99739,
+          0.25904
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cheese-wedge",
+      "tags": [
+        "cheese wedge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cheese-wedge-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.06255,
+          0,
+          -1.0678
+        ],
+        "max": [
+          1.06255,
+          0.98822,
+          1.0678
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gold-doubloon",
+      "tags": [
+        "gold doubloon",
+        "gold coin",
+        "doubloon"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gold-doubloon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49995,
+          0,
+          -0.05246
+        ],
+        "max": [
+          0.49995,
+          0.99927,
+          0.05246
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-enchanted-sword",
+      "tags": [
+        "enchanted sword",
+        "magic sword"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-enchanted-sword-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11089,
+          0,
+          -0.093
+        ],
+        "max": [
+          0.11089,
+          0.99578,
+          0.093
+        ]
+      }
     }
   ]
 }

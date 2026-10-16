@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "2ac3af2f28d6dec2ab04b2870c3546cb4270d2bf1050d041096d61333abf4366",
+ "catalogHash": "f82a4e2b770ac83571e514db14d091f5362f697c81df7bd38a7eccaa8197702f",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1674,6 +1674,13 @@
   "gen3d-remote-control": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-berry-basket": {"class":"prop"},
   "gen3d-bolt": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-energy-crystal": {"class":"biped","regions":{"legY":0.248}}
+  "gen3d-energy-crystal": {"class":"biped","regions":{"legY":0.248}},
+  "gen3d-banana-bunch": {"class":"prop"},
+  "gen3d-obsidian-shard": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-treasure-sack": {"class":"prop"},
+  "gen3d-sleigh-bell": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-cheese-wedge": {"class":"prop"},
+  "gen3d-gold-doubloon": {"class":"prop"},
+  "gen3d-enchanted-sword": {"class":"biped","regions":{"legY":0.249}}
  }
 }

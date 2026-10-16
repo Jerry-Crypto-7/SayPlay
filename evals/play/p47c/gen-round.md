@@ -20,3 +20,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 14 (opakování) | p46i-scenery goal | 10 | 3 | 3/3 | 3 | – | 94/101 | bone pile, jousting lance, fencing mask | – |
 | 15 | goal collect | 10 | 9 | 8/9 | 7 | – | 94/101 | haunted crown, trident statue, golden acorn, golden gear, hot cocoa mug, subway token, candy bar | – |
 | 16 | collect | 10 | 9 | 7/9 | 6 | – | 94/101 | candy corn, gem ring, remote control, berry basket, bolt, energy crystal | – |
+| 17 | collect | 10 | 10 | 7/10 | 7 | – | 94/101 | banana bunch, obsidian shard, treasure sack, sleigh bell, cheese wedge, gold doubloon, enchanted sword | – |
