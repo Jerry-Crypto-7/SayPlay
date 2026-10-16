@@ -34865,6 +34865,143 @@
           0.32502
         ]
       }
+    },
+    {
+      "assetId": "gen3d-coconut-tree",
+      "tags": [
+        "coconut tree",
+        "coconut palm"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coconut-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43272,
+          0,
+          -0.43183
+        ],
+        "max": [
+          0.43272,
+          1.00001,
+          0.43183
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cannonball-pile",
+      "tags": [
+        "cannonball pile",
+        "cannonballs"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cannonball-pile-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.93429,
+          0,
+          -0.94313
+        ],
+        "max": [
+          0.93429,
+          1.00001,
+          0.94313
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rope-coil",
+      "tags": [
+        "rope coil",
+        "coiled rope"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rope-coil-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.2498,
+          0,
+          -1.24804
+        ],
+        "max": [
+          1.2498,
+          0.99618,
+          1.24804
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-plank-bridge",
+      "tags": [
+        "plank bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-plank-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.80791,
+          0,
+          -0.44685
+        ],
+        "max": [
+          0.80791,
+          1.00001,
+          0.44685
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-weeping-angel-statue",
+      "tags": [
+        "weeping angel statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-weeping-angel-statue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23762,
+          0,
+          -0.23692
+        ],
+        "max": [
+          0.23762,
+          1.00001,
+          0.23692
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cemetery-bench",
+      "tags": [
+        "cemetery bench"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cemetery-bench-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.65071,
+          0,
+          -0.34413
+        ],
+        "max": [
+          0.65071,
+          0.99423,
+          0.34413
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dock-piling",
+      "tags": [
+        "dock piling",
+        "mooring posts"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-dock-piling-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34309,
+          0,
+          -0.35697
+        ],
+        "max": [
+          0.34309,
+          0.9999,
+          0.35697
+        ]
+      }
     }
   ]
 }

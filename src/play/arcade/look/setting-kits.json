@@ -1455,6 +1455,10 @@
         {
           "id": "gen3d-hammock",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-plank-bridge",
+          "height": 1.5
         }
       ]
     },
@@ -2148,6 +2152,10 @@
         {
           "id": "gen3d-message-in-a-bottle",
           "height": 0.6
+        },
+        {
+          "id": "gen3d-cannonball-pile",
+          "height": 0.7
         }
       ]
     },

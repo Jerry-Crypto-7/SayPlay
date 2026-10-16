@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "d70d6fd33880e58f1bb4604d99f03c4fea8321ed700c164c9093fcff96ab1885",
+ "catalogHash": "a4bbeb8162badd881d620155d91960798713aeae157a7157d9ea1fb56e0f38dd",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1738,6 +1738,13 @@
   "gen3d-beach-bonfire": {"class":"prop"},
   "gen3d-driftwood-log": {"class":"prop"},
   "gen3d-junk-tower": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-bubble-vent": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-bubble-vent": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-coconut-tree": {"class":"prop"},
+  "gen3d-cannonball-pile": {"class":"prop"},
+  "gen3d-rope-coil": {"class":"prop"},
+  "gen3d-plank-bridge": {"class":"prop"},
+  "gen3d-weeping-angel-statue": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-cemetery-bench": {"class":"prop"},
+  "gen3d-dock-piling": {"class":"biped","regions":{"legY":0.25}}
  }
 }

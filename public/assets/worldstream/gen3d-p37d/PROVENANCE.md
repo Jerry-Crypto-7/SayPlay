@@ -963,3 +963,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-driftwood-log` | driftwood log | 4746 / 2372 |
 | `gen3d-junk-tower` | junk tower, junk pile, scrap pile | 4208 / 1926 |
 | `gen3d-bubble-vent` | bubble vent, hydrothermal vent | 4748 / 2372 |
+| `gen3d-coconut-tree` | coconut tree, coconut palm | 4639 / 2292 |
+| `gen3d-cannonball-pile` | cannonball pile, cannonballs | 4503 / 3344 |
+| `gen3d-rope-coil` | rope coil, coiled rope | 3940 / 2685 |
+| `gen3d-plank-bridge` | plank bridge | 4679 / 2327 |
+| `gen3d-weeping-angel-statue` | weeping angel statue | 4666 / 2309 |
+| `gen3d-cemetery-bench` | cemetery bench | 4523 / 2249 |
+| `gen3d-dock-piling` | dock piling, mooring posts | 4486 / 2192 |
