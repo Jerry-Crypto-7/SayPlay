@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "a4bbeb8162badd881d620155d91960798713aeae157a7157d9ea1fb56e0f38dd",
+ "catalogHash": "0627fcb716a9f319fbfa441ee1a169e5059e33cd4eb79c44154ee3131e7541e1",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1745,6 +1745,12 @@
   "gen3d-plank-bridge": {"class":"prop"},
   "gen3d-weeping-angel-statue": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-cemetery-bench": {"class":"prop"},
-  "gen3d-dock-piling": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-dock-piling": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-fishing-net": {"class":"prop"},
+  "gen3d-log-pile": {"class":"prop"},
+  "gen3d-forest-mushroom-ring": {"class":"prop"},
+  "gen3d-fallen-log-bridge": {"class":"prop"},
+  "gen3d-hunter-cabin": {"class":"prop"},
+  "gen3d-toadstool-house": {"class":"prop"}
  }
 }

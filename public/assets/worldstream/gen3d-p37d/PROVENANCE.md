@@ -970,3 +970,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-weeping-angel-statue` | weeping angel statue | 4666 / 2309 |
 | `gen3d-cemetery-bench` | cemetery bench | 4523 / 2249 |
 | `gen3d-dock-piling` | dock piling, mooring posts | 4486 / 2192 |
+| `gen3d-fishing-net` | fishing net | 4540 / 2119 |
+| `gen3d-log-pile` | log pile, woodpile | 4335 / 2816 |
+| `gen3d-forest-mushroom-ring` | forest mushroom ring | 4661 / 2231 |
+| `gen3d-fallen-log-bridge` | fallen log bridge, log bridge | 4555 / 2249 |
+| `gen3d-hunter-cabin` | hunter cabin | 3892 / 2807 |
+| `gen3d-toadstool-house` | toadstool house | 4453 / 2144 |

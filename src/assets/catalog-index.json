@@ -35002,6 +35002,122 @@
           0.35697
         ]
       }
+    },
+    {
+      "assetId": "gen3d-fishing-net",
+      "tags": [
+        "fishing net"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fishing-net-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.55369,
+          0,
+          -0.18935
+        ],
+        "max": [
+          0.55369,
+          0.99841,
+          0.18935
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-log-pile",
+      "tags": [
+        "log pile",
+        "woodpile"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-log-pile-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.90268,
+          0,
+          -0.84768
+        ],
+        "max": [
+          0.90268,
+          1.00001,
+          0.84768
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-forest-mushroom-ring",
+      "tags": [
+        "forest mushroom ring"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-forest-mushroom-ring-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.31968,
+          0,
+          -2.32531
+        ],
+        "max": [
+          2.31968,
+          0.99907,
+          2.32531
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fallen-log-bridge",
+      "tags": [
+        "fallen log bridge",
+        "log bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fallen-log-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.99918,
+          0,
+          -1.59814
+        ],
+        "max": [
+          1.99918,
+          0.99871,
+          1.59814
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hunter-cabin",
+      "tags": [
+        "hunter cabin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-hunter-cabin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46636,
+          0,
+          -0.43905
+        ],
+        "max": [
+          0.46636,
+          0.99996,
+          0.43905
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-toadstool-house",
+      "tags": [
+        "toadstool house"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-toadstool-house-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43701,
+          0,
+          -0.43132
+        ],
+        "max": [
+          0.43701,
+          0.99854,
+          0.43132
+        ]
+      }
     }
   ]
 }
