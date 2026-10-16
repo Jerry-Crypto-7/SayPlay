@@ -308,8 +308,12 @@ export const FIELD = {
    * HP bosse úkolu v prostoru (`genre.v4`, P47A T4). Na 20 semínkách (intermediate / novice) buňka `quest.spatial`
    * se 4 HP 20 / 14, s 5 HP 20 / 8; věty P47A q03 a q05 se 4 HP 20 / 15, s 5 HP 20 / 13 (strážce v3: 19 / 10).
    * Se 4 HP byl začátečník na horní mezi pásma 0,3–0,7 a nad ní.
+   *
+   * Cíle blíž (T9, `questReach`) quest zhustily a 5 HP pak začátečníka shodilo pod pásmo (P47A T11, 20 semínek buňky):
+   * 5 HP 19 / 6, 4 HP 19 / 11; věty q01, q02 a q04 (svět buňky) na semínkách 1–8 začátečník 2/8 → 6/8. `questReach`
+   * 12 m dal 20 / 9 a větám 3/8 (hrana 0,3), 13 m 20 / 7 – a dva cíle by byly dál než 2,4 s chůze.
    */
-  questBossHp: 5,
+  questBossHp: 4,
   /**
    * Vnější poloměr cílů úkolu v prostoru ve `genre.v4` (P47A T9, `closerTargets`; generátor má 15 m): dva cíle
    * nejvýš 22 m od sebe = 2,4 s chůze hráče (150 jednotek za tik).
