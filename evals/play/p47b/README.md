@@ -53,8 +53,48 @@ Měřidlo T2 nad dev panelem a větami P46A (holdout ne), stroj bez souběžné 
 - v54 „an alien gunslinger duels the sheriff, firing a ray gun“ – `control duel takes no shoot`; v67 „a pickpocket duels another thief to swipe“ – `duel takes no grab`. Recept vybere souboj podle „duels“; přestřelka by chtěla jiný výběr žánru, ne akci.
 - Věty P46A a02 (úder + střelba) a a07 (dash + úder) na běžci – na prvním vyhraném semínku publikace robot intermediate spustí jen jednu ze dvou akcí (běžec ze vzorů jako výše); v P46 `actions-after.json` obě ještě prošly.
 
+## Výsledek T12
+
+Commit měření `1593ad90`, 16. 10. 2026. Holdout otevřený **jednou** (`holdout-opened.json`: čas, commit, SHA-256 `f163a285…` – sedí s `holdout-seal.json`). Po otevření se nic neladilo.
+
+| Sada | Stav | hasAction | botUsed | verbFired | spuriousRate (pasti) | p95 draftMs |
+|---|---|---|---|---|---|---|
+| dev panel | výchozí T2 (`baseline-dev.json`) | 0,16 | 0,24 | 0,24 | 0,20 (3 z 15) | 1391 |
+| dev panel | po T11 (`after-dev.json`) | 0,74 | 0,84 | 0,82 | 0,00 (0 z 15) | 1719 |
+| věty P46A | po T11 (`after-p46a.json`) | 1,00 | 1,00 | 0,89 | – | 1988 |
+| **holdout** (27 vět / 20 chce akci) | T12 (`holdout.json`) | **0,65** | **0,70** | **0,70** | **0,14** (1 z 7) | **1611** |
+| zapečetěná sada P45 (100 / 18), měřidlo P46 | P46 konečné (`../p46/final-actions.json`) | 0,72 | 0,67 | 0,67 | – | – |
+| zapečetěná sada P45, měřidlo P46 | T12 (`sealed-recheck.json`) | 0,78 | 0,78 | 0,78 | – | – |
+
+- **Cíl holdoutu (≥ 0,85 / 0,85 / 0,85, pasti ≤ 0,1) nesplněný v žádné ze čtyř hodnot.** Zapsáno poctivě, neladí se.
+- **p95 draftMs ≤ 2000 ms splněno:** holdout 1611 ms (dev po T11 1719, P46A 1988). Stroj při běhu holdoutu vytížený na 10–26 % (cizí sezení).
+- **Sealed-recheck – sada už otevřená, není to nezávislé měření.** Zapečetěnou sadu P45 otevřelo už konečné měření P46 (`../p45/sealed-opened.json`) a P47B ladila po něm. Číslo je jen zpráva vedle 0,72 / 0,67 / 0,67: 0,78 / 0,78 / 0,78 (chtěné akce z regexu P46, ne ze štítku).
+
+**Fakta – co na holdoutu chybí (7 vět bez celé akce, 1 past):**
+
+- Ovládání nebo generátor akci nebere – 5 vět: v01 „goat headbutts“ (`generator arena_catch takes no strike`), v09 „Grandma whacks the moles“ (`generator quest_spatial takes no strike`), v14 „knight bashes skeletons and steals“ v bludišti (`control walker takes no strike`, krádež je), v31 „goalkeeper octopus blocks shots“ (`control ball takes no shield`), v56 „chameleon zips … and spits goo“ (`control move_free takes no shoot`, dash je).
+- Slovník sloveso nezná – 2 věty: v23 „darts“, v26 „veers away“ (obě dash).
+- Akce ve hře je, robot ji nepoužil – 1 věta: v19 „matador sidesteps“ (dash v aréně).
+- Past s akcí – v78 „enemy turrets fire missiles“ dostane střelbu, sloveso patří nepříteli.
+
+**Odvozené (inference):** pět ze sedmi chyb je stejná třída jako „Co zbývá“ u dev – žánr, který akci nemá, ne slovník. Dvě slovesa, která slovník nezná, a past se slovesem nepřítele ukazují, že slovník T3 je laděný na slovesa dev panelu; na nových větách drží hůř (0,65 proti 0,74).
+
+**Zábava panelu P45** (`fun-after.json` proti `fun-baseline.json`, totéž měřidlo `../p45/fun.measure.ts`): hratelných 40/40 → 40/40, mrtvý čas medián 4 → 3,64 s, gradace 0,63 → 0,65, chování medián 1 → 1, finále 0,38 → 0,38, události/s 1,18 → 1,18. Změnil se jen řádek j08 (souboj v aréně, štít z T6): nejdelší mezera 11,62 → 3,07 s, gradace ne → ano. Nic horší.
+
+**E2E** (`npm run build`, `next start` na portu 3273, `FALLBACK_SMOKE_URL`): projekt `chromium` 50/50 zelených za 9,5 min – `interface-language` 3, `p35-perf` 17, `play-abilities` 8, `play-addons` 5, `play-arcade` 12, `play-drive` 4, `play-input` 1. Projekt `pixel7-touch` bere jen `play-touch` – navíc pušteno 5/5 zelených. Práh `p35-perf` beze změny (spec se na větvi nezměnil).
+
+**Celá vitest sada** (samotná, JSON reportér; stroj ale vytěžovaly cizí procesy – ComfyUI, jiný vitest, Chrome, 40–90 % CPU): 14 212 testů, 14 183 prošlo, 23 padlo, 6 přeskočeno. Rozdělení:
+
+- Prostředí worktree – 1: `scripts/__tests__/submission-check.test.ts` (ENOENT `plans/P8-odevzdani.md`, gitignorované).
+- Červené už před P47B – 1: `evals/play/p45/__tests__/sealed.test.ts` „is not opened yet in the repository“. `sealed-opened.json` commitnul konečný P46 (`abe38f04`), test se od P45A nezměnil – červený od `abe38f04`, P47B ho nezpůsobila.
+- Časový limit nebo časový práh pod zátěží, samotný soubor zelený – 20 testů v 6 souborech: `upgrade.test.ts` 13 (i práh 7759 < 6000 ms), `publish-moderation.test.ts` 2, `budgets.test.ts` 2, `external-import.test.ts` 1, `p41/golden.test.ts` 1, `compiled/compile-report.test.ts` 1 (práh 631,6 ≤ 500 ms). Navíc soubor `rules/coverage.test.ts` padl celý bez zprávy (3 testy přeskočené); samotný 25/25.
+- `src/play/compile/__tests__/scenery-carve.test.ts` „the carve removes zero triangles“ – limit 30 s. Samotný 2× červený na limit (36 s, 33 s), s delším limitem zelený (aserce drží). Srovnání se základem `abe38f04` za stejné zátěže, střídavě: základ 34–58 s, HEAD 24–50 s. **Odvozené:** není to regrese P47B – test počítá geometrii mřížky (`src/play/compile`, `src/geom`), kterou větev nemění, a základ limit překročí stejně.
+
+Testy přepsaly měřené artefakty `evals/play/compiled/report.json` a `evals/play/regression/p41-report.json` – vrácené (`git checkout`), závěr nemění. `npx tsc --noEmit` čisté.
+
 ## Rozhodnutí
 
 - **T6 – souboj v aréně bere dash i štít, výchozí řešení z „Co nevíme“ nebylo potřeba.** Robot intermediate s akcí vyhraje 10/10 (štít, dash, oba), sloveso dokázané 4/4. Úder a krádež souboj nebere (`FIGHT_ABILITIES`): úder má vlastní Attack, krást není co. Novice: bez akce 6/10, štít 5/10, dash 6/10, **oba naráz 1/10** – robot novice s dvěma akcemi častěji stojí a čeká na blok, který mu pozdní reakce nevyjde. Brána hlídá jen horní mez (hra nesmí zlehčit); dvojice dash + štít ve větě o souboji je vzácná, proto zůstává zapsaná, ne opravená.
 - **T4-R1 – dash běžce se složenými díly má cooldown 1,5 s místo 1 s (`guardParts`, `dashCooldown`).** Řady trati jdou v husté pasáži ~75 tiků po sobě a dash s 1 s prorazil každou: „a squirrel runs and dodges falling acorns“ novice 8/10 proti 5/10 bez akce (strop 0,7). S 1,5 s novice 6/10, intermediate 10/10, sloveso dokázané na semínkách 1–4. Běžec bez dílů a ostatní ovládání zůstávají na 1 s – fixtura P46A bránu drží (novice 1/10), v18, v21 a v70 překážku nepotkají. Dev panel beze změny (0,74 / 0,84 / 0,82, pasti 0).
 - **T7 – zahazování po jedné akci, limit 2 s zatím nedržený, příčina není T7.** Pokus „bez neprokázané akce“ přibude jen receptu se dvěma akcemi (u jedné akce splývá s pokusem bez akcí), což je výchozí řešení z „Co nevíme“. Dev panel při zátěži stroje (CPU 76 %): stav po T6 p95 2183 ms, po T7 2250 ms (+3 %); `botUsed` 0,64 → 0,70. Proti výchozím 1391 ms je to +62 % – víc vět nese akci (T3–T6) a každá neprokázaná stojí běh robota navíc. Přeměří T11 a T12 v klidu; přeteče-li i tam, další krok je zkrátit pokus se šablonou, ne T7.
+- **T12 – holdout pod cílem (0,65 / 0,70 / 0,70, pasti 0,14), zapsáno, neladí se.** Holdout byl jednorázový; každá oprava teď by se ladila na něm. Limit 2 s drží (p95 1611 ms), takže krok „zkrátit pokus se šablonou“ z T7 není potřeba. Další zlepšení je nová mechanika žánrů (úder v `arena_catch`, `quest_spatial` a bludišti, štít v míči, střelba ve volném pohybu) a měří se na nové slepé sadě, ne na tomhle holdoutu.
