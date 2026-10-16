@@ -34632,6 +34632,82 @@
           0.24839
         ]
       }
+    },
+    {
+      "assetId": "gen3d-sunken-anchor",
+      "tags": [
+        "sunken anchor"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sunken-anchor-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32499,
+          0,
+          -0.12958
+        ],
+        "max": [
+          0.32499,
+          0.99864,
+          0.12958
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coral-reef-rock",
+      "tags": [
+        "coral reef rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-reef-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.63825,
+          0,
+          -0.65549
+        ],
+        "max": [
+          0.63825,
+          0.99531,
+          0.65549
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crater-rock",
+      "tags": [
+        "crater rock"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-crater-rock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5315,
+          0,
+          -0.53047
+        ],
+        "max": [
+          0.5315,
+          0.99587,
+          0.53047
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-radar-tower",
+      "tags": [
+        "radar tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-radar-tower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11846,
+          0,
+          -0.11759
+        ],
+        "max": [
+          0.11846,
+          0.99816,
+          0.11759
+        ]
+      }
     }
   ]
 }

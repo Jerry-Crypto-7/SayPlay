@@ -34,3 +34,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 28 | p46j-redo remake sparse-setting | 10 | 9 | 7/9 | 8 | – | 95/101 | snow shovel, ticket machine, coyote, puffin, rafflesia, desert shrub, tire pile, engine block | – |
 | 29 | sparse-setting scenery | 10 | 4 | 3/4 | 2 | – | 96/101 | circus drum, sunken lamp post | – |
 | 30 (opakování) | p46j-redo | 10 | 8 | 3/8 | 0 | cypress tree, canned soup, lunar crater | 96/101 | – | red alone: src/play/__tests__/look.test.ts; dropped the round's models |
+| 31 | scenery | 10 | 9 | 5/9 | 4 | – | 96/101 | sunken anchor, coral reef rock, crater rock, radar tower | – |

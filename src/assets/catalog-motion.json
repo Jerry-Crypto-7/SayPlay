@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "ecb852a19262f881e32cdeafff310f2669d139cdbf853c8bf7c995980897f4a4",
+ "catalogHash": "42ce3310afda3797b915f9a2422008e9556d09a698af87c7c86b0ff682ddc472",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1726,6 +1726,10 @@
   "gen3d-tire-pile": {"class":"prop"},
   "gen3d-engine-block": {"class":"prop"},
   "gen3d-circus-drum": {"class":"prop"},
-  "gen3d-sunken-lamp-post": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-sunken-lamp-post": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-sunken-anchor": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-coral-reef-rock": {"class":"prop"},
+  "gen3d-crater-rock": {"class":"prop"},
+  "gen3d-radar-tower": {"class":"biped","regions":{"legY":0.25}}
  }
 }

@@ -951,3 +951,7 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-engine-block` | engine block | 3805 / 1861 |
 | `gen3d-circus-drum` | circus drum, circus podium, circus pedestal | 4353 / 2087 |
 | `gen3d-sunken-lamp-post` | sunken lamp post | 4724 / 2342 |
+| `gen3d-sunken-anchor` | sunken anchor | 4668 / 2272 |
+| `gen3d-coral-reef-rock` | coral reef rock | 4573 / 2208 |
+| `gen3d-crater-rock` | crater rock | 4651 / 2294 |
+| `gen3d-radar-tower` | radar tower | 4624 / 2282 |
