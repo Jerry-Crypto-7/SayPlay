@@ -30,3 +30,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 24 | collect | 10 | 10 | 9/10 | 8 | – | 94/101 | shell necklace, pumpkin lantern, spinning top, maple leaf, golden scarab, macaron, canopic jar, egg tray | – |
 | 25 | collect p46j-redo | 10 | 7 | 6/7 | 0 | jelly bean jar, jaguar statue, taro plant, claw machine, city map board | 94/101 | – | red alone: src/play/__tests__/look.test.ts; dropped the round's models |
 | 26 (opakování) | collect | 10 | 6 | 2/6 | 1 | – | 94/101 | coral crown | red under load, green alone: src/assets/__tests__/external-import.test.ts, scripts/assets/cc0/__tests__/promote.test.ts |
+| 27 | p46j-redo | 10 | 8 | 6/8 | 0 | rain barrel, manhole cover, cooling tower, lava lamp, hitching post, coral pillar | 94/101 | – | red alone: src/play/__tests__/look.test.ts; dropped the round's models |
