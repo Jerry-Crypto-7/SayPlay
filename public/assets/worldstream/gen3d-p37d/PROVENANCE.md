@@ -942,3 +942,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-macaron` | macaron | 4463 / 2114 |
 | `gen3d-canopic-jar` | canopic jar | 4748 / 2374 |
 | `gen3d-egg-tray` | egg tray, egg carton | 4322 / 2252 |
+| `gen3d-coral-crown` | coral crown | 4615 / 2205 |

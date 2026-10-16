@@ -34456,6 +34456,25 @@
           0.7396
         ]
       }
+    },
+    {
+      "assetId": "gen3d-coral-crown",
+      "tags": [
+        "coral crown"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coral-crown-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.93566,
+          0,
+          -0.93875
+        ],
+        "max": [
+          0.93566,
+          0.9997,
+          0.93875
+        ]
+      }
     }
   ]
 }

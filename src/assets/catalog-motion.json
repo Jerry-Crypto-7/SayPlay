@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "b7c816170ed0fffa9a9e4b48fc097e50101ed76c569e1e403950d0c4b380b760",
+ "catalogHash": "b050426b65995c583b32633b437936b425473ff86f53d07b4dd6fd02d43a219f",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1717,6 +1717,7 @@
   "gen3d-golden-scarab": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-macaron": {"class":"prop"},
   "gen3d-canopic-jar": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-egg-tray": {"class":"prop"}
+  "gen3d-egg-tray": {"class":"prop"},
+  "gen3d-coral-crown": {"class":"prop"}
  }
 }
