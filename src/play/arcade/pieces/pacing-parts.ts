@@ -20,7 +20,8 @@ import { BOSS, DROPPER, TURRET } from './behaviours/boss';
 import { DUEL_ENRAGE } from './duel';
 import { PACING, type PacingActor, type PacingSetup, TENSION_CURVE, intensityAt, withPacing } from './pacing';
 import { progressionParts } from './progression-parts';
-import { QUEST } from './quest';
+import type { CompiledInteract } from '../rules/interact';
+import { QUEST, boilRounds, stationRoundSeconds } from './quest';
 import { checkRhythmLevel, rhythmLevel } from './rhythm';
 import { RUNNER } from './runner';
 import { type GunParams, marchedRange, shooterWaves } from './shooter';
@@ -652,36 +653,92 @@ const rhythmPaced: GenrePacing = (parts, spec, seed) => {
 
 /**
  * Úkol na stanovišti (P45C T14): `drop` = o tolik kol míň (dvojí úkol posledního kola je práce navíc a hodiny
- * zůstávají); kopie stanovišť finále stojí na pultu o `QUEST.stationSpacing` za krajními, nejvýš `extra`.
+ * zůstávají); kopie stanovišť finále stojí na pultu o `QUEST.stationSpacing` za krajními (se spěchem o půl),
+ * nejvýš `extra`.
  */
-export const STATION_PACE = { drop: 2, extra: 2 } as const;
+export const STATION_PACE = {
+  drop: 2,
+  extra: 2,
+  /**
+   * Závěrečný spěch (`genre.v4`, P47A T5): držení i pečení na `rush`-tinu (`interact.rush`), kola spěchu
+   * podle odhadu robota (`stationRoundSeconds`, se stanovišti navíc) aspoň `rushSeconds` – posledních 10 s
+   * telemetrie (`climax`) leží skoro celé ve spěchu (`stationRush`).
+   */
+  rush: 3,
+  rushSeconds: 9,
+} as const;
+
+interface StationRush {
+  /** O tolik kol míň než generátor: nejmíň takové, aby odhad robota nepřetáhl hru bez spěchu (hodiny zůstávají). */
+  readonly drop: number;
+  /** Lhůta přetečení kol spěchu: dolní mez křivky z kroku spěchu (`boilRounds`). */
+  readonly limit: number;
+  readonly interact: NonNullable<CompiledInteract['rush']>;
+}
+
+/**
+ * Spěch stanoviště (P47A T5): držení a pečení na `STATION_PACE.rush`-tinu; kola spěchu (s kopiemi stanovišť,
+ * `own + extra` stanovišť) od konce, dokud jejich odhad robota (`stationRoundSeconds`) nedá `rushSeconds`.
+ * Bez spěchu běží `all − drop − 1` kol dvou stanovišť a poslední kolo dvojí; se spěchem tolik kol ubereme,
+ * aby odhad nebyl delší. Aspoň kolo 0 zůstane bez spěchu; `null` = na spěch nezbude kolo.
+ */
+function stationRush(interact: CompiledInteract, own: number, extra: number, all: number): StationRush | null {
+  const after = interact.ready?.after ?? QUEST.ready.after;
+  const hold = Math.floor(interact.hold / STATION_PACE.rush);
+  const quick = Math.max(1, Math.floor(after / STATION_PACE.rush));
+  const round = (count: number, held: number, baked: number): number => stationRoundSeconds({ count, states: interact.states, hold: held, after: baked });
+  const plain = round(own, interact.hold, after);
+  const rushed = round(own + extra, hold, quick);
+  const rushRounds = Math.ceil(STATION_PACE.rushSeconds / rushed);
+  const today = (all - STATION_PACE.drop - 1) * plain + round(own + extra, interact.hold, after);
+  let drop = 0;
+  // Půl kola rezervy: robot je ve spěchu rychlejší než odhad, kolo navíc pryč by hru zkrátilo pod 30 s a začátečníkovi
+  // pásmo přetáhlo (buňka bez rezervy 18/20, s ní 13/20; měřeno P47A T5).
+  while (drop < STATION_PACE.drop && (all - drop - rushRounds) * plain + rushRounds * rushed > today + plain / 2) drop += 1;
+  const from = all - drop - rushRounds;
+  if (from < 1) return null;
+  return { drop, limit: boilRounds({ hold, after: quick, window: interact.ready?.window ?? QUEST.ready.window }, all - drop).floor, interact: { round: from, hold, after: quick } };
+}
 
 /**
  * Úkol na stanovišti: postup = kola (`arena_waves`); kola zrychlují – lhůta přetečení kola (`boil_over.limits`)
  * jde s křivkou od dnešní lhůty prvního kola po dnešní lhůtu posledního, nikdy kratší (hrnec kypí čím dál
  * rychleji); finále = poslední kolo s dvojím úkolem: s jeho začátkem přibudou na pultu kopie stanovišť
  * (`PacingSetup.extra`) a výhra (`interact` ve hře po kolech) čeká, až budou hotové i ony. Nové `win` nepřibude.
+ * Ve `genre.v4` (P47A T5) jsou poslední kola spěch (`stationRush`): kopie přijdou s jeho prvním kolem, úkoly se
+ * střídají rychleji (`interact.rush`, držení a pečení na `STATION_PACE.rush`-tinu) a lhůta kol spěchu je dolní mez
+ * křivky z kroku spěchu (`boilRounds` nad krokem spěchu), kratší než dnešní poslední – konec běhu zhoustne
+ * (`climax` telemetrie).
  */
-const stationPaced: GenrePacing = (parts) => {
+const stationPaced: GenrePacing = (parts, spec) => {
   const waves = ruleOf(parts, 'arena_waves')?.params as WaveParams | undefined;
   const boil = ruleOf(parts, 'boil_over')?.params as { readonly ticks: number; readonly step?: number; readonly floor?: number } | undefined;
   const stations = parts.level.bodies.filter((body) => body.role === 'target');
-  const rounds = (waves?.waves.length ?? 0) + 1 - STATION_PACE.drop;
+  const count = Math.min(STATION_PACE.extra, stations.length);
+  const use = ruleOf(parts, 'interact')?.params as { readonly when: { readonly interact: CompiledInteract } } | undefined;
+  const rush = genreAtLeast(spec, FINALE_GENRE_VERSION) && use !== undefined ? stationRush(use.when.interact, stations.length, count, (waves?.waves.length ?? 0) + 1) : null;
+  const drop = rush?.drop ?? STATION_PACE.drop;
+  const rounds = (waves?.waves.length ?? 0) + 1 - drop;
   if (waves === undefined || waves.until !== 'targets' || boil === undefined || stations.length === 0 || rounds < 3) return null;
   const station = stations[0] as BodyInit;
-  const reach = Math.max(...stations.map((body) => Math.abs(body.x))) + QUEST.stationSpacing;
+  // Kopie spěchu o půl rozestupu blíž: stanoviště jdou v pořadí a první kopie přijde nejdál od hráče – o `stationSpacing`
+  // dál nesla každé kolo spěchu přes celý pult (+1 → −3 → +3 m), konec byl jen o vlásek hustší (buňka climax 16/20, se spěchem blíž 20/20).
+  const reach = Math.max(...stations.map((body) => Math.abs(body.x))) + (rush === null ? QUEST.stationSpacing : QUEST.stationSpacing / 2);
   // Dnešní lhůta prvního a posledního kola (`boilRounds`): křivka mezi nimi.
   const first = boil.ticks;
   const last = boil.step === undefined ? first : Math.max(boil.floor ?? ARCADE_HZ, first - boil.step * waves.waves.length);
   const span = PACING.intensity.finale - PACING.intensity.intro;
-  const limits = Array.from({ length: rounds }, (_, round) => first - Math.floor(((first - last) * (intensityAt(waveStart(round, rounds), TENSION_CURVE) - PACING.intensity.intro)) / span));
-  const shorter = (interact: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> => ({ ...interact, rounds });
+  const curve = Array.from({ length: rounds }, (_, round) => first - Math.floor(((first - last) * (intensityAt(waveStart(round, rounds), TENSION_CURVE) - PACING.intensity.intro)) / span));
+  // Spěch: kola od `rush.interact.round` na dolní mezi křivky z kroku spěchu, ostatní kola jako dřív.
+  const limits = rush === null ? curve : curve.map((limit, round) => (round < rush.interact.round ? limit : rush.limit));
+  const shorter = (own: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> => ({ ...own, rounds, ...(rush === null ? {} : { rush: rush.interact }) });
   return {
     ...still({ by: 'wave', need: rounds, limit: ARCADE_LIMITS.maxTicks }, 'round'),
     spots: [-reach, station.z, reach, station.z],
-    extra: { body: station, at: waveStart(rounds - 1, rounds), count: Math.min(STATION_PACE.extra, stations.length) },
+    // Kopie stanovišť přijdou se spěchem (bez něj s posledním kolem).
+    extra: { body: station, at: waveStart(rush?.interact.round ?? rounds - 1, rounds), count },
     adjust: (own) => {
-      const fewer = withRule(own, 'arena_waves', (params) => ({ ...params, waves: (params as WaveParams).waves.slice(STATION_PACE.drop) }));
+      const fewer = withRule(own, 'arena_waves', (params) => ({ ...params, waves: (params as WaveParams).waves.slice(drop) }));
       const timed = withRule(fewer, 'boil_over', (params) => ({ ...params, limits }));
       const ruled = withRule(timed, 'interact', (params) => {
         const when = params.when as { readonly interact: Readonly<Record<string, unknown>> };

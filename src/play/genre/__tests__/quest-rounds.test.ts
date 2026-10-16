@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
 import { compileArcade } from '@/play/arcade/compile';
-import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, ROLE, bodyBase, underlyingRule } from '@/play/arcade/contract';
 import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { STATION_PACE } from '@/play/arcade/pieces/pacing-parts';
@@ -141,11 +141,17 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
   it('station: the same stations start over each round, the win comes in the last one and the boil-over limit shrinks', () => {
     const game = publish('flip two pancakes in the kitchen');
     // Průběh P45C T14: dvojí úkol posledního kola stojí `STATION_PACE.drop` kol; jeho stanoviště přibudou až tik po začátku kola.
-    const planned = (tuningOf(game.spec).rounds as number) - STATION_PACE.drop;
+    // Spěch `genre.v4` (P47A T5): kopie přijdou s prvním kolem spěchu a zůstanou, kol ubere nejvýš tolik a aspoň jedno.
+    const generated = tuningOf(game.spec).rounds as number;
+    const planned = (game.world.rules.map(underlyingRule).find((rule) => rule.id === 'interact')!.params as { when: { interact: { rounds: number } } }).when.interact.rounds;
+    expect(planned).toBeGreaterThanOrEqual(generated - STATION_PACE.drop);
+    expect(planned).toBeLessThan(generated);
     const { rounds, wonInRound } = roundsOf(game.world);
     expect(rounds).toHaveLength(planned);
     expect(wonInRound).toBe(planned - 1);
-    expect(new Set(rounds.map((round) => JSON.stringify(round.targets))).size).toBe(1);
+    // Tatáž stanoviště začnou znovu (kopie spěchu stojí za nimi, tělo s vyšším indexem).
+    const own = rounds[0]!.targets;
+    expect(new Set(rounds.map((round) => JSON.stringify(round.targets.slice(0, own.length)))).size).toBe(1);
     // Lhůta po kolech z křivky (`limits`, P45C T14).
     const boil = game.world.rules.find((rule) => rule.id === 'boil_over')?.params as { limits: number[] };
     const limit = (round: number) => boil.limits[Math.min(round, boil.limits.length - 1)]!;

@@ -12,11 +12,11 @@
     "reasons": {
      "assembly": 3
     },
-    "finaleShare": 0.53,
+    "finaleShare": 0.67,
     "bossShare": 0.47,
     "behavioursMedian": 2.5,
     "deadTimeMedianS": 4.89,
-    "risingShare": 0.73
+    "risingShare": 0.8
    },
    "genres": {
     "arena.collect": {
@@ -75,11 +75,11 @@
      "playable": 4,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0,
+     "finaleShare": 1,
      "bossShare": 0,
      "behavioursMedian": 0,
      "deadTimeMedianS": 1.74,
-     "risingShare": 0.5
+     "risingShare": 1
     },
     "throw": {
      "sentences": 3,
@@ -105,11 +105,11 @@
      "entry": 6,
      "assembly": 2
     },
-    "finaleShare": 0.55,
+    "finaleShare": 0.6,
     "bossShare": 0.43,
     "behavioursMedian": 1.5,
     "deadTimeMedianS": 4,
-    "risingShare": 0.78
+    "risingShare": 0.83
    },
    "genres": {
     "arena.collect": {
@@ -274,11 +274,11 @@
      "reasons": {
       "assembly": 1
      },
-     "finaleShare": 0,
+     "finaleShare": 0.67,
      "bossShare": 0,
      "behavioursMedian": 0,
      "deadTimeMedianS": 1.8,
-     "risingShare": 0.33
+     "risingShare": 1
     },
     "rhythm": {
      "sentences": 2,
@@ -352,11 +352,11 @@
      "assembly": 5,
      "entry": 6
     },
-    "finaleShare": 0.54,
+    "finaleShare": 0.63,
     "bossShare": 0.44,
     "behavioursMedian": 2,
     "deadTimeMedianS": 4.63,
-    "risingShare": 0.76
+    "risingShare": 0.81
    },
    "genres": {
     "arena.collect": {
@@ -521,11 +521,11 @@
      "reasons": {
       "assembly": 1
      },
-     "finaleShare": 0,
+     "finaleShare": 0.86,
      "bossShare": 0,
      "behavioursMedian": 0,
      "deadTimeMedianS": 1.8,
-     "risingShare": 0.43
+     "risingShare": 1
     },
     "rhythm": {
      "sentences": 2,
@@ -1008,11 +1008,11 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "climax",
     "behaviourCount": 0,
     "behaviours": [],
     "longestGapS": 1.92,
-    "rising": false
+    "rising": true
    },
    {
     "id": "s02",
@@ -1025,11 +1025,11 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "climax",
     "behaviourCount": 0,
     "behaviours": [],
     "longestGapS": 1.5,
-    "rising": false
+    "rising": true
    },
    {
     "id": "s03",
@@ -1042,7 +1042,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "climax",
     "behaviourCount": 0,
     "behaviours": [],
     "longestGapS": 1.55,
@@ -1059,10 +1059,10 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "climax",
     "behaviourCount": 0,
     "behaviours": [],
-    "longestGapS": 2.37,
+    "longestGapS": 2.33,
     "rising": true
    },
    {
@@ -1421,11 +1421,11 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "climax",
     "behaviourCount": 0,
     "behaviours": [],
     "longestGapS": 1.8,
-    "rising": false
+    "rising": true
    },
    {
     "id": "m06",
@@ -1645,11 +1645,11 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "climax",
     "behaviourCount": 0,
     "behaviours": [],
     "longestGapS": 1.98,
-    "rising": false
+    "rising": true
    },
    {
     "id": "u06",

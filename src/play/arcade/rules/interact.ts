@@ -53,7 +53,9 @@ const ready = z.object({ after: z.int().min(1).max(10 * ARCADE_HZ), window: z.in
  * Po překladu: `role` = kód jádra, `radius` v jednotkách. `rounds` (jen po
  * překladu, staví ho generátor úkolu, P36A T4): hra má tolik kol a vyhrává se
  * až v posledním – další kolo spustí pravidlo `arena_waves`, které zvedá
- * čítač vlny (`waveOf`).
+ * čítač vlny (`waveOf`). `rush` (jen po překladu, staví ho průběh stanoviště
+ * ve `genre.v4`, P47A T5): od kola `round` platí kratší `hold` a `after`
+ * okna připravenosti (`interactAt`) – závěrečný spěch.
  */
 export const compiledInteractWhen = z
   .object({
@@ -66,11 +68,22 @@ export const compiledInteractWhen = z
         order: z.boolean().optional(),
         ready: ready.optional(),
         rounds: z.int().min(2).max(WAVE_LIMITS.rounds).optional(),
+        rush: z
+          .object({ round: z.int().min(1).max(WAVE_LIMITS.rounds - 1), hold: z.int().min(0).max(5 * ARCADE_HZ), after: z.int().min(1).max(10 * ARCADE_HZ) })
+          .strict()
+          .optional(),
       })
       .strict(),
   })
   .strict();
 export type CompiledInteract = z.infer<typeof compiledInteractWhen>['interact'];
+
+/** Spouštěč, který platí v tomhle tiku: od kola `rush.round` s držením a pečením spěchu, jinak beze změny. */
+export function interactAt(interact: CompiledInteract, state: Int32Array): CompiledInteract {
+  const { rush } = interact;
+  if (rush === undefined || waveOf(state) < rush.round) return interact;
+  return { ...interact, hold: rush.hold, ...(interact.ready === undefined ? {} : { ready: { ...interact.ready, after: rush.after } }) };
+}
 
 // ---------------------------------------------------------------------------
 // Rozdělaná práce v čítači `trigger`, 0 = nic:
@@ -167,8 +180,9 @@ function allDone(state: Int32Array, body: number, interact: CompiledInteract): b
  * Jeden tik pravidla (spouštěč `press`, vstup je v `ctx.input`). `reached` vrátí
  * efekty `do` pravidla pro cíl, který právě došel do konečného stavu.
  */
-export function interactFire(ctx: RuleContext, interact: CompiledInteract, reached: (body: number) => readonly ArcadeEffect[]): readonly ArcadeEffect[] {
+export function interactFire(ctx: RuleContext, compiled: CompiledInteract, reached: (body: number) => readonly ArcadeEffect[]): readonly ArcadeEffect[] {
   const { state, player } = ctx;
+  const interact = interactAt(compiled, state);
   const record = interactRecord(state);
   const target = (ctx.input.buttons & BUTTON.INTERACT) === 0 ? -1 : interactTarget(state, player, interact);
   // Puštění nebo odchod: držení se zahodí, tik posunu zůstane – okno připravenosti běží dál.
