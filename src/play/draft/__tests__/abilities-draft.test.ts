@@ -90,7 +90,8 @@ describe('abilities from the sentence verbs (P46A T8)', () => {
   it('keeps sentence order, at most two, and only what the control takes', () => {
     expect(saidAbilities('a ninja dashes over rooftops and kicks robot guards')).toEqual(['dash', 'strike']);
     expect(abilitiesFor('the hero shoots, punches, steals and dodges', 'runner')).toEqual(['shoot', 'strike']);
-    expect(abilitiesFor('a fox steals eggs and punches a bear', 'duel')).toEqual([]);
+    // Duel (P47B T8) bere úder, dash a štít vlastní mechanikou, krádež ne.
+    expect(abilitiesFor('a fox steals eggs and punches a bear', 'duel')).toEqual(['strike']);
   });
 
   it('does not hear an action in being hit, collecting or catching', () => {

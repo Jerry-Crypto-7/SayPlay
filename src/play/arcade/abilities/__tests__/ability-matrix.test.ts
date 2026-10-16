@@ -15,6 +15,7 @@ import { BODY, BUTTON, HEADER, ROLE, UNIT, bodyBase } from '../../contract';
 import { STRIKE, inStrikeReach } from '../strike';
 import { loadRapier } from '../../physics/world';
 import { runBot, verifyArcade } from '../../verify';
+import duel from '../../__fixtures__/duel.json';
 import flap from '../../__fixtures__/flap.json';
 import platform from '../../__fixtures__/platform.json';
 import runner from '../../__fixtures__/runner.json';
@@ -33,6 +34,7 @@ const FIXTURES: Partial<Record<ControlId, object>> = {
   flap,
   glide: { ...flap, control: 'glide', controlParams: {} },
   walker: { ...flap, control: 'walker', controlParams: { collect: true } },
+  duel,
   move_free: compileGenre({ genre: 'arena', mode: 'escape', hero: 'cat', cast: [{ label: 'polar bear', does: 'chase_me' }, { label: 'glowing fish', does: 'collect' }], setting: 'frozen lake' } as GenreSpec),
 };
 
@@ -73,7 +75,9 @@ describe('P46A ability matrix', () => {
       const made = arcadeWorldOf(read.value, seed);
       if (!made.ok) throw new Error(`${control} seed ${seed}: ${made.issues.join('; ')}`);
       const run = runBot(made.world, undefined, { profile: 'intermediate' });
-      expect(run.inputs.some((event) => (event.buttons & BUTTON.ACTION_A) !== 0), `seed ${seed}: never pressed`).toBe(true);
+      // Duel (P47B T8) hraje akce vlastním úderem (Tap) a úhybem (Down), ne tlačítkem A.
+      const button = control !== 'duel' ? BUTTON.ACTION_A : ability === 'strike' ? BUTTON.TAP : BUTTON.DOWN;
+      expect(run.inputs.some((event) => (event.buttons & button) !== 0), `seed ${seed}: never pressed`).toBe(true);
       const verdict = verifyArcade(made.world);
       expect(verdict.failures, `seed ${seed}`).toEqual([]);
       expect(verdict.verbs.find((proof) => proof.verb === ability)?.changed, `seed ${seed}`).toBe(true);

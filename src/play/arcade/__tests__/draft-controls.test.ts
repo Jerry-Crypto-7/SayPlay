@@ -114,7 +114,8 @@ describe('draft control choice', () => {
     expect(pickControl('stack blocks as high as u can')).toEqual({ control: 'timing', mode: 'stack', speed: null });
     expect(pickControl('tap at the right time to stop the moving platform')).toEqual({ control: 'timing', mode: 'precision', speed: null });
     expect(pickControl('a hard rhythm game')).toEqual({ control: 'rhythm', density: 'dense' });
-    expect(pickControl('an easy boxing match')).toEqual({ control: 'duel', difficulty: 'easy' });
+    // Box je úder věty a duel ho od P47B T8 hraje vlastním Tap.
+    expect(pickControl('an easy boxing match')).toEqual({ control: 'duel', difficulty: 'easy', abilities: ['strike'] });
     expect(pickControl('ninja running on rooftops')).not.toMatchObject({ control: 'duel' });
     // Narážka souboje se slovu „shoot“ vyhýbá schválně; po sloučení vlny 2 na
     // kovbojský duel existuje střelba (P25G), takže dostane ji, ne nic.

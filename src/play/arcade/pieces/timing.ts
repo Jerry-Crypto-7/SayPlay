@@ -188,6 +188,8 @@ const judgeParams = z
     miss: z.enum(['lose', 'damage']),
     /** Náhlá smrt (finále průběhu P45C T14): v posledních `sudden` úkolech minutí prohrává i se životy. Bez hodnoty žádná. */
     sudden: z.int().min(1).max(ARCADE_LIMITS.maxBodies).optional(),
+    /** Duel s akcí úder (P47B T8): zásah soupeře je sloveso věty – čte ho jen důkaz slovesa. */
+    verb: z.literal('strike').optional(),
   })
   .strict();
 

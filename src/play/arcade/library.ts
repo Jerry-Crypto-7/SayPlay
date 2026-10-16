@@ -27,7 +27,7 @@ import { questBot } from './pieces/quest-bot';
 import { RULES } from './pieces/rules';
 import { runnerControl, runnerTrack } from './pieces/runner';
 import { runnerBot } from './pieces/runner-bot';
-import { duelArena, duelControl } from './pieces/duel';
+import { duelArena, duelControl, duelDodgeRule } from './pieces/duel';
 import { duelBot } from './pieces/duel-bot';
 import { rhythmControl, rhythmLevel } from './pieces/rhythm';
 import { rhythmBot } from './pieces/rhythm-bot';
@@ -111,7 +111,7 @@ const PROGRESSION_CONTROLS = { ...PHASE_CONTROLS, pacing_control: makePacingCont
 const PROGRESSION_BOTS = { ...PHASE_BOTS, pacing_bot: makePacingBot(PHASE_BOTS) as BotPiece };
 const NATIVE_LIBRARY: ArcadeLibrary = {
   controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES },
+  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

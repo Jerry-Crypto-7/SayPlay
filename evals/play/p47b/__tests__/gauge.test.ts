@@ -36,6 +36,14 @@ describe('P47B action gauge', () => {
     expect(row.spurious).toEqual([]);
   });
 
+  it('counts a duel’s punch and dodge as the sentence’s strike and shield from params.verb (T8)', async () => {
+    const text = 'a sumo bear shoves rivals and blocks their slaps';
+    const meta = draftGameSpecWithMeta('a sumo bear shoves rivals out of the ring', 1);
+    const row = await verbRowOf({ id: 't', text, wants: ['strike', 'shield'] }, { ...meta, spec: { ...meta.spec, abilities: ['strike', 'shield'] } }, 5);
+    expect(row.control).toBe('duel');
+    expect([row.hasAction, row.botUsed, row.verbFired]).toEqual([true, true, true]);
+  });
+
   it('gives a dropped action the reason the composition recorded', async () => {
     const text = 'A rabbit runs through a meadow and dodges falling acorns';
     const meta = draftGameSpecWithMeta(text, 1);

@@ -61,6 +61,8 @@ function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
   if (said.length === 0 || spec.control === undefined) return spec;
   const abilities = abilitiesOfControl(said, spec.control);
   if (abilities.length === 0) return spec;
+  // Duel hraje akce vlastním úderem a úhybem (P47B T8): jeho nápověda je už říká, tlačítko J nemá.
+  if (spec.control === 'duel') return { ...spec, abilities };
   const own = abilities.includes('strike') ? spec.tutorial.controlsHint.replace(ATTACK_HINT, '') : spec.tutorial.controlsHint;
   const hint = `${own} ${abilityHint(abilities)}`;
   return { ...spec, abilities, tutorial: { ...spec.tutorial, controlsHint: hint.length <= 80 ? hint : own } };

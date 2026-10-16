@@ -198,6 +198,17 @@ export const ABILITY_PIECES: Readonly<Record<AbilityId, AbilityPiece>> = {
 
 export const ABILITY_RULES = { [strikeRule.id]: strikeRule, [grabRule.id]: grabRule, [dashRule.id]: dashRule, [shieldRule.id]: shieldRule, [fightGuardRule.id]: fightGuardRule } as const;
 
+/**
+ * Duel (P47B T8) hraje úder (Tap) a úhyb (Down) vlastní mechanikou: žádné tlačítko ani tělo akcí, jen
+ * sloveso – úder na zásahu soupeře (`judge`), dash a štít na úhybu, který vyšel (`duel_dodge`).
+ */
+function duelVerbs(parts: ArcadeParts, ids: readonly AbilityId[]): ArcadeParts {
+  const dodges = ids.filter((id): id is 'dash' | 'shield' => id === 'dash' || id === 'shield');
+  const rules = parts.rules.map((rule) => mapUnderlying(rule, (native) => (native.id === 'judge' && ids.includes('strike') ? { ...native, params: { ...native.params, verb: 'strike' } } : native)));
+  const control = dodges.length === 0 ? parts.control : withBaseControl(parts.control, (duel) => ({ ...duel, params: { ...duel.params, dodges: true } }));
+  return { ...parts, control, rules: [...rules, ...dodges.map((verb) => ({ id: 'duel_dodge', params: { verb } }))] };
+}
+
 /** Pořadí skládání: kdo přidává nepřátele (střelba, úder, krádež), jde před dashem a štítem, které chrání před jejich nárazy. */
 const APPLY_ORDER: readonly AbilityId[] = ['shoot', 'strike', 'grab', 'dash', 'shield'];
 
@@ -209,6 +220,7 @@ const APPLY_ORDER: readonly AbilityId[] = ['shoot', 'strike', 'grab', 'dash', 's
 export function applyAbilities(parts: ArcadeParts, context: AddonContext): ArcadeParts {
   const ids = context.spec.abilities ?? [];
   if (ids.length === 0) return parts;
+  if (baseControlOf(parts.control).id === 'duel') return duelVerbs(parts, ids);
   const keeper = parts.level.bodies.length;
   const hero = parts.level.bodies[0] as BodyInit;
   // Mrtvá předloha jako počítadlo komba: nic ji nekreslí ani nesrazí.

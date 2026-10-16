@@ -63,7 +63,8 @@ const ALL_ABILITIES: readonly AbilityId[] = ['shoot', 'strike', 'dash', 'shield'
  *   berou úder soupeře – souboj jen je (`FIGHT_ABILITIES`): úder má vlastní Attack a krást není co.
  *   Agar takovou hru odmítne a rychlá verze akci zahodí.
  * - shooter, ball, throw, timing, rhythm: tlačítko je samo mechanika (rána, hod, stop, nota), druhé by s ním soupeřilo.
- * - duel: úder a blok má souboj vlastní (ATTACK, INTERACT). tap_go: mřížka bez hrdiny s fyzikou arkády.
+ * - duel: úder, dash a štít hraje vlastní mechanika duelu (Tap úder, Down úhyb za dash i štít), žádné
+ *   druhé tlačítko – akce dá jen sloveso pravidlům (P47B T8). tap_go: mřížka bez hrdiny s fyzikou arkády.
  */
 const AIM_ABILITIES: readonly AbilityId[] = ['shoot', 'strike', 'grab'];
 
@@ -109,7 +110,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   // P30B T4: díl věže („pancakes“), nota rytmu („lily pads“) a mantinel závodu („crocodiles“) taky.
   timing: arcade({ setting: true, cues: 'stack, stop the bar', roles: ['block', 'miss'], finish: false, labels: ['block'], mechanics: LIVES_AND_TIMER }),
   rhythm: arcade({ setting: true, cues: 'tap on the beat', roles: ['note', 'miss'], finish: false, labels: ['player', 'note'], mechanics: LIVES_AND_TIMER }),
-  duel: arcade({ setting: true, cues: 'fight, boxing', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER }),
+  duel: arcade({ setting: true, cues: 'fight, boxing', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER, abilities: ['strike', 'dash', 'shield'] }),
 };
 
 export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.control ?? 'tap_go';
