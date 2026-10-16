@@ -450,6 +450,9 @@ export const throwBudgetIn = (seconds: number): number => Math.max(1, Math.floor
 
 const player: BodyInit = { role: 'player', kind: 'thrower', x: 0, y: 0, z: 0, w: THROW.playerW, h: THROW.playerH, d: THROW.playerD, solid: false };
 
+/** Tyč koše stojí o tolik za obroučkou; podstavec terče pod ním na stejném `z`. */
+const POLE_BEHIND = 700;
+
 /** Těla jednoho cíle na hloubce `z`: terč, koš na tyči, nebo věž. */
 function goalBodies(goal: ThrowGoal, z: number, height: number, lift: number): BodyInit[] {
   if (goal === 'target') {
@@ -461,7 +464,7 @@ function goalBodies(goal: ThrowGoal, z: number, height: number, lift: number): B
     const rim = 2600 + lift;
     return [
       { role: 'target', kind: 'hoop', x: 0, y: rim, z, w: 900, h: 250, d: 900, solid: false },
-      { role: 'obstacle', kind: 'pole', x: 0, y: 0, z: z + 700, w: 300, h: rim + 900, d: 300, solid: true },
+      { role: 'obstacle', kind: 'pole', x: 0, y: 0, z: z + POLE_BEHIND, w: 300, h: rim + 900, d: 300, solid: true },
     ];
   }
   return Array.from({ length: height }, (_, k): BodyInit => ({ role: 'target', kind: 'wood-block', x: 0, y: k * THROW.blockSize, z, w: THROW.blockSize, h: THROW.blockSize, d: THROW.blockSize, solid: true, gravity: true }));
@@ -629,7 +632,11 @@ function buildField(seed: number, params: ThrowParams): ThrowBuild {
     const bossRound = boss !== null && index === final;
     // Kolo bosse bez `hp` nejvyšších cílů (věž shora): tři hody na bosse místo nich a bonusového terče.
     const dropped = bossRound ? new Set(hitOrder(round.bodies, 0, round.bodies.length).slice(0, THROW_BOSS.hp)) : new Set<number>();
-    const spawned = round.bodies.filter((_, k) => !dropped.has(k));
+    // …a bez jejich opěr (P47A T10): podstavec terče pod ním a tyč koše za ním by stály samy. Místo bosse se
+    // hledalo s nimi (`bonusOf` bere jen přímý zásah), takže jeho hod platí i bez nich.
+    const orphan = (body: BodyInit): boolean =>
+      body.role === 'obstacle' && [...dropped].some((k) => round.bodies[k]!.x === body.x && body.z - round.bodies[k]!.z >= 0 && body.z - round.bodies[k]!.z <= POLE_BEHIND);
+    const spawned = round.bodies.filter((body, k) => !dropped.has(k) && !orphan(body));
     const own = { bodies: spawned.flatMap((body) => [bodies.length + templateOf(body), body.x, body.y, body.z]), throws: round.throws + (bossRound ? THROW_BOSS.hp - dropped.size - 1 + THROW_BOSS.reserve : 0) };
     const target = bossRound ? boss : round.bonus;
     if (target === null) return own;

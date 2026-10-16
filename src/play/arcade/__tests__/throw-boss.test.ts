@@ -95,7 +95,13 @@ describe('throw game ends with a boss target (P47A T7, genre.v4)', () => {
         const was = decode(stored, storedStart, before.at(-1)!.bodies);
         const targets = was.filter((body) => body.role === ROLE.target);
         const highest = new Set([...targets].sort((a, b) => b.y! - a.y!).slice(0, THROW_BOSS.hp));
-        expect(decode(world, start, last.bodies), `${name} seed ${seed}: the boss round`).toEqual(was.filter((body) => !highest.has(body)));
+        // Opěra stojí pod terčem (podstavec, stejné `z`) nebo 0,7 m za košem (tyč); s odebraným cílem odejde i ona (P47A T10).
+        const holds = (support: (typeof was)[number], target: (typeof was)[number]): boolean => support.x === target.x && support.z! - target.z! >= 0 && support.z! - target.z! <= 700;
+        const orphan = (body: (typeof was)[number]): boolean => body.role === ROLE.obstacle && [...highest].some((target) => holds(body, target));
+        const round = decode(world, start, last.bodies);
+        expect(round, `${name} seed ${seed}: the boss round`).toEqual(was.filter((body) => !highest.has(body) && !orphan(body)));
+        // Žádná opěra v kole bosse nestojí bez svého cíle.
+        for (const support of round.filter((body) => body.role === ROLE.obstacle)) expect(round.some((body) => body.role === ROLE.target && holds(support, body)), `${name} seed ${seed}: ${support.kind} at ${support.z}`).toBe(true);
         // Hody posledního kola: zbylé cíle, tři na bosse, hody navíc kola jako v `genre.v3` a rezerva.
         const spare = before.at(-1)!.throws - targets.length - 1;
         expect(spare).toBeGreaterThanOrEqual(1);
