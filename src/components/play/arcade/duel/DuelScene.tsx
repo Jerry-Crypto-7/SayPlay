@@ -10,6 +10,9 @@ import { renderHeld } from '../effects/render-feel';
  * a při úderu natáhne ruku. `z` hráče je počítadlo zásahů, kreslí se na místě.
  * Bojovník s modelem (P45D T10) hraje místo toho hračkový pohyb: úder = nápřah
  * a výpad k soupeři, úhyb = přikrčení, zásah, pád, výhra.
+ * Šampion (P47A T10): když tělo soupeře převezme větší rozměry předlohy šampiona
+ * (`duel.champion`), soupeř se kreslí v nich a kamera ho i s pipy HP nad hlavou
+ * vezme celého – bez animace, změna přijde s úderem, který porazil předposledního.
  *
  * Vstup: mezerník / Enter / šipka nahoru nebo ťuk do pravé půlky = úder;
  * šipka dolů / S nebo ťuk do levé půlky = úhyb.
@@ -47,6 +50,8 @@ const BACKDROP_BEYOND = 22;
 const STAGGER_LEAN = 0.25;
 /** Bojovníci stojí na místě: třída těla tvaruje jen chůzi, kterou souboj nemá (a model sem přijde bez jména). */
 const FIGHTER: BodyClass = 'biped';
+/** Záběr ringu na výšku (m): aspoň `tall`, se šampionem jeho výška a místo na pipy HP nad hlavou. */
+const FRAME = { tall: 3.2, overHead: 1.4, lookY: 1.1, below: 0.5 } as const;
 
 export function useDuelInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
   useEffect(() => {
@@ -247,11 +252,17 @@ export function DuelScene({
       }
     }
     foe.material.current?.color.set(PHASE_COLOR[phase] ?? '#64748b');
+    // Šampion: tělo soupeře má za běhu rozměry předlohy šampiona – model i postava z primitiv rostou s ním. Měřítko
+    // nese skupina soupeře v ringu (rodič skupiny pózy): pózu a její zmáčknutí si skupina pózy píše sama (`applyToy`).
+    const foeH = (state[f + BODY.h] as number) / UNIT;
+    foe.body.current?.parent?.scale.set((state[f + BODY.w] as number) / UNIT / rival.w, foeH / rival.h, (state[f + BODY.d] as number) / UNIT / rival.d);
 
     const tan = Math.tan((camera.fov * Math.PI) / 360);
-    const dist = Math.max(6 / (2 * tan * camera.aspect), 3.2 / (2 * tan), 5);
-    camera.position.set(-dist, 1.4, midZ);
-    look.set(0, 1.1, midZ);
+    const tall = Math.max(FRAME.tall, foeH + FRAME.overHead);
+    const dist = Math.max(6 / (2 * tan * camera.aspect), tall / (2 * tan), 5);
+    const lookY = Math.max(FRAME.lookY, tall / 2 - FRAME.below);
+    camera.position.set(-dist, lookY + 0.3, midZ);
+    look.set(0, lookY, midZ);
     camera.lookAt(look);
   });
 
