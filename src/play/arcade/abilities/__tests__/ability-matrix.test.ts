@@ -9,7 +9,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { CAPABILITIES } from '@/play/capabilities';
 import { type GenreSpec } from '@/play/genre/contract';
 import { compileGenre } from '@/play/genre/index';
-import { type ControlId, readGameSpec } from '../../../spec';
+import { type AbilityId, type ControlId, readGameSpec } from '../../../spec';
 import { arcadeWorldOf, preloadPhysics } from '../../compile';
 import { BODY, BUTTON, HEADER, ROLE, UNIT, bodyBase } from '../../contract';
 import { STRIKE, inStrikeReach } from '../strike';
@@ -68,19 +68,31 @@ describe('P46A ability matrix', () => {
     expect(inStrikeReach(state, 0, chaser, 0, false)).toBe(false);
   });
 
-  it.each(CELLS)('%s + %s: the bot presses it and the verb is proved', (control, ability) => {
-    for (const seed of SEEDS) {
-      const read = readGameSpec({ ...(FIXTURES[control] as object), abilities: [ability] });
-      if (!read.ok) throw new Error(`${control}: ${read.issues.join('; ')}`);
-      const made = arcadeWorldOf(read.value, seed);
-      if (!made.ok) throw new Error(`${control} seed ${seed}: ${made.issues.join('; ')}`);
-      const run = runBot(made.world, undefined, { profile: 'intermediate' });
-      // Duel (P47B T8) hraje akce vlastním úderem (Tap) a úhybem (Down), ne tlačítkem A.
-      const button = control !== 'duel' ? BUTTON.ACTION_A : ability === 'strike' ? BUTTON.TAP : BUTTON.DOWN;
-      expect(run.inputs.some((event) => (event.buttons & button) !== 0), `seed ${seed}: never pressed`).toBe(true);
-      const verdict = verifyArcade(made.world);
-      expect(verdict.failures, `seed ${seed}`).toEqual([]);
-      expect(verdict.verbs.find((proof) => proof.verb === ability)?.changed, `seed ${seed}`).toBe(true);
-    }
-  });
+  it.each(CELLS)('%s + %s: the bot presses it and the verb is proved', (control, ability) => expectProved(control, ability));
+
+  // Let (P47B T9): soupeř a pronásledovatel klouzání jedou vedle a za hrdinou, nikdy proti – nepřítel v obruči přibude i k nim.
+  it.each([
+    ['race', 'dash'],
+    ['race', 'shield'],
+    ['escape', 'dash'],
+    ['escape', 'shield'],
+  ] as const)('glide %s + %s: the moving rival does not stand in for a foe', (mode, ability) => expectProved('glide', ability, { controlParams: { mode } }));
 });
+
+/** Robot intermediate akci zmáčkne a ověření dokáže sloveso na 4 semínkách; `extra` přepíše položky hry ovládání. */
+function expectProved(control: ControlId, ability: AbilityId, extra: object = {}): void {
+  for (const seed of SEEDS) {
+    const read = readGameSpec({ ...(FIXTURES[control] as object), ...extra, abilities: [ability] });
+    if (!read.ok) throw new Error(`${control}: ${read.issues.join('; ')}`);
+    const made = arcadeWorldOf(read.value, seed);
+    if (!made.ok) throw new Error(`${control} seed ${seed}: ${made.issues.join('; ')}`);
+    // Verdikt první (P47B T9): hra bez těla, které by akce zastavila, padne na VERB_UNPROVED, ne až na stisku.
+    const verdict = verifyArcade(made.world);
+    expect(verdict.failures, `seed ${seed}`).toEqual([]);
+    expect(verdict.verbs.find((proof) => proof.verb === ability)?.changed, `seed ${seed}`).toBe(true);
+    const run = runBot(made.world, undefined, { profile: 'intermediate' });
+    // Duel (P47B T8) hraje akce vlastním úderem (Tap) a úhybem (Down), ne tlačítkem A.
+    const button = control !== 'duel' ? BUTTON.ACTION_A : ability === 'strike' ? BUTTON.TAP : BUTTON.DOWN;
+    expect(run.inputs.some((event) => (event.buttons & button) !== 0), `seed ${seed}: never pressed`).toBe(true);
+  }
+}

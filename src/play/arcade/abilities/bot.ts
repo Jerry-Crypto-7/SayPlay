@@ -44,13 +44,16 @@ function apart(state: Int32Array, p: number, b: number, axis: number, speed: num
   return least * 2 >= (state[p + size] as number) + (state[b + size] as number);
 }
 
-/** První tik v `from..to` (od pozorování), kdy se hrdina a tělo dotknou, když oba letí dál svou rychlostí; jinak −1. */
-export function contactAt(state: Int32Array, player: number, body: number, from: number, to: number): number {
+/**
+ * První tik v `from..to` (od pozorování), kdy se hrdina a tělo dotknou, když oba letí dál svou rychlostí; jinak −1.
+ * `anyHeight` (poletování, P47B T9): výšku nesrovnávat – ptáka ťuk přehodí o metr a pohled je 8 tiků starý.
+ */
+export function contactAt(state: Int32Array, player: number, body: number, from: number, to: number, anyHeight = false): number {
   const p = bodyBase(player);
   const b = bodyBase(body);
   const py = state[p + BODY.y] as number;
   const by = state[b + BODY.y] as number;
-  if (!(py < by + (state[b + BODY.h] as number) && by < py + (state[p + BODY.h] as number))) return -1;
+  if (!anyHeight && !(py < by + (state[b + BODY.h] as number) && by < py + (state[p + BODY.h] as number))) return -1;
   // R5: robot se ptá u každého těla trati v každém tiku – vzdálená těla vyřadí dřív než smyčka.
   if (apart(state, p, b, BODY.x, BODY.vx, BODY.w, from, to) || apart(state, p, b, BODY.z, BODY.vz, BODY.d, from, to)) return -1;
   const at = (base: number, axis: number, speed: number, t: number): number => (state[base + axis] as number) + (state[base + speed] as number) * t;
@@ -298,8 +301,10 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   const { state, player, recent } = observation;
   const n = recent.length;
   const steer = base.id === 'steer_bot';
+  const flap = base.id === 'flap_bot';
   // Překážky řízení jsou svodidla a kraj silnice: robot k nim nezatáčí, náraz mimo okno dashe stojí život (R4, a14).
-  const harm = params.harm.map((role) => ROLE[role]).filter((role) => !steer || role !== ROLE.obstacle);
+  // Trubky poletování (P47B T9) robot proletí mezerou: dotyk s nimi, který vidí bez výšky, by akci vybil před nepřítelem.
+  const harm = params.harm.map((role) => ROLE[role]).filter((role) => !(steer || flap) || role !== ROLE.obstacle);
   const around = AROUND_BOTS.includes(base.id);
   const slots = slotsOf(observation, params);
   if (base.id === 'fight_bot') return fightStep(observation, input, slots, params.keeper);
@@ -325,7 +330,7 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
     let at = contacts.get(body);
     if (at === undefined) {
       // Díl padá a je pohyblivý: řízení ho odhadem `aheadAt` nevidí, dotyk se počítá i s pádem.
-      at = parts.includes(body) ? partContactAt(state, player, body, n, n + horizon) : steer ? aheadAt(state, player, body, n, n + horizon) : contactAt(state, player, body, n, n + horizon);
+      at = parts.includes(body) ? partContactAt(state, player, body, n, n + horizon) : steer ? aheadAt(state, player, body, n, n + horizon) : contactAt(state, player, body, n, n + horizon, flap);
       contacts.set(body, at);
     }
     return at;

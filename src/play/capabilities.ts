@@ -40,7 +40,7 @@ export interface ControlCapability {
   readonly maxRoles: number;
   /** Doplňky (P26D), které jádro k ovládání přidá a robot s nimi vyhraje. */
   readonly addons: readonly AddonId[];
-  /** Akce hrdiny (P46A), které ovládání bere; matice s důvody u `AIM_ABILITIES`. */
+  /** Akce hrdiny (P46A), které ovládání bere; matice s důvody u `ALL_ABILITIES`. */
   readonly abilities: readonly AbilityId[];
 }
 
@@ -49,13 +49,13 @@ const LIVES_AND_TIMER: readonly MechanicId[] = ['health', 'timer'];
 /** Doplňky ovládání s tratí k cíli: běh, skákání, poletování (aréna sbírá už sama – potrava). */
 const ROAMING: readonly AddonId[] = ['shoot', 'collect', 'lives'];
 
-/** Všech 5 akcí: běžec, skákačka a řízení (P46A T3–T6). */
-const ALL_ABILITIES: readonly AbilityId[] = ['shoot', 'strike', 'dash', 'shield', 'grab'];
-
 /*
- * Akce zbylých ovládání (P46A T9), změřené `ability-matrix.test.ts` (robot akci zmáčkne a ověření
- * dokáže sloveso na 4 semínkách). Co chybí, má důvod:
- * - flap, glide: dash a štít ne – robot proletí mezerou a nic nenarazí na kolizním kurzu, sloveso nedokáže.
+ * Všech 5 akcí: běžec, skákačka a řízení (P46A T3–T6), poletování a klouzání (P46A T9, dash a štít P47B T9).
+ * Každou dvojici měří `ability-matrix.test.ts` (robot akci zmáčkne a ověření dokáže sloveso na 4 semínkách).
+ * Dash a štít letu: nepřítel v mezeře trubek (obruči) křižuje dráhu, trubky ani útes se nepočítají – robot jimi
+ * proletí. Štít poletování dostane jen každého druhého (`guardAbility`), robot poletování výšku k dotyku nesrovnává
+ * a trubky nehlídá.
+ * Co ostatním ovládáním chybí, má důvod:
  * - walker: jen krádež – bludiště nemá místo pro nepřítele a v útěku bludištěm robot pronásledovatele
  *   do dosahu nepustí (úder, dash, štít VERB_UNPROVED 4/4).
  * - move_free: střelba zůstává doplňkem `+shoot` (akce střelby v aréně sloveso nedokáže); dash a štít
@@ -66,7 +66,7 @@ const ALL_ABILITIES: readonly AbilityId[] = ['shoot', 'strike', 'dash', 'shield'
  * - duel: úder, dash a štít hraje vlastní mechanika duelu (Tap úder, Down úhyb za dash i štít), žádné
  *   druhé tlačítko – akce dá jen sloveso pravidlům (P47B T8). tap_go: mřížka bez hrdiny s fyzikou arkády.
  */
-const AIM_ABILITIES: readonly AbilityId[] = ['shoot', 'strike', 'grab'];
+const ALL_ABILITIES: readonly AbilityId[] = ['shoot', 'strike', 'dash', 'shield', 'grab'];
 
 const arcade = (
   entry: Omit<ControlCapability, 'counts' | 'setting' | 'maxRoles' | 'addons' | 'abilities'> & { readonly setting?: boolean; readonly counts?: boolean; readonly addons?: readonly AddonId[]; readonly abilities?: readonly AbilityId[] },
@@ -81,7 +81,7 @@ const arcade = (
 });
 
 export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
-  glide: arcade({ setting: true, cues: 'swim or fly in three dimensions', roles: ['glide_ring', 'glide_reef'], finish: true, labels: ['player', 'enemy', 'finish', 'glide_rival', 'glide_pursuer'], mechanics: ['timer'], addons: ['shoot'], abilities: AIM_ABILITIES }),
+  glide: arcade({ setting: true, cues: 'swim or fly in three dimensions', roles: ['glide_ring', 'glide_reef'], finish: true, labels: ['player', 'enemy', 'finish', 'glide_rival', 'glide_pursuer'], mechanics: ['timer'], addons: ['shoot'], abilities: ALL_ABILITIES }),
   walker: arcade({ setting: true, cues: 'walk through a maze', roles: ['wall', 'coin', 'guard', 'chaser'], finish: true, labels: ['player', 'coin', 'finish', 'guard', 'chaser'], mechanics: ['health', 'timer'], addons: ['lives'], abilities: ['grab'] }),
   ball: arcade({ setting: true, cues: 'aim and shoot a ball', roles: ['target', 'goalkeeper'], finish: true, labels: ['player', 'goalkeeper'], mechanics: ['timer'], addons: [] }),
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12, addons: [], abilities: [] },
@@ -89,7 +89,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   runner: arcade({ setting: true, counts: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player', 'obstacle', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'], abilities: ALL_ABILITIES }),
   // P35 T3: cíl na konci úrovně kreslí model z popisku („moon“, „battery“), jinak vlajku.
   platform: arcade({ setting: true, counts: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player', 'coin', 'finish', 'spikes'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'], abilities: ALL_ABILITIES }),
-  flap: arcade({ setting: true, counts: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player', 'coin', 'pipe'], mechanics: LIVES_AND_TIMER, addons: ROAMING, abilities: AIM_ABILITIES }),
+  flap: arcade({ setting: true, counts: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player', 'coin', 'pipe'], mechanics: LIVES_AND_TIMER, addons: ROAMING, abilities: ALL_ABILITIES }),
   // P27A T3: závod a aréna kreslí kulisy sady prostředí mimo dráhu a za hranou arény.
   steer: arcade({ setting: true, cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player', 'rival', 'barrier', 'hazard', 'finish', 'turbo'], mechanics: ['timer'], addons: ['shoot', 'chaser'], abilities: ALL_ABILITIES }),
   move_free: arcade({

@@ -35,12 +35,12 @@ function withFoes(parts: ArcadeParts, context: AddonContext): ArcadeParts {
   return parts.level.bodies.some((body) => body.role === 'enemy' || body.role === 'chaser') ? parts : addFoes(parts, context);
 }
 
-/** Nepřátelé ovládání a jejich náraz (`hit`). */
-function addFoes(parts: ArcadeParts, context: AddonContext): ArcadeParts {
+/** Nepřátelé ovládání a jejich náraz (`hit`); `every` = jen každý tolikátý z nich (štít poletování, P47B T9). */
+function addFoes(parts: ArcadeParts, context: AddonContext, every = 1): ArcadeParts {
   const control = baseControlOf(parts.control).id;
   // Řízení akcí nechává cíle jako dřív; běžec ze vzorů jen bez nepřátel ve finále bosse (`finaleFrom`).
   const { finaleFrom } = enemyOptions(context.spec, control);
-  const foes = enemiesFor(control, parts.level, { finaleFrom });
+  const foes = enemiesFor(control, parts.level, { finaleFrom }).filter((_foe, index) => index % every === 0);
   if (foes.length === 0) return { ...parts, issues: [...(parts.issues ?? []), 'abilities: the level has no place for an enemy to strike'] };
   return {
     ...parts,
@@ -107,10 +107,15 @@ export const harmOf = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
 
 /**
  * Nárazy, na které robot akcí opravdu najede: na řízení ne svodidla (`steer_crash`) – ta objíždí jako kraj
- * silnice (`abilityStep`), takže by dash ani štít v závodě nikdy nic nezastavil (P47B T5).
+ * silnice (`abilityStep`), takže by dash ani štít v závodě nikdy nic nezastavil (P47B T5). Let (P47B T9) proletí
+ * mezerou trubek a obručí útesu, soupeř a pronásledovatel klouzání jedou vedle či za ním: platí jen role,
+ * kterou nese stojící tělo úrovně – pravidlo `hit` klouzání je tam i bez těla.
  */
-const metHarm = (parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] =>
-  harmOf(parts).filter((role) => role !== 'obstacle' || baseControlOf(parts.control).id !== 'steer');
+function metHarm(parts: ArcadeParts): (typeof HARMFUL_ROLES)[number][] {
+  const control = baseControlOf(parts.control).id;
+  if (control !== 'flap' && control !== 'glide') return harmOf(parts).filter((role) => role !== 'obstacle' || control !== 'steer');
+  return harmOf(parts).filter((role) => role !== 'obstacle' && parts.level.bodies.some((body) => body.role === role && body.template !== true && body.kinematic !== true));
+}
 
 /** Základní ovládání pod obaly (`baseControlOf`) upravené `edit`; obaly zůstanou. */
 const withBaseControl = (control: PieceRef, edit: (base: PieceRef) => PieceRef): PieceRef =>
@@ -135,9 +140,12 @@ function guardAbility(id: 'dash' | 'shield'): AbilityPiece {
   return {
     id,
     apply: (start, context) => {
-      if (baseControlOf(start.control).id === 'fight') return fightGuard(start, context, id);
+      const control = baseControlOf(start.control).id;
+      if (control === 'fight') return fightGuard(start, context, id);
       // Soupeři řízení jsou `enemy` bez nárazu, proto nepřátele přidat i vedle nich (jako `+shoot`); svodidla řízení je nenahradí.
-      const parts = metHarm(start).length === 0 ? addFoes(start, context) : start;
+      // Let (P47B T9): nepřítel v každé druhé mezeře trubek (obruči) křižuje dráhu. Nepřátelé poletování jsou ~110 tiků
+      // od sebe a štít se nabíjí 120 – dostane jen každého druhého, jinak by na dalšího nebyl nabitý (robot 0/10).
+      const parts = metHarm(start).length === 0 ? addFoes(start, context, id === 'shield' && control === 'flap' ? 2 : 1) : start;
       if (id === 'shield') return shieldParts(parts, context.keeper);
       const roles = harmOf(parts);
       if (roles.length === 0) return parts;
