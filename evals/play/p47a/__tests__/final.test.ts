@@ -23,7 +23,7 @@ const HOLDOUT_SHA256 = '7f62855dd8f45ad6ab1f050aea403ad76030b5c9163c6bedef643cdd
 const TARGETS = ['finaleShare', 'behavioursMedian', 'deadTimeMedianS', 'risingShare'] as const;
 
 interface FinalRow { readonly id: string; readonly text: string; readonly a: FinaleRow; readonly b: FinaleRow }
-interface Target { readonly a: number | null; readonly value: number | null }
+interface Target { readonly a: number | null; readonly value: number | null; readonly goal: string; readonly met: boolean }
 const FINAL = JSON.parse(readLf(join(DIR, 'final.json'))) as {
   holdout: { sha256: string; openedAt: string };
   targets: Record<(typeof TARGETS)[number], Target>;
@@ -54,6 +54,16 @@ describe('P47A final measurement', () => {
     for (const key of TARGETS) {
       expect(FINAL.targets[key], key).toMatchObject({ a: a[key], value: b[key] });
       expect(FINAL.targetsSixGenres[key], key).toMatchObject({ a: aSix[key], value: bSix[key] });
+    }
+  });
+
+  // „Splněno“ plyne z hodnoty a cíle – 0,72 nesmí v README vypadat jako splněný cíl 0,8.
+  it('met is the goal applied to the value', () => {
+    for (const target of [...Object.values(FINAL.targets), ...Object.values(FINAL.targetsSixGenres)]) {
+      const [, op, bound] = /^(>=|<=) ([\d.]+)$/.exec(target.goal) ?? [];
+      expect(op, target.goal).toBeDefined();
+      const met = target.value !== null && (op === '>=' ? target.value >= Number(bound) : target.value <= Number(bound));
+      expect(target.met, `${target.goal} vs ${target.value}`).toBe(met);
     }
   });
 });
