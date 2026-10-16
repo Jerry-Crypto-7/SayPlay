@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 
 import type { ArcadeParts } from '../addons';
-import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeLevel, type ArcadeObservation, type ArcadeRole, type ArcadeWorld, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, UNIT, bodyBase, nativeRule } from '../contract';
+import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeLevel, type ArcadeObservation, type ArcadeRole, type ArcadeWorld, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, UNIT, bodyBase, bodyHp, nativeRule, targetStateOf } from '../contract';
 import { ESCAPE } from './arena';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef, type BehaviourSpace, behaviourBodies, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, seenByBase, stepBehaviours } from './behaviours';
 import { duelControl, enragedAfter } from './duel';
@@ -41,6 +41,13 @@ export const PACING = {
    * nad rezervu se zahodí; víc než dva střelci na hru → rezervu počítat z nich.
    */
   maxShots: 6,
+  /**
+   * Tep pole (P47A T9): tolik tiků bez události smí v úvodu uběhnout, pak přijde mince. S intenzitou se zkracuje
+   * (`heartbeatAt`: × úvod / intenzita – konec stupňování 95, vrchol 80, finále 70 tiků), takže houstne ke konci.
+   */
+  heartbeat: 150,
+  /** Živých mincí tepu naráz nejvýš: s plnou plochou tep místo nové mince odvolá tu nejdál od hráče. */
+  heartbeatCoins: 3,
 } as const;
 
 /** Body křivky `[postup ‰, intenzita ‰]`; mezi body lineárně, dva body na stejném postupu = skok. */
@@ -183,12 +190,16 @@ const refSchema = z.object({ id: z.string(), params: z.record(z.string(), z.unkn
 /** Chování nepřátel ve hře (P45C T4): předlohy, podle jejichž podpisu se těla poznají. */
 const behaviourRefs = z.array(behaviourRefSchema).min(1).max(8);
 /** `steady`: knoflíky žánru (`PACING_KNOBS`) se neškálují – křivka jen rozvrhuje spawny a finále. */
-const controlParams = z.object({ base: refSchema, goal: pacingGoalSchema, keeper: z.int().min(1), behaviours: behaviourRefs.optional(), space: z.enum(['plane', 'track']).optional(), steady: z.literal(true).optional() }).strict();
+/** `pulse`: tělo-počítadlo tepu a předloha jeho mince (`markPulse`), jen hry pole ve `genre.v4`. */
+const pulseRef = z.object({ keeper: z.int().min(1), template: z.int().min(1) }).strict();
+const controlParams = z.object({ base: refSchema, goal: pacingGoalSchema, keeper: z.int().min(1), behaviours: behaviourRefs.optional(), space: z.enum(['plane', 'track']).optional(), steady: z.literal(true).optional(), pulse: pulseRef.optional() }).strict();
 const botParams = z
   .object({
     base: refSchema, control: z.string(), keeper: z.int().min(1), behaviours: behaviourRefs.optional(), steady: z.literal(true).optional(),
     /** Skóre, od kterého výhra čeká už jen na pád bosse (`grow_to.boss`, P47A T3): robot pak věci na zemi nevidí a jde na bosse. */
     points: z.int().min(1).optional(),
+    /** Tep: robot mince tepu nevidí (`withoutCoins`). */
+    pulse: pulseRef.optional(),
   })
   .strict();
 
@@ -234,6 +245,67 @@ function scaledOnce(control: string, params: Readonly<Record<string, unknown>>, 
 /** Intenzita podle nejvyššího dosaženého postupu v počítadle. */
 const intensityOf = (state: Int32Array, keeper: number): number => intensityAt(reachedOf(state, keeper), TENSION_CURVE);
 
+/** Tiky bez události, po kterých tep přijde, na postupu `progress` ‰: `beat` v úvodu, s intenzitou kratší. */
+export const heartbeatAt = (beat: number, progress: number): number => Math.floor((beat * PACING.intensity.intro) / intensityAt(progress, TENSION_CURVE));
+
+/** Role, jejichž zmizení telemetrie počítá jako zabití (`telemetry.ts`, `KILL_ROLES`). */
+const PULSE_ROLES: readonly number[] = [ROLE.chaser, ROLE.enemy, ROLE.hazard, ROLE.target];
+/** Sloty těla-počítadla tepu se stavem po minulém tiku (`x` = tik poslední události). */
+const PULSE_SLOTS = [BODY.z, BODY.vx, BODY.vy, BODY.vz, BODY.w, BODY.h, BODY.d, BODY.aux0] as const;
+
+/** HP hráče, skóre, zdraví, živá těla od slotu spawnu, živé věci, živé hrozby, součet stavů cílů, HP hrozeb. */
+function pulseOf(state: Int32Array, player: number): number[] {
+  let spawned = 0;
+  let items = 0;
+  let threats = 0;
+  let states = 0;
+  let hp = 0;
+  const from = state[HEADER.spawnBase] as number;
+  for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+    const base = bodyBase(body);
+    if (body === player || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    if (body >= from) spawned += 1;
+    const role = state[base + BODY.role] as number;
+    if (role === ROLE.collectible) items += 1;
+    else if (PULSE_ROLES.includes(role)) {
+      threats += 1;
+      hp += bodyHp(state, body);
+      if (role === ROLE.target) states += targetStateOf(state, body);
+    }
+  }
+  const counter = (name: keyof typeof COUNTER): number => state[HEADER.counters + COUNTER[name]] as number;
+  return [bodyHp(state, player), counter('score'), counter('health'), spawned, items, threats, states, hp];
+}
+
+/**
+ * Tep pole (P47A T9), krok ovládání: stav po minulém tiku proti uloženému v těle-počítadle tepu. Událost = ubylo
+ * HP hráče, skóre přibylo, zdraví ubylo, těl od slotu spawnu přibylo, věcí, hrozeb či HP hrozeb ubylo, stav cílů
+ * se změnil – jen to, co telemetrie počítá taky (`eventsOf`), takže tep nikdy nečeká déle, než smí; co navíc
+ * nepozná, stojí nanejvýš minci navíc. Tik události (minulý) jde do `x`.
+ */
+function markPulse(state: Int32Array, player: number, pulse: z.infer<typeof pulseRef>): void {
+  const base = bodyBase(pulse.keeper);
+  const now = pulseOf(state, player);
+  const was = PULSE_SLOTS.map((slot) => state[base + slot] as number);
+  const [hp, score, health, spawned, items, threats, states, threatHp] = now as [number, number, number, number, number, number, number, number];
+  const happened = hp < (was[0] as number) || score > (was[1] as number) || health < (was[2] as number) || spawned > (was[3] as number)
+    || items < (was[4] as number) || threats < (was[5] as number) || states !== was[6] || threatHp < (was[7] as number);
+  if (happened) state[base + BODY.x] = (state[HEADER.tick] as number) - 1;
+  for (const [k, slot] of PULSE_SLOTS.entries()) state[base + slot] = now[k] as number;
+}
+
+/** Živé mince tepu: kopie předlohy `template` (role, model, šířka a výška) od slotu spawnu. */
+function coinsOf(state: Int32Array, template: number): number[] {
+  const t = bodyBase(template);
+  const same = (base: number, slot: number): boolean => state[base + slot] === state[t + slot];
+  const coins: number[] = [];
+  for (let body = state[HEADER.spawnBase] as number; body < (state[HEADER.bodyCount] as number); body += 1) {
+    const base = bodyBase(body);
+    if (((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && same(base, BODY.role) && same(base, BODY.kind) && same(base, BODY.w) && same(base, BODY.h)) coins.push(body);
+  }
+  return coins;
+}
+
 const roads = new WeakMap<object, SteerCourse | null>();
 /** Silnice řízení pod obaly základního ovládání (osa trati `course`), jednou na parametry; jiné ovládání ji nemá. */
 function roadOf(base: PieceRef): SteerCourse | undefined {
@@ -252,6 +324,7 @@ export function makePacingControl(controls: Readonly<Record<string, ControlPiece
     step(state, player, input, params) {
       const native = controls[params.base.id];
       if (native === undefined) throw new Error(`arcade: unknown paced control ${params.base.id}`);
+      if (params.pulse !== undefined) markPulse(state, player, params.pulse);
       const keeper = bodyBase(params.keeper);
       const reached = state[keeper + BODY.aux0] as number;
       state[keeper + BODY.aux1] = reached;
@@ -278,6 +351,19 @@ function withoutItems(observation: ArcadeObservation): ArcadeObservation {
   return { ...observation, state };
 }
 
+/**
+ * Pohled bez mincí tepu (P47A T9): mince jsou bonus pro člověka. Robot, který je viděl, sbíral nejbližší minci
+ * místo hlídané věci a bosse (sběr, semínko 7: od 26. s jen mince, boss nepadl) a začátečník přežití vyhrál 8/8
+ * místo pásma 3–6.
+ */
+function withoutCoins(observation: ArcadeObservation, template: number): ArcadeObservation {
+  const coins = coinsOf(observation.state, template);
+  if (coins.length === 0) return observation;
+  const state = observation.state.slice();
+  for (const body of coins) state[bodyBase(body) + BODY.flags] = (state[bodyBase(body) + BODY.flags] as number) & ~FLAG.alive;
+  return { ...observation, state };
+}
+
 /** `pacing_bot`: základní robot rozhoduje se stejně škálovanými parametry, jaké vidí ovládání; před těly chování uhne. */
 export function makePacingBot(bots: Readonly<Record<string, BotPiece>>): BotPiece<z.infer<typeof botParams>> {
   return {
@@ -285,7 +371,8 @@ export function makePacingBot(bots: Readonly<Record<string, BotPiece>>): BotPiec
     decide(observation, params) {
       const native = bots[params.base.id];
       if (native === undefined) throw new Error(`arcade: unknown paced bot ${params.base.id}`);
-      const goal = params.points !== undefined && (observation.state[HEADER.counters + COUNTER.score] as number) >= params.points ? withoutItems(observation) : observation;
+      const plain = params.pulse === undefined ? observation : withoutCoins(observation, params.pulse.template);
+      const goal = params.points !== undefined && (observation.state[HEADER.counters + COUNTER.score] as number) >= params.points ? withoutItems(plain) : plain;
       const seen = params.behaviours === undefined ? goal : seenByBase(goal, params.behaviours);
       const own = parseOnce(native, params.base.params);
       const input = native.decide(seen, params.steady === true ? own : scaledOnce(params.control, own, intensityOf(observation.state, params.keeper)));
@@ -320,9 +407,30 @@ const ruleParams = z
      * uvolní plochu bossovi, nová chování odejdou před poslední vlnou.
      */
     clear: z.array(z.object({ role: z.int().min(1), at: z.int().min(1).max(1000) }).strict()).min(1).max(2).optional(),
+    /** Tep pole (P47A T9): předloha mince, tělo-počítadlo tepu a `beat` = tiky bez události v úvodu (`heartbeatAt`). */
+    pulse: z.object({ template: z.int().min(1), keeper: z.int().min(1), beat: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict().optional(),
   })
   .strict();
 export type PacingRuleParams = z.infer<typeof ruleParams>;
+
+/**
+ * Tep pole (P47A T9): po `heartbeatAt` tikách bez události přijde mince na nejbližším volném místě vstupu; s plnou
+ * plochou (`heartbeatCoins`) tep místo ní odvolá minci nejdál od hráče. Obojí je událost a ovládání ji příští tik
+ * zapíše (`markPulse`), takže tep přijde znovu až po dalším tichu. Mince předlohy život nevezme.
+ */
+function heartbeatOf(state: Int32Array, player: number, pulse: NonNullable<PacingRuleParams['pulse']>, spots: readonly number[], reached: number): ArcadeEffect[] {
+  if ((state[HEADER.tick] as number) - (state[bodyBase(pulse.keeper) + BODY.x] as number) < heartbeatAt(pulse.beat, reached)) return [];
+  const coins = coinsOf(state, pulse.template);
+  const t = bodyBase(pulse.template);
+  const p = bodyBase(player);
+  // Čtverec vzdálenosti v celých číslech (za běhu žádná plovoucí čárka mimo přesný rozsah).
+  const away = (body: number): number => ((state[bodyBase(body) + BODY.x] as number) - (state[p + BODY.x] as number)) ** 2 + ((state[bodyBase(body) + BODY.z] as number) - (state[p + BODY.z] as number)) ** 2;
+  if (coins.length >= PACING.heartbeatCoins) return [{ kind: 'despawn', body: coins.reduce((far, body) => (away(body) > away(far) ? body : far)) }];
+  const near = spotsAway(state, player, spots).reverse();
+  const taken = (k: number): boolean => coins.some((body) => Math.abs((state[bodyBase(body) + BODY.x] as number) - (spots[2 * k] as number)) < (state[t + BODY.w] as number) && Math.abs((state[bodyBase(body) + BODY.z] as number) - (spots[2 * k + 1] as number)) < (state[t + BODY.d] as number));
+  const at = near.find((k) => !taken(k)) ?? (near[0] as number);
+  return [{ kind: 'spawn', template: pulse.template, x: spots[2 * at] as number, y: state[t + BODY.y] as number, z: spots[2 * at + 1] as number, vx: 0, vy: 0, vz: 0 }];
+}
 
 /** Živá těla chování: kopie některé z předloh rozvrhu (týž model) od prvního slotu spawnu. */
 function actorsAlive(state: Int32Array, templates: ReadonlySet<number>): number {
@@ -349,6 +457,7 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
     const before = state[keeper + BODY.aux1] as number;
     const reached = state[keeper + BODY.aux0] as number;
     const effects: ArcadeEffect[] = params.behaviours === undefined ? [] : behaviourEffects(state, player, params.behaviours, params.half);
+    if (params.pulse !== undefined) effects.push(...heartbeatOf(state, player, params.pulse, params.spots, reached));
     // Postup se v tomhle tiku nehnul: žádný krok rozvrhu ani úklid nepřešel.
     if (reached === before) return effects;
     const clears = (params.clear ?? []).filter((clear) => clear.at > before && clear.at <= reached);
@@ -431,6 +540,8 @@ export interface PacingSetup {
   readonly segments?: SegmentGenre;
   /** Scénář úseků od režiséra (P46E T4, `spec.segments`): přepíše los `segmentScriptOf`. */
   readonly script?: readonly SegmentNews[];
+  /** Tep pole (P47A T9): předloha mince, která přijde po `PACING.heartbeat` tikách bez události (`heartbeatOf`). */
+  readonly pulse?: BodyInit;
 }
 
 /** Rychlost fází (`phase_control`) v % na začátku rozjezdu a úseků scénáře; trať bez fází = prázdné. */
@@ -534,13 +645,16 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const shooters = [...new Set(actors.flatMap((actor) => (actor.behaviour !== undefined && BEHAVIOURS[actor.behaviour].shot !== undefined ? [actor.behaviour] : [])))];
   const shotBodies = shooters.map((id) => BEHAVIOURS[id].shot as BodyInit);
   const extras = setup.extra === undefined ? [] : [setup.extra.body];
-  const keeper = first + actors.length + shooters.length + extras.length;
+  // Mince tepu je poslední předloha před počítadlem, tělo-počítadlo tepu jde za počítadlo postupu.
+  const pulses = setup.pulse === undefined ? [] : [setup.pulse];
+  const keeper = first + actors.length + shooters.length + extras.length + pulses.length;
   const duplicate = duplicateSignature([...actors.map((actor) => actor.body), ...shotBodies]);
   if (duplicate !== null) return { ...parts, issues: [...(parts.issues ?? []), `pacing: two spawn templates share the signature ${duplicate} (role:kind:w:h:d)`] };
   const shotOf = (id: BehaviourId): { shot?: number } => (shooters.includes(id) ? { shot: first + actors.length + shooters.indexOf(id) } : {});
   const refs = actors.flatMap((actor, index) => (actor.behaviour === undefined ? [] : [{ id: actor.behaviour, template: first + index, ...shotOf(actor.behaviour) }]));
   const moved = refs.length === 0 ? {} : { behaviours: refs };
-  const bodies = [...parts.level.bodies, ...[...actors.map((actor) => actor.body), ...shotBodies, ...extras].map((body) => ({ ...body, template: true })), pacingKeeper(parts.level.bodies[0]?.kind ?? 'player')];
+  const counter = pacingKeeper(parts.level.bodies[0]?.kind ?? 'player');
+  const bodies = [...parts.level.bodies, ...[...actors.map((actor) => actor.body), ...shotBodies, ...extras, ...pulses].map((body) => ({ ...body, template: true })), counter, ...pulses.map(() => counter)];
   const raw = behaviours.length === 0 || setup.budget === 0 ? [] : scheduleOf(rng, TENSION_CURVE, setup.budget, behaviours.length, setup.from, setup.until);
   // Scénář losuje až za rozvrhem, takže kroky zůstanou, kde byly: nový nepřítel úseku smí až od jeho začátku a první krok úseku je jeho.
   const cast = {
@@ -583,19 +697,20 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
       return [{ atPermille: Math.max(1, entry.atPermille), template: first + index, count: group?.size ?? entry.count, entry: entry.entry }];
     });
   const bossed = setup.boss === undefined ? drawn : [...drawn, { atPermille: Math.max(1, setup.boss.at), template: first + behaviours.length, count: 1, entry: 0 }];
-  const schedule = setup.extra === undefined ? bossed : [...bossed, { atPermille: Math.max(1, setup.extra.at), template: keeper - 1, count: setup.extra.count, entry: 0 }];
+  const schedule = setup.extra === undefined ? bossed : [...bossed, { atPermille: Math.max(1, setup.extra.at), template: first + actors.length + shooters.length, count: setup.extra.count, entry: 0 }];
+  const pulse = setup.pulse === undefined ? {} : { pulse: { template: keeper - 1, keeper: keeper + 1, beat: PACING.heartbeat } };
   const half = parts.control.params.half;
   const edge = setup.space === 'plane' && shooters.length > 0 && typeof half === 'number' ? { half } : {};
   const clear = setup.clear === undefined || setup.clear.length === 0 ? {} : { clear: setup.clear.map((step) => ({ role: ROLE[step.role], at: Math.max(1, step.at) })) };
   const rule: PieceRef | null = schedule.length === 0 && setup.finale === undefined && refs.length === 0 ? null : {
-    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved, ...edge, ...clear },
+    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved, ...edge, ...clear, ...pulse },
   };
-  const slots = (schedule.length === 0 ? 0 : PACING.maxActors) + (shooters.length === 0 ? 0 : PACING.maxShots);
+  const slots = (schedule.length === 0 ? 0 : PACING.maxActors) + (shooters.length === 0 ? 0 : PACING.maxShots) + (pulses.length === 0 ? 0 : PACING.heartbeatCoins);
   const steady = setup.steady === true ? { steady: true as const } : {};
   return {
     ...parts,
-    control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper, ...moved, ...(refs.length === 0 ? {} : { space: setup.space }), ...steady } },
-    bot: { id: 'pacing_bot', params: { base: parts.bot, control: nativeControlId(parts.control), keeper, ...moved, ...steady } },
+    control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper, ...moved, ...(refs.length === 0 ? {} : { space: setup.space }), ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1 } }) } },
+    bot: { id: 'pacing_bot', params: { base: parts.bot, control: nativeControlId(parts.control), keeper, ...moved, ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1 } }) } },
     level: { ...parts.level, bodies, spawnSlots: (parts.level.spawnSlots ?? 0) + slots },
     rules: rule === null ? parts.rules : [...parts.rules, rule],
   };

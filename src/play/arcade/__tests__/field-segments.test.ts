@@ -128,13 +128,14 @@ const hashOf = (world: ArcadeWorld): string => createHash('sha256').update(JSON.
 
 describe('stored games and track segment scripts build the same world', () => {
   // Otisky světů na `f04010df` (před T8), semínka 1–3: uložené hry pole (`genre.v3`), úseky P46B (běžec, řízení,
-  // skákačka) a přežití `genre.v4` – jeho jediné chování už první krok úseku 2 mělo, scénář svět nemění.
+  // skákačka) a přežití `genre.v4` – jeho jediné chování už první krok úseku 2 mělo, scénář svět nemění. Přežití
+  // `genre.v4` přeotisknuté v T9 (P47A): svět má navíc tep (předloha mince, tělo-počítadlo tepu, 3 sloty).
   const PINS: readonly (readonly [string, boolean, readonly string[]])[] = [
     ['arena.collect', true, ['b8f490279695', '3a1e88e0bf3d', 'bb7d907225a6']],
     ['arena.escape', true, ['74a28c348188', '1591f5ae36dd', 'b56044e4a5d0']],
     ['arena.escape+collect', true, ['89cca55ed3df', '171b7bfe29e2', '7ff0286fe7cc']],
     ['quest.spatial', true, ['e7a5cb8cd961', '884d8d96893b', '56c7a67b52af']],
-    ['arena.escape', false, ['eebb49d0d2c0', '071dd1d11948', '08ef633d260f']],
+    ['arena.escape', false, ['970a6d998abd', 'bf1788f16bc0', '4ae534980487']],
     ['runner.default', false, ['91adfc092eae', '443589755c48', '5b57273aa65e']],
     ['run.escape', false, ['762ef4f834fd', '768ed29c6ac0', '24e183116936']],
     ['platformer.default', false, ['a742d0104813', 'c2a18d608e93', '73161f418097']],

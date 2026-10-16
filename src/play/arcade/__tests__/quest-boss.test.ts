@@ -19,6 +19,7 @@ import { ARCADE_LIBRARY } from '../library';
 import { type BehaviourRef, behaviourBodies } from '../pieces/behaviours';
 import { play } from '../pieces/behaviours/__tests__/harness';
 import { FIELD, FINALE_GENRE_VERSION, GUARDIAN_BOSS } from '../pieces/pacing-parts';
+import { QUEST } from '../pieces/quest';
 import { type WaveParams, waveOf } from '../pieces/waves';
 import { loadRapier } from '../physics/world';
 import { funMetrics, traceRun } from '../telemetry';
@@ -108,7 +109,9 @@ describe('spatial quest: the finale boss carries the last round and can be beate
         const storedLast = wavesOf(stored).waves.at(-1)!.items!;
         expect(beat?.drop, `${id} seed ${seed}`).toEqual({ template: wavesOf(world).item, count: storedLast.length / 2 });
         expect(wavesOf(world).waves.at(-1)!.items, `${id} seed ${seed}`).toBeUndefined();
-        expect(wavesOf(world).waves.slice(0, -1)).toEqual(wavesOf(stored).waves.slice(0, -1));
+        // Dřívější kola beze změny, jen cíle stažené ke středu (`closerTargets`, P47A T9).
+        const near = (value: number): number => Math.trunc((value * FIELD.questReach) / QUEST.targetRing[1]);
+        expect(wavesOf(world).waves.slice(0, -1)).toEqual(wavesOf(stored).waves.slice(0, -1).map((wave) => (wave.items === undefined ? wave : { ...wave, items: wave.items.map(near) })));
         // v3: strážce, bez zásahu a pádu.
         const guardian = pacedRefs(stored).at(-1)!;
         expect(guardian.id, `${id} v3`).toBe('guardian');

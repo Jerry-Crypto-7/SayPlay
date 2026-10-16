@@ -311,6 +311,11 @@ export const FIELD = {
    */
   questBossHp: 5,
   /**
+   * Vnější poloměr cílů úkolu v prostoru ve `genre.v4` (P47A T9, `closerTargets`; generátor má 15 m): dva cíle
+   * nejvýš 22 m od sebe = 2,4 s chůze hráče (150 jednotek za tik).
+   */
+  questReach: 11 * UNIT,
+  /**
    * Závěrečný déšť mincí přežití (`genre.v4`, P47A T3): `count` mincí `lead` tiků před koncem hodin, na místech
    * vstupu nejdál od hráče. Život nevezme – robot útěku mince sebere, jen když k nim má volno (`arena-bot.ts`).
    * Změřeno na 20 semínkách (intermediate / novice / climax ve výhrách, v závorce bez deště): buňka `arena.escape`
@@ -411,6 +416,17 @@ const itemField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
 
 /** Mince deště přežití: tělo věci útěku (`arena.ts`), scéna arény ji kreslí jako minci. */
 const SHOWER_COIN: BodyInit = { role: 'collectible', kind: 'item', x: 0, y: 0, z: 0, w: ESCAPE.itemSize, h: 200, d: ESCAPE.itemSize, solid: false };
+/**
+ * Mince tepu pole (`genre.v4`, P47A T9, `PacingSetup.pulse`): menší než věc vln (4/5) a nižší (150 proti 200 – věc
+ * vlny smí mít šířku škálovanou `itemSizePct`, výšku ne), aby ji tep rozeznal od věcí sběru a nikdy neodvolal věc vlny.
+ */
+export const HEARTBEAT_COIN: BodyInit = { ...SHOWER_COIN, w: (ESCAPE.itemSize * 4) / 5, h: 150, d: (ESCAPE.itemSize * 4) / 5 };
+/**
+ * Tep jen pro `genre.v4` (uložené hry stavějí týž svět) a jen přežití a úkol v prostoru. Sběr a útěk s věcmi tep
+ * nemají: mince je pro jádro věc jako každá jiná – strážci ji hlídají místo věcí vlny, vlna věcí čeká, až ji někdo
+ * sebere, a bod za ni posune cíl skóre (věta c08 „castle“ 8/8 → 4/8, boss od 36. s do konce hodin živý).
+ */
+const heartbeat = (spec: GameSpecV1): Pick<GenrePacingSetup, 'pulse'> => (genreAtLeast(spec, FINALE_GENRE_VERSION) ? { pulse: HEARTBEAT_COIN } : {});
 
 /**
  * Přežití: postup = čas, nová chování od druhé vlny, finále = poslední vlna ve vrcholu křivky.
@@ -440,6 +456,7 @@ const survivalField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
     finale: 'wave',
     ...(foes.steady === true ? { steady: true } : {}),
     ...(genreAtLeast(spec, FINALE_GENRE_VERSION) ? { extra: shower } : {}),
+    ...heartbeat(spec),
     adjust: (own) => flatten(own, foes.step),
   };
 };
@@ -495,6 +512,19 @@ export const GUARDIAN_BOSS: BodyInit = { ...BEHAVIOURS.guardian.body, w: (BEHAVI
  * jen jeden: `interact` vyhrává se všemi živými cíli, takže cíl položený před pádem by dal výhru s živým bossem.
  * S bossem pronásledovatelé odejdou a poslední kolo žádné nepřivede (jako boss sběru).
  */
+/**
+ * Úkol v prostoru blíž (`genre.v4`, P47A T9): cíle všech kol a kameny úrovně se stáhnou ke středu na
+ * `FIELD.questReach` / vnější poloměr mezikruží cílů, takže dva cíle od sebe nejsou dál než 2 × `questReach`
+ * (22 m = 2,4 s chůze hráče, `ARENA.speed`). Kameny se stáhnou s nimi – místo „Use“ u cíle zůstane volné;
+ * pronásledovatelé zůstanou na férovém startu (`chaserStartDistance`). Bez losu, jen při stavbě.
+ */
+function closerTargets(parts: ArcadeParts): ArcadeParts {
+  const near = (value: number): number => Math.trunc((value * FIELD.questReach) / QUEST.targetRing[1]);
+  const bodies = parts.level.bodies.map((body) => (body.template !== true && (body.role === 'target' || body.role === 'obstacle') ? { ...body, x: near(body.x), z: near(body.z) } : body));
+  const shrunk = withRule(parts, 'arena_waves', (params) => ({ ...params, waves: (params as WaveParams).waves.map((wave) => (wave.items === undefined ? wave : { ...wave, items: wave.items.map(near) })) }));
+  return { ...shrunk, level: { ...shrunk.level, bodies } };
+}
+
 const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
   const waves = ruleOf(parts, 'arena_waves')?.params as WaveParams | undefined;
   if (waves === undefined || waves.until !== 'targets' || waves.waves.length === 0) return null;
@@ -517,8 +547,9 @@ const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
     finale: 'boss',
     boss,
     ...(foes.steady === true ? { steady: true } : {}),
+    ...heartbeat(spec),
     adjust: (own, template) => {
-      const flat = flatten(own, foes.step);
+      const flat = genreAtLeast(spec, FINALE_GENRE_VERSION) ? closerTargets(flatten(own, foes.step)) : flatten(own, foes.step);
       if (!carrier || template === undefined) return flat;
       // Poslední kolo bez cílů (nese je boss) a bez nových pronásledovatelů.
       return withRule(flat, 'arena_waves', (params) => {
@@ -993,6 +1024,7 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
     ...(clear.length === 0 ? {} : { clear }),
     ...(setup.steady === true ? { steady: true } : {}),
     ...(setup.extra === undefined ? {} : { extra: setup.extra }),
+    ...(setup.pulse === undefined ? {} : { pulse: setup.pulse }),
     ...(setup.segments === undefined ? {} : { segments: setup.segments, ...(spec.segments === undefined ? {} : { script: spec.segments }) }),
   });
   // Výhra čeká na bosse (`grow_to.boss`, sběr ve v4): robot ví, od kterého skóre už jde jen o něj.

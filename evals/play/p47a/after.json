@@ -12,12 +12,12 @@
     "reasons": {
      "assembly": 3
     },
-    "finaleShare": 0.9,
-    "bossShare": 0.7,
+    "finaleShare": 0.87,
+    "bossShare": 0.67,
     "behavioursMedian": 2.5,
-    "deadTimeMedianS": 4.89,
+    "deadTimeMedianS": 2.5,
     "risingShare": 0.8,
-    "segmentChanges2Share": 0.43
+    "segmentChanges2Share": 0.47
    },
    "genres": {
     "arena.collect": {
@@ -44,9 +44,9 @@
      "finaleShare": 1,
      "bossShare": 0.5,
      "behavioursMedian": 4.5,
-     "deadTimeMedianS": 11.01,
+     "deadTimeMedianS": 4.17,
      "risingShare": 1,
-     "segmentChanges2Share": 0.75
+     "segmentChanges2Share": 1
     },
     "duel": {
      "sentences": 4,
@@ -67,10 +67,10 @@
      "playable": 5,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 1,
-     "bossShare": 1,
-     "behavioursMedian": 3,
-     "deadTimeMedianS": 9.27,
+     "finaleShare": 0.8,
+     "bossShare": 0.8,
+     "behavioursMedian": 4,
+     "deadTimeMedianS": 2.5,
      "risingShare": 1,
      "segmentChanges2Share": 0.6
     },
@@ -115,7 +115,7 @@
     "finaleShare": 0.68,
     "bossShare": 0.5,
     "behavioursMedian": 1.5,
-    "deadTimeMedianS": 4,
+    "deadTimeMedianS": 3.1,
     "risingShare": 0.83,
     "segmentChanges2Share": 0.4
    },
@@ -144,7 +144,7 @@
      "finaleShare": 1,
      "bossShare": 0.33,
      "behavioursMedian": 4,
-     "deadTimeMedianS": 8,
+     "deadTimeMedianS": 2.5,
      "risingShare": 1,
      "segmentChanges2Share": 0.67
     },
@@ -282,7 +282,7 @@
      "finaleShare": 1,
      "bossShare": 1,
      "behavioursMedian": 3,
-     "deadTimeMedianS": 10.98,
+     "deadTimeMedianS": 2.5,
      "risingShare": 1,
      "segmentChanges2Share": 0.33
     },
@@ -378,12 +378,12 @@
      "assembly": 5,
      "entry": 6
     },
-    "finaleShare": 0.77,
-    "bossShare": 0.59,
+    "finaleShare": 0.76,
+    "bossShare": 0.57,
     "behavioursMedian": 2,
-    "deadTimeMedianS": 4.63,
+    "deadTimeMedianS": 2.78,
     "risingShare": 0.81,
-    "segmentChanges2Share": 0.41
+    "segmentChanges2Share": 0.43
    },
    "genres": {
     "arena.collect": {
@@ -410,9 +410,9 @@
      "finaleShare": 1,
      "bossShare": 0.43,
      "behavioursMedian": 4,
-     "deadTimeMedianS": 8,
+     "deadTimeMedianS": 2.5,
      "risingShare": 1,
-     "segmentChanges2Share": 0.71
+     "segmentChanges2Share": 0.86
     },
     "arena.fight": {
      "sentences": 2,
@@ -545,10 +545,10 @@
      "playable": 8,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 1,
-     "bossShare": 1,
+     "finaleShare": 0.88,
+     "bossShare": 0.88,
      "behavioursMedian": 3,
-     "deadTimeMedianS": 9.71,
+     "deadTimeMedianS": 2.5,
      "risingShare": 1,
      "segmentChanges2Share": 0.5
     },
@@ -1017,15 +1017,17 @@
      "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 8,
+    "longestGapS": 2.5,
     "rising": true,
-    "segmentChanges": 1,
+    "segmentChanges": 2,
     "changes": [
      [
       "foe:hazard:chase",
       "foe:hazard:roam"
      ],
-     []
+     [
+      "foe:hazard:static"
+     ]
     ]
    },
    {
@@ -1047,7 +1049,7 @@
      "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 14.02,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -1071,14 +1073,14 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": "boss",
+    "finale": null,
     "behaviourCount": 3,
     "behaviours": [
      "chaser:chase",
      "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 9.58,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -1109,7 +1111,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 12.97,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -1117,7 +1119,6 @@
       "foe:hazard:static"
      ],
      [
-      "foe:chaser:static",
       "foe:hazard:chase",
       "foe:hazard:roam"
      ]
@@ -1135,19 +1136,21 @@
     "paced": true,
     "reason": null,
     "finale": "boss",
-    "behaviourCount": 3,
+    "behaviourCount": 4,
     "behaviours": [
      "chaser:chase",
      "hazard:chase+spawned",
-     "hazard:roam+spawned"
+     "hazard:roam+spawned",
+     "hazard:static+spawned"
     ],
-    "longestGapS": 9.27,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 1,
     "changes": [
      [
       "foe:hazard:chase",
-      "foe:hazard:roam"
+      "foe:hazard:roam",
+      "foe:hazard:static"
      ],
      []
     ]
@@ -1171,7 +1174,7 @@
      "hazard:roam+spawned",
      "hazard:static+spawned"
     ],
-    "longestGapS": 9.23,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -1202,7 +1205,7 @@
      "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 8.47,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 1,
     "changes": [
@@ -1575,7 +1578,7 @@
      "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 10.98,
+    "longestGapS": 2.33,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -1708,7 +1711,7 @@
      "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 8,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 1,
     "changes": [
@@ -2018,7 +2021,7 @@
      "chaser:static",
      "hazard:static+spawned"
     ],
-    "longestGapS": 8,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 2,
     "changes": [
@@ -2136,7 +2139,7 @@
      "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 11.43,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 1,
     "changes": [
@@ -2395,7 +2398,7 @@
      "hazard:chase+spawned",
      "hazard:roam+spawned"
     ],
-    "longestGapS": 9.83,
+    "longestGapS": 2.5,
     "rising": true,
     "segmentChanges": 1,
     "changes": [
