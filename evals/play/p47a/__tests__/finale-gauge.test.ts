@@ -86,21 +86,21 @@ describe('unpacedReason', () => {
 
 const row = (over: Partial<FinaleRow>): FinaleRow => ({
   id: 'x', text: 'x', cell: 'arena.collect', genre: 'arena.collect', generator: 'arena_collect', seed: 1, playable: true,
-  paced: true, reason: null, finale: 'boss', behaviourCount: 2, behaviours: [], longestGapS: 3, rising: true, issues: [], ...over,
+  paced: true, reason: null, finale: 'boss', behaviourCount: 2, behaviours: [], longestGapS: 3, rising: true, segmentChanges: 2, changes: [], issues: [], ...over,
 });
 
 describe('gauge summary', () => {
   it('shares pacing over built games and fun only over playable ones', () => {
     const rows = [
       row({ id: 'a' }),
-      row({ id: 'b', paced: false, reason: 'rules', finale: null, behaviourCount: 1, longestGapS: 6, rising: false }),
+      row({ id: 'b', paced: false, reason: 'rules', finale: null, behaviourCount: 1, longestGapS: 6, rising: false, segmentChanges: 0 }),
       row({ id: 'c', paced: false, reason: 'rules', finale: 'climax', behaviourCount: 1, longestGapS: 4 }),
       row({ id: 'd', playable: false, paced: false, reason: 'assembly', finale: 'boss', longestGapS: 30 }),
       row({ id: 'e', behaviourCount: null, longestGapS: null, finale: null, paced: false }),
     ];
     expect(summaryOf(rows)).toEqual({
       sentences: 5, built: 4, playable: 3, pacedShare: 0.25, reasons: { rules: 2, assembly: 1 },
-      finaleShare: 0.67, bossShare: 0.33, behavioursMedian: 1, deadTimeMedianS: 4, risingShare: 0.67,
+      finaleShare: 0.67, bossShare: 0.33, behavioursMedian: 1, deadTimeMedianS: 4, risingShare: 0.67, segmentChanges2Share: 0.67,
     });
     const split = genreSummary([...rows, row({ id: 'f', genre: 'duel', finale: null })]);
     expect(Object.keys(split.genres)).toEqual(['arena.collect', 'duel']);
@@ -114,6 +114,9 @@ describe('gauge summary', () => {
     expect(gauge.reason).toBeNull();
     expect(gauge.behaviourCount).toBeGreaterThanOrEqual(1);
     expect(gauge.longestGapS).toBeGreaterThan(0);
+    // Úseky v rovině (T8): postup cíle průběhu, ne `z` – po trati by aréna celá padla do finále a úsek 2 ani 3 nic nezměnil.
+    expect(gauge.changes).toHaveLength(2);
+    expect(gauge.segmentChanges).toBeGreaterThanOrEqual(1);
     expect(gaugeOf(collect, worldOf(collect))).toEqual(gauge);
   });
 });

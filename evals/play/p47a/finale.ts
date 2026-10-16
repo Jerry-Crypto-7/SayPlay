@@ -18,6 +18,7 @@ import { draftGameSpecWithMeta } from '@/play/draft';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { publishedWorld } from '../p45/fun';
+import { segmentRun } from '../p46b/segments';
 
 /** Proč hra průběh nemá: generátor bez záznamu či uložená verze, díly P42, pravidla či věci specu, málo životů, plný rozpočet pravidel. */
 export const UNPACED_REASONS = ['entry', 'assembly', 'rules', 'things', 'lives', 'budget'] as const;
@@ -43,6 +44,9 @@ export interface FinaleRow {
   readonly behaviours: readonly string[];
   readonly longestGapS: number | null;
   readonly rising: boolean | null;
+  /** Měřidlo úseků P46B (`p46b/segments.ts`, v rovině postup cíle průběhu): kolik z úseků 2 a 3 něco změnilo (T8). */
+  readonly segmentChanges: number | null;
+  readonly changes: readonly (readonly string[])[];
   readonly issues: readonly string[];
 }
 
@@ -72,9 +76,11 @@ export function genreOfSpec(spec: GameSpecV1): string {
 }
 
 /** Řádek gauge nad hotovým světem (bez výběru semínka): průběh, důvod a běh robota `intermediate`. */
-export function gaugeOf(spec: GameSpecV1, world: ArcadeWorld): Pick<FinaleRow, 'paced' | 'reason' | 'finale' | 'behaviourCount' | 'behaviours' | 'longestGapS' | 'rising'> {
+export function gaugeOf(spec: GameSpecV1, world: ArcadeWorld): Pick<FinaleRow, 'paced' | 'reason' | 'finale' | 'behaviourCount' | 'behaviours' | 'longestGapS' | 'rising' | 'segmentChanges' | 'changes'> {
   const reason = unpacedReason(spec, world);
-  const metrics = funMetrics(traceRun(world, runBot(world, undefined, { profile: 'intermediate' }).inputs));
+  const { inputs } = runBot(world, undefined, { profile: 'intermediate' });
+  const metrics = funMetrics(traceRun(world, inputs));
+  const segments = segmentRun(world, inputs);
   return {
     paced: reason === null,
     reason,
@@ -83,6 +89,8 @@ export function gaugeOf(spec: GameSpecV1, world: ArcadeWorld): Pick<FinaleRow, '
     behaviours: metrics.behaviours,
     longestGapS: metrics.longestGapS,
     rising: metrics.rising,
+    segmentChanges: segments.segmentChanges,
+    changes: segments.changes,
   };
 }
 
@@ -90,7 +98,7 @@ export async function finaleRow(id: string, text: string, cell?: string): Promis
   const { spec } = draftGameSpecWithMeta(text, 1);
   const { genre, seed, playable, world, issues } = await publishedWorld(text);
   const base = { id, text, cell: cell ?? genre, genre, generator: generatorOf(spec), seed, playable, issues };
-  if (world === null) return { ...base, paced: false, reason: null, finale: null, behaviourCount: null, behaviours: [], longestGapS: null, rising: null };
+  if (world === null) return { ...base, paced: false, reason: null, finale: null, behaviourCount: null, behaviours: [], longestGapS: null, rising: null, segmentChanges: null, changes: [] };
   return { ...base, ...gaugeOf(spec, world) };
 }
 
@@ -125,6 +133,8 @@ export interface GenreSummary {
   readonly behavioursMedian: number | null;
   readonly deadTimeMedianS: number | null;
   readonly risingShare: number | null;
+  /** Podíl hratelných her, kterým úsek 2 i úsek 3 něco změnil (`segmentChanges` 2, T8). */
+  readonly segmentChanges2Share: number | null;
 }
 
 /** Souhrn jedné skupiny řádků: průběh nad postavenými hrami, zábava nad hratelnými. */
@@ -144,6 +154,7 @@ export function summaryOf(rows: readonly FinaleRow[]): GenreSummary {
     behavioursMedian: median(played.map((row) => row.behaviourCount as number)),
     deadTimeMedianS: median(played.map((row) => row.longestGapS as number)),
     risingShare: share(played.map((row) => row.rising === true)),
+    segmentChanges2Share: share(played.map((row) => (row.segmentChanges ?? 0) >= 2)),
   };
 }
 
