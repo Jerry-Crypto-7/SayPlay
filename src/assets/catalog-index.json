@@ -33498,6 +33498,124 @@
           0.39444
         ]
       }
+    },
+    {
+      "assetId": "gen3d-candy-corn",
+      "tags": [
+        "candy corn"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-candy-corn-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26306,
+          0,
+          -0.23458
+        ],
+        "max": [
+          0.26306,
+          0.99893,
+          0.23458
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gem-ring",
+      "tags": [
+        "gem ring",
+        "ruby ring"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-gem-ring-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.55149,
+          0,
+          -0.48827
+        ],
+        "max": [
+          0.55149,
+          0.99485,
+          0.48827
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-remote-control",
+      "tags": [
+        "remote control",
+        "tv remote"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-remote-control-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.14736,
+          0,
+          -0.06456
+        ],
+        "max": [
+          0.14736,
+          0.9999,
+          0.06456
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-berry-basket",
+      "tags": [
+        "berry basket",
+        "basket of berries"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-berry-basket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48301,
+          0,
+          -0.48263
+        ],
+        "max": [
+          0.48301,
+          0.99552,
+          0.48263
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bolt",
+      "tags": [
+        "bolt",
+        "nut and bolt"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-bolt-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21129,
+          0,
+          -0.186
+        ],
+        "max": [
+          0.21129,
+          0.99999,
+          0.186
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-energy-crystal",
+      "tags": [
+        "energy crystal"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-energy-crystal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21836,
+          0,
+          -0.21331
+        ],
+        "max": [
+          0.21836,
+          0.99343,
+          0.21331
+        ]
+      }
     }
   ]
 }

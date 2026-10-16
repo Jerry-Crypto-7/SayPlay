@@ -893,3 +893,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-hot-cocoa-mug` | hot cocoa mug, hot chocolate | 4450 / 2176 |
 | `gen3d-subway-token` | subway token | 4748 / 2374 |
 | `gen3d-candy-bar` | candy bar | 4726 / 2301 |
+| `gen3d-candy-corn` | candy corn | 4742 / 2358 |
+| `gen3d-gem-ring` | gem ring, ruby ring | 4707 / 2353 |
+| `gen3d-remote-control` | remote control, tv remote | 4737 / 2360 |
+| `gen3d-berry-basket` | berry basket, basket of berries | 4290 / 2641 |
+| `gen3d-bolt` | bolt, nut and bolt | 4748 / 2374 |
+| `gen3d-energy-crystal` | energy crystal | 4453 / 2179 |

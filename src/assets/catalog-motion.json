@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "09e0a10e7ae32d156c6d75336653d13bfdb36f5dea81961885549b1c5a0f86d8",
+ "catalogHash": "2ac3af2f28d6dec2ab04b2870c3546cb4270d2bf1050d041096d61333abf4366",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1668,6 +1668,12 @@
   "gen3d-golden-gear": {"class":"prop"},
   "gen3d-hot-cocoa-mug": {"class":"prop"},
   "gen3d-subway-token": {"class":"prop"},
-  "gen3d-candy-bar": {"class":"prop"}
+  "gen3d-candy-bar": {"class":"prop"},
+  "gen3d-candy-corn": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-gem-ring": {"class":"prop"},
+  "gen3d-remote-control": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-berry-basket": {"class":"prop"},
+  "gen3d-bolt": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-energy-crystal": {"class":"biped","regions":{"legY":0.248}}
  }
 }
