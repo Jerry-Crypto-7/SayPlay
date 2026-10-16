@@ -92,9 +92,10 @@ describe('P47B T5: a shield sentence keeps its action when the game has somethin
 /** Otisk světa: `JSON.stringify` přes SHA-256, prvních 16 znaků. */
 const fingerprint = (world: ArcadeWorld): string => createHash('sha256').update(JSON.stringify(world)).digest('hex').slice(0, 16);
 
-// Změřeno s `abilities/index.ts` před T5 (158b8262), návrh i svět na semínku 1.
+// Změřeno s `abilities/index.ts` před T5 (158b8262), návrh i svět na semínku 1. Sběr mušlí po sloučení
+// s P47A (`genre.v4`, nápor v aréně) přeměřen na samotné P47A: týž otisk jako sloučená větev.
 const HARMFUL = [
-  ['a kid shields herself while collecting shells', '48edf5272162a983'],
+  ['a kid shields herself while collecting shells', '3eaf09280f807958'],
   ['a squirrel runs and blocks falling acorns', '327f61ddfc29d48b'],
 ] as const;
 
@@ -112,8 +113,9 @@ const PLAIN = [
   ['a car races rivals', [137, 141, 132, 134]],
   ['a car races rivals and shoots them', [142, 146, 137, 139]],
   ['a car races rivals and grabs turbo', [138, 142, 133, 135]],
-  ['a kid collects shells', [20, 21, 19, 21]],
-  ['a kid grabs shells', [20, 21, 19, 21]],
+  // Po sloučení s P47A (`genre.v4`): o 7 těl víc přidá nápor arény, ne akce – na samotné P47A týž počet.
+  ['a kid collects shells', [27, 28, 26, 28]],
+  ['a kid grabs shells', [27, 28, 26, 28]],
 ] as const;
 
 describe('P47B T5: a game without dash or shield gets no extra body', () => {

@@ -116,10 +116,11 @@ describe('arcade model choice from role labels', () => {
     // Klokan má od P30B T4 vlastní model; vombata katalog nemá – kategorie „zvíře“ by nakreslila lišku, soupeř zůstane postavou z primitiv.
     expect(propModels(withLabel(duel, 'rival', 'kangaroo'))).toEqual({ rival: 'kangaroo' });
     expect(propModels(withLabel(duel, 'rival', 'wombat'))).toEqual({});
-    expect(propModels(withLabel(steer, 'rival', 'rival plane'))).toEqual({ rival: 'plane' });
+    // Cíl závodu kreslí od P47C prapor (`gen3d-finish-banner`); tady jde o soupeře.
+    expect(propModels(withLabel(steer, 'rival', 'rival plane')).rival).toBe('plane');
     // Soupeř závodu je vozidlo; zvíře jako auto neřídí.
-    expect(propModels(withLabel(steer, 'rival', 'fox'))).toEqual({});
-    expect(propModels(withLabel(steer, 'rival', 'rival car'))).toEqual({});
+    expect(propModels(withLabel(steer, 'rival', 'fox')).rival).toBeUndefined();
+    expect(propModels(withLabel(steer, 'rival', 'rival car')).rival).toBeUndefined();
   });
 
   // Šablona střelnice a hodu (remix uložené hry, P32B T2) zapíše jméno z věty do role, kterou scéna kreslí.
