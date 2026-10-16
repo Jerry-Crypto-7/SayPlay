@@ -421,6 +421,10 @@
         {
           "id": "gen3d-water-wheel",
           "height": 3
+        },
+        {
+          "id": "gen3d-driftwood-log",
+          "height": 0.6
         }
       ]
     },

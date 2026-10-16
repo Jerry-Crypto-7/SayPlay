@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "42ce3310afda3797b915f9a2422008e9556d09a698af87c7c86b0ff682ddc472",
+ "catalogHash": "68de3a72179995cb07cc1a8ba0fc790f83f2fc44920946b7f1ee7a407ee07008",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1730,6 +1730,12 @@
   "gen3d-sunken-anchor": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-coral-reef-rock": {"class":"prop"},
   "gen3d-crater-rock": {"class":"prop"},
-  "gen3d-radar-tower": {"class":"biped","regions":{"legY":0.25}}
+  "gen3d-radar-tower": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-crystal-spire": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-cave-crystal-cluster": {"class":"prop"},
+  "gen3d-beach-towel": {"class":"prop"},
+  "gen3d-rock-pool": {"class":"prop"},
+  "gen3d-beach-bonfire": {"class":"prop"},
+  "gen3d-driftwood-log": {"class":"prop"}
  }
 }

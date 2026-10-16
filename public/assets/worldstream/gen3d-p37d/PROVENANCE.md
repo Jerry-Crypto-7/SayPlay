@@ -955,3 +955,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-coral-reef-rock` | coral reef rock | 4573 / 2208 |
 | `gen3d-crater-rock` | crater rock | 4651 / 2294 |
 | `gen3d-radar-tower` | radar tower | 4624 / 2282 |
+| `gen3d-crystal-spire` | crystal spire, crystal tower | 4714 / 2342 |
+| `gen3d-cave-crystal-cluster` | cave crystal cluster | 4372 / 2201 |
+| `gen3d-beach-towel` | beach towel | 4737 / 2339 |
+| `gen3d-rock-pool` | rock pool, tide pool | 4619 / 2266 |
+| `gen3d-beach-bonfire` | beach bonfire | 4695 / 2316 |
+| `gen3d-driftwood-log` | driftwood log | 4746 / 2372 |

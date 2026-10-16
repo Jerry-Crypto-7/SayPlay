@@ -34708,6 +34708,122 @@
           0.11759
         ]
       }
+    },
+    {
+      "assetId": "gen3d-crystal-spire",
+      "tags": [
+        "crystal spire",
+        "crystal tower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-crystal-spire-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21492,
+          0,
+          -0.19857
+        ],
+        "max": [
+          0.21492,
+          1.00001,
+          0.19857
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cave-crystal-cluster",
+      "tags": [
+        "cave crystal cluster"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cave-crystal-cluster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41794,
+          0,
+          -0.37184
+        ],
+        "max": [
+          0.41794,
+          0.99933,
+          0.37184
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-towel",
+      "tags": [
+        "beach towel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-towel-lod1.glb",
+      "bounds": {
+        "min": [
+          -4.54915,
+          0,
+          -4.50483
+        ],
+        "max": [
+          4.54915,
+          0.98896,
+          4.50483
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rock-pool",
+      "tags": [
+        "rock pool",
+        "tide pool"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rock-pool-lod1.glb",
+      "bounds": {
+        "min": [
+          -4.73687,
+          0,
+          -4.73711
+        ],
+        "max": [
+          4.73687,
+          0.97941,
+          4.73711
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-beach-bonfire",
+      "tags": [
+        "beach bonfire"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-beach-bonfire-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.81326,
+          0,
+          -0.80737
+        ],
+        "max": [
+          0.81326,
+          1.00001,
+          0.80737
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-driftwood-log",
+      "tags": [
+        "driftwood log"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-driftwood-log-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.28903,
+          0,
+          -0.34613
+        ],
+        "max": [
+          1.28903,
+          0.99819,
+          0.34613
+        ]
+      }
     }
   ]
 }
