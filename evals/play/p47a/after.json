@@ -12,8 +12,8 @@
     "reasons": {
      "assembly": 3
     },
-    "finaleShare": 0.67,
-    "bossShare": 0.47,
+    "finaleShare": 0.8,
+    "bossShare": 0.6,
     "behavioursMedian": 2.5,
     "deadTimeMedianS": 4.89,
     "risingShare": 0.8
@@ -51,8 +51,8 @@
      "playable": 4,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0,
-     "bossShare": 0,
+     "finaleShare": 1,
+     "bossShare": 1,
      "behavioursMedian": 1,
      "deadTimeMedianS": 2.24,
      "risingShare": 1
@@ -105,8 +105,8 @@
      "entry": 6,
      "assembly": 2
     },
-    "finaleShare": 0.6,
-    "bossShare": 0.43,
+    "finaleShare": 0.65,
+    "bossShare": 0.48,
     "behavioursMedian": 1.5,
     "deadTimeMedianS": 4,
     "risingShare": 0.83
@@ -224,8 +224,8 @@
      "playable": 2,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0,
-     "bossShare": 0,
+     "finaleShare": 1,
+     "bossShare": 1,
      "behavioursMedian": 1,
      "deadTimeMedianS": 2.26,
      "risingShare": 1
@@ -352,8 +352,8 @@
      "assembly": 5,
      "entry": 6
     },
-    "finaleShare": 0.63,
-    "bossShare": 0.44,
+    "finaleShare": 0.71,
+    "bossShare": 0.53,
     "behavioursMedian": 2,
     "deadTimeMedianS": 4.63,
     "risingShare": 0.81
@@ -471,8 +471,8 @@
      "playable": 6,
      "pacedShare": 1,
      "reasons": {},
-     "finaleShare": 0,
-     "bossShare": 0,
+     "finaleShare": 1,
+     "bossShare": 1,
      "behavioursMedian": 1,
      "deadTimeMedianS": 2.26,
      "risingShare": 1
@@ -1076,7 +1076,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 1,
     "behaviours": [
      "enemy:static"
@@ -1095,7 +1095,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 1,
     "behaviours": [
      "enemy:static"
@@ -1114,7 +1114,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 1,
     "behaviours": [
      "enemy:static"
@@ -1133,7 +1133,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 1,
     "behaviours": [
      "enemy:static"
@@ -1226,7 +1226,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 1,
     "behaviours": [
      "enemy:static"
@@ -1792,7 +1792,7 @@
     "issues": [],
     "paced": true,
     "reason": null,
-    "finale": null,
+    "finale": "boss",
     "behaviourCount": 1,
     "behaviours": [
      "enemy:static"

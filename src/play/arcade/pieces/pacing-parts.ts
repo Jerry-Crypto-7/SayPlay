@@ -16,8 +16,8 @@ import { RULE_TEMPLATES, type TemplateName } from '../rules/templates';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRef, RAMP_STEP_PCT, ROLE, UNIT } from '../contract';
 import { ESCAPE } from './arena';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef } from './behaviours';
-import { BOSS, DROPPER, TURRET } from './behaviours/boss';
-import { DUEL_ENRAGE } from './duel';
+import { BOSS, DROPPER, TURRET, bossBody } from './behaviours/boss';
+import { DUEL_ENRAGE, DUEL_FOE } from './duel';
 import { PACING, type PacingActor, type PacingSetup, TENSION_CURVE, intensityAt, withPacing } from './pacing';
 import { progressionParts } from './progression-parts';
 import type { CompiledInteract } from '../rules/interact';
@@ -46,7 +46,8 @@ export interface GenrePacingSetup extends Omit<PacingSetup, 'seed' | 'boss'> {
   /**
    * Části generátoru pro hru s průběhem (např. poslední vlna bez věcí, které nese
    * boss); `boss` = index předlohy bosse, nebo `undefined`, když ho rozpočet
-   * pravidel vzal. Nesmí měnit počet ani pořadí těl úrovně.
+   * pravidel vzal. Nesmí měnit pořadí těl úrovně a počet jen bez chování a bosse
+   * průběhu (šampion duelu připíše předlohu na konec, P47A T6).
    */
   readonly adjust?: (parts: ArcadeParts, boss: number | undefined) => ArcadeParts;
   /** Výchozí fáze (`progressionParts`), když spec nenese vlastní `phases` ani `dependsOn`. */
@@ -513,10 +514,10 @@ const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
  * Souboj dvou (P45C T13): postup = zásahy hráče (jeho `z`; délka úrovně = HP všech soupeřů), knoflík
  * agresivity soupeře `pace` (`PACING_KNOBS.duel`) místo zrychlení po soupeřích (`rise` – obojí naráz by
  * stáhlo okna na mez dřív, než přijde finále), finále = rozzuření posledního soupeře pod polovinou HP
- * (`DUEL_ENRAGE`: delší nápřah, kratší mezera). Bez chování: hráč z místa neuhne a scéna souboje kreslí
- * jen dvě postavy.
+ * (`DUEL_ENRAGE`: delší nápřah, kratší mezera); ve `genre.v4` je poslední soupeř navíc šampion se skutečnými
+ * zásahy (`withChampion`). Bez chování: hráč z místa neuhne a scéna souboje kreslí jen dvě postavy.
  */
-const duelPaced: GenrePacing = (parts) => (parts.control.id !== 'duel' ? null : {
+const duelPaced: GenrePacing = (parts, spec) => (parts.control.id !== 'duel' ? null : {
   goal: { by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks },
   space: 'plane',
   spots: [0, 0],
@@ -525,9 +526,28 @@ const duelPaced: GenrePacing = (parts) => (parts.control.id !== 'duel' ? null : 
   finale: 'round',
   adjust: (own) => {
     const { rise: _rise, ...params } = own.control.params;
-    return { ...own, control: { ...own.control, params: { ...params, pace: 1000, enrage: { ...DUEL_ENRAGE } } } };
+    const enraged = { ...own, control: { ...own.control, params: { ...params, pace: 1000, enrage: { ...DUEL_ENRAGE } } } };
+    return genreAtLeast(spec, FINALE_GENRE_VERSION) ? withChampion(enraged) : enraged;
   },
 });
+
+/**
+ * Šampion duelu (P47A T6): předloha `bossBody` soupeře s HP `foeHealth` na konci úrovně; ovládání ji otiskne
+ * do soupeře, když padne předposlední (`duel.champion`), a `judge` mu od té chvíle každou trefu zapíše jako
+ * zásah těla. Telemetrie tak vidí bosse s `foeHealth` (generátor 4–6) zásahy, který zůstal ležet s HP 0.
+ * Průběh duelu nemá chování ani bosse průběhu, takže předloha na konci úrovně žádný index neposune.
+ */
+function withChampion(parts: ArcadeParts): ArcadeParts {
+  const { foeHealth, rounds = 1 } = parts.control.params as { readonly foeHealth: number; readonly rounds?: number };
+  const body = parts.level.bodies.length;
+  const champion: BodyInit = { ...bossBody(parts.level.bodies[DUEL_FOE] as BodyInit, foeHealth), template: true };
+  const crowned: ArcadeParts = {
+    ...parts,
+    control: { ...parts.control, params: { ...parts.control.params, champion: { body } } },
+    level: { ...parts.level, bodies: [...parts.level.bodies, champion] },
+  };
+  return withRule(crowned, 'judge', (judge) => ({ ...judge, champion: { body: DUEL_FOE, after: foeHealth * (rounds - 1) } }));
+}
 
 /** Ostřelovač střelnice (T5) s rolí nepřítele: hráč z místa neuhne, ale během varování ho sestřelí. */
 export const SHOOTER_SNIPER: BodyInit = { ...BEHAVIOURS.sniper.body, role: 'enemy' };
