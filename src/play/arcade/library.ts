@@ -106,11 +106,12 @@ const BASE_CONTROLS = {
 
 const PHASE_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
 const PHASE_BOTS = { ...BASE_BOTS, objective_walker_bot: objectiveWalkerBot, phase_bot: makePacedBot(BASE_BOTS) };
-// Průběh hry (P45C) obalí základní ovládání i souboj; doplňky obalí jeho.
-const PROGRESSION_CONTROLS = { ...PHASE_CONTROLS, pacing_control: makePacingControl({ ...PHASE_CONTROLS, fight: fightControl as ControlPiece }) as ControlPiece };
+// Průběh hry (P45C) obalí základní ovládání i souboj; doplňky obalí jeho i holý souboj s akcemi (P47B T6, souboj režiséra bez průběhu).
+const FIGHT_CONTROLS = { ...PHASE_CONTROLS, fight: fightControl as ControlPiece };
+const PROGRESSION_CONTROLS = { ...FIGHT_CONTROLS, pacing_control: makePacingControl(FIGHT_CONTROLS) as ControlPiece };
 const PROGRESSION_BOTS = { ...PHASE_BOTS, pacing_bot: makePacingBot(PHASE_BOTS) as BotPiece };
 const NATIVE_LIBRARY: ArcadeLibrary = {
-  controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
+  controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece },
   rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES },
   generators: {
     runner_track: runnerTrack,

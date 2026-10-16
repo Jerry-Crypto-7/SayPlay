@@ -316,6 +316,8 @@ function wordOf(id: AbilityId, said: string): AbilityWord | undefined {
 const LINKERS = new Set([',', 'and', 'or', 'then', 'to', 'can', 'will', 'must', 'also', 'just', 'still', 'even', 'always', 'who', 'that', 'he', 'she', 'it', 'they', 'you', 'i', 'we', 'by']);
 /** Spojky, za kterými přichází nový podmět; hrdinovi patří jen tvar na -ing („while dodging“). */
 const SUBORDINATORS = new Set(['while', 'as', 'when', 'whenever', 'until', 'before', 'after', 'because']);
+/** Předložka místa za slovesem hrdiny: „runs through the city dodging“ – tvar na -ing dál patří hrdinovi. */
+const PLACE_PREPOSITIONS = new Set(['through', 'across', 'along', 'around', 'in', 'into', 'on', 'onto', 'over', 'under', 'down', 'up', 'past', 'inside', 'near', 'at', 'from']);
 /** Odmítnutí, které `negationScopes` nečte: „refuses to shoot“. */
 const REFUSAL = /\brefus(?:e|es|ing) to $/;
 /** Úder na věc, která nepřítel není: míč, nástroj, bedna sokobanu („kicks a football“, „hits the drums“, „pushes crates“). */
@@ -336,6 +338,9 @@ function heroDoes(text: string, at: number, end: number, hero: ReadonlySet<strin
   if (prev === undefined) return false;
   if (SUBORDINATORS.has(prev)) return /ing\b/.test(text.slice(at, end));
   if (LINKERS.has(prev)) return true;
+  // „through the city dodging“ ano, „past the cars blocking“ ne: množné číslo je podmět, místo ne.
+  const [preposition, article] = before.slice(-3, -1);
+  if (/ing\b/.test(text.slice(at, end)) && PLACE_PREPOSITIONS.has(preposition!) && (article === 'the' || article === 'a') && singular(prev) === prev) return true;
   if (!hero.has(prev) && !hero.has(singular(prev))) return false;
   // Po jednotném čísle má sloveso -s: „a photo shoot“ je podstatné jméno, „a fox shoots“ sloveso.
   return /s$/.test(prev) || /(?:s|ing|ed)$/.test(text.slice(at, end).split(' ')[0]!);

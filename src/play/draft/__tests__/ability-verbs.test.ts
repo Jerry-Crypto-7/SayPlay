@@ -47,6 +47,12 @@ describe('sentence verbs as hero actions', () => {
     expect(said('a girl climbs the tower while the guards block the stairs')).toEqual([]);
   });
 
+  it('keeps an -ing verb after a place phrase with the hero, not after a plural subject', () => {
+    expect(said('A fox runs through the city dodging taxis and collecting coins.')).toEqual(['dash']);
+    expect(said('a knight rides across the bridge blocking arrows')).toEqual(['shield']);
+    expect(said('a fox runs past the cars blocking the road')).toEqual([]);
+  });
+
   it('reads block and shield as nouns after an article, a number, an adjective or of', () => {
     expect(said('a toddler stacks wooden blocks into a tower')).toEqual([]);
     expect(said('a knight carries a shield over the bridge')).toEqual([]);
