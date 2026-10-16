@@ -115,7 +115,10 @@ describe('the seal on the P45 set', () => {
     expect(() => loadSet('p45-sealed', { sealDir, only: 'x001' })).toThrow(/sealed/);
   });
 
-  it('is not opened yet in the repository', () => {
-    expect(existsSync(join(PLAY, 'p45', 'sealed-opened.json'))).toBe(false);
+  // Otevřela ji jednou finální měření P46 (`abe38f04`); záznam musí sedět na obsah sady, ne na jiný soubor.
+  it('was opened once, by the P46 final run, over these exact bytes', () => {
+    const opened = json('p45/sealed-opened.json');
+    expect(opened.runId).toBe('p46-final');
+    expect(opened.sha256).toBe(sha(TEXT));
   });
 });
