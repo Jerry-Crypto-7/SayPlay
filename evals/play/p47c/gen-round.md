@@ -28,3 +28,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 22 (opakování) | collect | 10 | 9 | 2/9 | 1 | – | 94/101 | arcade token | – |
 | 23 | collect | 10 | 6 | 6/6 | 6 | – | 94/101 | vinyl record, fossil, candy apple, crystal heart, snowflake token, watermelon slice | – |
 | 24 | collect | 10 | 10 | 9/10 | 8 | – | 94/101 | shell necklace, pumpkin lantern, spinning top, maple leaf, golden scarab, macaron, canopic jar, egg tray | – |
+| 25 | collect p46j-redo | 10 | 7 | 6/7 | 0 | jelly bean jar, jaguar statue, taro plant, claw machine, city map board | 94/101 | – | red alone: src/play/__tests__/look.test.ts; dropped the round's models |
