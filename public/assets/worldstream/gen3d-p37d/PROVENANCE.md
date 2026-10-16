@@ -979,3 +979,9 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-sea-urchin` | sea urchin | 4258 / 2050 |
 | `gen3d-habitat-dome` | habitat dome, moon base | 4071 / 2027 |
 | `gen3d-meteorite` | meteorite | 4568 / 2258 |
+| `gen3d-forest-well` | forest well, stone well | 4270 / 2085 |
+| `gen3d-clay-well` | clay well | 4309 / 2057 |
+| `gen3d-sand-dune` | sand dune | 4746 / 2372 |
+| `gen3d-desert-lantern` | desert lantern, moroccan lantern | 4565 / 2239 |
+| `gen3d-clay-jar` | clay jar | 4748 / 2374 |
+| `gen3d-sphinx-statue` | sphinx statue | 4243 / 2041 |

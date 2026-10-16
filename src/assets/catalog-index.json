@@ -35176,6 +35176,122 @@
           0.5143
         ]
       }
+    },
+    {
+      "assetId": "gen3d-forest-well",
+      "tags": [
+        "forest well",
+        "stone well"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-forest-well-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48097,
+          0,
+          -0.45923
+        ],
+        "max": [
+          0.48097,
+          0.99494,
+          0.45923
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-clay-well",
+      "tags": [
+        "clay well"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-clay-well-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.52181,
+          0,
+          -0.52253
+        ],
+        "max": [
+          0.52181,
+          0.99663,
+          0.52253
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sand-dune",
+      "tags": [
+        "sand dune"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sand-dune-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.01144,
+          0,
+          -2.04004
+        ],
+        "max": [
+          2.01144,
+          1,
+          2.04004
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-desert-lantern",
+      "tags": [
+        "desert lantern",
+        "moroccan lantern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-desert-lantern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25631,
+          0,
+          -0.23733
+        ],
+        "max": [
+          0.25631,
+          0.99905,
+          0.23733
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-clay-jar",
+      "tags": [
+        "clay jar"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-clay-jar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32566,
+          0,
+          -0.2733
+        ],
+        "max": [
+          0.32566,
+          0.99857,
+          0.2733
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sphinx-statue",
+      "tags": [
+        "sphinx statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sphinx-statue-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28628,
+          0,
+          -0.41453
+        ],
+        "max": [
+          0.28628,
+          0.99166,
+          0.41453
+        ]
+      }
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "934b3eabb56f6d7789438a014072ea5c4aaf35cfbdaf50c3f26f1536d0b21fe0",
+ "catalogHash": "81202c7019d8bb5cb36dd1c6ea60862484301f1a5e4f42d7be30bd03093c8fd2",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1754,6 +1754,12 @@
   "gen3d-toadstool-house": {"class":"prop"},
   "gen3d-sea-urchin": {"class":"prop"},
   "gen3d-habitat-dome": {"class":"prop"},
-  "gen3d-meteorite": {"class":"prop"}
+  "gen3d-meteorite": {"class":"prop"},
+  "gen3d-forest-well": {"class":"prop"},
+  "gen3d-clay-well": {"class":"prop"},
+  "gen3d-sand-dune": {"class":"prop"},
+  "gen3d-desert-lantern": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-clay-jar": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-sphinx-statue": {"class":"prop"}
  }
 }
