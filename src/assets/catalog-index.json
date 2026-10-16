@@ -35118,6 +35118,64 @@
           0.43132
         ]
       }
+    },
+    {
+      "assetId": "gen3d-sea-urchin",
+      "tags": [
+        "sea urchin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-sea-urchin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5748,
+          0,
+          -0.57401
+        ],
+        "max": [
+          0.5748,
+          1.00001,
+          0.57401
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-habitat-dome",
+      "tags": [
+        "habitat dome",
+        "moon base"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-habitat-dome-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.85418,
+          0,
+          -0.83819
+        ],
+        "max": [
+          0.85418,
+          0.99344,
+          0.83819
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-meteorite",
+      "tags": [
+        "meteorite"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-meteorite-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50879,
+          0,
+          -0.5143
+        ],
+        "max": [
+          0.50879,
+          1.00001,
+          0.5143
+        ]
+      }
     }
   ]
 }

@@ -976,3 +976,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-fallen-log-bridge` | fallen log bridge, log bridge | 4555 / 2249 |
 | `gen3d-hunter-cabin` | hunter cabin | 3892 / 2807 |
 | `gen3d-toadstool-house` | toadstool house | 4453 / 2144 |
+| `gen3d-sea-urchin` | sea urchin | 4258 / 2050 |
+| `gen3d-habitat-dome` | habitat dome, moon base | 4071 / 2027 |
+| `gen3d-meteorite` | meteorite | 4568 / 2258 |

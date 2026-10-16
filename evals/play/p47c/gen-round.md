@@ -39,3 +39,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 33 (opakování) | sparse-setting scenery | 10 | 5 | 2/5 | 2 | – | 96/101 | junk tower, bubble vent | – |
 | 34 | scenery | 10 | 8 | 8/8 | 7 | – | 96/101 | coconut tree, cannonball pile, rope coil, plank bridge, weeping angel statue, cemetery bench, dock piling | – |
 | 35 | scenery | 10 | 7 | 6/7 | 6 | – | 96/101 | fishing net, log pile, forest mushroom ring, fallen log bridge, hunter cabin, toadstool house | – |
+| 36 (opakování) | scenery | 10 | 3 | 3/3 | 3 | – | 96/101 | sea urchin, habitat dome, meteorite | – |

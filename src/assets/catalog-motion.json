@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "0627fcb716a9f319fbfa441ee1a169e5059e33cd4eb79c44154ee3131e7541e1",
+ "catalogHash": "934b3eabb56f6d7789438a014072ea5c4aaf35cfbdaf50c3f26f1536d0b21fe0",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1751,6 +1751,9 @@
   "gen3d-forest-mushroom-ring": {"class":"prop"},
   "gen3d-fallen-log-bridge": {"class":"prop"},
   "gen3d-hunter-cabin": {"class":"prop"},
-  "gen3d-toadstool-house": {"class":"prop"}
+  "gen3d-toadstool-house": {"class":"prop"},
+  "gen3d-sea-urchin": {"class":"prop"},
+  "gen3d-habitat-dome": {"class":"prop"},
+  "gen3d-meteorite": {"class":"prop"}
  }
 }
