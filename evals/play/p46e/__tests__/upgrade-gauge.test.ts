@@ -8,7 +8,7 @@ import { type Played, type UpgradeRow, addsOf, keptOf, upgradeRow, upgradeSummar
 
 /** Běžec P46B: pravidla, logika a boss finále. */
 const RUNNER = "temple run but you're a banana running from a monkey";
-/** Sběr v aréně: bez bosse. */
+/** Sběr v aréně: jako uložená `genre.v3` bez bosse (od `genre.v4`, P47A T3, ho rychlá verze má). */
 const ARENA = 'Collect five acorns in a moonlit forest';
 
 function playedOf(spec: GameSpecV1): Played {
@@ -37,7 +37,8 @@ describe('the upgrade gauge', () => {
   });
 
   it('a boss the quick version did not have is an addition; the same boss is not', () => {
-    const arena = draftGameSpecWithMeta(ARENA, 1).spec;
+    const drafted = draftGameSpecWithMeta(ARENA, 1).spec;
+    const arena: GameSpecV1 = { ...drafted, genre: { ...drafted.genre!, compilerVersion: 'genre.v3' } };
     expect(addsOf(playedOf(arena), playedOf(quick))).toContain('boss');
     expect(addsOf(playedOf(quick), playedOf(quick))).toEqual([]);
   });
