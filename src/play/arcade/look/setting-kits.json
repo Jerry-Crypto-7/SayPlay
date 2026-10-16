@@ -79,6 +79,10 @@
           "height": 0.9
         },
         {
+          "id": "gen3d-sea-urchin",
+          "height": 1.2
+        },
+        {
           "id": "gen3d-pearl-oyster",
           "height": 0.6
         },
@@ -104,6 +108,10 @@
         {
           "id": "gen3d-giant-squid",
           "height": 2.5
+        },
+        {
+          "id": "gen3d-bubble-vent",
+          "height": 1
         }
       ]
     },
@@ -421,6 +429,10 @@
         {
           "id": "gen3d-water-wheel",
           "height": 3
+        },
+        {
+          "id": "gen3d-driftwood-log",
+          "height": 0.6
         }
       ]
     },
@@ -689,6 +701,10 @@
         {
           "id": "gen3d-outhouse",
           "height": 2.4
+        },
+        {
+          "id": "gen3d-log-pile",
+          "height": 1
         }
       ]
     },
@@ -773,6 +789,10 @@
         {
           "id": "gen3d-fuel-can",
           "height": 0.6
+        },
+        {
+          "id": "gen3d-tire-pile",
+          "height": 1
         }
       ]
     },
@@ -953,6 +973,10 @@
         {
           "id": "gen3d-wooden-rope-bridge",
           "height": 2.4
+        },
+        {
+          "id": "gen3d-jungle-vine-bridge",
+          "height": 2
         }
       ]
     },
@@ -1355,6 +1379,10 @@
         {
           "id": "gen3d-snowy-stump",
           "height": 0.7
+        },
+        {
+          "id": "gen3d-snow-lantern",
+          "height": 1.4
         }
       ]
     },
@@ -1443,6 +1471,10 @@
         {
           "id": "gen3d-hammock",
           "height": 1.2
+        },
+        {
+          "id": "gen3d-plank-bridge",
+          "height": 1.5
         }
       ]
     },
@@ -1581,6 +1613,10 @@
         {
           "id": "gen3d-street-lamp",
           "height": 4
+        },
+        {
+          "id": "gen3d-ticket-machine",
+          "height": 1.6
         }
       ]
     },
@@ -1677,6 +1713,10 @@
         {
           "id": "gen3d-acorn",
           "height": 0.5
+        },
+        {
+          "id": "gen3d-fallen-log-bridge",
+          "height": 1
         }
       ]
     },
@@ -2075,6 +2115,14 @@
         {
           "id": "gen3d-giant-toadstool",
           "height": 2
+        },
+        {
+          "id": "gen3d-forest-mushroom-ring",
+          "height": 0.4
+        },
+        {
+          "id": "gen3d-toadstool-house",
+          "height": 2
         }
       ]
     },
@@ -2094,6 +2142,10 @@
         {
           "id": "gen3d-snowman-with-hat",
           "height": 1.7
+        },
+        {
+          "id": "gen3d-polar-flag",
+          "height": 2.5
         }
       ]
     },
@@ -2132,6 +2184,10 @@
         {
           "id": "gen3d-message-in-a-bottle",
           "height": 0.6
+        },
+        {
+          "id": "gen3d-cannonball-pile",
+          "height": 0.7
         }
       ]
     },
@@ -2147,6 +2203,18 @@
         {
           "id": "gen3d-rusty-fridge",
           "height": 1.8
+        },
+        {
+          "id": "gen3d-tire-pile",
+          "height": 1
+        },
+        {
+          "id": "gen3d-engine-block",
+          "height": 0.9
+        },
+        {
+          "id": "gen3d-junk-tower",
+          "height": 3
         }
       ]
     },
@@ -2162,6 +2230,14 @@
         {
           "id": "gen3d-circus-cannon",
           "height": 2
+        },
+        {
+          "id": "gen3d-unicycle",
+          "height": 1.4
+        },
+        {
+          "id": "gen3d-circus-drum",
+          "height": 0.8
         }
       ]
     },
@@ -2172,6 +2248,14 @@
       "props": [
         {
           "id": "gen3d-coral-covered-archway",
+          "height": 3
+        },
+        {
+          "id": "gen3d-sunken-bell",
+          "height": 1.2
+        },
+        {
+          "id": "gen3d-sunken-lamp-post",
           "height": 3
         }
       ]

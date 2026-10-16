@@ -34,6 +34,17 @@ describe('judge-sheet (P37D T2)', () => {
     expect(matches('conveyor belt', 'leather strap')).toBe(false);
   });
 
+  it('takes the same head only when the other words just describe the look (P47C)', () => {
+    // P46I: Codex pustil tyhle přes poslední slovo, vlastník je 15. 10. vyřadil.
+    expect(matches('jaguar statue', 'dog statue')).toBe(false);
+    expect(matches('taro plant', 'monstera plant')).toBe(false);
+    expect(matches('claw machine', 'vending machine')).toBe(false);
+    expect(matches('cypress tree', 'pine tree')).toBe(false);
+    expect(matches('snowy bench', 'wooden bench')).toBe(true);
+    expect(matches('jaguar statue', 'statue')).toBe(true);
+    expect(matches('sunken crate', 'old wooden crate')).toBe(true);
+  });
+
   it('accepts a name that is only among the alternatives as top3', () => {
     expect(verdictOf('frog', answer('frog'))).toBe('top1');
     expect(verdictOf('frog', answer('toad', ['frog']))).toBe('top3');

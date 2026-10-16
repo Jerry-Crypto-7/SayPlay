@@ -1,0 +1,2252 @@
+{
+ "about": "P47C T1: the overnight list in queue order. group = p46i-* (P46I leftovers), goal (finale/goal objects for arena-collect, quest, duel, throw), collect (per-look collectibles), p46j-redo / remake (sharper feature in ops/gen3d/features.toml), sparse-setting, scenery. look = base look the model is meant for (* = any).",
+ "nouns": [
+  {
+   "noun": "mystery box",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "question block",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "golden ring",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "silver coin",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "crystal shard",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "shield orb",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "golden horseshoe",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "key card",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "golden ticket",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "energy capsule",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "golden bell",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "bonus token",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "clover coin",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-pickup"
+  },
+  {
+   "noun": "laser gate",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "rolling log",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "falling rock",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "fire pit",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "swinging log",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "spike roller",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "electric orb",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "toxic barrel",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "steam pipe",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "crumbling block",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "pinball bumper",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "electric pylon",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "fire wall",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "spike log",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "rotating hammer",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "spinning bar",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "spring trap",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "tripwire",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "pressure plate",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-obstacle"
+  },
+  {
+   "noun": "haunted tree",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "wooden swing",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "steel beam",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "channel marker",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "lava geyser",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "cave bridge",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "plasma generator",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "armor rack",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "broken gravestone",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "ash tree",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "rope pulley",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "moon base antenna",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "tournament tent",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "bone pile",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "volcanic bomb",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "jousting lance",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "tournament banner",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-scenery"
+  },
+  {
+   "noun": "fir wreath",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "beach shower",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "sunken crate",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "strangler vine",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "sea lily",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "pizzeria sign",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "pool float",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "ginger flower",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "wanted poster",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "ice slide",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "hidden temple door",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "frozen signpost",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "tide pool rock",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "vine curtain",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "boardwalk",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "ore vein",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "castle catapult",
+   "class": "prop",
+   "flat": false,
+   "group": "p46i-retry",
+   "retry": true
+  },
+  {
+   "noun": "victory podium",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "star trophy",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "champion belt",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "finish banner",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "laurel wreath",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "blue ribbon",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "boxing ring",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "sumo ring",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "gong",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "arena gate",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "fencing mask",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "bullseye target",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "carnival target",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "milk bottle pyramid",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "tin can stack",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "carnival booth",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "prize wheel",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "confetti cannon",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "orb pedestal",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "crystal pedestal",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "quest board",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "map piece",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "magic fountain",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "wishing well",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "*"
+  },
+  {
+   "noun": "sword in the stone",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "castle"
+  },
+  {
+   "noun": "holy grail",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "castle"
+  },
+  {
+   "noun": "ice throne",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "snow"
+  },
+  {
+   "noun": "frozen trophy",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "snow"
+  },
+  {
+   "noun": "ice crown",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "snow"
+  },
+  {
+   "noun": "fire crown",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "volcano"
+  },
+  {
+   "noun": "warp portal",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "space"
+  },
+  {
+   "noun": "haunted crown",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "graveyard"
+  },
+  {
+   "noun": "sunken throne",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "underwater"
+  },
+  {
+   "noun": "trident statue",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "underwater"
+  },
+  {
+   "noun": "enchanted stump",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "forest"
+  },
+  {
+   "noun": "golden acorn",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "forest"
+  },
+  {
+   "noun": "golden gear",
+   "class": "prop",
+   "flat": false,
+   "group": "goal",
+   "look": "factory"
+  },
+  {
+   "noun": "hot cocoa mug",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "snow"
+  },
+  {
+   "noun": "subway token",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "city"
+  },
+  {
+   "noun": "candy bar",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "supermarket"
+  },
+  {
+   "noun": "sand dollar",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "underwater"
+  },
+  {
+   "noun": "candy corn",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "graveyard"
+  },
+  {
+   "noun": "gem ring",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "castle"
+  },
+  {
+   "noun": "gift card",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "mall"
+  },
+  {
+   "noun": "remote control",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "living_room"
+  },
+  {
+   "noun": "berry basket",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "forest"
+  },
+  {
+   "noun": "scarab amulet",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "desert"
+  },
+  {
+   "noun": "wheat sheaf",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "meadow"
+  },
+  {
+   "noun": "bolt",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "factory"
+  },
+  {
+   "noun": "energy crystal",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "space"
+  },
+  {
+   "noun": "banana bunch",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "jungle"
+  },
+  {
+   "noun": "amethyst",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "cave"
+  },
+  {
+   "noun": "obsidian shard",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "volcano"
+  },
+  {
+   "noun": "treasure sack",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "beach"
+  },
+  {
+   "noun": "sleigh bell",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "snow"
+  },
+  {
+   "noun": "newspaper",
+   "class": "prop",
+   "flat": true,
+   "group": "collect",
+   "look": "city"
+  },
+  {
+   "noun": "cheese wedge",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "supermarket"
+  },
+  {
+   "noun": "gold doubloon",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "underwater"
+  },
+  {
+   "noun": "skull token",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "graveyard"
+  },
+  {
+   "noun": "enchanted sword",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "castle"
+  },
+  {
+   "noun": "perfume bottle",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "mall"
+  },
+  {
+   "noun": "toy block",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "living_room"
+  },
+  {
+   "noun": "honeycomb",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "forest"
+  },
+  {
+   "noun": "ankh",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "desert"
+  },
+  {
+   "noun": "cake slice",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "meadow"
+  },
+  {
+   "noun": "microchip",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "factory"
+  },
+  {
+   "noun": "space helmet",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "space"
+  },
+  {
+   "noun": "tribal mask",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "jungle"
+  },
+  {
+   "noun": "topaz",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "cave"
+  },
+  {
+   "noun": "fire gem",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "volcano"
+  },
+  {
+   "noun": "frozen gem",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "snow"
+  },
+  {
+   "noun": "arcade token",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "city"
+  },
+  {
+   "noun": "grocery bag",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "supermarket"
+  },
+  {
+   "noun": "giant pearl",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "underwater"
+  },
+  {
+   "noun": "soul orb",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "graveyard"
+  },
+  {
+   "noun": "jester hat",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "castle"
+  },
+  {
+   "noun": "gift bag",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "mall"
+  },
+  {
+   "noun": "present box",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "living_room"
+  },
+  {
+   "noun": "firefly jar",
+   "class": "flyer",
+   "flat": false,
+   "group": "collect",
+   "look": "forest"
+  },
+  {
+   "noun": "cactus fruit",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "desert"
+  },
+  {
+   "noun": "cotton candy",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "meadow"
+  },
+  {
+   "noun": "oil can",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "factory"
+  },
+  {
+   "noun": "power core",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "space"
+  },
+  {
+   "noun": "jade skull",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "jungle"
+  },
+  {
+   "noun": "sapphire",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "cave"
+  },
+  {
+   "noun": "magma crystal",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "volcano"
+  },
+  {
+   "noun": "ice key",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "snow"
+  },
+  {
+   "noun": "coupon",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "supermarket"
+  },
+  {
+   "noun": "coral crown",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "underwater"
+  },
+  {
+   "noun": "bone key",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "graveyard"
+  },
+  {
+   "noun": "vinyl record",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "mall"
+  },
+  {
+   "noun": "yo yo",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "living_room"
+  },
+  {
+   "noun": "acorn cap",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "forest"
+  },
+  {
+   "noun": "fossil",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "desert"
+  },
+  {
+   "noun": "candy apple",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "meadow"
+  },
+  {
+   "noun": "fuel cell",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "factory"
+  },
+  {
+   "noun": "space rock",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "space"
+  },
+  {
+   "noun": "crystal heart",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "cave"
+  },
+  {
+   "noun": "snowflake token",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "snow"
+  },
+  {
+   "noun": "watermelon slice",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "supermarket"
+  },
+  {
+   "noun": "shell necklace",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "underwater"
+  },
+  {
+   "noun": "pumpkin lantern",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "graveyard"
+  },
+  {
+   "noun": "spinning top",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "living_room"
+  },
+  {
+   "noun": "maple leaf",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "forest"
+  },
+  {
+   "noun": "golden scarab",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "desert"
+  },
+  {
+   "noun": "macaron",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "meadow"
+  },
+  {
+   "noun": "star chart",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "space"
+  },
+  {
+   "noun": "jam jar",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "supermarket"
+  },
+  {
+   "noun": "canopic jar",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "desert"
+  },
+  {
+   "noun": "egg tray",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "supermarket"
+  },
+  {
+   "noun": "jelly bean jar",
+   "class": "prop",
+   "flat": false,
+   "group": "collect",
+   "look": "supermarket"
+  },
+  {
+   "noun": "jaguar statue",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "taro plant",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "sunscreen bottle",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "claw machine",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "volleyball net",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "jade statue",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "avalanche fence",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "city map board",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "cypress tree",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "rain barrel",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "manhole cover",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "canned soup",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "cooling tower",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "lava lamp",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "lunar crater",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "electric generator",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "hitching post",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "coral pillar",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "stele",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "snow shovel",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "storefront",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "ticket machine",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "coyote",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "puffin",
+   "class": "prop",
+   "flat": false,
+   "group": "p46j-redo"
+  },
+  {
+   "noun": "rafflesia",
+   "class": "prop",
+   "flat": false,
+   "group": "remake"
+  },
+  {
+   "noun": "desert shrub",
+   "class": "prop",
+   "flat": false,
+   "group": "remake"
+  },
+  {
+   "noun": "tire pile",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "factory",
+   "settings": [
+    "junkyard garage",
+    "garage"
+   ]
+  },
+  {
+   "noun": "engine block",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "factory",
+   "settings": [
+    "junkyard garage"
+   ]
+  },
+  {
+   "noun": "hubcap",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "factory",
+   "settings": [
+    "junkyard garage"
+   ]
+  },
+  {
+   "noun": "junk tower",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "factory",
+   "settings": [
+    "junkyard garage"
+   ]
+  },
+  {
+   "noun": "trapeze",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "meadow",
+   "settings": [
+    "tightrope"
+   ]
+  },
+  {
+   "noun": "safety net",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "meadow",
+   "settings": [
+    "tightrope"
+   ]
+  },
+  {
+   "noun": "circus drum",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "meadow",
+   "settings": [
+    "tightrope"
+   ]
+  },
+  {
+   "noun": "sunken pillar",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "underwater",
+   "settings": [
+    "sunken city"
+   ]
+  },
+  {
+   "noun": "sunken arch",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "underwater",
+   "settings": [
+    "sunken city"
+   ]
+  },
+  {
+   "noun": "sunken lamp post",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "underwater",
+   "settings": [
+    "sunken city"
+   ]
+  },
+  {
+   "noun": "shipwreck hull",
+   "class": "prop",
+   "flat": false,
+   "group": "sparse-setting",
+   "look": "underwater",
+   "settings": [
+    "sunken city",
+    "deep sea"
+   ]
+  },
+  {
+   "noun": "kelp forest",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "underwater",
+   "settings": [
+    "underwater"
+   ]
+  },
+  {
+   "noun": "giant shell",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "underwater",
+   "settings": [
+    "underwater"
+   ]
+  },
+  {
+   "noun": "bubble vent",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "underwater",
+   "settings": [
+    "deep sea"
+   ]
+  },
+  {
+   "noun": "sunken anchor",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "underwater"
+  },
+  {
+   "noun": "sea urchin",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "underwater"
+  },
+  {
+   "noun": "coral reef rock",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "underwater"
+  },
+  {
+   "noun": "treasure chest pile",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "beach",
+   "settings": [
+    "treasure island"
+   ]
+  },
+  {
+   "noun": "crater rock",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "space"
+  },
+  {
+   "noun": "space antenna",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "space"
+  },
+  {
+   "noun": "habitat dome",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "space"
+  },
+  {
+   "noun": "radar tower",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "space"
+  },
+  {
+   "noun": "meteorite",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "space"
+  },
+  {
+   "noun": "space crate",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "space"
+  },
+  {
+   "noun": "crystal spire",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "space"
+  },
+  {
+   "noun": "cave mushroom",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "cave"
+  },
+  {
+   "noun": "cave lantern",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "cave"
+  },
+  {
+   "noun": "cave crystal cluster",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "cave"
+  },
+  {
+   "noun": "dripping rock",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "cave"
+  },
+  {
+   "noun": "beach towel",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "beach"
+  },
+  {
+   "noun": "rock pool",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "beach"
+  },
+  {
+   "noun": "beach bonfire",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "beach"
+  },
+  {
+   "noun": "driftwood log",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "beach",
+   "settings": [
+    "rocky river"
+   ]
+  },
+  {
+   "noun": "pail and shovel",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "beach"
+  },
+  {
+   "noun": "coconut tree",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "beach"
+  },
+  {
+   "noun": "cannonball pile",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "beach",
+   "settings": [
+    "treasure island"
+   ]
+  },
+  {
+   "noun": "rope coil",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "ocean"
+  },
+  {
+   "noun": "plank bridge",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "jungle",
+   "settings": [
+    "treetop"
+   ]
+  },
+  {
+   "noun": "weeping angel statue",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "graveyard"
+  },
+  {
+   "noun": "cemetery bench",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "graveyard"
+  },
+  {
+   "noun": "coffin lid",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "graveyard"
+  },
+  {
+   "noun": "haunted lantern",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "graveyard"
+  },
+  {
+   "noun": "dock piling",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "ocean"
+  },
+  {
+   "noun": "fishing net",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "ocean"
+  },
+  {
+   "noun": "sea wall",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "ocean"
+  },
+  {
+   "noun": "log pile",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "forest",
+   "settings": [
+    "forest hut"
+   ]
+  },
+  {
+   "noun": "berry bush",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "forest",
+   "settings": [
+    "autumn forest"
+   ]
+  },
+  {
+   "noun": "forest mushroom ring",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "forest",
+   "settings": [
+    "mushroom hill"
+   ]
+  },
+  {
+   "noun": "fallen log bridge",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "forest",
+   "settings": [
+    "autumn forest"
+   ]
+  },
+  {
+   "noun": "forest lantern",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "forest"
+  },
+  {
+   "noun": "wooden totem",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "forest"
+  },
+  {
+   "noun": "hunter cabin",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "forest"
+  },
+  {
+   "noun": "toadstool house",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "forest",
+   "settings": [
+    "mushroom hill"
+   ]
+  },
+  {
+   "noun": "forest well",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "forest"
+  },
+  {
+   "noun": "desert skull",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "desert"
+  },
+  {
+   "noun": "adobe hut",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "desert"
+  },
+  {
+   "noun": "clay well",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "desert"
+  },
+  {
+   "noun": "sand dune",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "desert"
+  },
+  {
+   "noun": "desert lantern",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "desert"
+  },
+  {
+   "noun": "clay jar",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "desert"
+  },
+  {
+   "noun": "hieroglyph tablet",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "desert"
+  },
+  {
+   "noun": "sphinx statue",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "desert"
+  },
+  {
+   "noun": "bamboo grove",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "jungle",
+   "settings": [
+    "jungle river"
+   ]
+  },
+  {
+   "noun": "jungle vine bridge",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "jungle",
+   "settings": [
+    "jungle river"
+   ]
+  },
+  {
+   "noun": "tiki totem",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "jungle"
+  },
+  {
+   "noun": "carved stone head",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "jungle"
+  },
+  {
+   "noun": "ice sculpture",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow"
+  },
+  {
+   "noun": "ski rack",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow"
+  },
+  {
+   "noun": "snow lantern",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow",
+   "settings": [
+    "snowy forest"
+   ]
+  },
+  {
+   "noun": "snow drift",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow"
+  },
+  {
+   "noun": "frozen barrel",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow"
+  },
+  {
+   "noun": "ice pillar",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow",
+   "settings": [
+    "snow fort"
+   ]
+  },
+  {
+   "noun": "polar flag",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow",
+   "settings": [
+    "snow fort"
+   ]
+  },
+  {
+   "noun": "ice cave entrance",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow"
+  },
+  {
+   "noun": "frozen chest",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow"
+  },
+  {
+   "noun": "snow cabin",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow"
+  },
+  {
+   "noun": "ski jump",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "snow"
+  },
+  {
+   "noun": "subway bench",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "city"
+  },
+  {
+   "noun": "construction cone",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "city"
+  },
+  {
+   "noun": "scaffold",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "city"
+  },
+  {
+   "noun": "air conditioner unit",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "city",
+   "settings": [
+    "school rooftop"
+   ]
+  },
+  {
+   "noun": "city fountain",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "city"
+  },
+  {
+   "noun": "neon arcade",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "city"
+  },
+  {
+   "noun": "newspaper box",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "city"
+  },
+  {
+   "noun": "water tower",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "factory",
+   "settings": [
+    "school rooftop"
+   ]
+  },
+  {
+   "noun": "price sign",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "supermarket"
+  },
+  {
+   "noun": "milk crate",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "supermarket"
+  },
+  {
+   "noun": "checkout scanner",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "supermarket"
+  },
+  {
+   "noun": "cereal aisle",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "supermarket"
+  },
+  {
+   "noun": "conveyor",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "factory"
+  },
+  {
+   "noun": "steam boiler",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "factory"
+  },
+  {
+   "noun": "crate stack",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "factory"
+  },
+  {
+   "noun": "welding station",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "factory"
+  },
+  {
+   "noun": "kiosk",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "mall"
+  },
+  {
+   "noun": "pinball machine",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "mall"
+  },
+  {
+   "noun": "boombox",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "mall"
+  },
+  {
+   "noun": "potted fern",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "living_room",
+   "settings": [
+    "living room"
+   ]
+  },
+  {
+   "noun": "rug",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "living_room",
+   "settings": [
+    "living room"
+   ]
+  },
+  {
+   "noun": "weapon rack",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "castle",
+   "settings": [
+    "forge"
+   ]
+  },
+  {
+   "noun": "banner pole",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "castle",
+   "settings": [
+    "castle ruin"
+   ]
+  },
+  {
+   "noun": "torch sconce",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "castle",
+   "settings": [
+    "crooked tower"
+   ]
+  },
+  {
+   "noun": "round table",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "castle"
+  },
+  {
+   "noun": "castle flag",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "castle"
+  },
+  {
+   "noun": "royal carriage",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "castle"
+  },
+  {
+   "noun": "court fountain",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "castle"
+  },
+  {
+   "noun": "volcano vent",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "volcano"
+  },
+  {
+   "noun": "charred tree",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "volcano"
+  },
+  {
+   "noun": "ash pile",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "volcano"
+  },
+  {
+   "noun": "obsidian rock",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "volcano"
+  },
+  {
+   "noun": "lemonade stand",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "meadow"
+  },
+  {
+   "noun": "swing set",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "meadow",
+   "settings": [
+    "lawn"
+   ]
+  },
+  {
+   "noun": "see saw",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "meadow"
+  },
+  {
+   "noun": "milk churn",
+   "class": "prop",
+   "flat": false,
+   "group": "scenery",
+   "look": "meadow"
+  }
+ ]
+}

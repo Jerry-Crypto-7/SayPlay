@@ -43,7 +43,7 @@ const { lookFor } = await import('../../src/play/arcade/look/index.ts');
 
 export const OUT = 'src/play/arcade/look/setting-kits.json';
 /** Vstupy v pořadí: P45G a pozdější kola; pořadí prostředí i rekvizit drží první výskyt. */
-export const KIT_NOUNS = ['evals/play/p45g/kit-nouns.json', 'evals/play/p46i/kit-nouns.json'];
+export const KIT_NOUNS = ['evals/play/p45g/kit-nouns.json', 'evals/play/p46i/kit-nouns.json', 'evals/play/p47c/kit-nouns.json'];
 
 /** Výška kulisy v metrech podle jména z `kit-nouns.json`. */
 const HEIGHTS = {

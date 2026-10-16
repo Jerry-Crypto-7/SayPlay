@@ -1,0 +1,1294 @@
+{
+ "about": "P47C: evals/play/p46i/aliases.json plus synonyms of the P47C names (evals/play/p47c/round-nouns.json) for scripts/p37d/judge-sheet.mjs --aliases; every P47C synonym is free of manifest class words.",
+ "bug": [
+  "beetle",
+  "insect"
+ ],
+ "investor": [
+  "businessman",
+  "banker"
+ ],
+ "pin": [
+  "pushpin",
+  "thumbtack"
+ ],
+ "police officer": [
+  "policeman",
+  "cop"
+ ],
+ "spellbook": [
+  "grimoire"
+ ],
+ "hippo": [
+  "hippopotamus"
+ ],
+ "rhino": [
+  "rhinoceros"
+ ],
+ "seagull": [
+  "gull"
+ ],
+ "shrimp": [
+  "prawn"
+ ],
+ "kraken": [
+  "giant squid"
+ ],
+ "demon": [
+  "devil"
+ ],
+ "caveman": [
+  "neanderthal"
+ ],
+ "spy": [
+  "secret agent"
+ ],
+ "mailman": [
+  "postman"
+ ],
+ "cashier": [
+  "clerk"
+ ],
+ "athlete": [
+  "runner",
+  "sprinter"
+ ],
+ "sailor": [
+  "seaman"
+ ],
+ "fisherman": [
+  "angler"
+ ],
+ "fire truck": [
+  "firetruck"
+ ],
+ "excavator": [
+  "digger",
+  "backhoe"
+ ],
+ "roller skate": [
+  "rollerskate"
+ ],
+ "wagon": [
+  "cart"
+ ],
+ "noodle": [
+  "ramen"
+ ],
+ "spaghetti": [
+  "pasta"
+ ],
+ "pie": [
+  "tart"
+ ],
+ "muffin": [
+  "cupcake"
+ ],
+ "tea": [
+  "teacup",
+  "teapot"
+ ],
+ "frying pan": [
+  "skillet"
+ ],
+ "headphone": [
+  "headset"
+ ],
+ "suitcase": [
+  "luggage"
+ ],
+ "sunglass": [
+  "shades"
+ ],
+ "shoe": [
+  "sneaker"
+ ],
+ "glove": [
+  "mitten"
+ ],
+ "amulet": [
+  "pendant",
+  "talisman"
+ ],
+ "wrench": [
+  "spanner"
+ ],
+ "street lamp": [
+  "streetlight",
+  "lamppost"
+ ],
+ "sign": [
+  "signpost"
+ ],
+ "seesaw": [
+  "teeter totter"
+ ],
+ "seashell": [
+  "shell",
+  "conch"
+ ],
+ "coffin": [
+  "casket"
+ ],
+ "ornament": [
+  "bauble"
+ ],
+ "santa": [
+  "santa claus"
+ ],
+ "raindrop": [
+  "droplet"
+ ],
+ "comet": [
+  "meteor"
+ ],
+ "anthill": [
+  "ant mound"
+ ],
+ "flower pot": [
+  "flowerpot"
+ ],
+ "dynamite": [
+  "tnt"
+ ],
+ "lamp post": [
+  "streetlight",
+  "lamppost"
+ ],
+ "game controller": [
+  "gamepad"
+ ],
+ "bow tie": [
+  "bowtie"
+ ],
+ "hair dryer": [
+  "hairdryer",
+  "blow dryer"
+ ],
+ "space suit": [
+  "spacesuit"
+ ],
+ "moon rover": [
+  "lunar rover"
+ ],
+ "ray gun": [
+  "blaster"
+ ],
+ "fuel can": [
+  "jerrycan"
+ ],
+ "lawn mower": [
+  "lawnmower"
+ ],
+ "doghouse": [
+  "kennel"
+ ],
+ "fish tank": [
+  "aquarium"
+ ],
+ "chicken leg": [
+  "drumstick"
+ ],
+ "t rex": [
+  "tyrannosaurus",
+  "tyrannosaurus rex"
+ ],
+ "bigfoot": [
+  "sasquatch"
+ ],
+ "angry bull": [
+  "bull"
+ ],
+ "wild boar": [
+  "boar"
+ ],
+ "steamroller": [
+  "road roller",
+  "steam roller"
+ ],
+ "locomotive": [
+  "steam locomotive",
+  "steam engine"
+ ],
+ "blimp": [
+  "zeppelin",
+  "dirigible"
+ ],
+ "airship": [
+  "steampunk airship"
+ ],
+ "gyrocopter": [
+  "autogyro",
+  "gyroplane"
+ ],
+ "flying carpet": [
+  "magic carpet"
+ ],
+ "storm cloud": [
+  "thundercloud",
+  "thunder cloud"
+ ],
+ "pterodactyl": [
+  "pteranodon",
+  "pterosaur"
+ ],
+ "sorcerer": [
+  "warlock",
+  "sorceress"
+ ],
+ "grim reaper": [
+  "reaper"
+ ],
+ "cement mixer": [
+  "concrete mixer"
+ ],
+ "combine harvester": [
+  "harvester"
+ ],
+ "shuriken": [
+  "throwing star"
+ ],
+ "nunchaku": [
+  "nunchucks"
+ ],
+ "laser gun": [
+  "laser pistol"
+ ],
+ "spiked club": [
+  "club"
+ ],
+ "money bundle": [
+  "cash",
+  "money stack",
+  "stack of money"
+ ],
+ "gold bar": [
+  "gold ingot",
+  "gold bullion"
+ ],
+ "treasure pile": [
+  "gold hoard",
+  "treasure hoard",
+  "hoard"
+ ],
+ "loot sack": [
+  "loot bag"
+ ],
+ "bandit": [
+  "outlaw"
+ ],
+ "praying mantis": [
+  "mantis"
+ ],
+ "possum": [
+  "opossum"
+ ],
+ "roadblock": [
+  "road barrier",
+  "barricade"
+ ],
+ "tnt crate": [
+  "dynamite crate",
+  "tnt box"
+ ],
+ "speed boots": [
+  "speed shoes"
+ ],
+ "winged shoes": [
+  "winged sandals"
+ ],
+ "torii gate": [
+  "shinto gate",
+  "torii"
+ ],
+ "stone lantern": [
+  "japanese stone lantern"
+ ],
+ "paper lantern": [
+  "chinese lantern"
+ ],
+ "bonsai tree": [
+  "bonsai"
+ ],
+ "wine barrel": [
+  "wine cask",
+  "cask"
+ ],
+ "giant tooth": [
+  "tooth",
+  "molar"
+ ],
+ "basketball hoop": [
+  "basketball net",
+  "basketball goal"
+ ],
+ "rain barrel": [
+  "water butt",
+  "water barrel"
+ ],
+ "outhouse": [
+  "privy",
+  "outdoor toilet"
+ ],
+ "lily bouquet": [
+  "bouquet",
+  "flower bouquet"
+ ],
+ "space probe": [
+  "probe"
+ ],
+ "wooden fence": [
+  "rail fence"
+ ],
+ "wooden pergola": [
+  "pergola",
+  "arbor"
+ ],
+ "rope swing": [
+  "tree swing"
+ ],
+ "feeding trough": [
+  "trough",
+  "hay trough"
+ ],
+ "water lily": [
+  "lotus",
+  "lotus flower"
+ ],
+ "cypress tree": [
+  "bald cypress",
+  "swamp cypress"
+ ],
+ "mooring bollard": [
+  "dock bollard",
+  "mooring post"
+ ],
+ "smoldering stump": [
+  "burning stump",
+  "charred stump"
+ ],
+ "crooked lamppost": [
+  "bent lamppost"
+ ],
+ "eucalyptus tree": [
+  "gum tree",
+  "eucalyptus"
+ ],
+ "solar panel": [
+  "solar array"
+ ],
+ "ticket machine": [
+  "parking machine",
+  "pay station"
+ ],
+ "camping chair": [
+  "folding chair",
+  "camp chair"
+ ],
+ "leaf pile": [
+  "leaf heap"
+ ],
+ "date palm tree": [
+  "date palm"
+ ],
+ "wooden gate": [
+  "farm gate",
+  "field gate"
+ ],
+ "poppy flower": [
+  "poppy"
+ ],
+ "garden arch": [
+  "rose arch"
+ ],
+ "rose bush": [
+  "rosebush"
+ ],
+ "wooden stile": [
+  "stile"
+ ],
+ "telephone pole": [
+  "utility pole",
+  "power pole"
+ ],
+ "newspaper stand": [
+  "newspaper box",
+  "news box"
+ ],
+ "storefront": [
+  "shop front",
+  "shopfront"
+ ],
+ "neon sign": [
+  "open sign"
+ ],
+ "subway entrance": [
+  "metro entrance"
+ ],
+ "crosswalk sign": [
+  "pedestrian signal",
+  "walk signal"
+ ],
+ "atm machine": [
+  "atm",
+  "cash machine",
+  "cash dispenser"
+ ],
+ "pay phone": [
+  "payphone",
+  "public phone"
+ ],
+ "street bollard": [
+  "traffic bollard"
+ ],
+ "food kiosk": [
+  "snack kiosk",
+  "food stand"
+ ],
+ "flower box": [
+  "window box"
+ ],
+ "photo booth": [
+  "photobooth"
+ ],
+ "claw machine": [
+  "crane game",
+  "claw crane"
+ ],
+ "gumball machine": [
+  "gum machine"
+ ],
+ "chest freezer": [
+  "freezer",
+  "deep freezer"
+ ],
+ "canned soup": [
+  "soup can",
+  "tin can"
+ ],
+ "candy display": [
+  "candy stand"
+ ],
+ "deli scale": [
+  "weighing scale"
+ ],
+ "side table": [
+  "end table"
+ ],
+ "bean bag chair": [
+  "bean bag",
+  "beanbag"
+ ],
+ "coat rack": [
+  "coat stand",
+  "hat stand"
+ ],
+ "gramophone": [
+  "phonograph"
+ ],
+ "smokestack": [
+  "factory chimney",
+  "smoke stack"
+ ],
+ "gas cylinder": [
+  "gas bottle"
+ ],
+ "industrial fan": [
+  "wall fan"
+ ],
+ "chain hoist": [
+  "crane hook"
+ ],
+ "warning light": [
+  "beacon light",
+  "rotating beacon"
+ ],
+ "hazard sign": [
+  "warning sign"
+ ],
+ "transformer box": [
+  "electrical box",
+  "utility box"
+ ],
+ "pine cone": [
+  "pinecone"
+ ],
+ "rafflesia": [
+  "corpse flower"
+ ],
+ "jungle waterfall": [
+  "waterfall"
+ ],
+ "stele": [
+  "stone tablet",
+  "stela"
+ ],
+ "forest shrine": [
+  "wayside shrine"
+ ],
+ "clay pot": [
+  "terracotta pot"
+ ],
+ "adobe oven": [
+  "mud oven"
+ ],
+ "desert shrub": [
+  "sagebrush"
+ ],
+ "sand bucket": [
+  "beach bucket",
+  "sand pail"
+ ],
+ "tiki bar": [
+  "beach bar"
+ ],
+ "surf shack": [
+  "surf hut"
+ ],
+ "navigation buoy": [
+  "channel buoy",
+  "marker buoy"
+ ],
+ "oil rig": [
+  "oil platform"
+ ],
+ "floating dock": [
+  "pontoon"
+ ],
+ "harbor crane": [
+  "container crane",
+  "dock crane"
+ ],
+ "rocky islet": [
+  "islet",
+  "small island"
+ ],
+ "sea fan": [
+  "gorgonian"
+ ],
+ "coral arch": [
+  "coral reef"
+ ],
+ "frozen log": [
+  "snowy log"
+ ],
+ "obsidian spire": [
+  "obsidian"
+ ],
+ "steam vent": [
+  "fumarole"
+ ],
+ "sulfur crystal": [
+  "sulphur crystal"
+ ],
+ "glowing mushroom": [
+  "glowing fungus"
+ ],
+ "mine support beam": [
+  "mine timber"
+ ],
+ "crystal geode": [
+  "geode"
+ ],
+ "lunar crater": [
+  "crater",
+  "moon crater"
+ ],
+ "space station module": [
+  "space station"
+ ],
+ "airlock door": [
+  "airlock",
+  "hatch"
+ ],
+ "fuel silo": [
+  "silo"
+ ],
+ "battlement wall": [
+  "castle wall"
+ ],
+ "wooden barricade": [
+  "stake barricade"
+ ],
+ "stone gatehouse": [
+  "gatehouse"
+ ],
+ "cemetery gate": [
+  "graveyard gate"
+ ],
+ "iron fence": [
+  "wrought iron fence"
+ ],
+ "grave lantern": [
+  "cemetery lantern"
+ ],
+ "giant toadstool": [
+  "red toadstool"
+ ],
+ "scrap metal pile": [
+  "scrap heap",
+  "junk pile"
+ ],
+ "rusty fridge": [
+  "old fridge",
+  "rusty refrigerator"
+ ],
+ "sunken temple": [
+  "underwater temple"
+ ],
+ "coral covered archway": [
+  "coral archway"
+ ],
+ "standing stone": [
+  "menhir"
+ ],
+ "bramble bush": [
+  "blackberry bush",
+  "bramble"
+ ],
+ "chopping stump": [
+  "chopping block"
+ ],
+ "log bench": [
+  "log seat"
+ ],
+ "stone face carving": [
+  "stone face"
+ ],
+ "banana leaf hut": [
+  "leaf hut"
+ ],
+ "yucca plant": [
+  "yucca"
+ ],
+ "western saloon": [
+  "saloon"
+ ],
+ "old windpump": [
+  "windpump",
+  "wind pump"
+ ],
+ "stone cairn": [
+  "cairn"
+ ],
+ "mud brick wall": [
+  "adobe wall"
+ ],
+ "cinema marquee": [
+  "movie theater",
+  "cinema"
+ ],
+ "fire station": [
+  "firehouse"
+ ],
+ "coffee kiosk": [
+  "coffee stand"
+ ],
+ "parking garage": [
+  "parking deck"
+ ],
+ "ski chalet": [
+  "chalet"
+ ],
+ "snow cannon": [
+  "snow machine"
+ ],
+ "polar research hut": [
+  "research hut"
+ ],
+ "beach cabana": [
+  "cabana"
+ ],
+ "beach cooler": [
+  "cooler box"
+ ],
+ "flip flop": [
+  "sandal"
+ ],
+ "snorkel mask": [
+  "snorkel"
+ ],
+ "surf rack": [
+  "surfboard rack"
+ ],
+ "sunken bell": [
+  "bronze bell"
+ ],
+ "helm wheel": [
+  "steering wheel"
+ ],
+ "castle catapult": [
+  "trebuchet catapult"
+ ],
+ "jousting lance": [
+  "lance"
+ ],
+ "laser gate": [
+  "laser barrier"
+ ],
+ "fire pit": [
+  "firepit"
+ ],
+ "spike roller": [
+  "spiked roller"
+ ],
+ "toxic barrel": [
+  "toxic waste barrel"
+ ],
+ "mystery box": [
+  "lucky box"
+ ],
+ "question block": [
+  "question mark block"
+ ],
+ "key card": [
+  "keycard",
+  "access card"
+ ],
+ "shield orb": [
+  "shield bubble"
+ ],
+ "golden horseshoe": [
+  "lucky horseshoe"
+ ],
+ "see saw": [
+  "seesaw",
+  "teeter totter"
+ ],
+ "yo yo": [
+  "yoyo"
+ ],
+ "pail and shovel": [
+  "sand bucket",
+  "bucket and spade",
+  "sand pail"
+ ],
+ "coconut tree": [
+  "coconut palm",
+  "palm tree"
+ ],
+ "sumo ring": [
+  "sumo arena",
+  "dohyo",
+  "wrestling ring"
+ ],
+ "boxing ring": [
+  "wrestling ring"
+ ],
+ "bullseye target": [
+  "archery target"
+ ],
+ "carnival target": [
+  "shooting gallery target"
+ ],
+ "milk bottle pyramid": [
+  "bottle pyramid",
+  "milk bottles"
+ ],
+ "tin can stack": [
+  "can pyramid",
+  "tin cans"
+ ],
+ "victory podium": [
+  "winners podium"
+ ],
+ "star trophy": [],
+ "frozen trophy": [
+  "ice trophy"
+ ],
+ "champion belt": [
+  "championship belt",
+  "wrestling belt"
+ ],
+ "finish banner": [
+  "finish line",
+  "finish arch"
+ ],
+ "blue ribbon": [
+  "prize ribbon",
+  "rosette",
+  "award ribbon"
+ ],
+ "laurel wreath": [],
+ "prize wheel": [
+  "wheel of fortune",
+  "spinning wheel"
+ ],
+ "confetti cannon": [
+  "party popper",
+  "confetti popper"
+ ],
+ "warp portal": [
+  "stargate"
+ ],
+ "orb pedestal": [],
+ "crystal pedestal": [],
+ "quest board": [
+  "notice board",
+  "bulletin board",
+  "job board"
+ ],
+ "map piece": [
+  "treasure map",
+  "map fragment"
+ ],
+ "magic fountain": [],
+ "wishing well": [],
+ "sword in the stone": [
+  "sword in stone",
+  "excalibur"
+ ],
+ "holy grail": [
+  "grail"
+ ],
+ "ice throne": [],
+ "sunken throne": [],
+ "ice crown": [],
+ "fire crown": [],
+ "haunted crown": [],
+ "coral crown": [],
+ "golden acorn": [],
+ "golden gear": [],
+ "enchanted stump": [
+  "tree stump"
+ ],
+ "gong": [
+  "bronze gong"
+ ],
+ "arena gate": [
+  "portcullis"
+ ],
+ "fencing mask": [
+  "fencing helmet"
+ ],
+ "hot cocoa mug": [
+  "hot chocolate"
+ ],
+ "sleigh bell": [
+  "jingle bell"
+ ],
+ "frozen gem": [
+  "ice gem"
+ ],
+ "ice key": [],
+ "snowflake token": [
+  "snowflake coin"
+ ],
+ "subway token": [],
+ "arcade token": [],
+ "skull token": [],
+ "candy bar": [
+  "chocolate bar"
+ ],
+ "cheese wedge": [],
+ "grocery bag": [
+  "paper bag",
+  "shopping bag"
+ ],
+ "watermelon slice": [],
+ "jam jar": [
+  "jar of jam"
+ ],
+ "egg tray": [
+  "egg carton"
+ ],
+ "jelly bean jar": [
+  "candy jar",
+  "jelly beans"
+ ],
+ "sand dollar": [
+  "sea biscuit"
+ ],
+ "gold doubloon": [
+  "gold coin",
+  "doubloon"
+ ],
+ "giant pearl": [],
+ "shell necklace": [],
+ "candy corn": [],
+ "soul orb": [],
+ "bone key": [],
+ "pumpkin lantern": [
+  "jack o lantern"
+ ],
+ "gem ring": [
+  "ruby ring"
+ ],
+ "enchanted sword": [
+  "magic sword"
+ ],
+ "jester hat": [
+  "jester cap"
+ ],
+ "gift card": [
+  "credit card"
+ ],
+ "perfume bottle": [],
+ "gift bag": [
+  "shopping bag"
+ ],
+ "vinyl record": [],
+ "remote control": [
+  "tv remote"
+ ],
+ "toy block": [
+  "alphabet block",
+  "wooden block"
+ ],
+ "present box": [
+  "gift box"
+ ],
+ "spinning top": [],
+ "berry basket": [
+  "basket of berries"
+ ],
+ "honeycomb": [],
+ "firefly jar": [],
+ "acorn cap": [],
+ "maple leaf": [],
+ "scarab amulet": [],
+ "golden scarab": [],
+ "cactus fruit": [
+  "prickly pear"
+ ],
+ "fossil": [
+  "ammonite"
+ ],
+ "canopic jar": [],
+ "wheat sheaf": [
+  "wheat bundle"
+ ],
+ "cake slice": [
+  "slice of cake"
+ ],
+ "cotton candy": [
+  "candy floss"
+ ],
+ "candy apple": [
+  "toffee apple",
+  "caramel apple"
+ ],
+ "bolt": [
+  "nut and bolt"
+ ],
+ "microchip": [
+  "circuit board"
+ ],
+ "oil can": [
+  "oiler"
+ ],
+ "fuel cell": [
+  "energy cell"
+ ],
+ "energy crystal": [],
+ "space helmet": [],
+ "power core": [
+  "reactor core",
+  "energy core"
+ ],
+ "space rock": [],
+ "star chart": [
+  "star map"
+ ],
+ "banana bunch": [],
+ "tribal mask": [],
+ "jade skull": [],
+ "amethyst": [
+  "amethyst crystal"
+ ],
+ "topaz": [],
+ "crystal heart": [
+  "heart crystal"
+ ],
+ "obsidian shard": [],
+ "fire gem": [],
+ "magma crystal": [
+  "lava rock"
+ ],
+ "treasure sack": [
+  "sack of gold",
+  "money bag",
+  "coin bag"
+ ],
+ "trident statue": [],
+ "tire pile": [
+  "tire stack"
+ ],
+ "engine block": [],
+ "junk tower": [
+  "junk pile",
+  "scrap pile"
+ ],
+ "safety net": [],
+ "circus drum": [
+  "circus podium",
+  "circus pedestal"
+ ],
+ "sunken pillar": [],
+ "sunken arch": [],
+ "sunken lamp post": [
+  "lamp post",
+  "street lamp"
+ ],
+ "shipwreck hull": [],
+ "kelp forest": [],
+ "giant shell": [],
+ "bubble vent": [
+  "hydrothermal vent"
+ ],
+ "sunken anchor": [],
+ "coral reef rock": [
+  "coral reef"
+ ],
+ "treasure chest pile": [
+  "treasure chest"
+ ],
+ "crater rock": [
+  "moon rock"
+ ],
+ "space antenna": [
+  "radio mast"
+ ],
+ "habitat dome": [
+  "moon base"
+ ],
+ "radar tower": [
+  "radar dish"
+ ],
+ "space crate": [
+  "cargo crate"
+ ],
+ "crystal spire": [
+  "crystal tower"
+ ],
+ "cave mushroom": [
+  "glowing mushroom"
+ ],
+ "cave lantern": [
+  "oil lantern"
+ ],
+ "cave crystal cluster": [
+  "crystal cluster"
+ ],
+ "dripping rock": [
+  "stalactite",
+  "stalagmite"
+ ],
+ "beach towel": [],
+ "rock pool": [
+  "tide pool"
+ ],
+ "beach bonfire": [],
+ "driftwood log": [],
+ "cannonball pile": [
+  "cannonballs"
+ ],
+ "rope coil": [
+  "coiled rope"
+ ],
+ "plank bridge": [
+  "rope bridge"
+ ],
+ "weeping angel statue": [
+  "angel statue"
+ ],
+ "cemetery bench": [],
+ "coffin lid": [],
+ "haunted lantern": [],
+ "dock piling": [
+  "mooring posts"
+ ],
+ "fishing net": [],
+ "sea wall": [
+  "stone wall",
+  "harbor wall"
+ ],
+ "log pile": [
+  "woodpile"
+ ],
+ "berry bush": [],
+ "forest mushroom ring": [],
+ "fallen log bridge": [
+  "fallen log",
+  "log bridge"
+ ],
+ "forest lantern": [
+  "lamp post"
+ ],
+ "wooden totem": [
+  "totem pole"
+ ],
+ "hunter cabin": [
+  "log cabin"
+ ],
+ "toadstool house": [
+  "mushroom house"
+ ],
+ "forest well": [
+  "stone well"
+ ],
+ "desert skull": [],
+ "adobe hut": [
+  "adobe house",
+  "mud house"
+ ],
+ "clay well": [],
+ "sand dune": [],
+ "desert lantern": [
+  "moroccan lantern"
+ ],
+ "clay jar": [
+  "amphora"
+ ],
+ "hieroglyph tablet": [
+  "stone tablet"
+ ],
+ "sphinx statue": [
+  "sphinx"
+ ],
+ "bamboo grove": [],
+ "jungle vine bridge": [
+  "rope bridge"
+ ],
+ "tiki totem": [
+  "tiki statue"
+ ],
+ "carved stone head": [
+  "olmec head",
+  "stone head"
+ ],
+ "ski rack": [],
+ "snow lantern": [
+  "stone lantern"
+ ],
+ "snow drift": [
+  "snow pile",
+  "snow mound"
+ ],
+ "frozen barrel": [],
+ "ice pillar": [
+  "ice column",
+  "ice spike"
+ ],
+ "polar flag": [],
+ "ice cave entrance": [
+  "ice cave"
+ ],
+ "frozen chest": [
+  "ice block"
+ ],
+ "snow cabin": [
+  "chalet"
+ ],
+ "ski jump": [],
+ "subway bench": [],
+ "construction cone": [
+  "traffic cone"
+ ],
+ "scaffold": [
+  "scaffolding"
+ ],
+ "air conditioner unit": [
+  "air conditioner",
+  "ac unit"
+ ],
+ "city fountain": [],
+ "neon arcade": [
+  "neon sign"
+ ],
+ "newspaper box": [
+  "newspaper stand",
+  "news box"
+ ],
+ "water tower": [],
+ "price sign": [
+  "price tag"
+ ],
+ "milk crate": [],
+ "checkout scanner": [
+  "checkout counter",
+  "cash register"
+ ],
+ "cereal aisle": [
+  "cereal shelf"
+ ],
+ "conveyor": [
+  "conveyor belt"
+ ],
+ "steam boiler": [],
+ "crate stack": [
+  "stack of crates"
+ ],
+ "welding station": [
+  "welding table"
+ ],
+ "pinball machine": [],
+ "boombox": [],
+ "potted fern": [
+  "potted plant"
+ ],
+ "rug": [],
+ "weapon rack": [
+  "sword rack"
+ ],
+ "banner pole": [],
+ "torch sconce": [
+  "wall torch"
+ ],
+ "round table": [],
+ "castle flag": [],
+ "royal carriage": [],
+ "court fountain": [],
+ "volcano vent": [
+  "lava vent",
+  "fumarole"
+ ],
+ "charred tree": [
+  "burnt tree",
+  "dead tree"
+ ],
+ "ash pile": [],
+ "obsidian rock": [
+  "black rock"
+ ],
+ "lemonade stand": [],
+ "swing set": [],
+ "milk churn": [
+  "milk can"
+ ],
+ "jaguar statue": [],
+ "cooling tower": [
+  "power plant tower"
+ ],
+ "electric generator": [],
+ "hitching post": [
+  "hitching rail"
+ ],
+ "coral pillar": [
+  "coral column"
+ ],
+ "manhole cover": [
+  "sewer cover"
+ ],
+ "avalanche fence": [
+  "snow fence",
+  "avalanche barrier"
+ ],
+ "city map board": [
+  "map board",
+  "city map"
+ ],
+ "sunscreen bottle": [
+  "sun cream"
+ ],
+ "volleyball net": [
+  "beach volleyball"
+ ],
+ "snow shovel": [],
+ "jade statue": [
+  "jade carving"
+ ],
+ "taro plant": [],
+ "lava lamp": [],
+ "coyote": []
+}
