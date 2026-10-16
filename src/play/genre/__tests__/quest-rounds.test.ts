@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
 import { compileArcade } from '@/play/arcade/compile';
-import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, ROLE, bodyBase, underlyingRule } from '@/play/arcade/contract';
 import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { STATION_PACE } from '@/play/arcade/pieces/pacing-parts';
@@ -112,9 +112,18 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
   });
 
   it('spatial: the win comes only in the last round, every round lays fresh targets elsewhere and brings more or faster chasers', () => {
-    const game = publish('light five candles before the ghost catches you');
-    const planned = tuningOf(game.spec).rounds as number;
+    const sentence = 'light five candles before the ghost catches you';
+    // Ve `genre.v4` (P47A T4) nese cíle posledního kola boss a pronásledovatelé s ním odejdou (`quest-boss.test.ts`):
+    // kolo začne bez cílů. Kola, jak je staví generátor, měří táž hra uložená jako `genre.v3`.
+    const fresh = publish(sentence);
+    const planned = tuningOf(fresh.spec).rounds as number;
     expect(planned).toBeGreaterThanOrEqual(2);
+    const boss = roundsOf(fresh.world);
+    expect(boss.rounds).toHaveLength(planned);
+    expect(boss.wonInRound).toBe(planned - 1);
+    expect(boss.rounds.at(-1)!.targets).toHaveLength(0);
+    expect((fresh.world.rules.find((rule) => rule.id === 'boss_beat')?.params as { drop?: { count: number } } | undefined)?.drop?.count).toBe(5);
+    const game = publish(sentence, (spec) => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v3' } }));
     const { rounds, wonInRound } = roundsOf(game.world);
     expect(rounds).toHaveLength(planned);
     expect(wonInRound).toBe(planned - 1);
@@ -132,11 +141,17 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
   it('station: the same stations start over each round, the win comes in the last one and the boil-over limit shrinks', () => {
     const game = publish('flip two pancakes in the kitchen');
     // Průběh P45C T14: dvojí úkol posledního kola stojí `STATION_PACE.drop` kol; jeho stanoviště přibudou až tik po začátku kola.
-    const planned = (tuningOf(game.spec).rounds as number) - STATION_PACE.drop;
+    // Spěch `genre.v4` (P47A T5): kopie přijdou s prvním kolem spěchu a zůstanou, kol ubere nejvýš tolik a aspoň jedno.
+    const generated = tuningOf(game.spec).rounds as number;
+    const planned = (game.world.rules.map(underlyingRule).find((rule) => rule.id === 'interact')!.params as { when: { interact: { rounds: number } } }).when.interact.rounds;
+    expect(planned).toBeGreaterThanOrEqual(generated - STATION_PACE.drop);
+    expect(planned).toBeLessThan(generated);
     const { rounds, wonInRound } = roundsOf(game.world);
     expect(rounds).toHaveLength(planned);
     expect(wonInRound).toBe(planned - 1);
-    expect(new Set(rounds.map((round) => JSON.stringify(round.targets))).size).toBe(1);
+    // Tatáž stanoviště začnou znovu (kopie spěchu stojí za nimi, tělo s vyšším indexem).
+    const own = rounds[0]!.targets;
+    expect(new Set(rounds.map((round) => JSON.stringify(round.targets.slice(0, own.length)))).size).toBe(1);
     // Lhůta po kolech z křivky (`limits`, P45C T14).
     const boil = game.world.rules.find((rule) => rule.id === 'boil_over')?.params as { limits: number[] };
     const limit = (round: number) => boil.limits[Math.min(round, boil.limits.length - 1)]!;

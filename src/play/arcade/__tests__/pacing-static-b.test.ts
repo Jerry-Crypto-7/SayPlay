@@ -8,7 +8,9 @@
  * Rytmus: písnička z generátoru nad `placeByCurve` – úvod řídký, vrchol a
  * finále husté, dráhy ve frázích dvou vzorů (`walk`, `trill`), finále rychlá
  * závěrečná fráze. Stanoviště: lhůta přetečení kola jde s křivkou (kola
- * zrychlují), finále poslední kolo s dvojím úkolem (kopie stanovišť).
+ * zrychlují), finále poslední kolo s dvojím úkolem (kopie stanovišť); ve
+ * `genre.v4` (P47A T5) závěrečný spěch – kopie přijdou s ním a jeho kola mají
+ * kratší lhůtu než dnešní poslední (`station-rush.test.ts`).
  *
  * Odchylka měřidla: tyhle žánry nemají hrozby, tlak `pressureRun` je 0 –
  * stoupání se měří tím, co hra opravdu zrychluje: načasování rychlostí jezdce,
@@ -80,8 +82,10 @@ function genrePressure(world: ArcadeWorld): (state: ArcadeState) => number {
     return (state) => bodies(state).filter((body) => body > 0 && alive(state, body) && (state[bodyBase(body) + BODY.z] as number) >= 0 && (state[bodyBase(body) + BODY.z] as number) < RHYTHM.noteSpeed * 3 * ARCADE_HZ).length;
   }
   if (control === 'throw') {
+    // Kývající se terče: bonusové a ve `genre.v4` terč-boss posledního kola (role nepřítele, P47A T7).
+    const swinging = (role: number): boolean => role === ROLE.target || role === ROLE.enemy;
     return (state) =>
-      Math.max(0, ...bodies(state).filter((body) => alive(state, body) && state[bodyBase(body) + BODY.role] === ROLE.target && ((state[bodyBase(body) + BODY.flags] as number) & FLAG.kinematic) !== 0).map((body) => Math.abs(state[bodyBase(body) + BODY.vx] as number)));
+      Math.max(0, ...bodies(state).filter((body) => alive(state, body) && swinging(state[bodyBase(body) + BODY.role] as number) && ((state[bodyBase(body) + BODY.flags] as number) & FLAG.kinematic) !== 0).map((body) => Math.abs(state[bodyBase(body) + BODY.vx] as number)));
   }
   const boil = ruleOf(world, 'boil_over')!.params as unknown as BoilParams;
   return (state) => 1000 / boilLimit(boil, waveOf(state));
@@ -218,53 +222,77 @@ describe('static genres B are paced (throw, timing, rhythm, station quest; landi
     }
   });
 
-  it('station: rounds speed up with the curve, never past today’s last round; the last round doubles the task and the win waits for it', () => {
-    const spec = cellSpec('quest.station');
-    const stored = worldOf(storedOf(spec));
-    const today = ruleOf(stored, 'boil_over')!.params as unknown as BoilParams;
-    const todayRounds = (ruleOf(stored, 'arena_waves')!.params as { waves: unknown[] }).waves.length + 1;
-    const todayLast = boilLimit(today, todayRounds - 1);
-    for (const seed of SEEDS) {
-      const world = worldOf(spec, seed);
-      const boil = ruleOf(world, 'boil_over')!.params as unknown as BoilParams;
-      const rounds = (ruleOf(world, 'arena_waves')!.params as { waves: unknown[] }).waves.length + 1;
-      expect(rounds).toBe(todayRounds - STATION_PACE.drop);
-      expect((ruleOf(world, 'interact')!.params as { when: { interact: { rounds: number } } }).when.interact.rounds).toBe(rounds);
-      // Lhůta z křivky: první kolo jako dnes, pak kratší, poslední jako dnešní poslední – nikdy kratší.
-      expect(boil.limits!.length).toBe(rounds);
-      expect(boil.limits![0]).toBe(boilLimit(today, 0));
-      expect(boil.limits!.at(-1)).toBe(todayLast);
-      for (let round = 1; round < rounds; round += 1) expect(boil.limits![round]!).toBeLessThanOrEqual(boil.limits![round - 1]!);
-      expect(Math.min(...boil.limits!)).toBeGreaterThanOrEqual(todayLast);
-      expect((ruleOf(world, 'pacing')!.params as { finale: string }).finale).toBe('round');
-      // Robot: s posledním kolem přibudou stanoviště (dřív ne), výhra přijde, až jsou hotová všechna.
-      const start = instantiate(world);
-      const own = bodies(start).filter((body) => start[bodyBase(body) + BODY.role] === ROLE.target && alive(start, body)).length;
-      const bot = runBot(world, ARCADE_LIBRARY, { profile: 'intermediate' });
-      expect(bot.outcome).toBe('won');
-      let lastRound = -1;
-      let won = -1;
-      const program = loadProgram(world, ARCADE_LIBRARY);
-      const state = instantiate(world);
-      let next = 0;
-      for (let tick = 0; tick <= bot.tick && state[HEADER.runState] === 0; tick += 1) {
-        while (next < bot.inputs.length && bot.inputs[next]!.tick < tick) next += 1;
-        const event = bot.inputs[next];
-        step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program, (_rule, effect) => {
-          if (effect.kind === 'win') won = tick;
-        });
-        const targets = bodies(state).filter((body) => state[bodyBase(body) + BODY.role] === ROLE.target && alive(state, body));
-        if (waveOf(state) < rounds - 1) expect(targets.length, `seed ${seed} tick ${tick}`).toBe(own);
-        if (waveOf(state) === rounds - 1 && lastRound < 0 && targets.length === own + Math.min(STATION_PACE.extra, own)) lastRound = tick;
-        if (won >= 0) expect(targets.every((body) => targetStateOf(state, body) >= 1), `seed ${seed}`).toBe(true);
+  // `genre.v3` = uložená hra P45C (pin beze změny); `genre.v4` (P47A T5) = poslední kola spěch (`interact.rush`, `station-rush.test.ts`).
+  for (const version of ['genre.v3', 'genre.v4'] as const) {
+    it(`station (${version}): rounds speed up with the curve; ${version === 'genre.v3' ? 'never past today’s last round, the last round doubles the task' : 'the rush rounds sit below today’s last round and the copies come with them'}; the win waits for every station`, () => {
+      const cell = cellSpec('quest.station');
+      const spec = { ...cell, genre: { ...cell.genre!, compilerVersion: version } };
+      const stored = worldOf(storedOf(spec));
+      const today = ruleOf(stored, 'boil_over')!.params as unknown as BoilParams;
+      const todayRounds = (ruleOf(stored, 'arena_waves')!.params as { waves: unknown[] }).waves.length + 1;
+      const todayLast = boilLimit(today, todayRounds - 1);
+      for (const seed of SEEDS) {
+        const world = worldOf(spec, seed);
+        const boil = ruleOf(world, 'boil_over')!.params as unknown as BoilParams;
+        const rounds = (ruleOf(world, 'arena_waves')!.params as { waves: unknown[] }).waves.length + 1;
+        const interact = (ruleOf(world, 'interact')!.params as { when: { interact: { rounds: number; rush?: { round: number } } } }).when.interact;
+        expect(interact.rounds).toBe(rounds);
+        // Kolo, se kterým přijdou kopie stanovišť: bez spěchu poslední, se spěchem první kolo spěchu.
+        const doubled = version === 'genre.v3' ? rounds - 1 : interact.rush!.round;
+        if (version === 'genre.v3') {
+          expect(interact.rush).toBeUndefined();
+          expect(rounds).toBe(todayRounds - STATION_PACE.drop);
+        } else {
+          // Spěch ubere nejvýš tolik kol jako dřív; kola před ním jako dřív – nikdy kratší než dnešní poslední.
+          expect(rounds).toBeGreaterThanOrEqual(todayRounds - STATION_PACE.drop);
+          expect(rounds).toBeLessThan(todayRounds);
+          expect(doubled).toBeLessThan(rounds - 1);
+        }
+        // Lhůta z křivky: první kolo jako dnes, pak kratší; bez spěchu poslední jako dnešní poslední – nikdy kratší.
+        expect(boil.limits!.length).toBe(rounds);
+        expect(boil.limits![0]).toBe(boilLimit(today, 0));
+        for (let round = 1; round < rounds; round += 1) expect(boil.limits![round]!).toBeLessThanOrEqual(boil.limits![round - 1]!);
+        if (version === 'genre.v3') {
+          expect(boil.limits!.at(-1)).toBe(todayLast);
+          expect(Math.min(...boil.limits!)).toBeGreaterThanOrEqual(todayLast);
+        } else {
+          expect(Math.min(...boil.limits!.slice(0, doubled))).toBeGreaterThanOrEqual(todayLast);
+          // Kola spěchu: jedna lhůta, kratší než dnešní poslední.
+          expect(new Set(boil.limits!.slice(doubled)).size).toBe(1);
+          expect(boil.limits!.at(-1)!).toBeLessThan(todayLast);
+        }
+        expect((ruleOf(world, 'pacing')!.params as { finale: string }).finale).toBe('round');
+        // Robot: s kolem `doubled` přibudou stanoviště (dřív ne), výhra přijde, až jsou hotová všechna.
+        const start = instantiate(world);
+        const own = bodies(start).filter((body) => start[bodyBase(body) + BODY.role] === ROLE.target && alive(start, body)).length;
+        const bot = runBot(world, ARCADE_LIBRARY, { profile: 'intermediate' });
+        expect(bot.outcome).toBe('won');
+        let doubledAt = -1;
+        let won = -1;
+        const program = loadProgram(world, ARCADE_LIBRARY);
+        const state = instantiate(world);
+        let next = 0;
+        for (let tick = 0; tick <= bot.tick && state[HEADER.runState] === 0; tick += 1) {
+          while (next < bot.inputs.length && bot.inputs[next]!.tick < tick) next += 1;
+          const event = bot.inputs[next];
+          step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program, (_rule, effect) => {
+            if (effect.kind === 'win') won = tick;
+          });
+          const targets = bodies(state).filter((body) => state[bodyBase(body) + BODY.role] === ROLE.target && alive(state, body));
+          if (waveOf(state) < doubled) expect(targets.length, `seed ${seed} tick ${tick}`).toBe(own);
+          if (waveOf(state) === doubled && doubledAt < 0 && targets.length === own + Math.min(STATION_PACE.extra, own)) doubledAt = tick;
+          if (won >= 0) expect(targets.every((body) => targetStateOf(state, body) >= 1), `seed ${seed}`).toBe(true);
+        }
+        expect(doubledAt, `seed ${seed}: the round ${doubled} doubled`).toBeGreaterThan(0);
+        expect(won).toBeGreaterThan(doubledAt);
       }
-      expect(lastRound, `seed ${seed}: the last round doubled`).toBeGreaterThan(0);
-      expect(won).toBeGreaterThan(lastRound);
-    }
-  });
+    });
+  }
 
   it('throw: every round brings a swinging bonus target, faster with the curve; the last one is the last step to the win', () => {
-    const spec = cellSpec('throw.default');
+    // Uložená hra `genre.v3`: ve `genre.v4` je poslední kolo terč-boss se 3 HP (`throw-boss.test.ts`, P47A T7).
+    const cell = cellSpec('throw.default');
+    const spec: GameSpecV1 = { ...cell, genre: { ...cell.genre!, compilerVersion: 'genre.v3' } };
     for (const seed of SEEDS) {
       const world = worldOf(spec, seed);
       expect((ruleOf(world, 'pacing')!.params as { finale: string }).finale).toBe('bonus');

@@ -188,6 +188,8 @@ const judgeParams = z
     miss: z.enum(['lose', 'damage']),
     /** Náhlá smrt (finále průběhu P45C T14): v posledních `sudden` úkolech minutí prohrává i se životy. Bez hodnoty žádná. */
     sudden: z.int().min(1).max(ARCADE_LIMITS.maxBodies).optional(),
+    /** Šampion duelu (finále P47A T6): trefa po víc než `after` splněných úkolech je i zásah těla `body` za 1 HP. Bez hodnoty žádný. */
+    champion: z.object({ body: z.int().min(0).max(ARCADE_LIMITS.maxBodies - 1), after: z.int().min(0).max(ARCADE_LIMITS.maxBodies) }).strict().optional(),
   })
   .strict();
 
@@ -195,7 +197,8 @@ const judgeParams = z
  * Výsledek ťuku z `aux0` hráče → efekty: trefa = body, minutí = prohra nebo
  * život (v posledních `sudden` úkolech vždy prohra). `goal` splněných úkolů
  * (`z` hráče v metrech) = výhra. Sdílí ho načasování, rytmus i souboj – všechna
- * tři ovládání píšou výsledek stejně.
+ * tři ovládání píšou výsledek stejně. Se šampionem duelu (`champion`) je trefa
+ * na posledního soupeře i efekt `hit` na jeho tělo, před výhrou téhož tiku.
  */
 export const judgeRule: RulePiece<z.infer<typeof judgeParams>> = {
   id: 'judge',
@@ -206,10 +209,13 @@ export const judgeRule: RulePiece<z.infer<typeof judgeParams>> = {
   fire: ({ state, player }, params) => {
     const p = bodyBase(player);
     const result = state[p + S.aux0] as number;
-    const effects: ({ kind: 'score'; amount: number } | { kind: 'damage'; amount: number } | { kind: 'lose' } | { kind: 'win' })[] = [];
-    const sudden = params.sudden !== undefined && Math.floor((state[p + S.z] as number) / UNIT) >= params.goal - params.sudden;
-    if (result > 0) effects.push({ kind: 'score', amount: result });
-    else if (result < 0) effects.push(params.miss === 'lose' || sudden ? { kind: 'lose' } : { kind: 'damage', amount: 1 });
+    const effects: ({ kind: 'score'; amount: number } | { kind: 'hit'; body: number; by: number; amount: number } | { kind: 'damage'; amount: number } | { kind: 'lose' } | { kind: 'win' })[] = [];
+    const done = Math.floor((state[p + S.z] as number) / UNIT);
+    const sudden = params.sudden !== undefined && done >= params.goal - params.sudden;
+    if (result > 0) {
+      effects.push({ kind: 'score', amount: result });
+      if (params.champion !== undefined && done > params.champion.after) effects.push({ kind: 'hit', body: params.champion.body, by: player, amount: 1 });
+    } else if (result < 0) effects.push(params.miss === 'lose' || sudden ? { kind: 'lose' } : { kind: 'damage', amount: 1 });
     if ((state[p + S.z] as number) >= params.goal * UNIT) effects.push({ kind: 'win' });
     return effects;
   },

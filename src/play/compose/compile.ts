@@ -12,6 +12,7 @@ import { BALL_DIFFICULTY } from './ball-difficulty';
 import { singular } from '../draft/lexicon';
 import { abilitiesOfControl, abilityHint } from '../draft/controls';
 import { RULE_TEMPLATES, type RuleTemplate, TEMPLATE_NAMES, type TemplateName, type TemplateSlot, says, templateParts, templatesFor } from '../arcade/rules/templates';
+import { FINALE_GENRE_VERSION, genreAtLeast } from '../arcade/pieces/pacing-parts';
 
 /** Recipes select an assembly; existing piece builders retain their frozen output. */
 export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
@@ -78,9 +79,12 @@ function withTemplate(game: GameSpecV1, assembly: RecipeAssembly): { readonly sp
   const budget = ARCADE_LIMITS.maxRules - (game.rules ?? []).length;
   const axes = [`move:${assembly.move}`, ...assembly.actions.map((action) => `action:${action}`), `objective:${assembly.objective}`];
   const goals = templatesFor(intent.unplayed.map((verb) => `action:${verb}`), budget).filter((name) => RULE_TEMPLATES[name].kind === 'goal');
+  // Quest v prostoru od `genre.v4` (P47A T2, varianta B): hustotu nese průběh, overlay šablona ne – pod průběhem
+  // vyhrál robot intermediate 6–7/8 (bez šablony 8/8, začátečník 3–5/8, `evals/play/p47a/README.md`).
+  const pacedQuest = game.genre?.id === 'quest' && game.genre.mode === 'spatial' && genreAtLeast(game, FINALE_GENRE_VERSION);
   const overlays = TEMPLATE_NAMES.filter((name) => {
     const template: RuleTemplate = RULE_TEMPLATES[name];
-    return template.kind === 'overlay' && template.budget <= budget && (template.axes.some((axis) => axes.includes(axis)) || template.verbs.some((verb) => says(intent.words, verb)));
+    return template.kind === 'overlay' && !pacedQuest && template.budget <= budget && (template.axes.some((axis) => axes.includes(axis)) || template.verbs.some((verb) => says(intent.words, verb)));
   });
   const taken = new Set(['ammunition', ...(game.assemblyParts ?? []).map((part) => part.role)]);
   for (const name of [...goals, ...overlays]) {

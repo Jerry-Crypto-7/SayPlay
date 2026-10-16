@@ -22,7 +22,7 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { type BehaviourRef, behaviourBodies } from '@/play/arcade/pieces/behaviours';
 import { play } from '@/play/arcade/pieces/behaviours/__tests__/harness';
 import { duelControl, enragedAfter } from '@/play/arcade/pieces/duel';
-import { FINALES, NEWS_LEAD, PACING, type PacingBeat, type PacingRuleParams, SEGMENT_NEWS, type SegmentNews, pacingBeatOf, reachedOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
+import { FINALES, FINALE_NEWS, NEWS_LEAD, PACING, type PacingBeat, type PacingRuleParams, SEGMENT_NEWS, type SegmentNews, pacingBeatOf, reachedOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
 import { THROW_ROUND_COUNTER } from '@/play/arcade/pieces/throw';
 import { waveOf } from '@/play/arcade/pieces/waves';
@@ -38,13 +38,21 @@ type Finale = (typeof FINALES)[number];
 /** Robot na celé hře pod cizí zátěží stroje. */
 const SLOW = 300_000;
 
-const cellWorld = (id: string, seed: number): ArcadeWorld => {
+const cellWorld = (id: string, seed: number, version?: string): ArcadeWorld => {
   const cell = liveCells().find((candidate) => candidate.id === id);
   if (cell === undefined) throw new Error(`no live cell ${id}`);
-  const made = arcadeWorldOf(compileRecipe(assemblyOfCell(cell)), seed);
+  const spec = compileRecipe(assemblyOfCell(cell));
+  const made = arcadeWorldOf(version === undefined ? spec : { ...spec, genre: { ...spec.genre!, compilerVersion: version } }, seed);
   if (!made.ok) throw new Error(made.issues.join('; '));
   return made.world;
 };
+
+/**
+ * Šest žánrů P47A (sběr, útěk, přežití, quest v prostoru, stanoviště, duel, hod) hlásí ve `genre.v4` úseky pole
+ * a finále podle žánru – pin `src/play/arcade/__tests__/field-news.test.ts`. Tady hrají jako uložené `genre.v3`:
+ * banner starých her se nesmí hnout.
+ */
+const STORED: ReadonlySet<string> = new Set(['arena.collect', 'quest.spatial', 'arena.escape', 'duel.default', 'quest.station', 'throw.default']);
 
 const pacingOf = (world: ArcadeWorld): PacingRuleParams | undefined => nativeRule(world.rules, 'pacing')?.params as PacingRuleParams | undefined;
 const bot = (world: ArcadeWorld): readonly InputEvent[] => runBot(world, ARCADE_LIBRARY, { profile: 'intermediate' }).inputs;
@@ -159,7 +167,7 @@ function blocks(banner: readonly (PacingBeat | null)[]): [PacingBeat, number, nu
 /** První vyhraný běh robota na semínkách 1–4 (finále přijde jen ve hře, která k němu dojde). */
 function wonRun(id: string): { readonly world: ArcadeWorld; readonly run: Trace } {
   for (const seed of [1, 2, 3, 4]) {
-    const world = cellWorld(id, seed);
+    const world = cellWorld(id, seed, STORED.has(id) ? 'genre.v3' : undefined);
     const run = trace(world, bot(world));
     if (run.won) return { world, run };
   }
@@ -395,7 +403,8 @@ describe('segment announcements – what the world really changes', () => {
 
 describe('the banner on screen', () => {
   it('every beat has a short English label in sentence case', () => {
-    expect(Object.keys(PACING_BANNER_LABELS).sort()).toEqual(['buildUp', ...FINALES].sort());
+    expect(Object.keys(PACING_BANNER_LABELS).sort()).toEqual(['buildUp', ...FINALES, ...FINALE_NEWS].sort());
+    expect([PACING_BANNER_LABELS.champion, PACING_BANNER_LABELS.bossTarget, PACING_BANNER_LABELS.rush]).toEqual(['Champion!', 'Boss target!', 'Rush order!']);
     expect(Object.keys(SEGMENT_NEWS_LABELS).sort()).toEqual([...SEGMENT_NEWS].sort());
     expect(PACING_BANNER_LABELS.buildUp).toBe('Here they come!');
     expect([PACING_BANNER_LABELS.boss, PACING_BANNER_LABELS.wave, PACING_BANNER_LABELS.sprint, PACING_BANNER_LABELS.round]).toEqual(['Boss!', 'Final wave!', 'Final sprint!', 'Last round!']);

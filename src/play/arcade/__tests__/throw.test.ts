@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { type ArcadeInput, type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, COUNTER, FLAG, HEADER, type InputEvent, NO_INPUT, bodyBase } from '../contract';
+import { type ArcadeInput, type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, type BodyInit, COUNTER, FLAG, HEADER, type InputEvent, NO_INPUT, bodyBase, bodyHp } from '../contract';
 import { type ArcadeLibrary, buildWorld, instantiate, loadProgram, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import {
   THROW,
+  THROW_BOSS,
   THROW_DIFFICULTIES,
   THROW_GOALS,
   type ThrowDifficulty,
@@ -153,6 +154,44 @@ describe('hod – ovládání a pravidla', () => {
     expect(((state[bodyBase(top) + BODY.flags] as number) & FLAG.alive)).toBe(0);
     expect(((state[bodyBase(bottom) + BODY.flags] as number) & FLAG.alive)).not.toBe(0);
     expect(state[bodyBase(bottom) + BODY.y]).toBe(0);
+  });
+
+  it('terč-boss (P47A T7, `shot_hit.tough`): každý zásah ubere 1 HP, padne a dá bod až třetí; bez `tough` padne prvním', () => {
+    const field = throwField.generate(4, params('normal', { goal: 'target' }));
+    const at = field.bodies.findIndex((b) => b.role === 'target');
+    const boss: BodyInit = { ...field.bodies[at]!, role: 'enemy', kind: 'boss', hp: THROW_BOSS.hp };
+    const bodies = field.bodies.map((b, i) => (i === at ? boss : b));
+    const level: ArcadeLevel = { ...field, bodies: [...bodies, { ...boss, template: true }], counters: { ammo: 10, reserve: 0 } };
+    const template = level.bodies.length - 1;
+    const build = (tough: boolean): ArcadeWorld => {
+      const rules = throwRules().map((rule) => (rule.id === 'shot_hit' && tough ? { ...rule, params: { tough: template } } : rule));
+      const built = buildWorld({ seed: 1, control: { id: 'throw', params: {} }, rules, bot: { id: 'idle', params: {} }, level }, library);
+      if (!built.ok) throw new Error(built.issues.join('; '));
+      return built.world;
+    };
+    const plan = solveThrow(boxesOfLevel(level.bodies), at) as ThrowPlan;
+    expect(plan).not.toBeNull();
+    const after = (world: ArcadeWorld, throws: number): Int32Array => {
+      const state = instantiate(world);
+      const program = loadProgram(world, library);
+      const events = Array.from({ length: throws }, (_, k) => throwInputs(k * 250, plan)).flat();
+      for (let t = 0; t < throws * 250; t += 1) step(state, events.find((e) => e.tick === t) ?? NO_INPUT, program);
+      return state;
+    };
+    const alive = (state: Int32Array): boolean => ((state[bodyBase(at) + BODY.flags] as number) & FLAG.alive) !== 0;
+    const tough = build(true);
+    expect(bodyHp(instantiate(tough), at)).toBe(3);
+    for (const [throws, hp, score] of [[1, 2, 0], [2, 1, 0]] as const) {
+      const state = after(tough, throws);
+      expect(alive(state), `${throws} throws`).toBe(true);
+      expect(bodyHp(state, at)).toBe(hp);
+      expect(counter(state, 'score')).toBe(score);
+    }
+    const fallen = after(tough, 3);
+    expect(alive(fallen)).toBe(false);
+    expect(counter(fallen, 'score')).toBe(1);
+    // Bez `tough` (uložené hry) je to obyčejný zásah: tělo zmizí prvním míčem.
+    expect(alive(after(build(false), 1))).toBe(false);
   });
 });
 

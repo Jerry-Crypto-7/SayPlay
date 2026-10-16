@@ -14,12 +14,14 @@
  * Pohyb podle `09-motion.md`: nápřah (nástup 160 ms), houstnutí k úderu (pás
  * sílí a kruh se plní se zrychlením), úder = konec varování, kdy kresba zmizí.
  * Boss a boss-terč mají nad hlavou pipy HP (jeden na život ze startu), stejně boss finále jiného chování
- * (shazovač řízení a rváč skákačky, P46B T7) – soupeři úseků stejného chování ne.
+ * (shazovač řízení a rváč skákačky, P46B T7) – soupeři úseků stejného chování ne. Od P47A T10 i boss finále bez
+ * chování (`finaleBossesOf`): šampion duelu nad soupeřem a terč-boss posledního kola hodu.
  *
  * Těla chování a bosse kreslí scéna, která kreslí jejich roli (`World` každé
  * tělo, aréna stylu B i agar těla role `hazard`); boss je větší jen svým AABB.
  * Scény, které těla nekreslí (souboj dvou, načasování, rytmus), chování nemají
- * (`GENRE_PACING` jim dává `behaviours: []`), takže tu žádný model těla není.
+ * (`GENRE_PACING` jim dává `behaviours: []`), takže tu žádný model těla není –
+ * jen pipy šampiona nad soupeřem, kterého souboj kreslí na místě jeho těla.
  *
  * Do stavu hry nic nepíše: čte stav, předchozí stav a sběrnici efektů.
  * „Méně pohybu“ vypne chvění, nástup a záblesk okraje; pás a kruh zůstanou,
@@ -35,6 +37,7 @@ import { type ArcadeState, BODY, FLAG, HEADER, UNIT, bodyBase, bodyHp } from '@/
 import { type BehaviourId, type BehaviourRef, type TelegraphKind, behaviourBodies, telegraphOf } from '@/play/arcade/pieces/behaviours';
 import { BOSS } from '@/play/arcade/pieces/behaviours/boss';
 import { GUARDIAN } from '@/play/arcade/pieces/behaviours/guardian';
+import { finaleBossesOf } from '@/play/arcade/pieces/pacing';
 
 import { type Path, runnerPathOf } from '../runner/path';
 import { type ArcadeSession, TICK_MS } from '../session';
@@ -149,9 +152,10 @@ function bodiesById(state: ArcadeState, refs: readonly BehaviourRef[]): [number,
 /**
  * Kresba varování nad světem `refs` – trojrozměrné kousky v jedné skupině, které
  * `update` každý snímek postaví podle stavu; `boss` = předloha bosse finále (`pacingBossOf`). Stav jen čte.
+ * `path` = zakřivená trať běžce (P46D T3): značky stojí nad tělem tam, kde ho scéna kreslí. `bossesOf` = těla
+ * bosse finále bez chování (`finaleBossesOf`: šampion duelu, terč-boss hodu) – jen pipy HP.
  */
-/** `path` = zakřivená trať běžce (P46D T3): značky stojí nad tělem tam, kde ho scéna kreslí. */
-export function createPacingDrawing(refs: readonly BehaviourRef[], boss?: BehaviourRef, path: Path | null = null): PacingDrawing {
+export function createPacingDrawing(refs: readonly BehaviourRef[], boss?: BehaviourRef, path: Path | null = null, bossesOf: ((state: ArcadeState) => readonly number[]) | null = null): PacingDrawing {
   const root = new Group();
   root.name = 'pacing-fx';
   const geometries: BufferGeometry[] = [];
@@ -235,35 +239,38 @@ export function createPacingDrawing(refs: readonly BehaviourRef[], boss?: Behavi
       const flock: { body: number; x: number; z: number; r: number; p: number }[] = [];
       const telegraphing = new Set<number>();
       const finaleBoss = boss === undefined ? [] : behaviourBodies(state, state[HEADER.player] as number, [boss]);
+      /** Pipy HP nad tělem (jeden na nejvyšší viděné HP), plné do HP těla. */
+      const hpBar = (body: number, x: number, y: number, z: number): void => {
+        const hp = bodyHp(state, body);
+        const max = Math.max(topHp.get(body) ?? 0, hp);
+        topHp.set(body, max);
+        if (max === 0) return;
+        bosses.push({ body, hp, max });
+        const bar = pips.take();
+        bar.userData.bossHp = { body, hp, max };
+        bar.position.set(x, y + size(body, 'h') + PIP.above, z);
+        bar.quaternion.copy(facing);
+        const width = max * PIP.w + (max - 1) * PIP.gap;
+        const [frame, ...cells] = bar.children as Mesh[];
+        frame!.scale.set(width + 2 * PIP.pad, PIP.h + 2 * PIP.pad, 1);
+        frame!.position.z = -0.01;
+        cells.forEach((cell, k) => {
+          cell.visible = k < max;
+          if (k >= max) return;
+          cell.scale.set(PIP.w, PIP.h, 1);
+          cell.position.x = -width / 2 + PIP.w / 2 + k * (PIP.w + PIP.gap);
+          (cell.material as MeshBasicMaterial).color.copy(k < hp ? PIP_FULL : PIP_EMPTY);
+        });
+      };
+      // Boss finále bez chování (šampion, terč-boss): stojí, kde ho kreslí jeho scéna – na místě těla.
+      for (const body of bossesOf === null ? [] : bossesOf(state)) hpBar(body, -at(body, 'x'), at(body, 'y'), at(body, 'z'));
 
       for (const [body, id] of bodiesById(state, refs)) {
         const z = at(body, 'z');
         const bend = path?.(z);
         const x = -at(body, 'x') + (bend?.x ?? 0);
         const y = at(body, 'y') + (bend?.y ?? 0);
-        if (id === 'boss' || id === 'turret' || finaleBoss.includes(body)) {
-          const hp = bodyHp(state, body);
-          const max = Math.max(topHp.get(body) ?? 0, hp);
-          topHp.set(body, max);
-          if (max > 0) {
-            bosses.push({ body, hp, max });
-            const bar = pips.take();
-            bar.userData.bossHp = { body, hp, max };
-            bar.position.set(x, y + size(body, 'h') + PIP.above, z);
-            bar.quaternion.copy(facing);
-            const width = max * PIP.w + (max - 1) * PIP.gap;
-            const [frame, ...cells] = bar.children as Mesh[];
-            frame!.scale.set(width + 2 * PIP.pad, PIP.h + 2 * PIP.pad, 1);
-            frame!.position.z = -0.01;
-            cells.forEach((cell, k) => {
-              cell.visible = k < max;
-              if (k >= max) return;
-              cell.scale.set(PIP.w, PIP.h, 1);
-              cell.position.x = -width / 2 + PIP.w / 2 + k * (PIP.w + PIP.gap);
-              (cell.material as MeshBasicMaterial).color.copy(k < hp ? PIP_FULL : PIP_EMPTY);
-            });
-          }
-        }
+        if (id === 'boss' || id === 'turret' || finaleBoss.includes(body)) hpBar(body, x, y, z);
         const telegraph = telegraphOf(state, body);
         if (telegraph === null) continue;
         telegraphing.add(body);
@@ -358,11 +365,12 @@ export function createPacingDrawing(refs: readonly BehaviourRef[], boss?: Behavi
   };
 }
 
-/** Kresba varování průběhu a záblesk okraje po blízkém minutí; hra bez chování nekreslí nic. */
+/** Kresba varování průběhu a záblesk okraje po blízkém minutí; hra bez chování a bez bosse finále nekreslí nic. */
 export function PacingFx({ session, bus, surface }: { readonly session: ArcadeSession; readonly bus: RefObject<EffectsBus | null>; readonly surface: RefObject<HTMLDivElement | null> }) {
   const drawing = useMemo(() => {
     const refs = pacingRefsOf(session.world.rules);
-    return refs.length === 0 ? null : createPacingDrawing(refs, pacingBossOf(session.world.rules), runnerPathOf(session.world));
+    const bosses = finaleBossesOf(session.world);
+    return refs.length === 0 && bosses === null ? null : createPacingDrawing(refs, pacingBossOf(session.world.rules), runnerPathOf(session.world), bosses);
   }, [session]);
   useEffect(() => () => drawing?.dispose(), [drawing]);
   const edge = useRef<HTMLDivElement | null>(null);
@@ -380,11 +388,13 @@ export function PacingFx({ session, bus, surface }: { readonly session: ArcadeSe
       element.remove();
       edge.current = null;
       delete host.dataset.telegraphs;
+      delete host.dataset.bossHp;
     };
   }, [drawing, surface]);
   const clock = useRef(0);
   const flash = useRef<{ key: string | null; at: number }>({ key: null, at: -Infinity });
   const shown = useRef(-1);
+  const hp = useRef('');
   const lit = useRef('0.00');
   useFrame(({ camera }, delta) => {
     if (drawing === null) return;
@@ -396,6 +406,12 @@ export function PacingFx({ session, bus, surface }: { readonly session: ArcadeSe
     if (surface.current !== null && drawn.cues.length !== shown.current) {
       shown.current = drawn.cues.length;
       surface.current.dataset.telegraphs = String(drawn.cues.length);
+    }
+    // Sonda e2e (P47A T10): pipy HP, které scéna právě kreslí, jako „HP/nejvýš“ po bossech.
+    const pips = drawn.bosses.map((entry) => `${entry.hp}/${entry.max}`).join(' ');
+    if (surface.current !== null && pips !== hp.current) {
+      hp.current = pips;
+      surface.current.dataset.bossHp = pips;
     }
     const latest = latestNearMiss(bus.current?.live() ?? []);
     if (latest !== null && latest !== flash.current.key) flash.current = { key: latest, at: clock.current };

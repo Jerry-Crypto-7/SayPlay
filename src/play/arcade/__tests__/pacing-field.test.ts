@@ -65,6 +65,9 @@ const bossRef = (world: ArcadeWorld): BehaviourRef | undefined => pacedRefs(worl
 const finaleRef = (world: ArcadeWorld): BehaviourRef | undefined => ((ruleOf(world, 'pacing')?.params as { finale?: string } | undefined)?.finale === 'boss' ? pacedRefs(world).at(-1) : undefined);
 const wavesOf = (world: ArcadeWorld): WaveParams => ruleOf(world, 'arena_waves')!.params as WaveParams;
 const scheduleOf = (world: ArcadeWorld): { atPermille: number; template: number }[] => (ruleOf(world, 'pacing')!.params as { schedule: { atPermille: number; template: number }[] }).schedule;
+/** Kroky rozvrhu s chováním: bez bosse a bez mincí deště přežití (`FIELD.shower`, `genre.v4` – `field-finale.test.ts`). */
+const foeSteps = (world: ArcadeWorld): { atPermille: number; template: number }[] =>
+  scheduleOf(world).filter((step) => step.template !== finaleRef(world)?.template && world.initial[bodyBase(step.template) + BODY.role] !== ROLE.collectible);
 
 /** Tik, kdy se boss poprvé objevil a kdy zmizel (−1 = nikdy), a tik konce běhu. */
 function bossTrace(world: ArcadeWorld, inputs: Parameters<typeof play>[1]): { seen: number; fell: number; end: number } {
@@ -123,7 +126,7 @@ describe('open-field genres are paced (arena, fight and spatial quest)', () => {
         expect(foes.length, cell.id).toBeGreaterThanOrEqual(1);
         expect(foes.length, cell.id).toBeLessThanOrEqual(2);
         const second = Math.floor(1000 / (wavesOf(world).waves.length + 1));
-        const spawns = scheduleOf(world).filter((step) => step.template !== finaleRef(world)?.template);
+        const spawns = foeSteps(world);
         expect(spawns.length, cell.id).toBeGreaterThan(0);
         for (const entry of spawns) expect(entry.atPermille, `${cell.id} seed ${seed}`).toBeGreaterThanOrEqual(second);
         draws.add(spawns.map((step) => foes.find((foe) => foe.body === step.template)!.behaviour).join('+'));
@@ -146,7 +149,10 @@ describe('open-field genres are paced (arena, fight and spatial quest)', () => {
       expect((own.waves.at(-1)!.items ?? []).length).toBe(lastBefore.length - 2 * carried);
       // Vlny a jejich čítače zůstávají: stejné vstupy, pravidlo, počet vln a věci dřívějších vln.
       expect(own.waves.slice(0, -1)).toEqual(before.waves.slice(0, -1));
-      expect({ ...own, waves: [] }).toEqual({ ...before, waves: [] });
+      // Navíc jen předloha jiskry tepu (P47A T9): vlna věcí na její kopie nečeká.
+      const { spark, ...plain } = own;
+      expect(spark).toBe((ruleOf(paced, 'pacing')!.params as { pulse: { template: number } }).pulse.template);
+      expect({ ...plain, waves: [] }).toEqual({ ...before, waves: [] });
       // Boss přijde se začátkem poslední vlny; pronásledovatelé s ním odejdou a poslední vlna žádné nepřivede.
       const count = before.waves.length + 1;
       const at = Math.floor(((count - 1) * 1000) / count);
@@ -223,7 +229,7 @@ describe('open-field genres are paced (arena, fight and spatial quest)', () => {
         const pacing = ruleOf(world, 'pacing')!.params as { clear: unknown };
         // Těla chování a jejich výstřely jsou `hazard`; boss souboje přijde v témže tiku až po úklidu.
         expect(pacing.clear, `${id} seed ${seed}`).toEqual([{ role: ROLE.hazard, at: last }]);
-        const foes = scheduleOf(world).filter((step) => step.template !== bossRef(world)?.template);
+        const foes = foeSteps(world);
         expect(foes.length, `${id} seed ${seed}`).toBeGreaterThan(0);
         // Souboj postupuje po vlnách skokem: spawn musí přijít nejpozději se začátkem předposlední vlny.
         const until = id === 'arena.fight' ? Math.floor(((count - 2) * 1000) / count) : last - 1;
@@ -339,13 +345,15 @@ describe('open-field genres are paced (arena, fight and spatial quest)', () => {
 
 describe('spatial quest is paced (P45C T12 part B)', () => {
   const QUEST_CELL = 'quest.spatial';
+  // Strážce jako boss mají uložené hry do `genre.v3`; ve v4 je finále boss, který jde porazit (`quest-boss.test.ts`, P47A T4).
+  const guardedOf = (spec: GameSpecV1): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v3' } });
   const lastRound = (world: ArcadeWorld): number => {
     const count = wavesOf(world).waves.length + 1;
     return Math.floor(((count - 1) * 1000) / count);
   };
 
   it('the finale is the guardian as a boss: it comes with the last round, has no boss_beat, the rounds stay and the chasers keep a flat speed', () => {
-    const spec = cellSpec(QUEST_CELL);
+    const spec = guardedOf(cellSpec(QUEST_CELL));
     for (const seed of SEEDS) {
       const world = worldOf(spec, seed);
       const boss = finaleRef(world);
@@ -366,7 +374,7 @@ describe('spatial quest is paced (P45C T12 part B)', () => {
   });
 
   it('the guardian boss guards the last target and the bot still finishes it before the quest clock (pin)', () => {
-    const spec = cellSpec(QUEST_CELL);
+    const spec = guardedOf(cellSpec(QUEST_CELL));
     let beaten = 0;
     for (const seed of SEEDS) {
       const world = worldOf(spec, seed);

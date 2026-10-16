@@ -53,7 +53,7 @@ import {
   bodyBase,
 } from '../contract';
 import { guardParams, guardedHit } from '../abilities/state';
-import { WAVE_LIMITS, WAVE_PLAN, collectClock, entrySpots, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
+import { WAVE_LIMITS, WAVE_PLAN, collectClock, entrySpots, isSpark, wavePositions, waveOf, waveSpeedStep, wavesChasers } from './waves';
 
 export const ARENA_DENSITIES = ['sparse', 'normal', 'dense'] as const;
 export type ArenaDensity = (typeof ARENA_DENSITIES)[number];
@@ -455,6 +455,8 @@ const eatParams = z
     knockback: z.int().min(1).max(ARENA.speed * 4).optional(),
     /** Dash a štít hrdiny (P46A T9): chycení pronásledovatelem v ochraně nic nevezme. */
     guard: guardParams.optional(),
+    /** Předloha jiskry tepu (P47A T9, `isSpark`): dotek ji sebere bez bodu – cíl skóre se nehne. Bez ní jako dřív. */
+    spark: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
   })
   .strict();
 
@@ -498,6 +500,7 @@ export const arenaEat: RulePiece<z.infer<typeof eatParams>> = {
     const role = state[bodyBase(other) + BODY.role];
     if (role === ROLE.chaser && params.grace !== undefined) return guardedHit(state, params.guard, other, [...caught(state, player, other, params.effect, params.grace, params.knockback)]);
     if (role !== ROLE.enemy && role !== ROLE.collectible) return [];
+    if (isSpark(state, other, params.spark)) return [{ kind: 'despawn', body: other }];
     const mine = state[bodyBase(player) + BODY.w] as number;
     const theirs = state[bodyBase(other) + BODY.w] as number;
     if (theirs < mine) {
@@ -532,9 +535,29 @@ function wakeChasers(state: Int32Array): ArcadeEffect[] {
   return effects;
 }
 
-const growToParams = z.object({ points: z.int().min(1).max(100), wake: z.literal(true).optional() }).strict();
+const growToParams = z
+  .object({
+    points: z.int().min(1).max(100),
+    wake: z.literal(true).optional(),
+    /** Boss finále (P47A T3, index předlohy, vzor `fight_end.boss`): dokud stojí jeho kopie, výhra počká. Bez něj jako dřív. */
+    boss: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+  })
+  .strict();
 
-/** Skóre (= velikost, v útěku sebrané věci) dosáhlo cíle → výhra. S `wake` probouzí pronásledovatele. */
+/** Podpis těla jako `matches` chování (role, model, rozměry); vlastní kopie – `behaviours` importují arénu. */
+const SIGNATURE = [BODY.role, BODY.kind, BODY.w, BODY.h, BODY.d] as const;
+
+/** Stojí živá kopie předlohy bosse (týž podpis)? */
+function bossStands(state: Int32Array, template: number): boolean {
+  const own = bodyBase(template);
+  for (let i = state[HEADER.spawnBase] as number; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const base = bodyBase(i);
+    if (((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && SIGNATURE.every((slot) => state[base + slot] === state[own + slot])) return true;
+  }
+  return false;
+}
+
+/** Skóre (= velikost, v útěku sebrané věci) dosáhlo cíle → výhra, s `boss` až po jeho pádu. S `wake` probouzí pronásledovatele. */
 export const growTo: RulePiece<z.infer<typeof growToParams>> = {
   id: 'grow_to',
   params: growToParams,
@@ -543,7 +566,8 @@ export const growTo: RulePiece<z.infer<typeof growToParams>> = {
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state }, params) => {
     const woken = params.wake === true ? wakeChasers(state) : [];
-    return (state[HEADER.counters + COUNTER.score] as number) >= params.points ? [...woken, { kind: 'win' }] : woken;
+    if ((state[HEADER.counters + COUNTER.score] as number) < params.points) return woken;
+    return params.boss !== undefined && bossStands(state, params.boss) ? woken : [...woken, { kind: 'win' }];
   },
 };
 

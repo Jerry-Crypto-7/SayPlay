@@ -18,14 +18,15 @@
  * Stav: soupeř (tělo 1) má fázi v `aux0` (`DUEL_PHASE`) a zbylé tiky fáze
  * v `aux1`; hráč má výsledek tiku v `aux0` (pro `judge`) a časovač úhybu
  * v `aux1` (> 0 uhýbá, < 0 zotavení nebo potácení). Zásahy soupeře jsou `z`
- * hráče v metrech, životy soupeře a pořadí útoku jsou čítače `DUEL_COUNTER`.
+ * hráče v metrech, životy soupeře a pořadí útoku jsou čítače `DUEL_COUNTER`. Šampion (`champion`,
+ * P47A T6) má navíc HP těla, které ubírají efekty `hit` pravidla `judge`; po knockoutu leží s HP 0.
  */
 
 import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_HZ, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, HEADER, UNIT, bodyBase } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, type ArcadeState, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, HEADER, UNIT, bodyBase, bodyHp, setBodyHp } from '../contract';
 import { judgeRules } from './timing';
 
 export const DUEL_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -90,11 +91,26 @@ const controlParams = z
     pace: z.int().min(100).max(5000).optional(),
     /** Rozzuření posledního soupeře pod polovinou HP (`DUEL_ENRAGE`); bez hodnoty žádné. */
     enrage: z.object({ warn: z.int().min(1).max(ARCADE_HZ), faster: z.int().min(0).max(ARCADE_HZ) }).strict().optional(),
+    /**
+     * Šampion (finále P47A T6, jen průběh `genre.v4`): index předlohy těla bosse. Když padne předposlední
+     * soupeř, tělo soupeře převezme její model a rozměry a dostane HP = `foeHealth`; zásahy mu ubírá
+     * `judge` (`champion`). Bez hodnoty tělo soupeře HP nemá.
+     */
+    champion: z.object({ body: z.int().min(DUEL_FOE + 1).max(ARCADE_LIMITS.maxBodies - 1) }).strict().optional(),
   })
   .strict();
 export type DuelControlParams = z.infer<typeof controlParams>;
 
 const S = BODY;
+
+/** Tělo soupeře se stane šampionem: model a rozměry předlohy, HP `hp`. Jednou – korunovaný šampion HP má. */
+function crown(state: ArcadeState, template: number, hp: number): void {
+  if (bodyHp(state, DUEL_FOE) > 0) return;
+  const foe = bodyBase(DUEL_FOE);
+  const from = bodyBase(template);
+  for (const slot of [S.kind, S.w, S.h, S.d]) state[foe + slot] = state[from + slot] as number;
+  setBodyHp(state, DUEL_FOE, hp);
+}
 
 /** Útok vzorce u soupeře `round` (od 0): o `rise` tiků za soupeře kratší, ne pod mez – co už pod ní je, zůstane. */
 export function duelAttackAt(move: DuelAttack, round: number, rise: number): DuelAttack {
@@ -147,6 +163,8 @@ export const duelControl: ControlPiece<DuelControlParams> = {
     }
 
     const hits = Math.floor((state[p + S.z] as number) / UNIT);
+    // Předposlední soupeř padl (i tímhle úderem): nastupuje šampion. Úder, který ho porazil, šampiona nezasáhne (`judge`).
+    if (params.champion !== undefined && hits === params.foeHealth * ((params.rounds ?? 1) - 1)) crown(state, params.champion.body, params.foeHealth);
     // Soupeř, se kterým se teď bojuje (od 0): každý další útočí rychleji.
     const round = Math.floor(hits / params.foeHealth);
     const enraged = enragedAfter(hits, params);

@@ -43,6 +43,7 @@ import {
   bodyBase,
 } from '../contract';
 import { GRAVITY } from '../kernel';
+import { bossBody } from './behaviours/boss';
 import { PACING, TENSION_CURVE, intensityAt } from './pacing';
 import { census } from './shots';
 import { WAVE_PLAN } from './waves';
@@ -108,13 +109,14 @@ const controlParams = z.object({ swing: z.int().min(UNIT).max(10 * UNIT).optiona
 /** Tiky jednoho kyvu bonusového terče (sudé): za tolik tiků přejede z kraje na kraj. */
 export const swingPeriod = (speed: number, amplitude: number): number => 2 * Math.round(amplitude / speed);
 
-/** Živé kinematické terče s rychlostí a bez periody (právě přišly) dostanou periodu kyvu. */
+/** Živé kinematické terče (i terč-boss role nepřítele, P47A T7) s rychlostí a bez periody (právě přišly) dostanou periodu kyvu. */
 function startSwings(state: Int32Array, amplitude: number): void {
   const count = state[HEADER.bodyCount] as number;
   for (let i = 0; i < count; i += 1) {
     const b = bodyBase(i);
     const flags = state[b + BODY.flags] as number;
-    if ((flags & FLAG.alive) === 0 || (flags & FLAG.kinematic) === 0 || state[b + BODY.role] !== ROLE.target) continue;
+    const role = state[b + BODY.role];
+    if ((flags & FLAG.alive) === 0 || (flags & FLAG.kinematic) === 0 || (role !== ROLE.target && role !== ROLE.enemy)) continue;
     const vx = state[b + BODY.vx] as number;
     if (vx !== 0 && state[b + BODY.aux1] === 0) state[b + BODY.aux1] = swingPeriod(Math.abs(vx), amplitude);
   }
@@ -334,6 +336,8 @@ const generatorParams = z
     paceBudgetPct: z.int().min(50).max(100).optional(),
     /** Průběh P45C T14 (píše ho jen průběh, ne spec): v každém kole pohyblivý bonusový terč (`THROW_SWING`). */
     swing: z.literal(true).optional(),
+    /** Průběh P47A T7 (jen `genre.v4`): bonusový terč posledního kola je terč-boss (`THROW_BOSS`). Jen se `swing`. */
+    boss: z.literal(true).optional(),
   })
   .strict();
 export type ThrowParams = z.infer<typeof generatorParams>;
@@ -366,6 +370,21 @@ export const THROW_SWING = {
   seconds: 2,
 } as const;
 
+/**
+ * Terč-boss hodu (P47A T7, parametr `boss`): poslední kolo nese místo bonusového terče a `hp` nejvyšších cílů
+ * nepřítele `bossBody` bonusového terče (9/4 rozměrů, `kind` `boss`) s `hp` HP, který se kýve rychlostí
+ * posledního kola – zásah míčem ubere 1 HP (`shot_hit.tough`), poslední HP ho sebere a kolo i výhra čekají na
+ * jeho pád. Hodů kola o `hp` na bosse víc než za odebrané cíle a bonusový terč, a navíc `reserve`, aby náboje
+ * nebyly útes (vzor `SHOOTER_FOES.bossAmmo`). Kolo bosse trvá jako kolo, které nahradilo (tři hody na kývající
+ * se terč ~2,4 s proti třem cílům a bonusovému terči), takže rozpočet kol ani hodiny se nemění: boss navíc
+ * ke všem cílům kola prohrál buňce `throw.default` na hodiny 52 s (intermediate 15/20), o kolo kratší hra
+ * s ním dala začátečníkovi 20/20.
+ */
+export const THROW_BOSS = { hp: 3, reserve: 2 } as const;
+
+/** Bonusový terč na čáře hodu (`x` 0); místo mu dá `bonusOf`, kraj a rychlost `swingAt`. */
+const BONUS: BodyInit = { role: 'target', kind: 'target', x: 0, y: 0, z: 0, ...THROW_SWING.body, solid: false, kinematic: true };
+
 /** Rychlost bonusového terče při intenzitě `intensity` (‰): úvod 700 → `speed[0]`, finále 1500 → `speed[1]`. */
 export function swingSpeed(intensity: number): number {
   const [slow, fast] = THROW_SWING.speed;
@@ -376,13 +395,14 @@ export function swingSpeed(intensity: number): number {
 /**
  * Bonusový terč za cíli kola (těla `from..`): první místo z `behind` × `lifts`, kam ho hod trefí, když cíle kola
  * padly a stojí jen opěry, zeď a tyče. Stojí na čáře hodu (`x` 0) – kraj a rychlost mu dá až `swingAt`. `null` = nikam.
+ * `shape` = tělo terče (terč-boss posledního kola, `THROW_BOSS`).
  */
-function bonusOf(bodies: readonly BodyInit[], from: number): BodyInit | null {
+function bonusOf(bodies: readonly BodyInit[], from: number, shape: BodyInit = BONUS): BodyInit | null {
   const far = Math.max(...bodies.slice(from).map((body) => body.z + body.d / 2));
   const standing = bodies.map((body, index) => (index >= from && body.role === 'target' ? { ...body, template: true } : body));
   for (const behind of THROW_SWING.behind) {
     for (const lift of THROW_SWING.lifts) {
-      const bonus: BodyInit = { role: 'target', kind: 'target', x: 0, y: lift, z: far + behind, ...THROW_SWING.body, solid: false, kinematic: true };
+      const bonus: BodyInit = { ...shape, y: lift, z: far + behind };
       if (solveThrow(boxesOfLevel([...standing, bonus]), standing.length) !== null) return bonus;
     }
   }
@@ -430,6 +450,9 @@ export const throwBudgetIn = (seconds: number): number => Math.max(1, Math.floor
 
 const player: BodyInit = { role: 'player', kind: 'thrower', x: 0, y: 0, z: 0, w: THROW.playerW, h: THROW.playerH, d: THROW.playerD, solid: false };
 
+/** Tyč koše stojí o tolik za obroučkou; podstavec terče pod ním na stejném `z`. */
+const POLE_BEHIND = 700;
+
 /** Těla jednoho cíle na hloubce `z`: terč, koš na tyči, nebo věž. */
 function goalBodies(goal: ThrowGoal, z: number, height: number, lift: number): BodyInit[] {
   if (goal === 'target') {
@@ -441,7 +464,7 @@ function goalBodies(goal: ThrowGoal, z: number, height: number, lift: number): B
     const rim = 2600 + lift;
     return [
       { role: 'target', kind: 'hoop', x: 0, y: rim, z, w: 900, h: 250, d: 900, solid: false },
-      { role: 'obstacle', kind: 'pole', x: 0, y: 0, z: z + 700, w: 300, h: rim + 900, d: 300, solid: true },
+      { role: 'obstacle', kind: 'pole', x: 0, y: 0, z: z + POLE_BEHIND, w: 300, h: rim + 900, d: 300, solid: true },
     ];
   }
   return Array.from({ length: height }, (_, k): BodyInit => ({ role: 'target', kind: 'wood-block', x: 0, y: k * THROW.blockSize, z, w: THROW.blockSize, h: THROW.blockSize, d: THROW.blockSize, solid: true, gravity: true }));
@@ -532,6 +555,8 @@ interface ThrowBuild {
   readonly level: ArcadeLevel;
   /** Kola od druhého; `null` = jedno pole jako dřív. */
   readonly rounds: ThrowRoundsParams | null;
+  /** Předloha terče-bosse posledního kola (`THROW_BOSS`); bez něj chybí. */
+  readonly tough?: number;
 }
 
 /**
@@ -598,16 +623,33 @@ function buildField(seed: number, params: ThrowParams): ThrowBuild {
   const speedOf = (k: number): number => swingSpeed(intensityAt(Math.floor(((2 * k + 1) * 500) / (planned.length + 1)), TENSION_CURVE));
   const firstAt = bodies.length - 1;
   if (firstBonus !== null) bodies[firstAt] = swingAt(firstBonus, speedOf(0), 0);
+  // Terč-boss (P47A T7) místo bonusového terče posledního kola, za cíli kola; bez místa zůstane kolo jak je.
+  const final = planned.length - 1;
+  const crowned = planned[final]!;
+  const boss = params.boss === true && crowned.bonus !== null ? bonusOf([...bodies.slice(0, field), ...crowned.bodies], field, bossBody({ ...BONUS, role: 'enemy' }, THROW_BOSS.hp)) : null;
+  let tough: number | undefined;
   const rounds = planned.map((round, index) => {
-    const own = { bodies: round.bodies.flatMap((body) => [bodies.length + templateOf(body), body.x, body.y, body.z]), throws: round.throws };
-    if (round.bonus === null) return own;
-    const bonus = swingAt(round.bonus, speedOf(index + 1), index + 1);
-    return { ...own, swing: [bodies.length + templateOf(bonus), bonus.x, bonus.y, bonus.z, bonus.vx ?? 0] as [number, number, number, number, number] };
+    const bossRound = boss !== null && index === final;
+    // Kolo bosse bez `hp` nejvyšších cílů (věž shora): tři hody na bosse místo nich a bonusového terče.
+    const dropped = bossRound ? new Set(hitOrder(round.bodies, 0, round.bodies.length).slice(0, THROW_BOSS.hp)) : new Set<number>();
+    // …a bez jejich opěr (P47A T10): podstavec terče pod ním a tyč koše za ním by stály samy. Místo bosse se
+    // hledalo s nimi (`bonusOf` bere jen přímý zásah), takže jeho hod platí i bez nich.
+    const orphan = (body: BodyInit): boolean =>
+      body.role === 'obstacle' && [...dropped].some((k) => round.bodies[k]!.x === body.x && body.z - round.bodies[k]!.z >= 0 && body.z - round.bodies[k]!.z <= POLE_BEHIND);
+    const spawned = round.bodies.filter((body, k) => !dropped.has(k) && !orphan(body));
+    const own = { bodies: spawned.flatMap((body) => [bodies.length + templateOf(body), body.x, body.y, body.z]), throws: round.throws + (bossRound ? THROW_BOSS.hp - dropped.size - 1 + THROW_BOSS.reserve : 0) };
+    const target = bossRound ? boss : round.bonus;
+    if (target === null) return own;
+    const bonus = swingAt(target, speedOf(index + 1), index + 1);
+    const template = bodies.length + templateOf(bonus);
+    if (bossRound) tough = template;
+    return { ...own, swing: [template, bonus.x, bonus.y, bonus.z, bonus.vx ?? 0] as [number, number, number, number, number] };
   });
   const supports = templates.flatMap((body, k) => (body.role === 'obstacle' ? [bodies.length + k] : []));
   return {
     level: { bodies: [...bodies, ...templates], length: 0, spawnSlots: 3 + widest, counters: { ammo: throws, reserve: 0 } },
     rounds: { rounds, supports },
+    ...(tough === undefined ? {} : { tough }),
   };
 }
 
@@ -619,14 +661,14 @@ export const throwField: GeneratorPiece<ThrowParams> = {
   generate: (seed, params) => buildField(seed, params).level,
 };
 
-/** Pole a pravidla hodu: odhoz, zásah, všechny cíle (s koly až poslední kolo), hody došly. */
+/** Pole a pravidla hodu: odhoz, zásah (terči-bossovi ubere HP), všechny cíle (s koly až poslední kolo), hody došly. */
 export function throwParts(seed: number, params: ThrowParams): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
-  const { level, rounds } = buildField(seed, params);
+  const { level, rounds, tough } = buildField(seed, params);
   return {
     level,
     rules: [
       { id: 'launch', params: { template: 1 } },
-      { id: 'shot_hit', params: {} },
+      { id: 'shot_hit', params: tough === undefined ? {} : { tough } },
       rounds === null ? { id: 'cleared', params: {} } : { id: 'throw_rounds', params: rounds },
       { id: 'out_of_ammo', params: {} },
     ],

@@ -18,6 +18,12 @@ import type { ArcadeSession } from './session';
  */
 export const PACING_KINDS: ReadonlySet<string> = new Set(Object.values(BEHAVIOURS).map((behaviour) => behaviour.body.kind));
 
+/**
+ * Jiskra tepu sběru a útěku s věcmi (`HEARTBEAT_SPARK`, P47A T9): bonus, který věci hry nepočítají. Katalog model
+ * nemá a model věci z věty by lhal, že se počítá – scéna arény ji kreslí vlastním tvarem (P47A T10).
+ */
+export const SPARK_KIND = 'spark';
+
 /** Výstřely chování P45C (ostřelovač, salva bosse, terč střelnice) – katalog je nemá, scéna je kreslí jako střelu. */
 export const PACING_SHOT_KINDS: ReadonlySet<string> = new Set(Object.values(BEHAVIOURS).flatMap((behaviour) => (behaviour.shot === undefined ? [] : [behaviour.shot.kind])));
 

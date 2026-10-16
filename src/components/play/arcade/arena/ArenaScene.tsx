@@ -47,7 +47,7 @@ import { FIGHT, FIGHT_PHASE, attackCooldownOf, facingOf, phaseOf, phaseTicksLeft
 import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
-import { type BodyView, PACING_KINDS, bodiesOf, bodiesStale } from '../bodies';
+import { type BodyView, PACING_KINDS, SPARK_KIND, bodiesOf, bodiesStale } from '../bodies';
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import { FieldGround } from '../look/FieldGround';
@@ -251,7 +251,8 @@ function AgarWorld({ session, half, surface, look: scene, targets, ghost }: Aren
             </group>
           );
         }
-        const color = colorOf(disc.role);
+        // Jiskra tepu (P47A T10) je bonus, ne věc hry: mátový kotouč místo žlutého.
+        const color = disc.role === ROLE.collectible && disc.kind === SPARK_KIND ? brand.mint : colorOf(disc.role);
         const tall = disc.role === ROLE.collectible ? 0.15 : Math.min(0.5, disc.h);
         return (
           // `frame` čte sonda záběru (P27A T6): hráč je hrdina, každý jiný kotouč kromě střely cíl nebo hrozba.
@@ -294,6 +295,8 @@ const DECOR_KEEP_M = 0.4;
 /** Záře věci nad prahem bloomu rigu (`bloomThreshold` ≈ 1,1). */
 const ITEM_GLOW = 2.4;
 const RING_GLOW = new Color(brand.sun).multiplyScalar(2.5);
+/** Kruh pod jiskrou tepu: mátová jako jiskra, ne slunce věcí hry. */
+const SPARK_GLOW = new Color(brand.mint).multiplyScalar(2.5);
 const ALERT_GLOW = new Color(brand.tomato).multiplyScalar(1.6);
 
 /** Sklon kamery nad vodorovnou (sin, cos). */
@@ -416,6 +419,21 @@ function Gem({ size }: { readonly size: number }) {
       <octahedronGeometry args={[size / 2, 0]} />
       <meshStandardMaterial color={brand.sun} emissive={brand.sun} emissiveIntensity={ITEM_GLOW} roughness={0.3} flatShading />
     </mesh>
+  );
+}
+
+/** Jiskra tepu (P47A T10): tři zkřížené hroty v mátové – bonus, ne věc hry (ta je drahokam nebo model z věty). Nic nestahuje. */
+const SPARK_ARMS: readonly (readonly [number, number, number])[] = [[0.3, 1, 0.3], [1, 0.3, 0.3], [0.3, 0.3, 1]];
+function Spark({ size }: { readonly size: number }) {
+  return (
+    <group position={[0, size / 2, 0]}>
+      {SPARK_ARMS.map((scale) => (
+        <mesh key={scale.join()} scale={[...scale]} userData={{ glow: true }}>
+          <octahedronGeometry args={[size / 2, 0]} />
+          <meshStandardMaterial color={brand.mint} emissive={brand.mint} emissiveIntensity={ITEM_GLOW} roughness={0.3} flatShading />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
@@ -766,6 +784,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
           );
         }
         const model = modelOf(part, cast);
+        const spark = part === 'item' && view.kind === SPARK_KIND;
         const character = rigged[view.index];
         const fighter = startHp[view.index]! > 0;
         // Klip, který postava opravdu hraje: hrdina pro sondu `data-anim-clip`, soupeř souboje pro `data-rival-clip`.
@@ -777,10 +796,11 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
               : undefined;
         return (
           // `frame` a `item` čte sonda záběru (`__playFrame`): hrdina, cíle a hrozby, pronásledovatel pod vlastním jménem.
-          <group key={view.index} ref={register} userData={{ frame: part === 'hero' ? 'hero' : 'target', item: part === 'hero' ? undefined : part === 'item' ? 'coin' : part }}>
+          // Jiskra tepu nekreslí věc z věty, takže ani nenese její jméno (`item`).
+          <group key={view.index} ref={register} userData={{ frame: part === 'hero' ? 'hero' : 'target', item: part === 'hero' || spark ? undefined : part === 'item' ? 'coin' : part }}>
             <group ref={(group) => { turned.current[view.index] = group; }}>
               {part === 'item' ? (
-                model === undefined ? <Gem size={size.h} /> : <FittedModel id={model} w={size.w} h={size.h} d={size.d} fallback={FALLBACK.item} />
+                spark ? <Spark size={size.h} /> : model === undefined ? <Gem size={size.h} /> : <FittedModel id={model} w={size.w} h={size.h} d={size.d} fallback={FALLBACK.item} />
               ) : (
                 // Nápřah a pád bojovníka (`drawFighter`); výpad, úder a zásah hraje hračková póza vnitřní skupiny.
                 <group ref={(group) => { leans.current[view.index] = group; }}>
@@ -811,7 +831,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
               // Zářící kruh na zemi pod věcí: svítí nad prahem bloomu, ať je věc vidět i z dálky.
               <mesh position={[0, 0.02 - ITEM_HOVER_M, 0]} rotation={[-Math.PI / 2, 0, 0]} userData={{ glow: true, rigShadow: 'receive' }}>
                 <ringGeometry args={[size.w * 0.45, size.w * 0.6, 24]} />
-                <meshBasicMaterial color={RING_GLOW} toneMapped={false} />
+                <meshBasicMaterial color={spark ? SPARK_GLOW : RING_GLOW} toneMapped={false} />
               </mesh>
             )}
             {part === 'hero' && (

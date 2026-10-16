@@ -193,6 +193,8 @@ const waveParams = z
     spots: z.array(z.int()).max(2 * WAVE_LIMITS.spots),
     /** Přestávka souboje mezi poslední ranou vlny a další vlnou (tiky). */
     pause: z.int().min(1).max(5 * ARCADE_HZ).optional(),
+    /** Předloha jiskry tepu (P47A T9, `isSpark`): vlna věcí na její kopie nečeká. Bez ní jako dřív. */
+    spark: body.optional(),
     /** Vlny od druhé: věci (x, z po dvojicích), noví pronásledovatelé, noví soupeři, HP soupeřů, tik začátku. */
     waves: z
       .array(
@@ -220,6 +222,13 @@ const aliveWith = (state: Int32Array, role: number): number[] => {
   }
   return found;
 };
+
+/**
+ * Jiskra tepu pole (P47A T9): věc, která je kopií předlohy `spark` (týž model). Je to bonus pro člověka – sběr ji
+ * nepočítá do skóre ani vlny a strážce ji nehlídá. Bez předlohy (uložené hry, přežití, quest) jiskra není nic.
+ */
+export const isSpark = (state: Int32Array, body: number, spark: number | undefined): boolean =>
+  spark !== undefined && state[bodyBase(body) + BODY.role] === ROLE.collectible && state[bodyBase(body) + BODY.kind] === state[bodyBase(spark) + BODY.kind];
 
 /**
  * Místa vstupu od nejvzdálenějšího od hráče (shoda: nižší index). Celá čísla:
@@ -271,7 +280,7 @@ export const arenaWaves: RulePiece<WaveParams> = {
     const next = params.waves[waveOf(state)];
     if (next === undefined) return [];
     const effects: ArcadeEffect[] = [];
-    if (params.until === 'items' && aliveWith(state, ROLE.collectible).length > 0) return [];
+    if (params.until === 'items' && aliveWith(state, ROLE.collectible).some((i) => !isSpark(state, i, params.spark))) return [];
     if (params.until === 'targets') {
       const targets = aliveWith(state, ROLE.target);
       if (targets.some((i) => targetStateOf(state, i) < (params.done ?? 1))) return [];

@@ -8,6 +8,12 @@
  * rozjezd 0–200, úsek 2 200–650, úsek 3 650–850, finále 850–1000. Běžec,
  * řízení i skákačka jsou trati v ose `z`, jinou hru měřidlo neměří.
  *
+ * **Rovina** (P47A T8: aréna, quest v prostoru – hra s průběhem, jehož cíl není
+ * ujetá trať): postup je `progressOf` cíle `pacing_control` (věci, skóre, kola,
+ * čas), ne `z`; zorné pole je celá aréna. Rychlost vpřed, šířka trati ani
+ * hustota na 100 m tam smysl nemají – změnu úseku dává jen nový nepřítel
+ * a nový druh prostředí.
+ *
  * `segmentChanges` = kolik z úseků 2 a 3 přineslo proti předchozímu aspoň
  * jednu hratelnou změnu (0–2). Finále měří `finale` telemetrie P45A, ne tohle.
  * Hratelná změna je jen jedna z těchto:
@@ -25,10 +31,10 @@
  *   začátku (soupeři na startu řízení) je náhoda rozestavění, ne stupňování.
  */
 
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, BODY, FLAG, HEADER, type InputEvent, NO_INPUT, ROLE, RUN_STATE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, BODY, FLAG, HEADER, type InputEvent, NO_INPUT, type PieceRef, ROLE, RUN_STATE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
-import { PACING } from '@/play/arcade/pieces/pacing';
+import { PACING, type PacingGoal, progressOf } from '@/play/arcade/pieces/pacing';
 import { releasePhysics } from '@/play/arcade/physics/step';
 import { CHASE_COSINE, SAMPLE_TICKS, STATIC_PATH } from '@/play/arcade/telemetry';
 
@@ -129,8 +135,15 @@ function widthAt(state: Int32Array, player: number): number | null {
   return Number.isFinite(left) && Number.isFinite(right) ? right - left : null;
 }
 
-/** Zapíše těla v zorném poli hráče do úseku (role hrozeb a trati, ne předlohy). */
-function observe(state: Int32Array, player: number, born: readonly number[], bucket: Bucket): void {
+/** Cíl postupu průběhu (`pacing_control` pod obaly doplňků), nebo `undefined` = hra bez průběhu. */
+function goalOf(control: PieceRef): PacingGoal | undefined {
+  if (control.id === 'pacing_control') return control.params.goal as PacingGoal;
+  const base = control.params.base as PieceRef | undefined;
+  return typeof base === 'object' && base !== null && typeof base.id === 'string' ? goalOf(base) : undefined;
+}
+
+/** Zapíše těla v zorném poli hráče do úseku (role hrozeb a trati, ne předlohy); v rovině vidí hráč celou arénu. */
+function observe(state: Int32Array, player: number, born: readonly number[], bucket: Bucket, plane: boolean): void {
   const px = at(state, player, 'x');
   const pz = at(state, player, 'z');
   for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
@@ -142,7 +155,7 @@ function observe(state: Int32Array, player: number, born: readonly number[], buc
     const z = at(state, body, 'z');
     // Stěna řízení je delší než zorné pole: viditelná je, když se ho dotkne kterákoli její část.
     const reach = at(state, body, 'd') / 2;
-    if (z + reach < pz - VIEW_BEHIND || z - reach > pz + VIEW_AHEAD) continue;
+    if (!plane && (z + reach < pz - VIEW_BEHIND || z - reach > pz + VIEW_AHEAD)) continue;
     const key = `${String(body)}@${String(born[body])}`;
     const seen = bucket.seen.get(key);
     if (seen === undefined) {
@@ -207,13 +220,16 @@ export function changesOf(prev: SegmentFacts, next: SegmentFacts, earlier: reado
 
 /**
  * Přehraje záznam jako `traceRun` a po úsecích sebere, co hráč viděl a jak
- * rychle jel. Hash na konci = hash přehrání.
+ * rychle jel. Hash na konci = hash přehrání. Hra s průběhem, jehož cíl není
+ * trať, se měří v rovině (postup = `progressOf` cíle).
  */
 export function segmentRun(world: ArcadeWorld, inputs: readonly InputEvent[], library: ArcadeLibrary = ARCADE_LIBRARY): SegmentRun {
   const program = loadProgram(world, library);
   const state = instantiate(world);
   const player = state[HEADER.player] as number;
   const length = Math.max(1, world.length);
+  const goal = goalOf(world.control);
+  const plane = goal !== undefined && goal.by !== 'distance' ? goal : undefined;
   const born = Array.from({ length: ARCADE_LIMITS.maxBodies }, () => 0);
   const buckets: Bucket[] = SEGMENT_NAMES.map(() => ({ ticks: 0, from: Infinity, to: -Infinity, speeds: [], widths: [], seen: new Map() }));
   let reached = 0;
@@ -227,15 +243,17 @@ export function segmentRun(world: ArcadeWorld, inputs: readonly InputEvent[], li
     step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program);
     for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) if (body >= count || (!wasAlive[body] && alive(state, body))) born[body] = tick + 1;
     const z = at(state, player, 'z');
-    reached = Math.max(reached, Math.min(1000, Math.max(0, Math.floor((z * 1000) / length))));
+    reached = Math.max(reached, plane === undefined ? Math.min(1000, Math.max(0, Math.floor((z * 1000) / length))) : progressOf(state, plane));
     const bucket = buckets[segmentOf(reached)] as Bucket;
     bucket.ticks += 1;
-    bucket.from = Math.min(bucket.from, before);
-    bucket.to = Math.max(bucket.to, z);
-    bucket.speeds.push(Math.max(0, z - before));
+    if (plane === undefined) {
+      bucket.from = Math.min(bucket.from, before);
+      bucket.to = Math.max(bucket.to, z);
+      bucket.speeds.push(Math.max(0, z - before));
+    }
     if ((state[HEADER.tick] as number) % SAMPLE_TICKS === 0) {
-      observe(state, player, born, bucket);
-      const width = widthAt(state, player);
+      observe(state, player, born, bucket, plane !== undefined);
+      const width = plane === undefined ? widthAt(state, player) : null;
       if (width !== null) bucket.widths.push(width);
     }
   }

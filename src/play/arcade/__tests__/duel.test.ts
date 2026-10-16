@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { describe, expect, it } from 'vitest';
 
 import { type GameSpecV1, readGameSpec } from '../../spec';
@@ -126,6 +128,23 @@ describe('souboj – robot a ověření', () => {
         expect(verdict.bot.outcome).toBe('won');
         expect(verdict.idle.outcome).toBe('lost');
       }
+    }
+  });
+
+  it('bez parametru `champion` (souboj mimo průběh v4, P47A T6) týž svět a týž hash robota jako před ním', () => {
+    // sha256 světa a hash robota nad `07a7491b`, před šampionem.
+    const pins = [
+      { difficulty: 'easy', seed: 1, health: undefined, world: '9fe16d245326e88d7e262147e1a680e75a5be06c17d0eb7e5d5baec977e9295f', bot: '89016347' },
+      { difficulty: 'normal', seed: 2, health: 5, world: '4a37c0569a366ab3b6eba3020a17b9ab2e446a90b2f8484643a823f88087a631', bot: 'e3b5106e' },
+      { difficulty: 'hard', seed: 3, health: undefined, world: '1138517f7b11d4c7a76db048d0589d4a2c31e046801c9080ab67cca65d4f7ba2', bot: '6b5eb94f' },
+    ] as const;
+    for (const pin of pins) {
+      const made = arcadeWorldOf(duelSpec({ difficulty: pin.difficulty }, pin.health), pin.seed);
+      if (!made.ok) throw new Error(made.issues.join('; '));
+      expect(made.world.control.params.champion, pin.difficulty).toBeUndefined();
+      expect(made.world.rules.find((rule) => rule.id === 'judge')?.params.champion).toBeUndefined();
+      expect(createHash('sha256').update(JSON.stringify(made.world)).digest('hex'), pin.difficulty).toBe(pin.world);
+      expect(runBot(made.world).hash, pin.difficulty).toBe(pin.bot);
     }
   });
 
