@@ -35292,6 +35292,141 @@
           0.41453
         ]
       }
+    },
+    {
+      "assetId": "gen3d-jungle-vine-bridge",
+      "tags": [
+        "jungle vine bridge"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-jungle-vine-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.57817,
+          0,
+          -0.57386
+        ],
+        "max": [
+          0.57817,
+          0.99501,
+          0.57386
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tiki-totem",
+      "tags": [
+        "tiki totem",
+        "tiki statue"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tiki-totem-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16339,
+          0,
+          -0.19028
+        ],
+        "max": [
+          0.16339,
+          1.00001,
+          0.19028
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-carved-stone-head",
+      "tags": [
+        "carved stone head",
+        "olmec head"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-carved-stone-head-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26577,
+          0,
+          -0.34506
+        ],
+        "max": [
+          0.26577,
+          0.99871,
+          0.34506
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ski-rack",
+      "tags": [
+        "ski rack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ski-rack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48332,
+          0,
+          -0.11954
+        ],
+        "max": [
+          0.48332,
+          0.998,
+          0.11954
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snow-lantern",
+      "tags": [
+        "snow lantern"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snow-lantern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35055,
+          0,
+          -0.34365
+        ],
+        "max": [
+          0.35055,
+          0.99095,
+          0.34365
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-frozen-barrel",
+      "tags": [
+        "frozen barrel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-frozen-barrel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.364,
+          0,
+          -0.35871
+        ],
+        "max": [
+          0.364,
+          0.99807,
+          0.35871
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-polar-flag",
+      "tags": [
+        "polar flag"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-polar-flag-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44455,
+          0,
+          -0.44392
+        ],
+        "max": [
+          0.44455,
+          0.99898,
+          0.44392
+        ]
+      }
     }
   ]
 }

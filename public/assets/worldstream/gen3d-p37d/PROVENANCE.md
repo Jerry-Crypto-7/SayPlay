@@ -985,3 +985,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-desert-lantern` | desert lantern, moroccan lantern | 4565 / 2239 |
 | `gen3d-clay-jar` | clay jar | 4748 / 2374 |
 | `gen3d-sphinx-statue` | sphinx statue | 4243 / 2041 |
+| `gen3d-jungle-vine-bridge` | jungle vine bridge | 3918 / 1812 |
+| `gen3d-tiki-totem` | tiki totem, tiki statue | 4702 / 2303 |
+| `gen3d-carved-stone-head` | carved stone head, olmec head | 4368 / 2132 |
+| `gen3d-ski-rack` | ski rack | 4528 / 2071 |
+| `gen3d-snow-lantern` | snow lantern | 4223 / 2026 |
+| `gen3d-frozen-barrel` | frozen barrel | 4012 / 2144 |
+| `gen3d-polar-flag` | polar flag | 4748 / 2370 |

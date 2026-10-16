@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "81202c7019d8bb5cb36dd1c6ea60862484301f1a5e4f42d7be30bd03093c8fd2",
+ "catalogHash": "b6fbb9b2716207f35711b1f63c9127f377f7701e88d792a4fb46507e739b05fd",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1760,6 +1760,13 @@
   "gen3d-sand-dune": {"class":"prop"},
   "gen3d-desert-lantern": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-clay-jar": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-sphinx-statue": {"class":"prop"}
+  "gen3d-sphinx-statue": {"class":"prop"},
+  "gen3d-jungle-vine-bridge": {"class":"prop"},
+  "gen3d-tiki-totem": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-carved-stone-head": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-ski-rack": {"class":"prop"},
+  "gen3d-snow-lantern": {"class":"biped","regions":{"legY":0.248}},
+  "gen3d-frozen-barrel": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-polar-flag": {"class":"prop"}
  }
 }

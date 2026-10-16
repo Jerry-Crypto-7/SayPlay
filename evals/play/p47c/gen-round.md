@@ -41,3 +41,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 35 | scenery | 10 | 7 | 6/7 | 6 | – | 96/101 | fishing net, log pile, forest mushroom ring, fallen log bridge, hunter cabin, toadstool house | – |
 | 36 (opakování) | scenery | 10 | 3 | 3/3 | 3 | – | 96/101 | sea urchin, habitat dome, meteorite | – |
 | 37 | scenery | 10 | 8 | 6/8 | 6 | – | 96/101 | forest well, clay well, sand dune, desert lantern, clay jar, sphinx statue | – |
+| 38 | scenery | 10 | 8 | 7/8 | 7 | – | 96/101 | jungle vine bridge, tiki totem, carved stone head, ski rack, snow lantern, frozen barrel, polar flag | timeouts alone under GPU load: src/assets/__tests__/external-import.test.ts |

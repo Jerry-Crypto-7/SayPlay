@@ -973,6 +973,10 @@
         {
           "id": "gen3d-wooden-rope-bridge",
           "height": 2.4
+        },
+        {
+          "id": "gen3d-jungle-vine-bridge",
+          "height": 2
         }
       ]
     },
@@ -1375,6 +1379,10 @@
         {
           "id": "gen3d-snowy-stump",
           "height": 0.7
+        },
+        {
+          "id": "gen3d-snow-lantern",
+          "height": 1.4
         }
       ]
     },
@@ -2134,6 +2142,10 @@
         {
           "id": "gen3d-snowman-with-hat",
           "height": 1.7
+        },
+        {
+          "id": "gen3d-polar-flag",
+          "height": 2.5
         }
       ]
     },
