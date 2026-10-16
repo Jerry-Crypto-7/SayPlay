@@ -13,7 +13,7 @@ Holdout `evals/play/p47a/holdout.json` (60 vět, které napsal nezávislý subag
 | Šest žánrů: mrtvý čas, medián | ≤ 3 s | 5,35 s | 2,5 s | ano |
 | Šest žánrů: stoupání | ≥ 0,7 | 0,28 | 0,88 | ano |
 | Panel P45: věta s horším finále nebo mezerou delší o > 1 s než v A | 0 | – | 0 ze 40 | ano |
-| Párový soud nad buňkami šesti žánrů, podíl B | ≥ 0,6 | – | viz Párový soud | – |
+| Párový soud nad buňkami šesti žánrů, podíl B | ≥ 0,6 | – | **0,8** (B 11, A 2, remízy 2) | ano |
 
 Všech 60 vět holdoutu dalo hratelnou hru v A i v B.
 
@@ -67,6 +67,17 @@ B po žánrech: aréna se sbíráním finále 0,7 (3 věty s díly P42 bez průb
 
 ## Párový soud
 
-Výsledek doplní koordinátor z běhu párového soudu.
+Slepý párový soud P45A (Codex nad listem dvou klipů, list jako `sheet.png` v prázdné dočasné složce) nad 15 buňkami panelu P45 ze šesti žánrů plánu, A = `abe38f04`, B = `4e806213`, oba servery jen rychlá verze (bez klíče modelu): **B 11, A 2, remízy 2, podíl B 0,8** (cíl ≥ 0,6), 15 volání Codexu bez chyby. Strana buildu se losovala ze semínka; soudce volil levý sloupec ve 0,333 případů.
+
+| Žánr | B | A | Remíza |
+|---|---|---|---|
+| aréna se sbíráním | 1 | 1 | 1 |
+| útěk / přežití | 3 | 0 | 0 |
+| quest v prostoru | 2 | 1 | 0 |
+| stanoviště | 2 | 0 | 1 |
+| duel | 2 | 0 | 0 |
+| hod | 1 | 0 | 0 |
+
+Buňky: `f01, m02, j01, m01, n02, s002, f05, u06, j05, m04, u03, d03, f02, h05, h03`. Příkaz `play-fidelity.mjs fun` filtr `--only` nebere a končí měřením přes vitest, proto běžely jeho tři kroky zvlášť se stejnými přepínači a `--only` (`run` proti 3272 a 3271, pak `pairwise --concurrency 1`); výsledek `evals/play/fidelity/runs/p47a-t12-6g-pairwise.json` (gitignorovaný). Build A neprošel typovou kontrolou na `e2e/play-segments.spec.ts` z B (chvíle průběhu, které kód A nemá) – pro build A dostal ten soubor verzi `abe38f04`.
 
 Zdrojová data: `evals/play/p47a/final.json` (cíle, souhrny A a B, řádky po větách holdoutu i panelu), měřidlo `evals/play/p47a/finale.measure.ts`; že čísla cílů jsou z holdoutu, hlídá `evals/play/p47a/__tests__/final.test.ts`.

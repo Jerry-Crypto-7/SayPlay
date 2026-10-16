@@ -1139,7 +1139,22 @@
    }
   }
  },
- "pairJudge": null,
+ "pairJudge": {
+  "set": "p45-panel",
+  "cells": ["f01", "m02", "j01", "m01", "n02", "s002", "f05", "u06", "j05", "m04", "u03", "d03", "f02", "h05", "h03"],
+  "aCommit": "abe38f04",
+  "bCommit": "4e806213",
+  "n": 15,
+  "bWins": 11,
+  "aWins": 2,
+  "ties": 2,
+  "bShare": 0.8,
+  "leftWinShare": 0.333,
+  "codexCalls": 15,
+  "target": 0.6,
+  "met": true,
+  "source": "evals/play/fidelity/runs/p47a-t12-6g-pairwise.json"
+ },
  "met": false,
  "rows": {
   "holdout": [

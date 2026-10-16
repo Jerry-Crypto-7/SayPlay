@@ -118,6 +118,7 @@ Z běhu robota `intermediate` na semínku publikace pak finále podle telemetrie
 - **T12 – „horší finále“ na panelu = v A finále (boss nebo climax), v B žádné;** boss → climax se počítá zvlášť (0 vět), mezera se srovnává po větách (nejdelší mezera B − A > 1 s) a navíc se hlídá ztráta hratelnosti. Porušení 0 ze 40.
 - **T12 – `final.json` nese řádky A a B po větách holdoutu i panelu,** surové výstupy obou běhů se necommitují; pin `__tests__/final.test.ts` z těch řádků přepočítá cíle přes `summaryOf` a kontroluje otisk a seznam vět holdoutu (namířený na `dev.json` červený).
 - **T12 – odpovědi na „Co nevíme“:** do šesti žánrů padne 25/60 vět holdoutu (zapečetěná sada 63/100); díly P42 má 4/60 = 6,7 % vět holdoutu (pod 10 %, v šesti žánrech 3/25), takže zůstávají bez průběhu podle T1/T3 a jsou jediné věty šesti žánrů bez finále.
+- **T12 – párový soud jen nad 15 buňkami panelu šesti žánrů, kroky `run` a `pairwise` zvlášť:** `play-fidelity.mjs fun` filtr `--only` nebere a končí měřením přes vitest, které už dal `finale.measure.ts`; podíl B 0,8 (B 11, A 2, remízy 2), 15 volání Codexu. Build A neprošel typovou kontrolou na `e2e/play-segments.spec.ts` z B, proto pro build A dostal ten soubor verzi `abe38f04` (`final.md`, Párový soud).
 
 ## Známé červené (T11, celá sada samotná 16. 10. na `44c47600`)
 
