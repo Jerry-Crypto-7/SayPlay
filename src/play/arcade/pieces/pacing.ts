@@ -478,6 +478,43 @@ function segmentPlaces(level: ArcadeParts['level']): string[][] {
   });
 }
 
+/** Kde postup krok na `permille` ‰ nejpozději přejde: cíl roste po celých věcech, kolech či tikách (`progressOf`). */
+const crossingOf = (goal: PacingGoal, permille: number): number => Math.min(1000, Math.floor((Math.ceil((permille * goal.need) / 1000) * 1000) / goal.need));
+
+/**
+ * Příchody nových nepřátel úseků pole (P47A T8). Postup sběru a questu roste po věcech a kolech, takže krok rozvrhu
+ * přijde až s věcí či kolem, které ho přešly (`crossingOf`; quest po druhém kole skočí rovnou na kolo bosse). Nový
+ * nepřítel úseku dostane první volný krok, který postup přejde uvnitř úseku a ne spolu s bossem (boss vyčistí role
+ * a finále má sám). Když takový krok není, posune se nejbližší volný krok na nejbližší takové místo od `from` do
+ * `until` – rozpočet spawnů zůstane a nic se nelosuje. Úsek bez takového místa (quest:
+ * úsek 3 je kolo bosse) nového nepřítele nedostane; jeho chování pak smí od začátku úseku jako u běžce.
+ */
+function fieldArrivals<T extends { readonly at: number; readonly until: number; readonly index: number }>(raw: readonly ScheduleEntry[], listed: readonly T[], setup: PacingSetup): { steps: ScheduleEntry[]; arrivals: T[]; firsts: number[] } {
+  const steps = [...raw];
+  const cross = (permille: number): number => crossingOf(setup.goal, permille);
+  const boss = setup.boss === undefined ? -1 : cross(Math.max(1, setup.boss.at));
+  const fits = (permille: number, at: number, until: number): boolean => cross(permille) >= at && cross(permille) < until && cross(permille) !== boss;
+  const used: number[] = [];
+  const arrivals = listed.map((arrival) => {
+    let k = steps.findIndex((entry, j) => !used.includes(j) && fits(entry.atPermille, arrival.at, arrival.until));
+    if (k < 0) {
+      // Nejbližší volný krok na nejbližší místo, kde ho postup přejde v úseku a ne s bossem: rozvrh se pohne co nejméně.
+      let best: { j: number; place: number } | null = null;
+      for (let place = Math.max(arrival.at, setup.from ?? 0, 1); place < Math.min(arrival.until, setup.until ?? 1000); place += 1) {
+        if (!fits(place, arrival.at, arrival.until)) continue;
+        for (const [j, entry] of steps.entries()) {
+          if (!used.includes(j) && (best === null || Math.abs(entry.atPermille - place) < Math.abs((steps[best.j] as ScheduleEntry).atPermille - best.place))) best = { j, place };
+        }
+      }
+      if (best !== null) steps[best.j] = { ...(steps[best.j] as ScheduleEntry), atPermille: best.place };
+      k = best?.j ?? -1;
+    }
+    if (k >= 0) used.push(k);
+    return { arrival: k < 0 ? arrival : { ...arrival, at: (steps[k] as ScheduleEntry).atPermille }, k };
+  });
+  return { steps, arrivals: arrivals.map((placed) => placed.arrival), firsts: arrivals.map((placed) => placed.k) };
+}
+
 /**
  * Části hry s průběhem: obalí ovládání a robota, za tělesa úrovně přidá
  * předlohy chování a počítadlo, rezervu spawnů a pravidlo `pacing` s rozvrhem
@@ -513,18 +550,22 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
     ...(setup.segments === 'platform' ? { places: segmentPlaces(parts.level) } : {}),
   };
   const script = setup.segments === undefined ? [] : segmentScriptOf(rng, setup.segments, cast, setup.script);
-  const arrivals = script.flatMap((step) => step.changes.flatMap((change) => (change.kind === 'newFoe' ? [{ ...step, index: behaviours.findIndex((actor) => actor.behaviour === change.behaviour) }] : [])));
+  const listed = script.flatMap((step) => step.changes.flatMap((change) => (change.kind === 'newFoe' ? [{ ...step, index: behaviours.findIndex((actor) => actor.behaviour === change.behaviour) }] : [])));
+  const field = setup.segments === 'field' ? fieldArrivals(raw, listed, setup) : null;
+  const steps = field?.steps ?? raw;
+  // Pole: nový nepřítel smí až od místa svého kroku (úsek 3 za tikem bosse), ne od začátku úseku.
+  const arrivals = field?.arrivals ?? listed;
   // Úsek režiséra bez nového nepřítele (P46E T4): nepřítel bez příchodu přijde až za posledním takovým úsekem.
   const hold = setup.script === undefined ? 0 : Math.max(0, ...script.filter((step) => !step.changes.some((change) => change.kind === 'newFoe')).map((step) => step.until));
   const fromOf = (index: number): number => Math.max(behaviours[index]?.from ?? 0, arrivals.find((arrival) => arrival.index === index)?.at ?? hold);
   // Předloha, která ještě nesmí (`from`), předá krok jiné z těch, které už smí – bez dalšího losu, stream zůstane.
-  const picked = raw.map((entry) => {
+  const picked = steps.map((entry) => {
     const ready = behaviours.flatMap((_actor, index) => (fromOf(index) <= entry.atPermille ? [index] : []));
     return ready.includes(entry.behaviour) ? entry.behaviour : ready[entry.behaviour % Math.max(1, ready.length)];
   });
   // Nový nepřítel úseku dostane jeho první krok a chování z toho kroku si vezme jeho nejbližší pozdější krok:
   // hra má dál stejné složení nepřátel (přepsat oba kroky ostřelovače vzalo semínku 7 běžce 15 z 24 útoků).
-  const firsts = arrivals.map((arrival) => raw.findIndex((entry) => entry.atPermille >= arrival.at && entry.atPermille < arrival.until));
+  const firsts = field?.firsts ?? arrivals.map((arrival) => raw.findIndex((entry) => entry.atPermille >= arrival.at && entry.atPermille < arrival.until));
   for (const [n, arrival] of arrivals.entries()) {
     const k = firsts[n] as number;
     if (k < 0 || picked[k] === arrival.index) continue;
@@ -532,7 +573,7 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
     if (swap >= 0) picked[swap] = picked[k];
     picked[k] = arrival.index;
   }
-  const drawn = raw
+  const drawn = steps
     .flatMap((entry, k) => {
       const index = picked[k];
       if (index === undefined) return [];

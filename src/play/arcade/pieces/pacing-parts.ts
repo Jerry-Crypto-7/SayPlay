@@ -243,6 +243,19 @@ interface FieldFoes {
   readonly leave?: boolean;
   /** Rychlost pronásledovatelů křivka neškáluje (`PacingSetup.steady`): vlny si drží své zrychlení. */
   readonly steady?: boolean;
+  /**
+   * Hra se scénářem úseků (`genre.v4`, P47A T8, `segments: 'field'`) bere chování odsud: úsek 2 a 3 přinese každý
+   * jedno, takže výběr je aspoň 2. Bez pole jako `pool` a `pick`.
+   *
+   * Změřeno (20 semínek buňky, intermediate / novice; pásmo ≥ 16 a 6–14): flanker, ostřelovač ani hejno pool
+   * nerozšířily. Sběr se strážcem a přepadníkem 20 / 11, s ostřelovačem 18 / 7, ale věta „Collect five glowing
+   * mushrooms…“ pak rychlým návrhem ztratila šablonu (svět se šablonou neprošel), s flankerem 18 / 5, s hejnem 13 / 4;
+   * útěk s věcmi s flankerem 20 / 7, ale věta e01 jen 5/8, s ostřelovačem 18 / 7, s hejnem 13 / 6; quest v prostoru
+   * 20 / 8, s flankerem 16 / 8, s ostřelovačem i hejnem 14 / 8. Přežití druhé chování nemá: se dvěma chováními (los,
+   * ostřelovač první, flanker místo přepadníka) začátečník 14–15 / 20 a 7/8 na semínkách 1–8, s ostřelovačem
+   * v úseku 3 intermediate 14 / 20, s flankerem v poolu buňka 4/8 na semínkách 1–8 – úsek 3 přežití nepřítele nedostane.
+   */
+  readonly scripted?: { readonly pool: readonly BehaviourId[]; readonly pick: number };
 }
 
 /**
@@ -277,7 +290,7 @@ export const FIELD = {
    * 100 % se strážcem 15/20, 50 % 36/40 (na semínkách 1–8 jen 5/8). S `steady` a krokem 1: 40 / 39 / 23.
    * Flanker, ostřelovač a hejno v rozvrhu shodili intermediate na 13–15/20.
    */
-  quest: { pool: ['ambusher', 'guardian'], pick: 1, budget: 2, step: 0, steady: true } as FieldFoes,
+  quest: { pool: ['ambusher', 'guardian'], pick: 1, budget: 2, step: 0, steady: true, scripted: { pool: ['ambusher', 'guardian'], pick: 2 } } as FieldFoes,
   /**
    * Souboj: ležící soupeři poslední vlny vstanou nejvýš s tolika HP a noví se
    * nepřidají – boss je hlavní soupeř vlny. Se slabšími (1–2 HP) stojí poslední
@@ -311,6 +324,15 @@ const ruleOf = (parts: ArcadeParts, id: string): PieceRef | undefined => parts.r
 const withRule = (parts: ArcadeParts, id: string, change: (params: Readonly<Record<string, unknown>>) => Readonly<Record<string, unknown>>): ArcadeParts =>
   ({ ...parts, rules: parts.rules.map((rule) => (rule.id === id ? { ...rule, params: change(rule.params) } : rule)) });
 const actorsOf = (foes: FieldFoes): PacingActor[] => foes.pool.map((id) => ({ body: BEHAVIOURS[id].body, behaviour: id }));
+/**
+ * Chování, výběr a scénář úseků pole: ve `genre.v4` (P47A T8) `scripted` a `segments: 'field'`, uložené hry jako dřív.
+ * Rozpočet spawnů zůstane – scénář jen určí, které chování přinese první krok úseku 2 a 3.
+ */
+const fieldCast = (foes: FieldFoes, spec: GameSpecV1): Pick<GenrePacingSetup, 'behaviours' | 'pick' | 'segments'> => {
+  if (!genreAtLeast(spec, FINALE_GENRE_VERSION)) return { behaviours: actorsOf(foes), pick: foes.pick };
+  const cast = foes.scripted ?? foes;
+  return { behaviours: actorsOf({ ...foes, pool: cast.pool }), pick: cast.pick, segments: 'field' };
+};
 /** Chování odejdou na `at` ‰ (těla chování a jejich výstřely jsou `hazard`); rozvrh je vysadí jen před `until` ‰. */
 const leaving = (foes: FieldFoes, at: number, until = at): Pick<GenrePacingSetup, 'until' | 'clear'> => (foes.leave === true ? { until, clear: [{ role: 'hazard', at }] } : {});
 
@@ -362,8 +384,7 @@ const itemField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
     goal: { by: 'score', need: points, limit: clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock * ARCADE_HZ) },
     space: 'plane',
     spots: waves.spots,
-    behaviours: actorsOf(foes),
-    pick: foes.pick,
+    ...fieldCast(foes, spec),
     budget: foes.budget,
     from: waveStart(1, count),
     finale: boss === undefined ? 'wave' : 'boss',
@@ -412,8 +433,7 @@ const survivalField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
     goal: { by: 'time', need: ticks, limit: ticks },
     space: 'plane',
     spots: waves.spots,
-    behaviours: actorsOf(foes),
-    pick: foes.pick,
+    ...fieldCast(foes, spec),
     budget: foes.budget,
     from: waveStart(1, count),
     ...leaving(foes, last),
@@ -491,8 +511,7 @@ const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
     goal: { by: 'wave', need: count, limit: clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock * ARCADE_HZ) },
     space: 'plane',
     spots: waves.spots,
-    behaviours: actorsOf(foes),
-    pick: foes.pick,
+    ...fieldCast(foes, spec),
     budget: foes.budget,
     from: waveStart(1, count),
     finale: 'boss',
