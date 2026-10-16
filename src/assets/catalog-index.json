@@ -33774,6 +33774,162 @@
           0.76499
         ]
       }
+    },
+    {
+      "assetId": "gen3d-perfume-bottle",
+      "tags": [
+        "perfume bottle"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-perfume-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24603,
+          0,
+          -0.23527
+        ],
+        "max": [
+          0.24603,
+          0.99929,
+          0.23527
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-toy-block",
+      "tags": [
+        "toy block",
+        "alphabet block",
+        "wooden block"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-toy-block-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.84962,
+          0,
+          -0.78884
+        ],
+        "max": [
+          0.84962,
+          0.97187,
+          0.78884
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ankh",
+      "tags": [
+        "ankh"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ankh-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27088,
+          0,
+          -0.06987
+        ],
+        "max": [
+          0.27088,
+          0.99798,
+          0.06987
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cake-slice",
+      "tags": [
+        "cake slice",
+        "slice of cake"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-cake-slice-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.53813,
+          0,
+          -0.52277
+        ],
+        "max": [
+          0.53813,
+          1.00001,
+          0.52277
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-microchip",
+      "tags": [
+        "microchip",
+        "circuit board"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-microchip-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49971,
+          0,
+          -0.08201
+        ],
+        "max": [
+          0.49971,
+          0.99987,
+          0.08201
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-space-helmet",
+      "tags": [
+        "space helmet"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-space-helmet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49924,
+          0,
+          -0.45344
+        ],
+        "max": [
+          0.49924,
+          0.99916,
+          0.45344
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tribal-mask",
+      "tags": [
+        "tribal mask"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tribal-mask-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25193,
+          0,
+          -0.20596
+        ],
+        "max": [
+          0.25193,
+          0.99196,
+          0.20596
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fire-gem",
+      "tags": [
+        "fire gem"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-fire-gem-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32109,
+          0,
+          -0.32114
+        ],
+        "max": [
+          0.32109,
+          0.99758,
+          0.32114
+        ]
+      }
     }
   ]
 }

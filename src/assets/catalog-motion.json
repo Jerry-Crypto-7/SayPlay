@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "8f9b0e4ec80c8d37281bdd7f4fdc51b6ec625af8e0b816085b0da6fc4729ea87",
+ "catalogHash": "b3a449f593f2674aa71daa7d44d363d2bfebddaab8a917830ffd9ba83595a246",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1682,6 +1682,14 @@
   "gen3d-cheese-wedge": {"class":"prop"},
   "gen3d-gold-doubloon": {"class":"prop"},
   "gen3d-enchanted-sword": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-enchanted-stump": {"class":"prop"}
+  "gen3d-enchanted-stump": {"class":"prop"},
+  "gen3d-perfume-bottle": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-toy-block": {"class":"prop"},
+  "gen3d-ankh": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-cake-slice": {"class":"prop"},
+  "gen3d-microchip": {"class":"prop"},
+  "gen3d-space-helmet": {"class":"prop"},
+  "gen3d-tribal-mask": {"class":"biped","regions":{"legY":0.248}},
+  "gen3d-fire-gem": {"class":"biped","regions":{"legY":0.249}}
  }
 }

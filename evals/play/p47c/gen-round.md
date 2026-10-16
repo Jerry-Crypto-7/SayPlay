@@ -22,3 +22,4 @@ Psaný smyčkou `D:/caches/p47c/loop.mjs` po každém kole. **Model** = obrázek
 | 16 | collect | 10 | 9 | 7/9 | 6 | – | 94/101 | candy corn, gem ring, remote control, berry basket, bolt, energy crystal | – |
 | 17 | collect | 10 | 10 | 7/10 | 7 | – | 94/101 | banana bunch, obsidian shard, treasure sack, sleigh bell, cheese wedge, gold doubloon, enchanted sword | – |
 | 18 (opakování) | goal collect | 10 | 6 | 2/6 | 1 | – | 94/101 | enchanted stump | – |
+| 19 | collect | 10 | 10 | 8/10 | 8 | – | 94/101 | perfume bottle, toy block, ankh, cake slice, microchip, space helmet, tribal mask, fire gem | timeouts alone under GPU load: src/assets/__tests__/external-import.test.ts |

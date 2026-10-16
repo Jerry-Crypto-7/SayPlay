@@ -907,3 +907,11 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-gold-doubloon` | gold doubloon, gold coin, doubloon | 4745 / 2362 |
 | `gen3d-enchanted-sword` | enchanted sword, magic sword | 4748 / 2374 |
 | `gen3d-enchanted-stump` | enchanted stump | 4543 / 2270 |
+| `gen3d-perfume-bottle` | perfume bottle | 4748 / 2374 |
+| `gen3d-toy-block` | toy block, alphabet block, wooden block | 4158 / 2017 |
+| `gen3d-ankh` | ankh | 4748 / 2374 |
+| `gen3d-cake-slice` | cake slice, slice of cake | 4620 / 2242 |
+| `gen3d-microchip` | microchip, circuit board | 4482 / 2220 |
+| `gen3d-space-helmet` | space helmet | 4513 / 2236 |
+| `gen3d-tribal-mask` | tribal mask | 4435 / 2143 |
+| `gen3d-fire-gem` | fire gem | 4680 / 2320 |
