@@ -906,3 +906,4 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-cheese-wedge` | cheese wedge | 4576 / 2184 |
 | `gen3d-gold-doubloon` | gold doubloon, gold coin, doubloon | 4745 / 2362 |
 | `gen3d-enchanted-sword` | enchanted sword, magic sword | 4748 / 2374 |
+| `gen3d-enchanted-stump` | enchanted stump | 4543 / 2270 |

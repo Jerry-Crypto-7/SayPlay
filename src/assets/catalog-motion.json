@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "f82a4e2b770ac83571e514db14d091f5362f697c81df7bd38a7eccaa8197702f",
+ "catalogHash": "8f9b0e4ec80c8d37281bdd7f4fdc51b6ec625af8e0b816085b0da6fc4729ea87",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1681,6 +1681,7 @@
   "gen3d-sleigh-bell": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-cheese-wedge": {"class":"prop"},
   "gen3d-gold-doubloon": {"class":"prop"},
-  "gen3d-enchanted-sword": {"class":"biped","regions":{"legY":0.249}}
+  "gen3d-enchanted-sword": {"class":"biped","regions":{"legY":0.249}},
+  "gen3d-enchanted-stump": {"class":"prop"}
  }
 }

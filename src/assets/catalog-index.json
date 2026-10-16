@@ -33755,6 +33755,25 @@
           0.093
         ]
       }
+    },
+    {
+      "assetId": "gen3d-enchanted-stump",
+      "tags": [
+        "enchanted stump"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-enchanted-stump-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.79729,
+          0,
+          -0.76499
+        ],
+        "max": [
+          0.79729,
+          0.98992,
+          0.76499
+        ]
+      }
     }
   ]
 }
