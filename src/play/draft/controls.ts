@@ -277,6 +277,39 @@ const ABILITY_CUES: Readonly<Record<AbilityId, RegExp>> = {
 const INTENT_ABILITY: Readonly<Record<string, AbilityId>> = { shoot: 'shoot', fight: 'strike', kick: 'strike' };
 
 /**
+ * Sloveso věty na tlačítku akce (P47B T10): uzavřený seznam slov každé akce, první je obecný
+ * popisek tlačítka (`ABILITY_FACES` v `ActionButton.tsx`). Slovo mimo seznam své akce spec odmítne
+ * (`readGameSpec`); anglicky a krátce – vejde se do kola 72 px. Sloveso bez slova v seznamu
+ * („fights“, „evades“) nechá obecný popisek.
+ */
+export const ABILITY_WORDS = {
+  shoot: ['Shoot', 'Zap', 'Blast', 'Fire'],
+  strike: ['Strike', 'Shove', 'Punch', 'Kick', 'Bite', 'Peck', 'Slash'],
+  dash: ['Dash', 'Dodge', 'Duck', 'Swerve'],
+  shield: ['Shield', 'Block', 'Guard', 'Deflect'],
+  grab: ['Grab', 'Steal', 'Snatch', 'Swipe'],
+} as const satisfies Readonly<Record<AbilityId, readonly string[]>>;
+
+export type AbilityWord = (typeof ABILITY_WORDS)[AbilityId][number];
+
+/** Všechna slova tlačítek – výčet pro schéma specu. */
+export const ALL_ABILITY_WORDS = [...new Set(Object.values(ABILITY_WORDS).flat())] as [AbilityWord, ...AbilityWord[]];
+
+/** Nepravidelné tvary sloves ze seznamu. */
+const IRREGULAR_WORDS: Readonly<Record<string, string>> = { stole: 'steal' };
+
+/** Slovo ze seznamu akce `id` pro tvar slovesa `said` („dodges“, „zapping“, „stole“), jinak `undefined`. */
+function wordOf(id: AbilityId, said: string): AbilityWord | undefined {
+  const verb = IRREGULAR_WORDS[said] ?? said;
+  return ABILITY_WORDS[id].find((word) => {
+    const base = word.toLowerCase();
+    const stem = base.replace(/e$/, '');
+    const doubled = `${base}${base.slice(-1)}`;
+    return [base, `${base}s`, `${base}es`, `${stem}ing`, `${stem}ed`, `${doubled}ing`, `${doubled}ed`].includes(verb);
+  });
+}
+
+/**
  * Slova mezi podmětem a slovesem, za kterými sloveso patří hrdinovi z předchozí klauze
  * („runs and dodges“, „it shoots“, „tries to steal“). Čárka taky: „shoots, punches, steals“.
  */
@@ -330,11 +363,10 @@ function heroOf(text: string, intent: Pick<Intent, 'hero' | 'items'>, first: num
 const MAX_ABILITIES = 2;
 
 /**
- * Všechny akce, které věta hrdinovi říká, v pořadí věty, bez sloves v záporu („doesn't shoot“)
- * a bez sloves, která dělá někdo jiný. `text` je věta malými písmeny; `intent` její záměr
- * (`assemble` ho předá, jinak se přečte).
+ * Akce, které věta hrdinovi říká, v pořadí věty, se slovem ze seznamu `ABILITY_WORDS` (P47B T10):
+ * první sloveso téže akce, které slovo v seznamu má („fights and punches“ → Punch).
  */
-export function saidAbilities(text: string, intent: Pick<Intent, 'hero' | 'items'> = extractIntent(text)): AbilityId[] {
+function heardAbilities(text: string, intent: Pick<Intent, 'hero' | 'items'>): { readonly id: AbilityId; word: AbilityWord | undefined }[] {
   const scopes = negationScopes(text);
   const found: { id: AbilityId; at: number; end: number }[] = [];
   for (const id of ABILITIES)
@@ -347,9 +379,38 @@ export function saidAbilities(text: string, intent: Pick<Intent, 'hero' | 'items
   }
   const live = found.filter(({ at }) => !scopes.some(([from, to]) => at >= from && at < to)).sort((a, b) => a.at - b.at);
   const hero = heroOf(text, intent, live[0]?.at);
-  const ordered: AbilityId[] = [];
-  for (const { id, at, end } of live) if (!ordered.includes(id) && heroDoes(text, at, end, hero, id)) ordered.push(id);
-  return ordered;
+  const heard: { readonly id: AbilityId; word: AbilityWord | undefined }[] = [];
+  for (const { id, at, end } of live) {
+    const known = heard.find((entry) => entry.id === id);
+    if (known?.word !== undefined || !heroDoes(text, at, end, hero, id)) continue;
+    const word = wordOf(id, text.slice(at, end).split(/\s+/)[0]!);
+    if (known === undefined) heard.push({ id, word });
+    else known.word = word;
+  }
+  return heard;
+}
+
+/**
+ * Všechny akce, které věta hrdinovi říká, v pořadí věty, bez sloves v záporu („doesn't shoot“)
+ * a bez sloves, která dělá někdo jiný. `text` je věta malými písmeny; `intent` její záměr
+ * (`assemble` ho předá, jinak se přečte).
+ */
+export function saidAbilities(text: string, intent: Pick<Intent, 'hero' | 'items'> = extractIntent(text)): AbilityId[] {
+  return heardAbilities(text, intent).map(({ id }) => id);
+}
+
+/** Slovo věty pro každou akci z `saidAbilities`, jejíž sloveso má slovo v `ABILITY_WORDS` (P47B T10). */
+export function saidAbilityWords(text: string, intent: Pick<Intent, 'hero' | 'items'> = extractIntent(text)): Partial<Record<AbilityId, AbilityWord>> {
+  return Object.fromEntries(heardAbilities(text, intent).flatMap(({ id, word }) => (word === undefined ? [] : [[id, word]])));
+}
+
+/**
+ * Slova tlačítek v pořadí `abilities` (P47B T10): slovo věty, jinak obecný popisek akce.
+ * `undefined`, když věta žádný popisek nemění – spec pak pole nedostane a HUD je jako dřív.
+ */
+export function abilityWordsOf(abilities: readonly AbilityId[], said: Partial<Record<AbilityId, AbilityWord>>): AbilityWord[] | undefined {
+  const words = abilities.map((id) => said[id] ?? ABILITY_WORDS[id][0]);
+  return words.some((word, slot) => word !== ABILITY_WORDS[abilities[slot]!][0]) ? words : undefined;
 }
 
 /** Z akcí věty `said` ty, které ovládání bere, nejvýš 2 (první = A = J). */
@@ -358,8 +419,9 @@ export const abilitiesOfControl = (said: readonly AbilityId[], control: ControlI
 
 export const abilitiesFor = (text: string, control: ControlId): AbilityId[] => abilitiesOfControl(saidAbilities(text), control);
 
-/** Akce na tlačítkách v nápovědě („J to strike, K to shoot.“). */
-export const abilityHint = (abilities: readonly AbilityId[]): string => `${abilities.map((id, slot) => `${slot === 0 ? 'J' : 'K'} to ${id}`).join(', ')}.`;
+/** Akce na tlačítkách v nápovědě („J to strike, K to shoot.“); se slovy tlačítek sloveso věty („J to dodge.“, P47B T10). */
+export const abilityHint = (abilities: readonly AbilityId[], words?: readonly string[]): string =>
+  `${abilities.map((id, slot) => `${slot === 0 ? 'J' : 'K'} to ${words?.[slot]?.toLowerCase() ?? id}`).join(', ')}.`;
 
 // Pohyb ve větě: „fight“ s během, závodem nebo skokem je úder za jízdy, ne souboj na místě.
 const TRAVEL = /\b(?:run|runs|running|race|races|racing|jump|jumps|jumping|hop|hops|hopping|flee|flees|fleeing|drive|drives|driving)\b/;

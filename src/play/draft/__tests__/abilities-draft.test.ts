@@ -70,9 +70,10 @@ describe('abilities from the sentence verbs (P46A T8)', () => {
   }, 180_000);
 
   it('names the buttons in the hint when it fits', () => {
-    expect(draftGameSpec('A rabbit steals carrots and runs from a fox').tutorial.controlsHint).toMatch(/ J to grab\.$/);
+    // Sloveso věty (P47B T10): „steals“ → steal, „punches“ → punch.
+    expect(draftGameSpec('A rabbit steals carrots and runs from a fox').tutorial.controlsHint).toMatch(/ J to steal\.$/);
     // Díl souboje bije i úder akce, takže nápověda k Attack ustoupí.
-    expect(draftGameSpec('A knight runs through a castle and punches goblins').tutorial.controlsHint).toBe('Arrows dodge. Space jumps. J to strike.');
+    expect(draftGameSpec('A knight runs through a castle and punches goblins').tutorial.controlsHint).toBe('Arrows dodge. Space jumps. J to punch.');
   });
 
   it('lets the strike button hit a fight part and shows it under the part wrapper', async () => {

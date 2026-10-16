@@ -799,7 +799,8 @@ function ArcadePlayGame({
       tickByHand: () => {
         hand?.step();
         const now = session.snapshot();
-        return { runState: now.runState, tick: now.tick, progress: now.progress, score: now.score, items: now.items };
+        // `health`: e2e akcí (P47B T10) jím měří, že dash prošel nárazem bez ztráty života.
+        return { runState: now.runState, tick: now.tick, progress: now.progress, score: now.score, items: now.items, health: now.health };
       },
       inputs: () => session.inputs(),
       /** One synchronous sample: real input events and the exact state they reached. */
@@ -870,6 +871,8 @@ function ArcadePlayGame({
         heroAction={heroActionOf(spec)}
         // Ukázka robota není závod: duch jen v běhu hráče.
         ghost={demo === null && ghost !== null ? ghost : undefined}
+        // Sloveso věty na tlačítkách akcí (P47B T10) – jen popisek, svět ho nečte.
+        abilityWords={spec.abilityWords}
         overlay={
           <>
             <Weather session={session} theme={spec.theme} />

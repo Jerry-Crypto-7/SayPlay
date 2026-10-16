@@ -51,7 +51,8 @@ function worldOf(spec: GameSpecV1, seed: number): ArcadeWorld {
 
 /** Spec věty s akcemi `abilities` místo těch, které dal návrh (prázdné = bez akcí). */
 function withAbilities(spec: GameSpecV1, abilities: readonly AbilityId[]): GameSpecV1 {
-  const { abilities: _abilities, ...plain } = spec;
+  // Slova tlačítek (P47B T10) patří zahozeným akcím věty – jdou s nimi.
+  const { abilities: _abilities, abilityWords: _words, ...plain } = spec;
   const read = readGameSpec({ ...plain, ...(abilities.length === 0 ? {} : { abilities }) });
   if (!read.ok) throw new Error(read.issues.join('; '));
   return read.value;

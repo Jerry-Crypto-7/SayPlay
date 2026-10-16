@@ -110,8 +110,12 @@ export function ActionButton({ session, action }: { readonly session: ArcadeSess
   );
 }
 
-/** Akce hrdiny (P46A T7): popisek a ikona. Klávesa podle pořadí ve `spec.abilities`: A = J, B = K. */
-const ABILITY_FACES: Readonly<Record<AbilityId, { readonly label: string; readonly icon: IconName }>> = {
+/**
+ * Akce hrdiny (P46A T7): popisek a ikona. Klávesa podle pořadí ve `spec.abilities`: A = J, B = K.
+ * Popisek je první slovo `ABILITY_WORDS` akce (`draft/controls.ts`); sloveso věty ze `spec.abilityWords`
+ * (P47B T10) ho nahradí, ikona zůstává podle akce.
+ */
+export const ABILITY_FACES: Readonly<Record<AbilityId, { readonly label: string; readonly icon: IconName }>> = {
   shoot: { label: 'Shoot', icon: 'shoot' },
   strike: { label: 'Strike', icon: 'strike' },
   dash: { label: 'Dash', icon: 'dash' },
@@ -141,11 +145,25 @@ export function useAbilityInput(session: ArcadeSession, abilities: readonly Abil
 
 /**
  * Tlačítko akce `slot` (0 = A, 1 = B) s ikonou a popiskem. `stack` = kolikáté kolo
- * odspodu ve sloupci vpravo dole (střelba a úder/použití leží pod ním).
+ * odspodu ve sloupci vpravo dole (střelba a úder/použití leží pod ním). `word` = sloveso
+ * věty místo obecného popisku (P47B T10); bez něj popisek akce.
  */
-export function AbilityButton({ session, ability, slot, stack }: { readonly session: ArcadeSession; readonly ability: AbilityId; readonly slot: number; readonly stack: number }) {
+export function AbilityButton({
+  session,
+  ability,
+  slot,
+  stack,
+  word,
+}: {
+  readonly session: ArcadeSession;
+  readonly ability: AbilityId;
+  readonly slot: number;
+  readonly stack: number;
+  readonly word?: string;
+}) {
   const button = useRef<HTMLButtonElement | null>(null);
-  const { label, icon } = ABILITY_FACES[ability];
+  const { icon } = ABILITY_FACES[ability];
+  const label = word ?? ABILITY_FACES[ability].label;
   const bit = ABILITY_BUTTONS[slot] as number;
   // Ťuk nesmí doběhnout k ploše scény (tam je skok nebo tah), jako u střelby.
   useEffect(() => {

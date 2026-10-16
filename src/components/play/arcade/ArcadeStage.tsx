@@ -763,6 +763,7 @@ export default function ArcadeStage({
   enabled = true,
   heroAction = 'none',
   ghost,
+  abilityWords,
   overlay,
 }: {
   readonly session: ArcadeSession;
@@ -776,6 +777,11 @@ export default function ArcadeStage({
   readonly heroAction?: HeroAction;
   /** Duch dřívějšího běhu (P37B T8, `GhostSlot.tsx`); scéna ho kreslí ve svém slotu. */
   readonly ghost?: ArcadeGhost;
+  /**
+   * Sloveso věty na tlačítkách akcí (P47B T10, `spec.abilityWords`) v pořadí akcí světa – svět je staví
+   * ze `spec.abilities` ve stejném pořadí. Jádro ho nečte; bez něj obecné popisky.
+   */
+  readonly abilityWords?: readonly string[];
   /* P29D */
   /** Vrstva nad plátnem (počasí a denní doba živé změny) – mimo scénu i hash. */
   readonly overlay?: ReactNode;
@@ -840,7 +846,7 @@ export default function ArcadeStage({
       </div>}
       {fireButton && enabled && <FireButton session={session} />}
       {enabled && actions.map((action) => <ActionButton key={action} session={session} action={action} />)}
-      {enabled && abilities.map((ability, slot) => <AbilityButton key={ability} session={session} ability={ability} slot={slot} stack={abilityBase + slot} />)}
+      {enabled && abilities.map((ability, slot) => <AbilityButton key={ability} session={session} ability={ability} slot={slot} stack={abilityBase + slot} word={abilityWords?.[slot]} />)}
     </div>
   );
 }

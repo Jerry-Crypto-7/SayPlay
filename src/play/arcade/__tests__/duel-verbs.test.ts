@@ -35,7 +35,8 @@ function worldOf(spec: GameSpecV1, seed: number): ArcadeWorld {
 }
 
 function withAbilities(spec: GameSpecV1, abilities: readonly AbilityId[]): GameSpecV1 {
-  const { abilities: _abilities, ...plain } = spec;
+  // Slova tlačítek (P47B T10) patří zahozeným akcím věty – jdou s nimi.
+  const { abilities: _abilities, abilityWords: _words, ...plain } = spec;
   const read = readGameSpec({ ...plain, ...(abilities.length === 0 ? {} : { abilities }) });
   if (!read.ok) throw new Error(read.issues.join('; '));
   return read.value;
@@ -49,8 +50,8 @@ describe('P47B T8: a duel proves the sentence verbs with its own punch and dodge
     expect(spec.control).toBe('duel');
     expect(spec.abilities).toEqual(['strike']);
     expect(spec.tutorial.controlsHint.length).toBeLessThanOrEqual(80);
-    // Nápověda duelu sloveso už říká (slovo z věty doplní T10); tlačítko J duel nemá.
-    expect(spec.tutorial.controlsHint).toMatch(/to strike.*to dodge/);
+    // Nápověda duelu říká sloveso věty (P47B T10: „shoves“ → shove); tlačítko J duel nemá.
+    expect(spec.tutorial.controlsHint).toMatch(/to shove.*to dodge/);
     expect(spec.tutorial.controlsHint).not.toMatch(/\bJ to\b/);
     for (const seed of SEEDS) {
       const world = worldOf(spec, seed);

@@ -34,6 +34,7 @@ import { ABILITIES, type AbilityId, ADDONS, type AddonId } from './arcade/contra
 import { LOOK_IDS, TIMES_OF_DAY, WEATHERS } from './arcade/look';
 import { logicSchema, ruleIssues, rulesSchema, thingsSchema } from './arcade/rules/schema';
 import { CAPABILITIES } from './capabilities';
+import { ABILITY_WORDS, ALL_ABILITY_WORDS } from './draft/controls';
 import { ALL_GENRE_MODES, GENRES, GENRE_MODES, isGenreMode } from './genre/contract';
 import { heroActionSchema } from './hero-action';
 
@@ -518,6 +519,11 @@ export const gameSpecSchema = z
     /** Akce hrdiny na dvou tlačítkách (P46A). Bez výchozí hodnoty: spec bez nich má stejný hash jako dřív. */
     abilities: z.array(z.enum(ABILITIES)).max(2).optional(),
     /**
+     * Sloveso věty na tlačítkách akcí (P47B T10): slovo pro každou akci v pořadí `abilities`, každé ze seznamu
+     * `ABILITY_WORDS` své akce. Jen popisek – svět ho nečte; bez výchozí hodnoty, jako `abilities`.
+     */
+    abilityWords: z.array(z.enum(ALL_ABILITY_WORDS)).max(2).optional(),
+    /**
      * Boss finále od režiséra (P46E T4): `name` ukáže banner, `role` = popisek věci obsazení, jejíž model boss
      * dostane. Chování a útok zůstávají žánru (`pacingParts`). Bez výchozí hodnoty: hash rychlé verze se nemění.
      */
@@ -700,6 +706,18 @@ export function readGameSpec(input: unknown): GameSpecResult {
           : [`/abilities/${index}: ${spec.control ?? 'tap_go'} does not take ${ability} (allowed: ${allowed.join(', ') || 'none'})`],
     );
     if (abilityIssues.length > 0) return { ok: false, reason: 'MALFORMED_SPEC', issues: abilityIssues };
+  }
+  if (spec.abilityWords !== undefined) {
+    // Slovo patří akci na tomtéž místě (P47B T10): „Dodge“ na tlačítku úderu by hráči lhalo.
+    const abilities = spec.abilities ?? [];
+    const wordIssues =
+      spec.abilityWords.length !== abilities.length
+        ? [`/abilityWords: ${spec.abilityWords.length} words for ${abilities.length} abilities – one word per ability, in the same order`]
+        : spec.abilityWords.flatMap((word, index) => {
+            const allowed: readonly string[] = ABILITY_WORDS[abilities[index]!];
+            return allowed.includes(word) ? [] : [`/abilityWords/${index}: ${word} is not a word for ${abilities[index]} (allowed: ${allowed.join(', ')})`];
+          });
+    if (wordIssues.length > 0) return { ok: false, reason: 'MALFORMED_SPEC', issues: wordIssues };
   }
   if (spec.control === 'move_free') {
     const win = arenaWinOf(spec);
