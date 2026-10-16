@@ -46,23 +46,37 @@ const isItem = (state: ArcadeState, body: number, spark?: number): boolean => {
   return GUARDED.has(role) || (role === ROLE.target && targetStateOf(state, body) === 0);
 };
 
-/** Hlídaná věc z paměti, nebo -1 (sebraná, ještě nepřidělená). */
-const guardedOf = (view: BehaviourView & { readonly spark?: number }): number => (view.memo > 0 && isItem(view.state, view.memo - 1, view.spark) ? view.memo - 1 : -1);
+type GuardView = BehaviourView & { readonly spark?: number };
 
 const gapTo = (state: ArcadeState, a: number, b: number): number => length(read(state, a, 'x') - read(state, b, 'x'), read(state, a, 'z') - read(state, b, 'z'));
+/** Věc `a` leží před `b` podle polohy (`x`, pak `z`). */
+const westOf = (state: ArcadeState, a: number, b: number): boolean => read(state, a, 'x') < read(state, b, 'x') || (read(state, a, 'x') === read(state, b, 'x') && read(state, a, 'z') < read(state, b, 'z'));
 
-/** Nejbližší živá věc ke strážci, nebo -1. */
-function nearestItem(view: BehaviourStep): number {
+/** Nejbližší živá věc ke strážci, nebo -1; ve hře s jiskrou tepu shodnou vzdálenost rozhodne poloha věci, ne index těla. */
+function nearestItem(view: GuardView): number {
   const { state, body } = view;
   let found = -1;
   let best = Number.POSITIVE_INFINITY;
   for (let item = 0; item < (state[HEADER.bodyCount] as number); item += 1) {
     if (item === body || !isItem(state, item, view.spark)) continue;
     const gap = gapTo(state, body, item);
-    if (gap < best) [found, best] = [item, gap];
+    if (gap < best || (gap === best && view.spark !== undefined && westOf(state, item, found))) [found, best] = [item, gap];
   }
   return found;
 }
+
+/**
+ * Hlídaná věc, nebo -1. Uložená hra: věc z paměti (sebraná = -1, `move` vybere nejbližší další). Hra s jiskrou tepu
+ * (`spark`: sběr a útěk s věcmi `genre.v4`, P47A T11): vždy nejbližší věc. Paměť drží slot těla a slot sebrané věci
+ * může v tomtéž tiku zabrat nová věc vlny nebo šablony – strážce pak hlídal, co do slotu padlo, a to určilo pořadí
+ * volných slotů, které jiskry vznikem a odvoláním mění (věta c08 „castle“: jiný strážce od 15. s, robot publikace
+ * na semínku 1 prohrál a hra ztratila šablonu). Robot (`botStep`, pohled bez `spark`) čte věc z paměti, kterou
+ * `move` každý tik přepíše.
+ */
+const guardedOf = (view: GuardView): number => {
+  if (view.spark !== undefined) return nearestItem(view);
+  return view.memo > 0 && isItem(view.state, view.memo - 1) ? view.memo - 1 : -1;
+};
 
 /** Krok po kruhu kolem věci (proti směru hodin); mimo kruh rychlostí `back` zpátky na něj. */
 function circle(view: BehaviourStep, item: number): void {
@@ -108,7 +122,9 @@ export const guardian: Behaviour = {
 
   move(view) {
     let item = guardedOf(view);
-    if (item < 0) {
+    if (view.spark !== undefined) {
+      if (item + 1 !== view.memo) view.remember(item + 1);
+    } else if (item < 0) {
       item = nearestItem(view);
       if (item >= 0) view.remember(item + 1);
     }

@@ -23,6 +23,7 @@ import { funMetrics, traceRun } from '../telemetry';
 import { runBot } from '../verify';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
+import { draftGameSpecWithMeta } from '@/play/draft';
 import type { GameSpecV1 } from '@/play/spec';
 
 /** Buňky pole s tepem; sběr a útěk s věcmi s jiskrou. */
@@ -180,6 +181,45 @@ describe('field heartbeat (genre.v4)', () => {
       const { spark: _spark, ...plain } = waves;
       expect(next(plain), id).toEqual([]);
     }
+  });
+
+  it('collect and item escape: the guardian guards the nearest item by position, not whatever fell into the slot it remembered (T11)', () => {
+    for (const id of ITEM_CELLS) {
+      const world = worldOf(cellSpec(id), 1);
+      const spark = pacingOf(world).pulse!.template;
+      const item = (nativeRule(world.rules, 'arena_waves')!.params as WaveParams).item;
+      expect(item, id).toBeDefined();
+      const ref = (pacedControl(world).params.behaviours as BehaviourRef[]).find((candidate) => candidate.id === 'guardian')!;
+      // Strážce v [0, 0] si pamatuje slot `remembered`; věci leží v pořadí slotů `xs`. Vrací `x` hlídané věci.
+      const guardedX = (xs: readonly number[], remembered: number, withSpark: boolean): number => {
+        const state = instantiate(world);
+        const player = state[HEADER.player] as number;
+        for (const body of bodies(state)) if (body !== player && state[bodyBase(body) + BODY.role] === ROLE.collectible) state[bodyBase(body) + BODY.flags] = (state[bodyBase(body) + BODY.flags] as number) & ~FLAG.alive;
+        const slot = state[HEADER.spawnBase] as number;
+        xs.forEach((x, k) => place(state, item!, slot + k, x, 0));
+        place(state, ref.template, slot + xs.length, 0, 0);
+        let memo = slot + remembered + 1;
+        const view: BehaviourStep = {
+          state, body: slot + xs.length, player, space: 'plane', phase: 'idle', ticksLeft: 0, aim: { x: 0, z: 0 }, memo, intensity: 1000,
+          ...(withSpark ? { spark } : {}), remember: (value) => { memo = value; },
+        };
+        BEHAVIOURS.guardian.move(view);
+        return state[bodyBase(memo - 1) + BODY.x] as number;
+      };
+      // Slot sebrané věci zabrala nová věc 15 m daleko: s jiskrou strážce jde k věci 4 m od sebe v každém pořadí slotů.
+      expect(guardedX([4000, 15000], 1, true), id).toBe(4000);
+      expect(guardedX([15000, 4000], 0, true), id).toBe(4000);
+      // Stejně daleko: rozhodne poloha, ne index těla.
+      expect(guardedX([4000, -4000], 0, true), id).toBe(-4000);
+      expect(guardedX([-4000, 4000], 1, true), id).toBe(-4000);
+      // Uložená hra (bez jiskry) hlídá dál věc ze zapamatovaného slotu – otisk přehrání se nemění.
+      expect(guardedX([4000, 15000], 1, false), id).toBe(15000);
+    }
+  });
+
+  it('the spark does not cost a game its overlay template: c08 "castle" keeps treasure_rush (T11)', () => {
+    // Dřív strážce šel za slotem, který jiskry posunuly, robot publikace na semínku 1 prohrál a šablona vypadla (začátečník 1/8).
+    expect(draftGameSpecWithMeta('Explore an old castle to find three treasure chests', 1).composition?.template).toBe('treasure_rush');
   });
 
   it('v4 quest targets of every round lie within questReach of the centre (≤ 2.4 s apart); stored v3 keeps the generator ring', () => {
