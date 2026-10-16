@@ -773,6 +773,10 @@
         {
           "id": "gen3d-fuel-can",
           "height": 0.6
+        },
+        {
+          "id": "gen3d-tire-pile",
+          "height": 1
         }
       ]
     },
@@ -1581,6 +1585,10 @@
         {
           "id": "gen3d-street-lamp",
           "height": 4
+        },
+        {
+          "id": "gen3d-ticket-machine",
+          "height": 1.6
         }
       ]
     },
@@ -2147,6 +2155,14 @@
         {
           "id": "gen3d-rusty-fridge",
           "height": 1.8
+        },
+        {
+          "id": "gen3d-tire-pile",
+          "height": 1
+        },
+        {
+          "id": "gen3d-engine-block",
+          "height": 0.9
         }
       ]
     },

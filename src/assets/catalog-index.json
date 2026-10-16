@@ -29582,26 +29582,6 @@
       }
     },
     {
-      "assetId": "gen3d-rafflesia",
-      "tags": [
-        "rafflesia",
-        "corpse flower"
-      ],
-      "path": "/assets/worldstream/gen3d-p37d/gen3d-rafflesia-lod1.glb",
-      "bounds": {
-        "min": [
-          -1.00166,
-          0,
-          -1.00209
-        ],
-        "max": [
-          1.00166,
-          0.98282,
-          1.00209
-        ]
-      }
-    },
-    {
       "assetId": "gen3d-navigation-buoy",
       "tags": [
         "navigation buoy",
@@ -34473,6 +34453,143 @@
           0.93566,
           0.9997,
           0.93875
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snow-shovel",
+      "tags": [
+        "snow shovel"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-snow-shovel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21685,
+          0,
+          -0.15801
+        ],
+        "max": [
+          0.21685,
+          0.99995,
+          0.15801
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ticket-machine",
+      "tags": [
+        "ticket machine",
+        "parking machine",
+        "pay station"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-ticket-machine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16913,
+          0,
+          -0.1667
+        ],
+        "max": [
+          0.16913,
+          0.99998,
+          0.1667
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coyote",
+      "tags": [
+        "coyote"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-coyote-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17164,
+          0,
+          -0.49905
+        ],
+        "max": [
+          0.17164,
+          0.99962,
+          0.49905
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-puffin",
+      "tags": [
+        "puffin"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-puffin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33325,
+          0,
+          -0.35231
+        ],
+        "max": [
+          0.33325,
+          1.00001,
+          0.35231
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rafflesia",
+      "tags": [
+        "rafflesia",
+        "corpse flower"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-rafflesia-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.67861,
+          0,
+          -1.65359
+        ],
+        "max": [
+          1.67861,
+          0.99871,
+          1.65359
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tire-pile",
+      "tags": [
+        "tire pile",
+        "tire stack"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-tire-pile-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.90487,
+          0,
+          -0.87286
+        ],
+        "max": [
+          0.90487,
+          0.98385,
+          0.87286
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-engine-block",
+      "tags": [
+        "engine block"
+      ],
+      "path": "/assets/worldstream/gen3d-p37d/gen3d-engine-block-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.487,
+          0,
+          -0.78614
+        ],
+        "max": [
+          0.487,
+          0.98222,
+          0.78614
         ]
       }
     }

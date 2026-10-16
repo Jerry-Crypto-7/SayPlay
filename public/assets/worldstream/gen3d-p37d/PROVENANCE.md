@@ -692,7 +692,6 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-wine-barrel` | wine barrel, wine cask, cask | 4602 / 2266 |
 | `gen3d-lily-bouquet` | lily bouquet, bouquet, flower bouquet | 4201 / 1989 |
 | `gen3d-wooden-pergola` | wooden pergola, pergola, arbor | 4281 / 1938 |
-| `gen3d-rafflesia` | rafflesia, corpse flower | 4271 / 2111 |
 | `gen3d-navigation-buoy` | navigation buoy, channel buoy, marker buoy | 4748 / 2374 |
 | `gen3d-castle-tower` | castle tower | 4089 / 2158 |
 | `gen3d-picnic-table` | picnic table | 4385 / 2192 |
@@ -943,3 +942,10 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-canopic-jar` | canopic jar | 4748 / 2374 |
 | `gen3d-egg-tray` | egg tray, egg carton | 4322 / 2252 |
 | `gen3d-coral-crown` | coral crown | 4615 / 2205 |
+| `gen3d-snow-shovel` | snow shovel | 4748 / 2374 |
+| `gen3d-ticket-machine` | ticket machine, parking machine, pay station | 4746 / 2364 |
+| `gen3d-coyote` | coyote | 4736 / 2362 |
+| `gen3d-puffin` | puffin | 4515 / 2233 |
+| `gen3d-rafflesia` | rafflesia, corpse flower | 4562 / 2256 |
+| `gen3d-tire-pile` | tire pile, tire stack | 4088 / 2837 |
+| `gen3d-engine-block` | engine block | 3805 / 1861 |

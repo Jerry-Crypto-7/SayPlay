@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "b050426b65995c583b32633b437936b425473ff86f53d07b4dd6fd02d43a219f",
+ "catalogHash": "529e4b81a7df04f3d13e80329382b974fc7dfc44bfc67326168a432cb549831f",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -1468,7 +1468,6 @@
   "gen3d-wine-barrel": {"class":"prop"},
   "gen3d-lily-bouquet": {"class":"prop"},
   "gen3d-wooden-pergola": {"class":"prop"},
-  "gen3d-rafflesia": {"class":"prop"},
   "gen3d-navigation-buoy": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-castle-tower": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-picnic-table": {"class":"prop"},
@@ -1718,6 +1717,13 @@
   "gen3d-macaron": {"class":"prop"},
   "gen3d-canopic-jar": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-egg-tray": {"class":"prop"},
-  "gen3d-coral-crown": {"class":"prop"}
+  "gen3d-coral-crown": {"class":"prop"},
+  "gen3d-snow-shovel": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-ticket-machine": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-coyote": {"class":"prop"},
+  "gen3d-puffin": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-rafflesia": {"class":"prop"},
+  "gen3d-tire-pile": {"class":"prop"},
+  "gen3d-engine-block": {"class":"prop"}
  }
 }
