@@ -14,7 +14,7 @@ import { bossKindOf, segmentNewsOf } from '@/play/arcade/pieces/pacing';
 import { type DirectedGame, direct } from '@/play/director';
 import { answered, fakeBranch } from '@/play/director/__fixtures__/branch';
 import type { LogicAnswerFixture } from '@/play/director/__fixtures__/logic-answers';
-import { draftGameSpecWithMeta } from '@/play/draft';
+import { draftForControl, draftGameSpecWithMeta } from '@/play/draft';
 import { memoryVersionStore } from '@/play/version';
 
 import { derivedSeeds, publishReadSpec, seedFrom } from '../_publish';
@@ -30,9 +30,9 @@ const withExtras = (answer: unknown, extras: Record<string, unknown>): unknown =
 };
 
 /** Upgrade nad rychlou verzí věty: první volání režiséra dostane `answers[0]`, druhé (s pokynem) `answers[1]`. */
-async function upgrade(sentence: string, answers: readonly unknown[]) {
+async function upgrade(sentence: string, answers: readonly unknown[], quickSpec = draftGameSpecWithMeta(sentence, 1).spec) {
   const store = memoryVersionStore();
-  const quick = await publishReadSpec(store, draftGameSpecWithMeta(sentence, 1).spec, derivedSeeds(seedFrom(sentence)), null, { origin: { sentence, seed: null } });
+  const quick = await publishReadSpec(store, quickSpec,derivedSeeds(seedFrom(sentence)), null, { origin: { sentence, seed: null } });
   if (!quick.ok) throw new Error(`quick version did not publish: ${JSON.stringify(quick.issues)}`);
   const draft = quick.value.game;
   const nudges: (string | undefined)[] = [];
@@ -125,6 +125,16 @@ describe('the AI version adds what the quick version lacks (P46E T4)', () => {
     expect(outcome).toMatchObject({ status: 'ready', adds: ['action'] });
     expect(child!.spec.abilities).toEqual(['grab']);
     expect(child!.spec.tutorial.controlsHint).toMatch(/J to grab\.$/);
+  }, 180_000);
+
+  // Mřížková rychlá verze nemá arkádový svět: srovnání novinek dřív padalo na TypeError místo publikace.
+  it('upgrades a grid quick version without adds and without a nudge', async () => {
+    const { draft, outcome, child, nudges } = await upgrade(s008.sentence, [s008.answer], draftForControl(s008.sentence, 'tap_go', 1)!);
+    expect(draft.arcade).toBeUndefined();
+    expect(outcome.status).toBe('ready');
+    expect(outcome).not.toHaveProperty('adds');
+    expect(child!.arcade).toBeDefined();
+    expect(nudges).toEqual([undefined]);
   }, 180_000);
 
   it('keeps the first AI version when the nudged call fails', async () => {

@@ -250,17 +250,19 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
 
   const intent = extractIntent(request.sentence);
   const before = await actionEvidence(draft.spec, draft.version.seed, draft.arcade);
-  const quick: PlayedGame = { spec: draft.spec, world: draft.arcade!, witnesses: before };
+  // Mřížková rychlá verze (`tap_go`: záloha, když se nepřeloží žádný žánr, nebo starší uložená hra) arkádový svět
+  // nemá – novinky není s čím srovnat, `adds` chybí a druhý pokus s pokynem se nezkouší.
+  const quick: PlayedGame | null = draft.arcade === undefined ? null : { spec: draft.spec, world: draft.arcade, witnesses: before };
   const picked = await upgradeCandidate(draft, aiSpec, seeds, intent, before, rejected !== null);
   if (picked === null && rejected !== null) return declined();
   if (picked === null) return final('ACTION_LOST', { stage: 'upgrade', reason: 'ACTION_LOST', detail: 'No candidate seed preserves all essential actions witnessed in the published quick version.', raw: directed.spec });
   let upgraded = picked.spec;
   let preservingSeeds = picked.seeds;
-  let adds = upgradeAddsOf(quick, picked.played);
+  let adds = quick === null ? undefined : upgradeAddsOf(quick, picked.played);
   let source: DirectorSource = rejected === null ? directed.source : 'authored';
   // AI verze bez novinky, kterou hráč hraje (P46E T4): jeden druhý pokus s pokynem. Ani ten nic nepřidá, nebo
   // nevyjde – publikuje se první; `adds: []` ho ukáže.
-  if (adds.length === 0) {
+  if (quick !== null && adds?.length === 0) {
     const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE)(request.sentence);
     const again = nudged.source === 'draft' ? null : await upgradeCandidate(draft, nudged.spec, seeds, intent, before);
     const added = again === null ? [] : upgradeAddsOf(quick, again.played);
@@ -276,7 +278,7 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
     const reason = published.issues?.[0] === 'CONTENT_REJECTED' ? 'BLOCKED' : (REFUSAL_REASON[published.response.status] ?? 'FAILED');
     return final(reason, { stage: 'publish', reason: published.issues?.[0] ?? String(published.response.status), detail: (published.issues ?? []).slice(1).join('; '), raw: upgraded });
   }
-  return { status: 'ready', versionId: published.value.game.version.versionId, adds };
+  return { status: 'ready', versionId: published.value.game.version.versionId, ...(adds === undefined ? {} : { adds }) };
 }
 
 /** Pokyn druhého pokusu upgradu, který nic nepřidal (P46E T4). */
