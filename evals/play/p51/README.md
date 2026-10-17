@@ -53,9 +53,30 @@ Změřeno nad commitem T2: nová hra už nese `genre.v5`, ale nic na ni zatím n
 - Finále obou žánrů telemetrie uzná jako `climax`, ne `boss`. Brány v každé živé buňce (7 chodce, 8 klouzání × 12 semínek) drží: `p51-walker-glide.test.ts`.
 - **Mrtvý čas chodce se zhoršil** (11,3 → 17,2 s): cesta k nejvzdálenějšímu východu je delší a jiskry leží jen na jejích posledních 8 polích. Řeší T7 (heartbeat chodce), tady se cíl 4 s nehonil.
 
+## T4 – míč, chytání a načasování (`t4.json`)
+
+| Žánr | Sada | Vět | Průběh | Finále | Mrtvý čas (medián) | Stoupá |
+|---|---|---|---|---|---|---|
+| míč | dev | 3 | 3 | **2/3** (boss) | 4,02 s (dřív 3,35 s) | 0,67 |
+| chytání | dev | 3 | 3 | **3/3** (boss) | 14,92 s (dřív 7,02 s) | 1 |
+| načasování | dev | 3 | 3 | **3/3** (`climax`) | 1,25 s (dřív 2,8 s) | 1 |
+| míč, chytání, načasování | panel | 5 | 5 | 5/5 | – | 1 |
+| **dev celkem** | dev | 30 | 0,87 | **0,83** (po T3 0,57) | 5,21 s | 0,87 |
+| **panel P45 celkem** | panel | 40 | 0,95 | **0,9** (po T3 0,78) | 2,69 s | 0,95 |
+
+- Cíl T4 (≥ 7/9, žádný žánr 0) splněn 8/9. Bez finále zůstal b01 („a robot plays tennis…“): týmová hra (`team`) soupeře-bosse nedostane, průběh má, ale jeho finále `round` telemetrie neuzná.
+- Brány v každé živé buňce (3 míče, 1 chytání, 3 načasování × 12 semínek): `p51-ball-catch-timing.test.ts`. Uložené hry: `p51-stored-v4` zelené, replay brána zelená.
+- **Mrtvý čas chytání se zhoršil** (7,0 → 14,9 s): mezi třemi chyceními kořist uteče a hráč jde zpět na start. T7 chytání nemá v rozsahu – zapsáno v plánu jako nález pro T7.
+- Mutace (záloha mimo repo, ne `git checkout --`): kořist bez tuhosti, soupeř míče padne po prvním zásahu, načasování nové hry na staré křivce, hodiny chytání bez rezervy → `p51-ball-catch-timing` červený; kořist-boss a soupeř bez značky nové hry, finální křivka i pro `genre.v4` → `p51-stored-v4` (a `pacing-static-b`) červený. Mutant „bez brány `segments` v `clockPaced`“ přežil, protože je ekvivalentní: spec bez `genre` pustí k průběhu jen se značkou už `pacingParts`.
+
 ## Rozhodnutí
 
 - **T2 – verze u žánrů bez `genre`:** chodec, klouzání, míč a chytání staví `nativeSpec` bez pole `genre`, takže `genreAtLeast(spec, FINALE5_GENRE_VERSION)` pro ně nikdy neplatí. Nová hra těchto žánrů proto dostane značku nové hry v parametrech generátoru, jako řízení v P46B (`pacedNative`, `segments: true`); uložený spec bez značky staví týž svět (`p51-stored-v4.test.ts`).
 - **T3 – značka nové hry:** `controlParams.segments: true` zapisuje `nativeSpec` (třetí parametr `paced`); hra s díly P42 ji nedostane (`compileAssembly`, `parts.length === 0`), takže její trať zůstává.
 - **T3 – finále chodce je spěch, ne strážce:** těla chování projdou zdmi bludiště (pevná tělesa zastaví jen hráče) a uhnutí v rovině posílá kód směru arény, který `walker` čte jako rychlost v ose x – boss by v chodbách nefungoval. Východ je proto v nejvzdálenější buňce a na posledních 8 polích cesty leží jiskry přes celou chodbu (`WALKER_FINALE`), takže je hráč na cestě sebere vždy; hodiny mají rezervu 51 tiků (bez ní začátečník 0/12, s ní 5/12). Ve scéně se jiskra kreslí krystalem (`spark-lod1.glb` neexistuje).
 - **T3 – finále klouzání je tunel:** výchozí trať nové hry 300 m místo 160 m (na 15 s by posledních 10 s byly dvě třetiny běhu), posledních 110 m kruhy po 8 m (`GLIDE_FINALE`). S doplňkem střelby má terč každý kruh tunelu (jinak finále 3/12); u akcí hrdiny ne – nepřítel po 44 tikách přijde dřív, než se výpad dobije (60 tiků).
+- **T4 – finále míče je soupeř za terči:** soupeř-boss se 3 HP (`BALL_FINALE`) chodí kyvadlem brankáře za nejvzdálenějším terčem, míč jím projde; výhra až po všech terčích a třetím zásahu soupeře. Hodiny nové hry dostanou navíc čas na 4 střely (`ballFinaleSeconds`, 3 + 1 rezervní) – bez rezervy `ball.score+rival` 0/12.
+- **T4 – u míče brána hlídá jen dolní mez začátečníka:** začátečník vyhraje 12/12 ve všech třech buňkách (před T4 7/12, 9/12, 9/12) – od intermediate se liší jen pomalejší reakcí (≤ 1,5 s za běh), takže pásmo 0,3–0,7 by držely jen hodiny pár desetin sekundy nad během intermediate, a to by na jiných větách neobstálo. Test proto u míče hlídá novice ≥ 0,3, horní mez jen u chytání.
+- **T4 – finále chytání je kořist na tři chycení:** první dvě chycení jí uberou HP a hráče vrátí na start, třetí vyhraje (`CATCH_FINALE`); hodiny 430 % `catchSeconds` (47 s u buňky `roam.catch`): 33 s → intermediate 6/12, 44 s → novice 4/12, 47 s → intermediate 12/12, novice 5/12.
+- **T4 – finále načasování je posledních 20 kol rychlostí 100:** plynulá křivka P45C dá konec nejvýš ~1,3× hustší, telemetrie chce 1,5× (`climax`). Nová hra (`genre.v5`) hraje první část rychlostí prvního kola a posledních 20 kol rychle (`TIMING_FINALE`); 19 kol → začátečník 3/12, 22 → 11/12.
+- **T4 – ohlášení finále `round` ve scéně** (míč a chytání) zůstává na T9; scéna dnes `round` neohlásí.
