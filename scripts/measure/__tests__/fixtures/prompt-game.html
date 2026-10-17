@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>prompt game</title>
+    <style>
+      body { margin: 0; background: #222; }
+      canvas { display: block; margin: 20px auto; }
+    </style>
+  </head>
+  <body>
+    <form id="create">
+      <textarea id="sentence"></textarea>
+      <button id="make" type="submit">Make it</button>
+    </form>
+    <div id="stage"></div>
+    <script>
+      // Stránka tvorby, na které už hraje doporučená hra: reaguje na vstup hned.
+      // Odeslání změní adresu po 300 ms (jako router SPA), ale nová hra se
+      // objeví a stane hratelnou až 2000 ms po odeslání. Sonda, která vezme
+      // starou plochu, naměří pod 1000 ms.
+      function game(colour) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 640;
+        canvas.height = 360;
+        const context = canvas.getContext('2d');
+        let x = 80;
+        const draw = () => {
+          context.fillStyle = colour;
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.fillStyle = '#f2c14e';
+          context.fillRect(x, 130, 100, 100);
+        };
+        const move = () => {
+          x = (x + 120) % (canvas.width - 100);
+          draw();
+        };
+        draw();
+        canvas.addEventListener('pointerdown', move);
+        window.addEventListener('keydown', (event) => {
+          if (canvas.isConnected && (event.code === 'Space' || event.code === 'ArrowRight')) move();
+        });
+        return canvas;
+      }
+      const stage = document.getElementById('stage');
+      stage.appendChild(game('#3a6ea5'));
+      document.getElementById('create').addEventListener('submit', (event) => {
+        event.preventDefault();
+        setTimeout(() => history.pushState({}, '', '?game=1'), 300);
+        setTimeout(() => stage.replaceChildren(game('#5a9e4b')), 2000);
+      });
+    </script>
+  </body>
+</html>

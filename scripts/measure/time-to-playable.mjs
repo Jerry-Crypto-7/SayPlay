@@ -6,8 +6,9 @@
  *   node scripts/measure/time-to-playable.mjs <config.json>
  *
  * Config: `url`; volitelně `promptSelector` + `sentence` (+ `submitSelector`,
- * bez něj Enter) pro měření „věta → hratelná“, `waitForUrl` (regex adresy hry –
- * plochy na stránce před ní se nepočítají), `surfaceSelector` (výchozí
+ * bez něj Enter) pro měření „věta → hratelná“ – plochy, které na stránce byly
+ * už před odesláním, se nepočítají –, `waitForUrl` (regex adresy hry, plocha se
+ * hledá až po ní), `surfaceSelector` (výchozí
  * `canvas, iframe`), `timeoutMs`, `harPath` (+ `harContent` omit|embed|attach),
  * `screenshotDir`, `gpu` (výchozí ano), `headless`, `viewport`.
  * Výstup: jeden JSON řádek `{ t0, tPlayable, ms, playable, note, … }` na stdout;
@@ -42,6 +43,8 @@ const PIXEL_DELTA = 24;
 /** Menší prvek není herní plocha (ikona, sledovací pixel). */
 const MIN_SIDE = 64;
 const IDLE_MS = 300;
+/** Značka ploch, které na stránce byly už před odesláním věty. */
+const STALE = 'data-ttp-stale';
 const POLL_MS = 100;
 
 const GPU_ARGS = ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'];
@@ -72,6 +75,7 @@ export async function changedPct(before, after) {
 async function findSurface(page, selector) {
   let best = null;
   for (const handle of await page.$$(selector)) {
+    if ((await handle.getAttribute(STALE).catch(() => null)) !== null) continue;
     const box = await handle.boundingBox().catch(() => null);
     if (box === null || box.width < MIN_SIDE || box.height < MIN_SIDE) continue;
     if (best === null || box.width * box.height > best.box.width * best.box.height) best = { handle, box };
@@ -126,6 +130,9 @@ export async function measure(config) {
       await page.goto(config.url, { waitUntil: 'load', timeout: timeoutMs });
       const prompt = page.locator(config.promptSelector).first();
       await prompt.fill(config.sentence ?? '', { timeout: timeoutMs });
+      // Hra, která na stránce tvorby hrála už před odesláním (doporučená hra,
+      // feed), není ta nová – jinak se změří ona.
+      await page.$$eval(surfaceSelector, (elements, mark) => elements.forEach((element) => element.setAttribute(mark, '')), STALE);
       result.t0 = Date.now();
       if (config.submitSelector) await page.locator(config.submitSelector).first().click({ timeout: timeoutMs });
       else await prompt.press('Enter');

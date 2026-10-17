@@ -24,7 +24,7 @@ beforeAll(async () => {
   scratch = mkdtempSync(join(tmpdir(), 'ttp-'));
   server = createServer((request, response) => {
     const name = (request.url ?? '/').replace(/^\//, '');
-    if (!/^[a-z-]+\.html$/.test(name)) {
+    if (!/^[a-z-]+\.html(\?.*)?$/.test(name)) {
       response.writeHead(404).end();
       return;
     }
@@ -61,6 +61,24 @@ describe('time-to-playable probe', () => {
     expect(result.ms).toBeNull();
     expect(result.tPlayable).toBeNull();
     expect(result.note).toMatch(/never reacted/);
+  });
+
+  it('a sentence run ignores the game that was already playing before submit', async () => {
+    const result = await measure({
+      url: `${base}/prompt-game.html`,
+      promptSelector: '#sentence',
+      submitSelector: '#make',
+      sentence: 'a corgi in a park',
+      waitForUrl: 'game=1',
+      surfaceSelector: 'canvas',
+      timeoutMs: 10_000,
+      gpu: false,
+    });
+
+    expect(result.playable).toBe(true);
+    expect(result.ms).toBeGreaterThanOrEqual(1900);
+    expect(result.ms).toBeLessThanOrEqual(3500);
+    expect(result.gameUrl).toMatch(/game=1$/);
   });
 
   it('a page without any surface reports that, not a reaction failure', async () => {
