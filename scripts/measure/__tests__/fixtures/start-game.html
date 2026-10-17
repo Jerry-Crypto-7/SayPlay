@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>start button game</title>
+    <style>
+      body { margin: 0; background: #222; }
+      canvas { display: block; margin: 40px auto; }
+      #play { position: absolute; left: 50%; top: 330px; transform: translateX(-50%); display: none; padding: 8px 24px; }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" width="640" height="360"></canvas>
+    <button id="play" type="button">PLAY</button>
+    <script>
+      // Hra se startovním tlačítkem mimo střed plochy: tlačítko se ukáže po
+      // 1000 ms a hra na vstup reaguje až po jeho stisknutí.
+      const canvas = document.getElementById('game');
+      const context = canvas.getContext('2d');
+      const play = document.getElementById('play');
+      let x = 80;
+      let started = false;
+      function draw() {
+        context.fillStyle = '#3a6ea5';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#f2c14e';
+        context.fillRect(x, 130, 100, 100);
+      }
+      draw();
+      function move() {
+        if (!started) return;
+        x = (x + 120) % (canvas.width - 100);
+        draw();
+      }
+      window.addEventListener('keydown', (event) => {
+        if (event.code === 'Space' || event.code === 'ArrowRight') move();
+      });
+      canvas.addEventListener('pointerdown', move);
+      play.addEventListener('click', () => {
+        started = true;
+        play.style.display = 'none';
+      });
+      setTimeout(() => (play.style.display = 'block'), Math.max(0, 1000 - performance.now()));
+    </script>
+  </body>
+</html>

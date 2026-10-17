@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>poster game</title>
+    <style>
+      body { margin: 0; background: #222; }
+      #wrap { position: relative; width: 640px; height: 360px; margin: 40px auto; }
+      canvas { display: block; }
+      #poster { position: absolute; inset: 0; background: #b33; color: #fff; font: 40px sans-serif; display: flex; align-items: center; justify-content: center; }
+    </style>
+  </head>
+  <body>
+    <div id="wrap">
+      <canvas id="game" width="640" height="360"></canvas>
+      <div id="poster">Tap to play</div>
+    </div>
+    <script>
+      // Plakát přes plochu zmizí na první klepnutí, ale hra pod ním začne na
+      // vstup reagovat až 2000 ms od začátku navigace. Sonda, která za
+      // hratelnost vezme zmizení plakátu, naměří pár set ms.
+      const canvas = document.getElementById('game');
+      const context = canvas.getContext('2d');
+      let x = 80;
+      function draw() {
+        context.fillStyle = '#3a6ea5';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#f2c14e';
+        context.fillRect(x, 130, 100, 100);
+      }
+      draw();
+      document.getElementById('poster').addEventListener('pointerdown', (event) => event.currentTarget.remove());
+      function move() {
+        x = (x + 120) % (canvas.width - 100);
+        draw();
+      }
+      setTimeout(() => {
+        window.addEventListener('keydown', (event) => {
+          if (event.code === 'Space' || event.code === 'ArrowRight') move();
+        });
+        canvas.addEventListener('pointerdown', move);
+      }, Math.max(0, 2000 - performance.now()));
+    </script>
+  </body>
+</html>
