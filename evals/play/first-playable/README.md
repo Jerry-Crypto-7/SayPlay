@@ -110,6 +110,7 @@ Párový medián B − A (30 dvojic na profil), záporné = B rychlejší.
 | Úloha | Změna | Hratelná desktop | Hratelná telefon | 1. snímek desktop | 1. snímek telefon | Proč vráceno |
 |---|---|---|---|---|---|---|
 | T2 | AO, SMAA a bloom až po prvním snímku (skládač s tónováním a laděním zůstal v prvním) | **+334 ms** | −263 ms | −319 ms | +28 ms | První snímek přijde dřív, ale překlad odložených efektů (~285 ms hlavního vlákna) padne přesně na start hry – na desktopu je hratelná později. |
+| T3 | Plátno stojí, dokud `compileAsync` nepřeloží programy scény (nejdéle 300 ms) | −77 ms | **+438 ms** | **+232 ms** | −4 ms | Paralelní překlad v Chromu sondy první snímek nezkrátí, jen ho odsune o čekání; telefon měl 5/4 běhů přes limit 60 s (zatížený stroj). |
 
 ## Co číslo neříká
 
