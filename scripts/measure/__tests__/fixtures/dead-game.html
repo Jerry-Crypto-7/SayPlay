@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>dead game</title>
+    <style>
+      body { margin: 0; background: #222; }
+      canvas { display: block; margin: 40px auto; }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" width="640" height="360"></canvas>
+    <script>
+      // Plocha, která vypadá jako hra, ale na žádný vstup nereaguje – statický obrázek.
+      const canvas = document.getElementById('game');
+      const context = canvas.getContext('2d');
+      context.fillStyle = '#3a6ea5';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = '#f2c14e';
+      context.fillRect(80, 130, 100, 100);
+    </script>
+  </body>
+</html>
