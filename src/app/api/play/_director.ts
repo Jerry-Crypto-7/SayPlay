@@ -353,6 +353,15 @@ export function directorQueueState(): { readonly running: number; readonly queue
 }
 
 /**
+ * Slot dveří `play` je volný hned (P53 T3a): nikdo nečeká a fronta nepouští plný
+ * strop. Volitelné druhé volání bez něj čeká za cizími větami, i když fronta je prázdná.
+ */
+export function directorSlotFree(): boolean {
+  const { running, queued } = directorQueueState();
+  return queued === 0 && running < DOOR_CEILING.play;
+}
+
+/**
  * Pořadí práce `queueId` ve frontě na slot (P53 T3), 1 = další na řadě; `null`
  * = nečeká. Upgrade a remix si ho přidají ke stavu `pending`, který klient polluje.
  */
@@ -410,16 +419,39 @@ const refusedBy = (detail: string): GenerationOutcome => ({ ok: false, reason: '
  * frontu). Bez kterékoli z nich se nevolá a výsledek je `UPSTREAM_REJECTED`.
  */
 export async function callDirectorModel(startedAt: number, caller: string, request: UpstreamRequest, prompt: string, queueId?: string): Promise<GenerationOutcome> {
-  const config = upstreamConfigFromEnv(process.env);
-  const branch = await cappedBranch(process.env, startedAt + DIRECTOR_BUDGET_MS, caller, () => {});
-  if (branch === null || config === null) return refusedBy('the paid director branch is not available');
-  const seat = await takePlaySlot(config, startedAt, queueId);
-  if ('refused' in seat) return refusedBy(seat.refused);
+  const calls = directorCalls(startedAt, caller, queueId);
   try {
-    return await branch.generate({ prompt, request });
+    return await calls.call(request, prompt);
   } finally {
-    seat.release();
+    calls.close();
   }
+}
+
+/**
+ * Placená volání jedné práce na jednom slotu (P53 T3a): slot se vezme u prvního
+ * volání a drží do `close()`, takže druhé volání téže práce (opravné kolo
+ * remixu) nečeká na konci fronty za cizími větami. Každé volání projde týmiž
+ * branami jako `callDirectorModel`; `close()` patří do `finally`.
+ */
+export function directorCalls(startedAt: number, caller: string, queueId?: string): { readonly call: (request: UpstreamRequest, prompt: string) => Promise<GenerationOutcome>; readonly close: () => void } {
+  let seat: { readonly release: () => void } | null = null;
+  return {
+    call: async (request, prompt) => {
+      const config = upstreamConfigFromEnv(process.env);
+      const branch = await cappedBranch(process.env, startedAt + DIRECTOR_BUDGET_MS, caller, () => {});
+      if (branch === null || config === null) return refusedBy('the paid director branch is not available');
+      if (seat === null) {
+        const taken = await takePlaySlot(config, startedAt, queueId);
+        if ('refused' in taken) return refusedBy(taken.refused);
+        seat = taken;
+      }
+      return branch.generate({ prompt, request });
+    },
+    close: () => {
+      seat?.release();
+      seat = null;
+    },
+  };
 }
 
 /**

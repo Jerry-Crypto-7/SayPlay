@@ -37,7 +37,7 @@ import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
-import { DIRECTOR_BUDGET_MS, directorQueuePosition, getDirector } from './_director';
+import { DIRECTOR_BUDGET_MS, directorQueuePosition, directorSlotFree, getDirector } from './_director';
 import { derivedSeeds, playabilityIssues, publishReadSpec, seedFrom } from './_publish';
 
 export type DraftFinalReason =
@@ -269,8 +269,9 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
   let adds = quick === null ? undefined : upgradeAddsOf(quick, picked.played);
   let source: DirectorSource = rejected === null ? directed.source : 'authored';
   // AI verze bez novinky, kterou hráč hraje (P46E T4): jeden druhý pokus s pokynem. Ani ten nic nepřidá, nebo
-  // nevyjde – publikuje se první; `adds: []` ho ukáže.
-  if (quick !== null && adds?.length === 0) {
+  // nevyjde – publikuje se první; `adds: []` ho ukáže. Bez volného slotu (P53 T3a) se pokus přeskočí:
+  // režie svůj slot už pustila a druhé čekání by hotovou verzi zdrželo za cizími větami.
+  if (quick !== null && adds?.length === 0 && directorSlotFree()) {
     const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE, upgradeQueueId(draftId))(request.sentence);
     const again = nudged.source === 'draft' ? null : await upgradeCandidate(draft, nudged.spec, seeds, intent, before);
     const added = again === null ? [] : upgradeAddsOf(quick, again.played);

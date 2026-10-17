@@ -30,6 +30,7 @@ import {
   callDirectorModel,
   DEFAULT_PLAY_DIRECTOR_QUEUE,
   DIRECTOR_BUDGET_MS,
+  directorCalls,
   directorQueueLength,
   directorQueueState,
   getDirector,
@@ -70,12 +71,15 @@ const answer = () =>
  */
 function gatedUpstream() {
   const first: string[] = [];
+  /** Každé volání v pořadí, i opravné kolo a druhý pokus téže věty. */
+  const all: string[] = [];
   const held: Array<{ readonly said: string; readonly settle: (reply: Response | Error) => void }> = [];
   let open = false;
   let peak = 0;
   vi.stubGlobal('fetch', (_url: string, init: RequestInit) => {
     const body = String(init.body);
     const said = WORDS.map((_, n) => sentence(n)).find((candidate) => body.includes(candidate)) ?? '?';
+    all.push(said);
     if (!first.includes(said)) first.push(said);
     if (open) return Promise.resolve(answer());
     return new Promise<Response>((resolve, reject) => {
@@ -85,6 +89,7 @@ function gatedUpstream() {
   });
   return {
     first,
+    all,
     inFlight: () => held.length,
     peak: () => peak,
     /** Odpoví nejstaršímu visícímu volání. */
@@ -303,6 +308,62 @@ describe('the play director queue (P53 T2)', () => {
     await Promise.all([...busy, upgraded]);
     await until(async () => expect((await remixStatus(store, draftId, remix.job))?.status).not.toBe('pending'));
     expect(await remixStatus(store, draftId, remix.job)).not.toHaveProperty('queued');
+  });
+
+  // Revize fáze 1, nález 2 (T3a): druhé volání téže práce nesmí znovu čekat na konci fronty za cizími větami.
+  it('(g) an upgrade that adds nothing publishes its first version while strangers wait, without queueing again', async () => {
+    const up = gatedUpstream();
+    const store = memoryVersionStore();
+    const said = sentence(2);
+    const quick = await publishReadSpec(store, draftGameSpecWithMeta(said, 1).spec, derivedSeeds(seedFrom(said)), null, { origin: { sentence: said, seed: null } });
+    if (!quick.ok) throw new Error(`quick version did not publish: ${JSON.stringify(quick.issues)}`);
+    const draftId = quick.value.game.version.versionId;
+    const busy = [directing(0), directing(1)];
+    await until(() => expect(up.inFlight()).toBe(2));
+    const upgraded = upgradeOf(store, quick.value.game, { sentence: said, seed: null, ackMs: null, draftReadyMs: null, startedAt: Date.now(), caller: 'queue-upgrade' });
+    await until(() => expect(knownUpgrade(draftId)).toMatchObject({ status: 'pending', queued: 1 }));
+    const strangers = [directing(3), directing(4)];
+    await until(() => expect(directorQueueState().queued).toBe(3));
+
+    up.answerNext();
+    await until(() => expect(up.first).toContain(said));
+    up.answerNext();
+    await until(() => expect(up.first).toContain(sentence(3)));
+    expect(directorQueueState().queued, 'a stranger still waits').toBe(1);
+    // Odpověď upgradu: jeho slot hned vezme čekající cizí věta, takže pro druhý pokus volno není.
+    up.answerNext();
+    await until(() => expect(knownUpgrade(draftId)?.status).toBe('ready'));
+    expect(knownUpgrade(draftId)).toMatchObject({ status: 'ready', adds: [] });
+    expect(up.all.filter((call) => call === said)).toHaveLength(1);
+
+    up.openAll();
+    await Promise.all([...busy, ...strangers, upgraded]);
+  });
+
+  it('(h) the second paid call of one work rides the slot its first call took', async () => {
+    const up = gatedUpstream();
+    const request = (n: number) => ({ model: 'x', system: 's', user: sentence(n) });
+    const calls = directorCalls(Date.now(), 'remix-caller', 'remix-work');
+    const first = calls.call(request(5), sentence(5));
+    await until(() => expect(up.inFlight()).toBe(1));
+    const busy = directing(0);
+    await until(() => expect(up.inFlight()).toBe(2));
+    const stranger = directing(1);
+    await until(() => expect(directorQueueState().queued).toBe(1));
+
+    up.answerNext();
+    expect(await first).toMatchObject({ ok: true });
+    const second = calls.call(request(6), sentence(6));
+    await until(() => expect(up.first).toContain(sentence(6)));
+    expect(up.first, 'the stranger still waits behind the held slot').not.toContain(sentence(1));
+    expect(directorQueueState()).toEqual({ running: 2, queued: 1 });
+
+    up.openAll();
+    expect(await second).toMatchObject({ ok: true });
+    calls.close();
+    await Promise.all([busy, stranger]);
+    expect(directorQueueState()).toEqual({ running: 0, queued: 0 });
+    expect(slotsDetail('play')).toContain('0 play');
   });
 });
 
