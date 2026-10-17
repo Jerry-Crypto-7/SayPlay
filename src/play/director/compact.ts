@@ -16,7 +16,7 @@ import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 import type { GenreSpec } from '../genre/contract';
 
 import { GENRE_ANSWER_SCHEMA } from './answer-schema';
-import { directorUser, genrePromptLines, rulesPromptLines } from './prompt';
+import { COURSE_LINE, directorUser, genrePromptLines, rulesPromptLines } from './prompt';
 import { examplesBlock, nearestExamples } from './retrieval';
 
 /** Systémový text bez věty; stavěný při volání, aby změna modulu žánru prošla ven. */
@@ -24,8 +24,8 @@ export function compactSystemPrompt(): string {
   return ["Choose how the user's sentence plays. Never output code. Answer one JSON object {plan, spec}: plan = one short line, spec = a live recipe with named content and explicit unmet; legacy GenreSpec remains accepted.", genrePromptLines(), rulesPromptLines()].join('\n');
 }
 
-/** Jako `DIRECTOR_PROMPT_VERSION`: text i schéma odpovědi (P36A T7), změna kteréhokoli zneplatní cache. */
-export const COMPACT_PROMPT_VERSION = canonicalHash({ system: compactSystemPrompt(), schema: GENRE_ANSWER_SCHEMA });
+/** Jako `DIRECTOR_PROMPT_VERSION`: text, schéma odpovědi (P36A T7) i řádek průběhu ve zprávě (P45B T11); změna kteréhokoli zneplatní cache. */
+export const COMPACT_PROMPT_VERSION = canonicalHash({ system: compactSystemPrompt(), schema: GENRE_ANSWER_SCHEMA, course: COURSE_LINE });
 
 /** `examples` (P30A T8): za výchozí bod 3–5 ověřených her k podobným větám; bez nich je zpráva jako dřív. */
 export function buildCompactRequest(sentence: string, draft: GenreSpec | null, examples = false): UpstreamRequest {

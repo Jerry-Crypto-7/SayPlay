@@ -9,12 +9,12 @@
  */
 
 import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Box3, type Group, type Object3D, Vector3 } from 'three';
+import { Box3, type Group, Mesh, type Object3D, Vector3 } from 'three';
 
-import { isSceneryModel, type Look, type PropKind, SCENERY_MODELS, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
+import { type Flora, floraIds, isSceneryModel, landmarks, type Look, modelHeight, type PropKind, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
 
 import { UNDER_PANORAMA } from './under-panorama';
-import { loadFlatModel } from './load';
+import { loadFlatModel, type PlantModel, paintedPlant, plantMaterial } from './load';
 import { PlayEnv } from './play-env';
 import { capSnow } from './rig/snowcap';
 
@@ -39,8 +39,8 @@ const PROP_HEIGHTS: Readonly<Record<PropKind, number>> = {
   chimney: 6, tower: 6.6, grave: 1.35, coral: 1.8, seaweed: 2.4, crystal: 1.7, iceblock: 1.2, volcano: 5, buoy: 1.45,
 };
 
-/** Výška kulisy při měřítku 1 (m): model z katalogu (`SCENERY_MODELS`), primitivy z `PROP_HEIGHTS`. */
-export const sceneryHeight = (kind: SceneryKind): number => (isSceneryModel(kind) ? SCENERY_MODELS[kind] : PROP_HEIGHTS[kind]);
+/** Výška kulisy při měřítku 1 (m): model z katalogu (`SCENERY_MODELS`, rekvizity prostředí), primitivy z `PROP_HEIGHTS`. */
+export const sceneryHeight = (kind: SceneryKind): number => (isSceneryModel(kind) ? modelHeight(kind) : PROP_HEIGHTS[kind]);
 
 /**
  * Strop kulisy v popředí: nejvýš 3 výšky hrdiny (P36C T5). Kamera arény kouká
@@ -56,12 +56,18 @@ export interface SceneryCap {
   readonly height: number;
 }
 
-/** Kde rekvizity stojí: krok 7 m, odsazení a velikost se střídají podle pořadí. `cap` zmenší vysoké kulisy jedné řady. */
-export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayout, inner: number, from: number, to: number, cap?: SceneryCap): SceneryPlace[] {
+/** Krok kulis vedle vegetace (P46G T4): stromy stojí ve vegetaci, v řadě zůstanou stavby a věci jako řídké akcenty. */
+export const LANDMARK_STEP = 24;
+
+/**
+ * Kde rekvizity stojí: krok 7 m, odsazení a velikost se střídají podle pořadí. `cap` zmenší vysoké kulisy jedné řady.
+ * `sparse` (vedle vegetace) = krok `LANDMARK_STEP` a strany se střídají, jedna kulisa na krok.
+ */
+export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayout, inner: number, from: number, to: number, cap?: SceneryCap, sparse = false): SceneryPlace[] {
   const places: SceneryPlace[] = [];
-  const sides = layout === 'sides' ? [-1, 1] : [1];
-  for (let index = 0, z = from; z <= to; index += 1, z += 7) {
-    for (const side of sides) {
+  if (props.length === 0) return places;
+  for (let index = 0, z = from; z <= to; index += 1, z += sparse ? LANDMARK_STEP : 7) {
+    for (const side of layout === 'behind' ? [1] : sparse ? [index % 2 === 0 ? -1 : 1] : [-1, 1]) {
       const n = index * 7 + (side + 1) * 3;
       const kind = props[n % props.length] as SceneryKind;
       const scale = 0.8 + ((index * 29 + side * 7) % 5) * 0.12;
@@ -200,7 +206,7 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
   }
 }
 
-/** Model katalogu postavený na zem ve výšce ze `SCENERY_MODELS`; dokud se nenačte, nic. `cap` = sněhová čepička. */
+/** Model katalogu postavený na zem ve výšce kulisy (`modelHeight`); dokud se nenačte, nic. `cap` = sněhová čepička. */
 function SceneryModelProp({ id, cap }: { readonly id: SceneryModel; readonly cap?: string }) {
   const [model, setModel] = useState<Object3D | null>(null);
   useEffect(() => {
@@ -217,7 +223,7 @@ function SceneryModelProp({ id, cap }: { readonly id: SceneryModel; readonly cap
     const copy = model.clone(true);
     const box = new Box3().setFromObject(copy);
     const size = box.getSize(new Vector3());
-    const scale = SCENERY_MODELS[id] / Math.max(size.y, 1e-3);
+    const scale = modelHeight(id) / Math.max(size.y, 1e-3);
     copy.scale.setScalar(scale);
     const center = box.getCenter(new Vector3());
     copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
@@ -226,6 +232,32 @@ function SceneryModelProp({ id, cap }: { readonly id: SceneryModel; readonly cap
     return copy;
   }, [model, id, cap]);
   return fitted === null ? null : <primitive object={fitted} />;
+}
+
+/**
+ * Rostlina vegetace sady jako kulisa (P46G T4): barvy jako ve vegetaci (`paintedPlant`),
+ * takže jehličnan v lese je zelený i ve scéně bez vegetace a šedé listí katalogu dostane barvu sady.
+ */
+function PlantProp({ id, flora, cap }: { readonly id: SceneryModel; readonly flora: Flora; readonly cap?: string }) {
+  const [plant, setPlant] = useState<PlantModel | null>(null);
+  useEffect(() => {
+    let live = true;
+    void paintedPlant(id, flora).then((loaded) => {
+      if (live) setPlant(loaded);
+    });
+    return () => {
+      live = false;
+    };
+  }, [id, flora]);
+  const mesh = useMemo(() => {
+    if (plant === null) return null;
+    const made = new Mesh(plant.geometry, plantMaterial(plant.double));
+    made.scale.setScalar(modelHeight(id));
+    if (cap !== undefined) capSnow(made, cap);
+    freeze(made);
+    return made;
+  }, [plant, id, cap]);
+  return mesh === null ? null : <primitive object={mesh} />;
 }
 
 /** Buňka mřížky je 1 m, kulisa arkády počítá s hrdinou ~2 m: na mřížce stojí zmenšená. */
@@ -280,12 +312,17 @@ const FOOT = 0.7;
  * podle `userData.scenery` smí kulisy za koncem mlhy vypnout – bez R3F tady,
  * stránka mřížky tenhle soubor importuje staticky (viz `Panorama` výš).
  * `ground` = výška terénu pod kulisou (údolí běžce, P32A T3), `cap` = barva sněhové čepičky,
- * `tallest` = strop výšky řady v popředí (v metrech scény, už se `size`).
+ * `tallest` = strop výšky řady v popředí (v metrech scény, už se `size`), `bend` = posun po
+ * zakřivené trati běžce (P46D T3, `runner/path.ts`): kulisa stojí vedle zatáčky, ne v ní.
+ * `vegetation` = scéna kreslí vegetaci sady (`Vegetation.tsx`): řada nese jen stavby a věci, řídce a střídavě.
  */
-export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap, tallest }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string; readonly tallest?: SceneryCap }) {
+export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap, tallest, bend, vegetation = false }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string; readonly tallest?: SceneryCap; readonly bend?: (z: number) => { readonly x: number; readonly y: number }; readonly vegetation?: boolean }) {
   const side = tallest?.side;
   const height = tallest === undefined ? undefined : tallest.height / size;
-  const places = useMemo(() => sceneryPlaces(look.props, layout, inner, from, to, side === undefined || height === undefined ? undefined : { side, height }), [look.props, layout, inner, from, to, side, height]);
+  const props = useMemo(() => (vegetation ? landmarks(look) : look.props), [look, vegetation]);
+  const sparse = vegetation && look.flora !== undefined;
+  const places = useMemo(() => sceneryPlaces(props, layout, inner, from, to, side === undefined || height === undefined ? undefined : { side, height }, sparse), [props, layout, inner, from, to, side, height, sparse]);
+  const plants = useMemo(() => (look.flora === undefined ? new Set<string>() : floraIds(look.flora)), [look.flora]);
   const heights = useMemo(
     () =>
       places.map((place) => {
@@ -305,8 +342,14 @@ export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground
   return (
     <group ref={root} userData={{ scenery: true }}>
       {places.map((place, index) => (
-        <group key={index} position={[place.x, heights[index]!, place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
-          {isSceneryModel(place.kind) ? <SceneryModelProp id={place.kind} cap={cap} /> : <Prop kind={place.kind} tint={look.tint} />}
+        <group key={index} position={[place.x + (bend?.(place.z).x ?? 0), heights[index]! + (bend?.(place.z).y ?? 0), place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
+          {!isSceneryModel(place.kind) ? (
+            <Prop kind={place.kind} tint={look.tint} />
+          ) : plants.has(place.kind) ? (
+            <PlantProp id={place.kind} flora={look.flora!} cap={cap} />
+          ) : (
+            <SceneryModelProp id={place.kind} cap={cap} />
+          )}
         </group>
       ))}
     </group>

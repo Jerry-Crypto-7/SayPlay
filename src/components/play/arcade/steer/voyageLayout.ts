@@ -6,7 +6,7 @@
 
 import type { Frustum, Vector3 } from 'three';
 
-import { baseControlOf } from '@/play/arcade/addons';
+import { baseBotOf, baseControlOf } from '@/play/arcade/addons';
 import { BODY, HEADER, type ArcadeWorld, UNIT, bodyBase } from '@/play/arcade/contract';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 
@@ -48,7 +48,7 @@ const TERRAIN_OF: Readonly<Record<string, VoyageTerrain>> = { island: 'islands',
 /** Plavba, nebo `null` pro obyčejný závod (ten si kreslí asfalt jako dřív). */
 export function voyageLayoutOf(world: ArcadeWorld): VoyageLayout | null {
   const land = (baseControlOf(world.control).params as { land?: unknown }).land !== undefined;
-  const course = world.bot.params.course as SteerCourse | undefined;
+  const course = baseBotOf(world.bot).params.course as SteerCourse | undefined;
   const state = world.initial;
   const boxes: (VoyageBox & { readonly kind: string })[] = [];
   for (let index = 0; index < (state[HEADER.bodyCount] as number); index += 1) {

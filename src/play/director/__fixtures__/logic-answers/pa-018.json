@@ -1,0 +1,130 @@
+{
+ "id": "pa-018",
+ "sentence": "survive in space by blasting asteroids with your spaceship",
+ "axis": "survive",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:39:50.799Z",
+ "ms": 12801,
+ "answer": {
+  "plan": "Create an arena‑escape game set in space where the player’s spaceship must shoot asteroids to survive.",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "spaceship",
+   "cast": [
+    {
+     "label": "asteroid",
+     "does": "shoot_at",
+     "verb": "shoot",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "space debris",
+     "does": "avoid",
+     "verb": "avoid",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "space",
+   "palette": "space",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "asteroid",
+     "kind": "hazard",
+     "label": "asteroid",
+     "count": null
+    },
+    {
+     "id": "spaceDebris",
+     "kind": "hazard",
+     "label": "space debris",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "spawnAsteroid",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "asteroid",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawnDebris",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "spaceDebris",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "asteroidHit",
+     "verb": "shoot",
+     "when": {
+      "contact": [
+       "player",
+       "asteroid"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "despawn": "other"
+      },
+      {
+       "score": 10
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "phase1"
+     }
+    ],
+    "phases": [
+     {
+      "id": "first"
+     },
+     {
+      "id": "second"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

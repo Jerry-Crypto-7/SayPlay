@@ -1,0 +1,662 @@
+{
+ "Grab every gem in a cave while bats swoop at you": {
+  "schema": "gamespec.v1",
+  "control": "move_free",
+  "controlParams": {
+   "generator": "arena_collect",
+   "tuning": {
+    "items": 10,
+    "waves": 3
+   }
+  },
+  "abilities": [
+   "grab"
+  ],
+  "genre": {
+   "id": "arena",
+   "mode": "collect",
+   "compilerVersion": "genre.v3"
+  },
+  "title": "Kid Hunt",
+  "archetype": "collect_exit",
+  "targetDurationSec": 60,
+  "theme": {
+   "setting": "cave",
+   "mood": "playful"
+  },
+  "objective": {
+   "kind": "collect",
+   "description": "Collect 10 gems in each of 3 waves before time runs out.",
+   "count": 10,
+   "role": "item"
+  },
+  "mechanics": [
+   {
+    "id": "health",
+    "params": {
+     "max": 3
+    }
+   }
+  ],
+  "roles": [
+   {
+    "id": "player",
+    "kind": "player",
+    "label": "kid",
+    "count": 1
+   },
+   {
+    "id": "item",
+    "kind": "collectible",
+    "label": "gem",
+    "count": 10
+   }
+  ],
+  "tutorial": {
+   "goalLine": "Collect 10 gems per wave, 3 waves.",
+   "controlsHint": "Drag or arrows to move. J to grab."
+  },
+  "verification": [
+   {
+    "id": "winnable",
+    "kind": "reachability",
+    "assert": {
+     "runState": "won"
+    }
+   }
+  ],
+  "budgets": {
+   "maxEntities": 40,
+   "maxRules": 120,
+   "maxTriangles": 200000
+  },
+  "rules": [
+   {
+    "id": "herald",
+    "verb": "herald",
+    "when": {
+     "every": 300
+    },
+    "if": [
+     {
+      "inPhase": "calm"
+     }
+    ],
+    "do": [
+     {
+      "goPhase": "rush"
+     },
+     {
+      "startTimer": {
+       "timer": "rush",
+       "ticks": 480
+      }
+     }
+    ]
+   },
+   {
+    "id": "shower",
+    "verb": "shower",
+    "when": {
+     "phase": "rush"
+    },
+    "do": [
+     {
+      "wave": {
+       "role": "item",
+       "count": 3,
+       "at": "edge"
+      }
+     }
+    ]
+   },
+   {
+    "id": "settle",
+    "verb": "settle",
+    "when": {
+     "timer": "rush"
+    },
+    "do": [
+     {
+      "goPhase": "calm"
+     }
+    ]
+   }
+  ],
+  "logic": {
+   "timers": [
+    {
+     "id": "rush"
+    }
+   ],
+   "phases": [
+    {
+     "id": "calm"
+    },
+    {
+     "id": "rush"
+    }
+   ]
+  },
+  "scoring": {}
+ },
+ "Pick up glowing mushrooms in a dark forest and avoid the wolves": {
+  "schema": "gamespec.v1",
+  "control": "move_free",
+  "controlParams": {
+   "generator": "arena_escape",
+   "tuning": {
+    "items": 10,
+    "waves": 3
+   }
+  },
+  "genre": {
+   "id": "arena",
+   "mode": "escape",
+   "compilerVersion": "genre.v3"
+  },
+  "title": "Fox Escape",
+  "archetype": "collect_exit",
+  "targetDurationSec": 60,
+  "theme": {
+   "setting": "dark forest",
+   "mood": "tense"
+  },
+  "objective": {
+   "kind": "collect",
+   "description": "Collect 10 glowing mushrooms in each of 3 waves before the wolf catches you.",
+   "count": 10,
+   "role": "item"
+  },
+  "mechanics": [
+   {
+    "id": "health",
+    "params": {
+     "max": 3
+    }
+   }
+  ],
+  "roles": [
+   {
+    "id": "player",
+    "kind": "player",
+    "label": "fox",
+    "count": 1
+   },
+   {
+    "id": "hunter",
+    "kind": "chaser",
+    "label": "wolf",
+    "count": 2
+   },
+   {
+    "id": "item",
+    "kind": "collectible",
+    "label": "glowing mushroom",
+    "count": 10
+   }
+  ],
+  "tutorial": {
+   "goalLine": "Grab 10 glowing mushrooms per wave, 3 waves. Don't get caught.",
+   "controlsHint": "Drag or arrows to move."
+  },
+  "verification": [
+   {
+    "id": "winnable",
+    "kind": "reachability",
+    "assert": {
+     "runState": "won"
+    }
+   }
+  ],
+  "budgets": {
+   "maxEntities": 40,
+   "maxRules": 120,
+   "maxTriangles": 200000
+  },
+  "rules": [
+   {
+    "id": "sound",
+    "verb": "sound",
+    "when": {
+     "every": 600
+    },
+    "if": [
+     {
+      "inPhase": "calm"
+     }
+    ],
+    "do": [
+     {
+      "goPhase": "alarm"
+     }
+    ]
+   },
+   {
+    "id": "muster",
+    "verb": "muster",
+    "when": {
+     "phase": "alarm"
+    },
+    "do": [
+     {
+      "wave": {
+       "role": "hunter",
+       "count": 1,
+       "at": "edge"
+      }
+     }
+    ]
+   }
+  ],
+  "logic": {
+   "phases": [
+    {
+     "id": "calm"
+    },
+    {
+     "id": "alarm"
+    }
+   ]
+  },
+  "scoring": {}
+ },
+ "Collect three keys in a pyramid while mummies chase you": {
+  "schema": "gamespec.v1",
+  "control": "move_free",
+  "controlParams": {
+   "generator": "arena_escape",
+   "tuning": {
+    "items": 3,
+    "waves": 4
+   }
+  },
+  "genre": {
+   "id": "arena",
+   "mode": "escape",
+   "compilerVersion": "genre.v3"
+  },
+  "title": "Fox Escape",
+  "archetype": "collect_exit",
+  "targetDurationSec": 60,
+  "theme": {
+   "setting": "pyramid",
+   "mood": "tense"
+  },
+  "objective": {
+   "kind": "collect",
+   "description": "Collect 3 keys in each of 4 waves before the mummy catches you.",
+   "count": 3,
+   "role": "item"
+  },
+  "mechanics": [
+   {
+    "id": "health",
+    "params": {
+     "max": 3
+    }
+   }
+  ],
+  "roles": [
+   {
+    "id": "player",
+    "kind": "player",
+    "label": "fox",
+    "count": 1
+   },
+   {
+    "id": "hunter",
+    "kind": "chaser",
+    "label": "mummy",
+    "count": 2
+   },
+   {
+    "id": "item",
+    "kind": "collectible",
+    "label": "key",
+    "count": 3
+   }
+  ],
+  "tutorial": {
+   "goalLine": "Grab 3 keys per wave, 4 waves. Don't get caught.",
+   "controlsHint": "Drag or arrows to move."
+  },
+  "verification": [
+   {
+    "id": "winnable",
+    "kind": "reachability",
+    "assert": {
+     "runState": "won"
+    }
+   }
+  ],
+  "budgets": {
+   "maxEntities": 40,
+   "maxRules": 120,
+   "maxTriangles": 200000
+  },
+  "rules": [
+   {
+    "id": "herald",
+    "verb": "herald",
+    "when": {
+     "every": 300
+    },
+    "if": [
+     {
+      "inPhase": "calm"
+     }
+    ],
+    "do": [
+     {
+      "goPhase": "rush"
+     },
+     {
+      "startTimer": {
+       "timer": "rush",
+       "ticks": 480
+      }
+     }
+    ]
+   },
+   {
+    "id": "shower",
+    "verb": "shower",
+    "when": {
+     "phase": "rush"
+    },
+    "do": [
+     {
+      "wave": {
+       "role": "item",
+       "count": 3,
+       "at": "edge"
+      }
+     }
+    ]
+   },
+   {
+    "id": "settle",
+    "verb": "settle",
+    "when": {
+     "timer": "rush"
+    },
+    "do": [
+     {
+      "goPhase": "calm"
+     }
+    ]
+   }
+  ],
+  "logic": {
+   "timers": [
+    {
+     "id": "rush"
+    }
+   ],
+   "phases": [
+    {
+     "id": "calm"
+    },
+    {
+     "id": "rush"
+    }
+   ]
+  },
+  "scoring": {}
+ },
+ "Survive a horde of skeletons in a graveyard until sunrise": {
+  "schema": "gamespec.v1",
+  "control": "move_free",
+  "controlParams": {
+   "seconds": 40,
+   "generator": "arena_escape",
+   "tuning": {
+    "items": 0,
+    "waves": 3
+   }
+  },
+  "genre": {
+   "id": "arena",
+   "mode": "escape",
+   "compilerVersion": "genre.v3"
+  },
+  "title": "Kid Escape",
+  "archetype": "survival_timer",
+  "targetDurationSec": 60,
+  "theme": {
+   "setting": "graveyard",
+   "mood": "tense"
+  },
+  "objective": {
+   "kind": "survive",
+   "description": "Stay away from the ghost for 40 seconds.",
+   "seconds": 40
+  },
+  "mechanics": [
+   {
+    "id": "timer",
+    "params": {
+     "id": "clock",
+     "seconds": 40,
+     "onEnd": "win"
+    }
+   },
+   {
+    "id": "health",
+    "params": {
+     "max": 3
+    }
+   }
+  ],
+  "roles": [
+   {
+    "id": "player",
+    "kind": "player",
+    "label": "kid",
+    "count": 1
+   },
+   {
+    "id": "hunter",
+    "kind": "chaser",
+    "label": "ghost",
+    "count": 2
+   }
+  ],
+  "tutorial": {
+   "goalLine": "Survive 40 seconds.",
+   "controlsHint": "Drag or arrows to move."
+  },
+  "verification": [
+   {
+    "id": "winnable",
+    "kind": "reachability",
+    "assert": {
+     "runState": "won"
+    }
+   }
+  ],
+  "budgets": {
+   "maxEntities": 40,
+   "maxRules": 120,
+   "maxTriangles": 200000
+  },
+  "rules": [
+   {
+    "id": "sound",
+    "verb": "sound",
+    "when": {
+     "every": 600
+    },
+    "if": [
+     {
+      "inPhase": "calm"
+     }
+    ],
+    "do": [
+     {
+      "goPhase": "alarm"
+     }
+    ]
+   },
+   {
+    "id": "muster",
+    "verb": "muster",
+    "when": {
+     "phase": "alarm"
+    },
+    "do": [
+     {
+      "wave": {
+       "role": "hunter",
+       "count": 1,
+       "at": "edge"
+      }
+     }
+    ]
+   }
+  ],
+  "logic": {
+   "phases": [
+    {
+     "id": "calm"
+    },
+    {
+     "id": "alarm"
+    }
+   ]
+  },
+  "scoring": {}
+ },
+ "A lighthouse keeper lights every lamp along the stormy coast": {
+  "schema": "gamespec.v1",
+  "control": "move_free",
+  "controlParams": {
+   "generator": "quest_spatial",
+   "tuning": {
+    "count": 5,
+    "states": 2,
+    "verb": "light",
+    "rounds": 3,
+    "chasers": 1
+   }
+  },
+  "genre": {
+   "id": "quest",
+   "mode": "spatial",
+   "compilerVersion": "genre.v3"
+  },
+  "title": "Lighthouse Keeper Quest",
+  "archetype": "switch_puzzle",
+  "targetDurationSec": 60,
+  "theme": {
+   "setting": "coast",
+   "mood": "tense"
+  },
+  "objective": {
+   "kind": "puzzle",
+   "description": "Light all 5 lamp in each of 3 rounds before the crab catches you.",
+   "role": "target"
+  },
+  "mechanics": [
+   {
+    "id": "timer",
+    "params": {
+     "id": "clock",
+     "seconds": 88,
+     "onEnd": "lose"
+    }
+   },
+   {
+    "id": "health",
+    "params": {
+     "max": 3
+    }
+   }
+  ],
+  "roles": [
+   {
+    "id": "player",
+    "kind": "player",
+    "label": "lighthouse keeper",
+    "count": 1
+   },
+   {
+    "id": "target",
+    "kind": "target",
+    "label": "lamp",
+    "count": 5
+   },
+   {
+    "id": "hunter",
+    "kind": "chaser",
+    "label": "crab",
+    "count": 1
+   }
+  ],
+  "tutorial": {
+   "goalLine": "Light all 5 lamp, 3 rounds.",
+   "controlsHint": "Drag or arrows to move, hold Use next to a target."
+  },
+  "verification": [
+   {
+    "id": "winnable",
+    "kind": "reachability",
+    "assert": {
+     "runState": "won"
+    }
+   }
+  ],
+  "budgets": {
+   "maxEntities": 40,
+   "maxRules": 120,
+   "maxTriangles": 200000
+  },
+  "rules": [
+   {
+    "id": "sound",
+    "verb": "sound",
+    "when": {
+     "every": 600
+    },
+    "if": [
+     {
+      "inPhase": "calm"
+     }
+    ],
+    "do": [
+     {
+      "goPhase": "alarm"
+     }
+    ]
+   },
+   {
+    "id": "muster",
+    "verb": "muster",
+    "when": {
+     "phase": "alarm"
+    },
+    "do": [
+     {
+      "wave": {
+       "role": "hunter",
+       "count": 1,
+       "at": "edge"
+      }
+     }
+    ]
+   }
+  ],
+  "logic": {
+   "phases": [
+    {
+     "id": "calm"
+    },
+    {
+     "id": "alarm"
+    }
+   ]
+  },
+  "scoring": {}
+ }
+}

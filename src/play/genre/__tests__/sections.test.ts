@@ -14,7 +14,9 @@ import { describe, expect, it } from 'vitest';
 
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
 import { compileArcade } from '@/play/arcade/compile';
-import { ARCADE_HZ, type ArcadeRole, type ArcadeWorld, BODY, HEADER, ROLE, bodyBase, rampedSpeed } from '@/play/arcade/contract';
+import { baseControlOf } from '@/play/arcade/addons';
+import { ARCADE_HZ, type ArcadeRole, type ArcadeWorld, BODY, FLAG, HEADER, type PieceRef, ROLE, bodyBase } from '@/play/arcade/contract';
+import { type Phase, phaseSpeed } from '@/play/compose/progression';
 import { replay } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { PLATFORM_DIFFICULTIES, checkPlatformLevel, platformLevel } from '@/play/arcade/pieces/platform';
@@ -52,6 +54,8 @@ interface Body {
   readonly z: number;
   readonly h: number;
   readonly d: number;
+  /** Mrtvá předloha (boss průběhu P46B čeká na spawn v z = 0) v úrovni není. */
+  readonly alive: boolean;
 }
 
 const ROLE_NAME = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name])) as Record<number, ArcadeRole>;
@@ -61,7 +65,7 @@ function bodies(world: ArcadeWorld): Body[] {
   return Array.from({ length: state[HEADER.bodyCount] as number }, (_, i) => {
     const base = bodyBase(i);
     const at = (slot: keyof typeof BODY): number => state[base + BODY[slot]] as number;
-    return { role: ROLE_NAME[at('role')] as ArcadeRole, x: at('x'), y: at('y'), z: at('z'), h: at('h'), d: at('d') };
+    return { role: ROLE_NAME[at('role')] as ArcadeRole, x: at('x'), y: at('y'), z: at('z'), h: at('h'), d: at('d'), alive: (at('flags') & FLAG.alive) !== 0 };
   });
 }
 
@@ -87,16 +91,19 @@ describe('runner sections (P36A T4)', () => {
 
   it('the third section is faster and denser than the first', () => {
     const { world } = publish('run and dodge 45 cars');
-    const ramp = world.control.params.ramp as readonly [number, number];
-    const speed = SPEED[world.control.params.speed as keyof typeof SPEED];
-    const sectionOf = (z: number): number => (z >= ramp[1] ? 2 : z >= ramp[0] ? 1 : 0);
-    expect(rampedSpeed(speed, ramp[1], ramp)).toBeGreaterThan(rampedSpeed(speed, 0, ramp));
+    // Nová hra (P45C T11): rychlost dává křivka průběhu (`phase_control` pod `pacing_control`) místo rampy; úseky jsou třetiny trati.
+    const phaseOf = (ref: PieceRef): PieceRef => (ref.id === 'phase_control' ? ref : phaseOf(ref.params.base as PieceRef));
+    const { phases, length } = phaseOf(world.control).params as { phases: Phase[]; length: number };
+    const speed = SPEED[baseControlOf(world.control).params.speed as keyof typeof SPEED];
+    const speedAt = (z: number): number => phaseSpeed(speed, z, length, phases);
+    const sectionOf = (z: number): number => Math.min(2, Math.floor((3 * z) / length));
+    expect(speedAt(length - 1)).toBeGreaterThan(speedAt(0));
 
     const rows = new Map<number, number>();
     for (const body of bodies(world)) if (body.role === 'obstacle') rows.set(body.z, (rows.get(body.z) ?? 0) + 1);
     const zs = [...rows.keys()].sort((a, b) => a - b);
     // Odstup řady od předchozí v ticích běhu rychlostí jejího úseku a obsazené pruhy.
-    const ticks = (section: number): number[] => zs.flatMap((z, i) => (i > 0 && sectionOf(z) === section && sectionOf(zs[i - 1]!) === section ? [(z - zs[i - 1]!) / rampedSpeed(speed, z, ramp)] : []));
+    const ticks = (section: number): number[] => zs.flatMap((z, i) => (i > 0 && sectionOf(z) === section && sectionOf(zs[i - 1]!) === section ? [(z - zs[i - 1]!) / speedAt(z)] : []));
     const lanes = (section: number): number[] => zs.filter((z) => sectionOf(z) === section).map((z) => rows.get(z)!);
     expect(ticks(0).length).toBeGreaterThan(2);
     expect(ticks(2).length).toBeGreaterThan(2);
@@ -141,7 +148,9 @@ describe('a game stored before T4 (no `sections`) builds the world it had', () =
     const { scoring: _scoring, ...unscored } = spec;
     const { sections: _sections, tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly sections?: number; readonly tuning?: Record<string, unknown> };
     const { sections: _inTuning, ...rest } = tuning ?? {};
-    return { ...unscored, controlParams: { ...own, ...(tuning === undefined ? {} : { tuning: rest }) } } as GameSpecV1;
+    // Uložené hry nesou překlad žánru před průběhem P45C (`genre.v1`).
+    const genre = unscored.genre === undefined ? {} : { genre: { ...unscored.genre, compilerVersion: 'genre.v1' } };
+    return { ...unscored, ...genre, controlParams: { ...own, ...(tuning === undefined ? {} : { tuning: rest }) } } as GameSpecV1;
   }
 
   // Čísla z `evals/play/regression/report.json` před T4 (semínko 1): běžec 1522 tiků a 73 těl, skákačka 1701 tiků, 55 těl, 6 pravidel.
@@ -180,19 +189,26 @@ describe('platformer sections (P36A T4)', () => {
   });
 
   it('three sections: a checkpoint opens the second and the third, which has wider gaps and more spikes than the first', () => {
-    const { world } = publish('a frog jumps across lily pads to reach the island');
+    const sentence = 'a frog jumps across lily pads to reach the island';
+    const { world } = publish(sentence);
     const list = bodies(world);
     const checkpoints = list.filter((body) => body.role === 'checkpoint').map((body) => body.z).sort((a, b) => a - b);
-    expect(checkpoints).toHaveLength(2);
-    const sectionOf = (z: number): number => (z >= checkpoints[1]! - 1000 ? 2 : z >= checkpoints[0]! - 1000 ? 1 : 0);
-    const slabs = list.filter((body) => body.role === 'platform').sort((a, b) => a.z - b.z);
+    // Úseky průběhu (P46B T6) mají checkpointů víc (i uprostřed úseků a v aréně): začátky úseků zná generátor.
+    const { tuning, ...own } = legacySpec(sentence).controlParams as Record<string, unknown> & { tuning?: Record<string, unknown> };
+    const starts = platformLevel.generate(world.seed, platformLevel.params.parse({ ...own, ...tuning })).sectionStarts ?? [];
+    expect(starts).toHaveLength(2);
+    for (const start of starts) expect(checkpoints).toContain(start + 800);
+    const sectionOf = (z: number): number => (z >= starts[1]! ? 2 : z >= starts[0]! ? 1 : 0);
+    // Římsa a jáma arény bosse (P46B R5) jsou pevný kus za schodem, ne plošiny úseku 3; schod stojí místo dřívější desky arény.
+    const slabs = list.filter((body) => body.role === 'platform').sort((a, b) => a.z - b.z).slice(0, -2);
     const gaps = (section: number): number[] =>
       slabs.flatMap((slab, i) => {
         const prev = slabs[i - 1];
         if (prev === undefined || sectionOf(slab.z - slab.d / 2) !== section) return [];
         return [slab.z - slab.d / 2 - (prev.z + prev.d / 2)];
       });
-    const spikes = (section: number): number => list.filter((body) => body.role === 'hazard' && sectionOf(body.z) === section).length;
+    // Jen hroty úrovně: předloha bosse (P46B) leží mrtvá v z = 0 a rozjezdu by přičetla hrot, který tam není.
+    const spikes = (section: number): number => list.filter((body) => body.role === 'hazard' && body.alive && sectionOf(body.z) === section).length;
     const platforms = (section: number): number => slabs.filter((slab) => sectionOf(slab.z - slab.d / 2) === section).length;
     expect(mean(gaps(2))).toBeGreaterThan(mean(gaps(0)));
     expect(spikes(2) / platforms(2)).toBeGreaterThan(spikes(0) / platforms(0));

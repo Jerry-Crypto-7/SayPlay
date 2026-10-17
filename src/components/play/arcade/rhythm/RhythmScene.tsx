@@ -18,17 +18,21 @@ import { useMemo, useRef } from 'react';
 import type { Group, MeshStandardMaterial, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
+import { baseControlOf } from '@/play/arcade/addons';
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
+import type { ToyPose } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 import { playTone } from '@/play/audio';
 
 import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
-import { UNDER_PANORAMA } from '../look/under-panorama';
+import { HorizonBackdrop } from '../look/Backdrop';
+import { FieldGround } from '../look/FieldGround';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
-import { type BodyModel, initialBody } from '../timing/TimingScene';
+import { type BodyModel, beatPoseOf, initialBody } from '../timing/TimingScene';
+import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 
@@ -37,6 +41,10 @@ const LANE_COLORS = ['#ef4444', '#f59e0b', '#22c55e', '#0ea5e9'];
 const LANE_OF = (x: number): number => Math.round(x / RHYTHM.laneW + (RHYTHM.lanes - 1) / 2);
 const FLASH_TICKS = 12;
 const TRACK_M = 60;
+/** Zem rytmu (m): do stran za kulisy, dozadu přes konec pruhů. */
+const RHYTHM_LAND = { x0: -30, x1: 30, z0: -10, z1: TRACK_M + 20 } as const;
+/** Nejbližší vrstva kulisy (m od kamery 4,5+ m před lištou): za koncem pruhů. */
+const BACKDROP_BEYOND = TRACK_M + 12;
 const HERO_M = { w: 0.8, h: 1.5, d: 0.6 };
 const HERO_GAP_M = 0.7;
 const HERO_Z_M = 0.6;
@@ -74,10 +82,14 @@ export function RhythmScene({
   const groups = useRef<(Group | null)[]>([]);
   const barMaterial = useRef<MeshStandardMaterial | null>(null);
   const flash = useRef<{ tick: number; hit: boolean } | null>(null);
+  // Hračková póza hrdiny (P45D T11): vnitřní skupina modelu a póza minulého snímku.
+  const heroPose = useRef<Group | null>(null);
+  const toyPose = useRef<ToyPose | null>(null);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(0, 0, 9), []);
   const edge = useMemo(() => new Vector3(), []);
-  const hitWindow = (world.control.params as { window?: number }).window ?? RHYTHM.window;
+  // Okno čte základní ovládání: nad průběhem (P45C T14) je ovládání světa `pacing_control`.
+  const hitWindow = (baseControlOf(world.control).params as { window?: number }).window ?? RHYTHM.window;
   const reach = hitWindow * RHYTHM.noteSpeed;
 
   useFrame((_, delta) => {
@@ -113,6 +125,13 @@ export function RhythmScene({
       material.emissive.set(recent !== null || near ? material.color : '#000000');
       material.emissiveIntensity = recent !== null ? 0.8 : near ? 0.4 : 0;
     }
+    // Trefa = poskok se zmáčknutím, minutí = zakymácení, výhra = oslava; do taktu se hrdina sám nehýbe.
+    const hero = heroPose.current;
+    if (hero !== null) {
+      const pose = beatPoseOf(state, prev, toyPose.current, toyTickOf(session), !toyMotionOn());
+      toyPose.current = pose;
+      applyToy({ group: hero }, pose, HERO_M.h);
+    }
     // Na výšku (mobil) kamera ustoupí a zvedne se, ať jsou vidět všechny čtyři pruhy u lišty.
     const tan = Math.tan((camera.fov * Math.PI) / 360);
     const back = Math.max(4.5, (bar.w + 0.8) / (2 * tan * camera.aspect) - 1);
@@ -131,10 +150,10 @@ export function RhythmScene({
     <>
       {/* Obloha, mlha, světla a stíny jsou rigu (`look/rig/StyleRig.tsx`, P32A T10); tma zůstává jen pod pruhy. */}
       {/* Prostředí (P27A T4): zem sady kolem pruhů a kulisy po stranách; pod pruhy zůstává tma, ať svítící noty čtou. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, TRACK_M / 2 - 2]} renderOrder={UNDER_PANORAMA}>
-        <planeGeometry args={[60, TRACK_M + 10]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
-      </mesh>
+      {/* Zem s odstíny a skvrnami (P46G T7) místo jedné barvy sady; vegetace ne – pruhy vedou do dálky a ty se nesmí zakrýt. */}
+      <FieldGround look={scene} area={RHYTHM_LAND} y={-0.06} under />
+      {/* Kulisa za mlhou až za koncem pruhů: noty jedou z 60 m. */}
+      <HorizonBackdrop look={scene} seed={session.world.seed} clear={0} beyond={BACKDROP_BEYOND} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, TRACK_M / 2 - 2]}>
         <planeGeometry args={[RHYTHM.lanes * laneW + 0.4, TRACK_M]} />
         <meshStandardMaterial color="#0f172a" roughness={1} />
@@ -153,7 +172,8 @@ export function RhythmScene({
       </mesh>
       {heroModel !== undefined && (
         <group position={[-(bar.w / 2 + HERO_GAP_M), 0, HERO_Z_M]} rotation={[0, Math.PI, 0]}>
-          {heroModel(HERO_M.w, HERO_M.h, HERO_M.d)}
+          {/* Hrdinou sondy je lišta; hračkovou pózu postavy čte `heroToy` sondy (P45D T14). */}
+          <group ref={heroPose} userData={{ toyHero: true }}>{heroModel(HERO_M.w, HERO_M.h, HERO_M.d)}</group>
         </group>
       )}
       {/* Slot ducha (P37-0 T3) vedle lišty. */}

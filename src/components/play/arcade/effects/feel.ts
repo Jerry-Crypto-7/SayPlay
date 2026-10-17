@@ -6,12 +6,22 @@ import type { VisualEvent } from './bus';
  * a přiblížení výhry a ztmavnutí prohry. Čisté funkce času kresby (ms) – scény
  * je čtou ve `useFrame`, do stavu hry ani hashe nepíšou nic.
  *
- * „Méně pohybu“ (`prefers-reduced-motion`) vypne zpomalení, přiblížení i otřes;
- * hit-stop (kresba stojí), blikání a ztmavnutí zůstávají – nic se jimi nehýbe.
+ * „Méně pohybu“ (`prefers-reduced-motion`) vypne zpomalení, přiblížení i otřes
+ * a od P46C T4 i hit-stop (zaškubnutí kresby je pohyb); blikání a ztmavnutí zůstávají.
  */
 
 /** Hit-stop: kresba stojí tolik ms po zásahu – v aréně (`FightFx.tsx`) i mimo ni. */
 export const HIT_STOP_MS = 60;
+
+/** Délka hit-stopu (ms); s „méně pohybu“ žádný. */
+export const hitStopMs = (reduced: boolean): number => (reduced ? 0 : HIT_STOP_MS);
+
+/** Zpomalení po pádu bosse a v poslední vteřině finále (P46C T4): rychlost efektů na `SLOW_MO_MS`. */
+export const SLOW_MO_MS = 400;
+export const SLOW_MO_SCALE = 0.4;
+
+/** Rychlost času efektů `ms` po pádu bosse nebo konci finále; s „méně pohybu“ vždy 1. */
+export const slowMoScale = (ms: number, reduced: boolean): number => (reduced || ms < 0 || ms >= SLOW_MO_MS ? 1 : SLOW_MO_SCALE);
 
 /**
  * Blikání hrdiny po zásahu (ms) a perioda (ms). Jádro této větve nezranitelnost
@@ -31,8 +41,8 @@ export const LOSE_FADE_MS = 600;
 /** Největší posun kamery při otřesu po zásahu hráče (m). */
 export const SHAKE_M = 0.14;
 
-/** Stojí kresba `ms` po zásahu? */
-export const hitStopHeld = (ms: number): boolean => ms >= 0 && ms < HIT_STOP_MS;
+/** Stojí kresba `ms` po zásahu? S „méně pohybu“ nikdy. */
+export const hitStopHeld = (ms: number, reduced = false): boolean => ms >= 0 && ms < hitStopMs(reduced);
 
 /** Je hrdina `ms` po zásahu zrovna zhasnutý? Bliká až po hit-stopu, ve stoje by zmizel celý. */
 export function blinkHidden(ms: number): boolean {
@@ -66,18 +76,26 @@ export function comboOf(effects: readonly { readonly kind: string }[]): number |
   return best;
 }
 
-export const reducedMotion = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/** Prostředí bez `matchMedia` (server, testy v node) je bez přání „méně pohybu“. */
+export const reducedMotion = (): boolean => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** Visual-only impact clock; accepts the bus's validated hit, never score/spawn. */
+/**
+ * Visual-only impact clock; accepts the bus's validated hit, never score/spawn.
+ * Hit-stop po zásahu (i akcí), zpomalení po pádu bosse a s `finale` i po výhře –
+ * výhra hry s finále je jeho poslední vteřina (P46C T4).
+ */
 export function createImpactClock() {
   let at = -Infinity;
+  let slowAt = -Infinity;
   return {
-    observe(events: readonly Pick<VisualEvent, 'kind'>[], now: number): void {
-      if (events.some(event => event.kind === 'hit')) at = now;
+    observe(events: readonly Pick<VisualEvent, 'kind'>[], now: number, finale = false): void {
+      if (events.some(event => event.kind === 'hit' || event.kind === 'ability')) at = now;
+      if (events.some(event => event.kind === 'bossDefeat' || (finale && event.kind === 'win'))) slowAt = now;
     },
-    held: (now: number): boolean => hitStopHeld(now - at),
+    held: (now: number, reduced = false): boolean => hitStopHeld(now - at, reduced),
     flash: (now: number): number => Math.max(0, 1 - Math.max(0, now - at) / 120),
-    reset: (): void => { at = -Infinity; },
+    timeScale: (now: number, reduced = false): number => slowMoScale(now - slowAt, reduced),
+    reset: (): void => { at = -Infinity; slowAt = -Infinity; },
   };
 }
 

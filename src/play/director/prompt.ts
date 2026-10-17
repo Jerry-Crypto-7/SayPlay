@@ -17,7 +17,9 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { liveCells } from '../compose/allowed';
+import { ABILITIES, BOSS_ATTACKS } from '../arcade/contract';
 import { LOOK_IDS } from '../arcade/look';
+import { SEGMENT_NEWS } from '../arcade/pieces/pacing';
 import { sentenceChecklist } from '../fidelity/checklist';
 import { CAST_MAX, CAST_ROLES, COUNT_PARAMS, COUNT_ROLES, type CastRole, type GenreModule, type GenreSpec } from '../genre/contract';
 import { DEPTH_PARAM_BOUNDS, GENRE_MODULES } from '../genre/index';
@@ -133,6 +135,8 @@ export function genrePromptLines(): string {
     ...new Set(liveCells().map(cell => `- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`)),
     'LEGACY GENRES (compatibility format; recipe answers omit genre/mode):',
     ...genres,
+    // P46E T5: s „(else null)“ a jedním příkladem vyplnil gpt-oss-20b bosse 0×, akce 2× a úseky 2× z 25 nahrávek.
+    `NEW IN YOUR VERSION – the quick version lacks them, so fill all three; null only when the sentence has no foe and no action: boss {role: cast label of the foe that comes last, name: what the player sees, attack: ${BOSS_ATTACKS.join('|')}}; abilities: 1–2 hero actions on buttons the sentence implies (${ABILITIES.join('|')}); segments: exactly 3 changes the run brings in order (${SEGMENT_NEWS.join('|')}). EXAMPLES: runner "a rabbit steals carrots and runs from a fox" {"boss":{"role":"fox","name":"Big Bad Fox","attack":"charge"},"abilities":["grab","dash"],"segments":["newFoe","narrow","faster"]}; driving "a car escapes police and shoots enemies" {"boss":{"role":"police car","name":"police helicopter","attack":"drop"},"abilities":["shoot","dash"],"segments":["newFoe","moving","faster"]}; platformer "a monkey jumps across jungle platforms" {"boss":{"role":"snake","name":"Giant Python","attack":"stomp"},"abilities":["dash"],"segments":["trap","moving","newFoe"]}`,
     'Preserve all essential movement, actions, goals and threats together; driving + racing + shooting cannot become stationary shooting.',
     'hero: 1-3 English words naming the player ("pirate ship", "wizard"); choose compatible movement.',
     // P39: obsazení místo jednoho `enemy` – každá věc věty a co s ní dělá její sloveso.
@@ -167,22 +171,33 @@ export function checklistLines(sentence: string): string {
   ].join('\n');
 }
 
-/** Zpráva požadavku: věta, její seznam a výchozí bod; plný i kompaktní prompt ji sdílejí. */
+/**
+ * Průběh hry jako poslední řádek zprávy (P45B T11): gpt-oss-20b nechával `logic`
+ * na `null` (2 z 25 vět), i když ho systémový prompt chtěl – řádek u věty je vidět víc.
+ * T12a: řádek říká celé zapojení – model jinak časovač spustil, ale skončil výhrou
+ * místo `goPhase`, takže druhá fáze zůstala mrtvá a výhra přebila cíl věty.
+ */
+export const COURSE_LINE = 'Course: give this game a course wired like the LOGIC EXAMPLE – {"when":{"phase":first}} starts a timer once (60 ticks = 1 s), its {"when":{"timer"}} rule does {"goPhase":second} (plus a wave, spawn or toggle), a {"when":{"phase":second}} rule reacts; every timer and phase you declare is used this way. Never win or lose on a timer or phase – the genre keeps its goal. null only when nothing in the game changes over time.';
+
+/** Zpráva požadavku: věta, její seznam, výchozí bod a průběh; plný i kompaktní prompt ji sdílejí. */
 export function directorUser(sentence: string, draft: GenreSpec | null): string {
-  return `${sentence.trim()}\n\n${checklistLines(sentence)}\n\n${startingPoint(draft)}`;
+  return `${sentence.trim()}\n\n${checklistLines(sentence)}\n\n${startingPoint(draft)}\n\n${COURSE_LINE}`;
 }
 
 /**
  * Pravidla P29A v první odpovědi (B-R5): sloveso, které žánr nehraje, dopíše
  * model pravidlem. Gramatika je `modelRulesSchema`; jeden příklad stačí, zbytek
  * nese schéma odpovědi. Role pravidel jsou „player“ a vlastní `ruleRoles`.
+ * Od P45B T10 i průběh hry: blok `logic` jedním řádkem a příklad s fází, časovačem a vlnou.
  */
 export function rulesPromptLines(): string {
   return [
-    'rules: only for a verb of the sentence the genre cannot play (carry, push, open, pull, give…); else null. Each rule {id, verb, when, if, do}; verb = that sentence verb, one lowercase English word – the robot must see every rule fire while it wins (a lose or damage rule: when a robot walks into it), or the game is refused.',
+    'rules: for a verb of the sentence the genre cannot play (carry, push, open, pull, give…) and for the course (logic below); else null. Each rule {id, verb, when, if, do}; verb = that sentence verb, one lowercase English word – the robot must see every rule fire while it wins (a lose or damage rule: when a robot walks into it), or the game is refused.',
     `when: {"contact":[role,role]} | {"press":"action"|"alt"} | {"every":ticks60Hz} | {"counter":{"name":"score"|"items"|"health","atLeast":n}} | {"hit":role} | {"interact":{"role","radius":m,"hold":ticks,"states":2|3}} (hold Use at it; only as the winning rule, do {"win":true}, won when all targets are done; one per game, not with +shoot/+chaser). if (all hold, or null): {"holding":role} | {"notHolding":true} | {"counter":{"name","atLeast"|"below"}} | {"near":{"role","within":m}}. do: {"score":n} {"damage":n} {"win":true} {"lose":true} {"despawn":"other"|"self"|"held"} {"spawn":{"role","at":"player"|"other"}} {"count":{"counter","amount"}} {"respawn":true} {"checkpoint":"other"|"self"} {"grab":"other"|"self"} {"release":true} {"throwHeld":true} {"push":"other"|"self"} {"toggle":role} (bodies of that role switch once).`,
     `A role is "player" or an id from ruleRoles [{id, kind, label, count}] (kind: ${ROLE_KINDS.filter((kind) => kind !== 'player').join('|')}). things [{role, start:"hidden"}] = starts invisible until toggled. In arena or quest a rule that wins plays in a walled yard: carried things in front, the goal behind the gate.`,
     'RULE EXAMPLE: {"ruleRoles":[{"id":"key","kind":"key","label":"golden key","count":null},{"id":"door","kind":"door","label":"castle door","count":null},{"id":"stairs","kind":"exit","label":"tower stairs","count":null}],"things":null,"rules":[{"id":"take_key","verb":"carry","when":{"contact":["player","key"]},"if":[{"notHolding":true}],"do":[{"grab":"other"}]},{"id":"open_door","verb":"open","when":{"contact":["player","door"]},"if":[{"holding":"key"}],"do":[{"toggle":"door"},{"despawn":"held"}]},{"id":"climb","verb":"climb","when":{"contact":["player","stairs"]},"if":null,"do":[{"win":true}]}]}',
+    'logic – REQUIRED when the sentence has a course (survive, defend, waves, escape, race, rescue, fight, a time limit, stages), else null: {"vars":[{id,start}],"timers":[{id}],"phases":[{id}] (2–4, first is the start),"events":[id]}. Every phase and timer you declare must be entered/started by one rule and read by another: the first phase is entered at tick 0, so {"when":{"phase":first}} starts a timer once (never restart it with every); a later phase needs goPhase; the genre keeps its goal. Its rules – when: {"timer":id} (ran out) | {"phase":id} (entered) | {"phaseExit":id} | {"var":{"name","atLeast"|"below"}} | {"event":id}; if: {"var":…} | {"inPhase":id} | {"timerRunning":id} | {"timerStopped":id}; do: {"set":{"var","value"}} {"add":{"var","amount"}} {"goPhase":id} {"startTimer":{"timer","ticks"}} {"stopTimer":id} {"emit":id} {"wave":{"role","count","at":"edge"|"player"|"other"}} (bodies of a role appear at once).',
+    'LOGIC EXAMPLE: {"ruleRoles":[{"id":"bat","kind":"chaser","label":"bat","count":null}],"things":null,"logic":{"vars":null,"timers":[{"id":"dusk"}],"phases":[{"id":"day"},{"id":"night"}],"events":null},"rules":[{"id":"sunset","verb":"wait","when":{"phase":"day"},"if":null,"do":[{"startTimer":{"timer":"dusk","ticks":900}}]},{"id":"fall","verb":"darken","when":{"timer":"dusk"},"if":null,"do":[{"goPhase":"night"}]},{"id":"swarm","verb":"swarm","when":{"phase":"night"},"if":null,"do":[{"wave":{"role":"bat","count":1,"at":"edge"}}]}]}',
   ].join('\n');
 }
 
@@ -195,7 +210,7 @@ export function directorSystemPrompt(): string {
  * Hash systémového textu a schématu odpovědi – klíč cache a otisk verze
  * promptu. Schéma je v něm od P36A T7: dřív jeho změna cache nezneplatnila.
  */
-export const DIRECTOR_PROMPT_VERSION = canonicalHash({ system: directorSystemPrompt(), schema: GENRE_ANSWER_SCHEMA });
+export const DIRECTOR_PROMPT_VERSION = canonicalHash({ system: directorSystemPrompt(), schema: GENRE_ANSWER_SCHEMA, course: COURSE_LINE });
 
 /** Návrh ze slov jako výchozí bod; hra bez žánru (mřížka archetypu) žádný nedá. */
 export function startingPoint(draft: GenreSpec | null): string {

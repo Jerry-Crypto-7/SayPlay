@@ -14,9 +14,10 @@ import { describe, expect, it } from 'vitest';
 
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
 import { compileArcade } from '@/play/arcade/compile';
-import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, ROLE, bodyBase, underlyingRule } from '@/play/arcade/contract';
 import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
+import { STATION_PACE } from '@/play/arcade/pieces/pacing-parts';
 import { WAVE_PLAN, waveOf } from '@/play/arcade/pieces/waves';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta, draftGenreFor } from '@/play/draft';
@@ -44,6 +45,18 @@ function publish(sentence: string, edit: (spec: GameSpecV1) => GameSpecV1 = (spe
     return { mode: `${spec.genre?.id ?? ''}.${spec.genre?.mode ?? ''}`, spec, seed, world, winSeconds: winsAtTick / ARCADE_HZ, idle: replay(world, [], ARCADE_LIBRARY).outcome };
   }
   throw new Error(`${sentence}: no seed publishes`);
+}
+
+/** Průměrná délka výhry robota přes všechna semínka publikace, na kterých robot vyhraje a nečinný hráč ne (`compileArcade` jiná nepustí). */
+function meanWinSeconds(sentence: string): number {
+  const spec = legacySpec(sentence);
+  const wins: number[] = [];
+  for (const seed of derivedSeeds(seedFrom(sentence))) {
+    const compiled = compileArcade(spec, seed);
+    if (compiled.ok && compiled.value.winsAtTick !== null) wins.push(compiled.value.winsAtTick / ARCADE_HZ);
+  }
+  if (wins.length === 0) throw new Error(`${sentence}: no seed publishes`);
+  return wins.reduce((sum, seconds) => sum + seconds, 0) / wins.length;
 }
 
 const tuningOf = (spec: GameSpecV1) => (spec.controlParams as { tuning: Record<string, unknown> }).tuning;
@@ -93,13 +106,24 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
       expect(game.winSeconds).toBeLessThanOrEqual(90);
       expect(game.idle).toBe('lost');
     }
-    expect(b.winSeconds).toBeGreaterThan(a.winSeconds);
+    // Průměr přes semínka publikace, ne jedno: s průběhem (P45C T12) kolísá délka mezi semínky víc než mezi
+    // počty – dvě svíčky 37–58 s, osm 49–56 s; první semínko dvou svíček je zrovna nejdelší.
+    expect(meanWinSeconds(long)).toBeGreaterThan(meanWinSeconds(short));
   });
 
   it('spatial: the win comes only in the last round, every round lays fresh targets elsewhere and brings more or faster chasers', () => {
-    const game = publish('light five candles before the ghost catches you');
-    const planned = tuningOf(game.spec).rounds as number;
+    const sentence = 'light five candles before the ghost catches you';
+    // Ve `genre.v4` (P47A T4) nese cíle posledního kola boss a pronásledovatelé s ním odejdou (`quest-boss.test.ts`):
+    // kolo začne bez cílů. Kola, jak je staví generátor, měří táž hra uložená jako `genre.v3`.
+    const fresh = publish(sentence);
+    const planned = tuningOf(fresh.spec).rounds as number;
     expect(planned).toBeGreaterThanOrEqual(2);
+    const boss = roundsOf(fresh.world);
+    expect(boss.rounds).toHaveLength(planned);
+    expect(boss.wonInRound).toBe(planned - 1);
+    expect(boss.rounds.at(-1)!.targets).toHaveLength(0);
+    expect((fresh.world.rules.find((rule) => rule.id === 'boss_beat')?.params as { drop?: { count: number } } | undefined)?.drop?.count).toBe(5);
+    const game = publish(sentence, (spec) => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v3' } }));
     const { rounds, wonInRound } = roundsOf(game.world);
     expect(rounds).toHaveLength(planned);
     expect(wonInRound).toBe(planned - 1);
@@ -116,13 +140,21 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
 
   it('station: the same stations start over each round, the win comes in the last one and the boil-over limit shrinks', () => {
     const game = publish('flip two pancakes in the kitchen');
-    const planned = tuningOf(game.spec).rounds as number;
+    // Průběh P45C T14: dvojí úkol posledního kola stojí `STATION_PACE.drop` kol; jeho stanoviště přibudou až tik po začátku kola.
+    // Spěch `genre.v4` (P47A T5): kopie přijdou s prvním kolem spěchu a zůstanou, kol ubere nejvýš tolik a aspoň jedno.
+    const generated = tuningOf(game.spec).rounds as number;
+    const planned = (game.world.rules.map(underlyingRule).find((rule) => rule.id === 'interact')!.params as { when: { interact: { rounds: number } } }).when.interact.rounds;
+    expect(planned).toBeGreaterThanOrEqual(generated - STATION_PACE.drop);
+    expect(planned).toBeLessThan(generated);
     const { rounds, wonInRound } = roundsOf(game.world);
     expect(rounds).toHaveLength(planned);
     expect(wonInRound).toBe(planned - 1);
-    expect(new Set(rounds.map((round) => JSON.stringify(round.targets))).size).toBe(1);
-    const boil = game.world.rules.find((rule) => rule.id === 'boil_over')?.params as { ticks: number; step: number; floor: number };
-    const limit = (round: number) => Math.max(boil.floor, boil.ticks - boil.step * round);
+    // Tatáž stanoviště začnou znovu (kopie spěchu stojí za nimi, tělo s vyšším indexem).
+    const own = rounds[0]!.targets;
+    expect(new Set(rounds.map((round) => JSON.stringify(round.targets.slice(0, own.length)))).size).toBe(1);
+    // Lhůta po kolech z křivky (`limits`, P45C T14).
+    const boil = game.world.rules.find((rule) => rule.id === 'boil_over')?.params as { limits: number[] };
+    const limit = (round: number) => boil.limits[Math.min(round, boil.limits.length - 1)]!;
     expect(limit(planned - 1)).toBeLessThan(limit(0));
     expect(limit(planned - 1)).toBeGreaterThanOrEqual(4 * ARCADE_HZ);
   });
@@ -204,7 +236,9 @@ describe('quest with seconds from the sentence – only as many rounds as fit th
   });
 
   it('a quest without seconds builds the same world as before', () => {
-    const spec = legacySpec('light five candles before the ghost catches you');
+    // Hra uložená před průběhem (`genre.v1`, P45C): nová hra má od T12 strážce a nová chování.
+    const fresh = legacySpec('light five candles before the ghost catches you');
+    const spec = { ...fresh, genre: { ...fresh.genre!, compilerVersion: 'genre.v1' } };
     const compiled = compileArcade(spec, 624372740);
     if (!compiled.ok) throw new Error(compiled.issues.join('; '));
     expect(compiled.value.worldHash).toBe('8ea05655');

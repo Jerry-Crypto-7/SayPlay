@@ -16,16 +16,25 @@ const SENTENCES = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p32/s
 function worldOf(id: string) {
   const read = readGenreSpec(voyageGenre.draftFill(SENTENCES.find((entry) => entry.id === id)!.text, null));
   if (!read.ok) throw new Error(read.issues.join('; '));
-  // Připíchnutá čísla platí pro závod uložený před P36A T4 (350 m, bez třetin): test čte rozvržení, ne délku trati.
+  // Připíchnutá čísla platí pro závod uložený před P36A T4 (350 m, bez třetin, bez průběhu P45C): test čte rozvržení, ne délku trati.
   const game = compileGenre(read.value);
   const { lengthM: _length, tuning, ...rest } = game.controlParams as { lengthM?: number; tuning?: Record<string, unknown> };
   const { sections: _sections, ...stored } = tuning ?? {};
-  const made = arcadeWorldOf({ ...game, controlParams: { ...rest, tuning: stored } }, 1);
+  const made = arcadeWorldOf({ ...game, genre: { ...game.genre!, compilerVersion: 'genre.v1' }, controlParams: { ...rest, tuning: stored } }, 1);
   if (!made.ok) throw new Error(made.issues.join('; '));
   return made.world;
 }
 
 describe('voyageLayoutOf (P32F T4)', () => {
+  it('reads a new race paced by P45C (phases wrap the bot) as the same boat race', () => {
+    const read = readGenreSpec(voyageGenre.draftFill(SENTENCES.find((entry) => entry.id === 'pirate')!.text, null));
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    const made = arcadeWorldOf(compileGenre(read.value), 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    expect(made.world.bot.id).toBe('pacing_bot');
+    expect(voyageLayoutOf(made.world)).toMatchObject({ mode: 'race', terrain: 'islands', motion: 'boat' });
+  });
+
   it('reads the pirate as a boat race between island banks, with gates, cannonballs and the treasure', () => {
     const layout = voyageLayoutOf(worldOf('pirate'))!;
     expect(layout).toMatchObject({ mode: 'race', terrain: 'islands', motion: 'boat' });

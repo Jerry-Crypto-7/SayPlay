@@ -1,7 +1,7 @@
 import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
-import { timeOfDayFor } from '../arcade/look';
-import { matchesWitness, type ActionWitness } from '../arcade/witness';
+import { lookFor, timeOfDayFor } from '../arcade/look';
+import { matchesWitness, namesActor, type ActionWitness, type RoleBinding } from '../arcade/witness';
 import { draftChoiceOrder, draftGenreFor } from '../draft/draft';
 import { nounPhrase, singular } from '../draft/lexicon';
 import { classifyGenre } from '../genre/classify';
@@ -11,7 +11,8 @@ import { essentialTriples, type Intent, type IntentTriple } from '../intent/cont
 import type { GameSpecV1 } from '../spec';
 import type { Reading } from '../read/schema';
 import { assemble, sourceFor, unplayed, type AssemblySource } from './assemble';
-import { compileRecipe, withoutPartNames } from './compile';
+import type { TemplateName } from '../arcade/rules/templates';
+import { compileTemplated, withoutPartNames } from './compile';
 import { namedProjectiles } from './projectiles';
 import { type RecipeAssembly } from './presets';
 
@@ -22,6 +23,8 @@ export interface Composition {
   readonly unmet: readonly IntentTriple[];
   readonly witnesses: readonly ActionWitness[];
   readonly issues: readonly string[];
+  /** Šablona pravidel, se kterou hra prošla (P45B T9); `null` = hraje bez ní. */
+  readonly template: TemplateName | null;
 }
 
 // Repeated publication of the same sentence must not replay identical worlds
@@ -48,7 +51,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   const cast: CastItem[] = (draft.cast ?? []).map(item => {
     if (setting === draft.setting || !DEFAULT_LABELS.has(item.label) || words.includes(singular(item.label.split(' ').at(-1)!))) return item;
     if (item.does === 'collect') return { ...item, label: defaultCollectible(setting) };
-    if (['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(item.does)) return { ...item, label: defaultFoe(setting, draft.genre).label };
+    if (['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(item.does)) return { ...item, label: defaultFoe(setting, draft.genre, item.does).label };
     return item;
   });
   const spoken: string[] = [];
@@ -71,7 +74,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   for (const fallback of cell.preset.cast ?? []) {
     const roles = draft.genre === 'arena' && fallback.does === 'chase_me'
       ? ['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'] : [fallback.does];
-    if (!cast.some(item => roles.includes(item.does))) cast.push({ ...fallback, label: fallback.does === 'collect' ? defaultCollectible(setting) : ['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(fallback.does) ? defaultFoe(setting, draft.genre).label : fallback.label });
+    if (!cast.some(item => roles.includes(item.does))) cast.push({ ...fallback, label: fallback.does === 'collect' ? defaultCollectible(setting) : ['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(fallback.does) ? defaultFoe(setting, draft.genre, fallback.does).label : fallback.label });
   }
   const put = (label: string, does: CastItem['does']): void => {
     if (label === 'hero') return;
@@ -119,7 +122,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   if (projectiles.length > 0) {
     // The moving controls' shooting addon needs a target even when the request
     // only names ammunition. That default target keeps its own identity.
-    if (!cast.some(member => member.does === 'shoot_at')) cast.push({ label: defaultFoe(setting, draft.genre).label, does: 'shoot_at' });
+    if (!cast.some(member => member.does === 'shoot_at')) cast.push({ label: defaultFoe(setting, draft.genre, 'shoot_at').label, does: 'shoot_at' });
     for (const projectile of projectiles) {
       cast.push({ label: projectile.label, does: 'scenery', verb: 'shoot' });
       spoken.push(projectile.label);
@@ -175,7 +178,10 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
     intent.items.some(item => item.essential && item.axis !== 'threat' && item.actor === head(draft.hero));
   const hero = cell.recipe.move === 'ball' && intent.hero === null ? BALL_PLAYER : intent.hero !== null && head(draft.hero) !== intent.hero && !keepNamedHero ? intent.hero : draft.hero;
   const landingTarget = cell.recipe.objective === 'land' && intent.items.some(item => item.essential && item.verb === 'land' && item.object !== null);
-  return { ...draft, hero, setting, cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
+  // Místo, které sady neznají („a supermarket Roomba“ dá místo `roomba`), vezme sadu ze slov věty jako
+  // návrh žánru – scéna i překážka trati pak patří do supermarketu (P46D T6).
+  const palette = draft.palette ?? (lookFor(setting) === null ? (lookFor(intent.sentence) ?? undefined) : undefined);
+  return { ...draft, hero, setting, ...(palette === undefined ? {} : { palette }), cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
 }
 
 export function compose(intent: Intent, seed = 1, reading: Reading | null = null): Composition {
@@ -189,6 +195,9 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
   const ranking = hasKnownAction ? classified.ranked : draftChoiceOrder(intent.sentence, classified, reading);
   const issues: string[] = [];
   const attempted = new Set<string>();
+  const triples = essentialTriples(intent);
+  // Svědka sondy průběhu („boss“, „swarm“) čte jen trojice, která ho jmenuje; ostatní sondy jsou celé běhy robota navíc (P46B R4).
+  const pacingProbe = (binding: RoleBinding) => triples.some(triple => namesActor(triple, binding));
   // A reading whose movement cannot play a requested action yields to a later reading
   // that can ("collect and shoot" is no shooting gallery); ties keep the rank.
   const sources = ranking.map((choice, rank) => {
@@ -202,23 +211,45 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
     for (let count = requested.parts?.length ?? 0; count >= 0; count--) {
       // A dropped part's thing does not come back as a base-genre role (a tossed pancake is no throw target).
       const recipe = { ...requested, parts: requested.parts?.slice(0, count), content: withoutPartNames(requested.content, requested.parts?.slice(count) ?? []) };
-      try {
-        const spec = compileRecipe(recipe);
-        const key = JSON.stringify(spec);
-        if (attempted.has(key)) continue;
-        attempted.add(key);
-        const made = arcadeWorldOf(spec, seed);
-        if (!made.ok) { issues.push(`${source.id}: ${made.issues.join('; ')}`); continue; }
-        const verdict = verifyArcade(made.world, undefined, made.roleBindings);
-        if (!verdict.publishEligible) { issues.push(`${source.id}: ${verdict.failures.join('; ')}`); continue; }
-        const witnesses = verdict.witnesses;
-        const unmet = essentialTriples(intent).filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
-        const composition = { cellId: source.id, recipe, spec, unmet, witnesses, issues };
-        if (compositions.size >= 64) compositions.delete(compositions.keys().next().value!);
-        compositions.set(cacheKey, structuredClone(composition));
-        return composition;
-      } catch (error) {
-        issues.push(`${source.id}: ${error instanceof Error ? error.message : String(error)}`);
+      // Šablona pravidel (P45B T9) jde první; neprojde-li, tentýž recept bez ní – teprve potom méně dílů.
+      const { intent: _intent, ...untemplated } = recipe;
+      // Akce hrdiny (P46A T8), které robot neprokáže, ustoupí dřív než díly: věta nesmí kvůli tlačítku spadnout.
+      // Po šabloně nejdřív jen akce, kterou robot nedokázal (P47B T7), teprve pak všechny.
+      const { abilities: _abilities, ...plain } = untemplated;
+      const unproved = new Set<string>();
+      const provable = (): RecipeAssembly => ({
+        ...untemplated,
+        abilities: untemplated.abilities?.filter(id => !unproved.has(id)),
+        content: { ...untemplated.content, abilities: untemplated.content.abilities?.filter(id => !unproved.has(id)) },
+      });
+      for (const attempt of [() => recipe, () => untemplated, provable, () => plain]) {
+        try {
+          const candidate = attempt();
+          const { spec, template } = compileTemplated(candidate);
+          const key = JSON.stringify(spec);
+          if (attempted.has(key)) continue;
+          attempted.add(key);
+          const label = template === null ? source.id : `${source.id} + template ${template}`;
+          const made = arcadeWorldOf(spec, seed);
+          if (!made.ok) { issues.push(`${label}: ${made.issues.join('; ')}`); continue; }
+          const verdict = verifyArcade(made.world, undefined, made.roleBindings, { pacingProbe });
+          if (!verdict.publishEligible) {
+            for (const proof of verdict.verbs) if (!proof.fired || !proof.changed) unproved.add(proof.verb);
+            issues.push(`${label}: ${verdict.failures.join('; ')}`);
+            continue;
+          }
+          const witnesses = verdict.witnesses;
+          const unmet = triples.filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
+          // Bez šablony recept záměr nenese: `compileRecipe(composition.recipe)` (rychlý návrh) postaví tutéž hru.
+          // Recept je ten pokus, který prošel (i bez akcí), jen bez záměru, když šablonu nedostal.
+          const bare = candidate === recipe ? untemplated : candidate;
+          const composition = { cellId: source.id, recipe: template === null ? bare : candidate, spec, unmet, witnesses, issues, template };
+          if (compositions.size >= 64) compositions.delete(compositions.keys().next().value!);
+          compositions.set(cacheKey, structuredClone(composition));
+          return composition;
+        } catch (error) {
+          issues.push(`${source.id}: ${error instanceof Error ? error.message : String(error)}`);
+        }
       }
     }
   }

@@ -5,11 +5,14 @@
  * vypadaly jen jako trochu jiný model.
  */
 
-import { BoxGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, ShaderLib, SphereGeometry, Texture, Vector3 } from 'three';
+import { BoxGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, type Object3D, ShaderLib, SphereGeometry, Texture, Vector3 } from 'three';
 import { Box3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { glowingCopy, mergeBody, singlePass } from '../look/load';
+import motion from '@/assets/catalog-motion.json';
+
+import { bodyFor, glowingCopy, MAX_PARTS, mergeBody, singlePass, toyPartsOf } from '../look/load';
+import { motionOf } from '../toy/body-class';
 
 function coin(): Group {
   const model = new Group();
@@ -128,6 +131,84 @@ describe('mergeBody', () => {
     const merged = mergeBody(model) as Mesh;
     expect((merged.material as MeshStandardMaterial).side).toBe(DoubleSide);
     expect(new Box3().setFromObject(merged).getSize(new Vector3()).y).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * Tělo, které se hýbe (P45D T6): díly s rolí se vyčlení pod pivot, ostatní
+ * zůstává jedna síť. Díl s pivotem jinde než v kloubu by dveře při otevření
+ * odletěly; tělo s pěti sítěmi by rozbilo rozpočet arény (≤ 200 sítí).
+ */
+describe('posed bodies', () => {
+  const meshesOf = (root: Object3D): number => {
+    let count = 0;
+    root.traverse((node) => {
+      if ((node as Mesh).isMesh) count += 1;
+    });
+    return count;
+  };
+  const plain = (color: string) => new MeshStandardMaterial({ color, roughness: 0.6, metalness: 0 });
+
+  /** Rám a křídlo dveří; křídlo visí v pivotu katalogu a sahá do +x. */
+  function panelDoor(): Group {
+    const model = new Group();
+    const frame = new Mesh(new BoxGeometry(1, 2.1, 0.1), plain('#8a6a4a'));
+    frame.position.set(0, 1.05, 0);
+    const leaf = new Mesh(new BoxGeometry(0.94, 2, 0.05).translate(0.47, 1, 0), plain('#c9a27a'));
+    leaf.name = 'door-leaf';
+    leaf.position.set(-0.47, 0, 0);
+    model.add(frame, leaf);
+    return model;
+  }
+
+  it('keeps a coin, an obstacle and a body that does not move one mesh', () => {
+    expect(meshesOf(bodyFor(coin(), 'coin', true))).toBe(1);
+    expect(meshesOf(bodyFor(coin(), 'cone', true))).toBe(1);
+    expect(meshesOf(bodyFor(panelDoor(), 'panel-door', false))).toBe(1);
+  });
+
+  it('lifts the door leaf out under a pivot at its hinge, the rest stays one mesh', () => {
+    const model = panelDoor();
+    const before = new Box3().setFromObject(model);
+    const body = bodyFor(model, 'panel-door', true);
+    expect(meshesOf(body)).toBe(2);
+    expect(new Box3().setFromObject(body).min.distanceTo(before.min)).toBeLessThan(1e-5);
+    expect(new Box3().setFromObject(body).max.distanceTo(before.max)).toBeLessThan(1e-5);
+    // Sdílený model zůstal celý (cache `loadModel`).
+    expect(model.getObjectByName('door-leaf')).toBeDefined();
+
+    const [part, ...more] = toyPartsOf(body);
+    expect(more).toHaveLength(0);
+    expect(part!.role).toBe('door');
+    expect(part!.side).toBe(-1);
+    expect(part!.pivot.position.toArray()).toEqual([-0.47, 0, 0]);
+    // Otevřené křídlo se točí kolem kloubu: hrana u pivotu stojí, volná hrana opíše čtvrtkruh.
+    part!.pivot.rotation.y = Math.PI / 2;
+    const open = new Box3().setFromObject(part!.pivot);
+    expect(open.min.x).toBeCloseTo(-0.47 - 0.025, 3);
+    expect(open.max.x).toBeCloseTo(-0.47 + 0.025, 3);
+    expect(open.min.z).toBeCloseTo(-0.94, 3);
+  });
+
+  it(`never draws a posed body with more than ${1 + MAX_PARTS} meshes`, () => {
+    const listed = Object.keys(motion.models).flatMap((id) => {
+      const parts = motionOf(id)?.parts;
+      return parts === undefined ? [] : [{ id, parts }];
+    });
+    expect(listed.length).toBeGreaterThan(10);
+    for (const { id, parts } of listed) {
+      const model = new Group().add(new Mesh(new BoxGeometry(1, 1, 1), plain('#777777')));
+      for (const part of parts) {
+        const node = new Mesh(new BoxGeometry(0.1, 0.1, 0.1), plain('#999999'));
+        node.name = part.node;
+        node.position.set(...part.pivot);
+        model.add(node);
+      }
+      const meshes = meshesOf(bodyFor(model, id, true));
+      expect(meshes, id).toBeLessThanOrEqual(1 + MAX_PARTS);
+      expect(meshes, id).toBe(1 + Math.min(MAX_PARTS, new Set(parts.map((part) => part.node)).size));
+    }
+    expect(motionOf('bar-stool')!.parts!.length).toBeGreaterThan(MAX_PARTS);
   });
 });
 

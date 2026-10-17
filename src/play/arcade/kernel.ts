@@ -13,8 +13,18 @@
 import { hashHex } from '@/sim/hash';
 
 import {
+  ABILITY_SLOTS,
   ARCADE_LIMITS,
+  ARCADE_RUNTIME_V2,
   ARCADE_RUNTIME_VERSION,
+  FIRED,
+  LOGIC_BODIES,
+  LOGIC_LIMITS,
+  LOGIC_SLOTS,
+  LOGIC_VAR_SLOTS,
+  type LogicTrigger,
+  setTimerLeft,
+  timerLeft,
   type ArcadeCounter,
   type ArcadeEffect,
   type ArcadeInput,
@@ -35,6 +45,7 @@ import {
   HP_SHIFT,
   type InputEvent,
   NO_INPUT,
+  POWERUP_SLOTS,
   PROJECTILE_LIFETIME,
   type PieceRef,
   ROLE,
@@ -54,6 +65,7 @@ import {
   setTargetState,
   stateSize,
   targetStateOf,
+  powerupCode,
   underlyingRule,
 } from './contract';
 import { releasePhysics, stepPhysics } from './physics/step';
@@ -81,6 +93,8 @@ export interface ArcadeProgram {
   readonly physics: boolean;
   /** Parametry pravidla `score_bonus` (P36A T5): bonus a cílové skóre na konci výhry; `null` = svět bez nich. */
   readonly bonus: ScoreBonusParams | null;
+  /** Stav logiky (P45B): první slot prvního logického těla; `null` = svět bez logiky, žádný průchod logiky. */
+  readonly logic: { readonly base: number } | null;
 }
 
 export type ArcadeOutcome = 'running' | 'won' | 'lost';
@@ -99,6 +113,7 @@ export function loadProgram(world: ArcadeWorld, library: ArcadeLibrary): ArcadeP
     physics: worldHasPhysics(world),
     // Bonus na konci počítá jádro: po výhře už žádné pravidlo nevystřelí. Složená hra (P42) má bonus v obalu.
     bonus: (world.rules.map(underlyingRule).find((ref) => ref.id === 'score_bonus')?.params as ScoreBonusParams | undefined) ?? null,
+    logic: world.logic === undefined ? null : { base: bodyBase(world.logic.bodies[0] as number) },
   };
 }
 
@@ -120,6 +135,14 @@ export interface BuildWorldInput {
   readonly level: ArcadeLevel;
   /** Počáteční životy (čítač `health`); 0 = hra bez životů. */
   readonly health?: number;
+  /** Stav logiky (P45B); bez něj svět nemá logická těla a nese `arcade-v2`. */
+  readonly logic?: LogicInit;
+}
+
+/** Počátek logiky: hodnoty proměnných (≤ 8) a počet fází (> 0 = hra v tiku 0 vstoupí do fáze 0). */
+export interface LogicInit {
+  readonly vars: readonly number[];
+  readonly phases: number;
 }
 
 export type BuildWorldResult = { readonly ok: true; readonly world: ArcadeWorld } | { readonly ok: false; readonly issues: readonly string[] };
@@ -127,8 +150,14 @@ export type BuildWorldResult = { readonly ok: true; readonly world: ArcadeWorld 
 /** Sestaví svět z úrovně a kusů. Meze a neznámé kusy se odmítají tady, ne za běhu. */
 export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): BuildWorldResult {
   const { bodies } = input.level;
-  const capacity = bodies.length + (input.level.spawnSlots ?? 0);
+  // Logická těla (P45B) leží za tělesy úrovně a pod `spawnBase`; svět bez logiky je nemá.
+  const logicBodies = input.logic === undefined ? 0 : LOGIC_BODIES;
+  const level = bodies.length + logicBodies;
+  const capacity = level + (input.level.spawnSlots ?? 0);
   const issues: string[] = [];
+  if (input.logic !== undefined && (input.logic.vars.length > LOGIC_LIMITS.maxVars || input.logic.phases > LOGIC_LIMITS.maxPhases)) {
+    issues.push(`logic: at most ${LOGIC_LIMITS.maxVars} vars and ${LOGIC_LIMITS.maxPhases} phases`);
+  }
   if (bodies.length === 0 || bodies[0]?.role !== 'player') issues.push('level: the first body must be the player');
   if (capacity > ARCADE_LIMITS.maxBodies) issues.push(`level: ${capacity} bodies exceed the ${ARCADE_LIMITS.maxBodies} body limit`);
   if (input.rules.length > ARCADE_LIMITS.maxRules) issues.push(`rules: ${input.rules.length} exceed the ${ARCADE_LIMITS.maxRules} rule limit`);
@@ -167,9 +196,9 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
   const kinds = [...new Set(bodies.map((body) => body.kind))];
   const state = new Int32Array(stateSize(capacity));
   state[HEADER.runState] = RUN_STATE.running;
-  state[HEADER.bodyCount] = bodies.length;
+  state[HEADER.bodyCount] = level;
   state[HEADER.player] = 0;
-  state[HEADER.spawnBase] = bodies.length;
+  state[HEADER.spawnBase] = level;
   state[HEADER.respawnX] = bodies[0]?.x ?? 0;
   state[HEADER.respawnY] = bodies[0]?.y ?? 0;
   state[HEADER.respawnZ] = bodies[0]?.z ?? 0;
@@ -203,11 +232,23 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
       ((body.hp ?? 0) << HP_SHIFT) |
       player;
   });
+  if (input.logic !== undefined) {
+    // Mrtvé, nulového rozměru, model hráče – nic se nekreslí a nic se jich nedotkne.
+    for (let i = bodies.length; i < level; i += 1) {
+      state[bodyBase(i) + BODY.role] = ROLE.logic;
+      state[bodyBase(i) + BODY.kind] = 0;
+    }
+    const logic = bodyBase(bodies.length);
+    input.logic.vars.forEach((value, index) => (state[logic + (LOGIC_VAR_SLOTS[index] as number)] = value));
+    // Hra v tiku 0 vstoupí do počáteční fáze: pravidlo „při vstupu do klidu“ vystřelí hned.
+    if (input.logic.phases > 0) state[logic + LOGIC_SLOTS.phasePending] = 1;
+  }
 
   return {
     ok: true,
     world: {
-      runtimeVersion: ARCADE_RUNTIME_VERSION,
+      runtimeVersion: input.logic === undefined ? ARCADE_RUNTIME_V2 : ARCADE_RUNTIME_VERSION,
+      ...(input.logic === undefined ? {} : { logic: { bodies: Array.from({ length: LOGIC_BODIES }, (_, i) => bodies.length + i) } }),
       seed: input.seed,
       control: input.control,
       rules: input.rules,
@@ -658,11 +699,86 @@ function toggle(state: ArcadeState, role: number): boolean {
   return changed;
 }
 
+type LogicEffect = Extract<ArcadeEffect, { kind: 'setVar' | 'addVar' | 'goPhase' | 'startTimer' | 'stopTimer' | 'emit' | 'latch' }>;
+const LOGIC_EFFECTS: ReadonlySet<string> = new Set(['setVar', 'addVar', 'goPhase', 'startTimer', 'stopTimer', 'emit', 'latch']);
+const isLogicEffect = (effect: ArcadeEffect): effect is LogicEffect => LOGIC_EFFECTS.has(effect.kind);
+
+/** Efekt logiky (P45B) na logická těla; `true` = stav se opravdu změnil. */
+function applyLogic(state: ArcadeState, effect: LogicEffect): boolean {
+  const base = baseOf((state[HD.spawnBase] as number) - LOGIC_BODIES);
+  const L = LOGIC_SLOTS;
+  if (effect.kind === 'setVar' || effect.kind === 'addVar') {
+    const slot = base + (LOGIC_VAR_SLOTS[effect.var] as number);
+    const before = state[slot] as number;
+    const cap = LOGIC_LIMITS.varSaturation;
+    state[slot] = effect.kind === 'setVar' ? effect.value : Math.max(-cap, Math.min(cap, before + effect.amount));
+    return state[slot] !== before;
+  }
+  if (effect.kind === 'goPhase') {
+    const from = state[base + L.phase] as number;
+    if (from === effect.phase) return false;
+    state[base + L.phase] = effect.phase;
+    state[base + L.phaseTick] = state[HD.tick] as number;
+    state[base + L.phasePending] = (state[base + L.phasePending] as number) | (1 << (4 + from)) | (1 << effect.phase);
+    return true;
+  }
+  if (effect.kind === 'startTimer' || effect.kind === 'stopTimer') {
+    const ticks = effect.kind === 'startTimer' ? effect.ticks : 0;
+    if (timerLeft(state, base, effect.timer) === ticks) return false;
+    setTimerLeft(state, base, effect.timer, ticks);
+    // Spuštěný v tomto tiku průchod časovačů ještě neodečte: doběhne přesně v tiku start + n.
+    const fresh = 1 << (FIRED.freshTimer + effect.timer);
+    state[base + L.fired] = ticks > 0 ? (state[base + L.fired] as number) | fresh : (state[base + L.fired] as number) & ~fresh;
+    return true;
+  }
+  const slot = base + (effect.kind === 'emit' ? L.eventPending : L.varLatch);
+  const bit = 1 << (effect.kind === 'emit' ? effect.event : effect.bit);
+  const before = state[slot] as number;
+  state[slot] = effect.kind === 'latch' && !effect.on ? before & ~bit : before | bit;
+  // Západka je účetnictví spouštěče, ne viditelná změna.
+  return effect.kind === 'emit' && state[slot] !== before;
+}
+
+/**
+ * Průchody logiky (P45B) za průchodem čítačů: časovače odečtou a doběhlé vystřelí, pak výstupy a
+ * vstupy fází, pak čekající události. Co vystřelilo, nese `fired` jen po dobu průchodu; přechod
+ * nebo událost vydaná v průchodu čeká na další tik, takže řetěz v jednom tiku vždy skončí.
+ */
+function logicPasses(state: ArcadeState, effects: ArcadeEffect[], owners: number[] | undefined, program: ArcadeProgram, ctx: RuleContext, trace?: RuleTrace): void {
+  const base = (program.logic as { readonly base: number }).base;
+  const L = LOGIC_SLOTS;
+  let expired = 0;
+  const fresh = (state[base + L.fired] as number) >>> FIRED.freshTimer;
+  for (let t = 0; t < LOGIC_LIMITS.maxTimers; t += 1) {
+    const left = timerLeft(state, base, t);
+    if (left === 0 || ((fresh >>> t) & 1) === 1) continue;
+    setTimerLeft(state, base, t, left - 1);
+    if (left === 1) expired |= 1 << t;
+  }
+  const pass = (trigger: LogicTrigger, fired: number): void => {
+    state[base + L.fired] = fired;
+    if (fired === 0 || state[HD.runState] !== RUN_STATE.running) return;
+    const from = effects.length;
+    const end: TickEnd = { won: false, lost: false };
+    fireRules(effects, owners, program, trigger, ctx);
+    apply(state, effects, from, end, owners, trace);
+    settleRun(state, end);
+  };
+  pass('timer', expired << FIRED.timer);
+  const phases = state[base + L.phasePending] as number;
+  state[base + L.phasePending] = 0;
+  pass('phase', ((phases & 0xf) << FIRED.phaseEnter) | (((phases >>> 4) & 0xf) << FIRED.phaseExit));
+  const events = state[base + L.eventPending] as number;
+  state[base + L.eventPending] = 0;
+  pass('event', events << FIRED.event);
+  state[base + L.fired] = 0;
+}
+
 /**
  * Použije efekty od `from`. Se stopou ohlásí pravidlo (`owners[i]`) jen za efekt,
  * který stav opravdu změnil – hod s prázdnou rukou ani přepnutí bez cíle sloveso nedokáže.
  */
-function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: number, end: TickEnd, owners?: readonly number[], trace?: RuleTrace): void {
+function apply(state: ArcadeState, effects: ArcadeEffect[], from: number, end: TickEnd, owners?: number[], trace?: RuleTrace): void {
   for (let i = from; i < effects.length; i += 1) {
     const effect = effects[i] as ArcadeEffect;
     let changed = true;
@@ -695,13 +811,37 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
     else if (effect.kind === 'throwHeld') changed = letGo(state, true);
     else if (effect.kind === 'push') changed = push(state, effect.body);
     else if (effect.kind === 'toggle') changed = toggle(state, effect.role);
-    else if (effect.body < 0 || effect.body >= (state[HD.bodyCount] as number)) changed = false;
+    else if (isLogicEffect(effect)) changed = applyLogic(state, effect);
+    else if (effect.kind === 'powerup') {
+      // Power-up (P46C): nový nahradí starý, odpočet a konec drží obal ovládání (`tickPowerup`).
+      const base = baseOf(effect.keeper);
+      state[base + POWERUP_SLOTS.kind] = effect.power;
+      state[base + POWERUP_SLOTS.left] = effect.ticks;
+      if (effect.power === powerupCode('shield')) state[base + ABILITY_SLOTS.shield] = 1;
+    } else if (effect.body < 0 || effect.body >= (state[HD.bodyCount] as number)) changed = false;
     else if (effect.kind === 'combo') {
       // Počítadlo komba (P36A T5): násobič, tik sebrání + 1 a životy v tu chvíli.
       const base = baseOf(effect.body);
       state[base + S.aux0] = effect.multiplier;
       state[base + S.aux1] = (state[HD.tick] as number) + 1;
       state[base + S.x] = state[HD.counters + CT.health] as number;
+    } else if (effect.kind === 'block' || effect.kind === 'ifAlive') {
+      // Rozhodne se až tady, ve chvíli použití (P46A R2): obal ustoupí efektům, které opravdu platí,
+      // a ty se použijí hned na jeho místě. Seznam, který vrací `step`, tak nese jen skutečné efekty.
+      let kept: readonly ArcadeEffect[] = [];
+      if (effect.kind === 'ifAlive') kept = alive(state, baseOf(effect.body)) ? effect.effects : [];
+      else {
+        const charge = baseOf(effect.keeper) + ABILITY_SLOTS.shield;
+        if (state[charge] !== 0 && alive(state, baseOf(effect.body))) {
+          state[charge] = 0;
+          kept = [{ kind: 'despawn', body: effect.body }];
+        }
+      }
+      const owner = owners?.[i] as number;
+      effects.splice(i, 1, ...kept);
+      owners?.splice(i, 1, ...kept.map(() => owner));
+      i -= 1;
+      continue;
     }
     // Předloha spawnu ani mrtvé tělo zásah nenese – kopie by zdědily jeho HP (revize P32-0 T4).
     else if ((effect.kind === 'hit' || effect.kind === 'stateChange') && !alive(state, baseOf(effect.body))) changed = false;
@@ -821,6 +961,8 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   fireRules(effects, owners, program, 'counter', none);
   apply(state, effects, countersFrom, counted, owners, trace);
   settleRun(state, counted);
+  // Logika (P45B) jen ve světě, který ji má: svět bez ní tikne bajt po bajtu jako dřív.
+  if (program.logic !== null) logicPasses(state, effects, owners, program, none, trace);
   if (program.bonus !== null && state[HD.runState] === RUN_STATE.won) finishScore(state, program.bonus);
 
   state[HD.tick] = (state[HD.tick] as number) + 1;

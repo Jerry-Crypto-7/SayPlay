@@ -7,9 +7,10 @@
  *    úroveň staví (mince běžce = `collectible`), dostane kód toho druhu – pravidlo
  *    pak míří na tělesa generátoru. Ostatní role jsou **věci pravidel**: kód
  *    `THING_ROLE_BASE + k` a tělesa, která překlad sám rozmístí.
- * 2. **Pravidlo → `PieceRef`** na jeden z pěti kusů podle spouštěče
- *    (`rule_contact`, `rule_press`, `rule_tick`, `rule_counter`, `rule_hit`) s
- *    parametry, ve kterých už jsou kódy místo jmen. Jádro je spouští stejně jako
+ * 2. **Pravidlo → `PieceRef`** na jeden z kusů podle spouštěče
+ *    (`rule_contact`, `rule_press`, `rule_tick`, `rule_counter`, `rule_hit`; logika
+ *    P45B `rule_timer`, `rule_phase`, `rule_event`) s parametry, ve kterých už jsou
+ *    kódy místo jmen rolí a indexy místo jmen logiky. Jádro je spouští stejně jako
  *    ručně psaná pravidla z `pieces/rules.ts`.
  *
  * Když pravidla sama vyhrávají (`win`) a ovládání je volný pohyb, hraje se na
@@ -33,9 +34,14 @@ import {
   BUTTON,
   type BodyInit,
   COUNTER,
+  FIRED,
   FLAG,
   HEADER,
   HIT_GRACE,
+  LOGIC_BODIES,
+  LOGIC_LIMITS,
+  LOGIC_SLOTS,
+  type LogicNames,
   type PieceRef,
   ROLE,
   type RuleContext,
@@ -43,10 +49,16 @@ import {
   type RuleTrigger,
   UNIT,
   bodyBase,
+  firedBit,
+  logicBase,
+  phaseOf,
+  timerLeft,
+  varValue,
 } from '../contract';
+import type { LogicInit } from '../kernel';
 import { ARENA } from '../pieces/arena';
 import { compiledInteractWhen, interactFire } from './interact';
-import { RULE_COUNTERS, type Rule, type RuleDo, type RuleIf } from './schema';
+import { type Logic, RULE_COUNTERS, type Rule, type RuleDo, type RuleIf } from './schema';
 
 /** První kód role věci pravidel; pod ním jsou role jádra (`ROLE`), jejichž čísla jsou v hashi. */
 export const THING_ROLE_BASE = 32;
@@ -62,6 +74,13 @@ const code = z.int().min(0).max(255);
 const counterName = z.enum(RULE_COUNTERS);
 const target = z.enum(['other', 'self', 'held']);
 
+// Logika (P45B): jména z bloku `logic` jako indexy v pořadí deklarace.
+const varIndex = z.int().min(0).max(LOGIC_LIMITS.maxVars - 1);
+const timerIndex = z.int().min(0).max(LOGIC_LIMITS.maxTimers - 1);
+const phaseIndex = z.int().min(0).max(LOGIC_LIMITS.maxPhases - 1);
+const eventIndex = z.int().min(0).max(LOGIC_LIMITS.maxEvents - 1);
+const varBound = { index: varIndex, atLeast: z.int().optional(), below: z.int().optional() };
+
 const compiledWhen = z.union([
   z.object({ contact: z.tuple([code, code]) }).strict(),
   z.object({ press: z.int().min(1) }).strict(),
@@ -69,6 +88,12 @@ const compiledWhen = z.union([
   z.object({ counter: z.object({ name: counterName, atLeast: z.int() }).strict() }).strict(),
   z.object({ hit: code }).strict(),
   compiledInteractWhen,
+  z.object({ timer: timerIndex }).strict(),
+  z.object({ phase: phaseIndex }).strict(),
+  z.object({ phaseExit: phaseIndex }).strict(),
+  /** `latch` = bit západky ve `varLatch`: index pravidla ve specu (pravidel je nejvýš 16). */
+  z.object({ var: z.object({ ...varBound, latch: z.int().min(0).max(ARCADE_LIMITS.maxRules - 1) }).strict() }).strict(),
+  z.object({ event: eventIndex }).strict(),
 ]);
 
 const compiledIf = z.union([
@@ -77,6 +102,10 @@ const compiledIf = z.union([
   z.object({ counter: z.object({ name: counterName, atLeast: z.int().optional(), below: z.int().optional() }).strict() }).strict(),
   /** `within` už v jednotkách jádra. */
   z.object({ near: z.object({ role: code, within: z.int().min(0) }).strict() }).strict(),
+  z.object({ var: z.object(varBound).strict() }).strict(),
+  z.object({ inPhase: phaseIndex }).strict(),
+  z.object({ timerRunning: timerIndex }).strict(),
+  z.object({ timerStopped: timerIndex }).strict(),
 ]);
 
 const compiledDo = z.union([
@@ -95,6 +124,20 @@ const compiledDo = z.union([
   z.object({ throwHeld: z.literal(true) }).strict(),
   z.object({ push: target }).strict(),
   z.object({ toggle: code }).strict(),
+  z.object({ set: z.object({ var: varIndex, value: z.int() }).strict() }).strict(),
+  z.object({ add: z.object({ var: varIndex, amount: z.int() }).strict() }).strict(),
+  z.object({ goPhase: phaseIndex }).strict(),
+  z.object({ startTimer: z.object({ timer: timerIndex, ticks: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict() }).strict(),
+  z.object({ stopTimer: timerIndex }).strict(),
+  z.object({ emit: eventIndex }).strict(),
+  /** `template` = index předlohy ve světě; `floor` = polovina strany podlahy (dvorek, aréna), když ji svět má – `edge` ji má vždy. */
+  z
+    .object({
+      wave: z
+        .object({ template: z.int().min(0), count: z.int().min(1).max(LOGIC_LIMITS.maxWave), at: z.enum(['edge', 'player', 'other']), floor: z.int().min(1).optional() })
+        .strict(),
+    })
+    .strict(),
 ]);
 
 export const compiledRuleSchema = z
@@ -147,6 +190,10 @@ function nearest(state: Int32Array, player: number, role: number, within: number
 
 const counterValue = (state: Int32Array, name: (typeof RULE_COUNTERS)[number]): number => state[HEADER.counters + COUNTER[name]] as number;
 
+/** Hodnota v mezi `atLeast` / `below` (`ruleIssues` u proměnné hlídá právě jednu). */
+const inBound = (value: number, bound: { readonly atLeast?: number | undefined; readonly below?: number | undefined }): boolean =>
+  (bound.atLeast === undefined || value >= bound.atLeast) && (bound.below === undefined || value < bound.below);
+
 /** Podmínky platí? Vrátí tělo `other` vybrané podmínkou `near` (nebo to, které přišlo), −2 = neplatí. */
 function check(state: Int32Array, player: number, conditions: readonly CompiledIf[], other: number): number {
   let picked = other;
@@ -160,6 +207,15 @@ function check(state: Int32Array, player: number, conditions: readonly CompiledI
       const value = counterValue(state, cond.counter.name);
       if (cond.counter.atLeast !== undefined && value < cond.counter.atLeast) return -2;
       if (cond.counter.below !== undefined && value >= cond.counter.below) return -2;
+    } else if ('var' in cond) {
+      // Podmínky logiky mají jen pravidla světa s logikou, takže logická těla tu jsou.
+      if (!inBound(varValue(state, logicBase(state), cond.var.index), cond.var)) return -2;
+    } else if ('inPhase' in cond) {
+      if (phaseOf(state, logicBase(state)) !== cond.inPhase) return -2;
+    } else if ('timerRunning' in cond) {
+      if (timerLeft(state, logicBase(state), cond.timerRunning) === 0) return -2;
+    } else if ('timerStopped' in cond) {
+      if (timerLeft(state, logicBase(state), cond.timerStopped) !== 0) return -2;
     } else {
       const found = nearest(state, player, cond.near.role, cond.near.within);
       if (found < 0) return -2;
@@ -207,7 +263,88 @@ function effectsOf(ctx: RuleContext, rule: CompiledRule, self: number, other: nu
       if (body >= 0 && body !== player) out.push({ kind: 'grab' in effect ? 'grab' : 'push', body });
     } else if ('release' in effect) out.push({ kind: 'release' });
     else if ('throwHeld' in effect) out.push({ kind: 'throwHeld' });
+    else if ('set' in effect) out.push({ kind: 'setVar', var: effect.set.var, value: effect.set.value });
+    else if ('add' in effect) out.push({ kind: 'addVar', var: effect.add.var, amount: effect.add.amount });
+    else if ('goPhase' in effect) out.push({ kind: 'goPhase', phase: effect.goPhase });
+    else if ('startTimer' in effect) out.push({ kind: 'startTimer', timer: effect.startTimer.timer, ticks: effect.startTimer.ticks });
+    else if ('stopTimer' in effect) out.push({ kind: 'stopTimer', timer: effect.stopTimer });
+    else if ('emit' in effect) out.push({ kind: 'emit', event: effect.emit });
+    else if ('wave' in effect) out.push(...waveSpawns(state, player, other, effect.wave));
     else out.push({ kind: 'toggle', role: effect.toggle });
+  }
+  return out;
+}
+
+/** Míst po obvodu podlahy, ze kterých vybírá vlna `edge`. */
+export const WAVE_EDGE_SLOTS = 32;
+/** Poloměr kruhu vlny `player` / `other` (střed ke středu). */
+export const WAVE_RING = 3 * UNIT;
+/** Odstup těla vlny od okraje podlahy a od hráče. */
+export const WAVE_GAP = UNIT / 2;
+/** cos po 22,5° × 1000 – pevná tabulka, ne `Math.cos`: kruh vyjde všude bit po bitu stejně. */
+const RING_COS = [1000, 924, 707, 383, 0, -383, -707, -924, -1000, -924, -707, -383, 0, 383, 707, 924] as const;
+
+type CompiledWave = Extract<CompiledDo, { wave: unknown }>['wave'];
+
+/** Místo `s` z `slots` po obvodu čtverce podlahy vsazeného o půl těla a odstup: od rohu −x/−z po +x, pak +z, −x, −z. */
+function edgeSpot(half: number, size: number, s: number, slots: number): { x: number; z: number } {
+  const e = half - Math.ceil(size / 2) - WAVE_GAP;
+  const along = Math.floor((s * 8 * e) / slots);
+  const side = Math.floor(along / (2 * e));
+  const run = along - side * 2 * e;
+  if (side === 0) return { x: -e + run, z: -e };
+  if (side === 1) return { x: e, z: -e + run };
+  if (side === 2) return { x: e - run, z: e };
+  return { x: -e, z: e - run };
+}
+
+/**
+ * Vlna (`wave`) → nejvýš `count` efektů `spawn` z předlohy. Místa leží rovnoměrně po obvodu
+ * podlahy (`edge`, `WAVE_EDGE_SLOTS`) nebo po kruhu `WAVE_RING` kolem hráče / těla `other`
+ * (16 směrů); i-té tělo začne na místě `i · míst / count`. Místo ve zdi (živé pevné tělo), u
+ * hráče blíž než `WAVE_GAP` nebo mimo podlahu přeskočí na další volné; kde volné není, tělo
+ * nevznikne. Žádná náhoda: pozice jsou jen ze stavu a indexu.
+ */
+function waveSpawns(state: Int32Array, player: number, other: number, wave: CompiledWave): ArcadeEffect[] {
+  const center = wave.at === 'player' ? player : other;
+  if (wave.at !== 'edge' && center < 0) return [];
+  const t = bodyBase(wave.template);
+  const w = state[t + BODY.w] as number;
+  const d = state[t + BODY.d] as number;
+  const slots = wave.at === 'edge' ? WAVE_EDGE_SLOTS : RING_COS.length;
+  const c = bodyBase(center);
+  const spot = (s: number): { x: number; z: number } =>
+    wave.at === 'edge'
+      ? edgeSpot(wave.floor as number, Math.max(w, d), s, slots)
+      : {
+          x: (state[c + BODY.x] as number) + Math.trunc((RING_COS[s]! * WAVE_RING) / 1000),
+          // sin = cos o čtvrt kruhu dřív.
+          z: (state[c + BODY.z] as number) + Math.trunc((RING_COS[(s + 12) % 16]! * WAVE_RING) / 1000),
+        };
+  const count = state[HEADER.bodyCount] as number;
+  const free = (x: number, z: number): boolean => {
+    if (wave.floor !== undefined && (Math.abs(x) * 2 + w > wave.floor * 2 || Math.abs(z) * 2 + d > wave.floor * 2)) return false;
+    for (let i = 0; i < count; i += 1) {
+      const b = bodyBase(i);
+      if (i !== player && ((state[b + BODY.flags] as number) & (FLAG.alive | FLAG.solid)) !== (FLAG.alive | FLAG.solid)) continue;
+      const gap = i === player ? 2 * WAVE_GAP : 0;
+      if (Math.abs(x - (state[b + BODY.x] as number)) * 2 < w + (state[b + BODY.w] as number) + gap && Math.abs(z - (state[b + BODY.z] as number)) * 2 < d + (state[b + BODY.d] as number) + gap) return false;
+    }
+    return true;
+  };
+  const out: ArcadeEffect[] = [];
+  let taken = 0;
+  for (let i = 0; i < wave.count; i += 1) {
+    const first = Math.floor((i * slots) / wave.count);
+    for (let k = 0; k < slots; k += 1) {
+      const s = (first + k) % slots;
+      if (((taken >>> s) & 1) === 1) continue;
+      const { x, z } = spot(s);
+      if (!free(x, z)) continue;
+      taken |= 1 << s;
+      out.push({ kind: 'spawn', template: wave.template, x, y: 0, z, vx: 0, vy: 0, vz: 0 });
+      break;
+    }
   }
   return out;
 }
@@ -265,6 +402,28 @@ function makePiece(id: string, trigger: RuleTrigger, fire: (ctx: RuleContext, ru
   return { id, params: compiledRuleSchema, roles: ['player'], trigger, cost: () => ({ bodies: 0, rules: 1 }), fire };
 }
 
+/** Vystřelil v tomto průchodu logiky bit `FIRED.<druh> + index`? Jen v průchodech logiky (`timer`, `phase`, `event`). */
+const logicFired = (ctx: RuleContext, bit: number): boolean => firedBit(ctx.state, logicBase(ctx.state), bit);
+
+type VarWhen = Extract<CompiledRule['when'], { var: unknown }>['var'];
+
+/**
+ * Překročení meze proměnné (`when.var`) v průchodu čítačů: vystřelí, jakmile je proměnná v mezi a
+ * podmínky platí, a zaklapne západku (bit `latch` ve `varLatch`); znovu až poté, co proměnná z meze
+ * vyjde a západka se uvolní.
+ */
+function crossing(ctx: RuleContext, rule: CompiledRule, bound: VarWhen): readonly ArcadeEffect[] {
+  const base = logicBase(ctx.state);
+  const inside = inBound(varValue(ctx.state, base, bound.index), bound);
+  const latched = (((ctx.state[base + LOGIC_SLOTS.varLatch] as number) >>> bound.latch) & 1) === 1;
+  if (!inside) return latched ? [{ kind: 'latch', bit: bound.latch, on: false }] : [];
+  if (latched) return [];
+  const picked = check(ctx.state, ctx.player, rule.if, -1);
+  if (picked === -2) return [];
+  // Západka první: utne-li strop efektů tiku zbytek, nevystřelí pravidlo ani podruhé.
+  return [{ kind: 'latch', bit: bound.latch, on: true }, ...effectsOf(ctx, rule, -1, picked)];
+}
+
 /** Kusy, na které se pravidla ze specu překládají – patří do `ARCADE_LIBRARY`. */
 export const SPEC_RULES = {
   rule_contact: makePiece('rule_contact', 'contact', (ctx, rule) => {
@@ -277,12 +436,20 @@ export const SPEC_RULES = {
     if ('every' in rule.when) return ((ctx.state[HEADER.tick] as number) + 1) % rule.when.every === 0 ? evaluate(ctx, rule, -1, -1) : [];
     return [];
   }),
-  rule_counter: makePiece('rule_counter', 'counter', (ctx, rule) =>
-    'counter' in rule.when && counterValue(ctx.state, rule.when.counter.name) >= rule.when.counter.atLeast ? evaluate(ctx, rule, -1, -1) : [],
-  ),
+  rule_counter: makePiece('rule_counter', 'counter', (ctx, rule) => {
+    if ('var' in rule.when) return crossing(ctx, rule, rule.when.var);
+    return 'counter' in rule.when && counterValue(ctx.state, rule.when.counter.name) >= rule.when.counter.atLeast ? evaluate(ctx, rule, -1, -1) : [];
+  }),
   rule_hit: makePiece('rule_hit', 'hit', (ctx, rule) => ('hit' in rule.when && ctx.other >= 0 && roleAt(ctx.state, ctx.other) === rule.when.hit ? evaluate(ctx, rule, ctx.source, ctx.other) : [])),
   // Tělo pravidla je v `interact.ts` (P32G); `do` se vyhodnotí pro cíl, který došel do konečného stavu.
   interact: makePiece('interact', 'press', (ctx, rule) => ('interact' in rule.when ? interactFire(ctx, rule.when.interact, (body) => evaluate(ctx, rule, ctx.player, body)) : [])),
+  // Logika (P45B): průchody jádra za průchodem čítačů; co vystřelilo, nese `LOGIC_SLOTS.fired`.
+  rule_timer: makePiece('rule_timer', 'timer', (ctx, rule) => ('timer' in rule.when && logicFired(ctx, FIRED.timer + rule.when.timer) ? evaluate(ctx, rule, -1, -1) : [])),
+  rule_phase: makePiece('rule_phase', 'phase', (ctx, rule) => {
+    if ('phase' in rule.when) return logicFired(ctx, FIRED.phaseEnter + rule.when.phase) ? evaluate(ctx, rule, -1, -1) : [];
+    return 'phaseExit' in rule.when && logicFired(ctx, FIRED.phaseExit + rule.when.phaseExit) ? evaluate(ctx, rule, -1, -1) : [];
+  }),
+  rule_event: makePiece('rule_event', 'event', (ctx, rule) => ('event' in rule.when && logicFired(ctx, FIRED.event + rule.when.event) ? evaluate(ctx, rule, -1, -1) : [])),
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -332,6 +499,7 @@ function referencedRoles(spec: GameSpecV1): string[] {
     }
     for (const effect of rule.do) {
       if ('spawn' in effect) names.add(effect.spawn.role);
+      if ('wave' in effect) names.add(effect.wave.role);
       if ('toggle' in effect) names.add(effect.toggle);
     }
   }
@@ -419,14 +587,31 @@ export interface RulesCompiled {
   readonly level: ArcadeLevel;
   /** Co spec chce a tenhle svět neumí – jde režisérovi do opravného kola jako `WORLD_REJECTED`. */
   readonly issues: string[];
+  /** Počátek logiky pro `buildWorld` (P45B), jen u specu s blokem `logic`. */
+  readonly logic?: LogicInit;
 }
 
 /** Jméno role jádra ke kódu pod `THING_ROLE_BASE`. */
 const builtinRole = (code: number): ArcadeRole => (Object.keys(ROLE) as ArcadeRole[]).find((name) => ROLE[name] === code) as ArcadeRole;
 
-/** Pravidlo ze specu → `PieceRef` (kódy místo jmen); `templates` = role → index předlohy. */
-function compileRule(rule: Rule, codes: ReadonlyMap<string, number>, templates: ReadonlyMap<string, number>): PieceRef {
+/** Jména bloku `logic` v pořadí deklarace; svět je nese i ověření (T7). */
+export const logicNames = (logic: Logic | undefined): LogicNames => ({
+  var: (logic?.vars ?? []).map((entry) => entry.id),
+  timer: (logic?.timers ?? []).map((entry) => entry.id),
+  phase: (logic?.phases ?? []).map((entry) => entry.id),
+  event: logic?.events ?? [],
+});
+
+/**
+ * Pravidlo ze specu → `PieceRef` (kódy místo jmen rolí, indexy místo jmen logiky); `index` = pořadí
+ * pravidla ve specu (bit západky), `templates` = role → index předlohy, `floor` = polovina strany podlahy.
+ */
+function compileRule(rule: Rule, index: number, codes: ReadonlyMap<string, number>, templates: ReadonlyMap<string, number>, names: LogicNames, floor: number | undefined): PieceRef {
   const c = (name: string): number => codes.get(name) as number;
+  // `ruleIssues` pustí jen deklarovaná jména, takže index vždy je.
+  const v = (name: string): number => names.var.indexOf(name);
+  const t = (name: string): number => names.timer.indexOf(name);
+  const p = (name: string): number => names.phase.indexOf(name);
   let when: CompiledRule['when'];
   let id: keyof typeof SPEC_RULES;
   if ('contact' in rule.when) {
@@ -448,18 +633,54 @@ function compileRule(rule: Rule, codes: ReadonlyMap<string, number>, templates: 
     const { role, radius, ...rest } = rule.when.interact;
     when = { interact: { role: c(role), radius: radius * UNIT, ...rest } };
     id = 'interact';
-  } else {
+  } else if ('hit' in rule.when) {
     when = { hit: c(rule.when.hit) };
     id = 'rule_hit';
+  } else if ('timer' in rule.when) {
+    when = { timer: t(rule.when.timer) };
+    id = 'rule_timer';
+  } else if ('phase' in rule.when) {
+    when = { phase: p(rule.when.phase) };
+    id = 'rule_phase';
+  } else if ('phaseExit' in rule.when) {
+    when = { phaseExit: p(rule.when.phaseExit) };
+    id = 'rule_phase';
+  } else if ('var' in rule.when) {
+    const { name, ...bound } = rule.when.var;
+    // Překročení meze hlídá průchod čítačů; západka je bit pravidla v logickém těle.
+    when = { var: { index: v(name), ...bound, latch: index } };
+    id = 'rule_counter';
+  } else {
+    when = { event: names.event.indexOf(rule.when.event) };
+    id = 'rule_event';
   }
   const conditions: CompiledIf[] = (rule.if ?? []).map((cond) => {
     if ('holding' in cond) return { holding: c(cond.holding) };
     if ('near' in cond) return { near: { role: c(cond.near.role), within: cond.near.within * UNIT } };
+    if ('var' in cond) {
+      const { name, ...bound } = cond.var;
+      return { var: { index: v(name), ...bound } };
+    }
+    if ('inPhase' in cond) return { inPhase: p(cond.inPhase) };
+    if ('timerRunning' in cond) return { timerRunning: t(cond.timerRunning) };
+    if ('timerStopped' in cond) return { timerStopped: t(cond.timerStopped) };
     return cond;
   });
   const effects: CompiledDo[] = rule.do.map((effect) => {
     if ('spawn' in effect) return { spawn: { template: templates.get(effect.spawn.role) as number, at: effect.spawn.at } };
     if ('toggle' in effect) return { toggle: c(effect.toggle) };
+    if ('set' in effect) return { set: { var: v(effect.set.var), value: effect.set.value } };
+    if ('add' in effect) return { add: { var: v(effect.add.var), amount: effect.add.amount } };
+    if ('goPhase' in effect) return { goPhase: p(effect.goPhase) };
+    if ('startTimer' in effect) return { startTimer: { timer: t(effect.startTimer.timer), ticks: effect.startTimer.ticks } };
+    if ('stopTimer' in effect) return { stopTimer: t(effect.stopTimer) };
+    if ('emit' in effect) return { emit: names.event.indexOf(effect.emit) };
+    if ('wave' in effect) {
+      const { role, count, at } = effect.wave;
+      // Bez podlahy (běžec, duel) nemá vlna okraj: přijde kruhem kolem hráče, ať AI verze nepropadne kvůli místu vzniku.
+      if (floor === undefined) return { wave: { template: templates.get(role) as number, count, at: at === 'edge' ? 'player' : at } };
+      return { wave: { template: templates.get(role) as number, count, at, floor } };
+    }
     return effect;
   });
   const params: CompiledRule = { id: rule.id, verb: rule.verb, when, if: conditions, do: effects };
@@ -468,9 +689,10 @@ function compileRule(rule: Rule, codes: ReadonlyMap<string, number>, templates: 
 
 /**
  * Pravidla specu → kusy jádra a úroveň s věcmi pravidel. Bez pravidel vrací
- * úroveň beze změny a žádný kus (hash dnešních her se nepohne).
+ * úroveň beze změny a žádný kus (hash dnešních her se nepohne). `floor` = polovina
+ * strany podlahy ovládání volného pohybu (dvorek, aréna) – bez ní vlna `edge` nemá kde stát.
  */
-export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number): RulesCompiled {
+export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number, floor?: number): RulesCompiled {
   const rules = spec.rules ?? [];
   if (rules.length === 0 && (spec.things ?? []).length === 0) return { rules: [], level, issues: [] };
   const codes = roleCodes(spec, level);
@@ -482,6 +704,7 @@ export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number)
     .map((id) => `things: role "${id}" is built by the ${spec.control} game itself and is visible from the start, so start:"hidden" cannot apply – give the hidden thing its own role id and kind`);
   const pairs = rules.filter((rule) => 'contact' in rule.when && codes.get(rule.when.contact[0]) !== ROLE.player && codes.get(rule.when.contact[1]) !== ROLE.player).length;
   if (pairs > PAIR_RULES_MAX) issues.push(`rules: ${pairs} rules watch a contact between two things without the player; at most ${PAIR_RULES_MAX} may – merge them`);
+  const waves = rules.flatMap((rule) => rule.do.flatMap((effect) => ('wave' in effect ? [effect.wave] : [])));
   // Fyzikální věc (P29A T13): hýbe s ní Rapier. Jen věci pravidel – tělesa generátoru mají vlastní pohyb.
   const physical = new Set((spec.things ?? []).filter((thing) => thing.physics === true).map((thing) => thing.role));
   const physics = (id: string): Partial<BodyInit> => (physical.has(id) ? { physics: true } : {});
@@ -537,11 +760,12 @@ export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number)
     }
   }
 
+  // Předloha na roli, kterou rodí `spawn` nebo `wave`.
   const templates = new Map<string, number>();
   for (const rule of rules) {
     for (const effect of rule.do) {
-      if (!('spawn' in effect) || templates.has(effect.spawn.role)) continue;
-      const id = effect.spawn.role;
+      const id = 'spawn' in effect ? effect.spawn.role : 'wave' in effect ? effect.wave.role : undefined;
+      if (id === undefined || templates.has(id)) continue;
       const role = spec.roles.find((r) => r.id === id)!;
       const [w, h, d, solid] = THING_SHAPE[role.kind];
       const roleCode = codes.get(id) as number;
@@ -551,10 +775,18 @@ export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number)
       bodies.push({ ...identity, kind: `thing:${id}`, x: 0, y: 0, z: 0, w, h, d, solid, template: true, ...physics(id) });
     }
   }
-  const spawnSlots = templates.size > 0 ? Math.min((level.spawnSlots ?? 0) + RULE_SPAWN_SLOTS, ARCADE_LIMITS.maxBodies - bodies.length) : level.spawnSlots;
+  // Každá vlna smí stát celá najednou vedle rezervy spawnu; logická těla jdou za tělesy úrovně, ze stropu.
+  const waveBodies = waves.reduce((sum, wave) => sum + wave.count, 0);
+  const logicBodies = spec.logic === undefined ? 0 : LOGIC_BODIES;
+  const spawnSlots =
+    templates.size > 0 ? Math.min((level.spawnSlots ?? 0) + RULE_SPAWN_SLOTS + waveBodies, ARCADE_LIMITS.maxBodies - bodies.length - logicBodies) : level.spawnSlots;
+  const names = logicNames(spec.logic);
+  // Počátek logiky: proměnné na `start` (jinak 0), hra v počáteční fázi 0.
+  const logic: LogicInit | undefined = spec.logic === undefined ? undefined : { vars: (spec.logic.vars ?? []).map((entry) => entry.start ?? 0), phases: names.phase.length };
   return {
-    rules: rules.map((rule) => compileRule(rule, codes, templates)),
+    rules: rules.map((rule, index) => compileRule(rule, index, codes, templates, names, floor)),
     level: { ...level, bodies, ...(spawnSlots === undefined ? {} : { spawnSlots }) },
     issues,
+    ...(logic === undefined ? {} : { logic }),
   };
 }

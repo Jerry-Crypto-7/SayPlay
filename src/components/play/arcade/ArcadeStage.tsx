@@ -25,7 +25,7 @@ import { CAPABILITIES } from '@/play/capabilities';
 import { stageOf } from '@/play/compose/stage-registry';
 import type { ControlId, HeroAction } from '@/play/spec';
 
-import { ActionButton, actionsOf, useActionInput } from './ActionButton';
+import { AbilityButton, ActionButton, abilitiesOf, actionsOf, useAbilityInput, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
 import type { ArcadeGhost } from './GhostSlot';
@@ -35,6 +35,7 @@ import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
+import { HudBoosts, boostKeepers } from './PowerupBadge';
 import { RhythmScene } from './rhythm/RhythmScene';
 import { RiggedModel } from './RiggedModel';
 import { RunnerWorld } from './runner/RunnerWorld';
@@ -45,6 +46,7 @@ import { useBallInput } from './ball/BallScene';
 import { useSteerInput } from './steer/SteerScene';
 import { type BodyModel, TimingScene, useTapInput } from './timing/TimingScene';
 import { TouchStick, TouchZones } from './TouchControls';
+import { type ToyTarget, appliedToyOf } from './toy/applyToy';
 import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
 import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
@@ -98,6 +100,39 @@ export interface FrameReport {
    * kolik jich je vidět a obdélník té, která je v záběru nejvíc.
    */
   readonly items: Readonly<Record<string, { readonly count: number; readonly box: FrameBox | null }>>;
+  /**
+   * Hračková póza hrdiny, jak ji `applyToy` nastavil (P45D T14): předklon a úklon (rad, bez
+   * natočení po směru – to je hra), měřítko, poskok a výpad vnitřní skupiny (m; poloha ve
+   * hře je na vnější), součet otočení dílů (rad) a uniformy deformace. Hledá
+   * `userData.toyHero`, jinak první hračkovou skupinu pod hrdinou sondy; `null` = bez pózy.
+   */
+  readonly heroToy: Readonly<Record<'pitch' | 'roll' | 'sx' | 'sy' | 'sz' | 'hop' | 'lunge' | 'parts' | 'flap' | 'sway' | 'stride', number>> | null;
+}
+
+/** Hračková póza hrdiny pro `FrameReport.heroToy`. */
+function heroToyOf(scene: Object3D, hero: Object3D | null): FrameReport['heroToy'] {
+  let toy: ToyTarget | undefined;
+  scene.traverse((node) => {
+    if (toy === undefined && node.userData.toyHero === true && shown(node)) toy = appliedToyOf(node);
+  });
+  hero?.traverse((node) => {
+    if (toy === undefined && shown(node)) toy = appliedToyOf(node);
+  });
+  if (toy === undefined) return null;
+  const { group, parts = [], deform } = toy as ToyTarget;
+  return {
+    pitch: group.rotation.x,
+    roll: group.rotation.z,
+    sx: group.scale.x,
+    sy: group.scale.y,
+    sz: group.scale.z,
+    hop: group.position.y,
+    lunge: Math.hypot(group.position.x, group.position.z),
+    parts: parts.reduce((sum, { pivot }) => sum + Math.abs(pivot.rotation.x) + Math.abs(pivot.rotation.y) + Math.abs(pivot.rotation.z), 0),
+    flap: deform?.toyFlap.value ?? 0,
+    sway: deform?.toySway.value ?? 0,
+    stride: deform?.toyStride.value ?? 0,
+  };
 }
 
 /** Jak daleko od středu obrazu obdélník leží (NDC); za kamerou nekonečno. */
@@ -122,6 +157,12 @@ export interface RenderReport {
    * mění stínový výřez i průchody a s nimi `calls`.
    */
   readonly meshes: number;
+  /**
+   * Vyčleněné díly hýbajících se těl (P45D T6, `mergePosed`): viditelné sítě pod pivoty
+   * dílů (`ink` z nich jsou obaly obrysu) a kolik těl díly má – bez nich by tělo bylo
+   * jedna slitá síť jako dřív.
+   */
+  readonly toyParts: { readonly meshes: number; readonly ink: number; readonly bodies: number };
 }
 
 declare global {
@@ -142,6 +183,21 @@ function RenderProbe() {
       });
       return count;
     };
+    const toyParts = (): RenderReport['toyParts'] => {
+      const bodies = new Set<Object3D>();
+      let count = 0;
+      let ink = 0;
+      scene.traverseVisible((node) => {
+        if (node.userData.toyPart === undefined) return;
+        if (node.parent !== null) bodies.add(node.parent);
+        node.traverseVisible((inner) => {
+          if ((inner as Mesh).isMesh !== true) return;
+          count += 1;
+          if (isInk(inner as Mesh)) ink += 1;
+        });
+      });
+      return { meshes: count, ink, bodies: bodies.size };
+    };
     const probe = (): RenderReport => ({
       calls: gl.info.render.calls,
       triangles: gl.info.render.triangles,
@@ -153,6 +209,7 @@ function RenderProbe() {
       post: (gl.domElement.dataset.post ?? '').split(' ').filter(Boolean),
       grade: gl.domElement.dataset.grade ?? null,
       meshes: meshes(),
+      toyParts: toyParts(),
     });
     window.__playRender = probe;    return () => {
       if (window.__playRender === probe) delete window.__playRender;
@@ -267,6 +324,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
         items,
+        heroToy: heroToyOf(scene, hero),
       };
     };
     // Bez podmínky, stejně jako `__playShell`: e2e ji čte na každé arkádové hře.
@@ -504,19 +562,22 @@ function useFlapInput(session: ArcadeSession, target: React.RefObject<HTMLDivEle
 }
 
 const FIRE_KEYS = new Set(['f', 'j', 'enter']);
+/** S akcemi hrdiny (P46A T7) patří J akci A, střelba zůstane na F a Enter. */
+const FIRE_KEYS_WITH_ABILITIES = new Set(['f', 'enter']);
 
 /** Střelba doplňku `+shoot` (P26D): F/J/Enter, na dotyku tlačítko ve scéně – skok a skluz zůstávají, kde byly. */
-function useFireInput(session: ArcadeSession, active: boolean): void {
+function useFireInput(session: ArcadeSession, active: boolean, abilities: boolean): void {
   useEffect(() => {
     if (!active) return;
+    const keys = abilities ? FIRE_KEYS_WITH_ABILITIES : FIRE_KEYS;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !FIRE_KEYS.has(event.key.toLowerCase())) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !keys.has(event.key.toLowerCase())) return;
       event.preventDefault();
       session.press(BUTTON.FIRE);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [session, active]);
+  }, [session, active, abilities]);
 }
 
 function FireButton({ session }: { readonly session: ArcadeSession }) {
@@ -702,6 +763,7 @@ export default function ArcadeStage({
   enabled = true,
   heroAction = 'none',
   ghost,
+  abilityWords,
   overlay,
 }: {
   readonly session: ArcadeSession;
@@ -715,6 +777,11 @@ export default function ArcadeStage({
   readonly heroAction?: HeroAction;
   /** Duch dřívějšího běhu (P37B T8, `GhostSlot.tsx`); scéna ho kreslí ve svém slotu. */
   readonly ghost?: ArcadeGhost;
+  /**
+   * Sloveso věty na tlačítkách akcí (P47B T10, `spec.abilityWords`) v pořadí akcí světa – svět je staví
+   * ze `spec.abilities` ve stejném pořadí. Jádro ho nečte; bez něj obecné popisky.
+   */
+  readonly abilityWords?: readonly string[];
   /* P29D */
   /** Vrstva nad plátnem (počasí a denní doba živé změny) – mimo scénu i hash. */
   readonly overlay?: ReactNode;
@@ -725,11 +792,21 @@ export default function ArcadeStage({
   const input = stageOf(control)?.input;
   const fires = hasBlaster(session.world.rules);
   // Úder a použití (P32-0 T5) jen ve světě, který je čte.
-  const actions = useMemo(() => actionsOf(session.world), [session]);
+  // Akce hrdiny (P46A T7): J/K patří tlačítkům A/B, úder a použití starých her je bez nich mají dál.
+  const abilities = useMemo(() => abilitiesOf(session.world), [session]);
+  // Power-up a kombo v HUD (P46C T5) jen ve světě, který je má.
+  const keepers = useMemo(() => boostKeepers(session.world), [session]);
+  // Díl souboje bere i úder akce (P46A T8), takže tlačítko Attack by bylo navíc.
+  const actions = useMemo(() => actionsOf(session.world).filter((action) => action !== 'attack' || !abilities.includes('strike')), [session, abilities]);
+  const hasAbilities = abilities.length > 0;
+  // Tlačítko Shoot akce střílí týmž blasterem – druhé tlačítko střelby by bylo navíc.
+  const fireButton = fires && !abilities.includes('shoot');
+  const abilityBase = actions.length > 0 ? 1 + actions.length : fireButton ? 1 : 0;
   const look = scene ?? LOOKS[lookId];
   const draws = CAPABILITIES[control as ControlId]?.setting === true;
-  useFireInput(session, fires && enabled);
-  useActionInput(session, actions, enabled);
+  useFireInput(session, fires && enabled, hasAbilities);
+  useActionInput(session, actions, enabled && !hasAbilities);
+  useAbilityInput(session, abilities, enabled);
   useRunnerInput(session, surface, enabled && input === 'runner');
   usePlatformInput(session, surface, enabled && input === 'platform');
   useFlapInput(session, surface, enabled && input === 'flap');
@@ -758,6 +835,7 @@ export default function ArcadeStage({
       <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
+      {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
       {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} />}
       {enabled && (control === 'move_free' || control === 'fight') && <TouchStick surface={surface} />}
@@ -766,8 +844,9 @@ export default function ArcadeStage({
         style={{ position: 'absolute', left: 12, top: 12, maxWidth: '65%', pointerEvents: 'none' }}>
         Left side: drag to move. Right side: aim and release to shoot. Keyboard: arrows move, Q/E aim, Space shoots.
       </div>}
-      {fires && enabled && <FireButton session={session} />}
+      {fireButton && enabled && <FireButton session={session} />}
       {enabled && actions.map((action) => <ActionButton key={action} session={session} action={action} />)}
+      {enabled && abilities.map((ability, slot) => <AbilityButton key={ability} session={session} ability={ability} slot={slot} stack={abilityBase + slot} word={abilityWords?.[slot]} />)}
     </div>
   );
 }

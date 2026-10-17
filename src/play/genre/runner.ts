@@ -14,6 +14,7 @@ import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SECTIONS, RUNNER_SPEEDS, RUNNE
 import { nounPhrase, singular } from '../draft/lexicon';
 
 import { type GenreModule, addonRoles, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { defaultObstacle } from './roles';
 
 /** Překážka z věty: čemu se hrdina vyhýbá, co přeskakuje nebo podbíhá. */
 const OBSTACLE_CUE =
@@ -65,7 +66,8 @@ export const runnerGenre: GenreModule<'runner'> = {
   availability: () => 'ready',
   compile: (spec) => {
     // Čemu se uhýbá, je překážka; soupeř zblízka a terč hodu taky – běžec je jinak zahrát neumí (P39).
-    const obstacle = castFor(spec, 'avoid', 'fight', 'throw_at')?.label ?? 'rock';
+    // Bez nich překážka z prostředí: v supermarketu vozík, ne kámen (P46D T6).
+    const obstacle = castFor(spec, 'avoid', 'fight', 'throw_at')?.label ?? defaultObstacle(spec) ?? 'rock';
     const finish = castFor(spec, 'reach')?.label ?? 'finish line';
     const palette = spec.palette ?? lookFor(spec.setting) ?? undefined;
     const { lengthM, speed, density, ride, items, obstacles: rows } = spec.params ?? {};
@@ -81,6 +83,8 @@ export const runnerGenre: GenreModule<'runner'> = {
         feel: 2,
         // Rozjezd, hustší, nejtěžší úsek; délka podle počtů z věty (P36A T4).
         sections: 3,
+        // Úseky z knihovny vzorů: cik-cak, řetěz skoků, rozcestí, most, tunel… (P46D T2).
+        patterns: 1,
       },
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} Run`,

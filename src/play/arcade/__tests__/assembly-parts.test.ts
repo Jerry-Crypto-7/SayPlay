@@ -94,6 +94,14 @@ describe('independent assembly gameplay', () => {
     expect(run.tick).toBeLessThanOrEqual(5400);
   });
 
+  it('a runner spec stored without controlParams still compiles', () => {
+    const { spec } = compose(extractIntent('escape from the forest'), 1);
+    expect(spec.control).toBe('runner');
+    expect(spec.assemblyParts?.length ?? 0).toBeGreaterThan(0);
+    const { controlParams: _dropped, ...old } = spec;
+    expect(arcadeWorldOf(old as typeof spec, 1).ok).toBe(true);
+  });
+
   it.each((['glide', 'flap', 'run', 'jump', 'drive', 'walk', 'ball', 'roam'] as const).flatMap(move => [1, 2, 3, 4, 5].map(seed => ({ move, seed }))))('$move seed $seed retains movement while catching prey', ({ move, seed }) => {
     const genre = move === 'glide' || move === 'drive' ? 'voyage' : move === 'flap' ? 'flap' : move === 'run' ? 'runner' : move === 'walk' ? 'quest' : move === 'ball' ? 'throw' : move === 'roam' ? 'arena' : 'platformer';
     const spec = compileRecipe({ preset: 'assembled', move, actions: [], objective: 'reach', threats: [],
@@ -104,6 +112,17 @@ describe('independent assembly gameplay', () => {
     const run = runBot(built.world, ARCADE_LIBRARY, { roleBindings: built.roleBindings });
     expect(run.outcome, `${move}: ${run.tick}`).toBe('won');
     expect(run.witnesses.some(witness => witness.verb === 'catch'), `${move}: moving contact evidence`).toBe(true);
+  });
+  // Úroveň ze vzorů stoupá po schodech: kořist ve výšce startu robot přeběhl nad hlavou a ta utekla za cíl (P46D R3).
+  it.each([['snow', 9], ['snow', 10], ['meadow', 24], ['city', 1], ['city', 17], ['castle', 5], ['castle', 23]] as const)('platformer catch in %s seed %s follows the chunk slabs and is caught', (setting, seed) => {
+    const spec = compileRecipe({ preset: 'assembled', move: 'jump', actions: [], objective: 'reach', threats: [],
+      content: { genre: 'platformer', mode: 'default', hero: 'seal', setting },
+      parts: [{ kind: 'catch', role: 'part_0', label: 'fish', phase: 0, motion: 'fall' }] });
+    const built = arcadeWorldOf(spec, seed);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    const run = runBot(built.world, ARCADE_LIBRARY, { roleBindings: built.roleBindings });
+    expect(run.outcome, `${setting} ${seed}: ${run.tick}`).toBe('won');
+    expect(run.witnesses.some(witness => witness.verb === 'catch')).toBe(true);
   });
   it.each(['deliver', 'interact'] as const)('walk navigates the maze to %s a named passenger', kind => {
     const spec = compileRecipe({ preset: 'assembled', move: 'walk', actions: [kind], objective: 'reach', threats: [],

@@ -1,0 +1,350 @@
+{
+ "about": "P45B T11: first answers of the compact director on local gpt-oss-20b for evals/play/p45b/director-sentences.json, judged offline by judgeLogicAnswer (src/play/director/__fixtures__/logic-answers.ts) – raw without and repaired with the phase-entry repair of the read path (withPhaseEntries). Target: >= 20/25 repaired write logic and pass with logic_proved. See evals/play/p45b/README.md.",
+ "recordedAt": "2026-10-09T11:42:16.491Z",
+ "judgedAt": "2026-10-15T10:30:00.000Z",
+ "commit": "41159424",
+ "model": "gpt-oss-20b",
+ "endpoint": "http://127.0.0.1:8792",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "raw": {
+  "hit": 1,
+  "of": 25
+ },
+ "repaired": {
+  "hit": 2,
+  "of": 25
+ },
+ "before": {
+  "record": "T11 record 3",
+  "directorPromptVersion": "3b597af4",
+  "raw": {
+   "hit": 0,
+   "of": 25
+  },
+  "repaired": {
+   "hit": 0,
+   "of": 25
+  }
+ },
+ "phasesEntered": 18,
+ "wroteLogic": 24,
+ "answered": 25,
+ "latencyMs": {
+  "p50": 13657,
+  "max": 22486
+ },
+ "rows": [
+  {
+   "id": "d06",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:race, phase:start, phase:race): idle_loses: a player who does nothing wins at tick 602 – the game plays itself",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "race",
+   "ms": 12690
+  },
+  {
+   "id": "d16",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "night"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:day, phase:day, phase:night): bot_wins: the bot lost at tick 4321, -5 m into the track",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "collect",
+   "ms": 10157
+  },
+  {
+   "id": "d20",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "active"
+   ],
+   "wroteLogic": true,
+   "why": "not authored (MALFORMED): counts.target: unsupported or out of bounds for drive",
+   "fallbackReason": "MALFORMED",
+   "axis": "rescue",
+   "ms": 7857
+  },
+  {
+   "id": "f22",
+   "passed": true,
+   "rawPassed": true,
+   "phasesEntered": [],
+   "wroteLogic": true,
+   "why": null,
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "defeat",
+   "ms": 11387
+  },
+  {
+   "id": "h02",
+   "passed": true,
+   "rawPassed": false,
+   "phasesEntered": [
+    "running"
+   ],
+   "wroteLogic": true,
+   "why": null,
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "race",
+   "ms": 9304
+  },
+  {
+   "id": "h03",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "active"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:phase_timer, phase:start, phase:active): ACTION_LOST: hero defend castle has no action witness; ACTION_LOST: hero throw dragon has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase active – add a rule with {\"goPhase\":\"active\"}; rules as written: [{\"id\":\"dragon_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"dragon\",\"at\":\"player\"}}]},{\"id\":\"snowball_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"snowball\",\"at\":\"player\"}}]},{\"id\":\"throw_snowball\",\"verb\":\"throw\",\"when\":{\"contact\":[\"player\",\"snowball\"]},\"if\":[{\"holding\":\"snowball\"}],\"do\":[{\"damage\":1},{\"relea; RULE_INVALID: /logic/timers/0: no rule starts timer phase_timer – add a rule with {\"startTimer\":{\"timer\":\"phase_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"dragon_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"dragon\",\"at\":\"player\"}}]},{\"id\":\"snowball_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"snowball\",\"at\":\"player\"}}]},{\"id\":\"throw_snowball\",\"verb\":\"throw\",\"when\":{\"contact\":[\"player\",\"snowball\"]},\"if\":[{\"holding\":\"snowball\"}],\"do\":[{\"damage\":1},{\"relea; RULE_INVALID: /rules/3/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"dragon_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"dragon\",\"at\":\"player\"}}]},{\"id\":\"snowball_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"snowball\",\"at\":\"player\"}}]},{\"id\":\"throw_snowball\",\"verb\":\"throw\",\"when\":{\"contact\":[\"player\",\"snowball\"]},\"if\":[{\"holding\":\"snowball\"}],\"do\":[{\"damage\":1},{\"relea; RULE_INVALID: /rules/4/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"dragon_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"dragon\",\"at\":\"player\"}}]},{\"id\":\"snowball_spawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"snowball\",\"at\":\"player\"}}]},{\"id\":\"throw_snowball\",\"verb\":\"throw\",\"when\":{\"contact\":[\"player\",\"snowball\"]},\"if\":[{\"holding\":\"snowball\"}],\"do\":[{\"damage\":1},{\"relea; rule verbs dropped: spawn, throw, damage, chase",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "defend",
+   "ms": 10623
+  },
+  {
+   "id": "h09",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "night"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:night_timer, phase:day, phase:night): verbs_proved: VERB_UNPROVED:spawn – no rule with the verb \"spawn\" fired while the bot played",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "escape",
+   "ms": 14551
+  },
+  {
+   "id": "j05",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [],
+   "wroteLogic": false,
+   "why": "the answer declares no logic",
+   "fallbackReason": null,
+   "axis": "collect",
+   "ms": 13741
+  },
+  {
+   "id": "j08",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "second"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:first, phase:second): bot_wins: the bot lost at tick 1480, 4 m into the track",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "defend",
+   "ms": 8872
+  },
+  {
+   "id": "j10",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "escape"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:chase_timer, phase:chase, phase:escape): verbs_proved: VERB_UNPROVED:damage – no rule with the verb \"damage\" fired while the bot played",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "escape",
+   "ms": 18543
+  },
+  {
+   "id": "m10",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "second"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (var:free, var:score, timer:phase1, phase:first, phase:second): verbs_proved: VERB_UNPROVED:interact – no rule with the verb \"interact\" fired while the bot played",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "rescue",
+   "ms": 21153
+  },
+  {
+   "id": "ma-031",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:battle, phase:first, phase:second): bot_wins: the bot lost at tick 998, 0 m into the track",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "defeat",
+   "ms": 9611
+  },
+  {
+   "id": "ma-048",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:wave_start, phase:wave_end): bot_wins: the bot lost at tick 1690, 0 m into the track",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "survive",
+   "ms": 20585
+  },
+  {
+   "id": "pa-017",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "second"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:spawn_timer, phase:first, phase:second): RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; RULE_INVALID: /logic/timers/0: no rule starts timer spawn_timer – add a rule with {\"startTimer\":{\"timer\":\"spawn_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; RULE_INVALID: /rules/0/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; RULE_INVALID: /rules/1/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"shoot_asteroid\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"hit_asteroid\",\"verb\":\"hit\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"damage\":1},{\"despawn\":\"self\"}]},{\"id\":\"respawn_asteroid\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_timer\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"aster; rule verbs dropped: shoot, hit, spawn",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "survive",
+   "ms": 22486
+  },
+  {
+   "id": "pa-018",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "second"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:phase1, phase:first, phase:second): RULE_INVALID: /rules/0/when/phase: unknown phase first; rules as written: [{\"id\":\"spawnAsteroid\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"asteroid\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"spawnDebris\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"spaceDebris\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"asteroidHit\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"despawn\":\"other\"},{\"scor; RULE_INVALID: /rules/1/when/phase: unknown phase first; rules as written: [{\"id\":\"spawnAsteroid\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"asteroid\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"spawnDebris\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"spaceDebris\",\"count\":1,\"at\":\"edge\"}}]},{\"id\":\"asteroidHit\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"asteroid\"]},\"if\":null,\"do\":[{\"despawn\":\"other\"},{\"scor; rule verbs dropped: spawn, shoot",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "survive",
+   "ms": 12801
+  },
+  {
+   "id": "s002",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "play"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (var:items, phase:start, phase:play): ACTION_LOST: ghost obstacle knight has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase play – add a rule with {\"goPhase\":\"play\"}; rules as written: [{\"id\":\"spawn_keys\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"key1\",\"at\":\"player\"}}]},{\"id\":\"spawn_keys2\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"key2\",\"at\":\"player\"}}]},{\"id\":\"spawn_keys3\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"key3\",\"at\":\"player\"}}]},{\"id\":\"spawn_ghost\",\"verb\":\"; rule verbs dropped: spawn, collect, chase",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "collect",
+   "ms": 16104
+  },
+  {
+   "id": "s003",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "second"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:escape_timer, phase:first, phase:second): bot_wins: the bot lost at tick 122, -8 m into the track",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "escape",
+   "ms": 14535
+  },
+  {
+   "id": "s008",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:escape, phase:first, phase:second): bot_wins: the bot lost at tick 3326, 557 m into the track",
+   "fallbackReason": null,
+   "axis": "escape",
+   "ms": 15067
+  },
+  {
+   "id": "s056",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "running"
+   ],
+   "wroteLogic": true,
+   "why": "not authored (MALFORMED): counts.enemy: unsupported or out of bounds for drive",
+   "fallbackReason": "MALFORMED",
+   "axis": "race",
+   "ms": 7337
+  },
+  {
+   "id": "s058",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "running"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:wave, phase:start, phase:running): bot_wins: the bot lost at tick 186, 36 m into the track",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "race",
+   "ms": 13657
+  },
+  {
+   "id": "s155",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "active"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:wave, phase:start, phase:active): bot_wins: the bot lost at tick 3027, 0 m into the track",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "defend",
+   "ms": 10571
+  },
+  {
+   "id": "s188",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "second"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:phase_timer, phase:first, phase:second): ACTION_LOST: grandma fight pigeon has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"pigeon\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"spawn_gang\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"gang\",\"count\":3,\"at\":\"edge\"}}]},{\"id\":\"check_win\",\"verb\":\"check\",\"when\":{\"phase\":\"second\"},\"if\":[{\"counter\":{\"name\":\"health\",\"atLeast\":1,\"below\":1}}],\"do\":[{\"lose\"; RULE_INVALID: /logic/timers/0: no rule starts timer phase_timer – add a rule with {\"startTimer\":{\"timer\":\"phase_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"pigeon\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"spawn_gang\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"gang\",\"count\":3,\"at\":\"edge\"}}]},{\"id\":\"check_win\",\"verb\":\"check\",\"when\":{\"phase\":\"second\"},\"if\":[{\"counter\":{\"name\":\"health\",\"atLeast\":1,\"below\":1}}],\"do\":[{\"lose\"; RULE_INVALID: /rules/2/if/0/counter: give exactly one of atLeast or below; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"pigeon\",\"count\":5,\"at\":\"edge\"}}]},{\"id\":\"spawn_gang\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"gang\",\"count\":3,\"at\":\"edge\"}}]},{\"id\":\"check_win\",\"verb\":\"check\",\"when\":{\"phase\":\"second\"},\"if\":[{\"counter\":{\"name\":\"health\",\"atLeast\":1,\"below\":1}}],\"do\":[{\"lose\"; rule verbs dropped: spawn, check",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "defeat",
+   "ms": 21605
+  },
+  {
+   "id": "si-018",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "survive"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:survival, phase:start, phase:survive): read without it",
+   "fallbackReason": null,
+   "axis": "survive",
+   "ms": 11106
+  },
+  {
+   "id": "si-031",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:wave_timer, phase:first, phase:second): bot_wins: the bot lost at tick 4423, 2 m into the track",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "defeat",
+   "ms": 16174
+  },
+  {
+   "id": "u47",
+   "passed": false,
+   "rawPassed": false,
+   "phasesEntered": [
+    "action"
+   ],
+   "wroteLogic": true,
+   "why": "the game does not keep the answer's logic (timer:spawn_timer, phase:waiting, phase:action): verbs_proved: VERB_UNPROVED:spawn – no rule with the verb \"spawn\" fired while the bot played",
+   "fallbackReason": "VERB_UNPROVED",
+   "axis": "rescue",
+   "ms": 20658
+  }
+ ]
+}

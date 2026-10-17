@@ -112,8 +112,9 @@ describe('setting defaults', () => {
   });
 
   it('the foe of the place plays the role its genre gives an unnamed foe', () => {
-    // Výchozí obsazení: les dá vlka, žánr říká, co vlk dělá – plošinovka se mu vyhýbá, střílečka ho sestřelí.
-    expect(defaultFoe('dark forest', 'platformer')).toEqual({ label: 'wolf', does: 'avoid' });
+    // Výchozí obsazení: les dá vlka, žánr říká, co vlk dělá – střílečka ho sestřelí. Čemu se žánr jen
+    // vyhýbá, je překážka na trati, a ta je v lese kmen (P46D T6).
+    expect(defaultFoe('dark forest', 'platformer')).toEqual({ label: 'log', does: 'avoid' });
     expect(defaultFoe('dark forest', 'shooter')).toEqual({ label: 'wolf', does: 'shoot_at' });
     expect(defaultFoe('dark forest', 'duel')).toEqual({ label: 'wolf', does: 'fight' });
     expect(defaultFoe('village', 'timing')).toEqual({ label: 'wind', does: 'scenery' });

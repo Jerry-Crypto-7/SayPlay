@@ -33,9 +33,16 @@ export interface ActionWitness {
   readonly evidence: string;
 }
 
-const roleAt = (state: ArrayLike<number>, body: number): number => state[bodyBase(body) + BODY.role]!;
-const live = (state: ArrayLike<number>, body: number): boolean => (state[bodyBase(body) + BODY.flags]! & FLAG.alive) !== 0;
-const kindAt = (world: ArcadeWorld, state: ArrayLike<number>, body: number): string => world.kinds[state[bodyBase(body) + BODY.kind]!] ?? '';
+// Sloty jednou za modul: import pod vitestem čte každý přístup getterem a svědek prochází všechna těla každý tik.
+const FIRST_BODY = bodyBase(0);
+const STRIDE = bodyBase(1) - FIRST_BODY;
+const { role: ROLE_SLOT, flags: FLAGS_SLOT, kind: KIND_SLOT, x: X_SLOT, y: Y_SLOT, z: Z_SLOT } = BODY;
+const BODY_COUNT = HEADER.bodyCount;
+const ALIVE = FLAG.alive;
+const MOVED_SQUARED = UNIT * UNIT;
+const roleAt = (state: ArrayLike<number>, body: number): number => state[FIRST_BODY + body * STRIDE + ROLE_SLOT]!;
+const live = (state: ArrayLike<number>, body: number): boolean => (state[FIRST_BODY + body * STRIDE + FLAGS_SLOT]! & ALIVE) !== 0;
+const kindAt = (world: ArcadeWorld, state: ArrayLike<number>, body: number): string => world.kinds[state[FIRST_BODY + body * STRIDE + KIND_SLOT]!] ?? '';
 
 /** Bez hádání mezi více kandidáty. Neobsazené tělo nemůže dokazovat jméno z věty. */
 export function bindRoles(spec: GameSpecV1, world: ArcadeWorld): readonly RoleBinding[] {
@@ -66,10 +73,12 @@ const names = (name: string, binding: RoleBinding): boolean => name === 'hero' ?
   // target/actor renamed basketball. Specific ball identities remain distinct.
   noun(name) === 'ball' && binding.roleKind === 'item' && ['ball', 'physics_ball'].includes(binding.roleId) &&
   /^(?:basketball|football|soccer ball|golf ball)$/.test(binding.label.toLowerCase());
+/** Může vazba `binding` být aktérem trojice? Bez toho svědek s tímto aktérem trojici nepotvrdí (`matchesWitness`). */
+export const namesActor = (triple: IntentTriple, binding: RoleBinding): boolean => names(triple.actor, binding);
 export function matchesWitness(triple: IntentTriple, witness: ActionWitness): boolean {
   // Zachycení v sondě nesmí potvrdit cíl catch/escape/survive.
   if (witness.run === 'probe' && !['chaser', 'guard', 'hazard', 'obstacle', 'rival'].includes(triple.verb)) return false;
-  return triple.verb === witness.verb && names(triple.actor, witness.actor) && (triple.object === null || (witness.object !== null && names(triple.object, witness.object)));
+  return triple.verb === witness.verb && namesActor(triple, witness.actor) && (triple.object === null || (witness.object !== null && names(triple.object, witness.object)));
 }
 
 /** Sonda mění jen vstup hráče; svět, rychlosti i pravidla zůstávají stejné. */
@@ -225,6 +234,8 @@ export class WitnessRecorder {
   private readonly movementVerb: string | undefined;
   private readonly positions = new Map<number, { roleId: string; x: number; y: number; z: number }>();
   private readonly hurt = new Set<string>();
+  /** Pronásledovatelé, které pravidlo `pacing` odvolalo živé (finále P45C T12: s bossem odejdou), poté co se hnuli. */
+  private readonly departed: RoleBinding[] = [];
   /** Keepers of a composed game: `assembly_gate_*` latches a native win there as `stateChange` 1 until the parts are done. */
   private readonly latches: ReadonlySet<number>;
   private readonly start: readonly number[];
@@ -289,7 +300,7 @@ export class WitnessRecorder {
   }
 
   private binding(body: number, state: ArcadeState): RoleBinding | undefined {
-    if (body < 0 || body >= state[HEADER.bodyCount]!) return undefined;
+    if (body < 0 || body >= state[BODY_COUNT]!) return undefined;
     const code = roleAt(state, body);
     const kind = kindAt(this.world, state, body);
     const cached = this.resolved.get(body);
@@ -319,6 +330,11 @@ export class WitnessRecorder {
     const origin = this.origins.get(effect);
     if (ref === undefined || origin === undefined) return;
     const player = state[HEADER.player]!;
+    // Lovce, kterého finále průběhu odvolá živého, hráč přečkal: únik z něj dokáže i výhra, při které už na ploše není.
+    if (ref.id === 'pacing' && effect.kind === 'despawn' && roleAt(state, effect.body) === ROLE.chaser) {
+      const binding = this.binding(effect.body, state);
+      if (binding !== undefined && this.hasMoved(binding, state)) this.departed.push(binding);
+    }
     const launchBefore = origin.projectileBefore;
     if (launchBefore !== undefined && effect.kind === 'spawn' && effect.template === ref.params.template &&
         roleAt(launchBefore, effect.template) === ROLE.projectile && kindAt(this.world, launchBefore, effect.template) === 'bullet' &&
@@ -406,6 +422,8 @@ export class WitnessRecorder {
       if (ref.id === 'arena_catch_contact' && code === ROLE.enemy && this.binding(other, state) !== undefined && this.binding(player, state) !== undefined && this.hasMoved(this.binding(other, state)!, state) && this.hasMoved(this.binding(player, state)!, state)) this.add('catch', player, other, tick, 'moving-prey-contact', state);
       if (ref.id === 'arena_eat' && code === ROLE.enemy) this.add('catch', player, other, tick, 'contact-consumed', state);
     }
+    // Akce Grab (P46A) bere věc v dosahu bez dotyku: věc hry je sebraná stejně jako dotykem.
+    if (ref.id === 'ability_grab' && effect.kind === 'despawn' && (roleAt(state, effect.body) === ROLE.collectible || this.binding(effect.body, state)?.roleKind === 'collectible')) this.add('collect', player, effect.body, tick, 'grabbed-ability', state);
     if (effect.kind === 'despawn' && effect.body === origin.held && other >= 0 && other !== origin.held && ref.id === 'rule_contact') this.add('deliver', player, origin.held, tick, 'carried-to-destination', state);
     if (effect.kind === 'hit' && effect.amount > 0) {
       if (effect.by === player) {
@@ -426,7 +444,8 @@ export class WitnessRecorder {
     if (effect.kind === 'score' && effect.amount > 0) {
       this.add('score', player, null, tick, 'score-increased', state);
       if (ref.id === 'judge') {
-        const verb = this.control === 'rhythm' ? 'beat' : this.control === 'duel' ? 'duel' : this.world.control.params.mode === 'stack' ? 'stack' : 'time';
+        // Mód čte základní ovládání: nad průběhem (P45C T14) je ovládání světa `pacing_control`.
+        const verb = this.control === 'rhythm' ? 'beat' : this.control === 'duel' ? 'duel' : this.stack ? 'stack' : 'time';
         const target = [...this.bindings.values()].find(b => !b.player && (roleAt(state, b.body) === ROLE.enemy || roleAt(state, b.body) === ROLE.target));
         this.add(verb, player, target?.body ?? null, tick, 'successful-timing', state);
       }
@@ -435,7 +454,7 @@ export class WitnessRecorder {
     if (effect.kind === 'win' || effect.kind === 'stateChange' && effect.state === 1 && this.latches.has(effect.body)) {
       if ((ref.id === 'finish' || ref.id === 'finish_collected' || ref.id === 'rule_contact') && (code === ROLE.goal || ['exit', 'destination'].includes(this.binding(other, state)?.roleKind ?? ''))) this.add('reach', player, other, tick, 'finish-contact', state);
       if (ref.id === 'survive_time') this.add('survive', player, null, tick, 'survival-timer', state);
-      if (ref.id === 'judge' && this.control === 'timing' && this.world.control.params.mode === 'stack' && [...this.found.values()].some(w => w.verb === 'stack')) this.add('build', player, null, tick, 'stack-completed', state);
+      if (ref.id === 'judge' && this.stack && [...this.found.values()].some(w => w.verb === 'stack')) this.add('build', player, null, tick, 'stack-completed', state);
       if (ref.id === 'rival_finish' && 'land' in ref.params) {
         const goal = [...this.bindings.values()].find(b => roleAt(state, b.body) === ROLE.goal);
         if (goal !== undefined) this.add('land', player, goal.body, tick, 'safe-landing', state);
@@ -455,6 +474,11 @@ export class WitnessRecorder {
         if (effect.kind === 'lose') this.pendingLosses.push({ body: other, evidence: 'harmful-contact' });
         else this.harm(other, player, tick, 'harmful-contact', state);
       }
+      // Tělo chování (P45C) udeří z pravidla `pacing` (spouštěč `tick`, bez `other`): sonda úder připíše nejbližšímu sondovanému tělu.
+      if (ref.id === 'pacing' && this.run === 'probe') {
+        const striker = this.nearestPaced(state, player);
+        if (striker >= 0) this.harm(striker, player, tick, 'behaviour-strike', state);
+      }
       if (ref.id === 'rival_finish' && typeof ref.params.atZ === 'number') {
         for (const b of this.bindings.values()) {
           const base = bodyBase(b.body);
@@ -466,6 +490,20 @@ export class WitnessRecorder {
         if (live(state, rival) && state[bodyBase(rival) + BODY.z]! >= ref.params.atZ) this.pendingLosses.push({ body: rival, evidence: 'rival-finished-first' });
       }
     }
+  }
+
+  /** Nejbližší živé tělo s vazbou sondy průběhu (`pacing:*`) k hráči, nebo −1. */
+  private nearestPaced(state: ArcadeState, player: number): number {
+    const p = bodyBase(player);
+    let nearest = -1;
+    let distance = Number.POSITIVE_INFINITY;
+    for (let body = 0; body < state[HEADER.bodyCount]!; body += 1) {
+      if (!live(state, body) || this.binding(body, state)?.roleId.startsWith('pacing:') !== true) continue;
+      const b = bodyBase(body);
+      const squared = (state[b + BODY.x]! - state[p + BODY.x]!) ** 2 + (state[b + BODY.z]! - state[p + BODY.z]!) ** 2;
+      if (squared < distance) { nearest = body; distance = squared; }
+    }
+    return nearest;
   }
 
   private harm(body: number, player: number, tick: number, evidence: string, state: ArcadeState): void {
@@ -498,8 +536,8 @@ export class WitnessRecorder {
     if (this.moved.get(binding.roleId)?.has(binding.body)) return true;
     const start = this.positions.get(binding.body);
     if (start === undefined || start.roleId !== binding.roleId) return false;
-    const base = bodyBase(binding.body);
-    return (state[base + BODY.x]! - start.x) ** 2 + (state[base + BODY.y]! - start.y) ** 2 + (state[base + BODY.z]! - start.z) ** 2 >= UNIT * UNIT;
+    const base = FIRST_BODY + binding.body * STRIDE;
+    return (state[base + X_SLOT]! - start.x) ** 2 + (state[base + Y_SLOT]! - start.y) ** 2 + (state[base + Z_SLOT]! - start.z) ** 2 >= MOVED_SQUARED;
   }
 
   afterTick(before: ArcadeState, state: ArcadeState, tick: number): void {
@@ -525,7 +563,7 @@ export class WitnessRecorder {
     if (state[HEADER.runState] === RUN_STATE.lost) for (const loss of this.pendingLosses) this.harm(loss.body, player, tick, loss.evidence, state);
     this.pendingLosses.length = 0;
     const p = bodyBase(player);
-    for (let body = 0; body < state[HEADER.bodyCount]!; body += 1) {
+    for (let body = 0; body < state[BODY_COUNT]!; body += 1) {
       const binding = this.binding(body, state);
       if (binding === undefined) continue;
       if (!live(state, body)) {
@@ -590,7 +628,20 @@ export class WitnessRecorder {
         if ((threat.verb === 'chaser' || threat.verb === 'guard') && this.hasMoved(own, state)) this.add('escape', state[HEADER.player]!, body, tick, `survived-threat:${threat.runId}`, state);
         this.add('survive', state[HEADER.player]!, body, tick, `survived-threat:${threat.runId}`, state);
       }
+      for (const left of this.departed) {
+        if (left.roleId !== threat.actor.roleId) continue;
+        if (threat.verb === 'chaser' || threat.verb === 'guard') this.addLeft('escape', left, tick, `survived-threat:${threat.runId}`, state);
+        this.addLeft('survive', left, tick, `survived-threat:${threat.runId}`, state);
+      }
     }
     return this.finish('won');
+  }
+
+  /** Jako `add` s hráčem jako aktérem, ale předmět je vazba odvolaného těla (jeho slot mohl mezitím připadnout jinému). */
+  private addLeft(verb: string, what: RoleBinding, tick: number, evidence: string, state: ArcadeState): void {
+    const who = this.binding(state[HEADER.player]!, state);
+    if (who === undefined) return;
+    const key = `${verb}:${who.roleId}:${what.roleId}:${evidence}`;
+    if (!this.found.has(key)) this.found.set(key, { actor: who, verb, object: what, tick, evidence, run: this.run, runId: this.runId });
   }
 }

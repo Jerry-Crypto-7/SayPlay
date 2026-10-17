@@ -3,15 +3,17 @@ import { describe, expect, it } from 'vitest';
 import type { ArcadeLevel, ArcadeWorld, BodyInit } from '../contract';
 import { buildWorld } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { PLATFORM_DIFFICULTIES, type PlatformDifficulty, type PlatformLevelParams, maxGap, platformLevel, platformRules } from '../pieces/platform';
+import { PLATFORM, PLATFORM_DIFFICULTIES, type PlatformDifficulty, type PlatformLevelParams, maxGap, platformLevel, platformRules } from '../pieces/platform';
 import { platformBot } from '../pieces/platform-bot';
 import { verifyArcade } from '../verify';
 
 const params = (difficulty: PlatformDifficulty, extra: Partial<PlatformLevelParams> = {}): PlatformLevelParams => platformLevel.params.parse({ difficulty, ...extra });
 
-function worldOf(level: ArcadeLevel, p: PlatformLevelParams): ArcadeWorld {
+/** `speed` = nejvyšší rychlost běhu ovládání i robota (P46B T6: úsek průběhu ji mění, robot skáče podle ní). */
+function worldOf(level: ArcadeLevel, p: PlatformLevelParams, speed?: number): ArcadeWorld {
+  const run = speed === undefined ? {} : { speed };
   const built = buildWorld(
-    { seed: 1, control: { id: 'platform', params: { doubleJump: p.doubleJump } }, rules: platformRules(p), bot: { id: 'platform_bot', params: {} }, level },
+    { seed: 1, control: { id: 'platform', params: { doubleJump: p.doubleJump, ...run } }, rules: platformRules(p), bot: { id: 'platform_bot', params: run }, level },
     ARCADE_LIBRARY,
   );
   if (!built.ok) throw new Error(built.issues.join('; '));
@@ -31,6 +33,19 @@ describe('robot plošinovky a ověření', () => {
         const verdict = verify(seed * 104729, params(difficulty));
         expect(verdict.failures, `${difficulty}/${seed}`).toEqual([]);
         expect(verdict.bot.tick).toBeLessThanOrEqual(5400);
+      }
+    }
+  });
+
+  it('robot skáče rychlostí úseku: s během 90 % i 125 % projde stejná úroveň (P46B T6)', () => {
+    for (const percent of [90, 125]) {
+      const speed = Math.trunc((PLATFORM.maxRun * percent) / 100);
+      for (const difficulty of PLATFORM_DIFFICULTIES) {
+        for (let seed = 1; seed <= 10; seed += 1) {
+          const p = params(difficulty);
+          const verdict = verifyArcade(worldOf(platformLevel.generate(seed * 104729, p), p, speed));
+          expect(verdict.failures, `${percent} %/${difficulty}/${seed}`).toEqual([]);
+        }
       }
     }
   });

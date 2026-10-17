@@ -1,0 +1,141 @@
+{
+ "sentence": "racing car escapes police and shoots enemies",
+ "failure": {
+  "stage": "critic",
+  "reason": "UNREPAIRED",
+  "detail": "UNSUPPORTED: control steer does not play mechanic chaser; UNSUPPORTED: control steer does not play mechanic health; UNSUPPORTED: control steer does not play mechanic zone_trigger",
+  "raw": {
+   "schema": "gamespec.v1",
+   "control": "steer",
+   "controlParams": {
+    "difficulty": "easy",
+    "lengthM": 200,
+    "rivals": false,
+    "roadWidth": 3600,
+    "roadEntryWidth": 4000,
+    "crashBudget": 9,
+    "turbo": true,
+    "drift": false,
+    "segments": true,
+    "patterns": 1,
+    "style": "open"
+   },
+   "addons": [
+    "shoot",
+    "chaser"
+   ],
+   "abilities": [
+    "shoot"
+   ],
+   "boss": {
+    "name": "Enemy Commander",
+    "role": "enemy"
+   },
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ],
+   "title": "racing car escape",
+   "archetype": "chase_escape",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "Open country highway",
+    "mood": "fast",
+    "look": "meadow"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Reach the finish without being caught.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "chaser",
+     "params": {
+      "role": "chaser",
+      "speed": "slow",
+      "catchEffect": "damage"
+     }
+    },
+    {
+     "id": "health",
+     "params": {
+      "max": 9
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "role": "finish",
+      "when": "enter",
+      "effect": "win"
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "racing car",
+     "count": 1
+    },
+    {
+     "id": "barrier",
+     "kind": "hazard",
+     "label": "tire barrier",
+     "count": 1
+    },
+    {
+     "id": "turbo",
+     "kind": "collectible",
+     "label": "turbo",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line",
+     "count": 1
+    },
+    {
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "enemy",
+     "count": 1
+    },
+    {
+     "id": "chaser",
+     "kind": "chaser",
+     "label": "police",
+     "count": 1
+    },
+    {
+     "id": "police",
+     "kind": "chaser",
+     "label": "police",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Reach the finish without being caught.",
+    "controlsHint": "Drag/arrows steer. Second finger/Space fires. Down/S brakes. Avoid barriers."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "rules": []
+  }
+ }
+}

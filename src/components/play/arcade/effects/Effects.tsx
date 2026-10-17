@@ -43,10 +43,12 @@ import { playSfx } from '@/play/audio';
 
 import { HeroCueFx } from '../action-cue/HeroCueFx';
 import { type QualityTier, QUALITY_TIERS } from '../look/rig/quality';
+import { runnerPathOf } from '../runner/path';
 import type { ArcadeSession } from '../session';
-import { type EffectsBus, type VisualEventKind, createEffectsBus } from './bus';
-import { installRenderFeel, renderHeld } from './render-feel';
+import { type EffectsBus, type VisualEvent, type VisualEventKind, createEffectsBus } from './bus';
+import { installRenderFeel, renderHeld, renderTimeScale } from './render-feel';
 import { FeelCues } from './FeelCues';
+import { PacingFx } from './PacingFx';
 import { reducedMotion, shakeAmount, winTimeScale, winZoom } from './feel';
 import { type Burst, type BurstLook, PARTICLE_CAP, burstsOf, createParticleDirector } from './particles';
 import { busPresets } from './sound';
@@ -165,6 +167,7 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     };
     const director = createParticleDirector(spawn);
     const created = createEffectsBus(session);
+    const path = runnerPathOf(session.world);
     bus.current = created;
     const tierOf = (): QualityTier => {
       const tier = surface.current?.dataset.quality;
@@ -184,7 +187,12 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
       director.update(now);
       // Barva sběratelné věci ze scény, dokud nějaká stojí; pak poslední známá.
       if (events.some((event) => event.kind === 'pickup')) colors = { ...colors, collectible: bodyColorOf(scene, 'coin') ?? colors.collectible };
-      director.emit(events.flatMap((event) => burstsOf(event, colors)), now, PARTICLE_CAP[tierOf()]);
+      // Zakřivená trať běžce (P46D T3): částice vyletí tam, kde scéna tělo kreslí (x jádra je zrcadlené).
+      const bent = (event: VisualEvent): VisualEvent => {
+        const at = path?.(event.z);
+        return at === undefined ? event : { ...event, x: event.x - at.x, y: event.y + at.y };
+      };
+      director.emit(events.flatMap((event) => burstsOf(bent(event), colors)), now, PARTICLE_CAP[tierOf()]);
     });
     // Restart (tik zpět) zahodí i částice, které ještě letí.
     let seen = session.state()[HEADER.tick] as number;
@@ -220,7 +228,8 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     clock.current += delta * 1000;
     const reduced = reducedMotion();
     const sinceWin = clock.current - wonAt.current;
-    batch.update((renderHeld(session) ? 0 : delta) * winTimeScale(sinceWin, reduced));
+    // Zpomalení výhry a pádu bosse / konce finále (P46C T4): platí to pomalejší.
+    batch.update((renderHeld(session) ? 0 : delta) * Math.min(winTimeScale(sinceWin, reduced), renderTimeScale(session)));
     if (renderHeld(session)) return;
     // Přiblížení po výhře drží do restartu; jinak zoom 1 (i po restartu, který `wonAt` vrátí).
     const zoom = winZoom(sinceWin, reduced);
@@ -237,6 +246,6 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     camera.updateMatrixWorld();
   });
 
-  // Sebrání a doručení vidět u hrdiny v každé scéně (P43 T6).
-  return <><primitive object={batch} /><FeelCues session={session} /><HeroCueFx session={session} /></>;
+  // Sebrání a doručení vidět u hrdiny v každé scéně (P43 T6); varování průběhu a blízká minutí (P45C T15).
+  return <><primitive object={batch} /><FeelCues session={session} /><HeroCueFx session={session} /><PacingFx session={session} bus={bus} surface={surface} /></>;
 }

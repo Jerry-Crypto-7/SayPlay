@@ -15,9 +15,14 @@
  *   Kontrola tady předbíhá schéma o jeden krok a `detail` nese ta jména.
  */
 
+import { arcadeWorldOf } from '../arcade/compile';
+import { SEGMENT_NEWS } from '../arcade/pieces/pacing';
+import { logicSchema, rulesSchema, withPhaseEntries, withStartedTimers } from '../arcade/rules/schema';
 import { liveCells } from '../compose/allowed';
 import { recipeKey } from '../compose/recipe';
 import { recipeAnswerSchema, nativeRecipeParams, type RecipeAnswer } from './answer-schema';
+// Cyklus s `repair.ts` je bezpečný: `fitDirectorExtras` se volá jen ve funkci, ne při načtení.
+import { fitDirectorExtras } from './repair';
 
 import { draftGenreFor, twistGoalFor } from '../draft/draft';
 import { singular } from '../draft/lexicon';
@@ -43,10 +48,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /** Přísný režim píše chybějící volitelné pole jako `null`; spec ho chce vynechané. */
-function withoutNulls(value: unknown): unknown {
+export function withoutNulls(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(withoutNulls);
   if (isRecord(value)) return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== null).map(([name, item]) => [name, withoutNulls(item)]));
   return value;
+}
+
+/** Spec s doplněným vstupem do fáze, na kterou pravidlo reaguje (`withPhaseEntries`); beze změny, když není co doplnit. */
+function withEnteredPhases(input: unknown): unknown {
+  if (!isRecord(input)) return input;
+  // Logika bez jediného pravidla nic nedělá a `readGameSpec` by kvůli ní odmítl celou odpověď (demo 12. 10.: si-018).
+  if (input.logic !== undefined && (!Array.isArray(input.rules) || input.rules.length === 0)) {
+    const { logic: _, ...rest } = input;
+    return rest;
+  }
+  const rules = rulesSchema.safeParse(input.rules);
+  const logic = logicSchema.safeParse(input.logic);
+  if (!rules.success || !logic.success) return input;
+  const entered = withPhaseEntries(rules.data, logic.data);
+  const timed = withStartedTimers(entered, logic.data);
+  if (timed.rules === rules.data && timed.logic === logic.data) return input;
+  return { ...input, rules: timed.rules, ...(timed.logic === logic.data ? {} : { logic: timed.logic }) };
 }
 
 /** Neznámá `id` v `mechanics`, v pořadí výskytu; prázdné, když je pole nečitelné. */
@@ -114,7 +136,7 @@ export type RecipeRead = { readonly ok: true; readonly value: RecipeAnswer } | E
 export function readRecipeAnswer(body: unknown): RecipeRead {
   if (!isRecord(body)) return { ok: false, reason: 'NOT_AN_OBJECT', detail: `answer is ${Array.isArray(body) ? 'an array' : typeof body}` };
   const raw = answerSpec(body);
-  const cleaned = withoutNulls(raw) as Record<string, unknown>;
+  const cleaned = withKnownSegments(withoutNulls(raw)) as Record<string, unknown>;
   // In a triple null means untargeted, not an omitted field.
   if (Array.isArray(raw.unmet)) cleaned.unmet = raw.unmet.map(triple => isRecord(triple) ? { ...triple } : triple);
   const parsed = recipeAnswerSchema.safeParse(cleaned);
@@ -139,14 +161,21 @@ export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MOD
   const raw = answerSpec(body);
   const foreign = WORLD_DOC_KEYS.filter((key) => key in raw);
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
-  const read = readGenreSpec(withoutNulls(raw));
+  const read = readGenreSpec(withKnownSegments(withoutNulls(raw)));
   if (!read.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: read.issues.join('; ') };
   const genre = sentence === undefined ? singularRoles(read.value) : ammoOfSentence(goalOfSentence(rideOfSentence(singularRoles(read.value), sentence), sentence, reading, modules), sentence, reading, modules);
   const game = compileGenreSpec(genre, modules);
   if (!game.ok) return game;
   // Věta mimo hry (P37A T5): AI verze řekne cíl slovy věty jako návrh („Dodge the long queues!“).
   const goal = sentence === undefined ? null : twistGoalFor(sentence, genre, reading, modules);
-  return { ok: true, spec: goal === null ? game.spec : { ...game.spec, tutorial: { ...game.spec.tutorial, goalLine: goal } }, genre };
+  return { ok: true, spec: goal === null ? game.spec : { ...game.spec, tutorial: { ...game.spec.tutorial, goalLine: goal } }, genre: fitDirectorExtras(genre, game.spec.control) };
+}
+
+/** Změny úseků mimo slovník (`SEGMENT_NEWS`) pryč – neznámá změna je zahozená, ne důvod odmítnout odpověď (P46E T3). */
+function withKnownSegments(value: unknown): unknown {
+  if (!isRecord(value) || !Array.isArray(value.segments)) return value;
+  const known: readonly unknown[] = SEGMENT_NEWS;
+  return { ...value, segments: value.segments.filter((news) => known.includes(news)) };
 }
 
 /**
@@ -236,7 +265,8 @@ export function answerRules(body: unknown): readonly unknown[] | null {
  */
 export function withoutAnswerRules(body: unknown): unknown {
   if (!isRecord(body)) return body;
-  const { rules: _rules, things: _things, ...rest } = answerSpec(body);
+  // Blok `logic` (P45B T10) bez pravidel by byl mrtvá deklarace – jde pryč s nimi.
+  const { rules: _rules, things: _things, logic: _logic, ...rest } = answerSpec(body);
   return answerSpec(body) === body ? rest : { ...body, spec: rest };
 }
 
@@ -250,8 +280,15 @@ export function compileGenreSpec(genre: GenreSpec, modules: GenreModules = GENRE
  * totéž (B-R6). Od B-R8 model smí všechny spouštěče; meze `interact` soudí
  * `ruleIssues` v `readGameSpec`, takže platí i pro přenos, který schéma
  * odpovědi neposílá (Messages).
+ *
+ * Fáze, na kterou pravidlo reaguje a nic do ní nevede, dostane vstupní pravidlo
+ * (`withPhaseEntries`, P45B T11) – gpt-oss-20b fázi deklaruje, ale přepnutí do ní
+ * vynechá. Platí jen, když spec s ním projde a svět ho unese: strop pravidel jádra
+ * počítá i vestavěná pravidla hry (`arcade/compile.ts`). Jinak se čte, jak ho model napsal.
  */
 export function readModelSpec(input: unknown): DirectorRead {
-  const result = readGameSpec(input);
+  const entered = withEnteredPhases(input);
+  const repaired = entered === input ? null : readGameSpec(entered);
+  const result = repaired?.ok === true && arcadeWorldOf(repaired.value, 1).ok ? repaired : readGameSpec(input);
   return result.ok ? { ok: true, spec: result.value } : { ok: false, reason: result.reason, detail: result.issues.join('; ') };
 }

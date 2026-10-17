@@ -22,11 +22,13 @@ class PrecheckRejected(RuntimeError):
     pass
 
 
-def check(noun: str, image: Path, out_dir: Path = OUT_DIR) -> dict:
+def check(
+    noun: str, image: Path, out_dir: Path = OUT_DIR, judge: str = "codex"
+) -> dict:
     """`{"verdict", …}` obrázku, který prošel; `PrecheckRejected`, když by ho soudce shodil.
 
-    Bez odpovědi Codexu (limit, pád) vrátí `unavailable` a karta pracuje dál – soud po 3D
-    model stejně uvidí.
+    Bez odpovědi soudce (limit, pád) vrátí `unavailable` a karta pracuje dál – soud po 3D
+    model stejně uvidí. `judge="claude"` (P46F) se ptá Opus 5.5 místo Codexu.
     """
     try:
         run = subprocess.run(
@@ -39,6 +41,8 @@ def check(noun: str, image: Path, out_dir: Path = OUT_DIR) -> dict:
                 noun,
                 "--out",
                 str(out_dir),
+                "--judge",
+                judge,
             ],
             cwd=ROOT,
             check=False,

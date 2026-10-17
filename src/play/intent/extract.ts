@@ -20,7 +20,7 @@
 
 import { familyOf } from '../genre/families';
 import { vocabVerb } from '../vocab';
-import { NUMBER_WORDS, nounPhrase, readCountedNouns, readLives, RED_LIGHT, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
+import { NUMBER_WORDS, negationScopes, nounPhrase, readCountedNouns, readLives, RED_LIGHT, ROAD, singular, toolsOf, withoutPossessor } from '../draft/lexicon';
 
 import { type ActionId, HERO, type Intent, type IntentAction, type IntentAxis, type MoveId, type ObjectiveId, type ThreatId } from './contract';
 
@@ -483,23 +483,8 @@ interface Boundary {
 }
 const BOUNDARY = /[,.;:!?]|\b(?:and|but|or|while|whilst|where|when|whenever|then|so|that|who|which|until|before|after|because|if|unless)\b/g;
 
-/** Kde začíná zápor a kam sahá: „without guns“, „no shooting“, „doesn't jump“ – do konce klauze. */
-const NEGATION =
-  /(?<!\bsay(?:s|ing)? )\b(?:without|no|not|never|don'?t|doesn'?t|didn'?t|can'?t|cannot|won'?t|isn'?t|aren'?t|shouldn'?t|mustn'?t|do not|does not|did not|can not|must not|should not)\b(?!-)(?! (?:be |being |get |getting )?(?:seen|spotted|caught|noticed|detected|waking)\b)(?! (?:one|matter|more than|longer|way|only|stops?|stopping|give up|gives up|giving up|quits?|quitting)\b)/g;
-const NEGATION_END = /[,.;:!?]|\b(?:and|but|while|where|when|then|so|that|who|which|because|until|before|after|instead|with)\b/;
 /** Hrozba je vypnutá jen záporem přímo před ní („no guards“, „without any rivals“). */
 const NEGATED_NOUN = /\b(?:no|without)(?: (?:any|other|more|the))* $/;
-
-function negationScopes(text: string): (readonly [number, number])[] {
-  return [...text.matchAll(NEGATION)].map((match) => {
-    const from = match.index + match[0].length;
-    // A nominal colour exclusion does not prohibit the following purpose.
-    const nominalPurpose = /^\s+(?:red|blue|green|yellow|black|white|orange|purple|pink|brown|gr[ae]y)\s+to\s/.exec(text.slice(from));
-    if (nominalPurpose !== null) return [from, from + nominalPurpose[0].indexOf(' to ')] as const;
-    const end = NEGATION_END.exec(text.slice(from));
-    return [from, end === null ? text.length : from + end.index] as const;
-  });
-}
 
 /** Přídavná jména na -ing, která sloveso nejsou („a boring game“). */
 const ING_ADJECTIVES = new Set(['boring', 'amazing', 'interesting', 'relaxing', 'exciting', 'thrilling', 'challenging', 'calming', 'satisfying', 'annoying', 'frustrating', 'charming', 'stunning', 'terrifying', 'fascinating', 'entertaining', 'addicting', 'engaging', 'rewarding', 'refreshing', 'soothing', 'inspiring', 'amusing', 'neverending', 'everlasting', 'thinking']);

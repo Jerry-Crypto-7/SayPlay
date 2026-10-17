@@ -1,0 +1,25 @@
+{
+ "about": "P46A T2: 20 sentences written on 2026-10-12 for the verb-to-action gauge – every one names an action the hero should do on a button (shoot, fight, steal, dash, block). Written before any P46 change, never taken from the P45 panel, the P45 sealed set or test-200. Tune on these and the P45 panel only.",
+ "sentences": [
+  { "id": "a01", "text": "A rabbit steals carrots and runs from a fox" },
+  { "id": "a02", "text": "Amanita mushrooms fight against bulls, flee from them, and shoot them." },
+  { "id": "a03", "text": "Racing car escaping and shooting enemies" },
+  { "id": "a04", "text": "racing car escapes police and shoots enemies" },
+  { "id": "a05", "text": "A knight runs through a castle and punches goblins" },
+  { "id": "a06", "text": "A raccoon grabs pizza slices while dodging trash trucks" },
+  { "id": "a07", "text": "A ninja dashes over rooftops and kicks robot guards" },
+  { "id": "a08", "text": "A turtle blocks falling rocks with its shell on a mountain road" },
+  { "id": "a09", "text": "A pirate jumps between ships and fights skeleton sailors" },
+  { "id": "a10", "text": "A cat burglar sneaks through a museum and steals diamonds" },
+  { "id": "a11", "text": "A spaceship races through an asteroid field shooting aliens" },
+  { "id": "a12", "text": "A boxer kangaroo hops across the outback punching snakes" },
+  { "id": "a13", "text": "A squirrel snatches acorns from crows in a windy forest" },
+  { "id": "a14", "text": "A motorbike dodges cars on a highway and blasts drones" },
+  { "id": "a15", "text": "A goalkeeper robot defends the city gate from flying meteors" },
+  { "id": "a16", "text": "A cowboy rides through the desert shooting bandits" },
+  { "id": "a17", "text": "A penguin slides on ice and slaps seals out of the way" },
+  { "id": "a18", "text": "A thief on a skateboard grabs gold coins and escapes the police" },
+  { "id": "a19", "text": "A samurai frog jumps over lily pads and slashes dragonflies" },
+  { "id": "a20", "text": "A bee shields its hive from wasps before the storm" }
+ ]
+}

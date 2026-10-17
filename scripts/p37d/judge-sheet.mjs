@@ -5,10 +5,13 @@
  *
  *   node scripts/p37d/judge-sheet.mjs --record <batch.json> --out <adresář> [--concurrency 3]
  *     [--aliases <aliases.json>] [--batch-out <catalog-batch.json> [--viewed <pilot.json>]]
- *   node scripts/p37d/judge-sheet.mjs --precheck <image.png> --noun <jméno> --out <adresář>
+ *     [--judge codex|claude]
+ *   node scripts/p37d/judge-sheet.mjs --precheck <image.png> --noun <jméno> --out <adresář> [--judge codex|claude]
  *
  * `--precheck` (P45E T2) se zeptá na jeden 2D obrázek před TRELLIS stejnou cestou a shodou;
  * volá ho `ops/gen3d/precheck.py`.
+ * `--judge claude` (P46F T2) se ptá Opus 5.5 přes `claude -p` na předplatné místo Codexu – stejná
+ * otázka, stejné schéma, stejný prázdný adresář jen se `sheet.png`; výchozí soudce zůstává `codex`.
  * `--aliases` je `{ "jméno": ["synonymum", …] }` (`evals/play/p37d/aliases.json`): odpověď
  * se porovná se všemi jmény záznamu a synonyma jdou v dávce do `nouns`.
  * `--batch-out` zapíše dávku `catalog-batch.v1` (`src/play/assets/batch.ts`) pro
@@ -62,12 +65,26 @@ export const ANSWER_SCHEMA = {
   },
 };
 
-/** Jméno dávky a odpověď soudce: všechna slova jména v odpovědi, nebo stejná hlava. */
+/**
+ * Slova, která jen popisují vzhled (barva, materiál, velikost, stáří) – „wooden bench“ smí být
+ * „snowy bench“, „dog statue“ „jaguar statue“ ne (P47C, ~25 sporných přijetí P46I).
+ */
+const LOOK_WORDS = new Set(('red green blue yellow orange purple pink brown black white grey gray gold golden silver '
+  + 'wooden wood stone metal metallic iron steel plastic glass rock clay brick concrete marble bronze copper leather '
+  + 'small large big tall short giant huge tiny little old ancient rusty broken toy cartoon simple round square mossy '
+  + 'snowy frozen icy wet dry dark bright colorful colourful painted carved decorative ornate rustic vintage antique '
+  + 'stylized low poly lowpoly 3d model miniature').split(' '));
+
+/**
+ * Jméno dávky a odpověď soudce: všechna slova jména v odpovědi, nebo stejná hlava, když
+ * ostatní slova odpovědi jsou ze jména nebo jen popisují vzhled.
+ */
 export function matches(noun, guess) {
   const want = wordsOf(noun.replaceAll('-', ' '));
   const got = wordsOf(guess.replaceAll('-', ' '));
   if (want.length === 0 || got.length === 0) return false;
-  return want.every((word) => got.includes(word)) || want.at(-1) === got.at(-1);
+  if (want.every((word) => got.includes(word))) return true;
+  return want.at(-1) === got.at(-1) && got.slice(0, -1).every((word) => want.includes(word) || LOOK_WORDS.has(word));
 }
 
 /**
@@ -140,34 +157,94 @@ export async function catalogBatch(models, results, viewed = new Map(), aliases 
   return { schema: 'catalog-batch.v1', entries };
 }
 
-/** `codex.cmd` by šel jen přes shell, který otázku rozseká na slova; `codex.js` přímo přes node ne (vzor `scripts/codex-shim.mjs`). */
-const CODEX = process.platform === 'win32'
-  ? { file: process.execPath, prefix: [path.join(process.env.APPDATA ?? '', 'npm', 'node_modules', '@openai', 'codex', 'bin', 'codex.js')] }
-  : { file: 'codex', prefix: [] };
+/**
+ * `codex.cmd` by šel jen přes shell, který otázku rozseká na slova; `codex.js` přímo přes node ne (vzor `scripts/codex-shim.mjs`).
+ * `claude.cmd` jen volá nativní `claude.exe` vedle sebe – ten jde spustit přímo.
+ */
+const JUDGES = process.platform === 'win32'
+  ? {
+    codex: { file: process.execPath, prefix: [path.join(process.env.APPDATA ?? '', 'npm', 'node_modules', '@openai', 'codex', 'bin', 'codex.js')] },
+    claude: { file: path.join(process.env.APPDATA ?? '', 'npm', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe'), prefix: [] },
+  }
+  : { codex: { file: 'codex', prefix: [] }, claude: { file: 'claude', prefix: [] } };
+
+export const CLAUDE_MODEL = 'claude-opus-5-5';
+
+/** Claude obrázek nedostane jako přílohu, otevře si ho sám nástrojem Read; zbytek otázky je stejný jako pro Codex. */
+const READ_FIRST = 'First open sheet.png in the current directory with the Read tool – that file is the attached image. ';
 
 /**
  * Soudce vidí cestu k obrázku i svůj pracovní adresář; list `ramp.png` vedle `glb-list.json`
  * mu jméno prozradil (dveře nazval „ramp“, 3. 10.). Každá otázka proto dostane prázdný
  * adresář s `sheet.png`, a odpověď se přesune pod jméno až potom.
+ * Claude (P46F) dostane schéma v argumentu a `--safe-mode`: bez CLAUDE.md, hooků, pluginů,
+ * paměti a MCP, jediný nástroj Read – nic z projektu mu jméno nepošeptá.
  */
-export function blindQuestion(sheet, schemaFile, question = QUESTION) {
+export function blindQuestion(sheet, schemaFile, question = QUESTION, judge = 'codex') {
   const cwd = mkdtempSync(path.join(os.tmpdir(), 'judge-'));
   copyFileSync(sheet, path.join(cwd, 'sheet.png'));
+  if (judge === 'claude') {
+    const schema = readFileSync(schemaFile, 'utf8');
+    const args = ['-p', '--safe-mode', '--strict-mcp-config', '--tools', 'Read', '--allowedTools', 'Read', '--no-session-persistence', '--model', CLAUDE_MODEL, '--output-format', 'json', '--json-schema', schema, READ_FIRST + question];
+    return { cwd, args };
+  }
   copyFileSync(schemaFile, path.join(cwd, 'schema.json'));
   const args = ['exec', '--skip-git-repo-check', '--ephemeral', '-s', 'read-only', '-c', 'tools.web_search=false', '-i', 'sheet.png', '--output-schema', 'schema.json', '-o', 'answer.json', question];
   return { cwd, args };
 }
 
-/** Jedna otázka soudci nad listem; `answerFile` dostane odpověď, když codex nějakou zapsal. */
-export function ask(sheet, schemaFile, answerFile, question = QUESTION) {
-  const { cwd: blind, args } = blindQuestion(sheet, schemaFile, question);
+const isAnswer = (value) => typeof value?.name === 'string' && Array.isArray(value.alternatives) && typeof value.recognizable === 'boolean' && typeof value.intact === 'boolean';
+
+/** První objekt `{…}` v textu, který je odpovědí podle schématu – model kolem JSONu občas napíše větu. */
+function answerIn(text) {
+  for (let start = text.indexOf('{'); start !== -1; start = text.indexOf('{', start + 1)) {
+    for (let end = text.lastIndexOf('}'); end > start; end = text.lastIndexOf('}', end - 1)) {
+      try {
+        const value = JSON.parse(text.slice(start, end + 1));
+        if (isAnswer(value)) return value;
+      } catch { /* zkus kratší úsek */ }
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Odpověď z výstupu `claude -p --output-format json`: `structured_output`, jinak JSON v textu
+ * `result`. Nenulový exit nebo `is_error` (vyčerpaný limit, pád) = žádná odpověď a `error`
+ * nese hlášku – smyčka P46F z ní čte čas obnovení limitu.
+ */
+export function claudeAnswer(code, stdout) {
+  let envelope;
+  try {
+    envelope = JSON.parse(stdout);
+  } catch {
+    envelope = undefined;
+  }
+  const text = typeof envelope?.result === 'string' ? envelope.result : envelope ? '' : stdout;
+  if (code !== 0 || envelope?.is_error) return { error: (text || stdout).trim().slice(-400) };
+  const answer = isAnswer(envelope?.structured_output) ? envelope.structured_output : answerIn(text);
+  return answer ? { answer } : { error: `no schema JSON in: ${text.trim().slice(-400)}` };
+}
+
+/** Jedna otázka soudci nad listem; `answerFile` dostane odpověď, když soudce nějakou dal. */
+export function ask(sheet, schemaFile, answerFile, question = QUESTION, judge = 'codex') {
+  const { cwd: blind, args } = blindQuestion(sheet, schemaFile, question, judge);
+  const { file, prefix } = JUDGES[judge];
   return new Promise((done) => {
     const started = Date.now();
-    const child = spawn(CODEX.file, [...CODEX.prefix, ...args], { cwd: blind, stdio: ['ignore', 'ignore', 'pipe'] });
+    const child = spawn(file, [...prefix, ...args], { cwd: blind, stdio: ['ignore', judge === 'claude' ? 'pipe' : 'ignore', 'pipe'] });
     let stderr = '';
+    let stdout = '';
+    child.stdout?.on('data', (chunk) => { stdout += chunk; });
     child.stderr.on('data', (chunk) => { stderr += chunk; });
-    child.on('exit', (code) => {
-      if (existsSync(path.join(blind, 'answer.json'))) copyFileSync(path.join(blind, 'answer.json'), answerFile);
+    child.on('error', (error) => { stderr += error.message; });
+    // Claude: `close` počká na celý stdout. Codex odpovídá souborem a vnuk codexu může stderr chvíli držet – `exit` jako dřív.
+    child.on(judge === 'claude' ? 'close' : 'exit', (code) => {
+      if (judge === 'claude') {
+        const { answer, error } = claudeAnswer(code, stdout);
+        if (answer) writeFileSync(answerFile, JSON.stringify(answer));
+        else stderr = `${error}${stderr ? ` | ${stderr}` : ''}`;
+      } else if (existsSync(path.join(blind, 'answer.json'))) copyFileSync(path.join(blind, 'answer.json'), answerFile);
       // Vnuk codexu může adresář ještě chvíli držet (EBUSY, 4. 10.); prázdný adresář v tempu nevadí.
       try {
         rmSync(blind, { recursive: true, force: true, maxRetries: 3, retryDelay: 300 });
@@ -181,18 +258,18 @@ export function ask(sheet, schemaFile, answerFile, question = QUESTION) {
  * Jeden obrázek, jedna slepá otázka (`ops/gen3d/precheck.py`); odpověď a verdikt jdou do
  * `<out>/precheck.jsonl` a jako poslední řádek na výstup. Bez odpovědi `unavailable`.
  */
-async function precheck(image, noun, out, names) {
+async function precheck(image, noun, out, names, judge) {
   const schemaFile = path.join(out, 'answer-schema.json');
   writeFileSync(schemaFile, JSON.stringify(ANSWER_SCHEMA));
   mkdirSync(path.join(out, 'answers'), { recursive: true });
   const answerFile = path.join(out, 'answers', `${slug(noun)}-${Date.now()}.json`);
-  const run = await ask(image, schemaFile, answerFile, IMAGE_QUESTION);
+  const run = await ask(image, schemaFile, answerFile, IMAGE_QUESTION, judge);
   let line;
   try {
     const answer = JSON.parse(readFileSync(answerFile, 'utf8'));
-    line = { noun, verdict: verdictOf(names, answer), answer, seconds: run.seconds };
+    line = { noun, verdict: verdictOf(names, answer), answer, seconds: run.seconds, judge };
   } catch {
-    line = { noun, verdict: 'unavailable', error: `codex exit ${run.code}: ${run.stderr}`, seconds: run.seconds };
+    line = { noun, verdict: 'unavailable', error: `${judge} exit ${run.code}: ${run.stderr}`, seconds: run.seconds, judge };
   }
   appendFileSync(path.join(out, 'precheck.jsonl'), `${JSON.stringify(line)}\n`);
   console.log(JSON.stringify(line));
@@ -203,6 +280,8 @@ async function main() {
   const flag = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
   const out = path.resolve(flag('--out', 'D:/caches/p37d/pilot'));
   const concurrency = Number(flag('--concurrency', '3'));
+  const judge = flag('--judge', 'codex');
+  if (!JUDGES[judge]) throw new Error(`--judge ${judge}: codex or claude`);
   assertNotTrainingDir(out);
   mkdirSync(path.join(out, 'answers'), { recursive: true });
   const aliasFile = flag('--aliases');
@@ -211,7 +290,7 @@ async function main() {
 
   const image = flag('--precheck');
   if (image) {
-    await precheck(path.resolve(image), flag('--noun'), out, namesOf(flag('--noun')));
+    await precheck(path.resolve(image), flag('--noun'), out, namesOf(flag('--noun')), judge);
     return;
   }
 
@@ -232,15 +311,15 @@ async function main() {
   const worker = async () => {
     for (let record = queue.shift(); record !== undefined; record = queue.shift()) {
       const answerFile = path.join(out, 'answers', `${slug(record.noun)}.json`);
-      const run = await ask(path.join(sheets, `${slug(record.noun)}.png`), schemaFile, answerFile);
+      const run = await ask(path.join(sheets, `${slug(record.noun)}.png`), schemaFile, answerFile, QUESTION, judge);
       let answer;
       try {
         answer = JSON.parse(readFileSync(answerFile, 'utf8'));
       } catch {
-        results[record.noun] = { error: `codex exit ${run.code}: ${run.stderr}`, seconds: run.seconds };
+        results[record.noun] = { error: `${judge} exit ${run.code}: ${run.stderr}`, seconds: run.seconds, judge };
         continue;
       }
-      results[record.noun] = { answer, verdict: verdictOf(namesOf(record.noun), answer), seconds: run.seconds };
+      results[record.noun] = { answer, verdict: verdictOf(namesOf(record.noun), answer), seconds: run.seconds, judge };
       writeFileSync(resultFile, `${JSON.stringify(results, null, 1)}\n`);
       console.log(`${record.noun}: ${answer.name} [${answer.alternatives.join(', ')}] -> ${results[record.noun].verdict}`);
     }

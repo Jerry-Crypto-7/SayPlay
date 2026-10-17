@@ -1,0 +1,176 @@
+{
+ "id": "d16",
+ "sentence": "an owl delivers letters across a snowy mountain village",
+ "axis": "collect",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:42:16.491Z",
+ "ms": 10157,
+ "answer": {
+  "plan": "Create a quest‑style spatial delivery game where an owl must deliver letters across a snowy mountain village while avoiding wolves and collecting coins.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "owl",
+   "cast": [
+    {
+     "label": "letter",
+     "does": "reach",
+     "verb": "deliver",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "wolf",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": true
+    },
+    {
+     "label": "coin",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "snowy mountain village",
+   "palette": "snow",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "target": 1
+   },
+   "ruleRoles": [
+    {
+     "id": "letter",
+     "kind": "target",
+     "label": "letter",
+     "count": 1
+    },
+    {
+     "id": "wolf",
+     "kind": "chaser",
+     "label": "wolf",
+     "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 5
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "pickup_letter",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "letter"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      }
+     ]
+    },
+    {
+     "id": "drop_letter",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "letter"
+      ]
+     },
+     "if": [
+      {
+       "holding": "letter"
+      }
+     ],
+     "do": [
+      {
+       "release": true
+      },
+      {
+       "win": true
+      }
+     ]
+    },
+    {
+     "id": "wolf_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "wolf"
+      ]
+     },
+     "if": [
+      {
+       "holding": "letter"
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    },
+    {
+     "id": "collect_coin",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "coin"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "score": 10
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "day"
+     }
+    ],
+    "phases": [
+     {
+      "id": "day"
+     },
+     {
+      "id": "night"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

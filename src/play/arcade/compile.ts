@@ -13,10 +13,13 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
-import { type ArcadeParts, addonControlParams, addonLives, applyAddons, mapUnderlying, underlyingRule } from './addons';
+import { type ArcadeParts, addonControlParams, addonLives, applyAddons, baseControlOf, mapUnderlying, underlyingRule } from './addons';
+import { applyAbilities } from './abilities';
+import { placePowerups, wantsPowerups } from './powerups/placement';
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
+  ARCADE_RUNTIME_V2,
   ARCADE_RUNTIME_VERSION,
   type ArcadeLevel,
   type ArcadeWorld,
@@ -35,12 +38,13 @@ import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHas
 import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { progressionParts } from './pieces/progression-parts';
+import { pacingParts } from './pieces/pacing-parts';
 import { assemblyGate, assemblyParts } from './pieces/assembly-parts';
 import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
 import { ballPitch } from './pieces/ball';
 import { rapierIfLoaded } from './physics/world';
-import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
+import { ARENA, arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
 import { platformControlRef, platformLevel, platformRules, platformSeconds } from './pieces/platform';
 import { runnerTrack } from './pieces/runner';
@@ -48,14 +52,16 @@ import { duelParts } from './pieces/duel';
 import { rhythmParts } from './pieces/rhythm';
 import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
 import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
-import { throwBudgetIn, throwField, throwParts } from './pieces/throw';
+import { throwField, throwParamsFor, throwParts } from './pieces/throw';
 import { timingParts } from './pieces/timing';
-import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
-import { runBot } from './verify';
+import { type CompiledRule, compileRules, logicNames, rulesOwnGoal, yardParts } from './rules/compile';
+import { rememberBotRun, runBot } from './verify';
 import { bindRoles, type RoleBinding } from './witness';
 
-/** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra. */
-export const ARCADE_COMPILER_VERSION = `${GAME_COMPILER_VERSION}/${ARCADE_RUNTIME_VERSION}`;
+/** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra, kterou svět nese (P45B: svět s logikou nebo vlnou je `arcade-v3`). */
+export const arcadeCompilerVersion = (world: Pick<ArcadeWorld, 'runtimeVersion'>): string => `${GAME_COMPILER_VERSION}/${world.runtimeVersion}`;
+/** Verze hry bez logiky – všech her před P45B. */
+export const ARCADE_COMPILER_VERSION = arcadeCompilerVersion({ runtimeVersion: ARCADE_RUNTIME_V2 });
 
 export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld; readonly roleBindings: readonly RoleBinding[] } | { readonly ok: false; readonly issues: readonly string[] };
 
@@ -100,7 +106,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
       bot: { id: 'platform_bot', params: {} },
       level,
       // Úroveň z úseků má hodiny: nečinný hráč na startu prohraje (P36A T4).
-      rules: platformRules(params, health, params.sections === undefined ? undefined : platformSeconds(level, params.difficulty)),
+      rules: platformRules(params, health, params.sections === undefined ? undefined : platformSeconds(level, params.difficulty, params.segments === true)),
     };
   }
   if (spec.control === 'steer') {
@@ -135,8 +141,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const clock = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
     // The opt-in pace ratio keeps the authored work budget, but the actual timer
     // and HUD use the shorter deadline. Without it the legacy remix clamp is unchanged.
-    const fitted = params.budget === undefined || clock?.onEnd !== 'lose' ? params : { ...params, budget: Math.min(params.budget, throwBudgetIn(limitSeconds(params.paceBudgetPct === undefined ? clock.seconds : Math.ceil(clock.seconds * 100 / params.paceBudgetPct)))) };
-    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, fitted), health: undefined };
+    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, throwParamsFor(params, clock)), health: undefined };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });
   // Se životy náraz ubere život, překážka zmizí, běh jede dál a vteřinu milosti další náraz nic nebere (P36A T2).
@@ -210,14 +215,22 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   const base = { ...plain, controlParams: addonControlParams(plain) } as GameSpecV1;
   // Pravidla, která sama vyhrávají, hrají na dvorku místo arény (P29A, `rules/compile.ts`).
   const generated = mode !== undefined ? mode.parts(seed, params?.data, health) : rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
-  const own = progressionParts(generated, spec);
+  const own = pacingParts(progressionParts(generated, spec), spec, seed, generator);
   // Pahýl módu vrací prázdnou úroveň s issue; doplňky by z ní četly tělo hráče (revize T4 kolo 2).
   if (own.issues !== undefined && own.issues.length > 0) return { ok: false, issues: own.issues };
   const lives = 'health' in own ? own.health : health;
-  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(applyAddons(own, { spec, seed, health: lives }), spec, ARCADE_LIBRARY.rules);
+  // Akce hrdiny (P46A) po doplňcích: střelba převezme blaster, který `+shoot` už dal.
+  const addonContext = { spec, seed, health: lives };
+  const armed = applyAbilities(applyAddons(own, addonContext), addonContext);
+  // Power-upy (P46C) po akcích: štít sdílí jejich počítadlo. Jen nová hra žánru, uložené hrají jako dřív.
+  const powered = wantsPowerups(spec) ? placePowerups(armed, spec, seed) : armed;
+  const { control, bot, level: baseLevel, rules, issues } = assemblyParts(powered, spec, ARCADE_LIBRARY.rules);
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
-  // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění.
-  const ruled = compileRules(spec, baseLevel, seed);
+  // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění. Volný pohyb má
+  // čtvercovou podlahu (dvorek, aréna) – její okraj je místo vlny `edge` (P45B).
+  const moving = baseControlOf(control);
+  const floor = moving.id === 'move_free' ? ((moving.params as { readonly half?: number }).half ?? ARENA.half) : undefined;
+  const ruled = compileRules(spec, baseLevel, seed, floor);
   if (ruled.issues.length > 0) return { ok: false, issues: ruled.issues };
   const level = ruled.level;
   const builtIn = rules.length + (timer?.onEnd === 'lose' ? 1 : 0);
@@ -227,15 +240,39 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   }
   // Složená hra (P42): výhra pravidla specu i cílového skóre počká v obalu, až budou hotové díly.
   const gate = assemblyGate(rules, ARCADE_LIBRARY.rules);
-  rules.push(...ruled.rules.map(gate));
+  // Časovač, fáze a událost obal nemají (P45B R1): pravidlo bez výhry hraje vedle dílů beze změny,
+  // výhru by obal nepodržel – složená hra ji odmítne.
+  const triggerOf = (ref: PieceRef): string => ARCADE_LIBRARY.rules[ref.id]!.trigger;
+  const ungated = (ref: PieceRef): boolean => !(`assembly_gate_${triggerOf(ref)}` in ARCADE_LIBRARY.rules);
+  if (rules.some((ref) => ref.id === 'assembly_finish')) {
+    const early = ruled.rules.filter((ref) => ungated(ref) && (ref.params as CompiledRule).do.some((effect) => 'win' in effect));
+    if (early.length > 0) {
+      return { ok: false, issues: early.map((ref) => `rules: rule "${(ref.params as CompiledRule).id}" wins on a ${triggerOf(ref)} trigger, but a composed game holds every win until its parts are done and only contact, tick, counter, hit or press rules can wait – win from one of those`) };
+    }
+  }
+  rules.push(...ruled.rules.map((ref) => (ungated(ref) ? ref : gate(ref))));
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: limitSeconds(timer.seconds) } });
-  const scored = spec.scoring === undefined ? { level, rules } : withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0, gate);
+  // Kombo (P46C T3) má každá nová hra žánru, i bez `scoring`; bez cílového skóre jen násobí body. Uložené hrají jako dřív.
+  // Úder zvedá kombo jen v nové hře: uložená hra se `scoring` a úderem musí mít týž hash.
+  const sources = wantsPowerups(spec) ? COMBO_SOURCES : LEGACY_COMBO_SOURCES;
+  const scored = spec.scoring !== undefined ? withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0, gate, sources) : wantsPowerups(spec) ? withCombo(level, rules, sources) : { level, rules };
   if (scored.rules.length > ARCADE_LIMITS.maxRules) {
     return { ok: false, issues: [`rules: this ${spec.control} game with scoring uses ${scored.rules.length} rules, over the ${ARCADE_LIMITS.maxRules} limit – merge or drop rules`] };
   }
 
-  const built = buildWorld({ seed, control, rules: scored.rules, bot, level: scored.level, ...(lives === undefined ? {} : { health: lives }) }, ARCADE_LIBRARY);
-  return built.ok ? { ok: true, world: built.world, roleBindings: bindRoles(spec, built.world) } : built;
+  // Logika (P45B) jen ze specu s blokem `logic`: jen takový svět dostane logická těla a `arcade-v3`.
+  const built = buildWorld(
+    { seed, control, rules: scored.rules, bot, level: scored.level, ...(lives === undefined ? {} : { health: lives }), ...(ruled.logic === undefined ? {} : { logic: ruled.logic }) },
+    ARCADE_LIBRARY,
+  );
+  if (!built.ok) return built;
+  // Vlna bez logiky (R3): starý kód ji nepřečte, takže svět nese `arcade-v3` i bez logických těl –
+  // jinak by ho razítko ani verze kompilátoru od starých her neodlišily. Jádro podle verze nevětví.
+  const waves = ruled.rules.some((ref) => (ref.params as CompiledRule).do.some((effect) => 'wave' in effect));
+  const stamped: ArcadeWorld = waves ? { ...built.world, runtimeVersion: ARCADE_RUNTIME_VERSION } : built.world;
+  // Jména deklarace logiky jdou se světem (T7): ověření jimi pojmenuje kostku, kterou robot nedokázal.
+  const world = stamped.logic === undefined ? stamped : { ...stamped, logic: { ...stamped.logic, names: logicNames(spec.logic) } };
+  return { ok: true, world, roleBindings: bindRoles(spec, world) };
 }
 
 /**
@@ -248,18 +285,30 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
  * k cíli (`grow_to`) – kombo by cíl zkrátilo, takže tam jen bonus na konci.
  * `gate` obalí `score_bonus` složené hry (P42), ať dosažený cíl nevyhraje před díly.
  */
-function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: number, target: number, gate: (ref: PieceRef) => PieceRef): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
+function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: number, target: number, gate: (ref: PieceRef) => PieceRef, sources: readonly string[]): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
+  const combo = withCombo(level, rules, sources);
+  const clock = rules.map(underlyingRule).find((ref) => ref.id === 'time_limit' || ref.id === 'survive_time')?.params as { readonly seconds: number } | undefined;
+  const limit = clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock.seconds * ARCADE_HZ);
+  return { level: combo.level, rules: [...combo.rules, gate({ id: 'score_bonus', params: { lives, limit, target } })] };
+}
+
+/** Pravidla, jejichž zásah nebo sebrání zvedá kombo nové hry (P46C T3). */
+const COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit', 'ability_strike', 'checkpoint'];
+/** Totéž pro uložené hry se `scoring` (P36A): bez úderu. */
+const LEGACY_COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit'];
+
+/**
+ * Kombo bez cílového skóre: počítadlo komba za tělesa úrovně (mrtvá předloha s modelem
+ * hráče) a `pickup` se `shot_hit` s ním – série sebrání a zásahů zvedá násobič ×1–×5,
+ * ztracený život ho shodí (`nextMultiplier`). Aréna sbírá přes `arena_eat`, tam násobí jen zásahy.
+ */
+function withCombo(level: ArcadeLevel, rules: readonly PieceRef[], sources: readonly string[]): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
   const keeper = level.bodies.length;
   const hero = level.bodies[0] as BodyInit;
   const counter: BodyInit = { role: 'thing', kind: hero.kind, x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true };
-  const clock = rules.map(underlyingRule).find((ref) => ref.id === 'time_limit' || ref.id === 'survive_time')?.params as { readonly seconds: number } | undefined;
-  const limit = clock === undefined ? ARCADE_LIMITS.maxTicks : Math.min(ARCADE_LIMITS.maxTicks, clock.seconds * ARCADE_HZ);
   return {
     level: { ...level, bodies: [...level.bodies, counter] },
-    rules: [
-      ...rules.map((ref) => mapUnderlying(ref, (native) => (native.id === 'pickup' || native.id === 'shot_hit' ? { id: native.id, params: { ...native.params, combo: keeper } } : native))),
-      gate({ id: 'score_bonus', params: { lives, limit, target } }),
-    ],
+    rules: rules.map((ref) => mapUnderlying(ref, (native) => (sources.includes(native.id) ? { id: native.id, params: { ...native.params, combo: keeper } } : native))),
   };
 }
 
@@ -318,6 +367,7 @@ export function compileArcade(spec: GameSpecV1, seed: number): CompileGameResult
   // Bez načteného Rapieru by robot spadl na výjimce jádra; volající má zavolat `preloadPhysics`.
   if (worldHasPhysics(world) && rapierIfLoaded() === null) return { ok: false, reason: 'WORLD_REJECTED', issues: [PHYSICS_NOT_LOADED] };
   const bot = runBot(world);
+  rememberBotRun(world, bot);
   if (bot.outcome !== 'won') return { ok: false, reason: 'UNWINNABLE', issues: [`the bot ${bot.outcome === 'lost' ? 'lost' : 'did not finish'} at tick ${bot.tick}, ${bot.distanceM} m into the track`] };
   // Trať, kterou vyhraje i nečinný hráč, je vada rozvržení – dveře publikace
   // zkusí další semínko, místo aby `verifyArcade` hru až potom odmítl (R3).
@@ -329,7 +379,7 @@ export function compileArcade(spec: GameSpecV1, seed: number): CompileGameResult
       spec,
       specHash: canonicalHash(spec),
       seed,
-      compilerVersion: ARCADE_COMPILER_VERSION,
+      compilerVersion: arcadeCompilerVersion(world),
       blueprint: null,
       arcade: world,
       worldHash: canonicalHash(world),

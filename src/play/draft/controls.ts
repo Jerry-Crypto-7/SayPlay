@@ -30,7 +30,12 @@ import type { SteerDifficulty } from '../arcade/pieces/steer';
 import { HOOP_CUES, TOWER_CUES, type ThrowDifficulty, type ThrowGoal } from '../arcade/pieces/throw';
 import type { TimingMode, TimingSpeed } from '../arcade/pieces/timing';
 import { CAPABILITIES } from '../capabilities';
-import { ADDONS, type AddonId } from '../spec';
+// Z kontraktu arkády, ne ze `spec.ts`: `compose/compile` tenhle modul načte i v prohlížeči (arcade-bundle).
+import { ABILITIES, ADDONS, type AbilityId, type AddonId } from '../arcade/contract';
+import type { Intent } from '../intent/contract';
+import { extractIntent } from '../intent/extract';
+import { negationScopes, singular } from './lexicon';
+import type { ControlId } from '../spec';
 
 const RHYTHM_CUES: readonly RegExp[] = [
   /\brhythm\b/,
@@ -255,21 +260,196 @@ const ADDON_CUES: Readonly<Record<AddonId, RegExp>> = {
   lives: /\b(?:\d+|two|three|four|five|a few|extra) (?:lives|hearts)\b/,
 };
 
+/**
+ * Akce hrdiny ze sloves věty (P46A T8). Krádež jen ze sloves krádeže a uchopení:
+ * „collect“ a „catch“ mají vlastní mechaniku (sběr dotykem, chycení v aréně),
+ * tlačítko Grab by přibylo každé hře s mincemi. „hit“ ne, když hrdinu něco trefí.
+ */
+const ABILITY_CUES: Readonly<Record<AbilityId, RegExp>> = {
+  shoot: /(?<!(?:photo|auto)[- ])\bshoot(?:s|ing)?\b(?! stars?)|\bblast(?:s|ing)? (?:the |at )?(?!off\b)\w+|\bfir(?:e|es|ing) (?:at|on|back)\b|\bfir(?:e|es|ing) (?:[a-z]+ ){1,2}at\b|\bbreath(?:e|es|ing) fire\b|\blaser(?:s|ing)?\b|\bzap(?:s|ping)?\b|\bsnip(?:e|es|ing)\b|\bspit(?:s|ting)? (?:[a-z]+ ){0,2}at\b/,
+  strike: /\b(?:fight(?:s|ing)?|punch(?:es|ing)?|kick(?:s|ing)?|strike(?:s)?|striking|slash(?:es|ing)?|slap(?:s|ping)?|smash(?:es|ing)?|bash(?:es|ing)?|attack(?:s|ing)?|crush(?:es|ing)?)\b|(?<!\b(?:get|gets|getting|got|be|being|without|avoid|avoids|avoiding|not|never) )\bhit(?:s|ting)?\b(?! by\b)|\b(?:bit(?:e|es|ing)|peck(?:s|ing)?|sting(?:s|ing)?|pinch(?:es|ing)?|swat(?:s|ting)?|chop(?:s|ping)?|stab(?:s|bing)?|whack(?:s|ing)?|tackl(?:e|es|ing)|ram(?:s|ming)?|headbutt(?:s|ing)?|shov(?:e|es|ing))\b/,
+  dash: /\b(?:dash(?:es|ing)?|dodg(?:e|es|ing)|duck(?:s|ing)?|evad(?:e|es|ing)|swerv(?:e|es|ing)|sidestep(?:s|ping)?)\b|\bzip(?:s|ping)? (?:past|around|between|through)\b|\bweav(?:e|es|ing) (?:through|between|around|past)\b|\b(?:leap|leaps|leaping|jump|jumps|jumping|dart|darts|darting) aside\b|\bescap(?:e|es|ing) quickly\b/,
+  shield: /\b(?:block(?:s|ing)?|defend(?:s|ing)?|protect(?:s|ing)?|shield(?:s|ing)?|guard(?:s|ing)?|deflect(?:s|ing)?|parr(?:y|ies|ying)|shelter(?:s|ing)?)\b/,
+  grab: /\b(?:steal(?:s|ing)?|stole|grab(?:s|bing)?|snatch(?:es|ing)?|swip(?:e|es|ing)|loot(?:s|ing)?|rob(?:s|bing)?|pickpocket(?:s|ing)?|nab(?:s|bing)?|pilfer(?:s|ing)?)\b/,
+};
+
+/** Úder a střelba ze záměru věty (P47B T3): osa akce `extractIntent`, i slovesa otevřeného slovníku P44C („shoves“ → kick, „zaps“ → shoot). */
+const INTENT_ABILITY: Readonly<Record<string, AbilityId>> = { shoot: 'shoot', fight: 'strike', kick: 'strike' };
+
+/**
+ * Sloveso věty na tlačítku akce (P47B T10): uzavřený seznam slov každé akce, první je obecný
+ * popisek tlačítka (`ABILITY_FACES` v `ActionButton.tsx`). Slovo mimo seznam své akce spec odmítne
+ * (`readGameSpec`); anglicky a krátce – vejde se do kola 72 px. Sloveso bez slova v seznamu
+ * („fights“, „evades“) nechá obecný popisek.
+ */
+export const ABILITY_WORDS = {
+  shoot: ['Shoot', 'Zap', 'Blast', 'Fire'],
+  strike: ['Strike', 'Shove', 'Punch', 'Kick', 'Bite', 'Peck', 'Slash'],
+  dash: ['Dash', 'Dodge', 'Duck', 'Swerve'],
+  shield: ['Shield', 'Block', 'Guard', 'Deflect'],
+  grab: ['Grab', 'Steal', 'Snatch', 'Swipe'],
+} as const satisfies Readonly<Record<AbilityId, readonly string[]>>;
+
+export type AbilityWord = (typeof ABILITY_WORDS)[AbilityId][number];
+
+/** Všechna slova tlačítek – výčet pro schéma specu. */
+export const ALL_ABILITY_WORDS = [...new Set(Object.values(ABILITY_WORDS).flat())] as [AbilityWord, ...AbilityWord[]];
+
+/** Nepravidelné tvary sloves ze seznamu. */
+const IRREGULAR_WORDS: Readonly<Record<string, string>> = { stole: 'steal' };
+
+/** Slovo ze seznamu akce `id` pro tvar slovesa `said` („dodges“, „zapping“, „stole“), jinak `undefined`. */
+function wordOf(id: AbilityId, said: string): AbilityWord | undefined {
+  const verb = IRREGULAR_WORDS[said] ?? said;
+  return ABILITY_WORDS[id].find((word) => {
+    const base = word.toLowerCase();
+    const stem = base.replace(/e$/, '');
+    const doubled = `${base}${base.slice(-1)}`;
+    return [base, `${base}s`, `${base}es`, `${stem}ing`, `${stem}ed`, `${doubled}ing`, `${doubled}ed`].includes(verb);
+  });
+}
+
+/**
+ * Slova mezi podmětem a slovesem, za kterými sloveso patří hrdinovi z předchozí klauze
+ * („runs and dodges“, „it shoots“, „tries to steal“). Čárka taky: „shoots, punches, steals“.
+ */
+const LINKERS = new Set([',', 'and', 'or', 'then', 'to', 'can', 'will', 'must', 'also', 'just', 'still', 'even', 'always', 'who', 'that', 'he', 'she', 'it', 'they', 'you', 'i', 'we', 'by']);
+/** Spojky, za kterými přichází nový podmět; hrdinovi patří jen tvar na -ing („while dodging“). */
+const SUBORDINATORS = new Set(['while', 'as', 'when', 'whenever', 'until', 'before', 'after', 'because']);
+/** Předložka místa za slovesem hrdiny: „runs through the city dodging“ – tvar na -ing dál patří hrdinovi. */
+const PLACE_PREPOSITIONS = new Set(['through', 'across', 'along', 'around', 'in', 'into', 'on', 'onto', 'over', 'under', 'down', 'up', 'past', 'inside', 'near', 'at', 'from']);
+/** Odmítnutí, které `negationScopes` nečte: „refuses to shoot“. */
+const REFUSAL = /\brefus(?:e|es|ing) to $/;
+/** Úder na věc, která nepřítel není: míč, nástroj, bedna sokobanu („kicks a football“, „hits the drums“, „pushes crates“). */
+const NOT_A_FOE = /^ (?:a |an |the |his |her |its |their |some |\d+ )?(?:[a-z]+ )?(?:balls?|football|drums?|notes?|keys|piano|bells?|gongs?|crates?|box(?:es)?|blocks?|carts?|buttons?|levers?|switch(?:es)?)\b/;
+
+/**
+ * Patří sloveso na `[at, end)` hrdinovi? Ano, když před ním stojí hrdina (podmět první klauze)
+ * nebo spojovací slovo. Ne, když před ním je člen, číslovka, „of“, přídavné jméno nebo jiné
+ * podstatné jméno – to je podstatné jméno („wooden blocks“, „a shield“) nebo sloveso nepřítele
+ * („while sharks bite“, „the ghosts shoot back“, „cars blocking“).
+ */
+function heroDoes(text: string, at: number, end: number, hero: ReadonlySet<string>, id: AbilityId): boolean {
+  if (REFUSAL.test(text.slice(0, at))) return false;
+  if (id === 'strike' && NOT_A_FOE.test(text.slice(end))) return false;
+  const before = text.slice(0, at).match(/[a-z']+|,/g) ?? [];
+  while (before.length > 0 && /ly$/.test(before[before.length - 1]!)) before.pop();
+  const prev = before[before.length - 1];
+  if (prev === undefined) return false;
+  if (SUBORDINATORS.has(prev)) return /ing\b/.test(text.slice(at, end));
+  if (LINKERS.has(prev)) return true;
+  // Místo s předložkou a jednotným číslem: „through the city dodging“ (tvar na -ing) a hrdina s místem před slovesem
+  // na -s („a thief on a skateboard grabs“). „past the cars blocking“ ne: množné číslo je podmět, místo ne.
+  const [subject, preposition, article] = before.slice(-4, -1);
+  const said = text.slice(at, end).split(' ')[0]!;
+  const place = PLACE_PREPOSITIONS.has(preposition!) && (article === 'the' || article === 'a') && singular(prev) === prev;
+  if (place && (/ing$/.test(said) || (hero.has(subject!) && /s$/.test(said)))) return true;
+  if (!hero.has(prev) && !hero.has(singular(prev))) return false;
+  // Po jednotném čísle má sloveso -s: „a photo shoot“ je podstatné jméno, „a fox shoots“ sloveso.
+  return /s$/.test(prev) || /(?:s|ing|ed)$/.test(said);
+}
+
+/**
+ * Slova podmětu první klauze pro `heroDoes`. Záměr dá první slovo hrdiny („amanita“ z „amanita
+ * mushrooms“), proto i slovo hned za ním na začátku věty. Bez hrdiny ze záměru slovo před první
+ * akcí, stojí-li na začátku věty („a mother hen shelters“). Slovo, které záměr čte jako
+ * sloveso („a toddler stacks blocks“), podmět není.
+ */
+function heroOf(text: string, intent: Pick<Intent, 'hero' | 'items'>, first: number | undefined): Set<string> {
+  const verbs = new Set(intent.items.map((item) => item.said.toLowerCase()));
+  const words = text.match(/[a-z']+/g) ?? [];
+  const words4 = words.slice(0, 4);
+  const head = intent.hero?.split(' ').pop();
+  const at = head === undefined ? -1 : words4.findIndex((word) => word === head || singular(word) === head);
+  const fallback = head === undefined && first !== undefined ? (text.slice(0, first).match(/[a-z']+/g) ?? []) : [];
+  // Hrdina ze záměru zůstává, i když nese pohyb („a motorbike“ → jízda); slova kolem něj jen nejsou-li sloveso.
+  const near = [at < 0 ? undefined : words4[at + 1], fallback.length <= 4 ? fallback[fallback.length - 1] : undefined];
+  return new Set([head, ...near.filter((word) => word === undefined || !verbs.has(word))].filter((word): word is string => word !== undefined));
+}
+
+/** Hrdina má nejvýš 2 akce (tlačítka A, B). */
+const MAX_ABILITIES = 2;
+
+/**
+ * Akce, které věta hrdinovi říká, v pořadí věty, se slovem ze seznamu `ABILITY_WORDS` (P47B T10):
+ * první sloveso téže akce, které slovo v seznamu má („fights and punches“ → Punch).
+ */
+function heardAbilities(text: string, intent: Pick<Intent, 'hero' | 'items'>): { readonly id: AbilityId; word: AbilityWord | undefined }[] {
+  const scopes = negationScopes(text);
+  const found: { id: AbilityId; at: number; end: number }[] = [];
+  for (const id of ABILITIES)
+    for (const match of text.matchAll(new RegExp(ABILITY_CUES[id].source, 'g'))) found.push({ id, at: match.index, end: match.index + match[0].length });
+  for (const item of intent.items) {
+    const id = item.axis === 'action' && item.essential ? INTENT_ABILITY[item.verb] : undefined;
+    const at = id === undefined ? -1 : text.indexOf(item.said.toLowerCase());
+    // Ruční seznam má přednost: „parries“ je štít, i když ho slovník P44C přiblíží k úderu.
+    if (id !== undefined && at >= 0 && !found.some((cue) => cue.at === at)) found.push({ id, at, end: at + item.said.length });
+  }
+  const live = found.filter(({ at }) => !scopes.some(([from, to]) => at >= from && at < to)).sort((a, b) => a.at - b.at);
+  const hero = heroOf(text, intent, live[0]?.at);
+  const heard: { readonly id: AbilityId; word: AbilityWord | undefined }[] = [];
+  for (const { id, at, end } of live) {
+    const known = heard.find((entry) => entry.id === id);
+    if (known?.word !== undefined || !heroDoes(text, at, end, hero, id)) continue;
+    const word = wordOf(id, text.slice(at, end).split(/\s+/)[0]!);
+    if (known === undefined) heard.push({ id, word });
+    else known.word = word;
+  }
+  return heard;
+}
+
+/**
+ * Všechny akce, které věta hrdinovi říká, v pořadí věty, bez sloves v záporu („doesn't shoot“)
+ * a bez sloves, která dělá někdo jiný. `text` je věta malými písmeny; `intent` její záměr
+ * (`assemble` ho předá, jinak se přečte).
+ */
+export function saidAbilities(text: string, intent: Pick<Intent, 'hero' | 'items'> = extractIntent(text)): AbilityId[] {
+  return heardAbilities(text, intent).map(({ id }) => id);
+}
+
+/** Slovo věty pro každou akci z `saidAbilities`, jejíž sloveso má slovo v `ABILITY_WORDS` (P47B T10). */
+export function saidAbilityWords(text: string, intent: Pick<Intent, 'hero' | 'items'> = extractIntent(text)): Partial<Record<AbilityId, AbilityWord>> {
+  return Object.fromEntries(heardAbilities(text, intent).flatMap(({ id, word }) => (word === undefined ? [] : [[id, word]])));
+}
+
+/**
+ * Slova tlačítek v pořadí `abilities` (P47B T10): slovo věty, jinak obecný popisek akce.
+ * `undefined`, když věta žádný popisek nemění – spec pak pole nedostane a HUD je jako dřív.
+ */
+export function abilityWordsOf(abilities: readonly AbilityId[], said: Partial<Record<AbilityId, AbilityWord>>): AbilityWord[] | undefined {
+  const words = abilities.map((id) => said[id] ?? ABILITY_WORDS[id][0]);
+  return words.some((word, slot) => word !== ABILITY_WORDS[abilities[slot]!][0]) ? words : undefined;
+}
+
+/** Z akcí věty `said` ty, které ovládání bere, nejvýš 2 (první = A = J). */
+export const abilitiesOfControl = (said: readonly AbilityId[], control: ControlId): AbilityId[] =>
+  said.filter((id) => CAPABILITIES[control].abilities.includes(id)).slice(0, MAX_ABILITIES);
+
+export const abilitiesFor = (text: string, control: ControlId): AbilityId[] => abilitiesOfControl(saidAbilities(text), control);
+
+/** Akce na tlačítkách v nápovědě („J to strike, K to shoot.“); se slovy tlačítek sloveso věty („J to dodge.“, P47B T10). */
+export const abilityHint = (abilities: readonly AbilityId[], words?: readonly string[]): string =>
+  `${abilities.map((id, slot) => `${slot === 0 ? 'J' : 'K'} to ${words?.[slot]?.toLowerCase() ?? id}`).join(', ')}.`;
+
+// Pohyb ve větě: „fight“ s během, závodem nebo skokem je úder za jízdy, ne souboj na místě.
+const TRAVEL = /\b(?:run|runs|running|race|races|racing|jump|jumps|jumping|hop|hops|hopping|flee|flees|fleeing|drive|drives|driving)\b/;
+
 // „jump and shoot“, „run and collect“: dvě slovesa hráče – pohyb je základ, druhé
 // sloveso doplněk (jinak by vyhrála střelnice, a samotné „run“ běžce nedá).
 const MOVE_AND_VERB = /\b(jump|hop|run)\w*(?: \w+){0,5} and (?:shoot|collect|grab|gather|pick)|\bshoot\w* (?:and|while) (jump|hop|run)/;
 
 /** Ovládání ze slov (níž) a doplňky, které jeho tabulka schopností bere. */
-export type ControlPick = ControlChoice & { readonly addons?: readonly AddonId[] };
+export type ControlPick = ControlChoice & { readonly addons?: readonly AddonId[]; readonly abilities?: readonly AbilityId[] };
 
-/** `text` je věta malými písmeny. Klíč `addons` jen když věta nějaký doplněk řekla. */
+/** `text` je věta malými písmeny. Klíče `addons` a `abilities` jen když je věta řekla. */
 export function pickControl(text: string): ControlPick | null {
   const pair = MOVE_AND_VERB.exec(text);
   const choice = pickBase(text, pair !== null) ?? (pair === null ? null : moveOf(pair[1] ?? pair[2] ?? 'jump', text));
   if (choice === null) return null;
   const allowed = CAPABILITIES[choice.control].addons;
   const addons = ADDONS.filter((addon) => allowed.includes(addon) && ADDON_CUES[addon].test(text));
-  return addons.length === 0 ? choice : { ...choice, addons };
+  const abilities = abilitiesFor(text, choice.control);
+  return { ...choice, ...(addons.length === 0 ? {} : { addons }), ...(abilities.length === 0 ? {} : { abilities }) };
 }
 
 /**
@@ -300,7 +480,7 @@ const NEAREST_NOUNS: readonly (readonly [RegExp, ControlChoice['control']])[] = 
 export type NearestPick = { readonly choice: ControlChoice; readonly why: 'verb' | 'noun' | 'default' };
 
 export function nearestControl(text: string): NearestPick {
-  const byVerb = NEAREST_VERBS.find(([cue]) => cue.test(text))?.[1];
+  const byVerb = NEAREST_VERBS.find(([cue, control]) => cue.test(text) && (control !== 'duel' || !TRAVEL.test(text)))?.[1];
   if (byVerb !== undefined) return { choice: defaultChoice(byVerb, text), why: 'verb' };
   const byNoun = NEAREST_NOUNS.find(([cue]) => cue.test(text))?.[1];
   if (byNoun !== undefined) return { choice: defaultChoice(byNoun, text), why: 'noun' };
@@ -341,7 +521,7 @@ function pickBase(text: string, moveAndShoot: boolean): ControlChoice | null {
   if (RHYTHM_CUES.some((cue) => cue.test(text))) return { control: 'rhythm', density: level === 'hard' ? 'dense' : level === 'easy' ? 'sparse' : null };
   // Souboj zblízka před hodem a střelbou: „throw punches“ i „gun fight“ jsou souboj,
   // a narážky souboje jsou úzké (holé „fight“ mezi nimi není).
-  if (DUEL_CUES.some((cue) => cue.test(text))) return { control: 'duel', difficulty: level };
+  if (DUEL_CUES.some((cue) => cue.test(text)) && !TRAVEL.test(text)) return { control: 'duel', difficulty: level };
   // Výslovný žánr plošinovky přebije hod i střelbu („a tower defense platformer“).
   const platformer = /\bplatform(?:er| game)\b/.test(text) || moveAndShoot;
   if (!platformer && THROW_CUES.some((cue) => cue.test(text))) {

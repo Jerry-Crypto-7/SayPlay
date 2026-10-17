@@ -1,0 +1,638 @@
+{
+ "about": "P47B T1 verb panel, dev half: 92 sentences written blind on 2026-10-15 by a subagent that saw only the five hero actions, their verb families and the genre list – no code, no lexicon, no other sentence set. Hand label `wants` (0–2 actions in sentence order), `family` = the family the sentence was written for (`trap` = looks like an action, wants none). Split by family with pure-rand xoroshiro128plus seed 4747, Fisher–Yates via uniformInt, first ceil(2n/3) of each family to dev.",
+ "seed": 4747,
+ "sentences": [
+  {
+   "id": "v02",
+   "text": "A kangaroo boxer punches a robot opponent in a neon ring.",
+   "genre": "duel",
+   "family": "strike",
+   "verb": "punches",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v03",
+   "text": "a crab pinches the toes of beachgoers who step on its sandcastle",
+   "genre": "arena-fight",
+   "family": "strike",
+   "verb": "pinches",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v04",
+   "text": "A woodpecker pecks beetles off the bark while climbing a tall pine.",
+   "genre": "platformer",
+   "family": "strike",
+   "verb": "pecks",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v05",
+   "text": "a bumblebee stings wasps while flying between flowers in the meadow",
+   "genre": "flying",
+   "family": "strike",
+   "verb": "stings",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v06",
+   "text": "A lumberjack chops through rolling logs as he runs down the mountain.",
+   "genre": "runner",
+   "family": "strike",
+   "verb": "chops",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v07",
+   "text": "a sumo wrestler shoves rivals out of a shrinking ring",
+   "genre": "arena-fight",
+   "family": "strike",
+   "verb": "shoves",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v08",
+   "text": "A monster truck rams the police cars blocking the desert highway.",
+   "genre": "driving",
+   "family": "strike",
+   "verb": "rams",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v10",
+   "text": "a horse swats buzzing flies with its tail to the beat of country music",
+   "genre": "rhythm",
+   "family": "strike",
+   "verb": "swats",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v11",
+   "text": "a samurai deflects arrows and slashes the archers on the castle wall",
+   "genre": "arena-fight",
+   "family": "strike",
+   "verb": "slashes",
+   "wants": [
+    "shield",
+    "strike"
+   ]
+  },
+  {
+   "id": "v13",
+   "text": "a stray dog ducks the butcher's cleaver and bites his ankles",
+   "genre": "arena-fight",
+   "family": "strike",
+   "verb": "bites",
+   "wants": [
+    "dash",
+    "strike"
+   ]
+  },
+  {
+   "id": "v15",
+   "text": "a pigeon dodges helicopter blades while flying between skyscrapers",
+   "genre": "flying",
+   "family": "dash",
+   "verb": "dodges",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v16",
+   "text": "a getaway van evades police roadblocks on a winding mountain road",
+   "genre": "driving",
+   "family": "dash",
+   "verb": "evades",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v17",
+   "text": "a hamster swerves around swinging pendulums in a maze of cardboard tubes",
+   "genre": "maze",
+   "family": "dash",
+   "verb": "swerves",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v18",
+   "text": "A mail carrier ducks under low branches while running to the post office.",
+   "genre": "runner",
+   "family": "dash",
+   "verb": "ducks",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v20",
+   "text": "a gecko zips past hungry birds while climbing a jungle wall",
+   "genre": "platformer",
+   "family": "dash",
+   "verb": "zips past",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v21",
+   "text": "a squid dashes away from fishing nets in a coral reef.",
+   "genre": "arena-escape",
+   "family": "dash",
+   "verb": "dashes",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v22",
+   "text": "a dancer leaps aside from falling spotlights in time with the music",
+   "genre": "rhythm",
+   "family": "dash",
+   "verb": "leaps aside",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v24",
+   "text": "a spaceship weaves through an asteroid field and blasts alien saucers",
+   "genre": "shooter",
+   "family": "dash",
+   "verb": "weaves",
+   "wants": [
+    "dash",
+    "shoot"
+   ]
+  },
+  {
+   "id": "v27",
+   "text": "a burglar dodges laser beams and snatches the diamond from its pedestal",
+   "genre": "arena-collect",
+   "family": "dash",
+   "verb": "dodges",
+   "wants": [
+    "dash",
+    "grab"
+   ]
+  },
+  {
+   "id": "v28",
+   "text": "a kid sidesteps snowballs while collecting presents in a snowy yard",
+   "genre": "arena-collect",
+   "family": "dash",
+   "verb": "sidesteps",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v29",
+   "text": "a turtle blocks falling coconuts with its shell on a tiny island",
+   "genre": "timing",
+   "family": "shield",
+   "verb": "blocks",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v30",
+   "text": "A mother hen shelters her chicks from hawks diving out of the sky.",
+   "genre": "arena-fight",
+   "family": "shield",
+   "verb": "shelters",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v32",
+   "text": "a lighthouse keeper guards the lamp from swarms of moths at night",
+   "genre": "arena-fight",
+   "family": "shield",
+   "verb": "guards",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v34",
+   "text": "a robot deflects laser bolts back at the invading drones",
+   "genre": "shooter",
+   "family": "shield",
+   "verb": "deflects",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v36",
+   "text": "a snowman defends his carrot nose from greedy rabbits in the garden",
+   "genre": "arena-fight",
+   "family": "shield",
+   "verb": "defends",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v38",
+   "text": "an armored truck protects the gold from raiders on a dusty frontier road",
+   "genre": "driving",
+   "family": "shield",
+   "verb": "protects",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v39",
+   "text": "a chef blocks flying tomatoes with a frying pan to the beat",
+   "genre": "rhythm",
+   "family": "shield",
+   "verb": "blocks",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v40",
+   "text": "a gladiator blocks spears with his shield and kicks the lions back",
+   "genre": "arena-fight",
+   "family": "shield",
+   "verb": "blocks",
+   "wants": [
+    "shield",
+    "strike"
+   ]
+  },
+  {
+   "id": "v41",
+   "text": "a sorceress shields herself from fireballs and zaps the trolls in the maze",
+   "genre": "maze",
+   "family": "shield",
+   "verb": "shields",
+   "wants": [
+    "shield",
+    "shoot"
+   ]
+  },
+  {
+   "id": "v42",
+   "text": "a hedgehog guards its apples and dodges the badgers in the orchard",
+   "genre": "arena-collect",
+   "family": "shield",
+   "verb": "guards",
+   "wants": [
+    "shield",
+    "dash"
+   ]
+  },
+  {
+   "id": "v44",
+   "text": "a cowboy shoots tin cans off a fence before the sun sets",
+   "genre": "timing",
+   "family": "shoot",
+   "verb": "shoots",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v45",
+   "text": "a tiny wizard casts spells at haunted armor in a castle maze",
+   "genre": "maze",
+   "family": "shoot",
+   "verb": "casts spells",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v47",
+   "text": "A submarine fires torpedoes at pirate ships above the waves.",
+   "genre": "shooter",
+   "family": "shoot",
+   "verb": "fires",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v49",
+   "text": "a vacuum robot lasers the mice racing across the kitchen floor",
+   "genre": "arena-fight",
+   "family": "shoot",
+   "verb": "lasers",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v50",
+   "text": "a dragon blasts fireballs at knights while flying over the castle",
+   "genre": "flying",
+   "family": "shoot",
+   "verb": "blasts",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v51",
+   "text": "a tank fires shells at enemy bunkers while driving across the desert.",
+   "genre": "driving",
+   "family": "shoot",
+   "verb": "fires",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v52",
+   "text": "a beatboxer zaps glowing notes in rhythm with the bass",
+   "genre": "rhythm",
+   "family": "shoot",
+   "verb": "zaps",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v53",
+   "text": "an archer shoots the orcs and snatches their loot bags",
+   "genre": "arena-collect",
+   "family": "shoot",
+   "verb": "shoots",
+   "wants": [
+    "shoot",
+    "grab"
+   ]
+  },
+  {
+   "id": "v54",
+   "text": "an alien gunslinger duels the sheriff, firing a ray gun at noon",
+   "genre": "duel",
+   "family": "shoot",
+   "verb": "firing",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v55",
+   "text": "a space ranger blocks meteors with a force field and blasts the alien ships",
+   "genre": "shooter",
+   "family": "shoot",
+   "verb": "blasts",
+   "wants": [
+    "shield",
+    "shoot"
+   ]
+  },
+  {
+   "id": "v57",
+   "text": "a raccoon steals leftovers from picnic baskets in a busy park",
+   "genre": "arena-collect",
+   "family": "grab",
+   "verb": "steals",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v60",
+   "text": "a masked bandit robs trains while galloping across the prairie",
+   "genre": "runner",
+   "family": "grab",
+   "verb": "robs",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v61",
+   "text": "a sneaky boy pickpockets guards at a crowded royal ball",
+   "genre": "arena-collect",
+   "family": "grab",
+   "verb": "pickpockets",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v62",
+   "text": "A monkey swipes bananas from market stalls and escapes across the rooftops.",
+   "genre": "platformer",
+   "family": "grab",
+   "verb": "swipes",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v63",
+   "text": "a magpie nabs shiny rings from windowsills before the owners notice",
+   "genre": "timing",
+   "family": "grab",
+   "verb": "nabs",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v66",
+   "text": "A fox pilfers eggs from the henhouse while the farmer's dogs chase it.",
+   "genre": "arena-escape",
+   "family": "grab",
+   "verb": "pilfers",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v67",
+   "text": "a pickpocket duels another thief to swipe the king's crown",
+   "genre": "duel",
+   "family": "grab",
+   "verb": "swipe",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v68",
+   "text": "a goblin robs merchants and bites the guards who try to stop him",
+   "genre": "arena-fight",
+   "family": "grab",
+   "verb": "robs",
+   "wants": [
+    "grab",
+    "strike"
+   ]
+  },
+  {
+   "id": "v69",
+   "text": "a space pirate loots cargo ships and zaps the patrol satellites",
+   "genre": "shooter",
+   "family": "grab",
+   "verb": "loots",
+   "wants": [
+    "grab",
+    "shoot"
+   ]
+  },
+  {
+   "id": "v70",
+   "text": "a chipmunk snatches seeds from bird feeders and dodges the barking dog",
+   "genre": "arena-collect",
+   "family": "grab",
+   "verb": "snatches",
+   "wants": [
+    "grab",
+    "dash"
+   ]
+  },
+  {
+   "id": "v72",
+   "text": "A tiny knight rides a snail and carries a shield bigger than himself.",
+   "genre": "runner",
+   "family": "trap",
+   "verb": "shield",
+   "wants": []
+  },
+  {
+   "id": "v75",
+   "text": "a fisherman rows his boat home as sharks bite the hull",
+   "genre": "arena-escape",
+   "family": "trap",
+   "verb": "bite",
+   "wants": []
+  },
+  {
+   "id": "v76",
+   "text": "a tourist runs across the city while pigeons steal her sandwich",
+   "genre": "runner",
+   "family": "trap",
+   "verb": "steal",
+   "wants": []
+  },
+  {
+   "id": "v77",
+   "text": "a mouse escapes the kitchen while the cook swats at it with a broom",
+   "genre": "arena-escape",
+   "family": "trap",
+   "verb": "swats",
+   "wants": []
+  },
+  {
+   "id": "v79",
+   "text": "A princess climbs the castle tower while guards block the main stairs.",
+   "genre": "platformer",
+   "family": "trap",
+   "verb": "block",
+   "wants": []
+  },
+  {
+   "id": "v80",
+   "text": "a janitor collects lost sneakers after a dodgeball tournament in the gym",
+   "genre": "arena-collect",
+   "family": "trap",
+   "verb": "dodgeball",
+   "wants": []
+  },
+  {
+   "id": "v81",
+   "text": "a model struts down the catwalk to the beat at a photo shoot",
+   "genre": "rhythm",
+   "family": "trap",
+   "verb": "photo shoot",
+   "wants": []
+  },
+  {
+   "id": "v82",
+   "text": "a little owl collects shooting stars that fall into the meadow",
+   "genre": "arena-collect",
+   "family": "trap",
+   "verb": "shooting stars",
+   "wants": []
+  },
+  {
+   "id": "v83",
+   "text": "a firefly glows its way through a dark forest maze",
+   "genre": "maze",
+   "family": "trap",
+   "verb": "firefly",
+   "wants": []
+  },
+  {
+   "id": "v86",
+   "text": "a pacifist robot refuses to shoot and just races across the wasteland",
+   "genre": "runner",
+   "family": "trap",
+   "verb": "refuses to shoot",
+   "wants": []
+  },
+  {
+   "id": "v87",
+   "text": "a polite goose who would never steal bread waddles through the bakery maze",
+   "genre": "maze",
+   "family": "trap",
+   "verb": "never steal",
+   "wants": []
+  },
+  {
+   "id": "v88",
+   "text": "a sleepy sloth doesn't dodge anything and just climbs slowly to the top",
+   "genre": "platformer",
+   "family": "trap",
+   "verb": "doesn't dodge",
+   "wants": []
+  },
+  {
+   "id": "v90",
+   "text": "a beetle pushes dung balls into holes to open the next level",
+   "genre": "platformer",
+   "family": "trap",
+   "verb": "pushes",
+   "wants": []
+  },
+  {
+   "id": "v91",
+   "text": "a girl kicks a football into the top corner from far away",
+   "genre": "throw",
+   "family": "trap",
+   "verb": "kicks",
+   "wants": []
+  },
+  {
+   "id": "v92",
+   "text": "a drummer hits the drums in time with falling notes",
+   "genre": "rhythm",
+   "family": "trap",
+   "verb": "hits",
+   "wants": []
+  }
+ ]
+}

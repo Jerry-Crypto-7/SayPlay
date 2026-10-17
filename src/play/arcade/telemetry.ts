@@ -147,8 +147,9 @@ export function traceRun(world: ArcadeWorld, inputs: readonly InputEvent[], libr
     const event = inputs[next];
     prev.set(state);
     const effects = step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program);
-    // Spawn smí svět rozšířit do rezervy: nové sloty i znovu oživené rodí v tomhle tiku.
-    for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) if (body >= (prev[HEADER.bodyCount] as number) || (!aliveIn(prev, body) && aliveIn(state, body))) born[body] = tick + 1;
+    // Spawn smí svět rozšířit do rezervy: nové sloty i znovu oživené rodí v tomhle tiku. Slot, který v jednom tiku
+    // uvolní střela a obsadí boss, mrtvý mezi tím nebyl – nové tělo pozná jiná role.
+    for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) if (body >= (prev[HEADER.bodyCount] as number) || (aliveIn(state, body) && (!aliveIn(prev, body) || roleIn(prev, body) !== roleIn(state, body)))) born[body] = tick + 1;
     events.push(...eventsOf(effects, tick, prev, state));
     if ((state[HEADER.tick] as number) % SAMPLE_TICKS === 0) samples.push(sampleOf(state, born));
   }

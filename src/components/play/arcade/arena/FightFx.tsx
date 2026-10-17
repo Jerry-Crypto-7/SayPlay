@@ -44,12 +44,13 @@ const STRIKE_CLIP_TAIL = 20;
 /** Procedurální pád po KO (ms) – postava bez klipu `die` – a o kolik ležící tělo zvednout, ať bokem nezajede pod podlahu (m). */
 const FALL_MS = 450;
 const FALL_LIFT_M = 0.3;
-/** Nápřah soupeře: záklon (rad) a vzepětí (podíl velikosti) – kamera za hrdinou vidí soupeře zepředu, záklon sám by zkrátila; výpad dopředu (rad). */
+/**
+ * Nápřah soupeře: záklon (rad) a vzepětí (podíl velikosti) – kamera za hrdinou vidí soupeře zepředu, záklon sám by zkrátila;
+ * předklon úderu riggovaného soupeře (rad). Švih, výpad a cuknutí modelu katalogu hraje hračková póza (`toyPoseOf`, P45D T9).
+ */
 const WINDUP_LEAN = 0.3;
 const WINDUP_GROW = 0.12;
 const STRIKE_LEAN = 0.32;
-/** Statická postava bez klipu zásahu cukne dozadu. */
-const RECOIL_LEAN = 0.22;
 
 /** Barvy: červený nádech nápřahu, bílý záblesk zásahu, žlutý srpek nad prahem bloomu (≈ 1,1) – bílý by s bílým zásahem splynul. */
 const TINT = new Color(brand.tomato);
@@ -189,7 +190,7 @@ export interface Fighter {
   /** Vlastní kopie materiálů modelu (modely si je jinak sdílejí). */
   readonly skin: SkinSlot[];
   readonly hero: boolean;
-  /** Riggovaná postava: zásah a sek hraje klip, procedurální póza jen doplňuje. */
+  /** Riggovaná postava: zásah a sek hraje klip, procedurální póza jen doplňuje; model katalogu je hraje hračkovou pózou ve scéně. */
   readonly rigged: boolean;
   /** Postava nemá klip `die`: KO = procedurální pád. */
   readonly falls: boolean;
@@ -263,15 +264,10 @@ export function drawFighter(fighter: Fighter, state: Int32Array, body: number, a
       pitch = -WINDUP_LEAN * k + 0.04 * p * Math.sin(now * 0.06);
       grow = WINDUP_GROW * k;
       tint = (0.45 + 0.55 * p) * (0.85 + 0.15 * Math.sin(now * 0.03));
-    } else if (phase === FIGHT_PHASE.strike) {
+    } else if (phase === FIGHT_PHASE.strike && fighter.rigged) {
+      // Riggovaný soupeř sekne klipem a předkloní se; model katalogu udělá výpad hračkovou pózou ve scéně.
       pitch = STRIKE_LEAN * (1 - clamp01((FIGHT.strike - left + alpha) / FIGHT.strike));
-    } else if (phase === FIGHT_PHASE.stagger && !fighter.rigged) {
-      pitch = -RECOIL_LEAN * clamp01(left / FIGHT.stagger);
     }
-  } else if (!fighter.rigged) {
-    const swing = watch.swing(now);
-    if (swing !== null) pitch = STRIKE_LEAN * Math.sin(Math.PI * swing);
-    else pitch = -RECOIL_LEAN * fade(watch.hurtFor(body, now), HURT_CLIP_MS);
   }
   fighter.lean.rotation.set(pitch, 0, (Math.PI / 2) * fall);
   fighter.lean.position.y = FALL_LIFT_M * fall;

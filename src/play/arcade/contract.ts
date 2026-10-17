@@ -17,8 +17,15 @@ import type { z } from 'zod';
 export const ARCADE_HZ = 60;
 /** Jednotek na metr – pozice, rozměry i rychlosti (za tik) jsou celá čísla. */
 export const UNIT = 1000;
-/** Zvednout, když stejný svět a stejné vstupy dají jiný hash. */
-export const ARCADE_RUNTIME_VERSION = 'arcade-v2';
+/**
+ * Zvednout, když stejný svět a stejné vstupy dají jiný hash. `arcade-v3` (P45B) nese jen
+ * svět se stavem logiky nebo s vlnou (tu starý kód nepřečte, `arcadeWorldOf`); ostatní světy
+ * dál razítkují `ARCADE_RUNTIME_V2` a hrají bajt po bajtu jako dřív – uložené hry i jejich
+ * hashe se nepohnou.
+ */
+export const ARCADE_RUNTIME_VERSION = 'arcade-v3';
+export const ARCADE_RUNTIME_V2 = 'arcade-v2';
+export type ArcadeRuntimeVersion = 'arcade-v1' | typeof ARCADE_RUNTIME_V2 | typeof ARCADE_RUNTIME_VERSION;
 
 /** Meze, které drží smyčky jádra konečné a svět malý. */
 export const ARCADE_LIMITS = {
@@ -32,6 +39,27 @@ export const ARCADE_LIMITS = {
   maxTicks: 90 * ARCADE_HZ,
   /** Pojmenovaných čítačů (skóre, životy, …). */
   maxCounters: 8,
+} as const;
+
+/**
+ * Meze bloku `logic` (P45B): proměnné, časovače, fáze a události hry. Stav logiky
+ * žije v hashovaném stavu jádra, takže strop je strop jeho slotů, ne jen jazyka.
+ */
+export const LOGIC_LIMITS = {
+  maxVars: 8,
+  maxTimers: 4,
+  /** První fáze je počáteční; jediná fáze by žádný průběh nedala. */
+  minPhases: 2,
+  maxPhases: 4,
+  maxEvents: 8,
+  /** Počáteční hodnota, `set` a mez podmínky – celá čísla v ±tolika. */
+  varLiteral: 1000,
+  /** `add` za jeden výstřel. */
+  maxAdd: 100,
+  /** Hodnota proměnné v jádře se drží v ±tolika (sčítání saturuje). */
+  varSaturation: 100_000,
+  /** Nejvýš tolik těl jedné vlny. */
+  maxWave: 8,
 } as const;
 
 /** Životnost projektilu v ticích, když ji úroveň neuvede: 3 s. Mez je `maxTicks`. */
@@ -297,9 +325,16 @@ export const ROLE = {
    * tělo patří pravidlům.
    */
   thing: 12,
+  /** Logické tělo (P45B): mrtvé, nulového rozměru, nese stav logiky (`LOGIC_SLOTS`). */
+  logic: 13,
+  /** Power-up (P46C): sebrání (`pickup` s `powerup`) nastaví časovaný stav v `POWERUP_SLOTS`. */
+  powerup: 14,
 } as const;
 export type ArcadeRole = keyof typeof ROLE;
 export type ArcadeRoleCode = (typeof ROLE)[ArcadeRole];
+
+/** Logické tělo nese jen stav logiky – scéna ho nekreslí ani k němu nestahuje model. */
+export const isLogicBody = (role: number): boolean => role === ROLE.logic;
 
 /** Role specu, jejíž `count` čte generátor ovládání (P26D T9): id role specu, role jejích těl, klíč parametru, strop generátoru. */
 export interface CountedRole {
@@ -333,6 +368,55 @@ export const ADDONS = ['shoot', 'collect', 'chaser', 'lives'] as const;
 export type AddonId = (typeof ADDONS)[number];
 
 /**
+ * Akce hrdiny (P46A): nejvýš 2 na hru, první na `ACTION_A`, druhá na `ACTION_B`.
+ * Která ovládání kterou berou, říká `CAPABILITIES[control].abilities`.
+ */
+export const ABILITIES = ['shoot', 'strike', 'dash', 'shield', 'grab'] as const;
+export type AbilityId = (typeof ABILITIES)[number];
+
+/**
+ * Útok bosse finále, jak ho režisér pojmenuje (P46E T3): útoky chování z P46B a P45C (`pieces/behaviours/boss.ts`,
+ * `brute.ts`). `charge` = rozběh na hráče (boss běžce, brute skákačky), `throw` = hod překážky do pruhu (boss běžce),
+ * `drop` = shoz překážky do silnice (dropper řízení), `stomp` = dupnutí (boss v rovině), `shoot` = salva (boss v rovině, věž).
+ */
+export const BOSS_ATTACKS = ['charge', 'throw', 'drop', 'stomp', 'shoot'] as const;
+export type BossAttack = (typeof BOSS_ATTACKS)[number];
+
+/**
+ * Stav akcí (P46A T1, `.claude/debate/p46a-ability-state.md`) nese tělo-počítadlo
+ * `abilityKeeper` jako kombo: mrtvá předloha za tělesy úrovně, jen ve světě
+ * s `abilities`, takže hash starých her se nepohne. Cooldown a aktivní okno
+ * v tikách, štít jako náboj 0/1, `held` = tlačítka minulého tiku (hrana stisku).
+ * `aux0`/`aux1` zůstávají volné pro power-up (P46C).
+ */
+export const ABILITY_SLOTS = {
+  cooldownA: BODY.x,
+  cooldownB: BODY.y,
+  activeA: BODY.z,
+  activeB: BODY.vx,
+  shield: BODY.vy,
+  held: BODY.vz,
+} as const;
+
+/**
+ * Power-upy (P46C): naráz je aktivní nejvýš jeden, nový nahradí starý. Stav nese
+ * počítadlo akcí (`abilityKeeper`) ve volných `aux0`/`aux1`; svět s power-upy a bez
+ * akcí dostane totéž tělo-počítadlo jen pro ně. Kód druhu = index v `POWERUPS` + 1.
+ */
+export const POWERUPS = ['magnet', 'shield', 'speed', 'double'] as const;
+export type PowerupId = (typeof POWERUPS)[number];
+export const POWERUP_SLOTS = { kind: BODY.aux0, left: BODY.aux1 } as const;
+/** Trvání v tikách; štít skončí i prvním pohlceným zásahem. */
+export const POWERUP_TICKS: Readonly<Record<PowerupId, number>> = { magnet: 5 * ARCADE_HZ, shield: 8 * ARCADE_HZ, speed: 4 * ARCADE_HZ, double: 6 * ARCADE_HZ };
+export const powerupCode = (id: PowerupId): number => POWERUPS.indexOf(id) + 1;
+
+/** Aktivní power-up v počítadle `keeper`, nebo `undefined`. */
+export function powerupOf(state: Int32Array, keeper: number): PowerupId | undefined {
+  const base = HEADER_SIZE + keeper * BODY_STRIDE;
+  return (state[base + POWERUP_SLOTS.left] as number) > 0 ? POWERUPS[(state[base + POWERUP_SLOTS.kind] as number) - 1] : undefined;
+}
+
+/**
  * Celý stav instance: `HEADER_SIZE` slotů hlavičky, pak `maxBodies × BODY_STRIDE`
  * slotů těl. Nic mimo tohle pole hash nevidí a nic jiného se mezi tiky nenese.
  */
@@ -340,6 +424,71 @@ export type ArcadeState = Int32Array;
 
 export const stateSize = (bodies: number): number => HEADER_SIZE + bodies * BODY_STRIDE;
 export const bodyBase = (index: number): number => HEADER_SIZE + index * BODY_STRIDE;
+
+// ---------------------------------------------------------------------------
+// Stav logiky (P45B)
+
+/**
+ * Logických těl ve světě s blokem `logic`. Leží těsně pod `HEADER.spawnBase`, takže je spawn
+ * nikdy nepřepíše, a nemění hlavičku ani výpočet kapacity – svět bez logiky je nemá vůbec.
+ */
+export const LOGIC_BODIES = 2;
+
+/**
+ * Sloty stavu logiky jako posun od prvního slotu prvního logického těla. Logické tělo je mrtvé
+ * a nulového rozměru; logika bere jen polohu, rychlost a `aux`, které jádro u mrtvého těla
+ * nečte – příznaky, rozměr, roli a model nechává jádru.
+ */
+export const LOGIC_SLOTS = {
+  /** Index aktuální fáze (0 = počáteční). */
+  phase: BODY.x,
+  /** Čekající vstupy (bity 0–3) a výstupy (bity 4–7) fází pro průchod fází. */
+  phasePending: BODY.y,
+  /** Tik posledního vstupu do fáze. */
+  phaseTick: BODY.z,
+  /** Čekající události, bit na událost. */
+  eventPending: BODY.vx,
+  /**
+   * Co vystřelilo v právě běžícím průchodu logiky: časovače bity 0–3, vstupy fází 4–7, výstupy
+   * 8–11, události 12–19; bity 20–23 = časovač spuštěný v tomto tiku (průchod časovačů ho
+   * ještě neodečte). Po průchodech logiky je 0.
+   */
+  fired: BODY.vy,
+  /** Západky překročení mezí proměnných, bit na pravidlo (`latch`). */
+  varLatch: BODY.vz,
+  /** Zbylé tiky časovačů 0–1 a 2–3 (dolních a horních 16 bitů); 0 = stojí. */
+  timers01: BODY.aux0,
+  timers23: BODY.aux1,
+} as const;
+
+/** Proměnné 0–7 ve druhém logickém těle. */
+export const LOGIC_VAR_SLOTS = [BODY.x, BODY.y, BODY.z, BODY.vx, BODY.vy, BODY.vz, BODY.aux0, BODY.aux1].map((slot) => BODY_STRIDE + slot);
+
+export const FIRED = { timer: 0, phaseEnter: 4, phaseExit: 8, event: 12, freshTimer: 20 } as const;
+
+/** Jména bloku `logic` podle druhu v pořadí deklarace – index jména je jeho index v jádře. */
+export interface LogicNames {
+  readonly var: readonly string[];
+  readonly timer: readonly string[];
+  readonly phase: readonly string[];
+  readonly event: readonly string[];
+}
+
+/** První slot prvního logického těla; jen ve světě s logikou. */
+export const logicBase = (state: ArcadeState): number => bodyBase((state[HEADER.spawnBase] as number) - LOGIC_BODIES);
+const timerSlot = (timer: number): number => (timer < 2 ? LOGIC_SLOTS.timers01 : LOGIC_SLOTS.timers23);
+const timerShift = (timer: number): number => (timer % 2) * 16;
+/** Zbylé tiky časovače; 0 = stojí. */
+export const timerLeft = (state: ArcadeState, base: number, timer: number): number => ((state[base + timerSlot(timer)] as number) >>> timerShift(timer)) & 0xffff;
+export function setTimerLeft(state: ArcadeState, base: number, timer: number, ticks: number): void {
+  const slot = base + timerSlot(timer);
+  const shift = timerShift(timer);
+  state[slot] = ((state[slot] as number) & ~(0xffff << shift)) | (ticks << shift);
+}
+export const varValue = (state: ArcadeState, base: number, index: number): number => state[base + (LOGIC_VAR_SLOTS[index] as number)] as number;
+export const phaseOf = (state: ArcadeState, base: number): number => state[base + LOGIC_SLOTS.phase] as number;
+/** Vystřelil v tomto průchodu logiky bit `FIRED.<druh> + index`? */
+export const firedBit = (state: ArcadeState, base: number, bit: number): boolean => (((state[base + LOGIC_SLOTS.fired] as number) >>> bit) & 1) === 1;
 
 // ---------------------------------------------------------------------------
 // Vstup
@@ -358,6 +507,10 @@ export const BUTTON = {
   ATTACK: 1 << 7,
   /** Použít (P32-0 T4, úkol P32G): klávesa K, na telefonu „Use“; drží se jako `HOLD`. */
   INTERACT: 1 << 8,
+  /** Akce hrdiny A (P46A): první ze `spec.abilities`, klávesa J, na telefonu levé tlačítko vpravo dole. */
+  ACTION_A: 1 << 9,
+  /** Akce hrdiny B (P46A): druhá ze `spec.abilities`, klávesa K. */
+  ACTION_B: 1 << 10,
 } as const;
 
 export const AXIS_MIN = -1000;
@@ -461,7 +614,37 @@ export type ArcadeEffect =
    * Sebrání v kombu (P36A T5): počítadlo `body` (`COMBO`) si zapíše násobič,
    * tik a životy. Zároveň je to zpráva pro efekty scény (P36C) – „×3“.
    */
-  | { readonly kind: 'combo'; readonly body: number; readonly multiplier: number };
+  | { readonly kind: 'combo'; readonly body: number; readonly multiplier: number }
+  /**
+   * Štít hrdiny (P46A T5, R2): má-li počítadlo akcí `keeper` náboj a tělo `body` žije,
+   * náboj spadne na 0 a jádro efekt nahradí `despawn` těla. Rozhoduje se až při použití,
+   * takže druhý náraz téhož tiku najde náboj spotřebovaný. Pravidla stav nepíšou přímo.
+   */
+  | { readonly kind: 'block'; readonly keeper: number; readonly body: number }
+  /**
+   * Sebraný power-up (P46C): počítadlo `keeper` si zapíše druh `power` (`powerupCode`) a `ticks`
+   * trvání; štít nabije náboj akce štítu (`ABILITY_SLOTS.shield`). Zároveň zpráva pro scénu.
+   */
+  | { readonly kind: 'powerup'; readonly keeper: number; readonly power: number; readonly ticks: number }
+  /**
+   * Efekty `effects` platí, jen když tělo `body` při použití ještě žije – náraz, který štít
+   * téhož tiku pohltil, nic nevezme (P46A R2). Jádro obal nahradí vnořenými efekty, nebo ničím.
+   */
+  | { readonly kind: 'ifAlive'; readonly body: number; readonly effects: readonly ArcadeEffect[] }
+  /**
+   * Logika (P45B), indexy z deklarace `logic`: proměnná na hodnotu / o kolik (saturuje na
+   * ±`LOGIC_LIMITS.varSaturation`), přechod do fáze, spuštění / zastavení časovače, vyslání
+   * události. Stopu ohlásí jen skutečná změna – nastavení na tutéž hodnotu, vstup do fáze, ve
+   * které hra už je, start běžícího časovače na týž zbytek ani vyslání čekající události ne.
+   */
+  | { readonly kind: 'setVar'; readonly var: number; readonly value: number }
+  | { readonly kind: 'addVar'; readonly var: number; readonly amount: number }
+  | { readonly kind: 'goPhase'; readonly phase: number }
+  | { readonly kind: 'startTimer'; readonly timer: number; readonly ticks: number }
+  | { readonly kind: 'stopTimer'; readonly timer: number }
+  | { readonly kind: 'emit'; readonly event: number }
+  /** Západka překročení meze proměnné (bit `bit` v `varLatch`); účetnictví spouštěče, stopu nehlásí. */
+  | { readonly kind: 'latch'; readonly bit: number; readonly on: boolean };
 
 /**
  * `hit` = projektil skončil: zasáhl terč, nepřítele nebo pevné tělo (`other`),
@@ -470,7 +653,13 @@ export type ArcadeEffect =
  * `press` (P29A) = hned po ovládání, s vstupem tiku: pravidlo samo pozná, zda
  * hráč stiskl, co ho zajímá.
  */
-export type RuleTrigger = 'contact' | 'tick' | 'counter' | 'hit' | 'press';
+export type RuleTrigger = 'contact' | 'tick' | 'counter' | 'hit' | 'press' | LogicTrigger;
+/**
+ * Průchody logiky (P45B) za průchodem čítačů, jen ve světě s logikou: `timer` = některý časovač
+ * doběhl, `phase` = hra vstoupila do fáze nebo z ní odešla, `event` = čekající události. Co
+ * přesně vystřelilo, nese `LOGIC_SLOTS.fired` (`firedBit`).
+ */
+export type LogicTrigger = 'timer' | 'phase' | 'event';
 
 /** Co pravidlo vidí: stav jen ke čtení, hráč a u `contact` těl, se kterým se dotkl. */
 export interface RuleContext {
@@ -623,7 +812,12 @@ export const mapUnderlying = (ref: PieceRef, edit: (native: PieceRef) => PieceRe
  * v tiku 0; `kinds` převádí `BODY.kind` na id modelu z katalogu.
  */
 export interface ArcadeWorld {
-  readonly runtimeVersion: typeof ARCADE_RUNTIME_VERSION;
+  readonly runtimeVersion: ArcadeRuntimeVersion;
+  /**
+   * Logická těla (P45B), jen ve světě s blokem `logic` (`arcade-v3`). `names` = jména deklarace
+   * ze specu (T7): ověření jimi pojmenuje kostku, kterou robot nedokázal; svět postavený bez specu je nemá.
+   */
+  readonly logic?: { readonly bodies: readonly number[]; readonly names?: LogicNames };
   readonly seed: number;
   readonly control: PieceRef;
   readonly rules: readonly PieceRef[];
@@ -633,3 +827,9 @@ export interface ArcadeWorld {
   readonly length: number;
   readonly initial: readonly number[];
 }
+
+/**
+ * Mřížka zamčeného cíle chování (`aux1`, P45C): `x` po 16, `z` po 64 jednotkách. Chování, které podle cíle
+ * staví (shazovač P46B T5 – osa silnice v místě shozu), počítá s cílem už zarovnaným na ni.
+ */
+export const AIM_GRID = { x: 16, z: 64 } as const;

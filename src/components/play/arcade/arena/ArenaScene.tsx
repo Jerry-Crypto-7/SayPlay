@@ -43,23 +43,28 @@ import type { Look } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { DIRECTIONS, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
-import { FIGHT_PHASE, facingOf, phaseOf, strikeDirectionOf } from '@/play/arcade/pieces/fight';
+import { FIGHT, FIGHT_PHASE, attackCooldownOf, facingOf, phaseOf, phaseTicksLeft, strikeDirectionOf } from '@/play/arcade/pieces/fight';
+import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
-import { type BodyView, bodiesOf, bodiesStale } from '../bodies';
-import { deadFor, fallOf, squashPose, tiltPose } from '../characterMotion';
+import { type BodyView, PACING_KINDS, SPARK_KIND, bodiesOf, bodiesStale } from '../bodies';
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
+import { FieldGround } from '../look/FieldGround';
+import { boxEdge } from '../look/ground';
 import { glowingCopy } from '../look/load';
-import { UNDER_PANORAMA } from '../look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
 import { Scenery } from '../look/Scenery';
+import { VegetationAround } from '../look/Vegetation';
+import { LOW_TOWARD_CAMERA } from '../look/vegetation-places';
 import { questTargets } from '../quest/TargetStates';
-import { RiggedModel } from '../RiggedModel';
+import { RiggedModel, type ToyFrame } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
 import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
-import { type Cast, FittedModel } from '../World';
+import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
+import { bodyClassOf } from '../toy/body-class';
+import { type Cast, FittedModel, toyTargetOf } from '../World';
 import { ArenaFloor } from './ArenaFloor';
 import { type TargetLayer, TargetsMount } from './TargetsMount';
 import { useThreatEdge } from './ThreatEdge';
@@ -95,8 +100,10 @@ const SEE_M = 9;
 /** Na výšku (mobil) méně: při 6 m měl hráč 3,7 % výšky obrazu (P27A T6, P30B T5); nahoru a dolů je pak vidět víc. */
 const SEE_M_TALL = 5;
 
-/** Jak daleko za hranou arény stojí první řada kulis (m). */
+/** Jak daleko za hranou arény stojí první řada kulis (m); tamtéž začíná vegetace (P46G T7). */
 const SCENERY_MARGIN = 1.5;
+/** Kam zem agaru sahá za hranu (m): za kulisy do mlhy. */
+const AGAR_LAND_M = 50;
 
 /** Sklon kamery nad vodorovnou (rad): 48° – hrdina pořád zřetelně shora, horní třetina obrazu už za hranou arény (58° ukázalo kulisy jen v rozích). */
 const PITCH = (48 * Math.PI) / 180;
@@ -211,6 +218,11 @@ function AgarWorld({ session, half, surface, look: scene, targets, ghost }: Aren
   });
 
   const side = (2 * half) / UNIT;
+  // Zem za hranou s odstíny, skvrnami, krajnicí u hrany a tmavnutím do dálky (P46G T7); vegetace sady za kulisami.
+  const { box, land, edge } = useMemo(() => {
+    const field = { x0: -side / 2, x1: side / 2, z0: -side / 2, z1: side / 2 };
+    return { box: field, land: { x0: field.x0 - AGAR_LAND_M, x1: field.x1 + AGAR_LAND_M, z0: field.z0 - AGAR_LAND_M, z1: field.z1 + AGAR_LAND_M }, edge: boxEdge(field) };
+  }, [side]);
   return (
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
@@ -218,14 +230,13 @@ function AgarWorld({ session, half, surface, look: scene, targets, ghost }: Aren
         {/* Podlaha v barvě dráhy sady, ne země: zelená kořist by na trávě splynula. Prostředí ukazují kulisy za hranou. */}
         <meshStandardMaterial color={scene.track} roughness={0.8} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.08, 0]} renderOrder={UNDER_PANORAMA}>
-        <planeGeometry args={[side + 60, side + 60]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
-      </mesh>
+      <FieldGround look={scene} area={land} edge={edge} y={-0.08} under />
+      {/* Kamera pod 48° obzor nevidí: kulisu za mlhou nahrazuje vzdálená linie stromů; na straně kamery jen drobnosti. */}
+      {scene.flora !== undefined && <VegetationAround flora={scene.flora} seed={session.world.seed} box={box} clear={SCENERY_MARGIN} layers={LOW_TOWARD_CAMERA} />}
       {/* Kulisy sady prostředí (P27A T3) za hranou arény ze všech čtyř stran – jen vzhled, jádro o nich neví. */}
       {[0, Math.PI / 2].map((turn) => (
         <group key={turn} rotation={[0, turn, 0]}>
-          <Scenery look={scene} layout="sides" inner={side / 2 + SCENERY_MARGIN} from={-side / 2} to={side / 2} />
+          <Scenery look={scene} layout="sides" inner={side / 2 + SCENERY_MARGIN} from={-side / 2} to={side / 2} vegetation />
         </group>
       ))}
       {discs.map((disc) => {
@@ -240,7 +251,8 @@ function AgarWorld({ session, half, surface, look: scene, targets, ghost }: Aren
             </group>
           );
         }
-        const color = colorOf(disc.role);
+        // Jiskra tepu (P47A T10) je bonus, ne věc hry: mátový kotouč místo žlutého.
+        const color = disc.role === ROLE.collectible && disc.kind === SPARK_KIND ? brand.mint : colorOf(disc.role);
         const tall = disc.role === ROLE.collectible ? 0.15 : Math.min(0.5, disc.h);
         return (
           // `frame` čte sonda záběru (P27A T6): hráč je hrdina, každý jiný kotouč kromě střely cíl nebo hrozba.
@@ -283,6 +295,8 @@ const DECOR_KEEP_M = 0.4;
 /** Záře věci nad prahem bloomu rigu (`bloomThreshold` ≈ 1,1). */
 const ITEM_GLOW = 2.4;
 const RING_GLOW = new Color(brand.sun).multiplyScalar(2.5);
+/** Kruh pod jiskrou tepu: mátová jako jiskra, ne slunce věcí hry. */
+const SPARK_GLOW = new Color(brand.mint).multiplyScalar(2.5);
 const ALERT_GLOW = new Color(brand.tomato).multiplyScalar(1.6);
 
 /** Sklon kamery nad vodorovnou (sin, cos). */
@@ -327,22 +341,24 @@ const GLOW_EVERY = 20;
 /** Nejdelší krok hodin kresby souboje (s): snímek po pauze nepřeskočí záblesk ani pád. */
 const MAX_FX_STEP_S = 0.1;
 
-type Part = 'hero' | 'chaser' | 'enemy' | 'item' | 'block';
+/** `foe` = tělo průběhu P45C (chování, boss): model pronásledovatele z věty, bez vykřičníku a tahu kamery pronásledovatele. */
+type Part = 'hero' | 'chaser' | 'enemy' | 'foe' | 'item' | 'block';
 
-function partOf(view: BodyView): Part {
+export function partOf(view: BodyView): Part {
   if (view.role === ROLE.player) return 'hero';
   if (view.role === ROLE.chaser) return 'chaser';
+  if (PACING_KINDS.has(view.kind)) return 'foe';
   if (view.kind === 'enemy' || (view.kind === 'prey' && view.role === ROLE.enemy)) return 'enemy';
   if (view.role === ROLE.collectible) return 'item';
   return 'block';
 }
 
 /** Model z popisku role; věc bez modelu (`undefined`) je zářící drahokam. */
-function modelOf(part: Part, cast: Cast): string | undefined {
-  return part === 'hero' ? cast.player : part === 'chaser' ? cast.chaser : part === 'enemy' ? cast.enemy : part === 'item' ? cast.props.coin : undefined;
+export function modelOf(part: Part, cast: Cast): string | undefined {
+  return part === 'hero' ? cast.player : part === 'chaser' || part === 'foe' ? cast.chaser : part === 'enemy' ? cast.enemy : part === 'item' ? cast.props.coin : undefined;
 }
 
-const FALLBACK: Readonly<Record<Part, string>> = { hero: brand['sky-deep'], chaser: brand.alarm, enemy: brand['tomato-deep'], item: brand.sun, block: FENCE_COLOR };
+const FALLBACK: Readonly<Record<Part, string>> = { hero: brand['sky-deep'], chaser: brand.alarm, enemy: brand['tomato-deep'], foe: brand.alarm, item: brand.sun, block: FENCE_COLOR };
 
 interface Size {
   readonly w: number;
@@ -367,14 +383,24 @@ function reachOf(qx: number, qy: number, qz: number, r: number, tan: number, asp
 }
 
 /**
- * Póza statického modelu: poskok, zmáčknutí, bliknutí a zakymácení po zásahu, pád
- * po prohře (`dead` = sekundy od ní, P36C T8). Předklon ne – směr drží otočení skupiny.
+ * Hračkový úder (`toyPoseOf`) začne nápřahem dozadu a výpad vrcholí až tolik tiků po začátku.
+ * V aréně je nápřahem přiblížení (v souboji telegraf) a rána dopadá v tiku zásahu, takže se
+ * začátek posune o tolik tiků zpět: tik zásahu je vrchol výpadu k zasaženému, ne nápřah od něj.
  */
-function applyPose(group: Group, pose: Pose, dead: number): void {
-  group.position.y = pose.bob;
-  tiltPose(group, pose.flash > 0 ? 1 - pose.flash : 1, fallOf(dead));
-  squashPose(group, pose.squash);
-  group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
+const BLOW_PEAK_TICKS = 16;
+
+/**
+ * Tik stavu, kdy tělo udeřilo: hrdina souboje švihem, soupeř souboje svým úderem (oba dopadnou
+ * v tiku, kdy začaly), jinak událost `attack` hračkového pohledu; `null` = neudeřilo.
+ */
+function blowOf(state: Int32Array, index: number, part: Part, fighter: boolean, attack: boolean): number | null {
+  const tick = state[HEADER.tick] as number;
+  if (fighter && part === 'hero') {
+    const left = attackCooldownOf(state, index);
+    return left > 0 ? tick - (FIGHT.attackCooldown - left) : null;
+  }
+  if (fighter) return phaseOf(state, index) === FIGHT_PHASE.strike ? tick - (FIGHT.strike - phaseTicksLeft(state, index)) : null;
+  return attack ? tick : null;
 }
 
 /** Zářící kopie materiálu modelu věci – jedna na zdrojový materiál, sdílená všemi věcmi. */
@@ -393,6 +419,21 @@ function Gem({ size }: { readonly size: number }) {
       <octahedronGeometry args={[size / 2, 0]} />
       <meshStandardMaterial color={brand.sun} emissive={brand.sun} emissiveIntensity={ITEM_GLOW} roughness={0.3} flatShading />
     </mesh>
+  );
+}
+
+/** Jiskra tepu (P47A T10): tři zkřížené hroty v mátové – bonus, ne věc hry (ta je drahokam nebo model z věty). Nic nestahuje. */
+const SPARK_ARMS: readonly (readonly [number, number, number])[] = [[0.3, 1, 0.3], [1, 0.3, 0.3], [0.3, 0.3, 1]];
+function Spark({ size }: { readonly size: number }) {
+  return (
+    <group position={[0, size / 2, 0]}>
+      {SPARK_ARMS.map((scale) => (
+        <mesh key={scale.join()} scale={[...scale]} userData={{ glow: true }}>
+          <octahedronGeometry args={[size / 2, 0]} />
+          <meshStandardMaterial color={brand.mint} emissive={brand.mint} emissiveIntensity={ITEM_GLOW} roughness={0.3} flatShading />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
@@ -432,8 +473,11 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
   const poses = useRef<(Pose | null)[]>([]);
   const clips = useRef<ClipState[]>([]);
   const yaws = useRef<(number | undefined)[]>([]);
-  /** Tik prohry statického hrdiny pro pád (P36C T8). */
-  const deaths = useRef(new Map<number, number>());
+  /** Hračková póza (P45D T9) s pamětí minulého snímku a třída těla modelu role. */
+  const toyPoses = useRef<(ToyPose | undefined)[]>([]);
+  /** Pohled a tik, ze kterých hraje hračku riggovaná postava (T13) – v hit-stopu stojí jako póza modelu. */
+  const toyFrames = useRef<(ToyFrame | undefined)[]>([]);
+  const bodyClasses = useMemo(() => parts.map((part) => bodyClassOf(modelOf(part, cast) ?? '')), [parts, cast]);
   /** Tik, kdy se probuzený pronásledovatel (kopie od `spawnBase`) poprvé ukázal. */
   const woke = useRef(new Map<number, number>());
   const glows = useMemo(() => new Map<Material, Material>(), []);
@@ -518,8 +562,13 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
     const prev = session.prev();
     const tick = state[HEADER.tick] as number;
     const restarted = follow.current !== null && tick < follow.current.tick;
-    if (restarted) woke.current.clear();
+    if (restarted) {
+      woke.current.clear();
+      toyPoses.current = [];
+    }
     posesOf(state, prev, poses.current, tick + alpha);
+    const reduced = !toyMotionOn();
+    const toyTick = toyTickOf(session);
     const player = state[HEADER.player] as number;
     const pb = bodyBase(player);
     const grace = graceLeft(state);
@@ -571,8 +620,26 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
       }
       const pose = poses.current[view.index];
       const inner = posed.current[view.index];
-      // Bojovník padá v `drawFighter` (skupina `leans`); tady jen hrdina, kterého chytili nebo zasáhli naposled.
-      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose, fighter ? 0 : deadFor(deaths.current, view.index, viewOf(state, prev, view.index).alive, tick + alpha, ARCADE_HZ));
+      // Hračková póza (P45D T9) podle stavu a třídy těla. Hit-stop drží pózu z chvíle zásahu: snímek, který
+      // zásah zachytil, ji ještě spočítá, další stojí, dokud hit-stop nepovolí.
+      if (!(fighter && hold === 1 && !capture)) {
+        const seen = toyViewOf(state, prev, view.index);
+        // Bojovníka zasáhne úbytek HP; KO kreslí `drawFighter` na hodinách kresby (poslední úder zastaví tiky), hračka ho nechá stát.
+        const moving = fighter ? { ...seen, attack: false, alive: true, hit: seen.hit || bodyHp(state, view.index) < bodyHp(prev, view.index) } : { ...seen, attack: false };
+        const blow = blowOf(state, view.index, part!, fighter, seen.attack);
+        // Riggovaná postava hraje tenhle pohled jen ve stavech bez klipu (`RiggedModel`, T13); posunutý začátek
+        // úderu dostane s ním, ať i její výpad vrcholí v tiku zásahu (T23).
+        toyFrames.current[view.index] = blow === null ? { view: moving, tick: toyTick } : { view: moving, tick: toyTick, attackAt: blow - BLOW_PEAK_TICKS };
+        if (inner !== null && inner !== undefined) {
+          const before = toyPoses.current[view.index] ?? null;
+          const memory = blow === null || before === null || before.attackAt === blow - BLOW_PEAK_TICKS ? before : { ...before, attackAt: blow - BLOW_PEAK_TICKS };
+          const toy = toyPoseOf(moving, bodyClasses[view.index]!, memory, toyTick, reduced);
+          toyPoses.current[view.index] = toy;
+          applyToy(toyTargetOf(inner), toy, drawn[view.index]!.h);
+          // Zásah bojovníka ukáže záblesk barvy (`drawFighter`); model by blikáním záblesk schoval.
+          if (fighter) inner.visible = true;
+        }
+      }
       if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) {
         const moving = clipOf(viewOf(state, prev, view.index), pose, tick + alpha);
         clips.current[view.index] = fighter ? fightClipOf(state, view.index, part === 'hero', watch, now, moving) : moving;
@@ -717,6 +784,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
           );
         }
         const model = modelOf(part, cast);
+        const spark = part === 'item' && view.kind === SPARK_KIND;
         const character = rigged[view.index];
         const fighter = startHp[view.index]! > 0;
         // Klip, který postava opravdu hraje: hrdina pro sondu `data-anim-clip`, soupeř souboje pro `data-rival-clip`.
@@ -728,22 +796,30 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
               : undefined;
         return (
           // `frame` a `item` čte sonda záběru (`__playFrame`): hrdina, cíle a hrozby, pronásledovatel pod vlastním jménem.
-          <group key={view.index} ref={register} userData={{ frame: part === 'hero' ? 'hero' : 'target', item: part === 'hero' ? undefined : part === 'item' ? 'coin' : part }}>
+          // Jiskra tepu nekreslí věc z věty, takže ani nenese její jméno (`item`).
+          <group key={view.index} ref={register} userData={{ frame: part === 'hero' ? 'hero' : 'target', item: part === 'hero' || spark ? undefined : part === 'item' ? 'coin' : part }}>
             <group ref={(group) => { turned.current[view.index] = group; }}>
               {part === 'item' ? (
-                model === undefined ? <Gem size={size.h} /> : <FittedModel id={model} w={size.w} h={size.h} d={size.d} fallback={FALLBACK.item} />
+                spark ? <Spark size={size.h} /> : model === undefined ? <Gem size={size.h} /> : <FittedModel id={model} w={size.w} h={size.h} d={size.d} fallback={FALLBACK.item} />
               ) : (
-                // Náklon nápřahu, výpad a pád bojovníka (`drawFighter`); mimo souboj stojí rovně.
+                // Nápřah a pád bojovníka (`drawFighter`); výpad, úder a zásah hraje hračková póza vnitřní skupiny.
                 <group ref={(group) => { leans.current[view.index] = group; }}>
                   {/* Obrys (P36C T6) jen na modelu – kruh, ukazatel zdraví a výstraha jsou mimo tuhle skupinu. */}
                   <InkOutline ink={part === 'hero' ? 'hero' : 'foe'} />
                   {/* Činnost hrdiny (P37B T2): soupeři a `none` dostanou model beze změny stromu. */}
                   <HeroActionBody action={part === 'hero' ? heroAction : 'none'} session={session} h={size.h}>
                     {character !== undefined ? (
-                      <RiggedModel character={character} h={size.h} clip={() => clips.current[view.index] ?? 'idle'} fallback={FALLBACK[part]} onClip={onClip} />
+                      <RiggedModel
+                        character={character}
+                        h={size.h}
+                        clip={() => clips.current[view.index] ?? 'idle'}
+                        fallback={FALLBACK[part]}
+                        onClip={onClip}
+                        toy={() => toyFrames.current[view.index] ?? { view: { ...toyViewOf(session.state(), session.prev(), view.index), attack: false }, tick: toyTickOf(session) }}
+                      />
                     ) : (
                       <group ref={(group) => { posed.current[view.index] = group; }}>
-                        <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} />
+                        <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} posed />
                       </group>
                     )}
                   </HeroActionBody>
@@ -755,7 +831,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
               // Zářící kruh na zemi pod věcí: svítí nad prahem bloomu, ať je věc vidět i z dálky.
               <mesh position={[0, 0.02 - ITEM_HOVER_M, 0]} rotation={[-Math.PI / 2, 0, 0]} userData={{ glow: true, rigShadow: 'receive' }}>
                 <ringGeometry args={[size.w * 0.45, size.w * 0.6, 24]} />
-                <meshBasicMaterial color={RING_GLOW} toneMapped={false} />
+                <meshBasicMaterial color={spark ? SPARK_GLOW : RING_GLOW} toneMapped={false} />
               </mesh>
             )}
             {part === 'hero' && (

@@ -1,0 +1,190 @@
+{
+ "id": "f10",
+ "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
+ "axis": "arena.fight",
+ "model": "gpt-oss-20b",
+ "promptVersion": "4ff1d2c9",
+ "directorPromptVersion": "0cf0988c",
+ "recordedAt": "2026-10-15T15:36:40.086Z",
+ "ms": 7575,
+ "answer": {
+  "plan": "arena fight with stone golem vs grave robbers in an ancient desert temple",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "stone golem",
+   "cast": [
+    {
+     "label": "grave robber",
+     "does": "fight",
+     "verb": "crush",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "gem",
+     "does": "collect",
+     "verb": "grab",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "ancient desert temple",
+   "palette": "desert",
+   "params": {
+    "entryDistance": 12000,
+    "chaseLead": 60,
+    "seconds": 60,
+    "items": 3,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 2,
+    "chaserSpeed": 70,
+    "enemies": 2,
+    "enemyHp": 5,
+    "enemySpeed": 80,
+    "playerHp": 7,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 0
+   },
+   "counts": {
+    "enemy": 2,
+    "collectible": 3
+   },
+   "ruleRoles": [
+    {
+     "id": "robber",
+     "kind": "chaser",
+     "label": "grave robber",
+     "count": 2
+    },
+    {
+     "id": "gem",
+     "kind": "collectible",
+     "label": "gem",
+     "count": 3
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "spawnRobbers",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "robber",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawnGems",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "gem",
+        "at": "other"
+       }
+      }
+     ]
+    },
+    {
+     "id": "robberChase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "robber"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    },
+    {
+     "id": "gemCollect",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "gem"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 100
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "robberDefeat",
+     "verb": "defeat",
+     "when": {
+      "contact": [
+       "player",
+       "robber"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "despawn": "self"
+      },
+      {
+       "score": 50
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "phase1"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "battle"
+     }
+    ],
+    "events": null
+   },
+   "boss": {
+    "role": "grave robber",
+    "name": "Ancient Tomb Guardian",
+    "attack": "charge"
+   },
+   "abilities": [],
+   "segments": [
+    "newFoe",
+    "moving",
+    "faster"
+   ]
+  }
+ },
+ "failure": null
+}

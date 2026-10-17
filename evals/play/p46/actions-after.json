@@ -1,0 +1,845 @@
+{
+ "schema": "p46-actions.v1",
+ "compiler": "play-compiler-v11/arcade-v2",
+ "profile": "intermediate",
+ "summary": {
+  "n": 60,
+  "wanting": 25,
+  "hasAction": 0.88,
+  "botUsed": 0.92,
+  "verbFired": 0.92
+ },
+ "rows": [
+  {
+   "id": "f01",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "f02",
+   "control": "duel",
+   "wanted": [],
+   "present": [
+    "strike"
+   ],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "f03",
+   "control": "shooter",
+   "wanted": [
+    "shoot"
+   ],
+   "present": [
+    "shoot"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "f05",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "f10",
+   "control": "move_free",
+   "wanted": [
+    "strike"
+   ],
+   "present": [
+    "strike"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "f12",
+   "control": "glide",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "f17",
+   "control": "flap",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "f18",
+   "control": "walker",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "m01",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "m02",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "m03",
+   "control": "steer",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "m04",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "m06",
+   "control": "steer",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "m07",
+   "control": "walker",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "m08",
+   "control": "runner",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "m09",
+   "control": "platform",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "m11",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "m16",
+   "control": "platform",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "n01",
+   "control": "timing",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "n02",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "n04",
+   "control": "timing",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "u01",
+   "control": "rhythm",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "u02",
+   "control": "rhythm",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "u03",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "u06",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "d01",
+   "control": "ball",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "d03",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "d04",
+   "control": "shooter",
+   "wanted": [
+    "shoot"
+   ],
+   "present": [
+    "shoot"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "d09",
+   "control": "timing",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "h02",
+   "control": "steer",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "h03",
+   "control": "throw",
+   "wanted": [
+    "shield"
+   ],
+   "present": [],
+   "wantsAction": true,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "h05",
+   "control": "duel",
+   "wanted": [],
+   "present": [
+    "strike"
+   ],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "j01",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "j04",
+   "control": "walker",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "j05",
+   "control": "move_free",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "j08",
+   "control": "move_free",
+   "wanted": [
+    "shield"
+   ],
+   "present": [
+    "strike"
+   ],
+   "wantsAction": true,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "s002",
+   "control": "move_free",
+   "wanted": [
+    "dash"
+   ],
+   "present": [
+    "dash"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "s003",
+   "control": "runner",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "s021",
+   "control": "platform",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "s035",
+   "control": "flap",
+   "wanted": [],
+   "present": [],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a01",
+   "control": "runner",
+   "wanted": [
+    "grab"
+   ],
+   "present": [
+    "grab"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a02",
+   "control": "runner",
+   "wanted": [
+    "strike",
+    "shoot"
+   ],
+   "present": [
+    "strike",
+    "shoot"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a03",
+   "control": "steer",
+   "wanted": [
+    "shoot"
+   ],
+   "present": [
+    "shoot"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a04",
+   "control": "steer",
+   "wanted": [
+    "shoot"
+   ],
+   "present": [
+    "shoot"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a05",
+   "control": "runner",
+   "wanted": [
+    "strike"
+   ],
+   "present": [
+    "strike"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a06",
+   "control": "move_free",
+   "wanted": [
+    "grab",
+    "dash"
+   ],
+   "present": [
+    "grab",
+    "dash"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a07",
+   "control": "runner",
+   "wanted": [
+    "dash",
+    "strike"
+   ],
+   "present": [
+    "dash",
+    "strike"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a08",
+   "control": "move_free",
+   "wanted": [
+    "shield"
+   ],
+   "present": [
+    "shield"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a09",
+   "control": "platform",
+   "wanted": [
+    "strike"
+   ],
+   "present": [
+    "strike"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a10",
+   "control": "walker",
+   "wanted": [
+    "grab"
+   ],
+   "present": [
+    "grab"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a11",
+   "control": "glide",
+   "wanted": [
+    "shoot"
+   ],
+   "present": [
+    "shoot"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a12",
+   "control": "platform",
+   "wanted": [
+    "strike"
+   ],
+   "present": [
+    "strike"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a13",
+   "control": "move_free",
+   "wanted": [
+    "grab"
+   ],
+   "present": [
+    "grab"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a14",
+   "control": "steer",
+   "wanted": [
+    "dash",
+    "shoot"
+   ],
+   "present": [
+    "shoot"
+   ],
+   "wantsAction": true,
+   "hasAction": false,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a15",
+   "control": "move_free",
+   "wanted": [
+    "shield"
+   ],
+   "present": [
+    "shield"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a16",
+   "control": "steer",
+   "wanted": [
+    "shoot"
+   ],
+   "present": [
+    "shoot"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a17",
+   "control": "runner",
+   "wanted": [],
+   "present": [
+    "strike"
+   ],
+   "wantsAction": false,
+   "hasAction": false,
+   "botUsed": false,
+   "verbFired": false,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a18",
+   "control": "runner",
+   "wanted": [
+    "grab"
+   ],
+   "present": [
+    "grab"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a19",
+   "control": "platform",
+   "wanted": [
+    "strike"
+   ],
+   "present": [
+    "strike"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  },
+  {
+   "id": "a20",
+   "control": "move_free",
+   "wanted": [
+    "shield"
+   ],
+   "present": [
+    "shield"
+   ],
+   "wantsAction": true,
+   "hasAction": true,
+   "botUsed": true,
+   "verbFired": true,
+   "playable": true,
+   "issues": []
+  }
+ ]
+}

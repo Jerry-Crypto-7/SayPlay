@@ -1,0 +1,18 @@
+{
+  "schema": "p46d-sentences.v1",
+  "note": "Napsané 12. 10. 2026 pro měřidlo P46D, mimo zapečetěné sady. Čtyři věty na žánr; r1, r2, s1 a p1 hrál majitel 12. 10.",
+  "sentences": [
+    { "id": "r1", "genre": "runner", "text": "Hamster escapes a supermarket Roomba" },
+    { "id": "r2", "genre": "runner", "text": "A rabbit steals carrots and runs from a fox" },
+    { "id": "r3", "genre": "runner", "text": "A penguin slides down an icy mountain, collects snowflakes and avoids rocks" },
+    { "id": "r4", "genre": "runner", "text": "A fox runs through the city at night dodging traffic cones" },
+    { "id": "s1", "genre": "steer", "text": "Racing car escaping and shooting enemies" },
+    { "id": "s2", "genre": "steer", "text": "shopping cart race in a supermarket" },
+    { "id": "s3", "genre": "steer", "text": "Grandma kart race through a forest" },
+    { "id": "s4", "genre": "steer", "text": "A monster truck races across the desert" },
+    { "id": "p1", "genre": "platform", "text": "Jumping arcade game in the forest" },
+    { "id": "p2", "genre": "platform", "text": "A ninja frog jumps across lily pads in a swamp" },
+    { "id": "p3", "genre": "platform", "text": "a kangaroo jumps over cars then collects coins on the highway" },
+    { "id": "p4", "genre": "platform", "text": "A knight climbs a castle tower jumping over spikes" }
+  ]
+}

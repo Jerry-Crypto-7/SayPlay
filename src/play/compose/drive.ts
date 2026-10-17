@@ -1,8 +1,11 @@
 import type { CastRole, GenreSpec } from '../genre/contract';
+import { defaultObstacle } from '../genre/roles';
 import type { GameRole, GameSpecV1 } from '../spec';
 import { recipeSchema, type Recipe } from './recipe';
 import { withAuthoredContent } from './content';
 import { expandTemplate } from '../arcade/rules/templates';
+import { lookFor } from '../arcade/look';
+import { steerStyleFor } from '../arcade/pieces/steer';
 
 /** New driving compositions use the native track, never the frozen voyage course. */
 export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
@@ -24,7 +27,8 @@ export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
   const destination = delivery ? 'delivery point' : label('reach', 'finish line');
   const roles: GameRole[] = [
     { id: 'player', kind: 'player', label: content.hero, count: 1 },
-    { id: 'barrier', kind: 'hazard', label: label('avoid', 'tire barrier'), count: 1 },
+    // Zeď okruhu z prostředí, když ji věta neříká: ve městě zábrana, v lese kmeny (P46D T6).
+    { id: 'barrier', kind: 'hazard', label: label('avoid', defaultObstacle(content) ?? 'tire barrier'), count: 1 },
     { id: 'turbo', kind: 'collectible', label: collect ? label('collect', 'crystal') : 'turbo', count: 1 },
     { id: 'finish', kind: 'exit', label: destination, count: 1 },
   ];
@@ -37,6 +41,7 @@ export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
   // (`arcade/compile.ts`) – and the spec says so, as the walker and the voyage course do.
   const { lives, ...rest } = content.params ?? {};
   const params = lives === undefined ? rest : { ...rest, crashBudget: lives };
+  const style = steerStyleFor(content.palette ?? lookFor(content.setting));
   const game = withAuthoredContent({
     schema: 'gamespec.v1',
     control: 'steer',
@@ -53,6 +58,11 @@ export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
       drift: params.drift === 1,
       ...(params.grip === undefined ? {} : { grip: params.grip }),
       ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }),
+      // Nová hra (P46B T5): úseky, soupeři úseků a boss finále (`pacingParts`); uložený spec bez značky se nemění.
+      segments: true,
+      // Okruh ze vzorů: šikany, zúžení, rozcestí… (P46D T4) ve stylu podle prostředí (R2); úseky z něj berou šířku.
+      patterns: 1,
+      ...(style === undefined ? {} : { style }),
     },
     title: `${content.hero} ${race ? 'race' : chase ? 'escape' : 'drive'}`,
     archetype: 'hazard_crossing',

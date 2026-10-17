@@ -1,0 +1,459 @@
+{
+ "schema": "p46e-upgrade.v1",
+ "answers": "src/play/director/__fixtures__/p46-answers",
+ "summary": {
+  "n": 25,
+  "authored": 25,
+  "ready": 25,
+  "readyShare": 1,
+  "keptRules": 1,
+  "keptLogic": 1,
+  "adds": 0.28,
+  "onlyCharacters": 10,
+  "boss": 7,
+  "action": 1,
+  "segments": 0,
+  "actionLost": 0,
+  "reasons": {}
+ },
+ "rows": [
+  {
+   "id": "d01",
+   "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "d04",
+   "sentence": "shoot down paper planes over a school playground",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "f01",
+   "sentence": "a dragon guards its gold hoard from greedy knights inside a volcano",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "f03",
+   "sentence": "An elf archer shoots goblins from the treetops.",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "boss"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "f10",
+   "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "boss",
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "f17",
+   "sentence": "a phoenix rises from the ashes over a burning desert",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "h02",
+   "sentence": "shopping cart race in a supermarket",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "h05",
+   "sentence": "boxing a kangaroo in the australian outback",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "boss"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "j08",
+   "sentence": "a wizard defends a crystal tower from flying skeletons",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "boss",
+    "action",
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "m01",
+   "sentence": "toaster tornado",
+   "directed": "authored",
+   "directedReason": null,
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    2,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "m03",
+   "sentence": "Grandma kart",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "m08",
+   "sentence": "a pengiun tht slides down a mountin",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "m09",
+   "sentence": "ninja cat jumpin on rooftops plz",
+   "directed": "authored",
+   "directedReason": null,
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "m11",
+   "sentence": "my dog chasing the mailman,around the backyard lol",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    4
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "m16",
+   "sentence": "a kangaroo jumps over cars then collects coins on the highway",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "o01",
+   "sentence": "A rabbit steals carrots and runs from a fox",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "boss"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "o02",
+   "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "boss"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "o03",
+   "sentence": "Racing car escaping and shooting enemies",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "o04",
+   "sentence": "racing car escapes police and shoots enemies",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "o05",
+   "sentence": "Hamster escapes a supermarket Roomba",
+   "directed": "authored",
+   "directedReason": null,
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    4
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "o06",
+   "sentence": "Jumping arcade game in the forest",
+   "directed": "authored",
+   "directedReason": null,
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "o07",
+   "sentence": "A ninja frog jumps across lily pads in a swamp",
+   "directed": "authored",
+   "directedReason": null,
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "o08",
+   "sentence": "A bee gathers honey in a windy meadow before the storm hits",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "s002",
+   "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    4
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "s021",
+   "sentence": "obby game with lava and spinning bars",
+   "directed": "authored",
+   "directedReason": null,
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    4
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "boss",
+    "characters"
+   ],
+   "actionLost": false
+  }
+ ]
+}

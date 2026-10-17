@@ -1,0 +1,632 @@
+{
+  "commit": "f1b88a664a5a1b72cfa314723238b89b633fceca",
+  "sets": [
+    "evals/play/p45/panel.json"
+  ],
+  "summary": {
+    "sentences": 40,
+    "usesLogic": 18,
+    "logicSharePct": 45,
+    "playable": 40,
+    "playablePct": 100,
+    "p50ms": 400,
+    "p95ms": 874,
+    "constructs": {
+      "var": 0,
+      "timer": 13,
+      "phase": 18,
+      "event": 0,
+      "wave": 18
+    },
+    "templates": 18
+  },
+  "rows": [
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "f01",
+      "text": "a dragon guards its gold hoard from greedy knights inside a volcano",
+      "ms": 641,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "treasure_rush",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "f02",
+      "text": "an ogre arm wrestles a frost giant in a smoky mountain tavern",
+      "ms": 103,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "f03",
+      "text": "An elf archer shoots goblins from the treetops.",
+      "ms": 372,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "f05",
+      "text": "a fairy lights lanterns along a moonlit forest path",
+      "ms": 641,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "phase",
+        "wave"
+      ],
+      "template": "reinforcements",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "f10",
+      "text": "a stone golem crushes grave robbers in an ancient desert temple",
+      "ms": 305,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "f12",
+      "text": "a baby dragon learns to fly over a medieval town",
+      "ms": 286,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "f17",
+      "text": "a phoenix rises from the ashes over a burning desert",
+      "ms": 400,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "coin_shower",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "f18",
+      "text": "a halfling sneaks past a sleeping dragon into its treasure cave",
+      "ms": 588,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "m01",
+      "text": "toaster tornado",
+      "ms": 387,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "phase",
+        "wave"
+      ],
+      "template": "reinforcements",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "m02",
+      "text": "cat lasers",
+      "ms": 559,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "treasure_rush",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "m03",
+      "text": "Grandma kart",
+      "ms": 517,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "coin_shower",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "m04",
+      "text": "bake cookies",
+      "ms": 185,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "m06",
+      "text": "dragon taxi",
+      "ms": 431,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "coin_shower",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "m07",
+      "text": "walk the dog",
+      "ms": 557,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "m08",
+      "text": "a pengiun tht slides down a mountin",
+      "ms": 485,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "coin_shower",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "m09",
+      "text": "ninja cat jumpin on rooftops plz",
+      "ms": 650,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "coin_shower",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "m11",
+      "text": "my dog chasing the mailman,around the backyard lol",
+      "ms": 81,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "m16",
+      "text": "a kangaroo jumps over cars then collects coins on the highway",
+      "ms": 306,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "n01",
+      "text": "file my expense report with a pile of crumpled receipts",
+      "ms": 86,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "n02",
+      "text": "me trying to fall asleep in bed the night before a big exam",
+      "ms": 474,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "phase",
+        "wave"
+      ],
+      "template": "reinforcements",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "n04",
+      "text": "Renew my passport at city hall.",
+      "ms": 162,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "u01",
+      "text": "a grandma cat knits a giant scarf by the fireplace",
+      "ms": 166,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "u02",
+      "text": "A tailor mouse sews buttons onto tiny coats before the royal parade.",
+      "ms": 140,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "u03",
+      "text": "a penguin chef stirs a huge pot of fish soup on an iceberg",
+      "ms": 104,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "u06",
+      "text": "a gardener waters thirsty sunflowers on a rooftop garden",
+      "ms": 600,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "phase",
+        "wave"
+      ],
+      "template": "reinforcements",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "d01",
+      "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+      "ms": 444,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "d03",
+      "text": "a witch brews potions in a crooked tower during a thunderstorm",
+      "ms": 316,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "d04",
+      "text": "shoot down paper planes over a school playground",
+      "ms": 484,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "d09",
+      "text": "stack cheese wheels into a wobbly tower at a farm market",
+      "ms": 196,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "h02",
+      "text": "shopping cart race in a supermarket",
+      "ms": 1699,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "coin_shower",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "h03",
+      "text": "defend a castle from dragons by throwing snowballs",
+      "ms": 310,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "h05",
+      "text": "boxing a kangaroo in the australian outback",
+      "ms": 41,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "j01",
+      "text": "Explain quantum physics to my grandma.",
+      "ms": 523,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "treasure_rush",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "j04",
+      "text": "walk my dog along the beach while eating an ice cream",
+      "ms": 614,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "j05",
+      "text": "pop ten balloons at a birthday party",
+      "ms": 874,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "phase",
+        "wave"
+      ],
+      "template": "reinforcements",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "j08",
+      "text": "a wizard defends a crystal tower from flying skeletons",
+      "ms": 257,
+      "playable": true,
+      "usesLogic": false,
+      "constructs": [],
+      "template": null,
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "s002",
+      "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+      "ms": 246,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "treasure_rush",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "s003",
+      "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+      "ms": 1564,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "coin_shower",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "s021",
+      "text": "obby game with lava and spinning bars",
+      "ms": 529,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "coin_shower",
+      "failure": null
+    },
+    {
+      "set": "evals/play/p45/panel.json",
+      "id": "s035",
+      "text": "like flappy bird but underwater",
+      "ms": 494,
+      "playable": true,
+      "usesLogic": true,
+      "constructs": [
+        "timer",
+        "phase",
+        "wave"
+      ],
+      "template": "coin_shower",
+      "failure": null
+    }
+  ],
+  "targets": [
+    {
+      "metric": "instant draft uses a phase, timer or variable",
+      "goal": ">= 40 %",
+      "value": "45 % (18/40)",
+      "met": true
+    },
+    {
+      "metric": "director recorded answers pass (repaired, logic_proved)",
+      "goal": ">= 80 %",
+      "value": "1/25",
+      "met": false
+    },
+    {
+      "metric": "playable (publishEligible: bot wins, idle loses, replay matches)",
+      "goal": "100 %",
+      "value": "40/40",
+      "met": true
+    },
+    {
+      "metric": "determinism (replay check inside publishEligible)",
+      "goal": "100 %",
+      "value": "40/40",
+      "met": true
+    },
+    {
+      "metric": "idle does not win (inside publishEligible)",
+      "goal": "100 %",
+      "value": "40/40",
+      "met": true
+    },
+    {
+      "metric": "draft p95",
+      "goal": "<= 2000 ms",
+      "value": "874 ms",
+      "met": true
+    },
+    {
+      "metric": "novice win rate per cell (p41/difficulty.json, cells without intent, not the panel)",
+      "goal": "0.3-0.7",
+      "value": "54/54 cells",
+      "met": true
+    }
+  ],
+  "director": {
+    "source": "evals/play/p45b/director-logic.json (T12a record 5)",
+    "directorPromptVersion": "dff25958",
+    "raw": {
+      "hit": 1,
+      "of": 25
+    },
+    "repaired": {
+      "hit": 1,
+      "of": 25
+    },
+    "before": {
+      "record": "T11 record 3",
+      "directorPromptVersion": "3b597af4",
+      "raw": {
+        "hit": 0,
+        "of": 25
+      },
+      "repaired": {
+        "hit": 0,
+        "of": 25
+      }
+    }
+  },
+  "difficulty": {
+    "source": "evals/play/p41/difficulty.json",
+    "cells": 54,
+    "noviceInBand": 54,
+    "noviceMin": 0.3,
+    "noviceMax": 0.7
+  },
+  "fun": {
+    "about": "P45A telemetry on the panel (fun.measure.ts, intermediate bot); main = evals/play/p45/baseline.json (0714a352 - origin/main changes no game code since, only telemetry), head = this commit. Recorded only - fun targets belong to P45C+D.",
+    "main": {
+      "n": 40,
+      "playable": 40,
+      "deadTimeMedianS": 6.37,
+      "risingShare": 0.4,
+      "behavioursMedian": 1,
+      "finaleShare": 0.15,
+      "eventsPerSMedian": 0.94,
+      "nearMissesMedian": 0,
+      "livesLostMedian": 0
+    },
+    "head": {
+      "n": 40,
+      "playable": 40,
+      "deadTimeMedianS": 4.76,
+      "risingShare": 0.48,
+      "behavioursMedian": 1,
+      "finaleShare": 0.1,
+      "eventsPerSMedian": 1.08,
+      "nearMissesMedian": 0,
+      "livesLostMedian": 0
+    }
+  }
+}

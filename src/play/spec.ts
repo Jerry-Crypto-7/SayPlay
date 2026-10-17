@@ -30,21 +30,23 @@ import { assemblyPartsSchema } from './compose/parts';
 import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
-import { ADDONS, type AddonId } from './arcade/contract';
+import { ABILITIES, type AbilityId, ADDONS, type AddonId } from './arcade/contract';
 import { LOOK_IDS, TIMES_OF_DAY, WEATHERS } from './arcade/look';
-import { ruleIssues, rulesSchema, thingsSchema } from './arcade/rules/schema';
+import { logicSchema, ruleIssues, rulesSchema, thingsSchema } from './arcade/rules/schema';
 import { CAPABILITIES } from './capabilities';
+import { ABILITY_WORDS, ALL_ABILITY_WORDS } from './draft/controls';
 import { ALL_GENRE_MODES, GENRES, GENRE_MODES, isGenreMode } from './genre/contract';
 import { heroActionSchema } from './hero-action';
 
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
+import { SEGMENT_NEWS } from './arcade/pieces/pacing';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
 import { DUEL, DUEL_DIFFICULTIES } from './arcade/pieces/duel';
 import { RHYTHM, RHYTHM_DENSITIES } from './arcade/pieces/rhythm';
 import { SHOOTER_DIFFICULTIES, SHOOTER_RISE_MAX, SHOOTER_WAVE_SIZE_MAX } from './arcade/pieces/shooter';
-import { STEER_DIFFICULTIES, STEER_TRACK } from './arcade/pieces/steer';
+import { STEER_DIFFICULTIES, STEER_STYLES, STEER_TRACK } from './arcade/pieces/steer';
 import { THROW_DIFFICULTIES, THROW_GOALS } from './arcade/pieces/throw';
 import { TIMING, TIMING_MODES, TIMING_SPEEDS } from './arcade/pieces/timing';
 import { ARCHETYPES, MECHANICS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from './registry';
@@ -265,7 +267,7 @@ export type ControlId = (typeof CONTROLS)[number];
  * Doplňky arkády (P26D), seznam v `arcade/contract.ts`. Pole ve specu je
  * volitelné **bez výchozí hodnoty**, jako `control`.
  */
-export { ADDONS, type AddonId };
+export { ABILITIES, type AbilityId, ADDONS, type AddonId };
 
 /** Parametry běžce; co chybí, doplní generátor tratě svým výchozím. */
 export const runnerParamsSchema = z
@@ -283,6 +285,8 @@ export const runnerParamsSchema = z
     feel: z.literal(2).optional(),
     /** Trať ze tří úseků s délkou podle obsahu (P36A T4); žánr Běžec ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
     sections: z.literal(3).optional(),
+    /** Úseky z knihovny vzorů (P46D T2); žánr Běžec ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
+    patterns: z.literal(1).optional(),
   })
   .strict();
 export type RunnerParams = z.infer<typeof runnerParamsSchema>;
@@ -360,6 +364,12 @@ export const steerParamsSchema = z
     drift: z.boolean().optional(),
     grip: z.int().min(4).max(20).optional(),
     brakeDrift: z.int().min(4).max(20).optional(),
+    /** Nová hra s úseky a bossem (P46B T5, `steerTrack`); uložený spec bez pole hraje jako dřív. */
+    segments: z.literal(true).optional(),
+    /** Okruh ze vzorů (P46D T4); návrh závodu ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
+    patterns: z.literal(1).optional(),
+    /** Styl okruhu ze vzorů podle prostředí (P46D R2); bez něj ho vybere semínko. */
+    style: z.enum(STEER_STYLES).optional(),
   })
   .strict();
 export type SteerParams = z.infer<typeof steerParamsSchema>;
@@ -506,6 +516,20 @@ export const gameSpecSchema = z
       ])
       .optional(),
     addons: z.array(z.enum(ADDONS)).max(3).optional(),
+    /** Akce hrdiny na dvou tlačítkách (P46A). Bez výchozí hodnoty: spec bez nich má stejný hash jako dřív. */
+    abilities: z.array(z.enum(ABILITIES)).max(2).optional(),
+    /**
+     * Sloveso věty na tlačítkách akcí (P47B T10): slovo pro každou akci v pořadí `abilities`, každé ze seznamu
+     * `ABILITY_WORDS` své akce. Jen popisek – svět ho nečte; bez výchozí hodnoty, jako `abilities`.
+     */
+    abilityWords: z.array(z.enum(ALL_ABILITY_WORDS)).max(2).optional(),
+    /**
+     * Boss finále od režiséra (P46E T4): `name` ukáže banner, `role` = popisek věci obsazení, jejíž model boss
+     * dostane. Chování a útok zůstávají žánru (`pacingParts`). Bez výchozí hodnoty: hash rychlé verze se nemění.
+     */
+    boss: z.object({ name: text.max(40), role: text.max(40) }).strict().optional(),
+    /** Scénář úseků od režiséra (P46E T4, `segmentScriptOf`): změna úseku 2, pak úseku 3 slovy `SEGMENT_NEWS`. */
+    segments: z.array(z.enum(SEGMENT_NEWS)).min(1).max(3).optional(),
     /**
      * Žánr, ze kterého spec vznikl (P32, `genre/contract.ts`). Bez výchozí
      * hodnoty, jako `control`: spec bez něj má stejný `gameSpecHash` jako dřív.
@@ -534,6 +558,12 @@ export const gameSpecSchema = z
     rules: rulesSchema.optional(),
     /** Doplňky rolí pro pravidla (skryté na startu). */
     things: thingsSchema.optional(),
+    /**
+     * Stav hry pro pravidla (P45B): proměnné, časovače, fáze a události – jen spolu
+     * s pravidly, která ho čtou a mění. Bez výchozí hodnoty: uložený spec bez pole
+     * staví tentýž svět.
+     */
+    logic: logicSchema.optional(),
     /**
      * Skóre, které rozhoduje (P36A T5, `arcade/compile.ts` `withScoring`):
      * kombo za sebrání v řadě a bonus na konci výhry; `target` = výhra až po
@@ -666,6 +696,29 @@ export function readGameSpec(input: unknown): GameSpecResult {
     );
     if (addonIssues.length > 0) return { ok: false, reason: 'MALFORMED_SPEC', issues: addonIssues };
   }
+  if (spec.abilities !== undefined) {
+    const allowed = CAPABILITIES[spec.control ?? 'tap_go'].abilities;
+    const abilityIssues = spec.abilities.flatMap((ability, index) =>
+      spec.abilities!.indexOf(ability) !== index
+        ? [`/abilities/${index}: ${ability} is listed twice`]
+        : allowed.includes(ability)
+          ? []
+          : [`/abilities/${index}: ${spec.control ?? 'tap_go'} does not take ${ability} (allowed: ${allowed.join(', ') || 'none'})`],
+    );
+    if (abilityIssues.length > 0) return { ok: false, reason: 'MALFORMED_SPEC', issues: abilityIssues };
+  }
+  if (spec.abilityWords !== undefined) {
+    // Slovo patří akci na tomtéž místě (P47B T10): „Dodge“ na tlačítku úderu by hráči lhalo.
+    const abilities = spec.abilities ?? [];
+    const wordIssues =
+      spec.abilityWords.length !== abilities.length
+        ? [`/abilityWords: ${spec.abilityWords.length} words for ${abilities.length} abilities – one word per ability, in the same order`]
+        : spec.abilityWords.flatMap((word, index) => {
+            const allowed: readonly string[] = ABILITY_WORDS[abilities[index]!];
+            return allowed.includes(word) ? [] : [`/abilityWords/${index}: ${word} is not a word for ${abilities[index]} (allowed: ${allowed.join(', ')})`];
+          });
+    if (wordIssues.length > 0) return { ok: false, reason: 'MALFORMED_SPEC', issues: wordIssues };
+  }
   if (spec.control === 'move_free') {
     const win = arenaWinOf(spec);
     if ('issue' in win) return { ok: false, reason: 'MALFORMED_SPEC', issues: [win.issue] };
@@ -690,6 +743,9 @@ export function readGameSpec(input: unknown): GameSpecResult {
   });
   if (issues.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues };
 
+  if (spec.logic !== undefined && (spec.rules ?? []).length === 0) {
+    return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/logic: a logic block needs rules that read and change it'] };
+  }
   if (spec.rules !== undefined || spec.things !== undefined) {
     if (spec.control === undefined || spec.control === 'tap_go') {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/rules: only an arcade game (any control but tap_go) takes rules'] };
@@ -697,7 +753,7 @@ export function readGameSpec(input: unknown): GameSpecResult {
     // Vyhrává-li pravidlo na volném pohybu, hraje robot pravidel na dvorku. Generátor se počítá,
     // dokud ho spec nese: svět ho postaví. Zahodí ho jen `rulesYard` a ten běží před čtením (B-R10).
     const yard = spec.control === 'move_free' && (spec.rules ?? []).some((rule) => rule.do.some((effect) => 'win' in effect));
-    const ruleProblems = ruleIssues(spec.rules ?? [], spec.things ?? [], roleIds, { addons: spec.addons, generator: spec.controlParams?.generator, yard });
+    const ruleProblems = ruleIssues(spec.rules ?? [], spec.things ?? [], roleIds, { addons: spec.addons, generator: spec.controlParams?.generator, yard, ...(spec.logic === undefined ? {} : { logic: spec.logic }) });
     if (ruleProblems.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues: ruleProblems };
   }
 

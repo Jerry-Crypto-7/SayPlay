@@ -16,6 +16,7 @@ import { compileGenre } from '@/play/genre/index';
 import { CONTROL_PARAMS, type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import duelFixture from '../__fixtures__/duel.json';
+import { baseControlOf } from '../addons';
 import { arcadeWorldOf, compileArcade, generatorOf } from '../compile';
 import { type ArcadeLevel, BODY, BUTTON, FLAG, HEADER, HP_MAX, NO_INPUT, type RulePiece, TARGET_STATE_MAX, bodyBase, bodyHp, targetStateOf } from '../contract';
 import { type ArcadeLibrary, buildWorld, instantiate, loadProgram, step } from '../kernel';
@@ -121,7 +122,7 @@ describe('P32-0 T4 kernel seams', () => {
     // Od P36A T6 pocit dojde až k ovládání (dřív stub bez účinku): bez `tuning` je to jiný svět.
     const { tuning: _tuning, ...untuned } = plain.controlParams as Record<string, unknown>;
     const before = arcadeWorldOf(read({ ...plain, controlParams: untuned }), 1);
-    expect(made.ok && made.world.control.params).toMatchObject({ feel: 2 });
+    expect(made.ok && baseControlOf(made.world.control).params).toMatchObject({ feel: 2 });
     expect(made.ok && before.ok && canonicalHash(made.world)).not.toBe(before.ok && canonicalHash(before.world));
     const wrong = arcadeWorldOf(read(delegate(plain, { tuning: { feel: 3 } })), 1);
     expect(!wrong.ok && wrong.issues.join(' ')).toMatch(/feel.*platform_level/);
@@ -178,8 +179,10 @@ describe('P32-0 T4 kernel seams', () => {
   });
 
   it('an old world keeps HP and target state at 0 in every body', () => {
-    // Souboj z žánru HP nese (P32E); starý svět souboje je uložený duel.
-    for (const spec of [compileGenre(SAMPLE.escape as GenreSpec), read(duelFixture), compileGenre(SAMPLE.platformer as GenreSpec)]) {
+    // Souboj z žánru HP nese (P32E); starý svět souboje je uložený duel. Starý svět žánru = uložený
+    // před průběhem (`genre.v1`): nová hra útěku nese od P45C T12 bosse s HP.
+    const stored = (spec: GameSpecV1): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v1' } });
+    for (const spec of [stored(compileGenre(SAMPLE.escape as GenreSpec)), read(duelFixture), stored(compileGenre(SAMPLE.platformer as GenreSpec))]) {
       const compiled = compileArcade(read(spec), 1);
       if (!compiled.ok || compiled.value.arcade === undefined) throw new Error('fixture did not compile');
       const state = instantiate(compiled.value.arcade);

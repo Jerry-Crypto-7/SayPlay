@@ -9,8 +9,8 @@
  * Pro každou větu sady s hrdinou: návrh hry (`POST /api/play/games`), robot hraje
  * ručními hodinami sondy (`__playShell.byHand`, jako klip `scripts/play-fidelity.mjs`),
  * vzorek po 9 ticích (150 ms hry). Šest po sobě jdoucích vzorků od prvního, kde se
- * hrdina pohnul (promítnutý obdélník `__playFrame().hero`), se ořízne kolem hrdiny
- * a složí do listu 3 × 2. Soudce dostane jen `sheet.png` v prázdném adresáři
+ * hrdina pohnul (promítnutý obdélník `__playFrame().hero`), se ořízne tak, že hrdina
+ * zůstane uprostřed (přesun scénou zmizí, T24), a složí do listu 3 × 2. Soudce dostane jen `sheet.png` v prázdném adresáři
  * (`evals/play/p45d/alive.ts`). `--toy off` přidá `?toy=off` – jediný vypínač
  * hračkového pohybu (P45D T5) – a kalibruje, že měřidlo měří pohyb.
  *
@@ -33,7 +33,7 @@ if (!process.features.typescript) {
   process.exit(run.status ?? 1);
 }
 await import('../ts-paths.mjs');
-const { ALIVE_SCHEMA, askAlive, assertOpenSet, heroOf, rowOf, summary, windowStart } = await import('../../evals/play/p45d/alive.ts');
+const { ALIVE_SCHEMA, askAlive, assertOpenSet, heroOf, rowOf, stableCropsOf, summary, windowStart } = await import('../../evals/play/p45d/alive.ts');
 
 /** Šest snímků po 9 ticích (150 ms při 60 Hz); hledá se pohyb nejvýš 40 vzorků (6 s hry). */
 const FRAMES = 6;
@@ -51,24 +51,6 @@ const flag = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) 
 /** Pohnul se hrdina mezi dvěma vzorky? Posun nebo změna velikosti obdélníku o víc než 0,5 % obrazu. */
 const movedBetween = (before, after) =>
   before !== null && after !== null && ['minX', 'maxX', 'minY', 'maxY'].some((key) => Math.abs(after[key] - before[key]) > 0.01);
-
-/** Výřez kolem všech poloh hrdiny v okně (px), s okrajem; bez hrdiny celý obraz. */
-function cropOf(boxes, width, height) {
-  const seen = boxes.filter((box) => box !== null && !box.behind);
-  if (seen.length === 0) return { left: 0, top: 0, width, height };
-  const px = (x) => ((x + 1) / 2) * width;
-  const py = (y) => ((1 - y) / 2) * height;
-  const left = Math.min(...seen.map((box) => px(box.minX)));
-  const right = Math.max(...seen.map((box) => px(box.maxX)));
-  const top = Math.min(...seen.map((box) => py(box.maxY)));
-  const bottom = Math.max(...seen.map((box) => py(box.minY)));
-  const side = Math.min(Math.max(right - left, bottom - top) * 1.6 + 40, Math.min(width, height));
-  const cx = (left + right) / 2;
-  const cy = (top + bottom) / 2;
-  const x = Math.round(Math.min(Math.max(cx - side / 2, 0), width - side));
-  const y = Math.round(Math.min(Math.max(cy - side / 2, 0), height - side));
-  return { left: x, top: y, width: Math.round(side), height: Math.round(side) };
-}
 
 /** Šest snímků hry hrané robotem; `moving` = okno začíná pohybem hrdiny. */
 async function capture(page, base, versionId, toyOff) {
@@ -104,12 +86,12 @@ async function capture(page, base, versionId, toyOff) {
   return { frames: window, moving: window[0]?.moved === true };
 }
 
-/** List 3 × 2 ze šesti snímků oříznutých stejným výřezem. */
+/** List 3 × 2 ze šesti snímků, každý vystředěný na hrdinu (`stableCropsOf`, T24). */
 async function sheetOf(frames, viewport, file) {
   const sharp = (await import('sharp')).default;
-  const crop = cropOf(frames.map((frame) => frame.hero), viewport.width, viewport.height);
+  const crops = stableCropsOf(frames.map((frame) => frame.hero), viewport.width, viewport.height);
   const tiles = await Promise.all(
-    frames.map((frame) => sharp(frame.png).extract(crop).resize(CELL, CELL, { fit: 'contain', background: '#000000' }).png().toBuffer()),
+    frames.map((frame, index) => sharp(frame.png).extract(crops[index]).resize(CELL, CELL, { fit: 'contain', background: '#000000' }).png().toBuffer()),
   );
   await sharp({ create: { width: CELL * 3, height: CELL * 2, channels: 3, background: '#000000' } })
     .composite(tiles.map((input, index) => ({ input, left: (index % 3) * CELL, top: Math.floor(index / 3) * CELL })))
@@ -180,7 +162,7 @@ async function main() {
   }
   const report = {
     about:
-      'P45D T3 alive meter: 6 frames 150 ms apart of the robot playing the draft game, cropped around the hero into one 3 x 2 sheet; one blind Codex call per sentence (sheet.png only) answers what the character is (likeNoun = matches the sentence hero) and whether its body moves the way such a thing would (alive). toy = the ?toy=off switch. See scripts/p45d/alive-clip.mjs and evals/play/p45d/README.md.',
+      'P45D T3/T24 alive meter: 6 frames 150 ms apart of the robot playing the draft game, each cropped to keep the hero centred (travel removed) into one 3 x 2 sheet; one blind Codex call per sentence (sheet.png only) answers what the character is (likeNoun = matches the sentence hero) and whether its body moves the way such a thing would (alive). toy = the ?toy=off switch. See scripts/p45d/alive-clip.mjs and evals/play/p45d/README.md.',
     run: runId,
     set: path.relative(ROOT, setFile).replaceAll('\\', '/'),
     toy: toyOff ? 'off' : 'on',

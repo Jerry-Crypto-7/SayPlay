@@ -16,6 +16,7 @@ import { BufferGeometry, Float32BufferAttribute, type Points, PointsMaterial } f
 import { color } from '@/brand/tokens';
 import { HEADER } from '@/play/arcade/contract';
 import { visualAt } from '@/play/arcade/live';
+import { moodFor } from '@/play/arcade/look';
 import type { GameSpecV1 } from '@/play/spec';
 
 import type { ArcadeSession } from './session';
@@ -80,11 +81,13 @@ export function Snowfall() {
 }
 
 export function Weather({ session, theme }: { readonly session: ArcadeSession; readonly theme: GameSpecV1['theme'] }) {
-  const start = `${theme.weather ?? 'clear'}|${theme.timeOfDay ?? 'day'}`;
+  // Bouřka z věty (P46G T5) prší, dokud počasí nezmění spec nebo živá změna.
+  const opening = theme.weather === undefined && moodFor(theme.setting, theme.mood) === 'storm' ? { ...theme, weather: 'rain' as const } : theme;
+  const start = `${opening.weather ?? 'clear'}|${opening.timeOfDay ?? 'day'}`;
   const key = useSyncExternalStore(
     session.subscribe,
     () => {
-      const now = visualAt(session.patches(), session.state()[HEADER.tick] as number, theme);
+      const now = visualAt(session.patches(), session.state()[HEADER.tick] as number, opening);
       return `${now.weather}|${now.timeOfDay}`;
     },
     () => start,

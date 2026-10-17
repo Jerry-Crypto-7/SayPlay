@@ -17,7 +17,7 @@
  *   node scripts/assets/p32-manifest.mjs
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -122,12 +122,34 @@ const FALLBACK = {
 
 const LOOKUP = new Map(CLASS_ORDER.flatMap((kind) => WORDS[kind].map((word) => [word, kind])));
 
+/**
+ * Jmenné seznamy kol gen3d s ruční třídou šablony (`batch.py --from`); pozdější seznam vyhrává.
+ * Ruční `prop` nebo plochá věc hrdinou není, ať jméno nese jakékoli slovo třídy („dog kennel“,
+ * „car jack“, „wizard tower“). Ruční třída těla (biped, vehicle…) je hrubší než třídy manifestu
+ * (loď, letadlo, auto), tu dál určí slova.
+ */
+const HAND_LISTS = ['evals/play/p45d/gen-nouns.json', 'evals/play/p45f/retry-nouns.json', 'evals/play/p45g/kit-nouns.json', 'evals/play/p45i/round-nouns.json'];
+
+/** `gen3d-<jméno>` → ruční třída šablony ze seznamů, které existují. */
+function handClassesFromLists(lists = HAND_LISTS) {
+  const classes = {};
+  for (const list of lists.filter((path) => existsSync(join(ROOT, path)))) {
+    for (const entry of JSON.parse(readFileSync(join(ROOT, list), 'utf8')).nouns) {
+      classes[`gen3d-${entry.noun.trim().toLowerCase().split(/\s+/).join('-')}`] = entry.flat ? 'flat' : entry.class;
+    }
+  }
+  return classes;
+}
+
+const HAND_CLASSES = handClassesFromLists();
+
 /** „penguins“ → „penguin“, „puppies“ → „puppy“, „foxes“ → „fox“. */
 const forms = (word) => [word, word.replace(/ies$/, 'y'), word.replace(/es$/, ''), word.replace(/s$/, '')];
 
 /** Třída podle slov tagů a id; `undefined` = model hrdinou není. */
-function classOf(asset) {
+function classOf(asset, handClasses) {
   if (asset.assetId in CLASS_OF_MODEL) return CLASS_OF_MODEL[asset.assetId] ?? undefined;
+  if (['prop', 'flat'].includes(handClasses[asset.assetId])) return undefined;
   // Jména ze slepého soudu P43 (`seen:hot dog`) třídu neurčují – párek by byl pes.
   const words = [...asset.tags.filter((tag) => !tag.includes(':')), asset.assetId.replace(/^(cc0|gen3d)-/, '')].flatMap((tag) => tag.toLowerCase().split(/[\s-]+/));
   const found = new Set(words.flatMap(forms).map((form) => LOOKUP.get(form)));
@@ -143,12 +165,12 @@ const round = (value) => Math.max(0.001, Math.round(value * 1000) / 1000);
  * `entries/base.ts` (riggované postavy, tučňák), se přeskočí – id musí být
  * v manifestu jedinečné a riggovaná verze je lepší hrdina.
  */
-export function catalogEntries({ catalog, rigged, disclosure, forward }) {
+export function catalogEntries({ catalog, rigged, disclosure, forward, handClasses = HAND_CLASSES }) {
   const described = new Set(['penguin', ...rigged.characters.map((character) => character.id)]);
   const licenses = new Map(disclosure.entries.map((entry) => [entry.name, entry.license]));
   const entries = [];
   for (const asset of catalog.assets) {
-    const kind = classOf(asset);
+    const kind = classOf(asset, handClasses);
     // P43 T13: model, který slepý soud nepoznal, hrdinu ani nepřítele nehraje.
     if (kind === undefined || described.has(asset.assetId) || asset.tags.includes('qa:unrecognisable')) continue;
     const license = licenses.get(`public${asset.path}`);

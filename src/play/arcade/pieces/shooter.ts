@@ -31,6 +31,7 @@ import {
   type BodyInit,
   COUNTER,
   type ControlPiece,
+  FLAG,
   type GeneratorPiece,
   HEADER,
   HIT_GRACE,
@@ -82,15 +83,31 @@ export function aimAt(x: number, z: number): number {
   return clamped === 0 ? 1 : clamped;
 }
 
-const controlParams = z.object({}).strict();
+/**
+ * Pochod vln střelnice s průběhem (P45C T13): nepřítel `body` stojí za branou
+ * a v tiku `at` vyjde rychlostí `vx/vz` rovnou na hráče. Bez pole jdou všichni
+ * od startu jako dřív.
+ */
+const marchEntry = z.object({ body: z.int().min(1), at: z.int().min(1).max(ARCADE_LIMITS.maxTicks), vx: z.int(), vz: z.int().max(-1) }).strict();
+export type MarchEntry = z.infer<typeof marchEntry>;
+const controlParams = z.object({ march: z.array(marchEntry).min(1).max(48).optional() }).strict();
 
-/** Ovládání: hráč stojí, osa nastaví míření, vlevo/vpravo ho posune, ťuk = spoušť. */
+/** Ovládání: hráč stojí, osa nastaví míření, vlevo/vpravo ho posune, ťuk = spoušť; vlny za branou vyjdou podle pochodu. */
 export const shooterControl: ControlPiece<z.infer<typeof controlParams>> = {
   id: 'shooter',
   params: controlParams,
   roles: ['player'],
   cost: () => ({ bodies: 1, rules: 0 }),
-  step: (state, player, input) => {
+  step: (state, player, input, params) => {
+    if (params.march !== undefined) {
+      const tick = state[HEADER.tick] as number;
+      for (const entry of params.march) {
+        const enemy = bodyBase(entry.body);
+        if (entry.at !== tick || ((state[enemy + BODY.flags] as number) & FLAG.alive) === 0) continue;
+        state[enemy + BODY.vx] = entry.vx;
+        state[enemy + BODY.vz] = entry.vz;
+      }
+    }
     const base = bodyBase(player);
     state[base + BODY.vx] = 0;
     state[base + BODY.vz] = 0;
@@ -368,6 +385,60 @@ export function arrivalOf(body: BodyInit): number | null {
   if (vz >= 0 || body.z % -vz !== 0) return null;
   const arrive = body.z / -vz;
   return body.x + (body.vx ?? 0) * arrive === 0 ? arrive : null;
+}
+
+/** Střelnice s průběhem (P45C T13): brána, za kterou vlny čekají – za dostřelem 36 m, robot ani hráč na ně nedostřelí. */
+export const SHOOTER_PACE = { gate: 40 * UNIT } as const;
+
+/** Vlny úrovně: nepřátelé (index těla a tik příchodu) seřazení podle příchodu, vlna = příchody do `memberGap` po sobě. */
+export function shooterWaves(level: ArcadeLevel): { readonly body: number; readonly arrive: number }[][] {
+  const enemies = level.bodies
+    .flatMap((body, index) => {
+      const arrive = body.role === 'enemy' ? arrivalOf(body) : null;
+      return arrive === null ? [] : [{ body: index, arrive }];
+    })
+    .sort((a, b) => a.arrive - b.arrive || a.body - b.body);
+  const waves: { body: number; arrive: number }[][] = [];
+  for (const enemy of enemies) {
+    const last = waves.at(-1);
+    if (last !== undefined && enemy.arrive - (last.at(-1) as { arrive: number }).arrive <= SHOOTER_RANGE.memberGap) last.push(enemy);
+    else waves.push([enemy]);
+  }
+  return waves;
+}
+
+/**
+ * Pochod střelnice s průběhem: rozestup příchodu vlny `k` = dnešní rozestup × 1000 / `density(k, vln)`
+ * (intenzita křivky: úvod řidší, vrchol hustší), nikdy kratší než `waveSpacing` předchozí vlny. Nepřítel,
+ * který by k novému příchodu šel z dálky už od startu, stojí na své přímce za branou a vyjde v tiku
+ * `at` (pochod ovládání) – tlak hrozeb tak roste s vlnami, ne klesá. Týž počet i pořadí těl.
+ */
+export function marchedRange(level: ArcadeLevel, gunParams: GunParams, density: (wave: number, waves: number) => number): { readonly level: ArcadeLevel; readonly march: MarchEntry[] } {
+  const waves = shooterWaves(level);
+  const bodies = [...level.bodies];
+  const march: MarchEntry[] = [];
+  let start = waves[0]?.[0]?.arrive ?? 0;
+  waves.forEach((wave, k) => {
+    const first = (wave[0] as { arrive: number }).arrive;
+    if (k > 0) {
+      const before = waves[k - 1] as { arrive: number }[];
+      const gap = first - (before[0] as { arrive: number }).arrive;
+      start += Math.max(waveSpacing(before.length, gunParams), Math.round((gap * 1000) / density(k, waves.length)));
+    }
+    for (const { body, arrive } of wave) {
+      const init = bodies[body] as BodyInit;
+      const speed = -(init.vz ?? 0);
+      const vx = init.vx ?? 0;
+      const at = start + arrive - first;
+      const walk = Math.ceil(SHOOTER_PACE.gate / speed);
+      if (at - walk < 1) bodies[body] = { ...init, x: -vx * at, z: speed * at };
+      else {
+        bodies[body] = { ...init, x: -vx * walk, z: speed * walk, vx: 0, vz: 0 };
+        march.push({ body, at: at - walk, vx, vz: -speed });
+      }
+    }
+  });
+  return { level: { ...level, bodies }, march };
 }
 
 /** Tvrzení „hratelné z konstrukce“ nad hotovou střelnicí; prázdné pole = hratelná. */

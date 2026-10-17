@@ -16,11 +16,12 @@ import { describe, expect, it } from 'vitest';
 
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
 import throwFixture from '@/play/arcade/__fixtures__/throw.json';
+import { baseControlOf } from '@/play/arcade/addons';
 import { arcadeWorldOf, compileArcade } from '@/play/arcade/compile';
-import { ARCADE_HZ, type ArcadeWorld, BODY, COUNTER, HEADER, HIT_GRACE, ROLE, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, HIT_GRACE, ROLE, bodyBase } from '@/play/arcade/contract';
 import { hashArcade, instantiate, replay } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
-import { shooterRules } from '@/play/arcade/pieces/shooter';
+import { type MarchEntry, shooterRules } from '@/play/arcade/pieces/shooter';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta, draftGenreFor } from '@/play/draft';
 import { classifyGenre } from '@/play/genre/classify';
@@ -75,15 +76,20 @@ function publish(sentence: string, edit: (spec: GameSpecV1) => GameSpecV1 = (spe
   throw new Error(`${sentence}: no seed publishes`);
 }
 
-/** Rychlost nepřátel podle pořadí příchodu (jednotek za tik), z počátečního stavu světa. */
+/**
+ * Rychlost nepřátel podle pořadí příchodu (jednotek za tik), z počátečního stavu světa. Nepřítel držený za
+ * branou (pochod průběhu P45C T13) vyjde v tiku `at` rychlostí z pochodu; předlohy (ostřelovač, výstřely) nežijí.
+ */
 function enemySpeeds(world: ArcadeWorld): number[] {
   const state = instantiate(world);
+  const march = (baseControlOf(world.control).params.march ?? []) as MarchEntry[];
   const enemies: { arrive: number; speed: number }[] = [];
   for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
     const base = bodyBase(i);
-    if (state[base + BODY.role] !== ROLE.enemy) continue;
-    const speed = -(state[base + BODY.vz] as number);
-    enemies.push({ arrive: (state[base + BODY.z] as number) / speed, speed });
+    if (state[base + BODY.role] !== ROLE.enemy || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const held = march.find((entry) => entry.body === i);
+    const speed = -(held?.vz ?? (state[base + BODY.vz] as number));
+    enemies.push({ arrive: (held?.at ?? 0) + (state[base + BODY.z] as number) / speed, speed });
   }
   return enemies.sort((a, b) => a.arrive - b.arrive).map((enemy) => enemy.speed);
 }

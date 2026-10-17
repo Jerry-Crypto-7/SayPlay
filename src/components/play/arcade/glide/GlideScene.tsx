@@ -9,12 +9,27 @@ import { color } from '@/brand/tokens';
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { GLIDE } from '@/play/arcade/pieces/glide';
+import { HorizonBackdrop } from '../look/Backdrop';
+import { FieldGround } from '../look/FieldGround';
+import { boxEdge } from '../look/ground';
 import { Scenery } from '../look/Scenery';
+import { Vegetation } from '../look/Vegetation';
+import type { RoadAt } from '../look/vegetation-places';
 import type { ArcadeSession } from '../session';
 import { FittedModel } from '../World';
 
 export { placeGlide } from './camera';
 export { useGlideInput } from './glide-input';
+
+/** Hranice letu do strany (m): za ní jádro hru ukončí. */
+const BOUND = GLIDE.bound / UNIT;
+/** Koridor letu jako „cesta“ vegetace: rovný v ose, půl šířky po hranici. */
+const COURSE = (): RoadAt => ({ center: 0, half: BOUND });
+const COURSE_EDGE = boxEdge({ x0: -BOUND, x1: BOUND, z0: -Infinity, z1: Infinity });
+/** Volný pás vegetace za hranicí letu (m). */
+const VEGETATION_CLEAR = 1.5;
+/** Kam zem sahá do strany za hranici (m). */
+const LAND_M = 50;
 
 /** These native course bodies are drawn here; named actors remain in World. */
 export const GLIDE_SCENE_KINDS: ReadonlySet<string> = new Set(['glide-ring', 'glide-current', 'glide-reef']);
@@ -40,12 +55,17 @@ export function GlideBackdrop({ session, look, collectibleModel }: { readonly se
       group.position.set(-at(BODY.x), at(BODY.y) + body.h / 2, at(BODY.z));
     }
   });
+  const length = session.world.length / UNIT;
+  const seed = session.world.seed;
+  const far = length + look.fog[1] + 10;
+  const land = useMemo(() => ({ x0: -BOUND - LAND_M, x1: BOUND + LAND_M, z0: -40, z1: far }), [far]);
   return <>
-    <Scenery look={look} layout="sides" inner={GLIDE.bound / UNIT + 2.5} from={-10} to={session.world.length / UNIT + 20} />
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, session.world.length / UNIT / 2]} receiveShadow>
-      <planeGeometry args={[80, session.world.length / UNIT + 80]} />
-      <meshStandardMaterial color={look.ground} roughness={1} />
-    </mesh>
+    {/* Vegetace sady za hranicí letu: koruny nikdy nevrostou do koridoru, kudy hrdina smí letět. */}
+    {look.flora !== undefined && <Vegetation flora={look.flora} seed={seed} from={-10} to={far} road={COURSE} clear={VEGETATION_CLEAR} />}
+    <Scenery look={look} layout="sides" inner={BOUND + 2.5} from={-10} to={length + 20} vegetation />
+    {/* Zem s odstíny, skvrnami, krajnicí u hranice letu a tmavnutím do strany (P46G T7); dřív jedna barva sady. */}
+    <FieldGround look={look} area={land} edge={COURSE_EDGE} y={-0.06} />
+    <HorizonBackdrop look={look} seed={seed} length={length} clear={BOUND + VEGETATION_CLEAR} />
     {bodies.map(body => <group key={body.body} ref={group => { if (group === null) groups.current.delete(body.body); else groups.current.set(body.body, group); }}>
       {body.kind === 'glide-ring' ? <group>
         {collectibleModel !== undefined && <group position={[0, -0.3, 0]}>

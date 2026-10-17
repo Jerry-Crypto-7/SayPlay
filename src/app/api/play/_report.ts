@@ -10,14 +10,13 @@
 
 import type { CompiledGame, QualityReport } from '@/play/contracts';
 import { arcadeReport, verifyArcade } from '@/play/arcade/verify';
-import { parOf } from '@/play/score/replay';
 import { verifyGame } from '@/play/verify';
 
 export function reportFor(compiled: CompiledGame): QualityReport {
   if (compiled.arcade === undefined) return verifyGame(compiled);
   const verdict = verifyArcade(compiled.arcade);
   const report = arcadeReport(verdict, compiled.arcade, compiled);
-  // Par jen u hry, která publikací projde – jinak by přehrání stálo čas opravnému kolu režiséra zbytečně.
-  const par = report.publishEligible ? parOf(compiled.arcade, verdict.bot.inputs) : null;
-  return par === null ? report : { ...report, par };
+  // Par jen u hry, která publikací projde: robot vyhrál a přehrání skončilo v jeho stavu (`replayEqual`), takže skóre
+  // a tik jeho běhu jsou par bez čtvrtého přehrání (`parOf`) – to na delší trati ze vzorů (P46D) stálo čtvrtinu ověření.
+  return report.publishEligible ? { ...report, par: { score: verdict.bot.score, ticks: verdict.bot.tick } } : report;
 }

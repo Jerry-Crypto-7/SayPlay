@@ -13,16 +13,23 @@
 
 import { z } from 'zod';
 
-import { START_LIVES } from '../arcade/contract';
+import { ABILITIES, BOSS_ATTACKS, START_LIVES } from '../arcade/contract';
+import { SEGMENT_NEWS } from '../arcade/pieces/pacing';
 import { LOOK_IDS } from '../arcade/look';
-import { THINGS_MAX, type Rule, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
+import { THINGS_MAX, type Rule, logicSchema, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { readRoles } from '../draft/lexicon';
 import type { Reading } from '../read/schema';
 import { HERO_ACTIONS } from '../hero-action';
 import type { ControlId, GameRole, GameSpecV1 } from '../spec';
 
-/** Verze překladu `GenreSpec → GameSpecV1`; zapisuje se do `spec.genre`. */
-export const GENRE_COMPILER_VERSION = 'genre.v1';
+/**
+ * Verze překladu `GenreSpec → GameSpecV1`; zapisuje se do `spec.genre`.
+ * `genre.v2` (P45C T11): hra dostane průběh (`pacingParts`); uložené `genre.v1` hrají jako dřív.
+ * `genre.v3` (P46C T2): hra dostane power-upy (`placePowerups`); uložené `genre.v2` hrají jako dřív.
+ * `genre.v4` (P47A T2): průběh i pod overlay šablonou P45B a finále podle žánru (`FINALE_GENRE_VERSION`); uložené `genre.v3` hrají jako dřív.
+ * Kontroly verze jsou „tahle a novější“ (`genreAtLeast`), nikdy rovnost s jednou verzí.
+ */
+export const GENRE_COMPILER_VERSION = 'genre.v4';
 
 /**
  * Životy hry žánru (P36A T2): mechanika `health` se třemi životy. Čte ji
@@ -142,6 +149,15 @@ const variant = <G extends GenreId>(genre: G) =>
       ruleRoles: z.array(ruleRoleSchema).max(THINGS_MAX).optional(),
       things: thingsSchema.optional(),
       rules: modelRulesSchema.optional(),
+      /** Stav pro pravidla (P45B): proměnné, časovače, fáze, události; překlad ho propíše beze změny. */
+      logic: logicSchema.optional(),
+      /**
+       * Novinky AI verze (P46E T3): boss finále (`role` = popisek věci z obsazení, `name` = co hráč vidí), akce hrdiny
+       * a scénář úseků. Čtečka unese víc akcí, než hra vezme; co ovládání nebere, zahodí `fitDirectorExtras`.
+       */
+      boss: z.object({ role: label, name: label, attack: z.enum(BOSS_ATTACKS) }).strict().optional(),
+      abilities: z.array(z.enum(ABILITIES)).max(ABILITIES.length).optional(),
+      segments: z.array(z.enum(SEGMENT_NEWS)).max(3).optional(),
     })
     .strict();
 
@@ -373,6 +389,7 @@ export function legacySpec(spec: GenreSpec, game: LegacyGame): GameSpecV1 {
     roles,
     ...(rules.length === 0 ? {} : { rules }),
     ...(spec.things === undefined || spec.things.length === 0 ? {} : { things: spec.things }),
+    ...(spec.logic === undefined ? {} : { logic: spec.logic }),
     // Kombo a bonus na konci (P36A T5) má každá nová hra žánru; cílové skóre z věty dosadí rychlý návrh.
     scoring: {},
     tutorial: game.tutorial,

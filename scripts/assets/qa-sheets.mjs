@@ -22,7 +22,7 @@
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { extname, join, normalize } from 'node:path';
+import { dirname, extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { gridPlan } from './qa-grid.mjs';
@@ -48,7 +48,8 @@ const todo = catalog.filter((asset) => (only ? only.includes(asset.assetId) : tr
 mkdirSync(outDir, { recursive: true });
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.glb': 'model/gltf-binary', '.png': 'image/png', '.bin': 'application/octet-stream' };
-const MOUNTS = [['/three/', join(root, 'node_modules/three/')], ['/', join(root, 'public/')]];
+// `three` tam, kde ho najde Node: worktree bez vlastních node_modules ho bere z hlavního checkoutu.
+const MOUNTS = [['/three/', join(dirname(dirname(require.resolve('three'))), '/')], ['/', join(root, 'public/')]];
 
 const PAGE = `<!doctype html><html><body style="margin:0">
 <script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>

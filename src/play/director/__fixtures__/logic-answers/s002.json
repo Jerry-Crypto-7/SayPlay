@@ -1,0 +1,269 @@
+{
+ "id": "s002",
+ "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+ "axis": "collect",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:41:52.591Z",
+ "ms": 16104,
+ "answer": {
+  "plan": "Create an arena‑escape game where the knight collects three keys while ghosts chase him.",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "knight",
+   "cast": [
+    {
+     "label": "key",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "ghost",
+     "does": "avoid",
+     "verb": "obstacle",
+     "states": null,
+     "patrol": true
+    }
+   ],
+   "heroAction": "none",
+   "setting": "haunted castle",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": 3
+   },
+   "ruleRoles": [
+    {
+     "id": "key1",
+     "kind": "collectible",
+     "label": "key",
+     "count": null
+    },
+    {
+     "id": "key2",
+     "kind": "collectible",
+     "label": "key",
+     "count": null
+    },
+    {
+     "id": "key3",
+     "kind": "collectible",
+     "label": "key",
+     "count": null
+    },
+    {
+     "id": "ghost1",
+     "kind": "chaser",
+     "label": "ghost",
+     "count": null
+    }
+   ],
+   "things": [
+    {
+     "role": "key1",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "key2",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "key3",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "ghost1",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "spawn_keys",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "key1",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_keys2",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "key2",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_keys3",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "key3",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_ghost",
+     "verb": "spawn",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "ghost1",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "collect_key1",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key1"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "collect_key2",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key2"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "collect_key3",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key3"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "ghost_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "ghost1"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": [
+     {
+      "id": "items",
+      "start": 0
+     }
+    ],
+    "timers": [],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "play"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

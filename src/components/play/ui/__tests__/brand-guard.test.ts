@@ -31,10 +31,16 @@ const SCENE_FILES = new Set([
   'arcade/ArcadeStage.tsx',
   // Maska částic na plátně potřebuje bílou s průhledností (rgba), token nese jen barvu.
   'arcade/effects/Effects.tsx',
+  // Varování průběhu (P45C T15): barvy z `colorHex`, ale geometrie položená na zem (`rotateX`) – `rotate` three.js, ne CSS.
+  'arcade/effects/PacingFx.tsx',
   'arcade/World.tsx',
+  // Podklad vyčleněný z `World.tsx` (P46G T7) – čáry drah nesou barvu přímo jako dřív.
+  'arcade/WorldBackdrop.tsx',
   'arcade/arena/ArenaScene.tsx',
   'arcade/duel/DuelScene.tsx',
   'arcade/look/Scenery.tsx',
+  // Scéna skákačky (P46G): břeh v písku míchá zem s bílou jako ostatní terén (`islands.ts`, `water.ts`).
+  'arcade/platform/PlatformWorld.tsx',
   'arcade/rhythm/RhythmScene.tsx',
   'arcade/shooter/ShooterRig.tsx',
   'arcade/shooter/primitives.tsx',

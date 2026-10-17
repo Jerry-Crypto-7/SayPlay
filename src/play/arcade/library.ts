@@ -7,7 +7,11 @@ import { assemblyPart, assemblyFinish, assemblyGateRules, makeAssemblyControl, m
  */
 
 import { ADDON_RULES, makeAddonBot, makeAddonControl } from './addons';
-import type { BotPiece, ControlPiece, ModeGeneratorPiece } from './contract';
+import { ABILITY_RULES } from './abilities';
+import { abilityStep } from './abilities/bot';
+import type { BotPiece, ControlPiece, ModeGeneratorPiece, RulePiece } from './contract';
+import { bossBeat, bossBeatHit } from './pieces/boss';
+import { makePacingBot, makePacingControl, pacingRule } from './pieces/pacing';
 import type { ArcadeLibrary } from './kernel';
 import { arenaCollect, arenaEat, arenaEscape, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
 import { arenaCatch, arenaCatchContact } from './pieces/arena-catch';
@@ -23,7 +27,7 @@ import { questBot } from './pieces/quest-bot';
 import { RULES } from './pieces/rules';
 import { runnerControl, runnerTrack } from './pieces/runner';
 import { runnerBot } from './pieces/runner-bot';
-import { duelArena, duelControl } from './pieces/duel';
+import { duelArena, duelControl, duelDodgeRule } from './pieces/duel';
 import { duelBot } from './pieces/duel-bot';
 import { rhythmControl, rhythmLevel } from './pieces/rhythm';
 import { rhythmBot } from './pieces/rhythm-bot';
@@ -100,11 +104,15 @@ const BASE_CONTROLS = {
   duel: duelControl,
 } as const;
 
-const PROGRESSION_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
-const PROGRESSION_BOTS = { ...BASE_BOTS, objective_walker_bot: objectiveWalkerBot, phase_bot: makePacedBot(BASE_BOTS) };
+const PHASE_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
+const PHASE_BOTS = { ...BASE_BOTS, objective_walker_bot: objectiveWalkerBot, phase_bot: makePacedBot(BASE_BOTS) };
+// Průběh hry (P45C) obalí základní ovládání i souboj; doplňky obalí jeho i holý souboj s akcemi (P47B T6, souboj režiséra bez průběhu).
+const FIGHT_CONTROLS = { ...PHASE_CONTROLS, fight: fightControl as ControlPiece };
+const PROGRESSION_CONTROLS = { ...FIGHT_CONTROLS, pacing_control: makePacingControl(FIGHT_CONTROLS) as ControlPiece };
+const PROGRESSION_BOTS = { ...PHASE_BOTS, pacing_bot: makePacingBot(PHASE_BOTS) as BotPiece };
 const NATIVE_LIBRARY: ArcadeLibrary = {
-  controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
+  controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece },
+  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,
@@ -118,7 +126,7 @@ const NATIVE_LIBRARY: ArcadeLibrary = {
     duel_arena: duelArena,
     ...MODE_GENERATORS,
   },
-  bots: { ...PROGRESSION_BOTS, addon_bot: makeAddonBot(PROGRESSION_BOTS) as BotPiece },
+  bots: { ...PROGRESSION_BOTS, addon_bot: makeAddonBot(PROGRESSION_BOTS, abilityStep) as BotPiece },
 };
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {

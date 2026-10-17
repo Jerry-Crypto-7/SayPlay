@@ -31,6 +31,7 @@ import { DuelScene } from '../duel/DuelScene';
 import { Ghost, type GhostPlacement } from '../Ghost';
 import { type ArcadeGhost, type GhostPose, GhostSlot, besideHero, loadGhost } from '../GhostSlot';
 import { PlatformWorld } from '../platform/PlatformWorld';
+import { runnerPathOf } from '../runner/path';
 import { StationScene } from '../quest/StationScene';
 import { TargetStates } from '../quest/TargetStates';
 import { RhythmScene } from '../rhythm/RhythmScene';
@@ -163,9 +164,20 @@ describe('ghost wiring (P37B T8)', () => {
     expect(slotsOf(ArcadeStage({ session: sessionOf(world), cast, enabled: false, ghost })).map((slot) => slot.props.ghost)).toEqual([ghost]);
   });
 
-  it.each(TRACKED)('a %s ghost follows the track the way World draws the hero', (fixture) => {
+  it.each(TRACKED.filter((fixture) => fixture !== 'runner'))('a %s ghost follows the track the way World draws the hero', (fixture) => {
     const [slot] = slotsOf(ArcadeStage({ session: sessionOf(fixtureWorld(fixture)), cast, enabled: false, ghost }));
     expect(slot?.props.place).toBeUndefined();
+  });
+
+  it('a runner ghost runs on the bent track the way World draws the hero (P46D T3)', () => {
+    const world = fixtureWorld('runner');
+    const [slot] = slotsOf(ArcadeStage({ session: sessionOf(world), cast, enabled: false, ghost }));
+    const path = runnerPathOf(world)!;
+    const [x, y, z] = (slot!.props.place as (pose: GhostPose) => GhostPlacement)({ x: -2 * UNIT, y: 0.3 * UNIT, z: 90 * UNIT, yaw: 0 });
+    expect(z).toBe(90);
+    expect(Math.abs(path(90).x)).toBeGreaterThan(0.1);
+    expect(x).toBeCloseTo(2 + path(90).x, 9);
+    expect(y).toBeCloseTo(0.3 + path(90).y, 9);
   });
 
   it.each(BESIDE)('a %s ghost stands beside the hero, whatever count its z carries', (fixture) => {

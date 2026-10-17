@@ -4,6 +4,7 @@ import { heroClass } from '../genre/roles';
 import { PRESETS, type RecipeAssembly } from './presets';
 import type { Recipe } from './recipe';
 import type { AssemblyPart } from './parts';
+import { saidAbilities, saidAbilityWords } from '../draft/controls';
 
 export interface AssemblySource {
   id: string;
@@ -73,10 +74,12 @@ const MOVE_ACTIONS: Partial<Record<Recipe['move'], readonly string[]>> = {
 const PART_ACTIONS = ['fight', 'duel', 'deliver', 'interact'];
 
 /** Requested actions a source plays neither itself nor through an attachable part. */
-export function unplayed(source: AssemblySource): number {
+function unplayedActions(source: AssemblySource): string[] {
   const own = [...(MOVE_ACTIONS[source.recipe.move] ?? []), ...PRESETS[`${source.preset.genre}.${source.preset.mode}`]!.actions];
-  return source.recipe.actions.filter(verb => !own.includes(verb) && !PART_ACTIONS.includes(verb)).length;
+  return source.recipe.actions.filter(verb => !own.includes(verb) && !PART_ACTIONS.includes(verb));
 }
+
+export const unplayed = (source: AssemblySource): number => unplayedActions(source).length;
 
 /**
  * Names belong to parts, not to whichever genre happened to provide scenery.
@@ -108,5 +111,14 @@ export function assemble(intent: Intent, source: AssemblySource, content: GenreS
     parts.push({ kind, label, role: `part_${parts.length}`, phase: phaseAt >= 0 && at > phaseAt ? 1 : 0,
       motion: /\b(?:laser|arrow|missile|bullet)/i.test(label) ? 'fly' : 'fall' });
   }
-  return { ...source.recipe, preset: 'assembled', content, parts };
+  // The sentence goes with the recipe: `compileRecipe` picks its rule template by it (P45B T9).
+  const words = intent.sentence.toLowerCase().match(/[a-z]+/g) ?? [];
+  // Akce hrdiny (P46A T8) jdou s receptem i bez šablony – recept bez šablony `intent` nenese.
+  const abilities = saidAbilities(intent.sentence.toLowerCase(), intent);
+  // Sloveso věty pro tlačítko (P47B T10): i pro akci, kterou dodá až režisér.
+  const saidWords = saidAbilityWords(intent.sentence.toLowerCase(), intent);
+  return {
+    ...source.recipe, preset: 'assembled', content, parts, intent: { words, unplayed: unplayedActions(source) },
+    ...(abilities.length === 0 ? {} : { abilities }), ...(Object.keys(saidWords).length === 0 ? {} : { saidWords }),
+  };
 }

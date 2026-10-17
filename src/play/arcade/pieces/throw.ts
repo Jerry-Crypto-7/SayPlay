@@ -43,6 +43,8 @@ import {
   bodyBase,
 } from '../contract';
 import { GRAVITY } from '../kernel';
+import { bossBody } from './behaviours/boss';
+import { PACING, TENSION_CURVE, intensityAt } from './pacing';
 import { census } from './shots';
 import { WAVE_PLAN } from './waves';
 
@@ -98,7 +100,27 @@ export function launchVelocity(aim: number, charge: number): { vy: number; vz: n
   return { vy: Math.trunc(speed * Math.sin(angle)), vz: Math.trunc(speed * Math.cos(angle)) };
 }
 
-const controlParams = z.object({}).strict();
+/**
+ * `swing` (průběh P45C T14) = amplituda kyvu bonusových terčů: terč kola, který přišel efektem `spawn`
+ * (jádro mu vynuluje `aux1`), dostane od ovládání periodu kyvadla ze své rychlosti (`swingPeriod`).
+ */
+const controlParams = z.object({ swing: z.int().min(UNIT).max(10 * UNIT).optional() }).strict();
+
+/** Tiky jednoho kyvu bonusového terče (sudé): za tolik tiků přejede z kraje na kraj. */
+export const swingPeriod = (speed: number, amplitude: number): number => 2 * Math.round(amplitude / speed);
+
+/** Živé kinematické terče (i terč-boss role nepřítele, P47A T7) s rychlostí a bez periody (právě přišly) dostanou periodu kyvu. */
+function startSwings(state: Int32Array, amplitude: number): void {
+  const count = state[HEADER.bodyCount] as number;
+  for (let i = 0; i < count; i += 1) {
+    const b = bodyBase(i);
+    const flags = state[b + BODY.flags] as number;
+    const role = state[b + BODY.role];
+    if ((flags & FLAG.alive) === 0 || (flags & FLAG.kinematic) === 0 || (role !== ROLE.target && role !== ROLE.enemy)) continue;
+    const vx = state[b + BODY.vx] as number;
+    if (vx !== 0 && state[b + BODY.aux1] === 0) state[b + BODY.aux1] = swingPeriod(Math.abs(vx), amplitude);
+  }
+}
 
 /** Ovládání: hráč stojí, osa/nahoru/dolů = úhel, držení nabíjí, ťuk pustí. */
 export const throwControl: ControlPiece<z.infer<typeof controlParams>> = {
@@ -106,7 +128,8 @@ export const throwControl: ControlPiece<z.infer<typeof controlParams>> = {
   params: controlParams,
   roles: ['player'],
   cost: () => ({ bodies: 1, rules: 0 }),
-  step: (state, player, input) => {
+  step: (state, player, input, params) => {
+    if (params.swing !== undefined) startSwings(state, params.swing);
     const base = bodyBase(player);
     state[base + BODY.vx] = 0;
     state[base + BODY.vz] = 0;
@@ -311,9 +334,87 @@ const generatorParams = z
     budget: z.int().min(1).max(90).optional(),
     /** Opt-in ratio of the visible clock to the original work budget; read by arcade compilation. */
     paceBudgetPct: z.int().min(50).max(100).optional(),
+    /** Průběh P45C T14 (píše ho jen průběh, ne spec): v každém kole pohyblivý bonusový terč (`THROW_SWING`). */
+    swing: z.literal(true).optional(),
+    /** Průběh P47A T7 (jen `genre.v4`): bonusový terč posledního kola je terč-boss (`THROW_BOSS`). Jen se `swing`. */
+    boss: z.literal(true).optional(),
   })
   .strict();
 export type ThrowParams = z.infer<typeof generatorParams>;
+
+/** Hodiny, které jádro opravdu hlídá (`limitSeconds` v `arcade/compile.ts`): 10 s až horizont ověření. */
+const clockSeconds = (seconds: number): number => Math.min(ARCADE_LIMITS.maxTicks / ARCADE_HZ, Math.max(10, seconds));
+
+/**
+ * Rozpočet kol pro hodiny specu (P36A F5): kola se vejdou do hodin s prohrou, ne do delšího rozpočtu
+ * (remix, který zkrátí jen hodiny). `paceBudgetPct` drží rozpočet práce, hodiny jsou kratší.
+ */
+export function throwParamsFor(params: ThrowParams, clock: { readonly seconds: number; readonly onEnd: string } | undefined): ThrowParams {
+  if (params.budget === undefined || clock?.onEnd !== 'lose') return params;
+  return { ...params, budget: Math.min(params.budget, throwBudgetIn(clockSeconds(params.paceBudgetPct === undefined ? clock.seconds : Math.ceil((clock.seconds * 100) / params.paceBudgetPct)))) };
+}
+
+/**
+ * Pohyblivý bonusový terč (P45C T14, `swing`): v každém kole visí za jeho cíli terč, který přejíždí čáru
+ * hodu kyvadlem jádra (±`amplitude`); rychlost kola jde s křivkou napětí od `speed[0]` (úvod) po `speed[1]`
+ * (finále). Kolo končí, až padne i on, takže bonusový terč posledního kola je poslední krok k výhře –
+ * finále. `seconds` = odhad robota na něj (hod a čekání, až terč přejede čáru) do rozpočtu kol.
+ */
+export const THROW_SWING = {
+  body: { w: 1000, h: 1000, d: 300 },
+  amplitude: 3 * UNIT,
+  speed: [30, 105] as const,
+  /** Za nejvzdálenějším cílem kola o tolik dál; spodní hrana z `lifts` – první místo, kam hod doletí, když cíle kola padly. */
+  behind: [2 * UNIT, 3 * UNIT, UNIT] as const,
+  lifts: [1800, 3000, 600, 4200] as const,
+  seconds: 2,
+} as const;
+
+/**
+ * Terč-boss hodu (P47A T7, parametr `boss`): poslední kolo nese místo bonusového terče a `hp` nejvyšších cílů
+ * nepřítele `bossBody` bonusového terče (9/4 rozměrů, `kind` `boss`) s `hp` HP, který se kýve rychlostí
+ * posledního kola – zásah míčem ubere 1 HP (`shot_hit.tough`), poslední HP ho sebere a kolo i výhra čekají na
+ * jeho pád. Hodů kola o `hp` na bosse víc než za odebrané cíle a bonusový terč, a navíc `reserve`, aby náboje
+ * nebyly útes (vzor `SHOOTER_FOES.bossAmmo`). Kolo bosse trvá jako kolo, které nahradilo (tři hody na kývající
+ * se terč ~2,4 s proti třem cílům a bonusovému terči), takže rozpočet kol ani hodiny se nemění: boss navíc
+ * ke všem cílům kola prohrál buňce `throw.default` na hodiny 52 s (intermediate 15/20), o kolo kratší hra
+ * s ním dala začátečníkovi 20/20.
+ */
+export const THROW_BOSS = { hp: 3, reserve: 2 } as const;
+
+/** Bonusový terč na čáře hodu (`x` 0); místo mu dá `bonusOf`, kraj a rychlost `swingAt`. */
+const BONUS: BodyInit = { role: 'target', kind: 'target', x: 0, y: 0, z: 0, ...THROW_SWING.body, solid: false, kinematic: true };
+
+/** Rychlost bonusového terče při intenzitě `intensity` (‰): úvod 700 → `speed[0]`, finále 1500 → `speed[1]`. */
+export function swingSpeed(intensity: number): number {
+  const [slow, fast] = THROW_SWING.speed;
+  const share = Math.max(0, Math.min(PACING.intensity.finale - PACING.intensity.intro, intensity - PACING.intensity.intro));
+  return slow + Math.floor(((fast - slow) * share) / (PACING.intensity.finale - PACING.intensity.intro));
+}
+
+/**
+ * Bonusový terč za cíli kola (těla `from..`): první místo z `behind` × `lifts`, kam ho hod trefí, když cíle kola
+ * padly a stojí jen opěry, zeď a tyče. Stojí na čáře hodu (`x` 0) – kraj a rychlost mu dá až `swingAt`. `null` = nikam.
+ * `shape` = tělo terče (terč-boss posledního kola, `THROW_BOSS`).
+ */
+function bonusOf(bodies: readonly BodyInit[], from: number, shape: BodyInit = BONUS): BodyInit | null {
+  const far = Math.max(...bodies.slice(from).map((body) => body.z + body.d / 2));
+  const standing = bodies.map((body, index) => (index >= from && body.role === 'target' ? { ...body, template: true } : body));
+  for (const behind of THROW_SWING.behind) {
+    for (const lift of THROW_SWING.lifts) {
+      const bonus: BodyInit = { ...shape, y: lift, z: far + behind };
+      if (solveThrow(boxesOfLevel([...standing, bonus]), standing.length) !== null) return bonus;
+    }
+  }
+  return null;
+}
+
+/** Bonusový terč na kraji kyvu rychlosti `speed` (strana podle kola), mířící přes čáru hodu. */
+function swingAt(bonus: BodyInit, speed: number, round: number): BodyInit {
+  const side = round % 2 === 0 ? -1 : 1;
+  const period = swingPeriod(speed, THROW_SWING.amplitude);
+  return { ...bonus, x: (side * period * speed) / 2, vx: -side * speed, period };
+}
 
 /**
  * Kola hodu (P36A F5): po vyčištění pole přijdou nové cíle, výhra až
@@ -349,6 +450,9 @@ export const throwBudgetIn = (seconds: number): number => Math.max(1, Math.floor
 
 const player: BodyInit = { role: 'player', kind: 'thrower', x: 0, y: 0, z: 0, w: THROW.playerW, h: THROW.playerH, d: THROW.playerD, solid: false };
 
+/** Tyč koše stojí o tolik za obroučkou; podstavec terče pod ním na stejném `z`. */
+const POLE_BEHIND = 700;
+
 /** Těla jednoho cíle na hloubce `z`: terč, koš na tyči, nebo věž. */
 function goalBodies(goal: ThrowGoal, z: number, height: number, lift: number): BodyInit[] {
   if (goal === 'target') {
@@ -360,7 +464,7 @@ function goalBodies(goal: ThrowGoal, z: number, height: number, lift: number): B
     const rim = 2600 + lift;
     return [
       { role: 'target', kind: 'hoop', x: 0, y: rim, z, w: 900, h: 250, d: 900, solid: false },
-      { role: 'obstacle', kind: 'pole', x: 0, y: 0, z: z + 700, w: 300, h: rim + 900, d: 300, solid: true },
+      { role: 'obstacle', kind: 'pole', x: 0, y: 0, z: z + POLE_BEHIND, w: 300, h: rim + 900, d: 300, solid: true },
     ];
   }
   return Array.from({ length: height }, (_, k): BodyInit => ({ role: 'target', kind: 'wood-block', x: 0, y: k * THROW.blockSize, z, w: THROW.blockSize, h: THROW.blockSize, d: THROW.blockSize, solid: true, gravity: true }));
@@ -429,7 +533,16 @@ const roundsParams = z
   .object({
     /** Kola od druhého: těla (předloha, x, y, z po čtveřicích) a hody kola. */
     rounds: z
-      .array(z.object({ bodies: z.array(z.int()).max(4 * 16), throws: z.int().min(1).max(30) }).strict())
+      .array(
+        z
+          .object({
+            bodies: z.array(z.int()).max(4 * 16),
+            throws: z.int().min(1).max(30),
+            /** Bonusový terč kola (P45C T14): předloha, x, y, z a rychlost kyvu `vx` – periodu mu dá ovládání (`swing`). */
+            swing: z.tuple([roundBody, z.int(), z.int(), z.int(), z.int()]).optional(),
+          })
+          .strict(),
+      )
       .min(1)
       .max(THROW_ROUNDS.max - 1),
     /** Předlohy opěr (tyč koše, podstavec terče): živá překážka jejich druhu s koncem kola zmizí. */
@@ -442,6 +555,8 @@ interface ThrowBuild {
   readonly level: ArcadeLevel;
   /** Kola od druhého; `null` = jedno pole jako dřív. */
   readonly rounds: ThrowRoundsParams | null;
+  /** Předloha terče-bosse posledního kola (`THROW_BOSS`); bez něj chybí. */
+  readonly tough?: number;
 }
 
 /**
@@ -465,6 +580,11 @@ function buildField(seed: number, params: ThrowParams): ThrowBuild {
   }
   const field = bodies.length;
   placeGoals(rng, bodies, goal, tier, 0, tier.towerHeight);
+  // Bonusový terč (P45C T14) nebere los rozvržení: cíle kol zůstanou, kde by byly bez průběhu.
+  const swing = params.swing === true && params.budget !== undefined;
+  const goals = targetsIn(bodies);
+  const firstBonus = swing ? bonusOf(bodies, field) : null;
+  if (firstBonus !== null) bodies.push(firstBonus);
   const spare = params.spareThrows ?? tier.spareThrows;
   const throws = targetsIn(bodies) + spare;
   const single = (): ThrowBuild => ({ level: { bodies, length: 0, spawnSlots: 3, counters: { ammo: throws, reserve: 0 } }, rounds: null });
@@ -482,26 +602,54 @@ function buildField(seed: number, params: ThrowParams): ThrowBuild {
     }
     return at;
   };
-  const planned: { readonly bodies: readonly BodyInit[]; readonly throws: number }[] = [];
-  let seconds = throwRoundSeconds(targetsIn(bodies));
+  const planned: { readonly bodies: readonly BodyInit[]; readonly throws: number; readonly bonus: BodyInit | null }[] = [];
+  const bonusSeconds = (bonus: BodyInit | null): number => (bonus === null ? 0 : THROW_SWING.seconds);
+  let seconds = throwRoundSeconds(goals) + bonusSeconds(firstBonus);
   let widest = 0;
   for (let k = 1; k < THROW_ROUNDS.max; k += 1) {
     const scratch = bodies.slice(0, field);
     const shift = Math.min(k * THROW_ROUNDS.shift, Math.max(0, THROW_ROUNDS.farMax - tier.far));
     placeGoals(rng, scratch, goal, tier, shift, Math.min(THROW_ROUNDS.towerMax, tier.towerHeight + Math.floor(k / 2)), goal === 'hoop' ? 0 : 2);
+    const bonus = swing ? bonusOf(scratch, field) : null;
     const round = scratch.slice(field).flatMap(inSteps);
-    const next = seconds + throwRoundSeconds(targetsIn(round));
+    const next = seconds + throwRoundSeconds(targetsIn(round)) + bonusSeconds(bonus);
     if (next > params.budget) break;
     seconds = next;
-    widest = Math.max(widest, round.length);
-    planned.push({ bodies: round, throws: targetsIn(round) + Math.max(THROW_ROUNDS.spareMin, spare - Math.ceil(k / 2)) });
+    widest = Math.max(widest, round.length + (bonus === null ? 0 : 1));
+    planned.push({ bodies: round, throws: targetsIn(round) + (bonus === null ? 0 : 1) + Math.max(THROW_ROUNDS.spareMin, spare - Math.ceil(k / 2)), bonus });
   }
   if (planned.length === 0) return single();
-  const rounds = planned.map((round) => ({ bodies: round.bodies.flatMap((body) => [bodies.length + templateOf(body), body.x, body.y, body.z]), throws: round.throws }));
+  // Rychlost bonusového terče kola `k` z intenzity uprostřed kola: první kolo úvod, poslední finále.
+  const speedOf = (k: number): number => swingSpeed(intensityAt(Math.floor(((2 * k + 1) * 500) / (planned.length + 1)), TENSION_CURVE));
+  const firstAt = bodies.length - 1;
+  if (firstBonus !== null) bodies[firstAt] = swingAt(firstBonus, speedOf(0), 0);
+  // Terč-boss (P47A T7) místo bonusového terče posledního kola, za cíli kola; bez místa zůstane kolo jak je.
+  const final = planned.length - 1;
+  const crowned = planned[final]!;
+  const boss = params.boss === true && crowned.bonus !== null ? bonusOf([...bodies.slice(0, field), ...crowned.bodies], field, bossBody({ ...BONUS, role: 'enemy' }, THROW_BOSS.hp)) : null;
+  let tough: number | undefined;
+  const rounds = planned.map((round, index) => {
+    const bossRound = boss !== null && index === final;
+    // Kolo bosse bez `hp` nejvyšších cílů (věž shora): tři hody na bosse místo nich a bonusového terče.
+    const dropped = bossRound ? new Set(hitOrder(round.bodies, 0, round.bodies.length).slice(0, THROW_BOSS.hp)) : new Set<number>();
+    // …a bez jejich opěr (P47A T10): podstavec terče pod ním a tyč koše za ním by stály samy. Místo bosse se
+    // hledalo s nimi (`bonusOf` bere jen přímý zásah), takže jeho hod platí i bez nich.
+    const orphan = (body: BodyInit): boolean =>
+      body.role === 'obstacle' && [...dropped].some((k) => round.bodies[k]!.x === body.x && body.z - round.bodies[k]!.z >= 0 && body.z - round.bodies[k]!.z <= POLE_BEHIND);
+    const spawned = round.bodies.filter((body, k) => !dropped.has(k) && !orphan(body));
+    const own = { bodies: spawned.flatMap((body) => [bodies.length + templateOf(body), body.x, body.y, body.z]), throws: round.throws + (bossRound ? THROW_BOSS.hp - dropped.size - 1 + THROW_BOSS.reserve : 0) };
+    const target = bossRound ? boss : round.bonus;
+    if (target === null) return own;
+    const bonus = swingAt(target, speedOf(index + 1), index + 1);
+    const template = bodies.length + templateOf(bonus);
+    if (bossRound) tough = template;
+    return { ...own, swing: [template, bonus.x, bonus.y, bonus.z, bonus.vx ?? 0] as [number, number, number, number, number] };
+  });
   const supports = templates.flatMap((body, k) => (body.role === 'obstacle' ? [bodies.length + k] : []));
   return {
     level: { bodies: [...bodies, ...templates], length: 0, spawnSlots: 3 + widest, counters: { ammo: throws, reserve: 0 } },
     rounds: { rounds, supports },
+    ...(tough === undefined ? {} : { tough }),
   };
 }
 
@@ -513,14 +661,14 @@ export const throwField: GeneratorPiece<ThrowParams> = {
   generate: (seed, params) => buildField(seed, params).level,
 };
 
-/** Pole a pravidla hodu: odhoz, zásah, všechny cíle (s koly až poslední kolo), hody došly. */
+/** Pole a pravidla hodu: odhoz, zásah (terči-bossovi ubere HP), všechny cíle (s koly až poslední kolo), hody došly. */
 export function throwParts(seed: number, params: ThrowParams): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
-  const { level, rounds } = buildField(seed, params);
+  const { level, rounds, tough } = buildField(seed, params);
   return {
     level,
     rules: [
       { id: 'launch', params: { template: 1 } },
-      { id: 'shot_hit', params: {} },
+      { id: 'shot_hit', params: tough === undefined ? {} : { tough } },
       rounds === null ? { id: 'cleared', params: {} } : { id: 'throw_rounds', params: rounds },
       { id: 'out_of_ammo', params: {} },
     ],
@@ -550,6 +698,7 @@ export const throwRounds: RulePiece<ThrowRoundsParams> = {
       if (((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && state[base + BODY.role] === ROLE.obstacle && kinds.includes(state[base + BODY.kind] as number)) effects.push({ kind: 'despawn', body: i });
     }
     for (let k = 0; k + 3 < next.bodies.length; k += 4) effects.push({ kind: 'spawn', template: next.bodies[k]!, x: next.bodies[k + 1]!, y: next.bodies[k + 2]!, z: next.bodies[k + 3]!, vx: 0, vy: 0, vz: 0 });
+    if (next.swing !== undefined) effects.push({ kind: 'spawn', template: next.swing[0], x: next.swing[1], y: next.swing[2], z: next.swing[3], vx: next.swing[4], vy: 0, vz: 0 });
     effects.push({ kind: 'count', counter: 'ammo', amount: next.throws - (state[HEADER.counters + COUNTER.ammo] as number) });
     effects.push({ kind: 'count', counter: THROW_ROUND_COUNTER, amount: 1 });
     return effects;

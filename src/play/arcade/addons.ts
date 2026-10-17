@@ -10,11 +10,13 @@
  */
 
 import { z } from 'zod';
+import { guardLanes } from './pieces/behaviours';
 import { pacedBotBase } from './pieces/phase-pieces';
 
 import type { GameSpecV1 } from '@/play/spec';
 
 import {
+  ABILITY_SLOTS,
   ADDONS,
   ARCADE_LIMITS,
   type AddonId,
@@ -40,11 +42,21 @@ import { GRAVITY } from './kernel';
 import { ARENA } from './pieces/arena';
 import { FLAP } from './pieces/flap';
 import { GLIDE, glideControlParams, glidePathOf, glideVelocity } from './pieces/glide';
-import { centerAt, courseOf, courseSchema, type SteerCourse } from './pieces/steer';
+import { centerAt, courseOf, courseSchema, type SteerCourse, type SteerSegment, steerRoute } from './pieces/steer';
+import { RUNNER_FOES } from './pieces/pacing-parts';
 import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
 import { census, shotHit } from './pieces/shots';
+import { abilityBotParams, abilityButton, abilityControlParams, tickAbilities } from './abilities/state';
+import { powerupControlParams, tickPowerup } from './powerups/state';
+
+// Sloty jednou za modul: import pod vitestem čte každý přístup getterem a pronásledovatel jde přes všechna těla každý tik.
+const FIRST_BODY = bodyBase(0);
+const STRIDE = bodyBase(1) - FIRST_BODY;
+const { role: ROLE_SLOT, flags: FLAGS_SLOT } = BODY;
+const ALIVE = FLAG.alive;
+const CHASER = ROLE.chaser;
 
 /** Parametry kusu pod obalem, přečtené jednou: obal běží každý tik a zod parse by ho zpomalil. */
 const parsedParams = new WeakMap<object, unknown>();
@@ -70,7 +82,10 @@ export interface ArcadeParts {
  * poznat běžce a scéna podle něj volí kameru a vstup.
  */
 export const baseControlOf = (control: PieceRef): PieceRef =>
-  control.id === 'addon_control' || control.id === 'phase_control' || control.id === 'assembly_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
+  control.id === 'addon_control' || control.id === 'phase_control' || control.id === 'pacing_control' || control.id === 'assembly_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
+/** Základní robot pod obaly doplňků, fází, průběhu a skládání – scéna z něj čte trať (`course`). */
+export const baseBotOf = (bot: PieceRef): PieceRef =>
+  bot.id === 'addon_bot' || bot.id === 'phase_bot' || bot.id === 'pacing_bot' || bot.id === 'assembly_bot' ? baseBotOf((bot.params as { base: PieceRef }).base) : bot;
 const baseControl = (parts: ArcadeParts): PieceRef => baseControlOf(parts.control);
 
 export { mapUnderlying, underlyingRule } from './contract';
@@ -105,7 +120,7 @@ export interface AddonPiece<P = unknown> {
 const noParams = z.object({}).strict();
 
 /** Náraz do nového nepřítele: bez životů prohra, se životy ztráta života a vteřina milosti (P36A T2). */
-const hitParamsFor = (role: 'enemy' | 'chaser', health: number | undefined): Readonly<Record<string, unknown>> =>
+export const hitParamsFor = (role: 'enemy' | 'chaser', health: number | undefined): Readonly<Record<string, unknown>> =>
   health === undefined ? { role, effect: 'lose' } : { role, effect: 'damage', grace: HIT_GRACE };
 
 /** `+lives`: tři životy. Náraz pak ubere život místo prohry – pravidla ovládání to podle `health` udělají sama. */
@@ -238,7 +253,8 @@ export const finishCollected: RulePiece<z.infer<typeof needParams>> = {
 export const glideShotHit: RulePiece = {
   ...shotHit,
   id: 'glide_shot_hit',
-  params: noParams,
+  // Střelba jako akce hrdiny (P46A T9) nese sloveso jako `shot_hit`.
+  params: z.object({ verb: z.literal('shoot').optional() }).strict(),
   fire(ctx) {
     if (ctx.other < 0) return [];
     const at = bodyBase(ctx.other);
@@ -263,6 +279,14 @@ export const SHOOT = {
   spareAmmo: 10,
   /** Střel ve vzduchu naráz: život střely / rozestup ran. */
   spawnSlots: Math.ceil(BULLET_LIFETIME / SHOOTER.fireInterval) + 1,
+  /** Cíl řízení stojí aspoň tolik za místem, kde se silnice zúží (`settledZ`). */
+  settle: 15 * UNIT,
+  /**
+   * Cíle řízení na okruhu ze vzorů za cílem na rovince startu, v ‰ délky. Třetí cíl (350 ‰, P46H) vrací střelbě
+   * obtížnost, kterou po sloučení P46B × P46D dělal jen shoz vedle cíle (`DROPPER.targetClear`): bez něj začátečník
+   * vyhrál 0,72, s ním 0,48, intermediate 0,92 → 0,87 (`drive.race+shoot`, 60 semínek).
+   */
+  patternTargets: [550, 350] as const,
 } as const;
 
 const enemy = (x: number, y: number, z: number, size?: number): BodyInit => ({
@@ -277,6 +301,38 @@ const enemy = (x: number, y: number, z: number, size?: number): BodyInit => ({
   solid: false,
 });
 
+/**
+ * Cíl řízení ne hned za zúžením (P46H): okruh ze vzorů P46D zúží silnici kdekoli a cíl na ose zúžení robot nestihne
+ * po vjezdu do něj srovnat a trefit (`drive.test` se střelbou, semínko 16). Cíl se posune na první místo aspoň
+ * `SHOOT.settle` za každým zúžením. Jen okruh ze vzorů (`patterns`), uložené hry staví cíle jako dřív.
+ */
+function settledZ(route: readonly SteerSegment[], from: number): number {
+  let z = from;
+  for (let moved = true; moved; ) {
+    moved = false;
+    route.forEach((segment, index) => {
+      const narrows = index > 0 && segment.width < (route[index - 1] as SteerSegment).width;
+      if (narrows && segment.near <= z && z < segment.near + SHOOT.settle) {
+        z = segment.near + SHOOT.settle;
+        moved = true;
+      }
+    });
+  }
+  return z;
+}
+
+export interface EnemyOptions {
+  readonly patterned?: boolean;
+  readonly finaleFrom?: number;
+}
+
+/** Nová hra se vzory (P46D, značka `patterns` ve spec): řízení i běžec; uložená hra dostane nepřátele jako dřív. */
+export function enemyOptions(spec: GameSpecV1, control: string): EnemyOptions {
+  if ((spec.controlParams as { patterns?: unknown } | undefined)?.patterns !== 1) return {};
+  // Čte se až při volání: `pacing-parts` a doplňky se navzájem importují.
+  return control === 'runner' ? { finaleFrom: RUNNER_FOES.bossAt } : { patterned: true };
+}
+
 /** Řady překážek běžce: z → obsazené pruhy. */
 function runnerRows(level: ArcadeLevel): Map<number, Set<number>> {
   const rows = new Map<number, Set<number>>();
@@ -290,9 +346,11 @@ function runnerRows(level: ArcadeLevel): Map<number, Set<number>> {
 /**
  * Nepřátelé tam, kudy hráč musí: běžci do pruhu, který příští řada nechává
  * volný (za mince), plošinovce na vzdálený konec desky, poletování do
- * mezery trubky. Každý druhý úsek, ať mezi nimi zbude čas.
+ * mezery trubky. Každý druhý úsek, ať mezi nimi zbude čas. Nová hra (`enemyOptions`): `patterned` = řízení
+ * na okruhu ze vzorů (P46D), `finaleFrom` = od kolika ‰ trati běžce patří finále bossovi (bez nepřátel).
  */
-function enemiesFor(control: string, level: ArcadeLevel): BodyInit[] {
+export function enemiesFor(control: string, level: ArcadeLevel, options: EnemyOptions = {}): BodyInit[] {
+  const { patterned = false } = options;
   if (control === 'glide') {
     // Actual XYZ ring apertures, not a floor-level track: there is enough time
     // to settle into the next ring's lane and fire before reaching its target.
@@ -304,7 +362,10 @@ function enemiesFor(control: string, level: ArcadeLevel): BodyInit[] {
     const course = courseOf(level);
     // A target on the opening straight gives the driver a clear forward shot;
     // later targets use the actual track center, never an off-road decoration.
-    return [25 * UNIT, Math.floor(level.length * 0.55)].map(z => enemy(centerAt(course, z), 0, z));
+    if (!patterned) return [25 * UNIT, Math.floor(level.length * 0.55)].map(z => enemy(centerAt(course, z), 0, z));
+    // Okruh ze vzorů (P46D, nová hra): cíle mimo ústí zúžení a třetí cíl v úseku 2 (`SHOOT.patternTargets`).
+    const route = steerRoute(level);
+    return [25 * UNIT, ...SHOOT.patternTargets.map((permille) => settledZ(route, Math.floor((level.length * permille) / 1000)))].map(z => enemy(centerAt(course, z), 0, z));
   }
   if (control === 'runner') {
     const rows = runnerRows(level);
@@ -314,6 +375,9 @@ function enemiesFor(control: string, level: ArcadeLevel): BodyInit[] {
       const free = [0, -1, 1].filter((lane) => !(rows.get(to) as Set<number>).has(lane));
       if (index % 2 === 1 || free.length === 0) return [];
       const z = Math.min(Math.floor((from + to) / 2) + 2500, to - 2000);
+      // Finále bosse (P46H): nepřítel ve volném pruhu stojí tam, kudy boss útočí, a úder na něj vybije akci právě
+      // v jediném okně, kdy je boss v dosahu (`boss-abilities.test`, semínko 1).
+      if (options.finaleFrom !== undefined && z * 1000 >= level.length * options.finaleFrom) return [];
       return [enemy((free[0] as number) * RUNNER.laneWidth, 0, z)];
     });
   }
@@ -372,9 +436,10 @@ function covered(state: Int32Array, target: number): boolean {
  * 90 tiků a bližší nepřítel v novém pruhu nesmí čekat, až dopadne. Pohled je
  * 8 tiků starý: běžec proto nestřílí při přebíhání, plošinovka jen ze země,
  * poletování dopočítá výšku z vlastních ťuků (jako jeho robot). Aréna
- * střílí ve směru pohybu na cokoli v ráně, jen když nic neletí.
+ * střílí ve směru pohybu na cokoli v ráně, jen když nic neletí. `owns` omezí
+ * cíle na nepřátele, které robot akcí přidělil střelbě (R4).
  */
-const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
+export const shootStep = ({ state, player, recent }: ArcadeObservation, input: ArcadeInput, base: PieceRef, owns?: (body: number) => boolean): ArcadeInput => {
   if (recent.some((seen) => (seen.buttons & BUTTON.FIRE) !== 0)) return input;
   if (base.id === 'arena_bot' && census(state).projectiles > 0) return input;
   const p = bodyBase(player);
@@ -394,7 +459,26 @@ const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
     px = now.x; py = now.y; pz = now.z;
   }
   const grounded = ((state[p + BODY.flags] as number) & FLAG.grounded) !== 0;
-  if (base.id === 'runner_bot' && (px % RUNNER.laneWidth !== 0 || recent.some((seen) => (seen.buttons & (BUTTON.LEFT | BUTTON.RIGHT)) !== 0))) return input;
+  if (base.id === 'runner_bot') {
+    // Přeběh pruhu dopočítá z vlastních stisků (jako ovládání běžce): nepřítel
+    // čeká v pruhu, do kterého robot přebíhá až před řadou, a robot se
+    // zpožděným pohledem by jinak vystřelil pozdě (R1). Stejně skok (R4): po
+    // dopadu je na ránu málo času, starý pohled by ho ještě viděl ve vzduchu.
+    let lane = state[p + BODY.aux0] as number;
+    let vy = state[p + BODY.vy] as number;
+    let ground = ((state[p + BODY.flags] as number) & FLAG.grounded) !== 0;
+    for (const seen of [...recent, input]) {
+      if ((seen.buttons & BUTTON.LEFT) !== 0) lane = Math.max(-1, lane - 1);
+      if ((seen.buttons & BUTTON.RIGHT) !== 0) lane = Math.min(1, lane + 1);
+      px += Math.max(-RUNNER.laneSpeed, Math.min(RUNNER.laneSpeed, lane * RUNNER.laneWidth - px));
+      if (ground && (seen.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0) vy = RUNNER.jumpVy;
+      vy -= GRAVITY;
+      py += vy;
+      ground = py <= 0;
+      if (ground) [py, vy] = [0, 0];
+    }
+    if (px !== lane * RUNNER.laneWidth) return input;
+  }
   if (base.id === 'platform_bot' && (!grounded || recent.some((seen) => (seen.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0))) return input;
   if (base.id === 'flap_bot') {
     let vy = state[p + BODY.vy] as number;
@@ -411,6 +495,7 @@ const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
   for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
     const b = bodyBase(i);
     if (i === player || state[b + BODY.role] !== ROLE.enemy || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    if (owns !== undefined && !owns(i)) continue;
     // The moving race opponent is not a shooting target.
     if (base.id === 'glide_bot' && (state[b + BODY.flags]! & FLAG.kinematic)) continue;
     const ex = (state[b + BODY.x] as number) - from.x;
@@ -427,10 +512,24 @@ const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
     const y = state[b + BODY.y] as number;
     // Střela musí celá projít výškou nepřítele, ne ho jen škrtnout.
     if (from.y < y || from.y + SHOOTER.bulletSize > y + (state[b + BODY.h] as number)) continue;
-    if (!covered(state, i) && clearShot(state, player, from, i)) return { ...input, buttons: input.buttons | BUTTON.FIRE };
+    if (!covered(state, i) && clearShot(state, player, from, i) && (owns === undefined || !screened(state, from, i, owns))) return { ...input, buttons: input.buttons | BUTTON.FIRE };
   }
   return input;
 };
+
+/** Stojí mezi hráčem a cílem v dráze střely živý nepřítel, kterého střelba nevlastní (R4)? Střela by zabila jeho. */
+function screened(state: Int32Array, from: { x: number; y: number; z: number }, target: number, owns: (body: number) => boolean): boolean {
+  const tz = state[bodyBase(target) + BODY.z] as number;
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const b = bodyBase(i);
+    if (i === target || owns(i) || state[b + BODY.role] !== ROLE.enemy || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const z = state[b + BODY.z] as number;
+    if (z < from.z || z > tz || Math.abs((state[b + BODY.x] as number) - from.x) * 2 >= (state[b + BODY.w] as number) + SHOOTER.bulletSize) continue;
+    const y = state[b + BODY.y] as number;
+    if (from.y < y + (state[b + BODY.h] as number) && y < from.y + SHOOTER.bulletSize) return true;
+  }
+  return false;
+}
 
 /**
  * `+shoot`: nepřátelé v cestě (aréna má svoje), blaster a tlačítko střelby
@@ -439,9 +538,9 @@ const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
 export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
   id: 'shoot',
   params: noParams,
-  apply: (parts, _params, { health }) => {
+  apply: (parts, _params, { health, spec }) => {
     const control = baseControl(parts).id;
-    const enemies = enemiesFor(control, parts.level);
+    const enemies = enemiesFor(control, parts.level, enemyOptions(spec, control));
     // Nová těla jen na konec: index modelu (`kinds`), který si dřívější doplněk zapsal, se tak nepohne.
     const bodies = [...parts.level.bodies, ...enemies];
     const template = bodies.length;
@@ -535,9 +634,10 @@ function chaserFor(control: PieceRef, level: ArcadeLevel): { body: BodyInit; spe
 function chase(state: Int32Array, player: number, speed: ChaseSpeed): void {
   const p = bodyBase(player);
   const clamp = (delta: number, limit: number) => Math.max(-limit, Math.min(limit, delta));
-  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
-    const b = bodyBase(i);
-    if (state[b + BODY.role] !== ROLE.chaser || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+  const bodies = state[HEADER.bodyCount] as number;
+  for (let i = 0; i < bodies; i += 1) {
+    const b = FIRST_BODY + i * STRIDE;
+    if (state[b + ROLE_SLOT] !== CHASER || ((state[b + FLAGS_SLOT] as number) & ALIVE) === 0) continue;
     if (speed.oncoming === true) {
       const aiming = (state[b + BODY.z] as number) - (state[p + BODY.z] as number) > (speed.commit ?? 0);
       state[b + BODY.vx] = aiming ? clamp((state[p + BODY.x] as number) - (state[b + BODY.x] as number), speed.across) : 0;
@@ -579,9 +679,10 @@ const chaseStep: AddonBotStep = ({ state, player, recent }, input, base) => {
   // Pruhy, kam pronásledovatel stihne dorazit, než hráče mine – a za kolik tiků ho mine.
   let soonest = Number.POSITIVE_INFINITY;
   const danger = new Set<number>();
-  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
-    const b = bodyBase(i);
-    if (state[b + BODY.role] !== ROLE.chaser || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+  const bodies = state[HEADER.bodyCount] as number;
+  for (let i = 0; i < bodies; i += 1) {
+    const b = FIRST_BODY + i * STRIDE;
+    if (state[b + ROLE_SLOT] !== CHASER || ((state[b + FLAGS_SLOT] as number) & ALIVE) === 0) continue;
     const closing = (state[p + BODY.vz] as number) + CHASE.runner.along;
     const seenDz = (state[b + BODY.z] as number) - (state[p + BODY.z] as number);
     const dz = seenDz - closing * lag;
@@ -635,11 +736,20 @@ const wrappedControlParams = z
   .object({
     base: z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) }).strict(),
     chase: z.object({ along: z.int().min(1), across: z.int().min(0), oncoming: z.boolean().optional(), commit: z.int().min(0).optional(), course: courseSchema.optional() }).strict().optional(),
+    /** Akce hrdiny (P46A): počítadlo a akce v pořadí tlačítek A, B. */
+    abilities: abilityControlParams.optional(),
+    /** Power-up (P46C): počítadlo a zrychlení žánru. */
+    powerups: powerupControlParams.optional(),
+    /**
+     * `false` (P46C, jen svět s power-upy bez blasteru): obal čítač `trigger` nepřepisuje – drží v něm
+     * rozdělanou práci `interact`. Bez klíče ho zapisuje každý tik jako dřív (hash uložených her).
+     */
+    trigger: z.literal(false).optional(),
   })
   .strict();
 
 /** Obalí ovládání `addon_control`, nebo doplní parametry obalu, který už tam je. */
-function wrapControl(parts: ArcadeParts, extra: Partial<z.infer<typeof wrappedControlParams>>): PieceRef {
+export function wrapControl(parts: ArcadeParts, extra: Partial<z.infer<typeof wrappedControlParams>>): PieceRef {
   const params = parts.control.id === 'addon_control' ? parts.control.params : { base: parts.control };
   return { id: 'addon_control', params: { ...params, ...extra } };
 }
@@ -658,7 +768,16 @@ export function makeAddonControl(bases: Readonly<Record<string, ControlPiece>>):
       const base = bases[params.base.id];
       if (base === undefined) throw new Error(`arcade: unknown control ${params.base.id}`);
       base.step(state, player, input, paramsOf(base, params.base.params));
-      state[HEADER.counters + COUNTER.trigger] = (input.buttons & BUTTON.FIRE) !== 0 ? 1 : 0;
+      let trigger = (input.buttons & BUTTON.FIRE) !== 0;
+      if (params.abilities !== undefined) {
+        // Střelba jako akce hrdiny (P46A) spouští blaster svým tlačítkem A nebo B, ale jen
+        // novým stiskem: `held` jsou tlačítka minulého tiku, `tickAbilities` je hned přepíše.
+        const held = state[bodyBase(params.abilities.keeper) + ABILITY_SLOTS.held] as number;
+        trigger ||= (input.buttons & ~held & abilityButton(params.abilities.ids, 'shoot')) !== 0;
+        tickAbilities(state, input.buttons, params.abilities);
+      }
+      if (params.powerups !== undefined) tickPowerup(state, player, params.powerups, params.abilities);
+      if (params.trigger !== false) state[HEADER.counters + COUNTER.trigger] = trigger ? 1 : 0;
       if (params.chase !== undefined) chase(state, player, params.chase);
     },
   };
@@ -692,16 +811,27 @@ export function applyAddons(parts: ArcadeParts, context: AddonContext): ArcadePa
 const addonBotParams = z
   .object({
     base: z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) }).strict(),
-    addons: z.array(z.enum(ADDONS)).min(1).max(3),
+    // Bez doplňků jen u robota s akcemi (P46A).
+    addons: z.array(z.enum(ADDONS)).max(3),
+    abilities: abilityBotParams.optional(),
   })
   .strict();
+
+/** Krok robota akcí (`abilities/bot.ts`); předává se zvenku kvůli kruhovému importu. `fire` = svět má doplněk `+shoot`. */
+export type AbilityBotStep = (observation: ArcadeObservation, input: ArcadeInput, base: PieceRef, params: z.infer<typeof abilityBotParams>, fire: boolean) => ArcadeInput;
+
+/** Obalí robota `addon_bot` s akcemi, nebo jim doplní obal, který už tam je. */
+export function wrapBot(parts: ArcadeParts, abilities: z.infer<typeof abilityBotParams>): PieceRef {
+  const params = parts.bot.id === 'addon_bot' ? parts.bot.params : { base: parts.bot, addons: [] };
+  return { id: 'addon_bot', params: { ...params, abilities } };
+}
 
 /**
  * Robot s doplňky: základní robot rozhodne, doplňky v pořadí vstup upraví.
  * `bases` jsou roboti knihovny – předávají se zvenku, ať knihovna a doplňky
  * nemají kruhový import.
  */
-export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>): BotPiece<z.infer<typeof addonBotParams>> {
+export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>, abilityStep?: AbilityBotStep): BotPiece<z.infer<typeof addonBotParams>> {
   return {
     id: 'addon_bot',
     params: addonBotParams,
@@ -712,12 +842,17 @@ export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>): BotPiec
     decide: (observation, params) => {
       const base = bases[params.base.id];
       if (base === undefined) throw new Error(`arcade: unknown bot ${params.base.id}`);
-      let input = base.decide(observation, paramsOf(base, params.base.params));
+      const decided = base.decide(observation, paramsOf(base, params.base.params));
+      let input = decided;
       for (const id of params.addons) {
         const step = ADDON_PIECES[id]?.bot;
         if (step !== undefined) input = step(observation, input, pacedBotBase(params.base, observation));
       }
-      return input;
+      // Průběh (P45C R2): tah doplňku do jiného pruhu běžce ještě projde plánovačem pruhů – doplněk hrozby chování nevidí.
+      const lanes = BUTTON.LEFT | BUTTON.RIGHT;
+      const guarded = (input.buttons & lanes) === (decided.buttons & lanes) ? input : guardLanes(observation, params.base, input);
+      // Akce hrdiny (P46A T6) až po plánovači pruhů: robot s připravenou akcí smí neuhnout.
+      return params.abilities === undefined || abilityStep === undefined ? guarded : abilityStep(observation, guarded, pacedBotBase(params.base, observation), params.abilities, params.addons.includes('shoot'));
     },
   };
 }

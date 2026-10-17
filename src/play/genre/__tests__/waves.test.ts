@@ -54,20 +54,27 @@ const WAVE_SLOT = HEADER.counters + COUNTER.ammo;
 interface Wave {
   /** Kolik nebezpečí na začátku vlny stojí: pronásledovatelé, nebo soupeři s HP. */
   readonly threats: number;
-  /** Součet HP soupeřů na začátku vlny (souboj). */
+  /** Součet HP soupeřů na začátku vlny (souboj), s bossem vlny (P45C T12). */
   readonly hp: number;
   /** Nejvyšší rychlost pronásledovatele během vlny (jednotek za tik). */
   readonly speed: number;
+  /** Ve vlně přišel boss (finále P45C T12: tělo nebezpečí s HP). */
+  readonly boss: boolean;
 }
 
-/** Přehraje robotův záznam a pro každou vlnu zapíše, co hráči hrozí. */
+/**
+ * Přehraje robotův záznam a pro každou vlnu zapíše, co hráči hrozí. Boss
+ * finále (P45C T12) přijde tik po začátku vlny (průběh čte vlnu až v dalším
+ * tiku), proto se HP vlny bere jako nejvyšší součet za její první půlsekundu.
+ */
 function wavesOf(world: ArcadeWorld): Wave[] {
   const inputs = runBot(world).inputs;
   const program = loadProgram(world, ARCADE_LIBRARY);
   const state = instantiate(world);
-  const waves: { threats: number; hp: number; speed: number }[] = [];
+  const waves: { threats: number; hp: number; speed: number; boss: boolean }[] = [];
   let next = 0;
   let wave = -1;
+  let since = 0;
   for (let tick = 0; tick < 90 * ARCADE_HZ && state[HEADER.runState] === 0; tick += 1) {
     while (next < inputs.length && inputs[next]!.tick < tick) next += 1;
     const event = inputs[next];
@@ -76,20 +83,28 @@ function wavesOf(world: ArcadeWorld): Wave[] {
     const count = state[HEADER.bodyCount] as number;
     if (at !== wave) {
       wave = at;
+      since = tick;
       let threats = 0;
-      let hp = 0;
       for (let i = 0; i < count; i += 1) {
         const base = bodyBase(i);
         if (((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
         if (state[base + BODY.role] === ROLE.chaser) threats += 1;
-        if (state[base + BODY.role] === ROLE.enemy && bodyHp(state, i) > 0) {
-          threats += 1;
-          hp += bodyHp(state, i);
-        }
+        if (state[base + BODY.role] === ROLE.enemy && bodyHp(state, i) > 0) threats += 1;
       }
-      waves.push({ threats, hp, speed: 0 });
+      waves.push({ threats, hp: 0, speed: 0, boss: false });
     }
     const current = waves[waves.length - 1]!;
+    let hp = 0;
+    for (let i = 0; i < count; i += 1) {
+      const base = bodyBase(i);
+      if (((state[base + BODY.flags] as number) & FLAG.alive) === 0 || bodyHp(state, i) === 0) continue;
+      if (state[base + BODY.role] === ROLE.enemy) hp += bodyHp(state, i);
+      if (state[base + BODY.role] === ROLE.hazard) {
+        hp += bodyHp(state, i);
+        current.boss = true;
+      }
+    }
+    if (tick - since < ARCADE_HZ / 2) current.hp = Math.max(current.hp, hp);
     for (let i = 0; i < count; i += 1) {
       const base = bodyBase(i);
       if (state[base + BODY.role] !== ROLE.chaser || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
@@ -116,7 +131,14 @@ describe('arena waves (P36A T4)', () => {
       expect(run.winSeconds).toBeLessThanOrEqual(90);
       expect(run.idle.outcome).toBe('lost');
     }
-    expect(b.winSeconds, `${String(a.winSeconds)} s vs ${String(b.winSeconds)} s`).toBeGreaterThan(a.winSeconds + 5);
+    // Odchylka P45C T12: v útěku s věcmi nese poslední vlnu boss a lovci s ním odejdou (boss s lovcem robot
+    // nepřemohl), zbytek poslední vlny robot posbírá bez nich – dvě vlny po 20 klíčích pak trvají jako čtyři
+    // po třech (53,8 / 53,9 s). Délku podle obsahu u nich dál dává plán vln, který průběh nemění: táž věta
+    // uložená před průběhem (`genre.v1`).
+    const finale = mode === 'arena.escape' && [a, b].some((run) => run.world.rules.some((rule) => rule.id === 'boss_beat'));
+    const stored = (spec: GameSpecV1): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v1' } });
+    const [x, y] = finale ? [publish(short, stored), publish(long, stored)] : [a, b];
+    expect(y.winSeconds, `${String(x.winSeconds)} s vs ${String(y.winSeconds)} s`).toBeGreaterThan(x.winSeconds + 5);
   });
 
   it.each([
@@ -124,19 +146,30 @@ describe('arena waves (P36A T4)', () => {
     ['A knight must collect three keys in a haunted castle while dodging ghosts.'],
     ['escape from one ghost in a haunted house'],
   ])('„%s“: every next wave sends more chasers or faster ones', (sentence) => {
-    const waves = wavesOf(publish(sentence).world);
+    const { world } = publish(sentence);
+    const waves = wavesOf(world);
+    // Hra s věcmi má od P45C T12 finále: poslední vlnu nese boss a pronásledovatelé s ním odejdou
+    // (boss s pronásledovatelem robot nepřemohl) – stupňování té vlny je boss, ne další pronásledovatel.
+    const finale = world.rules.some((rule) => rule.id === 'boss_beat');
     expect(waves.length, JSON.stringify(waves)).toBeGreaterThanOrEqual(3);
     for (let k = 1; k < waves.length; k += 1) {
       const [before, now] = [waves[k - 1]!, waves[k]!];
+      if (finale && k === waves.length - 1) {
+        expect(now.boss, `wave ${String(k + 1)} brings the boss: ${JSON.stringify(waves)}`).toBe(true);
+        expect(waves.slice(0, -1).some((wave) => wave.boss), JSON.stringify(waves)).toBe(false);
+        continue;
+      }
       expect(now.threats, `wave ${String(k + 1)}: ${JSON.stringify(waves)}`).toBeGreaterThanOrEqual(before.threats);
       expect(now.threats > before.threats || now.speed > before.speed, `wave ${String(k + 1)}: ${JSON.stringify(waves)}`).toBe(true);
     }
   });
 
   it('a fight comes in waves, every next one with more HP to knock out', () => {
+    // Od P45C T12 je poslední vlnou boss: jeho HP se počítá k těm, které je třeba vyřadit (`fight_end` na něj čeká).
     const waves = wavesOf(publish('a ninja fights a robot on a rooftop').world);
     expect(waves.length, JSON.stringify(waves)).toBeGreaterThanOrEqual(3);
     for (let k = 1; k < waves.length; k += 1) expect(waves[k]!.hp, JSON.stringify(waves)).toBeGreaterThan(waves[k - 1]!.hp);
+    expect(waves.at(-1)!.boss, JSON.stringify(waves)).toBe(true);
   });
 
   it('the robot wins a collecting game on almost every seed – remix checks a chip on one seed only', () => {
@@ -157,8 +190,10 @@ describe('arena waves (P36A T4)', () => {
     expect(clock).toBeDefined();
     expect(clock!).toBeLessThanOrEqual(88);
     expect(clock! - run.winSeconds).toBeGreaterThanOrEqual(15);
-    // Hodiny dojdou na posledním tiku limitu, prohra se zapíše o tik později.
-    expect(run.idle.seconds).toBeCloseTo(clock!, 1);
+    // Hodiny dojdou na posledním tiku limitu, prohra se zapíše o tik později. Od P45C T12 roste
+    // tlak i nečinnému hráči (postup má spodní mez v uběhlém čase): nová chování ho můžou dostat dřív.
+    expect(run.idle.outcome).toBe('lost');
+    expect(run.idle.seconds).toBeLessThanOrEqual(clock! + 0.05);
   });
 });
 
@@ -180,7 +215,8 @@ describe('stored arena games without waves', () => {
     const { scoring: _scoring, ...spec } = legacySpec(sentence);
     const { tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly tuning: Record<string, unknown> };
     const { waves: _waves, ...old } = tuning;
-    const compiled = compileArcade({ ...spec, controlParams: { ...own, tuning: old } as GameSpecV1['controlParams'] }, seed);
+    // Uložená hra je `genre.v2`, bez power-upů (P46C).
+    const compiled = compileArcade({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v2' }, controlParams: { ...own, tuning: old } as GameSpecV1['controlParams'] }, seed);
     expect(compiled.ok).toBe(true);
     if (!compiled.ok) return;
     expect(compiled.value.winsAtTick).toBe(ticks);

@@ -19,9 +19,16 @@ export default defineConfig({
     // Výchozích 5 s vitestu nestačí testům, které protáhnou celý zmrazený korpus
     // jedním `it` (25 editačních promptů endpointem) nebo spustí podproces.
     // Pod zátěží paralelních workerů padal pokaždé jiný z nich — zátěží podmíněná
-    // vada sady, ne regrese. Nejpomalejší soubor jede ~30 s, takže 30 s na test
-    // je strop s rezervou; skutečné zaseknutí pořád spadne.
-    testTimeout: 30_000,
+    // vada sady, ne regrese. Po P46/P47 jede nejtěžší test samotný 20–29 s
+    // (`draft` 40 vět, `external-import`, `publish-moderation`, `scenery-carve`
+    // 22 s), v celé sadě 31–33 s – naměřeno 16. 10. 2026. 60 s je strop
+    // s rezervou; skutečné zaseknutí pořád spadne.
+    testTimeout: 60_000,
+    // Polovina logických jader = fyzická jádra. Výchozí počet workerů (15 na
+    // 16 logických / 8 fyzických) přetěžoval stroj sadou samotnou: naměřeno
+    // 16. 10. 2026 v klidu, 15 workerů 10 časových pádů v 9 souborech (limity
+    // 30 s a výkonové rozpočty), 8 workerů 1 pád a sada o 5 min rychlejší.
+    maxWorkers: '50%',
     /**
      * **Sada běží v jednom procesu a od P15 `T29-lambdadetect` to musí říct.**
      *

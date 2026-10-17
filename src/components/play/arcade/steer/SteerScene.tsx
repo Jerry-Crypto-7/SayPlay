@@ -13,26 +13,32 @@ import { renderHeld } from '../effects/render-feel';
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { type Camera, Color, Frustum, type InstancedMesh, Matrix4, MeshBasicMaterial, MeshStandardMaterial, type Object3D, type PerspectiveCamera, Plane, PlaneGeometry, Raycaster, Vector2, Vector3 } from 'three';
+import { BoxGeometry, type Camera, Color, Frustum, type InstancedMesh, Matrix4, MeshBasicMaterial, MeshStandardMaterial, type Object3D, type PerspectiveCamera, Plane, Raycaster, Vector2, Vector3 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import { color } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, UNIT, bodyBase, nativeRule, rampedSpeed } from '@/play/arcade/contract';
-import type { Look } from '@/play/arcade/look';
+import { type Look, SURFACES } from '@/play/arcade/look';
 import { STEER, type SteerCourse } from '@/play/arcade/pieces/steer';
 import type { HeroAction } from '@/play/spec';
 
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
+import { FieldGround } from '../look/FieldGround';
+import { buildRoadGround } from '../look/ground';
 import { type IslandSpot, buildIslands, islandPalette } from '../look/rig/terrain/islands';
 import { hash } from '../look/rig/terrain/valley';
+import { roadGeometry, stripCurve } from '../look/road-strip';
 import { buildWater } from '../look/rig/terrain/water';
 import { UNDER_PANORAMA } from '../look/under-panorama';
+import { HorizonBackdrop } from '../look/Backdrop';
 import { Scenery } from '../look/Scenery';
+import { Vegetation } from '../look/Vegetation';
 import type { ArcadeSession } from '../session';
 import { FittedModel } from '../World';
 import { keySteer } from './key-steer';
+import { BARRIER_W, roadShapeOf } from './road-shape';
 import { type DriveInputMode, driveInput } from './drive-input';
 import { VoyageHero } from './VoyageHero';
 import { type VoyageLayout, centerOf, nearShotsInView, voyageLayoutOf } from './voyageLayout';
@@ -190,9 +196,10 @@ export function SteerBackdrop({
   readonly namedPad?: string;
 }) {
   const voyage = useVoyageSession();
+  const shape = useMemo(() => roadShapeOf(session.world), [session.world]);
   return (
     <>
-      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} namedPad={namedPad} /> : <RoadBackdrop course={course} length={length} look={look} />}
+      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} namedPad={namedPad} /> : <RoadBackdrop course={course} shape={shape} length={length} look={look} seed={session.world.seed} />}
       {/* Slot ducha (P37-0 T3) pro silnici i plavbu. */}
       <GhostSlot ghost={ghost} session={session} />
     </>
@@ -213,58 +220,102 @@ function useVoyageSession(): { readonly session: ArcadeSession; readonly layout:
 }
 
 /**
- * Asfalt úsek po úseku (střed a šířka z osy trati) + bílé okraje, zem a
- * kulisy sady prostředí (P27A T3) podél každého úseku. Kulisy jsou jen vzhled:
- * jádro o nich neví, hash světa se nehne.
+ * Silnice jako jeden pás po hladké křivce středů a šířek úseků (P46G T2):
+ * povrch sady (asfalt se středovou čárou, hlína, písek, sníh, prkna), okraje
+ * a mantinely po téže křivce, zem a kulisy sady prostředí (P27A T3) podél
+ * každého úseku. Sada s vegetací (P46G T4) má místo nich vegetaci za volným
+ * pásem a jednu řídkou řadu kulis po ose celé cesty.
+ * Jen vzhled: jádro o nich neví, hash světa se nehne.
  */
-function RoadBackdrop({ course, length, look, sceneryFrom = 0 }: { readonly course: SteerCourse | undefined; readonly length: number; readonly look: Look; readonly sceneryFrom?: number }) {
+function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { readonly course: SteerCourse | undefined; readonly shape?: RoadShape; readonly length: number; readonly look: Look; readonly seed: number; readonly sceneryFrom?: number }) {
   const span = length + 80;
   const half = (course?.halfWidth ?? 5 * UNIT) / UNIT;
-  const segments = useMemo(() => segmentsOf(course), [course]);
-  // Asfalt a okraje všech úseků po jedné síti: úsek po úseku to byly desítky volání kreslení na snímek (P32F T4, telefon).
-  const road = useMemo(() => {
-    if (segments.length === 0) return null;
-    const strip = (w: number, d: number, x: number, y: number, z: number) => new PlaneGeometry(w, d).rotateX(-Math.PI / 2).translate(x, y, z);
-    const mid = (segment: Segment) => (segment.near + segment.far) / 2;
-    return {
-      asphalt: mergeGeometries(segments.map((segment) => strip(half * 2, segment.far - segment.near + 0.05, segment.center, -0.01, mid(segment)))),
-      edges: mergeGeometries(segments.flatMap((segment) => [-1, 1].map((side) => strip(0.12, segment.far - segment.near, segment.center + side * (half - 0.15), 0, mid(segment))))),
+  // Silnice z mantinelů světa ve skutečné šířce (P46D R2); bez nich z osy trati v šířce prvního úseku.
+  const segments = useMemo(() => (shape !== undefined && shape.segments.length > 0 ? shape.segments : segmentsOf(course).map((segment) => ({ ...segment, width: half * 2 }))), [shape, course, half]);
+  const strip = useMemo(() => (segments.length > 0 ? segments : [{ near: -60, far: span, center: 0, width: half * 2 }]), [segments, span, half]);
+  const roadAt = useMemo(() => {
+    const curve = stripCurve(strip);
+    return (z: number) => {
+      const { center, width } = curve(z);
+      return { center, half: width / 2 };
     };
-  }, [segments, half]);
-  useEffect(() => () => { road?.asphalt.dispose(); road?.edges.dispose(); }, [road]);
+  }, [strip]);
+  const centerAt = useMemo(() => (z: number) => ({ x: roadAt(z).center, y: 0 }), [roadAt]);
+  const widest = Math.max(...strip.map((segment) => segment.width));
+  const surface = SURFACES[look.surface];
+  // Pás, okraje, značení a mantinely po jedné síti: úsek po úseku to byly desítky volání kreslení na snímek (P32F T4, telefon).
+  const road = useMemo(() => {
+    const wallH = STEER.wallH / UNIT;
+    const walls = shape !== undefined && shape.barriers.length > 0;
+    const built = roadGeometry(segments, surface, walls ? { height: wallH, thickness: BARRIER_W } : null);
+    if (built === null) return null;
+    // Ostrůvky rozcestí zůstávají kvádry jádra; s mantinely jedna síť (bez UV, které pás nemá).
+    const islands = (shape?.islands ?? []).map((island) => new BoxGeometry(island.w, wallH, island.d).translate(island.x, wallH / 2, island.z).deleteAttribute('uv'));
+    const barriers = built.walls === null && islands.length === 0 ? null : mergeGeometries([...(built.walls === null ? [] : [built.walls]), ...islands]);
+    return { ...built, barriers };
+  }, [segments, shape, surface]);
+  useEffect(() => () => { road?.surface.dispose(); road?.edges.dispose(); road?.marks?.dispose(); road?.walls?.dispose(); road?.barriers?.dispose(); }, [road]);
+  // Zem s odstíny, skvrnami, krajnicí podél cesty a tmavnutím do strany (P46G T3) – jedna síť místo roviny jedné barvy.
+  const ground = useMemo(() => buildRoadGround(look, strip, -60, span), [look, strip, span]);
+  useEffect(() => () => ground.dispose(), [ground]);
+  const afloat = look.afloat === true;
   return (
     <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, span / 2 - 30]} renderOrder={UNDER_PANORAMA}>
-        <planeGeometry args={[160, span + 60]} />
-        <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
+      <mesh geometry={ground} position={[0, -0.03, 0]} renderOrder={UNDER_PANORAMA}>
+        <meshStandardMaterial vertexColors roughness={1} depthWrite={false} />
       </mesh>
       {road !== null && (
         <>
-          <mesh geometry={road.asphalt}>
-            {/* Závod po řece jede po hladině (`afloat`, P30B T6), jinak po asfaltu sady. */}
-            <meshStandardMaterial color={look.afloat === true ? look.water : look.track} roughness={look.afloat === true ? 0.3 : 0.9} />
+          <mesh geometry={road.surface} receiveShadow>
+            {/* Závod po řece jede po hladině (`afloat`, P30B T6), jinak po povrchu sady. */}
+            <meshStandardMaterial color={afloat ? look.water : surface.color} roughness={afloat ? 0.3 : 0.9} />
           </mesh>
-          <mesh geometry={road.edges}>
-            <meshBasicMaterial color="#e2e8f0" />
+          <mesh geometry={road.edges} receiveShadow>
+            <meshStandardMaterial color={surface.edge} roughness={0.9} />
           </mesh>
+          {road.marks !== null && !afloat && 'marks' in surface && (
+            <mesh geometry={road.marks} receiveShadow>
+              <meshStandardMaterial color={surface.marks.color} roughness={0.9} />
+            </mesh>
+          )}
+          {road.barriers !== null && (
+            <mesh geometry={road.barriers} castShadow receiveShadow>
+              <meshStandardMaterial color={color.tomato} roughness={0.7} />
+            </mesh>
+          )}
         </>
       )}
-      {segments.map((segment, i) =>
-        segment.far - segment.near < sceneryFrom ? null : (
-          <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>
-            <Scenery look={look} layout="sides" inner={half + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
-          </group>
-        ),
+      {look.flora !== undefined ? (
+        <>
+          <Vegetation flora={look.flora} seed={seed} from={-60} to={span} road={roadAt} clear={VEGETATION_CLEAR} />
+          {/* Vedle vegetace jedna řídká řada kulis po ose celé cesty: řada na úsek by na krátkých úsecích kulisy zahustila. */}
+          <Scenery look={look} layout="sides" inner={widest / 2 + SCENERY_MARGIN} from={-10} to={span - 2} bend={centerAt} vegetation />
+        </>
+      ) : (
+        segments.map((segment, i) =>
+          segment.far - segment.near < sceneryFrom ? null : (
+            <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>
+              <Scenery look={look} layout="sides" inner={segment.width / 2 + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
+            </group>
+          ),
+        )
       )}
+      {/* Kulisa za mlhou (P46G T6): průsek nejbližší vrstvy nad nejširším úsekem silnice. */}
+      <HorizonBackdrop look={look} seed={seed} length={length} clear={widest / 2 + SCENERY_MARGIN} />
     </>
   );
 }
+
+/** Volný pás vegetace za krajem silnice (m): mantinel a kus krajnice, ať je na cestu vidět i v zatáčce. */
+const VEGETATION_CLEAR = BARRIER_W + 1;
 
 interface Segment {
   readonly near: number;
   readonly far: number;
   readonly center: number;
 }
+
+type RoadShape = ReturnType<typeof roadShapeOf>;
 
 /** Úseky trati ve scéně (m): od konce předchozího (první 20 m před startem) do svého konce, střed zrcadlený. */
 function segmentsOf(course: SteerCourse | undefined): Segment[] {
@@ -286,6 +337,14 @@ const BANK_TOP = 1.1;
 const SLAB_BULGE = 0.32;
 /** Kulisa, která by stála ve vodě, se schová pod hladinu. */
 const SUNK = -8;
+/** Kulisa za mlhou plavby po moři stojí na hladině. */
+const AT_SEA = (): number => WATER_LEVEL;
+
+/** Zem kaňonu a přistání s odstíny a skvrnami (P46G T7) – dřív jedna barva sady; do stran a za cíl jako dřívější rovina. */
+function VoyageLand({ look, reach, far }: { readonly look: Look; readonly reach: number; readonly far: number }) {
+  const area = useMemo(() => ({ x0: -reach - 110, x1: reach + 110, z0: -80, z1: far + 40 }), [reach, far]);
+  return <FieldGround look={look} area={area} y={-0.03} under />;
+}
 /** Záře: barva × tolik je nad prahem bloomu (`bloomThreshold`), bez tone mappingu. */
 const GLOW = 3;
 /** Stopa dělové koule: kolik posledních poloh. */
@@ -531,17 +590,16 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard, namedPad }
   return (
     <>
       {layout.terrain === 'buildings' ? (
-        <RoadBackdrop course={layout.course} length={length} look={look} sceneryFrom={STRAIGHT_M} />
+        <RoadBackdrop course={layout.course} length={length} look={look} seed={session.world.seed} sceneryFrom={STRAIGHT_M} />
       ) : water !== null ? (
         <mesh geometry={water.geometry} material={water.material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'water' }} />
       ) : (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, far / 2 - 20]} renderOrder={UNDER_PANORAMA}>
-          <planeGeometry args={[layout.reach * 2 + 220, far + 120]} />
-          <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
-        </mesh>
+        <VoyageLand look={look} reach={layout.reach} far={far} />
       )}
       {layout.terrain !== 'buildings' && (
         <>
+          {/* Kulisa za mlhou (P46G T7): na moři z hladiny, v kaňonu ze země; průsek nad kanálem. Přistání ne – kamera letí ve výšce rakety a prstenec by z ní byl zeď na zemi. */}
+          {layout.mode !== 'land' && <HorizonBackdrop look={look} seed={session.world.seed} length={length} clear={half + SCENERY_MARGIN} ground={sea ? AT_SEA : undefined} />}
           <mesh geometry={islands.geometry} material={landMaterial} castShadow receiveShadow userData={{ terrain: 'islands' }} />
           {segments.map((segment, i) =>
             segment.far - segment.near < STRAIGHT_M ? null : (

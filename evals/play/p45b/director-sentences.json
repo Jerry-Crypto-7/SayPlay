@@ -1,0 +1,31 @@
+{
+ "about": "P45B T11: 25 dev sentences where a course (stages, countdown, waves) makes sense, for recording local gpt-oss-20b director answers with logic. Never test-200, held-out or sealed sets.",
+ "rule": "Axes in this order with quotas defend 3, rescue 3, defeat 4, survive 4, escape 4, race 4, collect 3. Within an axis the first sentences in set order (p30/dev.json, p37a/dev-150.json, p41/sentences.json groups single, multi-action, paraphrase), file order inside a set, never a sentence picked by an earlier axis. survive/escape/race/collect = extractIntent objective; defend = words defend(s)/protect(s); rescue = rescue(s)/save(s); defeat = fight(s|ing)/defeat(s)/battle(s)/slay(s).",
+ "sentences": [
+  { "id": "s155", "set": "evals/play/p30/dev.json", "axis": "defend", "text": "defend the castle from waves of goblins" },
+  { "id": "h03", "set": "evals/play/p30/dev.json", "axis": "defend", "text": "defend a castle from dragons by throwing snowballs" },
+  { "id": "j08", "set": "evals/play/p30/dev.json", "axis": "defend", "text": "a wizard defends a crystal tower from flying skeletons" },
+  { "id": "d20", "set": "evals/play/p30/dev.json", "axis": "rescue", "text": "a knight rides a unicorn to rescue a prince from a cloud castle" },
+  { "id": "u47", "set": "evals/play/p37a/dev-150.json", "axis": "rescue", "text": "a lifeguard rescues swimmers from sharks at a crowded beach" },
+  { "id": "m10", "set": "evals/play/p37a/dev-150.json", "axis": "rescue", "text": "FIREFIGHTER SAVES KITTENS FROM A BURNING TREE" },
+  { "id": "s188", "set": "evals/play/p30/dev.json", "axis": "defeat", "text": "A grandma karate fights a gang of pigeons in the park" },
+  { "id": "f22", "set": "evals/play/p37a/dev-150.json", "axis": "defeat", "text": "A knight fights a three-headed hydra at the castle gates." },
+  { "id": "si-031", "set": "evals/play/p41/sentences.json#single", "axis": "defeat", "text": "a karate kid fighting ninjas in the city" },
+  { "id": "ma-031", "set": "evals/play/p41/sentences.json#multi-action", "axis": "defeat", "text": "a knight fights a dragon to save the princess" },
+  { "id": "si-018", "set": "evals/play/p41/sentences.json#single", "axis": "survive", "text": "survive in the desert for 3 minutes" },
+  { "id": "ma-048", "set": "evals/play/p41/sentences.json#multi-action", "axis": "survive", "text": "zombie survival: shoot zombies, collect ammo, survive 5 waves" },
+  { "id": "pa-017", "set": "evals/play/p41/sentences.json#paraphrase", "axis": "survive", "text": "a spaceship shooting asteroids to survive" },
+  { "id": "pa-018", "set": "evals/play/p41/sentences.json#paraphrase", "axis": "survive", "text": "survive in space by blasting asteroids with your spaceship" },
+  { "id": "s003", "set": "evals/play/p30/dev.json", "axis": "escape", "text": "A hamster escaping a supermarket while a giant Roomba hunts me" },
+  { "id": "s008", "set": "evals/play/p30/dev.json", "axis": "escape", "text": "temple run but you're a banana running from a monkey" },
+  { "id": "h09", "set": "evals/play/p30/dev.json", "axis": "escape", "text": "escape from a haunted hospital with a flashlight" },
+  { "id": "j10", "set": "evals/play/p30/dev.json", "axis": "escape", "text": "an elf princess escapes a goblin castle through a dark forest" },
+  { "id": "s056", "set": "evals/play/p30/dev.json", "axis": "race", "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold" },
+  { "id": "s058", "set": "evals/play/p30/dev.json", "axis": "race", "text": "boat race through a jungle river full of crocodiles" },
+  { "id": "h02", "set": "evals/play/p30/dev.json", "axis": "race", "text": "shopping cart race in a supermarket" },
+  { "id": "d06", "set": "evals/play/p30/dev.json", "axis": "race", "text": "race hot air balloons over a desert canyon" },
+  { "id": "s002", "set": "evals/play/p30/dev.json", "axis": "collect", "text": "A knight must collect three keys in a haunted castle while dodging ghosts." },
+  { "id": "j05", "set": "evals/play/p30/dev.json", "axis": "collect", "text": "pop ten balloons at a birthday party" },
+  { "id": "d16", "set": "evals/play/p30/dev.json", "axis": "collect", "text": "an owl delivers letters across a snowy mountain village" }
+ ]
+}

@@ -1,0 +1,168 @@
+{
+ "id": "m10",
+ "sentence": "FIREFIGHTER SAVES KITTENS FROM A BURNING TREE",
+ "axis": "rescue",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:37:45.037Z",
+ "ms": 21153,
+ "answer": {
+  "plan": "Create a spatial quest where a firefighter rescues kittens from a burning tree while avoiding a shadowy pursuer and collecting coins.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "firefighter",
+   "cast": [
+    {
+     "label": "kitten",
+     "does": "reach",
+     "verb": "free",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "shadow",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": true
+    },
+    {
+     "label": "coin",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "sweep",
+   "setting": "village",
+   "palette": "forest",
+   "params": {
+    "seconds": 30,
+    "paceBudgetPct": 70,
+    "count": 3,
+    "chasers": 1,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 0
+   },
+   "counts": {
+    "enemy": 1,
+    "target": 3
+   },
+   "ruleRoles": [
+    {
+     "id": "kitten",
+     "kind": "target",
+     "label": "kitten",
+     "count": 3
+    },
+    {
+     "id": "shadow",
+     "kind": "chaser",
+     "label": "shadow",
+     "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 5
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "free_kitten",
+     "verb": "interact",
+     "when": {
+      "contact": [
+       "player",
+       "kitten"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "set": {
+        "var": "free",
+        "value": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "collect_coin",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "coin"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "add": {
+        "var": "score",
+        "amount": 10
+       }
+      }
+     ]
+    },
+    {
+     "id": "shadow_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "shadow"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": [
+     {
+      "id": "free",
+      "start": 0
+     },
+     {
+      "id": "score",
+      "start": 0
+     }
+    ],
+    "timers": [
+     {
+      "id": "phase1"
+     }
+    ],
+    "phases": [
+     {
+      "id": "first"
+     },
+     {
+      "id": "second"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

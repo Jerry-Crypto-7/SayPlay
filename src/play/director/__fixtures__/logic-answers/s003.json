@@ -1,0 +1,142 @@
+{
+ "id": "s003",
+ "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+ "axis": "escape",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:40:05.335Z",
+ "ms": 14535,
+ "answer": {
+  "plan": "arena escape",
+  "spec": {
+   "genre": "arena",
+   "mode": "escape",
+   "hero": "hamster",
+   "cast": [
+    {
+     "label": "giant roomba",
+     "does": "chase_me",
+     "verb": "chase",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "cheese",
+     "does": "collect",
+     "verb": "collect",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "supermarket",
+   "palette": "supermarket",
+   "params": null,
+   "counts": {
+    "enemy": 1,
+    "collectible": 1
+   },
+   "ruleRoles": [
+    {
+     "id": "roomba",
+     "kind": "chaser",
+     "label": "giant roomba",
+     "count": 1
+    },
+    {
+     "id": "cheese",
+     "kind": "collectible",
+     "label": "cheese",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "roomba_chase",
+     "verb": "chase",
+     "when": {
+      "contact": [
+       "player",
+       "roomba"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "damage": 1
+      }
+     ]
+    },
+    {
+     "id": "roomba_spawn",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "roomba",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "cheese_spawn",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "cheese",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "escape_to_exit",
+     "verb": "escape",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "escape_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "first"
+     },
+     {
+      "id": "second"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

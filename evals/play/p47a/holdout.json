@@ -1,0 +1,708 @@
+{
+ "about": "P47A holdout: 60 sentences written by an independent agent with no access to code, plans or other sets; group shares as P45 (threat 24, everyday 15, fantasy 12, non-game 9). Read only by the P47A final measurement (T12), guarded by its SHA-256.",
+ "sentences": [
+  {
+   "id": "h001",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "a skateboarding grandma escapes a swarm of angry bees through the park",
+   "checklist": [
+    { "item": "grandma", "slot": "hero", "match": ["grandma", "granny", "grandmother"] },
+    { "item": "bees", "slot": "role", "match": ["bees", "bee", "swarm"] },
+    { "item": "park", "slot": "setting", "match": ["park"] },
+    { "item": "escapes", "slot": "verb", "controls": ["move_free", "runner"] }
+   ]
+  },
+  {
+   "id": "h002",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "flip pancakes for a line of hungry customers before they walk out",
+   "checklist": [
+    { "item": "pancakes", "slot": "any", "match": ["pancakes", "pancake", "crepes"] },
+    { "item": "customers", "slot": "role", "match": ["customers", "customer", "guests", "diners"] },
+    { "item": "flip", "slot": "verb", "controls": ["timing"] }
+   ]
+  },
+  {
+   "id": "h003",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a baby dragon learns to fly over a misty valley",
+   "checklist": [
+    { "item": "dragon", "slot": "hero", "match": ["dragon", "wyvern", "drake"] },
+    { "item": "valley", "slot": "setting", "match": ["valley", "mountains", "canyon"] },
+    { "item": "fly", "slot": "verb", "controls": ["flap"] }
+   ]
+  },
+  {
+   "id": "h004",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "a boxing kangaroo fights a crocodile in a muddy ring",
+   "checklist": [
+    { "item": "kangaroo", "slot": "hero", "match": ["kangaroo", "wallaby"] },
+    { "item": "crocodile", "slot": "role", "match": ["crocodile", "croc", "alligator", "gator"] },
+    { "item": "ring", "slot": "setting", "match": ["ring", "arena"] },
+    { "item": "fights", "slot": "verb", "controls": ["duel"] }
+   ]
+  },
+  {
+   "id": "h005",
+   "source": "p47a-holdout",
+   "group": "non-game",
+   "text": "finish the quarterly report and email it to my boss",
+   "checklist": [
+    { "item": "report", "slot": "any", "match": ["report", "document", "spreadsheet"] },
+    { "item": "boss", "slot": "role", "match": ["boss", "manager"] },
+    { "item": "finish", "slot": "verb", "controls": [] }
+   ]
+  },
+  {
+   "id": "h006",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "fight off zombies with a frying pan in an empty supermarket",
+   "checklist": [
+    { "item": "zombies", "slot": "role", "match": ["zombies", "zombie", "undead"] },
+    { "item": "pan", "slot": "any", "match": ["pan", "skillet"] },
+    { "item": "supermarket", "slot": "setting", "match": ["supermarket", "store", "shop", "grocery"] },
+    { "item": "fight", "slot": "verb", "controls": ["duel", "shooter"] }
+   ]
+  },
+  {
+   "id": "h007",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "catch the last bus before it pulls away from the stop",
+   "checklist": [
+    { "item": "bus", "slot": "role", "match": ["bus", "coach"] },
+    { "item": "stop", "slot": "setting", "match": ["stop", "station", "street"] },
+    { "item": "catch", "slot": "verb", "controls": ["runner", "move_free"] }
+   ]
+  },
+  {
+   "id": "h008",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "a delivery drone flies through a thunderstorm dodging lightning bolts",
+   "checklist": [
+    { "item": "drone", "slot": "hero", "match": ["drone", "quadcopter"] },
+    { "item": "lightning", "slot": "role", "match": ["lightning", "bolts", "bolt"] },
+    { "item": "thunderstorm", "slot": "setting", "match": ["thunderstorm", "storm", "sky", "clouds"] },
+    { "item": "flies", "slot": "verb", "controls": ["flap", "steer"] }
+   ]
+  },
+  {
+   "id": "h009",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a wizard hurls fireballs at skeletons in a dusty crypt",
+   "checklist": [
+    { "item": "wizard", "slot": "hero", "match": ["wizard", "mage", "sorcerer"] },
+    { "item": "fireballs", "slot": "any", "match": ["fireballs", "fireball", "fire"] },
+    { "item": "skeletons", "slot": "role", "match": ["skeletons", "skeleton", "undead"] },
+    { "item": "crypt", "slot": "setting", "match": ["crypt", "tomb", "dungeon"] },
+    { "item": "hurls", "slot": "verb", "controls": ["throw", "shooter"] }
+   ]
+  },
+  {
+   "id": "h010",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "walk the dog around the block without letting it eat trash",
+   "checklist": [
+    { "item": "dog", "slot": "role", "match": ["dog", "puppy", "pet"] },
+    { "item": "block", "slot": "setting", "match": ["block", "street", "neighborhood", "sidewalk"] },
+    { "item": "trash", "slot": "any", "match": ["trash", "garbage", "rubbish"] },
+    { "item": "walk", "slot": "verb", "controls": ["move_free"] }
+   ]
+  },
+  {
+   "id": "h011",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "collect seashells on the beach before the giant crabs pinch you",
+   "checklist": [
+    { "item": "seashells", "slot": "any", "match": ["seashells", "shells", "shell"] },
+    { "item": "beach", "slot": "setting", "match": ["beach", "shore", "sand", "coast"] },
+    { "item": "crabs", "slot": "role", "match": ["crabs", "crab"] },
+    { "item": "collect", "slot": "verb", "controls": ["move_free"] }
+   ]
+  },
+  {
+   "id": "h012",
+   "source": "p47a-holdout",
+   "group": "non-game",
+   "text": "buy milk, bread and batteries on the way home",
+   "checklist": [
+    { "item": "milk", "slot": "any", "match": ["milk"] },
+    { "item": "bread", "slot": "any", "match": ["bread", "loaf"] },
+    { "item": "batteries", "slot": "any", "match": ["batteries", "battery"] },
+    { "item": "buy", "slot": "verb", "controls": [] }
+   ]
+  },
+  {
+   "id": "h013",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "jump across melting ice floes to get away from a walrus",
+   "checklist": [
+    { "item": "floes", "slot": "any", "match": ["floes", "floe", "ice"] },
+    { "item": "walrus", "slot": "role", "match": ["walrus", "seal"] },
+    { "item": "jump", "slot": "verb", "controls": ["platform"] }
+   ]
+  },
+  {
+   "id": "h014",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a mermaid swims through a sunken city collecting pearls",
+   "checklist": [
+    { "item": "mermaid", "slot": "hero", "match": ["mermaid", "merman"] },
+    { "item": "city", "slot": "setting", "match": ["city", "ruins", "underwater"] },
+    { "item": "pearls", "slot": "any", "match": ["pearls", "pearl", "gems"] },
+    { "item": "swims", "slot": "verb", "controls": ["move_free", "runner"] }
+   ]
+  },
+  {
+   "id": "h015",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "chop vegetables to the beat of the kitchen radio",
+   "checklist": [
+    { "item": "vegetables", "slot": "any", "match": ["vegetables", "veggies", "carrots"] },
+    { "item": "radio", "slot": "any", "match": ["radio", "music"] },
+    { "item": "kitchen", "slot": "setting", "match": ["kitchen"] },
+    { "item": "chop", "slot": "verb", "controls": ["rhythm", "timing"] }
+   ]
+  },
+  {
+   "id": "h016",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "a tiny mouse sneaks past sleeping guard dogs to grab the cheese",
+   "checklist": [
+    { "item": "mouse", "slot": "hero", "match": ["mouse", "rat"] },
+    { "item": "dogs", "slot": "role", "match": ["dogs", "dog", "hounds"] },
+    { "item": "cheese", "slot": "any", "match": ["cheese"] },
+    { "item": "sneaks", "slot": "verb", "controls": ["move_free"] }
+   ]
+  },
+  {
+   "id": "h017",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "an office worker races to the printer before the big meeting starts",
+   "checklist": [
+    { "item": "worker", "slot": "hero", "match": ["worker", "employee", "clerk"] },
+    { "item": "printer", "slot": "any", "match": ["printer", "copier"] },
+    { "item": "office", "slot": "setting", "match": ["office", "workplace"] },
+    { "item": "races", "slot": "verb", "controls": ["runner", "move_free"] }
+   ]
+  },
+  {
+   "id": "h018",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "outrun an avalanche on skis all the way down the mountain",
+   "checklist": [
+    { "item": "avalanche", "slot": "role", "match": ["avalanche", "snow", "snowslide"] },
+    { "item": "skis", "slot": "any", "match": ["skis", "ski", "skier"] },
+    { "item": "mountain", "slot": "setting", "match": ["mountain", "slope", "hill"] },
+    { "item": "outrun", "slot": "verb", "controls": ["runner", "steer"] }
+   ]
+  },
+  {
+   "id": "h019",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a robot astronaut hops between tiny floating moons",
+   "checklist": [
+    { "item": "astronaut", "slot": "hero", "match": ["astronaut", "robot", "spaceman"] },
+    { "item": "moons", "slot": "any", "match": ["moons", "moon", "planets", "asteroids"] },
+    { "item": "hops", "slot": "verb", "controls": ["platform"] }
+   ]
+  },
+  {
+   "id": "h020",
+   "source": "p47a-holdout",
+   "group": "non-game",
+   "text": "I just want a quiet evening with hot tea and a good book",
+   "checklist": [
+    { "item": "tea", "slot": "any", "match": ["tea", "cup", "drink"] },
+    { "item": "book", "slot": "any", "match": ["book", "novel"] },
+    { "item": "want", "slot": "verb", "controls": [] }
+   ]
+  },
+  {
+   "id": "h021",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "a kid steals cookies from the kitchen while mom is on the phone",
+   "checklist": [
+    { "item": "kid", "slot": "hero", "match": ["kid", "child", "boy", "girl"] },
+    { "item": "cookies", "slot": "any", "match": ["cookies", "cookie", "biscuits"] },
+    { "item": "mom", "slot": "role", "match": ["mom", "mother", "mum", "parent"] },
+    { "item": "kitchen", "slot": "setting", "match": ["kitchen"] },
+    { "item": "steals", "slot": "verb", "controls": ["move_free"] }
+   ]
+  },
+  {
+   "id": "h022",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "defend your treehouse from raccoons using only a water pistol",
+   "checklist": [
+    { "item": "treehouse", "slot": "setting", "match": ["treehouse", "tree", "fort"] },
+    { "item": "raccoons", "slot": "role", "match": ["raccoons", "raccoon"] },
+    { "item": "pistol", "slot": "any", "match": ["pistol", "gun", "blaster", "squirt"] },
+    { "item": "defend", "slot": "verb", "controls": ["shooter", "throw"] }
+   ]
+  },
+  {
+   "id": "h023",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a cyborg samurai duels a holographic ninja on a neon rooftop",
+   "checklist": [
+    { "item": "samurai", "slot": "hero", "match": ["samurai", "cyborg", "warrior"] },
+    { "item": "ninja", "slot": "role", "match": ["ninja", "hologram", "assassin"] },
+    { "item": "rooftop", "slot": "setting", "match": ["rooftop", "roof", "city"] },
+    { "item": "duels", "slot": "verb", "controls": ["duel"] }
+   ]
+  },
+  {
+   "id": "h024",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "escape the bank vault before the security robots wake up",
+   "checklist": [
+    { "item": "vault", "slot": "setting", "match": ["vault", "bank", "safe"] },
+    { "item": "robots", "slot": "role", "match": ["robots", "robot", "guards", "droids"] },
+    { "item": "escape", "slot": "verb", "controls": ["move_free", "runner"] }
+   ]
+  },
+  {
+   "id": "h025",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "race a shark to the lighthouse in a little rowing boat",
+   "checklist": [
+    { "item": "shark", "slot": "role", "match": ["shark", "sharks"] },
+    { "item": "lighthouse", "slot": "setting", "match": ["lighthouse", "coast", "sea"] },
+    { "item": "boat", "slot": "any", "match": ["boat", "rowboat", "canoe"] },
+    { "item": "race", "slot": "verb", "controls": ["steer", "runner"] }
+   ]
+  },
+  {
+   "id": "h026",
+   "source": "p47a-holdout",
+   "group": "non-game",
+   "text": "remind me to call the dentist about my broken tooth",
+   "checklist": [
+    { "item": "dentist", "slot": "role", "match": ["dentist", "doctor"] },
+    { "item": "tooth", "slot": "any", "match": ["tooth", "teeth"] },
+    { "item": "call", "slot": "verb", "controls": [] }
+   ]
+  },
+  {
+   "id": "h027",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "mow the lawn in neat stripes without running over the flowerbeds",
+   "checklist": [
+    { "item": "lawn", "slot": "setting", "match": ["lawn", "grass", "yard", "garden"] },
+    { "item": "flowerbeds", "slot": "role", "match": ["flowerbeds", "flowerbed", "flowers"] },
+    { "item": "mow", "slot": "verb", "controls": ["steer", "move_free"] }
+   ]
+  },
+  {
+   "id": "h028",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "pop the balloons carrying spiders before they land on the picnic",
+   "checklist": [
+    { "item": "balloons", "slot": "role", "match": ["balloons", "balloon"] },
+    { "item": "spiders", "slot": "role", "match": ["spiders", "spider"] },
+    { "item": "picnic", "slot": "setting", "match": ["picnic", "park", "blanket"] },
+    { "item": "pop", "slot": "verb", "controls": ["shooter", "throw", "timing"] }
+   ]
+  },
+  {
+   "id": "h029",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a grumpy troll stops goats from crossing his wooden bridge",
+   "checklist": [
+    { "item": "troll", "slot": "hero", "match": ["troll", "ogre"] },
+    { "item": "goats", "slot": "role", "match": ["goats", "goat"] },
+    { "item": "bridge", "slot": "setting", "match": ["bridge"] },
+    { "item": "stops", "slot": "verb", "controls": ["duel", "timing"] }
+   ]
+  },
+  {
+   "id": "h030",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "a student bikes to school dodging puddles and buses",
+   "checklist": [
+    { "item": "student", "slot": "hero", "match": ["student", "pupil", "kid"] },
+    { "item": "school", "slot": "setting", "match": ["school"] },
+    { "item": "puddles", "slot": "role", "match": ["puddles", "puddle", "water"] },
+    { "item": "buses", "slot": "role", "match": ["buses", "bus", "traffic"] },
+    { "item": "bikes", "slot": "verb", "controls": ["steer", "runner"] }
+   ]
+  },
+  {
+   "id": "h031",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "a mail carrier delivers letters down the street while angry geese chase her",
+   "checklist": [
+    { "item": "carrier", "slot": "hero", "match": ["carrier", "mailman", "postman", "postwoman"] },
+    { "item": "letters", "slot": "any", "match": ["letters", "letter", "mail", "parcels"] },
+    { "item": "geese", "slot": "role", "match": ["geese", "goose"] },
+    { "item": "street", "slot": "setting", "match": ["street", "road", "neighborhood"] },
+    { "item": "delivers", "slot": "verb", "controls": ["move_free", "runner", "throw"] }
+   ]
+  },
+  {
+   "id": "h032",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "beat the rival dance crew in a showdown on the subway platform",
+   "checklist": [
+    { "item": "crew", "slot": "role", "match": ["crew", "dancers", "rivals", "rival"] },
+    { "item": "platform", "slot": "setting", "match": ["platform", "subway", "station"] },
+    { "item": "beat", "slot": "verb", "controls": ["rhythm", "duel"] }
+   ]
+  },
+  {
+   "id": "h033",
+   "source": "p47a-holdout",
+   "group": "non-game",
+   "text": "clean out the garage and take the old boxes to recycling",
+   "checklist": [
+    { "item": "garage", "slot": "setting", "match": ["garage", "shed"] },
+    { "item": "boxes", "slot": "any", "match": ["boxes", "box", "cardboard"] },
+    { "item": "clean", "slot": "verb", "controls": [] }
+   ]
+  },
+  {
+   "id": "h034",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a firefly fairy lights paper lanterns for the forest festival",
+   "checklist": [
+    { "item": "fairy", "slot": "hero", "match": ["fairy", "pixie", "sprite", "firefly"] },
+    { "item": "lanterns", "slot": "any", "match": ["lanterns", "lantern", "lamps"] },
+    { "item": "forest", "slot": "setting", "match": ["forest", "woods"] },
+    { "item": "lights", "slot": "verb", "controls": ["flap", "move_free", "timing"] }
+   ]
+  },
+  {
+   "id": "h035",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "toss crumpled paper balls into the trash can from your desk",
+   "checklist": [
+    { "item": "balls", "slot": "any", "match": ["balls", "ball", "paper"] },
+    { "item": "can", "slot": "any", "match": ["can", "bin", "basket", "trash"] },
+    { "item": "desk", "slot": "setting", "match": ["desk", "office"] },
+    { "item": "toss", "slot": "verb", "controls": ["throw"] }
+   ]
+  },
+  {
+   "id": "h036",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "survive one night in a haunted hospital while a ghost nurse hunts you",
+   "checklist": [
+    { "item": "hospital", "slot": "setting", "match": ["hospital", "clinic", "ward"] },
+    { "item": "nurse", "slot": "role", "match": ["nurse", "ghost", "phantom", "spirit"] },
+    { "item": "survive", "slot": "verb", "controls": ["move_free", "runner"] }
+   ]
+  },
+  {
+   "id": "h037",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "catch falling apples in a basket under the old orchard trees",
+   "checklist": [
+    { "item": "apples", "slot": "any", "match": ["apples", "apple", "fruit"] },
+    { "item": "basket", "slot": "any", "match": ["basket", "bucket"] },
+    { "item": "orchard", "slot": "setting", "match": ["orchard", "garden", "trees"] },
+    { "item": "catch", "slot": "verb", "controls": ["timing", "move_free"] }
+   ]
+  },
+  {
+   "id": "h038",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "pilot a spaceship through an asteroid field to reach an alien planet",
+   "checklist": [
+    { "item": "spaceship", "slot": "any", "match": ["spaceship", "ship", "rocket", "spacecraft"] },
+    { "item": "asteroid", "slot": "role", "match": ["asteroid", "asteroids", "meteors", "rocks"] },
+    { "item": "planet", "slot": "setting", "match": ["planet", "space", "world"] },
+    { "item": "pilot", "slot": "verb", "controls": ["steer"] }
+   ]
+  },
+  {
+   "id": "h039",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "steer a little submarine through the deep ocean away from a hungry squid",
+   "checklist": [
+    { "item": "submarine", "slot": "any", "match": ["submarine", "sub"] },
+    { "item": "ocean", "slot": "setting", "match": ["ocean", "sea", "underwater"] },
+    { "item": "squid", "slot": "role", "match": ["squid", "kraken", "octopus"] },
+    { "item": "steer", "slot": "verb", "controls": ["steer"] }
+   ]
+  },
+  {
+   "id": "h040",
+   "source": "p47a-holdout",
+   "group": "non-game",
+   "text": "schedule a meeting with the design team for Thursday afternoon",
+   "checklist": [
+    { "item": "meeting", "slot": "any", "match": ["meeting", "call"] },
+    { "item": "team", "slot": "role", "match": ["team", "colleagues", "designers"] },
+    { "item": "schedule", "slot": "verb", "controls": [] }
+   ]
+  },
+  {
+   "id": "h041",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "a firefighter rescues kittens from a burning apartment building",
+   "checklist": [
+    { "item": "firefighter", "slot": "hero", "match": ["firefighter", "fireman"] },
+    { "item": "kittens", "slot": "role", "match": ["kittens", "kitten", "cats", "cat"] },
+    { "item": "building", "slot": "setting", "match": ["building", "apartment", "house"] },
+    { "item": "rescues", "slot": "verb", "controls": ["move_free", "platform"] }
+   ]
+  },
+  {
+   "id": "h042",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a centaur archer shoots a pumpkin off a sleeping giant's head",
+   "checklist": [
+    { "item": "centaur", "slot": "hero", "match": ["centaur", "archer"] },
+    { "item": "pumpkin", "slot": "any", "match": ["pumpkin", "pumpkins", "target"] },
+    { "item": "giant", "slot": "role", "match": ["giant", "ogre", "titan"] },
+    { "item": "shoots", "slot": "verb", "controls": ["shooter"] }
+   ]
+  },
+  {
+   "id": "h043",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "pack the grocery bag so the eggs don't get crushed",
+   "checklist": [
+    { "item": "bag", "slot": "any", "match": ["bag", "sack"] },
+    { "item": "eggs", "slot": "any", "match": ["eggs", "egg"] },
+    { "item": "pack", "slot": "verb", "controls": ["timing"] }
+   ]
+  },
+  {
+   "id": "h044",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "dodge falling rocks while climbing up the side of a volcano",
+   "checklist": [
+    { "item": "rocks", "slot": "role", "match": ["rocks", "rock", "boulders", "stones"] },
+    { "item": "volcano", "slot": "setting", "match": ["volcano", "mountain", "lava"] },
+    { "item": "dodge", "slot": "verb", "controls": ["runner", "move_free", "platform"] }
+   ]
+  },
+  {
+   "id": "h045",
+   "source": "p47a-holdout",
+   "group": "non-game",
+   "text": "translate this paragraph into Spanish for our new client",
+   "checklist": [
+    { "item": "paragraph", "slot": "any", "match": ["paragraph", "text"] },
+    { "item": "client", "slot": "role", "match": ["client", "customer"] },
+    { "item": "translate", "slot": "verb", "controls": [] }
+   ]
+  },
+  {
+   "id": "h046",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "throw snowballs at the neighbor kids hiding behind their snow fort",
+   "checklist": [
+    { "item": "snowballs", "slot": "any", "match": ["snowballs", "snowball"] },
+    { "item": "kids", "slot": "role", "match": ["kids", "children", "neighbors"] },
+    { "item": "fort", "slot": "setting", "match": ["fort", "wall", "snow"] },
+    { "item": "throw", "slot": "verb", "controls": ["throw"] }
+   ]
+  },
+  {
+   "id": "h047",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "a waiter carries a wobbly tower of plates through a crowded restaurant",
+   "checklist": [
+    { "item": "waiter", "slot": "hero", "match": ["waiter", "waitress", "server"] },
+    { "item": "plates", "slot": "any", "match": ["plates", "plate", "dishes"] },
+    { "item": "restaurant", "slot": "setting", "match": ["restaurant", "diner", "cafe"] },
+    { "item": "carries", "slot": "verb", "controls": ["move_free", "runner", "timing"] }
+   ]
+  },
+  {
+   "id": "h048",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "guide a family of ducklings across a busy highway without getting squashed",
+   "checklist": [
+    { "item": "ducklings", "slot": "role", "match": ["ducklings", "duckling", "ducks", "duck"] },
+    { "item": "highway", "slot": "setting", "match": ["highway", "road", "traffic"] },
+    { "item": "guide", "slot": "verb", "controls": ["tap_go", "timing", "move_free"] }
+   ]
+  },
+  {
+   "id": "h049",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a unicorn gallops along rainbow bridges high above the clouds",
+   "checklist": [
+    { "item": "unicorn", "slot": "hero", "match": ["unicorn", "horse", "pony"] },
+    { "item": "bridges", "slot": "any", "match": ["bridges", "bridge", "rainbow"] },
+    { "item": "clouds", "slot": "setting", "match": ["clouds", "cloud", "sky"] },
+    { "item": "gallops", "slot": "verb", "controls": ["runner"] }
+   ]
+  },
+  {
+   "id": "h050",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "a lizard scurries across the desert avoiding hungry hawks",
+   "checklist": [
+    { "item": "lizard", "slot": "hero", "match": ["lizard", "gecko"] },
+    { "item": "desert", "slot": "setting", "match": ["desert", "sand", "dunes"] },
+    { "item": "hawks", "slot": "role", "match": ["hawks", "hawk", "birds", "falcon"] },
+    { "item": "scurries", "slot": "verb", "controls": ["runner", "move_free"] }
+   ]
+  },
+  {
+   "id": "h051",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "help grandpa find his glasses somewhere in the messy living room",
+   "checklist": [
+    { "item": "grandpa", "slot": "role", "match": ["grandpa", "grandfather", "granddad"] },
+    { "item": "glasses", "slot": "any", "match": ["glasses", "spectacles"] },
+    { "item": "room", "slot": "setting", "match": ["room", "house", "lounge"] },
+    { "item": "find", "slot": "verb", "controls": ["move_free"] }
+   ]
+  },
+  {
+   "id": "h052",
+   "source": "p47a-holdout",
+   "group": "non-game",
+   "text": "rainy Sunday, feeling sleepy, all I need is coffee and a blanket",
+   "checklist": [
+    { "item": "coffee", "slot": "any", "match": ["coffee", "mug", "cup"] },
+    { "item": "blanket", "slot": "any", "match": ["blanket", "quilt"] },
+    { "item": "need", "slot": "verb", "controls": [] }
+   ]
+  },
+  {
+   "id": "h053",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "a goalkeeper stops penalty shots from a robot striker",
+   "checklist": [
+    { "item": "goalkeeper", "slot": "hero", "match": ["goalkeeper", "goalie", "keeper"] },
+    { "item": "shots", "slot": "any", "match": ["shots", "ball", "penalties"] },
+    { "item": "striker", "slot": "role", "match": ["striker", "robot", "kicker", "player"] },
+    { "item": "stops", "slot": "verb", "controls": ["timing", "duel"] }
+   ]
+  },
+  {
+   "id": "h054",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a little witch stirs potions in time with a spooky drum",
+   "checklist": [
+    { "item": "witch", "slot": "hero", "match": ["witch", "sorceress"] },
+    { "item": "potions", "slot": "any", "match": ["potions", "potion", "brew"] },
+    { "item": "drum", "slot": "any", "match": ["drum", "music", "beat"] },
+    { "item": "stirs", "slot": "verb", "controls": ["rhythm", "timing"] }
+   ]
+  },
+  {
+   "id": "h055",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "park the car in a tight spot outside the busy mall",
+   "checklist": [
+    { "item": "car", "slot": "any", "match": ["car", "vehicle"] },
+    { "item": "spot", "slot": "any", "match": ["spot", "space"] },
+    { "item": "mall", "slot": "setting", "match": ["mall", "lot", "parking"] },
+    { "item": "park", "slot": "verb", "controls": ["steer"] }
+   ]
+  },
+  {
+   "id": "h056",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "a hedgehog rolls through the forest dodging foxes and owls",
+   "checklist": [
+    { "item": "hedgehog", "slot": "hero", "match": ["hedgehog"] },
+    { "item": "forest", "slot": "setting", "match": ["forest", "woods"] },
+    { "item": "foxes", "slot": "role", "match": ["foxes", "fox"] },
+    { "item": "owls", "slot": "role", "match": ["owls", "owl"] },
+    { "item": "rolls", "slot": "verb", "controls": ["runner", "move_free"] }
+   ]
+  },
+  {
+   "id": "h057",
+   "source": "p47a-holdout",
+   "group": "threat",
+   "text": "knock the pirates overboard before they steal the gold from your ship",
+   "checklist": [
+    { "item": "pirates", "slot": "role", "match": ["pirates", "pirate"] },
+    { "item": "gold", "slot": "any", "match": ["gold", "treasure", "coins"] },
+    { "item": "ship", "slot": "setting", "match": ["ship", "deck", "boat"] },
+    { "item": "knock", "slot": "verb", "controls": ["duel", "throw"] }
+   ]
+  },
+  {
+   "id": "h058",
+   "source": "p47a-holdout",
+   "group": "fantasy",
+   "text": "a phoenix soars over a jungle temple chasing the sunrise",
+   "checklist": [
+    { "item": "phoenix", "slot": "hero", "match": ["phoenix", "firebird", "bird"] },
+    { "item": "temple", "slot": "setting", "match": ["temple", "jungle", "ruins"] },
+    { "item": "soars", "slot": "verb", "controls": ["flap"] }
+   ]
+  },
+  {
+   "id": "h059",
+   "source": "p47a-holdout",
+   "group": "non-game",
+   "text": "renew my passport before the summer trip in June",
+   "checklist": [
+    { "item": "passport", "slot": "any", "match": ["passport", "document"] },
+    { "item": "trip", "slot": "any", "match": ["trip", "travel", "vacation", "holiday"] },
+    { "item": "renew", "slot": "verb", "controls": [] }
+   ]
+  },
+  {
+   "id": "h060",
+   "source": "p47a-holdout",
+   "group": "everyday",
+   "text": "sort the dirty laundry into the right baskets as fast as you can",
+   "checklist": [
+    { "item": "laundry", "slot": "any", "match": ["laundry", "clothes", "socks", "shirts"] },
+    { "item": "baskets", "slot": "any", "match": ["baskets", "basket", "hamper", "bins"] },
+    { "item": "sort", "slot": "verb", "controls": ["throw", "timing"] }
+   ]
+  }
+ ]
+}

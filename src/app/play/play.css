@@ -1707,6 +1707,43 @@ button.play-version-switch__item:not(:disabled) {
   animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop);
 }
 
+/* Banner průběhu (P45C T16): „Here they come!“, „Boss!“, „Final wave!“ … štítek kitu (rajčatová = hrozba)
+ * nad řádkem se slovesem, 1,4 s herního času; nezachytává dotyky. Úseky P46B T7 nesou jméno z věty
+ * („Boss: Police helicopter“) – dlouhé jméno se na úzkém telefonu zalomí místo přetečení přes okraj. */
+.play-pacing-banner {
+  top: 24%;
+  left: 50%;
+  z-index: 2;
+  margin: 0;
+  /* Šířka podle textu, ne podle místa vpravo od `left: 50%` – zalomí se až u okraje scény. */
+  width: max-content;
+  max-width: calc(100% - var(--sp-space-8));
+  white-space: normal;
+  text-align: center;
+  text-wrap: balance;
+  box-shadow: var(--sp-shadow-sm);
+  pointer-events: none;
+  animation: play-pacing-banner var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
+/* Náběh přes vlastnost `scale`: `transform` nese náklon štítku kitu a `sp-pop-in` by ho po dobu náběhu přepsal. */
+@keyframes play-pacing-banner {
+  from {
+    scale: 0.6;
+    opacity: 0;
+  }
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-pacing-banner {
+    animation: none;
+  }
+}
+
 /* Arkáda (P35 T6): výzva uprostřed zakrývala hrdinu arény a úkolu. Plátno ví, kde
  * hrdina v obraze stojí (`PromptSpot` v `ArcadeStage.tsx`), a výzva sedne nad něj,
  * nebo pod něj – kde je víc místa. Bez hrdiny v záběru zůstává uprostřed.
@@ -1828,6 +1865,83 @@ button.play-version-switch__item:not(:disabled) {
   color: var(--sp-primary);
 }
 
+/* Power-up a kombo (P46C T5, `PowerupBadge.tsx`): vlevo pod pilulkou postupu, tedy u skóre.
+ * Tlačítka akcí stojí vpravo dole, takže se s nimi na telefonu nepotkají. Popisek, ne ovladač:
+ * ťuk projde na scénu. Kolo s ikonou má inkoustový prstenec, který ubývá se zbylým časem. */
+.play-boosts {
+  position: absolute;
+  top: calc(var(--_top) + var(--sp-size-hud-pill) + var(--sp-space-3));
+  left: var(--_side-l);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-space-2);
+  pointer-events: none;
+  transition: top var(--sp-duration-base) var(--sp-ease-standard);
+}
+
+/* Prvních 4 s hry stojí pod pilulkou řádek cíle – odznak se posune o řádek níž. */
+.play-shell:has(.play-hud-goal[data-shown='true']) .play-boosts {
+  top: calc(var(--_top) + var(--sp-size-hud-pill) + var(--sp-size-touch-min) + var(--sp-space-4));
+}
+
+.play-shell:has(> .play-result) .play-boosts {
+  visibility: hidden;
+}
+
+.play-boost {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sp-size-hud-pill);
+  height: var(--sp-size-hud-pill);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: 50%;
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  box-shadow: var(--sp-shadow-sm);
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
+.play-boost > .sp-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.play-boost-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.play-boost-ring circle {
+  fill: none;
+  stroke: var(--sp-outline);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.play-boost-combo {
+  line-height: 1;
+  letter-spacing: var(--sp-text-hud-num-tracking);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-boosts {
+    transition: none;
+  }
+
+  .play-boost,
+  .play-boost-combo {
+    animation: none;
+  }
+}
+
 /* Prohra (P36C T7, `effects/feel.ts` LOSE_FADE_MS): scéna se za 0,6 s odbarví a ztmaví.
  * Jen plátno – karta konce a HUD nad ním zůstávají v barvě. Restart atribut smaže. */
 .play-stage canvas {
@@ -1890,6 +2004,27 @@ button.play-version-switch__item:not(:disabled) {
 
 .play-action + .play-action {
   bottom: calc(var(--_stack) + 168px);
+}
+
+/* Akce hrdiny (P46A T7, `AbilityButton`): totéž kolo ve sloupci vpravo dole, A pod B.
+ * `--_slot` = kolikáté kolo odspodu (střelba a úder/použití jsou pod nimi). Ikona nad popiskem. */
+.play-ability {
+  bottom: calc(var(--_stack) + var(--_slot, 0) * 84px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: var(--sp-secondary);
+  color: var(--sp-on-secondary);
+  font-size: var(--sp-text-caption-size);
+  line-height: 1;
+  transition: transform var(--sp-duration-press) var(--sp-ease-standard), box-shadow var(--sp-duration-press) var(--sp-ease-standard);
+}
+
+.play-ability:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
 }
 
 /* Fáze světla mřížky (P25D T1) pod časovačem: rajčatová stůj, mátová jdi – text to říká i bez barvy. */

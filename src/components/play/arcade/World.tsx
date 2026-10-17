@@ -22,7 +22,8 @@ import { renderHeld } from './effects/render-feel';
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Box3, type Group, type Object3D, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, BoxGeometry, type BufferGeometry, type Group, type Object3D, type PerspectiveCamera, PlaneGeometry, Vector3 } from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import { ARCADE_HZ, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { baseControlOf } from '@/play/arcade/addons';
@@ -30,22 +31,22 @@ import type { Look } from '@/play/arcade/look';
 import { type PropRole, fitScale, riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { FLAP } from '@/play/arcade/pieces/flap';
-import { PLATFORM } from '@/play/arcade/pieces/platform';
-import { RUNNER } from '@/play/arcade/pieces/runner';
+import { STRUCTURE_KINDS } from '@/play/arcade/pieces/runner-sections';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
+import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
-import { type BodyView, bodiesOf, bodiesStale, drawsNothing } from './bodies';
-import { deadFor, fallOf, headingOf, squashPose, tiltPose, turnToward } from './characterMotion';
+import { type BodyView, PACING_KINDS, PACING_SHOT_KINDS, bodiesOf, bodiesStale, drawsNothing } from './bodies';
+import { headingOf, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
-import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
-import { loadBodyModel } from './look/load';
+import { loadBodyModel, toyPartsOf } from './look/load';
+import { deformBody } from './look/toy-deform';
 import { HeroActionBody } from './hero-action/HeroActionBody';
 import { type Ink, InkOutline } from './look/rig/InkOutline';
-import { Scenery } from './look/Scenery';
 import { RiggedModel } from './RiggedModel';
+import { type Path, bendGeometry, bridgesOverChasm, runnerPathOf, slopeAt } from './runner/path';
 import type { ArcadeSession } from './session';
 import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
 import { ShooterRig } from './shooter/ShooterRig';
@@ -54,7 +55,10 @@ import { WalkerBackdrop, WALKER_SCENE_KINDS, placeWalker } from './walker/Walker
 import { BallBackdrop, BALL_SCENE_KINDS, placeBall } from './ball/BallScene';
 import { SteerBackdrop, placeChase } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
+import { type ToyTarget, applyToy, toyMotionOn, toyTickOf } from './toy/applyToy';
+import { bodyClassOf, motionOf } from './toy/body-class';
 import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
+import { WorldBackdrop } from './WorldBackdrop';
 
 /** Barva náhradního kvádru podle id těla; nic fialového. */
 const FALLBACK_COLOR: Readonly<Record<string, string>> = {
@@ -75,7 +79,7 @@ const FALLBACK_COLOR: Readonly<Record<string, string>> = {
 const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name]));
 
 /** Id modelu, který katalog nemá – kreslí se primitivem (objednávka modelů pro P25F je ve Findings plánu). */
-const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', 'turbo', ...SHOT_PRIMITIVES]);
+const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', 'turbo', 'pool', ...SHOT_PRIMITIVES]);
 
 /** Modely z popisků rolí (`@/play/arcade/models`): hrdina, nepřítel střelnice a rekvizity. */
 export interface Cast {
@@ -83,6 +87,8 @@ export interface Cast {
   readonly enemy: string;
   /** Pronásledovatel doplňku `+chaser`. */
   readonly chaser: string;
+  /** Boss od režiséra (P46E T4): tělo druhu `kind` kreslí model jeho věci z obsazení místo pronásledovatele. */
+  readonly boss?: { readonly kind: string; readonly model: string };
   readonly props: Partial<Record<PropRole, string>>;
   readonly things?: Readonly<Record<string, string>>;
   readonly objectives?: Readonly<Record<number, string>>;
@@ -94,8 +100,15 @@ const SWAPPABLE_OBSTACLES: ReadonlySet<string> = new Set(['hurdle', 'cone', 'cra
 /** Id těla → id modelu v katalogu. Hráč, nepřítel, mince, překážka a terč berou model z popisku role, když ho katalog má. */
 export function modelIdOf(view: BodyView, cast: Cast): string {
   if (cast.objectives?.[view.index] !== undefined) return cast.objectives[view.index]!;
-  if (view.kind.startsWith('thing:') && cast.things?.[view.kind.slice(6)] !== undefined) return cast.things[view.kind.slice(6)]!;
+  if (view.kind.startsWith('thing:')) {
+    const id = view.kind.slice(6);
+    // Věc pravidel bez modelu z popisku (P46E T6, demo: `thing:turbo` auta → 404 na `thing:turbo-lod1.glb`): tvar svého jména, jinak krystal.
+    return cast.things?.[id] ?? (PRIMITIVE.has(id) ? id : 'crystal');
+  }
   if (view.role === ROLE.player) return cast.player;
+  if (cast.boss !== undefined && view.kind === cast.boss.kind) return cast.boss.model;
+  if (PACING_KINDS.has(view.kind)) return cast.chaser;
+  if (PACING_SHOT_KINDS.has(view.kind)) return 'bullet';
   // P35 T3: cíl skákačky z věty („moon“, „battery“); bez modelu v katalogu vlajka.
   if (view.kind === 'finish') return cast.props.finish ?? 'finish-flag';
   if (view.kind === 'goal' && cast.props.finish !== undefined) return cast.props.finish;
@@ -104,6 +117,8 @@ export function modelIdOf(view: BodyView, cast: Cast): string {
   // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
   if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
   if (view.kind === 'turbo') return cast.props.turbo ?? view.kind;
+  // P46C: power-up (`powerup_magnet` …) vlastní model nemá – krystal, ne 404 na `powerup_shield-lod1.glb`.
+  if (view.role === ROLE.powerup) return 'crystal';
   if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
@@ -147,34 +162,60 @@ function ModelColumn({ id, w, h, d, fallback }: { readonly id: string; readonly 
  * Model je slitý do jedné sítě (`loadBodyModel`) a jeho matice jsou zmrazené: hýbe se
  * jen skupina těla a póza nad ním, přepočet vnitřku modelu každý snímek by byl zbytečný.
  */
-export function FittedModel({ id, w, h, d, fallback, character = false, fill = false }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string; readonly character?: boolean; readonly fill?: boolean }) {
+interface Fit {
+  readonly id: string;
+  readonly w: number;
+  readonly h: number;
+  readonly d: number;
+  readonly character?: boolean;
+  readonly fill?: boolean;
+  /** Role, která se hýbe (P45D T7): díly a deformace z `catalog-motion.json` pro `applyToy`. */
+  readonly posed?: boolean;
+}
+
+/** Díly a deformace vepsaného modelu, který se hýbe – smyčka `World` je najde pod vnitřní skupinou pózy. */
+const toyBits = new WeakMap<Object3D, Pick<ToyTarget, 'parts' | 'deform'>>();
+
+/** Hračkový cíl vnitřní skupiny pózy: skupina a díly a deformace modelu, který v ní leží. */
+export function toyTargetOf(inner: Object3D): ToyTarget {
+  const model = inner.children[0];
+  return { group: inner, ...(model === undefined ? undefined : toyBits.get(model)) };
+}
+
+/** Klon modelu vepsaný do kvádru těla; tělo, které se hýbe, dostane vlastní deformaci a pivoty s živou maticí. */
+export function fitModel(model: Object3D, { id, w, h, d, character = false, fill = false, posed = false }: Fit): Object3D {
+  const copy = model.clone(true);
+  const box = new Box3().setFromObject(copy);
+  const size = box.getSize(new Vector3());
+  const along = (length: number): number => Math.max(length, 1e-3);
+  const uniform = fitScale(size, { x: w, y: h, z: d }, character);
+  const scale = fill ? new Vector3(w / along(size.x), h / along(size.y), d / along(size.z)) : new Vector3(uniform, uniform, uniform);
+  copy.scale.copy(scale);
+  const center = box.getCenter(new Vector3());
+  copy.position.set(-center.x * scale.x, -box.min.y * scale.y, -center.z * scale.z);
+  if (posed) toyBits.set(copy, { parts: toyPartsOf(copy), deform: deformBody(copy, motionOf(id)?.regions) });
+  copy.traverse((node) => {
+    node.updateMatrix();
+    node.matrixAutoUpdate = node.userData.toyPart !== undefined;
+  });
+  return copy;
+}
+
+export function FittedModel({ id, w, h, d, fallback, character = false, fill = false, posed = false }: Fit & { readonly fallback: string }) {
   const [model, setModel] = useState<Object3D | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
-    void loadBodyModel(id).then((loaded) => {
+    void loadBodyModel(id, { posed }).then((loaded) => {
       if (live) setModel(loaded);
     });
     return () => {
       live = false;
     };
-  }, [id]);
-  const fitted = useMemo(() => {
-    if (model === null || model === undefined) return null;
-    const copy = model.clone(true);
-    const box = new Box3().setFromObject(copy);
-    const size = box.getSize(new Vector3());
-    const along = (length: number): number => Math.max(length, 1e-3);
-    const uniform = fitScale(size, { x: w, y: h, z: d }, character);
-    const scale = fill ? new Vector3(w / along(size.x), h / along(size.y), d / along(size.z)) : new Vector3(uniform, uniform, uniform);
-    copy.scale.copy(scale);
-    const center = box.getCenter(new Vector3());
-    copy.position.set(-center.x * scale.x, -box.min.y * scale.y, -center.z * scale.z);
-    copy.traverse((node) => {
-      node.updateMatrix();
-      node.matrixAutoUpdate = false;
-    });
-    return copy;
-  }, [model, w, h, d, character, fill]);
+  }, [id, posed]);
+  const fitted = useMemo(
+    () => (model === null || model === undefined ? null : fitModel(model, { id, w, h, d, character, fill, posed })),
+    [model, id, w, h, d, character, fill, posed],
+  );
   if (fitted !== null) return <primitive object={fitted} />;
   return (
     <mesh position={[0, h / 2, 0]}>
@@ -188,7 +229,7 @@ export function FittedModel({ id, w, h, d, fallback, character = false, fill = f
  * Tělesa bez modelu: plošina (hlína + tráva, nebo hmota sady), řada hrotů,
  * trubka, strop, ptáček. Pohyblivá plošina si barvu nechává: hráč z ní čte pohyb.
  */
-function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: Look['block'] }) {
+function Primitive({ id, w, h, d, block, water }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: Look['block']; readonly water?: string }) {
   if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} block={block?.[1]} />;
   if (id === 'turbo') return <mesh position={[0, h / 2, 0]}>
     <boxGeometry args={[w, h, d]} />
@@ -224,6 +265,11 @@ function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: nu
       </>
     );
   }
+  // Voda pod mezerou skákačky (P46D T5): hladina těsně pod hranou pádu.
+  if (id === 'pool') return <mesh position={[0, h / 2, 0]}>
+    <boxGeometry args={[w * 3, h, d]} />
+    <meshStandardMaterial color={water ?? '#0284c7'} roughness={0.15} metalness={0.2} transparent opacity={0.8} />
+  </mesh>;
   if (id === 'bird') {
     const r = Math.min(w, h, d) / 2;
     return (
@@ -251,6 +297,84 @@ function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: nu
   );
 }
 
+const RUNNER_STRUCTURES: ReadonlySet<string> = new Set(STRUCTURE_KINDS);
+const BRIDGE = { deck: '#a16207', rail: '#57534e', chasm: '#0f172a', posts: 2 } as const;
+/** Žebra tunelu: rozteč a hloubka (m) – mezi nimi kamera nad stropem hrdinu pořád vidí. */
+const TUNNEL = { ribEvery: 2.5, ribDepth: 0.35, wall: 0.5 } as const;
+
+interface StructurePart {
+  readonly geometry: BufferGeometry;
+  readonly color: string;
+}
+
+interface StructureShape {
+  readonly w: number;
+  readonly h: number;
+  readonly d: number;
+  readonly z: number;
+  readonly lift: number;
+  readonly side: number;
+  readonly path: Path;
+  readonly look: Look;
+  readonly chasm: boolean;
+}
+
+/**
+ * Sítě stavby běžce (P46D T3) ohnuté po křivce trati: zeď rozcestí, půlka mostu nad vodou
+ * či propastí (každé těleso vody kreslí svou stranu – hladinu ven do údolí, zábradlí a půlku
+ * mostovky ke středu) a tunel ze stěn a žeber. `side` = strana tělesa ve scéně (−1, 0, 1),
+ * `lift` = výška spodku tělesa nad dráhou (m).
+ */
+function structureParts(kind: string, { w, h, d, z, lift, side, path, look, chasm }: StructureShape): StructurePart[] {
+  const segments = Math.max(1, Math.ceil(d));
+  const box = (bw: number, bh: number, bd: number, x: number, y: number, at = 0): BufferGeometry =>
+    bendGeometry(new BoxGeometry(bw, bh, bd, 1, 1, bd >= 1 ? segments : 1).translate(x, y, at), path, z);
+  const [stone, cap] = look.block ?? ['#78716c', '#a8a29e'];
+  const along = (every: number): number[] => Array.from({ length: Math.max(1, Math.floor(d / every)) }, (_, i) => -d / 2 + every / 2 + i * every);
+  if (kind === 'divider') return [{ geometry: box(w, h, d, 0, h / 2), color: stone }, { geometry: box(w + 0.16, 0.12, d, 0, h + 0.06), color: cap }];
+  if (kind === 'water') {
+    const inner = -side * (w / 2);
+    const surface = new PlaneGeometry(15, d, 1, segments).rotateX(-Math.PI / 2).translate(inner + side * 7.5, 0.03, 0);
+    return [
+      { geometry: bendGeometry(surface, path, z), color: chasm ? BRIDGE.chasm : look.water },
+      { geometry: box(w / 2, 0.06, d, inner - (side * w) / 4, 0.03), color: BRIDGE.deck },
+      { geometry: box(0.08, 0.08, d, inner, 0.95), color: BRIDGE.rail },
+      { geometry: box(0.08, 0.08, d, inner, 0.5), color: BRIDGE.rail },
+      ...along(BRIDGE.posts).map((at) => ({ geometry: box(0.1, 0.95, 0.1, inner, 0.475, at), color: BRIDGE.rail })),
+    ];
+  }
+  // Strop tunelu visí ve výšce těla (`lift`): stěny sahají od dráhy po jeho vršek.
+  const ground = -lift;
+  return [
+    ...[-1, 1].map((edge) => ({ geometry: box(TUNNEL.wall, h - ground, d, edge * (w / 2 + TUNNEL.wall / 2), (h + ground) / 2), color: stone })),
+    ...along(TUNNEL.ribEvery).map((at) => ({ geometry: box(w + 2 * TUNNEL.wall, h, TUNNEL.ribDepth, 0, h / 2, at), color: cap })),
+  ];
+}
+
+function RunnerStructure({ kind, w, h, d, z, lift, side, path, look, chasm }: { readonly kind: string } & StructureShape) {
+  // Díly jedné barvy slité do jedné sítě: sloupky zábradlí a žebra tunelu nestojí volání kreslení každý zvlášť.
+  const parts = useMemo(() => {
+    const byColor = new Map<string, BufferGeometry[]>();
+    for (const part of structureParts(kind, { w, h, d, z, lift, side, path, look, chasm })) byColor.set(part.color, [...(byColor.get(part.color) ?? []), part.geometry]);
+    return [...byColor].map(([color, geometries]): StructurePart => {
+      if (geometries.length === 1) return { color, geometry: geometries[0]! };
+      const geometry = mergeGeometries(geometries)!;
+      geometries.forEach((source) => source.dispose());
+      return { color, geometry };
+    });
+  }, [kind, w, h, d, z, lift, side, path, look, chasm]);
+  useEffect(() => () => parts.forEach((part) => part.geometry.dispose()), [parts]);
+  return (
+    <>
+      {parts.map((part, index) => (
+        <mesh key={index} geometry={part.geometry}>
+          <meshStandardMaterial color={part.color} roughness={0.85} />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
 function lerp(from: number, to: number, alpha: number): number {
   return from + (to - from) * alpha;
 }
@@ -270,7 +394,7 @@ const frameTagOf = (view: BodyView): 'hero' | 'target' | undefined =>
 
 /** Obrys těla (P36C T6): hrdina inkoustem, nepřítel a pronásledovatel rajčatovou, ostatní bez obrysu. */
 const inkOf = (view: BodyView): Ink | undefined =>
-  view.role === ROLE.player ? 'hero' : view.role === ROLE.enemy || view.role === ROLE.chaser ? 'foe' : undefined;
+  view.role === ROLE.player ? 'hero' : view.role === ROLE.enemy || view.role === ROLE.chaser || PACING_KINDS.has(view.kind) ? 'foe' : undefined;
 
 /**
  * Role věty, jejíž popisek tělo kreslí (P30B T5) – totéž rozhodnutí jako `modelIdOf`
@@ -297,7 +421,7 @@ export interface WorldProps {
   readonly surface: React.RefObject<HTMLDivElement | null>;
   readonly scene: Look;
   readonly enabled: boolean;
-  /** Podklad místo výchozího (`Backdrop`): údolí běžce kreslí `RunnerWorld` (P32A T3). */
+  /** Podklad místo výchozího (`WorldBackdrop`): údolí běžce kreslí `RunnerWorld` (P32A T3). */
   readonly backdrop?: React.ReactNode;
   /** Viditelná činnost hrdiny (P37-0 T2); `none` = dnešní hra. Jen vzhled, jádro ji nečte. */
   readonly heroAction: HeroAction;
@@ -314,17 +438,6 @@ const POSED_ROLES: ReadonlySet<number> = new Set([ROLE.player, ROLE.enemy, ROLE.
 const TURN_MIN_MPS = 0.5;
 /** Jak rychle se postava dotočí po směru (1/s). */
 const TURN_RATE = 12;
-
-/**
- * Póza na vnitřní skupinu modelu: poskok, předklon, zmáčknutí (objem drží), bliknutí
- * a zakymácení po zásahu, pád po smrti (`dead` = sekundy od ní, P36C T8).
- */
-function applyPose(group: Group, pose: Pose, dead: number): void {
-  group.position.y = pose.bob;
-  tiltPose(group, pose.flash > 0 ? 1 - pose.flash : 1, fallOf(dead), pose.lean);
-  squashPose(group, pose.squash);
-  group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
-}
 
 export function World({ session, control, cast: baseCast, surface, scene, enabled, backdrop, heroAction, ghost }: WorldProps) {
   const cast = useMemo(() => {
@@ -346,6 +459,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
   const rigged = useMemo(() => views.map((view) => riggedCharacter(modelIdOf(view, cast))), [views, cast]);
   const clips = useRef<ClipState[]>([]);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
+  // Zakřivená trať běžce (P46D T3): těla, stavby i kamera jdou po křivce; jádro dál běží rovně.
+  const path = useMemo(() => (control === 'runner' ? runnerPathOf(session.world) : null), [control, session]);
   const look = useMemo(() => new Vector3(), []);
   const projected = useMemo(() => new Vector3(), []);
   const followY = useRef<number | null>(null);
@@ -365,9 +480,10 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
   const drawClock = useRef(0);
   const hurtAt = useRef(-Infinity);
   const lastTick = useRef(0);
-  // Pohyb postav (P36C T8): natočení po směru (rad, po indexu těla) a tik smrti pro pád.
+  // Pohyb postav (P36C T8): natočení po směru (rad, po indexu těla); hračková póza (P45D T7) s pamětí minulého snímku.
   const yaws = useRef<(number | undefined)[]>([]);
-  const deaths = useRef(new Map<number, number>());
+  const toyPoses = useRef<(ToyPose | undefined)[]>([]);
+  const bodyClasses = useMemo(() => views.map((view) => bodyClassOf(modelIdOf(view, cast))), [views, cast]);
   useEffect(
     () =>
       session.onEvents((events) => {
@@ -390,6 +506,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
     if ((state[HEADER.tick] as number) < lastTick.current) {
       hurtAt.current = -Infinity;
       yaws.current = [];
+      toyPoses.current = [];
     }
     lastTick.current = state[HEADER.tick] as number;
     // Hit-stop (P36C T7, jako `FightFx` v aréně): jádro odtikalo, kresba i kamera 60 ms stojí.
@@ -398,6 +515,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
     // Póza jen čte stav; tik s podílem rozběhnutého kroku, ať poskok neskáče po 1/60 s.
     const tick = (state[HEADER.tick] as number) + alpha;
     posesOf(state, prev, poses.current, tick);
+    const reduced = !toyMotionOn();
+    const toyTick = toyTickOf(session);
     const turn = 1 - Math.exp(-delta * TURN_RATE);
     // Poloha těla ve scéně (m), x zrcadlené jako níž u `group.position`.
     const spotAt = (index: number): Spot => {
@@ -412,7 +531,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
     for (const view of views) {
       const inner = posed.current[view.index];
       const pose = poses.current[view.index];
-      const moving = POSED_ROLES.has(view.role) ? viewOf(state, prev, view.index) : null;
+      const moving = POSED_ROLES.has(view.role) ? toyViewOf(state, prev, view.index) : null;
       // P39 T16: pronásledovatel z věty v záběru – běžci v patách, plošinovce na kraji obrazu (`track-camera.ts`).
       // Útočí-li běžci zepředu, otočí se k hrdinovi čelem; jinak běží po trati jako on.
       const drawn = view.role === ROLE.chaser ? chaserSpot(control, spotAt(state[HEADER.player] as number), spotAt(view.index), camera.far, camera.aspect) : null;
@@ -421,9 +540,11 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       if ((control === 'platform' || control === 'walker') && moving !== null && (Math.hypot(moving.vx, moving.vz) * ARCADE_HZ) / UNIT > TURN_MIN_MPS) {
         yaws.current[view.index] = turnToward(yaws.current[view.index], headingOf(moving.vx, moving.vz), turn);
       }
-      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) {
-        applyPose(inner, pose, moving === null ? 0 : deadFor(deaths.current, view.index, moving.alive, tick, ARCADE_HZ));
-        inner.rotation.y = yaws.current[view.index] ?? 0;
+      // Hračková póza (P45D T7) podle stavu a třídy těla; mrtvý se převrhne, zásah blikne, výhra slaví.
+      if (inner !== null && inner !== undefined && moving !== null) {
+        const toy = toyPoseOf(moving, bodyClasses[view.index] ?? 'prop', toyPoses.current[view.index] ?? null, toyTick, reduced);
+        toyPoses.current[view.index] = toy;
+        applyToy(toyTargetOf(inner), toy, view.h, yaws.current[view.index] ?? 0);
       }
       // Po zásahu hrdina bliká (zhasíná vnitřek, ne skupinu – sondy záběru ji dál vidí).
       if (inner !== null && inner !== undefined && view.role === ROLE.player) inner.visible = !blinkHidden(sinceHurt);
@@ -459,6 +580,13 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
           z,
         );
       }
+      if (path !== null) {
+        const at = path(z);
+        group.position.x += at.x;
+        group.position.y += at.y;
+        // Překážka stojí napříč zatáčkou; stavbu ohýbá síť, minci točí scéna, hrdinu natočí `HeroPose`.
+        if (view.role !== ROLE.player && view.role !== ROLE.collectible && !RUNNER_STRUCTURES.has(view.kind)) group.rotation.y = Math.atan(slopeAt(path, z).x);
+      }
       // Skluz snižuje tělo – model se přikrčí stejně.
       if (view.role === ROLE.player) group.scale.y = (state[base + BODY.h] as number) / UNIT / view.h;
       if (view.role === ROLE.collectible) group.rotation.y += delta * 3;
@@ -493,7 +621,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       } else if (control === 'shooter' || control === 'throw') {
         // Kameru střelnice a hřiště staví jejich scéna (`ShooterRig`, `ThrowRig`).
       } else {
-        placeRunner(camera, look, x, z);
+        // Hrdina je už na křivce; kamera chce jeho pruh a křivku zvlášť.
+        placeRunner(camera, look, path === null ? x : x - path(z).x, z, path ?? undefined);
       }
       if (control !== 'shooter' && control !== 'throw') applyIntro(camera, look, introLeft(introClock()));
       camera.updateMatrixWorld();
@@ -511,7 +640,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
         : control === 'steer' ? (
           <SteerBackdrop session={session} course={baseControlOf(session.world.control).params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} namedHazard={cast.props.hazard !== undefined} namedPad={cast.things?.pad} />
         ) : (
-          <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
+          <WorldBackdrop control={control} length={session.world.length / UNIT} look={scene} seed={session.world.seed} />
         ))}
       {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
@@ -521,8 +650,21 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
             {/* Činnost hrdiny (P37B T2): ostatní těla a `none` dostanou model beze změny stromu. */}
             <HeroActionBody action={view.role === ROLE.player ? heroAction : 'none'} session={session} h={view.h}>
-            {PRIMITIVE.has(modelIdOf(view, cast)) ? (
-              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} />
+            {path !== null && RUNNER_STRUCTURES.has(view.kind) ? (
+              <RunnerStructure
+                kind={view.kind}
+                w={view.w}
+                h={view.h}
+                d={view.d}
+                z={(session.world.initial[bodyBase(view.index) + BODY.z] as number) / UNIT}
+                lift={(session.world.initial[bodyBase(view.index) + BODY.y] as number) / UNIT}
+                side={-Math.sign(session.world.initial[bodyBase(view.index) + BODY.x] as number)}
+                path={path}
+                look={scene}
+                chasm={bridgesOverChasm(session.world.seed)}
+              />
+            ) : PRIMITIVE.has(modelIdOf(view, cast)) ? (
+              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} water={scene.water} />
             ) : rigged[view.index] !== undefined ? (
               // Riggovaná postava hraje klipy – poskok a zmáčknutí statických modelů by se s nimi praly.
               <RiggedModel
@@ -533,6 +675,8 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                 // Klip hráče čte e2e z DOM – z obrázku se nepřečte.
                 onClip={view.role === ROLE.player ? (state) => { if (surface.current !== null) surface.current.dataset.animClip = state; } : undefined}
                 yaw={control === 'platform' || control === 'walker' || view.role === ROLE.chaser ? () => yaws.current[view.index] ?? 0 : undefined}
+                // Stavy bez klipu (výhra, nesení, výpad) dohraje hračkový pohyb (P45D T13).
+                toy={POSED_ROLES.has(view.role) ? () => ({ view: toyViewOf(session.state(), session.prev(), view.index), tick: toyTickOf(session) }) : undefined}
               />
             ) : view.kind === 'pipe' ? (
               <ModelColumn id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
@@ -548,6 +692,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                   d={view.kind === 'target' || ((view.kind === 'finish' || view.kind === 'goal') && cast.props.finish !== undefined) ? Math.max(view.d, view.w) : view.d}
                   fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
                   character={POSED_ROLES.has(view.role) && view.h >= Math.max(view.w, view.d)}
+                  posed={POSED_ROLES.has(view.role)}
                 />
               </group>
             )}
@@ -559,70 +704,6 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       )}
       {/* Slot ducha (P37-0 T3): ostatní žánry tohohle světa ho drží ve své scéně, poletování vlastní nemá. */}
       {control === 'flap' && <GhostSlot ghost={ghost} session={session} />}
-    </>
-  );
-}
-
-/** Podklad scény v barvách sady prostředí (P26 T11): dráha běžce, hladina pod plošinami, zem pod trubkami, rekvizity. */
-function Backdrop({ control, length, look }: { readonly control: string; readonly length: number; readonly look: Look }) {
-  const span = length + 60;
-  if (control === 'platform') {
-    const water = PLATFORM.fallBelowY / UNIT - 0.4;
-    return (
-      <>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, water, span / 2 - 30]}>
-          <planeGeometry args={[80, span]} />
-          <meshStandardMaterial color={look.water} roughness={0.3} />
-        </mesh>
-        <Scenery look={look} layout="behind" inner={11} from={-20} to={length + 20} y={water} size={1.6} />
-      </>
-    );
-  }
-  if (control === 'flap') {
-    // Úzký pás země: z boku je to proužek pod trubkami a za ním obloha. Široká
-    // plocha by z výšky kamery zabrala spodní půlku obrazu a spolkla dolní trubky.
-    return (
-      <>
-        <mesh position={[0, -0.4, span / 2 - 30]}>
-          <boxGeometry args={[3, 0.8, span]} />
-          <meshStandardMaterial color={look.ground} roughness={1} />
-        </mesh>
-        {/* Boční kamera vidí kulisy za tratí malé a v mlze: dvojnásobná velikost (P28D T6). */}
-        <Scenery look={look} layout="behind" inner={12} from={-20} to={length + 20} y={-0.4} size={2} />
-      </>
-    );
-  }
-  if (control === 'shooter' || control === 'throw') {
-    return (
-      <>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]} renderOrder={UNDER_PANORAMA}>
-          <planeGeometry args={[120, 120]} />
-          <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
-        </mesh>
-        {control === 'shooter' ? <Scenery look={look} layout="sides" inner={14} from={-4} to={60} size={1.5} /> : <Scenery look={look} layout="behind" inner={13} from={-10} to={45} size={1.5} />}
-      </>
-    );
-  }
-  const trackLength = length + 20;
-  const trackWidth = (RUNNER.lanes * RUNNER.laneWidth) / UNIT;
-  const laneWidth = RUNNER.laneWidth / UNIT;
-  return (
-    <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, trackLength / 2 - 10]}>
-        <planeGeometry args={[trackWidth + 0.6, trackLength]} />
-        <meshStandardMaterial color={look.track} roughness={0.9} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, trackLength / 2 - 10]} renderOrder={UNDER_PANORAMA}>
-        <planeGeometry args={[80, trackLength + 80]} />
-        <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
-      </mesh>
-      <Scenery look={look} layout="sides" inner={trackWidth / 2 + 2.5} from={-10} to={trackLength - 10} />
-      {[-0.5, 0.5].map((edge) => (
-        <mesh key={edge} rotation={[-Math.PI / 2, 0, 0]} position={[edge * laneWidth, 0, trackLength / 2 - 10]}>
-          <planeGeometry args={[0.08, trackLength]} />
-          <meshBasicMaterial color="#e2e8f0" />
-        </mesh>
-      ))}
     </>
   );
 }

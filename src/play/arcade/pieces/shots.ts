@@ -5,16 +5,36 @@
 
 import { z } from 'zod';
 
-import { ARCADE_LIMITS, type ArcadeEffect, BODY, COUNTER, FLAG, HEADER, ROLE, type RulePiece, bodyBase } from '../contract';
+import { ARCADE_LIMITS, type ArcadeEffect, BODY, COUNTER, FLAG, HEADER, ROLE, type RulePiece, bodyBase, bodyHp } from '../contract';
 import { nextMultiplier } from './rules';
 import { SHOOTER, gunOf, gunTick } from './shooter';
 
 const noParams = z.object({}).strict();
 
-/** Index těla-počítadla komba (P36A T10, `COMBO`); bez něj zásah za bod jako dřív. */
-const shotHitParams = z.object({ combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional() }).strict();
+/**
+ * `combo` = index těla-počítadla komba (P36A T10, `COMBO`); bez něj zásah za bod jako dřív.
+ * `spare` = předloha bosse-terče (P45C T13): tělo s jejím podpisem zásah nesebere – HP mu ubírá `boss_beat_hit`.
+ * `tough` = předloha terče-bosse hodu (P47A T7): tělo s jejím podpisem zásah ubere o 1 HP (efekt `hit`), sebere ho
+ * až zásah na posledním HP – bez okna a varování, boss hodu nestřílí.
+ */
+const shotHitParams = z
+  .object({
+    combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+    spare: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+    tough: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+    // Střelba jako akce hrdiny (P46A): ověření robotem pak dokazuje sloveso zásahem.
+    verb: z.literal('shoot').optional(),
+  })
+  .strict();
 
 const isFoe = (role: number): boolean => role === ROLE.target || role === ROLE.enemy;
+
+/** Má tělo `body` podpis (role, model, rozměry) předlohy `template`? */
+function sameAs(state: Int32Array, body: number, template: number): boolean {
+  const a = bodyBase(body);
+  const b = bodyBase(template);
+  return [BODY.role, BODY.kind, BODY.w, BODY.h, BODY.d].every((slot) => state[a + slot] === state[b + slot]);
+}
 
 /** Živé terče a nepřátelé; `projectiles` navíc počítá projektily ve vzduchu. */
 export function census(state: Int32Array): { foes: number; projectiles: number } {
@@ -38,16 +58,21 @@ export const shotHit: RulePiece<z.infer<typeof shotHitParams>> = {
   roles: ['projectile', 'target', 'enemy'],
   trigger: 'hit',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, other }, params) => {
+  fire: ({ state, other, player }, params) => {
     if (other < 0 || !isFoe(state[bodyBase(other) + BODY.role] as number)) return [];
+    if (params.spare !== undefined && sameAs(state, other, params.spare)) return [];
+    const hit: ArcadeEffect[] = params.tough !== undefined && sameAs(state, other, params.tough) ? [{ kind: 'hit', body: other, by: player, amount: 1 }] : [];
+    if (hit.length > 0 && bodyHp(state, other) > 1) return hit;
     if (params.combo === undefined) {
       return [
+        ...hit,
         { kind: 'score', amount: 1 },
         { kind: 'despawn', body: other },
       ];
     }
     const multiplier = nextMultiplier(state, params.combo);
     return [
+      ...hit,
       { kind: 'score', amount: multiplier },
       { kind: 'despawn', body: other },
       { kind: 'combo', body: params.combo, multiplier },

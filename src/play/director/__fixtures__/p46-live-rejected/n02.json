@@ -1,0 +1,125 @@
+{
+ "sentence": "A pirate ship sails through a storm firing cannons at sea monsters",
+ "failure": {
+  "stage": "critic",
+  "reason": "UNREPAIRED",
+  "detail": "UNSUPPORTED: control steer does not play mechanic hazard_zone; ACTION_LOST: storm hazard ship has no action witness",
+  "raw": {
+   "schema": "gamespec.v1",
+   "control": "steer",
+   "controlParams": {
+    "difficulty": "normal",
+    "lengthM": 700,
+    "rivals": false,
+    "roadWidth": 3600,
+    "roadEntryWidth": 4000,
+    "crashBudget": 1,
+    "turbo": true,
+    "drift": false,
+    "segments": true,
+    "patterns": 1,
+    "style": "open"
+   },
+   "addons": [
+    "shoot"
+   ],
+   "abilities": [
+    "shoot"
+   ],
+   "boss": {
+    "name": "Sea Monster",
+    "role": "sea monster"
+   },
+   "segments": [
+    "trap",
+    "moving",
+    "newFoe"
+   ],
+   "title": "pirate ship drive",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "Stormy sea",
+    "mood": "fast",
+    "look": "ocean"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Reach the finish line.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "hazard_zone",
+     "params": {
+      "role": "storm",
+      "effect": "lose"
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "pirate ship",
+     "count": 1
+    },
+    {
+     "id": "barrier",
+     "kind": "hazard",
+     "label": "storm",
+     "count": 1
+    },
+    {
+     "id": "turbo",
+     "kind": "collectible",
+     "label": "turbo",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line",
+     "count": 1
+    },
+    {
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "sea monster",
+     "count": 1
+    },
+    {
+     "id": "storm",
+     "kind": "hazard",
+     "label": "storm",
+     "count": 1
+    },
+    {
+     "id": "sea_monster",
+     "kind": "target",
+     "label": "sea monster",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Reach the finish line.",
+    "controlsHint": "Drag/arrows steer. Second finger/Space fires. Down/S brakes. Avoid barriers."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "rules": []
+  }
+ }
+}

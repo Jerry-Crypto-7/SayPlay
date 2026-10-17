@@ -131,7 +131,11 @@ describe('effects bus (P32-0 T5)', () => {
       emit([{ kind: 'hit', body: 1, by: 0, amount: -2 }], 1);
       emit([{ kind: 'hit', body: dead, by: 0, amount: 2 }], 2);
     });
-    expect(heard.map((event) => [event.tick, event.body, event.kind])).toEqual([[0, 1, 'hit']]);
+    // Zásah jiného těla než hráče dal hráč: vedle záblesku i událost akce (P46C T4).
+    expect(heard.map((event) => [event.tick, event.body, event.kind])).toEqual([
+      [0, 1, 'hit'],
+      [0, 1, 'ability'],
+    ]);
   });
 
   it('never writes the simulation: a frozen state passes and the hash does not move', () => {

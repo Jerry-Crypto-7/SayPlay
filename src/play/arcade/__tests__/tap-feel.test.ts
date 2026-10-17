@@ -16,6 +16,7 @@ import type { GenreSpec } from '@/play/genre/contract';
 import type { GameSpecV1 } from '@/play/spec';
 
 import flapFixture from '../__fixtures__/flap.json';
+import { baseControlOf } from '../addons';
 import { arcadeWorldOf } from '../compile';
 import { type ArcadeInput, type ArcadeWorld, BODY, BUTTON, NO_INPUT, bodyBase } from '../contract';
 import { hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from '../kernel';
@@ -213,11 +214,12 @@ const GENRES: Readonly<Record<string, GenreSpec>> = {
   rhythm: { genre: 'rhythm', mode: 'default', hero: 'frog', setting: 'pond' },
 };
 
-/** Spec žánrové hry, jak ji uložila hra před T7: bez `feel`. */
-function storedSpec(name: string): GameSpecV1 {
+/** Spec žánrové hry bez `feel`; `stored` = jak ji uložila hra před T7 (i před průběhem P45C, `genre.v1`). */
+function storedSpec(name: string, stored = true): GameSpecV1 {
   const spec = compileGenre(GENRES[name] as GenreSpec);
   const { feel: _feel, ...params } = (spec.controlParams ?? {}) as Record<string, unknown>;
-  return { ...spec, controlParams: params } as GameSpecV1;
+  const genre = stored && spec.genre !== undefined ? { genre: { ...spec.genre, compilerVersion: 'genre.v1' } } : {};
+  return { ...spec, controlParams: params, ...genre } as GameSpecV1;
 }
 
 describe('who gets feel: 2', () => {
@@ -225,13 +227,13 @@ describe('who gets feel: 2', () => {
     const spec = compileGenre(GENRES[name] as GenreSpec);
     expect(spec.controlParams).toMatchObject({ feel: 2 });
     const world = worldOf(spec);
-    expect(world.control.params).toMatchObject({ feel: 2 });
+    expect(baseControlOf(world.control).params).toMatchObject({ feel: 2 });
     if (name === 'flap') expect(world.rules).toContainEqual({ id: 'fall_out', params: { belowY: 1, effect: 'lose', afterTicks: PLATFORM_FEEL.coyoteTicks } });
   });
 
   it.each(Object.keys(GENRES))('%s: the robot wins at the same tick and an idle player still loses', (name) => {
     const felt = worldOf(compileGenre(GENRES[name] as GenreSpec));
-    const stored = worldOf(storedSpec(name));
+    const stored = worldOf(storedSpec(name, false));
     const bot = runBot(felt);
     expect(bot.outcome).toBe('won');
     expect(bot.tick).toBe(runBot(stored).tick);

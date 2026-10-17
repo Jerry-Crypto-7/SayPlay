@@ -9,10 +9,30 @@ import { color } from '@/brand/tokens';
 import { underlyingRule } from '@/play/arcade/addons';
 import { BODY, BODY_STRIDE, COUNTER, FLAG, HEADER, HEADER_SIZE, PHYSICS_SUBSTEPS, UNIT, bodyBase, unpackRotation, type PieceRef } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
+import { HorizonBackdrop } from '../look/Backdrop';
+import { FieldGround } from '../look/FieldGround';
+import { Vegetation } from '../look/Vegetation';
+import type { RoadAt } from '../look/vegetation-places';
 import type { ArcadeSession } from '../session';
 
 export { placeBall } from './camera';
 export { useBallInput } from './ball-input';
+
+/** Zem hřiště (m): kamera stojí 12–16 m za hráčem, mlha sad končí do 140 m. */
+const LAND = { x0: -70, x1: 70, z0: -30, z1: 110 } as const;
+/**
+ * Mýtina hřiště jako „cesta“ vegetace: od hráče (z = 0) se rozevírá o půl metru
+ * do strany na metr dopředu, ať strom nestojí v dráze míče ani mířené pod ±27°
+ * (cíle stojí do 18 m a do 3,5 m do strany), za `PITCH_CLOSE` ji uzavře les.
+ * Za hráčem nic – tam stojí kamera.
+ */
+const PITCH_FROM = -2;
+const PITCH_TO = 120;
+const PITCH_CLOSE = 30;
+const pitchAt = (z: number): RoadAt => ({ center: 0, half: z < PITCH_CLOSE ? 7 + 0.5 * Math.max(0, z) : 0 });
+const VEGETATION_CLEAR = 1.5;
+/** Kulisa nestojí blíž než cíle a soupeř od kamery (m): cíl do 18 m před hráčem, kamera 16 m za ním, rezerva. */
+const BACKDROP_BEYOND = 42;
 /** Named player/goalkeeper actors stay in World; these are native sports props. */
 export const BALL_SCENE_KINDS: ReadonlySet<string> = new Set(['physics-ball', 'opponent-ball', 'goal', 'home-goal', 'hoop', 'hole', 'pin']);
 
@@ -85,9 +105,11 @@ export function BallScene({ session, look }: { readonly session: ArcadeSession; 
       <mesh><ringGeometry args={[0.27, 0.3, 24]} /><meshBasicMaterial color={color.cream} side={2} /></mesh>
       <mesh ref={ready}><circleGeometry args={[0.24, 24]} /><meshBasicMaterial color={color.sun} side={2} /></mesh>
     </group>
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 10]} receiveShadow>
-      <planeGeometry args={[40, 50]} /><meshStandardMaterial color={look.ground} roughness={1} />
-    </mesh>
+    {/* Zem s odstíny a skvrnami (P46G T7) místo jedné barvy sady, až do mlhy. */}
+    <FieldGround look={look} area={LAND} y={-0.02} />
+    {/* Vegetace sady po stranách hřiště a za ním: mýtina se rozevírá po směru střelby, ať míč ani mířidla nikdy nezajdou za strom. */}
+    {look.flora !== undefined && <Vegetation flora={look.flora} seed={session.world.seed} from={PITCH_FROM} to={PITCH_TO} road={pitchAt} clear={VEGETATION_CLEAR} />}
+    <HorizonBackdrop look={look} seed={session.world.seed} clear={0} beyond={BACKDROP_BEYOND} />
     {props.map(body => <group key={body.index} ref={group => { if (group === null) groups.current.delete(body.index); else groups.current.set(body.index, group); }}>
       {body.kind === 'pin' ? <mesh><boxGeometry args={[body.w, body.h, body.d]} /><meshStandardMaterial color={color.cream} roughness={0.5} /></mesh> : body.kind === 'hoop' ? <group>
         <mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[body.w / 2, 0.07, 8, 24]} /><meshStandardMaterial color={color.tomato} /></mesh>

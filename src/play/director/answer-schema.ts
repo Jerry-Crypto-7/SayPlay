@@ -6,7 +6,9 @@
 
 import { z } from 'zod';
 
-import { THINGS_MAX, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
+import { ABILITIES } from '../arcade/contract';
+import { SEGMENT_NEWS } from '../arcade/pieces/pacing';
+import { THINGS_MAX, logicSchema, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { COUNT_PARAMS, COUNT_ROLES, type CountRole, type GenreModule, genreSpecSchema, ruleRoleSchema } from '../genre/contract';
 import { GENRE_MODULES, paramBoundsOf } from '../genre/index';
 import { ROLE_KINDS } from '../spec';
@@ -82,21 +84,31 @@ function genreVariant(module: GenreModule): Json | null {
   const counts = countsOf(module, modes);
   const variant = bounds.length === 0 ? base.omit({ params: true }) : base.extend({ params: params.optional() });
   const counted = counts === null ? variant.omit({ counts: true }) : variant.extend({ counts: counts.optional() });
-  const schema = strictSchema(toJson(counted.extend({ mode: z.enum(modes as [string, ...string[]]) })));
+  const schema = strictSchema(toJson(counted.extend({ mode: z.enum(modes as [string, ...string[]]), ...MODEL_EXTRAS })));
   // Keep rule fields in place, but inline their provider-compatible schemas.
   const properties = schema.properties as Record<string, Json>;
   for (const key of Object.keys(RULE_DEFS)) properties[key] = { anyOf: [RULE_DEFS[key as keyof typeof RULE_DEFS], { type: 'null' }] };
   return schema;
 }
 
+/**
+ * Meze novinek AI verze, jak je dostane model (P46E T3): nejvýš 2 akce a přesně 3 změny úseků. Čtečka
+ * (`genreSpecSchema`) je volnější – víc akcí ořízne a neznámou změnu zahodí, místo aby odmítla celou odpověď.
+ */
+const MODEL_EXTRAS = {
+  abilities: z.array(z.enum(ABILITIES)).max(2).optional(),
+  segments: z.array(z.enum(SEGMENT_NEWS)).length(3).optional(),
+};
+
 /** Druhy rolí, které smí nést jen pravidla – hráče staví modul. */
 const RULE_ROLE_KINDS = ROLE_KINDS.filter((kind) => kind !== 'player') as [string, ...string[]];
 
-/** Shared construction source; emitted independently inside every variant. */
-const RULE_DEFS: Readonly<Record<'ruleRoles' | 'things' | 'rules', Json>> = {
+/** Shared construction source; emitted independently inside every variant. `logic` + its rule constructs since P45B T10. */
+const RULE_DEFS: Readonly<Record<'ruleRoles' | 'things' | 'rules' | 'logic', Json>> = {
   ruleRoles: strictSchema(toJson(z.array(ruleRoleSchema.extend({ kind: z.enum(RULE_ROLE_KINDS) })).max(THINGS_MAX))),
   things: strictSchema(toJson(thingsSchema)),
   rules: strictSchema(toJson(modelRulesSchema)),
+  logic: strictSchema(toJson(logicSchema)),
 };
 
 /**
@@ -159,6 +171,6 @@ export const GENRE_ANSWER_SCHEMA: Json = {
   required: ['plan', 'spec'],
   properties: {
     plan: { type: 'string' },
-    spec: { anyOf: [strictSchema(toJson(recipeAnswerSchema)), ...(Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) => genreVariant(module) ?? [])] },
+    spec: { anyOf: [strictSchema(toJson(recipeAnswerSchema.extend(MODEL_EXTRAS))), ...(Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) => genreVariant(module) ?? [])] },
   },
 };

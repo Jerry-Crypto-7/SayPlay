@@ -1,0 +1,265 @@
+{
+ "about": "P47B T1 verb panel, holdout (read only by T12, once) half: 92 sentences written blind on 2026-10-15 by a subagent that saw only the five hero actions, their verb families and the genre list – no code, no lexicon, no other sentence set. Hand label `wants` (0–2 actions in sentence order), `family` = the family the sentence was written for (`trap` = looks like an action, wants none). Split by family with pure-rand xoroshiro128plus seed 4747, Fisher–Yates via uniformInt, first ceil(2n/3) of each family to dev.",
+ "seed": 4747,
+ "sentences": [
+  {
+   "id": "v01",
+   "text": "a grumpy goat headbutts the farmers chasing it across the field",
+   "genre": "arena-escape",
+   "family": "strike",
+   "verb": "headbutts",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v09",
+   "text": "Grandma whacks the moles popping out of her vegetable garden.",
+   "genre": "timing",
+   "family": "strike",
+   "verb": "whacks",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v12",
+   "text": "a pirate stabs at her rival with a rusty cutlass on deck",
+   "genre": "duel",
+   "family": "strike",
+   "verb": "stabs",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "v14",
+   "text": "a knight bashes skeletons and steals their golden keys in a dungeon maze",
+   "genre": "maze",
+   "family": "strike",
+   "verb": "bashes",
+   "wants": [
+    "strike",
+    "grab"
+   ]
+  },
+  {
+   "id": "v19",
+   "text": "a matador sidesteps a charging bull in a dusty arena",
+   "genre": "arena-escape",
+   "family": "dash",
+   "verb": "sidesteps",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v23",
+   "text": "a frog darts between lily pads to avoid a hungry heron",
+   "genre": "timing",
+   "family": "dash",
+   "verb": "darts",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v25",
+   "text": "a boxer ducks wild swings and punches back at the champion",
+   "genre": "duel",
+   "family": "dash",
+   "verb": "ducks",
+   "wants": [
+    "dash",
+    "strike"
+   ]
+  },
+  {
+   "id": "v26",
+   "text": "a hot air balloon veers away from lightning bolts in a storm",
+   "genre": "flying",
+   "family": "dash",
+   "verb": "veers",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "v31",
+   "text": "a goalkeeper octopus blocks shots with eight arms in a penalty shootout",
+   "genre": "duel",
+   "family": "shield",
+   "verb": "blocks",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v33",
+   "text": "a paladin parries the dragon's tail swipes while crossing a lava bridge",
+   "genre": "platformer",
+   "family": "shield",
+   "verb": "parries",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v35",
+   "text": "A firefighter protects kittens from falling embers while running through a burning street.",
+   "genre": "runner",
+   "family": "shield",
+   "verb": "protects",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v37",
+   "text": "a glider pilot shields her cockpit from hailstones above the mountains",
+   "genre": "flying",
+   "family": "shield",
+   "verb": "shields",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "v43",
+   "text": "a llama spits at kids who try to ride it at the zoo",
+   "genre": "arena-fight",
+   "family": "shoot",
+   "verb": "spits",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v46",
+   "text": "an eel zaps jellyfish while swimming through a dark underwater cave",
+   "genre": "runner",
+   "family": "shoot",
+   "verb": "zaps",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v48",
+   "text": "a farmer snipes crows from the barn roof at sunrise",
+   "genre": "shooter",
+   "family": "shoot",
+   "verb": "snipes",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "v56",
+   "text": "a chameleon zips past hawks and spits sticky goo at beetles",
+   "genre": "platformer",
+   "family": "shoot",
+   "verb": "spits",
+   "wants": [
+    "dash",
+    "shoot"
+   ]
+  },
+  {
+   "id": "v58",
+   "text": "a seagull snatches french fries from sunbathers while flying along the pier",
+   "genre": "flying",
+   "family": "grab",
+   "verb": "snatches",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v59",
+   "text": "an explorer loots treasure chests hidden deep in a jungle maze",
+   "genre": "maze",
+   "family": "grab",
+   "verb": "loots",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v64",
+   "text": "a racing driver steals fuel cans from rival pit crews",
+   "genre": "driving",
+   "family": "grab",
+   "verb": "steals",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v65",
+   "text": "a jazz cat grabs fish off the dinner plates on every drum beat",
+   "genre": "rhythm",
+   "family": "grab",
+   "verb": "grabs",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "v71",
+   "text": "a beaver stacks stone blocks to build a dam before the flood",
+   "genre": "timing",
+   "family": "trap",
+   "verb": "blocks",
+   "wants": []
+  },
+  {
+   "id": "v73",
+   "text": "a security guard rides a scooter through an empty shopping mall at night",
+   "genre": "driving",
+   "family": "trap",
+   "verb": "guard",
+   "wants": []
+  },
+  {
+   "id": "v74",
+   "text": "a space capsule with a cracked heat shield falls back to earth",
+   "genre": "flying",
+   "family": "trap",
+   "verb": "heat shield",
+   "wants": []
+  },
+  {
+   "id": "v78",
+   "text": "a cargo plane flies through a canyon where enemy turrets fire missiles",
+   "genre": "flying",
+   "family": "trap",
+   "verb": "fire",
+   "wants": []
+  },
+  {
+   "id": "v84",
+   "text": "A fire truck races to a burning school across town.",
+   "genre": "driving",
+   "family": "trap",
+   "verb": "fire truck",
+   "wants": []
+  },
+  {
+   "id": "v85",
+   "text": "a skateboarder lands kickflips over park benches before the streetlights turn on",
+   "genre": "timing",
+   "family": "trap",
+   "verb": "kickflips",
+   "wants": []
+  },
+  {
+   "id": "v89",
+   "text": "a grandpa tosses horseshoes at a metal post in his backyard",
+   "genre": "throw",
+   "family": "trap",
+   "verb": "tosses",
+   "wants": []
+  }
+ ]
+}

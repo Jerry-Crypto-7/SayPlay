@@ -1,0 +1,446 @@
+{
+ "schema": "p46e-upgrade.v1",
+ "answers": "src/play/director/__fixtures__/logic-answers",
+ "summary": {
+  "n": 25,
+  "authored": 23,
+  "ready": 20,
+  "readyShare": 0.8,
+  "keptRules": 0.75,
+  "keptLogic": 0.7,
+  "adds": 0.05,
+  "onlyCharacters": 10,
+  "boss": 1,
+  "action": 0,
+  "segments": 0,
+  "actionLost": 3,
+  "reasons": {
+   "ACTION_LOST": 3,
+   "MALFORMED": 2
+  }
+ },
+ "rows": [
+  {
+   "id": "d06",
+   "sentence": "race hot air balloons over a desert canyon",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "d16",
+   "sentence": "an owl delivers letters across a snowy mountain village",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "d20",
+   "sentence": "a knight rides a unicorn to rescue a prince from a cloud castle",
+   "directed": "draft",
+   "directedReason": "MALFORMED",
+   "status": "draft-final",
+   "reason": "MALFORMED",
+   "rules": [
+    2,
+    null
+   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "f22",
+   "sentence": "A knight fights a three-headed hydra at the castle gates.",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    4
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "h02",
+   "sentence": "shopping cart race in a supermarket",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    4
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "h03",
+   "sentence": "defend a castle from dragons by throwing snowballs",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "h09",
+   "sentence": "escape from a haunted hospital with a flashlight",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "draft-final",
+   "reason": "ACTION_LOST",
+   "rules": [
+    3,
+    null
+   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
+   "actionLost": true
+  },
+  {
+   "id": "j05",
+   "sentence": "pop ten balloons at a birthday party",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    2,
+    2
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "j08",
+   "sentence": "a wizard defends a crystal tower from flying skeletons",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "j10",
+   "sentence": "an elf princess escapes a goblin castle through a dark forest",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "m10",
+   "sentence": "FIREFIGHTER SAVES KITTENS FROM A BURNING TREE",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    2,
+    1
+   ],
+   "keptRules": true,
+   "keptLogic": false,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "ma-031",
+   "sentence": "a knight fights a dragon to save the princess",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    2,
+    2
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "ma-048",
+   "sentence": "zombie survival: shoot zombies, collect ammo, survive 5 waves",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "pa-017",
+   "sentence": "a spaceship shooting asteroids to survive",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    2,
+    0
+   ],
+   "keptRules": false,
+   "keptLogic": false,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "pa-018",
+   "sentence": "survive in space by blasting asteroids with your spaceship",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    2,
+    0
+   ],
+   "keptRules": false,
+   "keptLogic": false,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "s002",
+   "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    0
+   ],
+   "keptRules": false,
+   "keptLogic": false,
+   "adds": [
+    "boss"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "s003",
+   "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "draft-final",
+   "reason": "ACTION_LOST",
+   "rules": [
+    3,
+    null
+   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
+   "actionLost": true
+  },
+  {
+   "id": "s008",
+   "sentence": "temple run but you're a banana running from a monkey",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    0
+   ],
+   "keptRules": false,
+   "keptLogic": false,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "s056",
+   "sentence": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+   "directed": "draft",
+   "directedReason": "MALFORMED",
+   "status": "draft-final",
+   "reason": "MALFORMED",
+   "rules": [
+    3,
+    null
+   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "s058",
+   "sentence": "boat race through a jungle river full of crocodiles",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    3,
+    3
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "s155",
+   "sentence": "defend the castle from waves of goblins",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "s188",
+   "sentence": "A grandma karate fights a gang of pigeons in the park",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "si-018",
+   "sentence": "survive in the desert for 3 minutes",
+   "directed": "authored",
+   "directedReason": null,
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    2,
+    0
+   ],
+   "keptRules": false,
+   "keptLogic": false,
+   "adds": [
+    "characters"
+   ],
+   "actionLost": false
+  },
+  {
+   "id": "si-031",
+   "sentence": "a karate kid fighting ninjas in the city",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "ready",
+   "reason": null,
+   "rules": [
+    0,
+    0
+   ],
+   "keptRules": true,
+   "keptLogic": true,
+   "adds": [],
+   "actionLost": false
+  },
+  {
+   "id": "u47",
+   "sentence": "a lifeguard rescues swimmers from sharks at a crowded beach",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
+   "status": "draft-final",
+   "reason": "ACTION_LOST",
+   "rules": [
+    2,
+    null
+   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
+   "actionLost": true
+  }
+ ]
+}

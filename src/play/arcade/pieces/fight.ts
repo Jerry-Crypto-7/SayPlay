@@ -47,7 +47,9 @@ import {
   bodyHp,
   graceOf,
 } from '../contract';
+import { blowGuarded, guardParams } from '../abilities/state';
 import { ARENA, DIRECTIONS, directionOfAxis, directionToward } from './arena';
+import { matches } from './behaviours';
 import { WAVE_LIMITS, entrySpots, waveOf } from './waves';
 
 export const FIGHT = {
@@ -103,7 +105,7 @@ export type FightPhase = (typeof FIGHT_PHASE)[keyof typeof FIGHT_PHASE];
 const PHASE_MASK = 0xf;
 const DIRECTION_SHIFT = 4;
 /** Úder, který právě začal, hráče zasáhl. */
-const LANDED = 1 << 9;
+export const LANDED = 1 << 9;
 
 export const phaseOf = (state: ArcadeState, body: number): FightPhase => ((state[bodyBase(body) + BODY.aux0] as number) & PHASE_MASK) as FightPhase;
 /** Směr úderu zamčený na začátku telegrafu (0..31). */
@@ -176,7 +178,7 @@ function swing(state: ArcadeState, player: number, enemies: readonly number[]): 
 }
 
 /** Jeden tik nepřítele `i` (ne toho, kterého hráč právě zasáhl). */
-function stepEnemy(state: ArcadeState, i: number, player: number, enemies: readonly number[], speed: number): void {
+function stepEnemy(state: ArcadeState, i: number, player: number, enemies: readonly number[], speed: number, guard?: z.infer<typeof guardParams>): void {
   const base = bodyBase(i);
   const p = bodyBase(player);
   const x = state[base + BODY.x] as number;
@@ -234,7 +236,7 @@ function stepEnemy(state: ArcadeState, i: number, player: number, enemies: reado
       return;
     }
     // Úder: zasáhne hráče, který teď stojí v zamčeném oblouku a dosahu.
-    const landed = inArc(dx, dz, locked, FIGHT.strikeReach, FIGHT.strikeArc);
+    const landed = inArc(dx, dz, locked, FIGHT.strikeReach, FIGHT.strikeArc) && !blowGuarded(state, guard);
     setPhase(state, i, FIGHT_PHASE.strike, FIGHT.strike, locked, landed);
     setVelocity(state, i, locked, FIGHT.lunge);
     if (landed) setVelocity(state, player, locked, FIGHT.playerKnockback);
@@ -269,6 +271,8 @@ const controlParams = z
     enemySpeed: z.int().min(FIGHT.enemySpeed.min).max(FIGHT.enemySpeed.max).default(FIGHT.enemySpeed.default),
     /** Vlny (P36A T4): o kolik každá další vlna (`waveOf`) zrychlí soupeře, nejvýš na strop `FIGHT.enemySpeed`. */
     step: z.int().min(1).max(FIGHT.enemySpeed.max - FIGHT.enemySpeed.min).optional(),
+    /** Dash a štít hrdiny (P47B T6, `blowGuarded`): úder soupeře propustí či odrazí. */
+    guard: guardParams.optional(),
   })
   .strict();
 export type FightControlParams = z.infer<typeof controlParams>;
@@ -302,7 +306,7 @@ export const fightControl: ControlPiece<FightControlParams> = {
 
     const speed = params.step === undefined ? params.enemySpeed : Math.min(FIGHT.enemySpeed.max, params.enemySpeed + params.step * waveOf(state));
     for (const i of enemies) {
-      if (!(swung && phaseOf(state, i) === FIGHT_PHASE.stagger && phaseTicksLeft(state, i) === FIGHT.stagger)) stepEnemy(state, i, player, enemies, speed);
+      if (!(swung && phaseOf(state, i) === FIGHT_PHASE.stagger && phaseTicksLeft(state, i) === FIGHT.stagger)) stepEnemy(state, i, player, enemies, speed, params.guard);
       keepInside(state, i, params.half);
     }
     keepInside(state, player, params.half);
@@ -351,10 +355,20 @@ const endParams = z
     knockout: z.object({ hp: z.int().min(1).max(HP_MAX), grace: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict().optional(),
     /** Vlny (P36A T4): výhra až ve vlně `waves` (poslední); dřív další vlnu přivede `arena_waves`. Bez nich jako dřív. */
     waves: z.int().min(2).max(WAVE_LIMITS.waves).optional(),
+    /** Boss poslední vlny (P45C, index předlohy): dokud stojí jeho kopie, výhra počká. Bez něj jako dřív. */
+    boss: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
   })
   .strict();
 
-/** Hráč na 0 HP = prohra (s knockouty ztráta života), všichni nepřátelé na 0 (ve vlnách v poslední) = výhra. */
+/** Stojí živá kopie předlohy bosse (týž podpis – role, model, rozměry)? */
+function bossStands(state: ArcadeState, template: number): boolean {
+  for (let i = state[HEADER.spawnBase] as number; i < (state[HEADER.bodyCount] as number); i += 1) {
+    if (((state[bodyBase(i) + BODY.flags] as number) & FLAG.alive) !== 0 && matches(state, i, template)) return true;
+  }
+  return false;
+}
+
+/** Hráč na 0 HP = prohra (s knockouty ztráta života), všichni nepřátelé na 0 (ve vlnách v poslední, s bossem až po jeho pádu) = výhra. */
 export const fightEnd: RulePiece<z.infer<typeof endParams>> = {
   id: 'fight_end',
   params: endParams,
@@ -372,6 +386,7 @@ export const fightEnd: RulePiece<z.infer<typeof endParams>> = {
       ];
     }
     if (params.waves !== undefined && waveOf(state) < params.waves - 1) return [];
+    if (params.boss !== undefined && bossStands(state, params.boss)) return [];
     const enemies = enemiesOf(state);
     return enemies.length > 0 && enemies.every((i) => bodyHp(state, i) === 0) ? [{ kind: 'win' }] : [];
   },

@@ -1,0 +1,127 @@
+{
+ "id": "u47",
+ "sentence": "a lifeguard rescues swimmers from sharks at a crowded beach",
+ "axis": "rescue",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:37:23.883Z",
+ "ms": 20658,
+ "answer": {
+  "plan": "Create a quest‑style rescue game where the lifeguard must reach a swimmer before a shark catches them, using a simple two‑phase timer to spawn the shark.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "lifeguard",
+   "cast": [
+    {
+     "label": "swimmer",
+     "does": "reach",
+     "verb": "rescue",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "shark",
+     "does": "chase_me",
+     "verb": "attack",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "crowded beach",
+   "palette": "beach",
+   "params": {
+    "seconds": null,
+    "paceBudgetPct": null,
+    "count": null,
+    "chasers": 1,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 0
+   },
+   "counts": {
+    "enemy": 1,
+    "target": 1
+   },
+   "ruleRoles": [
+    {
+     "id": "swimmer",
+     "kind": "target",
+     "label": "swimmer",
+     "count": 1
+    },
+    {
+     "id": "shark",
+     "kind": "chaser",
+     "label": "shark",
+     "count": 1
+    }
+   ],
+   "things": [
+    {
+     "role": "shark",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "spawn_shark",
+     "verb": "spawn",
+     "when": {
+      "timer": "spawn_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "shark",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "win_rescue",
+     "verb": "interact",
+     "when": {
+      "contact": [
+       "player",
+       "swimmer"
+      ]
+     },
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "spawn_timer"
+     }
+    ],
+    "phases": [
+     {
+      "id": "waiting"
+     },
+     {
+      "id": "action"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

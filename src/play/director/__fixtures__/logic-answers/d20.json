@@ -1,0 +1,112 @@
+{
+ "id": "d20",
+ "sentence": "a knight rides a unicorn to rescue a prince from a cloud castle",
+ "axis": "rescue",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:37:03.224Z",
+ "ms": 7857,
+ "answer": {
+  "plan": "Create a quest‑style game where a knight rides a unicorn to rescue a prince from a cloud castle, using a two‑phase timer logic to spawn the prince and trigger the rescue.",
+  "spec": {
+   "genre": "quest",
+   "mode": "spatial",
+   "hero": "knight",
+   "cast": [
+    {
+     "label": "prince",
+     "does": "reach",
+     "verb": "rescue",
+     "states": null,
+     "patrol": null
+    }
+   ],
+   "heroAction": "none",
+   "setting": "castle",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "target": 1
+   },
+   "ruleRoles": [
+    {
+     "id": "prince",
+     "kind": "target",
+     "label": "prince",
+     "count": 1
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "startTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "spawn",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawnPrince",
+     "verb": "spawn",
+     "when": {
+      "timer": "spawn"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "prince",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "reachPrince",
+     "verb": "reach",
+     "when": {
+      "contact": [
+       "player",
+       "prince"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "spawn"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "active"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

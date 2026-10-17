@@ -1,0 +1,89 @@
+{
+ "schema": "p45-result.v1",
+ "set": "p45-sealed",
+ "seed": 45045,
+ "a": {
+  "base": "http://127.0.0.1:3047",
+  "run": "p46-final-a",
+  "commit": "491079b7"
+ },
+ "b": {
+  "base": "http://127.0.0.1:3046",
+  "run": "p46-final-b",
+  "commit": "5867439d"
+ },
+ "pairwise": {
+  "n": 100,
+  "aWins": 8,
+  "bWins": 69,
+  "ties": 23,
+  "bShare": 0.805,
+  "leftWinShare": 0.455
+ },
+ "fun": {
+  "n": 100,
+  "playable": 100,
+  "deadTimeMedianS": 4.6,
+  "risingShare": 0.65,
+  "behavioursMedian": 1,
+  "finaleShare": 0.38,
+  "eventsPerSMedian": 1.12,
+  "nearMissesMedian": 0,
+  "livesLostMedian": 0,
+  "targets": [
+   {
+    "metric": "deadTimeMedianS",
+    "goal": "<= 3",
+    "value": 4.6,
+    "met": false
+   },
+   {
+    "metric": "risingShare",
+    "goal": ">= 0.70",
+    "value": 0.65,
+    "met": false
+   },
+   {
+    "metric": "behavioursMedian",
+    "goal": ">= 2",
+    "value": 1,
+    "met": false
+   },
+   {
+    "metric": "finaleShare",
+    "goal": ">= 0.50",
+    "value": 0.38,
+    "met": false
+   }
+  ],
+  "met": false
+ },
+ "targets": {
+  "pairwiseB": {
+   "goal": ">= 0.7",
+   "value": 0.805,
+   "met": true
+  },
+  "deadTimeMedianS": {
+   "goal": "<= 3",
+   "value": 4.6,
+   "met": false
+  },
+  "risingShare": {
+   "goal": ">= 0.70",
+   "value": 0.65,
+   "met": false
+  },
+  "behavioursMedian": {
+   "goal": ">= 2",
+   "value": 1,
+   "met": false
+  },
+  "finaleShare": {
+   "goal": ">= 0.50",
+   "value": 0.38,
+   "met": false
+  }
+ },
+ "met": false
+}

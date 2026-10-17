@@ -12,7 +12,10 @@
  * jeden záblesk. Restart relace (tik zpět) zahodí živé částice i otřes.
  */
 
-import { type ArcadeEffect, BODY, FLAG, HEADER, ROLE, RUN_STATE, UNIT, bodyBase, targetStateOf } from '@/play/arcade/contract';
+import { type ArcadeEffect, type ArcadeState, BODY, COUNTER, FLAG, HEADER, type PieceRef, ROLE, RUN_STATE, UNIT, bodyBase, nativeRule, targetStateOf } from '@/play/arcade/contract';
+import { abilityActive } from '@/play/arcade/abilities/state';
+import { type BehaviourRef, behaviourBodies, behaviourPhaseOf, matches, shotBodies, telegraphOf } from '@/play/arcade/pieces/behaviours';
+import { BOSS } from '@/play/arcade/pieces/behaviours/boss';
 
 import { actualHitBodies } from './impact';
 import type { ArcadeWorld } from '@/play/arcade/contract';
@@ -22,9 +25,16 @@ import type { ArcadeSession } from '../session';
  * `pickup` = sebraná věc zmizela, `death` = jiné tělo zmizelo, `hit` = zásah těla
  * (u hráče i ubraný život), `stateChange` = cíl přešel do jiného stavu, `spawn` =
  * nové tělo z efektu `spawn`, `win` / `lose` = konec běhu. `land` (dopad hráče)
- * jádro jako efekt nehlásí – sběrnice ho pozná ze stavu (P32A T4).
+ * jádro jako efekt nehlásí – sběrnice ho pozná ze stavu (P32A T4). `nearMiss`
+ * (P45C T15) taky ne: hrozba průběhu prošla kolem hráče do `NEAR_MISS` a nezasáhla.
+ *
+ * Juice (P46C T4): `ability` = tělo, které zasáhla akce hráče (zásah jiného těla
+ * než hráče, nebo zánik nepřítele či pronásledovatele v aktivním okně akce),
+ * `powerup` = sebraný power-up (zmizelé tělo role `powerup`), `bossDefeat` = padlý
+ * boss (vedle `death`), `comboUp` = efekt `combo` jádra zvedl násobič (u hráče,
+ * nese `multiplier`).
  */
-export const VISUAL_EVENT_KINDS = ['pickup', 'hit', 'death', 'win', 'lose', 'stateChange', 'land', 'spawn'] as const;
+export const VISUAL_EVENT_KINDS = ['pickup', 'hit', 'death', 'win', 'lose', 'stateChange', 'land', 'spawn', 'nearMiss', 'ability', 'powerup', 'bossDefeat', 'comboUp'] as const;
 export type VisualEventKind = (typeof VISUAL_EVENT_KINDS)[number];
 
 export interface VisualEvent {
@@ -41,6 +51,8 @@ export interface VisualEvent {
   readonly tick: number;
   /** Jen `stateChange`: stav cíle po tiku (0..`TARGET_STATE_MAX`). */
   readonly state?: number;
+  /** Jen `comboUp`: nový násobič komba (2..`COMBO.max`). */
+  readonly multiplier?: number;
 }
 
 /** Klíč události – jeden na (tik, tělo, druh); hodí se i jako klíč částice. */
@@ -59,7 +71,7 @@ export interface EffectsBus {
   subscribe(listener: (events: readonly VisualEvent[]) => void): () => void;
   /** Události posledních `LIVE_TICKS` tiků (živé částice), nejstarší první. */
   live(): readonly VisualEvent[];
-  /** Otřes 0..1: 1 hned po tiku zásahu hráče, za `SHAKE_TICKS` doběhne na 0. */
+  /** Otřes 0..1: 1 hned po tiku zásahu hráče, zásahu akcí nebo pádu bosse, za `SHAKE_TICKS` doběhne na 0. */
   shake(): number;
   /** Zahodí živé částice i otřes; restart relace to udělá sám. */
   reset(): void;
@@ -76,30 +88,71 @@ function eventAt(kind: VisualEventKind, body: number, tick: number, state: Int32
   return { kind, body, role: state[base + BODY.role] as number, x: (state[base + BODY.x] as number) / UNIT, y: (state[base + BODY.y] as number) / UNIT, z: (state[base + BODY.z] as number) / UNIT, tick };
 }
 
+/** Akce hrdiny, jejichž aktivní okno zabíjí dotykem (úder, výpad): pravidla nesou počítadlo a slot. */
+const STRIKING_ABILITIES: readonly string[] = ['ability_strike', 'ability_dash'];
+
+/** Běží v tiku některé úderné okno akce? Stav před tikem i po něm – okno se mohlo právě otevřít či zavřít. */
+function abilityStriking(rules: readonly PieceRef[], prev: Int32Array, state: Int32Array): boolean {
+  return rules.some((rule) => {
+    const { keeper, slot } = rule.params as { readonly keeper?: unknown; readonly slot?: unknown };
+    if (!STRIKING_ABILITIES.includes(rule.id) || typeof keeper !== 'number' || typeof slot !== 'number') return false;
+    return abilityActive(prev, keeper, slot) > 0 || abilityActive(state, keeper, slot) > 0;
+  });
+}
+
+/** Předlohy bossů z pravidel pádu (`boss_beat*` nese index, úder akcí `{ boss }`). */
+function bossTemplatesOf(rules: readonly PieceRef[]): number[] {
+  return rules.flatMap((rule) => {
+    const boss = (rule.params as { readonly boss?: unknown }).boss;
+    if (typeof boss === 'number' && rule.id.startsWith('boss_beat')) return [boss];
+    const nested = typeof boss === 'object' && boss !== null ? (boss as { readonly boss?: unknown }).boss : undefined;
+    return typeof nested === 'number' ? [nested] : [];
+  });
+}
+
+/** Byl `body` před tikem boss? Podpis předlohy pravidla pádu, nebo boss finále průběhu. */
+function wasBoss(rules: readonly PieceRef[], prev: Int32Array, body: number): boolean {
+  if (bossTemplatesOf(rules).some((template) => template !== body && matches(prev, body, template))) return true;
+  const finale = pacingBossOf(rules);
+  return finale !== undefined && behaviourBodies(prev, prev[HEADER.player] as number, [finale]).includes(body);
+}
+
 /** Efekty jednoho tiku → vizuální události; `state` = stav po tiku, `prev` = před ním. */
 function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: Int32Array, prev: Int32Array, world?: Pick<ArcadeWorld, 'rules'>): VisualEvent[] {
   const player = state[HEADER.player] as number;
+  const rules = world?.rules ?? [];
   const events: VisualEvent[] = [];
   const seen = new Set<string>();
-  const add = (kind: VisualEventKind, body: number, targetState?: number): void => {
+  const add = (kind: VisualEventKind, body: number, extra?: Pick<VisualEvent, 'state' | 'multiplier'>): void => {
     const key = visualKey({ tick, body, kind });
     if (seen.has(key)) return;
     seen.add(key);
     const at = eventAt(kind, body, tick, state);
-    events.push(targetState === undefined ? at : { ...at, state: targetState });
+    events.push(extra === undefined ? at : { ...at, ...extra });
   };
   // Tělo mimo svět jádro zahodí (`apply` v `kernel.ts`), sběrnice taky.
   const inWorld = (body: number): boolean => body >= 0 && body < (state[HEADER.bodyCount] as number);
-  for (const body of actualHitBodies(effects, prev, state, world)) add('hit', body);
+  for (const body of actualHitBodies(effects, prev, state, world)) {
+    add('hit', body);
+    // Zásah jiného těla než hráče dal vždy hráč – výstřel, úder do bosse, uhnutý útok (P46C T4).
+    if (body !== player) add('ability', body);
+  }
+  const striking = abilityStriking(rules, prev, state);
   let spawns = 0;
   for (const effect of effects) {
     if (effect.kind === 'spawn') spawns += 1;
     // Jako jádro: zásah jen živého těla (před tikem – smrtící rána tělo zabije až po sobě) a jen kladný.
     // Jen tělo, které tímhle tikem opravdu zmizelo – despawn mrtvého těla stav nemění.
     else if (effect.kind === 'despawn' && inWorld(effect.body) && aliveIn(prev, effect.body) && !aliveIn(state, effect.body)) {
-      add(state[bodyBase(effect.body) + BODY.role] === ROLE.collectible ? 'pickup' : 'death', effect.body);
+      const role = state[bodyBase(effect.body) + BODY.role];
+      add(role === ROLE.collectible ? 'pickup' : role === ROLE.powerup ? 'powerup' : 'death', effect.body);
+      if (striking && (role === ROLE.enemy || role === ROLE.chaser)) add('ability', effect.body);
+      if (role !== ROLE.collectible && role !== ROLE.powerup && wasBoss(rules, prev, effect.body)) add('bossDefeat', effect.body);
     } else if (effect.kind === 'stateChange' && inWorld(effect.body) && targetStateOf(state, effect.body) !== targetStateOf(prev, effect.body)) {
-      add('stateChange', effect.body, targetStateOf(state, effect.body));
+      add('stateChange', effect.body, { state: targetStateOf(state, effect.body) });
+    } else if (effect.kind === 'combo' && inWorld(effect.body) && effect.multiplier > Math.max(1, prev[bodyBase(effect.body) + BODY.aux0] as number)) {
+      // Kombo (P36A T5, všude od P46C T3): násobič je v `aux0` počítadla; jen růst, ne držení na stropu.
+      add('comboUp', player, { multiplier: effect.multiplier });
     }
   }
   // Tělo z `spawn` jde do slotu od `spawnBase`, který před tikem nežil (plný svět spawn zahodí).
@@ -115,6 +168,101 @@ function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: I
   return events;
 }
 
+/** Chování průběhu ve hře (P45C): odkazy z pravidla `pacing`; hra bez něj žádná nemá. */
+export const pacingRefsOf = (rules: readonly PieceRef[]): readonly BehaviourRef[] => (nativeRule(rules, 'pacing')?.params.behaviours ?? []) as readonly BehaviourRef[];
+
+/** Boss finále: poslední předloha chování pravidla `pacing` s finále `boss` (`withPacing`), jinak `undefined`. */
+export const pacingBossOf = (rules: readonly PieceRef[]): BehaviourRef | undefined => (nativeRule(rules, 'pacing')?.params.finale === 'boss' ? pacingRefsOf(rules).at(-1) : undefined);
+
+/** Blízké minutí: hrozba průběhu prošla kolem hráče nejvýš o tolik (1,5 m, mezera hran) a nezasáhla. */
+export const NEAR_MISS = (3 * UNIT) / 2;
+
+/** Mezera hran dvou těl na zemi (jednotky); 0 = dotýkají se. */
+function edgeGap(state: ArcadeState, a: number, b: number): number {
+  const pa = bodyBase(a);
+  const pb = bodyBase(b);
+  const gx = Math.abs((state[pa + BODY.x] as number) - (state[pb + BODY.x] as number)) - ((state[pa + BODY.w] as number) + (state[pb + BODY.w] as number)) / 2;
+  const gz = Math.abs((state[pa + BODY.z] as number) - (state[pb + BODY.z] as number)) - ((state[pa + BODY.d] as number) + (state[pb + BODY.d] as number)) / 2;
+  return Math.hypot(Math.max(0, gx), Math.max(0, gz));
+}
+
+/** Mezera hráče k dosahu dupnutí bosse (střed od středu, jako `boss.effects`). */
+function stompGap(state: ArcadeState, boss: number, player: number): number {
+  const b = bodyBase(boss);
+  const p = bodyBase(player);
+  return Math.max(0, Math.hypot((state[p + BODY.x] as number) - (state[b + BODY.x] as number), (state[p + BODY.z] as number) - (state[b + BODY.z] as number)) - BOSS.stomp);
+}
+
+/** Jeden průlet hrozby: nejmenší mezera, životy na jeho začátku, dupnutí (dosah kruhem) a výstřel. */
+interface Pass {
+  closest: number;
+  readonly health: number;
+  readonly shot: boolean;
+  stomp: boolean;
+}
+
+export interface NearMissWatch {
+  /** Stav po posledních ticích → těla, jejichž průlet skončil blízkým minutím. Stav jen čte. */
+  see(state: ArcadeState): number[];
+  reset(): void;
+}
+
+/**
+ * Hlídka blízkých minutí (P45C T15). Hrozba = tělo chování od začátku varování
+ * do konce úderu (mezera se měří v `act`) a každý výstřel chování, dokud žije.
+ * Průlet skončí blízkým minutím, když nejmenší mezera byla nad 0 a nejvýš
+ * `NEAR_MISS` a hráč mezitím neztratil život. Vzorkuje po oznámeních relace
+ * (telefon odtiká i dva tiky za snímek): úder, který vzorkování přeskočilo
+ * (dupnutí trvá tik), se změří při konci, když tělo pořád žije; tělo, které
+ * zmizelo dřív, než udeřilo (úklid před poslední vlnou), nic nehlásí. Mrtvý
+ * slot drží polohu z tiku zániku, takže výstřel, který hráče trefil v milosti,
+ * má mezeru 0.
+ */
+export function createNearMissWatch(rules: readonly PieceRef[]): NearMissWatch {
+  const refs = pacingRefsOf(rules);
+  const bossRefs = refs.filter((ref) => ref.id === 'boss');
+  const passes = new Map<number, Pass>();
+  return {
+    see(state) {
+      if (refs.length === 0) return [];
+      const player = state[HEADER.player] as number;
+      const health = state[HEADER.counters + COUNTER.health] as number;
+      const seen = new Set<number>();
+      const open = (body: number, shot: boolean): Pass => {
+        seen.add(body);
+        let pass = passes.get(body);
+        if (pass === undefined) passes.set(body, (pass = { closest: Infinity, health, shot, stomp: false }));
+        return pass;
+      };
+      const bosses = bossRefs.length === 0 ? [] : behaviourBodies(state, player, bossRefs);
+      for (const body of behaviourBodies(state, player, refs)) {
+        const phase = behaviourPhaseOf(state, body);
+        if (phase !== 'telegraph' && phase !== 'act') continue;
+        const pass = open(body, false);
+        // Dupnutí poznáme z varování: boss s kruhem (strážce má kruh dosahu, ale útočí výpadem).
+        if (phase === 'telegraph') pass.stomp = bosses.includes(body) && telegraphOf(state, body)?.kind === 'ring';
+        else pass.closest = Math.min(pass.closest, pass.stomp ? stompGap(state, body, player) : edgeGap(state, body, player));
+      }
+      for (const shot of shotBodies(state, player, refs)) {
+        const pass = open(shot, true);
+        pass.closest = Math.min(pass.closest, edgeGap(state, shot, player));
+      }
+      const missed: number[] = [];
+      for (const [body, pass] of passes) {
+        if (seen.has(body)) continue;
+        passes.delete(body);
+        const alive = ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
+        if (!pass.shot && pass.closest === Infinity && !alive) continue;
+        const end = pass.stomp ? stompGap(state, body, player) : edgeGap(state, body, player);
+        const closest = pass.stomp && pass.closest !== Infinity ? pass.closest : Math.min(pass.closest, end);
+        if (closest > 0 && closest <= NEAR_MISS && health >= pass.health) missed.push(body);
+      }
+      return missed;
+    },
+    reset: () => passes.clear(),
+  };
+}
+
 export function createEffectsBus(session: EffectsSource): EffectsBus {
   let live: VisualEvent[] = [];
   /** Tik posledního zásahu hráče; −1 = bez otřesu. */
@@ -126,12 +274,14 @@ export function createEffectsBus(session: EffectsSource): EffectsBus {
    * `grounded` mezi oznámeními, ne mezi dvěma tiky: telefon za snímek odtiká i dva.
    */
   let airborne = false;
+  const nearMiss = createNearMissWatch(session.world?.rules ?? []);
   const listeners = new Set<(events: readonly VisualEvent[]) => void>();
   const now = (): number => session.state()[HEADER.tick] as number;
   const reset = (): void => {
     live = [];
     shakeFrom = -1;
     airborne = false;
+    nearMiss.reset();
   };
   const publish = (events: readonly VisualEvent[], tick: number): void => {
     live = live.filter((event) => tick - event.tick < LIVE_TICKS).concat(events);
@@ -143,8 +293,8 @@ export function createEffectsBus(session: EffectsSource): EffectsBus {
     seenTick = tick + 1;
     const events = visualEventsOf(effects, tick, state, session.prev(), session.world);
     if (events.length === 0) return;
-    // Stav už je po tiku zásahu (`tick + 1`): odtud otřes doznívá.
-    if (events.some((event) => event.kind === 'hit' && event.body === state[HEADER.player])) shakeFrom = tick + 1;
+    // Stav už je po tiku zásahu (`tick + 1`): odtud otřes doznívá. Třese i zásah akcí a padlý boss (P46C T4).
+    if (events.some((event) => (event.kind === 'hit' && event.body === state[HEADER.player]) || event.kind === 'ability' || event.kind === 'bossDefeat')) shakeFrom = tick + 1;
     publish(events, tick);
   });
   const offState = session.subscribe(() => {
@@ -157,6 +307,9 @@ export function createEffectsBus(session: EffectsSource): EffectsBus {
     // Jako ostatní události jen za člověka: ukázka ani přehrání záznamu nic nevydají.
     if (airborne && grounded && session.humanRun()) publish([eventAt('land', player, tick - 1, state)], tick - 1);
     airborne = !grounded && aliveIn(state, player);
+    // Blízké minutí (P45C T15): hlídka sleduje průlety vždy, vydá je jen hra člověka.
+    const missed = nearMiss.see(state);
+    if (missed.length > 0 && session.humanRun()) publish(missed.map((body) => eventAt('nearMiss', body, tick - 1, state)), tick - 1);
   });
 
   return {

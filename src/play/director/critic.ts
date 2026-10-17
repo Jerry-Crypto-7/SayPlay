@@ -19,7 +19,7 @@ import { NUMBER_WORDS, readRoles, toolsOf, singular } from '../draft/lexicon';
 import { type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
 import type { CastItem, CastRole, GenreModule, GenreSpec } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
-import { defaultCollectible, defaultFoe, heroFits, semanticRoleDefaults } from '../genre/roles';
+import { defaultCollectible, defaultFoe, heroFits, placeFoe, semanticRoleDefaults } from '../genre/roles';
 import type { Reading } from '../read/schema';
 import { ARCHETYPES, type MechanicId, estimateCost } from '../registry';
 import type { GameSpecV1 } from '../spec';
@@ -28,6 +28,7 @@ import { missingActions } from '../fidelity/action-evidence';
 import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
 import type { ActionWitness } from '../arcade/witness';
+import { phaseEntryOf, rulesTouching } from '../arcade/rules/schema';
 
 export const CRITIC_CODES = [
   'NO_AGENCY',
@@ -267,13 +268,13 @@ const RULE_HINT = 'fix the rule with operations on /rules (roles are "player" or
 
 /**
  * Pravidla, pro která se odpověď nedala složit (P29A T8): `detail` jsou hlášky
- * `readGameSpec` spojené „; “. Každá hláška pod `/rules` nebo `/things` je nález;
- * když žádná pod ně nemíří, jeden nález na celé pole. Model dostane i pravidla,
- * jak je napsal – spec, nad kterým opravuje, je nemá.
+ * `readGameSpec` spojené „; “. Každá hláška pod `/rules`, `/things` nebo `/logic`
+ * (P45B T10) je nález; když žádná pod ně nemíří, jeden nález na celé pole. Model
+ * dostane i pravidla, jak je napsal – spec, nad kterým opravuje, je nemá.
  */
 export function ruleInvalidIssues(detail: string, written: unknown): CriticIssue[] {
   const asWritten = `rules as written: ${JSON.stringify(written)}`.slice(0, 400);
-  const parts = detail.split('; ').filter((part) => /^\/(rules|things)\b/.test(part));
+  const parts = detail.split('; ').filter((part) => /^\/(rules|things|logic)\b/.test(part));
   const found = parts.length === 0 ? [`/rules: ${detail}`] : parts;
   return found.map((part) => ({
     code: 'RULE_INVALID',
@@ -286,19 +287,46 @@ export function ruleInvalidIssues(detail: string, written: unknown): CriticIssue
 
 const VERB_UNPROVED_MARK = /VERB_UNPROVED:([a-z][a-z-]*)/g;
 const VERB_NO_EFFECT_MARK = /VERB_NO_EFFECT:([a-z][a-z-]*)/g;
+/**
+ * `LOGIC_UNPROVED|LOGIC_NO_EFFECT:<druh>:<jméno>` – důvod za pomlčkou (`arcade/verify.ts`, P45B T7).
+ * Jméno vlny je id jejího pravidla, a to smí velká písmena i tečky (`startFight`), ne jen tvar jmen logiky.
+ */
+const LOGIC_MARK = /LOGIC_(UNPROVED|NO_EFFECT):(var|timer|phase|event|wave):([A-Za-z][A-Za-z0-9_.]*) – ([^;]+)/g;
+
+/**
+ * Neprokázaná kostka logiky (P45B T10) jde do opravy i do vyřazení cestou slovesa
+ * (`VERB_UNPROVED`): nález na každé pravidlo modelu, které na kostku sahá, s jeho slovesem
+ * v uvozovkách (`unprovedVerbs`). Vstup do fáze doplněný čtením (`phaseEntryOf`) model
+ * nenapsal, takže nález nedostane (R6) – jeho fázi odnese vyřazení s pravidly, která na ni
+ * reagují. Kostka, na kterou žádné pravidlo modelu nesahá, míří na `/logic`.
+ */
+function logicIssues(evidence: string, spec: GameSpecV1): CriticIssue[] {
+  const rules = spec.rules ?? [];
+  return [...evidence.matchAll(LOGIC_MARK)].flatMap(([, how, kind, id, why]) => {
+    // Jméno kostky bez uvozovek: první text v uvozovkách čte `unprovedVerbs` jako sloveso.
+    const what = `${kind} ${id} LOGIC_${how}: ${why!.trim()}`;
+    const repairHint = `make the ${kind} ${id} do its part on the way to the win (a rule that starts, sets or enters it and a rule that reacts to it), or remove the rules that use it`;
+    const touching = rulesTouching(rules, kind as 'var' | 'timer' | 'phase' | 'event' | 'wave', id!).filter((index) => phaseEntryOf(rules[index]!) === null);
+    if (touching.length === 0) return [{ code: 'VERB_UNPROVED' as const, severity: 'block' as const, path: '/logic', evidence: what, repairHint }];
+    return touching.map((index) => ({ code: 'VERB_UNPROVED' as const, severity: 'block' as const, path: `/rules/${String(index)}`, evidence: `"${rules[index]!.verb}" ${what}`, repairHint }));
+  });
+}
 
 /**
  * Ověření robotem hlásí neprokázané sloveso uvnitř nálezu keypointu
  * (`VERB_UNPROVED:<sloveso>`, `arcade/verify.ts`). Kritik z něj udělá nález na
  * pravidlo toho slovesa, aby model věděl, které pravidlo se ve hře nestalo;
- * ostatní nálezy jdou dál beze změny.
+ * stejně neprokázanou kostku logiky (`logicIssues`). Ostatní nálezy jdou dál beze změny.
  */
 export function verbIssues<T extends Pick<CriticIssue, 'path' | 'evidence' | 'repairHint'> & { readonly code: string }>(checked: readonly T[], spec: GameSpecV1): (T | CriticIssue)[] {
   const out: (T | CriticIssue)[] = [];
   for (const issue of checked) {
     const verbs = [...issue.evidence.matchAll(VERB_UNPROVED_MARK)].map((match) => match[1] as string);
     const idle = [...issue.evidence.matchAll(VERB_NO_EFFECT_MARK)].map((match) => match[1] as string);
+    const logic = logicIssues(issue.evidence, spec);
+    out.push(...logic);
     if (verbs.length === 0 && idle.length === 0) {
+      if (logic.length > 0) continue;
       out.push(issue);
       continue;
     }
@@ -426,7 +454,8 @@ function castIssues(genre: GenreSpec, sentence: string, words: GenreSpec | null,
   const named = readRoles(sentence).named.filter((thing): thing is CastItem => thing.does !== null);
   const tools = toolsOf(sentence);
   const drafted = words?.cast ?? [];
-  const defaults = [defaultFoe(genre.setting, genre.genre).label, defaultCollectible(genre.setting), ...semanticRoleDefaults(sentence), ...drafted.map((item) => item.label)];
+  // Nepřítel místa (les → vlk) je výchozí věc i u žánru, kterému prostředí dává překážku (kmen, P46D T6).
+  const defaults = [defaultFoe(genre.setting, genre.genre).label, ...[placeFoe(genre.setting) ?? []].flat(), defaultCollectible(genre.setting), ...semanticRoleDefaults(sentence), ...drafted.map((item) => item.label)];
   const cast = genre.cast ?? [];
   const issues: FidelityIssue[] = [];
   cast.forEach((item, index) => {

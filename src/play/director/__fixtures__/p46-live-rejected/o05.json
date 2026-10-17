@@ -1,0 +1,202 @@
+{
+ "sentence": "Hamster escapes a supermarket Roomba",
+ "failure": {
+  "stage": "critic",
+  "reason": "UNREPAIRED",
+  "detail": "UNSUPPORTED: control runner does not play mechanic chaser; UNSUPPORTED: control runner does not play mechanic zone_trigger",
+  "raw": {
+   "schema": "gamespec.v1",
+   "control": "runner",
+   "controlParams": {
+    "fullRowPct": 25,
+    "obstacles": [
+     "hurdle",
+     "cone",
+     "crate"
+    ],
+    "feel": 2,
+    "sections": 3
+   },
+   "addons": [
+    "chaser"
+   ],
+   "abilities": [],
+   "boss": {
+    "name": "Supermarket Roomba",
+    "role": "supermarket Roomba"
+   },
+   "segments": [
+    "narrow",
+    "newFoe",
+    "faster"
+   ],
+   "genre": {
+    "id": "runner",
+    "mode": "default",
+    "compilerVersion": "genre.v3"
+   },
+   "title": "Hamster Run",
+   "archetype": "chase_escape",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "Supermarket aisles",
+    "mood": "energetic",
+    "look": "supermarket"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Escape the supermarket Roomba and reach the finish without being caught.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 1
+     }
+    },
+    {
+     "id": "chaser",
+     "params": {
+      "role": "roomba",
+      "speed": "normal",
+      "catchEffect": "lose"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "role": "finish",
+      "when": "enter",
+      "effect": "win"
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "hamster",
+     "count": 1
+    },
+    {
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "shopping cart",
+     "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line",
+     "count": 1
+    },
+    {
+     "id": "chaser",
+     "kind": "chaser",
+     "label": "supermarket Roomba",
+     "count": 1
+    },
+    {
+     "id": "roomba",
+     "kind": "chaser",
+     "label": "supermarket Roomba",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Reach the finish without being caught by the supermarket Roomba.",
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane. J to dash."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "rules": [
+    {
+     "id": "begin_pursuit",
+     "verb": "escape",
+     "when": {
+      "phase": "pursuit"
+     },
+     "do": [
+      {
+       "startTimer": {
+        "timer": "reinforcements",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "reinforcements_arrive",
+     "verb": "chase",
+     "when": {
+      "timer": "reinforcements"
+     },
+     "do": [
+      {
+       "wave": {
+        "role": "roomba",
+        "count": 1,
+        "at": "edge"
+       }
+      },
+      {
+       "goPhase": "final_pursuit"
+      }
+     ]
+    },
+    {
+     "id": "final_pursuit",
+     "verb": "chase",
+     "when": {
+      "phase": "final_pursuit"
+     },
+     "do": [
+      {
+       "wave": {
+        "role": "roomba",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "timers": [
+     {
+      "id": "reinforcements"
+     }
+    ],
+    "phases": [
+     {
+      "id": "pursuit"
+     },
+     {
+      "id": "final_pursuit"
+     }
+    ]
+   },
+   "scoring": {},
+   "heroAction": "none"
+  }
+ }
+}

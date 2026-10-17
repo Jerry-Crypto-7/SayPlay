@@ -1,4 +1,4 @@
-import { ARCADE_HZ, ARCADE_LIMITS, type AddonId } from '../arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type AbilityId, type AddonId } from '../arcade/contract';
 import { CAPABILITIES } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
@@ -10,9 +10,129 @@ import { nativeSpec } from './native';
 import { timeOfDayFor } from '../arcade/look';
 import { BALL_DIFFICULTY } from './ball-difficulty';
 import { singular } from '../draft/lexicon';
+import { type AbilityWord, abilitiesOfControl, abilityHint, abilityWordsOf } from '../draft/controls';
+import { RULE_TEMPLATES, type RuleTemplate, TEMPLATE_NAMES, type TemplateName, type TemplateSlot, says, templateParts, templatesFor } from '../arcade/rules/templates';
+import { FINALE_GENRE_VERSION, genreAtLeast } from '../arcade/pieces/pacing-parts';
 
 /** Recipes select an assembly; existing piece builders retain their frozen output. */
 export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
+  return compileTemplated(assembly).spec;
+}
+
+/** `compileRecipe` and the rule template it attached (P45B T9); `null` = none. */
+export function compileTemplated(assembly: RecipeAssembly): { readonly spec: GameSpecV1; readonly template: TemplateName | null } {
+  const templated = withTemplate(compileRecipeSpec(assembly), assembly);
+  return { ...templated, spec: withDirectorExtras(withAbilities(templated.spec, assembly), assembly.content) };
+}
+
+/**
+ * Boss a scénář úseků z odpovědi režiséra (P46E T4) jdou do specu beze změny; co z nich hra unese, rozhodne
+ * průběh (`pacingParts`) a ověření robotem v `direct()`. Obsah rychlé verze je nenese, její spec se nemění.
+ */
+function withDirectorExtras(spec: GameSpecV1, content: GenreSpec): GameSpecV1 {
+  const { boss, segments } = content;
+  return { ...spec, ...(boss === undefined ? {} : { boss: { name: boss.name, role: boss.role } }), ...(segments === undefined || segments.length === 0 ? {} : { segments: [...segments] }) };
+}
+
+const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
+
+/**
+ * Generátory režimu, kde robot akce použije a ověření je dokáže (P46A T10, matice T9 a živé
+ * věty); souboj (`fight`) od P47B T6 jen s akcemi `FIGHT_ABILITIES`, let (`glide_course`, matice P47B T9) všechny.
+ * Ostatní generátory nikdo neměřil.
+ */
+export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth', 'fight', 'glide_course']);
+
+/** Souboj má vlastní úder (Attack) a nic ke krádeži: bere jen dash a štít proti úderu soupeře (P47B T6). */
+export const FIGHT_ABILITIES: readonly AbilityId[] = ['dash', 'shield'];
+
+/** Bere hra generátoru `generator` (bez generátoru staví trať ovládání) akci `id`? Čte i měřidlo P47B. */
+export const generatorTakes = (generator: string | undefined, id: AbilityId): boolean =>
+  generator === undefined || (ABILITY_GENERATORS.has(generator) && (generator !== 'fight' || FIGHT_ABILITIES.includes(id)));
+
+/**
+ * Akce hrdiny ze sloves věty (P46A T8, `assemble`), jen akce, které ovládání bere, a jen hře,
+ * která staví trať ovládáním nebo generátorem z `ABILITY_GENERATORS`. `compose` ověří svět
+ * a akce, které robot nedokáže, zahodí. Úder bije i díl souboje, takže nápověda k Attack
+ * ustoupí tlačítkům akcí. Sloveso věty (P47B T10, `saidWords`) dá tlačítku i nápovědě své
+ * slovo („J to dodge.“); svět ho nečte.
+ */
+function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
+  const generator = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
+  // Akce z odpovědi režiséra (P46E T4) za akcemi věty; dvě tlačítka bere `abilitiesOfControl`.
+  const said = [...new Set([...(assembly.abilities ?? []), ...(assembly.content.abilities ?? [])])].filter((id) => generatorTakes(generator, id));
+  if (said.length === 0 || spec.control === undefined) return spec;
+  const abilities = abilitiesOfControl(said, spec.control);
+  if (abilities.length === 0) return spec;
+  const heard = assembly.saidWords ?? {};
+  const words = abilityWordsOf(abilities, heard);
+  const labelled = { ...spec, abilities, ...(words === undefined ? {} : { abilityWords: words }) };
+  // Duel hraje akce vlastním úderem a úhybem (P47B T8): tlačítko J nemá, jeho nápověda řekne sloveso věty.
+  if (spec.control === 'duel') return { ...labelled, tutorial: { ...spec.tutorial, controlsHint: duelHint(spec.tutorial.controlsHint, abilities, heard) } };
+  const own = abilities.includes('strike') ? spec.tutorial.controlsHint.replace(ATTACK_HINT, '') : spec.tutorial.controlsHint;
+  // Delší slovo nápovědu nepřetáhne: nevejde-li se, platí obecná slovesa jako dřív.
+  const hint = [abilityHint(abilities, words), abilityHint(abilities)].map((buttons) => `${own} ${buttons}`).find((line) => line.length <= 80) ?? own;
+  return { ...labelled, tutorial: { ...spec.tutorial, controlsHint: hint } };
+}
+
+/**
+ * Nápověda souboje se slovesy věty (P47B T10): „to strike“ dostane slovo úderu, „to dodge“ slovo
+ * dashe nebo štítu („Tap right or Space to shove, tap left or Down to dodge.“). Akce bez slova věty
+ * nechá obecné sloveso; nad 80 znaků zůstane nápověda žánru.
+ */
+function duelHint(hint: string, abilities: readonly AbilityId[], heard: Readonly<Partial<Record<AbilityId, AbilityWord>>>): string {
+  const strike = abilities.includes('strike') ? heard.strike : undefined;
+  const dodge = abilities.filter((id) => id === 'dash' || id === 'shield').map((id) => heard[id]).find((word) => word !== undefined);
+  let said = hint;
+  if (strike !== undefined) said = said.replace(/\bto strike\b/, `to ${strike.toLowerCase()}`);
+  if (dodge !== undefined) said = said.replace(/\bto dodge\b/, `to ${dodge.toLowerCase()}`);
+  return said.length <= 80 ? said : hint;
+}
+
+/** Druhy rolí hry, které šablona dosadí do slotu – první volná role hry v pořadí `roles[]`. */
+const SLOT_KINDS: Readonly<Record<TemplateSlot, readonly string[]>> = {
+  item: ['item', 'key', 'collectible'], goal: ['destination', 'exit'], target: ['target'], lever: ['switch'], door: ['door'],
+  enemy: ['chaser', 'patrol', 'hazard'], hazard: ['hazard'], exit: ['exit', 'destination'], zone: ['zone', 'checkpoint'],
+};
+
+/**
+ * Šablona pravidel pro recept ze `assemble` (P45B T9; jiné cesty záměr nenesou a šablonu
+ * nedostanou). Žánr, který žádané sloveso nehraje (`unplayed`), dostane nejdřív `goal` šablonu
+ * toho slovesa; jinak (a po ní) `overlay` podle os receptu a slov věty. Sloty berou role hry –
+ * ne role dílů ani munici; chybí-li role, šablona se přeskočí. Platí první, která se vejde
+ * do zbylých pravidel; nevejde-li se hra s vestavěnými pravidly, `compose` ji zkusí bez ní.
+ */
+function withTemplate(game: GameSpecV1, assembly: RecipeAssembly): { readonly spec: GameSpecV1; readonly template: TemplateName | null } {
+  const { intent } = assembly;
+  if (intent === undefined || game.logic !== undefined) return { spec: game, template: null };
+  const budget = ARCADE_LIMITS.maxRules - (game.rules ?? []).length;
+  const axes = [`move:${assembly.move}`, ...assembly.actions.map((action) => `action:${action}`), `objective:${assembly.objective}`];
+  const goals = templatesFor(intent.unplayed.map((verb) => `action:${verb}`), budget).filter((name) => RULE_TEMPLATES[name].kind === 'goal');
+  // Quest v prostoru od `genre.v4` (P47A T2, varianta B): hustotu nese průběh, overlay šablona ne – pod průběhem
+  // vyhrál robot intermediate 6–7/8 (bez šablony 8/8, začátečník 3–5/8, `evals/play/p47a/README.md`).
+  const pacedQuest = game.genre?.id === 'quest' && game.genre.mode === 'spatial' && genreAtLeast(game, FINALE_GENRE_VERSION);
+  const overlays = TEMPLATE_NAMES.filter((name) => {
+    const template: RuleTemplate = RULE_TEMPLATES[name];
+    return template.kind === 'overlay' && !pacedQuest && template.budget <= budget && (template.axes.some((axis) => axes.includes(axis)) || template.verbs.some((verb) => says(intent.words, verb)));
+  });
+  const taken = new Set(['ammunition', ...(game.assemblyParts ?? []).map((part) => part.role)]);
+  for (const name of [...goals, ...overlays]) {
+    const roles: Partial<Record<TemplateSlot, string>> = {};
+    for (const slot of RULE_TEMPLATES[name].slots) {
+      const role = game.roles.find((item) => SLOT_KINDS[slot].includes(item.kind) && !taken.has(item.id) && !Object.values(roles).includes(item.id));
+      if (role !== undefined) roles[slot] = role.id;
+    }
+    const parts = templateParts(name, roles);
+    if (parts === null) continue;
+    return {
+      spec: { ...game, rules: [...(game.rules ?? []), ...parts.rules], ...(parts.things.length === 0 ? {} : { things: [...(game.things ?? []), ...parts.things] }), ...(parts.logic === undefined ? {} : { logic: parts.logic }) },
+      template: name,
+    };
+  }
+  return { spec: game, template: null };
+}
+
+function compileRecipeSpec(assembly: RecipeAssembly): GameSpecV1 {
   const base = compileRecipeBase(assembly);
   const time = timeOfDayFor(assembly.content.setting);
   const game = time === null ? base : { ...base, theme: { ...base.theme, timeOfDay: time } };
@@ -67,7 +187,13 @@ function compileRecipeBase(assembly: RecipeAssembly): GameSpecV1 {
     if (escape) {
       // Getting caught ends this new course. Existing reach+chaser still retains its legacy health.
       const chaser = compiled.roles.find(role => role.kind === 'chaser')?.label ?? 'pursuer';
-      return { ...compiled, mechanics: compiled.mechanics.map(mechanic => mechanic.id === 'health' ? { id: 'health', params: { max: 1 } } : mechanic),
+      // Útěk běží na trati z náhodných řad: hrozby průběhu (P45C) stavby trati ze vzorů (P46D T2) nečtou – 0 úderů a prohra robota.
+      const { patterns: _patterns, ...controlParams } = compiled.controlParams as Record<string, unknown>;
+      // One life gets no pacing (`GENRE_PACING.platform_level`), so no paced layout either: the course stays as it was.
+      const paced = (controlParams.tuning as Record<string, unknown> | undefined)?.segments === true;
+      const { segments: _segments, ...tuning } = (controlParams.tuning ?? {}) as Record<string, unknown>;
+      return { ...compiled, controlParams: paced ? { ...controlParams, tuning } : controlParams,
+        mechanics: compiled.mechanics.map(mechanic => mechanic.id === 'health' ? { id: 'health', params: { max: 1 } } : mechanic),
         tutorial: { ...compiled.tutorial, goalLine: `Reach the finish without being caught by the ${chaser}.` },
         objective: { ...compiled.objective, description: `Escape the ${chaser} and reach the finish without being caught.` } };
     }
@@ -117,6 +243,9 @@ function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
       actions: recipe.actions.filter(action => ['shoot', 'collect', 'deliver'].includes(action)),
       threats: recipe.threats.filter(threat => ['rival', 'chaser', 'obstacle'].includes(threat)) },
     { ...content, params: { lengthM: 700, roadWidth: 3600, roadEntryWidth: 10000, crashBudget: 3, ...content.params } });
+    // A drive with parts gets no pacing (`GENRE_PACING.steer_track`), so no paced road or dodging bot either: the track stays as it was.
+    const { segments: _segments, ...road } = (base.controlParams ?? {}) as Record<string, unknown>;
+    if (parts.length > 0) base = { ...base, controlParams: road as GameSpecV1['controlParams'] };
   } else if (move === 'glide' && recipe.objective === 'land') {
     base = compileWith(GENRE_MODULES.voyage as GenreModule, { ...content, genre: 'voyage', mode: 'land', params: { touchdownSpeed: 19, gravityRisePct: 1, lives: 1, ...content.params } });
   } else if (['glide', 'walk', 'ball'].includes(move)) {

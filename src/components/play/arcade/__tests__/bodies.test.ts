@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import shooterFixture from '@/play/arcade/__fixtures__/shooter.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
-import { BODY, BUTTON, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import { BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { draftGameSpec } from '@/play/draft/draft';
 import { readGameSpec } from '@/play/spec';
 
@@ -61,7 +61,21 @@ describe('drawn bodies', () => {
     if (!built.ok) throw new Error(built.issues.join('; '));
     const views = bodiesOf(createArcadeSession(built.world));
     const hidden = views.filter(drawsNothing);
-    expect(hidden).toEqual([expect.objectContaining({ role: ROLE.thing, kind: 'player' })]);
+    // Logická těla (P45B – věta dostane šablonu s logikou) jsou skrytá taky; drží je test níž.
+    // Zbytek: počítadlo průběhu P45C (běžec je nová hra s křivkou), počítadlo power-upů P46C a za nimi počítadlo komba.
+    expect(hidden.filter((view) => view.role !== ROLE.logic)).toEqual([expect.objectContaining({ role: ROLE.obstacle, kind: 'player', w: 1 / UNIT }), expect.objectContaining({ role: ROLE.thing, kind: 'player' }), expect.objectContaining({ role: ROLE.thing, kind: 'player' })]);
     expect(views.filter((view) => !drawsNothing(view)).map((view) => view.role)).toContain(ROLE.player);
+    expect(views.filter((view) => !drawsNothing(view)).map((view) => view.role)).toContain(ROLE.powerup);
+  });
+
+  it('the logic body of an arcade-v3 world draws nothing, so no player model mounts for it (P45B R2)', () => {
+    const spec = draftGameSpec('toaster tornado');
+    expect(spec.logic).toBeDefined();
+    const built = arcadeWorldOf(spec, 1);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    expect(built.world.runtimeVersion).toBe('arcade-v3');
+    const views = bodiesOf(createArcadeSession(built.world));
+    expect(views.filter((view) => view.role === ROLE.logic).length).toBeGreaterThan(0);
+    expect(views.filter((view) => !drawsNothing(view)).map((view) => view.role)).not.toContain(ROLE.logic);
   });
 });

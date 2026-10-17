@@ -1,0 +1,1463 @@
+{
+ "schema": "p45c-mid-round.v1",
+ "about": "P45C T17 mid-plan round on the P45 dev panel (40 sentences, never the sealed set): `play-fidelity.mjs fun --set p45-panel`, A = origin/main, B = this branch. `result` is the tool output verbatim (evals/play/p45/result-<run>.json, kept out of git); `byGenre.new` = telemetry of B over playable games, `byGenre.main` = evals/play/p45/baseline.json (main 0714a352 – origin/main plays the same games, P45A/P45E change no game code); `pairs` = the blind judge verbatim with sides resolved (winner new/main/tie).",
+ "run": "p45c-t17-mid",
+ "commits": {
+  "a": "fc6b99ba",
+  "b": "c9c3d91b"
+ },
+ "result": {
+  "schema": "p45-result.v1",
+  "set": "p45-panel",
+  "seed": 45045,
+  "a": {
+   "base": "http://127.0.0.1:3218",
+   "run": "p45c-t17-mid-a",
+   "commit": "fc6b99ba"
+  },
+  "b": {
+   "base": "http://127.0.0.1:3217",
+   "run": "p45c-t17-mid-b",
+   "commit": "c9c3d91b"
+  },
+  "pairwise": {
+   "n": 40,
+   "aWins": 7,
+   "bWins": 18,
+   "ties": 15,
+   "bShare": 0.638,
+   "leftWinShare": 0.488
+  },
+  "fun": {
+   "n": 40,
+   "playable": 40,
+   "deadTimeMedianS": 6.79,
+   "risingShare": 0.57,
+   "behavioursMedian": 1,
+   "finaleShare": 0.33,
+   "eventsPerSMedian": 0.89,
+   "nearMissesMedian": 0,
+   "livesLostMedian": 0,
+   "targets": [
+    {
+     "metric": "deadTimeMedianS",
+     "goal": "<= 3",
+     "value": 6.79,
+     "met": false
+    },
+    {
+     "metric": "risingShare",
+     "goal": ">= 0.70",
+     "value": 0.57,
+     "met": false
+    },
+    {
+     "metric": "behavioursMedian",
+     "goal": ">= 2",
+     "value": 1,
+     "met": false
+    },
+    {
+     "metric": "finaleShare",
+     "goal": ">= 0.50",
+     "value": 0.33,
+     "met": false
+    }
+   ],
+   "met": false
+  },
+  "targets": {
+   "pairwiseB": {
+    "goal": ">= 0.55",
+    "value": 0.638,
+    "met": true
+   },
+   "deadTimeMedianS": {
+    "goal": "<= 3",
+    "value": 6.79,
+    "met": false
+   },
+   "risingShare": {
+    "goal": ">= 0.70",
+    "value": 0.57,
+    "met": false
+   },
+   "behavioursMedian": {
+    "goal": ">= 2",
+    "value": 1,
+    "met": false
+   },
+   "finaleShare": {
+    "goal": ">= 0.50",
+    "value": 0.33,
+    "met": false
+   }
+  },
+  "met": false
+ },
+ "pairwise": {
+  "n": 40,
+  "aWins": 7,
+  "bWins": 18,
+  "ties": 15,
+  "bShare": 0.638,
+  "leftWinShare": 0.488
+ },
+ "byGenre": [
+  {
+   "genre": "arena.collect",
+   "ids": [
+    "f01",
+    "m02",
+    "j01"
+   ],
+   "pairs": {
+    "n": 3,
+    "newWins": 2,
+    "mainWins": 0,
+    "ties": 1,
+    "newShare": 0.83,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 10.48,
+    "risingShare": 0.67,
+    "behavioursMedian": 4,
+    "finaleShare": 0.67
+   },
+   "main": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 9.92,
+    "risingShare": 0,
+    "behavioursMedian": 1,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "arena.escape",
+   "ids": [
+    "m01",
+    "n02",
+    "s002"
+   ],
+   "pairs": {
+    "n": 3,
+    "newWins": 3,
+    "mainWins": 0,
+    "ties": 0,
+    "newShare": 1,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 15.87,
+    "risingShare": 0.33,
+    "behavioursMedian": 4,
+    "finaleShare": 0.33
+   },
+   "main": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 24.67,
+    "risingShare": 0,
+    "behavioursMedian": 2,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "arena.fight",
+   "ids": [
+    "f10",
+    "j08"
+   ],
+   "pairs": {
+    "n": 2,
+    "newWins": 2,
+    "mainWins": 0,
+    "ties": 0,
+    "newShare": 1,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 6.9,
+    "risingShare": 0.5,
+    "behavioursMedian": 4,
+    "finaleShare": 1
+   },
+   "main": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 4.95,
+    "risingShare": 0,
+    "behavioursMedian": 2,
+    "finaleShare": 1
+   }
+  },
+  {
+   "genre": "control:ball",
+   "ids": [
+    "d01"
+   ],
+   "pairs": {
+    "n": 1,
+    "newWins": 0,
+    "mainWins": 0,
+    "ties": 1,
+    "newShare": 0.5,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 1,
+    "playable": 1,
+    "deadTimeMedianS": 3.27,
+    "risingShare": 0,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 1,
+    "playable": 1,
+    "deadTimeMedianS": 3.27,
+    "risingShare": 0,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "control:glide",
+   "ids": [
+    "f12"
+   ],
+   "pairs": {
+    "n": 1,
+    "newWins": 0,
+    "mainWins": 0,
+    "ties": 1,
+    "newShare": 0.5,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 1,
+    "playable": 1,
+    "deadTimeMedianS": 2.15,
+    "risingShare": 0,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 1,
+    "playable": 1,
+    "deadTimeMedianS": 2.15,
+    "risingShare": 0,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "control:move_free",
+   "ids": [
+    "m11"
+   ],
+   "pairs": {
+    "n": 1,
+    "newWins": 0,
+    "mainWins": 0,
+    "ties": 1,
+    "newShare": 0.5,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 1,
+    "playable": 1,
+    "deadTimeMedianS": 6.32,
+    "risingShare": 1,
+    "behavioursMedian": 1,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 1,
+    "playable": 1,
+    "deadTimeMedianS": 6.32,
+    "risingShare": 1,
+    "behavioursMedian": 1,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "control:steer",
+   "ids": [
+    "m03",
+    "m06",
+    "h02"
+   ],
+   "pairs": {
+    "n": 3,
+    "newWins": 0,
+    "mainWins": 0,
+    "ties": 3,
+    "newShare": 0.5,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 21.25,
+    "risingShare": 0.67,
+    "behavioursMedian": 0,
+    "finaleShare": 0.67
+   },
+   "main": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 21.25,
+    "risingShare": 0.67,
+    "behavioursMedian": 0,
+    "finaleShare": 0.67
+   }
+  },
+  {
+   "genre": "control:walker",
+   "ids": [
+    "f18",
+    "m07",
+    "j04"
+   ],
+   "pairs": {
+    "n": 3,
+    "newWins": 0,
+    "mainWins": 0,
+    "ties": 3,
+    "newShare": 0.5,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 21.92,
+    "risingShare": 0.33,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 21.92,
+    "risingShare": 0.33,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "duel",
+   "ids": [
+    "f02",
+    "h05"
+   ],
+   "pairs": {
+    "n": 2,
+    "newWins": 0,
+    "mainWins": 2,
+    "ties": 0,
+    "newShare": 0,
+    "lostShare": 1
+   },
+   "new": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 2.49,
+    "risingShare": 1,
+    "behavioursMedian": 1,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 2.26,
+    "risingShare": 1,
+    "behavioursMedian": 1,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "flap",
+   "ids": [
+    "f17",
+    "s035"
+   ],
+   "pairs": {
+    "n": 2,
+    "newWins": 2,
+    "mainWins": 0,
+    "ties": 0,
+    "newShare": 1,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 2.98,
+    "risingShare": 1,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 2.68,
+    "risingShare": 1,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "platformer",
+   "ids": [
+    "m09",
+    "m16",
+    "s021"
+   ],
+   "pairs": {
+    "n": 3,
+    "newWins": 0,
+    "mainWins": 0,
+    "ties": 3,
+    "newShare": 0.5,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 8.38,
+    "risingShare": 0,
+    "behavioursMedian": 1,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 8.38,
+    "risingShare": 0,
+    "behavioursMedian": 1,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "quest.spatial",
+   "ids": [
+    "f05",
+    "u06",
+    "j05"
+   ],
+   "pairs": {
+    "n": 3,
+    "newWins": 3,
+    "mainWins": 0,
+    "ties": 0,
+    "newShare": 1,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 10.32,
+    "risingShare": 0.33,
+    "behavioursMedian": 2,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 14.7,
+    "risingShare": 0,
+    "behavioursMedian": 1,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "quest.station",
+   "ids": [
+    "m04",
+    "u03",
+    "d03"
+   ],
+   "pairs": {
+    "n": 3,
+    "newWins": 2,
+    "mainWins": 0,
+    "ties": 1,
+    "newShare": 0.83,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 1.8,
+    "risingShare": 0.33,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 1.8,
+    "risingShare": 0.33,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "rhythm",
+   "ids": [
+    "u01",
+    "u02"
+   ],
+   "pairs": {
+    "n": 2,
+    "newWins": 0,
+    "mainWins": 2,
+    "ties": 0,
+    "newShare": 0,
+    "lostShare": 1
+   },
+   "new": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 4.42,
+    "risingShare": 1,
+    "behavioursMedian": 0,
+    "finaleShare": 1
+   },
+   "main": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 3,
+    "risingShare": 1,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "runner",
+   "ids": [
+    "m08",
+    "s003"
+   ],
+   "pairs": {
+    "n": 2,
+    "newWins": 0,
+    "mainWins": 2,
+    "ties": 0,
+    "newShare": 0,
+    "lostShare": 1
+   },
+   "new": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 20.02,
+    "risingShare": 1,
+    "behavioursMedian": 0.5,
+    "finaleShare": 1
+   },
+   "main": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 21.1,
+    "risingShare": 1,
+    "behavioursMedian": 0.5,
+    "finaleShare": 1
+   }
+  },
+  {
+   "genre": "shooter",
+   "ids": [
+    "f03",
+    "d04"
+   ],
+   "pairs": {
+    "n": 2,
+    "newWins": 2,
+    "mainWins": 0,
+    "ties": 0,
+    "newShare": 1,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 5.67,
+    "risingShare": 1,
+    "behavioursMedian": 2.5,
+    "finaleShare": 1
+   },
+   "main": {
+    "n": 2,
+    "playable": 2,
+    "deadTimeMedianS": 4.35,
+    "risingShare": 0,
+    "behavioursMedian": 1,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "throw",
+   "ids": [
+    "h03"
+   ],
+   "pairs": {
+    "n": 1,
+    "newWins": 1,
+    "mainWins": 0,
+    "ties": 0,
+    "newShare": 1,
+    "lostShare": 0
+   },
+   "new": {
+    "n": 1,
+    "playable": 1,
+    "deadTimeMedianS": 2.27,
+    "risingShare": 0,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 1,
+    "playable": 1,
+    "deadTimeMedianS": 1.28,
+    "risingShare": 0,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   }
+  },
+  {
+   "genre": "timing.stack",
+   "ids": [
+    "n01",
+    "n04",
+    "d09"
+   ],
+   "pairs": {
+    "n": 3,
+    "newWins": 1,
+    "mainWins": 1,
+    "ties": 1,
+    "newShare": 0.5,
+    "lostShare": 0.33
+   },
+   "new": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 1.9,
+    "risingShare": 1,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   },
+   "main": {
+    "n": 3,
+    "playable": 3,
+    "deadTimeMedianS": 1.25,
+    "risingShare": 1,
+    "behavioursMedian": 0,
+    "finaleShare": 0
+   }
+  }
+ ],
+ "pairs": [
+  {
+   "id": "d01",
+   "genre": "control:ball",
+   "panelGenre": "control:ball",
+   "left": "a",
+   "winner": "tie",
+   "why": "Both games show the same pace: clusters of wireframe obstacles shrink to one and then disappear, while the player and nearby yellow marker stay in similar positions. Neither shows greater danger, more scene activity, or a stronger buildup toward the end.",
+   "new": {
+    "playable": true,
+    "longestGapS": 3.27,
+    "rising": false,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "d03",
+   "genre": "quest.station",
+   "panelGenre": "quest.station",
+   "left": "a",
+   "winner": "tie",
+   "why": "Both games show nearly identical action: two small targets alternate colored rings across the barrier while the player stays below, with occasional tiny sparks nearby. Neither shows more close danger, scene changes, or a stronger buildup toward the end.",
+   "new": {
+    "playable": true,
+    "longestGapS": 1.65,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "d04",
+   "genre": "shooter",
+   "panelGenre": "shooter",
+   "left": "b",
+   "winner": "new",
+   "why": "Game A shows more varied action, with bright projectiles appearing repeatedly in the later scenes and a small target indicator near the end. Game B mostly shows the aiming line sweeping across an empty arena until late gunfire, so A has better pace and buildup, though neither shows much nearby danger.",
+   "new": {
+    "playable": true,
+    "longestGapS": 5.5,
+    "rising": true,
+    "behaviours": [
+     "enemy:chase",
+     "enemy:chase+spawned"
+    ],
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   }
+  },
+  {
+   "id": "d09",
+   "genre": "timing.stack",
+   "panelGenre": "timing.stack",
+   "left": "b",
+   "winner": "main",
+   "why": "Both games steadily build a tall yellow tower, with little visible danger or change beyond stacking and the rising camera. B has a small dark object near the early stack and continues building at 37.5 seconds after A has ended, giving it a slight edge in sustained activity.",
+   "new": {
+    "playable": true,
+    "longestGapS": 2.65,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "f01",
+   "genre": "arena.collect",
+   "panelGenre": "arena.collect",
+   "left": "b",
+   "winner": "new",
+   "why": "Both games start with scattered glowing projectiles and small orange threats, but A builds to a large orange enemy with health markers looming directly over the player. B keeps more shots moving across the arena late on, but its small, spread-out enemies give it less of a visible climax.",
+   "new": {
+    "playable": true,
+    "longestGapS": 10.48,
+    "rising": true,
+    "behaviours": [
+     "chaser:chase+spawned",
+     "hazard:chase+spawned",
+     "hazard:roam+spawned",
+     "hazard:static+spawned"
+    ],
+    "finale": {
+     "present": true,
+     "why": "boss"
+    }
+   }
+  },
+  {
+   "id": "f02",
+   "genre": "duel",
+   "panelGenre": "duel",
+   "left": "a",
+   "winner": "main",
+   "why": "Game A shows the robot staying low near the moving obstacle, then extending its blue arm just before the game ends, giving the sequence a stronger finish. Game B alternates standing and crouching as the orange obstacle repeats its motion, with little visible buildup.",
+   "new": {
+    "playable": true,
+    "longestGapS": 2.47,
+    "rising": true,
+    "behaviours": [
+     "enemy:static"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "f03",
+   "genre": "shooter",
+   "panelGenre": "shooter",
+   "left": "b",
+   "winner": "new",
+   "why": "Game A shows more projectile action and builds to an enemy advancing toward the player in the final row. Game B stays mostly static with distant targets, then shows gunfire at the end but less visible close danger.",
+   "new": {
+    "playable": true,
+    "longestGapS": 5.83,
+    "rising": true,
+    "behaviours": [
+     "enemy:chase",
+     "enemy:chase+spawned",
+     "enemy:roam+spawned"
+    ],
+    "finale": {
+     "present": true,
+     "why": "boss"
+    }
+   }
+  },
+  {
+   "id": "f05",
+   "genre": "quest.spatial",
+   "panelGenre": "quest.spatial",
+   "left": "a",
+   "winner": "new",
+   "why": "Game B builds to more rock enemies spread across the arena and converging near the player, with glowing projectiles keeping the later scenes busy. Game A has similar early action, but its later waves look thinner and leave more open space around the player.",
+   "new": {
+    "playable": true,
+    "longestGapS": 8.73,
+    "rising": false,
+    "behaviours": [
+     "chaser:chase",
+     "chaser:chase+spawned",
+     "hazard:roam+spawned",
+     "hazard:static+spawned"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "f10",
+   "genre": "arena.fight",
+   "panelGenre": "arena.fight",
+   "left": "b",
+   "winner": "new",
+   "why": "Game A builds from small attackers into a large enemy joining close-range swarms, with frequent bright combat flashes and sustained pressure near the end. Game B has active skirmishes, but its smaller enemies stay more spread out and the final scenes show less escalation.",
+   "new": {
+    "playable": true,
+    "longestGapS": 2.17,
+    "rising": true,
+    "behaviours": [
+     "enemy:roam",
+     "enemy:roam+spawned",
+     "hazard:chase+spawned",
+     "hazard:roam+spawned"
+    ],
+    "finale": {
+     "present": true,
+     "why": "boss"
+    }
+   }
+  },
+  {
+   "id": "f12",
+   "genre": "control:glide",
+   "panelGenre": "control:glide",
+   "left": "b",
+   "winner": "tie",
+   "why": "Both games show the same progression: approaching a huge red wall, closing in on a glowing yellow target, then emerging onto open grass. Their pacing, nearby obstacles, and final scene look effectively identical, with neither showing more danger or a stronger buildup.",
+   "new": {
+    "playable": true,
+    "longestGapS": 2.15,
+    "rising": false,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "f17",
+   "genre": "flap",
+   "panelGenre": "flap",
+   "left": "a",
+   "winner": "new",
+   "why": "Game B keeps closely spaced overhead and ground obstacles near the player later into the run, with several tight passages still visible at 37.5 seconds. Game A has similar early action but opens into a largely empty stretch before ending, while B sustains the challenge longer.",
+   "new": {
+    "playable": true,
+    "longestGapS": 2.98,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "f18",
+   "genre": "control:walker",
+   "panelGenre": "control:walker",
+   "left": "a",
+   "winner": "tie",
+   "why": "Both games show virtually identical progress through the dark maze, with the same scattered creatures, rocks, and glowing teal objects at each time. Neither shows more nearby danger, faster action, or a stronger buildup toward the end.",
+   "new": {
+    "playable": true,
+    "longestGapS": 26.73,
+    "rising": false,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "h02",
+   "genre": "control:steer",
+   "panelGenre": "control:steer",
+   "left": "b",
+   "winner": "tie",
+   "why": "Both games show nearly identical pacing and danger: the robot passes shelves, black obstacles, and orange animals that move close to its path. Both build into a crowded corridor before opening up at the end, with no clear difference in variety or intensity.",
+   "new": {
+    "playable": true,
+    "longestGapS": 20.4,
+    "rising": true,
+    "behaviours": [
+     "enemy:chase"
+    ],
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   }
+  },
+  {
+   "id": "h03",
+   "genre": "throw",
+   "panelGenre": "throw",
+   "left": "a",
+   "winner": "new",
+   "why": "Game B shows more frequent flying shots and red objects crossing the right side, with white projectile trails near the player continuing into the final scene. Game A has similar moving barriers and occasional shots, but its later scenes look quieter, giving B a more sustained pace and danger.",
+   "new": {
+    "playable": true,
+    "longestGapS": 2.27,
+    "rising": false,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "h05",
+   "genre": "duel",
+   "panelGenre": "duel",
+   "left": "a",
+   "winner": "main",
+   "why": "Game A shows the large orange creature repeatedly flattening and rising beside the small player, with the raised orange object appearing at several points before the game ends. Game B has similar nearby action, but the creature stays upright through most of the sequence and only flattens in the final view, making its pace look more repetitive.",
+   "new": {
+    "playable": true,
+    "longestGapS": 2.5,
+    "rising": true,
+    "behaviours": [
+     "enemy:static"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "j01",
+   "genre": "arena.collect",
+   "panelGenre": "arena.collect",
+   "left": "a",
+   "winner": "new",
+   "why": "Game B builds from scattered yellow pickups to several orange threats and a large enemy with a segmented health bar near the foreground at the end. Game A has movement and occasional nearby orange enemies, but stays comparatively sparse and shows less escalation.",
+   "new": {
+    "playable": true,
+    "longestGapS": 13.35,
+    "rising": true,
+    "behaviours": [
+     "chaser:chase+spawned",
+     "hazard:chase+spawned",
+     "hazard:roam+spawned",
+     "hazard:static+spawned"
+    ],
+    "finale": {
+     "present": true,
+     "why": "boss"
+    }
+   }
+  },
+  {
+   "id": "j04",
+   "genre": "control:walker",
+   "panelGenre": "control:walker",
+   "left": "b",
+   "winner": "tie",
+   "why": "Both games show the player moving through nearly identical grey mazes, with sparse activity early and a yellow pickup plus a nearby small figure at the end. Neither shows noticeably greater pace, danger, variety, or buildup.",
+   "new": {
+    "playable": true,
+    "longestGapS": 11.47,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "j05",
+   "genre": "quest.spatial",
+   "panelGenre": "quest.spatial",
+   "left": "a",
+   "winner": "new",
+   "why": "Game B keeps more orange threats visible and brings several close to the player in the later scenes, creating more sustained danger and a stronger buildup. Game A spreads the action across a more open arena, with later moments showing fewer nearby threats and less happening around the player.",
+   "new": {
+    "playable": true,
+    "longestGapS": 10.32,
+    "rising": true,
+    "behaviours": [
+     "chaser:chase",
+     "hazard:roam+spawned"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "j08",
+   "genre": "arena.fight",
+   "panelGenre": "arena.fight",
+   "left": "b",
+   "winner": "new",
+   "why": "Game A builds toward a large enemy and a crowded late fight, with several smaller enemies and bright attacks close to the player. Game B has regular skirmishes and nearby threats, but its smaller enemy groups show less escalation toward the end.",
+   "new": {
+    "playable": true,
+    "longestGapS": 11.62,
+    "rising": false,
+    "behaviours": [
+     "enemy:roam",
+     "enemy:roam+spawned",
+     "hazard:chase+spawned",
+     "hazard:roam+spawned"
+    ],
+    "finale": {
+     "present": true,
+     "why": "boss"
+    }
+   }
+  },
+  {
+   "id": "m01",
+   "genre": "arena.escape",
+   "panelGenre": "arena.escape",
+   "left": "b",
+   "winner": "new",
+   "why": "Game A has a busier middle stretch, with an extra nearby cluster of red enemies at 25.5 seconds, then three enemies pursuing the visible grey player near the end. Game B has similar early action, but fewer midgame threats and a late trio that appears more spread away from the player.",
+   "new": {
+    "playable": true,
+    "longestGapS": 15.87,
+    "rising": false,
+    "behaviours": [
+     "chaser:chase+spawned",
+     "chaser:static",
+     "hazard:chase+spawned",
+     "hazard:roam+spawned"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "m02",
+   "genre": "arena.collect",
+   "panelGenre": "arena.collect",
+   "left": "b",
+   "winner": "tie",
+   "why": "Both games show nearly identical pacing: scattered yellow pickups and glowing rings, with occasional red enemies near the dark player character. Neither shows noticeably closer threats, more action, or a stronger buildup toward the end.",
+   "new": {
+    "playable": true,
+    "longestGapS": 6.42,
+    "rising": false,
+    "behaviours": [
+     "chaser:chase+spawned"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "m03",
+   "genre": "control:steer",
+   "panelGenre": "control:steer",
+   "left": "b",
+   "winner": "tie",
+   "why": "Both games show nearly identical pacing and danger: the car approaches paired rocks, passes trees and benches, and reaches large windmills near the end. Neither shows more close threats, scene variety, or a stronger buildup than the other.",
+   "new": {
+    "playable": true,
+    "longestGapS": 30.38,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   }
+  },
+  {
+   "id": "m04",
+   "genre": "quest.station",
+   "panelGenre": "quest.station",
+   "left": "b",
+   "winner": "new",
+   "why": "Game A builds from two objects on the counter to four, with the player shifting right near the end, making the scene feel busier and more urgent. Game B keeps the same two-object setup and centered player throughout, with little visible escalation.",
+   "new": {
+    "playable": true,
+    "longestGapS": 1.8,
+    "rising": false,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "m06",
+   "genre": "control:steer",
+   "panelGenre": "control:steer",
+   "left": "a",
+   "winner": "tie",
+   "why": "Both games show nearly identical pacing: a quiet road develops into repeated groups of bats, including threats close beside the car, before opening up near large windmills. The scenery, danger, and buildup look equally varied and intense in A and B.",
+   "new": {
+    "playable": true,
+    "longestGapS": 21.25,
+    "rising": false,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "m07",
+   "genre": "control:walker",
+   "panelGenre": "control:walker",
+   "left": "a",
+   "winner": "tie",
+   "why": "Both games show nearly identical progress through the same maze, with the orange player approaching the same small figure near the end. Neither shows more action, closer threats, or a stronger buildup than the other.",
+   "new": {
+    "playable": true,
+    "longestGapS": 21.92,
+    "rising": false,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "m08",
+   "genre": "runner",
+   "panelGenre": "runner",
+   "left": "b",
+   "winner": "main",
+   "why": "Game B has more close roadside scenery and obstacles approaching the player, with a larger orange hoop and a more pronounced jump late in the run. Game A shows similar coins and windmills, but its stretches feel emptier and its late hoop encounter less dramatic.",
+   "new": {
+    "playable": true,
+    "longestGapS": 22.62,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   }
+  },
+  {
+   "id": "m09",
+   "genre": "platformer",
+   "panelGenre": "platformer",
+   "left": "b",
+   "winner": "tie",
+   "why": "Both games show nearly identical pacing and danger: the robot crosses floating platforms past coins, red spikes, buildings, and wide gaps. Both introduce a yellow platform over water and close spike encounters later, with no clear difference in variety or buildup.",
+   "new": {
+    "playable": true,
+    "longestGapS": 7.15,
+    "rising": false,
+    "behaviours": [
+     "hazard:static"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "m11",
+   "genre": "control:move_free",
+   "panelGenre": "control:move_free",
+   "left": "a",
+   "winner": "tie",
+   "why": "Both games show nearly identical sparse grassy arenas, with a small brown character early on and near the far fence later. Neither shows visible nearby threats, sustained action, or a stronger buildup.",
+   "new": {
+    "playable": true,
+    "longestGapS": 6.32,
+    "rising": true,
+    "behaviours": [
+     "enemy:roam"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "m16",
+   "genre": "platformer",
+   "panelGenre": "platformer",
+   "left": "b",
+   "winner": "tie",
+   "why": "Both games show nearly identical jumps across broken platforms, small red hazards close to the robot, and an orange platform crossing over water. Their pace and progression match throughout, with neither showing more danger, activity, or a stronger buildup at the end.",
+   "new": {
+    "playable": true,
+    "longestGapS": 17.88,
+    "rising": false,
+    "behaviours": [
+     "hazard:static"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "n01",
+   "genre": "timing.stack",
+   "panelGenre": "timing.stack",
+   "left": "b",
+   "winner": "tie",
+   "why": "Both games show nearly identical action: a blue-green tower grows rapidly beneath an orange platform while the tree, bench, and windmill recede below. Neither shows clear nearby threats or a stronger late buildup; B simply continues the same scene after A ends.",
+   "new": {
+    "playable": true,
+    "longestGapS": 1.02,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "n02",
+   "genre": "arena.escape",
+   "panelGenre": "arena.escape",
+   "left": "b",
+   "winner": "new",
+   "why": "Game A keeps an orange threat visible near the right wall at 19.5 and 25.5 seconds, while B has a quieter, empty-looking stretch. Both otherwise show similar movement and build to three orange enemies late, so A has a slight edge in sustained action.",
+   "new": {
+    "playable": true,
+    "longestGapS": 15.75,
+    "rising": false,
+    "behaviours": [
+     "chaser:chase+spawned",
+     "chaser:static",
+     "hazard:chase+spawned",
+     "hazard:static+spawned"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "n04",
+   "genre": "timing.stack",
+   "panelGenre": "timing.stack",
+   "left": "b",
+   "winner": "new",
+   "why": "Game A’s colored tower grows slightly faster and reaches an ending sooner, giving it a brisker pace than B’s longer stretch of similar upward growth. Both show the same sparse street props and orange overhead platform, with little visible danger or new activity as they progress.",
+   "new": {
+    "playable": true,
+    "longestGapS": 1.9,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "s002",
+   "genre": "arena.escape",
+   "panelGenre": "arena.escape",
+   "left": "b",
+   "winner": "new",
+   "why": "Game A builds toward a busier finish, with several enemies and a large enemy right beside the player in the final scene. Game B has some close chases, but later scenes repeatedly become nearly empty, making its pace and ending less exciting.",
+   "new": {
+    "playable": true,
+    "longestGapS": 15.88,
+    "rising": true,
+    "behaviours": [
+     "chaser:chase+spawned",
+     "chaser:static",
+     "hazard:roam+spawned",
+     "hazard:static+spawned"
+    ],
+    "finale": {
+     "present": true,
+     "why": "boss"
+    }
+   }
+  },
+  {
+   "id": "s003",
+   "genre": "runner",
+   "panelGenre": "runner",
+   "left": "b",
+   "winner": "main",
+   "why": "Game B shows tighter passes by large furniture, more side-to-side movement around cheese trails, and a bright yellow effect close behind the player at 31.5 seconds. Game A has similar obstacles but a steadier, more open route; both thin out near the end, but B has more close-up action along the way.",
+   "new": {
+    "playable": true,
+    "longestGapS": 17.42,
+    "rising": true,
+    "behaviours": [
+     "chaser:roam"
+    ],
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   }
+  },
+  {
+   "id": "s021",
+   "genre": "platformer",
+   "panelGenre": "platformer",
+   "left": "a",
+   "winner": "tie",
+   "why": "Both games show nearly identical jumps across island gaps, nearby red spikes, coins, and a small floating platform at the same times. They maintain the same pace and finish on the same isolated platform, with no clear difference in danger or buildup.",
+   "new": {
+    "playable": true,
+    "longestGapS": 8.38,
+    "rising": false,
+    "behaviours": [
+     "hazard:static"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "s035",
+   "genre": "flap",
+   "panelGenre": "flap",
+   "left": "a",
+   "winner": "new",
+   "why": "Both games have tight passages between upper and lower pillars, but B keeps obstacles close around the player later, especially at 37.5 seconds when A has mostly cleared out. B sustains the action longer and reaches a final open stretch with visible yellow pickups, while A has already ended.",
+   "new": {
+    "playable": true,
+    "longestGapS": 2.98,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "u01",
+   "genre": "rhythm",
+   "panelGenre": "rhythm",
+   "left": "b",
+   "winner": "main",
+   "why": "Game B brings colored blocks right up to the player’s bar repeatedly, with yellow flashes and changing lanes that make the later play look busier and more urgent. Game A’s blocks mostly stay farther away and its bar remains quiet until the final green state, which both games reach.",
+   "new": {
+    "playable": true,
+    "longestGapS": 4.33,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   }
+  },
+  {
+   "id": "u02",
+   "genre": "rhythm",
+   "panelGenre": "rhythm",
+   "left": "b",
+   "winner": "main",
+   "why": "Game B has more frequent colored blocks, including several reaching the player’s yellow bar, giving it a busier pace and more close-up threats. Game A builds up with red and green blocks later, but stays quieter overall; both finish with a green bar and cleared lanes.",
+   "new": {
+    "playable": true,
+    "longestGapS": 4.5,
+    "rising": true,
+    "behaviours": [],
+    "finale": {
+     "present": true,
+     "why": "climax"
+    }
+   }
+  },
+  {
+   "id": "u03",
+   "genre": "quest.station",
+   "panelGenre": "quest.station",
+   "left": "a",
+   "winner": "new",
+   "why": "Game A repeats the same two objects with the player staying near the center throughout. Game B builds to four objects across the lane and the player moves right before the game ends, giving it more variety, movement, and apparent pressure.",
+   "new": {
+    "playable": true,
+    "longestGapS": 1.98,
+    "rising": false,
+    "behaviours": [],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  },
+  {
+   "id": "u06",
+   "genre": "quest.spatial",
+   "panelGenre": "quest.spatial",
+   "left": "a",
+   "winner": "new",
+   "why": "Game B adds a second red car later, with both cars moving among the small figures and obstacles, creating more activity and close encounters toward the end. Game A stays with one car in a more spread-out scene, so its later moments look less busy and threatening.",
+   "new": {
+    "playable": true,
+    "longestGapS": 11.43,
+    "rising": false,
+    "behaviours": [
+     "chaser:chase",
+     "hazard:roam+spawned"
+    ],
+    "finale": {
+     "present": false,
+     "why": null
+    }
+   }
+  }
+ ]
+}

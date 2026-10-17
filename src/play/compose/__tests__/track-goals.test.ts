@@ -23,14 +23,20 @@ describe('T23 additional real track objectives',()=>{
    expect(cells.some(cell=>cell.recipe.actions.length+cell.recipe.threats.length>0)).toBe(true);
   }
  });
+ // run.escape may lose one seed: the runner bot's coin pace (P46B R1) costs it seed 4, publish picks a won seed.
+ // Owner's decision, plans/P46B-useky-a-boss-2026-10-12.md R3 (b).
  it.each(['run.escape','jump.escape','flap.collect'])('%s wins with actual action/goal witnesses on seeds1–5',id=>{
+  const lost:number[]=[];
   for(let seed=1;seed<=5;seed++){
    const made=make(id,seed),v=verifyArcade(made.world,undefined,made.roleBindings);
-   expect(v.bot.outcome,`${id}/${seed}`).toBe('won');expect(v.publishEligible).toBe(true);expect(v.replayEqual).toBe(true);
+   expect(v.replayEqual).toBe(true);
+   if(v.bot.outcome!=='won'){lost.push(seed);continue;}
+   expect(v.publishEligible).toBe(true);
    const expected=id==='flap.collect'?['flap','collect']:id==='run.escape'?['run','chaser','escape']:['jump','chaser','escape'];
    for(const verb of expected)expect(v.witnesses.some(w=>w.verb===verb),`${id}/${seed}/${verb}`).toBe(true);
    if(id==='flap.collect')expect(v.witnesses.some(w=>w.verb==='collect'&&w.object?.label==='coin')).toBe(true);
   }
+  expect(lost.length,`${id} lost seeds ${lost}`).toBeLessThanOrEqual(id==='run.escape'?1:0);
  },60000);
  it.each(['run.escape','jump.escape'])('%s actually loses when the pursuer catches the player',id=>{
   const made=make(id),state=instantiate(made.world),program=loadProgram(made.world,ARCADE_LIBRARY);

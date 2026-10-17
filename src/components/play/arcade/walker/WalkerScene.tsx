@@ -10,9 +10,18 @@ import { type ArcadeWorld, BODY, FLAG, HEADER, UNIT, bodyBase, nativeRules } fro
 import type { Look } from '@/play/arcade/look';
 import { walkerMapSchema, WALKER_CELL } from '@/play/arcade/pieces/walker';
 import { baseControlOf } from '@/play/arcade/addons';
+import { FieldGround } from '../look/FieldGround';
+import { boxEdge } from '../look/ground';
 import { Scenery } from '../look/Scenery';
+import { VegetationAround } from '../look/Vegetation';
+import { NONE_TOWARD_CAMERA } from '../look/vegetation-places';
 import type { ArcadeSession } from '../session';
 import { walkerCone } from './view';
+
+/** Kam zem sahá za bludiště (m): za vegetaci do mlhy. */
+const LAND_M = 50;
+/** Volný pás vegetace za krajem bludiště (m): tam, kde dřív stála řada kulis. */
+const VEGETATION_CLEAR = 3;
 
 export { placeWalker } from './view';
 export { useWalkerInput } from './walker-input';
@@ -61,13 +70,18 @@ export function WalkerBackdrop({ session, look }: { readonly session: ArcadeSess
     mesh.current.computeBoundingSphere();
   }, [data, session]);
   const extent = data.size * WALKER_CELL / UNIT, centre = (data.size - 1) * WALKER_CELL / UNIT / 2;
+  // Bludiště ve scéně (x zrcadlené): buňky od 0 do (size − 1) · 4 m, každá ±2 m kolem středu.
+  const { box, land, edge } = useMemo(() => {
+    const maze = { x0: -centre - extent / 2, x1: -centre + extent / 2, z0: centre - extent / 2, z1: centre + extent / 2 };
+    return { box: maze, land: { x0: maze.x0 - LAND_M, x1: maze.x1 + LAND_M, z0: maze.z0 - LAND_M, z1: maze.z1 + LAND_M }, edge: boxEdge(maze) };
+  }, [centre, extent]);
   return <>
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-centre, -0.02, centre]} receiveShadow>
-      <planeGeometry args={[extent + 12, extent + 12]} />
-      <meshStandardMaterial color={look.ground} roughness={1} />
-    </mesh>
+    {/* Zem s odstíny a skvrnami, kolem bludiště krajnice a do dálky tmavne (P46G T7); dřív jedna barva sady. */}
+    <FieldGround look={look} area={land} edge={edge} y={-0.02} />
+    {/* Vegetace sady kolem bludiště, z −z hrdina vchází a stojí kamera – tam nic. Kulisa za mlhou chybí schválně: kamera kouká 63–70° dolů a obzor nevidí. */}
+    {look.flora !== undefined && <VegetationAround flora={look.flora} seed={session.world.seed} box={box} clear={VEGETATION_CLEAR} layers={NONE_TOWARD_CAMERA} />}
     <group position={[-centre, 0, 0]}>
-      <Scenery look={look} layout="sides" inner={extent / 2 + 3} from={-4} to={extent + 4} />
+      <Scenery look={look} layout="sides" inner={extent / 2 + 3} from={-4} to={extent + 4} vegetation />
     </group>
     <instancedMesh ref={mesh} args={[undefined, undefined, data.walls.length]} castShadow receiveShadow>
       <boxGeometry args={[1, 1, 1]} />

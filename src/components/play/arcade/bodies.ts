@@ -6,9 +6,26 @@
  * a při změně seznam postaví znovu.
  */
 
-import { BODY, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, HEADER, ROLE, UNIT, bodyBase, isLogicBody } from '@/play/arcade/contract';
+import { BEHAVIOURS } from '@/play/arcade/pieces/behaviours';
 
 import type { ArcadeSession } from './session';
+
+/**
+ * Druhy těl průběhu P45C (chování a boss, i terč střelnice). Katalog pro ně model nemá – scéna je kreslí
+ * modelem nepřítele ze specu (`cast.chaser`: pronásledovatel z věty, jinak nepřítel), vepsaným do kvádru těla,
+ * takže boss je větší podle svého AABB.
+ */
+export const PACING_KINDS: ReadonlySet<string> = new Set(Object.values(BEHAVIOURS).map((behaviour) => behaviour.body.kind));
+
+/**
+ * Jiskra tepu sběru a útěku s věcmi (`HEARTBEAT_SPARK`, P47A T9): bonus, který věci hry nepočítají. Katalog model
+ * nemá a model věci z věty by lhal, že se počítá – scéna arény ji kreslí vlastním tvarem (P47A T10).
+ */
+export const SPARK_KIND = 'spark';
+
+/** Výstřely chování P45C (ostřelovač, salva bosse, terč střelnice) – katalog je nemá, scéna je kreslí jako střelu. */
+export const PACING_SHOT_KINDS: ReadonlySet<string> = new Set(Object.values(BEHAVIOURS).flatMap((behaviour) => (behaviour.shot === undefined ? [] : [behaviour.shot.kind])));
 
 export interface BodyView {
   readonly index: number;
@@ -23,8 +40,12 @@ export interface BodyView {
  * Tělo, které scéna nekreslí: neviditelná branka poletování a holá role `thing` –
  * počítadlo komba (P36A T5, `withScoring` v `compile.ts`) nese druh hrdiny, takže
  * by scéna stahovala neexistující `player-lod1.glb`. Věci pravidel mají vlastní kód role od 32.
+ * Logické tělo (P45B, `isLogicBody`) nese jen stav logiky, taky se nekreslí.
+ * Počítadlo průběhu (`pacingKeeper`, P45C) nese druh hrdiny s rolí překážky: pozná se
+ * podle velikosti 1 × 1 × 1 jednotka, jakou žádná věc scény nemá.
  */
-export const drawsNothing = (view: Pick<BodyView, 'kind' | 'role'>): boolean => view.kind === 'gate' || view.role === ROLE.thing;
+export const drawsNothing = (view: Pick<BodyView, 'kind' | 'role' | 'w' | 'h' | 'd'>): boolean =>
+  view.kind === 'gate' || view.role === ROLE.thing || isLogicBody(view.role) || Math.max(view.w, view.h, view.d) * UNIT <= 1;
 
 const kindOf = (session: Pick<ArcadeSession, 'world'>, code: number): string => session.world.kinds[code] ?? 'crate';
 

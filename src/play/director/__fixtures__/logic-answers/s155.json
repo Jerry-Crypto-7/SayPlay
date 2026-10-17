@@ -1,0 +1,113 @@
+{
+ "id": "s155",
+ "sentence": "defend the castle from waves of goblins",
+ "axis": "defend",
+ "model": "gpt-oss-20b",
+ "promptVersion": "3cf3f465",
+ "directorPromptVersion": "dff25958",
+ "recordedAt": "2026-10-09T11:36:35.847Z",
+ "ms": 10571,
+ "answer": {
+  "plan": "Create an arena‑fight game where a knight defends a castle against waves of goblins, using a simple phase‑timer logic to spawn enemies.",
+  "spec": {
+   "genre": "arena",
+   "mode": "fight",
+   "hero": "knight",
+   "cast": [
+    {
+     "label": "goblin",
+     "does": "fight",
+     "verb": "attack",
+     "states": null,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
+   "setting": "castle",
+   "palette": "castle",
+   "params": null,
+   "counts": {
+    "enemy": null,
+    "collectible": null
+   },
+   "ruleRoles": [
+    {
+     "id": "goblin",
+     "kind": "chaser",
+     "label": "goblin",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "start_wave_timer",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "wave",
+        "ticks": 600
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawn_wave",
+     "verb": "spawn",
+     "when": {
+      "timer": "wave"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "goblin",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "reset_wave_timer",
+     "verb": "wait",
+     "when": {
+      "timer": "wave"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "wave",
+        "ticks": 600
+       }
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "vars": null,
+    "timers": [
+     {
+      "id": "wave"
+     }
+    ],
+    "phases": [
+     {
+      "id": "start"
+     },
+     {
+      "id": "active"
+     }
+    ],
+    "events": null
+   }
+  }
+ },
+ "failure": null
+}

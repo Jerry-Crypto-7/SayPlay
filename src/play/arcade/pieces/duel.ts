@@ -18,14 +18,15 @@
  * Stav: soupeř (tělo 1) má fázi v `aux0` (`DUEL_PHASE`) a zbylé tiky fáze
  * v `aux1`; hráč má výsledek tiku v `aux0` (pro `judge`) a časovač úhybu
  * v `aux1` (> 0 uhýbá, < 0 zotavení nebo potácení). Zásahy soupeře jsou `z`
- * hráče v metrech, životy soupeře a pořadí útoku jsou čítače `DUEL_COUNTER`.
+ * hráče v metrech, životy soupeře a pořadí útoku jsou čítače `DUEL_COUNTER`. Šampion (`champion`,
+ * P47A T6) má navíc HP těla, které ubírají efekty `hit` pravidla `judge`; po knockoutu leží s HP 0.
  */
 
 import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_HZ, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, HEADER, UNIT, bodyBase } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, type ArcadeState, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, HEADER, type RulePiece, UNIT, bodyBase, bodyHp, setBodyHp } from '../contract';
 import { judgeRules } from './timing';
 
 export const DUEL_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -55,10 +56,23 @@ export const DUEL = {
   minRecover: 17,
 } as const;
 
+/**
+ * Rozzuření posledního soupeře pod polovinou jeho HP (finále průběhu P45C T13):
+ * nápřah – varování – o `warn` tiků delší, mezera po úderu o `faster` kratší
+ * (soupeř se rychleji vzpamatuje a útočí znovu), nikdy pod `minRecover`.
+ * Rozzuření bez delšího varování by soupeře udělalo jen nefér. Změřeno (souboj z věty, 20 semínek,
+ * agresivita nejvýš 1200): začátečník vyhrál s `faster` 0 / 3 / 4 / 5 / 6 18 / 15 / 10 / 0 / 0 her –
+ * kratší mezera mu bere úder (reakce 20 tiků), delší nápřah mu úhyb nechá.
+ */
+export const DUEL_ENRAGE = { warn: 12, faster: 4 } as const;
+
 /** Fáze soupeře v `aux0`. */
 export const DUEL_PHASE = { ready: 0, windup: 1, open: 2, struck: 3 } as const;
-/** Sloty čítačů: životy soupeře a pořadí útoku. */
-export const DUEL_COUNTER = { foeHealth: 2, attack: 3 } as const;
+/**
+ * Sloty čítačů: životy soupeře, pořadí útoku a úhyb, který v tomto tiku vyšel (P47B T8, jen s `dodges`;
+ * slot sběru – duel nic nesbírá a HUD ho ukáže jen hře s cílem sběru).
+ */
+export const DUEL_COUNTER = { foeHealth: 2, attack: 3, dodged: 5 } as const;
 /** Index soupeře. */
 export const DUEL_FOE = 1;
 
@@ -73,16 +87,70 @@ const controlParams = z
     rounds: z.int().min(1).max(DUEL.maxRounds).optional(),
     /** O kolik tiků další soupeř zkrátí nápřah i mezeru (nejvýš na `minWindup` / `minRecover`). */
     rise: z.int().min(0).max(10).optional(),
+    /**
+     * Agresivita soupeře v promile (průběh P45C T13 ji škáluje intenzitou): nápřah i mezera
+     * × 1000 / `pace`, ne pod mez. Bez hodnoty vzorec beze změny.
+     */
+    pace: z.int().min(100).max(5000).optional(),
+    /** Rozzuření posledního soupeře pod polovinou HP (`DUEL_ENRAGE`); bez hodnoty žádné. */
+    enrage: z.object({ warn: z.int().min(1).max(ARCADE_HZ), faster: z.int().min(0).max(ARCADE_HZ) }).strict().optional(),
+    /**
+     * Šampion (finále P47A T6, jen průběh `genre.v4`): index předlohy těla bosse. Když padne předposlední
+     * soupeř, tělo soupeře převezme její model a rozměry a dostane HP = `foeHealth`; zásahy mu ubírá
+     * `judge` (`champion`). Bez hodnoty tělo soupeře HP nemá.
+     */
+    champion: z.object({ body: z.int().min(DUEL_FOE + 1).max(ARCADE_LIMITS.maxBodies - 1) }).strict().optional(),
+    /** Úhyb jako sloveso věty (P47B T8): úder, kterému hráč uhnul, zapíše `DUEL_COUNTER.dodged`. Bez hodnoty nic. */
+    dodges: z.literal(true).optional(),
   })
   .strict();
 export type DuelControlParams = z.infer<typeof controlParams>;
 
 const S = BODY;
 
+/** Tělo soupeře se stane šampionem: model a rozměry předlohy, HP `hp`. Jednou – korunovaný šampion HP má. */
+function crown(state: ArcadeState, template: number, hp: number): void {
+  if (bodyHp(state, DUEL_FOE) > 0) return;
+  const foe = bodyBase(DUEL_FOE);
+  const from = bodyBase(template);
+  for (const slot of [S.kind, S.w, S.h, S.d]) state[foe + slot] = state[from + slot] as number;
+  setBodyHp(state, DUEL_FOE, hp);
+}
+
+const dodgeParams = z.object({ verb: z.enum(['dash', 'shield']) }).strict();
+
+/** Úhyb, který v tomto tiku vyšel (`dodges`), je dash nebo štít věty (P47B T8): bod a sloveso pro důkaz. */
+export const duelDodgeRule: RulePiece<z.infer<typeof dodgeParams>> = {
+  id: 'duel_dodge',
+  params: dodgeParams,
+  roles: ['player'],
+  trigger: 'tick',
+  cost: () => ({ bodies: 0, rules: 1 }),
+  fire: ({ state }) => ((state[HEADER.counters + DUEL_COUNTER.dodged] as number) === 1 ? [{ kind: 'score', amount: 1 }] : []),
+};
+
 /** Útok vzorce u soupeře `round` (od 0): o `rise` tiků za soupeře kratší, ne pod mez – co už pod ní je, zůstane. */
 export function duelAttackAt(move: DuelAttack, round: number, rise: number): DuelAttack {
   const shorter = (ticks: number, floor: number): number => Math.max(Math.min(ticks, floor), ticks - round * rise);
   return { windup: shorter(move.windup, DUEL.minWindup), recover: shorter(move.recover, DUEL.minRecover) };
+}
+
+/** Útok s agresivitou `pace` (promile): delší pod 1000, kratší nad, ne pod mez – co už pod ní je, zůstane. */
+export function pacedAttack(move: DuelAttack, pace: number): DuelAttack {
+  const scaled = (ticks: number, floor: number): number => Math.max(Math.min(ticks, floor), Math.floor((ticks * 1000) / pace));
+  return { windup: scaled(move.windup, DUEL.minWindup), recover: scaled(move.recover, DUEL.minRecover) };
+}
+
+/** Rozzuřený útok: delší nápřah (varování), kratší mezera, ne pod `minRecover`. */
+export const enragedAttack = (move: DuelAttack, enrage: { readonly warn: number; readonly faster: number }): DuelAttack =>
+  ({ windup: move.windup + enrage.warn, recover: Math.max(Math.min(move.recover, DUEL.minRecover), move.recover - enrage.faster) });
+
+/** Rozzuřený je poslední soupeř, kterému po `hits` zásazích zbývá méně než polovina HP. */
+export function enragedAfter(hits: number, params: DuelControlParams): boolean {
+  if (params.enrage === undefined) return false;
+  const rounds = params.rounds ?? 1;
+  const left = params.foeHealth * rounds - hits;
+  return hits >= params.foeHealth * (rounds - 1) && left > 0 && left * 2 < params.foeHealth;
 }
 
 export const duelControl: ControlPiece<DuelControlParams> = {
@@ -94,6 +162,7 @@ export const duelControl: ControlPiece<DuelControlParams> = {
     const p = bodyBase(player);
     const foe = bodyBase(DUEL_FOE);
     state[p + S.aux0] = 0;
+    if (params.dodges) state[HEADER.counters + DUEL_COUNTER.dodged] = 0;
 
     // Časovač úhybu: uhýbání dojde do zotavení, zotavení a potácení dojdou k nule.
     let timer = state[p + S.aux1] as number;
@@ -112,15 +181,23 @@ export const duelControl: ControlPiece<DuelControlParams> = {
     }
 
     const hits = Math.floor((state[p + S.z] as number) / UNIT);
+    // Předposlední soupeř padl (i tímhle úderem): nastupuje šampion. Úder, který ho porazil, šampiona nezasáhne (`judge`).
+    if (params.champion !== undefined && hits === params.foeHealth * ((params.rounds ?? 1) - 1)) crown(state, params.champion.body, params.foeHealth);
     // Soupeř, se kterým se teď bojuje (od 0): každý další útočí rychleji.
     const round = Math.floor(hits / params.foeHealth);
-    const moveAt = (index: number): DuelAttack => duelAttackAt(params.pattern[index] as DuelAttack, round, params.rise ?? 0);
+    const enraged = enragedAfter(hits, params);
+    const moveAt = (index: number): DuelAttack => {
+      const move = duelAttackAt(params.pattern[index] as DuelAttack, round, params.rise ?? 0);
+      const paced = params.pace === undefined ? move : pacedAttack(move, params.pace);
+      return enraged && params.enrage !== undefined ? enragedAttack(paced, params.enrage) : paced;
+    };
     if ((state[HEADER.tick] as number) >= DUEL.lead) {
       if (left > 0) left -= 1;
       if (left === 0) {
         if (phase === DUEL_PHASE.windup) {
           // Úder: kdo zrovna neuhýbá, přijde o život.
           if (timer <= 0) state[p + S.aux0] = -1;
+          else if (params.dodges) state[HEADER.counters + DUEL_COUNTER.dodged] = 1;
           const index = (state[HEADER.counters + DUEL_COUNTER.attack] as number) % params.pattern.length;
           phase = DUEL_PHASE.open;
           left = moveAt(index).recover;

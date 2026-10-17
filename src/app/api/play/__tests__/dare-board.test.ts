@@ -148,7 +148,11 @@ describe.each(['memory', 'file'])('POST …/dare feeds the leaderboard over the 
   });
 
   it('téměř-kopie ducha: cizí běh posunutý o pár tiků žebříček nezmění ani podruhé, výzva platí; vlastní posun ano (T5b)', async () => {
-    const { id, world, runs } = await publishedGame((game, both) => ghostCopy(game, both.better) !== null);
+    // Hra musí mít dva různé posuny se stejným skóre: cizí kopii a pak Adin vlastní posun s jiným koncem.
+    const { id, world, runs } = await publishedGame((game, both) => {
+      const copy = ghostCopy(game, both.better);
+      return copy !== null && ghostCopy(game, both.better, [copy.hash]) !== null;
+    });
     const [ada, bo] = [player(), player()];
     const copied = ghostCopy(world, runs.better) as NonNullable<ReturnType<typeof ghostCopy>>;
     const first = await send(id, { inputs: packInputs(runs.better.inputs) }, ada.cookie);
@@ -168,7 +172,14 @@ describe.each(['memory', 'file'])('POST …/dare feeds the leaderboard over the 
   });
 
   it('dva poctiví hráči se stejným skóre a blízkými tiky jsou v žebříčku oba; kopie toho níž ne (T5b, revize T5b-1)', async () => {
-    const { id, world, runs } = await publishedGame((game, both) => lookAlike(game, both.better) !== null && ghostCopy(game, both.better) !== null);
+    // Který z obou řádků se stejným skóre leží níž, rozhodne až úložiště – kopie s novým koncem musí jít z obou běhů.
+    const { id, world, runs } = await publishedGame((game, both) => {
+      const look = lookAlike(game, both.better);
+      if (look === null) return false;
+      const boLike = { inputs: look, run: scoredReplay(game, look, []) };
+      const taken = [both.better.run.hash, boLike.run.hash];
+      return ghostCopy(game, both.better, taken) !== null && ghostCopy(game, boLike, taken) !== null;
+    });
     const [ada, bo, cy] = [player(), player(), player()];
     const other = lookAlike(world, runs.better) as InputEvent[];
     expect((await send(id, { inputs: packInputs(runs.better.inputs) }, ada.cookie)).body.board).toEqual({ place: 1, of: 1 });

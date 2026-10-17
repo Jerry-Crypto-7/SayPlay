@@ -8,23 +8,30 @@ import { renderHeld } from '../effects/render-feel';
  * (P32F T5) – pevné desky jádra jsou ostrůvky ze skály s okrajem sady
  * (`islands.ts` od A, horní plocha přesně ve výšce desky) nad vlnící se hladinou.
  * Kvádry, které za desky kreslí `World`, se schovají; pohyblivá plošina si svůj
- * vzhled nechává – hráč z něj čte pohyb. Hrdina se při odrazu zmáčkne jako běžec
- * (`runner/heroMotion.ts`), dopad hlásí sběrnice efektů (`land`).
+ * vzhled nechává – hráč z něj čte pohyb. Krok, skok a dopad hrdiny podle třídy těla
+ * mu dává hračková póza ze sdíleného `World` (P45D T7, T8), dopad hlásí i sběrnice
+ * efektů (`land`).
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { type RefObject, useEffect, useMemo, useRef } from 'react';
 import { Box3, type Mesh, MeshStandardMaterial, type Object3D, Raycaster, Vector3 } from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 import { type ArcadeWorld, UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 
 import { GhostSlot } from '../GhostSlot';
+import { HorizonBackdrop } from '../look/Backdrop';
+import { FieldGround } from '../look/FieldGround';
+import { mix } from '../look/ground';
+import { VegetationAround } from '../look/Vegetation';
+import { LAYERS, type Layer, type Side } from '../look/vegetation-places';
+import { type Block, buildBlocks, streetBlocks, urbanLook } from '../look/rig/terrain/city-blocks';
 import { buildIslands, platformIslands, platformSlabKeys, spotKey } from '../look/rig/terrain/islands';
 import { buildWater } from '../look/rig/terrain/water';
 import { Scenery } from '../look/Scenery';
-import { createHeroMotion } from '../runner/heroMotion';
 import type { GroundGap } from '../runner/RunnerWorld';
 import type { ArcadeSession } from '../session';
 import { World, type WorldProps } from '../World';
@@ -41,7 +48,20 @@ declare global {
 
 function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; readonly look: Look; readonly terrain: RefObject<Mesh | null> }) {
   const length = world.length / UNIT;
-  const islands = useMemo(() => buildIslands({ look, islands: platformIslands(world), base: WATER }), [look, world]);
+  const urban = urbanLook(look);
+  const spots = useMemo(() => platformIslands(world), [world]);
+  const islands = useMemo(() => buildIslands({ look, islands: spots, base: WATER, roofOnly: urban }), [look, spots, urban]);
+  // Město (P46G doplněk): desky jsou střechy domů, za břehem ulice.
+  const houses = useMemo(() => {
+    if (!urban) return null;
+    const under = spots.map((s): Block => ({ x0: s.x - s.w / 2 + HOUSE_IN, x1: s.x + s.w / 2 - HOUSE_IN, z0: s.z - s.d / 2 + HOUSE_IN, z1: s.z + s.d / 2 - HOUSE_IN, base: WATER - 0.5, top: s.top - 0.3 }));
+    const street = streetBlocks({ from: -30, to: length + 30, x0: STREET_X, base: BANK, seed: world.seed });
+    return mergeGeometries([buildBlocks(under, world.seed, ['-x', '-z', '+z'], false), buildBlocks(street, world.seed + 1, ['-x', '-z', '+z'], true)]);
+  }, [urban, spots, length, world.seed]);
+  useEffect(() => () => houses?.dispose(), [houses]);
+  // Písek: horní plocha desek je zem sady, břeh v téže barvě s nimi na snímku splýval – břeh je světlejší písek dun.
+  const bankLook = useMemo((): Look => (look.cover === 'sand' ? { ...look, ground: look.terrain?.lane ?? mix(look.ground, '#ffffff', 0.35) } : look), [look]);
+  const bankArea = useMemo(() => ({ x0: BANK_FROM, x1: BACKDROP_BEYOND + 20, z0: -40, z1: length + 40 }), [length]);
   const water = useMemo(() => buildWater({ look, half: 40, from: -30, to: length + 30, level: WATER, shore: islands.shoreDistance }), [look, length, islands]);
   const material = useMemo(() => new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), []);
   useEffect(() => () => islands.geometry.dispose(), [islands]);
@@ -58,20 +78,45 @@ function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; re
     <>
       <mesh geometry={water.geometry} material={water.material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'water' }} />
       <mesh ref={terrain} geometry={islands.geometry} material={material} castShadow receiveShadow userData={{ rigShadow: 'both', terrain: 'islands' }} />
-      <Scenery look={look} layout="behind" inner={11} from={-20} to={length + 20} y={WATER} size={1.6} />
+      {houses !== null && <mesh geometry={houses} material={material} receiveShadow userData={{ rigShadow: 'receive' }} />}
+      {/* Břeh za ostrůvky (+x, boční kamera stojí na −x) v barvách sady a na něm vegetace – jen za nimi, před kamerou nic, takže doskok ani minci nezakryje. */}
+      <FieldGround look={bankLook} area={bankArea} y={BANK} />
+      {look.flora !== undefined && (
+        <group position={[0, BANK, 0]}>
+          <VegetationAround flora={look.flora} seed={world.seed} box={{ x0: -SLAB_HALF, x1: SLAB_HALF, z0: -10, z1: length + 10 }} clear={BANK_FROM + 1 - SLAB_HALF} layers={BEHIND_ONLY} behind={30} />
+        </group>
+      )}
+      <Scenery look={look} layout="behind" inner={11} from={-20} to={length + 20} y={BANK} size={1.6} vegetation={look.flora !== undefined} />
+      {/* Kulisa za mlhou (P46G T7) z břehu, za řadou kulis a vegetací. */}
+      <HorizonBackdrop look={look} seed={world.seed} length={length} clear={0} ground={AT_BANK} beyond={BACKDROP_BEYOND} />
     </>
   );
 }
 
+/** Břeh za ostrůvky (m): kousek nad hladinou, začíná 3 m za hranou desek. */
+const BANK = WATER + 0.25;
+const SLAB_HALF = PLATFORM.slabW / UNIT / 2;
+const BANK_FROM = SLAB_HALF + 3;
+/** Vegetace plošinovky jen za tratí: před kamerou (−x) a na koncích nic. */
+const BEHIND_ONLY: Readonly<Record<Side, readonly Layer[]>> = { '-x': [], '+x': LAYERS, '-z': [], '+z': [] };
+/** Dům pod deskou o kousek uvnitř její hrany (m) – zezadu ho kryje pás pod lemem střechy. */
+const HOUSE_IN = 0.05;
+/** Přední stěna ulice (m): za řadou pouličních kulis (`Scenery` 11–17 m). */
+const STREET_X = 18;
+/** Kulisa stojí na břehu. */
+const AT_BANK = (): number => BANK;
+/** Nejbližší vrstva kulisy (m): boční kamera 10–18 m před ostrůvky, kulisy 11–17 m za nimi. */
+const BACKDROP_BEYOND = 36;
+
 /**
  * Běží po snímku `World` (sourozenec za ním, jako `HeroPose` běžce): `World` každý
- * snímek zapíše skupinám polohu a viditelnost, tady se kvádry desek znovu schovají
- * a hrdina dostane zmáčknutí odrazu.
+ * snímek zapíše skupinám polohu a viditelnost, tady se kvádry desek znovu schovají.
+ * Hrdinu pózuje jen `World` (hračková póza vnitřní skupiny, P45D T7): druhé zmáčknutí
+ * odrazu na obalu by se s jeho skokem sečetlo.
  */
 function PlatformPose({ session, terrain }: { readonly session: ArcadeSession; readonly terrain: RefObject<Mesh | null> }) {
   const scene = useThree((three) => three.scene);
   const get = useThree((three) => three.get);
-  const motion = useMemo(() => createHeroMotion(session, null), [session]);
   const slabs = useMemo(() => platformSlabKeys(session.world), [session]);
   const found = useRef<{ boxes: Object3D[]; hero: Object3D | null; frame: number }>({ boxes: [], hero: null, frame: 0 });
 
@@ -92,12 +137,6 @@ function PlatformPose({ session, terrain }: { readonly session: ArcadeSession; r
       });
     }
     for (const box of found.current.boxes) box.visible = false;
-    const hero = found.current.hero;
-    if (hero === null) return;
-    // Zmáčknutí kolem paty (objem drží); natažení ve vzduchu a dosednutí dává `World` vnitřní skupině.
-    const { squash } = motion.sample();
-    const wide = 1 + squash / 2;
-    hero.scale.set(wide, hero.scale.y * (1 - squash), wide);
   });
 
   // Sonda: nejnižší bod nakresleného hrdiny proti ploše ostrůvku pod ním, obojí promítnuté kamerou (px).
