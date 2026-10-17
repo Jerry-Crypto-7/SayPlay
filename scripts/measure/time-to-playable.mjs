@@ -145,7 +145,7 @@ export async function measure(config) {
     }
     const deadline = result.t0 + timeoutMs;
     if (config.waitForUrl) await page.waitForURL(new RegExp(config.waitForUrl), { waitUntil: 'commit', timeout: Math.max(1, deadline - Date.now()) });
-    // Startovní tlačítko mimo střed plochy (Bitmagic „PLAY“) obecný vstup
+    // Startovní tlačítko mimo střed plochy (např. „PLAY“) obecný vstup
     // netrefí; klik je krok hráče, čas dál běží od t0.
     if (config.startSelector) await page.locator(config.startSelector).first().click({ timeout: Math.max(1, deadline - Date.now()) });
 
