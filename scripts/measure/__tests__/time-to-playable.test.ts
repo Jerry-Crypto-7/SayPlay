@@ -81,6 +81,15 @@ describe('time-to-playable probe', () => {
     expect(result.gameUrl).toMatch(/game=1$/);
   });
 
+  it('a poster that vanishes on the first tap is not the game reacting', async () => {
+    const result = await measure({ url: `${base}/poster-game.html`, surfaceSelector: 'canvas', timeoutMs: 10_000, gpu: false });
+
+    expect(result.playable).toBe(true);
+    expect(result.ms).toBeGreaterThanOrEqual(1900);
+    expect(result.ms).toBeLessThanOrEqual(3500);
+    expect(result.confirmChangePct).toBeGreaterThanOrEqual(1);
+  });
+
   it('a page without any surface reports that, not a reaction failure', async () => {
     const result = await measure({ url: `${base}/dead-game.html`, surfaceSelector: 'iframe', timeoutMs: 1500, gpu: false });
 

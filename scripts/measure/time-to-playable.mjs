@@ -16,11 +16,13 @@
  *
  * **Hratelná** = na stránce je plocha (největší viditelný canvas/iframe) a po
  * vstupu (klepnutí do středu plochy, Space, držená ArrowRight) se do 500 ms
- * změní ≥ 1 % jejích pixelů. Klepnutí jde první, protože teprve ono dá ploše
- * (i iframe) fokus pro klávesy. `t0` = těsně před odesláním věty, u sdílené hry
- * těsně před navigací; `tPlayable` = snímek, na kterém byla změna vidět.
- * Rozlišení je jeden pokus (~0,6 s): hra připravená uprostřed pokusu se pozná
- * až v dalším.
+ * změní ≥ 1 % jejích pixelů – a hned následující pokus na téže ploše reaguje
+ * znovu. Jedna reakce nestačí: plakát „Tap to play“ přes iframe zmizí na první
+ * klepnutí, i když hra pod ním ještě načítá. Klepnutí jde první, protože teprve
+ * ono dá ploše (i iframe) fokus pro klávesy. `t0` = těsně před odesláním věty,
+ * u sdílené hry těsně před navigací; `tPlayable` = snímek první reakce
+ * potvrzené dvojice. Rozlišení je jeden pokus (~0,6 s): hra připravená
+ * uprostřed pokusu se pozná až v dalším.
  *
  * Snímá se screenshot stránky (kompozitor), ne `toDataURL` plátna – WebGL bez
  * `preserveDrawingBuffer` i cizí iframe tak vidí stejně jako hráč.
@@ -123,7 +125,7 @@ export async function measure(config) {
   if (config.harPath) mkdirSync(dirname(config.harPath), { recursive: true });
   if (config.screenshotDir) mkdirSync(config.screenshotDir, { recursive: true });
   const page = await context.newPage();
-  const result = { url: config.url, sentence: config.sentence ?? null, t0: 0, tPlayable: null, ms: null, playable: false, note: null, attempts: 0, inputChangePct: null, idleAfterPct: null, renderer: gpu ? 'gpu' : 'software', gameUrl: null };
+  const result = { url: config.url, sentence: config.sentence ?? null, t0: 0, tPlayable: null, ms: null, playable: false, note: null, attempts: 0, inputChangePct: null, confirmChangePct: null, idleAfterPct: null, renderer: gpu ? 'gpu' : 'software', gameUrl: null };
 
   try {
     if (config.promptSelector) {
@@ -144,35 +146,49 @@ export async function measure(config) {
     if (config.waitForUrl) await page.waitForURL(new RegExp(config.waitForUrl), { waitUntil: 'commit', timeout: Math.max(1, deadline - Date.now()) });
 
     let sawSurface = false;
+    /** Reakce, která čeká na potvrzení hned následujícím pokusem na téže ploše. */
+    let pending = null;
     while (Date.now() < deadline) {
       try {
         const surface = await findSurface(page, surfaceSelector);
         if (surface === null) {
+          pending = null;
           await wait(POLL_MS);
           continue;
         }
         sawSurface = true;
+        if (pending !== null && !(await pending.handle.evaluate((element, other) => element === other, surface.handle).catch(() => false))) pending = null;
         result.attempts += 1;
         const hit = await attempt(page, surface);
-        if (hit === null) continue;
+        if (hit === null) {
+          pending = null;
+          continue;
+        }
+        if (pending === null) {
+          pending = { ...hit, handle: surface.handle };
+          continue;
+        }
         result.playable = true;
-        result.tPlayable = hit.seenAt;
-        result.ms = hit.seenAt - result.t0;
-        result.inputChangePct = round(hit.pct);
+        result.tPlayable = pending.seenAt;
+        result.ms = pending.seenAt - result.t0;
+        result.inputChangePct = round(pending.pct);
+        result.confirmChangePct = round(hit.pct);
         result.gameUrl = page.url();
         const idleA = await shot(surface.handle);
         await wait(IDLE_MS);
         result.idleAfterPct = round((await changedPct(idleA, await shot(surface.handle))) ?? 100);
         if (result.idleAfterPct >= CHANGE_PCT) result.note = `surface also changes without input (${result.idleAfterPct} % in ${IDLE_MS} ms) – check the screenshot`;
         if (config.screenshotDir) {
-          await sharp(hit.before).toFile(join(config.screenshotDir, 'surface-before.png'));
-          await sharp(hit.after).toFile(join(config.screenshotDir, 'surface-after.png'));
+          await sharp(pending.before).toFile(join(config.screenshotDir, 'surface-before.png'));
+          await sharp(pending.after).toFile(join(config.screenshotDir, 'surface-after.png'));
+          await sharp(hit.after).toFile(join(config.screenshotDir, 'surface-confirm.png'));
           await page.screenshot({ path: join(config.screenshotDir, 'page.png') });
         }
         break;
       } catch (error) {
         // Navigace uprostřed pokusu odpojí prvek nebo zničí kontext – další pokus.
         if (!/detached|destroyed|navigat|Target closed|not attached|Timeout/i.test(String(error))) throw error;
+        pending = null;
         await wait(POLL_MS);
       }
     }

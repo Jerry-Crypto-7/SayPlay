@@ -26,6 +26,7 @@ export interface ProbeResult {
   note: string | null;
   attempts: number;
   inputChangePct: number | null;
+  confirmChangePct: number | null;
   idleAfterPct: number | null;
   renderer: 'gpu' | 'software';
   gameUrl: string | null;
