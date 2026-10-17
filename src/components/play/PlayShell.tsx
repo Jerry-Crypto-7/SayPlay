@@ -49,6 +49,8 @@ export interface PlayShellProps {
   readonly par?: Par | null;
   /** Výzva kamaráda z odkazu `?dare=` (P36B T7), ověřená serverem; jen arkáda. */
   readonly challenge?: Dare | null;
+  /** Id výzvy nejlepšího běhu z úložiště (P50 T6) pro prvního ducha; jen arkáda. */
+  readonly bestDare?: string | null;
 }
 
 /**

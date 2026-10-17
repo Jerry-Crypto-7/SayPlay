@@ -102,6 +102,20 @@ je párový rozdíl širší: nejvíc −141 ms (telefon, sdílená hra, první 
 - **Srovnávací build A je poslední přijatý stav před úlohou**, ne pořád
   `origin/main` – o úloze rozhoduje její vlastní přínos. Proti `origin/main`
   měří až konečné měření.
+- **T6: „data před prvním snímkem“ = detail hry `GET /api/play/games/:id`.** HAR
+  T5 (120 běhů) ho ukazuje v každém běhu před prvním snímkem, kvůli jedinému
+  údaji `bestDare` pro ducha. `/env` se ptá až po prvním snímku (`Panorama`
+  začne v prvním `useFrame`) a v měřených hrách vůbec, `/voice` až po prvním
+  vstupu hráče (vypravěč), `/upgrade` je štítek AI verze – nic z toho první
+  snímek nečeká, proto zůstávají na klientovi.
+
+### Přijato
+
+Párový medián B − A (30 dvojic na profil), A = `origin/main`.
+
+| Úloha | Změna | Hratelná desktop | Hratelná telefon | 1. snímek desktop | 1. snímek telefon | Proč zůstává |
+|---|---|---|---|---|---|---|
+| T6 | Nejlepší běh pro ducha (`bestDare`) jde se stránkou `/play/[id]`; klient ho použije pro první načtení ducha, další se ptá dveří znovu | +17 ms | **−195 ms** | −4 ms | −42,5 ms | Telefon pod prahem −56 ms, nic nad prahem. HAR před hratelností: detail hry A 60/60 běhů, B 0/60. |
 
 ### Zkoušeno a vráceno
 

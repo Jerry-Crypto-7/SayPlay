@@ -79,15 +79,30 @@ async function bestDareOf(versionId: string, fetcher: typeof fetch): Promise<str
 }
 
 /**
+ * Nejlepší běh, který stránka `/play/[id]` přečetla z úložiště (P50 T6), dostane
+ * jen první načtení ducha – detail hry se po hydrataci nestahuje. Každé další
+ * načtení (`undefined`) se zeptá znovu: id z HTML je staré jako stránka.
+ */
+export function bestOnce(fromPage: string | null | undefined): () => string | null | undefined {
+  let left = fromPage;
+  return () => {
+    const best = left;
+    left = undefined;
+    return best;
+  };
+}
+
+/**
  * Duch hry (`GHOST.md` krok 1–2): kamarád z odkazu `?dare=` má přednost; jeho
  * výzva bez běhu (starší, nad stropem) ustoupí nejlepšímu běhu hry. Žádný = `null`.
+ * `known` = nejlepší běh ze stránky (`null` = hra žádný nemá); `undefined` = zeptat se dveří.
  */
-export async function loadGhost(versionId: string, friendDare: string | null, world: ArcadeWorld, fetcher: typeof fetch = fetch): Promise<LoadedGhost | null> {
+export async function loadGhost(versionId: string, friendDare: string | null, world: ArcadeWorld, fetcher: typeof fetch = fetch, known?: string | null): Promise<LoadedGhost | null> {
   if (friendDare !== null) {
     const source = await fetchGhost(versionId, friendDare, world, fetcher);
     if (source !== null) return { source, label: 'friend' };
   }
-  const best = await bestDareOf(versionId, fetcher);
+  const best = known === undefined ? await bestDareOf(versionId, fetcher) : known;
   if (best === null || best === friendDare) return null;
   const source = await fetchGhost(versionId, best, world, fetcher);
   return source === null ? null : { source, label: 'best' };
