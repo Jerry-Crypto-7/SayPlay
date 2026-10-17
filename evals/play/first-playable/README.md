@@ -103,6 +103,14 @@ je párový rozdíl širší: nejvíc −141 ms (telefon, sdílená hra, první 
   `origin/main` – o úloze rozhoduje její vlastní přínos. Proti `origin/main`
   měří až konečné měření.
 
+### Zkoušeno a vráceno
+
+Párový medián B − A (30 dvojic na profil), záporné = B rychlejší.
+
+| Úloha | Změna | Hratelná desktop | Hratelná telefon | 1. snímek desktop | 1. snímek telefon | Proč vráceno |
+|---|---|---|---|---|---|---|
+| T2 | AO, SMAA a bloom až po prvním snímku (skládač s tónováním a laděním zůstal v prvním) | **+334 ms** | −263 ms | −319 ms | +28 ms | První snímek přijde dřív, ale překlad odložených efektů (~285 ms hlavního vlákna) padne přesně na start hry – na desktopu je hratelná později. |
+
 ## Co číslo neříká
 
 - **AI verze neměřena.** Vylepšení od režiséra potřebuje klíče k modelu a lokálně

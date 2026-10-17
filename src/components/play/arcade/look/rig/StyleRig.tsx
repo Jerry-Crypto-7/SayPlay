@@ -22,7 +22,7 @@ import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mes
 import type { Look, LookId } from '@/play/arcade/look';
 
 import { LOOK_FAMILY } from './grade';
-import { Post, useFirstFrameDrawn, useQualityTier } from './Post';
+import { Post, useQualityTier } from './Post';
 import { TIER_SETTINGS } from './quality';
 
 /**
@@ -261,7 +261,6 @@ function Exposure({ exposure }: { readonly exposure: number }) {
 
 export function StyleRig({ look, lookId, control, surface }: { readonly look: Look; readonly lookId: LookId; readonly control: string; readonly surface: RefObject<HTMLDivElement | null> }) {
   const tier = useQualityTier(surface);
-  const drawn = useFirstFrameDrawn();
   return (
     <>
       <color attach="background" args={[look.horizon]} />
@@ -273,7 +272,7 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <Sun look={look} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       <ShadowFlags />
       <SceneryWindow />
-      <Post look={look} family={LOOK_FAMILY[lookId]} tier={tier} lean={!drawn} />
+      <Post look={look} family={LOOK_FAMILY[lookId]} tier={tier} />
     </>
   );
 }
