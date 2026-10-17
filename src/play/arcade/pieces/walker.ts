@@ -9,8 +9,19 @@ export const walkerParamsSchema = z.object({
   collect: z.boolean().optional(),
   paceBudgetPct: z.int().min(100).max(180).optional(),
   corridorRisePermille: z.int().min(0).max(200).optional(),
+  /** Nová hra (P51 T3, nativní spec bez `genre`): průběh, východ v nejvzdálenější buňce a stezka jisker (`WALKER_FINALE`). */
+  segments: z.literal(true).optional(),
 }).strict();
 export type WalkerParams = z.infer<typeof walkerParamsSchema>;
+
+/**
+ * Finále chodce (P51 T3, jen se značkou `segments`): východ leží v nejvzdálenější buňce bludiště (nejdelší
+ * cesta, robot 17–29 s místo 10–22 s), na posledních `trail` buňkách cesty před ním jiskry – závěrečný spěch,
+ * jehož sebrání telemetrie uzná jako `climax`. Jiskra má `spark` jednotek přes chodbu: střed hráče je v chodbě
+ * nejvýš 1600 od její osy, takže cesta k východu (strom bez smyček) seberou všechny – výhru se sběrem nezdrží.
+ */
+export const WALKER_FINALE = { trail: 8, spark: 2800 } as const;
+const WALKER_SPARK: Omit<BodyInit, 'x' | 'z'> = { role: 'collectible', kind: 'spark', y: 0, w: WALKER_FINALE.spark, h: 150, d: WALKER_FINALE.spark, solid: false };
 export const walkerMapSchema = z.object({ size: z.int().min(7).max(15), open: z.array(z.int().min(0).max(224)).max(225) }).strict();
 export type WalkerMap = z.infer<typeof walkerMapSchema>;
 export const walkerControlParams = walkerMapSchema.extend({ speed: z.int().min(80).max(160), chaseSpeed: z.int().min(0).max(70).default(0) }).strict();
@@ -54,6 +65,21 @@ export function walkerMaze(seed: number, size: number): WalkerMap {
   open.add(1);
   return { size, open: [...open].sort((a, b) => a - b) };
 }
+
+/** Východ: roh naproti startu; nová hra (`segments`) nejvzdálenější buňka od startu, remíza = nižší index. Vstupní chodba (řada 0) ne. */
+export function walkerExit(map: WalkerMap, segments: boolean | undefined): number {
+  const start = map.size + 1;
+  if (segments !== true) return (map.size - 2) * map.size + map.size - 2;
+  let best = start, most = 0;
+  for (const cell of map.open) {
+    const steps = cell < map.size ? 0 : walkerPath(map, start, cell).length - 1;
+    if (steps > most) { best = cell; most = steps; }
+  }
+  return best;
+}
+
+/** Tiky cesty robota plnou rychlostí od startu k východu (`goal`): postup průběhu chodce měří čas proti ní. */
+export const walkerRouteTicks = (map: WalkerMap, speed: number, goal: number): number => Math.ceil((walkerPath(map, map.size + 1, goal).length - 1) * WALKER_CELL / speed);
 
 export const walkerVelocity = (input: ArcadeInput, speed: number): { vx: number; vz: number } => {
   let x = Math.max(-AXIS_MAX, Math.min(AXIS_MAX, input.axis));
@@ -134,7 +160,8 @@ export const walkerCaught: RulePiece<z.infer<typeof caughtParams>> = {
 type Mode = 'labyrinth' | 'stealth' | 'escape';
 function levelOf(seed: number, params: WalkerParams, mode: Mode): ArcadeLevel {
   const map = walkerMaze(seed, params.size), open = new Set(map.open);
-  const route = params.corridorRisePermille === undefined ? [] : walkerPath(map, params.size + 1, (params.size - 2) * params.size + params.size - 2);
+  const exit = walkerExit(map, params.segments);
+  const route = params.corridorRisePermille === undefined ? [] : walkerPath(map, params.size + 1, exit);
   const wallSize = (cell: number): number => {
     if (route.length === 0) return WALKER_CELL;
     let nearest = 0, distance = Infinity;
@@ -144,11 +171,16 @@ function levelOf(seed: number, params: WalkerParams, mode: Mode): ArcadeLevel {
   };
   const bodies: BodyInit[] = [{ role: 'player', kind: 'player', x: WALKER_CELL, y: 0, z: WALKER_CELL, w: 800, h: 1200, d: 800, solid: false }];
   for (let cell = 0; cell < params.size * params.size; cell++) if (!open.has(cell)) bodies.push({ role: 'obstacle', kind: 'wall', x: cell % params.size * WALKER_CELL, y: 0, z: Math.floor(cell / params.size) * WALKER_CELL, w: wallSize(cell), h: 3 * UNIT, d: wallSize(cell), solid: true });
-  bodies.push({ role: 'goal', kind: 'finish', x: (params.size - 2) * WALKER_CELL, y: 0, z: (params.size - 2) * WALKER_CELL, w: 1600, h: 1800, d: 1600, solid: false });
+  bodies.push({ role: 'goal', kind: 'finish', x: exit % params.size * WALKER_CELL, y: 0, z: Math.floor(exit / params.size) * WALKER_CELL, w: 1600, h: 1800, d: 1600, solid: false });
+  const path = walkerPath(map, params.size + 1, exit);
   if (params.collect) {
-    const path = walkerPath(map, params.size + 1, (params.size - 2) * params.size + params.size - 2);
     const cell = path.at(-2)!;
     bodies.push({ role: 'collectible', kind: 'coin', x: cell % params.size * WALKER_CELL, y: 0, z: Math.floor(cell / params.size) * WALKER_CELL, w: 1000, h: 1000, d: 1000, solid: false });
+  }
+  // Stezka finále před strážným či pronásledovatelem: `walker_caught` čte strážného jako poslední tělo úrovně.
+  if (params.segments === true) {
+    const trail = path.slice(1, params.collect ? -2 : -1).slice(-WALKER_FINALE.trail);
+    for (const cell of trail) bodies.push({ ...WALKER_SPARK, x: cell % params.size * WALKER_CELL, z: Math.floor(cell / params.size) * WALKER_CELL });
   }
   if (mode === 'stealth') bodies.push({ role: 'enemy', kind: 'guard', x: WALKER_CELL, y: 0, z: -2 * UNIT, w: 800, h: 1400, d: 800, solid: false, kinematic: true, vz: 40, period: 200 });
   if (mode === 'escape') bodies.push({ role: 'chaser', kind: 'chaser', x: WALKER_CELL, y: 0, z: -2 * UNIT, w: 800, h: 1400, d: 800, solid: false, kinematic: true });
@@ -158,14 +190,14 @@ function levelOf(seed: number, params: WalkerParams, mode: Mode): ArcadeLevel {
 function generator(mode: Mode): ModeGeneratorPiece<WalkerParams> {
   return {
     id: `walker_${mode}`, params: walkerParamsSchema, roles: ['player', 'obstacle', 'goal', 'enemy', 'chaser'],
-    cost: params => ({ bodies: params.size * params.size + 3, rules: 4 }),
+    cost: params => ({ bodies: params.size * params.size + 3 + (params.segments === true ? WALKER_FINALE.trail : 0), rules: 4 }),
     generate: (seed, params) => levelOf(seed, params, mode),
     parts(seed, params, health) {
       const map = walkerMaze(seed, params.size), level = levelOf(seed, params, mode);
-      const goal = (params.size - 2) * params.size + params.size - 2;
+      const goal = walkerExit(map, params.segments);
       const path = walkerPath(map, params.size + 1, goal);
       const rules: PieceRef[] = [
-        ...(params.collect ? [{ id: 'pickup', params: {} }] : []),
+        ...(params.collect || params.segments === true ? [{ id: 'pickup', params: {} }] : []),
         { id: 'finish', params: params.collect ? { allItems: true } : {} },
         { id: 'time_limit', params: { seconds: params.paceBudgetPct === undefined ? 80 : Math.max(10, Math.min(90, Math.ceil((path.length - 1) * WALKER_CELL / params.speed * params.paceBudgetPct / 100 / 60))) } }, { id: 'out_of_health', params: {} },
       ];

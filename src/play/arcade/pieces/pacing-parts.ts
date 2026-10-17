@@ -28,6 +28,7 @@ import { type GunParams, marchedRange, shooterWaves } from './shooter';
 import { courseOf, steerRoute } from './steer';
 import { THROW_SWING, throwField, throwParamsFor, throwParts } from './throw';
 import { type TimingLevelParams, checkTimingLevel, timingLevel, timingLevelAtSpeeds, timingSpeedOf } from './timing';
+import { type WalkerMap, walkerRouteTicks } from './walker';
 import type { WaveParams } from './waves';
 
 /** Co žánr dá průběhu: nastavení `withPacing` bez semínka; boss navíc s věcmi, které nese, a body za pád. */
@@ -689,6 +690,20 @@ function generatorParams(spec: GameSpecV1): Record<string, unknown> {
   return { ...own, ...tuning };
 }
 
+/**
+ * Chodec a klouzání (P51 T3): nativní spec bez `genre` dostane průběh jen se značkou nové hry `segments`
+ * (`pacedNative`) a bez dílů P42; finále staví generátor (stezka jisker `WALKER_FINALE`, tunel `GLIDE_FINALE`).
+ * Postup chodce = čas proti cestě robota plnou rychlostí (bludiště nemá osu), klouzání = trať.
+ */
+const walkerPaced: GenrePacing = (parts, spec) => {
+  if (generatorParams(spec).segments !== true || spec.assemblyParts !== undefined) return null;
+  const bot = parts.bot.params as unknown as WalkerMap & { readonly speed: number; readonly goal: number };
+  const ticks = walkerRouteTicks(bot, bot.speed, bot.goal);
+  return still({ by: 'time', need: ticks, limit: Math.min(ARCADE_LIMITS.maxTicks, ticks) }, 'sprint');
+};
+const glidePaced: GenrePacing = (parts, spec) =>
+  generatorParams(spec).segments !== true || spec.assemblyParts !== undefined ? null : still({ by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks }, 'sprint');
+
 /** Statický žánr bez chování: jen křivka (`pacing_control`) a finále v pravidle `pacing`. */
 const still = (goal: GenrePacingSetup['goal'], finale: NonNullable<GenrePacingSetup['finale']>): Pick<GenrePacingSetup, 'goal' | 'space' | 'spots' | 'behaviours' | 'budget' | 'finale'> => ({
   goal,
@@ -961,6 +976,11 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   // Složená hra (díly P42, R2) ano, kromě dílu `chaser`: vyběhne hráči naproti a v první sekundě mu vezme život, takže past
   // a boss průběhu se hrají na dva – začátečník 0,5 → 0,25 (20 semínek). Ostatní díly: intermediate 1,0, začátečník 0,3–0,45.
   platform_level: (parts, spec, seed) => (livesAtMost(spec, 1) || spec.assemblyParts?.some((part) => part.kind === 'chaser') === true ? null : platformPaced(parts, spec, seed)),
+  // Chodec a klouzání (P51 T3): jen nová hra se značkou `segments`, finále staví generátor.
+  walker_labyrinth: walkerPaced,
+  walker_stealth: walkerPaced,
+  walker_escape: walkerPaced,
+  glide_course: glidePaced,
 };
 
 /** Verze překladu žánru před průběhem (`GENRE_COMPILER_VERSION` v `genre/contract.ts`): uložené hry s ní průběh nedostanou. */
