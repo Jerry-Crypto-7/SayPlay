@@ -19,8 +19,10 @@ export type WalkerParams = z.infer<typeof walkerParamsSchema>;
  * cesta, robot 17–29 s místo 10–22 s), na posledních `trail` buňkách cesty před ním jiskry – závěrečný spěch,
  * jehož sebrání telemetrie uzná jako `climax`. Jiskra má `spark` jednotek přes chodbu: střed hráče je v chodbě
  * nejvýš 1600 od její osy, takže cesta k východu (strom bez smyček) seberou všechny – výhru se sběrem nezdrží.
+ * Hodiny mají navíc `reserve` tiků: na delší cestě začátečník ztratí 1,1–2,6 s a bez rezervy vyhrál 0/12;
+ * s 51 tiky (0,85 s, okno 46–58 před zaokrouhlením na celé sekundy) vyhraje 5/12 (změřeno, 7 buněk × 12 semínek).
  */
-export const WALKER_FINALE = { trail: 8, spark: 2800 } as const;
+export const WALKER_FINALE = { trail: 8, spark: 2800, reserve: 51 } as const;
 const WALKER_SPARK: Omit<BodyInit, 'x' | 'z'> = { role: 'collectible', kind: 'spark', y: 0, w: WALKER_FINALE.spark, h: 150, d: WALKER_FINALE.spark, solid: false };
 export const walkerMapSchema = z.object({ size: z.int().min(7).max(15), open: z.array(z.int().min(0).max(224)).max(225) }).strict();
 export type WalkerMap = z.infer<typeof walkerMapSchema>;
@@ -199,7 +201,7 @@ function generator(mode: Mode): ModeGeneratorPiece<WalkerParams> {
       const rules: PieceRef[] = [
         ...(params.collect || params.segments === true ? [{ id: 'pickup', params: {} }] : []),
         { id: 'finish', params: params.collect ? { allItems: true } : {} },
-        { id: 'time_limit', params: { seconds: params.paceBudgetPct === undefined ? 80 : Math.max(10, Math.min(90, Math.ceil((path.length - 1) * WALKER_CELL / params.speed * params.paceBudgetPct / 100 / 60))) } }, { id: 'out_of_health', params: {} },
+        { id: 'time_limit', params: { seconds: params.paceBudgetPct === undefined ? 80 : Math.max(10, Math.min(90, Math.ceil(((path.length - 1) * WALKER_CELL / params.speed * params.paceBudgetPct / 100 + (params.segments === true ? WALKER_FINALE.reserve : 0)) / 60))) } }, { id: 'out_of_health', params: {} },
       ];
       if (mode === 'stealth') rules.push({ id: 'walker_caught', params: { ...map, body: level.bodies.length - 1, range: 5 * UNIT } });
       if (mode === 'escape') rules.push({ id: 'hit', params: { role: 'chaser', effect: 'damage', grace: 60, after: 'respawn' } });

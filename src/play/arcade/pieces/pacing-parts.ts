@@ -18,7 +18,7 @@ import { ESCAPE } from './arena';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef } from './behaviours';
 import { BOSS, DROPPER, TURRET, bossBody } from './behaviours/boss';
 import { DUEL_ENRAGE, DUEL_FOE } from './duel';
-import { PACING, type PacingActor, type PacingSetup, TENSION_CURVE, intensityAt, withPacing } from './pacing';
+import { PACING, type PacingActor, type PacingSetup, TENSION_CURVE, controlIn, intensityAt, withPacing } from './pacing';
 import { progressionParts } from './progression-parts';
 import type { CompiledInteract } from '../rules/interact';
 import { QUEST, boilRounds, stationRoundSeconds } from './quest';
@@ -28,7 +28,7 @@ import { type GunParams, marchedRange, shooterWaves } from './shooter';
 import { courseOf, steerRoute } from './steer';
 import { THROW_SWING, throwField, throwParamsFor, throwParts } from './throw';
 import { type TimingLevelParams, checkTimingLevel, timingLevel, timingLevelAtSpeeds, timingSpeedOf } from './timing';
-import { type WalkerMap, walkerRouteTicks } from './walker';
+import { type WalkerMap, walkerExit, walkerRouteTicks } from './walker';
 import type { WaveParams } from './waves';
 
 /** Co žánr dá průběhu: nastavení `withPacing` bez semínka; boss navíc s věcmi, které nese, a body za pád. */
@@ -697,8 +697,9 @@ function generatorParams(spec: GameSpecV1): Record<string, unknown> {
  */
 const walkerPaced: GenrePacing = (parts, spec) => {
   if (generatorParams(spec).segments !== true || spec.assemblyParts !== undefined) return null;
-  const bot = parts.bot.params as unknown as WalkerMap & { readonly speed: number; readonly goal: number };
-  const ticks = walkerRouteTicks(bot, bot.speed, bot.goal);
+  // Mapu nese ovládání chodce (pod obaly fází): robot ji s `dependsOn` nemá (`objective_walker_bot`).
+  const map = controlIn(parts.control, 'walker')!.params as unknown as WalkerMap & { readonly speed: number };
+  const ticks = walkerRouteTicks(map, map.speed, walkerExit(map, true));
   return still({ by: 'time', need: ticks, limit: Math.min(ARCADE_LIMITS.maxTicks, ticks) }, 'sprint');
 };
 const glidePaced: GenrePacing = (parts, spec) =>

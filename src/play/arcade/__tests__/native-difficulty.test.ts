@@ -36,7 +36,8 @@ it('preserves cell tuning when named content replaces the reference cast',()=>{
  for(const cell of liveCells().filter(c=>c.assembly==='native'&&['walk','glide'].includes(c.recipe.move))){const {params:_params,...content}=cell.preset;const spec=compileRecipe(assemblyOfCell(cell,{...content,hero:'fox'}));expect(spec.controlParams).toMatchObject(cell.recipe.move==='walk'?{paceBudgetPct:100,corridorRisePermille:200}:{clearancePermille:275,clearanceRisePermille:10});}
 });
 it('later solid corridor walls physically block the same input sooner',()=>{
- const cell=liveCells().find(c=>c.id==='walk.reach')!;const spec=compileRecipe(assemblyOfCell(cell));const made=arcadeWorldOf(spec,1);if(!made.ok)throw Error('build');
+ // Bez značky nové hry (P51 T3): pravidlo `pacing` obalí ovládání a `control.params` by mapu neneslo.
+ const cell=liveCells().find(c=>c.id==='walk.reach')!;const {segments:_segments,...params}=compileRecipe(assemblyOfCell(cell)).controlParams as Record<string,unknown>;const spec={...compileRecipe(assemblyOfCell(cell)),controlParams:params as ReturnType<typeof compileRecipe>['controlParams']};const made=arcadeWorldOf(spec,1);if(!made.ok)throw Error('build');
  const original=arcadeWorldOf({...spec,controlParams:{...spec.controlParams,corridorRisePermille:undefined}},1);if(!original.ok)throw Error('baseline build');
  const map=made.world.control.params as {size:number;open:number[]};let wall=-1,cellX=0,cellZ=0,sign=0;
  for(let i=0;i<made.world.initial[HEADER.bodyCount];i++){

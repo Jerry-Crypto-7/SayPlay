@@ -937,7 +937,7 @@ export function bossKindOf(world: Pick<ArcadeWorld, 'rules' | 'initial' | 'kinds
 }
 
 /** Kus ovládání `id` v řetězu obalů (`params.base`: doplňky, průběh, fáze, skládání). */
-function controlIn(ref: PieceRef, id: string): PieceRef | undefined {
+export function controlIn(ref: PieceRef, id: string): PieceRef | undefined {
   if (ref.id === id) return ref;
   const base = ref.params.base;
   return typeof base === 'object' && base !== null ? controlIn(base as PieceRef, id) : undefined;
