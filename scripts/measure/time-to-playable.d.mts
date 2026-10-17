@@ -15,6 +15,8 @@ export interface ProbeConfig {
   gpu?: boolean;
   headless?: boolean;
   viewport?: { width: number; height: number };
+  device?: string;
+  cpuThrottle?: number;
 }
 
 export interface ProbeResult {
@@ -29,6 +31,7 @@ export interface ProbeResult {
   inputChangePct: number | null;
   confirmChangePct: number | null;
   idleAfterPct: number | null;
+  firstFrameMs: number | null;
   renderer: 'gpu' | 'software';
   gameUrl: string | null;
 }

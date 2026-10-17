@@ -48,6 +48,61 @@ rozlišení sondy.
   `surface-confirm.png`, `page.png`). `t0` a `tPlayable` v `report.json` jsou
   epoch ms, takže se dají odečíst přímo proti `startedDateTime` v HAR.
 
+## P50: střídavé měření A/B (17. 10. 2026)
+
+- **Nástroj:** `node scripts/measure/first-playable-ab.mjs <config.json>` – dva
+  servery (A, B), stejné cíle, běhy po dvojicích těsně po sobě; strana, která
+  jde první, se po dvojicích střídá (AB, BA, …), mezi běhy 5 s. Opakování je
+  vnější smyčka, takže se tři běhy cíle rozloží přes celé měření.
+- **Cíle:** věty `evals/play/p30/dev.json` [0..4] (věta → hra na `/play`) a
+  sdílené hry z vět [5..9] (skript je publikuje přes `POST /api/play/games` na
+  obou serverech a měří otevření `/play/<id>`). Před měřením se každá věta
+  publikuje na obou serverech, takže každý běh věty najde hotovou hru.
+- **Profily:** `desktop` (1280×720 jako výše) a `pixel7-cpu4` (Playwright
+  `Pixel 7`, CPU 4× pomalejší přes CDP jako `e2e/p35-perf.spec.ts`).
+- **Dvě metriky:** čas do hratelnosti (`ms`, sonda výše) a `firstFrameMs` – od
+  t0 do konce prvního snímku, ve kterém plátno hry kreslilo (sonda obalí
+  kreslicí volání WebGL a `requestAnimationFrame`). První snímek nemá zrnitost
+  pokusů sondy (~0,6 s, na telefonu pod zátěží i několik sekund).
+- **Úpravy sondy:** snímek plochy v CSS pixelech – na telefonu s hustotou 2,6
+  a 4× CPU trval snímek v plném rozlišení přes 2 s a jeden pokus ~5 s; na
+  desktopu s hustotou 1 beze změny. Navíc `device`, `cpuThrottle`, `firstFrameMs`.
+- **Výstup:** medián, min, max po cíli, druhu cíle a profilu; `diffMedian` =
+  medián B − medián A, `pairedDiffMedian` = medián rozdílů B − A uvnitř dvojic,
+  kde hrály obě strany. Nehratelný běh je selhání, do časů se nepočítá. HAR
+  každého běhu leží mimo repo v `.claude/p50-raw/<běh>/` hlavního checkoutu.
+
+### Rozptyl: stejný kód na obou stranách (`p50-baseline.json`)
+
+A = `origin/main` 04700849, B = větev v T1 (mění jen `scripts/measure`).
+3 běhy × 10 cílů × 2 profily × 2 strany = 120 běhů, 30 dvojic na profil. Stroj
+byl během měření vytížený jinými úlohami (CPU až 100 %).
+
+| profil | metrika | medián A (min – max) | medián B (min – max) | B − A mediánů | B − A párů |
+|---|---|---|---|---|---|
+| desktop | hratelná | 2134 ms (1447 – 9927) | 2111 ms (1469 – 3034) | −23 | +37 |
+| desktop | první snímek | 1191 ms (880 – 1679) | 1170 ms (884 – 1800) | −21 | +6 |
+| pixel7-cpu4 | hratelná | 6333 ms (4515 – 42221) | 6436 ms (4442 – 17930) | +103 | −56 |
+| pixel7-cpu4 | první snímek | 3917 ms (1656 – 36456) | 3503 ms (1643 – 6076) | −414 | +28 |
+
+Telefon A má jedno selhání (hra nereagovala do 60 s). Po druzích cílů (15 dvojic)
+je párový rozdíl širší: nejvíc −141 ms (telefon, sdílená hra, první snímek).
+
+**Závěr:** dva stejné buildy se v mediánu liší až o 414 ms, v párech nejvýš o
+56 ms. Rozdíl mediánů bez párování na rozhodnutí o 50 ms pod zátěží stroje nestačí.
+
+### Rozhodnutí P50
+
+- **Rozhoduje párový medián přes oba druhy cílů v profilu** (30 dvojic), ne
+  rozdíl mediánů.
+- **Práh skutečné změny** = větší z 50 ms a |A proti A| téže metriky a profilu:
+  hratelná desktop 50 ms, telefon 56 ms; první snímek 50 ms na obou. Změna
+  zůstane, když aspoň jedna metrika v aspoň jednom profilu klesne pod −práh a
+  žádná nestoupne nad +práh; jinak se vrátí a zapíše níž do „Zkoušeno a vráceno“.
+- **Srovnávací build A je poslední přijatý stav před úlohou**, ne pořád
+  `origin/main` – o úloze rozhoduje její vlastní přínos. Proti `origin/main`
+  měří až konečné měření.
+
 ## Co číslo neříká
 
 - **AI verze neměřena.** Vylepšení od režiséra potřebuje klíče k modelu a lokálně
