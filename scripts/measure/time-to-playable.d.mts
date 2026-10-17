@@ -6,6 +6,7 @@ export interface ProbeConfig {
   submitSelector?: string;
   sentence?: string;
   waitForUrl?: string;
+  startSelector?: string;
   surfaceSelector?: string;
   timeoutMs?: number;
   harPath?: string;

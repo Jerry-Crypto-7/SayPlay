@@ -90,6 +90,14 @@ describe('time-to-playable probe', () => {
     expect(result.confirmChangePct).toBeGreaterThanOrEqual(1);
   });
 
+  it('a game behind an off-centre start button is measured from navigation through the click', async () => {
+    const result = await measure({ url: `${base}/start-game.html`, startSelector: '#play', surfaceSelector: 'canvas', timeoutMs: 10_000, gpu: false });
+
+    expect(result.playable).toBe(true);
+    expect(result.ms).toBeGreaterThanOrEqual(900);
+    expect(result.ms).toBeLessThanOrEqual(3500);
+  });
+
   it('a page without any surface reports that, not a reaction failure', async () => {
     const result = await measure({ url: `${base}/dead-game.html`, surfaceSelector: 'iframe', timeoutMs: 1500, gpu: false });
 

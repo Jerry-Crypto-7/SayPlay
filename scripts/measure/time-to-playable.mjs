@@ -8,7 +8,8 @@
  * Config: `url`; volitelně `promptSelector` + `sentence` (+ `submitSelector`,
  * bez něj Enter) pro měření „věta → hratelná“ – plochy, které na stránce byly
  * už před odesláním, se nepočítají –, `waitForUrl` (regex adresy hry, plocha se
- * hledá až po ní), `surfaceSelector` (výchozí
+ * hledá až po ní), `startSelector` (startovní tlačítko hry, klikne se na něj,
+ * jakmile je vidět), `surfaceSelector` (výchozí
  * `canvas, iframe`), `timeoutMs`, `harPath` (+ `harContent` omit|embed|attach),
  * `screenshotDir`, `gpu` (výchozí ano), `headless`, `viewport`.
  * Výstup: jeden JSON řádek `{ t0, tPlayable, ms, playable, note, … }` na stdout;
@@ -144,6 +145,9 @@ export async function measure(config) {
     }
     const deadline = result.t0 + timeoutMs;
     if (config.waitForUrl) await page.waitForURL(new RegExp(config.waitForUrl), { waitUntil: 'commit', timeout: Math.max(1, deadline - Date.now()) });
+    // Startovní tlačítko mimo střed plochy (Bitmagic „PLAY“) obecný vstup
+    // netrefí; klik je krok hráče, čas dál běží od t0.
+    if (config.startSelector) await page.locator(config.startSelector).first().click({ timeout: Math.max(1, deadline - Date.now()) });
 
     let sawSurface = false;
     /** Reakce, která čeká na potvrzení hned následujícím pokusem na téže ploše. */
