@@ -718,6 +718,16 @@ const walkerPaced: GenrePacing = (parts, spec) => {
 };
 const glidePaced: GenrePacing = (parts, spec) =>
   generatorParams(spec).segments !== true || spec.assemblyParts !== undefined ? null : still({ by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks }, 'sprint');
+/**
+ * Míč a chytání (P51 T4): jako chodec jen nová hra se značkou `segments` a bez dílů P42; finále staví generátor –
+ * soupeř-boss za terči (`BALL_FINALE`), kořist-boss na tři chycení (`CATCH_FINALE`). Postup = hodiny hry.
+ */
+const clockPaced: GenrePacing = (parts, spec) => {
+  if (generatorParams(spec).segments !== true || spec.assemblyParts !== undefined) return null;
+  const seconds = (ruleOf(parts, 'time_limit')?.params as { readonly seconds: number } | undefined)?.seconds;
+  const ticks = Math.min(ARCADE_LIMITS.maxTicks, seconds === undefined ? ARCADE_LIMITS.maxTicks : seconds * ARCADE_HZ);
+  return still({ by: 'time', need: ticks, limit: ticks }, 'round');
+};
 
 /** Statický žánr bez chování: jen křivka (`pacing_control`) a finále v pravidle `pacing`. */
 const still = (goal: GenrePacingSetup['goal'], finale: NonNullable<GenrePacingSetup['finale']>): Pick<GenrePacingSetup, 'goal' | 'space' | 'spots' | 'behaviours' | 'budget' | 'finale'> => ({
@@ -939,7 +949,7 @@ const livesAtMost = (spec: GameSpecV1, most: number): boolean => {
 /**
  * Průběh podle generátoru světa (`generatorOf`); žánry plní T11–T14. Generátor bez záznamu hraje beze změny.
  * Plošinovka (P46B T6) jen se značkou nové hry `segments` (`platformPaced`); `arena` (agar ze slovního návrhu bez
- * žánru) a `arena_catch` (`compose/catch.ts`) staví spec bez `genre`: žánr Aréna staví jen `arena_collect`,
+ * žánru) a `arena_catch` (`compose/catch.ts`, od P51 T4 se značkou `segments`) staví spec bez `genre`: žánr Aréna staví jen `arena_collect`,
  * `arena_escape` a `fight` (`genre/arena.ts`). `steer_track` (P46B T5) staví spec bez `genre` (`compose/drive.ts`):
  * průběh dostane, jen když nese značku nové hry `segments` (`pacedNative`).
  *
@@ -994,6 +1004,9 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   walker_stealth: walkerPaced,
   walker_escape: walkerPaced,
   glide_course: glidePaced,
+  // Míč a chytání (P51 T4): jen nová hra se značkou `segments`, soupeře a kořist-bosse staví generátor.
+  ball_pitch: clockPaced,
+  arena_catch: clockPaced,
 };
 
 /** Verze překladu žánru před průběhem (`GENRE_COMPILER_VERSION` v `genre/contract.ts`): uložené hry s ní průběh nedostanou. */

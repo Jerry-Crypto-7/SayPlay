@@ -1,13 +1,26 @@
 /** P41: a kicked/thrown sphere simulated by PhysicsSession, never a projectile shortcut. */
 import { z } from 'zod';
 import { createCompileRng } from '@/play/compile/rng';
-import { AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, PHYSICS_SUBSTEPS, ROLE, bodyBase, unpackRotation, type ArcadeEffect, type ArcadeLevel, type BodyInit, type ControlPiece, type ModeGeneratorPiece, type RulePiece } from '../contract';
+import { ARCADE_HZ, AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, PHYSICS_SUBSTEPS, ROLE, bodyBase, bodyHp, unpackRotation, type ArcadeEffect, type ArcadeLevel, type BodyInit, type ControlPiece, type ModeGeneratorPiece, type RulePiece } from '../contract';
 import { GRAVITY } from '../kernel';
 
 export const BALL_GOALS = ['goal', 'hoop', 'hole'] as const;
 export type BallGoal = typeof BALL_GOALS[number];
 export const BALL = { size: 400, launchY: 1000, launchZ: 500, maxCharge: 60, minSpeed: 100, chargeSpeed: 4, timeout: 3600, flightTicks: 160, keeperSpeed: 60, keeperPeriod: 80 } as const;
-export const ballParams = z.object({ goal: z.enum(BALL_GOALS).default('goal'), keeper: z.boolean().default(false), team: z.boolean().optional(), knockdown: z.boolean().optional(), difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'), targets: z.int().min(1).max(5).default(1), shotRecoveryTicks: z.int().min(120).max(240).optional(), shotRecoveryRiseTicks: z.int().min(0).max(12).optional(), paceSeconds: z.int().min(10).max(90).optional() }).strict();
+/**
+ * Finále míče (P51 T4, jen nová hra se značkou `segments`): za terči hlídkuje soupeř-boss se `hp` HP – role nepřítele,
+ * kyvadlo brankáře kolem x = 0, míč jím projde. Hra vyhraje, až padnou všechny terče a soupeř dostane `hp` zásahů
+ * míčem. Stojí `behind` za nejvzdálenějším terčem, takže střela, která terč trefí, k němu nedoletí. Náboje navíc
+ * `ammo`; hodiny navíc na `hp` + `spare` střel, každá = zotavení po střele + perioda kyvadla (čekání na průchod středem).
+ * Změřeno (12 semínek, intermediate / finále): `ball.defeat`, `ball.score`, `ball.score+rival` 12/12 / 12/12, běh 26–31 s.
+ * Bez rezervy (`spare` 0) `+rival` 0/12 (brankář prodlouží čekání). Začátečník 12/12 ve všech třech: liší se od
+ * intermediate jen reakcí (≤ 1,5 s za běh), takže pásmo by držely jen hodiny pár desetin nad během intermediate.
+ */
+export const BALL_FINALE = { hp: 3, spare: 1, behind: 2000, ammo: 6, w: 1400, h: 2600, d: 800 } as const;
+/** Sekundy navíc na finále: střely na soupeře podle zotavení hry (`ball_launch`, nejvyšší přírůstek po čtyřech gólech). */
+export const ballFinaleSeconds = (params: BallPitchParams): number =>
+  Math.ceil(((BALL_FINALE.hp + BALL_FINALE.spare) * ((params.shotRecoveryTicks ?? BALL.flightTicks) + 4 * (params.shotRecoveryRiseTicks ?? 0) + BALL.keeperPeriod)) / ARCADE_HZ);
+export const ballParams = z.object({ goal: z.enum(BALL_GOALS).default('goal'), keeper: z.boolean().default(false), team: z.boolean().optional(), knockdown: z.boolean().optional(), difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'), targets: z.int().min(1).max(5).default(1), shotRecoveryTicks: z.int().min(120).max(240).optional(), shotRecoveryRiseTicks: z.int().min(0).max(12).optional(), paceSeconds: z.int().min(10).max(90).optional(), segments: z.literal(true).optional() }).strict();
 export type BallPitchParams = z.infer<typeof ballParams>;
 export const ballControlParams = z.object({}).strict();
 export const ballLoft = (goal: BallGoal): number => goal === 'hoop' ? 300 : goal === 'hole' ? 150 : 80;
@@ -60,7 +73,17 @@ export const ballLaunch: RulePiece<z.infer<typeof launchParams>> = {
   },
 };
 
-const scoreParams = z.object({ team: teamSchema.optional(), goal: z.enum(BALL_GOALS), timeout: z.int().min(100).default(BALL.timeout) }).strict();
+const scoreParams = z.object({ team: teamSchema.optional(), goal: z.enum(BALL_GOALS), timeout: z.int().min(100).default(BALL.timeout), rival: z.int().min(1).optional() }).strict();
+const aliveAt = (state: ArrayLike<number>, body: number | undefined): boolean => body !== undefined && (state[bodyBase(body) + BODY.flags]! & FLAG.alive) !== 0;
+/** Míč v těle soupeře-bosse (`BALL_FINALE`): zásah a míč pryč; poslední HP = soupeř padne a bez terčů je to výhra. */
+function rivalHit(state: Int32Array, ball: number, rival: number, targetsLeft: number): ArcadeEffect[] | null {
+  const b = bodyBase(ball), r = bodyBase(rival);
+  if (!aliveAt(state, rival) || Math.abs(state[b + BODY.x]! - state[r + BODY.x]!) * 2 >= state[r + BODY.w]! + BALL.size ||
+      Math.abs(state[b + BODY.z]! - state[r + BODY.z]!) * 2 >= state[r + BODY.d]! + BALL.size || state[b + BODY.y]! >= state[r + BODY.y]! + state[r + BODY.h]!) return null;
+  const effects: ArcadeEffect[] = [{ kind: 'hit', body: rival, by: ball, amount: 1 }, { kind: 'despawn', body: ball }];
+  if (bodyHp(state, rival) <= 1) effects.push({ kind: 'despawn', body: rival }, ...(targetsLeft === 0 ? [{ kind: 'win' as const }] : []));
+  return effects;
+}
 export const ballScore: RulePiece<z.infer<typeof scoreParams>> = {
   id: 'ball_score', params: scoreParams, roles: ['thing', 'target'], trigger: 'tick', cost: () => ({ bodies: 0, rules: 1 }),
   fire({ state }, params) {
@@ -88,9 +111,11 @@ export const ballScore: RulePiece<z.infer<typeof scoreParams>> = {
         const inside = Math.abs(state[b + BODY.x]! - state[t + BODY.x]!) < state[t + BODY.w]! / 2 && Math.abs(state[b + BODY.z]! - state[t + BODY.z]!) < state[t + BODY.d]! / 2 && state[b + BODY.y]! + BALL.size / 2 >= state[t + BODY.y]! && state[b + BODY.y]! + BALL.size / 2 <= state[t + BODY.y]! + state[t + BODY.h]!;
         if (!inside || (params.goal === 'hoop' && state[b + BODY.vy]! >= 0)) continue;
         const effects: ArcadeEffect[] = [{ kind: 'score', amount: 1 }, { kind: 'despawn', body: ball }, { kind: 'despawn', body: target }];
-        if (targets.length === 1) effects.push({ kind: 'win' });
+        if (targets.length === 1 && !aliveAt(state, params.rival)) effects.push({ kind: 'win' });
         return effects;
       }
+      const rival = params.rival === undefined ? null : rivalHit(state, ball, params.rival, targets.length);
+      if (rival !== null) return rival;
       if (state[HEADER.counters + COUNTER.cooldown]! <= 1 || Math.abs(state[b + BODY.x]!) > 20000 || state[b + BODY.z]! > 30000) return [{ kind: 'despawn', body: ball }];
     }
     if (state[HEADER.tick]! >= params.timeout || (state[HEADER.counters + COUNTER.ammo]! <= 0 && balls.length === 0)) return [{ kind: 'lose' }];
@@ -114,7 +139,11 @@ export const ballKnockdown: RulePiece<z.infer<typeof scoreParams>> = {
       if ((flags & (FLAG.physics | FLAG.ball)) === (FLAG.physics | FLAG.ball)) balls.push(i);
     }
     for (const target of targets) if (pinFallen(state, target)) {
-      return [{ kind: 'score', amount: 1 }, { kind: 'despawn', body: target }, ...(targets.length === 1 ? [{ kind: 'win' as const }] : [])];
+      return [{ kind: 'score', amount: 1 }, { kind: 'despawn', body: target }, ...(targets.length === 1 && !aliveAt(state, params.rival) ? [{ kind: 'win' as const }] : [])];
+    }
+    if (params.rival !== undefined) for (const ball of balls) {
+      const rival = rivalHit(state, ball, params.rival, targets.length);
+      if (rival !== null) return rival;
     }
     if (balls.length > 0 && state[HEADER.counters + COUNTER.cooldown]! <= 1) return balls.map(body => ({ kind: 'despawn', body }));
     if (state[HEADER.tick]! >= params.timeout || (state[HEADER.counters + COUNTER.ammo]! <= 0 && balls.length === 0)) return [{ kind: 'lose' }];
@@ -142,19 +171,30 @@ function generate(seed: number, params: BallPitchParams): ArcadeLevel {
     const target = bodies[2]!;
     bodies.push({ role: 'enemy', kind: 'goalkeeper', x: -2400, y: 0, z: Math.floor(target.z * 0.6), w: 1000, h: 2300, d: 600, solid: true, kinematic: true, vx: BALL.keeperSpeed, period: BALL.keeperPeriod });
   }
+  if (params.segments === true && !params.team) {
+    const far = Math.max(...bodies.filter(body => body.role === 'target').map(body => body.z));
+    const { w, h, d, hp, behind } = BALL_FINALE;
+    bodies.push({ role: 'enemy', kind: 'goalkeeper', x: -(BALL.keeperSpeed * BALL.keeperPeriod) / 2, y: 0, z: far + behind, w, h, d, solid: false, kinematic: true, vx: BALL.keeperSpeed, period: BALL.keeperPeriod, hp });
+  }
   if (params.team) {
     bodies.push({ role: 'enemy', kind: 'opponent-forward', x: 3500, y: 0, z: 15000, w: 600, h: 1700, d: 600, solid: true });
     bodies.push({ role: 'thing', kind: 'opponent-ball', x: 3500, y: BALL.launchY, z: 15000, w: BALL.size, h: BALL.size, d: BALL.size, solid: true, physics: true, ball: true, restitution: 150, template: true });
     bodies.push({ role: 'goal', kind: 'home-goal', x: 3500, y: 0, z: 1600, w: 1600, h: 5000, d: 1600, solid: false });
   }
-  return { bodies, length: 0, spawnSlots: params.team ? 2 : 1, counters: { ammo: params.targets * 3 } };
+  const rival = params.segments === true && !params.team;
+  return { bodies, length: 0, spawnSlots: params.team ? 2 : 1, counters: { ammo: params.targets * 3 + (rival ? BALL_FINALE.ammo : 0) } };
 }
+/** Soupeř-boss finále (`BALL_FINALE`) v úrovni, nebo `undefined`. */
+const rivalOf = (level: ArcadeLevel, params: BallPitchParams): number | undefined => (params.segments === true && !params.team ? level.bodies.findIndex(body => body.hp === BALL_FINALE.hp && body.role === 'enemy') : undefined);
 export const ballPitch: ModeGeneratorPiece<BallPitchParams> = {
   id: 'ball_pitch', params: ballParams, roles: ['player', 'thing', 'target', 'enemy'], cost: params => ({ bodies: 3 + params.targets + Number(params.keeper || params.team) + (params.team ? 4 : 0), rules: 2 }), generate,
   parts(seed, params, health) {
     const level = generate(seed, params);
     const team = params.team ? { team: { forward: level.bodies.findIndex(b => b.kind === 'opponent-forward'), template: level.bodies.findIndex(b => b.kind === 'opponent-ball'), goal: level.bodies.findIndex(b => b.kind === 'home-goal'), goalsToLose: params.targets + 1 } } : {};
     const recovery = { ...(params.shotRecoveryTicks === undefined ? {} : { shotRecoveryTicks: params.shotRecoveryTicks }), ...(params.shotRecoveryRiseTicks === undefined ? {} : { shotRecoveryRiseTicks: params.shotRecoveryRiseTicks }) };
-    return { level, control: { id: 'ball', params: {} }, bot: { id: 'ball_bot', params: { goal: params.goal } }, rules: [{ id: 'ball_launch', params: { template: 1, goal: params.goal, ...recovery, ...team } }, { id: params.knockdown ? 'ball_knockdown' : 'ball_score', params: { goal: params.goal, timeout: BALL.timeout, ...team } }, ...(params.paceSeconds === undefined ? [] : [{ id: 'time_limit', params: { seconds: params.paceSeconds } }])], health };
+    const index = rivalOf(level, params);
+    const rival = index === undefined ? {} : { rival: index };
+    const seconds = params.paceSeconds === undefined ? undefined : index === undefined ? params.paceSeconds : Math.min(90, params.paceSeconds + ballFinaleSeconds(params));
+    return { level, control: { id: 'ball', params: {} }, bot: { id: 'ball_bot', params: { goal: params.goal, ...rival } }, rules: [{ id: 'ball_launch', params: { template: 1, goal: params.goal, ...recovery, ...team } }, { id: params.knockdown ? 'ball_knockdown' : 'ball_score', params: { goal: params.goal, timeout: BALL.timeout, ...team, ...rival } }, ...(seconds === undefined ? [] : [{ id: 'time_limit', params: { seconds } }])], health };
   },
 };

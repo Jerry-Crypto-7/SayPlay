@@ -23,7 +23,18 @@ export function solveBall(target: BallTarget, goal: BallGoal): BallPlan | null {
   }
   return best;
 }
-const paramsSchema = z.object({ goal: z.enum(BALL_GOALS) }).strict();
+const paramsSchema = z.object({ goal: z.enum(BALL_GOALS), rival: z.int().min(1).optional() }).strict();
+/** Where a patrolling body (keeper pendulum, kernel `period`) will stand after `ticks`. */
+function patrolX(state: Int32Array, b: number, ticks: number): number {
+  let x = state[b + BODY.x]!, vx = state[b + BODY.vx]!, phase = state[b + BODY.aux0]!;
+  const period = state[b + BODY.aux1]!;
+  for (let t = 0; t < ticks; t++) {
+    x += vx;
+    phase++;
+    if (period > 0 && phase >= period) { phase = 0; vx = -vx; }
+  }
+  return x;
+}
 export const ballBot: BotPiece<z.infer<typeof paramsSchema>> = {
   id: 'ball_bot', params: paramsSchema, roles: ['player', 'target', 'enemy', 'thing'], reactionTicks: 8, cost: () => ({ bodies: 0, rules: 0 }),
   decide({ state, player, recent }, params) {
@@ -36,7 +47,9 @@ export const ballBot: BotPiece<z.infer<typeof paramsSchema>> = {
       const b = bodyBase(i);
       if ((state[b + BODY.flags]! & FLAG.alive) && state[b + BODY.role] === ROLE.target) targets.push({ x: state[b + BODY.x]!, y: state[b + BODY.y]!, z: state[b + BODY.z]!, w: state[b + BODY.w]!, h: state[b + BODY.h]!, d: state[b + BODY.d]! });
     }
-    const target = targets[0];
+    // The P51 finale rival (`BALL_FINALE`) comes last: aimed at the middle of its patrol (x = 0), shot when it will be there.
+    const rival = params.rival !== undefined && (state[bodyBase(params.rival) + BODY.flags]! & FLAG.alive) ? bodyBase(params.rival) : undefined;
+    const target = targets[0] ?? (rival === undefined ? undefined : { x: 0, y: state[rival + BODY.y]!, z: state[rival + BODY.z]!, w: state[rival + BODY.w]!, h: state[rival + BODY.h]!, d: state[rival + BODY.d]! });
     if (target === undefined) return NO_INPUT;
     const plan = solveBall(target, params.goal);
     if (plan === null) return NO_INPUT;
@@ -45,20 +58,18 @@ export const ballBot: BotPiece<z.infer<typeof paramsSchema>> = {
     // forecast crossing lane is clear; do not modify its position or collision.
     for (let i = 0; i < state[HEADER.bodyCount]!; i++) {
       const b = bodyBase(i);
-      if (!(state[b + BODY.flags]! & FLAG.alive) || state[b + BODY.role] !== ROLE.enemy) continue;
+      if (!(state[b + BODY.flags]! & FLAG.alive) || state[b + BODY.role] !== ROLE.enemy || i === params.rival) continue;
       if (state[b + BODY.z]! > target.z + target.d / 2) continue;
       const time = Math.max(0, Math.round((state[b + BODY.z]! - BALL.launchZ) / ballSpeed(plan.charge)));
       const flight = ballFlight(params.goal, plan.charge, time);
       if (flight.y > state[b + BODY.y]! + state[b + BODY.h]! + BALL.size / 2) continue;
-      let x = state[b + BODY.x]!, vx = state[b + BODY.vx]!, phase = state[b + BODY.aux0]!;
-      const period = state[b + BODY.aux1]!;
-      for (let t = 0; t < time + recent.length + 1; t++) {
-        x += vx;
-        phase++;
-        if (period > 0 && phase >= period) { phase = 0; vx = -vx; }
-      }
+      const x = patrolX(state, b, time + recent.length + 1);
       const shotX = Math.trunc(ballSpeed(plan.charge) * plan.aim / AXIS_MAX) * time;
       if (Math.abs(shotX - x) < state[b + BODY.w]! / 2 + BALL.size + 250) return { axis: plan.aim, buttons: 0 };
+    }
+    if (rival !== undefined && targets.length === 0) {
+      const time = Math.max(0, Math.round((state[rival + BODY.z]! - BALL.launchZ) / ballSpeed(plan.charge)));
+      if (Math.abs(patrolX(state, rival, time + recent.length + 1)) >= state[rival + BODY.w]! / 2) return { axis: plan.aim, buttons: 0 };
     }
     return { axis: plan.aim, buttons: BUTTON.TAP };
   },

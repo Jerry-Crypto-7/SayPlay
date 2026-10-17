@@ -448,6 +448,8 @@ export const ballSpecParamsSchema = z.object({
   keeper: z.boolean().optional(),
   difficulty: z.enum(['easy', 'normal', 'hard']).optional(),
   targets: z.int().min(1).max(5).optional(),
+  /** Nová hra s průběhem a soupeřem-bossem finále (P51 T4, `BALL_FINALE`); uložený spec bez pole hraje jako dřív. */
+  segments: z.literal(true).optional(),
 }).strict();
 
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */

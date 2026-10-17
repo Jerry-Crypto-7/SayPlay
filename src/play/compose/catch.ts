@@ -15,6 +15,8 @@ export function catchSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
       ...(content.params?.preySpeed === undefined ? {} : { preySpeed: content.params.preySpeed }),
       ...(content.params?.half === undefined ? {} : { half: content.params.half }),
       ...(content.params?.seconds === undefined ? {} : { catchSeconds: content.params.seconds }),
+      // New-game mark (P51 T4): pacing and a prey that takes three catches (`CATCH_FINALE`); a stored spec without it plays as before.
+      segments: true,
     } },
     title: `${content.hero} chases ${prey}`, archetype: 'combat_lite', targetDurationSec: 30,
     theme: { setting: content.setting, mood: 'adventurous', ...(content.palette === undefined ? {} : { look: content.palette }) },

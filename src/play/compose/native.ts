@@ -10,8 +10,8 @@ const role = (id: string, kind: GameRole['kind'], label: string, count = 1): Gam
 
 /**
  * Pure content-to-spec assembly. Native runtime registration is a separate gate.
- * `paced`: a new glide or walker game carries the new-game mark `segments` (P51 T3 – pacing and a finale,
- * `GENRE_PACING`); a game with P42 parts does not, so its course stays as it was (the drive pattern).
+ * `paced`: a new glide, walker or ball game carries the new-game mark `segments` (P51 T3, T4 – pacing and a
+ * finale, `GENRE_PACING`); a game with P42 parts does not, so its course stays as it was (the drive pattern).
  */
 export function nativeSpec(recipe: Recipe, content: GenreSpec, paced = true): GameSpecV1 {
   recipeSchema.parse(recipe);
@@ -81,7 +81,7 @@ export function nativeSpec(recipe: Recipe, content: GenreSpec, paced = true): Ga
     if (keeper) roles.push(role('goalkeeper', 'patrol', label('fight', label('avoid', 'goalkeeper'))));
     const description = recipe.objective === 'defeat' ? 'Knock down every pin with the ball.' : goal === 'hoop' ? 'Score in every hoop.' : goal === 'hole' ? 'Putt the ball into every hole.' : 'Score in every goal.';
     const pace = { ...(params.shotRecoveryTicks === undefined ? {} : { shotRecoveryTicks: params.shotRecoveryTicks }), ...(params.shotRecoveryRiseTicks === undefined ? {} : { shotRecoveryRiseTicks: params.shotRecoveryRiseTicks }), ...(params.paceSeconds === undefined ? {} : { paceSeconds: params.paceSeconds }) };
-    return base('ball', { generator: 'ball_pitch', goal, keeper, difficulty: 'normal', targets, ...pace, ...(recipe.objective === 'defeat' ? { knockdown: true } : {}) }, description,
+    return base('ball', { generator: 'ball_pitch', goal, keeper, difficulty: 'normal', targets, ...pace, ...(recipe.objective === 'defeat' ? { knockdown: true } : {}), ...(paced ? { segments: true } : {}) }, description,
       'Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire.', { kind: 'defeat_targets', description, role: targetKind, count: targets });
   }
   return unsupported();
