@@ -15,7 +15,7 @@
 
 import { Canvas, addAfterEffect, useThree } from '@react-three/fiber';
 import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
+import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3, type WebGLRenderer, WebGLRenderTarget } from 'three';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BUTTON, type PieceRef, nativeRule } from '@/play/arcade/contract';
@@ -281,6 +281,60 @@ function facingOf(hero: Object3D, at: Vector3, camera: Camera): number {
 function RedrawOnChange({ session }: { readonly session: ArcadeSession }) {
   const invalidate = useThree((three) => three.invalidate);
   useEffect(() => session.subscribe(() => invalidate()), [session, invalidate]);
+  return null;
+}
+
+/** Nejdéle tolik plátno čeká na paralelní překlad shaderů, než odkryje scénu (P50 T3). */
+export const PRECOMPILE_LIMIT_MS = 300;
+
+/**
+ * Přeloží programy scény paralelně (`compileAsync`, `KHR_parallel_shader_compile`) a vyřeší
+ * se, až jsou hotové, nejpozději po `PRECOMPILE_LIMIT_MS` – co nestihne, dopřeloží první
+ * snímek jako dřív. Překládá se do cíle, ne na plátno: s cílem renderer netónuje a programy
+ * se shodují s těmi, které pak kreslí skládač (`Post.tsx` kreslí na každé úrovni).
+ */
+export function precompile(gl: WebGLRenderer, scene: Object3D, camera: Camera): Promise<void> {
+  const target = new WebGLRenderTarget(1, 1);
+  const previous = gl.getRenderTarget();
+  gl.setRenderTarget(target);
+  let compiled: Promise<unknown>;
+  try {
+    compiled = gl.compileAsync(scene, camera);
+  } finally {
+    // Cíl stačí na výběr programů: překlad samotný na něj už nesahá.
+    gl.setRenderTarget(previous);
+    target.dispose();
+  }
+  return new Promise((resolve) => {
+    const limit = setTimeout(resolve, PRECOMPILE_LIMIT_MS);
+    void compiled.then(() => {
+      clearTimeout(limit);
+      resolve();
+    });
+  });
+}
+
+/**
+ * Plátno stojí (`frameloop="never"`), dokud se programy scény nepřeloží (P50 T3): první snímek
+ * pak nečeká na sériový překlad. Poslední dítě plátna – jeho efekt běží po efektech scény.
+ * R3F po `never` smyčku sám nerozběhne, první snímek si proto vyžádá.
+ */
+export function Precompile({ ready, onReady }: { readonly ready: boolean; readonly onReady: (ready: boolean) => void }) {
+  const gl = useThree((three) => three.gl);
+  const scene = useThree((three) => three.scene);
+  const camera = useThree((three) => three.camera);
+  const invalidate = useThree((three) => three.invalidate);
+  useEffect(() => {
+    if (ready) return;
+    let mounted = true;
+    void precompile(gl, scene, camera).then(() => mounted && onReady(true));
+    return () => {
+      mounted = false;
+    };
+  }, [ready, gl, scene, camera, onReady]);
+  useEffect(() => {
+    if (ready) invalidate();
+  }, [ready, invalidate]);
   return null;
 }
 
@@ -716,9 +770,10 @@ const StageCanvas = memo(function StageCanvas({
   const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback="#0ea5e9" />;
   const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback="#0ea5e9" fill />;
   const world = { session, cast, surface, scene: look, enabled, heroAction, ghost };
+  const [compiled, setCompiled] = useState(false);
   return (
     // Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá.
-    <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'} shadows="percentage">
+    <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={!compiled ? 'never' : live ? 'always' : 'demand'} shadows="percentage">
       <RedrawOnChange session={session} />
       <FrameProbe control={control} />
       <RenderProbe />
@@ -751,6 +806,7 @@ const StageCanvas = memo(function StageCanvas({
       <PromptSpot session={session} surface={surface} />
       {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
       <Effects session={session} look={look} surface={surface} />
+      <Precompile ready={compiled} onReady={setCompiled} />
     </Canvas>
   );
 });
