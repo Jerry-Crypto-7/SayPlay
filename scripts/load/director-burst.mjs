@@ -112,10 +112,11 @@ function cleanEnv(extra) {
 /**
  * Soubory `.env*`, ze kterých by `next start` doplnil klíče, jež `cleanEnv`
  * vynechal (`@next/env` doplní jen klíč chybějící v prostředí) – i placenou
- * zálohu a sdílené úložiště. `.env.example` Next nečte.
+ * zálohu a sdílené úložiště. `.env.example` Next nečte. Bez ohledu na velikost
+ * písmen: Windows otevře `.ENV.local`, když Next chce `.env.local`.
  */
 export function envFilesIn(root) {
-  return readdirSync(root).filter((name) => /^\.env(\..+)?$/.test(name) && name !== '.env.example');
+  return readdirSync(root).filter((name) => /^\.env(\..+)?$/i.test(name) && name.toLowerCase() !== '.env.example');
 }
 
 /** `next start` nad náhradním upstreamem; vrací adresu a zastavení. */
@@ -183,12 +184,16 @@ const median = (values) => {
 };
 
 /** Jeden běh: věty během `spreadMs`, pak dotazy na stav, dokud všechny AI verze nedoběhnou. */
-export async function burst({ players, slots, queue, delayMs = 3_000, port = 3312, spreadMs = 2_000, probe = false }) {
+export async function burst({ players, slots, queue, delayMs = 3_000, port = 3312, spreadMs = 2_000, probe = false, root = ROOT }) {
   const answers = loadAnswers();
   if (answers.length < players) throw new Error(`only ${String(answers.length)} recorded answers for ${String(players)} players`);
   const rows = answers.slice(0, players);
   const upstream = await stubUpstream(answers, delayMs);
-  const server = await startServer({ port, upstream: upstream.root, slots, queue });
+  // Bez zavření by otevřený port náhradního upstreamu držel Node naživu a příkaz by po odmítnutí visel.
+  const server = await startServer({ port, upstream: upstream.root, slots, queue, root }).catch(async (thrown) => {
+    await upstream.close();
+    throw thrown;
+  });
   try {
     const games = await Promise.all(
       rows.map(async (row, index) => {
