@@ -118,18 +118,44 @@ export function opaqueAo(pass: { autoDetectTransparency: boolean; configuration:
 }
 
 /**
+ * `true`, jakmile plátno vykreslilo první snímek (P50 T2). Callback `useFrame`
+ * běží uvnitř téhož `requestAnimationFrame` PŘED vykreslením snímku, takže úloha
+ * naplánovaná z prvního callbacku doběhne až po vykreslení – i když další snímek
+ * nepřijde (`frameloop="demand"`).
+ */
+export function useFirstFrameDrawn(): boolean {
+  const [drawn, setDrawn] = useState(false);
+  const scheduled = useRef(false);
+  useFrame(() => {
+    if (scheduled.current) return;
+    scheduled.current = true;
+    setTimeout(() => setDrawn(true), 0);
+  });
+  return drawn;
+}
+
+/**
  * Skládač kreslí na každé úrovni (`TIER_SETTINGS`): scéna tak jde vždy do jeho
  * cíle bez tónování a změna úrovně nepřekládá shadery materiálů. SMAA jde první –
  * čte vstup průchodu, efekty před ním by zahodil.
+ *
+ * `lean` (P50 T2) = první snímek: skládač jen tónuje a ladí, AO, SMAA a bloom
+ * přijdou hned po něm. Jejich programy stály před prvním snímkem sdílené hry
+ * ~285 ms ze 419 ms překladu (desktop, 17. 10.). Skládač samotný se neodkládá:
+ * bez něj by renderer tónoval sám a jeho příchod by přeložil shadery všech
+ * materiálů znovu (viz `TIER_SETTINGS`); `multisampling` se nemění, jinak by
+ * se skládač postavil znovu.
  */
-export function Post({ look, family, tier }: { readonly look: Look; readonly family: GradeFamily; readonly tier: QualityTier }) {
-  const { bloom, ao, aa } = TIER_SETTINGS[tier];
+export function Post({ look, family, tier, lean = false }: { readonly look: Look; readonly family: GradeFamily; readonly tier: QualityTier; readonly lean?: boolean }) {
+  const { aa } = TIER_SETTINGS[tier];
+  const { bloom, ao } = lean ? { bloom: false, ao: false as const } : TIER_SETTINGS[tier];
+  const smaa = aa === 'smaa' && !lean;
   return (
     <>
-      <PostProbe effects={[ao === false ? '' : 'ao', aa === 'smaa' ? 'smaa' : '', bloom ? 'bloom' : '', 'aces'].filter(Boolean).join(' ')} />
+      <PostProbe effects={[ao === false ? '' : 'ao', smaa ? 'smaa' : '', bloom ? 'bloom' : '', 'aces'].filter(Boolean).join(' ')} />
       <EffectComposer multisampling={aa === 'msaa' ? MSAA_SAMPLES : 0} renderPriority={COMPOSER_PRIORITY}>
         {ao === false ? <></> : <N8AO ref={opaqueAo} aoRadius={1.2} distanceFalloff={1} intensity={2} halfRes={ao === 'half'} quality={ao === 'half' ? 'performance' : 'medium'} />}
-        {aa === 'smaa' ? <SMAA /> : <></>}
+        {smaa ? <SMAA /> : <></>}
         {bloom ? <Bloom mipmapBlur luminanceThreshold={bloomThreshold(look)} luminanceSmoothing={0.1} intensity={0.8} /> : <></>}
         <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         <Grading family={family} />
