@@ -29,7 +29,7 @@ import { instantiate, loadProgram, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { play } from '../pieces/behaviours/__tests__/harness';
 import { TENSION_CURVE, intensityAt } from '../pieces/pacing';
-import { GENRE_PACING, STATION_PACE, TIMING_PACE, timingPacedSpeeds } from '../pieces/pacing-parts';
+import { GENRE_PACING, STATION_PACE, TIMING_PACE, timingFinaleSpeeds, timingPacedSpeeds } from '../pieces/pacing-parts';
 import { RHYTHM, RHYTHM_CURVE, beatMap, checkRhythmLevel, rhythmLaneOfX, rhythmLevel, rhythmTicks } from '../pieces/rhythm';
 import { THROW_SWING, swingSpeed } from '../pieces/throw';
 import { TIMING_SLOTS, judgeRule, timingLevel, timingSpeedOf, timingWindowTicks } from '../pieces/timing';
@@ -55,6 +55,8 @@ const worldOf = (spec: GameSpecV1, seed = 1): ArcadeWorld => {
 };
 /** Tatáž hra uložená před průběhem (`genre.v1`). */
 const storedOf = (spec: GameSpecV1): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v1' } });
+/** Tatáž hra uložená před finále P51 (`genre.v4`): načasování po křivce; nové finále je v `p51-ball-catch-timing.test.ts`. */
+const storedV4Of = (spec: GameSpecV1): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v4' } });
 
 const chain = (ref: PieceRef): PieceRef[] => {
   const base = ref.params.base as PieceRef | undefined;
@@ -132,15 +134,17 @@ describe('static genres B are paced (throw, timing, rhythm, station quest; landi
     }, 600_000);
   }
 
-  it('timing: no round swings faster than today’s last round, so no window is narrower than today’s narrowest (pin)', () => {
+  it('timing (stored genre.v4): no round swings faster than today’s last round, so no window is narrower than today’s narrowest (pin)', () => {
     for (const cell of PACED.filter((own) => own.id.startsWith('timing'))) {
-      const spec = cellSpec(cell.id);
+      const spec = storedV4Of(cellSpec(cell.id));
       const params = timingLevel.params.parse({ ...spec.controlParams });
       const today = Array.from({ length: params.rounds }, (_, round) => timingSpeedOf(params, round));
       const paced = timingPacedSpeeds(params);
       const narrowest = timingWindowTicks(Math.max(...today), params.tolerance);
       expect(Math.max(...paced), cell.id).toBe(Math.max(...today));
       for (const speed of paced) expect(timingWindowTicks(speed, params.tolerance), cell.id).toBeGreaterThanOrEqual(narrowest);
+      // Finále nové hry (P51 T4) jede rychleji než dnešní poslední kolo, okno v tikách ale užší není.
+      for (const speed of timingFinaleSpeeds(params)) expect(timingWindowTicks(speed, params.tolerance), `${cell.id} v5`).toBeGreaterThanOrEqual(narrowest);
       // Úvod pomaleji než stupňování, finále nejrychlejší: rychlost roste s křivkou.
       expect(paced[0]!).toBeLessThan(paced[Math.floor(params.rounds / 2)]!);
       for (const seed of SEEDS) {
@@ -170,11 +174,11 @@ describe('static genres B are paced (throw, timing, rhythm, station quest; landi
     for (let done = judge.goal - judge.sudden; done < judge.goal; done += 1) expect(outcome(done)).toBe('lose');
   });
 
-  it('timing: the novice never loses inside the sudden death – the finale window is one the novice can hit', () => {
+  it('timing (stored genre.v4): the novice never loses inside the sudden death – the finale window is one the novice can hit', () => {
     let reached = 0;
     for (const cell of PACED.filter((own) => own.id.startsWith('timing'))) {
       for (const seed of SEEDS) {
-        const world = worldOf(cellSpec(cell.id), seed);
+        const world = worldOf(storedV4Of(cellSpec(cell.id)), seed);
         const judge = ruleOf(world, 'judge')!.params as { goal: number; sudden: number };
         const novice = runBot(world, ARCADE_LIBRARY, { profile: 'novice' });
         const done = Math.floor(play(world, novice.inputs, () => {})[bodyBase(0) + BODY.z]! / UNIT);
