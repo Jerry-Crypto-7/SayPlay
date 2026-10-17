@@ -15,7 +15,8 @@
  * - strop počtu volání (`WORLDSMITH_CALL_CAP`, `WORLDSMITH_FALLBACK_CALL_CAP`)
  *   chybí, nebo kousne dřív než dolarový strop: u gpt-oss-20b by výchozích 200
  *   volání skončilo po ~0,35 USD z 5 a každá další hra by byla návrh ze slov
- *   (revize T3, P30A T3a). Mez = strop / (max výstupních tokenů × cena výstupu).
+ *   (revize T3, P30A T3a). Mez = strop / (max výstupních tokenů × cena výstupu);
+ * - volitelný `PLAY_DIRECTOR_SLOTS` není celé číslo 1..2 (P53 T1).
  *
  * 0 = konfigurace nestojí na PC, 2 = chybí argument nebo soubor nejde přečíst.
  * Soubor je ve tvaru `vercel env pull`; vzor, který projde: `env.production.example`.
@@ -38,6 +39,12 @@ const LEDGERS = [
 ];
 /** `DEFAULT_MAX_OUTPUT_TOKENS` v `src/server/upstream.ts`; placená záloha má týž. */
 const DEFAULT_MAX_OUTPUT_TOKENS = 8000;
+
+/**
+ * `MAX_PLAY_DIRECTOR_SLOTS` v `src/server/paid-slots.ts` (P53 T1); skript jede holým Nodem
+ * a TypeScript neimportuje, souhlas obou čísel hlídá `scripts/__tests__/cloud-check-env.test.ts`.
+ */
+const MAX_PLAY_DIRECTOR_SLOTS = 2;
 
 const isAddress = (name) => name.endsWith('_ENDPOINT') || name.endsWith('_URL');
 
@@ -77,6 +84,11 @@ export function checkEnv(vars) {
   for (const ledger of LEDGERS) {
     const problem = callCapProblem(vars, ledger);
     if (problem !== null) problems.push(problem);
+  }
+  // Volitelná: prázdná = 2. Hodnotu mimo mez by server zahodil a jel na 2, tady se to řekne dřív.
+  const slots = vars.PLAY_DIRECTOR_SLOTS?.trim() ?? '';
+  if (slots !== '' && !(/^\d+$/.test(slots) && Number(slots) >= 1 && Number(slots) <= MAX_PLAY_DIRECTOR_SLOTS)) {
+    problems.push({ name: 'PLAY_DIRECTOR_SLOTS', reason: `must be a whole number from 1 to ${String(MAX_PLAY_DIRECTOR_SLOTS)}` });
   }
   return problems;
 }
