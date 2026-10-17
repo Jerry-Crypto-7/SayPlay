@@ -24,8 +24,9 @@ import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
 import type { UpstreamRequest } from '@/model/prompt';
 import type { GenerationBranch, GenerationOutcome } from '@/server/pipeline';
+import { AdmissionQueue } from '@/server/admission';
 import { costUsd, processFallbackSpendCap, processSpendCap, type Reserved } from '@/server/spend-cap';
-import { acquireSlot, releaseSlot } from '@/server/paid-slots';
+import { acquireSlot, DOOR_CEILING, releaseSlot } from '@/server/paid-slots';
 import { upstreamBranch, type UpstreamConfig, upstreamConfigFromEnv } from '@/server/upstream';
 
 /**
@@ -290,39 +291,132 @@ async function cappedBranch(
 const NO_MODEL: GenerationBranch = upstreamBranch(null);
 
 /**
- * Totéž pro plné dveře, jen s vlastním důvodem (P30A T7b): řádek konce upgradu
- * pak říká „no free play slot“ místo „no upstream endpoint“ a srovnání modelů
- * podle něj pozná, že návrh dostala věta od dveří, ne od modelu.
+ * Kolik režií smí čekat na slot dveří `play` (P53 T2). Šestnáct je dva nápory
+ * poroty po osmi; čekající drží jen místo ve frontě, ne rezervaci stropu ani
+ * volání. Nula = fronta vypnutá, třetí režie dostane návrh hned jako před P53.
  */
-const DOOR_FULL: GenerationBranch = {
-  ...NO_MODEL,
-  generate: () => Promise.resolve({ ok: false, reason: 'UPSTREAM_REJECTED', detail: 'no free play slot', usage: null }),
-};
+export const DEFAULT_PLAY_DIRECTOR_QUEUE = 16;
+
+/** `PLAY_DIRECTOR_QUEUE`: celé číslo od 0; cokoli jiného řádek logu a výchozích 16. */
+export function directorQueueLength(env: Record<string, string | undefined>): number {
+  const raw = env.PLAY_DIRECTOR_QUEUE?.trim() ?? '';
+  if (raw === '') return DEFAULT_PLAY_DIRECTOR_QUEUE;
+  // `isSafeInteger`: třísetmístné číslo je `Infinity` a `AdmissionQueue` by se nepostavila vůbec.
+  if (/^\d+$/.test(raw) && Number.isSafeInteger(Number(raw))) return Number(raw);
+  console.warn(`[play] PLAY_DIRECTOR_QUEUE=${JSON.stringify(raw.slice(0, 40))} ignored: must be a whole number from 0; the queue keeps ${String(DEFAULT_PLAY_DIRECTOR_QUEUE)}`);
+  return DEFAULT_PLAY_DIRECTOR_QUEUE;
+}
+
+/**
+ * Fronta na sloty dveří `play`, jedna na proces. Na `globalThis` ze stejného
+ * důvodu jako mapa prací v `_upgrade.ts`: routy PLAY jsou v Next.js oddělené
+ * moduly a modulová proměnná by každá měla svou, tedy vlastní frontu i strop.
+ * `createdAt`: čas přijetí starší než fronta by ona vzala jako rozbité hodiny.
+ */
+const QUEUE = Symbol.for('worldstream.play.director-queue');
+type QueueHolder = { [QUEUE]?: { readonly queue: AdmissionQueue; readonly createdAt: number } };
+
+/**
+ * Termín čekání (P53 T2): fronta pustí volání, jen když po čekání zbývá
+ * z rozpočtu trasy aspoň `minCallMs()` primáru – táž mez, kterou volání
+ * kontroluje samo, takže fronta neodmítne nic, co by bez ní odešlo (gpt-oss
+ * s 40 s zbytku). Pro astru je to `MIN_CALL_MS`, čekání tedy nejvýš 195 s.
+ * Mez se čte z konfigurace při vzniku fronty; v provozu se za běhu nemění.
+ */
+function directorQueue(config: UpstreamConfig): { readonly queue: AdmissionQueue; readonly createdAt: number } {
+  const holder = globalThis as QueueHolder;
+  holder[QUEUE] ??= {
+    createdAt: Date.now(),
+    queue: new AdmissionQueue(
+      { budgetMs: DIRECTOR_BUDGET_MS, minServiceMs: minCallMs(config), maxQueued: directorQueueLength(process.env) },
+      {
+        now: () => Date.now(),
+        concurrency: DOOR_CEILING.play,
+        onCoercedReceipt: ({ id }) => console.warn(`[play] director queue: ${id} came with an untrusted start time, its wait counts from now`),
+      },
+    ),
+  };
+  return holder[QUEUE];
+}
+
+/** Stav fronty pro testy a log; bez fronty nuly. */
+export function directorQueueState(): { readonly running: number; readonly queued: number } {
+  const held = (globalThis as QueueHolder)[QUEUE];
+  return held === undefined ? { running: 0, queued: 0 } : { running: held.queue.running, queued: held.queue.queued };
+}
+
+/** Jen pro testy: zavře frontu (čekající dostanou `SHUTTING_DOWN`) a další volání postaví novou z prostředí. */
+export function resetDirectorQueue(): void {
+  const holder = globalThis as QueueHolder;
+  holder[QUEUE]?.queue.close();
+  delete holder[QUEUE];
+}
+
+let queueIds = 0;
+
+/**
+ * Slot dveří `play` přes frontu: počká, až je volno, a vrátí funkci, která ho
+ * pustí dalšímu čekajícímu. Pod frontou se bere i slot `acquireSlot('play')`,
+ * protože celkový strop placených volání sdílí s dveřmi studia – ten se při
+ * plném dnu odmítne hned jako dřív. `refused` nese důvod pro řádek konce upgradu.
+ */
+function takePlaySlot(config: UpstreamConfig, startedAt: number): Promise<{ readonly release: () => void } | { readonly refused: string }> {
+  const { queue, createdAt } = directorQueue(config);
+  queueIds += 1;
+  const id = `play-${String(queueIds)}`;
+  return new Promise((resolve) => {
+    const work = () =>
+      new Promise<void>((leave) => {
+        if (!acquireSlot('play')) {
+          leave();
+          resolve({ refused: 'no free play slot' });
+          return;
+        }
+        resolve({
+          release: () => {
+            releaseSlot('play');
+            leave();
+          },
+        });
+      });
+    void queue.submit(id, work, Math.max(startedAt, createdAt)).then(({ verdict }) => {
+      if (!verdict.admitted) resolve({ refused: `no free play slot: ${verdict.reason}` });
+    });
+  });
+}
+
+const refusedBy = (detail: string): GenerationOutcome => ({ ok: false, reason: 'UPSTREAM_REJECTED', detail, usage: null });
 
 /**
  * Jedno placené volání s vlastním požadavkem (P27C T4, remix vlastní větou):
  * tytéž brány jako `getDirector` – objednávka, vypínač `upstream`, strop
- * utrácení, počet volajícího, rozpočet trasy a slot dveří `play`. Bez
- * kterékoli z nich se nevolá a výsledek je `UPSTREAM_REJECTED`.
+ * utrácení, počet volajícího, rozpočet trasy a slot dveří `play` (od P53 přes
+ * frontu). Bez kterékoli z nich se nevolá a výsledek je `UPSTREAM_REJECTED`.
  */
 export async function callDirectorModel(startedAt: number, caller: string, request: UpstreamRequest, prompt: string): Promise<GenerationOutcome> {
+  const config = upstreamConfigFromEnv(process.env);
   const branch = await cappedBranch(process.env, startedAt + DIRECTOR_BUDGET_MS, caller, () => {});
-  if (branch === null) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the paid director branch is not available', usage: null };
-  if (!acquireSlot('play')) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'no free play slot', usage: null };
+  if (branch === null || config === null) return refusedBy('the paid director branch is not available');
+  const seat = await takePlaySlot(config, startedAt);
+  if ('refused' in seat) return refusedBy(seat.refused);
   try {
     return await branch.generate({ prompt, request });
   } finally {
-    releaseSlot('play');
+    seat.release();
   }
 }
 
 /**
- * Placená větev drží po celou režii jeden slot **vlastních dveří `play`** – pod
- * týmž celkovým stropem souběžných placených volání jako `/api/generate` a
- * relace WORLDSTREAM, ale s vlastním čítačem, aby visící režie nezavřela
- * `/api/generate` (druhé kolo revize T1). Bez volného slotu se model nevolá a
- * hra je návrh: jinak by jeden volající se stovkou různých vět vyčerpal strop
- * volání celého dema (nález revize T1).
+ * Placená větev drží jeden slot **vlastních dveří `play`** od prvního volání
+ * modelu do konce režie – pod týmž celkovým stropem souběžných placených volání
+ * jako `/api/generate` a relace WORLDSTREAM, ale s vlastním čítačem, aby visící
+ * režie nezavřela `/api/generate` (druhé kolo revize T1). Bez slotu se model
+ * nevolá a hra je návrh: jinak by jeden volající se stovkou různých vět
+ * vyčerpal strop volání celého dema (nález revize T1).
+ *
+ * **Od P53 T2 se na slot čeká ve frontě**, a až u prvního volání modelu, ne před
+ * režií: věta z cache model nevolá, takže za dvěma pomalými větami nečeká.
+ * Opravné kolo jede na slotu, který režie už drží.
  *
  * `startedAt` je příchod požadavku (`Date.now()`), jehož `maxDuration` režii drží.
  */
@@ -331,20 +425,33 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
     const deadline = startedAt + DIRECTOR_BUDGET_MS;
     const cache = directorCacheFromEnv(process.env);
     let callerLimited = false;
+    const config = upstreamConfigFromEnv(process.env);
     const branch = await cappedBranch(process.env, deadline, caller, () => {
       callerLimited = true;
     });
-    if (branch === null) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now })), callerLimited };
-    if (!acquireSlot('play')) return { ...(await direct(sentence, { branch: DOOR_FULL, cache, now: Date.now })), callerLimited };
+    if (branch === null || config === null) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now })), callerLimited };
+    let seat: { readonly release: () => void } | null = null;
+    const queued: GenerationBranch = {
+      ...branch,
+      async generate(call) {
+        if (seat === null) {
+          const taken = await takePlaySlot(config, startedAt);
+          if ('refused' in taken) return refusedBy(taken.refused);
+          seat = taken;
+        }
+        return branch.generate(call);
+      },
+    };
     try {
       // P27D T2: kompaktní první odpověď je výchozí – živě 30/30 hratelných, p50 12 s proti 45 s
       // a věrnost `drawn` 0,727 proti 0,702 (`evals/play/fidelity/README.md`). Celý GameSpec jen na objednávku.
       const compact = process.env.PLAY_DIRECTOR_MODE !== 'full';
       // P30A T8: ověřené příklady jen na objednávku, dokud T10 nezměří, jestli pomáhají.
       const examples = process.env.PLAY_DIRECTOR_EXAMPLES === 'on';
-      return { ...(await direct(sentence, { branch, cache, now: Date.now, check, compact, examples, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
+      return { ...(await direct(sentence, { branch: queued, cache, now: Date.now, check, compact, examples, ...(nudge === undefined ? {} : { nudge }) })), callerLimited };
     } finally {
-      releaseSlot('play');
+      // `seat` přiřazuje `generate` výš; TypeScript to po `await` nevidí.
+      (seat as { readonly release: () => void } | null)?.release();
     }
   };
 }

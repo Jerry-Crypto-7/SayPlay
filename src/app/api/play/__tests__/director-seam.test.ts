@@ -12,7 +12,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
-import { buildDirectorRequest, DIRECTOR_PROMPT_VERSION, directorCache, directorKey } from '@/play/director';
+import { directorCache, directorKey } from '@/play/director';
+import { buildCompactRequest, COMPACT_PROMPT_VERSION } from '@/play/director/compact';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import type { GameSpecV1 } from '@/play/spec';
 import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
@@ -23,7 +24,7 @@ import { upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
 import { resetProcessSpendCap } from '@/server/spend-cap';
 
 import { acquireSlot, resetConcurrency } from '@/server/paid-slots';
-import { DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS } from '../_director';
+import { DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS, resetDirectorQueue } from '../_director';
 import { POST as createGame } from '../games/route';
 import { GET as readUpgrade } from '../games/[id]/upgrade/route';
 import { directorCallerOf, UNTRUSTED_DIRECTOR_CALLER } from '../_publish';
@@ -69,6 +70,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   resetProcessSpendCap();
   resetConcurrency();
+  resetDirectorQueue();
   for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
@@ -186,10 +188,12 @@ describe('getDirector – kvóty a cache (R8)', () => {
   it('bez volného slotu se cache čte pod klíčem živé větve – táž věta, táž hra', async () => {
     const cachedSentence = 'a penguin jumps';
     stubEnv(LIVE);
-    const request = buildDirectorRequest(cachedSentence, draftGameSpecWithMeta(cachedSentence).genre);
+    // Klíč, pod který píše živá větev: kompaktní odpověď je výchozí (P27D T2). Do P53 T2 četly
+    // plné dveře pod klíčem celého GameSpec, tedy jinou hru, než by táž věta dostala s volným slotem.
+    const request = buildCompactRequest(cachedSentence, draftGameSpecWithMeta(cachedSentence).genre);
     const branchId = upstreamBranch(upstreamConfigFromEnv(process.env)).id;
     // Klíč nese i verzi tabulky sloves P44C (jiná tabulka = jiná hra).
-    const key = directorKey({ sentence: cachedSentence, promptVersion: `${DIRECTOR_PROMPT_VERSION}+vocab:${vocabVersion()}`, model: request.model, endpoint: branchId });
+    const key = directorKey({ sentence: cachedSentence, promptVersion: `${COMPACT_PROMPT_VERSION}+vocab:${vocabVersion()}`, model: request.model, endpoint: branchId });
     await directorCache(answers.store ?? memoryAnswerStore()).write(key, draftGameSpecWithMeta(cachedSentence).spec);
     expect(acquireSlot('play')).toBe(true);
     expect(acquireSlot('play')).toBe(true);

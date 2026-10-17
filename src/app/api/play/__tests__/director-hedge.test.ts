@@ -15,7 +15,7 @@ import { resetRateWindows } from '@/server/rate-limit';
 import { processSpendCap, resetProcessSpendCap } from '@/server/spend-cap';
 
 import { resetConcurrency } from '@/server/paid-slots';
-import { DEFAULT_HEDGE_MS, getDirector, hedged } from '../_director';
+import { DEFAULT_HEDGE_MS, getDirector, hedged, resetDirectorQueue } from '../_director';
 
 const SENTENCE = 'a penguin jumps';
 
@@ -62,6 +62,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
   resetProcessSpendCap();
   resetConcurrency();
+  resetDirectorQueue();
 });
 
 describe('hedged', () => {
