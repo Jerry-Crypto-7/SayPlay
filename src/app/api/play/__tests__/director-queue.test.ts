@@ -39,7 +39,7 @@ import {
 } from '../_director';
 import { derivedSeeds, publishReadSpec, seedFrom } from '../_publish';
 import { __resetRemixes, remixStatus, startRemix } from '../_remix-jobs';
-import { __resetUpgrades, knownUpgrade, upgradeOf } from '../_upgrade';
+import { __resetUpgrades, directUpgrade, knownUpgrade, upgradeOf } from '../_upgrade';
 
 const OSS = {
   WORLDSMITH_BRANCH: 'live',
@@ -364,6 +364,24 @@ describe('the play director queue (P53 T2)', () => {
     await Promise.all([busy, stranger]);
     expect(directorQueueState()).toEqual({ running: 0, queued: 0 });
     expect(slotsDetail('play')).toContain('0 play');
+  });
+
+  // Revize T3a/T3b, nález 1: mezi kontrolou volného slotu a voláním jsou síťová čtení (vypínač, cache),
+  // slot se mezitím může obsadit – pokyn proto sám na slot nečeká.
+  it('(j) the nudge itself may not wait for a slot', async () => {
+    gatedUpstream().openAll();
+    const store = memoryVersionStore();
+    const said = sentence(2);
+    const quick = await publishReadSpec(store, draftGameSpecWithMeta(said, 1).spec, derivedSeeds(seedFrom(said)), null, { origin: { sentence: said, seed: null } });
+    if (!quick.ok) throw new Error(`quick version did not publish: ${JSON.stringify(quick.issues)}`);
+    const nudgeWaits: Array<boolean | undefined> = [];
+    const spy: typeof getDirector = (...args) => {
+      if (args[3] !== undefined) nudgeWaits.push(args[5]);
+      return getDirector(...args);
+    };
+    const outcome = await directUpgrade(store, quick.value.game, { sentence: said, seed: null, ackMs: null, draftReadyMs: null, startedAt: Date.now(), caller: 'nudge-caller' }, spy);
+    expect(outcome).toMatchObject({ status: 'ready', adds: [] });
+    expect(nudgeWaits).toEqual([false]);
   });
 
   // Revize fáze 1, nález 4 (T3b): synchronní `POST` s nehratelným návrhem nesmí mlčky čekat ve frontě.

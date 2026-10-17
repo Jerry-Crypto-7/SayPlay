@@ -272,7 +272,8 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
   // nevyjde – publikuje se první; `adds: []` ho ukáže. Bez volného slotu (P53 T3a) se pokus přeskočí:
   // režie svůj slot už pustila a druhé čekání by hotovou verzi zdrželo za cizími větami.
   if (quick !== null && adds?.length === 0 && directorSlotFree()) {
-    const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE, upgradeQueueId(draftId))(request.sentence);
+    // `false`: slot se mezi kontrolou výš a voláním (čtení vypínače a cache po síti) mohl obsadit – pak se nečeká.
+    const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE, upgradeQueueId(draftId), false)(request.sentence);
     const again = nudged.source === 'draft' ? null : await upgradeCandidate(draft, nudged.spec, seeds, intent, before);
     const added = again === null ? [] : upgradeAddsOf(quick, again.played);
     if (again !== null && added.length > 0 && nudged.source !== 'draft') [upgraded, preservingSeeds, adds, source] = [again.spec, again.seeds, added, nudged.source];
