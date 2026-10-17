@@ -401,6 +401,8 @@ const ruleParams = z
     spots: z.array(z.int()).min(2).max(16),
     space: z.enum(['plane', 'track']),
     maxActors: z.int().min(1).max(PACING.maxActors),
+    /** Předloha bosse, který přijde i přes plný `maxActors` (P51 T5, `genre.v5`) – má vlastní slot navíc. */
+    bossRoom: z.int().min(1).optional(),
     finale: z.enum(FINALES).optional(),
     /** Těla chování, která pravidlo nechá udeřit (`behaviourEffects`). */
     behaviours: behaviourRefs.optional(),
@@ -482,7 +484,8 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
     for (const entry of due) {
       const ref = params.behaviours?.find((candidate) => candidate.template === entry.template);
       const group = ref === undefined ? undefined : BEHAVIOURS[ref.id].group;
-      for (let k = 0; k < entry.count && room > 0; k += 1, room -= 1) {
+      // Boss nové hry (`bossRoom`) přijde i do plna: hejno těsně před ním by mu jinak vzalo poslední místo a finále by nebylo (P51 T5).
+      for (let k = 0; k < entry.count && (room > 0 || entry.template === params.bossRoom); k += 1, room -= 1) {
         // Hejno přijde celé na jednom místě, po `spacing` vedle sebe (rovina) nebo za sebou (trať).
         const at = params.space === 'plane' ? (order[group === undefined ? k % spots : 0] as number) : (entry.entry + (group === undefined ? k : 0)) % spots;
         const shift = group === undefined ? 0 : Math.trunc(((2 * k - entry.count + 1) * group.spacing) / 2);
@@ -527,7 +530,7 @@ export interface PacingSetup {
    * Boss: tělo a postup v promile, na kterém přijde – jeden spawn mimo los rozvrhu, předloha za předlohami `behaviours`.
    * `behaviour` = chování bosse (výchozí `boss`; úkol má za bosse strážce nad poslední věcí).
    */
-  readonly boss?: { readonly body: BodyInit; readonly at: number; readonly behaviour?: BehaviourId };
+  readonly boss?: { readonly body: BodyInit; readonly at: number; readonly behaviour?: BehaviourId; readonly room?: true };
   /** Na postupu `at` ‰ odejdou živá těla role `role` (pronásledovatelé s příchodem bosse, chování před poslední vlnou). */
   readonly clear?: readonly { readonly role: BodyInit['role']; readonly at: number }[];
   /** Knoflíky žánru zůstanou, jak jsou (vlny si drží své zrychlení); křivka jen rozvrhuje spawny a finále. */
@@ -707,14 +710,15 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
     });
   const bossed = setup.boss === undefined ? drawn : [...drawn, { atPermille: Math.max(1, setup.boss.at), template: first + behaviours.length, count: 1, entry: 0 }];
   const schedule = setup.extra === undefined ? bossed : [...bossed, { atPermille: Math.max(1, setup.extra.at), template: first + actors.length + shooters.length, count: setup.extra.count, entry: 0 }];
+  const bossRoom = setup.boss?.room === true ? { bossRoom: first + behaviours.length } : {};
   const pulse = setup.pulse === undefined ? {} : { pulse: { template: keeper - 1, keeper: keeper + 1, beat: PACING.heartbeat } };
   const half = parts.control.params.half;
   const edge = setup.space === 'plane' && shooters.length > 0 && typeof half === 'number' ? { half } : {};
   const clear = setup.clear === undefined || setup.clear.length === 0 ? {} : { clear: setup.clear.map((step) => ({ role: ROLE[step.role], at: Math.max(1, step.at) })) };
   const rule: PieceRef | null = schedule.length === 0 && setup.finale === undefined && refs.length === 0 ? null : {
-    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved, ...edge, ...clear, ...pulse },
+    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...bossRoom, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved, ...edge, ...clear, ...pulse },
   };
-  const slots = (schedule.length === 0 ? 0 : PACING.maxActors) + (shooters.length === 0 ? 0 : PACING.maxShots) + (pulses.length === 0 ? 0 : PACING.heartbeatCoins);
+  const slots = (schedule.length === 0 ? 0 : PACING.maxActors + (setup.boss?.room === true ? 1 : 0)) + (shooters.length === 0 ? 0 : PACING.maxShots) + (pulses.length === 0 ? 0 : PACING.heartbeatCoins);
   const steady = setup.steady === true ? { steady: true as const } : {};
   return {
     ...parts,
