@@ -19,6 +19,7 @@ import { funMetrics, traceRun } from '../telemetry';
 import { runBot, verifyArcade } from '../verify';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
+import type { RecipeAssembly } from '@/play/compose/presets';
 import type { GameSpecV1 } from '@/play/spec';
 
 const SEEDS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -100,6 +101,16 @@ describe('P51 T3: walker and glide games are paced to a finale', () => {
       expect(Math.min(...seconds), `${cell.id}: ${runs}`).toBeGreaterThan(15);
     });
   }
+
+  it.each([['glide', 'voyage', 'race'], ['walk', 'quest', 'spatial']])('builds an assembled %s with parts (P42) as before: no mark, no pacing; without parts it is a new game', (move, genre, mode) => {
+    const recipe = { preset: 'assembled', move, actions: [], objective: 'reach', threats: [], content: { genre, mode, hero: 'seal', setting: 'snow' } } as unknown as RecipeAssembly;
+    const parted = compileRecipe({ ...recipe, parts: [{ kind: 'catch', role: 'part_0', label: 'fish', phase: 0, motion: 'fall' }] });
+    expect(parted.controlParams).not.toHaveProperty('segments');
+    expect(ruleOf(worldOf(parted), 'pacing')).toBeUndefined();
+    const plain = compileRecipe({ ...recipe, parts: [] });
+    expect(plain.controlParams).toMatchObject({ segments: true });
+    expect((ruleOf(worldOf(plain), 'pacing')?.params as { finale?: string } | undefined)?.finale).toBe('sprint');
+  });
 
   it('the glide tunnel is within the delayed steering reach and the course fits the body budget', () => {
     expect(GLIDE_FINALE.spacing).toBeLessThan(GLIDE.spacing);
