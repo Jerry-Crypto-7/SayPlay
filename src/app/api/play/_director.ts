@@ -235,6 +235,10 @@ async function cappedBranch(
         return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'too little time left in the route', usage: null };
       }
       const bounded = left < config.timeoutMs ? upstreamBranch({ ...config, timeoutMs: left }) : branch;
+      // Vypínač znovu před každým voláním (P53, revize fáze 1): mezi čtením nahoře
+      // a voláním stojí od P53 fronta na slot, až 240 s, a vypínač přepnutý
+      // mezitím by jinak placené volání nezastavil – stejně jako u zálohy níž.
+      if ((await killState(env)).upstream) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the upstream kill switch is on', usage: null };
       const reservation = await cap.reserve(branch.worstCaseUsd(call));
       if (!reservation.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'spend cap refused the call', usage: null };
       // Počet volajícího až po rezervaci: odmítnutí stropem mu volání neubere (revize R8).

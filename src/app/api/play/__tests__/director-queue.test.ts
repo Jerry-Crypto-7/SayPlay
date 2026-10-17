@@ -6,6 +6,10 @@
  * primár, který odpoví až na pokyn – nikam se nevolá.
  */
 
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { genreAnswer } from '@/play/director/__fixtures__';
@@ -246,6 +250,28 @@ describe('the play director queue (P53 T2)', () => {
     expect(refused.ok ? '' : refused.detail).toContain('QUEUE_FULL');
     up.openAll();
     await Promise.all(games);
+  });
+
+  // Revize fáze 1: vypínač čtený před frontou by čekajícího po až 240 s pustil k placenému volání.
+  it('a waiter admitted after the upstream kill switch went on makes no paid call', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'play-queue-kill-'));
+    const control = join(dir, 'control.json');
+    writeFileSync(control, JSON.stringify({ off: [] }));
+    stubEnv({ WORLDSMITH_CONTROL_FILE: control });
+    try {
+      const up = gatedUpstream();
+      const games = [directing(0), directing(1), directing(2)];
+      await until(() => expect(directorQueueState()).toEqual({ running: 2, queued: 1 }));
+      writeFileSync(control, JSON.stringify({ off: ['upstream'] }));
+      up.answerNext();
+      const late = await games[2]!;
+      expect(late.fallbackReason).toBe('MODEL_UNAVAILABLE');
+      expect(up.first).not.toContain(sentence(2));
+      up.openAll();
+      await Promise.all(games);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   // P53 T3: stav, který klient polluje, nese pořadí, dokud práce čeká – a ztratí ho, jakmile slot má.
