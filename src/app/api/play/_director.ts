@@ -329,17 +329,20 @@ type QueueHolder = { [QUEUE]?: { readonly queue: AdmissionQueue; readonly create
  */
 function directorQueue(config: UpstreamConfig): { readonly queue: AdmissionQueue; readonly createdAt: number } {
   const holder = globalThis as QueueHolder;
-  holder[QUEUE] ??= {
-    createdAt: Date.now(),
-    queue: new AdmissionQueue(
+  if (holder[QUEUE] === undefined) {
+    const queue = new AdmissionQueue(
       { budgetMs: DIRECTOR_BUDGET_MS, minServiceMs: minCallMs(config), maxQueued: directorQueueLength(process.env) },
       {
         now: () => Date.now(),
         concurrency: DOOR_CEILING.play,
         onCoercedReceipt: ({ id }) => console.warn(`[play] director queue: ${id} came with an untrusted start time, its wait counts from now`),
       },
-    ),
-  };
+    );
+    // `createdAt` až po frontě: čtené před ní je o milisekundu starší než její
+    // vlastní vznik a první volání procesu by fronta hlásila jako rozbité hodiny
+    // (naměřeno pod `next start` v P53 T4).
+    holder[QUEUE] = { queue, createdAt: Date.now() };
+  }
   return holder[QUEUE];
 }
 
