@@ -9,8 +9,9 @@
  * režiséra z `src/play/director/__fixtures__/p46-answers` podle věty, zpoždění
  * `--delay-ms`, počítá souběžná volání), nad ním `next start` z hotového buildu
  * (`npm run build` předem) a pošle věty. **Nikam jinam se nevolá**: prostředí
- * serveru se staví bez proměnných modelu, sdíleného úložiště a Vercelu, takže
- * placený endpoint ani sdílený klíč nedostane nic.
+ * serveru se staví bez proměnných modelu, sdíleného úložiště a Vercelu a se
+ * souborem `.env*` v kořeni se nespustí, takže placený endpoint ani sdílený
+ * klíč nedostane nic.
  *
  * Dva běhy do `--out` (výchozí `evals/play/director-queue/report.json`):
  * `burst` s výchozí frontou (úspěch = N/N `ready`, 0× `MODEL_UNAVAILABLE`,
@@ -108,8 +109,20 @@ function cleanEnv(extra) {
   return { ...env, ...extra };
 }
 
+/**
+ * Soubory `.env*`, ze kterých by `next start` doplnil klíče, jež `cleanEnv`
+ * vynechal (`@next/env` doplní jen klíč chybějící v prostředí) – i placenou
+ * zálohu a sdílené úložiště. `.env.example` Next nečte.
+ */
+export function envFilesIn(root) {
+  return readdirSync(root).filter((name) => /^\.env(\..+)?$/.test(name) && name !== '.env.example');
+}
+
 /** `next start` nad náhradním upstreamem; vrací adresu a zastavení. */
-export async function startServer({ port, upstream, slots, queue }) {
+export async function startServer({ port, upstream, slots, queue, root = ROOT }) {
+  const envFiles = envFilesIn(root);
+  if (envFiles.length > 0)
+    throw new Error(`refusing to start: ${envFiles.join(', ')} in ${root} would hand next start a real model endpoint, key or shared store; move it away for the burst test`);
   const store = mkdtempSync(join(tmpdir(), 'p53-burst-store-'));
   const env = cleanEnv({
     NODE_ENV: 'production',
@@ -131,7 +144,7 @@ export async function startServer({ port, upstream, slots, queue }) {
     PLAY_DIRECTOR_SLOTS: String(slots),
     ...(queue === undefined ? {} : { PLAY_DIRECTOR_QUEUE: String(queue) }),
   });
-  const child = spawn(process.execPath, [join(ROOT, 'node_modules/next/dist/bin/next'), 'start', '-p', String(port), '-H', '127.0.0.1'], { cwd: ROOT, env, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, [join(root, 'node_modules/next/dist/bin/next'), 'start', '-p', String(port), '-H', '127.0.0.1'], { cwd: root, env, stdio: ['ignore', 'pipe', 'pipe'] });
   const log = [];
   const keep = (chunk) => {
     log.push(String(chunk));
