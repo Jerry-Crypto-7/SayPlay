@@ -1,13 +1,13 @@
 {
   "schema": "play-regression-report.v1",
-  "measuredAt": "2026-10-08T13:27:04.375Z",
+  "measuredAt": "2026-10-17T05:21:42.755Z",
   "seed": 1,
   "rows": [
     {
       "id": "chase_escape-1",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 3941.4,
+      "draftMs": 2384,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": false,
@@ -15,13 +15,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2897,
-      "entities": 115,
-      "rules": 8,
-      "compileMs": 588,
-      "verifyMs": 955.7,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3800,
+      "entities": 123,
+      "rules": 13,
+      "compileMs": 676.6,
+      "verifyMs": 258.3,
       "evidence": {
         "hero": "hamster",
         "cellId": "assembled.run",
@@ -54,7 +54,7 @@
       "id": "chase_escape-2",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 2850.9,
+      "draftMs": 1859.7,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": false,
@@ -62,13 +62,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2897,
-      "entities": 115,
-      "rules": 8,
-      "compileMs": 212,
-      "verifyMs": 803.2,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3800,
+      "entities": 123,
+      "rules": 13,
+      "compileMs": 630.2,
+      "verifyMs": 196.7,
       "evidence": {
         "hero": "mouse",
         "cellId": "assembled.run",
@@ -101,7 +101,7 @@
       "id": "chase_escape-3",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 1808.4,
+      "draftMs": 1680.1,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": false,
@@ -109,13 +109,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2897,
-      "entities": 115,
-      "rules": 8,
-      "compileMs": 224.2,
-      "verifyMs": 392.9,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3800,
+      "entities": 123,
+      "rules": 13,
+      "compileMs": 583.7,
+      "verifyMs": 188.2,
       "evidence": {
         "hero": null,
         "cellId": "assembled.run",
@@ -148,7 +148,7 @@
       "id": "chase_escape-4",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 1371.3,
+      "draftMs": 1606.2,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": false,
@@ -156,13 +156,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2897,
-      "entities": 113,
-      "rules": 6,
-      "compileMs": 463.6,
-      "verifyMs": 789.5,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3611,
+      "entities": 125,
+      "rules": 12,
+      "compileMs": 533.1,
+      "verifyMs": 180.5,
       "evidence": {
         "hero": "penguin",
         "cellId": "assembled.run",
@@ -195,7 +195,7 @@
       "id": "collect_exit-1",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 1099.7,
+      "draftMs": 1121.9,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": true,
@@ -203,13 +203,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 3240,
-      "entities": 8,
-      "rules": 6,
-      "compileMs": 454.5,
-      "verifyMs": 476.6,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3863,
+      "entities": 22,
+      "rules": 13,
+      "compileMs": 604.8,
+      "verifyMs": 578.6,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -237,7 +237,7 @@
       "id": "collect_exit-2",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 307.2,
+      "draftMs": 570.6,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": true,
@@ -245,13 +245,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2144,
-      "entities": 11,
-      "rules": 6,
-      "compileMs": 174.6,
-      "verifyMs": 275.7,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 2673,
+      "entities": 25,
+      "rules": 13,
+      "compileMs": 373.6,
+      "verifyMs": 389,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -279,7 +279,7 @@
       "id": "collect_exit-3",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 1174.8,
+      "draftMs": 989.7,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": true,
@@ -287,13 +287,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2157,
-      "entities": 6,
-      "rules": 6,
-      "compileMs": 304,
-      "verifyMs": 215.8,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3033,
+      "entities": 20,
+      "rules": 13,
+      "compileMs": 577.6,
+      "verifyMs": 637.9,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -338,7 +338,7 @@
       "id": "collect_exit-4",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 746.7,
+      "draftMs": 1594.5,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": true,
@@ -346,13 +346,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 3381,
-      "entities": 9,
-      "rules": 6,
-      "compileMs": 402.6,
-      "verifyMs": 484.8,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 2697,
+      "entities": 20,
+      "rules": 11,
+      "compileMs": 303,
+      "verifyMs": 277.9,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -397,7 +397,7 @@
       "id": "survival_timer-1",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 1300.2,
+      "draftMs": 562.3,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": true,
@@ -405,13 +405,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
       "winsAtTick": 3600,
-      "entities": 4,
-      "rules": 5,
-      "compileMs": 384.9,
-      "verifyMs": 611.4,
+      "entities": 17,
+      "rules": 10,
+      "compileMs": 291.3,
+      "verifyMs": 193.9,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -434,7 +434,7 @@
       "id": "survival_timer-2",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 1074.5,
+      "draftMs": 632.8,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": true,
@@ -442,13 +442,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
       "winsAtTick": 4800,
-      "entities": 4,
-      "rules": 5,
-      "compileMs": 1047.1,
-      "verifyMs": 1107.2,
+      "entities": 17,
+      "rules": 10,
+      "compileMs": 376.3,
+      "verifyMs": 236.8,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -488,7 +488,7 @@
       "id": "survival_timer-3",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 934,
+      "draftMs": 288.3,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": true,
@@ -496,13 +496,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
       "winsAtTick": 2700,
-      "entities": 6,
-      "rules": 7,
-      "compileMs": 340.6,
-      "verifyMs": 428.4,
+      "entities": 9,
+      "rules": 9,
+      "compileMs": 176.4,
+      "verifyMs": 72.8,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -530,7 +530,7 @@
       "id": "survival_timer-4",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 2286,
+      "draftMs": 666.1,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": true,
@@ -538,13 +538,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
       "winsAtTick": 4800,
-      "entities": 4,
-      "rules": 5,
-      "compileMs": 1257.3,
-      "verifyMs": 1380.9,
+      "entities": 17,
+      "rules": 10,
+      "compileMs": 447.7,
+      "verifyMs": 223.6,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -584,7 +584,7 @@
       "id": "checkpoint_race-1",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 1440.8,
+      "draftMs": 1301,
       "archetype": "hazard_crossing",
       "genre": null,
       "genreHit": false,
@@ -592,13 +592,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2124,
-      "entities": 114,
-      "rules": 5,
-      "compileMs": 366.9,
-      "verifyMs": 686.1,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 2050,
+      "entities": 143,
+      "rules": 9,
+      "compileMs": 219.9,
+      "verifyMs": 249.5,
       "evidence": {
         "hero": null,
         "cellId": "assembled.drive",
@@ -621,7 +621,7 @@
       "id": "checkpoint_race-2",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 214.5,
+      "draftMs": 104.8,
       "archetype": "hazard_crossing",
       "genre": null,
       "genreHit": false,
@@ -634,8 +634,8 @@
       "winsAtTick": 907,
       "entities": 44,
       "rules": 6,
-      "compileMs": 24.3,
-      "verifyMs": 71.9,
+      "compileMs": 9.9,
+      "verifyMs": 13.3,
       "evidence": {
         "hero": "plane",
         "cellId": "assembled.glide",
@@ -658,7 +658,7 @@
       "id": "checkpoint_race-3",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 961.5,
+      "draftMs": 514.8,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": false,
@@ -666,13 +666,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 1983,
-      "entities": 101,
-      "rules": 5,
-      "compileMs": 118.7,
-      "verifyMs": 157.9,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 1992,
+      "entities": 85,
+      "rules": 13,
+      "compileMs": 288.8,
+      "verifyMs": 111.8,
       "evidence": {
         "hero": null,
         "cellId": "assembled.run",
@@ -712,7 +712,7 @@
       "id": "checkpoint_race-4",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 1032.2,
+      "draftMs": 943.9,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": false,
@@ -720,13 +720,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2897,
-      "entities": 112,
-      "rules": 5,
-      "compileMs": 163.5,
-      "verifyMs": 260.2,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3611,
+      "entities": 124,
+      "rules": 11,
+      "compileMs": 540.9,
+      "verifyMs": 165,
       "evidence": {
         "hero": null,
         "cellId": "assembled.run",
@@ -761,7 +761,7 @@
       "id": "delivery-1",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 797.4,
+      "draftMs": 263,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": false,
@@ -769,13 +769,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2920,
-      "entities": 16,
-      "rules": 8,
-      "compileMs": 434.1,
-      "verifyMs": 1328.2,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3426,
+      "entities": 19,
+      "rules": 11,
+      "compileMs": 147.3,
+      "verifyMs": 137.3,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -798,7 +798,7 @@
       "id": "delivery-2",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 424.2,
+      "draftMs": 244.9,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": false,
@@ -806,13 +806,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2920,
-      "entities": 16,
-      "rules": 8,
-      "compileMs": 484.4,
-      "verifyMs": 669,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3426,
+      "entities": 19,
+      "rules": 11,
+      "compileMs": 134.8,
+      "verifyMs": 140.1,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -835,7 +835,7 @@
       "id": "delivery-3",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 705.7,
+      "draftMs": 315.7,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": false,
@@ -843,13 +843,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2920,
-      "entities": 17,
-      "rules": 9,
-      "compileMs": 252.7,
-      "verifyMs": 839.4,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3426,
+      "entities": 20,
+      "rules": 12,
+      "compileMs": 177.5,
+      "verifyMs": 210.5,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -877,7 +877,7 @@
       "id": "delivery-4",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 527.7,
+      "draftMs": 267.3,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": false,
@@ -885,13 +885,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2920,
-      "entities": 16,
-      "rules": 8,
-      "compileMs": 328.9,
-      "verifyMs": 371.3,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3426,
+      "entities": 19,
+      "rules": 11,
+      "compileMs": 151.8,
+      "verifyMs": 151.5,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -914,7 +914,7 @@
       "id": "switch_puzzle-1",
       "bucket": "switch_puzzle",
       "expectArchetype": "switch_puzzle",
-      "draftMs": 1802.2,
+      "draftMs": 513,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": true,
@@ -924,11 +924,11 @@
       "publishEligible": true,
       "keypointsPassed": 5,
       "keypointsTotal": 5,
-      "winsAtTick": 4192,
-      "entities": 12,
-      "rules": 6,
-      "compileMs": 887.5,
-      "verifyMs": 1092.3,
+      "winsAtTick": 3036,
+      "entities": 23,
+      "rules": 10,
+      "compileMs": 186.7,
+      "verifyMs": 169.3,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -951,7 +951,7 @@
       "id": "switch_puzzle-2",
       "bucket": "switch_puzzle",
       "expectArchetype": "switch_puzzle",
-      "draftMs": 1327.6,
+      "draftMs": 461.1,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": true,
@@ -961,11 +961,11 @@
       "publishEligible": true,
       "keypointsPassed": 5,
       "keypointsTotal": 5,
-      "winsAtTick": 4938,
-      "entities": 10,
-      "rules": 6,
-      "compileMs": 1299.3,
-      "verifyMs": 1926.3,
+      "winsAtTick": 3134,
+      "entities": 21,
+      "rules": 10,
+      "compileMs": 260.9,
+      "verifyMs": 168.4,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -988,7 +988,7 @@
       "id": "switch_puzzle-3",
       "bucket": "switch_puzzle",
       "expectArchetype": "switch_puzzle",
-      "draftMs": 945.6,
+      "draftMs": 337.2,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": true,
@@ -998,11 +998,11 @@
       "publishEligible": true,
       "keypointsPassed": 5,
       "keypointsTotal": 5,
-      "winsAtTick": 4192,
-      "entities": 12,
-      "rules": 6,
-      "compileMs": 910.5,
-      "verifyMs": 1201.7,
+      "winsAtTick": 3036,
+      "entities": 23,
+      "rules": 10,
+      "compileMs": 181.8,
+      "verifyMs": 177.9,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1042,7 +1042,7 @@
       "id": "switch_puzzle-4",
       "bucket": "switch_puzzle",
       "expectArchetype": "switch_puzzle",
-      "draftMs": 1893.8,
+      "draftMs": 391,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": true,
@@ -1052,11 +1052,11 @@
       "publishEligible": true,
       "keypointsPassed": 5,
       "keypointsTotal": 5,
-      "winsAtTick": 4192,
-      "entities": 12,
-      "rules": 6,
-      "compileMs": 1190.5,
-      "verifyMs": 976.7,
+      "winsAtTick": 3036,
+      "entities": 23,
+      "rules": 10,
+      "compileMs": 232.7,
+      "verifyMs": 168.1,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1096,7 +1096,7 @@
       "id": "hazard_crossing-1",
       "bucket": "hazard_platforming",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 1040.8,
+      "draftMs": 631,
       "archetype": "hazard_crossing",
       "genre": "platformer.default",
       "genreHit": true,
@@ -1104,13 +1104,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2430,
-      "entities": 74,
-      "rules": 10,
-      "compileMs": 370.6,
-      "verifyMs": 567.4,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 2471,
+      "entities": 115,
+      "rules": 14,
+      "compileMs": 298.2,
+      "verifyMs": 284.9,
       "evidence": {
         "hero": null,
         "cellId": "assembled.jump",
@@ -1133,7 +1133,7 @@
       "id": "hazard_crossing-2",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 350.6,
+      "draftMs": 608.2,
       "archetype": "hazard_crossing",
       "genre": "platformer.default",
       "genreHit": true,
@@ -1141,13 +1141,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2430,
-      "entities": 74,
-      "rules": 10,
-      "compileMs": 108.1,
-      "verifyMs": 284,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 2603,
+      "entities": 97,
+      "rules": 14,
+      "compileMs": 249.2,
+      "verifyMs": 224.2,
       "evidence": {
         "hero": null,
         "cellId": "assembled.jump",
@@ -1202,7 +1202,7 @@
       "id": "hazard_crossing-3",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 609,
+      "draftMs": 854,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": false,
@@ -1210,13 +1210,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2897,
-      "entities": 112,
-      "rules": 5,
-      "compileMs": 126.5,
-      "verifyMs": 233.1,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 3611,
+      "entities": 124,
+      "rules": 11,
+      "compileMs": 601.4,
+      "verifyMs": 231.9,
       "evidence": {
         "hero": null,
         "cellId": "assembled.run",
@@ -1281,7 +1281,7 @@
       "id": "hazard_crossing-4",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 1075.9,
+      "draftMs": 542.9,
       "archetype": "hazard_crossing",
       "genre": "platformer.default",
       "genreHit": true,
@@ -1289,13 +1289,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 2430,
-      "entities": 74,
-      "rules": 10,
-      "compileMs": 584.7,
-      "verifyMs": 350.2,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 2839,
+      "entities": 115,
+      "rules": 14,
+      "compileMs": 300.5,
+      "verifyMs": 300.6,
       "evidence": {
         "hero": null,
         "cellId": "assembled.jump",
@@ -1328,7 +1328,7 @@
       "id": "combat_lite-1",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 932.3,
+      "draftMs": 308,
       "archetype": "combat_lite",
       "genre": "arena.fight",
       "genreHit": true,
@@ -1338,11 +1338,11 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 3565,
-      "entities": 5,
-      "rules": 5,
-      "compileMs": 105.8,
-      "verifyMs": 453.4,
+      "winsAtTick": 3279,
+      "entities": 9,
+      "rules": 7,
+      "compileMs": 84.7,
+      "verifyMs": 85.4,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1365,7 +1365,7 @@
       "id": "combat_lite-2",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 635.8,
+      "draftMs": 231.7,
       "archetype": "combat_lite",
       "genre": "arena.fight",
       "genreHit": true,
@@ -1375,11 +1375,11 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 3565,
-      "entities": 5,
-      "rules": 5,
-      "compileMs": 52.4,
-      "verifyMs": 325.2,
+      "winsAtTick": 3279,
+      "entities": 9,
+      "rules": 7,
+      "compileMs": 76.8,
+      "verifyMs": 67.3,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1402,7 +1402,7 @@
       "id": "combat_lite-3",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 339.7,
+      "draftMs": 233.2,
       "archetype": "combat_lite",
       "genre": "arena.fight",
       "genreHit": true,
@@ -1412,11 +1412,11 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 3565,
-      "entities": 5,
-      "rules": 5,
-      "compileMs": 98.9,
-      "verifyMs": 533.5,
+      "winsAtTick": 3279,
+      "entities": 9,
+      "rules": 7,
+      "compileMs": 88.4,
+      "verifyMs": 92.7,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1439,7 +1439,7 @@
       "id": "combat_lite-4",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 1038.1,
+      "draftMs": 441.3,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": false,
@@ -1449,11 +1449,11 @@
       "publishEligible": true,
       "keypointsPassed": 5,
       "keypointsTotal": 5,
-      "winsAtTick": 4192,
-      "entities": 12,
-      "rules": 6,
-      "compileMs": 942.6,
-      "verifyMs": 2073.9,
+      "winsAtTick": 3036,
+      "entities": 23,
+      "rules": 10,
+      "compileMs": 214.5,
+      "verifyMs": 174.6,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1488,7 +1488,7 @@
       "id": "ambiguity-1",
       "bucket": "ambiguity",
       "expectArchetype": null,
-      "draftMs": 1293.2,
+      "draftMs": 794.5,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": null,
@@ -1496,13 +1496,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 3787,
-      "entities": 13,
-      "rules": 6,
-      "compileMs": 291.6,
-      "verifyMs": 485.8,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 2705,
+      "entities": 27,
+      "rules": 13,
+      "compileMs": 529.9,
+      "verifyMs": 646.7,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1519,7 +1519,7 @@
       "id": "contradiction-1",
       "bucket": "contradiction",
       "expectArchetype": null,
-      "draftMs": 666.9,
+      "draftMs": 899.3,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": null,
@@ -1527,13 +1527,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 3787,
-      "entities": 13,
-      "rules": 6,
-      "compileMs": 737.6,
-      "verifyMs": 1444,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 2705,
+      "entities": 27,
+      "rules": 13,
+      "compileMs": 640.5,
+      "verifyMs": 628.5,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1550,7 +1550,7 @@
       "id": "scale-1",
       "bucket": "scale",
       "expectArchetype": null,
-      "draftMs": 62.7,
+      "draftMs": 33.4,
       "archetype": "combat_lite",
       "genre": null,
       "genreHit": null,
@@ -1563,8 +1563,8 @@
       "winsAtTick": 373,
       "entities": 2,
       "rules": 2,
-      "compileMs": 8.4,
-      "verifyMs": 54.3,
+      "compileMs": 8.8,
+      "verifyMs": 7.4,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1587,7 +1587,7 @@
       "id": "remix-1",
       "bucket": "remix",
       "expectArchetype": null,
-      "draftMs": 582.9,
+      "draftMs": 894.9,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": null,
@@ -1595,13 +1595,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 3787,
-      "entities": 13,
-      "rules": 6,
-      "compileMs": 551.8,
-      "verifyMs": 654.2,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 2705,
+      "entities": 27,
+      "rules": 13,
+      "compileMs": 497.4,
+      "verifyMs": 500.4,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1618,7 +1618,7 @@
       "id": "remix-2",
       "bucket": "remix",
       "expectArchetype": null,
-      "draftMs": 870.3,
+      "draftMs": 778.6,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": null,
@@ -1626,13 +1626,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 3787,
-      "entities": 13,
-      "rules": 6,
-      "compileMs": 985.8,
-      "verifyMs": 759.5,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 2705,
+      "entities": 27,
+      "rules": 13,
+      "compileMs": 543.5,
+      "verifyMs": 611.3,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1649,7 +1649,7 @@
       "id": "remix-3",
       "bucket": "remix",
       "expectArchetype": null,
-      "draftMs": 590.4,
+      "draftMs": 872.6,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": null,
@@ -1657,13 +1657,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 3787,
-      "entities": 13,
-      "rules": 6,
-      "compileMs": 348.6,
-      "verifyMs": 763.4,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 2705,
+      "entities": 27,
+      "rules": 13,
+      "compileMs": 531.3,
+      "verifyMs": 543.8,
       "evidence": {
         "hero": "twice",
         "cellId": "assembled.roam",
@@ -1680,7 +1680,7 @@
       "id": "count-1",
       "bucket": "count",
       "expectArchetype": null,
-      "draftMs": 554.6,
+      "draftMs": 1086.2,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": null,
@@ -1688,13 +1688,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 3787,
-      "entities": 13,
-      "rules": 6,
-      "compileMs": 532.5,
-      "verifyMs": 786.9,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
+      "winsAtTick": 4477,
+      "entities": 24,
+      "rules": 13,
+      "compileMs": 604.8,
+      "verifyMs": 761.5,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1729,7 +1729,7 @@
       "id": "relation-1",
       "bucket": "relation",
       "expectArchetype": null,
-      "draftMs": 447.6,
+      "draftMs": 378.5,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": null,
@@ -1737,13 +1737,13 @@
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
+      "keypointsPassed": 6,
+      "keypointsTotal": 6,
       "winsAtTick": 2400,
-      "entities": 4,
-      "rules": 5,
-      "compileMs": 477.5,
-      "verifyMs": 315.7,
+      "entities": 17,
+      "rules": 10,
+      "compileMs": 212.9,
+      "verifyMs": 124,
       "evidence": {
         "hero": null,
         "cellId": "assembled.roam",
@@ -1764,8 +1764,8 @@
     "total": 40,
     "genreHits": 18,
     "withExpect": 32,
-    "medianCompileMs": 370.6,
-    "p90CompileMs": 985.8
+    "medianCompileMs": 291.3,
+    "p90CompileMs": 604.8
   },
   "historicalGenreHitTarget": 26,
   "historicalDifferences": [
@@ -1788,19 +1788,29 @@
           "after": false
         },
         {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
           "field": "winsAtTick",
           "before": 2400,
-          "after": 2897
+          "after": 3800
         },
         {
           "field": "entities",
           "before": 4,
-          "after": 115
+          "after": 123
         },
         {
           "field": "rules",
           "before": 5,
-          "after": 8
+          "after": 13
         }
       ]
     },
@@ -1823,19 +1833,29 @@
           "after": false
         },
         {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
           "field": "winsAtTick",
           "before": 2400,
-          "after": 2897
+          "after": 3800
         },
         {
           "field": "entities",
           "before": 4,
-          "after": 115
+          "after": 123
         },
         {
           "field": "rules",
           "before": 5,
-          "after": 8
+          "after": 13
         }
       ]
     },
@@ -1858,19 +1878,29 @@
           "after": false
         },
         {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
           "field": "winsAtTick",
           "before": 2400,
-          "after": 2897
+          "after": 3800
         },
         {
           "field": "entities",
           "before": 4,
-          "after": 115
+          "after": 123
         },
         {
           "field": "rules",
           "before": 5,
-          "after": 8
+          "after": 13
         }
       ]
     },
@@ -1893,19 +1923,174 @@
           "after": false
         },
         {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
           "field": "winsAtTick",
           "before": 2400,
-          "after": 2897
+          "after": 3611
         },
         {
           "field": "entities",
           "before": 4,
-          "after": 113
+          "after": 125
         },
         {
           "field": "rules",
           "before": 5,
+          "after": 12
+        }
+      ]
+    },
+    {
+      "id": "collect_exit-1",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
           "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 3240,
+          "after": 3863
+        },
+        {
+          "field": "entities",
+          "before": 8,
+          "after": 22
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 13
+        }
+      ]
+    },
+    {
+      "id": "collect_exit-2",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2144,
+          "after": 2673
+        },
+        {
+          "field": "entities",
+          "before": 11,
+          "after": 25
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 13
+        }
+      ]
+    },
+    {
+      "id": "collect_exit-3",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2157,
+          "after": 3033
+        },
+        {
+          "field": "entities",
+          "before": 6,
+          "after": 20
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 13
+        }
+      ]
+    },
+    {
+      "id": "collect_exit-4",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 5
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 5
+        },
+        {
+          "field": "winsAtTick",
+          "before": 3381,
+          "after": 2697
+        },
+        {
+          "field": "entities",
+          "before": 9,
+          "after": 20
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 11
+        }
+      ]
+    },
+    {
+      "id": "survival_timer-1",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "entities",
+          "before": 4,
+          "after": 17
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 10
         }
       ]
     },
@@ -1928,6 +2113,16 @@
           "after": true
         },
         {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
           "field": "winsAtTick",
           "before": 3787,
           "after": 4800
@@ -1935,12 +2130,12 @@
         {
           "field": "entities",
           "before": 13,
-          "after": 4
+          "after": 17
         },
         {
           "field": "rules",
           "before": 6,
-          "after": 5
+          "after": 10
         }
       ]
     },
@@ -1948,14 +2143,49 @@
       "id": "survival_timer-3",
       "fields": [
         {
-          "field": "entities",
+          "field": "keypointsPassed",
           "before": 4,
           "after": 6
         },
         {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "entities",
+          "before": 4,
+          "after": 9
+        },
+        {
           "field": "rules",
           "before": 5,
-          "after": 7
+          "after": 9
+        }
+      ]
+    },
+    {
+      "id": "survival_timer-4",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "entities",
+          "before": 4,
+          "after": 17
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 10
         }
       ]
     },
@@ -1973,19 +2203,29 @@
           "after": false
         },
         {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
           "field": "winsAtTick",
           "before": 2446,
-          "after": 2124
+          "after": 2050
         },
         {
           "field": "entities",
           "before": 106,
-          "after": 114
+          "after": 143
         },
         {
           "field": "rules",
           "before": 6,
-          "after": 5
+          "after": 9
         }
       ]
     },
@@ -2030,27 +2270,57 @@
         {
           "field": "keypointsPassed",
           "before": 5,
-          "after": 4
+          "after": 6
         },
         {
           "field": "keypointsTotal",
           "before": 5,
-          "after": 4
+          "after": 6
         },
         {
           "field": "winsAtTick",
           "before": 4201,
-          "after": 1983
+          "after": 1992
         },
         {
           "field": "entities",
           "before": 13,
-          "after": 101
+          "after": 85
         },
         {
           "field": "rules",
           "before": 6,
-          "after": 5
+          "after": 13
+        }
+      ]
+    },
+    {
+      "id": "checkpoint_race-4",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2897,
+          "after": 3611
+        },
+        {
+          "field": "entities",
+          "before": 112,
+          "after": 124
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 11
         }
       ]
     },
@@ -2075,27 +2345,27 @@
         {
           "field": "keypointsPassed",
           "before": 5,
-          "after": 4
+          "after": 6
         },
         {
           "field": "keypointsTotal",
           "before": 5,
-          "after": 4
+          "after": 6
         },
         {
           "field": "winsAtTick",
           "before": 5181,
-          "after": 2920
+          "after": 3426
         },
         {
           "field": "entities",
           "before": 13,
-          "after": 16
+          "after": 19
         },
         {
           "field": "rules",
           "before": 6,
-          "after": 8
+          "after": 11
         }
       ]
     },
@@ -2120,27 +2390,27 @@
         {
           "field": "keypointsPassed",
           "before": 5,
-          "after": 4
+          "after": 6
         },
         {
           "field": "keypointsTotal",
           "before": 5,
-          "after": 4
+          "after": 6
         },
         {
           "field": "winsAtTick",
           "before": 4192,
-          "after": 2920
+          "after": 3426
         },
         {
           "field": "entities",
           "before": 12,
-          "after": 16
+          "after": 19
         },
         {
           "field": "rules",
           "before": 6,
-          "after": 8
+          "after": 11
         }
       ]
     },
@@ -2165,27 +2435,27 @@
         {
           "field": "keypointsPassed",
           "before": 5,
-          "after": 4
+          "after": 6
         },
         {
           "field": "keypointsTotal",
           "before": 5,
-          "after": 4
+          "after": 6
         },
         {
           "field": "winsAtTick",
           "before": 4192,
-          "after": 2920
+          "after": 3426
         },
         {
           "field": "entities",
           "before": 12,
-          "after": 17
+          "after": 20
         },
         {
           "field": "rules",
           "before": 6,
-          "after": 9
+          "after": 12
         }
       ]
     },
@@ -2210,27 +2480,107 @@
         {
           "field": "keypointsPassed",
           "before": 5,
-          "after": 4
+          "after": 6
         },
         {
           "field": "keypointsTotal",
           "before": 5,
-          "after": 4
+          "after": 6
         },
         {
           "field": "winsAtTick",
           "before": 4192,
-          "after": 2920
+          "after": 3426
         },
         {
           "field": "entities",
           "before": 12,
-          "after": 16
+          "after": 19
         },
         {
           "field": "rules",
           "before": 6,
-          "after": 8
+          "after": 11
+        }
+      ]
+    },
+    {
+      "id": "switch_puzzle-1",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 4192,
+          "after": 3036
+        },
+        {
+          "field": "entities",
+          "before": 12,
+          "after": 23
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 10
+        }
+      ]
+    },
+    {
+      "id": "switch_puzzle-2",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 4938,
+          "after": 3134
+        },
+        {
+          "field": "entities",
+          "before": 10,
+          "after": 21
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 10
+        }
+      ]
+    },
+    {
+      "id": "switch_puzzle-3",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 4192,
+          "after": 3036
+        },
+        {
+          "field": "entities",
+          "before": 12,
+          "after": 23
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 10
+        }
+      ]
+    },
+    {
+      "id": "switch_puzzle-4",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 4192,
+          "after": 3036
+        },
+        {
+          "field": "entities",
+          "before": 12,
+          "after": 23
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 10
         }
       ]
     },
@@ -2238,14 +2588,29 @@
       "id": "hazard_crossing-1",
       "fields": [
         {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2430,
+          "after": 2471
+        },
+        {
           "field": "entities",
           "before": 72,
-          "after": 74
+          "after": 115
         },
         {
           "field": "rules",
           "before": 8,
-          "after": 10
+          "after": 14
         }
       ]
     },
@@ -2253,14 +2618,59 @@
       "id": "hazard_crossing-2",
       "fields": [
         {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2430,
+          "after": 2603
+        },
+        {
           "field": "entities",
           "before": 72,
-          "after": 74
+          "after": 97
         },
         {
           "field": "rules",
           "before": 8,
-          "after": 10
+          "after": 14
+        }
+      ]
+    },
+    {
+      "id": "hazard_crossing-3",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2897,
+          "after": 3611
+        },
+        {
+          "field": "entities",
+          "before": 112,
+          "after": 124
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 11
         }
       ]
     },
@@ -2268,14 +2678,69 @@
       "id": "hazard_crossing-4",
       "fields": [
         {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 2430,
+          "after": 2839
+        },
+        {
           "field": "entities",
           "before": 72,
-          "after": 74
+          "after": 115
         },
         {
           "field": "rules",
           "before": 8,
-          "after": 10
+          "after": 14
+        }
+      ]
+    },
+    {
+      "id": "combat_lite-1",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 3565,
+          "after": 3279
+        },
+        {
+          "field": "entities",
+          "before": 5,
+          "after": 9
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 7
+        }
+      ]
+    },
+    {
+      "id": "combat_lite-2",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 3565,
+          "after": 3279
+        },
+        {
+          "field": "entities",
+          "before": 5,
+          "after": 9
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 7
         }
       ]
     },
@@ -2310,17 +2775,97 @@
         {
           "field": "winsAtTick",
           "before": 4201,
-          "after": 3565
+          "after": 3279
         },
         {
           "field": "entities",
           "before": 13,
-          "after": 5
+          "after": 9
         },
         {
           "field": "rules",
           "before": 6,
-          "after": 5
+          "after": 7
+        }
+      ]
+    },
+    {
+      "id": "combat_lite-4",
+      "fields": [
+        {
+          "field": "winsAtTick",
+          "before": 4192,
+          "after": 3036
+        },
+        {
+          "field": "entities",
+          "before": 12,
+          "after": 23
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 10
+        }
+      ]
+    },
+    {
+      "id": "ambiguity-1",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 2705
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 27
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 13
+        }
+      ]
+    },
+    {
+      "id": "contradiction-1",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 2705
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 27
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 13
         }
       ]
     },
@@ -2351,6 +2896,151 @@
           "field": "rules",
           "before": 5,
           "after": 2
+        }
+      ]
+    },
+    {
+      "id": "remix-1",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 2705
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 27
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 13
+        }
+      ]
+    },
+    {
+      "id": "remix-2",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 2705
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 27
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 13
+        }
+      ]
+    },
+    {
+      "id": "remix-3",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 2705
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 27
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 13
+        }
+      ]
+    },
+    {
+      "id": "count-1",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "winsAtTick",
+          "before": 3787,
+          "after": 4477
+        },
+        {
+          "field": "entities",
+          "before": 13,
+          "after": 24
+        },
+        {
+          "field": "rules",
+          "before": 6,
+          "after": 13
+        }
+      ]
+    },
+    {
+      "id": "relation-1",
+      "fields": [
+        {
+          "field": "keypointsPassed",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "keypointsTotal",
+          "before": 4,
+          "after": 6
+        },
+        {
+          "field": "entities",
+          "before": 4,
+          "after": 17
+        },
+        {
+          "field": "rules",
+          "before": 5,
+          "after": 10
         }
       ]
     }
