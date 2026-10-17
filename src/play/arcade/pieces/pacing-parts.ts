@@ -684,6 +684,20 @@ export function timingPacedSpeeds(params: TimingLevelParams): number[] {
   });
 }
 
+/**
+ * Finále načasování (P51 T4, `genre.v5`): klidná první část rychlostí prvního kola, posledních `rounds` kol
+ * rychlostí `speed` – ≈ 10 s rychlých kol, které telemetrie uzná jako `climax`. Křivka `timingPacedSpeeds`
+ * finále nedá: stoupá plynule a při pevném počtu kol je konec nejvýš ~1,3× hustší (třeba 1,5×). Okno v tikách
+ * je při 100 stejné jako při dnešní nejvyšší 80 (2·⌊300/v⌋ + 1 = 7). Změřeno na 12 semínkách (`timing.*`):
+ * posledních 19 kol → začátečník 3/12, 20 → 5/12, 22 → 11/12; intermediate a finále 12/12, běh 30 s.
+ */
+export const TIMING_FINALE = { rounds: 20, speed: 100 } as const;
+
+export function timingFinaleSpeeds(params: TimingLevelParams): number[] {
+  const calm = timingSpeedOf(params, 0);
+  return Array.from({ length: params.rounds }, (_, round) => (round >= params.rounds - TIMING_FINALE.rounds ? Math.max(calm, TIMING_FINALE.speed) : calm));
+}
+
 /** Parametry generátoru ze specu jako v `arcadeWorldOf`: bez `generator`, s rozbaleným `tuning`. */
 function generatorParams(spec: GameSpecV1): Record<string, unknown> {
   const { generator: _generator, tuning, ...own } = (spec.controlParams ?? {}) as Record<string, unknown> & { readonly tuning?: Record<string, unknown> };
@@ -722,7 +736,7 @@ const still = (goal: GenrePacingSetup['goal'], finale: NonNullable<GenrePacingSe
 const timingPaced: GenrePacing = (parts, spec) => {
   const params = timingLevel.params.safeParse(generatorParams(spec));
   if (parts.control.id !== 'timing' || !params.success || params.data.rise !== true) return null;
-  const level = timingLevelAtSpeeds(parts.level, timingPacedSpeeds(params.data));
+  const level = timingLevelAtSpeeds(parts.level, genreAtLeast(spec, FINALE5_GENRE_VERSION) ? timingFinaleSpeeds(params.data) : timingPacedSpeeds(params.data));
   if (checkTimingLevel(level).length > 0) return null;
   return {
     ...still({ by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks }, 'sudden'),
