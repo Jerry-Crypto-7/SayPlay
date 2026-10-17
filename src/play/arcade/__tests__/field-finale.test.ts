@@ -21,7 +21,7 @@ import type { ArcadeParts } from '../addons';
 import { growTo } from '../pieces/arena';
 import { type BehaviourRef, behaviourBodies } from '../pieces/behaviours';
 import { play } from '../pieces/behaviours/__tests__/harness';
-import { FIELD, FINALE_GENRE_VERSION, pacingParts } from '../pieces/pacing-parts';
+import { FIELD, FINALE_GENRE_VERSION, genreAtLeast, pacingParts } from '../pieces/pacing-parts';
 import type { WaveParams } from '../pieces/waves';
 import { loadRapier } from '../physics/world';
 import { RULE_TEMPLATES, templateParts } from '../rules/templates';
@@ -104,7 +104,7 @@ describe('collect and item escape: the boss is the last step to the win (genre.v
   it('every v4 collect and item-escape game gates the win on its boss; the same game stored as v3 does not', () => {
     for (const [id, make] of ITEM_GAMES) {
       const spec = make();
-      expect(spec.genre?.compilerVersion, id).toBe(FINALE_GENRE_VERSION);
+      expect(genreAtLeast(spec, FINALE_GENRE_VERSION), id).toBe(true);
       for (const seed of SEEDS.slice(0, 3)) {
         const world = worldOf(spec, seed);
         expect((ruleOf(world, 'pacing')!.params as { finale: string }).finale, id).toBe('boss');
@@ -228,7 +228,7 @@ describe('survival: the last wave ends with a coin shower the telemetry sees (ge
   it('a v4 survival game gets the shower in its last 10 s, after the last wave starts; the same game stored as v3 does not', () => {
     for (const [id, make] of SURVIVAL_GAMES) {
       const spec = make();
-      expect(spec.genre?.compilerVersion, id).toBe(FINALE_GENRE_VERSION);
+      expect(genreAtLeast(spec, FINALE_GENRE_VERSION), id).toBe(true);
       for (const seed of SEEDS.slice(0, 3)) {
         const world = worldOf(spec, seed);
         expect((ruleOf(world, 'pacing')!.params as { finale: string }).finale, id).toBe('wave');

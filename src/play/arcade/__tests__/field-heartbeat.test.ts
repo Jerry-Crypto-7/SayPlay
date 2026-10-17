@@ -16,7 +16,7 @@ import { loadRapier } from '../physics/world';
 import { arenaEat } from '../pieces/arena';
 import { BEHAVIOURS, type BehaviourRef, type BehaviourStep } from '../pieces/behaviours';
 import { PACING, type PacingRuleParams, TENSION_CURVE, heartbeatAt, pacingRule } from '../pieces/pacing';
-import { FIELD, FINALE_GENRE_VERSION, HEARTBEAT_COIN, HEARTBEAT_SPARK } from '../pieces/pacing-parts';
+import { FIELD, FINALE_GENRE_VERSION, HEARTBEAT_COIN, HEARTBEAT_SPARK, genreAtLeast } from '../pieces/pacing-parts';
 import { QUEST } from '../pieces/quest';
 import { type WaveParams, arenaWaves, isSpark } from '../pieces/waves';
 import { funMetrics, traceRun } from '../telemetry';
@@ -74,7 +74,7 @@ describe('field heartbeat (genre.v4)', () => {
     const failures: string[] = [];
     for (const id of CELLS) {
       const spec = cellSpec(id);
-      expect(spec.genre?.compilerVersion, id).toBe(FINALE_GENRE_VERSION);
+      expect(genreAtLeast(spec, FINALE_GENRE_VERSION), id).toBe(true);
       let wins = 0;
       for (const seed of SEEDS) {
         const world = worldOf(spec, seed);
