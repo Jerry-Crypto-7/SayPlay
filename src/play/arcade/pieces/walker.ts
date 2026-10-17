@@ -23,7 +23,8 @@ export type WalkerParams = z.infer<typeof walkerParamsSchema>;
  * s 51 tiky (0,85 s, okno 46–58 před zaokrouhlením na celé sekundy) vyhraje 5/12 (změřeno, 7 buněk × 12 semínek).
  */
 export const WALKER_FINALE = { trail: 8, spark: 2800, reserve: 51 } as const;
-const WALKER_SPARK: Omit<BodyInit, 'x' | 'z'> = { role: 'collectible', kind: 'spark', y: 0, w: WALKER_FINALE.spark, h: 150, d: WALKER_FINALE.spark, solid: false };
+/** Výška 900: scéna do těla vepíše krystal (`modelIdOf`) stejným měřítkem ve všech osách – na 150 by byl nevidět. */
+const WALKER_SPARK: Omit<BodyInit, 'x' | 'z'> = { role: 'collectible', kind: 'spark', y: 0, w: WALKER_FINALE.spark, h: 900, d: WALKER_FINALE.spark, solid: false };
 export const walkerMapSchema = z.object({ size: z.int().min(7).max(15), open: z.array(z.int().min(0).max(224)).max(225) }).strict();
 export type WalkerMap = z.infer<typeof walkerMapSchema>;
 export const walkerControlParams = walkerMapSchema.extend({ speed: z.int().min(80).max(160), chaseSpeed: z.int().min(0).max(70).default(0) }).strict();

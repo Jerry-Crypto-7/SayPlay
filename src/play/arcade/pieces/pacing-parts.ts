@@ -924,17 +924,15 @@ const livesAtMost = (spec: GameSpecV1, most: number): boolean => {
 
 /**
  * Průběh podle generátoru světa (`generatorOf`); žánry plní T11–T14. Generátor bez záznamu hraje beze změny.
- * Plošinovka (P46B T6) jen se značkou nové hry `segments` (`platformPaced`); `glide_course` staví jen spec bez `genre`,
- * stejně jako `arena` (agar ze slovního návrhu bez žánru) a `arena_catch` (`compose/catch.ts` – spec bez `genre`):
- * žánr Aréna staví jen `arena_collect`, `arena_escape` a `fight` (`genre/arena.ts`). `steer_track` (P46B T5) staví
- * spec bez `genre` (`compose/drive.ts`): průběh dostane, jen když nese značku nové hry `segments` (`pacedNative`).
+ * Plošinovka (P46B T6) jen se značkou nové hry `segments` (`platformPaced`); `arena` (agar ze slovního návrhu bez
+ * žánru) a `arena_catch` (`compose/catch.ts`) staví spec bez `genre`: žánr Aréna staví jen `arena_collect`,
+ * `arena_escape` a `fight` (`genre/arena.ts`). `steer_track` (P46B T5) staví spec bez `genre` (`compose/drive.ts`):
+ * průběh dostane, jen když nese značku nové hry `segments` (`pacedNative`).
  *
- * Chodec (`walker_*`) bez záznamu (odchylka T12, změřeno na 7 živých buňkách `walk.*` × 8 semínek): spec staví
- * `nativeSpec` bez `genre`, takže záznam by nikdy neběžel, a hra tvar průběhu neunese – robot projde bludiště
- * za 9,5–22 s s hodinami na délku své cesty (`paceBudgetPct` 100, rezerva pod 1 s), labyrint nemá hrozbu,
- * těla chování projdou zdmi (pevná tělesa zastaví jen hráče) a uhnutí v rovině posílá kód směru arény, který
- * ovládání `walker` čte jako rychlost v ose x. Útěk „na čas“ by v bludišti bez smyček (`walkerMaze`) před
- * pronásledovatelem nešel přečkat. Značka nové hry pro nativní spec by navíc změnila otisk každé nové hry chodce.
+ * Chodec (`walker_*`) a klouzání (`glide_course`, P51 T3) staví `nativeSpec` bez `genre`, takže průběh dostane
+ * jen nová hra se značkou `segments` (`walkerPaced`, `glidePaced`). Chodec nemá boss ani chování: těla chování
+ * projdou zdmi (pevná tělesa zastaví jen hráče) a uhnutí v rovině posílá kód směru arény, který ovládání `walker`
+ * čte jako rychlost v ose x; finále je proto závěrečný spěch (stezka jisker `WALKER_FINALE`), ne strážce.
  *
  * Přistání (`voyage_land`) bez záznamu (odchylka T14, buňka `voyage.land`, 20 semínek): jeden život a hra
  * trvá 13,6–15,1 s (robot intermediate 19/20, novice 13/20) – křivka by měla na úvod necelé 3 s a délku

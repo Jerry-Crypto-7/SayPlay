@@ -39,6 +39,23 @@ Změřeno nad commitem T2: nová hra už nese `genre.v5`, ale nic na ni zatím n
 - Načasování průběh má (`timing_level` v `GENRE_PACING`), telemetrie u něj ale finále neuzná – důvod v plánu „`entry`“ platil pro holdout P47A, ne pro tuhle buňku.
 - Běžec na dev sadě finále má 3/3 už teď; h024 z holdoutu P47A tu nemá obdobu.
 
+## T3 – chodec a klouzání (`t3.json`)
+
+| Žánr | Sada | Vět | Průběh | Finále | Mrtvý čas (medián) | Stoupá |
+|---|---|---|---|---|---|---|
+| chodec | dev | 5 | 5 | **5/5** (cíl ≥ 4/5) | 17,2 s (dřív 11,32 s) | 1 |
+| klouzání | dev | 4 | 4 | **4/4** (cíl ≥ 3/4) | 2,15 s | 1 |
+| chodec | panel | 3 | 3 | 3/3 | 18,12 s | 1 |
+| klouzání | panel | 1 | 1 | 1/1 | 2,15 s | 1 |
+| **dev celkem** | dev | 30 | 0,67 | **0,57** (dřív 0,27) | 5,21 s | 0,8 |
+| **panel P45 celkem** | panel | 40 | 0,9 | **0,78** (dřív 0,68) | 2,76 s | 0,93 |
+
+- Finále obou žánrů telemetrie uzná jako `climax`, ne `boss`. Brány v každé živé buňce (7 chodce, 8 klouzání × 12 semínek) drží: `p51-walker-glide.test.ts`.
+- **Mrtvý čas chodce se zhoršil** (11,3 → 17,2 s): cesta k nejvzdálenějšímu východu je delší a jiskry leží jen na jejích posledních 8 polích. Řeší T7 (heartbeat chodce), tady se cíl 4 s nehonil.
+
 ## Rozhodnutí
 
 - **T2 – verze u žánrů bez `genre`:** chodec, klouzání, míč a chytání staví `nativeSpec` bez pole `genre`, takže `genreAtLeast(spec, FINALE5_GENRE_VERSION)` pro ně nikdy neplatí. Nová hra těchto žánrů proto dostane značku nové hry v parametrech generátoru, jako řízení v P46B (`pacedNative`, `segments: true`); uložený spec bez značky staví týž svět (`p51-stored-v4.test.ts`).
+- **T3 – značka nové hry:** `controlParams.segments: true` zapisuje `nativeSpec` (třetí parametr `paced`); hra s díly P42 ji nedostane (`compileAssembly`, `parts.length === 0`), takže její trať zůstává.
+- **T3 – finále chodce je spěch, ne strážce:** těla chování projdou zdmi bludiště (pevná tělesa zastaví jen hráče) a uhnutí v rovině posílá kód směru arény, který `walker` čte jako rychlost v ose x – boss by v chodbách nefungoval. Východ je proto v nejvzdálenější buňce a na posledních 8 polích cesty leží jiskry přes celou chodbu (`WALKER_FINALE`), takže je hráč na cestě sebere vždy; hodiny mají rezervu 51 tiků (bez ní začátečník 0/12, s ní 5/12). Ve scéně se jiskra kreslí krystalem (`spark-lod1.glb` neexistuje).
+- **T3 – finále klouzání je tunel:** výchozí trať nové hry 300 m místo 160 m (na 15 s by posledních 10 s byly dvě třetiny běhu), posledních 110 m kruhy po 8 m (`GLIDE_FINALE`). S doplňkem střelby má terč každý kruh tunelu (jinak finále 3/12); u akcí hrdiny ne – nepřítel po 44 tikách přijde dřív, než se výpad dobije (60 tiků).
