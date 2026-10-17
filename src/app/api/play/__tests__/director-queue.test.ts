@@ -9,7 +9,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { genreAnswer } from '@/play/director/__fixtures__';
-import { __resetProcessVersionStore } from '@/play/version';
+import { draftGameSpecWithMeta } from '@/play/draft';
+import { __resetProcessVersionStore, memoryVersionStore } from '@/play/version';
 import { type AnswerStore, memoryAnswerStore } from '@/server/answer-cache';
 import { acquireSlot, DOOR_CEILING, resetConcurrency, slotsDetail } from '@/server/paid-slots';
 import { resetRateWindows } from '@/server/rate-limit';
@@ -31,6 +32,9 @@ import {
   OSS_MIN_CALL_MS,
   resetDirectorQueue,
 } from '../_director';
+import { derivedSeeds, publishReadSpec, seedFrom } from '../_publish';
+import { __resetRemixes, remixStatus, startRemix } from '../_remix-jobs';
+import { __resetUpgrades, knownUpgrade, upgradeOf } from '../_upgrade';
 
 const OSS = {
   WORLDSMITH_BRANCH: 'live',
@@ -100,6 +104,8 @@ beforeEach(() => {
   resetRateWindows();
   resetConcurrency();
   resetDirectorQueue();
+  __resetUpgrades();
+  __resetRemixes();
   stubEnv(OSS);
 });
 
@@ -240,6 +246,37 @@ describe('the play director queue (P53 T2)', () => {
     expect(refused.ok ? '' : refused.detail).toContain('QUEUE_FULL');
     up.openAll();
     await Promise.all(games);
+  });
+
+  // P53 T3: stav, který klient polluje, nese pořadí, dokud práce čeká – a ztratí ho, jakmile slot má.
+  it('(f) a waiting upgrade and remix carry their place in line until they get a slot', async () => {
+    const up = gatedUpstream();
+    const store = memoryVersionStore();
+    const said = sentence(2);
+    const quick = await publishReadSpec(store, draftGameSpecWithMeta(said, 1).spec, derivedSeeds(seedFrom(said)), null, { origin: { sentence: said, seed: null } });
+    if (!quick.ok) throw new Error(`quick version did not publish: ${JSON.stringify(quick.issues)}`);
+    const draft = quick.value.game;
+    const draftId = draft.version.versionId;
+    const busy = [directing(0), directing(1)];
+    await until(() => expect(up.inFlight()).toBe(2));
+
+    const upgraded = upgradeOf(store, draft, { sentence: said, seed: null, ackMs: null, draftReadyMs: null, startedAt: Date.now(), caller: 'queue-upgrade' });
+    await until(() => expect(knownUpgrade(draftId)).toMatchObject({ status: 'pending', queued: 1 }));
+    const remix = startRemix(store, draft, { sentence: sentence(3), startedAt: Date.now(), caller: 'queue-remix' });
+    if (remix.status !== 'pending') throw new Error(`remix did not start: ${JSON.stringify(remix)}`);
+    await until(() => expect(directorQueueState().queued).toBe(2));
+    expect(await remixStatus(store, draftId, remix.job)).toMatchObject({ status: 'pending', queued: 2 });
+
+    up.answerNext();
+    await until(() => expect(up.first).toContain(said));
+    expect(knownUpgrade(draftId)).toMatchObject({ status: 'pending' });
+    expect(knownUpgrade(draftId)).not.toHaveProperty('queued');
+    expect(await remixStatus(store, draftId, remix.job)).toMatchObject({ status: 'pending', queued: 1 });
+
+    up.openAll();
+    await Promise.all([...busy, upgraded]);
+    await until(async () => expect((await remixStatus(store, draftId, remix.job))?.status).not.toBe('pending'));
+    expect(await remixStatus(store, draftId, remix.job)).not.toHaveProperty('queued');
   });
 });
 

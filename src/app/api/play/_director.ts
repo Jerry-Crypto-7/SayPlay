@@ -345,6 +345,14 @@ export function directorQueueState(): { readonly running: number; readonly queue
   return held === undefined ? { running: 0, queued: 0 } : { running: held.queue.running, queued: held.queue.queued };
 }
 
+/**
+ * Pořadí práce `queueId` ve frontě na slot (P53 T3), 1 = další na řadě; `null`
+ * = nečeká. Upgrade a remix si ho přidají ke stavu `pending`, který klient polluje.
+ */
+export function directorQueuePosition(queueId: string): number | null {
+  return (globalThis as QueueHolder)[QUEUE]?.queue.position(queueId) ?? null;
+}
+
 /** Jen pro testy: zavře frontu (čekající dostanou `SHUTTING_DOWN`) a další volání postaví novou z prostředí. */
 export function resetDirectorQueue(): void {
   const holder = globalThis as QueueHolder;
@@ -359,11 +367,12 @@ let queueIds = 0;
  * pustí dalšímu čekajícímu. Pod frontou se bere i slot `acquireSlot('play')`,
  * protože celkový strop placených volání sdílí s dveřmi studia – ten se při
  * plném dnu odmítne hned jako dřív. `refused` nese důvod pro řádek konce upgradu.
+ * `queueId` dává volající, který chce pořadí ukázat (`directorQueuePosition`).
  */
-function takePlaySlot(config: UpstreamConfig, startedAt: number): Promise<{ readonly release: () => void } | { readonly refused: string }> {
+function takePlaySlot(config: UpstreamConfig, startedAt: number, queueId?: string): Promise<{ readonly release: () => void } | { readonly refused: string }> {
   const { queue, createdAt } = directorQueue(config);
   queueIds += 1;
-  const id = `play-${String(queueIds)}`;
+  const id = queueId ?? `play-${String(queueIds)}`;
   return new Promise((resolve) => {
     const work = () =>
       new Promise<void>((leave) => {
@@ -393,11 +402,11 @@ const refusedBy = (detail: string): GenerationOutcome => ({ ok: false, reason: '
  * utrácení, počet volajícího, rozpočet trasy a slot dveří `play` (od P53 přes
  * frontu). Bez kterékoli z nich se nevolá a výsledek je `UPSTREAM_REJECTED`.
  */
-export async function callDirectorModel(startedAt: number, caller: string, request: UpstreamRequest, prompt: string): Promise<GenerationOutcome> {
+export async function callDirectorModel(startedAt: number, caller: string, request: UpstreamRequest, prompt: string, queueId?: string): Promise<GenerationOutcome> {
   const config = upstreamConfigFromEnv(process.env);
   const branch = await cappedBranch(process.env, startedAt + DIRECTOR_BUDGET_MS, caller, () => {});
   if (branch === null || config === null) return refusedBy('the paid director branch is not available');
-  const seat = await takePlaySlot(config, startedAt);
+  const seat = await takePlaySlot(config, startedAt, queueId);
   if ('refused' in seat) return refusedBy(seat.refused);
   try {
     return await branch.generate({ prompt, request });
@@ -420,7 +429,7 @@ export async function callDirectorModel(startedAt: number, caller: string, reque
  *
  * `startedAt` je příchod požadavku (`Date.now()`), jehož `maxDuration` režii drží.
  */
-export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check'], nudge?: string): Director {
+export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check'], nudge?: string, queueId?: string): Director {
   return async (sentence) => {
     const deadline = startedAt + DIRECTOR_BUDGET_MS;
     const cache = directorCacheFromEnv(process.env);
@@ -435,7 +444,7 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
       ...branch,
       async generate(call) {
         if (seat === null) {
-          const taken = await takePlaySlot(config, startedAt);
+          const taken = await takePlaySlot(config, startedAt, queueId);
           if ('refused' in taken) return refusedBy(taken.refused);
           seat = taken;
         }

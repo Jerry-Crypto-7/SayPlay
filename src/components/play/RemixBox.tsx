@@ -21,14 +21,14 @@ import type { RemixFinalReason } from '@/app/api/play/_remix-jobs';
 import { appendSpoken, MicButton } from './MicButton';
 import { COUNTER_WARN, REMIX_IT, REMIX_LABEL, REMIX_PLACEHOLDER } from './starters';
 import { Button } from './ui';
-import { POLL_MS } from './UpgradeBanner';
+import { placeInLine, POLL_MS, queuedOf } from './UpgradeBanner';
 
 /** Týž strop jako `MAX_REMIX_SENTENCE_CHARS` na serveru. */
 const MAX_CHARS = 140;
 
-type RemixView =
+export type RemixView =
   | { readonly kind: 'idle' }
-  | { readonly kind: 'working'; readonly since: number }
+  | { readonly kind: 'working'; readonly since: number; readonly queued?: number }
   | { readonly kind: 'ready'; readonly versionId: string; readonly changed: readonly string[] }
   | { readonly kind: 'final'; readonly reason: RemixFinalReason }
   | { readonly kind: 'refused'; readonly message: string }
@@ -59,10 +59,11 @@ function outcomeOf(body: unknown): RemixView | null {
   return null;
 }
 
-/** Ptá se na práci do `deadlineAt`; vrací zrušení. */
-function followRemix(url: string, deadlineAt: number, onView: (view: RemixView) => void): () => void {
+/** Ptá se na práci do `deadlineAt`; vrací zrušení. Změna pořadí ve frontě režiséra (P53 T3) jde ven jako `working`. */
+export function followRemix(url: string, since: number, deadlineAt: number, onView: (view: RemixView) => void): () => void {
   const control = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let queued: number | null = null;
   const ask = async (): Promise<void> => {
     let body: unknown = null;
     try {
@@ -75,6 +76,12 @@ function followRemix(url: string, deadlineAt: number, onView: (view: RemixView) 
     const outcome = outcomeOf(body);
     if (outcome !== null) return onView(outcome);
     if (Date.now() >= deadlineAt) return onView({ kind: 'lost' });
+    // Výpadek sítě nebo nesrozumitelná odpověď pořadí nemění.
+    const pending = body as { status?: unknown; queued?: unknown } | null;
+    if (pending?.status === 'pending' && queuedOf(pending.queued) !== queued) {
+      queued = queuedOf(pending.queued);
+      onView({ kind: 'working', since, ...(queued === null ? {} : { queued }) });
+    }
     timer = setTimeout(() => void ask(), POLL_MS);
   };
   timer = setTimeout(() => void ask(), POLL_MS);
@@ -124,7 +131,7 @@ export function useRemixJob(versionId: string, showing: boolean): RemixJob {
         if (control.signal.aborted) return;
         if (response.status === 202 && typeof body.job === 'string') {
           const deadline = typeof body.deadlineAt === 'string' ? Date.parse(body.deadlineAt) : Number.NaN;
-          stop.current = followRemix(`${url}?job=${body.job}`, Number.isFinite(deadline) ? deadline : since + 285_000, setView);
+          stop.current = followRemix(`${url}?job=${body.job}`, since, Number.isFinite(deadline) ? deadline : since + 285_000, setView);
           return;
         }
         if (response.ok && typeof body.url === 'string') {
@@ -252,7 +259,11 @@ export function RemixBox({ job, suggestions }: { readonly job: RemixJob; readonl
 
       {view.kind !== 'idle' && (
         <div className="play-remix-state" data-testid="remix-state" data-kind={view.kind} role="status">
-          {view.kind === 'working' && <p>Making your change – the original stays as it is. {Math.max(0, Math.floor((now - view.since) / 1000))} s</p>}
+          {view.kind === 'working' && (
+            <p>
+              {view.queued === undefined ? 'Making your change' : `Your change is ${placeInLine(view.queued)} in line`} – the original stays as it is. {Math.max(0, Math.floor((now - view.since) / 1000))} s
+            </p>
+          )}
           {view.kind === 'ready' && (
             <>
               <p className="play-remix-changed-title">What changed</p>
