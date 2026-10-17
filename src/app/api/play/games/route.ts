@@ -147,7 +147,8 @@ export async function POST(request: Request): Promise<Response> {
     if (draft.response.status !== 422 || draft.issues?.[0] === 'CONTENT_REJECTED') return draft.response;
     if (refused !== null) return refused;
     // Návrh, který se nedá hrát, nemá co ukázat hned – věta čeká na režiséra jako před T2.
-    const directed = await getDirector(startedAt, caller, (candidate) => playabilityIssues(candidate, seeds))(sentence);
+    // Na slot ale nečeká (P53 T3b): při plných slotech hned 422 s návrhem jako před P53, ne mlčení až 240 s.
+    const directed = await getDirector(startedAt, caller, (candidate) => playabilityIssues(candidate, seeds), undefined, undefined, false)(sentence);
     if (directed.source === 'draft') return draft.response;
     // Věta jde k verzi, aby `/play/[id]` ukázal tutéž hlášku jako odpověď (R1).
     const published = await publishReadSpec(versions, directed.spec, seeds, parentId, { sentence });

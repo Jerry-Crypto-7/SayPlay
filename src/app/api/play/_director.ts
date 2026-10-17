@@ -468,7 +468,7 @@ export function directorCalls(startedAt: number, caller: string, queueId?: strin
  *
  * `startedAt` je příchod požadavku (`Date.now()`), jehož `maxDuration` režii drží.
  */
-export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check'], nudge?: string, queueId?: string): Director {
+export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check'], nudge?: string, queueId?: string, waitForSlot = true): Director {
   return async (sentence) => {
     const deadline = startedAt + DIRECTOR_BUDGET_MS;
     const cache = directorCacheFromEnv(process.env);
@@ -483,6 +483,9 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
       ...branch,
       async generate(call) {
         if (seat === null) {
+          // `waitForSlot: false` (P53 T3b): odpověď, na kterou hráč kouká, nečeká mlčky ve frontě –
+          // bez volného slotu se model nevolá jako před P53; věta z cache sem nedojde, ta projde.
+          if (!waitForSlot && !directorSlotFree()) return refusedBy('no free play slot: this path does not wait in line');
           const taken = await takePlaySlot(config, startedAt, queueId);
           if ('refused' in taken) return refusedBy(taken.refused);
           seat = taken;

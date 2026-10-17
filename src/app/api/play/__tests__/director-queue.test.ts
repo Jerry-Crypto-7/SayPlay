@@ -365,6 +365,28 @@ describe('the play director queue (P53 T2)', () => {
     expect(directorQueueState()).toEqual({ running: 0, queued: 0 });
     expect(slotsDetail('play')).toContain('0 play');
   });
+
+  // Revize fáze 1, nález 4 (T3b): synchronní `POST` s nehratelným návrhem nesmí mlčky čekat ve frontě.
+  it('(i) a director that may not wait refuses at once when the slots are full, but a cached sentence still plays', async () => {
+    const warm = gatedUpstream();
+    warm.openAll();
+    expect((await directing(5)).source).toBe('authored');
+    const up = gatedUpstream();
+    const busy = [directing(0), directing(1)];
+    await until(() => expect(up.inFlight()).toBe(2));
+    const noWait = (n: number) => getDirector(Date.now(), 'sync-caller', undefined, undefined, undefined, false)(sentence(n));
+
+    const asked = Date.now();
+    const refused = await noWait(6);
+    expect(Date.now() - asked).toBeLessThan(2_000);
+    expect(refused).toMatchObject({ source: 'draft', fallbackReason: 'MODEL_UNAVAILABLE' });
+    expect(directorQueueState()).toEqual({ running: 2, queued: 0 });
+    expect(up.first).not.toContain(sentence(6));
+    expect((await noWait(5)).source).not.toBe('draft');
+
+    up.openAll();
+    await Promise.all(busy);
+  });
 });
 
 describe('PLAY_DIRECTOR_QUEUE', () => {
