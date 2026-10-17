@@ -13,6 +13,7 @@
  */
 
 import dynamic from 'next/dynamic';
+import { Suspense, use } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
@@ -51,6 +52,12 @@ export interface PlayShellProps {
   readonly challenge?: Dare | null;
 }
 
+/** Poctivá hláška, až ji server dopočítá (P50 T4); `null` = hra nic nepřiznává. */
+function HonestySlot({ honesty }: { readonly honesty: Promise<Honesty | null> }) {
+  const shown = use(honesty);
+  return shown === null ? null : <HonestyStrip honesty={shown} />;
+}
+
 /**
  * Arkádová hra (P25A) jde do `ArcadePlay`, mřížková beze změny. Poctivá hláška
  * (P25E) leží nad oběma, proto ji kreslí rozcestník, ne shell; proužek výzvy
@@ -59,9 +66,9 @@ export interface PlayShellProps {
 export function PlayShell({
   blueprint,
   arcade,
-  honesty = null,
+  honesty,
   ...rest
-}: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld; readonly honesty?: Honesty | null }) {
+}: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld; readonly honesty: Promise<Honesty | null> }) {
   if (blueprint === null && arcade === undefined) throw new Error('PlayShell: a grid game needs its blueprint');
   const game = arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} /> : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
   // Info o hře je jeden list (P33 T7): shell dá sourozencům `SentenceRead`, `HowItWorks` a `Lineage` společný kontext.
@@ -75,11 +82,13 @@ export function PlayShell({
     </WithPlayEnv>
   );
   const dare = arcade !== undefined && rest.challenge ? rest.challenge : null;
-  if (honesty === null && dare === null) return shell;
-  // Proužky hru odsunou, nepřekryjí: HUD s cílem hry musí zůstat vidět.
+  // Proužky hru odsunou, nepřekryjí: HUD s cílem hry musí zůstat vidět. Rám je tu i bez nich
+  // (bez proužku dá hře stejnou výšku): hláška přijde až po hře a jiný strom by hru spustil znovu.
   return (
     <div className="play-honest-frame">
-      {honesty !== null && <HonestyStrip honesty={honesty} />}
+      <Suspense fallback={null}>
+        <HonestySlot honesty={honesty} />
+      </Suspense>
       {dare !== null && arcade !== undefined && <DareStrip challenge={dare} arcade={arcade} />}
       {shell}
     </div>

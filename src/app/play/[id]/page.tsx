@@ -11,7 +11,7 @@ import { authorshipOf, labFacts, readFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import type { GameVersion } from '@/play/contracts';
-import { type Honesty, sentenceOf, honestyOf } from '@/play/draft/unsupported';
+import { sentenceOf, honestyOf } from '@/play/draft/unsupported';
 import { shownNickname } from '@/play/player/nickname';
 import { DARE_ID_PATTERN, type PublishedGame, versionStoreFromEnv } from '@/play/version';
 
@@ -44,7 +44,7 @@ async function challengeOf(id: string, dare: string | string[] | undefined): Pro
 type Loaded =
   | { readonly kind: 'refused' }
   | { readonly kind: 'missing' }
-  | { readonly kind: 'game'; readonly game: PublishedGame; readonly children: readonly string[]; readonly lineage: readonly GameVersion[]; readonly honesty: Honesty | null; readonly sentence: string | null };
+  | { readonly kind: 'game'; readonly game: PublishedGame; readonly children: readonly string[]; readonly lineage: readonly GameVersion[]; readonly sentence: string | null };
 
 /**
  * Jedno načtení na požadavek, sdílené metadaty i stránkou (`cache` z Reactu).
@@ -63,8 +63,7 @@ const load = cache(async (id: string): Promise<Loaded> => {
   const game = await versions.get(id);
   if (game === null) return { kind: 'missing' };
   const [children, lineage, sentence] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id), sentenceOf(versions, game)]);
-  const honesty = await honestyOf(versions, game);
-  return { kind: 'game', game, children, lineage, honesty, sentence };
+  return { kind: 'game', game, children, lineage, sentence };
 });
 
 /**
@@ -106,9 +105,12 @@ export default async function PlayGamePage({ params, searchParams }: PageProps) 
       </main>
     );
   }
-  const { game, children, lineage, honesty, sentence } = loaded;
+  const { game, children, lineage, sentence } = loaded;
   // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
   if (game.blueprint === null && game.arcade === undefined) notFound();
+  // Poctivá hláška hraje svědecké běhy hry – na serveru, který hru ještě neviděl, 0,1–1,1 s.
+  // Hra na ni nečeká (P50 T4): hláška se dopošle ve streamu stránky, shell ji čte v `Suspense`.
+  const honesty = honestyOf(versionStoreFromEnv(process.env), game);
   // Výzvu nese jen arkáda (P36B T5) – mřížková hra odkaz s `dare=` otevře jako obyčejnou hru.
   const challenge = game.arcade === undefined ? null : await challengeOf(id, (await searchParams).dare);
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
