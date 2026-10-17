@@ -1,0 +1,699 @@
+{
+ "about": "P51 holdout: 60 sentences written by an independent agent with no access to code, plans or other sets; group shares threat 24, everyday 15, fantasy 12, non-game 9. Read only by the P51 final measurement (T11), guarded by its SHA-256.",
+ "sentences": [
+  {
+   "id": "h001",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "A hedgehog rolls downhill dodging falling pinecones before the fox catches up",
+   "checklist": [
+    {"item": "hedgehog", "slot": "hero", "match": ["hedgehog"]},
+    {"item": "pinecones", "slot": "role", "match": ["pinecone", "pinecones", "cone", "cones"]},
+    {"item": "fox", "slot": "role", "match": ["fox"]},
+    {"item": "dodge", "slot": "verb", "controls": ["runner", "glide", "move_free"]}
+   ]
+  },
+  {
+   "id": "h002",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "escape the flooding submarine before the water reaches the top deck and grab the captain's lucky hat on the way",
+   "checklist": [
+    {"item": "submarine", "slot": "setting", "match": ["submarine", "sub"]},
+    {"item": "water", "slot": "role", "match": ["water", "flood", "wave"]},
+    {"item": "hat", "slot": "role", "match": ["hat", "cap"]},
+    {"item": "escape", "slot": "verb", "controls": ["platform", "runner", "walker", "move_free"]}
+   ]
+  },
+  {
+   "id": "h003",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Sneak past sleeping guard dogs to steal back your grandma's cookie jar",
+   "checklist": [
+    {"item": "guard dogs", "slot": "role", "match": ["dog", "dogs", "guard"]},
+    {"item": "cookie jar", "slot": "role", "match": ["jar", "cookie", "cookies"]},
+    {"item": "sneak", "slot": "verb", "controls": ["walker", "move_free"]}
+   ]
+  },
+  {
+   "id": "h004",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "A tiny robot fights a giant vacuum cleaner boss in the living room",
+   "checklist": [
+    {"item": "robot", "slot": "hero", "match": ["robot", "bot"]},
+    {"item": "vacuum cleaner", "slot": "role", "match": ["vacuum", "cleaner", "hoover"]},
+    {"item": "living room", "slot": "setting", "match": ["room", "living", "house", "home"]},
+    {"item": "fight", "slot": "verb", "controls": ["duel", "shooter", "move_free"]}
+   ]
+  },
+  {
+   "id": "h005",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Zombie chickens are chasing me through a cornfield, run!",
+   "checklist": [
+    {"item": "zombie chickens", "slot": "role", "match": ["chicken", "chickens", "zombie", "hen"]},
+    {"item": "cornfield", "slot": "setting", "match": ["cornfield", "corn", "field", "farm"]},
+    {"item": "run", "slot": "verb", "controls": ["runner", "move_free", "walker"]}
+   ]
+  },
+  {
+   "id": "h006",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Shoot down the asteroids before they smash into the moon base",
+   "checklist": [
+    {"item": "asteroids", "slot": "role", "match": ["asteroid", "asteroids", "rock", "meteor"]},
+    {"item": "moon base", "slot": "setting", "match": ["base", "moon", "station", "colony"]},
+    {"item": "shoot", "slot": "verb", "controls": ["shooter", "throw"]}
+   ]
+  },
+  {
+   "id": "h007",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Pirates board my fishing boat and I fend them off with a mop",
+   "checklist": [
+    {"item": "pirates", "slot": "role", "match": ["pirate", "pirates"]},
+    {"item": "fishing boat", "slot": "setting", "match": ["boat", "ship", "deck"]},
+    {"item": "mop", "slot": "any", "match": ["mop"]},
+    {"item": "fend off", "slot": "verb", "controls": ["duel", "shooter", "throw", "move_free"]}
+   ]
+  },
+  {
+   "id": "h008",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Dodge the lava balls",
+   "checklist": [
+    {"item": "lava", "slot": "setting", "match": ["lava", "magma", "volcano"]},
+    {"item": "balls", "slot": "role", "match": ["ball", "balls", "fireball", "blob"]},
+    {"item": "dodge", "slot": "verb", "controls": ["runner", "move_free", "platform", "glide"]}
+   ]
+  },
+  {
+   "id": "h009",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "A mouse has to cross the kitchen while the cat is napping",
+   "checklist": [
+    {"item": "mouse", "slot": "hero", "match": ["mouse"]},
+    {"item": "kitchen", "slot": "setting", "match": ["kitchen"]},
+    {"item": "cat", "slot": "role", "match": ["cat", "kitty"]},
+    {"item": "cross", "slot": "verb", "controls": ["walker", "move_free", "runner"]}
+   ]
+  },
+  {
+   "id": "h010",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "I'm a penguin sliding down an iceberg away from a hungry walrus",
+   "checklist": [
+    {"item": "penguin", "slot": "hero", "match": ["penguin"]},
+    {"item": "iceberg", "slot": "setting", "match": ["iceberg", "ice", "glacier", "snow"]},
+    {"item": "walrus", "slot": "role", "match": ["walrus"]},
+    {"item": "slide", "slot": "verb", "controls": ["glide", "runner"]}
+   ]
+  },
+  {
+   "id": "h011",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "The last knight standing duels the skeleton king on a crumbling bridge",
+   "checklist": [
+    {"item": "knight", "slot": "hero", "match": ["knight"]},
+    {"item": "skeleton king", "slot": "role", "match": ["skeleton", "king", "bones"]},
+    {"item": "bridge", "slot": "setting", "match": ["bridge"]},
+    {"item": "duel", "slot": "verb", "controls": ["duel"]}
+   ]
+  },
+  {
+   "id": "h012",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "bees chase you after you knock the hive over, get to the pond",
+   "checklist": [
+    {"item": "bees", "slot": "role", "match": ["bee", "bees", "swarm"]},
+    {"item": "hive", "slot": "role", "match": ["hive", "beehive", "nest"]},
+    {"item": "pond", "slot": "setting", "match": ["pond", "lake", "water"]},
+    {"item": "chase", "slot": "verb", "controls": ["runner", "move_free", "walker"]}
+   ]
+  },
+  {
+   "id": "h013",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Hunt the ghost hiding in the old library using only a flashlight",
+   "checklist": [
+    {"item": "ghost", "slot": "role", "match": ["ghost", "spirit", "phantom"]},
+    {"item": "library", "slot": "setting", "match": ["library", "book", "books", "shelf"]},
+    {"item": "flashlight", "slot": "any", "match": ["flashlight", "torch", "lamp", "light"]},
+    {"item": "hunt", "slot": "verb", "controls": ["move_free", "walker", "shooter", "tap_go"]}
+   ]
+  },
+  {
+   "id": "h014",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Fly a paper plane through a thunderstorm without getting hit by lightning",
+   "checklist": [
+    {"item": "paper plane", "slot": "hero", "match": ["plane", "paper", "airplane"]},
+    {"item": "thunderstorm", "slot": "setting", "match": ["storm", "thunderstorm", "cloud", "clouds"]},
+    {"item": "lightning", "slot": "role", "match": ["lightning", "bolt", "thunder"]},
+    {"item": "fly", "slot": "verb", "controls": ["flap", "glide", "steer"]}
+   ]
+  },
+  {
+   "id": "h015",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "ninja frog vs sumo crab, best of three rounds",
+   "checklist": [
+    {"item": "ninja frog", "slot": "hero", "match": ["frog", "ninja"]},
+    {"item": "sumo crab", "slot": "role", "match": ["crab", "sumo"]},
+    {"item": "fight", "slot": "verb", "controls": ["duel"]}
+   ]
+  },
+  {
+   "id": "h016",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "A tow truck races away from a tornado across the open prairie",
+   "checklist": [
+    {"item": "tow truck", "slot": "hero", "match": ["truck", "tow", "car"]},
+    {"item": "tornado", "slot": "role", "match": ["tornado", "twister", "storm", "wind"]},
+    {"item": "prairie", "slot": "setting", "match": ["prairie", "plains", "field", "grass"]},
+    {"item": "race", "slot": "verb", "controls": ["steer", "runner"]}
+   ]
+  },
+  {
+   "id": "h017",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Keep the wolves away from the sheep by throwing snowballs at them",
+   "checklist": [
+    {"item": "wolves", "slot": "role", "match": ["wolf", "wolves"]},
+    {"item": "sheep", "slot": "role", "match": ["sheep", "lamb", "flock"]},
+    {"item": "snowballs", "slot": "role", "match": ["snowball", "snowballs", "snow"]},
+    {"item": "throw", "slot": "verb", "controls": ["throw", "shooter"]}
+   ]
+  },
+  {
+   "id": "h018",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "the sharks are circling my raft, paddle to the island quick",
+   "checklist": [
+    {"item": "sharks", "slot": "role", "match": ["shark", "sharks", "fin"]},
+    {"item": "raft", "slot": "hero", "match": ["raft", "boat"]},
+    {"item": "island", "slot": "setting", "match": ["island", "beach", "shore"]},
+    {"item": "paddle", "slot": "verb", "controls": ["steer", "move_free"]}
+   ]
+  },
+  {
+   "id": "h019",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Escape a haunted maze before the clock strikes midnight",
+   "checklist": [
+    {"item": "maze", "slot": "setting", "match": ["maze", "labyrinth"]},
+    {"item": "clock", "slot": "role", "match": ["clock", "timer", "time", "midnight"]},
+    {"item": "escape", "slot": "verb", "controls": ["walker", "move_free"]}
+   ]
+  },
+  {
+   "id": "h020",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "A firefighter climbs a burning tower to rescue the parrot stuck on the roof",
+   "checklist": [
+    {"item": "firefighter", "slot": "hero", "match": ["firefighter", "fireman"]},
+    {"item": "tower", "slot": "setting", "match": ["tower", "building", "floor"]},
+    {"item": "parrot", "slot": "role", "match": ["parrot", "bird"]},
+    {"item": "climb", "slot": "verb", "controls": ["platform", "timing"]}
+   ]
+  },
+  {
+   "id": "h021",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Dodge dodgeballs thrown by angry gym teachers",
+   "checklist": [
+    {"item": "dodgeballs", "slot": "role", "match": ["dodgeball", "dodgeballs", "ball", "balls"]},
+    {"item": "gym teachers", "slot": "role", "match": ["teacher", "teachers", "coach"]},
+    {"item": "gym", "slot": "setting", "match": ["gym", "gymnasium", "hall"]},
+    {"item": "dodge", "slot": "verb", "controls": ["move_free", "runner", "ball"]}
+   ]
+  },
+  {
+   "id": "h022",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Defend the sandcastle from greedy seagulls and the rising tide",
+   "checklist": [
+    {"item": "sandcastle", "slot": "role", "match": ["sandcastle", "castle", "sand"]},
+    {"item": "seagulls", "slot": "role", "match": ["seagull", "seagulls", "gull", "bird"]},
+    {"item": "tide", "slot": "role", "match": ["tide", "wave", "waves", "water"]},
+    {"item": "defend", "slot": "verb", "controls": ["shooter", "throw", "tap_go", "move_free"]}
+   ]
+  },
+  {
+   "id": "h023",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "a snail trying to outrun a hungry bird but its sooo slow",
+   "checklist": [
+    {"item": "snail", "slot": "hero", "match": ["snail"]},
+    {"item": "bird", "slot": "role", "match": ["bird", "crow", "robin"]},
+    {"item": "outrun", "slot": "verb", "controls": ["runner", "move_free"]}
+   ]
+  },
+  {
+   "id": "h024",
+   "source": "p51-holdout",
+   "group": "threat",
+   "text": "Boss fight against a giant angry toaster that shoots burnt bread",
+   "checklist": [
+    {"item": "toaster", "slot": "role", "match": ["toaster"]},
+    {"item": "bread", "slot": "role", "match": ["bread", "toast", "slice"]},
+    {"item": "fight", "slot": "verb", "controls": ["duel", "shooter", "move_free"]}
+   ]
+  },
+  {
+   "id": "h025",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Deliver pizzas on a skateboard across a hilly town before they get cold",
+   "checklist": [
+    {"item": "pizzas", "slot": "role", "match": ["pizza", "pizzas", "box"]},
+    {"item": "skateboard", "slot": "hero", "match": ["skateboard", "board", "skater"]},
+    {"item": "town", "slot": "setting", "match": ["town", "city", "street", "hill"]},
+    {"item": "deliver", "slot": "verb", "controls": ["steer", "runner", "glide", "throw"]}
+   ]
+  },
+  {
+   "id": "h026",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "water all the thirsty plants in the greenhouse",
+   "checklist": [
+    {"item": "plants", "slot": "role", "match": ["plant", "plants", "flower", "pot"]},
+    {"item": "greenhouse", "slot": "setting", "match": ["greenhouse", "garden"]},
+    {"item": "water", "slot": "verb", "controls": ["move_free", "tap_go", "throw"]}
+   ]
+  },
+  {
+   "id": "h027",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Stack pancakes on a plate as high as you can",
+   "checklist": [
+    {"item": "pancakes", "slot": "role", "match": ["pancake", "pancakes"]},
+    {"item": "plate", "slot": "role", "match": ["plate", "dish"]},
+    {"item": "stack", "slot": "verb", "controls": ["timing"]}
+   ]
+  },
+  {
+   "id": "h028",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Mop the school hallway before the principal walks in",
+   "checklist": [
+    {"item": "hallway", "slot": "setting", "match": ["hallway", "corridor", "school", "hall"]},
+    {"item": "principal", "slot": "role", "match": ["principal", "teacher", "headmaster"]},
+    {"item": "mop", "slot": "verb", "controls": ["move_free", "walker", "tap_go"]}
+   ]
+  },
+  {
+   "id": "h029",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Sort the recycling into the right bins as it rolls down the conveyor belt",
+   "checklist": [
+    {"item": "recycling", "slot": "role", "match": ["recycling", "trash", "bottle", "can"]},
+    {"item": "bins", "slot": "role", "match": ["bin", "bins", "box"]},
+    {"item": "conveyor belt", "slot": "setting", "match": ["belt", "conveyor", "factory"]},
+    {"item": "sort", "slot": "verb", "controls": ["tap_go", "throw", "timing"]}
+   ]
+  },
+  {
+   "id": "h030",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "walk the dog without leting him chase every squirrel in the park",
+   "checklist": [
+    {"item": "dog", "slot": "any", "match": ["dog", "puppy"]},
+    {"item": "squirrel", "slot": "role", "match": ["squirrel", "squirrels"]},
+    {"item": "park", "slot": "setting", "match": ["park", "grass", "tree"]},
+    {"item": "walk", "slot": "verb", "controls": ["walker", "runner", "move_free"]}
+   ]
+  },
+  {
+   "id": "h031",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Juggle oranges while riding a unicycle through the farmers market",
+   "checklist": [
+    {"item": "oranges", "slot": "role", "match": ["orange", "oranges", "fruit"]},
+    {"item": "unicycle", "slot": "any", "match": ["unicycle", "cycle", "wheel"]},
+    {"item": "market", "slot": "setting", "match": ["market", "stall", "stand"]},
+    {"item": "juggle", "slot": "verb", "controls": ["timing", "tap_go", "rhythm", "throw"]}
+   ]
+  },
+  {
+   "id": "h032",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Bake a birthday cake by catching the ingredients that fall from the shelves",
+   "checklist": [
+    {"item": "cake", "slot": "role", "match": ["cake"]},
+    {"item": "ingredients", "slot": "role", "match": ["ingredient", "egg", "flour", "sugar"]},
+    {"item": "shelves", "slot": "setting", "match": ["shelf", "shelves", "kitchen", "pantry"]},
+    {"item": "catch", "slot": "verb", "controls": ["move_free", "tap_go", "runner"]}
+   ]
+  },
+  {
+   "id": "h033",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Fold laundry faster than my roommate",
+   "checklist": [
+    {"item": "laundry", "slot": "role", "match": ["laundry", "clothes", "shirt", "sock"]},
+    {"item": "roommate", "slot": "role", "match": ["roommate", "rival", "friend"]},
+    {"item": "fold", "slot": "verb", "controls": ["timing", "tap_go", "rhythm"]}
+   ]
+  },
+  {
+   "id": "h034",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Paint the whole fence before the rain comes",
+   "checklist": [
+    {"item": "fence", "slot": "role", "match": ["fence", "plank"]},
+    {"item": "rain", "slot": "role", "match": ["rain", "cloud", "raindrop"]},
+    {"item": "paint", "slot": "verb", "controls": ["move_free", "tap_go", "walker"]}
+   ]
+  },
+  {
+   "id": "h035",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Park a wobbly shopping cart in the tight row outside the supermarket",
+   "checklist": [
+    {"item": "shopping cart", "slot": "any", "match": ["cart", "trolley"]},
+    {"item": "supermarket", "slot": "setting", "match": ["supermarket", "store", "shop", "parking"]},
+    {"item": "park", "slot": "verb", "controls": ["steer", "move_free"]}
+   ]
+  },
+  {
+   "id": "h036",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Grandpa golfs balls of yarn into knitting baskets",
+   "checklist": [
+    {"item": "grandpa", "slot": "hero", "match": ["grandpa", "grandfather", "granddad"]},
+    {"item": "yarn", "slot": "role", "match": ["yarn", "wool", "ball"]},
+    {"item": "baskets", "slot": "role", "match": ["basket", "baskets"]},
+    {"item": "golf", "slot": "verb", "controls": ["ball", "throw"]}
+   ]
+  },
+  {
+   "id": "h037",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Rake the leaves into piles while the wind keeps blowing them away",
+   "checklist": [
+    {"item": "leaves", "slot": "role", "match": ["leaf", "leaves"]},
+    {"item": "piles", "slot": "role", "match": ["pile", "piles", "heap"]},
+    {"item": "wind", "slot": "role", "match": ["wind", "gust", "breeze"]},
+    {"item": "rake", "slot": "verb", "controls": ["move_free", "tap_go"]}
+   ]
+  },
+  {
+   "id": "h038",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Serve coffee to a long line of grumpy office workers before the clock hits nine in the morning",
+   "checklist": [
+    {"item": "coffee", "slot": "role", "match": ["coffee", "cup", "mug"]},
+    {"item": "office workers", "slot": "role", "match": ["worker", "workers", "customer", "office"]},
+    {"item": "clock", "slot": "role", "match": ["clock", "timer", "time"]},
+    {"item": "serve", "slot": "verb", "controls": ["tap_go", "timing", "throw"]}
+   ]
+  },
+  {
+   "id": "h039",
+   "source": "p51-holdout",
+   "group": "everyday",
+   "text": "Bounce a basketball while carrying groceries up the stairs",
+   "checklist": [
+    {"item": "basketball", "slot": "role", "match": ["basketball", "ball"]},
+    {"item": "groceries", "slot": "role", "match": ["grocery", "groceries", "bag"]},
+    {"item": "stairs", "slot": "setting", "match": ["stairs", "stair", "steps", "staircase"]},
+    {"item": "bounce", "slot": "verb", "controls": ["ball", "timing", "rhythm"]}
+   ]
+  },
+  {
+   "id": "h040",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "A young witch brews potions by catching falling stars in her cauldron",
+   "checklist": [
+    {"item": "witch", "slot": "hero", "match": ["witch"]},
+    {"item": "stars", "slot": "role", "match": ["star", "stars"]},
+    {"item": "cauldron", "slot": "role", "match": ["cauldron", "pot"]},
+    {"item": "catch", "slot": "verb", "controls": ["move_free", "tap_go"]}
+   ]
+  },
+  {
+   "id": "h041",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "Ride a dragon between floating sky islands and collect every gem",
+   "checklist": [
+    {"item": "dragon", "slot": "hero", "match": ["dragon"]},
+    {"item": "sky islands", "slot": "setting", "match": ["island", "islands", "sky", "cloud"]},
+    {"item": "gem", "slot": "role", "match": ["gem", "gems", "jewel", "crystal"]},
+    {"item": "ride", "slot": "verb", "controls": ["flap", "glide", "steer"]}
+   ]
+  },
+  {
+   "id": "h042",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "an astronaut bouncing between tiny planets to get back to her lost rocket",
+   "checklist": [
+    {"item": "astronaut", "slot": "hero", "match": ["astronaut", "spaceman"]},
+    {"item": "planets", "slot": "role", "match": ["planet", "planets", "moon"]},
+    {"item": "rocket", "slot": "role", "match": ["rocket", "ship", "spaceship"]},
+    {"item": "bounce", "slot": "verb", "controls": ["platform", "glide", "flap"]}
+   ]
+  },
+  {
+   "id": "h043",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "Mermaid plays tennis with an octopus under the sea",
+   "checklist": [
+    {"item": "mermaid", "slot": "hero", "match": ["mermaid"]},
+    {"item": "octopus", "slot": "role", "match": ["octopus"]},
+    {"item": "sea", "slot": "setting", "match": ["sea", "ocean", "underwater", "water"]},
+    {"item": "play tennis", "slot": "verb", "controls": ["ball", "duel"]}
+   ]
+  },
+  {
+   "id": "h044",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "Guide a lantern spirit through the dark enchanted forest",
+   "checklist": [
+    {"item": "lantern spirit", "slot": "hero", "match": ["spirit", "lantern", "wisp", "light"]},
+    {"item": "forest", "slot": "setting", "match": ["forest", "woods", "tree", "trees"]},
+    {"item": "guide", "slot": "verb", "controls": ["walker", "move_free", "glide"]}
+   ]
+  },
+  {
+   "id": "h045",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "The unicorn has to drum along at the rainbow festival",
+   "checklist": [
+    {"item": "unicorn", "slot": "hero", "match": ["unicorn"]},
+    {"item": "rainbow festival", "slot": "setting", "match": ["festival", "rainbow", "party", "stage"]},
+    {"item": "drum", "slot": "verb", "controls": ["rhythm"]}
+   ]
+  },
+  {
+   "id": "h046",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "Wizard school snowball fight except the snowballs are fireballs",
+   "checklist": [
+    {"item": "wizard school", "slot": "setting", "match": ["school", "wizard", "castle", "academy"]},
+    {"item": "fireballs", "slot": "role", "match": ["fireball", "fireballs", "fire", "ball"]},
+    {"item": "fight", "slot": "verb", "controls": ["throw", "shooter", "duel"]}
+   ]
+  },
+  {
+   "id": "h047",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "Hop across lily pads to bring the frog prince home to his castle",
+   "checklist": [
+    {"item": "lily pads", "slot": "role", "match": ["lily", "pad", "pads", "leaf"]},
+    {"item": "frog prince", "slot": "any", "match": ["frog", "prince"]},
+    {"item": "castle", "slot": "setting", "match": ["castle", "palace"]},
+    {"item": "hop", "slot": "verb", "controls": ["platform", "timing"]}
+   ]
+  },
+  {
+   "id": "h048",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "A genie on a flying carpet races through a desert sandstorm",
+   "checklist": [
+    {"item": "genie", "slot": "hero", "match": ["genie"]},
+    {"item": "carpet", "slot": "role", "match": ["carpet", "rug"]},
+    {"item": "desert", "slot": "setting", "match": ["desert", "sand", "dune", "dunes"]},
+    {"item": "race", "slot": "verb", "controls": ["steer", "glide", "flap", "runner"]}
+   ]
+  },
+  {
+   "id": "h049",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "Fairy shrinks down and sneaks thru the giant's pantry",
+   "checklist": [
+    {"item": "fairy", "slot": "hero", "match": ["fairy"]},
+    {"item": "giant", "slot": "role", "match": ["giant"]},
+    {"item": "pantry", "slot": "setting", "match": ["pantry", "kitchen", "larder", "shelf"]},
+    {"item": "sneak", "slot": "verb", "controls": ["walker", "move_free"]}
+   ]
+  },
+  {
+   "id": "h050",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "Shoot comets with a slingshot to light up the night sky",
+   "checklist": [
+    {"item": "comets", "slot": "role", "match": ["comet", "comets", "star", "meteor"]},
+    {"item": "slingshot", "slot": "any", "match": ["slingshot", "sling"]},
+    {"item": "night sky", "slot": "setting", "match": ["sky", "night", "space"]},
+    {"item": "shoot", "slot": "verb", "controls": ["throw", "shooter"]}
+   ]
+  },
+  {
+   "id": "h051",
+   "source": "p51-holdout",
+   "group": "fantasy",
+   "text": "a little ghost learning to slide down moonbeams",
+   "checklist": [
+    {"item": "ghost", "slot": "hero", "match": ["ghost"]},
+    {"item": "moonbeams", "slot": "setting", "match": ["moonbeam", "moonbeams", "moon", "beam"]},
+    {"item": "slide", "slot": "verb", "controls": ["glide", "runner"]}
+   ]
+  },
+  {
+   "id": "h052",
+   "source": "p51-holdout",
+   "group": "non-game",
+   "text": "Rainy sunday afternoons make me want hot chocolate",
+   "checklist": [
+    {"item": "afternoons", "slot": "setting", "match": ["afternoon", "sunday", "rain", "rainy"]},
+    {"item": "hot chocolate", "slot": "role", "match": ["chocolate", "cocoa", "mug", "cup"]},
+    {"item": "want", "slot": "verb", "controls": ["tap_go", "move_free"]}
+   ]
+  },
+  {
+   "id": "h053",
+   "source": "p51-holdout",
+   "group": "non-game",
+   "text": "My grandmother had a cat named Pickles who hated mondays",
+   "checklist": [
+    {"item": "grandmother", "slot": "any", "match": ["grandmother", "grandma", "granny"]},
+    {"item": "cat", "slot": "any", "match": ["cat", "pickles", "kitten"]},
+    {"item": "hate", "slot": "verb", "controls": ["tap_go", "move_free"]}
+   ]
+  },
+  {
+   "id": "h054",
+   "source": "p51-holdout",
+   "group": "non-game",
+   "text": "Sloths only climb down from their trees once a week",
+   "checklist": [
+    {"item": "sloths", "slot": "any", "match": ["sloth", "sloths"]},
+    {"item": "trees", "slot": "setting", "match": ["tree", "trees", "jungle", "branch"]},
+    {"item": "climb down", "slot": "verb", "controls": ["platform", "glide", "tap_go"]}
+   ]
+  },
+  {
+   "id": "h055",
+   "source": "p51-holdout",
+   "group": "non-game",
+   "text": "I wish I could nap in a hammock by the sea all day",
+   "checklist": [
+    {"item": "hammock", "slot": "role", "match": ["hammock"]},
+    {"item": "sea", "slot": "setting", "match": ["sea", "beach", "ocean"]},
+    {"item": "nap", "slot": "verb", "controls": ["tap_go", "timing"]}
+   ]
+  },
+  {
+   "id": "h056",
+   "source": "p51-holdout",
+   "group": "non-game",
+   "text": "the smell of fresh bread in a small bakery at dawn",
+   "checklist": [
+    {"item": "bread", "slot": "role", "match": ["bread", "loaf", "bun"]},
+    {"item": "bakery", "slot": "setting", "match": ["bakery", "shop", "oven"]},
+    {"item": "dawn", "slot": "setting", "match": ["dawn", "sunrise", "morning"]},
+    {"item": "smell", "slot": "verb", "controls": ["tap_go", "move_free"]}
+   ]
+  },
+  {
+   "id": "h057",
+   "source": "p51-holdout",
+   "group": "non-game",
+   "text": "Long day at the office, i just want my couch and some quiet",
+   "checklist": [
+    {"item": "office", "slot": "setting", "match": ["office", "desk", "work"]},
+    {"item": "couch", "slot": "role", "match": ["couch", "sofa"]},
+    {"item": "want", "slot": "verb", "controls": ["tap_go", "move_free"]}
+   ]
+  },
+  {
+   "id": "h058",
+   "source": "p51-holdout",
+   "group": "non-game",
+   "text": "Snow falling softly on an empty train station at night",
+   "checklist": [
+    {"item": "snow", "slot": "role", "match": ["snow", "snowflake", "flake"]},
+    {"item": "train station", "slot": "setting", "match": ["station", "train", "rail"]},
+    {"item": "fall", "slot": "verb", "controls": ["tap_go", "move_free", "glide"]}
+   ]
+  },
+  {
+   "id": "h059",
+   "source": "p51-holdout",
+   "group": "non-game",
+   "text": "Mars has a volcano almost three times taller than Everest",
+   "checklist": [
+    {"item": "mars", "slot": "setting", "match": ["mars", "planet"]},
+    {"item": "volcano", "slot": "role", "match": ["volcano", "mountain", "peak"]},
+    {"item": "have", "slot": "verb", "controls": ["tap_go", "platform", "move_free"]}
+   ]
+  },
+  {
+   "id": "h060",
+   "source": "p51-holdout",
+   "group": "non-game",
+   "text": "My little brother learned to whistle and now the whole house suffers",
+   "checklist": [
+    {"item": "brother", "slot": "any", "match": ["brother", "boy", "kid"]},
+    {"item": "house", "slot": "setting", "match": ["house", "home"]},
+    {"item": "whistle", "slot": "verb", "controls": ["rhythm", "tap_go", "timing"]}
+   ]
+  }
+ ]
+}

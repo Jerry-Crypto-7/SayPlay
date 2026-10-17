@@ -45,7 +45,7 @@ export const FUN_TARGETS = [
   { metric: 'deadTimeMedianS', goal: '<= 3' },
   { metric: 'risingShare', goal: '>= 0.70' },
   { metric: 'behavioursMedian', goal: '>= 2' },
-  { metric: 'finaleShare', goal: '>= 0.50' },
+  { metric: 'finaleShare', goal: '>= 0.80' },
 ] as const;
 
 export interface FunSummary {

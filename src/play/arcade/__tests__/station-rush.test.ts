@@ -18,7 +18,7 @@ import { arcadeWorldOf } from '../compile';
 import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, type PieceRef, ROLE, bodyBase, underlyingRule } from '../contract';
 import { instantiate } from '../kernel';
 import { play } from '../pieces/behaviours/__tests__/harness';
-import { FINALE_GENRE_VERSION } from '../pieces/pacing-parts';
+import { FINALE_GENRE_VERSION, genreAtLeast } from '../pieces/pacing-parts';
 import { QUEST } from '../pieces/quest';
 import { waveOf } from '../pieces/waves';
 import type { CompiledInteract } from '../rules/interact';
@@ -93,7 +93,7 @@ function lastRoundStart(world: ArcadeWorld, inputs: Parameters<typeof play>[1]):
 describe('station quest ends with a rush round (P47A T5, genre.v4)', () => {
   it('genre.v4 is the version the rush waits for', () => {
     expect(FINALE_GENRE_VERSION).toBe('genre.v4');
-    expect(cellSpec().genre?.compilerVersion).toBe('genre.v4');
+    expect(genreAtLeast(cellSpec(), FINALE_GENRE_VERSION)).toBe(true);
   });
 
   for (const [name, specOf] of STATION_GAMES) {

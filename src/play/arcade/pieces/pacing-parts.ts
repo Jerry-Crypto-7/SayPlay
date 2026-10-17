@@ -876,6 +876,9 @@ const ownShape = (spec: GameSpecV1, overlays = false): boolean =>
 /** Verze překladu žánru, od které hra dostane průběh pod overlay šablonou a finále podle žánru (P47A, `GENRE_COMPILER_VERSION`). */
 export const FINALE_GENRE_VERSION = 'genre.v4';
 
+/** Verze, od které finále dostanou všechny žánry, stanoviště nepřátele a mrtvý čas hustotu událostí (P51, `GENRE_COMPILER_VERSION`). */
+export const FINALE5_GENRE_VERSION = 'genre.v5';
+
 const genreVersion = (version: string): number => Number(/^genre\.v(\d+)$/.exec(version)?.[1] ?? 0);
 
 /** Je hra žánru přeložená verzí `version` nebo novější? Spec bez žánru ne. */

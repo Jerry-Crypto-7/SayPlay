@@ -18,7 +18,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { arcadeWorldOf, generatorOf } from '../compile';
 import { type ArcadeWorld, nativeRule } from '../contract';
 import { ARCADE_LIBRARY } from '../library';
-import { FINALE_GENRE_VERSION } from '../pieces/pacing-parts';
+import { FINALE5_GENRE_VERSION, FINALE_GENRE_VERSION, genreAtLeast } from '../pieces/pacing-parts';
 import { loadRapier } from '../physics/world';
 import { POWERUP_GENRE_VERSION, wantsPowerups } from '../powerups/placement';
 import { runBot, verifyArcade } from '../verify';
@@ -83,9 +83,10 @@ beforeAll(async () => {
 });
 
 describe('pacing under a P45B overlay template', () => {
-  it('new games are genre.v4 and the finale version is the current one', () => {
-    expect(GENRE_COMPILER_VERSION).toBe('genre.v4');
-    expect(FINALE_GENRE_VERSION).toBe(GENRE_COMPILER_VERSION);
+  it('new games are genre.v5 and still get the genre.v4 finale', () => {
+    expect(GENRE_COMPILER_VERSION).toBe('genre.v5');
+    expect(FINALE5_GENRE_VERSION).toBe(GENRE_COMPILER_VERSION);
+    expect(FINALE_GENRE_VERSION).toBe('genre.v4');
   });
 
   it('a stored v3 game with its template builds the frozen pre-P47A world, unpaced', () => {
@@ -131,7 +132,7 @@ describe('pacing under a P45B overlay template', () => {
   for (const text of SENTENCES) {
     it(`v4 "${text}": paced, intermediate >= 0.8, novice >= 0.3, idle never wins`, () => {
       const spec = draftGameSpecWithMeta(text, 1).spec;
-      expect(spec.genre?.compilerVersion).toBe('genre.v4');
+      expect(genreAtLeast(spec, FINALE_GENRE_VERSION)).toBe(true);
       expect(paced(spec)).toBe(true);
       expect(winShare(spec, 'intermediate')).toBeGreaterThanOrEqual(0.8);
       expect(winShare(spec, 'novice')).toBeGreaterThanOrEqual(0.3);

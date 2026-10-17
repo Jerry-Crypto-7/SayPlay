@@ -20,6 +20,7 @@ import { type ArcadeEffect, type ArcadeWorld, BODY, FLAG, HEADER, type PieceRef,
 import { instantiate } from '../kernel';
 import { play } from '../pieces/behaviours/__tests__/harness';
 import { DUEL_COUNTER, DUEL_ENRAGE, DUEL_FOE, type DuelControlParams } from '../pieces/duel';
+import { FINALE_GENRE_VERSION, genreAtLeast } from '../pieces/pacing-parts';
 import { funMetrics, traceRun } from '../telemetry';
 import { runBot } from '../verify';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
@@ -69,7 +70,7 @@ describe('duel champion takes real hits (P47A T6, genre.v4)', () => {
   for (const [name, specOf] of DUEL_GAMES) {
     it(`${name}: the last opponent's body is a boss template, the judge hits it only after the second-to-last falls`, () => {
       const spec = specOf();
-      expect(spec.genre?.compilerVersion).toBe('genre.v4');
+      expect(genreAtLeast(spec, FINALE_GENRE_VERSION)).toBe(true);
       for (const seed of SEEDS.slice(0, 3)) {
         const world = worldOf(spec, seed);
         const duel = duelOf(world);

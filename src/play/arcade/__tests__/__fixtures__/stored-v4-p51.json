@@ -1,0 +1,2800 @@
+{
+ "w01": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "walker",
+   "controlParams": {
+    "size": 11,
+    "speed": 110,
+    "collect": true,
+    "generator": "walker_labyrinth"
+   },
+   "addons": [],
+   "title": "lost cat reach",
+   "archetype": "collect_exit",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "maze",
+    "mood": "adventurous",
+    "look": "living_room"
+   },
+   "objective": {
+    "kind": "collect",
+    "description": "Collect the coin and reach the exit.",
+    "count": 1,
+    "role": "coin"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "lost cat",
+     "count": 1
+    },
+    {
+     "id": "wall",
+     "kind": "hazard",
+     "label": "wall",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "way home",
+     "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Collect the coin and reach the exit.",
+    "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "e0208e738c6f8ac8",
+   "2": "d44f7c941341d6ac",
+   "3": "fe365a8a06407db6"
+  }
+ },
+ "w02": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "walker",
+   "controlParams": {
+    "size": 11,
+    "speed": 110,
+    "generator": "walker_stealth"
+   },
+   "addons": [],
+   "title": "mouse reach",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "maze",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Sneak past the guard and reach the exit.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "mouse",
+     "count": 1
+    },
+    {
+     "id": "wall",
+     "kind": "hazard",
+     "label": "dog",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "cellar maze",
+     "count": 1
+    },
+    {
+     "id": "guard",
+     "kind": "patrol",
+     "label": "sleeping guard",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Sneak past the guard and reach the exit.",
+    "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "24cb8d28de191c4b",
+   "2": "04d012bdf56482ef",
+   "3": "b40b20856af77989"
+  }
+ },
+ "w03": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "walker",
+   "controlParams": {
+    "size": 11,
+    "speed": 110,
+    "generator": "walker_stealth"
+   },
+   "addons": [],
+   "title": "burglar reach",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "sleepy museum",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Sneak past the guard and reach the exit.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "burglar",
+     "count": 1
+    },
+    {
+     "id": "wall",
+     "kind": "hazard",
+     "label": "wall",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "past the",
+     "count": 1
+    },
+    {
+     "id": "guard",
+     "kind": "patrol",
+     "label": "watchmen",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Sneak past the guard and reach the exit.",
+    "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "rules": [
+    {
+     "id": "sound",
+     "verb": "sound",
+     "when": {
+      "every": 600
+     },
+     "if": [
+      {
+       "inPhase": "calm"
+      }
+     ],
+     "do": [
+      {
+       "goPhase": "alarm"
+      }
+     ]
+    },
+    {
+     "id": "muster",
+     "verb": "muster",
+     "when": {
+      "phase": "alarm"
+     },
+     "do": [
+      {
+       "wave": {
+        "role": "wall",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "phases": [
+     {
+      "id": "calm"
+     },
+     {
+      "id": "alarm"
+     }
+    ]
+   }
+  },
+  "worlds": {
+   "1": "954fefb2928eaef9",
+   "2": "9e55b1f84e2018a8",
+   "3": "12bca4b614b15b18"
+  }
+ },
+ "w04": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "walker",
+   "controlParams": {
+    "size": 11,
+    "speed": 110,
+    "generator": "walker_labyrinth"
+   },
+   "addons": [],
+   "title": "knight reach",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "castle",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Find a path through the maze to the exit.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "knight",
+     "count": 1
+    },
+    {
+     "id": "wall",
+     "kind": "hazard",
+     "label": "wall",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "twisting corridor",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Find a path through the maze to the exit.",
+    "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "068dcda9b5c4cad3",
+   "2": "c909c9bf7fb7a7f6",
+   "3": "23a3855f8d6fc5d4"
+  }
+ },
+ "w05": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "walker",
+   "controlParams": {
+    "size": 11,
+    "speed": 110,
+    "generator": "walker_labyrinth"
+   },
+   "addons": [],
+   "title": "beetle reach",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "garden",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Find a path through the maze to the exit.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "beetle",
+     "count": 1
+    },
+    {
+     "id": "wall",
+     "kind": "hazard",
+     "label": "wall",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "star",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Find a path through the maze to the exit.",
+    "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "068dcda9b5c4cad3",
+   "2": "c909c9bf7fb7a7f6",
+   "3": "23a3855f8d6fc5d4"
+  }
+ },
+ "g01": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "glide",
+   "controlParams": {
+    "clearancePermille": 275,
+    "clearanceRisePermille": 10,
+    "mode": "reach",
+    "difficulty": "normal",
+    "lengthM": 160,
+    "topSpeed": 180,
+    "generator": "glide_course"
+   },
+   "addons": [],
+   "title": "snowboarder reach",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "mountain",
+    "mood": "adventurous",
+    "look": "snow"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Pass every ring and reach the finish.",
+    "role": "finish"
+   },
+   "mechanics": [],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "snowboarder",
+     "count": 1
+    },
+    {
+     "id": "glide_ring",
+     "kind": "collectible",
+     "label": "ring",
+     "count": 7
+    },
+    {
+     "id": "glide_reef",
+     "kind": "hazard",
+     "label": "rock",
+     "count": 1
+    },
+    {
+     "id": "glide_current",
+     "kind": "zone",
+     "label": "current",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Pass every ring and reach the finish.",
+    "controlsHint": "Drag in two directions, or use arrows to swim. Shift or a second finger brakes."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "052a951ae459f7ec",
+   "2": "e4a6dac44cd39283",
+   "3": "efa6b17a54dc441c"
+  }
+ },
+ "g02": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "glide",
+   "controlParams": {
+    "clearancePermille": 275,
+    "clearanceRisePermille": 10,
+    "mode": "reach",
+    "difficulty": "normal",
+    "lengthM": 160,
+    "topSpeed": 180,
+    "generator": "glide_course"
+   },
+   "addons": [],
+   "title": "paper plane reach",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "rooftops",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Pass every ring and reach the finish.",
+    "role": "finish"
+   },
+   "mechanics": [],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "paper plane",
+     "count": 1
+    },
+    {
+     "id": "glide_ring",
+     "kind": "collectible",
+     "label": "ring",
+     "count": 7
+    },
+    {
+     "id": "glide_reef",
+     "kind": "hazard",
+     "label": "traffic barrier",
+     "count": 1
+    },
+    {
+     "id": "glide_current",
+     "kind": "zone",
+     "label": "current",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Pass every ring and reach the finish.",
+    "controlsHint": "Drag in two directions, or use arrows to swim. Shift or a second finger brakes."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "052a951ae459f7ec",
+   "2": "e4a6dac44cd39283",
+   "3": "efa6b17a54dc441c"
+  }
+ },
+ "g03": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "glide",
+   "controlParams": {
+    "clearancePermille": 275,
+    "clearanceRisePermille": 10,
+    "mode": "reach",
+    "difficulty": "normal",
+    "lengthM": 160,
+    "topSpeed": 180,
+    "generator": "glide_course"
+   },
+   "addons": [],
+   "title": "girl reach",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "river",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Pass every ring and reach the finish.",
+    "role": "finish"
+   },
+   "mechanics": [],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "girl",
+     "count": 1
+    },
+    {
+     "id": "glide_ring",
+     "kind": "collectible",
+     "label": "ring",
+     "count": 7
+    },
+    {
+     "id": "glide_reef",
+     "kind": "hazard",
+     "label": "ice",
+     "count": 1
+    },
+    {
+     "id": "glide_current",
+     "kind": "zone",
+     "label": "current",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Pass every ring and reach the finish.",
+    "controlsHint": "Drag in two directions, or use arrows to swim. Shift or a second finger brakes."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "052a951ae459f7ec",
+   "2": "e4a6dac44cd39283",
+   "3": "efa6b17a54dc441c"
+  }
+ },
+ "g04": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "glide",
+   "controlParams": {
+    "clearancePermille": 275,
+    "clearanceRisePermille": 10,
+    "mode": "reach",
+    "difficulty": "normal",
+    "lengthM": 160,
+    "topSpeed": 180,
+    "generator": "glide_course"
+   },
+   "addons": [],
+   "title": "hang glider reach",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "canyon",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Pass every ring and reach the finish.",
+    "role": "finish"
+   },
+   "mechanics": [],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "hang glider",
+     "count": 1
+    },
+    {
+     "id": "glide_ring",
+     "kind": "collectible",
+     "label": "ring",
+     "count": 7
+    },
+    {
+     "id": "glide_reef",
+     "kind": "hazard",
+     "label": "cliff",
+     "count": 1
+    },
+    {
+     "id": "glide_current",
+     "kind": "zone",
+     "label": "current",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Pass every ring and reach the finish.",
+    "controlsHint": "Drag in two directions, or use arrows to swim. Shift or a second finger brakes."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "052a951ae459f7ec",
+   "2": "e4a6dac44cd39283",
+   "3": "efa6b17a54dc441c"
+  }
+ },
+ "b01": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "ball",
+   "controlParams": {
+    "team": true,
+    "goal": "goal",
+    "shotRecoveryTicks": 178,
+    "shotRecoveryRiseTicks": 4,
+    "paceSeconds": 16,
+    "keeper": true,
+    "difficulty": "normal",
+    "targets": 5,
+    "generator": "ball_pitch"
+   },
+   "addons": [],
+   "title": "robot score",
+   "archetype": "combat_lite",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "beach",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "defeat_targets",
+    "description": "Score in every goal.",
+    "count": 5,
+    "role": "goal"
+   },
+   "mechanics": [],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "robot",
+     "count": 1
+    },
+    {
+     "id": "physics_ball",
+     "kind": "item",
+     "label": "ball",
+     "count": 1
+    },
+    {
+     "id": "goal",
+     "kind": "target",
+     "label": "target",
+     "count": 5
+    },
+    {
+     "id": "goalkeeper",
+     "kind": "patrol",
+     "label": "grumpy octopus",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Score in every goal.",
+    "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "1e895941430bb58f",
+   "2": "2861bedd23d94175",
+   "3": "8d7dabb3255d94e8"
+  }
+ },
+ "b02": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "ball",
+   "controlParams": {
+    "goal": "goal",
+    "shotRecoveryTicks": 168,
+    "shotRecoveryRiseTicks": 4,
+    "paceSeconds": 15,
+    "keeper": false,
+    "difficulty": "normal",
+    "targets": 5,
+    "generator": "ball_pitch"
+   },
+   "addons": [],
+   "title": "goat score",
+   "archetype": "combat_lite",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "park",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "defeat_targets",
+    "description": "Score in every goal.",
+    "count": 5,
+    "role": "goal"
+   },
+   "mechanics": [],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "goat",
+     "count": 1
+    },
+    {
+     "id": "physics_ball",
+     "kind": "item",
+     "label": "football",
+     "count": 1
+    },
+    {
+     "id": "goal",
+     "kind": "target",
+     "label": "goal",
+     "count": 5
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Score in every goal.",
+    "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "f3d9ddb6b9f852f5",
+   "2": "b63ec0b6b22d7730",
+   "3": "dfb4f7a0cd7cccc3"
+  }
+ },
+ "b03": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "ball",
+   "controlParams": {
+    "goal": "goal",
+    "shotRecoveryTicks": 168,
+    "shotRecoveryRiseTicks": 4,
+    "paceSeconds": 15,
+    "keeper": false,
+    "difficulty": "normal",
+    "targets": 5,
+    "generator": "ball_pitch"
+   },
+   "addons": [],
+   "title": "frog score",
+   "archetype": "combat_lite",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "sunny island",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "defeat_targets",
+    "description": "Score in every goal.",
+    "count": 5,
+    "role": "goal"
+   },
+   "mechanics": [],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "frog",
+     "count": 1
+    },
+    {
+     "id": "physics_ball",
+     "kind": "item",
+     "label": "football",
+     "count": 1
+    },
+    {
+     "id": "goal",
+     "kind": "target",
+     "label": "goal",
+     "count": 5
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Score in every goal.",
+    "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "f3d9ddb6b9f852f5",
+   "2": "b63ec0b6b22d7730",
+   "3": "dfb4f7a0cd7cccc3"
+  }
+ },
+ "k01": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "move_free",
+   "controlParams": {
+    "generator": "arena_catch",
+    "tuning": {
+     "preySpeed": 250,
+     "half": 40000,
+     "catchSeconds": 11
+    }
+   },
+   "addons": [],
+   "title": "kid chases raindrop",
+   "archetype": "combat_lite",
+   "targetDurationSec": 30,
+   "theme": {
+    "setting": "bucket",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "defeat_targets",
+    "description": "Catch the moving raindrop before time runs out.",
+    "count": 1,
+    "role": "prey"
+   },
+   "mechanics": [],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "kid",
+     "count": 1
+    },
+    {
+     "id": "prey",
+     "kind": "target",
+     "label": "raindrop",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Catch the moving raindrop before time runs out.",
+    "controlsHint": "Move with arrows or WASD, or drag to chase."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "681d5dc85f32501c",
+   "2": "5be9f383f10e52de",
+   "3": "fad7ca0c62b7e487"
+  }
+ },
+ "k02": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "move_free",
+   "controlParams": {
+    "generator": "arena_catch",
+    "tuning": {
+     "preySpeed": 250,
+     "half": 40000,
+     "catchSeconds": 11
+    }
+   },
+   "addons": [],
+   "title": "dog chases frisbee",
+   "archetype": "combat_lite",
+   "targetDurationSec": 30,
+   "theme": {
+    "setting": "park",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "defeat_targets",
+    "description": "Catch the moving frisbee before time runs out.",
+    "count": 1,
+    "role": "prey"
+   },
+   "mechanics": [],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "dog",
+     "count": 1
+    },
+    {
+     "id": "prey",
+     "kind": "target",
+     "label": "frisbee",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Catch the moving frisbee before time runs out.",
+    "controlsHint": "Move with arrows or WASD, or drag to chase."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "681d5dc85f32501c",
+   "2": "5be9f383f10e52de",
+   "3": "fad7ca0c62b7e487"
+  }
+ },
+ "k03": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "move_free",
+   "controlParams": {
+    "generator": "arena_catch",
+    "tuning": {
+     "preySpeed": 250,
+     "half": 40000,
+     "catchSeconds": 11
+    }
+   },
+   "addons": [],
+   "title": "puppy chases soap bubble",
+   "archetype": "combat_lite",
+   "targetDurationSec": 30,
+   "theme": {
+    "setting": "backyard",
+    "mood": "adventurous"
+   },
+   "objective": {
+    "kind": "defeat_targets",
+    "description": "Catch the moving soap bubble before time runs out.",
+    "count": 1,
+    "role": "prey"
+   },
+   "mechanics": [],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "puppy",
+     "count": 1
+    },
+    {
+     "id": "prey",
+     "kind": "target",
+     "label": "soap bubble",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Catch the moving soap bubble before time runs out.",
+    "controlsHint": "Move with arrows or WASD, or drag to chase."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 64,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   }
+  },
+  "worlds": {
+   "1": "681d5dc85f32501c",
+   "2": "5be9f383f10e52de",
+   "3": "fad7ca0c62b7e487"
+  }
+ },
+ "t01": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "timing",
+   "controlParams": {
+    "mode": "stack",
+    "speed": "slow",
+    "rounds": 36,
+    "rise": true,
+    "feel": 2
+   },
+   "genre": {
+    "id": "timing",
+    "mode": "stack",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Builder Stack",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "windy dock",
+    "mood": "playful"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Stack 36 crates. Each one swings faster.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "builder",
+     "count": 1
+    },
+    {
+     "id": "block",
+     "kind": "collectible",
+     "label": "crate",
+     "count": 36
+    },
+    {
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed drop",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "of the tower",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Stack 36 crates. Each one swings faster.",
+    "controlsHint": "Tap or Space to drop the block."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {},
+   "heroAction": "stack"
+  },
+  "worlds": {
+   "1": "e7be6b8ab7e644ef",
+   "2": "4c4a8977d177e2e2",
+   "3": "12f0b93280b52fe2"
+  }
+ },
+ "t02": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "timing",
+   "controlParams": {
+    "mode": "stack",
+    "speed": "slow",
+    "rounds": 36,
+    "rise": true,
+    "feel": 2
+   },
+   "genre": {
+    "id": "timing",
+    "mode": "stack",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Baker Stack",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "windy hilltop",
+    "mood": "playful"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Stack 36 layers. Each one swings faster.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "baker",
+     "count": 1
+    },
+    {
+     "id": "block",
+     "kind": "collectible",
+     "label": "layer",
+     "count": 36
+    },
+    {
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed drop",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "of the tower",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Stack 36 layers. Each one swings faster.",
+    "controlsHint": "Tap or Space to drop the block."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {},
+   "heroAction": "stack"
+  },
+  "worlds": {
+   "1": "e7be6b8ab7e644ef",
+   "2": "4c4a8977d177e2e2",
+   "3": "12f0b93280b52fe2"
+  }
+ },
+ "t03": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "timing",
+   "controlParams": {
+    "mode": "stack",
+    "speed": "slow",
+    "rounds": 36,
+    "rise": true,
+    "feel": 2
+   },
+   "genre": {
+    "id": "timing",
+    "mode": "stack",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Crane Operator Stack",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "swaying ship",
+    "mood": "playful"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Stack 36 containers. Each one swings faster.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "crane operator",
+     "count": 1
+    },
+    {
+     "id": "block",
+     "kind": "collectible",
+     "label": "container",
+     "count": 36
+    },
+    {
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed drop",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "of the tower",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Stack 36 containers. Each one swings faster.",
+    "controlsHint": "Tap or Space to drop the block."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {},
+   "heroAction": "stack"
+  },
+  "worlds": {
+   "1": "e7be6b8ab7e644ef",
+   "2": "4c4a8977d177e2e2",
+   "3": "12f0b93280b52fe2"
+  }
+ },
+ "a01": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "assemblyParts": [
+    {
+     "kind": "catch",
+     "role": "part_0",
+     "phase": 0,
+     "motion": "fall"
+    },
+    {
+     "kind": "hazard",
+     "role": "part_1",
+     "phase": 0,
+     "motion": "fall"
+    }
+   ],
+   "control": "move_free",
+   "controlParams": {
+    "generator": "arena_collect",
+    "tuning": {
+     "items": 10,
+     "waves": 3
+    }
+   },
+   "genre": {
+    "id": "arena",
+    "mode": "collect",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Farmer Hunt",
+   "archetype": "collect_exit",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "henhouse",
+    "mood": "playful"
+   },
+   "objective": {
+    "kind": "collect",
+    "description": "Collect 10 toy blocks in each of 3 waves before time runs out.",
+    "count": 10,
+    "role": "item"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "farmer",
+     "count": 1
+    },
+    {
+     "id": "item",
+     "kind": "collectible",
+     "label": "toy block",
+     "count": 10
+    },
+    {
+     "id": "part_0",
+     "kind": "patrol",
+     "label": "egg",
+     "count": 1
+    },
+    {
+     "id": "part_1",
+     "kind": "hazard",
+     "label": "egg",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Catch the egg. Dodge the egg. Collect 10 toy blocks per wave, 3 waves.",
+    "controlsHint": "Drag or arrows to move."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "b13f3c0f3fb5171a",
+   "2": "dc6a5ba90c714448",
+   "3": "5a970f6f2d8dec86"
+  }
+ },
+ "a02": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "assemblyParts": [
+    {
+     "kind": "hazard",
+     "role": "part_0",
+     "phase": 0,
+     "motion": "fall"
+    }
+   ],
+   "control": "move_free",
+   "controlParams": {
+    "generator": "arena_collect",
+    "tuning": {
+     "items": 10,
+     "waves": 3
+    }
+   },
+   "genre": {
+    "id": "arena",
+    "mode": "collect",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Firefighter Hunt",
+   "archetype": "collect_exit",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "burning barn",
+    "mood": "playful",
+    "look": "meadow"
+   },
+   "objective": {
+    "kind": "collect",
+    "description": "Collect 10 kittens in each of 3 waves before time runs out.",
+    "count": 10,
+    "role": "item"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "firefighter",
+     "count": 1
+    },
+    {
+     "id": "item",
+     "kind": "collectible",
+     "label": "kitten",
+     "count": 10
+    },
+    {
+     "id": "part_0",
+     "kind": "hazard",
+     "label": "spark",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Dodge the spark. Collect 10 kittens per wave, 3 waves.",
+    "controlsHint": "Drag or arrows to move."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "rules": [
+    {
+     "id": "herald",
+     "verb": "herald",
+     "when": {
+      "every": 300
+     },
+     "if": [
+      {
+       "inPhase": "calm"
+      }
+     ],
+     "do": [
+      {
+       "goPhase": "rush"
+      },
+      {
+       "startTimer": {
+        "timer": "rush",
+        "ticks": 480
+       }
+      }
+     ]
+    },
+    {
+     "id": "shower",
+     "verb": "shower",
+     "when": {
+      "phase": "rush"
+     },
+     "do": [
+      {
+       "wave": {
+        "role": "item",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "settle",
+     "verb": "settle",
+     "when": {
+      "timer": "rush"
+     },
+     "do": [
+      {
+       "goPhase": "calm"
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "timers": [
+     {
+      "id": "rush"
+     }
+    ],
+    "phases": [
+     {
+      "id": "calm"
+     },
+     {
+      "id": "rush"
+     }
+    ]
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "6dd4aa52c88f7d33",
+   "2": "1607529873964a19",
+   "3": "34cece3e661f6b33"
+  }
+ },
+ "a03": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "assemblyParts": [
+    {
+     "kind": "rival",
+     "role": "part_0",
+     "phase": 0,
+     "motion": "fall"
+    },
+    {
+     "kind": "catch",
+     "role": "part_1",
+     "phase": 0,
+     "motion": "fall"
+    },
+    {
+     "kind": "hazard",
+     "role": "part_2",
+     "phase": 0,
+     "motion": "fall"
+    }
+   ],
+   "control": "move_free",
+   "controlParams": {
+    "generator": "arena_collect",
+    "tuning": {
+     "items": 10,
+     "waves": 3
+    }
+   },
+   "genre": {
+    "id": "arena",
+    "mode": "collect",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Goalkeeper Hunt",
+   "archetype": "collect_exit",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "magic meadow",
+    "mood": "playful"
+   },
+   "objective": {
+    "kind": "collect",
+    "description": "Collect 10 flowers in each of 3 waves before time runs out.",
+    "count": 10,
+    "role": "item"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "goalkeeper",
+     "count": 1
+    },
+    {
+     "id": "item",
+     "kind": "collectible",
+     "label": "flower",
+     "count": 10
+    },
+    {
+     "id": "part_0",
+     "kind": "patrol",
+     "label": "goalkeeper",
+     "count": 1
+    },
+    {
+     "id": "part_1",
+     "kind": "patrol",
+     "label": "star",
+     "count": 1
+    },
+    {
+     "id": "part_2",
+     "kind": "hazard",
+     "label": "star",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Complete the named goals. Collect 10 flowers per wave, 3 waves.",
+    "controlsHint": "Drag or arrows to move."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "59098aa95160ac10",
+   "2": "a651dcf17560ce9d",
+   "3": "0a2e0e7718f687e4"
+  }
+ },
+ "a04": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "assemblyParts": [
+    {
+     "kind": "catch",
+     "role": "part_0",
+     "phase": 0,
+     "motion": "fall"
+    },
+    {
+     "kind": "hazard",
+     "role": "part_1",
+     "phase": 0,
+     "motion": "fall"
+    }
+   ],
+   "control": "move_free",
+   "controlParams": {
+    "generator": "arena_collect",
+    "tuning": {
+     "items": 10,
+     "waves": 3
+    }
+   },
+   "genre": {
+    "id": "arena",
+    "mode": "collect",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Kid Hunt",
+   "archetype": "collect_exit",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "autumn yard",
+    "mood": "playful"
+   },
+   "objective": {
+    "kind": "collect",
+    "description": "Collect 10 coins in each of 3 waves before time runs out.",
+    "count": 10,
+    "role": "item"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "kid",
+     "count": 1
+    },
+    {
+     "id": "item",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 10
+    },
+    {
+     "id": "part_0",
+     "kind": "patrol",
+     "label": "leaf",
+     "count": 1
+    },
+    {
+     "id": "part_1",
+     "kind": "hazard",
+     "label": "leaf",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Catch the leaf. Dodge the leaf. Collect 10 coins per wave, 3 waves.",
+    "controlsHint": "Drag or arrows to move."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "b13f3c0f3fb5171a",
+   "2": "dc6a5ba90c714448",
+   "3": "5a970f6f2d8dec86"
+  }
+ },
+ "r01": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "runner",
+   "controlParams": {
+    "obstacles": [
+     "hurdle",
+     "cone",
+     "crate"
+    ],
+    "feel": 2,
+    "sections": 3,
+    "patterns": 1
+   },
+   "addons": [
+    "chaser"
+   ],
+   "genre": {
+    "id": "runner",
+    "mode": "default",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Fox Run",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "forest",
+    "mood": "energetic",
+    "look": "forest"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Run to the finish without hitting a fallen log.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "fox",
+     "count": 1
+    },
+    {
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "fallen log",
+     "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "acorn",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line",
+     "count": 1
+    },
+    {
+     "id": "chaser",
+     "kind": "chaser",
+     "label": "hunter",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes.",
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "rules": [
+    {
+     "id": "herald",
+     "verb": "herald",
+     "when": {
+      "every": 300
+     },
+     "if": [
+      {
+       "inPhase": "calm"
+      }
+     ],
+     "do": [
+      {
+       "goPhase": "rush"
+      },
+      {
+       "startTimer": {
+        "timer": "rush",
+        "ticks": 480
+       }
+      }
+     ]
+    },
+    {
+     "id": "shower",
+     "verb": "shower",
+     "when": {
+      "phase": "rush"
+     },
+     "do": [
+      {
+       "wave": {
+        "role": "coin",
+        "count": 3,
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "settle",
+     "verb": "settle",
+     "when": {
+      "timer": "rush"
+     },
+     "do": [
+      {
+       "goPhase": "calm"
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "timers": [
+     {
+      "id": "rush"
+     }
+    ],
+    "phases": [
+     {
+      "id": "calm"
+     },
+     {
+      "id": "rush"
+     }
+    ]
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "7a2753eeca70564a",
+   "2": "11f4ce93293f966f",
+   "3": "af9bdb30d93f3c8a"
+  }
+ },
+ "r02": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "runner",
+   "controlParams": {
+    "obstacles": [
+     "hurdle",
+     "cone",
+     "crate"
+    ],
+    "feel": 2,
+    "sections": 3,
+    "patterns": 1
+   },
+   "genre": {
+    "id": "runner",
+    "mode": "default",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Skater Run",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "boardwalk",
+    "mood": "energetic",
+    "motion": "ride"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Run to the finish without hitting a seagull.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "skater",
+     "count": 1
+    },
+    {
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "seagull",
+     "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes.",
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "26af19ffd34a60fc",
+   "2": "18e9852791102661",
+   "3": "1d910b9be94fe513"
+  }
+ },
+ "r03": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "runner",
+   "controlParams": {
+    "obstacles": [
+     "hurdle",
+     "cone",
+     "crate"
+    ],
+    "feel": 2,
+    "sections": 3,
+    "patterns": 1
+   },
+   "genre": {
+    "id": "runner",
+    "mode": "default",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Pizza Courier Run",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "city",
+    "mood": "energetic",
+    "look": "city"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Run to the finish without hitting a traffic.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "pizza courier",
+     "count": 1
+    },
+    {
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "traffic",
+     "count": 1
+    },
+    {
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes.",
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "rules": [
+    {
+     "id": "herald",
+     "verb": "herald",
+     "when": {
+      "every": 300
+     },
+     "if": [
+      {
+       "inPhase": "calm"
+      }
+     ],
+     "do": [
+      {
+       "goPhase": "rush"
+      },
+      {
+       "startTimer": {
+        "timer": "rush",
+        "ticks": 480
+       }
+      }
+     ]
+    },
+    {
+     "id": "shower",
+     "verb": "shower",
+     "when": {
+      "phase": "rush"
+     },
+     "do": [
+      {
+       "wave": {
+        "role": "coin",
+        "count": 3,
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "settle",
+     "verb": "settle",
+     "when": {
+      "timer": "rush"
+     },
+     "do": [
+      {
+       "goPhase": "calm"
+      }
+     ]
+    }
+   ],
+   "logic": {
+    "timers": [
+     {
+      "id": "rush"
+     }
+    ],
+    "phases": [
+     {
+      "id": "calm"
+     },
+     {
+      "id": "rush"
+     }
+    ]
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "55314c83f75d436f",
+   "2": "229545e773872999",
+   "3": "a757b6946e62dd30"
+  }
+ },
+ "s01": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "shooter",
+   "controlParams": {
+    "waves": 6,
+    "rise": 4
+   },
+   "genre": {
+    "id": "shooter",
+    "mode": "default",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Cowboy Shootout",
+   "archetype": "combat_lite",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "ranch",
+    "mood": "tense"
+   },
+   "objective": {
+    "kind": "defeat_targets",
+    "description": "Stop 6 waves of ranches before they reach you.",
+    "count": 6,
+    "role": "enemy"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "cowboy",
+     "count": 1
+    },
+    {
+     "id": "target",
+     "kind": "target",
+     "label": "robot",
+     "count": 1
+    },
+    {
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "ranch",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Stop 6 waves of ranches. Each wave is faster.",
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "1713805f4c26d5b9",
+   "2": "58a1aefcf9e5f945",
+   "3": "82e368e98a306fbc"
+  }
+ },
+ "s02": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "shooter",
+   "controlParams": {
+    "waves": 6,
+    "rise": 4
+   },
+   "genre": {
+    "id": "shooter",
+    "mode": "default",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Astronaut Shootout",
+   "archetype": "combat_lite",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "space",
+    "mood": "tense"
+   },
+   "objective": {
+    "kind": "defeat_targets",
+    "description": "Stop 6 waves of asteroids before they reach you.",
+    "count": 6,
+    "role": "enemy"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "astronaut",
+     "count": 1
+    },
+    {
+     "id": "target",
+     "kind": "target",
+     "label": "target",
+     "count": 1
+    },
+    {
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "asteroid",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Stop 6 waves of asteroids. Each wave is faster.",
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "1713805f4c26d5b9",
+   "2": "58a1aefcf9e5f945",
+   "3": "82e368e98a306fbc"
+  }
+ },
+ "m01": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "rhythm",
+   "controlParams": {
+    "bpm": 120,
+    "beats": 66,
+    "ramp": true,
+    "lanes": true,
+    "feel": 2
+   },
+   "genre": {
+    "id": "rhythm",
+    "mode": "default",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Robot Beat",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "neon disco",
+    "mood": "energetic"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Hit each tile in its lane on the beat and play the song to the end.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "robot",
+     "count": 1
+    },
+    {
+     "id": "note",
+     "kind": "collectible",
+     "label": "tile",
+     "count": 12
+    },
+    {
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed beat",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "last beat",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Tap each lane as its note hits the line. The song gets busier.",
+    "controlsHint": "Tap the lane, or D F J K, on the beat. M toggles sound."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "ee1d7e831f281744",
+   "2": "3b9b9dfe4e22e177",
+   "3": "a88bcb3de3f4ee09"
+  }
+ },
+ "m02": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "rhythm",
+   "controlParams": {
+    "bpm": 120,
+    "beats": 66,
+    "ramp": true,
+    "lanes": true,
+    "feel": 2
+   },
+   "genre": {
+    "id": "rhythm",
+    "mode": "default",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Guitarist Beat",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "rock concert",
+    "mood": "energetic"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Hit each tile in its lane on the beat and play the song to the end.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "guitarist",
+     "count": 1
+    },
+    {
+     "id": "note",
+     "kind": "collectible",
+     "label": "tile",
+     "count": 12
+    },
+    {
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed beat",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "last beat",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Tap each lane as its note hits the line. The song gets busier.",
+    "controlsHint": "Tap the lane, or D F J K, on the beat. M toggles sound."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "ee1d7e831f281744",
+   "2": "3b9b9dfe4e22e177",
+   "3": "a88bcb3de3f4ee09"
+  }
+ },
+ "m03": {
+  "spec": {
+   "schema": "gamespec.v1",
+   "control": "rhythm",
+   "controlParams": {
+    "bpm": 120,
+    "beats": 66,
+    "ramp": true,
+    "lanes": true,
+    "feel": 2
+   },
+   "genre": {
+    "id": "rhythm",
+    "mode": "default",
+    "compilerVersion": "genre.v4"
+   },
+   "title": "Dancer Beat",
+   "archetype": "hazard_crossing",
+   "targetDurationSec": 60,
+   "theme": {
+    "setting": "glowing dance floor",
+    "mood": "energetic"
+   },
+   "objective": {
+    "kind": "reach",
+    "description": "Hit each tile in its lane on the beat and play the song to the end.",
+    "role": "finish"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "roles": [
+    {
+     "id": "player",
+     "kind": "player",
+     "label": "dancer",
+     "count": 1
+    },
+    {
+     "id": "note",
+     "kind": "collectible",
+     "label": "tile",
+     "count": 12
+    },
+    {
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed beat",
+     "count": 1
+    },
+    {
+     "id": "finish",
+     "kind": "exit",
+     "label": "last beat",
+     "count": 1
+    }
+   ],
+   "tutorial": {
+    "goalLine": "Tap each lane as its note hits the line. The song gets busier.",
+    "controlsHint": "Tap the lane, or D F J K, on the beat. M toggles sound."
+   },
+   "verification": [
+    {
+     "id": "winnable",
+     "kind": "reachability",
+     "assert": {
+      "runState": "won"
+     }
+    }
+   ],
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "scoring": {}
+  },
+  "worlds": {
+   "1": "ee1d7e831f281744",
+   "2": "3b9b9dfe4e22e177",
+   "3": "a88bcb3de3f4ee09"
+  }
+ }
+}
