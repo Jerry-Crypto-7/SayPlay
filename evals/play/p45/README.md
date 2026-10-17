@@ -20,6 +20,7 @@ SHA-256 (konce řádků LF): `1b6d2eb9c11f58cbef5a9f9bff7a1b69aa380c69d804c44225
 
 - Žádná věta se po normalizaci (`normalizeSentence`) neshoduje s `p30/test-200.json`, `p30/dev.json`, `p37a/dev-150.json`, `fidelity/corpus.json`, `fidelity/judge-10.json`, `demand/corpus.json`, `p41/sentences.json`, `p43/panel.json`, `p43/sealed-100.json`, `p44c/sealed-110.json`, `p44e/sealed-200.json` ani s panelem P45.
 - Pečeť rozhoduje obsah (`source: "sealed-p45"`), ne cesta: `loadSet` bez `--open-sealed-once` odmítne, s ním zapíše `sealed-opened.json` (čas, běh, commit, SHA-256 nad LF bajty) dřív, než odejde první věta, a každé další otevření odmítne.
+- **Pečeť je zlomená:** otevřelo ji konečné měření P46 (`abe38f04`, běh `p46-final`, 15. 10. 2026). Ten commit zapsal `sealed-opened.json`, a tím shodil očekávání „v repu ještě neotevřená“; `88e0596d` ho oprávněně nahradil přísnějším – záznam existuje, běh je `p46-final` a otisk sedí na tyto bajty. Sada je od té doby otevřená a na další měření se nehodí; nové plány si píšou vlastní holdout (P51: `evals/play/p51/holdout.json`).
 
 ### Panel – ids
 
