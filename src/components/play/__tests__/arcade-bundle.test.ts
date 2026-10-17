@@ -37,8 +37,15 @@ describe('arkáda v prohlížeči nenese schémata GameSpec (P28E T5)', () => {
     expect([...loaded].filter((file) => ['src/play/spec.ts', 'src/play/registry.ts', 'src/ir/worlddoc.ts'].includes(file))).toEqual([]);
   });
 
-  it('chunky scény se stahují při načtení modulu, ne až po hydrataci', () => {
+  // P50 T5: místo `import()` při načtení modulu (stahoval scénu i mřížce) je díl vykreslený
+  // serverem – Next za něj dá do HTML preload chunků scény. Bez `ssr: false`, jinak preload není.
+  // Pořadí požadavků hlídá e2e `p50-chunks.spec.ts`.
+  it('chunky scény ohlásí HTML arkádové hry, ne až hydratace', () => {
     const source = readFileSync(join(ROOT, 'src/components/play/arcade/ArcadePlay.tsx'), 'utf8');
-    expect(source).toMatch(/^if \(typeof window !== 'undefined'\) void import\('\.\/ArcadeStage'\);$/m);
+    const preload = /^const PreloadStage = dynamic\(\(\) => import\('\.\/ArcadeStage'\)[^\n]*$/m.exec(source)?.[0] ?? '';
+    expect(preload).not.toBe('');
+    expect(preload).not.toContain('ssr: false');
+    expect(source).toMatch(/<PreloadStage \/>/);
+    expect(source).not.toMatch(/^if \(typeof window !== 'undefined'\) void import\('\.\/ArcadeStage'\);$/m);
   });
 });
