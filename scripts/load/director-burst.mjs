@@ -15,7 +15,8 @@
  *
  * Dva běhy do `--out` (výchozí `evals/play/director-queue/report.json`):
  * `burst` s výchozí frontou (úspěch = N/N `ready`, 0× `MODEL_UNAVAILABLE`,
- * souběh na upstreamu ≤ `--slots`) a `overflow` s `PLAY_DIRECTOR_QUEUE=2`
+ * souběh na upstreamu = `--slots` – menší by znamenal frontu, která pouští
+ * po jednom) a `overflow` s `PLAY_DIRECTOR_QUEUE=2`
  * (přebytek dostane `MODEL_UNAVAILABLE` a sonda `time-to-playable` ověří, že
  * jeho rychlá verze se hraje). `--only burst|overflow` pustí jen jeden.
  * Úspěch se počítá z AI verze (`ready` s jiným id než návrh), nikdy z rychlé.
@@ -124,6 +125,11 @@ export async function startServer({ port, upstream, slots, queue, root = ROOT })
   const envFiles = envFilesIn(root);
   if (envFiles.length > 0)
     throw new Error(`refusing to start: ${envFiles.join(', ')} in ${root} would hand next start a real model endpoint, key or shared store; move it away for the burst test`);
+  // Obsazený port by odpověděl cizí server dřív, než náš `next start` spadne na EADDRINUSE.
+  await new Promise((free, taken) => {
+    const probe = createServer().once('error', () => taken(new Error(`port ${String(port)} is already in use: the burst would measure that server, not its own`)));
+    probe.listen(port, '127.0.0.1', () => probe.close(free));
+  });
   const store = mkdtempSync(join(tmpdir(), 'p53-burst-store-'));
   const env = cleanEnv({
     NODE_ENV: 'production',
@@ -275,7 +281,7 @@ async function main() {
   writeFileSync(out, `${JSON.stringify(report, null, 2)}\n`);
   const line = (name, run) => `${name}: ${String(run.aiVersions)}/${String(run.players)} AI versions, ${String(run.modelUnavailable)}x MODEL_UNAVAILABLE, upstream peak ${String(run.upstreamPeak)}/${String(run.slots)}, wait median ${String(run.waitMedianMs)} ms, max ${String(run.waitMaxMs)} ms`;
   for (const [name, run] of Object.entries(runs)) console.log(line(name, run));
-  const ok = (runs.burst === undefined || (runs.burst.aiVersions === players && runs.burst.modelUnavailable === 0 && runs.burst.upstreamPeak <= slots)) && (runs.overflow === undefined || (runs.overflow.modelUnavailable > 0 && runs.overflow.upstreamPeak <= slots && runs.overflow.refusedQuickVersion?.playable === true));
+  const ok = (runs.burst === undefined || (runs.burst.aiVersions === players && runs.burst.modelUnavailable === 0 && runs.burst.upstreamPeak === Math.min(players, slots))) && (runs.overflow === undefined || (runs.overflow.modelUnavailable > 0 && runs.overflow.upstreamPeak <= slots && runs.overflow.refusedQuickVersion?.playable === true));
   process.exitCode = ok ? 0 : 1;
 }
 

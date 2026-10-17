@@ -6,7 +6,7 @@ Na jedné instanci smí běžet jen `PLAY_DIRECTOR_SLOTS` režií `/play` naráz
 
 `npm run build`, pak `node scripts/load/director-burst.mjs --players 8 --slots 2` (exit 0 = obě podmínky drží). Skript pustí náhradní upstream na `127.0.0.1` s nahranými odpověďmi `src/play/director/__fixtures__/p46-answers` (v P46E 25/25 AI verzí; `evals/play/p30/dev.json` nahrané odpovědi nemá), 3 s na volání, a nad ním `next start` na portu 3312 s prostředím bez skutečného modelu a sdíleného úložiště. Dva běhy do `report.json`:
 
-- **burst** (fronta výchozí): 17. 10. 8/8 AI verzí, 0× `MODEL_UNAVAILABLE`, souběh na upstreamu 2/2, čekání na první volání medián 21,9 s, max. 39,1 s (36 volání: opravná kola a pokyn `ADD_NUDGE` jdou frontou znovu).
+- **burst** (fronta výchozí): 17. 10. 8/8 AI verzí, 0× `MODEL_UNAVAILABLE`, souběh na upstreamu 2/2, čekání na první volání medián 21,9 s, max. 39,1 s (39 volání: opravná kola a pokyn `ADD_NUDGE` jdou frontou znovu).
 - **overflow** (`PLAY_DIRECTOR_QUEUE=2`): 4 AI verze, 4× `MODEL_UNAVAILABLE`; sonda `time-to-playable` na odmítnuté hře: rychlá verze hratelná.
 
 Krátká verze v `e2e/p53-director-queue.spec.ts` (4 hráči, strop 1, ~1,2 min; postaví si vlastní server na 3313). Zkouška nastavuje `VERCEL_ENV=preview` bez `VERCEL` (jinak kniha útraty mimo Vercel chybí a strop odmítne každé volání) a `PLAY_DIRECTOR_CALLS_PER_CALLER=1000` (všichni hráči jsou tu jeden volající `untrusted`).
