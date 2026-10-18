@@ -2,6 +2,7 @@ import type { CastRole, GenreSpec } from '../genre/contract';
 import type { GameRole, GameSpecV1 } from '../spec';
 import { UNIT } from '../arcade/contract';
 import { GLIDE_FINALE, glideRingZs } from '../arcade/pieces/glide';
+import { WALKER_BEAT } from '../arcade/pieces/walker';
 import { recipeSchema, type Recipe } from './recipe';
 import { withAuthoredContent } from './content';
 
@@ -56,7 +57,7 @@ export function nativeSpec(recipe: Recipe, content: GenreSpec, paced = true): Ga
       recipe.threats.some(threat => !['guard', 'chaser', 'obstacle'].includes(threat)) || guard && chaser) return unsupported();
     const collect = recipe.objective === 'collect' || recipe.actions.includes('collect');
     if (guard && recipe.objective === 'escape' && !collect) return unsupported();
-    const size = bounded(params.size, 11, 7, 15) | 1;
+    const size = bounded(params.size, paced ? WALKER_BEAT.size : 11, 7, 15) | 1;
     roles.push(role('wall', 'hazard', label('avoid', 'wall')), role('finish', 'exit', label('reach', 'exit')));
     if (guard) roles.push(role('guard', 'patrol', label('chase_me', 'guard')));
     if (chaser) roles.push(role('chaser', 'chaser', label('chase_me', 'pursuer')));

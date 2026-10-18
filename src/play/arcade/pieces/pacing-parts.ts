@@ -90,18 +90,32 @@ export const RUNNER_FOES = {
   bossRoom: 2,
 } as const;
 
-/** Hrozby běžce, když se do stropu těl jádra vejdou i s doplňky; jinak trať bez nich (hra kvůli průběhu nikdy neselže). Boss jen s místem i pro něj. */
-function runnerFoes(parts: ArcadeParts): Pick<GenrePacingSetup, 'behaviours' | 'budget' | 'from' | 'spots' | 'finale' | 'boss'> | null {
+/**
+ * Tep běžce (P51 T7, `genre.v5`): tep pole P47A T9 na trati – po `heartbeatAt` tikách bez události mince běžce ve
+ * vnějším pruhu `RUNNER_FOES.ahead` před hráčem (`heartbeatOf`). Mrtvý čas byl mezi shluky mincí trati (dev 4,6–7,4 s,
+ * buňky až 9,9 s). Robot mince tepu nevidí (`withoutCoins`), obtížnost tratě zůstane. `room` = předloha, počítadlo
+ * tepu a sloty mincí; tep jen s místem i pro ně, po bossovi.
+ */
+export const RUNNER_PULSE = {
+  coin: { role: 'collectible', kind: 'coin', x: 0, y: 300, z: 0, w: 500, h: 500, d: 500, solid: false } satisfies BodyInit,
+  room: 2 + PACING.heartbeatCoins,
+} as const;
+
+/** Hrozby běžce, když se do stropu těl jádra vejdou i s doplňky; jinak trať bez nich (hra kvůli průběhu nikdy neselže). Boss jen s místem i pro něj, tep (`pulse`) i pro sebe. */
+function runnerFoes(parts: ArcadeParts, pulse: boolean): Pick<GenrePacingSetup, 'behaviours' | 'budget' | 'from' | 'spots' | 'finale' | 'boss' | 'pulse'> | null {
   const used = parts.level.bodies.length + (parts.level.spawnSlots ?? 0) + RUNNER_FOES.room + RUNNER_FOES.spare;
   if (used > ARCADE_LIMITS.maxBodies) return null;
   const { actors, ahead } = RUNNER_FOES;
-  const boss = used + RUNNER_FOES.bossRoom > ARCADE_LIMITS.maxBodies ? {} : { finale: 'boss' as const, boss: { body: { ...BEHAVIOURS.boss.body, hp: BOSS.track.hp }, at: RUNNER_FOES.bossAt } };
+  const bossed = used + RUNNER_FOES.bossRoom <= ARCADE_LIMITS.maxBodies;
+  const boss = bossed ? { finale: 'boss' as const, boss: { body: { ...BEHAVIOURS.boss.body, hp: BOSS.track.hp }, at: RUNNER_FOES.bossAt } } : {};
+  const beat = pulse && used + (bossed ? RUNNER_FOES.bossRoom : 0) + RUNNER_PULSE.room <= ARCADE_LIMITS.maxBodies ? { pulse: RUNNER_PULSE.coin } : {};
   return {
     behaviours: actors.map((actor) => ({ body: BEHAVIOURS[actor.behaviour].body, behaviour: actor.behaviour, from: actor.from })),
     budget: RUNNER_FOES.budget,
     from: Math.min(...actors.map((actor) => actor.from)),
     spots: [-RUNNER.laneWidth, ahead, RUNNER.laneWidth, ahead],
     ...boss,
+    ...beat,
   };
 }
 
@@ -109,14 +123,14 @@ function runnerFoes(parts: ArcadeParts): Pick<GenrePacingSetup, 'behaviours' | '
  * Dráhový žánr (P45C T11): postup = ujetá trať, fáze z křivky a finále
  * závěrečný sprint. Hrozby v pruzích jen běžec (`foes`, R2), a s nimi finále boss (P46B T4); ostatní dráhy pruhy nemají.
  */
-const track = (rows: number, rampLevel = false, foes = false): GenrePacing => (parts) => ({
+const track = (rows: number, rampLevel = false, foes = false): GenrePacing => (parts, spec) => ({
   goal: { by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks },
   space: 'track',
   spots: [0, 0],
   behaviours: [],
   budget: 0,
   finale: 'sprint',
-  ...((foes ? runnerFoes(parts) : null) ?? {}),
+  ...((foes ? runnerFoes(parts, genreAtLeast(spec, FINALE5_GENRE_VERSION)) : null) ?? {}),
   ...(foes ? { segments: 'runner' as const } : {}),
   phases: curvePhases(rows),
   ...(rampLevel ? { rampLevel: true } : {}),
@@ -641,8 +655,12 @@ export const SHOOTER_SNIPER: BodyInit = { ...BEHAVIOURS.sniper.body, role: 'enem
  * profilu s nulou prohrál 10/20 buňky s jedním životem, se šesti vyhrál 20/20), za bosse-terč s HP 5 a salvou
  * po třech výstřelech šedesát (robot vystřelí za souboj s bossem 42–55 ran; se čtyřiceti navíc vyhrál 20/20,
  * s třiceti 15/20 – náboje jsou útes pro všechny profily, ne páka obtížnosti).
+ * `densityFloor` (P51 T7, `genre.v5`): pochod vln nikdy řidší než tahle intenzita – v úvodu (700 ‰) přišla další
+ * vlna 1,4× později a pole stálo prázdné 5,6–6,7 s mezi vlnami (dev s01, s02 × 12 semínek: medián nejdelší mezery
+ * 6,18 s). Podlaha 1000 → medián 4,08 / nejvýš 4,68 s, 1100 → 3,45 / 4,05, 1150 → 3,17 / 3,77; výhry, finále
+ * i stoupání beze změny (12/12), hra 49–56 s místo 57–64 s. Vrchol a finále (1300, 1500) zůstávají hustší.
  */
-export const SHOOTER_FOES = { budget: 3, sniperAmmo: 6, bossAmmo: 60 } as const;
+export const SHOOTER_FOES = { budget: 3, sniperAmmo: 6, bossAmmo: 60, densityFloor: 1150 } as const;
 
 /**
  * Střelnice (P45C T13): postup = sestřelení nepřátelé vln (`fallen`), vlny čekají za branou a vyjdou podle
@@ -651,13 +669,14 @@ export const SHOOTER_FOES = { budget: 3, sniperAmmo: 6, bossAmmo: 60 } as const;
  * výhra `cleared` počká na jeho pád, nové `win` ani obal výhry nepřibude. Terče stojí od startu jako dřív:
  * rozvrh vysazuje na místě vstupu nejdál od hráče, ne na vlastních místech terčů (odchylka T13).
  */
-const shooterPaced: GenrePacing = (parts) => {
+const shooterPaced: GenrePacing = (parts, spec) => {
   const gun = ruleOf(parts, 'gun')?.params as GunParams | undefined;
   const byWave = shooterWaves(parts.level);
   const waves = byWave.length;
   const enemies = byWave.flat().length;
   if (parts.control.id !== 'shooter' || gun === undefined || waves < 2) return null;
-  const density = (wave: number, count: number): number => intensityAt(waveStart(wave, count), TENSION_CURVE);
+  const floor = genreAtLeast(spec, FINALE5_GENRE_VERSION) ? SHOOTER_FOES.densityFloor : 0;
+  const density = (wave: number, count: number): number => Math.max(floor, intensityAt(waveStart(wave, count), TENSION_CURVE));
   const last = waveStart(waves - 1, waves);
   // Místa vstupu ostřelovače a bosse: 26 m před hráčem (v dostřelu), napříč podle terčů úrovně – každé semínko jinde.
   const across = parts.level.bodies.flatMap((body) => (body.role === 'target' ? [Math.max(-8 * UNIT, Math.min(8 * UNIT, body.x))] : [])).slice(0, 4);

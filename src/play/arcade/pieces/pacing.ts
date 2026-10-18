@@ -428,11 +428,13 @@ export type PacingRuleParams = z.infer<typeof ruleParams>;
  * plochou (`heartbeatCoins`) tep místo ní odvolá minci nejdál od hráče. Obojí je událost a ovládání ji příští tik
  * zapíše (`markPulse`), takže tep přijde znovu až po dalším tichu. Mince předlohy život nevezme.
  */
-function heartbeatOf(state: Int32Array, player: number, pulse: NonNullable<PacingRuleParams['pulse']>, spots: readonly number[], reached: number): ArcadeEffect[] {
+function heartbeatOf(state: Int32Array, player: number, pulse: NonNullable<PacingRuleParams['pulse']>, places: readonly number[], space: PacingRuleParams['space'], reached: number): ArcadeEffect[] {
   if ((state[HEADER.tick] as number) - (state[bodyBase(pulse.keeper) + BODY.x] as number) < heartbeatAt(pulse.beat, reached)) return [];
   const coins = coinsOf(state, pulse.template);
   const t = bodyBase(pulse.template);
   const p = bodyBase(player);
+  // Trať (běžec, P51 T7): místo vstupu je odstup před hráčem.
+  const spots = space === 'track' ? places.map((value, index) => (index % 2 === 1 ? value + (state[p + BODY.z] as number) : value)) : places;
   // Čtverec vzdálenosti v celých číslech (za běhu žádná plovoucí čárka mimo přesný rozsah).
   const away = (body: number): number => ((state[bodyBase(body) + BODY.x] as number) - (state[p + BODY.x] as number)) ** 2 + ((state[bodyBase(body) + BODY.z] as number) - (state[p + BODY.z] as number)) ** 2;
   if (coins.length >= PACING.heartbeatCoins) return [{ kind: 'despawn', body: coins.reduce((far, body) => (away(body) > away(far) ? body : far)) }];
@@ -467,7 +469,7 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
     const before = state[keeper + BODY.aux1] as number;
     const reached = state[keeper + BODY.aux0] as number;
     const effects: ArcadeEffect[] = params.behaviours === undefined ? [] : behaviourEffects(state, player, params.behaviours, params.half);
-    if (params.pulse !== undefined) effects.push(...heartbeatOf(state, player, params.pulse, params.spots, reached));
+    if (params.pulse !== undefined) effects.push(...heartbeatOf(state, player, params.pulse, params.spots, params.space, reached));
     // Postup se v tomhle tiku nehnul: žádný krok rozvrhu ani úklid nepřešel.
     if (reached === before) return effects;
     const clears = (params.clear ?? []).filter((clear) => clear.at > before && clear.at <= reached);
