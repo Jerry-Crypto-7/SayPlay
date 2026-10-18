@@ -38,6 +38,11 @@ export const PACING_BANNER_LABELS: Readonly<Record<'buildUp' | (typeof FINALES)[
   rush: 'Rush order!',
   // Přežití: déšť bonusových mincí 9 s před koncem – nic neberou, jen přidávají.
   shower: 'Grab the bonus!',
+  // Nativní finále P51 (`nativeFinaleOf`): chodec na stezce jisker k východu, klouzání v tunelu kruhů, kořist chytání
+  // po prvním chycení utekla (hráč je zpět na startu). Soupeř-boss míče je „Boss: Llama“.
+  exit: 'Exit ahead!',
+  rings: 'Hit the rings!',
+  prey: 'Catch it again!',
 };
 
 /** Změna úseku bez jména; nový nepřítel s jménem z věty je „New foe: Fox“ (`pacingBannerLabel`). */

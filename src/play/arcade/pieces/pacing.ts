@@ -18,13 +18,17 @@ import type { ArcadeParts } from '../addons';
 import type { CompiledInteract } from '../rules/interact';
 import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeLevel, type ArcadeObservation, type ArcadeRole, type ArcadeWorld, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, UNIT, bodyBase, bodyHp, nativeRule, targetStateOf } from '../contract';
 import { ESCAPE } from './arena';
+import { CATCH_FINALE } from './arena-catch';
+import { BALL_FINALE } from './ball';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef, type BehaviourSpace, behaviourBodies, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, seenByBase, stepBehaviours } from './behaviours';
 import { DUEL_FOE, duelControl, enragedAfter } from './duel';
 import { FIGHT } from './fight';
+import { glideTunnelZ } from './glide';
 // Cykly `throw.ts` a `segments.ts` ↔ tenhle modul jsou bezpečné: ani jeden nečte hodnoty druhého při načtení, jen ve funkcích.
 import { type SegmentGenre, segmentScriptOf, segmentSpans } from './segments';
 import { type SteerCourse, steerSegments } from './steer';
 import { THROW_ROUND_COUNTER } from './throw';
+import { WALKER_CELL, WALKER_FINALE, type WalkerMap, walkerExit, walkerPath } from './walker';
 import { spotsAway, waveOf } from './waves';
 
 export const PACING = {
@@ -753,8 +757,10 @@ export type SegmentBeat = (typeof SEGMENT_BEATS)[number];
  * `pacing`: `champion` = šampion duelu (tělo soupeře převezme předlohu `duel.champion`), `bossTarget` = terč-boss
  * posledního kola hodu (`shot_hit.tough`), `rush` = spěch stanoviště (`interact.rush`), `shower` = déšť mincí
  * přežití (předloha mimo chování v rozvrhu finále `wave`). Svět bez nich (uložené hry) hlásí finále jako dřív.
+ * Finále nativních žánrů P51 (`nativeFinaleOf`): `exit` = stezka k východu chodce, `rings` = tunel kruhů klouzání,
+ * `prey` = kořist chytání po prvním chycení; soupeř-boss míče se hlásí jako `boss`.
  */
-export const FINALE_NEWS = ['champion', 'bossTarget', 'rush', 'shower'] as const;
+export const FINALE_NEWS = ['champion', 'bossTarget', 'rush', 'shower', 'exit', 'rings', 'prey'] as const;
 export type FinaleNews = (typeof FINALE_NEWS)[number];
 
 /**
@@ -1002,6 +1008,46 @@ interface BeatStep {
   readonly at?: number;
 }
 
+/** Těla počátečního stavu dané role; `alive` = jen živá. */
+const initialBodies = (world: BeatWorld, role: number, test: (body: number) => boolean = () => true): number[] =>
+  Array.from({ length: world.initial[HEADER.bodyCount] as number }, (_, body) => body).filter((body) => world.initial[bodyBase(body) + BODY.role] === role && test(body));
+const aliveIn = (state: Int32Array, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
+
+/**
+ * Finále nativních žánrů P51 (T3, T4), která staví generátor, ne pravidlo `pacing` (to má jen hodiny, `still`):
+ * `exit` = hráč na stezce jisker před východem chodce (posledních `WALKER_FINALE.trail` polí cesty, mince a východ),
+ * `rings` = hráč v tunelu kruhů klouzání (`glideTunnelZ`), `boss` = soupeř-boss míče (`BALL_FINALE`) sám na hřišti
+ * (padl poslední terč), `prey` = kořist chytání (`CATCH_FINALE`) po prvním chycení utekla. Jiný svět `undefined`.
+ */
+function nativeFinaleOf(world: BeatWorld, finale: (typeof FINALES)[number]): BeatStep | undefined {
+  const walker = controlIn(world.control, 'walker')?.params as (WalkerMap & { readonly speed: number }) | undefined;
+  if (finale === 'sprint' && walker !== undefined) {
+    const path = walkerPath(walker, walker.size + 1, walkerExit(walker, true));
+    const coin = world.kinds.indexOf('coin');
+    const tail = initialBodies(world, ROLE.collectible, (body) => world.initial[bodyBase(body) + BODY.kind] === coin).length > 0 ? 2 : 1;
+    const trail = new Set(path.slice(Math.max(1, path.length - tail - WALKER_FINALE.trail)));
+    return {
+      beat: 'exit',
+      on: (state) => {
+        const base = bodyBase(state[HEADER.player] as number);
+        return trail.has(Math.round((state[base + BODY.x] as number) / WALKER_CELL) + Math.round((state[base + BODY.z] as number) / WALKER_CELL) * walker.size);
+      },
+    };
+  }
+  if (finale === 'sprint' && controlIn(world.control, 'glide') !== undefined) {
+    const tunnel = glideTunnelZ(world.length);
+    return { beat: 'rings', on: (state) => playerZ(state) >= tunnel };
+  }
+  if (finale !== 'round') return undefined;
+  const contact = nativeRule(world.rules, 'arena_catch_contact')?.params as { readonly prey: number; readonly tough?: boolean } | undefined;
+  if (contact?.tough === true) return { beat: 'prey', on: (state) => bodyHp(state, contact.prey) < CATCH_FINALE.hp };
+  if (controlIn(world.control, 'ball') === undefined) return undefined;
+  const start = Int32Array.from(world.initial);
+  const rival = initialBodies(world, ROLE.enemy, (body) => bodyHp(start, body) === BALL_FINALE.hp)[0];
+  const targets = initialBodies(world, ROLE.target);
+  return rival === undefined ? undefined : { beat: 'boss', on: (state) => aliveIn(state, rival) && !targets.some((body) => aliveIn(state, body)) };
+}
+
 /**
  * Finále, které hra ohlásí, a kdy běží – mechanismem, který ho ve světě opravdu dělá: šampion = soupeř duelu
  * s modelem předlohy šampiona (otiskne ji ovládání v tiku, kdy padne předposlední soupeř), spěch = kolo arény od
@@ -1020,6 +1066,8 @@ function finaleStepOf(world: BeatWorld, params: PacingRuleParams & { readonly fi
   if (finale === 'bonus' && toughOf(world) !== undefined) return { beat: 'bossTarget', on: finaleOn(world, finale, keeper, []) };
   const shower = showerOf(params);
   if (shower !== undefined) return { beat: 'shower', on: (state) => copiesOf(state, shower.template).length > 0, at: shower.atPermille };
+  const native = nativeFinaleOf(world, finale);
+  if (native !== undefined) return native;
   // Boss je poslední předloha chování (`withPacing`).
   const boss = bossStepOf(params);
   return { beat: finale, on: finaleOn(world, finale, keeper, finale === 'boss' ? refs.slice(-1) : []), ...(boss === undefined ? {} : { at: boss.atPermille }) };

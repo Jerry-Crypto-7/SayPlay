@@ -26,10 +26,13 @@ export type GlideCourseParams = z.infer<typeof glideCourseParams>;
  */
 export const GLIDE_FINALE = { stretch: 110 * UNIT, spacing: 8 * UNIT, ticks: 44, shift: 500, lengthM: 300 } as const;
 
+/** Začátek tunelu finále (z) na trati délky `length`: `GLIDE_FINALE.stretch` před posledním kruhem (8 m před cílem). */
+export const glideTunnelZ = (length: number): number => length - 8000 - GLIDE_FINALE.stretch;
+
 /** Polohy kruhů (z): po `GLIDE.spacing` do konce trati bez 8 m, nová hra s tunelem finále na konci. */
 export function glideRingZs(length: number, segments: boolean | undefined, topSpeed: number): number[] {
   const last = length - 8000;
-  const tunnel = segments === true ? last - GLIDE_FINALE.stretch : Infinity;
+  const tunnel = segments === true ? glideTunnelZ(length) : Infinity;
   const tight = Math.max(GLIDE_FINALE.spacing, GLIDE_FINALE.ticks * topSpeed);
   const zs: number[] = [];
   for (let at = GLIDE.spacing; at <= last; at += at >= tunnel ? tight : GLIDE.spacing) zs.push(at);
