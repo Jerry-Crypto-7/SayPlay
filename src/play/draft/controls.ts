@@ -33,7 +33,7 @@ import { CAPABILITIES } from '../capabilities';
 // Z kontraktu arkády, ne ze `spec.ts`: `compose/compile` tenhle modul načte i v prohlížeči (arcade-bundle).
 import { ABILITIES, ADDONS, type AbilityId, type AddonId } from '../arcade/contract';
 import type { Intent } from '../intent/contract';
-import { extractIntent } from '../intent/extract';
+import { CLAUSE_SUBORDINATORS, enemyDoes, extractIntent, shootsAtTheHero } from '../intent/extract';
 import { negationScopes, singular } from './lexicon';
 import type { ControlId } from '../spec';
 
@@ -267,9 +267,11 @@ const ADDON_CUES: Readonly<Record<AddonId, RegExp>> = {
  */
 const ABILITY_CUES: Readonly<Record<AbilityId, RegExp>> = {
   shoot: /(?<!(?:photo|auto)[- ])\bshoot(?:s|ing)?\b(?! stars?)|\bblast(?:s|ing)? (?:the |at )?(?!off\b)\w+|\bfir(?:e|es|ing) (?:at|on|back)\b|\bfir(?:e|es|ing) (?:[a-z]+ ){1,2}at\b|\bbreath(?:e|es|ing) fire\b|\blaser(?:s|ing)?\b|\bzap(?:s|ping)?\b|\bsnip(?:e|es|ing)\b|\bspit(?:s|ting)? (?:[a-z]+ ){0,2}at\b/,
-  strike: /\b(?:fight(?:s|ing)?|punch(?:es|ing)?|kick(?:s|ing)?|strike(?:s)?|striking|slash(?:es|ing)?|slap(?:s|ping)?|smash(?:es|ing)?|bash(?:es|ing)?|attack(?:s|ing)?|crush(?:es|ing)?)\b|(?<!\b(?:get|gets|getting|got|be|being|without|avoid|avoids|avoiding|not|never) )\bhit(?:s|ting)?\b(?! by\b)|\b(?:bit(?:e|es|ing)|peck(?:s|ing)?|sting(?:s|ing)?|pinch(?:es|ing)?|swat(?:s|ting)?|chop(?:s|ping)?|stab(?:s|bing)?|whack(?:s|ing)?|tackl(?:e|es|ing)|ram(?:s|ming)?|headbutt(?:s|ing)?|shov(?:e|es|ing))\b/,
-  dash: /\b(?:dash(?:es|ing)?|dodg(?:e|es|ing)|duck(?:s|ing)?|evad(?:e|es|ing)|swerv(?:e|es|ing)|sidestep(?:s|ping)?)\b|\bzip(?:s|ping)? (?:past|around|between|through)\b|\bweav(?:e|es|ing) (?:through|between|around|past)\b|\b(?:leap|leaps|leaping|jump|jumps|jumping|dart|darts|darting) aside\b|\bescap(?:e|es|ing) quickly\b/,
-  shield: /\b(?:block(?:s|ing)?|defend(?:s|ing)?|protect(?:s|ing)?|shield(?:s|ing)?|guard(?:s|ing)?|deflect(?:s|ing)?|parr(?:y|ies|ying)|shelter(?:s|ing)?)\b/,
+  strike: /\b(?:fight(?:s|ing)?|punch(?:es|ing)?|kick(?:s|ing)?|strike(?:s)?|striking|slash(?:es|ing)?|slap(?:s|ping)?|smash(?:es|ing)?|bash(?:es|ing)?|attack(?:s|ing)?|crush(?:es|ing)?)\b|(?<!\b(?:get|gets|getting|got|be|being|without|avoid|avoids|avoiding|not|never) )\bhit(?:s|ting)?\b(?! by\b)|\b(?:bit(?:e|es|ing)|peck(?:s|ing)?|sting(?:s|ing)?|pinch(?:es|ing)?|swat(?:s|ting)?|chop(?:s|ping)?|stab(?:s|bing)?|whack(?:s|ing)?|smack(?:s|ing)?|thump(?:s|ing)?|pummel(?:s|ing|ling)?|tackl(?:e|es|ing)|ram(?:s|ming)?|headbutt(?:s|ing)?|shov(?:e|es|ing))\b/,
+  // P52 T3: „darts between“, „veers around“ – sloveso s předložkou; holé „darts“ jsou šipky.
+  dash: /\b(?:dash(?:es|ing)?|dodg(?:e|es|ing)|duck(?:s|ing)?|evad(?:e|es|ing)|swerv(?:e|es|ing)|sidestep(?:s|ping)?)\b|\bzip(?:s|ping)? (?:past|around|between|through)\b|\bweav(?:e|es|ing) (?:through|between|around|past)\b|\b(?:leap|leaps|leaping|jump|jumps|jumping|dart|darts|darting) aside\b|\b(?:dart(?:s|ing)?|veer(?:s|ing)?) (?:past|around|between|through|away|aside|across|under|off)\b|\bescap(?:e|es|ing) quickly\b/,
+  // P52 T3: štít, který hrdina zvedne („raises a force field“, „holding up a shield“).
+  shield: /\b(?:block(?:s|ing)?|defend(?:s|ing)?|protect(?:s|ing)?|shield(?:s|ing)?|guard(?:s|ing)?|deflect(?:s|ing)?|parr(?:y|ies|ying)|shelter(?:s|ing)?)\b|\b(?:rais(?:e|es|ing)|lift(?:s|ing)?|hold(?:s|ing)? up|put(?:s|ting)? up) (?:a |an |the |his |her |its |their )?(?:[a-z]+ )?(?:shield|force field|barrier)\b/,
   grab: /\b(?:steal(?:s|ing)?|stole|grab(?:s|bing)?|snatch(?:es|ing)?|swip(?:e|es|ing)|loot(?:s|ing)?|rob(?:s|bing)?|pickpocket(?:s|ing)?|nab(?:s|bing)?|pilfer(?:s|ing)?)\b/,
 };
 
@@ -315,7 +317,7 @@ function wordOf(id: AbilityId, said: string): AbilityWord | undefined {
  */
 const LINKERS = new Set([',', 'and', 'or', 'then', 'to', 'can', 'will', 'must', 'also', 'just', 'still', 'even', 'always', 'who', 'that', 'he', 'she', 'it', 'they', 'you', 'i', 'we', 'by']);
 /** Spojky, za kterými přichází nový podmět; hrdinovi patří jen tvar na -ing („while dodging“). */
-const SUBORDINATORS = new Set(['while', 'as', 'when', 'whenever', 'until', 'before', 'after', 'because']);
+const SUBORDINATORS = CLAUSE_SUBORDINATORS;
 /** Předložka místa za slovesem hrdiny: „runs through the city dodging“ – tvar na -ing dál patří hrdinovi. */
 const PLACE_PREPOSITIONS = new Set(['through', 'across', 'along', 'around', 'in', 'into', 'on', 'onto', 'over', 'under', 'down', 'up', 'past', 'inside', 'near', 'at', 'from']);
 /** Odmítnutí, které `negationScopes` nečte: „refuses to shoot“. */
@@ -338,11 +340,14 @@ function heroDoes(text: string, at: number, end: number, hero: ReadonlySet<strin
   if (prev === undefined) return false;
   if (SUBORDINATORS.has(prev)) return /ing\b/.test(text.slice(at, end));
   if (LINKERS.has(prev)) return true;
-  // Místo s předložkou a jednotným číslem: „through the city dodging“ (tvar na -ing) a hrdina s místem před slovesem
-  // na -s („a thief on a skateboard grabs“). „past the cars blocking“ ne: množné číslo je podmět, místo ne.
-  const [subject, preposition, article] = before.slice(-4, -1);
   const said = text.slice(at, end).split(' ')[0]!;
-  const place = PLACE_PREPOSITIONS.has(preposition!) && (article === 'the' || article === 'a') && singular(prev) === prev;
+  if (shootsAtTheHero(text, at, said, before)) return false;
+  // Místo s předložkou a jednotným číslem: „through the city dodging“ (tvar na -ing) a hrdina s místem před slovesem
+  // na -s („a thief on a skateboard grabs“). „past the cars blocking“ ne: množné číslo je podmět, místo ne –
+  // kromě štítu, který někdo zvedá („across the rooftops holding up a shield“, P52 T3).
+  const [subject, preposition, article] = before.slice(-4, -1);
+  const held = id === 'shield' && /^(?:holding|raising|lifting|putting)$/.test(said);
+  const place = PLACE_PREPOSITIONS.has(preposition!) && (article === 'the' || article === 'a') && (singular(prev) === prev || held);
   if (place && (/ing$/.test(said) || (hero.has(subject!) && /s$/.test(said)))) return true;
   if (!hero.has(prev) && !hero.has(singular(prev))) return false;
   // Po jednotném čísle má sloveso -s: „a photo shoot“ je podstatné jméno, „a fox shoots“ sloveso.
@@ -441,14 +446,19 @@ const MOVE_AND_VERB = /\b(jump|hop|run)\w*(?: \w+){0,5} and (?:shoot|collect|gra
 /** Ovládání ze slov (níž) a doplňky, které jeho tabulka schopností bere. */
 export type ControlPick = ControlChoice & { readonly addons?: readonly AddonId[]; readonly abilities?: readonly AbilityId[] };
 
+/** Doplněk střelby: aspoň jedno „shoot/blast“ věty nepatří nepříteli (`enemyDoes`, P52 T3). */
+const heroMayShoot = (text: string, hero: string | null): boolean =>
+  [...text.matchAll(new RegExp(ADDON_CUES.shoot.source, 'g'))].some((match) => !enemyDoes(text, match.index, hero));
+
 /** `text` je věta malými písmeny. Klíče `addons` a `abilities` jen když je věta řekla. */
 export function pickControl(text: string): ControlPick | null {
   const pair = MOVE_AND_VERB.exec(text);
   const choice = pickBase(text, pair !== null) ?? (pair === null ? null : moveOf(pair[1] ?? pair[2] ?? 'jump', text));
   if (choice === null) return null;
   const allowed = CAPABILITIES[choice.control].addons;
-  const addons = ADDONS.filter((addon) => allowed.includes(addon) && ADDON_CUES[addon].test(text));
-  const abilities = abilitiesFor(text, choice.control);
+  const intent = extractIntent(text);
+  const addons = ADDONS.filter((addon) => allowed.includes(addon) && (addon === 'shoot' ? heroMayShoot(text, intent.hero) : ADDON_CUES[addon].test(text)));
+  const abilities = abilitiesOfControl(saidAbilities(text, intent), choice.control);
   return { ...choice, ...(addons.length === 0 ? {} : { addons }), ...(abilities.length === 0 ? {} : { abilities }) };
 }
 

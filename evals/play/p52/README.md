@@ -33,6 +33,16 @@ Robot `intermediate`, semínko 1, kompilátor `genre.v5`. Podíly nad větami, k
 - p95 návrhu je čas stroje a v době měření běžely souběžně jiné relace; P47B naměřil 1,7 s. Brána ≤ 2 s se posoudí v T11 na klidném stroji.
 - Hratelné všechny hry ve všech třech sadách.
 
+## T3 – slovník a past sloves nepřítele
+
+Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDoes`), sloveso záměru v `src/play/intent/extract.ts`; T3 mění oba.
+
+- **Nová slovesa** (minutá na dev sadě P52): „darts/veers + předložka“ → dash (d29, d30), „smacks“ (+ „thumps“, „pummels“) → strike (d02), zvednutý štít „raises a force field“, „holding up a shield“ → shield (d22, d28).
+- **Past nepřítele** (`enemyDoes` v `extract.ts`): sloveso střelby nebo úderu ve vedlejší větě s jiným podmětem („as hunters shoot“, „as cannons blast“) nebo holý množný podmět, který střílí na hrdinu („enemy turrets fire at a little robot crossing…“, „guards shoot at you“, „hawks grab at a field mouse running…“). Záměr takové sloveso nepočítá jako akci hrdiny (jen `shoot`/`fight`/`kick`, „until the door unlocks“ zůstává) a doplněk střelby ho nečte.
+- **Gauge po T3:** P52 dev 0,24 / 0,35 / 0,32, past **0** (dřív 0,5); P47B dev 0,70 / 0,76 / 0,74 a P46A 1 / 1 / 0,89 beze změny. Věty T3 (d02, d28, d29, d30 – bránil jim jen slovník) mají `hasAction` 4/4; d22 slyší štít, ale střílečka štít nebere (T7).
+- **Zbývá:** d35 („enemy turrets fire at a little robot…“) staví střílečku – hrdina střílí, protože je to mechanika žánru, ne akce ze slovesa; gauge ji jako past nepočítá. d25 („…and the captain grabs the treasure map“) – kapitán není hrdina věty, nechává se na T8.
+- Uložené hry: spec nese akce i doplňky, slovník čte jen nový návrh – replay brána, `golden.test.ts` a `p51-stored-v4.test.ts` zelené.
+
 ## Rozhodnutí
 
 - T1: větev P51 na origin není (`git ls-remote` bez ní); sloučena lokální `features/P51-…`, která `origin/main` už obsahuje – fast-forward bez merge commitu.
