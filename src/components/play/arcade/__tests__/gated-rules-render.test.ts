@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { ArcadeWorld, PieceRef } from '@/play/arcade/contract';
 import { actionsOf } from '../ActionButton';
-import { collectNeed, countsAmmo, limitOf, survives } from '../ArcadePlay';
+import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
+import { compileRecipe } from '@/play/compose/compile';
+import { collectNeed, countsAmmo, limitOf, scoreUnit, survives } from '../ArcadePlay';
 import { glideShoots } from '../glide/glide-input';
 import { enterOpensLiveBox } from '../LiveBox';
 import { questVerbOf } from '../quest/verbFx';
@@ -48,5 +50,17 @@ describe('render and HUD see gated native rules', () => {
   it('the quest verb and the use button find a gated interact', () => {
     expect(questVerbOf(composed)?.states).toBe(2);
     expect(actionsOf(composed)).toContain('use');
+  });
+});
+
+describe('result unit of a catch game', () => {
+  // P51 T4a: body nové hry chytání jsou mince tepu; uložená hra bez značky `segments` počítá snědené jako dřív.
+  it('a new catch game counts coins, a stored one counts what was eaten', () => {
+    const spec = compileRecipe(assemblyOfCell(liveCells().find((cell) => cell.id === 'roam.catch')!));
+    const { tuning, ...params } = spec.controlParams as { tuning: Record<string, unknown> };
+    const { segments, ...stored } = tuning;
+    expect(segments).toBe(true);
+    expect(scoreUnit(spec)).toBe('coins');
+    expect(scoreUnit({ ...spec, controlParams: { ...params, tuning: stored } as typeof spec.controlParams })).toBe('eaten');
   });
 });

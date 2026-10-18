@@ -73,14 +73,20 @@ if (typeof window !== 'undefined') void import('./ArcadeStage');
 /** Střelba a hod nemají trať: místo metrů ukazují zbývající rány. */
 const aiming = (spec: GameSpecV1): boolean => spec.control === 'shooter' || spec.control === 'throw' || spec.control === 'ball';
 
+/** Mince tepu sbírá jen nová hra chytání (značka `tuning.segments`, `catchSpec`); uložená počítá snědené jako dřív. */
+const catchCoins = (spec: GameSpecV1): boolean => {
+  const params = spec.controlParams as { readonly generator?: string; readonly tuning?: { readonly segments?: boolean } } | undefined;
+  return params?.generator === 'arena_catch' && params.tuning?.segments === true;
+};
+
 /**
  * Co hra počítá: se `scoring` (P36A T5) body s kombem a bonusem za výhru, ne kusy;
- * jinak mince u běžce a plošinovky, turba v závodě, snědené v aréně, jinak body.
+ * jinak mince u běžce, plošinovky a nového chytání (P51 T4a, mince tepu), turba v závodě, snědené v aréně, jinak body.
  */
-const scoreUnit = (spec: GameSpecV1): string =>
+export const scoreUnit = (spec: GameSpecV1): string =>
   spec.scoring !== undefined
     ? 'points'
-    : spec.control === 'runner' || spec.control === 'platform' || (spec.controlParams as { readonly generator?: string } | undefined)?.generator === 'arena_catch'
+    : spec.control === 'runner' || spec.control === 'platform' || catchCoins(spec)
       ? 'coins'
       : spec.control === 'steer'
         ? 'turbos'

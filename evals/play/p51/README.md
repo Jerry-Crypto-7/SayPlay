@@ -196,6 +196,18 @@ Banner P47A (`PacingBanner`, štítek kitu `sp-world-tag`) teď ohlásí každé
 - **Chodec s fázemi a závislostmi (nález 2):** změřeno 12 semínek, `paceBudgetPct: 100`, rychlost 80/110/160 – nová hra vyhraje 12/12 (nejmenší náskok 86 tiků). Klíče leží na cestě ke starému rohu, ale objížďku kryje rezerva hodin a zaokrouhlení na celé sekundy, takže kód se nemění; pin v `p51-walker-glide.test.ts`. Mutant „klíče u starého rohu“ ho shodí (7/12).
 - **Krátké a rychlé klouzání (nález 3):** bez změny neměla finále trať 80–250 m při 180 ani 300–400 m při 240. Navržené zkrácení tunelu nestačí: na 160 m (běh 15 s) by v posledních 10 s muselo ležet 99 % kruhů. Nová hra teď má tunel úměrný rychlosti, úvodní kruhy aspoň 2,5× řidší než tunel a trať aspoň tak dlouhou, aby podmínka telemetrie platila s rezervou 10 % (`glideFinaleMinM`: 120 → 172 m, 180 → 288 m, 240 → 400 m). Všechny zkoušené kombinace délky 80–400 m a rychlosti 120–240: `climax`. Výchozí nová hra (300 m, 180) staví týž svět. Mutace 4/5 červené; přežila „hodiny chodce bez rezervy“ (viz výš, rezerva je pro jiskry tepu T7).
 
+## T10 – regrese po P51
+
+Celá sada (18. 10.): 14625/14655, 27 červených v 9 souborech. Opravené (všechny jsou piny světa *nové* hry, které P51 vědomě mění; uložené hry beze změny):
+- `evals/play/p41/golden/genres.json` + `replays.json` přezmrazené generátorem (`-t genres`, `stored.json` nedotčený): mění se jen otisk světa a brána publikace ve 13 skupinách (běžec, skákačka, arény, quest, střílečka, hod, načasování, duel); žádný spec ani `readGameSpec`, všechny výsledky přehrání stejné (`won→won`, `lost→lost`). Tím zelený i `bot-profiles` (čte tytéž soubory).
+- `field-segments`: běžec, útěk po trati a skákačka pinují uloženou `genre.v4` – staví přesně staré otisky.
+- `finale-gauge`: hra s díly P42 má od T5 průběh; důvod `assembly` ukazuje uložená v4.
+- `ball-difficulty`: HUD čte `time_limit` nové hry (15 s + `ballFinaleSeconds` = 33 s), nečinný hráč prohraje v tiku 1981 – termín platí, test pinoval 15 s.
+- `bodies`: počítadlo tepu trati běžce (T7) se nekreslí – správně, test ho doplnil.
+- Nález revize T5c-1 č. 5: uložená hra chytání ukazovala „0 coins“ místo „0 eaten“ (`ArcadePlay.tsx` `scoreUnit`); teď mince jen u nové hry (`tuning.segments`), pin v `gated-rules-render.test.ts`.
+
+Zbývá: 4 piny P47B ve složce `src/play/arcade/abilities/__tests__/` (viz „Rozhodnutí“) a `submission-check` (ENOENT `plans/P8-odevzdani.md`, worktree). Build a e2e zatím neběžely.
+
 ## Rozhodnutí
 
 - **T2 – verze u žánrů bez `genre`:** chodec, klouzání, míč a chytání staví `nativeSpec` bez pole `genre`, takže `genreAtLeast(spec, FINALE5_GENRE_VERSION)` pro ně nikdy neplatí. Nová hra těchto žánrů proto dostane značku nové hry v parametrech generátoru, jako řízení v P46B (`pacedNative`, `segments: true`); uložený spec bez značky staví týž svět (`p51-stored-v4.test.ts`).
@@ -226,4 +238,5 @@ Banner P47A (`PacingBanner`, štítek kitu `sp-world-tag`) teď ohlásí každé
 - **T5b – krátkou trať klouzání nová hra prodlouží:** režisér smí chtít 80 m, ale běh pod ~25 s nemůže mít konec, který telemetrie uzná. Přednost má finále; žádost o krátkou trať se splní nejkratší tratí, která ho ještě má.
 - **T9 – chodec a klouzání nehlásí „Final sprint!“:** jejich finále je místo (stezka k východu, tunel kruhů), ne zrychlení; nápis říká, kam jít.
 - **T5c – začátečník nové hry načasování smí v náhlé smrti prohrát hodinami:** uložený pin „nikdy neprohraje v náhlé smrti“ na nové hře neplatí (4 z 8 semínek, 3 buňky), ale ani jednou minutím – všechny prohry jsou 34 s pravidla `time_limit` v tiku 2040, robot okno rychlých kol trefí každým ťukem. Finále se nemění: hodiny jsou to, co drží začátečníka v pásmu 0,3–0,7; nový pin hlídá, že náhlá smrt minutím nezabíjí.
+- **T10 – čtyři piny P47B nechané červené:** `assembly-harm` (2) a `fight-guard` (2) pinují otisk světa nové hry z věty; uložená `genre.v4` staví přesně jejich otisk (`3eaf0928…`, `327f61dd…`, `ef1c82ae…`), mění se jen `genre.v5`. Leží ve `src/play/arcade/abilities/**`, kam P51 podle hranice s P52 nesmí – přeotiskne je P52 při slučování této větve.
 - **T5c – sonda svědka vybírá tělo jen v rámci role:** globální řazení vazeb z T5 posunulo i pořadí rolí (a tedy sond a svědků). Na žádné živé buňce to pořadí neměnilo (změřeno nad všemi), týkalo by se jen her s díly; teď se volí první tělo přítomné od startu v rámci role a role jdou v pořadí vazeb jako před T5.
