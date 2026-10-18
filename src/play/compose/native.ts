@@ -1,7 +1,7 @@
 import type { CastRole, GenreSpec } from '../genre/contract';
 import type { GameRole, GameSpecV1 } from '../spec';
 import { UNIT } from '../arcade/contract';
-import { GLIDE_FINALE, glideRingZs } from '../arcade/pieces/glide';
+import { GLIDE_FINALE, glideFinaleMinM, glideRingZs } from '../arcade/pieces/glide';
 import { WALKER_BEAT } from '../arcade/pieces/walker';
 import { recipeSchema, type Recipe } from './recipe';
 import { withAuthoredContent } from './content';
@@ -36,8 +36,9 @@ export function nativeSpec(recipe: Recipe, content: GenreSpec, paced = true): Ga
       recipe.threats.some(threat => !['rival', 'chaser', 'obstacle'].includes(threat)) ||
       recipe.threats.includes('rival') && recipe.objective !== 'race' || recipe.threats.includes('chaser') && recipe.objective !== 'escape') return unsupported();
     const shoot = recipe.actions.includes('shoot');
-    const lengthM = bounded(params.lengthM, paced ? GLIDE_FINALE.lengthM : 160, 80, 400);
     const topSpeed = bounded(params.topSpeed, 180, 120, 240);
+    // Nová hra: kratší trať (i z odpovědi režiséra) by neměla konec, který telemetrie uzná (`glideFinaleMinM`, T5b).
+    const lengthM = Math.max(paced ? glideFinaleMinM(topSpeed) : 0, bounded(params.lengthM, paced ? GLIDE_FINALE.lengthM : 160, 80, 400));
     const rings = glideRingZs(lengthM * UNIT, paced, topSpeed).length;
     roles.push(role('glide_ring', 'collectible', label('collect', 'ring'), rings), role('glide_reef', 'hazard', label('avoid', 'reef')),
       role('glide_current', 'zone', 'current'), role('finish', 'exit', label('reach', 'finish')));

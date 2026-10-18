@@ -23,7 +23,7 @@ import { BALL_FINALE } from './ball';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef, type BehaviourSpace, behaviourBodies, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, seenByBase, stepBehaviours } from './behaviours';
 import { DUEL_FOE, duelControl, enragedAfter } from './duel';
 import { FIGHT } from './fight';
-import { glideTunnelZ } from './glide';
+import { GLIDE, glideTunnelZ } from './glide';
 // Cykly `throw.ts` a `segments.ts` ↔ tenhle modul jsou bezpečné: ani jeden nečte hodnoty druhého při načtení, jen ve funkcích.
 import { type SegmentGenre, segmentScriptOf, segmentSpans } from './segments';
 import { type SteerCourse, steerSegments } from './steer';
@@ -1045,8 +1045,9 @@ function nativeFinaleOf(world: BeatWorld, finale: (typeof FINALES)[number]): Bea
       },
     };
   }
-  if (finale === 'sprint' && controlIn(world.control, 'glide') !== undefined) {
-    const tunnel = glideTunnelZ(world.length);
+  const glide = controlIn(world.control, 'glide');
+  if (finale === 'sprint' && glide !== undefined) {
+    const tunnel = glideTunnelZ(world.length, Number(glide.params.topSpeed ?? GLIDE.speed));
     return { beat: 'rings', on: (state) => playerZ(state) >= tunnel };
   }
   if (finale !== 'round') return undefined;

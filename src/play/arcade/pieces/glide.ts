@@ -21,21 +21,46 @@ export type GlideCourseParams = z.infer<typeof glideCourseParams>;
  * kruhů po `spacing` s posunem nejvýš `shift` – zhoustlý konec, který telemetrie uzná jako `climax`. Rychlejší
  * let má kruhy tunelu dál, aspoň `ticks` tiků nejvyšší rychlosti: reakce 8 + rozjezd a brzda bočního řízení 24
  * + posun s rezervou 600 proti proudu (11) + 1 – jinak kontrola dosahu (`checkGlideLevel`) hru shodí.
- * Nová hra má výchozí trať `lengthM` (≈ 28 s): na 160 m (15 s) by posledních 10 s byly dvě třetiny běhu
- * a 1,5× hustší konec by nešel.
+ * Nová hra má výchozí trať `lengthM` (≈ 28 s).
+ *
+ * Parametry režiséra (T5b, délka 80–400 m, rychlost 120–240): konec je 1,5× hustší jen když tunel trvá zhruba okno
+ * telemetrie (600 tiků), je aspoň `density`× hustší než úvod a okno je nejvýš ~44 % běhu. Tunel proto trvá
+ * stejně jako `stretch` při `GLIDE.speed` (≈ 611 tiků), úvod má kruhy aspoň `density` rozestupů tunelu (při 180
+ * a pomaleji `GLIDE.spacing`) a trať nové hry je aspoň tak dlouhá, aby podmínka telemetrie platila s rezervou
+ * `margin` (`glideFinaleMinM`; `window` a `factor` = `CLIMAX_TICKS`, `CLIMAX_FACTOR` telemetrie, pin v testu).
+ * Při 180 tak výchozí trať staví týž svět. Změřeno (4 semínka, intermediate): bez toho 80–250 m při 180
+ * a 300–400 m při 240 bez finále; mez při 180 leží mezi 250 m (1407 tiků) a 255 m (1434 tiků).
  */
-export const GLIDE_FINALE = { stretch: 110 * UNIT, spacing: 8 * UNIT, ticks: 44, shift: 500, lengthM: 300 } as const;
+export const GLIDE_FINALE = { stretch: 110 * UNIT, spacing: 8 * UNIT, ticks: 44, shift: 500, lengthM: 300, density: 2.5, window: 600, factor: 1.5, margin: 1.1 } as const;
 
-/** Začátek tunelu finále (z) na trati délky `length`: `GLIDE_FINALE.stretch` před posledním kruhem (8 m před cílem). */
-export const glideTunnelZ = (length: number): number => length - 8000 - GLIDE_FINALE.stretch;
+/** Rozestup kruhů tunelu: `spacing`, při rychlém letu aspoň `ticks` tiků nejvyšší rychlosti. */
+const tunnelSpacing = (topSpeed: number): number => Math.max(GLIDE_FINALE.spacing, GLIDE_FINALE.ticks * topSpeed);
+
+/** Začátek tunelu finále (z): `stretch` při `GLIDE.speed`, úměrně nejvyšší rychlosti, před posledním kruhem (8 m před cílem). */
+export const glideTunnelZ = (length: number, topSpeed: number): number => length - 8000 - Math.round(GLIDE_FINALE.stretch * topSpeed / GLIDE.speed);
+
+/**
+ * Nejkratší trať nové hry (m) při nejvyšší rychlosti `topSpeed`, na které kruhy v posledních `window` tikách splní
+ * podmínku finále telemetrie s rezervou `margin`. Běh ≈ trať / nejvyšší rychlost (rozjezd ho jen prodlouží).
+ */
+export function glideFinaleMinM(topSpeed: number): number {
+  let lengthM = 80;
+  for (; lengthM < 400; lengthM++) {
+    const length = lengthM * UNIT, zs = glideRingZs(length, true, topSpeed);
+    const late = zs.filter((z) => z >= length - GLIDE_FINALE.window * topSpeed).length;
+    if (late * length / topSpeed >= GLIDE_FINALE.margin * GLIDE_FINALE.factor * GLIDE_FINALE.window * zs.length) break;
+  }
+  return lengthM;
+}
 
 /** Polohy kruhů (z): po `GLIDE.spacing` do konce trati bez 8 m, nová hra s tunelem finále na konci. */
 export function glideRingZs(length: number, segments: boolean | undefined, topSpeed: number): number[] {
   const last = length - 8000;
-  const tunnel = segments === true ? glideTunnelZ(length) : Infinity;
-  const tight = Math.max(GLIDE_FINALE.spacing, GLIDE_FINALE.ticks * topSpeed);
+  const tunnel = segments === true ? glideTunnelZ(length, topSpeed) : Infinity;
+  const tight = tunnelSpacing(topSpeed);
+  const spacing = segments === true ? Math.max(GLIDE.spacing, Math.round(GLIDE_FINALE.density * tight)) : GLIDE.spacing;
   const zs: number[] = [];
-  for (let at = GLIDE.spacing; at <= last; at += at >= tunnel ? tight : GLIDE.spacing) zs.push(at);
+  for (let at = GLIDE.spacing; at <= last; at += at >= tunnel ? tight : spacing) zs.push(at);
   return zs;
 }
 const clamp = (n: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, n));

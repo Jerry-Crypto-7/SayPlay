@@ -12,13 +12,14 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf, generatorOf } from '../compile';
 import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, type PieceRef, UNIT, bodyBase, underlyingRule } from '../contract';
-import { GLIDE, GLIDE_FINALE } from '../pieces/glide';
+import { GLIDE, GLIDE_FINALE, glideFinaleMinM } from '../pieces/glide';
 import { WALKER_FINALE } from '../pieces/walker';
 import { loadRapier } from '../physics/world';
-import { funMetrics, traceRun } from '../telemetry';
+import { CLIMAX_FACTOR, CLIMAX_TICKS, funMetrics, traceRun } from '../telemetry';
 import { runBot, verifyArcade } from '../verify';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
+import { nativeSpec } from '@/play/compose/native';
 import type { RecipeAssembly } from '@/play/compose/presets';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -119,5 +120,52 @@ describe('P51 T3: walker and glide games are paced to a finale', () => {
       for (const seed of SEEDS) expect(arcadeWorldOf(cellSpec(cell.id), seed).ok, `${cell.id} seed ${seed}`).toBe(true);
     }
     expect(UNIT).toBe(1000);
+  });
+});
+
+/**
+ * Parametry režiséra (T5b, nálezy 2 a 3 revize fáze 2). Chodec s fázemi a závislostmi má cíle na cestě ke starému
+ * rohu a hodiny jen na cestu k novému východu + rezervu – rezerva objížďku kryje (nejmenší náskok 86 tiků při
+ * rychlosti 160). Klouzání: délka 80–400 m a rychlost 120–240 – nová hra má trať aspoň `glideFinaleMinM`, tunel
+ * úměrný rychlosti a řidší úvod, takže konec telemetrie uzná i na krátké nebo rychlé trati.
+ */
+describe('P51 T5b: new walker and glide games keep their finale under director params', () => {
+  const walkSpec = (speed: number): GameSpecV1 => {
+    const base = nativeSpec({ move: 'walk', actions: [], objective: 'reach', threats: [] }, { genre: 'quest', mode: 'spatial', hero: 'fox', setting: 'maze', params: { paceBudgetPct: 100, speed } });
+    const roles = [...base.roles, { ...base.roles[0]!, id: 'key', kind: 'key' as const, label: 'key' }, { ...base.roles[0]!, id: 'gate', kind: 'door' as const, label: 'gate' }];
+    return { ...base, roles, phases: [{ start: 0, speedPercent: 100, add: [{ role: 'collectible', count: 1 }] }, { start: 500, speedPercent: 110, add: [{ role: 'obstacle', count: 1 }] }], dependsOn: [{ goal: 'key', prerequisites: [] }, { goal: 'gate', prerequisites: ['key'] }] };
+  };
+  for (const speed of [110, 160]) {
+    it(`a new walker with phases and dependencies at paceBudgetPct 100 and speed ${speed}: intermediate ≥ 0.8`, () => {
+      const spec = walkSpec(speed);
+      expect(spec.controlParams).toMatchObject({ segments: true, paceBudgetPct: 100 });
+      let won = 0;
+      for (const seed of SEEDS) if (runBot(worldOf(spec, seed), undefined, { profile: 'intermediate' }).outcome === 'won') won += 1;
+      expect(won / SEEDS.length).toBeGreaterThanOrEqual(0.8);
+    });
+  }
+
+  const glideSpec = (lengthM: number, topSpeed: number): GameSpecV1 =>
+    nativeSpec({ move: 'glide', actions: [], objective: 'reach', threats: [] }, { genre: 'voyage', mode: 'race', hero: 'fish', setting: 'coral reef', params: { lengthM, topSpeed, clearancePermille: 275, clearanceRisePermille: 10 } });
+  for (const [lengthM, topSpeed] of [[80, 120], [160, 180], [80, 240], [400, 240]] as const) {
+    it(`a new glide asked for ${lengthM} m at ${topSpeed}: the course is long enough and its wins end in a climax`, () => {
+      const spec = glideSpec(lengthM, topSpeed);
+      expect((spec.controlParams as { lengthM: number }).lengthM).toBe(Math.max(lengthM, glideFinaleMinM(topSpeed)));
+      for (const seed of [1, 2, 3]) {
+        const world = worldOf(spec, seed);
+        const bot = runBot(world, undefined, { profile: 'intermediate' });
+        expect(bot.outcome, `seed ${seed}`).toBe('won');
+        expect(funMetrics(traceRun(world, bot.inputs)).finale.why, `seed ${seed}`).toBe('climax');
+      }
+    });
+  }
+
+  it('the default new glide keeps its course, and the floor reads the telemetry climax rule', () => {
+    expect(glideFinaleMinM(GLIDE.speed)).toBeLessThanOrEqual(GLIDE_FINALE.lengthM);
+    expect((glideSpec(GLIDE_FINALE.lengthM, GLIDE.speed).controlParams as { lengthM: number }).lengthM).toBe(GLIDE_FINALE.lengthM);
+    expect(GLIDE_FINALE.window).toBe(CLIMAX_TICKS);
+    expect(GLIDE_FINALE.factor).toBe(CLIMAX_FACTOR);
+    // Tunel úměrný rychlosti: nejkratší trať trvá při každé rychlosti nejvýš o 10 % déle než při výchozí (pevný tunel: 120 → 284 m).
+    for (let speed = 120; speed <= 240; speed += 20) expect(glideFinaleMinM(speed) / speed, `speed ${speed}`).toBeLessThanOrEqual(1.1 * glideFinaleMinM(GLIDE.speed) / GLIDE.speed);
   });
 });
