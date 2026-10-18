@@ -160,26 +160,30 @@ export async function startServer({ port, upstream, slots, queue, root = ROOT })
   child.stdout.on('data', keep);
   child.stderr.on('data', keep);
   const base = `http://127.0.0.1:${String(port)}`;
+  const stop = async () => {
+    child.kill();
+    await new Promise((done) => (child.exitCode === null ? child.once('exit', done) : done()));
+    rmSync(store, { recursive: true, force: true });
+  };
   const started = Date.now();
   for (;;) {
-    if (child.exitCode !== null) throw new Error(`next start exited ${String(child.exitCode)}:\n${log.join('').slice(-2000)}`);
+    if (child.exitCode !== null) {
+      await stop();
+      throw new Error(`next start exited ${String(child.exitCode)}:\n${log.join('').slice(-2000)}`);
+    }
     try {
       if ((await fetch(`${base}/play`)).ok) break;
     } catch {
       // ještě neposlouchá
     }
-    if (Date.now() - started > 120_000) throw new Error('next start did not answer within 120 s');
+    // Bez zastavení by běžící server držel port i příkaz naživu.
+    if (Date.now() - started > 120_000) {
+      await stop();
+      throw new Error('next start did not answer within 120 s');
+    }
     await new Promise((next) => setTimeout(next, 1_000));
   }
-  return {
-    base,
-    log,
-    stop: async () => {
-      child.kill();
-      await new Promise((done) => (child.exitCode === null ? child.once('exit', done) : done()));
-      rmSync(store, { recursive: true, force: true });
-    },
-  };
+  return { base, log, stop };
 }
 
 const median = (values) => {
