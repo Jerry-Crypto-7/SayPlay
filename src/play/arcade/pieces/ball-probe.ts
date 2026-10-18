@@ -1,10 +1,12 @@
 /** Ordinary-input adversarial shot: aim at the physical keeper, not the goal. */
+import { baseControlOf } from '../addons';
 import { AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, bodyBase, type ArcadeInput, type ArcadeWorld } from '../contract';
 import { BALL, ballFlight, ballSpeed, type BallGoal } from './ball';
 
 export function ballKeeperProbeInput(world: ArcadeWorld, state: ArrayLike<number>, keeper: number, recent: readonly ArcadeInput[] = []): ArcadeInput {
   const k = bodyBase(keeper), p = bodyBase(state[HEADER.player]!);
-  if (world.control.id !== 'ball' || state[k + BODY.role] !== ROLE.enemy || !(state[k + BODY.flags]! & FLAG.alive) || state[HEADER.counters + COUNTER.cooldown]! > recent.length || recent.some(input => input.buttons & BUTTON.TAP)) return NO_INPUT;
+  // A paced game (P51, `pacing_control`) wraps the ball control; the probe asks for the control underneath.
+  if (baseControlOf(world.control).id !== 'ball' || state[k + BODY.role] !== ROLE.enemy || !(state[k + BODY.flags]! & FLAG.alive) || state[HEADER.counters + COUNTER.cooldown]! > recent.length || recent.some(input => input.buttons & BUTTON.TAP)) return NO_INPUT;
   const goal = world.rules.find(rule => rule.id === 'ball_launch')?.params.goal as BallGoal | undefined;
   if (goal !== 'goal' && goal !== 'hoop' && goal !== 'hole') return NO_INPUT;
   let chargeNow = Math.max(0, state[p + BODY.aux1]!);
