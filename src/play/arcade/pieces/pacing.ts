@@ -440,10 +440,12 @@ function heartbeatOf(state: Int32Array, player: number, pulse: NonNullable<Pacin
   const coins = coinsOf(state, pulse.template);
   const t = bodyBase(pulse.template);
   const p = bodyBase(player);
-  // Trať (běžec, P51 T7): místo vstupu je odstup před hráčem. Kolem hráče (chytání, P51 T4a): odstup na obou osách, v ploše.
+  // Trať (běžec, P51 T7): místo vstupu je odstup před hráčem. Kolem hráče (chytání, P51 T4a): odstup na obou osách, v ploše;
+  // odstup, který by vyjel z plochy, se zrcadlí na druhou stranu hráče – oříznutý by u zdi položil minci na hráče.
   const around = pulse.around;
+  const aside = (value: number, at: number): number => (Math.abs(at + value) > around! ? at - value : at + value);
   const spots = around !== undefined
-    ? places.map((value, index) => Math.max(-around, Math.min(around, value + (state[p + (index % 2 === 0 ? BODY.x : BODY.z)] as number))))
+    ? places.map((value, index) => Math.max(-around, Math.min(around, aside(value, state[p + (index % 2 === 0 ? BODY.x : BODY.z)] as number))))
     : space === 'track' ? places.map((value, index) => (index % 2 === 1 ? value + (state[p + BODY.z] as number) : value)) : places;
   // Čtverec vzdálenosti v celých číslech (za běhu žádná plovoucí čárka mimo přesný rozsah).
   const away = (body: number): number => ((state[bodyBase(body) + BODY.x] as number) - (state[p + BODY.x] as number)) ** 2 + ((state[bodyBase(body) + BODY.z] as number) - (state[p + BODY.z] as number)) ** 2;

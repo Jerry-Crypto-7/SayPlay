@@ -231,6 +231,29 @@ describe('P51 T4a: catch games get the field heartbeat', () => {
       alive = live;
     });
     expect(born, 'coins in the bot run').toBeGreaterThan(3);
+    // Hráč natlačený do rohu u zdi: oříznutý odstup by položil minci na hráče (bod zadarmo, falešná událost tepu).
+    const cornered = instantiate(world);
+    const corner = { axis: arenaAxis(1, 1), buttons: 0 };
+    let seen = new Set<number>();
+    let bornCornered = 0;
+    for (let tick = 0; tick < 20 * ARCADE_HZ; tick += 1) {
+      step(cornered, corner, program);
+      const p = bodyBase(cornered[HEADER.player] as number);
+      const live = new Set<number>();
+      for (let body = cornered[HEADER.spawnBase] as number; body < (cornered[HEADER.bodyCount] as number); body += 1) {
+        const at = bodyBase(body);
+        if (cornered[at + BODY.kind] !== coin || ((cornered[at + BODY.flags] as number) & FLAG.alive) === 0) continue;
+        live.add(body);
+        if (seen.has(body)) continue;
+        bornCornered += 1;
+        const apartX = Math.abs((cornered[at + BODY.x] as number) - (cornered[p + BODY.x] as number)) - ((cornered[at + BODY.w] as number) + (cornered[p + BODY.w] as number)) / 2;
+        const apartZ = Math.abs((cornered[at + BODY.z] as number) - (cornered[p + BODY.z] as number)) - ((cornered[at + BODY.d] as number) + (cornered[p + BODY.d] as number)) / 2;
+        expect(Math.max(apartX, apartZ), `coin ${body} clear of the cornered player`).toBeGreaterThan(0);
+      }
+      seen = live;
+    }
+    expect(bornCornered, 'coins while cornered').toBeGreaterThan(1);
+    expect(cornered[HEADER.counters + COUNTER.score], 'no free point while cornered').toBe(0);
   });
 
   // Chytání trvá 22–35 s už od T4 (intermediate chytí kořist potřetí dřív, než doběhnou hodiny) – tep hru nezkracuje.
