@@ -155,6 +155,22 @@ Přeměřeno všech 54 živých buněk × 20 semínek × začátečník/intermed
 - Brána obtížnosti: horní mez začátečníka se u buněk `ball.*` nehlídá (stejně jako v `p51-ball-catch-timing` od T4), dolní mez 0,3 a intermediate ≥ 0,8 dál platí. Mutace (záloha mimo repo, 2/2 červené): začátečník bez zpomalení reakce (`extraReactionTicks` 12 → 4) → brána červená na profilech; `walk.reach` začátečník 16/20 v datech → `walk.reach/novice` nad 0,7.
 - `e2e/offline-chain.spec.ts`, který plán jmenuje, v repu není – pevná čísla k porovnání nejsou.
 
+## T9 – oznámení nových finále ve scéně
+
+Banner P47A (`PacingBanner`, štítek kitu `sp-world-tag`) teď ohlásí každé nové finále. Co a kdy, čte `nativeFinaleOf` v `pieces/pacing.ts` ze světa – finále, které staví generátor, ne pravidlo `pacing`:
+
+| Žánr | Nápis | Kdy |
+|---|---|---|
+| chodec | „Exit ahead!“ | hráč na stezce jisker, posledních 8 polí cesty před východem |
+| klouzání | „Hit the rings!“ | hráč vjel do tunelu kruhů (`glideTunnelZ`) |
+| míč | „Boss: <jméno>“ | padl poslední terč a soupeř-boss žije |
+| chytání | „Catch it again!“ | kořist po prvním chycení utekla |
+| načasování, skládaná aréna, běžec | „Sudden death!“, „Boss: …“ | beze změny, hlásily už před T9 |
+
+- Pin `src/play/arcade/__tests__/p51-finale-news.test.ts` (w01, w02, g01, b02, b03, k02, k03 × semínka 1–2): nápis přijde jednou, před výhrou, v tiku změny ve světě; uložená hra bez značky nové hry nehlásí nic. Délku (≤ 15 znaků) a anglickou větu hlídá `pacing-banner.test.tsx`.
+- E2E `e2e/p51-finale-banner.spec.ts` (desktop a Pixel 7 s „méně pohybu“): věta w01 dveřmi návštěvníka, robot hraje v prohlížeči – „Exit ahead!“ v záběru ve 41,4 s, výhra ve 46,9 s, náběh `play-pacing-banner`, s „méně pohybu“ žádný; 0 chyb konzole. `e2e/interface-language.spec.ts` 3/3.
+- Barvy a pohyb beze změny: nápis bere styl i `prefers-reduced-motion` z existujícího CSS banneru (`play.css`), nový popisek do `HUD_COUNTER_LABELS` nevznikl (banner má vlastní `PACING_BANNER_LABELS`).
+
 ## Rozhodnutí
 
 - **T2 – verze u žánrů bez `genre`:** chodec, klouzání, míč a chytání staví `nativeSpec` bez pole `genre`, takže `genreAtLeast(spec, FINALE5_GENRE_VERSION)` pro ně nikdy neplatí. Nová hra těchto žánrů proto dostane značku nové hry v parametrech generátoru, jako řízení v P46B (`pacedNative`, `segments: true`); uložený spec bez značky staví týž svět (`p51-stored-v4.test.ts`).
@@ -179,3 +195,5 @@ Přeměřeno všech 54 živých buněk × 20 semínek × začátečník/intermed
 - **T7 – živá buňka `shooter.default` není v testu:** má jeden život a průběh nemá, mezera se tam podlahou nemění; test měří věty dev s01, s02 (střílečka s průběhem).
 - **T7 – rytmus se nemění:** cíl ≤ 4 s splňuje už `genre.v4` (dev 3,62 s) a nejdelší mezera je náběh před první notou; hustší začátek by změnil hudbu, ne mrtvý čas uprostřed hry.
 - **T8 – brána obtížnosti nehlídá horní mez začátečníka u míče:** pokračování rozhodnutí T4 – začátečník míče vyhraje 20/20 a pásmo 0,3–0,7 by držely jen hodiny desetiny sekundy nad během intermediate. Výjimka stojí v `difficulty.test.ts` vedle výjimky běžce se střelbou; míč je tím jediný žánr, kde začátečník může vyhrát vždy – kandidát na úpravu, až bude míč mít jiný rozdíl mezi profily než reakci.
+- **T9 – finále míče se hlásí jako „Boss: <jméno>“, ne „Last round!“:** pravidlo `pacing` míče má finále `round`, ale to, co hráč na konci opravdu potká, je soupeř-boss se 3 HP sám na hřišti; „Last round!“ by sliboval kolo, které hra nemá. Nápis přijde, až padne poslední terč – dřív by boss nebyl jediný, co zbývá.
+- **T9 – chodec a klouzání nehlásí „Final sprint!“:** jejich finále je místo (stezka k východu, tunel kruhů), ne zrychlení; nápis říká, kam jít.
