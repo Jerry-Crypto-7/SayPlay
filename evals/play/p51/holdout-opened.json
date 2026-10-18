@@ -1,0 +1,10 @@
+{
+ "schema": "p51-holdout-opened.v1",
+ "set": "evals/play/p51/holdout.json",
+ "sha256": "3b36fe64a2d7864245799f62bf91ce8a0423c45c7900c36efa640f03db321352",
+ "verifiedBeforeRead": true,
+ "openedAt": "2026-10-18T16:43:23Z",
+ "by": "P51 T11 (finale.measure.ts, P47A_SET=p51 P47A_HOLDOUT=1)",
+ "b": { "branch": "features/P51-finale-nepratele-mrtvy-cas-2026-10-17", "commit": "1b8204b9" },
+ "a": { "commit": "0618344a", "note": "T2: genre.v5 tag with nothing gated on it, world of origin/main 04700849 (baseline.json)" }
+}

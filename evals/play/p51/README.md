@@ -210,6 +210,10 @@ Zbývá: 4 piny P47B ve složce `src/play/arcade/abilities/__tests__/` (viz „R
 
 Po opravách (18. 10.): celá sada 14648/14656 – červených jen těch pět; replay brána je v ní celá. `npm run build` exit 0. E2E proti `next start` na 3291 (úložiště jen v paměti, `PLAY_STORE_DIR` na nezapisovatelné cestě, jak `play-share` čeká): `p35-perf` 17, `play-share` 5, `p36-dare` 4, `interface-language` 3 – 29/29 zelených. `e2e/offline-chain.spec.ts` v repu není (T8).
 
+## T11 – konečné měření (`final.json`, `final.md`)
+
+Holdout otevřený jednou 18. 10. (`holdout-opened.json`, otisk sedí). B proti A (svět `origin/main`) na 60 větách: finále 0,77 → **0,93** (cíl ≥ 0,8), medián chování 2 → 2,5 (≥ 2), mrtvý čas medián 3,22 → 2,5 s (≤ 3 s), stoupání 0,78 → 0,93 (≥ 0,7), hratelné 60/60. **Nesplněno:** žádný žánr nad 4 s – aréna boj 7,93 s (P51 ji neměnil, A = B) a míč 4,31 s (mezera narostla s novým finále). Bez finále zůstaly 4 věty: tři hry chodce a klouzání s díly P42 (rozhodnutí T3) a jedna věta bez hry. Párový slepý soud nad 19 větami panelu, které P51 mění: podíl B 0,66 (B 12, A 6, remíza 1); souboj a načasování soudce u B nevolil ani jednou.
+
 ## Rozhodnutí
 
 - **T2 – verze u žánrů bez `genre`:** chodec, klouzání, míč a chytání staví `nativeSpec` bez pole `genre`, takže `genreAtLeast(spec, FINALE5_GENRE_VERSION)` pro ně nikdy neplatí. Nová hra těchto žánrů proto dostane značku nové hry v parametrech generátoru, jako řízení v P46B (`pacedNative`, `segments: true`); uložený spec bez značky staví týž svět (`p51-stored-v4.test.ts`).
@@ -241,4 +245,6 @@ Po opravách (18. 10.): celá sada 14648/14656 – červených jen těch pět; r
 - **T9 – chodec a klouzání nehlásí „Final sprint!“:** jejich finále je místo (stezka k východu, tunel kruhů), ne zrychlení; nápis říká, kam jít.
 - **T5c – začátečník nové hry načasování smí v náhlé smrti prohrát hodinami:** uložený pin „nikdy neprohraje v náhlé smrti“ na nové hře neplatí (4 z 8 semínek, 3 buňky), ale ani jednou minutím – všechny prohry jsou 34 s pravidla `time_limit` v tiku 2040, robot okno rychlých kol trefí každým ťukem. Finále se nemění: hodiny jsou to, co drží začátečníka v pásmu 0,3–0,7; nový pin hlídá, že náhlá smrt minutím nezabíjí.
 - **T10 – čtyři piny P47B nechané červené:** `assembly-harm` (2) a `fight-guard` (2) pinují otisk světa nové hry z věty; uložená `genre.v4` staví přesně jejich otisk (`3eaf0928…`, `327f61dd…`, `ef1c82ae…`), mění se jen `genre.v5`. Leží ve `src/play/arcade/abilities/**`, kam P51 podle hranice s P52 nesmí – přeotiskne je P52 při slučování této větve.
+- **T11 – A je commit T2 `0618344a`, ne dnešní `origin/main`:** `origin/main` mezitím dostal P50 a P53 (`9aa10350`), takže soud proti němu by srovnával i jejich změny. Commit T2 má svět `04700849` (značka `genre.v5`, na kterou nic nečeká, `baseline.json`) a už i sadu P51 pro měřidlo – A i B jdou týmž měřidlem nad týmž holdoutem.
+- **T11 – párový soud jen nad větami, které P51 mění:** 19 vět panelu, kde se řádek měřidla mezi A a B liší; u zbylých 21 je výsledek měřidla týž. Z denního stropu 50 volání Codexu bylo 21 pryč, celý panel (40) by se nevešel.
 - **T5c – sonda svědka vybírá tělo jen v rámci role:** globální řazení vazeb z T5 posunulo i pořadí rolí (a tedy sond a svědků). Na žádné živé buňce to pořadí neměnilo (změřeno nad všemi), týkalo by se jen her s díly; teď se volí první tělo přítomné od startu v rámci role a role jdou v pořadí vazeb jako před T5.
