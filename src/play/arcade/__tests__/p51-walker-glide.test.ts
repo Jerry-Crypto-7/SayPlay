@@ -63,7 +63,8 @@ describe('P51 T3: walker and glide games are paced to a finale', () => {
       const stored = worldOf(storedOf(spec));
       expect(ruleOf(stored, 'pacing')).toBeUndefined();
       if (cell.id.startsWith('walk.')) {
-        expect(kindsOf(world, 'spark')).toBe(WALKER_FINALE.trail);
+        // Od P51 T7 leží navíc jiskra tepu na každém `beatCells`-tém poli cesty; přesné rozložení (stezka + tep) hlídá `p51-dead-time`.
+        expect(kindsOf(world, 'spark')).toBeGreaterThan(WALKER_FINALE.trail);
         expect(kindsOf(stored, 'spark')).toBe(0);
       } else {
         // Tunel: poslední kruhy po `GLIDE_FINALE.spacing`, bez značky všude `GLIDE.spacing`.
