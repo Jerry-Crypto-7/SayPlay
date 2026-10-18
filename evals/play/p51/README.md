@@ -136,6 +136,25 @@ Nejdelší mezera bez události (`longestGapS`, medián), proti `t6.json`:
 - Brány: `p51-dead-time` 23/23 (7 buněk chodce, 5 běžce, s01/s02 střílečky × 12 semínek: mezera medián ≤ 4 s a žádná nad 6 s, hra 30–90 s, `idle` nevyhraje, replay týž, intermediate ≥ 0,8 s finále, novice 0,3–0,7 u chodce a ≥ 0,3 u běžce a střílečky; uložená hra staví týž svět), replay brána, `p51-stored-v4` a `runner-boss` 117/117, `tsc` čistý.
 - Mutace (záloha mimo repo, 5/5 červené): bez jisker tepu chodce → 14 testů chodce (mezera 31–46 s); bez `RUNNER_PULSE` → 5 testů běžce (mezera 5,7 s); `densityFloor` 0 → s01, s02 (6,2 s); `WALKER_BEAT.slack` 0 → novice chodce 0/12 v 7 buňkách; bludiště 11 × 11 → hra 20–24 s v 7 buňkách. Strukturální test „velké bludiště“ při 11 × 11 neselže (čte tutéž konstantu) – menší bludiště chytí délka hry.
 
+## T8 – obtížnost po P51 (`evals/play/p41/difficulty.json`)
+
+Přeměřeno všech 54 živých buněk × 20 semínek × začátečník/intermediate (`difficulty.measure.ts`); posunulo se 17 řádků, proti stavu zapsanému v T3 (`728c8933`):
+
+| Buňka | Otisk specu | Začátečník | Intermediate | Proč |
+|---|---|---|---|---|
+| `roam.catch` | změněný | 14 → 8/20 | 19 → 20/20 | T4: kořist na tři chycení, hodiny 430 % `catchSeconds` |
+| `timing.stack`, `timing.precision`, `timing.bridge` | týž | 12 → 7/20 | 20/20 | T4: posledních 20 kol rychlostí 100 (`TIMING_FINALE`) |
+| `ball.defeat`, `ball.score`, `ball.score+rival` | změněný | 14 → **20/20** | 20/20 (`ball.score` 19 → 20) | T4: soupeř-boss za terči a hodiny na 4 střely navíc (`ballFinaleSeconds`) – začátečník nad pásmem, viz „Rozhodnutí“ |
+| `throw.default` | týž | 11 → 7/20 | 20/20 | T6: čtyři útočníci v posledních dvou kolech, o kolo míň |
+| `duel.default` | týž | 8 → 10/20 | 20/20 | T6: hozená věc každý třetí útok, hra delší (48,7–53,4 s místo 41–46 s) |
+| `quest.station` | týž | 13 → 12/20 | 20/20 | T6: dva vrhači se spěchem |
+| sedm buněk `walk.*` | změněný | 10/20 | 20/20 | T7: bludiště 15 × 15 nové hry; jiskry tepu a rezerva hodin drží začátečníka na polovině |
+
+- Žádný řádek nemá chybu stavby ani rozdílné přehrání; všechny buňky mají intermediate ≥ 0,8 a začátečník ≥ 0,3. Běžec, střílečka, arény a ostatní žánry beze změny: tep běžce robot nevidí (`withoutCoins`), `shooter.default` průběh nemá.
+- **Šest řádků bylo zastaralých se stejným otiskem** (`timing.*`, `throw.default`, `duel.default`, `quest.station`): spec je týž, mění se svět za branou `genre.v5`. Brána `src/play/compose/__tests__/difficulty.test.ts` porovnává jen otisk specu, takže změnu světa za verzí nevidí – našlo je až přeměření. Oprava (otisk postaveného světa semínka 1 v měření i bráně) zapsaná jako přetečení směrování v commitu T8.
+- Brána obtížnosti: horní mez začátečníka se u buněk `ball.*` nehlídá (stejně jako v `p51-ball-catch-timing` od T4), dolní mez 0,3 a intermediate ≥ 0,8 dál platí. Mutace (záloha mimo repo, 2/2 červené): začátečník bez zpomalení reakce (`extraReactionTicks` 12 → 4) → brána červená na profilech; `walk.reach` začátečník 16/20 v datech → `walk.reach/novice` nad 0,7.
+- `e2e/offline-chain.spec.ts`, který plán jmenuje, v repu není – pevná čísla k porovnání nejsou.
+
 ## Rozhodnutí
 
 - **T2 – verze u žánrů bez `genre`:** chodec, klouzání, míč a chytání staví `nativeSpec` bez pole `genre`, takže `genreAtLeast(spec, FINALE5_GENRE_VERSION)` pro ně nikdy neplatí. Nová hra těchto žánrů proto dostane značku nové hry v parametrech generátoru, jako řízení v P46B (`pacedNative`, `segments: true`); uložený spec bez značky staví týž svět (`p51-stored-v4.test.ts`).
@@ -159,3 +178,4 @@ Nejdelší mezera bez události (`longestGapS`, medián), proti `t6.json`:
 - **T7 – podlaha hustoty střílečky 1150:** nejnižší změřená, při které je nejdelší mezera na všech 12 semíncích obou vět pod 4 s (1000 → nejvýš 4,68 s, 1100 → 4,05 s); vrchol a finále (1300, 1500) zůstávají hustší, takže stoupání drží.
 - **T7 – živá buňka `shooter.default` není v testu:** má jeden život a průběh nemá, mezera se tam podlahou nemění; test měří věty dev s01, s02 (střílečka s průběhem).
 - **T7 – rytmus se nemění:** cíl ≤ 4 s splňuje už `genre.v4` (dev 3,62 s) a nejdelší mezera je náběh před první notou; hustší začátek by změnil hudbu, ne mrtvý čas uprostřed hry.
+- **T8 – brána obtížnosti nehlídá horní mez začátečníka u míče:** pokračování rozhodnutí T4 – začátečník míče vyhraje 20/20 a pásmo 0,3–0,7 by držely jen hodiny desetiny sekundy nad během intermediate. Výjimka stojí v `difficulty.test.ts` vedle výjimky běžce se střelbou; míč je tím jediný žánr, kde začátečník může vyhrát vždy – kandidát na úpravu, až bude míč mít jiný rozdíl mezi profily než reakci.
