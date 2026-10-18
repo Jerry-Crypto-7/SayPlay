@@ -4,24 +4,29 @@ Dvě čísla: **věta → hratelná hra** (od klepnutí na „Make it!“) a **s
 hratelná** (od otevření odkazu `/play/<id>` v čistém prohlížeči). Obojí na
 produkčním buildu lokálně, okamžitá verze hry; `report.json` nese každý běh.
 
-## Naměřeno 17. 10. 2026
+## Naměřeno 18. 10. 2026 (P50 T8, větev `e6e9354e`)
 
 | metrika | medián | min – max | běhů hratelných |
 |---|---|---|---|
-| věta → hratelná | **2,1 s** (2061 ms) | 1,4 – 4,5 s | 15 / 15 |
-| sdílená hra → hratelná | **2,2 s** (2189 ms) | 2,0 – 2,3 s | 3 / 3 |
+| věta → hratelná | **2,3 s** (2252 ms) | 1,6 – 4,9 s | 15 / 15 |
+| sdílená hra → hratelná | **2,4 s** (2375 ms) | 2,3 – 2,9 s | 3 / 3 |
 
 Po větách (medián, min – max, 3 běhy):
 
 | věta | medián | min – max |
 |---|---|---|
-| zombie shooter in a mall | 1795 ms | 1722 – 2917 |
-| A space marine shoots alien bugs in a mining colony | 1522 ms | 1422 – 1530 |
-| A knight must collect three keys in a haunted castle while dodging ghosts. | 1740 ms | 1734 – 2312 |
-| A hamster escaping a supermarket while a giant Roomba hunts me | 2098 ms | 2061 – 4477 |
-| A corgi runs through a park grabbing sausages and jumping over sprinklers | 2389 ms | 2075 – 3269 |
+| zombie shooter in a mall | 2032 ms | 1936 – 3432 |
+| A space marine shoots alien bugs in a mining colony | 1857 ms | 1561 – 1886 |
+| A knight must collect three keys in a haunted castle while dodging ghosts. | 2252 ms | 2012 – 2490 |
+| A hamster escaping a supermarket while a giant Roomba hunts me | 2634 ms | 2171 – 4896 |
+| A corgi runs through a park grabbing sausages and jumping over sprinklers | 3232 ms | 3060 – 4566 |
 
-Ve vodopádu běhu s1-r2 (1722 ms) trvá uložení hry na serveru 128 ms a poslední
+P49 17. 10. na `7648c2ea`: věta 2061 ms (1,4 – 4,5 s), sdílená hra 2189 ms
+(2,0 – 2,3 s). Inference: rozdíl ~0,2 s je rozptyl jediného neprokládaného běhu
+na vytíženém stroji (dva stejné buildy se v mediánu liší až o 414 ms, níž), ne
+změna kódu – kód se srovnává střídavým A/B v „P50: konečné měření“.
+
+P49, vodopád běhu s1-r2 (1722 ms): uložení hry na serveru trvá 128 ms a poslední
 síťový požadavek před hratelností skončí v 1,2 s; zbytek je první snímek hry a
 rozlišení sondy.
 
@@ -43,7 +48,8 @@ rozlišení sondy.
 - **Server:** `npm run build` (webpack) a `next start` na 127.0.0.1, úložiště her
   v nové prázdné složce (`PLAY_STORE_DIR`), bez klíčů k modelům.
 - **Důkazy:** HAR a snímky každého běhu leží mimo repo v
-  `.claude/rea-pruzkum/raw/sayplay/` hlavního checkoutu (`sentence-sN-rM.har`,
+  `.claude/p50-raw/t8-report/` hlavního checkoutu (P49:
+  `.claude/rea-pruzkum/raw/sayplay/`; `sentence-sN-rM.har`,
   `shared-rM.har`, `shots/<běh>/surface-before.png`, `surface-after.png`,
   `surface-confirm.png`, `page.png`). `t0` a `tPlayable` v `report.json` jsou
   epoch ms, takže se dají odečíst přímo proti `startedDateTime` v HAR.
@@ -128,6 +134,52 @@ Párový medián B − A (30 dvojic na profil), záporné = B rychlejší.
 | T4 | Poctivá hláška (`honestyOf`) ve streamu stránky za `Suspense`, ne před prvním bajtem | – | – | – | – | Studený server (3 kola × 9 her, oba servery znovu spuštěné nad kopií téhož úložiště): první bajt A 470 ms, B 473 ms, párově −17 ms. `honestyOf` jsou synchronní svědecké běhy (169–2020 ms na hru) ve vlákně serveru – drží odeslání stránky i ve streamu, i když začnou až o úlohu později (shell je vykreslený s čekající hranicí, ale odejde až po nich). Standardní A/B to nevidí vůbec: hru zakládá týž server a hláška je v jeho paměti. Skutečná oprava: spočítat hlášku jednou při zveřejnění a uložit ji ke hře (změna schématu úložiště), nebo ji počítat mimo vlákno požadavku. |
 | T5 | Chunky scény ohlášené v HTML (`<link rel="preload">` přes prázdný SSR díl `next/dynamic` v `ArcadePlay`) místo `import()` při načtení modulu | −32 ms | **+274,5 ms** | +12 ms | +26 ms | Druhá vlna začala s první, ale lokálně se chunk stáhne za ~10 ms – čas stojí v provádění JS, ne v síti. Vedlejší nález: na `main` stahuje scénu i mřížková hra (`ArcadePlay` je v `PlayShell` importovaný napevno a `import()` běží při načtení modulu); přínos přes internet (souběh se stahováním první vlny) lokální měření neukáže. |
 
+### Zvažováno, nezařazeno
+
+- **T7 – jen modely, které hra používá, místo celého katalogu.** Katalog (1766
+  modelů, `catalog-index.json`) je 77 KB gzip v chunku první vlny o 145 KB gzip,
+  protože `ArcadePlay` vybírá postavy a předměty na klientovi z celého indexu
+  podle štítků. Bezpečná verze znamená přestavbu ~15–20 souborů: server spočítá
+  obsazení a podmnožinu, scéna čte registr a při chybějícím id si katalog
+  dotáhne (jinak 404 a neviditelný model). Zisk procesoru: načtení a mapy celého
+  katalogu 5 ms (medián, V8), ~20 ms při 4× pomalejším CPU – pod prahem 50/56 ms,
+  takže by ho pravidlo výš vrátilo. Skutečný zisk je síťový (77 KB gzip z první
+  vlny), který lokální A/B nevidí (viz T5). Samostatná úloha až s měřením přes
+  síť proti nasazené verzi.
+
+## P50: konečné měření větve proti `main` (18. 10. 2026)
+
+A = `origin/main` 04700849, B = větev `e6e9354e` (přijatá T6; T2–T5 vrácené, T7
+nezařazená). Střídavé A/B jako výš, `p50-final.json`. Po 3 bězích (120) ležely
+párové rozdíly po druzích cílů mezi −390 a +394 ms, víc než čekaný zisk, proto
+5 běhů: 5 cílů × 5 běhů × 2 profily × 2 strany × 2 druhy = 200 běhů, 25 dvojic
+na profil a druh. Telefon A má jedno selhání (rytíř, hra nereagovala do 60 s).
+
+| profil | cíl | metrika | před (A) medián (min – max) | po (B) medián (min – max) | B − A mediánů | B − A párů |
+|---|---|---|---|---|---|---|
+| desktop | věta | hratelná | 2407 ms (1377 – 9758) | 2414 ms (1461 – 5933) | +7 | +84 |
+| desktop | sdílená hra | hratelná | 2416 ms (1658 – 5436) | 2332 ms (1508 – 3983) | −84 | +12 |
+| pixel7-cpu4 | věta | hratelná | 7096,5 ms (4447 – 32073) | 6216 ms (3376 – 48697) | −880,5 | −238 |
+| pixel7-cpu4 | sdílená hra | hratelná | 6478 ms (4511 – 14299) | 6947 ms (4567 – 15326) | +469 | +267 |
+| desktop | věta | první snímek | 1391 ms (866 – 3276) | 1338 ms (848 – 2774) | −53 | +14 |
+| desktop | sdílená hra | první snímek | 1441 ms (1001 – 2239) | 1267 ms (1000 – 1938) | −174 | −27 |
+| pixel7-cpu4 | věta | první snímek | 2904 ms (1634 – 12367) | 2803 ms (1540 – 8995) | −101 | −27,5 |
+| pixel7-cpu4 | sdílená hra | první snímek | 4002 ms (2812 – 6424) | 4066 ms (2925 – 6966) | +64 | +82 |
+
+Přes oba druhy cílů (50 dvojic na profil), párově B − A: hratelná desktop
++40,5 ms, telefon +33 ms; první snímek desktop −5,5 ms, telefon +4 ms.
+
+**Cíl −300 ms (desktop, sdílená hra) nepadl:** sdílená hra je na desktopu párově
+o 12 ms pomalejší (rozdíl mediánů −84 ms), tedy stejně rychlá jako `main`.
+
+- Inference: telefonní rozdíly po druzích (věta −238, sdílená hra +267) jsou
+  šum, ne účinek. Mají opačné znaménko, mezi 3 a 5 běhy týchž buildů se
+  posunuly o 152 a 127 ms a telefon má dlouhé chvosty (max 14–49 s). Zisk T6
+  na telefonu (−195 ms proti T5) se proti `main` nezopakoval.
+- Inference: lokálně už není co zkrátit pěti zdrženími z auditu – čas stojí
+  v provádění JS a stavbě scény (T2, T3, T5). Co zbývá, je síťové (T5, T7 –
+  vidět až přes internet) a hláška při zveřejnění (T4, změna úložiště).
+
 ## Co číslo neříká
 
 - **AI verze neměřena.** Vylepšení od režiséra potřebuje klíče k modelu a lokálně
@@ -138,10 +190,11 @@ Párový medián B − A (30 dvojic na profil), záporné = B rychlejší.
   každé věty uložily hru se stejným id. Uložení trvá ~0,1 s, na mediánu to nic
   podstatného nemění.
 - **Rozlišení ~0,6 s.** Sonda zkouší vstup v cyklech; hra připravená uprostřed
-  pokusu se pozná až v dalším. Všech 18 běhů zareagovalo hned na první pokus po
-  objevení plátna a potvrdilo to druhým.
-- **Plocha se hýbe i bez vstupu.** U 17 z 18 běhů se plátno po úspěchu měnilo
-  samo (≥ 1 % za 300 ms – běžící hra, nepřátelé, kamera). Snímky před/po vstupu
-  a potvrzovací snímek jsme prošli u běhů s nejnižší změnou a u nejpomalejšího:
-  všechny ukazují spuštěnou hru (výstřel, posun zaměřovače, běžící čas), ne
-  načítání.
+  pokusu se pozná až v dalším. V `report.json` z 18. 10. zareagovalo 15 z 18
+  běhů hned na první pokus po objevení plátna a potvrdilo to druhým, 3 až na
+  druhý (P49: 18 z 18 na první).
+- **Plocha se hýbe i bez vstupu.** U 12 z 18 běhů se plátno po úspěchu měnilo
+  samo (≥ 1 % za 300 ms – běžící hra, nepřátelé, kamera; P49 17 z 18). Snímky po
+  vstupu jsme prošli u běhu s nejnižší změnou (s2-r1), u nejpomalejšího (s4-r1)
+  a u běhu s největší změnou bez vstupu (s5-r2, ~40 %): všechny ukazují spuštěnou
+  hru s běžícím časem (0,9–1,4 s), ne načítání.
