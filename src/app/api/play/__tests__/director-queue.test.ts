@@ -308,6 +308,7 @@ describe('the play director queue (P53 T2)', () => {
     await Promise.all([...busy, upgraded]);
     await until(async () => expect((await remixStatus(store, draftId, remix.job))?.status).not.toBe('pending'));
     expect(await remixStatus(store, draftId, remix.job)).not.toHaveProperty('queued');
+    await until(() => expect(directorQueueState(), 'the remix kept its slot').toEqual({ running: 0, queued: 0 }));
   });
 
   // Revize fáze 1, nález 2 (T3a): druhé volání téže práce nesmí znovu čekat na konci fronty za cizími větami.

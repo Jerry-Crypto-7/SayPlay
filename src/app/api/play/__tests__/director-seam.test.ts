@@ -24,7 +24,7 @@ import { upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
 import { resetProcessSpendCap } from '@/server/spend-cap';
 
 import { acquireSlot, resetConcurrency } from '@/server/paid-slots';
-import { DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS, resetDirectorQueue } from '../_director';
+import { DIRECTOR_BUDGET_MS, directorQueueState, getDirector, MIN_CALL_MS, resetDirectorQueue } from '../_director';
 import { POST as createGame } from '../games/route';
 import { GET as readUpgrade } from '../games/[id]/upgrade/route';
 import { directorCallerOf, UNTRUSTED_DIRECTOR_CALLER } from '../_publish';
@@ -263,6 +263,7 @@ describe('getDirector – souběh a pořadí bran (nálezy revize T1)', () => {
     const game = await getDirector(Date.now(), 'test-caller')(SENTENCE);
     expect(game.source).toBe('draft');
     expect(fetchCalls).toBe(0);
+    await vi.waitFor(() => expect(directorQueueState(), 'odmítnutí si nechalo místo ve frontě').toEqual({ running: 0, queued: 0 }));
   });
 
   it('režie PLAY nebere sloty /api/generate (druhé kolo revize T1)', async () => {
