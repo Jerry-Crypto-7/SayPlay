@@ -190,6 +190,34 @@ describe('static genres B are paced (throw, timing, rhythm, station quest; landi
     expect(reached).toBeGreaterThan(0);
   });
 
+  // Nová hra (`genre.v5`, P51 T4): 20 rychlých kol finále za 34 s hodin – začátečník v náhlé smrti prohrává (4 z 8 semínek),
+  // ale hodinami, ne minutím: okno rychlých kol trefí každým ťukem (P51 T5c).
+  it('timing (new game): the novice never misses inside the sudden death – a loss there is the clock', () => {
+    let reached = 0;
+    for (const cell of PACED.filter((own) => own.id.startsWith('timing'))) {
+      for (const seed of SEEDS) {
+        const world = worldOf(cellSpec(cell.id), seed);
+        const judge = ruleOf(world, 'judge')!.params as { goal: number; sudden: number };
+        const { seconds } = ruleOf(world, 'time_limit')!.params as { seconds: number };
+        const novice = runBot(world, ARCADE_LIBRARY, { profile: 'novice' });
+        const misses: number[] = [];
+        let endedAt = 0;
+        const done = Math.floor(
+          play(world, novice.inputs, (state, tick) => {
+            endedAt = tick;
+            const player = bodyBase(state[HEADER.player] as number);
+            if ((state[player + BODY.aux0] as number) < 0 && Math.floor((state[player + BODY.z] as number) / UNIT) >= judge.goal - judge.sudden) misses.push(tick);
+          })[bodyBase(0) + BODY.z]! / UNIT,
+        );
+        if (done < judge.goal - judge.sudden) continue;
+        reached += 1;
+        expect(misses, `${cell.id} seed ${seed}: missed in the sudden death`).toEqual([]);
+        if (novice.outcome !== 'won') expect(endedAt, `${cell.id} seed ${seed}: lost in the sudden death after ${done} rounds`).toBe(seconds * ARCADE_HZ);
+      }
+    }
+    expect(reached).toBeGreaterThan(0);
+  });
+
   it('rhythm: the song is built over the curve – sparse intro, dense finale phrase, two lane patterns', () => {
     const spec = cellSpec('rhythm.default');
     const params = rhythmLevel.params.parse({ ...spec.controlParams });
