@@ -171,7 +171,7 @@ function generate(seed: number, params: BallPitchParams): ArcadeLevel {
     const target = bodies[2]!;
     bodies.push({ role: 'enemy', kind: 'goalkeeper', x: -2400, y: 0, z: Math.floor(target.z * 0.6), w: 1000, h: 2300, d: 600, solid: true, kinematic: true, vx: BALL.keeperSpeed, period: BALL.keeperPeriod });
   }
-  if (params.segments === true && !params.team) {
+  if (params.segments === true) {
     const far = Math.max(...bodies.filter(body => body.role === 'target').map(body => body.z));
     const { w, h, d, hp, behind } = BALL_FINALE;
     bodies.push({ role: 'enemy', kind: 'goalkeeper', x: -(BALL.keeperSpeed * BALL.keeperPeriod) / 2, y: 0, z: far + behind, w, h, d, solid: false, kinematic: true, vx: BALL.keeperSpeed, period: BALL.keeperPeriod, hp });
@@ -181,18 +181,19 @@ function generate(seed: number, params: BallPitchParams): ArcadeLevel {
     bodies.push({ role: 'thing', kind: 'opponent-ball', x: 3500, y: BALL.launchY, z: 15000, w: BALL.size, h: BALL.size, d: BALL.size, solid: true, physics: true, ball: true, restitution: 150, template: true });
     bodies.push({ role: 'goal', kind: 'home-goal', x: 3500, y: 0, z: 1600, w: 1600, h: 5000, d: 1600, solid: false });
   }
-  const rival = params.segments === true && !params.team;
-  return { bodies, length: 0, spawnSlots: params.team ? 2 : 1, counters: { ammo: params.targets * 3 + (rival ? BALL_FINALE.ammo : 0) } };
+  return { bodies, length: 0, spawnSlots: params.team ? 2 : 1, counters: { ammo: params.targets * 3 + (params.segments === true ? BALL_FINALE.ammo : 0) } };
 }
 /** Soupeř-boss finále (`BALL_FINALE`) v úrovni, nebo `undefined`. */
-const rivalOf = (level: ArcadeLevel, params: BallPitchParams): number | undefined => (params.segments === true && !params.team ? level.bodies.findIndex(body => body.hp === BALL_FINALE.hp && body.role === 'enemy') : undefined);
+const rivalOf = (level: ArcadeLevel, params: BallPitchParams): number | undefined => (params.segments === true ? level.bodies.findIndex(body => body.hp === BALL_FINALE.hp && body.role === 'enemy') : undefined);
 export const ballPitch: ModeGeneratorPiece<BallPitchParams> = {
   id: 'ball_pitch', params: ballParams, roles: ['player', 'thing', 'target', 'enemy'], cost: params => ({ bodies: 3 + params.targets + Number(params.keeper || params.team) + (params.team ? 4 : 0), rules: 2 }), generate,
   parts(seed, params, health) {
     const level = generate(seed, params);
-    const team = params.team ? { team: { forward: level.bodies.findIndex(b => b.kind === 'opponent-forward'), template: level.bodies.findIndex(b => b.kind === 'opponent-ball'), goal: level.bodies.findIndex(b => b.kind === 'home-goal'), goalsToLose: params.targets + 1 } } : {};
-    const recovery = { ...(params.shotRecoveryTicks === undefined ? {} : { shotRecoveryTicks: params.shotRecoveryTicks }), ...(params.shotRecoveryRiseTicks === undefined ? {} : { shotRecoveryRiseTicks: params.shotRecoveryRiseTicks }) };
     const index = rivalOf(level, params);
+    // The finale rival's shots (`hp` + `spare`) give the opposing team as many goals more before the game is lost.
+    const finaleGoals = index === undefined ? 0 : BALL_FINALE.hp + BALL_FINALE.spare;
+    const team = params.team ? { team: { forward: level.bodies.findIndex(b => b.kind === 'opponent-forward'), template: level.bodies.findIndex(b => b.kind === 'opponent-ball'), goal: level.bodies.findIndex(b => b.kind === 'home-goal'), goalsToLose: params.targets + 1 + finaleGoals } } : {};
+    const recovery = { ...(params.shotRecoveryTicks === undefined ? {} : { shotRecoveryTicks: params.shotRecoveryTicks }), ...(params.shotRecoveryRiseTicks === undefined ? {} : { shotRecoveryRiseTicks: params.shotRecoveryRiseTicks }) };
     const rival = index === undefined ? {} : { rival: index };
     const seconds = params.paceSeconds === undefined ? undefined : index === undefined ? params.paceSeconds : Math.min(90, params.paceSeconds + ballFinaleSeconds(params));
     return { level, control: { id: 'ball', params: {} }, bot: { id: 'ball_bot', params: { goal: params.goal, ...rival } }, rules: [{ id: 'ball_launch', params: { template: 1, goal: params.goal, ...recovery, ...team } }, { id: params.knockdown ? 'ball_knockdown' : 'ball_score', params: { goal: params.goal, timeout: BALL.timeout, ...team, ...rival } }, ...(seconds === undefined ? [] : [{ id: 'time_limit', params: { seconds } }])], health };

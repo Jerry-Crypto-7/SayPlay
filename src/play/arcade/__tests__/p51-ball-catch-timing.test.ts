@@ -22,6 +22,7 @@ import { funMetrics, traceRun } from '../telemetry';
 import { runBot, verifyArcade } from '../verify';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
+import { draftGameSpecWithMeta } from '@/play/draft';
 import type { GameSpecV1 } from '@/play/spec';
 
 const SEEDS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -79,17 +80,16 @@ describe('P51 T4: timing games end in a fast finale', () => {
   }
 });
 
-/** Hraje buňku 12 semínky: nečinný nevyhraje, přehrání = hash; výhry intermediate a začátečníka, výhry s bossem. */
-function gates(cell: (typeof BOSS_CELLS)[number]): { intermediate: number; bosses: number; novice: number } {
-  const spec = compileRecipe(assemblyOfCell(cell));
+/** Hraje spec 12 semínky: nečinný nevyhraje, přehrání = hash; výhry intermediate a začátečníka, výhry s bossem. */
+function gates(spec: GameSpecV1, id: string): { intermediate: number; bosses: number; novice: number } {
   let intermediate = 0;
   let bosses = 0;
   let novice = 0;
   for (const seed of SEEDS) {
     const world = worldOf(spec, seed);
     const verdict = verifyArcade(world);
-    expect(verdict.idle.outcome, `${cell.id} seed ${seed}: idle`).not.toBe('won');
-    expect(verdict.replayEqual, `${cell.id} seed ${seed}: replay`).toBe(true);
+    expect(verdict.idle.outcome, `${id} seed ${seed}: idle`).not.toBe('won');
+    expect(verdict.replayEqual, `${id} seed ${seed}: replay`).toBe(true);
     const bot = runBot(world, undefined, { profile: 'intermediate' });
     if (bot.outcome === 'won') {
       intermediate += 1;
@@ -117,13 +117,39 @@ describe('P51 T4: ball and catch games end on a boss', () => {
     });
 
     it(`${cell.id}: idle never wins, replay equal, intermediate ≥ 0.8 and its wins end on the boss`, () => {
-      const { intermediate, bosses, novice } = gates(cell);
+      const { intermediate, bosses, novice } = gates(compileRecipe(assemblyOfCell(cell)), cell.id);
       expect(intermediate / SEEDS.length, `${cell.id}: intermediate`).toBeGreaterThanOrEqual(0.8);
       expect(bosses / intermediate, `${cell.id}: boss in wins`).toBeGreaterThanOrEqual(0.8);
       expect(novice / SEEDS.length, `${cell.id}: novice`).toBeGreaterThanOrEqual(0.3);
       // Míč: začátečník se od intermediate liší jen reakcí (≤ 1,5 s za běh) a pásmo by držely jen hodiny pár desetin
       // nad během intermediate – horní mez jen u chytání (README „Rozhodnutí“, T4).
       if (cell.id === 'roam.catch') expect(novice / SEEDS.length, `${cell.id}: novice`).toBeLessThanOrEqual(0.7);
+    });
+  }
+});
+
+/**
+ * Míč se soupeřem z věty (T4b): rychlá verze (`compose()` → `compileAssembly`) staví týmovou hru (`team`), kterou
+ * buňky výš nestaví. I ona má bosse; soupeřův tým má na něj gólů navíc tolik, kolik střel boss stojí.
+ */
+const TEAM_SENTENCES = ['a penguin plays football against a walrus goalkeeper', 'shoot hoops against a rival basketball team'];
+
+describe('P51 T4b: ball games against a rival from a sentence end on a boss', () => {
+  for (const text of TEAM_SENTENCES) {
+    it(`"${text}": a paced team game whose boss takes ${BALL_FINALE.hp} hits; gates as the cells`, () => {
+      const { spec } = draftGameSpecWithMeta(text, 1);
+      expect((spec.controlParams as { team?: boolean }).team, 'team game').toBe(true);
+      const world = worldOf(spec);
+      expect(world.rules.some((rule) => rule.id === 'pacing'), 'pacing').toBe(true);
+      const initial = Int32Array.from(world.initial);
+      expect(Array.from({ length: initial[HEADER.bodyCount]! }, (_, body) => body).some((body) => initial[bodyBase(body) + BODY.role] === ROLE.enemy && bodyHp(initial, body) === BALL_FINALE.hp), 'boss body').toBe(true);
+      const targets = (spec.controlParams as { targets: number }).targets;
+      const score = world.rules.find((rule) => rule.id === 'ball_score')!.params as { team: { goalsToLose: number } };
+      expect(score.team.goalsToLose).toBe(targets + 1 + BALL_FINALE.hp + BALL_FINALE.spare);
+      const { intermediate, bosses, novice } = gates(spec, text);
+      expect(intermediate / SEEDS.length, 'intermediate').toBeGreaterThanOrEqual(0.8);
+      expect(bosses / intermediate, 'boss in wins').toBeGreaterThanOrEqual(0.8);
+      expect(novice / SEEDS.length, 'novice').toBeGreaterThanOrEqual(0.3);
     });
   }
 });

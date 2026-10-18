@@ -186,6 +186,11 @@ Banner P47A (`PacingBanner`, štítek kitu `sp-world-tag`) teď ohlásí každé
 - E2E `e2e/p51-finale-banner.spec.ts` (desktop a Pixel 7 s „méně pohybu“): věta w01 dveřmi návštěvníka, robot hraje v prohlížeči – „Exit ahead!“ v záběru ve 41,4 s, výhra ve 46,9 s, náběh `play-pacing-banner`, s „méně pohybu“ žádný; 0 chyb konzole. `e2e/interface-language.spec.ts` 3/3.
 - Barvy a pohyb beze změny: nápis bere styl i `prefers-reduced-motion` z existujícího CSS banneru (`play.css`), nový popisek do `HUD_COUNTER_LABELS` nevznikl (banner má vlastní `PACING_BANNER_LABELS`).
 
+## T4b – svědek soupeře a míč se soupeřem z věty
+
+- **Svědek `rival` (4 červené `ball.score+rival`):** průběh obalí ovládání míče do `pacing_control` a sonda brankáře (`pieces/ball-probe.ts`) kontrolovala holé `world.control.id`, takže v nové hře nevystřelila ani jednou. Teď čte ovládání pod obaly (`baseControlOf`). `allowed.test.ts` a `ball-recipes.test.ts` 66/66.
+- **Míč se soupeřem z věty měl finále jen na papíře:** každá taková věta jde rychlou verzí (`compose()` → `team`) a dostala průběh s finále `round` bez bosse – nejen b01, ale všechny čtyři zkoušené věty (fotbal, brankář, koše proti týmu, tenis). Týmová hra teď má bosse jako ostatní míč a soupeřův tým na něj má o `hp` + `spare` = 4 góly víc; bez nich robot prohrál na všech semínkách (soupeř dá gól zhruba každé 3,5 s). Čtyři věty: finále `boss`, hratelné, publikované semínko beze změny, nejdelší mezera 3,6 → 4,0 s (koše 2,4 s). Brána `p51-ball-catch-timing` má dvě týmové věty přes `draftGameSpecWithMeta`: intermediate ≥ 0,8, výhry s bossem ≥ 0,8, začátečník ≥ 0,3, `goalsToLose` pinované. Dev míč tím 2/3 → 3/3 (b01).
+
 ## Rozhodnutí
 
 - **T2 – verze u žánrů bez `genre`:** chodec, klouzání, míč a chytání staví `nativeSpec` bez pole `genre`, takže `genreAtLeast(spec, FINALE5_GENRE_VERSION)` pro ně nikdy neplatí. Nová hra těchto žánrů proto dostane značku nové hry v parametrech generátoru, jako řízení v P46B (`pacedNative`, `segments: true`); uložený spec bez značky staví týž svět (`p51-stored-v4.test.ts`).
@@ -212,4 +217,5 @@ Banner P47A (`PacingBanner`, štítek kitu `sp-world-tag`) teď ohlásí každé
 - **T8 – brána obtížnosti nehlídá horní mez začátečníka u míče:** pokračování rozhodnutí T4 – začátečník míče vyhraje 20/20 a pásmo 0,3–0,7 by držely jen hodiny desetiny sekundy nad během intermediate. Výjimka stojí v `difficulty.test.ts` vedle výjimky běžce se střelbou; míč je tím jediný žánr, kde začátečník může vyhrát vždy – kandidát na úpravu, až bude míč mít jiný rozdíl mezi profily než reakci.
 - **T4a – mince tepu chytání jde sebrat za bod:** mince, kterou hráč nesebere, by byla jen kulisa, která měřidlu dodá událost. Chytání skóre jinak nemá, takže bod nic nerozbije (velikost hráče je pevná, `size` ovládání), a kořist zůstává jediná cesta k výhře.
 - **T9 – finále míče se hlásí jako „Boss: <jméno>“, ne „Last round!“:** pravidlo `pacing` míče má finále `round`, ale to, co hráč na konci opravdu potká, je soupeř-boss se 3 HP sám na hřišti; „Last round!“ by sliboval kolo, které hra nemá. Nápis přijde, až padne poslední terč – dřív by boss nebyl jediný, co zbývá.
+- **T4b – týmová hra dostane bosse, ne průběh bez finále:** plán připouštěl obojí; míč se soupeřem z věty je přesně ta hra, kterou porota zkusí, a průběh bez finále by ji nechal jediným žánrem bez konce. Cena: soupeřův tým má o 4 góly víc, než měl uložený `team`.
 - **T9 – chodec a klouzání nehlásí „Final sprint!“:** jejich finále je místo (stezka k východu, tunel kruhů), ne zrychlení; nápis říká, kam jít.
