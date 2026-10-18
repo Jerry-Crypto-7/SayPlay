@@ -206,7 +206,9 @@ Celá sada (18. 10.): 14625/14655, 27 červených v 9 souborech. Opravené (vše
 - `bodies`: počítadlo tepu trati běžce (T7) se nekreslí – správně, test ho doplnil.
 - Nález revize T5c-1 č. 5: uložená hra chytání ukazovala „0 coins“ místo „0 eaten“ (`ArcadePlay.tsx` `scoreUnit`); teď mince jen u nové hry (`tuning.segments`), pin v `gated-rules-render.test.ts`.
 
-Zbývá: 4 piny P47B ve složce `src/play/arcade/abilities/__tests__/` (viz „Rozhodnutí“) a `submission-check` (ENOENT `plans/P8-odevzdani.md`, worktree). Build a e2e zatím neběžely.
+Zbývá: 4 piny P47B ve složce `src/play/arcade/abilities/__tests__/` (viz „Rozhodnutí“) a `submission-check` (ENOENT `plans/P8-odevzdani.md`, worktree).
+
+Po opravách (18. 10.): celá sada 14648/14656 – červených jen těch pět; replay brána je v ní celá. `npm run build` exit 0. E2E proti `next start` na 3291 (úložiště jen v paměti, `PLAY_STORE_DIR` na nezapisovatelné cestě, jak `play-share` čeká): `p35-perf` 17, `play-share` 5, `p36-dare` 4, `interface-language` 3 – 29/29 zelených. `e2e/offline-chain.spec.ts` v repu není (T8).
 
 ## Rozhodnutí
 
