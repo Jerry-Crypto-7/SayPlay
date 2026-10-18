@@ -116,6 +116,26 @@ Změřeno nad commitem T2: nová hra už nese `genre.v5`, ale nic na ni zatím n
 - Brány: replay brána, `p51-stored-v4`, `p51-foes` (12 testů) a všechny testy, které hlídají souboj a hod, zelené; `tsc` čistý. Červené už na HEAD před T6 (ověřeno na zdrojích HEAD): `finale-gauge` „names P42 parts“ (sběr s díly má průběh od T5), `ball-difficulty` (hodiny HUD), `field-segments` (otisky `runner.default`, `run.escape`, `platformer.default`), `difficulty` (`roam.catch` zastaralé měření) a známé `ball.score+rival`.
 - Mutace (záloha mimo repo, 7/7 červené): bez věci ve v5 → `p51-foes` (4 testy); bez útočníků ve v5 → `p51-foes` (3); jen jeden útočník v posledním kole (konec bez tlaku) → `p51-foes` `rising`; věc i ve `genre.v4` → `p51-foes`, `duel-verbs`, `pacing-static-a`; útočníci i ve `genre.v4` → `p51-foes`, `throw-boss` (4); robot souboje bez věci → `p51-foes` (3); robot hodu bez útočníků → `p51-foes` (2, k robotu došlo 81 % útočníků).
 
+## T7 – mrtvý čas chodce, střílečky, běžce a rytmu (`t7.json`)
+
+Nejdelší mezera bez události (`longestGapS`, medián), proti `t6.json`:
+
+| Žánr | Dev (vět) | Dev | Panel (vět) | Panel |
+|---|---|---|---|---|
+| chodec | 5 | **17,2 → 2,52 s** | 3 | **18,12 → 2,55 s** |
+| běžec | 3 | **5,78 → 2,5 s** | 2 | **5,23 → 2,5 s** |
+| střílečka | 2 | **6,15 → 3,34 s** | 2 | **5,67 → 2,79 s** |
+| rytmus | 3 | 3,62 s (beze změny) | 2 | 4 s (beze změny) |
+| **celkem** | 30 | **4,07 → 2,51 s** | 40 | 2,5 s |
+
+- **Chodec** (značka `segments`): jiskra tepu na každém poli cesty k východu, ke kterému hráč plnou rychlostí dojde za 150 tiků (`WALKER_BEAT.beat` = tep pole P47A T9) – mezera 2,5 s ve všech pěti větách dev (dřív 10–20 s). Nová hra má bludiště 15 × 15 (`WALKER_BEAT.size`): na 11 × 11 trvala hra s jiskrami 20–27 s, pod pásmem 30–90 s. Hodiny mají navíc 35 ‰ cesty (`WALKER_BEAT.slack`), jinak začátečník na větším bludišti 0/12.
+- **Běžec** (`genre.v5`): tep pole P47A T9 na trati – po 150 tikách bez události mince v pruhu před hráčem (`RUNNER_PULSE`, `heartbeatOf` posune místo o polohu hráče pro `space: 'track'`). Mezera 2,5 s ve všech větách; intermediate, novice, finále `boss` i stoupání beze změny. `run.escape` tep nemá (trať bez hrozeb `runnerFoes`) a pod 4 s byla už dřív.
+- **Střílečka** (`genre.v5`): pochod vln nikdy řidší než intenzita 1150 (`SHOOTER_FOES.densityFloor`). Dev s01, s02 × 12 semínek: medián nejdelší mezery 6,18 → 3,17 s, nejvýš 3,77 s; výhry, finále i stoupání 12/12, hra 49–56 s místo 57–64 s.
+- **Rytmus** beze změny: medián dev 3,62 s je pod 4 s; nejdelší mezera je náběh před první notou (m03 4,12 s, pod stropem 6 s).
+- Gauge: změnily se jen řádky chodce, běžce a střílečky; finále (dev 0,93, panel 0,93), medián chování (1 / 2), stoupání (0,97 / 1) a hratelnost (30/30, 40/40) beze změny. Chytání (`control:move_free`, dev 14,92 s) řeší T4a.
+- Brány: `p51-dead-time` 23/23 (7 buněk chodce, 5 běžce, s01/s02 střílečky × 12 semínek: mezera medián ≤ 4 s a žádná nad 6 s, hra 30–90 s, `idle` nevyhraje, replay týž, intermediate ≥ 0,8 s finále, novice 0,3–0,7 u chodce a ≥ 0,3 u běžce a střílečky; uložená hra staví týž svět), replay brána, `p51-stored-v4` a `runner-boss` 117/117, `tsc` čistý.
+- Mutace (záloha mimo repo, 5/5 červené): bez jisker tepu chodce → 14 testů chodce (mezera 31–46 s); bez `RUNNER_PULSE` → 5 testů běžce (mezera 5,7 s); `densityFloor` 0 → s01, s02 (6,2 s); `WALKER_BEAT.slack` 0 → novice chodce 0/12 v 7 buňkách; bludiště 11 × 11 → hra 20–24 s v 7 buňkách. Strukturální test „velké bludiště“ při 11 × 11 neselže (čte tutéž konstantu) – menší bludiště chytí délka hry.
+
 ## Rozhodnutí
 
 - **T2 – verze u žánrů bez `genre`:** chodec, klouzání, míč a chytání staví `nativeSpec` bez pole `genre`, takže `genreAtLeast(spec, FINALE5_GENRE_VERSION)` pro ně nikdy neplatí. Nová hra těchto žánrů proto dostane značku nové hry v parametrech generátoru, jako řízení v P46B (`pacedNative`, `segments: true`); uložený spec bez značky staví týž svět (`p51-stored-v4.test.ts`).
@@ -134,3 +154,8 @@ Změřeno nad commitem T2: nová hra už nese `genre.v5`, ale nic na ni zatím n
 - **T6 – útočník hodu bere hody, ne život:** hod životy nemá („Hod nemá čím ubrat život“, `arcade/compile.ts`), prohra je „hody došly“ – konzervativní čtení drží slovník hodu a nepřidává životy.
 - **T6 – útočníci hodu jdou do rozpočtu kol:** bez toho dlouhá semínka buňky přetáhla 52 s hodin; o poslední kolo míň, hodiny zůstávají (jako vrhači stanoviště). Křivka rychlosti kyvu se počítá z kol před úbytkem, takže kola, která zůstala, jsou kola `genre.v4` (s křivkou přes méně kol se kyv druhého kola h03 zrychlil a mrtvý čas stoupl 2,27 → 2,88 s).
 - **T6 – testy dnešního souboje a hodu staví `genre.v4`:** otisk sumo duelu (`duel-verbs`), údery po třetinách souboje (`pacing-static-a`) a stavba terče-bosse (`throw-boss`) popisují svět `genre.v4`; nová hra je hlídaná v `p51-foes.test.ts` (věta f02, h05 a sumo mají věc, stoupání telemetrie souboje, kola hodu = kola `genre.v4` bez posledního nejvýš jednoho, HP a rychlost terče-bosse). Žádná aserce se nezmírnila.
+- **T7 – tep chodce leží na cestě, ne na místě vstupu:** bludiště se staví při stavbě a robot jde vždy nejkratší cestou, takže jiskry na každém poli cesty, ke kterému hráč dojde za jeden tep, dají týž rytmus jako tep pole P47A bez čekání na ticho za běhu – mince tepu na pevném místě vstupu by v bludišti ležela za zdí.
+- **T7 – nová hra chodce má bludiště 15 × 15:** plán zakazuje zkrátit hru pod 30 s; s hustšími událostmi na 11 × 11 šel robot k východu 20–27 s. Rezerva hodin 35 ‰ cesty (25–40 ‰ → novice 6/12, 20 → 4/12, 45 → 8/12, 50 → 11/12; intermediate 12/12 v celém okně) je střed okna.
+- **T7 – podlaha hustoty střílečky 1150:** nejnižší změřená, při které je nejdelší mezera na všech 12 semíncích obou vět pod 4 s (1000 → nejvýš 4,68 s, 1100 → 4,05 s); vrchol a finále (1300, 1500) zůstávají hustší, takže stoupání drží.
+- **T7 – živá buňka `shooter.default` není v testu:** má jeden život a průběh nemá, mezera se tam podlahou nemění; test měří věty dev s01, s02 (střílečka s průběhem).
+- **T7 – rytmus se nemění:** cíl ≤ 4 s splňuje už `genre.v4` (dev 3,62 s) a nejdelší mezera je náběh před první notou; hustší začátek by změnil hudbu, ne mrtvý čas uprostřed hry.
