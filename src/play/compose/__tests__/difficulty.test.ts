@@ -33,7 +33,8 @@ it('pins measured novice and intermediate bounds for every current live recipe',
       expect(result.winRate, cell.id).toBe(result.wins / 20);
       expect(result.winRate, `${cell.id}/${profile}`).toBeGreaterThanOrEqual(profile === 'novice' ? 0.3 : 0.8);
       // Běžec se střelbou (P46A) je lehčí záměrně: horní mez začátečníka bez něj (rozhodnutí majitele 14. 10., jako `runner-boss.test`).
-      const easyByChoice = cell.id.startsWith('runner.') && cell.id.includes('+shoot_at');
+      // Míč s finále (P51 T4, `evals/play/p51/README.md` „Rozhodnutí“): začátečník se od intermediate liší jen reakcí, pásmo by držely jen hodiny desetiny sekundy nad jeho během – hlídá se dolní mez.
+      const easyByChoice = (cell.id.startsWith('runner.') && cell.id.includes('+shoot_at')) || cell.id.startsWith('ball.');
       expect(result.winRate, `${cell.id}/${profile}`).toBeLessThanOrEqual(profile === 'novice' && !easyByChoice ? 0.7 : 1);
     }
   }

@@ -110,8 +110,11 @@ describe('static genres A are paced (shooter and duel; ball stays unpaced)', () 
   });
 
   // Živé buňky s průběhem a střelnice z věty se třemi životy; buňka `shooter.default` má jediný život a průběh nedostane.
+  // Souboj staví průběh `genre.v4`: nová hra (`genre.v5`, P51 T6) hází každý třetí útok věc a údery po třetinách
+  // rostou míň; její stoupání (telemetrie) a hody hlídá `p51-foes.test.ts`.
+  const v4 = (spec: GameSpecV1): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v4' } });
   const GAMES = [
-    ...CELLS.filter((cell) => cell.id !== 'shooter.default').map((cell) => ({ id: cell.id, spec: () => compileRecipe(assemblyOfCell(cell)) })),
+    ...CELLS.filter((cell) => cell.id !== 'shooter.default').map((cell) => ({ id: cell.id, spec: () => (cell.id.startsWith('duel') ? v4(compileRecipe(assemblyOfCell(cell))) : compileRecipe(assemblyOfCell(cell))) })),
     { id: 'shooter (three lives)', spec: shooterSpec },
   ];
 
@@ -368,15 +371,18 @@ describe('static genres A are paced (shooter and duel; ball stays unpaced)', () 
   });
 });
 
-describe('ball modes stay unpaced (P45C T13, deviation)', () => {
+// Nová hra míče má od P51 T4 průběh a soupeře-bosse (značka `segments`, `p51-ball-catch-timing.test.ts`); uložená bez značky ne.
+describe('stored ball games stay unpaced (P45C T13, deviation; new games paced since P51 T4)', () => {
   const BALLS = liveCells().filter((cell) => generatorOf(compileRecipe(assemblyOfCell(cell))) === 'ball_pitch');
 
-  it('every ball cell is a native spec without genre: its world has no pacing and only the rules its generator builds', async () => {
+  it('every ball cell is a native spec without genre: without the new-game mark its world has no pacing and only the rules its generator builds', async () => {
     expect(BALLS.map((cell) => cell.id).sort()).toEqual(['ball.defeat', 'ball.score', 'ball.score+rival']);
     const { loadRapier } = await import('../physics/world');
     const { preloadPhysics } = await import('../compile');
     for (const cell of BALLS) {
-      const spec = compileRecipe(assemblyOfCell(cell));
+      const fresh = compileRecipe(assemblyOfCell(cell));
+      const { segments: _mark, ...stored } = fresh.controlParams as Record<string, unknown>;
+      const spec = { ...fresh, controlParams: stored } as typeof fresh;
       await preloadPhysics(spec, loadRapier);
       expect(spec.genre, cell.id).toBeUndefined();
       const { generator: _generator, ...params } = spec.controlParams as Record<string, unknown>;

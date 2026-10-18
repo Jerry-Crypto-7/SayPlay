@@ -13,6 +13,8 @@ import { renderHeld } from '../effects/render-feel';
  * Šampion (P47A T10): když tělo soupeře převezme větší rozměry předlohy šampiona
  * (`duel.champion`), soupeř se kreslí v nich a kamera ho i s pipy HP nad hlavou
  * vezme celého – bez animace, změna přijde s úderem, který porazil předposledního.
+ * Hozená věc (P51 T6, `duel.hurl`): míček z primitiv střelnice v poloze svého těla, dokud žije –
+ * v nápřahu nad hlavou soupeře, po švihu letí k hráči.
  *
  * Vstup: mezerník / Enter / šipka nahoru nebo ťuk do pravé půlky = úder;
  * šipka dolů / S nebo ťuk do levé půlky = úhyb.
@@ -23,9 +25,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { Group, MeshStandardMaterial, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
-import { BODY, BUTTON, HEADER, RUN_STATE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, BUTTON, FLAG, HEADER, type PieceRef, RUN_STATE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
-import { DUEL, DUEL_FOE, DUEL_PHASE } from '@/play/arcade/pieces/duel';
+import { DUEL, DUEL_FOE, DUEL_PHASE, type DuelControlParams } from '@/play/arcade/pieces/duel';
 import { type BodyClass, type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
@@ -37,6 +39,7 @@ import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { ShotPrimitive } from '../shooter/primitives';
 import { DUEL_ZONES, zoneAt } from '../touch-zones';
 import { initialBody } from '../timing/TimingScene';
 import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
@@ -149,6 +152,13 @@ function ModelFigure({ fighter, heading, w, h, arm, children }: { readonly fight
 /** Model bojovníka vepsaný do jeho těla (m); scéna arkády ho dodá, když popisek model jmenuje. */
 export type RivalModel = (w: number, h: number, d: number) => React.ReactNode;
 
+/** Předloha hozené věci (`duel.hurl`) pod obaly průběhu a doplňků; souboj bez ní `undefined`. */
+function hurlBodyOf(control: PieceRef): number | undefined {
+  if (control.id === 'duel') return (control.params as DuelControlParams).hurl?.body;
+  const base = control.params.base as PieceRef | undefined;
+  return base === undefined ? undefined : hurlBodyOf(base);
+}
+
 export function DuelScene({
   session,
   look: scene,
@@ -181,6 +191,9 @@ export function DuelScene({
   const look = useMemo(() => new Vector3(), []);
   const midZ = rival.z / 2;
   const duelLand = useMemo(() => ({ x0: -30, x1: 30, z0: midZ - 30, z1: midZ + 30 }), [midZ]);
+  const hurlBody = hurlBodyOf(world.control);
+  const hurlSize = hurlBody === undefined ? null : initialBody(world, hurlBody);
+  const hurled = useRef<Group>(null);
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
@@ -252,6 +265,15 @@ export function DuelScene({
       }
     }
     foe.material.current?.color.set(PHASE_COLOR[phase] ?? '#64748b');
+    if (hurlBody !== undefined && hurled.current !== null) {
+      // Hozená věc: poloha těla mezi tiky; věc, která v minulém tiku nežila, se objeví rovnou v ruce (ne z místa minulého zásahu).
+      const h = bodyBase(hurlBody);
+      const live = ((state[h + BODY.flags] as number) & FLAG.alive) !== 0;
+      const was = ((prev[h + BODY.flags] as number) & FLAG.alive) !== 0;
+      hurled.current.visible = live;
+      const at = (slot: number): number => (was ? (prev[h + slot] as number) + ((state[h + slot] as number) - (prev[h + slot] as number)) * alpha : (state[h + slot] as number)) / UNIT;
+      if (live) hurled.current.position.set(at(BODY.x), at(BODY.y), at(BODY.z));
+    }
     // Šampion: tělo soupeře má za běhu rozměry předlohy šampiona – model i postava z primitiv rostou s ním. Měřítko
     // nese skupina soupeře v ringu (rodič skupiny pózy): pózu a její zmáčknutí si skupina pózy píše sama (`applyToy`).
     const foeH = (state[f + BODY.h] as number) / UNIT;
@@ -306,6 +328,11 @@ export function DuelScene({
           </ModelFigure>
         )}
       </group>
+      {hurlSize !== null && (
+        <group ref={hurled} visible={false}>
+          <ShotPrimitive id="ball" w={hurlSize.w} h={hurlSize.h} d={hurlSize.d} />
+        </group>
+      )}
     </>
   );
 }

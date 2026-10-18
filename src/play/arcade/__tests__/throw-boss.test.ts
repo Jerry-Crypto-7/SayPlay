@@ -20,6 +20,7 @@ import { type ArcadeEffect, type ArcadeWorld, BODY, FLAG, HEADER, type PieceRef,
 import { instantiate } from '../kernel';
 import { play } from '../pieces/behaviours/__tests__/harness';
 import { TENSION_CURVE, intensityAt } from '../pieces/pacing';
+import { FINALE_GENRE_VERSION, genreAtLeast } from '../pieces/pacing-parts';
 import { THROW_BOSS, THROW_SWING, type ThrowRoundsParams, swingSpeed } from '../pieces/throw';
 import { funMetrics, traceRun } from '../telemetry';
 import { runBot } from '../verify';
@@ -61,9 +62,11 @@ describe('throw game ends with a boss target (P47A T7, genre.v4)', () => {
   for (const [name, specOf] of THROW_GAMES) {
     it(`${name}: the last round's swinging target is a 3 HP enemy boss, the rounds are the genre.v3 rounds, the last round has the boss throws and the reserve`, () => {
       const spec = specOf();
-      expect(spec.genre?.compilerVersion).toBe('genre.v4');
+      expect(genreAtLeast(spec, FINALE_GENRE_VERSION)).toBe(true);
       for (const seed of SEEDS.slice(0, 4)) {
-        const world = worldOf(spec, seed);
+        // Stavba terče-bosse `genre.v4`: nová hra (`genre.v5`, P51 T6) má navíc útočníky, hody za ně a o jejich čas
+        // nejvýš o kolo míň – její kola, boss a hody hlídá `p51-foes.test.ts`.
+        const world = worldOf(withVersion(spec, 'genre.v4'), seed);
         const stored = worldOf(withVersion(spec, 'genre.v3'), seed);
         const rounds = roundsOf(world).rounds;
         const before = roundsOf(stored).rounds;

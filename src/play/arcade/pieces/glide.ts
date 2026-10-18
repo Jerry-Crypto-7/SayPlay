@@ -7,12 +7,62 @@ import { GRAVITY } from '../kernel';
 export const GLIDE = { size: 700, speed: 180, lateral: 120, acceleration: 10, drag: 8, reactionTicks: 8, halfGap: 1800, spacing: 20 * UNIT, ceiling: 14 * UNIT, bound: 12 * UNIT, current: 12, currentDepth: 4000 } as const;
 export const GLIDE_MODES = ['reach', 'collect', 'race', 'escape'] as const;
 export const glideNodeSchema = z.object({ x: z.int(), y: z.int(), z: z.int(), currentX: z.int().min(-12).max(12), currentY: z.int().min(-12).max(12) }).strict();
-export const glidePathSchema = z.array(glideNodeSchema).min(1).max(20);
+export const glidePathSchema = z.array(glideNodeSchema).min(1).max(40);
 export type GlideNode = z.infer<typeof glideNodeSchema>;
 export const glideControlParams = z.object({ topSpeed: z.int().min(120).max(240).default(GLIDE.speed), path: glidePathSchema, rivalIndex: z.int().min(1).optional() }).strict();
 export type GlideControlParams = z.infer<typeof glideControlParams>;
-export const glideCourseParams = z.object({ mode: z.enum(GLIDE_MODES).default('reach'), difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'), clearancePermille: z.int().min(250).max(1000).optional(), clearanceRisePermille: z.int().min(0).max(250).optional(), lengthM: z.int().min(80).max(400).default(160), topSpeed: z.int().min(120).max(240).default(GLIDE.speed) }).strict();
+export const glideCourseParams = z.object({ mode: z.enum(GLIDE_MODES).default('reach'), difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'), clearancePermille: z.int().min(250).max(1000).optional(), clearanceRisePermille: z.int().min(0).max(250).optional(), lengthM: z.int().min(80).max(400).default(160), topSpeed: z.int().min(120).max(240).default(GLIDE.speed),
+  /** Nová hra (P51 T3, nativní spec bez `genre`): průběh a tunel finále (`GLIDE_FINALE`). */
+  segments: z.literal(true).optional() }).strict();
 export type GlideCourseParams = z.infer<typeof glideCourseParams>;
+
+/**
+ * Finále klouzání (P51 T3, jen se značkou `segments`): posledních `stretch` jednotek před koncem kruhů je tunel
+ * kruhů po `spacing` s posunem nejvýš `shift` – zhoustlý konec, který telemetrie uzná jako `climax`. Rychlejší
+ * let má kruhy tunelu dál, aspoň `ticks` tiků nejvyšší rychlosti: reakce 8 + rozjezd a brzda bočního řízení 24
+ * + posun s rezervou 600 proti proudu (11) + 1 – jinak kontrola dosahu (`checkGlideLevel`) hru shodí.
+ * Nová hra má výchozí trať `lengthM` (≈ 28 s).
+ *
+ * Parametry režiséra (T5b, délka 80–400 m, rychlost 120–240): konec je 1,5× hustší jen když tunel trvá zhruba okno
+ * telemetrie (600 tiků), je aspoň `density`× hustší než úvod a okno je nejvýš ~44 % běhu. Tunel proto trvá
+ * stejně jako `stretch` při `GLIDE.speed` (≈ 611 tiků), úvod má kruhy aspoň `density` rozestupů tunelu (při 180
+ * a pomaleji `GLIDE.spacing`) a trať nové hry je aspoň tak dlouhá, aby podmínka telemetrie platila s rezervou
+ * `margin` (`glideFinaleMinM`; `window` a `factor` = `CLIMAX_TICKS`, `CLIMAX_FACTOR` telemetrie, pin v testu).
+ * Při 180 tak výchozí trať staví týž svět. Změřeno (4 semínka, intermediate): bez toho 80–250 m při 180
+ * a 300–400 m při 240 bez finále; mez při 180 leží mezi 250 m (1407 tiků) a 255 m (1434 tiků).
+ */
+export const GLIDE_FINALE = { stretch: 110 * UNIT, spacing: 8 * UNIT, ticks: 44, shift: 500, lengthM: 300, density: 2.5, window: 600, factor: 1.5, margin: 1.1 } as const;
+
+/** Rozestup kruhů tunelu: `spacing`, při rychlém letu aspoň `ticks` tiků nejvyšší rychlosti. */
+const tunnelSpacing = (topSpeed: number): number => Math.max(GLIDE_FINALE.spacing, GLIDE_FINALE.ticks * topSpeed);
+
+/** Začátek tunelu finále (z): `stretch` při `GLIDE.speed`, úměrně nejvyšší rychlosti, před posledním kruhem (8 m před cílem). */
+export const glideTunnelZ = (length: number, topSpeed: number): number => length - 8000 - Math.round(GLIDE_FINALE.stretch * topSpeed / GLIDE.speed);
+
+/**
+ * Nejkratší trať nové hry (m) při nejvyšší rychlosti `topSpeed`, na které kruhy v posledních `window` tikách splní
+ * podmínku finále telemetrie s rezervou `margin`. Běh ≈ trať / nejvyšší rychlost (rozjezd ho jen prodlouží).
+ */
+export function glideFinaleMinM(topSpeed: number): number {
+  let lengthM = 80;
+  for (; lengthM < 400; lengthM++) {
+    const length = lengthM * UNIT, zs = glideRingZs(length, true, topSpeed);
+    const late = zs.filter((z) => z >= length - GLIDE_FINALE.window * topSpeed).length;
+    if (late * length / topSpeed >= GLIDE_FINALE.margin * GLIDE_FINALE.factor * GLIDE_FINALE.window * zs.length) break;
+  }
+  return lengthM;
+}
+
+/** Polohy kruhů (z): po `GLIDE.spacing` do konce trati bez 8 m, nová hra s tunelem finále na konci. */
+export function glideRingZs(length: number, segments: boolean | undefined, topSpeed: number): number[] {
+  const last = length - 8000;
+  const tunnel = segments === true ? glideTunnelZ(length, topSpeed) : Infinity;
+  const tight = tunnelSpacing(topSpeed);
+  const spacing = segments === true ? Math.max(GLIDE.spacing, Math.round(GLIDE_FINALE.density * tight)) : GLIDE.spacing;
+  const zs: number[] = [];
+  for (let at = GLIDE.spacing; at <= last; at += at >= tunnel ? tight : spacing) zs.push(at);
+  return zs;
+}
 const clamp = (n: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, n));
 const toward = (n: number, goal: number, rate: number): number => n < goal ? Math.min(goal, n + rate) : Math.max(goal, n - rate);
 export interface GlideMotion { x: number; y: number; z: number; vx: number; vy: number; vz: number }
@@ -63,8 +113,13 @@ function generate(seed: number, params: GlideCourseParams): ArcadeLevel {
   const bodies: BodyInit[] = [{ role: 'player', kind: 'glider', x: 0, y: 4000, z: 0, w: GLIDE.size, h: GLIDE.size, d: GLIDE.size, solid: false }];
   let x = rng.pick([-1, 1]) * 3000;
   let y = 7500;
-  const shift = params.difficulty === 'easy' ? 1600 : params.difficulty === 'hard' ? 2600 : 2100;
-  for (let at = GLIDE.spacing; at <= length - 8000; at += GLIDE.spacing) {
+  const course = params.difficulty === 'easy' ? 1600 : params.difficulty === 'hard' ? 2600 : 2100;
+  const zs = glideRingZs(length, params.segments, params.topSpeed);
+  for (const [index, at] of zs.entries()) {
+    // Kruh tunelu (bližší než `GLIDE.spacing`) jen o `GLIDE_FINALE.shift` vedle předchozího.
+    const tight = (zs[index + 1] ?? at + GLIDE.spacing) - at < GLIDE.spacing;
+    const shift = tight ? GLIDE_FINALE.shift : course;
+    const rise = tight ? GLIDE_FINALE.shift : 1500;
     const section = Math.min(2, Math.floor(at * 3 / length));
     const baseClearance = params.clearancePermille ?? 1000;
     const clearance = Math.min(1000, baseClearance + Math.round((params.clearanceRisePermille ?? 0) * (2 - section) / 2));
@@ -76,7 +131,7 @@ function generate(seed: number, params: GlideCourseParams): ArcadeLevel {
     bodies.push(frame((-GLIDE.bound + left) / 2, 0, left + GLIDE.bound, GLIDE.ceiling), frame((right + GLIDE.bound) / 2, 0, GLIDE.bound - right, GLIDE.ceiling), frame(x, 0, 2 * gap, y - gap), frame(x, y + gap, 2 * gap, GLIDE.ceiling - y - gap));
     bodies.push({ role: 'platform', kind: 'glide-current', x, y: y - gap, z: at - 1000, w: 2 * gap, h: 2 * gap, d: GLIDE.currentDepth, solid: false });
     x = clamp(x + rng.int(-shift, shift), -5500, 5500);
-    y = clamp(y + rng.int(-1500, 1500), 3500, 10500);
+    y = clamp(y + rng.int(-rise, rise), 3500, 10500);
   }
   if (params.mode === 'race') bodies.push({ role: 'enemy', kind: 'glide-rival', x: 0, y: 6000, z: 10000, w: GLIDE.size, h: GLIDE.size, d: GLIDE.size, solid: false, kinematic: true, vz: Math.floor(params.topSpeed * 0.65) });
   if (params.mode === 'escape') bodies.push({ role: 'chaser', kind: 'glide-pursuer', x: 0, y: 4000, z: -12000, w: 1100, h: 1100, d: 1100, solid: false, kinematic: true, vz: params.topSpeed - 25 });
@@ -118,7 +173,7 @@ export function checkGlideLevel(level: ArcadeLevel, topSpeed: number = GLIDE.spe
 
 export const glideCourse: ModeGeneratorPiece<GlideCourseParams> = {
   id: 'glide_course', params: glideCourseParams, roles: ['player', 'obstacle', 'collectible', 'platform', 'enemy', 'chaser', 'goal'],
-  cost: params => ({ bodies: 3 + 6 * Math.ceil(params.lengthM * UNIT / GLIDE.spacing), rules: 6 }), generate,
+  cost: params => ({ bodies: 3 + 6 * Math.max(Math.ceil(params.lengthM * UNIT / GLIDE.spacing), glideRingZs(params.lengthM * UNIT, params.segments, params.topSpeed).length), rules: 6 }), generate,
   parts(seed, params, health) {
     const level = generate(seed, params);
     const rivalIndex = level.bodies.findIndex(body => body.kind === 'glide-rival');

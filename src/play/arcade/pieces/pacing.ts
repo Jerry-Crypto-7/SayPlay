@@ -18,13 +18,17 @@ import type { ArcadeParts } from '../addons';
 import type { CompiledInteract } from '../rules/interact';
 import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeLevel, type ArcadeObservation, type ArcadeRole, type ArcadeWorld, BODY, type BodyInit, type BotPiece, COUNTER, type ControlPiece, FLAG, HEADER, type PieceRef, ROLE, type RulePiece, UNIT, bodyBase, bodyHp, nativeRule, targetStateOf } from '../contract';
 import { ESCAPE } from './arena';
+import { CATCH_FINALE } from './arena-catch';
+import { BALL_FINALE } from './ball';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef, type BehaviourSpace, behaviourBodies, behaviourEffects, behaviourRefSchema, dodge, duplicateSignature, seenByBase, stepBehaviours } from './behaviours';
 import { DUEL_FOE, duelControl, enragedAfter } from './duel';
 import { FIGHT } from './fight';
+import { GLIDE, glideTunnelZ } from './glide';
 // Cykly `throw.ts` a `segments.ts` ↔ tenhle modul jsou bezpečné: ani jeden nečte hodnoty druhého při načtení, jen ve funkcích.
 import { type SegmentGenre, segmentScriptOf, segmentSpans } from './segments';
 import { type SteerCourse, steerSegments } from './steer';
 import { THROW_ROUND_COUNTER } from './throw';
+import { WALKER_CELL, WALKER_FINALE, type WalkerMap, walkerExit, walkerPath } from './walker';
 import { spotsAway, waveOf } from './waves';
 
 export const PACING = {
@@ -204,6 +208,8 @@ const botParams = z
     points: z.int().min(1).optional(),
     /** Tep: robot mince tepu nevidí (`withoutCoins`). */
     pulse: pulseRef.optional(),
+    /** Základní robot uhýbá tělům chování sám (`PacingSetup.ownDodge`): `dodge` se přeskočí. */
+    own: z.literal(true).optional(),
   })
   .strict();
 
@@ -380,7 +386,7 @@ export function makePacingBot(bots: Readonly<Record<string, BotPiece>>): BotPiec
       const seen = params.behaviours === undefined ? goal : seenByBase(goal, params.behaviours);
       const own = parseOnce(native, params.base.params);
       const input = native.decide(seen, params.steady === true ? own : scaledOnce(params.control, own, intensityOf(observation.state, params.keeper)));
-      return params.behaviours === undefined ? input : dodge(observation, params.behaviours, params.control, input);
+      return params.behaviours === undefined || params.own === true ? input : dodge(observation, params.behaviours, params.control, input);
     },
   };
 }
@@ -399,8 +405,12 @@ const ruleParams = z
     schedule: z.array(z.object({ atPermille: z.int().min(1).max(1000), template: z.int().min(1), count: z.int().min(1).max(PACING.maxActors), entry: z.int().min(0).max(3) }).strict()).max(32),
     /** Místa vstupu `[x, z]` po dvojicích; `track` = `z` je odstup před hráčem. */
     spots: z.array(z.int()).min(2).max(16),
+    /** Místa vstupu těl chování, když jinde než ostatní spawny (`PacingSetup.foeSpots`, stanoviště P51 T6). */
+    foeSpots: z.array(z.int()).min(2).max(16).optional(),
     space: z.enum(['plane', 'track']),
     maxActors: z.int().min(1).max(PACING.maxActors),
+    /** Předloha bosse, který přijde i přes plný `maxActors` (P51 T5, `genre.v5`) – má vlastní slot navíc. */
+    bossRoom: z.int().min(1).optional(),
     finale: z.enum(FINALES).optional(),
     /** Těla chování, která pravidlo nechá udeřit (`behaviourEffects`). */
     behaviours: behaviourRefs.optional(),
@@ -411,8 +421,11 @@ const ruleParams = z
      * uvolní plochu bossovi, nová chování odejdou před poslední vlnou.
      */
     clear: z.array(z.object({ role: z.int().min(1), at: z.int().min(1).max(1000) }).strict()).min(1).max(2).optional(),
-    /** Tep pole (P47A T9): předloha mince, tělo-počítadlo tepu a `beat` = tiky bez události v úvodu (`heartbeatAt`). */
-    pulse: z.object({ template: z.int().min(1), keeper: z.int().min(1), beat: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict().optional(),
+    /**
+     * Tep pole (P47A T9): předloha mince, tělo-počítadlo tepu a `beat` = tiky bez události v úvodu (`heartbeatAt`);
+     * `around` = místa jsou odstup od hráče a mince zůstane v ploše `|x|, |z| ≤ around` (chytání, P51 T4a).
+     */
+    pulse: z.object({ template: z.int().min(1), keeper: z.int().min(1), beat: z.int().min(1).max(ARCADE_LIMITS.maxTicks), around: z.int().min(1).optional() }).strict().optional(),
   })
   .strict();
 export type PacingRuleParams = z.infer<typeof ruleParams>;
@@ -422,11 +435,18 @@ export type PacingRuleParams = z.infer<typeof ruleParams>;
  * plochou (`heartbeatCoins`) tep místo ní odvolá minci nejdál od hráče. Obojí je událost a ovládání ji příští tik
  * zapíše (`markPulse`), takže tep přijde znovu až po dalším tichu. Mince předlohy život nevezme.
  */
-function heartbeatOf(state: Int32Array, player: number, pulse: NonNullable<PacingRuleParams['pulse']>, spots: readonly number[], reached: number): ArcadeEffect[] {
+function heartbeatOf(state: Int32Array, player: number, pulse: NonNullable<PacingRuleParams['pulse']>, places: readonly number[], space: PacingRuleParams['space'], reached: number): ArcadeEffect[] {
   if ((state[HEADER.tick] as number) - (state[bodyBase(pulse.keeper) + BODY.x] as number) < heartbeatAt(pulse.beat, reached)) return [];
   const coins = coinsOf(state, pulse.template);
   const t = bodyBase(pulse.template);
   const p = bodyBase(player);
+  // Trať (běžec, P51 T7): místo vstupu je odstup před hráčem. Kolem hráče (chytání, P51 T4a): odstup na obou osách, v ploše;
+  // odstup, který by vyjel z plochy, se zrcadlí na druhou stranu hráče – oříznutý by u zdi položil minci na hráče.
+  const around = pulse.around;
+  const aside = (value: number, at: number): number => (Math.abs(at + value) > around! ? at - value : at + value);
+  const spots = around !== undefined
+    ? places.map((value, index) => Math.max(-around, Math.min(around, aside(value, state[p + (index % 2 === 0 ? BODY.x : BODY.z)] as number))))
+    : space === 'track' ? places.map((value, index) => (index % 2 === 1 ? value + (state[p + BODY.z] as number) : value)) : places;
   // Čtverec vzdálenosti v celých číslech (za běhu žádná plovoucí čárka mimo přesný rozsah).
   const away = (body: number): number => ((state[bodyBase(body) + BODY.x] as number) - (state[p + BODY.x] as number)) ** 2 + ((state[bodyBase(body) + BODY.z] as number) - (state[p + BODY.z] as number)) ** 2;
   if (coins.length >= PACING.heartbeatCoins) return [{ kind: 'despawn', body: coins.reduce((far, body) => (away(body) > away(far) ? body : far)) }];
@@ -461,7 +481,7 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
     const before = state[keeper + BODY.aux1] as number;
     const reached = state[keeper + BODY.aux0] as number;
     const effects: ArcadeEffect[] = params.behaviours === undefined ? [] : behaviourEffects(state, player, params.behaviours, params.half);
-    if (params.pulse !== undefined) effects.push(...heartbeatOf(state, player, params.pulse, params.spots, reached));
+    if (params.pulse !== undefined) effects.push(...heartbeatOf(state, player, params.pulse, params.spots, params.space, reached));
     // Postup se v tomhle tiku nehnul: žádný krok rozvrhu ani úklid nepřešel.
     if (reached === before) return effects;
     const clears = (params.clear ?? []).filter((clear) => clear.at > before && clear.at <= reached);
@@ -476,18 +496,21 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
     const due = params.schedule.filter((entry) => entry.atPermille > before && entry.atPermille <= reached && !stale(entry));
     if (due.length === 0) return effects;
     let room = params.maxActors - actorsAlive(state, new Set(params.schedule.map((entry) => entry.template)));
-    const spots = params.spots.length >> 1;
-    const order = params.space === 'plane' ? spotsAway(state, player, params.spots) : [];
     const p = bodyBase(player);
     for (const entry of due) {
       const ref = params.behaviours?.find((candidate) => candidate.template === entry.template);
       const group = ref === undefined ? undefined : BEHAVIOURS[ref.id].group;
-      for (let k = 0; k < entry.count && room > 0; k += 1, room -= 1) {
+      // Tělo chování na vlastních místech, je-li svět má (stanoviště: kopie na pultu, nepřátelé zezadu kuchyně).
+      const places = ref !== undefined && params.foeSpots !== undefined ? params.foeSpots : params.spots;
+      const spots = places.length >> 1;
+      const order = params.space === 'plane' ? spotsAway(state, player, places) : [];
+      // Boss nové hry (`bossRoom`) přijde i do plna: hejno těsně před ním by mu jinak vzalo poslední místo a finále by nebylo (P51 T5).
+      for (let k = 0; k < entry.count && (room > 0 || entry.template === params.bossRoom); k += 1, room -= 1) {
         // Hejno přijde celé na jednom místě, po `spacing` vedle sebe (rovina) nebo za sebou (trať).
         const at = params.space === 'plane' ? (order[group === undefined ? k % spots : 0] as number) : (entry.entry + (group === undefined ? k : 0)) % spots;
         const shift = group === undefined ? 0 : Math.trunc(((2 * k - entry.count + 1) * group.spacing) / 2);
-        const x = (params.spots[2 * at] as number) + (params.space === 'plane' ? shift : 0);
-        const z = (params.spots[2 * at + 1] as number) + (params.space === 'track' ? (state[p + BODY.z] as number) + shift : 0);
+        const x = (places[2 * at] as number) + (params.space === 'plane' ? shift : 0);
+        const z = (places[2 * at + 1] as number) + (params.space === 'track' ? (state[p + BODY.z] as number) + shift : 0);
         // Výška předlohy: těla chování i boss stojí na zemi (0), stanoviště finále (T14) na pultu.
         effects.push({ kind: 'spawn', template: entry.template, x, y: state[bodyBase(entry.template) + BODY.y] as number, z, vx: 0, vy: 0, vz: 0 });
       }
@@ -513,6 +536,10 @@ export interface PacingSetup {
   readonly goal: PacingGoal;
   readonly space: BehaviourSpace;
   readonly spots: readonly number[];
+  /** Místa vstupu těl chování a bosse, když jinde než `spots` (stanoviště P51 T6: `spots` = kopie na pultu). */
+  readonly foeSpots?: readonly number[];
+  /** Základní robot uhýbá tělům chování sám (stanoviště P51 T6, `quest-bot.ts` `rowStep`); `pacing_bot` neuhýbá. */
+  readonly ownDodge?: true;
   /** Předlohy spawnů (`template: true`); prázdné = jen křivka bez spawnů. */
   readonly behaviours: readonly PacingActor[];
   /** Hra dostane jen tolik z `behaviours`, losem ze streamu `pacing` před rozvrhem; bez pole všechny. */
@@ -527,7 +554,7 @@ export interface PacingSetup {
    * Boss: tělo a postup v promile, na kterém přijde – jeden spawn mimo los rozvrhu, předloha za předlohami `behaviours`.
    * `behaviour` = chování bosse (výchozí `boss`; úkol má za bosse strážce nad poslední věcí).
    */
-  readonly boss?: { readonly body: BodyInit; readonly at: number; readonly behaviour?: BehaviourId };
+  readonly boss?: { readonly body: BodyInit; readonly at: number; readonly behaviour?: BehaviourId; readonly room?: true };
   /** Na postupu `at` ‰ odejdou živá těla role `role` (pronásledovatelé s příchodem bosse, chování před poslední vlnou). */
   readonly clear?: readonly { readonly role: BodyInit['role']; readonly at: number }[];
   /** Knoflíky žánru zůstanou, jak jsou (vlny si drží své zrychlení); křivka jen rozvrhuje spawny a finále. */
@@ -546,6 +573,11 @@ export interface PacingSetup {
   readonly script?: readonly SegmentNews[];
   /** Tep pole (P47A T9): předloha mince, která přijde po `PACING.heartbeat` tikách bez události (`heartbeatOf`). */
   readonly pulse?: BodyInit;
+  /**
+   * Mince tepu kolem hráče (P51 T4a, chytání): `spots` jsou odstup od hráče na obou osách a mince zůstane v ploše
+   * `|x|, |z| ≤ around`. Bez něj místa vstupu jako dřív.
+   */
+  readonly pulseAround?: number;
   /**
    * Mince tepu je jiskra (P47A T9, sběr a útěk s věcmi, `isSpark`): strážci ji nehlídají; `arena_eat` ji sebere bez
    * bodu a vlna věcí na ni nečeká (předlohu jim dá `pacingParts`).
@@ -707,19 +739,20 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
     });
   const bossed = setup.boss === undefined ? drawn : [...drawn, { atPermille: Math.max(1, setup.boss.at), template: first + behaviours.length, count: 1, entry: 0 }];
   const schedule = setup.extra === undefined ? bossed : [...bossed, { atPermille: Math.max(1, setup.extra.at), template: first + actors.length + shooters.length, count: setup.extra.count, entry: 0 }];
-  const pulse = setup.pulse === undefined ? {} : { pulse: { template: keeper - 1, keeper: keeper + 1, beat: PACING.heartbeat } };
+  const bossRoom = setup.boss?.room === true ? { bossRoom: first + behaviours.length } : {};
+  const pulse = setup.pulse === undefined ? {} : { pulse: { template: keeper - 1, keeper: keeper + 1, beat: PACING.heartbeat, ...(setup.pulseAround === undefined ? {} : { around: setup.pulseAround }) } };
   const half = parts.control.params.half;
   const edge = setup.space === 'plane' && shooters.length > 0 && typeof half === 'number' ? { half } : {};
   const clear = setup.clear === undefined || setup.clear.length === 0 ? {} : { clear: setup.clear.map((step) => ({ role: ROLE[step.role], at: Math.max(1, step.at) })) };
   const rule: PieceRef | null = schedule.length === 0 && setup.finale === undefined && refs.length === 0 ? null : {
-    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved, ...edge, ...clear, ...pulse },
+    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], ...(setup.foeSpots === undefined ? {} : { foeSpots: [...setup.foeSpots] }), space: setup.space, maxActors: PACING.maxActors, ...bossRoom, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved, ...edge, ...clear, ...pulse },
   };
-  const slots = (schedule.length === 0 ? 0 : PACING.maxActors) + (shooters.length === 0 ? 0 : PACING.maxShots) + (pulses.length === 0 ? 0 : PACING.heartbeatCoins);
+  const slots = (schedule.length === 0 ? 0 : PACING.maxActors + (setup.boss?.room === true ? 1 : 0)) + (shooters.length === 0 ? 0 : PACING.maxShots) + (pulses.length === 0 ? 0 : PACING.heartbeatCoins);
   const steady = setup.steady === true ? { steady: true as const } : {};
   return {
     ...parts,
     control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper, ...moved, ...(refs.length === 0 ? {} : { space: setup.space }), ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1, ...(setup.spark === true ? { spark: true } : {}) } }) } },
-    bot: { id: 'pacing_bot', params: { base: parts.bot, control: nativeControlId(parts.control), keeper, ...moved, ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1 } }) } },
+    bot: { id: 'pacing_bot', params: { base: parts.bot, control: nativeControlId(parts.control), keeper, ...moved, ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1 } }), ...(setup.ownDodge === true ? { own: true } : {}) } },
     level: { ...parts.level, bodies, spawnSlots: (parts.level.spawnSlots ?? 0) + slots },
     rules: rule === null ? parts.rules : [...parts.rules, rule],
   };
@@ -737,8 +770,10 @@ export type SegmentBeat = (typeof SEGMENT_BEATS)[number];
  * `pacing`: `champion` = šampion duelu (tělo soupeře převezme předlohu `duel.champion`), `bossTarget` = terč-boss
  * posledního kola hodu (`shot_hit.tough`), `rush` = spěch stanoviště (`interact.rush`), `shower` = déšť mincí
  * přežití (předloha mimo chování v rozvrhu finále `wave`). Svět bez nich (uložené hry) hlásí finále jako dřív.
+ * Finále nativních žánrů P51 (`nativeFinaleOf`): `exit` = stezka k východu chodce, `rings` = tunel kruhů klouzání,
+ * `prey` = kořist chytání po prvním chycení; soupeř-boss míče se hlásí jako `boss`.
  */
-export const FINALE_NEWS = ['champion', 'bossTarget', 'rush', 'shower'] as const;
+export const FINALE_NEWS = ['champion', 'bossTarget', 'rush', 'shower', 'exit', 'rings', 'prey'] as const;
 export type FinaleNews = (typeof FINALE_NEWS)[number];
 
 /**
@@ -937,7 +972,7 @@ export function bossKindOf(world: Pick<ArcadeWorld, 'rules' | 'initial' | 'kinds
 }
 
 /** Kus ovládání `id` v řetězu obalů (`params.base`: doplňky, průběh, fáze, skládání). */
-function controlIn(ref: PieceRef, id: string): PieceRef | undefined {
+export function controlIn(ref: PieceRef, id: string): PieceRef | undefined {
   if (ref.id === id) return ref;
   const base = ref.params.base;
   return typeof base === 'object' && base !== null ? controlIn(base as PieceRef, id) : undefined;
@@ -986,6 +1021,47 @@ interface BeatStep {
   readonly at?: number;
 }
 
+/** Těla počátečního stavu dané role; `alive` = jen živá. */
+const initialBodies = (world: BeatWorld, role: number, test: (body: number) => boolean = () => true): number[] =>
+  Array.from({ length: world.initial[HEADER.bodyCount] as number }, (_, body) => body).filter((body) => world.initial[bodyBase(body) + BODY.role] === role && test(body));
+const aliveIn = (state: Int32Array, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
+
+/**
+ * Finále nativních žánrů P51 (T3, T4), která staví generátor, ne pravidlo `pacing` (to má jen hodiny, `still`):
+ * `exit` = hráč na stezce jisker před východem chodce (posledních `WALKER_FINALE.trail` polí cesty, mince a východ),
+ * `rings` = hráč v tunelu kruhů klouzání (`glideTunnelZ`), `boss` = soupeř-boss míče (`BALL_FINALE`) sám na hřišti
+ * (padl poslední terč), `prey` = kořist chytání (`CATCH_FINALE`) po prvním chycení utekla. Jiný svět `undefined`.
+ */
+function nativeFinaleOf(world: BeatWorld, finale: (typeof FINALES)[number]): BeatStep | undefined {
+  const walker = controlIn(world.control, 'walker')?.params as (WalkerMap & { readonly speed: number }) | undefined;
+  if (finale === 'sprint' && walker !== undefined) {
+    const path = walkerPath(walker, walker.size + 1, walkerExit(walker, true));
+    const coin = world.kinds.indexOf('coin');
+    const tail = initialBodies(world, ROLE.collectible, (body) => world.initial[bodyBase(body) + BODY.kind] === coin).length > 0 ? 2 : 1;
+    const trail = new Set(path.slice(Math.max(1, path.length - tail - WALKER_FINALE.trail)));
+    return {
+      beat: 'exit',
+      on: (state) => {
+        const base = bodyBase(state[HEADER.player] as number);
+        return trail.has(Math.round((state[base + BODY.x] as number) / WALKER_CELL) + Math.round((state[base + BODY.z] as number) / WALKER_CELL) * walker.size);
+      },
+    };
+  }
+  const glide = controlIn(world.control, 'glide');
+  if (finale === 'sprint' && glide !== undefined) {
+    const tunnel = glideTunnelZ(world.length, Number(glide.params.topSpeed ?? GLIDE.speed));
+    return { beat: 'rings', on: (state) => playerZ(state) >= tunnel };
+  }
+  if (finale !== 'round') return undefined;
+  const contact = nativeRule(world.rules, 'arena_catch_contact')?.params as { readonly prey: number; readonly tough?: boolean } | undefined;
+  if (contact?.tough === true) return { beat: 'prey', on: (state) => bodyHp(state, contact.prey) < CATCH_FINALE.hp };
+  if (controlIn(world.control, 'ball') === undefined) return undefined;
+  const start = Int32Array.from(world.initial);
+  const rival = initialBodies(world, ROLE.enemy, (body) => bodyHp(start, body) === BALL_FINALE.hp)[0];
+  const targets = initialBodies(world, ROLE.target);
+  return rival === undefined ? undefined : { beat: 'boss', on: (state) => aliveIn(state, rival) && !targets.some((body) => aliveIn(state, body)) };
+}
+
 /**
  * Finále, které hra ohlásí, a kdy běží – mechanismem, který ho ve světě opravdu dělá: šampion = soupeř duelu
  * s modelem předlohy šampiona (otiskne ji ovládání v tiku, kdy padne předposlední soupeř), spěch = kolo arény od
@@ -1004,6 +1080,8 @@ function finaleStepOf(world: BeatWorld, params: PacingRuleParams & { readonly fi
   if (finale === 'bonus' && toughOf(world) !== undefined) return { beat: 'bossTarget', on: finaleOn(world, finale, keeper, []) };
   const shower = showerOf(params);
   if (shower !== undefined) return { beat: 'shower', on: (state) => copiesOf(state, shower.template).length > 0, at: shower.atPermille };
+  const native = nativeFinaleOf(world, finale);
+  if (native !== undefined) return native;
   // Boss je poslední předloha chování (`withPacing`).
   const boss = bossStepOf(params);
   return { beat: finale, on: finaleOn(world, finale, keeper, finale === 'boss' ? refs.slice(-1) : []), ...(boss === undefined ? {} : { at: boss.atPermille }) };

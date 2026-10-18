@@ -409,14 +409,17 @@ describe('spatial quest is paced (P45C T12 part B)', () => {
   });
 });
 
-describe('walker modes stay unpaced (P45C T12 part B, deviation)', () => {
+describe('stored walker games stay unpaced (P45C T12 part B, deviation; new games are paced since P51 T3)', () => {
   const WALKERS = liveCells().filter((cell) => generatorOf(compileRecipe(assemblyOfCell(cell))).startsWith('walker_'));
 
-  it('every walker cell is a native spec without genre: its world has no pacing, and the escape has no finale, win rule or win wrapper of its own', () => {
+  it('every walker cell is a native spec without genre: without the new-game mark its world has no pacing, and the escape has no finale, win rule or win wrapper of its own', () => {
     expect(WALKERS.map((cell) => cell.id).sort()).toEqual(['walk.collect', 'walk.collect+guard', 'walk.escape', 'walk.escape+collect', 'walk.escape+collect+guard', 'walk.reach', 'walk.reach+guard']);
     for (const cell of WALKERS) {
-      const spec = compileRecipe(assemblyOfCell(cell));
-      expect(spec.genre, cell.id).toBeUndefined();
+      const compiled = compileRecipe(assemblyOfCell(cell));
+      expect(compiled.genre, cell.id).toBeUndefined();
+      // Uložená hra (před P51 T3) značku `segments` nemá; nová hra s ní je v `p51-walker-glide.test.ts`.
+      const { segments: _segments, ...stored } = compiled.controlParams as Record<string, unknown>;
+      const spec = { ...compiled, controlParams: stored as GameSpecV1['controlParams'] };
       const generator = generatorOf(spec);
       const { generator: _generator, ...params } = spec.controlParams as Record<string, unknown>;
       for (const seed of [1, 2]) {

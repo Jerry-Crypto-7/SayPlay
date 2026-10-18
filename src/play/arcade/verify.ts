@@ -655,10 +655,15 @@ export function witnessRuns(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_
   const probes: ActionWitness[] = [];
   const probed = new Set<string>();
   const probeWorld = withoutPowerups(world);
-  for (const binding of roleBindings ?? []) {
+  // Na roli míří sonda nejdřív na tělo, které ve scéně je od startu: vazba podle kódu role (`bindRoles`) chytí i předlohy
+  // průběhu, a ve hře s díly (P51 T5, aréna s dílem `hazard`) leží díl za nimi – sonda by šla po nepříteli průběhu.
+  // Výběr jen v rámci role: pořadí rolí (a tedy sond a svědků) zůstává pořadím vazeb.
+  const present = (binding: RoleBinding): boolean => ((world.initial[bodyBase(binding.body) + BODY.flags] as number) & FLAG.alive) !== 0;
+  for (const listed of roleBindings ?? []) {
     // Jedna sonda na roli; v neúspěchu se žádná hrozba nepředpokládá.
-    if (binding.player || !['hazard', 'chaser', 'patrol'].includes(binding.roleKind) || probed.has(binding.roleId)) continue;
-    probed.add(binding.roleId);
+    if (listed.player || !['hazard', 'chaser', 'patrol'].includes(listed.roleKind) || probed.has(listed.roleId)) continue;
+    probed.add(listed.roleId);
+    const binding = roleBindings?.find((own) => own.roleId === listed.roleId && present(own)) ?? listed;
     const probe = runBot(probeWorld, library, { roleBindings, probeBody: binding.body, runId: `probe:${binding.roleId}` });
     probes.push(...probe.witnesses.filter(w => w.actor.roleId === binding.roleId));
   }

@@ -5,7 +5,7 @@ import { instantiate, loadProgram, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { loadRapier } from '../physics/world';
 import { releasePhysics } from '../physics/step';
-import { ballParams, ballPitch } from '../pieces/ball';
+import { ballFinaleSeconds, ballParams, ballPitch } from '../pieces/ball';
 import { assemblyOfCell, liveCells } from '../../compose/allowed';
 import { compileRecipe } from '../../compose/compile';
 import { nativeRecipeParams } from '../../director/answer-schema';
@@ -45,9 +45,12 @@ it('real launch recovery increases after completed goals and blocks early firing
   }
 });
 it('the deadline displayed by the HUD actually loses an idle run', () => {
-  const { world } = make();
-  expect(world.rules).toContainEqual({ id: 'time_limit', params: { seconds: 15 } });
+  const { spec, world } = make();
+  // Nová hra (P51 T4): tempo věty 15 s + hodiny na střely finále (`ballFinaleSeconds`); HUD čte totéž pravidlo `time_limit`.
+  const { generator: _generator, ...params } = spec.controlParams as Record<string, unknown>;
+  const seconds = Math.min(90, 15 + ballFinaleSeconds(ballParams.parse(params)));
+  expect(world.rules).toContainEqual({ id: 'time_limit', params: { seconds } });
   const idle = replay(world, [], ARCADE_LIBRARY);
   expect(idle.outcome).toBe('lost');
-  expect(idle.tick).toBeLessThanOrEqual(902);
+  expect(idle.tick).toBeLessThanOrEqual(seconds * 60 + 2);
 });

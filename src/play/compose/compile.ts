@@ -254,7 +254,9 @@ function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
     base = nativeSpec({ ...recipe, objective,
       actions: recipe.actions.filter(action => move === 'ball' ? ['kick', 'throw'].includes(action) : move === 'walk' ? action === 'collect' : ['shoot', 'collect'].includes(action)),
       threats: recipe.threats.filter(threat => move === 'ball' ? threat === 'rival' : move === 'walk' ? ['guard', 'chaser', 'obstacle'].includes(threat) : ['rival', 'chaser', 'obstacle'].includes(threat)) },
-    { ...content, params: { ...(move === 'glide' ? { clearancePermille: 275, clearanceRisePermille: 10 } : move === 'ball' && !sport ? BALL_DIFFICULTY[`ball.${objective}${recipe.threats.includes('rival') ? '+rival' : ''}`] : {}), ...content.params } });
+    { ...content, params: { ...(move === 'glide' ? { clearancePermille: 275, clearanceRisePermille: 10 } : move === 'ball' && !sport ? BALL_DIFFICULTY[`ball.${objective}${recipe.threats.includes('rival') ? '+rival' : ''}`] : {}), ...content.params } },
+    // A glide, walk or ball with parts gets no pacing (`GENRE_PACING`), so no finale course or rival either (P51 T3, T4).
+    parts.length === 0);
   } else {
     base = compileWith(GENRE_MODULES[content.genre] as GenreModule, content);
   }

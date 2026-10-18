@@ -36,7 +36,7 @@ import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
-import { type BodyView, PACING_KINDS, PACING_SHOT_KINDS, bodiesOf, bodiesStale, drawsNothing } from './bodies';
+import { type BodyView, PACING_KINDS, PACING_SHOT_KINDS, SPARK_KIND, bodiesOf, bodiesStale, drawsNothing } from './bodies';
 import { headingOf, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
@@ -118,7 +118,8 @@ export function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
   if (view.kind === 'turbo') return cast.props.turbo ?? view.kind;
   // P46C: power-up (`powerup_magnet` …) vlastní model nemá – krystal, ne 404 na `powerup_shield-lod1.glb`.
-  if (view.role === ROLE.powerup) return 'crystal';
+  // Totéž jiskra stezky finále chodce (`WALKER_FINALE`, P51 T3): `spark-lod1.glb` neleží nikde.
+  if (view.role === ROLE.powerup || view.kind === SPARK_KIND) return 'crystal';
   if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;

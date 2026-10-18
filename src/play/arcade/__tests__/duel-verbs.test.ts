@@ -80,7 +80,9 @@ describe('P47B T8: a duel without abilities builds the world it had before', () 
   // Semínko 1, změřeno nad 550c289e (před T8; duel se od abe38f04 nezměnil): otisk světa, tik a hash robota, hash nečinného hráče.
   // Otisk světa a oba hashe po sloučení s P47A (šampion `genre.v4`) přeměřeny na samotné P47A – týž jako sloučená větev.
   it('the sumo duel without abilities', () => {
-    const built = worldOf(withAbilities(draftGameSpecWithMeta(SUMO, 1).spec, []), 1);
+    // Otisk `genre.v4`: nová hra (`genre.v5`, P51 T6) má navíc hozenou věc soupeře – hlídá ji `p51-foes.test.ts`.
+    const plain = withAbilities(draftGameSpecWithMeta(SUMO, 1).spec, []);
+    const built = worldOf({ ...plain, genre: { ...plain.genre!, compilerVersion: 'genre.v4' } }, 1);
     expect(JSON.stringify([built.control, built.rules])).not.toMatch(/"verb"|"dodges"|duel_dodge/);
     const run = runBot(built);
     expect([fingerprint(built), run.tick, run.hash, replay(built, [], ARCADE_LIBRARY).hash]).toEqual(['389710414ae06416', 2469, '01605e5d', '61671e5c']);

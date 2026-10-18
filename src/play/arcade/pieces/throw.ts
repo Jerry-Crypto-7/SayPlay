@@ -103,8 +103,52 @@ export function launchVelocity(aim: number, charge: number): { vy: number; vz: n
 /**
  * `swing` (průběh P45C T14) = amplituda kyvu bonusových terčů: terč kola, který přišel efektem `spawn`
  * (jádro mu vynuluje `aux1`), dostane od ovládání periodu kyvadla ze své rychlosti (`swingPeriod`).
+ * `dive` (P51 T6, `THROW_DIVE`) = předloha útočníků, rychlost snášení (záporná), výška plížení, dosah a okno
+ * plížení v tikách: čekající útočníky ovládání pošle na hráče (`startDives`).
  */
-const controlParams = z.object({ swing: z.int().min(UNIT).max(10 * UNIT).optional() }).strict();
+const controlParams = z
+  .object({
+    swing: z.int().min(UNIT).max(10 * UNIT).optional(),
+    dive: z.object({ template: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1), drop: z.int().max(-1), low: z.int().min(0), reach: z.int().min(0), window: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict().optional(),
+  })
+  .strict();
+
+/** Živé tělo s podpisem předlohy `template` (role, model, rozměry) – útočník hodu. */
+function sameKind(state: Int32Array, body: number, template: number): boolean {
+  const a = bodyBase(body);
+  const b = bodyBase(template);
+  return body !== template && ((state[a + BODY.flags] as number) & FLAG.alive) !== 0 && [BODY.role, BODY.kind, BODY.w, BODY.h, BODY.d].every((slot) => state[a + slot] === state[b + slot]);
+}
+
+/**
+ * Útočníci (`THROW_DIVE`) čekají vysoko nad polem (`throw_rounds` je vysadí stojící nad každým obloukem hodu), dokud
+ * stojí nějaký cíl kola; pak se nejbližší snese (`drop` za tik) do výšky `low` a odtud se plíží na hráče – tak, aby na
+ * `reach` od hráče došel za `window` tiků od přistání, ať přistane kdekoli. Další se snese v tiku, kdy předchozí
+ * dosedne, pokud se už neplíží žádný dřívější – nejvýš dva naráz. Kolo tak končí náletem, ne čekáním.
+ */
+function startDives(state: Int32Array, dive: { readonly template: number; readonly drop: number; readonly low: number; readonly reach: number; readonly window: number }): void {
+  const count = state[HEADER.bodyCount] as number;
+  let next = -1;
+  let dropping = false;
+  let creeping = false;
+  let targets = false;
+  for (let i = 0; i < count; i += 1) {
+    const b = bodyBase(i);
+    if (((state[b + BODY.flags] as number) & FLAG.alive) !== 0 && state[b + BODY.role] === ROLE.target) targets = true;
+    if (!sameKind(state, i, dive.template)) continue;
+    const y = state[b + BODY.y] as number;
+    if ((state[b + BODY.vy] as number) < 0 && y <= dive.low) {
+      // Dosedl přesně na `low`: plíží se vpřed na hráče (a další se může snést).
+      state[b + BODY.vy] = 0;
+      state[b + BODY.vz] = -Math.max(1, Math.ceil(((state[b + BODY.z] as number) - dive.reach) / dive.window));
+    } else if ((state[b + BODY.vy] as number) < 0) {
+      state[b + BODY.vy] = Math.max(dive.drop, dive.low - y);
+      dropping = true;
+    } else if (state[b + BODY.vz] !== 0) creeping = true;
+    else if (next < 0 || (state[b + BODY.z] as number) < (state[bodyBase(next) + BODY.z] as number)) next = i;
+  }
+  if (!targets && !dropping && !creeping && next >= 0) state[bodyBase(next) + BODY.vy] = dive.drop;
+}
 
 /** Tiky jednoho kyvu bonusového terče (sudé): za tolik tiků přejede z kraje na kraj. */
 export const swingPeriod = (speed: number, amplitude: number): number => 2 * Math.round(amplitude / speed);
@@ -130,6 +174,7 @@ export const throwControl: ControlPiece<z.infer<typeof controlParams>> = {
   cost: () => ({ bodies: 1, rules: 0 }),
   step: (state, player, input, params) => {
     if (params.swing !== undefined) startSwings(state, params.swing);
+    if (params.dive !== undefined) startDives(state, params.dive);
     const base = bodyBase(player);
     state[base + BODY.vx] = 0;
     state[base + BODY.vz] = 0;
@@ -338,6 +383,8 @@ const generatorParams = z
     swing: z.literal(true).optional(),
     /** Průběh P47A T7 (jen `genre.v4`): bonusový terč posledního kola je terč-boss (`THROW_BOSS`). Jen se `swing`. */
     boss: z.literal(true).optional(),
+    /** Průběh P51 T6 (jen `genre.v5`): do posledních kol přiletí útočníci (`THROW_DIVE`). Jen s koly. */
+    dive: z.literal(true).optional(),
   })
   .strict();
 export type ThrowParams = z.infer<typeof generatorParams>;
@@ -381,6 +428,44 @@ export const THROW_SWING = {
  * s ním dala začátečníkovi 20/20.
  */
 export const THROW_BOSS = { hp: 3, reserve: 2 } as const;
+
+/**
+ * Útočníci hodu (P51 T6, jen nová hra `genre.v5`, parametr `dive`): do posledních kol přiletí s jejich začátkem
+ * útočníci – `counts[0]` do posledního, `counts[1]` do předposledního. Čekají v řadě nad polem blízko hráče
+ * (`from`, každý další o `gap` dál) ve výšce `wait` – nad vrcholem každého oblouku hodu (plný hod pod 45° vrcholí
+ * ~7,8 m), takže hodům na cíle nepřekážejí. Až padne poslední cíl kola, snese se nejbližší (`drop` za tik) do výšky
+ * `low` a odtud se plíží na hráče tak, aby na `reach` od hráče došel za `window` tiků od přistání; jakmile dosedne,
+ * snáší se další, pokud se už neplíží žádný dřívější (`startDives`). Role nepřítele: míček je sestřelí (bod) a kolo
+ * na ně čeká jako na cíle. Kdo se doplíží na `reach`, vezme hráči `steal` hodů (nejvýš, co má) a zmizí – nechat
+ * ho doplížit je dražší než ho sestřelit, a hody došly = prohra. Kolo s útočníky má za každého `throws` hodů navíc
+ * a jejich odhad (`seconds` za útočníka) jde do rozpočtu kol: o tolik posledních kol míň, kolik přetáhne (hodiny
+ * zůstávají; křivka rychlostí kyvu jde dál přes kola před úbytkem, `buildField`). Blízký útočník padne krátkým
+ * hodem, takže konec kola zhoustne (telemetrie `rising`).
+ *
+ * Změřeno na buňce `throw.default` (12 semínek, intermediate / novice / `rising`; bez útočníků 12 / 6 / 0, hodiny
+ * 52 s, dlouhá semínka 46–48 s, začátečník je přetáhne):
+ * - útočníci s kolem rovnou na hráče (24 m, 1 m/s): 5 / 5 / 0 – útočník stál robota ~1,9 s a dal 2–3 události, konec
+ *   nezhoustl a dlouhé hry přetáhly 52 s; přílet z dálky až po vyčištění kola: 5 / 5 / 0;
+ * - snesení a plížení bez rozpočtu kol: 5 / 5 / 5; s rozpočtem (o kolo míň) a pomalým plížením: 12 / 12 / 12 –
+ *   začátečník dostal kolo času navíc; plížení do pevného okna vždy jen jeden: novice 10 → 0 mezi 34 a 30 tiky;
+ * - další se snese, když předchozí dosedne, 4 + 4 útočníci (`window` 42 / 46 / 50 / 54 / 60): intermediate
+ *   5 / 12 / 12 / 12 / 12, novice 1 / 5 / 5 / 6 / 12, `rising` 12/12 od 46; dlouhá semínka intermediate 42,5–44,4 s.
+ *   S 4 + 3 jedno semínko poměr 1,0 (`rising` 11/12), s 5 + 4 novice 0 / 5 / 5 při 46 / 50 / 54.
+ */
+export const THROW_DIVE = {
+  body: { role: 'enemy', kind: 'enemy', x: 0, y: 0, z: 0, w: 1200, h: 900, d: 1200, solid: false, kinematic: true } as BodyInit,
+  wait: 9000,
+  low: 2400,
+  from: 5 * UNIT,
+  gap: 1500,
+  drop: 400,
+  window: 50,
+  reach: 3 * UNIT,
+  steal: 2,
+  counts: [4, 4] as readonly number[],
+  seconds: 1,
+  throws: 1,
+} as const;
 
 /** Bonusový terč na čáře hodu (`x` 0); místo mu dá `bonusOf`, kraj a rychlost `swingAt`. */
 const BONUS: BodyInit = { role: 'target', kind: 'target', x: 0, y: 0, z: 0, ...THROW_SWING.body, solid: false, kinematic: true };
@@ -540,6 +625,8 @@ const roundsParams = z
             throws: z.int().min(1).max(30),
             /** Bonusový terč kola (P45C T14): předloha, x, y, z a rychlost kyvu `vx` – periodu mu dá ovládání (`swing`). */
             swing: z.tuple([roundBody, z.int(), z.int(), z.int(), z.int()]).optional(),
+            /** Útočníků kola (P51 T6, `dive`): od jeho začátku čekají v řadě nad polem. */
+            dives: z.int().min(1).max(6).optional(),
           })
           .strict(),
       )
@@ -547,6 +634,8 @@ const roundsParams = z
       .max(THROW_ROUNDS.max - 1),
     /** Předlohy opěr (tyč koše, podstavec terče): živá překážka jejich druhu s koncem kola zmizí. */
     supports: z.array(roundBody).max(4),
+    /** Útočníci (P51 T6, `THROW_DIVE`): předloha, výška, kde čeká první a o kolik dál další, kde už berou hody a kolik. */
+    dive: z.object({ template: roundBody, y: z.int().min(0), from: z.int().min(1), gap: z.int().min(0), reach: z.int().min(0), steal: z.int().min(1).max(10) }).strict().optional(),
   })
   .strict();
 export type ThrowRoundsParams = z.infer<typeof roundsParams>;
@@ -558,6 +647,9 @@ interface ThrowBuild {
   /** Předloha terče-bosse posledního kola (`THROW_BOSS`); bez něj chybí. */
   readonly tough?: number;
 }
+
+/** Útočníků kola `index` z `count` kol od druhého (`THROW_DIVE.counts` od posledního); jen s `dive`. */
+const divesAt = (index: number, count: number): number => THROW_DIVE.counts[count - 1 - index] ?? 0;
 
 /**
  * Pole hodu a jeho kola. Bez `budget` přesně dřívější pole (stejné losy).
@@ -602,7 +694,7 @@ function buildField(seed: number, params: ThrowParams): ThrowBuild {
     }
     return at;
   };
-  const planned: { readonly bodies: readonly BodyInit[]; readonly throws: number; readonly bonus: BodyInit | null }[] = [];
+  const planned: { readonly bodies: readonly BodyInit[]; readonly throws: number; readonly bonus: BodyInit | null; readonly seconds: number }[] = [];
   const bonusSeconds = (bonus: BodyInit | null): number => (bonus === null ? 0 : THROW_SWING.seconds);
   let seconds = throwRoundSeconds(goals) + bonusSeconds(firstBonus);
   let widest = 0;
@@ -612,15 +704,20 @@ function buildField(seed: number, params: ThrowParams): ThrowBuild {
     placeGoals(rng, scratch, goal, tier, shift, Math.min(THROW_ROUNDS.towerMax, tier.towerHeight + Math.floor(k / 2)), goal === 'hoop' ? 0 : 2);
     const bonus = swing ? bonusOf(scratch, field) : null;
     const round = scratch.slice(field).flatMap(inSteps);
-    const next = seconds + throwRoundSeconds(targetsIn(round)) + bonusSeconds(bonus);
-    if (next > params.budget) break;
-    seconds = next;
+    const own = throwRoundSeconds(targetsIn(round)) + bonusSeconds(bonus);
+    if (seconds + own > params.budget) break;
+    seconds += own;
     widest = Math.max(widest, round.length + (bonus === null ? 0 : 1));
-    planned.push({ bodies: round, throws: targetsIn(round) + (bonus === null ? 0 : 1) + Math.max(THROW_ROUNDS.spareMin, spare - Math.ceil(k / 2)), bonus });
+    planned.push({ bodies: round, throws: targetsIn(round) + (bonus === null ? 0 : 1) + Math.max(THROW_ROUNDS.spareMin, spare - Math.ceil(k / 2)), bonus, seconds: own });
   }
+  // Útočníci (P51 T6) jdou do rozpočtu kol: o tolik posledních kol míň, kolik jejich odhad přetáhne (jedno kolo zůstane).
+  const diveSeconds = (count: number): number => (params.dive === true ? Array.from({ length: count }, (_, index) => divesAt(index, count)).reduce((sum, dives) => sum + dives, 0) * THROW_DIVE.seconds : 0);
+  // Křivka rychlostí jde přes kola před úbytkem: kola, která zůstala, se kývou jako bez útočníků, boss rychlostí finále.
+  const curveRounds = planned.length;
+  while (planned.length > 1 && seconds + diveSeconds(planned.length) > params.budget) seconds -= planned.pop()!.seconds;
   if (planned.length === 0) return single();
   // Rychlost bonusového terče kola `k` z intenzity uprostřed kola: první kolo úvod, poslední finále.
-  const speedOf = (k: number): number => swingSpeed(intensityAt(Math.floor(((2 * k + 1) * 500) / (planned.length + 1)), TENSION_CURVE));
+  const speedOf = (k: number): number => swingSpeed(intensityAt(Math.floor(((2 * k + 1) * 500) / (curveRounds + 1)), TENSION_CURVE));
   const firstAt = bodies.length - 1;
   if (firstBonus !== null) bodies[firstAt] = swingAt(firstBonus, speedOf(0), 0);
   // Terč-boss (P47A T7) místo bonusového terče posledního kola, za cíli kola; bez místa zůstane kolo jak je.
@@ -637,18 +734,27 @@ function buildField(seed: number, params: ThrowParams): ThrowBuild {
     const orphan = (body: BodyInit): boolean =>
       body.role === 'obstacle' && [...dropped].some((k) => round.bodies[k]!.x === body.x && body.z - round.bodies[k]!.z >= 0 && body.z - round.bodies[k]!.z <= POLE_BEHIND);
     const spawned = round.bodies.filter((body, k) => !dropped.has(k) && !orphan(body));
-    const own = { bodies: spawned.flatMap((body) => [bodies.length + templateOf(body), body.x, body.y, body.z]), throws: round.throws + (bossRound ? THROW_BOSS.hp - dropped.size - 1 + THROW_BOSS.reserve : 0) };
+    // Útočníci kola (P51 T6): hod navíc za každého.
+    const dives = params.dive === true ? divesAt(index, planned.length) : 0;
+    const own = {
+      bodies: spawned.flatMap((body) => [bodies.length + templateOf(body), body.x, body.y, body.z]),
+      throws: round.throws + (bossRound ? THROW_BOSS.hp - dropped.size - 1 + THROW_BOSS.reserve : 0) + dives * THROW_DIVE.throws,
+      ...(dives === 0 ? {} : { dives }),
+    };
     const target = bossRound ? boss : round.bonus;
     if (target === null) return own;
-    const bonus = swingAt(target, speedOf(index + 1), index + 1);
+    const bonus = swingAt(target, speedOf(index === final ? curveRounds : index + 1), index + 1);
     const template = bodies.length + templateOf(bonus);
     if (bossRound) tough = template;
     return { ...own, swing: [template, bonus.x, bonus.y, bonus.z, bonus.vx ?? 0] as [number, number, number, number, number] };
   });
   const supports = templates.flatMap((body, k) => (body.role === 'obstacle' ? [bodies.length + k] : []));
+  // Předloha útočníků až za předlohami kol: indexy předloh, které kola znají ze `genre.v4`, se nehnou.
+  const dive = params.dive === true ? { template: bodies.length + templateOf(THROW_DIVE.body), y: THROW_DIVE.wait, from: THROW_DIVE.from, gap: THROW_DIVE.gap, reach: THROW_DIVE.reach, steal: THROW_DIVE.steal } : undefined;
+  const divers = Math.max(0, ...rounds.map((round) => round.dives ?? 0));
   return {
-    level: { bodies: [...bodies, ...templates], length: 0, spawnSlots: 3 + widest, counters: { ammo: throws, reserve: 0 } },
-    rounds: { rounds, supports },
+    level: { bodies: [...bodies, ...templates], length: 0, spawnSlots: 3 + widest + divers, counters: { ammo: throws, reserve: 0 } },
+    rounds: { rounds, supports, ...(dive === undefined ? {} : { dive }) },
     ...(tough === undefined ? {} : { tough }),
   };
 }
@@ -679,7 +785,8 @@ export function throwParts(seed: number, params: ThrowParams): { readonly level:
  * Konec kola (spouštěč `counter`): pole je čisté → v posledním kole výhra,
  * jinak opěry kola zmiznou, přijdou těla dalšího kola, hody na počet kola
  * a čítač kola o jedno výš. Poslední míček ve vzduchu nic nemění: kolo
- * začíná, až žádný cíl nestojí.
+ * začíná, až žádný cíl nestojí. S útočníky (`dive`, P51 T6) přijdou s kolem i ti
+ * a každý tik vezme hody ten, kdo se doplížil k hráči (`diveArrivals`).
  */
 export const throwRounds: RulePiece<ThrowRoundsParams> = {
   id: 'throw_rounds',
@@ -688,7 +795,9 @@ export const throwRounds: RulePiece<ThrowRoundsParams> = {
   trigger: 'counter',
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state }, params) => {
-    if (census(state).foes > 0) return [];
+    // Útočníci, kteří doletěli k hráči, vezmou hody a zmizí – i uprostřed kola (P51 T6).
+    const arrived = params.dive === undefined ? [] : diveArrivals(state, params.dive);
+    if (census(state).foes > 0) return arrived;
     const next = params.rounds[state[HEADER.counters + COUNTER[THROW_ROUND_COUNTER]] as number];
     if (next === undefined) return [{ kind: 'win' }];
     const effects: ArcadeEffect[] = [];
@@ -699,11 +808,28 @@ export const throwRounds: RulePiece<ThrowRoundsParams> = {
     }
     for (let k = 0; k + 3 < next.bodies.length; k += 4) effects.push({ kind: 'spawn', template: next.bodies[k]!, x: next.bodies[k + 1]!, y: next.bodies[k + 2]!, z: next.bodies[k + 3]!, vx: 0, vy: 0, vz: 0 });
     if (next.swing !== undefined) effects.push({ kind: 'spawn', template: next.swing[0], x: next.swing[1], y: next.swing[2], z: next.swing[3], vx: next.swing[4], vy: 0, vz: 0 });
+    const { dive } = params;
+    // Útočníci kola čekají v řadě za polem; vrhne je na hráče ovládání (`startDives`).
+    if (dive !== undefined) for (let k = 0; k < (next.dives ?? 0); k += 1) effects.push({ kind: 'spawn', template: dive.template, x: 0, y: dive.y, z: dive.from + k * dive.gap, vx: 0, vy: 0, vz: 0 });
     effects.push({ kind: 'count', counter: 'ammo', amount: next.throws - (state[HEADER.counters + COUNTER.ammo] as number) });
     effects.push({ kind: 'count', counter: THROW_ROUND_COUNTER, amount: 1 });
     return effects;
   },
 };
+
+/** Útočníci na `reach` od hráče a blíž: každý zmizí a vezme `steal` hodů, dokud nějaké jsou. */
+function diveArrivals(state: Int32Array, dive: NonNullable<ThrowRoundsParams['dive']>): ArcadeEffect[] {
+  const effects: ArcadeEffect[] = [];
+  let ammo = state[HEADER.counters + COUNTER.ammo] as number;
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    if (!sameKind(state, i, dive.template) || (state[bodyBase(i) + BODY.z] as number) > dive.reach) continue;
+    const taken = Math.min(dive.steal, Math.max(0, ammo));
+    ammo -= taken;
+    effects.push({ kind: 'despawn', body: i });
+    if (taken > 0) effects.push({ kind: 'count', counter: 'ammo', amount: -taken });
+  }
+  return effects;
+}
 
 /** Tvrzení „hratelné z konstrukce“ nad hotovým polem; prázdné pole = hratelné. */
 export function checkThrowLevel(level: ArcadeLevel): string[] {

@@ -18,7 +18,7 @@ import { arcadeWorldOf } from '../compile';
 import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, type PieceRef, ROLE, bodyBase, underlyingRule } from '../contract';
 import { instantiate } from '../kernel';
 import { play } from '../pieces/behaviours/__tests__/harness';
-import { FINALE_GENRE_VERSION } from '../pieces/pacing-parts';
+import { FINALE_GENRE_VERSION, genreAtLeast } from '../pieces/pacing-parts';
 import { QUEST } from '../pieces/quest';
 import { waveOf } from '../pieces/waves';
 import type { CompiledInteract } from '../rules/interact';
@@ -80,6 +80,19 @@ const STORED_PINS: readonly { readonly game: string; readonly text: string | nul
   { game: 's04', text: 'Serve drinks at a busy beach bar', seed: 2, world: 'cc9fdf00490fe9a8636afcb7a9bd3e39292373287e1d2f1e876ce80d4cb63d35', bot: '3a252cb3' },
 ];
 
+/**
+ * Uložené `genre.v4` hry nad `04700849` (před P51; vrhači `genre.v5` ubírají kola jen nové hře): sha256 světa
+ * a hash robota intermediate – změřené nad `04700849` i nad P51 T9 se stejným výsledkem (revize fáze 3 P51, nález 3).
+ */
+const STORED_V4_PINS: typeof STORED_PINS = [
+  { game: 'cell', text: null, seed: 1, world: '050f78c0d83ad875367049b729f122193845f4ab3c52235f238154643e556944', bot: 'a41c2b3a' },
+  { game: 'cell', text: null, seed: 2, world: 'f2851c911c673a06a7606aff799c938e8d83ce7673714e10ee5c5912114ac620', bot: '9c54747c' },
+  { game: 's01', text: 'Cook burgers for hungry customers at a diner', seed: 1, world: '78cdcc1fccd549d51bfe9158e67ececabbba0b129569afbfe06964bd31761c0e', bot: '19df6f68' },
+  { game: 's01', text: 'Cook burgers for hungry customers at a diner', seed: 2, world: '5cca2dd5e405668690be31ab17d18303bf52d72f5ff1a30ccd02f93b56fe5d23', bot: '1dcf987a' },
+  { game: 's04', text: 'Serve drinks at a busy beach bar', seed: 1, world: 'ddb1fa0e31e49948fb536b2b4afc5ff80ab4c4b37209ec295355d197787ac055', bot: '44af5807' },
+  { game: 's04', text: 'Serve drinks at a busy beach bar', seed: 2, world: '57a20f07ef5b4d3ea76913474c30c5c09cd4308844fa90fdc587d7f0bb253ecd', bot: '3f6c3a51' },
+];
+
 /** Tik začátku posledního kola v běhu robota (−1 = nedošel). */
 function lastRoundStart(world: ArcadeWorld, inputs: Parameters<typeof play>[1]): number {
   const last = roundsOf(world) - 1;
@@ -93,7 +106,7 @@ function lastRoundStart(world: ArcadeWorld, inputs: Parameters<typeof play>[1]):
 describe('station quest ends with a rush round (P47A T5, genre.v4)', () => {
   it('genre.v4 is the version the rush waits for', () => {
     expect(FINALE_GENRE_VERSION).toBe('genre.v4');
-    expect(cellSpec().genre?.compilerVersion).toBe('genre.v4');
+    expect(genreAtLeast(cellSpec(), FINALE_GENRE_VERSION)).toBe(true);
   });
 
   for (const [name, specOf] of STATION_GAMES) {
@@ -105,7 +118,8 @@ describe('station quest ends with a rush round (P47A T5, genre.v4)', () => {
       expect(storedInteract.rush, 'v3 has no rush').toBeUndefined();
       const storedLast = boilLimit(storedBoil, roundsOf(stored) - 1);
       for (const seed of SEEDS) {
-        const world = worldOf(spec, seed);
+        // Stavba spěchu `genre.v4`; nová hra (`genre.v5`) má navíc vrhače a o jejich čas míň kol (`p51-foes.test.ts`).
+        const world = worldOf(withVersion(spec, 'genre.v4'), seed);
         const rounds = roundsOf(world);
         const interact = interactOf(world);
         const rush = interact.rush!;
@@ -175,12 +189,14 @@ describe('station quest ends with a rush round (P47A T5, genre.v4)', () => {
     expect(novice / BAND_SEEDS.length).toBeLessThanOrEqual(0.7);
   }, 600_000);
 
-  it('a stored genre.v3 station game builds the same world and the bot plays the same hash', () => {
-    for (const pin of STORED_PINS) {
-      const spec = withVersion(pin.text === null ? cellSpec() : draft(pin.text), 'genre.v3');
-      const world = worldOf(spec, pin.seed);
-      expect(createHash('sha256').update(JSON.stringify(world)).digest('hex'), `${pin.game} seed ${pin.seed}`).toBe(pin.world);
-      expect(runBot(world, undefined, { profile: 'intermediate' }).hash, `${pin.game} seed ${pin.seed}`).toBe(pin.bot);
-    }
-  });
+  for (const [version, pins] of [['genre.v3', STORED_PINS], ['genre.v4', STORED_V4_PINS]] as const) {
+    it(`a stored ${version} station game builds the same world and the bot plays the same hash`, () => {
+      for (const pin of pins) {
+        const spec = withVersion(pin.text === null ? cellSpec() : draft(pin.text), version);
+        const world = worldOf(spec, pin.seed);
+        expect(createHash('sha256').update(JSON.stringify(world)).digest('hex'), `${pin.game} seed ${pin.seed}`).toBe(pin.world);
+        expect(runBot(world, undefined, { profile: 'intermediate' }).hash, `${pin.game} seed ${pin.seed}`).toBe(pin.bot);
+      }
+    });
+  }
 });

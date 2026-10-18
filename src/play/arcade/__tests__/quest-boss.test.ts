@@ -18,7 +18,7 @@ import { instantiate } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { type BehaviourRef, behaviourBodies } from '../pieces/behaviours';
 import { play } from '../pieces/behaviours/__tests__/harness';
-import { FIELD, FINALE_GENRE_VERSION, GUARDIAN_BOSS } from '../pieces/pacing-parts';
+import { FIELD, FINALE_GENRE_VERSION, GUARDIAN_BOSS, genreAtLeast } from '../pieces/pacing-parts';
 import { QUEST } from '../pieces/quest';
 import { type WaveParams, waveOf } from '../pieces/waves';
 import { loadRapier } from '../physics/world';
@@ -95,7 +95,7 @@ describe('spatial quest: the finale boss carries the last round and can be beate
   it('v4 has a beatable plane boss whose drop is the last round; the same game stored as v3 keeps the guardian', () => {
     for (const [id, make] of QUEST_GAMES) {
       const spec = make();
-      expect(spec.genre?.compilerVersion, id).toBe(FINALE_GENRE_VERSION);
+      expect(genreAtLeast(spec, FINALE_GENRE_VERSION), id).toBe(true);
       for (const seed of SEEDS.slice(0, 3)) {
         const world = worldOf(spec, seed);
         const stored = worldOf(withVersion(spec, 'genre.v3'), seed);

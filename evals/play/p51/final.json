@@ -1,0 +1,6728 @@
+{
+ "schema": "p51-final.v1",
+ "set": "p51-holdout",
+ "holdout": {
+  "path": "evals/play/p51/holdout.json",
+  "sha256": "3b36fe64a2d7864245799f62bf91ce8a0423c45c7900c36efa640f03db321352",
+  "verifiedBeforeRead": true,
+  "openedAt": "2026-10-18T16:43:23Z",
+  "sentences": 60
+ },
+ "a": {
+  "commit": "0618344a",
+  "note": "T2: genre.v5 tag with nothing gated on it, world of origin/main 04700849 (baseline.json)",
+  "compiler": "genre.v5"
+ },
+ "b": {
+  "branch": "features/P51-finale-nepratele-mrtvy-cas-2026-10-17",
+  "commit": "1b8204b9",
+  "compiler": "genre.v5"
+ },
+ "profile": "intermediate",
+ "seed": "publication seed (publishedWorld, p45/fun.ts)",
+ "gauge": "evals/play/p47a/finale.measure.ts (P47A_SET=p51 P47A_HOLDOUT=1)",
+ "targets": {
+  "finaleShare": {
+   "a": 0.77,
+   "value": 0.93,
+   "goal": ">= 0.8",
+   "met": true
+  },
+  "behavioursMedian": {
+   "a": 2,
+   "value": 2.5,
+   "goal": ">= 2",
+   "met": true
+  },
+  "deadTimeMedianS": {
+   "a": 3.22,
+   "value": 2.5,
+   "goal": "<= 3",
+   "met": true
+  },
+  "risingShare": {
+   "a": 0.78,
+   "value": 0.93,
+   "goal": ">= 0.7",
+   "met": true
+  },
+  "playableShare": {
+   "a": 1,
+   "value": 1,
+   "goal": "= 1",
+   "met": true
+  },
+  "genreDeadTimeMaxS": {
+   "a": 18.18,
+   "value": 7.93,
+   "goal": "<= 4 in every genre",
+   "met": false,
+   "over": [
+    "arena.fight",
+    "control:ball"
+   ]
+  }
+ },
+ "byGenre": {
+  "arena.collect": {
+   "a": {
+    "sentences": 13,
+    "built": 13,
+    "playable": 13,
+    "pacedShare": 0.77,
+    "reasons": {
+     "assembly": 3
+    },
+    "finaleShare": 0.85,
+    "bossShare": 0.77,
+    "behavioursMedian": 3,
+    "deadTimeMedianS": 2.22,
+    "risingShare": 0.85,
+    "segmentChanges2Share": 0.77
+   },
+   "b": {
+    "sentences": 13,
+    "built": 13,
+    "playable": 13,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 4,
+    "deadTimeMedianS": 2.22,
+    "risingShare": 1,
+    "segmentChanges2Share": 1
+   }
+  },
+  "arena.fight": {
+   "a": {
+    "sentences": 2,
+    "built": 2,
+    "playable": 2,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 4,
+    "deadTimeMedianS": 7.93,
+    "risingShare": 0.5,
+    "segmentChanges2Share": 1
+   },
+   "b": {
+    "sentences": 2,
+    "built": 2,
+    "playable": 2,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 4,
+    "deadTimeMedianS": 7.93,
+    "risingShare": 0.5,
+    "segmentChanges2Share": 1
+   }
+  },
+  "control:ball": {
+   "a": {
+    "sentences": 2,
+    "built": 2,
+    "playable": 2,
+    "pacedShare": 0,
+    "reasons": {
+     "entry": 2
+    },
+    "finaleShare": 0,
+    "bossShare": 0,
+    "behavioursMedian": 0,
+    "deadTimeMedianS": 3.27,
+    "risingShare": 0,
+    "segmentChanges2Share": 0
+   },
+   "b": {
+    "sentences": 2,
+    "built": 2,
+    "playable": 2,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 1,
+    "deadTimeMedianS": 4.31,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   }
+  },
+  "control:glide": {
+   "a": {
+    "sentences": 2,
+    "built": 2,
+    "playable": 2,
+    "pacedShare": 0,
+    "reasons": {
+     "entry": 2
+    },
+    "finaleShare": 0,
+    "bossShare": 0,
+    "behavioursMedian": 0.5,
+    "deadTimeMedianS": 1.87,
+    "risingShare": 0,
+    "segmentChanges2Share": 0
+   },
+   "b": {
+    "sentences": 2,
+    "built": 2,
+    "playable": 2,
+    "pacedShare": 0,
+    "reasons": {
+     "entry": 2
+    },
+    "finaleShare": 0,
+    "bossShare": 0,
+    "behavioursMedian": 0.5,
+    "deadTimeMedianS": 1.87,
+    "risingShare": 0,
+    "segmentChanges2Share": 0
+   }
+  },
+  "control:steer": {
+   "a": {
+    "sentences": 6,
+    "built": 6,
+    "playable": 6,
+    "pacedShare": 0.83,
+    "reasons": {
+     "entry": 1
+    },
+    "finaleShare": 0.83,
+    "bossShare": 0.83,
+    "behavioursMedian": 2,
+    "deadTimeMedianS": 3.22,
+    "risingShare": 1,
+    "segmentChanges2Share": 1
+   },
+   "b": {
+    "sentences": 6,
+    "built": 6,
+    "playable": 6,
+    "pacedShare": 0.83,
+    "reasons": {
+     "entry": 1
+    },
+    "finaleShare": 0.83,
+    "bossShare": 0.83,
+    "behavioursMedian": 2,
+    "deadTimeMedianS": 3.22,
+    "risingShare": 1,
+    "segmentChanges2Share": 1
+   }
+  },
+  "control:walker": {
+   "a": {
+    "sentences": 6,
+    "built": 6,
+    "playable": 6,
+    "pacedShare": 0,
+    "reasons": {
+     "entry": 6
+    },
+    "finaleShare": 0,
+    "bossShare": 0,
+    "behavioursMedian": 0.5,
+    "deadTimeMedianS": 18.18,
+    "risingShare": 0.17,
+    "segmentChanges2Share": 0.17
+   },
+   "b": {
+    "sentences": 6,
+    "built": 6,
+    "playable": 6,
+    "pacedShare": 0.83,
+    "reasons": {
+     "entry": 1
+    },
+    "finaleShare": 0.83,
+    "bossShare": 0,
+    "behavioursMedian": 0.5,
+    "deadTimeMedianS": 2.55,
+    "risingShare": 0.83,
+    "segmentChanges2Share": 0
+   }
+  },
+  "duel": {
+   "a": {
+    "sentences": 3,
+    "built": 3,
+    "playable": 3,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 1,
+    "deadTimeMedianS": 2.23,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   },
+   "b": {
+    "sentences": 3,
+    "built": 3,
+    "playable": 3,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 2,
+    "deadTimeMedianS": 2.23,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   }
+  },
+  "platformer": {
+   "a": {
+    "sentences": 5,
+    "built": 5,
+    "playable": 5,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 3,
+    "deadTimeMedianS": 3.1,
+    "risingShare": 1,
+    "segmentChanges2Share": 0.8
+   },
+   "b": {
+    "sentences": 5,
+    "built": 5,
+    "playable": 5,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 3,
+    "deadTimeMedianS": 3.1,
+    "risingShare": 1,
+    "segmentChanges2Share": 0.8
+   }
+  },
+  "quest.spatial": {
+   "a": {
+    "sentences": 2,
+    "built": 2,
+    "playable": 2,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 3,
+    "deadTimeMedianS": 2.5,
+    "risingShare": 1,
+    "segmentChanges2Share": 0.5
+   },
+   "b": {
+    "sentences": 2,
+    "built": 2,
+    "playable": 2,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 3,
+    "deadTimeMedianS": 2.5,
+    "risingShare": 1,
+    "segmentChanges2Share": 0.5
+   }
+  },
+  "quest.station": {
+   "a": {
+    "sentences": 3,
+    "built": 3,
+    "playable": 3,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 0,
+    "behavioursMedian": 0,
+    "deadTimeMedianS": 1.9,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   },
+   "b": {
+    "sentences": 3,
+    "built": 3,
+    "playable": 3,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 0,
+    "behavioursMedian": 2,
+    "deadTimeMedianS": 1.67,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   }
+  },
+  "rhythm": {
+   "a": {
+    "sentences": 3,
+    "built": 3,
+    "playable": 3,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 0,
+    "behavioursMedian": 0,
+    "deadTimeMedianS": 4,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   },
+   "b": {
+    "sentences": 3,
+    "built": 3,
+    "playable": 3,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 0,
+    "behavioursMedian": 0,
+    "deadTimeMedianS": 4,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   }
+  },
+  "runner": {
+   "a": {
+    "sentences": 9,
+    "built": 9,
+    "playable": 9,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 3,
+    "deadTimeMedianS": 4.98,
+    "risingShare": 1,
+    "segmentChanges2Share": 1
+   },
+   "b": {
+    "sentences": 9,
+    "built": 9,
+    "playable": 9,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 3,
+    "deadTimeMedianS": 2.5,
+    "risingShare": 1,
+    "segmentChanges2Share": 1
+   }
+  },
+  "shooter": {
+   "a": {
+    "sentences": 2,
+    "built": 2,
+    "playable": 2,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 0.5,
+    "behavioursMedian": 2.5,
+    "deadTimeMedianS": 6.56,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   },
+   "b": {
+    "sentences": 2,
+    "built": 2,
+    "playable": 2,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 0.5,
+    "behavioursMedian": 2.5,
+    "deadTimeMedianS": 3.5,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   }
+  },
+  "throw": {
+   "a": {
+    "sentences": 1,
+    "built": 1,
+    "playable": 1,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 1,
+    "deadTimeMedianS": 1.47,
+    "risingShare": 0,
+    "segmentChanges2Share": 0
+   },
+   "b": {
+    "sentences": 1,
+    "built": 1,
+    "playable": 1,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 1,
+    "behavioursMedian": 2,
+    "deadTimeMedianS": 1.47,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   }
+  },
+  "timing.stack": {
+   "a": {
+    "sentences": 1,
+    "built": 1,
+    "playable": 1,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 0,
+    "bossShare": 0,
+    "behavioursMedian": 0,
+    "deadTimeMedianS": 1.02,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   },
+   "b": {
+    "sentences": 1,
+    "built": 1,
+    "playable": 1,
+    "pacedShare": 1,
+    "reasons": {},
+    "finaleShare": 1,
+    "bossShare": 0,
+    "behavioursMedian": 0,
+    "deadTimeMedianS": 1.25,
+    "risingShare": 1,
+    "segmentChanges2Share": 0
+   }
+  }
+ },
+ "panel": {
+  "a": {
+   "sentences": 40,
+   "built": 40,
+   "playable": 40,
+   "pacedShare": 0.8,
+   "reasons": {
+    "entry": 6,
+    "assembly": 2
+   },
+   "finaleShare": 0.68,
+   "bossShare": 0.5,
+   "behavioursMedian": 1.5,
+   "deadTimeMedianS": 2.76,
+   "risingShare": 0.85,
+   "segmentChanges2Share": 0.43
+  },
+  "b": {
+   "sentences": 40,
+   "built": 40,
+   "playable": 40,
+   "pacedShare": 0.98,
+   "reasons": {
+    "assembly": 1
+   },
+   "finaleShare": 0.93,
+   "bossShare": 0.57,
+   "behavioursMedian": 2,
+   "deadTimeMedianS": 2.5,
+   "risingShare": 1,
+   "segmentChanges2Share": 0.45
+  },
+  "worse": []
+ },
+ "dev": {
+  "a": {
+   "sentences": 30,
+   "built": 30,
+   "playable": 30,
+   "pacedShare": 0.37,
+   "reasons": {
+    "entry": 15,
+    "assembly": 4
+   },
+   "finaleShare": 0.27,
+   "bossShare": 0.17,
+   "behavioursMedian": 0.5,
+   "deadTimeMedianS": 5.21,
+   "risingShare": 0.57,
+   "segmentChanges2Share": 0.1
+  },
+  "b": {
+   "sentences": 30,
+   "built": 30,
+   "playable": 30,
+   "pacedShare": 1,
+   "reasons": {},
+   "finaleShare": 0.97,
+   "bossShare": 0.47,
+   "behavioursMedian": 1,
+   "deadTimeMedianS": 2.5,
+   "risingShare": 0.97,
+   "segmentChanges2Share": 0.23
+  }
+ },
+ "p47a": {
+  "set": "p47a-holdout (other sentences)",
+  "b": {
+   "finaleShare": 0.72,
+   "behavioursMedian": 2.5,
+   "deadTimeMedianS": 2.99,
+   "risingShare": 0.78
+  }
+ },
+ "pairJudge": {
+  "set": "p45-panel",
+  "cells": [
+   "f02",
+   "f03",
+   "f12",
+   "f18",
+   "m02",
+   "m04",
+   "m07",
+   "m08",
+   "m11",
+   "n01",
+   "n04",
+   "u03",
+   "d01",
+   "d04",
+   "d09",
+   "h03",
+   "h05",
+   "j04",
+   "s003"
+  ],
+  "aCommit": "0618344a",
+  "bCommit": "1b8204b9",
+  "n": 19,
+  "aWins": 6,
+  "bWins": 12,
+  "ties": 1,
+  "bShare": 0.658,
+  "leftWinShare": 0.447,
+  "codexCalls": 19,
+  "target": ">= 0.6",
+  "met": true
+ },
+ "met": false,
+ "rows": {
+  "holdout": [
+   {
+    "id": "h001",
+    "text": "A hedgehog rolls downhill dodging falling pinecones before the fox catches up",
+    "a": {
+     "id": "h001",
+     "text": "A hedgehog rolls downhill dodging falling pinecones before the fox catches up",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 2068826054,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "behaviours": [
+      "chaser:chase+spawned"
+     ],
+     "longestGapS": 6.65,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h001",
+     "text": "A hedgehog rolls downhill dodging falling pinecones before the fox catches up",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 2068826054,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.3,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:chaser:static",
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h002",
+    "text": "escape the flooding submarine before the water reaches the top deck and grab the captain's lucky hat on the way",
+    "a": {
+     "id": "h002",
+     "text": "escape the flooding submarine before the water reaches the top deck and grab the captain's lucky hat on the way",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 39057270,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:roam",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 6.93,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:3.15->6.65"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:6.65->22.05"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h002",
+     "text": "escape the flooding submarine before the water reaches the top deck and grab the captain's lucky hat on the way",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 39057270,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:roam",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:3.15->6.65"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:6.65->22.05"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h003",
+    "text": "Sneak past sleeping guard dogs to steal back your grandma's cookie jar",
+    "a": {
+     "id": "h003",
+     "text": "Sneak past sleeping guard dogs to steal back your grandma's cookie jar",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_stealth",
+     "seed": 1472668971,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:roam"
+     ],
+     "longestGapS": 11.42,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "speed:0->6.6"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "h003",
+     "text": "Sneak past sleeping guard dogs to steal back your grandma's cookie jar",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_stealth",
+     "seed": 1472668971,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:roam"
+     ],
+     "longestGapS": 2.57,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h004",
+    "text": "A tiny robot fights a giant vacuum cleaner boss in the living room",
+    "a": {
+     "id": "h004",
+     "text": "A tiny robot fights a giant vacuum cleaner boss in the living room",
+     "cell": "duel",
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 1841363238,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:static"
+     ],
+     "longestGapS": 2.23,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h004",
+     "text": "A tiny robot fights a giant vacuum cleaner boss in the living room",
+     "cell": "duel",
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 1841363238,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:static",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.23,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h005",
+    "text": "Zombie chickens are chasing me through a cornfield, run!",
+    "a": {
+     "id": "h005",
+     "text": "Zombie chickens are chasing me through a cornfield, run!",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 928520012,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:roam",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 4.75,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:1.01->7.62"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:7.62->26.26"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h005",
+     "text": "Zombie chickens are chasing me through a cornfield, run!",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 928520012,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:roam",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:1.01->7.62"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:7.62->26.26"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h006",
+    "text": "Shoot down the asteroids before they smash into the moon base",
+    "a": {
+     "id": "h006",
+     "text": "Shoot down the asteroids before they smash into the moon base",
+     "cell": "shooter",
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 1823266009,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:chase",
+      "enemy:chase+spawned"
+     ],
+     "longestGapS": 6.5,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h006",
+     "text": "Shoot down the asteroids before they smash into the moon base",
+     "cell": "shooter",
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 1823266009,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:chase",
+      "enemy:chase+spawned"
+     ],
+     "longestGapS": 3.17,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h007",
+    "text": "Pirates board my fishing boat and I fend them off with a mop",
+    "a": {
+     "id": "h007",
+     "text": "Pirates board my fishing boat and I fend them off with a mop",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 977603111,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:20.7->23.4",
+       "width:10->4",
+       "density:0->4.06"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:4.06->9.83"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h007",
+     "text": "Pirates board my fishing boat and I fend them off with a mop",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 977603111,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:20.7->23.4",
+       "width:10->4",
+       "density:0->4.06"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:4.06->9.83"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h008",
+    "text": "Dodge the lava balls",
+    "a": {
+     "id": "h008",
+     "text": "Dodge the lava balls",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1351667797,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 5.7,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.1->9",
+       "density:2.97->8.78"
+      ],
+      [
+       "speed:9->10.32",
+       "density:8.78->30.66"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h008",
+     "text": "Dodge the lava balls",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1351667797,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.1->9",
+       "density:2.97->8.78"
+      ],
+      [
+       "speed:9->10.32",
+       "density:8.78->30.66"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h009",
+    "text": "A mouse has to cross the kitchen while the cat is napping",
+    "a": {
+     "id": "h009",
+     "text": "A mouse has to cross the kitchen while the cat is napping",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1473588234,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h009",
+     "text": "A mouse has to cross the kitchen while the cat is napping",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1473588234,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h010",
+    "text": "I'm a penguin sliding down an iceberg away from a hungry walrus",
+    "a": {
+     "id": "h010",
+     "text": "I'm a penguin sliding down an iceberg away from a hungry walrus",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 320895012,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 3.57,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:1.95->7.8"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:7.8->26.36"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h010",
+     "text": "I'm a penguin sliding down an iceberg away from a hungry walrus",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 320895012,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:1.95->8.23"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:8.23->26.36"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h011",
+    "text": "The last knight standing duels the skeleton king on a crumbling bridge",
+    "a": {
+     "id": "h011",
+     "text": "The last knight standing duels the skeleton king on a crumbling bridge",
+     "cell": "duel",
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 1639494263,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:static"
+     ],
+     "longestGapS": 2.22,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h011",
+     "text": "The last knight standing duels the skeleton king on a crumbling bridge",
+     "cell": "duel",
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 1639494263,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:static",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.22,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h012",
+    "text": "bees chase you after you knock the hive over, get to the pond",
+    "a": {
+     "id": "h012",
+     "text": "bees chase you after you knock the hive over, get to the pond",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1656857367,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:roam",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 4.18,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:2.09->8.33"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:8.33->22.92"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h012",
+     "text": "bees chase you after you knock the hive over, get to the pond",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1656857367,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:roam",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:2.09->8.33"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:8.33->22.92"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h013",
+    "text": "Hunt the ghost hiding in the old library using only a flashlight",
+    "a": {
+     "id": "h013",
+     "text": "Hunt the ghost hiding in the old library using only a flashlight",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 994206812,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 9.17,
+     "rising": false,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "speed:0->6.6"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "h013",
+     "text": "Hunt the ghost hiding in the old library using only a flashlight",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 994206812,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 9.17,
+     "rising": false,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "speed:0->6.6"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h014",
+    "text": "Fly a paper plane through a thunderstorm without getting hit by lightning",
+    "a": {
+     "id": "h014",
+     "text": "Fly a paper plane through a thunderstorm without getting hit by lightning",
+     "cell": "control:glide",
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 1778975607,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.87,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h014",
+     "text": "Fly a paper plane through a thunderstorm without getting hit by lightning",
+     "cell": "control:glide",
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 1778975607,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.87,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h015",
+    "text": "ninja frog vs sumo crab, best of three rounds",
+    "a": {
+     "id": "h015",
+     "text": "ninja frog vs sumo crab, best of three rounds",
+     "cell": "arena.fight",
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 2087877652,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "enemy:roam",
+      "enemy:roam+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 5.93,
+     "rising": false,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h015",
+     "text": "ninja frog vs sumo crab, best of three rounds",
+     "cell": "arena.fight",
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 2087877652,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "enemy:roam",
+      "enemy:roam+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 5.93,
+     "rising": false,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h016",
+    "text": "A tow truck races away from a tornado across the open prairie",
+    "a": {
+     "id": "h016",
+     "text": "A tow truck races away from a tornado across the open prairie",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1477660544,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "enemy:chase",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:20.7->23.4",
+       "width:10->4"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:4.07->8.46"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h016",
+     "text": "A tow truck races away from a tornado across the open prairie",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1477660544,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "enemy:chase",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:20.7->23.4",
+       "width:10->4"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:4.07->8.46"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h017",
+    "text": "Keep the wolves away from the sheep by throwing snowballs at them",
+    "a": {
+     "id": "h017",
+     "text": "Keep the wolves away from the sheep by throwing snowballs at them",
+     "cell": "throw",
+     "genre": "throw",
+     "generator": "throw_field",
+     "seed": 1551730002,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:roam+spawned"
+     ],
+     "longestGapS": 1.47,
+     "rising": false,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:enemy:roam"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "h017",
+     "text": "Keep the wolves away from the sheep by throwing snowballs at them",
+     "cell": "throw",
+     "genre": "throw",
+     "generator": "throw_field",
+     "seed": 1551730002,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:chase+spawned",
+      "enemy:roam+spawned"
+     ],
+     "longestGapS": 1.47,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:enemy:chase",
+       "foe:enemy:roam"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h018",
+    "text": "the sharks are circling my raft, paddle to the island quick",
+    "a": {
+     "id": "h018",
+     "text": "the sharks are circling my raft, paddle to the island quick",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1075995024,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:20.7->23.4",
+       "width:10->4",
+       "density:0->4.06"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:4.06->8.44"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h018",
+     "text": "the sharks are circling my raft, paddle to the island quick",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1075995024,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:20.7->23.4",
+       "width:10->4",
+       "density:0->4.06"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:4.06->8.44"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h019",
+    "text": "Escape a haunted maze before the clock strikes midnight",
+    "a": {
+     "id": "h019",
+     "text": "Escape a haunted maze before the clock strikes midnight",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_escape",
+     "seed": 1151730110,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "behaviours": [
+      "chaser:roam"
+     ],
+     "longestGapS": 16.92,
+     "rising": false,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "speed:0->6.6"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "h019",
+     "text": "Escape a haunted maze before the clock strikes midnight",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_escape",
+     "seed": 1151730110,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 1,
+     "behaviours": [
+      "chaser:roam"
+     ],
+     "longestGapS": 2.62,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h020",
+    "text": "A firefighter climbs a burning tower to rescue the parrot stuck on the roof",
+    "a": {
+     "id": "h020",
+     "text": "A firefighter climbs a burning tower to rescue the parrot stuck on the roof",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1922235255,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.2,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving",
+       "density:0->5.64"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "h020",
+     "text": "A firefighter climbs a burning tower to rescue the parrot stuck on the roof",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1922235255,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.2,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving",
+       "density:0->5.64"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h021",
+    "text": "Dodge dodgeballs thrown by angry gym teachers",
+    "a": {
+     "id": "h021",
+     "text": "Dodge dodgeballs thrown by angry gym teachers",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 399019883,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 5.15,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:1.79->8.34"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:8.34->25.88"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h021",
+     "text": "Dodge dodgeballs thrown by angry gym teachers",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 399019883,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:1.79->8.34"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:8.34->25.88"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h022",
+    "text": "Defend the sandcastle from greedy seagulls and the rising tide",
+    "a": {
+     "id": "h022",
+     "text": "Defend the sandcastle from greedy seagulls and the rising tide",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 551953088,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "assembly",
+     "finale": "climax",
+     "behaviourCount": 1,
+     "behaviours": [
+      "chaser:chase+spawned"
+     ],
+     "longestGapS": 4.6,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h022",
+     "text": "Defend the sandcastle from greedy seagulls and the rising tide",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 551953088,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 1.87,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h023",
+    "text": "a snail trying to outrun a hungry bird but its sooo slow",
+    "a": {
+     "id": "h023",
+     "text": "a snail trying to outrun a hungry bird but its sooo slow",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1270150533,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:roam",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 6.58,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9"
+      ],
+      [
+       "foe:hazard:chase",
+       "speed:9.9->11.34",
+       "density:2.58->23.26"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h023",
+     "text": "a snail trying to outrun a hungry bird but its sooo slow",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1270150533,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:roam",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.48,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9"
+      ],
+      [
+       "foe:hazard:chase",
+       "speed:9.9->11.34",
+       "density:2.58->23.26"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h024",
+    "text": "Boss fight against a giant angry toaster that shoots burnt bread",
+    "a": {
+     "id": "h024",
+     "text": "Boss fight against a giant angry toaster that shoots burnt bread",
+     "cell": "duel",
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 963143893,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:static"
+     ],
+     "longestGapS": 2.25,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h024",
+     "text": "Boss fight against a giant angry toaster that shoots burnt bread",
+     "cell": "duel",
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 963143893,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:static",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.25,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h025",
+    "text": "Deliver pizzas on a skateboard across a hilly town before they get cold",
+    "a": {
+     "id": "h025",
+     "text": "Deliver pizzas on a skateboard across a hilly town before they get cold",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1814747160,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 4.98,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.1->9",
+       "density:5.17->7.8"
+      ],
+      [
+       "speed:9->10.32",
+       "density:7.8->28.87"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h025",
+     "text": "Deliver pizzas on a skateboard across a hilly town before they get cold",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1814747160,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.1->9",
+       "density:5.17->7.8"
+      ],
+      [
+       "speed:9->10.32",
+       "density:7.8->28.87"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h026",
+    "text": "water all the thirsty plants in the greenhouse",
+    "a": {
+     "id": "h026",
+     "text": "water all the thirsty plants in the greenhouse",
+     "cell": "quest.spatial",
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1799635717,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "h026",
+     "text": "water all the thirsty plants in the greenhouse",
+     "cell": "quest.spatial",
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1799635717,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h027",
+    "text": "Stack pancakes on a plate as high as you can",
+    "a": {
+     "id": "h027",
+     "text": "Stack pancakes on a plate as high as you can",
+     "cell": "timing.stack",
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 680647567,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.02,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h027",
+     "text": "Stack pancakes on a plate as high as you can",
+     "cell": "timing.stack",
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 680647567,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.25,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h028",
+    "text": "Mop the school hallway before the principal walks in",
+    "a": {
+     "id": "h028",
+     "text": "Mop the school hallway before the principal walks in",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 1182792292,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 21.55,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h028",
+     "text": "Mop the school hallway before the principal walks in",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 1182792292,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.48,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h029",
+    "text": "Sort the recycling into the right bins as it rolls down the conveyor belt",
+    "a": {
+     "id": "h029",
+     "text": "Sort the recycling into the right bins as it rolls down the conveyor belt",
+     "cell": "control:ball",
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 184385384,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 3.33,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h029",
+     "text": "Sort the recycling into the right bins as it rolls down the conveyor belt",
+     "cell": "control:ball",
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 184385384,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:roam"
+     ],
+     "longestGapS": 4.35,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h030",
+    "text": "walk the dog without leting him chase every squirrel in the park",
+    "a": {
+     "id": "h030",
+     "text": "walk the dog without leting him chase every squirrel in the park",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_escape",
+     "seed": 2128918493,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "behaviours": [
+      "chaser:roam"
+     ],
+     "longestGapS": 19.43,
+     "rising": false,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:roam"
+      ],
+      [
+       "speed:0->6.6"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h030",
+     "text": "walk the dog without leting him chase every squirrel in the park",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_escape",
+     "seed": 2128918493,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 1,
+     "behaviours": [
+      "chaser:roam"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:chaser:roam"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h031",
+    "text": "Juggle oranges while riding a unicycle through the farmers market",
+    "a": {
+     "id": "h031",
+     "text": "Juggle oranges while riding a unicycle through the farmers market",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1590851595,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:18.3->22.44",
+       "width:10->4",
+       "density:0->3.76"
+      ],
+      [
+       "width:4->3.6",
+       "density:3.76->8.44"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h031",
+     "text": "Juggle oranges while riding a unicycle through the farmers market",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1590851595,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:18.3->22.44",
+       "width:10->4",
+       "density:0->3.76"
+      ],
+      [
+       "width:4->3.6",
+       "density:3.76->8.44"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h032",
+    "text": "Bake a birthday cake by catching the ingredients that fall from the shelves",
+    "a": {
+     "id": "h032",
+     "text": "Bake a birthday cake by catching the ingredients that fall from the shelves",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 893371504,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.93,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h032",
+     "text": "Bake a birthday cake by catching the ingredients that fall from the shelves",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 893371504,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:static+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 1.67,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:enemy:static",
+       "foe:hazard:chase"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h033",
+    "text": "Fold laundry faster than my roommate",
+    "a": {
+     "id": "h033",
+     "text": "Fold laundry faster than my roommate",
+     "cell": "rhythm",
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 230321408,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 4.25,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h033",
+     "text": "Fold laundry faster than my roommate",
+     "cell": "rhythm",
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 230321408,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 4.25,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h034",
+    "text": "Paint the whole fence before the rain comes",
+    "a": {
+     "id": "h034",
+     "text": "Paint the whole fence before the rain comes",
+     "cell": "quest.spatial",
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 719807352,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h034",
+     "text": "Paint the whole fence before the rain comes",
+     "cell": "quest.spatial",
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 719807352,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h035",
+    "text": "Park a wobbly shopping cart in the tight row outside the supermarket",
+    "a": {
+     "id": "h035",
+     "text": "Park a wobbly shopping cart in the tight row outside the supermarket",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1934300668,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h035",
+     "text": "Park a wobbly shopping cart in the tight row outside the supermarket",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1934300668,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h036",
+    "text": "Grandpa golfs balls of yarn into knitting baskets",
+    "a": {
+     "id": "h036",
+     "text": "Grandpa golfs balls of yarn into knitting baskets",
+     "cell": "rhythm",
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 274038664,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h036",
+     "text": "Grandpa golfs balls of yarn into knitting baskets",
+     "cell": "rhythm",
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 274038664,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h037",
+    "text": "Rake the leaves into piles while the wind keeps blowing them away",
+    "a": {
+     "id": "h037",
+     "text": "Rake the leaves into piles while the wind keeps blowing them away",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 2137183266,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "behaviours": [
+      "chaser:chase+spawned"
+     ],
+     "longestGapS": 4.72,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h037",
+     "text": "Rake the leaves into piles while the wind keeps blowing them away",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 2137183266,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:chase"
+      ],
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h038",
+    "text": "Serve coffee to a long line of grumpy office workers before the clock hits nine in the morning",
+    "a": {
+     "id": "h038",
+     "text": "Serve coffee to a long line of grumpy office workers before the clock hits nine in the morning",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 373718252,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.9,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h038",
+     "text": "Serve coffee to a long line of grumpy office workers before the clock hits nine in the morning",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 373718252,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 3,
+     "behaviours": [
+      "enemy:static+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 1.9,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [],
+      [
+       "foe:enemy:static"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h039",
+    "text": "Bounce a basketball while carrying groceries up the stairs",
+    "a": {
+     "id": "h039",
+     "text": "Bounce a basketball while carrying groceries up the stairs",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1205576692,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 3.1,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving",
+       "density:0->4.48"
+      ],
+      [
+       "speed:3.6->4.5"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h039",
+     "text": "Bounce a basketball while carrying groceries up the stairs",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1205576692,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 3.1,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving",
+       "density:0->4.48"
+      ],
+      [
+       "speed:3.6->4.5"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h040",
+    "text": "A young witch brews potions by catching falling stars in her cauldron",
+    "a": {
+     "id": "h040",
+     "text": "A young witch brews potions by catching falling stars in her cauldron",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 588665461,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.5,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h040",
+     "text": "A young witch brews potions by catching falling stars in her cauldron",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 588665461,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:static+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 1.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:enemy:static"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h041",
+    "text": "Ride a dragon between floating sky islands and collect every gem",
+    "a": {
+     "id": "h041",
+     "text": "Ride a dragon between floating sky islands and collect every gem",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 2140559879,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:20.7->23.4",
+       "width:10->4",
+       "density:0->4.21"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:4.21->8.78"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h041",
+     "text": "Ride a dragon between floating sky islands and collect every gem",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 2140559879,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:20.7->23.4",
+       "width:10->4",
+       "density:0->4.21"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:4.21->8.78"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h042",
+    "text": "an astronaut bouncing between tiny planets to get back to her lost rocket",
+    "a": {
+     "id": "h042",
+     "text": "an astronaut bouncing between tiny planets to get back to her lost rocket",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1264355586,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 3.45,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving",
+       "density:0->4.46"
+      ],
+      [
+       "speed:3.6->4.86"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h042",
+     "text": "an astronaut bouncing between tiny planets to get back to her lost rocket",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1264355586,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 3.45,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving",
+       "density:0->4.46"
+      ],
+      [
+       "speed:3.6->4.86"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h043",
+    "text": "Mermaid plays tennis with an octopus under the sea",
+    "a": {
+     "id": "h043",
+     "text": "Mermaid plays tennis with an octopus under the sea",
+     "cell": "control:ball",
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 1229352585,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 3.2,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h043",
+     "text": "Mermaid plays tennis with an octopus under the sea",
+     "cell": "control:ball",
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 1229352585,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:roam"
+     ],
+     "longestGapS": 4.28,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h044",
+    "text": "Guide a lantern spirit through the dark enchanted forest",
+    "a": {
+     "id": "h044",
+     "text": "Guide a lantern spirit through the dark enchanted forest",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 2094429033,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h044",
+     "text": "Guide a lantern spirit through the dark enchanted forest",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 2094429033,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h045",
+    "text": "The unicorn has to drum along at the rainbow festival",
+    "a": {
+     "id": "h045",
+     "text": "The unicorn has to drum along at the rainbow festival",
+     "cell": "rhythm",
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 1674075368,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 3.5,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h045",
+     "text": "The unicorn has to drum along at the rainbow festival",
+     "cell": "rhythm",
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 1674075368,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 3.5,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h046",
+    "text": "Wizard school snowball fight except the snowballs are fireballs",
+    "a": {
+     "id": "h046",
+     "text": "Wizard school snowball fight except the snowballs are fireballs",
+     "cell": "arena.fight",
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1052164263,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "enemy:roam",
+      "enemy:roam+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 9.93,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h046",
+     "text": "Wizard school snowball fight except the snowballs are fireballs",
+     "cell": "arena.fight",
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1052164263,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "enemy:roam",
+      "enemy:roam+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 9.93,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h047",
+    "text": "Hop across lily pads to bring the frog prince home to his castle",
+    "a": {
+     "id": "h047",
+     "text": "Hop across lily pads to bring the frog prince home to his castle",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 362323493,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 2.17,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving",
+       "density:0->4.19"
+      ],
+      [
+       "speed:4.08->4.5"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h047",
+     "text": "Hop across lily pads to bring the frog prince home to his castle",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 362323493,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 2.17,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving",
+       "density:0->4.19"
+      ],
+      [
+       "speed:4.08->4.5"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h048",
+    "text": "A genie on a flying carpet races through a desert sandstorm",
+    "a": {
+     "id": "h048",
+     "text": "A genie on a flying carpet races through a desert sandstorm",
+     "cell": "control:glide",
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 1078743670,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:chase"
+     ],
+     "longestGapS": 1.87,
+     "rising": false,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:enemy:chase"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "h048",
+     "text": "A genie on a flying carpet races through a desert sandstorm",
+     "cell": "control:glide",
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 1078743670,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:chase"
+     ],
+     "longestGapS": 1.87,
+     "rising": false,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:enemy:chase"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h049",
+    "text": "Fairy shrinks down and sneaks thru the giant's pantry",
+    "a": {
+     "id": "h049",
+     "text": "Fairy shrinks down and sneaks thru the giant's pantry",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 2047908815,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 19.63,
+     "rising": false,
+     "segmentChanges": 1,
+     "changes": [
+      [],
+      [
+       "speed:0->6.6"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h049",
+     "text": "Fairy shrinks down and sneaks thru the giant's pantry",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 2047908815,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.53,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h050",
+    "text": "Shoot comets with a slingshot to light up the night sky",
+    "a": {
+     "id": "h050",
+     "text": "Shoot comets with a slingshot to light up the night sky",
+     "cell": "shooter",
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 1141142283,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "enemy:chase",
+      "enemy:chase+spawned",
+      "enemy:static+spawned"
+     ],
+     "longestGapS": 6.62,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h050",
+     "text": "Shoot comets with a slingshot to light up the night sky",
+     "cell": "shooter",
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 1141142283,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "enemy:chase",
+      "enemy:chase+spawned",
+      "enemy:static+spawned"
+     ],
+     "longestGapS": 3.83,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h051",
+    "text": "a little ghost learning to slide down moonbeams",
+    "a": {
+     "id": "h051",
+     "text": "a little ghost learning to slide down moonbeams",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1923156848,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 4.85,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:5.16->10.07"
+      ],
+      [
+       "foe:hazard:static",
+       "speed:9.9->11.34",
+       "density:10.07->29.86"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h051",
+     "text": "a little ghost learning to slide down moonbeams",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1923156848,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:5.16->10.07"
+      ],
+      [
+       "foe:hazard:static",
+       "speed:9.9->11.34",
+       "density:10.07->29.86"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h052",
+    "text": "Rainy sunday afternoons make me want hot chocolate",
+    "a": {
+     "id": "h052",
+     "text": "Rainy sunday afternoons make me want hot chocolate",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 139192179,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h052",
+     "text": "Rainy sunday afternoons make me want hot chocolate",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 139192179,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h053",
+    "text": "My grandmother had a cat named Pickles who hated mondays",
+    "a": {
+     "id": "h053",
+     "text": "My grandmother had a cat named Pickles who hated mondays",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 993324730,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.3,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h053",
+     "text": "My grandmother had a cat named Pickles who hated mondays",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 993324730,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.3,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h054",
+    "text": "Sloths only climb down from their trees once a week",
+    "a": {
+     "id": "h054",
+     "text": "Sloths only climb down from their trees once a week",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1810074448,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 2.82,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving"
+      ],
+      [
+       "speed:3.36->4.32"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h054",
+     "text": "Sloths only climb down from their trees once a week",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1810074448,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 2.82,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving"
+      ],
+      [
+       "speed:3.36->4.32"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h055",
+    "text": "I wish I could nap in a hammock by the sea all day",
+    "a": {
+     "id": "h055",
+     "text": "I wish I could nap in a hammock by the sea all day",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 224357176,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 1.9,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h055",
+     "text": "I wish I could nap in a hammock by the sea all day",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 224357176,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 1.9,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h056",
+    "text": "the smell of fresh bread in a small bakery at dawn",
+    "a": {
+     "id": "h056",
+     "text": "the smell of fresh bread in a small bakery at dawn",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1910716252,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h056",
+     "text": "the smell of fresh bread in a small bakery at dawn",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1910716252,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h057",
+    "text": "Long day at the office, i just want my couch and some quiet",
+    "a": {
+     "id": "h057",
+     "text": "Long day at the office, i just want my couch and some quiet",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1009039893,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:static"
+      ],
+      [
+       "foe:chaser:static",
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h057",
+     "text": "Long day at the office, i just want my couch and some quiet",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1009039893,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:static"
+      ],
+      [
+       "foe:chaser:static",
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h058",
+    "text": "Snow falling softly on an empty train station at night",
+    "a": {
+     "id": "h058",
+     "text": "Snow falling softly on an empty train station at night",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1901584790,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 4.95,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "speed:18->21.96",
+       "width:10->3.8"
+      ],
+      [
+       "speed:21.96->24.48"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h058",
+     "text": "Snow falling softly on an empty train station at night",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1901584790,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 4.95,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "speed:18->21.96",
+       "width:10->3.8"
+      ],
+      [
+       "speed:21.96->24.48"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h059",
+    "text": "Mars has a volcano almost three times taller than Everest",
+    "a": {
+     "id": "h059",
+     "text": "Mars has a volcano almost three times taller than Everest",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1541352212,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.3,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h059",
+     "text": "Mars has a volcano almost three times taller than Everest",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1541352212,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.3,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h060",
+    "text": "My little brother learned to whistle and now the whole house suffers",
+    "a": {
+     "id": "h060",
+     "text": "My little brother learned to whistle and now the whole house suffers",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1638728085,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h060",
+     "text": "My little brother learned to whistle and now the whole house suffers",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1638728085,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    }
+   }
+  ],
+  "panel": [
+   {
+    "id": "f01",
+    "text": "a dragon guards its gold hoard from greedy knights inside a volcano",
+    "a": {
+     "id": "f01",
+     "text": "a dragon guards its gold hoard from greedy knights inside a volcano",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 2029908878,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.4,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    },
+    "b": {
+     "id": "f01",
+     "text": "a dragon guards its gold hoard from greedy knights inside a volcano",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 2029908878,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.4,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "f02",
+    "text": "an ogre arm wrestles a frost giant in a smoky mountain tavern",
+    "a": {
+     "id": "f02",
+     "text": "an ogre arm wrestles a frost giant in a smoky mountain tavern",
+     "cell": "duel",
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 1765971460,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:static"
+     ],
+     "longestGapS": 2.25,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "f02",
+     "text": "an ogre arm wrestles a frost giant in a smoky mountain tavern",
+     "cell": "duel",
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 1765971460,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:static",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.25,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "f03",
+    "text": "An elf archer shoots goblins from the treetops.",
+    "a": {
+     "id": "f03",
+     "text": "An elf archer shoots goblins from the treetops.",
+     "cell": "shooter",
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 980376029,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:chase",
+      "enemy:chase+spawned"
+     ],
+     "longestGapS": 5.83,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "f03",
+     "text": "An elf archer shoots goblins from the treetops.",
+     "cell": "shooter",
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 980376029,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:chase",
+      "enemy:chase+spawned"
+     ],
+     "longestGapS": 2.95,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "f05",
+    "text": "a fairy lights lanterns along a moonlit forest path",
+    "a": {
+     "id": "f05",
+     "text": "a fairy lights lanterns along a moonlit forest path",
+     "cell": "quest.spatial",
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 21180790,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.33,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    },
+    "b": {
+     "id": "f05",
+     "text": "a fairy lights lanterns along a moonlit forest path",
+     "cell": "quest.spatial",
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 21180790,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.33,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "f10",
+    "text": "a stone golem crushes grave robbers in an ancient desert temple",
+    "a": {
+     "id": "f10",
+     "text": "a stone golem crushes grave robbers in an ancient desert temple",
+     "cell": "arena.fight",
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1596118451,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "enemy:roam",
+      "enemy:roam+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.17,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    },
+    "b": {
+     "id": "f10",
+     "text": "a stone golem crushes grave robbers in an ancient desert temple",
+     "cell": "arena.fight",
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1596118451,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "enemy:roam",
+      "enemy:roam+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.17,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "f12",
+    "text": "a baby dragon learns to fly over a medieval town",
+    "a": {
+     "id": "f12",
+     "text": "a baby dragon learns to fly over a medieval town",
+     "cell": "control:glide",
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 464079286,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.15,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "f12",
+     "text": "a baby dragon learns to fly over a medieval town",
+     "cell": "control:glide",
+     "genre": "control:glide",
+     "generator": "glide_course",
+     "seed": 464079286,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.15,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [],
+      [
+       "density:26.67->46.71"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "f17",
+    "text": "a phoenix rises from the ashes over a burning desert",
+    "a": {
+     "id": "f17",
+     "text": "a phoenix rises from the ashes over a burning desert",
+     "cell": "flap",
+     "genre": "flap",
+     "generator": "flap_track",
+     "seed": 2115210011,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.98,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "speed:4.86->5.4"
+      ],
+      [
+       "speed:5.4->6.18"
+      ]
+     ]
+    },
+    "b": {
+     "id": "f17",
+     "text": "a phoenix rises from the ashes over a burning desert",
+     "cell": "flap",
+     "genre": "flap",
+     "generator": "flap_track",
+     "seed": 2115210011,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.98,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "speed:4.86->5.4"
+      ],
+      [
+       "speed:5.4->6.18"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "f18",
+    "text": "a halfling sneaks past a sleeping dragon into its treasure cave",
+    "a": {
+     "id": "f18",
+     "text": "a halfling sneaks past a sleeping dragon into its treasure cave",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 307148749,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 26.73,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "f18",
+     "text": "a halfling sneaks past a sleeping dragon into its treasure cave",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 307148749,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.55,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "m01",
+    "text": "toaster tornado",
+    "a": {
+     "id": "m01",
+     "text": "toaster tornado",
+     "cell": "arena.escape",
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 467943004,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "chaser:static",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "m01",
+     "text": "toaster tornado",
+     "cell": "arena.escape",
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 467943004,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "chaser:static",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "m02",
+    "text": "cat lasers",
+    "a": {
+     "id": "m02",
+     "text": "cat lasers",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1608071755,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 1,
+     "behaviours": [
+      "chaser:chase+spawned"
+     ],
+     "longestGapS": 5.78,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "m02",
+     "text": "cat lasers",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1608071755,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "m03",
+    "text": "Grandma kart",
+    "a": {
+     "id": "m03",
+     "text": "Grandma kart",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1219393165,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:18.54->23.4",
+       "width:10->4",
+       "density:0->3.07"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:3.07->8.98"
+      ]
+     ]
+    },
+    "b": {
+     "id": "m03",
+     "text": "Grandma kart",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1219393165,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:18.54->23.4",
+       "width:10->4",
+       "density:0->3.07"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:3.07->8.98"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "m04",
+    "text": "bake cookies",
+    "a": {
+     "id": "m04",
+     "text": "bake cookies",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 71607569,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.8,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "m04",
+     "text": "bake cookies",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 71607569,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 3,
+     "behaviours": [
+      "enemy:static+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 1.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:enemy:static"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "m06",
+    "text": "dragon taxi",
+    "a": {
+     "id": "m06",
+     "text": "dragon taxi",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1992089601,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:20.7->23.4",
+       "width:10->4",
+       "density:0->4.26"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:4.26->8.92"
+      ]
+     ]
+    },
+    "b": {
+     "id": "m06",
+     "text": "dragon taxi",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1992089601,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "speed:20.7->23.4",
+       "width:10->4",
+       "density:0->4.26"
+      ],
+      [
+       "speed:23.4->26.1",
+       "width:4->3.6",
+       "density:4.26->8.92"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "m07",
+    "text": "walk the dog",
+    "a": {
+     "id": "m07",
+     "text": "walk the dog",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 2062223603,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 21.92,
+     "rising": false,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "speed:0->6.6"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "m07",
+     "text": "walk the dog",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 2062223603,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.57,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "m08",
+    "text": "a pengiun tht slides down a mountin",
+    "a": {
+     "id": "m08",
+     "text": "a pengiun tht slides down a mountin",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 971846864,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 5.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:2.25->5.99"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:5.99->24.7"
+      ]
+     ]
+    },
+    "b": {
+     "id": "m08",
+     "text": "a pengiun tht slides down a mountin",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 971846864,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.88->9.9",
+       "density:2.25->5.99"
+      ],
+      [
+       "speed:9.9->11.34",
+       "density:5.99->24.7"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "m09",
+    "text": "ninja cat jumpin on rooftops plz",
+    "a": {
+     "id": "m09",
+     "text": "ninja cat jumpin on rooftops plz",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1611622728,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 2.87,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "terrain:platform:moving",
+       "speed:3.54->3.96"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "m09",
+     "text": "ninja cat jumpin on rooftops plz",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 1611622728,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 2.87,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "terrain:platform:moving",
+       "speed:3.54->3.96"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "m11",
+    "text": "my dog chasing the mailman,around the backyard lol",
+    "a": {
+     "id": "m11",
+     "text": "my dog chasing the mailman,around the backyard lol",
+     "cell": "control:move_free",
+     "genre": "control:move_free",
+     "generator": "arena_catch",
+     "seed": 415905883,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:roam"
+     ],
+     "longestGapS": 6.32,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "m11",
+     "text": "my dog chasing the mailman,around the backyard lol",
+     "cell": "control:move_free",
+     "genre": "control:move_free",
+     "generator": "arena_catch",
+     "seed": 415905883,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:roam"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "m16",
+    "text": "a kangaroo jumps over cars then collects coins on the highway",
+    "a": {
+     "id": "m16",
+     "text": "a kangaroo jumps over cars then collects coins on the highway",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 14821989,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 13.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "terrain:platform:moving"
+      ],
+      [
+       "speed:3.84->4.5"
+      ]
+     ]
+    },
+    "b": {
+     "id": "m16",
+     "text": "a kangaroo jumps over cars then collects coins on the highway",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 14821989,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 13.13,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "terrain:platform:moving"
+      ],
+      [
+       "speed:3.84->4.5"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "n01",
+    "text": "file my expense report with a pile of crumpled receipts",
+    "a": {
+     "id": "n01",
+     "text": "file my expense report with a pile of crumpled receipts",
+     "cell": "timing.stack",
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 476065825,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.02,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "n01",
+     "text": "file my expense report with a pile of crumpled receipts",
+     "cell": "timing.stack",
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 476065825,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.25,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "n02",
+    "text": "me trying to fall asleep in bed the night before a big exam",
+    "a": {
+     "id": "n02",
+     "text": "me trying to fall asleep in bed the night before a big exam",
+     "cell": "arena.escape",
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 459205541,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "chaser:static",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    },
+    "b": {
+     "id": "n02",
+     "text": "me trying to fall asleep in bed the night before a big exam",
+     "cell": "arena.escape",
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 459205541,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "chaser:static",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "n04",
+    "text": "Renew my passport at city hall.",
+    "a": {
+     "id": "n04",
+     "text": "Renew my passport at city hall.",
+     "cell": "timing.stack",
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 1283607489,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.9,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "n04",
+     "text": "Renew my passport at city hall.",
+     "cell": "timing.stack",
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 1283607489,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.5,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "u01",
+    "text": "a grandma cat knits a giant scarf by the fireplace",
+    "a": {
+     "id": "u01",
+     "text": "a grandma cat knits a giant scarf by the fireplace",
+     "cell": "rhythm",
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 359369212,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "u01",
+     "text": "a grandma cat knits a giant scarf by the fireplace",
+     "cell": "rhythm",
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 359369212,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "u02",
+    "text": "A tailor mouse sews buttons onto tiny coats before the royal parade.",
+    "a": {
+     "id": "u02",
+     "text": "A tailor mouse sews buttons onto tiny coats before the royal parade.",
+     "cell": "rhythm",
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 567995346,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "u02",
+     "text": "A tailor mouse sews buttons onto tiny coats before the royal parade.",
+     "cell": "rhythm",
+     "genre": "rhythm",
+     "generator": "rhythm_level",
+     "seed": 567995346,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 4,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "u03",
+    "text": "a penguin chef stirs a huge pot of fish soup on an iceberg",
+    "a": {
+     "id": "u03",
+     "text": "a penguin chef stirs a huge pot of fish soup on an iceberg",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 2101970384,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.98,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "u03",
+     "text": "a penguin chef stirs a huge pot of fish soup on an iceberg",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 2101970384,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:static+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 1.98,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:enemy:static"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "u06",
+    "text": "a gardener waters thirsty sunflowers on a rooftop garden",
+    "a": {
+     "id": "u06",
+     "text": "a gardener waters thirsty sunflowers on a rooftop garden",
+     "cell": "quest.spatial",
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1969247423,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "u06",
+     "text": "a gardener waters thirsty sunflowers on a rooftop garden",
+     "cell": "quest.spatial",
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1969247423,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "d01",
+    "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+    "a": {
+     "id": "d01",
+     "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+     "cell": "control:ball",
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 1448805176,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 3.27,
+     "rising": false,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "d01",
+     "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+     "cell": "control:ball",
+     "genre": "control:ball",
+     "generator": "ball_pitch",
+     "seed": 1538884031,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:roam"
+     ],
+     "longestGapS": 3.78,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "d03",
+    "text": "a witch brews potions in a crooked tower during a thunderstorm",
+    "a": {
+     "id": "d03",
+     "text": "a witch brews potions in a crooked tower during a thunderstorm",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 1279517972,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.65,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "d03",
+     "text": "a witch brews potions in a crooked tower during a thunderstorm",
+     "cell": "quest.station",
+     "genre": "quest.station",
+     "generator": "quest_station",
+     "seed": 1279517972,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "assembly",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.65,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "d04",
+    "text": "shoot down paper planes over a school playground",
+    "a": {
+     "id": "d04",
+     "text": "shoot down paper planes over a school playground",
+     "cell": "shooter",
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 809519851,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:chase",
+      "enemy:chase+spawned"
+     ],
+     "longestGapS": 5.5,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "d04",
+     "text": "shoot down paper planes over a school playground",
+     "cell": "shooter",
+     "genre": "shooter",
+     "generator": "shooter_range",
+     "seed": 809519851,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:chase",
+      "enemy:chase+spawned"
+     ],
+     "longestGapS": 2.63,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "d09",
+    "text": "stack cheese wheels into a wobbly tower at a farm market",
+    "a": {
+     "id": "d09",
+     "text": "stack cheese wheels into a wobbly tower at a farm market",
+     "cell": "timing.stack",
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 1726936063,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.65,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "d09",
+     "text": "stack cheese wheels into a wobbly tower at a farm market",
+     "cell": "timing.stack",
+     "genre": "timing.stack",
+     "generator": "timing_level",
+     "seed": 1726936063,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 1.25,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "h02",
+    "text": "shopping cart race in a supermarket",
+    "a": {
+     "id": "h02",
+     "text": "shopping cart race in a supermarket",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1227587564,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "enemy:chase",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "width:10->4"
+      ],
+      [
+       "speed:19.8->24.66",
+       "width:4->3.6",
+       "density:3.08->7.62"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h02",
+     "text": "shopping cart race in a supermarket",
+     "cell": "control:steer",
+     "genre": "control:steer",
+     "generator": "steer_track",
+     "seed": 1227587564,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "enemy:chase",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 3.22,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "width:10->4"
+      ],
+      [
+       "speed:19.8->24.66",
+       "width:4->3.6",
+       "density:3.08->7.62"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h03",
+    "text": "defend a castle from dragons by throwing snowballs",
+    "a": {
+     "id": "h03",
+     "text": "defend a castle from dragons by throwing snowballs",
+     "cell": "throw",
+     "genre": "throw",
+     "generator": "throw_field",
+     "seed": 328920478,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:roam+spawned"
+     ],
+     "longestGapS": 2.27,
+     "rising": false,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "terrain:obstacle:moving"
+      ],
+      [
+       "foe:enemy:roam"
+      ]
+     ]
+    },
+    "b": {
+     "id": "h03",
+     "text": "defend a castle from dragons by throwing snowballs",
+     "cell": "throw",
+     "genre": "throw",
+     "generator": "throw_field",
+     "seed": 328920478,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:chase+spawned",
+      "enemy:roam+spawned"
+     ],
+     "longestGapS": 2.27,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:enemy:static",
+       "terrain:obstacle:moving"
+      ],
+      [
+       "foe:enemy:chase",
+       "foe:enemy:roam"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "h05",
+    "text": "boxing a kangaroo in the australian outback",
+    "a": {
+     "id": "h05",
+     "text": "boxing a kangaroo in the australian outback",
+     "cell": "duel",
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 727311170,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 1,
+     "behaviours": [
+      "enemy:static"
+     ],
+     "longestGapS": 2.27,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    },
+    "b": {
+     "id": "h05",
+     "text": "boxing a kangaroo in the australian outback",
+     "cell": "duel",
+     "genre": "duel",
+     "generator": "duel_arena",
+     "seed": 727311170,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 2,
+     "behaviours": [
+      "enemy:static",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.27,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "j01",
+    "text": "Explain quantum physics to my grandma.",
+    "a": {
+     "id": "j01",
+     "text": "Explain quantum physics to my grandma.",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1760529582,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    },
+    "b": {
+     "id": "j01",
+     "text": "Explain quantum physics to my grandma.",
+     "cell": "arena.collect",
+     "genre": "arena.collect",
+     "generator": "arena_collect",
+     "seed": 1760529582,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:static"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "j04",
+    "text": "walk my dog along the beach while eating an ice cream",
+    "a": {
+     "id": "j04",
+     "text": "walk my dog along the beach while eating an ice cream",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 936404094,
+     "playable": true,
+     "issues": [],
+     "paced": false,
+     "reason": "entry",
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 11.47,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "speed:0->6.6"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "j04",
+     "text": "walk my dog along the beach while eating an ice cream",
+     "cell": "control:walker",
+     "genre": "control:walker",
+     "generator": "walker_labyrinth",
+     "seed": 936404094,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "climax",
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 0,
+     "changes": [
+      [],
+      []
+     ]
+    }
+   },
+   {
+    "id": "j05",
+    "text": "pop ten balloons at a birthday party",
+    "a": {
+     "id": "j05",
+     "text": "pop ten balloons at a birthday party",
+     "cell": "quest.spatial",
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1823895065,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ],
+      []
+     ]
+    },
+    "b": {
+     "id": "j05",
+     "text": "pop ten balloons at a birthday party",
+     "cell": "quest.spatial",
+     "genre": "quest.spatial",
+     "generator": "quest_spatial",
+     "seed": 1823895065,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:chase",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 1,
+     "changes": [
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ],
+      []
+     ]
+    }
+   },
+   {
+    "id": "j08",
+    "text": "a wizard defends a crystal tower from flying skeletons",
+    "a": {
+     "id": "j08",
+     "text": "a wizard defends a crystal tower from flying skeletons",
+     "cell": "arena.fight",
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1631427981,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "enemy:roam",
+      "enemy:roam+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 3.07,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    },
+    "b": {
+     "id": "j08",
+     "text": "a wizard defends a crystal tower from flying skeletons",
+     "cell": "arena.fight",
+     "genre": "arena.fight",
+     "generator": "fight",
+     "seed": 1631427981,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 4,
+     "behaviours": [
+      "enemy:roam",
+      "enemy:roam+spawned",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 3.07,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam"
+      ],
+      [
+       "foe:hazard:chase"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "s002",
+    "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+    "a": {
+     "id": "s002",
+     "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "cell": "arena.escape",
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1291481298,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 5,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "chaser:static",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.35,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    },
+    "b": {
+     "id": "s002",
+     "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+     "cell": "arena.escape",
+     "genre": "arena.escape",
+     "generator": "arena_escape",
+     "seed": 1291481298,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 5,
+     "behaviours": [
+      "chaser:chase+spawned",
+      "chaser:static",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned",
+      "hazard:static+spawned"
+     ],
+     "longestGapS": 2.35,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:static"
+      ],
+      [
+       "foe:hazard:chase",
+       "foe:hazard:roam"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "s003",
+    "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+    "a": {
+     "id": "s003",
+     "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1924202525,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:roam",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 5.33,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.1->9",
+       "density:4.44->12.79"
+      ],
+      [
+       "speed:9->10.32",
+       "density:12.79->29.91"
+      ]
+     ]
+    },
+    "b": {
+     "id": "s003",
+     "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+     "cell": "runner",
+     "genre": "runner",
+     "generator": "runner_track",
+     "seed": 1924202525,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "chaser:roam",
+      "hazard:chase+spawned",
+      "hazard:roam+spawned"
+     ],
+     "longestGapS": 2.5,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:chaser:chase",
+       "foe:hazard:chase",
+       "foe:hazard:roam",
+       "speed:8.1->9",
+       "density:4.44->12.79"
+      ],
+      [
+       "speed:9->10.32",
+       "density:12.79->29.91"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "s021",
+    "text": "obby game with lava and spinning bars",
+    "a": {
+     "id": "s021",
+     "text": "obby game with lava and spinning bars",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 292625551,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 2.03,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving"
+      ],
+      [
+       "speed:3.84->4.26"
+      ]
+     ]
+    },
+    "b": {
+     "id": "s021",
+     "text": "obby game with lava and spinning bars",
+     "cell": "platformer",
+     "genre": "platformer",
+     "generator": "platform_level",
+     "seed": 292625551,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": "boss",
+     "behaviourCount": 3,
+     "behaviours": [
+      "hazard:chase+spawned",
+      "hazard:roam",
+      "hazard:static"
+     ],
+     "longestGapS": 2.03,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "foe:hazard:roam",
+       "foe:hazard:static",
+       "terrain:platform:moving"
+      ],
+      [
+       "speed:3.84->4.26"
+      ]
+     ]
+    }
+   },
+   {
+    "id": "s035",
+    "text": "like flappy bird but underwater",
+    "a": {
+     "id": "s035",
+     "text": "like flappy bird but underwater",
+     "cell": "flap",
+     "genre": "flap",
+     "generator": "flap_track",
+     "seed": 1363119617,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.98,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "speed:4.86->5.4"
+      ],
+      [
+       "speed:5.4->6.18"
+      ]
+     ]
+    },
+    "b": {
+     "id": "s035",
+     "text": "like flappy bird but underwater",
+     "cell": "flap",
+     "genre": "flap",
+     "generator": "flap_track",
+     "seed": 1363119617,
+     "playable": true,
+     "issues": [],
+     "paced": true,
+     "reason": null,
+     "finale": null,
+     "behaviourCount": 0,
+     "behaviours": [],
+     "longestGapS": 2.98,
+     "rising": true,
+     "segmentChanges": 2,
+     "changes": [
+      [
+       "speed:4.86->5.4"
+      ],
+      [
+       "speed:5.4->6.18"
+      ]
+     ]
+    }
+   }
+  ]
+ }
+}

@@ -17,8 +17,8 @@ import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRe
 import { ESCAPE } from './arena';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef } from './behaviours';
 import { BOSS, DROPPER, TURRET, bossBody } from './behaviours/boss';
-import { DUEL_ENRAGE, DUEL_FOE } from './duel';
-import { PACING, type PacingActor, type PacingSetup, TENSION_CURVE, intensityAt, withPacing } from './pacing';
+import { DUEL_ENRAGE, DUEL_FOE, DUEL_HURL } from './duel';
+import { PACING, type PacingActor, type PacingSetup, TENSION_CURVE, controlIn, intensityAt, withPacing } from './pacing';
 import { progressionParts } from './progression-parts';
 import type { CompiledInteract } from '../rules/interact';
 import { QUEST, boilRounds, stationRoundSeconds } from './quest';
@@ -26,8 +26,9 @@ import { checkRhythmLevel, rhythmLevel } from './rhythm';
 import { RUNNER } from './runner';
 import { type GunParams, marchedRange, shooterWaves } from './shooter';
 import { courseOf, steerRoute } from './steer';
-import { THROW_SWING, throwField, throwParamsFor, throwParts } from './throw';
+import { THROW_DIVE, THROW_SWING, type ThrowRoundsParams, throwField, throwParamsFor, throwParts } from './throw';
 import { type TimingLevelParams, checkTimingLevel, timingLevel, timingLevelAtSpeeds, timingSpeedOf } from './timing';
+import { type WalkerMap, walkerExit, walkerRouteTicks } from './walker';
 import type { WaveParams } from './waves';
 
 /** Co žánr dá průběhu: nastavení `withPacing` bez semínka; boss navíc s věcmi, které nese, a body za pád. */
@@ -47,7 +48,7 @@ export interface GenrePacingSetup extends Omit<PacingSetup, 'seed' | 'boss'> {
    * Části generátoru pro hru s průběhem (např. poslední vlna bez věcí, které nese
    * boss); `boss` = index předlohy bosse, nebo `undefined`, když ho rozpočet
    * pravidel vzal. Nesmí měnit pořadí těl úrovně a počet jen bez chování a bosse
-   * průběhu (šampion duelu připíše předlohu na konec, P47A T6).
+   * průběhu (šampion duelu připíše předlohu na konec, P47A T6, a za něj hozená věc, P51 T6).
    */
   readonly adjust?: (parts: ArcadeParts, boss: number | undefined) => ArcadeParts;
   /** Výchozí fáze (`progressionParts`), když spec nenese vlastní `phases` ani `dependsOn`. */
@@ -89,18 +90,32 @@ export const RUNNER_FOES = {
   bossRoom: 2,
 } as const;
 
-/** Hrozby běžce, když se do stropu těl jádra vejdou i s doplňky; jinak trať bez nich (hra kvůli průběhu nikdy neselže). Boss jen s místem i pro něj. */
-function runnerFoes(parts: ArcadeParts): Pick<GenrePacingSetup, 'behaviours' | 'budget' | 'from' | 'spots' | 'finale' | 'boss'> | null {
+/**
+ * Tep běžce (P51 T7, `genre.v5`): tep pole P47A T9 na trati – po `heartbeatAt` tikách bez události mince běžce ve
+ * vnějším pruhu `RUNNER_FOES.ahead` před hráčem (`heartbeatOf`). Mrtvý čas byl mezi shluky mincí trati (dev 4,6–7,4 s,
+ * buňky až 9,9 s). Robot mince tepu nevidí (`withoutCoins`), obtížnost tratě zůstane. `room` = předloha, počítadlo
+ * tepu a sloty mincí; tep jen s místem i pro ně, po bossovi.
+ */
+export const RUNNER_PULSE = {
+  coin: { role: 'collectible', kind: 'coin', x: 0, y: 300, z: 0, w: 500, h: 500, d: 500, solid: false } satisfies BodyInit,
+  room: 2 + PACING.heartbeatCoins,
+} as const;
+
+/** Hrozby běžce, když se do stropu těl jádra vejdou i s doplňky; jinak trať bez nich (hra kvůli průběhu nikdy neselže). Boss jen s místem i pro něj, tep (`pulse`) i pro sebe. */
+function runnerFoes(parts: ArcadeParts, pulse: boolean): Pick<GenrePacingSetup, 'behaviours' | 'budget' | 'from' | 'spots' | 'finale' | 'boss' | 'pulse'> | null {
   const used = parts.level.bodies.length + (parts.level.spawnSlots ?? 0) + RUNNER_FOES.room + RUNNER_FOES.spare;
   if (used > ARCADE_LIMITS.maxBodies) return null;
   const { actors, ahead } = RUNNER_FOES;
-  const boss = used + RUNNER_FOES.bossRoom > ARCADE_LIMITS.maxBodies ? {} : { finale: 'boss' as const, boss: { body: { ...BEHAVIOURS.boss.body, hp: BOSS.track.hp }, at: RUNNER_FOES.bossAt } };
+  const bossed = used + RUNNER_FOES.bossRoom <= ARCADE_LIMITS.maxBodies;
+  const boss = bossed ? { finale: 'boss' as const, boss: { body: { ...BEHAVIOURS.boss.body, hp: BOSS.track.hp }, at: RUNNER_FOES.bossAt } } : {};
+  const beat = pulse && used + (bossed ? RUNNER_FOES.bossRoom : 0) + RUNNER_PULSE.room <= ARCADE_LIMITS.maxBodies ? { pulse: RUNNER_PULSE.coin } : {};
   return {
     behaviours: actors.map((actor) => ({ body: BEHAVIOURS[actor.behaviour].body, behaviour: actor.behaviour, from: actor.from })),
     budget: RUNNER_FOES.budget,
     from: Math.min(...actors.map((actor) => actor.from)),
     spots: [-RUNNER.laneWidth, ahead, RUNNER.laneWidth, ahead],
     ...boss,
+    ...beat,
   };
 }
 
@@ -108,14 +123,14 @@ function runnerFoes(parts: ArcadeParts): Pick<GenrePacingSetup, 'behaviours' | '
  * Dráhový žánr (P45C T11): postup = ujetá trať, fáze z křivky a finále
  * závěrečný sprint. Hrozby v pruzích jen běžec (`foes`, R2), a s nimi finále boss (P46B T4); ostatní dráhy pruhy nemají.
  */
-const track = (rows: number, rampLevel = false, foes = false): GenrePacing => (parts) => ({
+const track = (rows: number, rampLevel = false, foes = false): GenrePacing => (parts, spec) => ({
   goal: { by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks },
   space: 'track',
   spots: [0, 0],
   behaviours: [],
   budget: 0,
   finale: 'sprint',
-  ...((foes ? runnerFoes(parts) : null) ?? {}),
+  ...((foes ? runnerFoes(parts, genreAtLeast(spec, FINALE5_GENRE_VERSION)) : null) ?? {}),
   ...(foes ? { segments: 'runner' as const } : {}),
   phases: curvePhases(rows),
   ...(rampLevel ? { rampLevel: true } : {}),
@@ -576,7 +591,8 @@ const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
  * agresivity soupeře `pace` (`PACING_KNOBS.duel`) místo zrychlení po soupeřích (`rise` – obojí naráz by
  * stáhlo okna na mez dřív, než přijde finále), finále = rozzuření posledního soupeře pod polovinou HP
  * (`DUEL_ENRAGE`: delší nápřah, kratší mezera); ve `genre.v4` je poslední soupeř navíc šampion se skutečnými
- * zásahy (`withChampion`). Bez chování: hráč z místa neuhne a scéna souboje kreslí jen dvě postavy.
+ * zásahy (`withChampion`). Bez chování průběhu: hráč z místa neuhne (jen se skrčí) a scéna souboje kreslí jen dvě
+ * postavy – ve `genre.v5` (P51 T6) navíc věc, kterou soupeř každý třetí útok hodí (`withHurl`).
  */
 const duelPaced: GenrePacing = (parts, spec) => (parts.control.id !== 'duel' ? null : {
   goal: { by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks },
@@ -588,9 +604,30 @@ const duelPaced: GenrePacing = (parts, spec) => (parts.control.id !== 'duel' ? n
   adjust: (own) => {
     const { rise: _rise, ...params } = own.control.params;
     const enraged = { ...own, control: { ...own.control, params: { ...params, pace: 1000, enrage: { ...DUEL_ENRAGE } } } };
-    return genreAtLeast(spec, FINALE_GENRE_VERSION) ? withChampion(enraged) : enraged;
+    const crowned = genreAtLeast(spec, FINALE_GENRE_VERSION) ? withChampion(enraged) : enraged;
+    return genreAtLeast(spec, FINALE5_GENRE_VERSION) ? withHurl(crowned) : crowned;
   },
 });
+
+/**
+ * Hozená věc souboje (P51 T6, `genre.v5`): předloha těla `DUEL_HURL.body` na konci úrovně (za šampionem), ovládání
+ * `duel` ji každý `DUEL_HURL.every`-tý útok oživí v ruce soupeře a hodí, robot souboje ji vidí (`hurl`) a uhne, až
+ * doletí. Telemetrie v ní vidí druhé chování (role hrozby, letí po startu). Průběh duelu nemá chování ani bosse
+ * průběhu, takže předloha na konci úrovně žádný index neposune.
+ *
+ * Změřeno na buňce `duel.default` (12 semínek, intermediate / jeho výhry s finále / novice; bez věci 12 / 12 / 7,
+ * hra 41–46 s): každý třetí útok, let 30 tiků → 12 / 12 / 7, hra 48,7–53,4 s, 180 hodů, robotu světa žádný zásah;
+ * robot, který uhýbá na švih ruky, dostal 36 zásahů a prohrál 12/12.
+ */
+function withHurl(parts: ArcadeParts): ArcadeParts {
+  const body = parts.level.bodies.length;
+  return {
+    ...parts,
+    control: { ...parts.control, params: { ...parts.control.params, hurl: { body, every: DUEL_HURL.every, flight: DUEL_HURL.flight } } },
+    bot: { ...parts.bot, params: { ...parts.bot.params, hurl: { body, flight: DUEL_HURL.flight } } },
+    level: { ...parts.level, bodies: [...parts.level.bodies, { ...DUEL_HURL.body, template: true }] },
+  };
+}
 
 /**
  * Šampion duelu (P47A T6): předloha `bossBody` soupeře s HP `foeHealth` na konci úrovně; ovládání ji otiskne
@@ -618,8 +655,12 @@ export const SHOOTER_SNIPER: BodyInit = { ...BEHAVIOURS.sniper.body, role: 'enem
  * profilu s nulou prohrál 10/20 buňky s jedním životem, se šesti vyhrál 20/20), za bosse-terč s HP 5 a salvou
  * po třech výstřelech šedesát (robot vystřelí za souboj s bossem 42–55 ran; se čtyřiceti navíc vyhrál 20/20,
  * s třiceti 15/20 – náboje jsou útes pro všechny profily, ne páka obtížnosti).
+ * `densityFloor` (P51 T7, `genre.v5`): pochod vln nikdy řidší než tahle intenzita – v úvodu (700 ‰) přišla další
+ * vlna 1,4× později a pole stálo prázdné 5,6–6,7 s mezi vlnami (dev s01, s02 × 12 semínek: medián nejdelší mezery
+ * 6,18 s). Podlaha 1000 → medián 4,08 / nejvýš 4,68 s, 1100 → 3,45 / 4,05, 1150 → 3,17 / 3,77; výhry, finále
+ * i stoupání beze změny (12/12), hra 49–56 s místo 57–64 s. Vrchol a finále (1300, 1500) zůstávají hustší.
  */
-export const SHOOTER_FOES = { budget: 3, sniperAmmo: 6, bossAmmo: 60 } as const;
+export const SHOOTER_FOES = { budget: 3, sniperAmmo: 6, bossAmmo: 60, densityFloor: 1150 } as const;
 
 /**
  * Střelnice (P45C T13): postup = sestřelení nepřátelé vln (`fallen`), vlny čekají za branou a vyjdou podle
@@ -628,13 +669,14 @@ export const SHOOTER_FOES = { budget: 3, sniperAmmo: 6, bossAmmo: 60 } as const;
  * výhra `cleared` počká na jeho pád, nové `win` ani obal výhry nepřibude. Terče stojí od startu jako dřív:
  * rozvrh vysazuje na místě vstupu nejdál od hráče, ne na vlastních místech terčů (odchylka T13).
  */
-const shooterPaced: GenrePacing = (parts) => {
+const shooterPaced: GenrePacing = (parts, spec) => {
   const gun = ruleOf(parts, 'gun')?.params as GunParams | undefined;
   const byWave = shooterWaves(parts.level);
   const waves = byWave.length;
   const enemies = byWave.flat().length;
   if (parts.control.id !== 'shooter' || gun === undefined || waves < 2) return null;
-  const density = (wave: number, count: number): number => intensityAt(waveStart(wave, count), TENSION_CURVE);
+  const floor = genreAtLeast(spec, FINALE5_GENRE_VERSION) ? SHOOTER_FOES.densityFloor : 0;
+  const density = (wave: number, count: number): number => Math.max(floor, intensityAt(waveStart(wave, count), TENSION_CURVE));
   const last = waveStart(waves - 1, waves);
   // Místa vstupu ostřelovače a bosse: 26 m před hráčem (v dostřelu), napříč podle terčů úrovně – každé semínko jinde.
   const across = parts.level.bodies.flatMap((body) => (body.role === 'target' ? [Math.max(-8 * UNIT, Math.min(8 * UNIT, body.x))] : [])).slice(0, 4);
@@ -683,11 +725,69 @@ export function timingPacedSpeeds(params: TimingLevelParams): number[] {
   });
 }
 
+/**
+ * Finále načasování (P51 T4, `genre.v5`): klidná první část rychlostí prvního kola, posledních `rounds` kol
+ * rychlostí `speed` – ≈ 10 s rychlých kol, které telemetrie uzná jako `climax`. Křivka `timingPacedSpeeds`
+ * finále nedá: stoupá plynule a při pevném počtu kol je konec nejvýš ~1,3× hustší (třeba 1,5×). Okno v tikách
+ * je při 100 stejné jako při dnešní nejvyšší 80 (2·⌊300/v⌋ + 1 = 7). Změřeno na 12 semínkách (`timing.*`):
+ * posledních 19 kol → začátečník 3/12, 20 → 5/12, 22 → 11/12; intermediate a finále 12/12, běh 30 s.
+ */
+export const TIMING_FINALE = { rounds: 20, speed: 100 } as const;
+
+export function timingFinaleSpeeds(params: TimingLevelParams): number[] {
+  const calm = timingSpeedOf(params, 0);
+  return Array.from({ length: params.rounds }, (_, round) => (round >= params.rounds - TIMING_FINALE.rounds ? Math.max(calm, TIMING_FINALE.speed) : calm));
+}
+
 /** Parametry generátoru ze specu jako v `arcadeWorldOf`: bez `generator`, s rozbaleným `tuning`. */
 function generatorParams(spec: GameSpecV1): Record<string, unknown> {
   const { generator: _generator, tuning, ...own } = (spec.controlParams ?? {}) as Record<string, unknown> & { readonly tuning?: Record<string, unknown> };
   return { ...own, ...tuning };
 }
+
+/**
+ * Chodec a klouzání (P51 T3): nativní spec bez `genre` dostane průběh jen se značkou nové hry `segments`
+ * (`pacedNative`) a bez dílů P42; finále staví generátor (stezka jisker `WALKER_FINALE`, tunel `GLIDE_FINALE`).
+ * Postup chodce = čas proti cestě robota plnou rychlostí (bludiště nemá osu), klouzání = trať.
+ */
+const walkerPaced: GenrePacing = (parts, spec) => {
+  if (generatorParams(spec).segments !== true || spec.assemblyParts !== undefined) return null;
+  // Mapu nese ovládání chodce (pod obaly fází): robot ji s `dependsOn` nemá (`objective_walker_bot`).
+  const map = controlIn(parts.control, 'walker')!.params as unknown as WalkerMap & { readonly speed: number };
+  const ticks = walkerRouteTicks(map, map.speed, walkerExit(map, true));
+  return still({ by: 'time', need: ticks, limit: Math.min(ARCADE_LIMITS.maxTicks, ticks) }, 'sprint');
+};
+const glidePaced: GenrePacing = (parts, spec) =>
+  generatorParams(spec).segments !== true || spec.assemblyParts !== undefined ? null : still({ by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks }, 'sprint');
+/**
+ * Tep chytání (P51 T4a): tep pole P47A T9 – po `heartbeatAt` tikách bez události mince (`HEARTBEAT_COIN`, `pickup`
+ * = bod) na volném z osmi míst čtverce `reach` kolem hráče (`pulseAround`), v záběru kamery a uvnitř arény. Mrtvý čas
+ * byla cesta ke kořisti a po prvních dvou chyceních zpět ze startu (dev medián 14,9 s); místa kolem středu arény
+ * (polovina arény, 20 m) ležela mimo záběr. Robot mince nevidí (`withoutCoins`), takže běh i obtížnost zůstanou.
+ */
+export const CATCH_PULSE = { reach: 6 * UNIT } as const;
+const { reach } = CATCH_PULSE;
+const CATCH_PULSE_SPOTS = [reach, 0, reach, reach, 0, reach, -reach, reach, -reach, 0, -reach, -reach, 0, -reach, reach, -reach];
+
+/**
+ * Míč a chytání (P51 T4): jako chodec jen nová hra se značkou `segments` a bez dílů P42; finále staví generátor –
+ * soupeř-boss za terči (`BALL_FINALE`), kořist-boss na tři chycení (`CATCH_FINALE`). Postup = hodiny hry.
+ * Chytání má navíc tep (`CATCH_PULSE`).
+ */
+const clockPaced: GenrePacing = (parts, spec) => {
+  if (generatorParams(spec).segments !== true || spec.assemblyParts !== undefined) return null;
+  const seconds = (ruleOf(parts, 'time_limit')?.params as { readonly seconds: number } | undefined)?.seconds;
+  const ticks = Math.min(ARCADE_LIMITS.maxTicks, seconds === undefined ? ARCADE_LIMITS.maxTicks : seconds * ARCADE_HZ);
+  const paced = still({ by: 'time', need: ticks, limit: ticks }, 'round');
+  if (ruleOf(parts, 'arena_catch_contact') === undefined) return paced;
+  return {
+    ...paced,
+    spots: CATCH_PULSE_SPOTS,
+    pulse: HEARTBEAT_COIN,
+    pulseAround: (parts.control.params.half as number) - (HEARTBEAT_COIN.w as number),
+    adjust: (own) => ({ ...own, rules: [...own.rules, { id: 'pickup', params: {} }] }),
+  };
+};
 
 /** Statický žánr bez chování: jen křivka (`pacing_control`) a finále v pravidle `pacing`. */
 const still = (goal: GenrePacingSetup['goal'], finale: NonNullable<GenrePacingSetup['finale']>): Pick<GenrePacingSetup, 'goal' | 'space' | 'spots' | 'behaviours' | 'budget' | 'finale'> => ({
@@ -706,7 +806,7 @@ const still = (goal: GenrePacingSetup['goal'], finale: NonNullable<GenrePacingSe
 const timingPaced: GenrePacing = (parts, spec) => {
   const params = timingLevel.params.safeParse(generatorParams(spec));
   if (parts.control.id !== 'timing' || !params.success || params.data.rise !== true) return null;
-  const level = timingLevelAtSpeeds(parts.level, timingPacedSpeeds(params.data));
+  const level = timingLevelAtSpeeds(parts.level, genreAtLeast(spec, FINALE5_GENRE_VERSION) ? timingFinaleSpeeds(params.data) : timingPacedSpeeds(params.data));
   if (checkTimingLevel(level).length > 0) return null;
   return {
     ...still({ by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks }, 'sudden'),
@@ -749,6 +849,31 @@ export const STATION_PACE = {
   rushSeconds: 9,
 } as const;
 
+/**
+ * Nepřátelé stanoviště (`genre.v5`, P51 T6): dva vrhači zezadu kuchyně (chování `sniper`) – `first` přijde se
+ * začátkem druhého kola, `rush` (větší, role nepřítele) se spěchem, bez spěchu s posledním kolem. Po varování
+ * (0,8 s) hodí výstřel pomaleji, než hráč běží, přes řadu u pultu: uhne se podél pultu a práce v dosahu běží dál
+ * (robot `quest-bot.ts`, `rowStep`). Vstupují u zadní stěny blízko středu (`spots`), ne na pultu jako kopie
+ * stanovišť: přímka výstřelu je skoro kolmá na pult a pás, kde hráč nesmí stát, má ~2 m – úkrok nechá stanoviště
+ * v dosahu; z rohů kuchyně letí šikmo a pás má ~3 m. `seconds` = čas, který vrhači robotu vezmou: o tolik kol před
+ * spěchem míň, kolik ho po zaokrouhlení pokryjí (`stationRush`), hodiny zůstávají – kratší kola tak odpadnou spíš
+ * a hra s víc stanovišti zůstane delší než s méně (`quest-rounds.test.ts`; pevné kolo navíc to obrátilo, 30,4 < 31,6 s).
+ *
+ * Změřeno na buňce `quest.station` (12 semínek, intermediate / jeho výhry s finále / novice; bez nepřátel 12 / 12 / 9,
+ * hra 33,2 s v průměru, novice dobíhá 37,5–40 s na 40 s hodinách):
+ * - flanker od druhého kola: 0 / 0 / 0 – výpad každé ~2 s, robot nedodělal stanoviště a přetečení mu vzalo životy;
+ * - vrhač z rohů s obecným úhybem průběhu (`dodgeShot`): 0/12 (hodiny), věta m04 hra 35 → 50 s;
+ * - vrhač u zadní stěny, robot uhýbá podél pultu sám, bez krácení kol: 12 / 12 / 0, hra 35,7 s – začátečník za hodinami;
+ * - o kolo míň (2,4 s) a druhý vrhač se spěchem: 12 / 12 / 7, hra 33,1 s, telemetrie 2–3 chování na běh. Druhý vrhač
+ *   s rolí `hazard` jako první dal na semínku 12 jen jeden podpis (těla i výstřely `hazard:roam`).
+ */
+export const STATION_FOES = {
+  first: BEHAVIOURS.sniper.body,
+  rush: { ...BEHAVIOURS.sniper.body, role: 'enemy', w: 1100, h: 2000, d: 1100 } as BodyInit,
+  spots: [-UNIT / 2, -4500, UNIT / 2, -4500] as readonly number[],
+  seconds: 2.5,
+} as const;
+
 interface StationRush {
   /** O tolik kol míň než generátor: nejmíň takové, aby odhad robota nepřetáhl hru bez spěchu (hodiny zůstávají). */
   readonly drop: number;
@@ -761,9 +886,11 @@ interface StationRush {
  * Spěch stanoviště (P47A T5): držení a pečení na `STATION_PACE.rush`-tinu; kola spěchu (s kopiemi stanovišť,
  * `own + extra` stanovišť) od konce, dokud jejich odhad robota (`stationRoundSeconds`) nedá `rushSeconds`.
  * Bez spěchu běží `all − drop − 1` kol dvou stanovišť a poslední kolo dvojí; se spěchem tolik kol ubereme,
- * aby odhad nebyl delší. Aspoň kolo 0 zůstane bez spěchu; `null` = na spěch nezbude kolo.
+ * aby odhad nebyl delší. Aspoň kolo 0 zůstane bez spěchu; `null` = na spěch nezbude kolo. `foes` = čas (s), který
+ * vezmou nepřátelé nové hry (`STATION_FOES.seconds`): o tolik celých kol před spěchem míň, kolik ho po zaokrouhlení
+ * odhad kola pokryje, pokud kolo 0 zůstane.
  */
-function stationRush(interact: CompiledInteract, own: number, extra: number, all: number): StationRush | null {
+function stationRush(interact: CompiledInteract, own: number, extra: number, all: number, foes = 0): StationRush | null {
   const after = interact.ready?.after ?? QUEST.ready.after;
   const hold = Math.floor(interact.hold / STATION_PACE.rush);
   const quick = Math.max(1, Math.floor(after / STATION_PACE.rush));
@@ -778,7 +905,8 @@ function stationRush(interact: CompiledInteract, own: number, extra: number, all
   while (drop < STATION_PACE.drop && (all - drop - rushRounds) * plain + rushRounds * rushed > today + plain / 2) drop += 1;
   const from = all - drop - rushRounds;
   if (from < 1) return null;
-  return { drop, limit: boilRounds({ hold, after: quick, window: interact.ready?.window ?? QUEST.ready.window }, all - drop).floor, interact: { round: from, hold, after: quick } };
+  const cut = Math.min(Math.round(foes / plain), from - 1);
+  return { drop: drop + cut, limit: boilRounds({ hold, after: quick, window: interact.ready?.window ?? QUEST.ready.window }, all - drop - cut).floor, interact: { round: from - cut, hold, after: quick } };
 }
 
 /**
@@ -789,7 +917,9 @@ function stationRush(interact: CompiledInteract, own: number, extra: number, all
  * Ve `genre.v4` (P47A T5) jsou poslední kola spěch (`stationRush`): kopie přijdou s jeho prvním kolem, úkoly se
  * střídají rychleji (`interact.rush`, držení a pečení na `STATION_PACE.rush`-tinu) a lhůta kol spěchu je dolní mez
  * křivky z kroku spěchu (`boilRounds` nad krokem spěchu), kratší než dnešní poslední – konec běhu zhoustne
- * (`climax` telemetrie).
+ * (`climax` telemetrie). Ve `genre.v5` (P51 T6) přijdou vrhači `STATION_FOES`: první jako jediný krok rozvrhu se
+ * začátkem druhého kola, druhý se spěchem jako spawn bosse (bez `boss_beat` – chování není `boss`, finále zůstává
+ * `round`), a robot úkolu uhýbá sám (`ownDodge`, `close`).
  */
 const stationPaced: GenrePacing = (parts, spec) => {
   const waves = ruleOf(parts, 'arena_waves')?.params as WaveParams | undefined;
@@ -797,7 +927,9 @@ const stationPaced: GenrePacing = (parts, spec) => {
   const stations = parts.level.bodies.filter((body) => body.role === 'target');
   const count = Math.min(STATION_PACE.extra, stations.length);
   const use = ruleOf(parts, 'interact')?.params as { readonly when: { readonly interact: CompiledInteract } } | undefined;
-  const rush = genreAtLeast(spec, FINALE_GENRE_VERSION) && use !== undefined ? stationRush(use.when.interact, stations.length, count, (waves?.waves.length ?? 0) + 1) : null;
+  // Nepřátelé jen s robotem úkolu, kterému jde říct, ať uhýbá sám (`close`); robot pod obalem by neuhnul vůbec.
+  const armed = genreAtLeast(spec, FINALE5_GENRE_VERSION) && parts.bot.params.interact !== undefined;
+  const rush = genreAtLeast(spec, FINALE_GENRE_VERSION) && use !== undefined ? stationRush(use.when.interact, stations.length, count, (waves?.waves.length ?? 0) + 1, armed ? STATION_FOES.seconds : 0) : null;
   const drop = rush?.drop ?? STATION_PACE.drop;
   const rounds = (waves?.waves.length ?? 0) + 1 - drop;
   if (waves === undefined || waves.until !== 'targets' || boil === undefined || stations.length === 0 || rounds < 3) return null;
@@ -813,11 +945,24 @@ const stationPaced: GenrePacing = (parts, spec) => {
   // Spěch: kola od `rush.interact.round` na dolní mezi křivky z kroku spěchu, ostatní kola jako dřív.
   const limits = rush === null ? curve : curve.map((limit, round) => (round < rush.interact.round ? limit : rush.limit));
   const shorter = (own: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> => ({ ...own, rounds, ...(rush === null ? {} : { rush: rush.interact }) });
+  const doubled = waveStart(rush?.interact.round ?? rounds - 1, rounds);
+  // Nepřátelé nové hry: první se začátkem druhého kola (rozvrh jen na tom postupu), druhý se spěchem jako jediný spawn mimo los.
+  const second = waveStart(1, rounds);
+  const foes: Partial<GenrePacingSetup> = !armed ? {} : {
+    behaviours: [{ body: STATION_FOES.first, behaviour: 'sniper' }],
+    budget: 1,
+    from: second,
+    until: second + 1,
+    boss: { body: STATION_FOES.rush, at: doubled, behaviour: 'sniper' },
+    foeSpots: STATION_FOES.spots,
+    ownDodge: true,
+  };
   return {
     ...still({ by: 'wave', need: rounds, limit: ARCADE_LIMITS.maxTicks }, 'round'),
     spots: [-reach, station.z, reach, station.z],
+    ...foes,
     // Kopie stanovišť přijdou se spěchem (bez něj s posledním kolem).
-    extra: { body: station, at: waveStart(rush?.interact.round ?? rounds - 1, rounds), count },
+    extra: { body: station, at: doubled, count },
     adjust: (own) => {
       const fewer = withRule(own, 'arena_waves', (params) => ({ ...params, waves: (params as WaveParams).waves.slice(drop) }));
       const timed = withRule(fewer, 'boil_over', (params) => ({ ...params, limits }));
@@ -826,7 +971,9 @@ const stationPaced: GenrePacing = (parts, spec) => {
         return { ...params, when: { ...when, interact: shorter(when.interact) } };
       });
       const interact = ruled.bot.params.interact as Readonly<Record<string, unknown>> | undefined;
-      return interact === undefined ? ruled : { ...ruled, bot: { ...ruled.bot, params: { ...ruled.bot.params, interact: shorter(interact) } } };
+      // Robot hry s nepřáteli uhýbá výstřelům sám, podél pultu (`quest-bot.ts`, `rowStep`); `pacing_bot` neuhýbá (`ownDodge`).
+      const close = armed ? { close: true } : {};
+      return interact === undefined ? ruled : { ...ruled, bot: { ...ruled.bot, params: { ...ruled.bot.params, interact: shorter(interact), ...close } } };
     },
   };
 };
@@ -837,24 +984,28 @@ const stationPaced: GenrePacing = (parts, spec) => {
  * rychleji (rychlost kola z křivky), finále = bonusový terč posledního kola, poslední krok k výhře. Postup =
  * čas proti rozpočtu práce kol: kolo ani skóre (kombo) postup neměří a rychlosti stojí v úrovni. Jen hra po kolech.
  * Ve `genre.v4` je bonusový terč posledního kola terč-boss se 3 HP (`THROW_BOSS`, P47A T7): `shot_hit.tough` mu
- * zásahem ubere HP a kolo s výhrou čeká na jeho pád.
+ * zásahem ubere HP a kolo s výhrou čeká na jeho pád. Ve `genre.v5` (P51 T6) přiletí do posledních kol útočníci
+ * (`THROW_DIVE`): druhé chování a hustší konec hry.
  */
 const throwPaced: GenrePacing = (parts, spec, seed) => {
   const params = throwField.params.safeParse(generatorParams(spec));
   if (parts.control.id !== 'throw' || !params.success || ruleOf(parts, 'throw_rounds') === undefined) return null;
   const clock = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   const fitted = throwParamsFor(params.data, clock);
-  const built = throwParts(seed, { ...fitted, swing: true, ...(genreAtLeast(spec, FINALE_GENRE_VERSION) ? { boss: true as const } : {}) });
+  const built = throwParts(seed, { ...fitted, swing: true, ...(genreAtLeast(spec, FINALE_GENRE_VERSION) ? { boss: true as const } : {}), ...(genreAtLeast(spec, FINALE5_GENRE_VERSION) ? { dive: true as const } : {}) });
   const rounds = built.rules.find((rule) => rule.id === 'throw_rounds');
   if (rounds === undefined || fitted.budget === undefined) return null;
   const tough = built.rules.find((rule) => rule.id === 'shot_hit')?.params.tough;
+  // Útočníci (P51 T6): na hráče je vrhá ovládání, předlohu zná z kol.
+  const diver = (rounds.params as Partial<ThrowRoundsParams>).dive?.template;
+  const dive = diver === undefined ? {} : { dive: { template: diver, drop: -THROW_DIVE.drop, low: THROW_DIVE.low, reach: THROW_DIVE.reach, window: THROW_DIVE.window } };
   // Rozpočet práce kol (s), ne viditelné hodiny: kratší hodiny (`paceBudgetPct`) svět jinak nemění.
   const ticks = Math.min(ARCADE_LIMITS.maxTicks, fitted.budget * ARCADE_HZ);
   return {
     ...still({ by: 'time', need: ticks, limit: ticks }, 'bonus'),
     adjust: (own) => ({
       ...own,
-      control: { ...own.control, params: { ...own.control.params, swing: THROW_SWING.amplitude } },
+      control: { ...own.control, params: { ...own.control.params, swing: THROW_SWING.amplitude, ...dive } },
       level: built.level,
       rules: own.rules.map((rule) => (rule.id === 'throw_rounds' ? rounds : rule.id === 'shot_hit' && tough !== undefined ? { ...rule, params: { ...rule.params, tough } } : rule)),
     }),
@@ -869,12 +1020,16 @@ const throwPaced: GenrePacing = (parts, spec, seed) => {
  *   se nepostaví. Obojí je mimo P45C (`rules/**`);
  * - složená hra (díly P42, `assemblyParts`): pronásledovatel či překážka dílu u bosse, který nese poslední
  *   věci, robota shodili (aréna + díl `chaser` semínka 1–3 prohrál) – jako boss s pronásledovatelem.
+ *   `parts` = záznam díly unese (aréna se sbíráním ve `genre.v5`, P51 T5).
  */
-const ownShape = (spec: GameSpecV1, overlays = false): boolean =>
-  ((spec.rules?.length ?? 0) > 0 && !(overlays && overlayOnly(spec))) || (spec.things?.length ?? 0) > 0 || spec.assemblyParts !== undefined;
+const ownShape = (spec: GameSpecV1, overlays = false, parts = false): boolean =>
+  ((spec.rules?.length ?? 0) > 0 && !(overlays && overlayOnly(spec))) || (spec.things?.length ?? 0) > 0 || (spec.assemblyParts !== undefined && !parts);
 
 /** Verze překladu žánru, od které hra dostane průběh pod overlay šablonou a finále podle žánru (P47A, `GENRE_COMPILER_VERSION`). */
 export const FINALE_GENRE_VERSION = 'genre.v4';
+
+/** Verze, od které finále dostanou všechny žánry, stanoviště nepřátele a mrtvý čas hustotu událostí (P51, `GENRE_COMPILER_VERSION`). */
+export const FINALE5_GENRE_VERSION = 'genre.v5';
 
 const genreVersion = (version: string): number => Number(/^genre\.v(\d+)$/.exec(version)?.[1] ?? 0);
 
@@ -905,17 +1060,15 @@ const livesAtMost = (spec: GameSpecV1, most: number): boolean => {
 
 /**
  * Průběh podle generátoru světa (`generatorOf`); žánry plní T11–T14. Generátor bez záznamu hraje beze změny.
- * Plošinovka (P46B T6) jen se značkou nové hry `segments` (`platformPaced`); `glide_course` staví jen spec bez `genre`,
- * stejně jako `arena` (agar ze slovního návrhu bez žánru) a `arena_catch` (`compose/catch.ts` – spec bez `genre`):
- * žánr Aréna staví jen `arena_collect`, `arena_escape` a `fight` (`genre/arena.ts`). `steer_track` (P46B T5) staví
- * spec bez `genre` (`compose/drive.ts`): průběh dostane, jen když nese značku nové hry `segments` (`pacedNative`).
+ * Plošinovka (P46B T6) jen se značkou nové hry `segments` (`platformPaced`); `arena` (agar ze slovního návrhu bez
+ * žánru) a `arena_catch` (`compose/catch.ts`, od P51 T4 se značkou `segments`) staví spec bez `genre`: žánr Aréna staví jen `arena_collect`,
+ * `arena_escape` a `fight` (`genre/arena.ts`). `steer_track` (P46B T5) staví spec bez `genre` (`compose/drive.ts`):
+ * průběh dostane, jen když nese značku nové hry `segments` (`pacedNative`).
  *
- * Chodec (`walker_*`) bez záznamu (odchylka T12, změřeno na 7 živých buňkách `walk.*` × 8 semínek): spec staví
- * `nativeSpec` bez `genre`, takže záznam by nikdy neběžel, a hra tvar průběhu neunese – robot projde bludiště
- * za 9,5–22 s s hodinami na délku své cesty (`paceBudgetPct` 100, rezerva pod 1 s), labyrint nemá hrozbu,
- * těla chování projdou zdmi (pevná tělesa zastaví jen hráče) a uhnutí v rovině posílá kód směru arény, který
- * ovládání `walker` čte jako rychlost v ose x. Útěk „na čas“ by v bludišti bez smyček (`walkerMaze`) před
- * pronásledovatelem nešel přečkat. Značka nové hry pro nativní spec by navíc změnila otisk každé nové hry chodce.
+ * Chodec (`walker_*`) a klouzání (`glide_course`, P51 T3) staví `nativeSpec` bez `genre`, takže průběh dostane
+ * jen nová hra se značkou `segments` (`walkerPaced`, `glidePaced`). Chodec nemá boss ani chování: těla chování
+ * projdou zdmi (pevná tělesa zastaví jen hráče) a uhnutí v rovině posílá kód směru arény, který ovládání `walker`
+ * čte jako rychlost v ose x; finále je proto závěrečný spěch (stezka jisker `WALKER_FINALE`), ne strážce.
  *
  * Přistání (`voyage_land`) bez záznamu (odchylka T14, buňka `voyage.land`, 20 semínek): jeden život a hra
  * trvá 13,6–15,1 s (robot intermediate 19/20, novice 13/20) – křivka by měla na úvod necelé 3 s a délku
@@ -937,7 +1090,10 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   voyage_race: (parts, spec, seed) => (parts.health === 1 ? null : track(3)(parts, spec, seed)),
   // Sběr a útěk (P47A T2, varianta A): ve `genre.v4` průběh i pod overlay šablonou P45B (`overlayOnly`). Quest v prostoru
   // ji ve v4 nedostane vůbec (varianta B, `withTemplate` v `compose/compile.ts`).
-  arena_collect: (parts, spec, seed) => (ownShape(spec, true) || livesAtMost(spec, 1) ? null : itemField(FIELD.collect)(parts, spec, seed)),
+  // Sběr s díly P42 (P51 T5): nová hra (`genre.v5`) průběh dostane – věty „chytá padající vejce“ (díly `catch`/`hazard`/`rival`) jinak finále
+  // neměly. Kromě dílu `chaser` (vzor skákačky): s bossem a chováními robot intermediate prohrál 12/12 semínek (bez průběhu vyhrál 11/12).
+  arena_collect: (parts, spec, seed) =>
+    (ownShape(spec, true, genreAtLeast(spec, FINALE5_GENRE_VERSION) && spec.assemblyParts?.some((part) => part.kind === 'chaser') !== true) || livesAtMost(spec, 1) ? null : itemField(FIELD.collect)(parts, spec, seed)),
   arena_escape: (parts, spec, seed) => (ownShape(spec, true) ? null : (ruleOf(parts, 'survive_time') === undefined ? itemField(FIELD.escape) : survivalField(FIELD.survival))(parts, spec, seed)),
   fight: (parts, spec, seed) => (ownShape(spec) || livesAtMost(spec, 2) ? null : fightField(FIELD.fight)(parts, spec, seed)),
   quest_spatial: (parts, spec, seed) => (ownShape(spec) ? null : questField(FIELD.quest)(parts, spec, seed)),
@@ -958,6 +1114,14 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   // Složená hra (díly P42, R2) ano, kromě dílu `chaser`: vyběhne hráči naproti a v první sekundě mu vezme život, takže past
   // a boss průběhu se hrají na dva – začátečník 0,5 → 0,25 (20 semínek). Ostatní díly: intermediate 1,0, začátečník 0,3–0,45.
   platform_level: (parts, spec, seed) => (livesAtMost(spec, 1) || spec.assemblyParts?.some((part) => part.kind === 'chaser') === true ? null : platformPaced(parts, spec, seed)),
+  // Chodec a klouzání (P51 T3): jen nová hra se značkou `segments`, finále staví generátor.
+  walker_labyrinth: walkerPaced,
+  walker_stealth: walkerPaced,
+  walker_escape: walkerPaced,
+  glide_course: glidePaced,
+  // Míč a chytání (P51 T4): jen nová hra se značkou `segments`, soupeře a kořist-bosse staví generátor.
+  ball_pitch: clockPaced,
+  arena_catch: clockPaced,
 };
 
 /** Verze překladu žánru před průběhem (`GENRE_COMPILER_VERSION` v `genre/contract.ts`): uložené hry s ní průběh nedostanou. */
@@ -1026,16 +1190,20 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
   const level = carried.length === 0 ? adjusted.level : { ...adjusted.level, bodies: adjusted.level.bodies.map((body, index) => (carried.includes(index) ? { ...body, template: true } : body)) };
   const built = withPacing({ ...adjusted, level }, {
     seed, goal: setup.goal, space: setup.space, spots: setup.spots,
+    ...(setup.foeSpots === undefined ? {} : { foeSpots: setup.foeSpots }),
+    ...(setup.ownDodge === true ? { ownDodge: true } : {}),
     behaviours: moving ? setup.behaviours : [], budget: moving ? setup.budget : 0,
     ...(moving && setup.pick !== undefined ? { pick: setup.pick } : {}),
     ...(setup.from === undefined ? {} : { from: setup.from }),
     ...(setup.until === undefined ? {} : { until: setup.until }),
     ...(finale === undefined ? {} : { finale }),
-    ...(boss === undefined ? {} : { boss: { body: boss.body, at: boss.at, ...(boss.behaviour === undefined ? {} : { behaviour: boss.behaviour }) } }),
+    // Boss nové hry (P51 T5) přijde i do plného `maxActors` – runner s hejnem těsně před bossem jinak finále neměl.
+    ...(boss === undefined ? {} : { boss: { body: boss.body, at: boss.at, ...(boss.behaviour === undefined ? {} : { behaviour: boss.behaviour }), ...(genreAtLeast(spec, FINALE5_GENRE_VERSION) ? { room: true as const } : {}) } }),
     ...(clear.length === 0 ? {} : { clear }),
     ...(setup.steady === true ? { steady: true } : {}),
     ...(setup.extra === undefined ? {} : { extra: setup.extra }),
     ...(setup.pulse === undefined ? {} : { pulse: setup.pulse }),
+    ...(setup.pulseAround === undefined ? {} : { pulseAround: setup.pulseAround }),
     ...(setup.spark === true ? { spark: true } : {}),
     ...(setup.segments === undefined ? {} : { segments: setup.segments, ...(spec.segments === undefined ? {} : { script: spec.segments }) }),
   });

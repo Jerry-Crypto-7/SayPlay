@@ -21,7 +21,7 @@ import { compileRecipe } from '@/play/compose/compile';
 
 import { modelIdOf } from '../World';
 import { modelOf, partOf } from '../arena/ArenaScene';
-import { type BodyView, PACING_KINDS, PACING_SHOT_KINDS, bodiesOf } from '../bodies';
+import { type BodyView, PACING_KINDS, PACING_SHOT_KINDS, SPARK_KIND, bodiesOf } from '../bodies';
 import { SHOT_PRIMITIVES } from '../shooter/primitives';
 
 /** Model, který scéna opravdu načte: riggovaná postava, nebo GLB v `public/`. */
@@ -116,6 +116,23 @@ it('every power-up draws a model that exists', () => {
     const model = modelIdOf({ index: 1, kind: powerupKind(id), role: ROLE.powerup, w: 0.8, h: 0.8, d: 0.8 }, cast);
     expect(model !== undefined && exists(model), `${id} → ${String(model)}`).toBe(true);
   }
+});
+
+// P51 T3: jiskry stezky finále nové hry chodce – `spark-lod1.glb` neleží nikde, scéna by hlásila 404 a kreslila kvádr.
+it('the walker finale sparks draw a model that exists', () => {
+  let sparks = 0;
+  for (const cell of liveCells().filter((c) => c.id.startsWith('walk.'))) {
+    const spec = compileRecipe(assemblyOfCell(cell));
+    const made = arcadeWorldOf(spec, 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    const state = instantiate(made.world);
+    const cast = { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: {} };
+    for (const view of bodiesOf({ world: made.world, state: () => state }).filter((v) => v.kind === SPARK_KIND)) {
+      sparks += 1;
+      expect(exists(modelIdOf(view, cast)), `${cell.id} → ${modelIdOf(view, cast)}`).toBe(true);
+    }
+  }
+  expect(sparks).toBeGreaterThan(0);
 });
 
 // P46E T6: věc pravidel režiséra bez modelu z popisku – demo auta hlásilo 404 na `thing:turbo-lod1.glb`.

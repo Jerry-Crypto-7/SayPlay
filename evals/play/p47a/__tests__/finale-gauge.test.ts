@@ -58,7 +58,10 @@ describe('unpacedReason', () => {
   it('names P42 parts before rules, and a stored game version as the entry', () => {
     const assembled = draftGameSpecWithMeta('Collect seashells on a beach before the tide crabs pinch you', 1).spec;
     expect(assembled.assemblyParts).toBeDefined();
-    expect(unpacedReason(assembled, worldOf(assembled))).toBe('assembly');
+    // P51 T5: nová hra s díly P42 má průběh; důvod `assembly` hlásí uložená `genre.v4`.
+    expect(unpacedReason(assembled, worldOf(assembled))).toBeNull();
+    const storedAssembled = { ...assembled, genre: { ...assembled.genre!, compilerVersion: 'genre.v4' } } as GameSpecV1;
+    expect(unpacedReason(storedAssembled, worldOf(storedAssembled))).toBe('assembly');
     const stored = { ...collect, genre: { ...collect.genre!, compilerVersion: 'genre.v1' } } as GameSpecV1;
     expect(unpacedReason(stored, worldOf(stored))).toBe('entry');
     expect(paced(stored)).toBe(false);

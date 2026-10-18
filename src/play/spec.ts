@@ -426,6 +426,8 @@ export const glideSpecParamsSchema = z.object({
   difficulty: z.enum(['easy', 'normal', 'hard']).optional(),
   lengthM: z.int().min(80).max(400).optional(),
   topSpeed: z.int().min(120).max(240).optional(),
+  /** Nová hra s průběhem a tunelem finále (P51 T3, `GLIDE_FINALE`); uložený spec bez pole hraje jako dřív. */
+  segments: z.literal(true).optional(),
 }).strict();
 export const walkerSpecParamsSchema = z.object({
   paceBudgetPct: z.int().min(100).max(180).optional(),
@@ -433,6 +435,8 @@ export const walkerSpecParamsSchema = z.object({
   size: z.int().min(7).max(15).refine(value => value % 2 === 1, 'Maze size must be odd').optional(),
   speed: z.int().min(80).max(160).optional(),
   collect: z.boolean().optional(),
+  /** Nová hra s průběhem a stezkou finále (P51 T3, `WALKER_FINALE`); uložený spec bez pole hraje jako dřív. */
+  segments: z.literal(true).optional(),
 }).strict();
 export const ballSpecParamsSchema = z.object({
   team: z.boolean().optional(),
@@ -444,6 +448,8 @@ export const ballSpecParamsSchema = z.object({
   keeper: z.boolean().optional(),
   difficulty: z.enum(['easy', 'normal', 'hard']).optional(),
   targets: z.int().min(1).max(5).optional(),
+  /** Nová hra s průběhem a soupeřem-bossem finále (P51 T4, `BALL_FINALE`); uložený spec bez pole hraje jako dřív. */
+  segments: z.literal(true).optional(),
 }).strict();
 
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */

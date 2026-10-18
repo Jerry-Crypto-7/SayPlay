@@ -324,6 +324,8 @@ function settledZ(route: readonly SteerSegment[], from: number): number {
 export interface EnemyOptions {
   readonly patterned?: boolean;
   readonly finaleFrom?: number;
+  /** Klouzání: terč u každého kruhu tunelu finále (jen doplněk `shoot`). */
+  readonly tunnel?: boolean;
 }
 
 /** Nová hra se vzory (P46D, značka `patterns` ve spec): řízení i běžec; uložená hra dostane nepřátele jako dřív. */
@@ -354,8 +356,11 @@ export function enemiesFor(control: string, level: ArcadeLevel, options: EnemyOp
   if (control === 'glide') {
     // Actual XYZ ring apertures, not a floor-level track: there is enough time
     // to settle into the next ring's lane and fire before reaching its target.
+    // Střelba (`tunnel`): tunel finále nové hry (`GLIDE_FINALE`, kruhy blíž než `GLIDE.spacing`) má terč u každého
+    // kruhu – po každém druhém by zásahy po celé trati rozředily hustotu konce pod `CLIMAX_FACTOR` (P51 T3).
+    // Akce hrdiny ne: nepřítel po 44 tikách přijde dashi v cooldownu (60) a robot prohraje.
     const size = 2 * GLIDE.size;
-    return glidePathOf(level).filter((_node, index) => index % 2 === 0)
+    return glidePathOf(level).filter((node, index, path) => index % 2 === 0 || (options.tunnel === true && node.z - path[index - 1]!.z < GLIDE.spacing))
       .map(node => enemy(node.x, node.y - size / 2, node.z, size));
   }
   if (control === 'steer') {
@@ -540,7 +545,7 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
   params: noParams,
   apply: (parts, _params, { health, spec }) => {
     const control = baseControl(parts).id;
-    const enemies = enemiesFor(control, parts.level, enemyOptions(spec, control));
+    const enemies = enemiesFor(control, parts.level, { ...enemyOptions(spec, control), tunnel: true });
     // Nová těla jen na konec: index modelu (`kinds`), který si dřívější doplněk zapsal, se tak nepohne.
     const bodies = [...parts.level.bodies, ...enemies];
     const template = bodies.length;
