@@ -155,6 +155,21 @@ Přeměřeno všech 54 živých buněk × 20 semínek × začátečník/intermed
 - Brána obtížnosti: horní mez začátečníka se u buněk `ball.*` nehlídá (stejně jako v `p51-ball-catch-timing` od T4), dolní mez 0,3 a intermediate ≥ 0,8 dál platí. Mutace (záloha mimo repo, 2/2 červené): začátečník bez zpomalení reakce (`extraReactionTicks` 12 → 4) → brána červená na profilech; `walk.reach` začátečník 16/20 v datech → `walk.reach/novice` nad 0,7.
 - `e2e/offline-chain.spec.ts`, který plán jmenuje, v repu není – pevná čísla k porovnání nejsou.
 
+## T4a – mrtvý čas chytání
+
+Kořist na tři chycení (T4) poslala hráče po prvních dvou chyceních zpět na start a cesta ke kořisti byla bez události. Nová hra chytání má tep pole P47A T9 (`CATCH_PULSE` v `pacing-parts.ts`): po 2,5 s ticha (houstne s křivkou) přijde mince na volném z osmi míst čtverce 6 m kolem hráče, sevřená do arény (`pulse.around`), hráč ji sebere za bod (`pickup`, výsledek ji počítá jako „coins“); se třemi mincemi na ploše tep odvolá tu nejdál. První verze s pevnými místy v polovině arény (20 m od středu) dala táž čísla, ale ve snímku z prohlížeče mince ležela mimo záběr – událost, kterou hráč nevidí, se zahodila.
+
+| Hra | Nejdelší mezera před | Po | Běh (s) |
+|---|---|---|---|
+| buňka `roam.catch`, 12 semínek | 9,3–16,6 s (medián 10,7) | 2,5 s všude | 22,3–34,6, beze změny |
+| dev k01 / k02 / k03 (publikovaná semínka) | 9,5 / 14,9 / 16,1 s | 2,5 s | 22,9 / 33,1 / 33,1, beze změny |
+| panel m11 | 9,5 s | 2,5 s | 22,5, beze změny |
+
+- Robot mince nevidí (`withoutCoins`, jako tep pole), takže hraje tytéž vstupy: délka běhu na každém semínku sedí na desetinu, finále `boss` ve všech výhrách, intermediate a novice beze změny. Řádek `roam.catch` v `difficulty.json` se proto nepřeměřoval (otisk specu týž, výsledky robotů taky).
+- Test `p51-dead-time.test.ts` („P51 T4a“): buňka a k01–k03 na 12 semínkách – medián ≤ 4 s, žádná nad 6 s, běh 20–90 s (chytání trvá 22–35 s už od T4), nečinný nevyhraje, přehrání = hash, intermediate ≥ 0,8 s finále, novice ≥ 0,3 (buňka i ≤ 0,7); hráč, který dojde k minci, dostane bod; uložená hra bez značky tep nemá.
+- Mutace (záloha mimo repo): bez mince tepu → 5 testů červených; bez `pickup` → test sebrání červený; tep i pro míč → 8 testů míče červených; místa bez `around` (pevná kolem středu) → mince 11 m od hráče, test červený; „jen hra s `half`“ místo „jen chytání“ je ekvivalentní (ovládání míče `half` nemá).
+- Ve snímku z prohlížeče (věta k02, tik 200, produkční build) mince svítí 6 m od psa v záběru kamery.
+
 ## T9 – oznámení nových finále ve scéně
 
 Banner P47A (`PacingBanner`, štítek kitu `sp-world-tag`) teď ohlásí každé nové finále. Co a kdy, čte `nativeFinaleOf` v `pieces/pacing.ts` ze světa – finále, které staví generátor, ne pravidlo `pacing`:
@@ -195,5 +210,6 @@ Banner P47A (`PacingBanner`, štítek kitu `sp-world-tag`) teď ohlásí každé
 - **T7 – živá buňka `shooter.default` není v testu:** má jeden život a průběh nemá, mezera se tam podlahou nemění; test měří věty dev s01, s02 (střílečka s průběhem).
 - **T7 – rytmus se nemění:** cíl ≤ 4 s splňuje už `genre.v4` (dev 3,62 s) a nejdelší mezera je náběh před první notou; hustší začátek by změnil hudbu, ne mrtvý čas uprostřed hry.
 - **T8 – brána obtížnosti nehlídá horní mez začátečníka u míče:** pokračování rozhodnutí T4 – začátečník míče vyhraje 20/20 a pásmo 0,3–0,7 by držely jen hodiny desetiny sekundy nad během intermediate. Výjimka stojí v `difficulty.test.ts` vedle výjimky běžce se střelbou; míč je tím jediný žánr, kde začátečník může vyhrát vždy – kandidát na úpravu, až bude míč mít jiný rozdíl mezi profily než reakci.
+- **T4a – mince tepu chytání jde sebrat za bod:** mince, kterou hráč nesebere, by byla jen kulisa, která měřidlu dodá událost. Chytání skóre jinak nemá, takže bod nic nerozbije (velikost hráče je pevná, `size` ovládání), a kořist zůstává jediná cesta k výhře.
 - **T9 – finále míče se hlásí jako „Boss: <jméno>“, ne „Last round!“:** pravidlo `pacing` míče má finále `round`, ale to, co hráč na konci opravdu potká, je soupeř-boss se 3 HP sám na hřišti; „Last round!“ by sliboval kolo, které hra nemá. Nápis přijde, až padne poslední terč – dřív by boss nebyl jediný, co zbývá.
 - **T9 – chodec a klouzání nehlásí „Final sprint!“:** jejich finále je místo (stezka k východu, tunel kruhů), ne zrychlení; nápis říká, kam jít.

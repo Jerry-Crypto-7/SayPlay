@@ -80,7 +80,7 @@ const aiming = (spec: GameSpecV1): boolean => spec.control === 'shooter' || spec
 const scoreUnit = (spec: GameSpecV1): string =>
   spec.scoring !== undefined
     ? 'points'
-    : spec.control === 'runner' || spec.control === 'platform'
+    : spec.control === 'runner' || spec.control === 'platform' || (spec.controlParams as { readonly generator?: string } | undefined)?.generator === 'arena_catch'
       ? 'coins'
       : spec.control === 'steer'
         ? 'turbos'

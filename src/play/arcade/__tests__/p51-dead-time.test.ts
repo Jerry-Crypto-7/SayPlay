@@ -16,9 +16,14 @@ import { createHash } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf, generatorOf } from '../compile';
-import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, bodyBase, nativeRule } from '../contract';
+import { ARCADE_HZ, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, NO_INPUT, UNIT, bodyBase, nativeRule } from '../contract';
+import { instantiate, loadProgram, step } from '../kernel';
+import { ARCADE_LIBRARY } from '../library';
 import { loadRapier } from '../physics/world';
+import { arenaAxis } from '../pieces/arena';
+import { play } from '../pieces/behaviours/__tests__/harness';
 import { PACING, type PacingRuleParams } from '../pieces/pacing';
+import { CATCH_PULSE } from '../pieces/pacing-parts';
 import { WALKER_BEAT, WALKER_CELL, WALKER_FINALE, walkerExit, walkerPath, type WalkerMap } from '../pieces/walker';
 import { funMetrics, traceRun } from '../telemetry';
 import { runBot, verifyArcade } from '../verify';
@@ -68,10 +73,10 @@ const mapOf = (world: ArcadeWorld): WalkerMap & { readonly speed: number } => {
 const pulseOf = (world: ArcadeWorld): PacingRuleParams['pulse'] => (nativeRule(world.rules, 'pacing')?.params as PacingRuleParams | undefined)?.pulse;
 
 /**
- * Brány mrtvého času na 12 semínkách: medián nejdelší mezery ≤ 4 s a žádná nad 6 s, běh 30–90 s, nečinný nevyhraje,
- * přehrání = hash, intermediate ≥ 0,8 a výhry s finále, novice ≥ 0,3 (s `noviceMax` i ≤ 0,7).
+ * Brány mrtvého času na 12 semínkách: medián nejdelší mezery ≤ 4 s a žádná nad 6 s, běh `shortest`–90 s, nečinný
+ * nevyhraje, přehrání = hash, intermediate ≥ 0,8 a výhry s finále, novice ≥ 0,3 (s `noviceMax` i ≤ 0,7).
  */
-function expectBusy(label: string, spec: GameSpecV1, noviceMax: boolean): void {
+function expectBusy(label: string, spec: GameSpecV1, noviceMax: boolean, shortest = 30): void {
   const gaps: number[] = [];
   const seconds: number[] = [];
   let intermediate = 0;
@@ -96,7 +101,7 @@ function expectBusy(label: string, spec: GameSpecV1, noviceMax: boolean): void {
   const runs = `gaps ${gaps.join(' ')}; runs ${seconds.map((s) => s.toFixed(1)).join(' ')}`;
   expect(median(gaps), `${label}: median longest gap (${runs})`).toBeLessThanOrEqual(4);
   expect(Math.max(...gaps), `${label}: longest gap (${runs})`).toBeLessThanOrEqual(6);
-  expect(Math.min(...seconds), `${label}: shortest run (${runs})`).toBeGreaterThanOrEqual(30);
+  expect(Math.min(...seconds), `${label}: shortest run (${runs})`).toBeGreaterThanOrEqual(shortest);
   expect(Math.max(...seconds), `${label}: longest run (${runs})`).toBeLessThanOrEqual(90);
   expect(intermediate / SEEDS.length, `${label}: intermediate (${runs})`).toBeGreaterThanOrEqual(0.8);
   expect(finales / intermediate, `${label}: finale in wins (${runs})`).toBeGreaterThanOrEqual(0.8);
@@ -168,6 +173,76 @@ describe('P51 T7: runner games get the field heartbeat', () => {
   for (const cell of RUNNERS) {
     it(`${cell.id}: longest gap median ≤ 4 s and none over 6 s, runs 30–90 s; idle never wins, replay equal, intermediate ≥ 0.8 with a finale, novice ≥ 0.3`, () => {
       expectBusy(cell.id, cellSpec(cell.id), cell.id === 'runner.default');
+    });
+  }
+});
+
+/** Věty chytání z dev sady P51 (`evals/play/p51/dev.json`). */
+const CATCHES = [
+  { id: 'k01', text: 'a kid catches raindrops in a bucket on the porch' },
+  { id: 'k02', text: 'a dog catches frisbees in the park' },
+  { id: 'k03', text: 'a puppy catches soap bubbles in the backyard' },
+] as const;
+
+describe('P51 T4a: catch games get the field heartbeat', () => {
+  it('a new catch game has the heartbeat; a player who walks to its coin scores it, a stored game has none', () => {
+    const spec = cellSpec('roam.catch');
+    const world = worldOf(spec);
+    const pulse = pulseOf(world)!;
+    expect(pulse.beat).toBe(PACING.heartbeat);
+    const { segments: _segments, ...tuning } = (spec.controlParams as { tuning: Record<string, unknown> }).tuning;
+    expect(pulseOf(worldOf({ ...spec, controlParams: { ...spec.controlParams, tuning } as GameSpecV1['controlParams'] }))).toBeUndefined();
+    // Hráč jde k nejbližší živé minci tepu (kopie předlohy od slotu spawnu); dřív než kořist ho nic jiného bodem neodmění.
+    const program = loadProgram(world, ARCADE_LIBRARY);
+    const state = instantiate(world);
+    const coin = world.initial[bodyBase(pulse.template) + BODY.kind];
+    const score = (): number => state[HEADER.counters + COUNTER.score] as number;
+    let coins = 0;
+    for (let tick = 0; tick < 20 * ARCADE_HZ && score() === 0; tick += 1) {
+      const live = Array.from({ length: state[HEADER.bodyCount] as number }, (_, body) => body).filter(
+        (body) => body >= (state[HEADER.spawnBase] as number) && state[bodyBase(body) + BODY.kind] === coin && ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0,
+      );
+      coins = Math.max(coins, live.length);
+      const p = bodyBase(state[HEADER.player] as number);
+      const at = live[0] === undefined ? undefined : bodyBase(live[0]);
+      step(state, at === undefined ? NO_INPUT : { axis: arenaAxis((state[at + BODY.x] as number) - (state[p + BODY.x] as number), (state[at + BODY.z] as number) - (state[p + BODY.z] as number)), buttons: 0 }, program);
+    }
+    expect(coins, 'a heartbeat coin came').toBeGreaterThan(0);
+    expect(score(), 'the coin is worth a point').toBeGreaterThan(0);
+    // V běhu robota (hráč přejde celou arénu): každá mince přijde v záběru u hráče (`CATCH_PULSE.reach` na obou osách) a v aréně.
+    const half = (world.control.params.base as { params: { half: number } }).params.half;
+    // Sloty mincí se recyklují (tep odvolá nejvzdálenější), nová mince = tělo, které minulý tik nežilo.
+    let alive = new Set<number>();
+    let born = 0;
+    play(world, runBot(world, undefined, { profile: 'intermediate' }).inputs, (now) => {
+      const p = bodyBase(now[HEADER.player] as number);
+      const live = new Set<number>();
+      for (let body = now[HEADER.spawnBase] as number; body < (now[HEADER.bodyCount] as number); body += 1) {
+        const at = bodyBase(body);
+        if (now[at + BODY.kind] !== coin || ((now[at + BODY.flags] as number) & FLAG.alive) === 0) continue;
+        live.add(body);
+        if (alive.has(body)) continue;
+        born += 1;
+        for (const axis of [BODY.x, BODY.z]) {
+          expect(Math.abs((now[at + axis] as number) - (now[p + axis] as number)), `coin ${body} near the player`).toBeLessThanOrEqual(CATCH_PULSE.reach + UNIT);
+          expect(Math.abs(now[at + axis] as number), `coin ${body} in the arena`).toBeLessThan(half);
+        }
+      }
+      alive = live;
+    });
+    expect(born, 'coins in the bot run').toBeGreaterThan(3);
+  });
+
+  // Chytání trvá 22–35 s už od T4 (intermediate chytí kořist potřetí dřív, než doběhnou hodiny) – tep hru nezkracuje.
+  it('cell roam.catch: longest gap median ≤ 4 s and none over 6 s, runs 20–90 s; idle never wins, replay equal, intermediate ≥ 0.8 with a finale, novice 0.3–0.7', () => {
+    expectBusy('roam.catch', cellSpec('roam.catch'), true, 20);
+  });
+
+  for (const { id, text } of CATCHES) {
+    it(`${id}: longest gap median ≤ 4 s and none over 6 s, runs 20–90 s; idle never wins, replay equal, intermediate ≥ 0.8 with a finale, novice ≥ 0.3`, () => {
+      const spec = draftGameSpecWithMeta(text, 1).spec;
+      expect(generatorOf(spec), id).toBe('arena_catch');
+      expectBusy(id, spec, false, 20);
     });
   }
 });

@@ -760,14 +760,33 @@ const walkerPaced: GenrePacing = (parts, spec) => {
 const glidePaced: GenrePacing = (parts, spec) =>
   generatorParams(spec).segments !== true || spec.assemblyParts !== undefined ? null : still({ by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks }, 'sprint');
 /**
+ * Tep chytání (P51 T4a): tep pole P47A T9 – po `heartbeatAt` tikách bez události mince (`HEARTBEAT_COIN`, `pickup`
+ * = bod) na volném z osmi míst čtverce `reach` kolem hráče (`pulseAround`), v záběru kamery a uvnitř arény. Mrtvý čas
+ * byla cesta ke kořisti a po prvních dvou chyceních zpět ze startu (dev medián 14,9 s); místa kolem středu arény
+ * (polovina arény, 20 m) ležela mimo záběr. Robot mince nevidí (`withoutCoins`), takže běh i obtížnost zůstanou.
+ */
+export const CATCH_PULSE = { reach: 6 * UNIT } as const;
+const { reach } = CATCH_PULSE;
+const CATCH_PULSE_SPOTS = [reach, 0, reach, reach, 0, reach, -reach, reach, -reach, 0, -reach, -reach, 0, -reach, reach, -reach];
+
+/**
  * Míč a chytání (P51 T4): jako chodec jen nová hra se značkou `segments` a bez dílů P42; finále staví generátor –
  * soupeř-boss za terči (`BALL_FINALE`), kořist-boss na tři chycení (`CATCH_FINALE`). Postup = hodiny hry.
+ * Chytání má navíc tep (`CATCH_PULSE`).
  */
 const clockPaced: GenrePacing = (parts, spec) => {
   if (generatorParams(spec).segments !== true || spec.assemblyParts !== undefined) return null;
   const seconds = (ruleOf(parts, 'time_limit')?.params as { readonly seconds: number } | undefined)?.seconds;
   const ticks = Math.min(ARCADE_LIMITS.maxTicks, seconds === undefined ? ARCADE_LIMITS.maxTicks : seconds * ARCADE_HZ);
-  return still({ by: 'time', need: ticks, limit: ticks }, 'round');
+  const paced = still({ by: 'time', need: ticks, limit: ticks }, 'round');
+  if (ruleOf(parts, 'arena_catch_contact') === undefined) return paced;
+  return {
+    ...paced,
+    spots: CATCH_PULSE_SPOTS,
+    pulse: HEARTBEAT_COIN,
+    pulseAround: (parts.control.params.half as number) - (HEARTBEAT_COIN.w as number),
+    adjust: (own) => ({ ...own, rules: [...own.rules, { id: 'pickup', params: {} }] }),
+  };
 };
 
 /** Statický žánr bez chování: jen křivka (`pacing_control`) a finále v pravidle `pacing`. */
@@ -1184,6 +1203,7 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
     ...(setup.steady === true ? { steady: true } : {}),
     ...(setup.extra === undefined ? {} : { extra: setup.extra }),
     ...(setup.pulse === undefined ? {} : { pulse: setup.pulse }),
+    ...(setup.pulseAround === undefined ? {} : { pulseAround: setup.pulseAround }),
     ...(setup.spark === true ? { spark: true } : {}),
     ...(setup.segments === undefined ? {} : { segments: setup.segments, ...(spec.segments === undefined ? {} : { script: spec.segments }) }),
   });

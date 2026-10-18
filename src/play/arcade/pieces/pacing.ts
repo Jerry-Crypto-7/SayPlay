@@ -421,8 +421,11 @@ const ruleParams = z
      * uvolní plochu bossovi, nová chování odejdou před poslední vlnou.
      */
     clear: z.array(z.object({ role: z.int().min(1), at: z.int().min(1).max(1000) }).strict()).min(1).max(2).optional(),
-    /** Tep pole (P47A T9): předloha mince, tělo-počítadlo tepu a `beat` = tiky bez události v úvodu (`heartbeatAt`). */
-    pulse: z.object({ template: z.int().min(1), keeper: z.int().min(1), beat: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict().optional(),
+    /**
+     * Tep pole (P47A T9): předloha mince, tělo-počítadlo tepu a `beat` = tiky bez události v úvodu (`heartbeatAt`);
+     * `around` = místa jsou odstup od hráče a mince zůstane v ploše `|x|, |z| ≤ around` (chytání, P51 T4a).
+     */
+    pulse: z.object({ template: z.int().min(1), keeper: z.int().min(1), beat: z.int().min(1).max(ARCADE_LIMITS.maxTicks), around: z.int().min(1).optional() }).strict().optional(),
   })
   .strict();
 export type PacingRuleParams = z.infer<typeof ruleParams>;
@@ -437,8 +440,11 @@ function heartbeatOf(state: Int32Array, player: number, pulse: NonNullable<Pacin
   const coins = coinsOf(state, pulse.template);
   const t = bodyBase(pulse.template);
   const p = bodyBase(player);
-  // Trať (běžec, P51 T7): místo vstupu je odstup před hráčem.
-  const spots = space === 'track' ? places.map((value, index) => (index % 2 === 1 ? value + (state[p + BODY.z] as number) : value)) : places;
+  // Trať (běžec, P51 T7): místo vstupu je odstup před hráčem. Kolem hráče (chytání, P51 T4a): odstup na obou osách, v ploše.
+  const around = pulse.around;
+  const spots = around !== undefined
+    ? places.map((value, index) => Math.max(-around, Math.min(around, value + (state[p + (index % 2 === 0 ? BODY.x : BODY.z)] as number))))
+    : space === 'track' ? places.map((value, index) => (index % 2 === 1 ? value + (state[p + BODY.z] as number) : value)) : places;
   // Čtverec vzdálenosti v celých číslech (za běhu žádná plovoucí čárka mimo přesný rozsah).
   const away = (body: number): number => ((state[bodyBase(body) + BODY.x] as number) - (state[p + BODY.x] as number)) ** 2 + ((state[bodyBase(body) + BODY.z] as number) - (state[p + BODY.z] as number)) ** 2;
   if (coins.length >= PACING.heartbeatCoins) return [{ kind: 'despawn', body: coins.reduce((far, body) => (away(body) > away(far) ? body : far)) }];
@@ -565,6 +571,11 @@ export interface PacingSetup {
   readonly script?: readonly SegmentNews[];
   /** Tep pole (P47A T9): předloha mince, která přijde po `PACING.heartbeat` tikách bez události (`heartbeatOf`). */
   readonly pulse?: BodyInit;
+  /**
+   * Mince tepu kolem hráče (P51 T4a, chytání): `spots` jsou odstup od hráče na obou osách a mince zůstane v ploše
+   * `|x|, |z| ≤ around`. Bez něj místa vstupu jako dřív.
+   */
+  readonly pulseAround?: number;
   /**
    * Mince tepu je jiskra (P47A T9, sběr a útěk s věcmi, `isSpark`): strážci ji nehlídají; `arena_eat` ji sebere bez
    * bodu a vlna věcí na ni nečeká (předlohu jim dá `pacingParts`).
@@ -727,7 +738,7 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const bossed = setup.boss === undefined ? drawn : [...drawn, { atPermille: Math.max(1, setup.boss.at), template: first + behaviours.length, count: 1, entry: 0 }];
   const schedule = setup.extra === undefined ? bossed : [...bossed, { atPermille: Math.max(1, setup.extra.at), template: first + actors.length + shooters.length, count: setup.extra.count, entry: 0 }];
   const bossRoom = setup.boss?.room === true ? { bossRoom: first + behaviours.length } : {};
-  const pulse = setup.pulse === undefined ? {} : { pulse: { template: keeper - 1, keeper: keeper + 1, beat: PACING.heartbeat } };
+  const pulse = setup.pulse === undefined ? {} : { pulse: { template: keeper - 1, keeper: keeper + 1, beat: PACING.heartbeat, ...(setup.pulseAround === undefined ? {} : { around: setup.pulseAround }) } };
   const half = parts.control.params.half;
   const edge = setup.space === 'plane' && shooters.length > 0 && typeof half === 'number' ? { half } : {};
   const clear = setup.clear === undefined || setup.clear.length === 0 ? {} : { clear: setup.clear.map((step) => ({ role: ROLE[step.role], at: Math.max(1, step.at) })) };
