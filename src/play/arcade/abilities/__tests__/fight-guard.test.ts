@@ -134,10 +134,12 @@ describe('P47B T6: an arena fight without abilities builds the world it had befo
   // Semínko 1, změřeno nad 1c76cb71 (před T6): otisk světa, tik a hash robota, hash nečinného hráče.
   it.each(SENTENCES)('"%s"', (text) => {
     const built = worldOf(withAbilities(draftGameSpecWithMeta(text, 1).spec, []), 1);
-    expect(fingerprint(built)).toBe('ef1c82ae5b2346d3');
+    // Otisk, hash robota i nečinného hráče přeotisknuty po P51 (`genre.v5` dává nové hře finále a tep);
+    // uložená `genre.v4` staví dál ef1c82ae… (c2d58dad, cb032be4).
+    expect(fingerprint(built)).toBe('c0c6a671a5706afa');
     expect(JSON.stringify([built.control, built.rules])).not.toMatch(/"guard"|ability_fight_guard/);
     const run = runBot(built);
-    expect([run.tick, run.hash]).toEqual([3322, 'c2d58dad']);
-    expect(replay(built, [], ARCADE_LIBRARY).hash).toBe('cb032be4');
+    expect([run.tick, run.hash]).toEqual([3322, 'c09bee0d']);
+    expect(replay(built, [], ARCADE_LIBRARY).hash).toBe('805ca764');
   });
 });

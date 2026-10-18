@@ -94,9 +94,11 @@ const fingerprint = (world: ArcadeWorld): string => createHash('sha256').update(
 
 // Změřeno s `abilities/index.ts` před T5 (158b8262), návrh i svět na semínku 1. Sběr mušlí po sloučení
 // s P47A (`genre.v4`, nápor v aréně) přeměřen na samotné P47A: týž otisk jako sloučená větev.
+// P51 (`genre.v5`: finále, tep pole) dává nové hře nový otisk; uložená `genre.v4` staví dál 3eaf0928… a 327f61dd…
+// (piny uložených světů P51 ve `stored-v4-p51.json`). Přeotisknuto při slučování P51 do main, ať main nezůstane červený.
 const HARMFUL = [
-  ['a kid shields herself while collecting shells', '3eaf09280f807958'],
-  ['a squirrel runs and blocks falling acorns', '327f61ddfc29d48b'],
+  ['a kid shields herself while collecting shells', '456144f4d03c5c2a'],
+  ['a squirrel runs and blocks falling acorns', 'ee876db25b493c43'],
 ] as const;
 
 describe('P47B T5: a game that already has something harmful builds the world it had before', () => {
