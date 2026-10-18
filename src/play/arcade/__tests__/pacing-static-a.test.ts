@@ -110,8 +110,11 @@ describe('static genres A are paced (shooter and duel; ball stays unpaced)', () 
   });
 
   // Živé buňky s průběhem a střelnice z věty se třemi životy; buňka `shooter.default` má jediný život a průběh nedostane.
+  // Souboj staví průběh `genre.v4`: nová hra (`genre.v5`, P51 T6) hází každý třetí útok věc a údery po třetinách
+  // rostou míň; její stoupání (telemetrie) a hody hlídá `p51-foes.test.ts`.
+  const v4 = (spec: GameSpecV1): GameSpecV1 => ({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v4' } });
   const GAMES = [
-    ...CELLS.filter((cell) => cell.id !== 'shooter.default').map((cell) => ({ id: cell.id, spec: () => compileRecipe(assemblyOfCell(cell)) })),
+    ...CELLS.filter((cell) => cell.id !== 'shooter.default').map((cell) => ({ id: cell.id, spec: () => (cell.id.startsWith('duel') ? v4(compileRecipe(assemblyOfCell(cell))) : compileRecipe(assemblyOfCell(cell))) })),
     { id: 'shooter (three lives)', spec: shooterSpec },
   ];
 

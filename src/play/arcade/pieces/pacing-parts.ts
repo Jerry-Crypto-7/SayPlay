@@ -17,7 +17,7 @@ import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, type BodyInit, type PieceRe
 import { ESCAPE } from './arena';
 import { BEHAVIOURS, type BehaviourId, type BehaviourRef } from './behaviours';
 import { BOSS, DROPPER, TURRET, bossBody } from './behaviours/boss';
-import { DUEL_ENRAGE, DUEL_FOE } from './duel';
+import { DUEL_ENRAGE, DUEL_FOE, DUEL_HURL } from './duel';
 import { PACING, type PacingActor, type PacingSetup, TENSION_CURVE, controlIn, intensityAt, withPacing } from './pacing';
 import { progressionParts } from './progression-parts';
 import type { CompiledInteract } from '../rules/interact';
@@ -26,7 +26,7 @@ import { checkRhythmLevel, rhythmLevel } from './rhythm';
 import { RUNNER } from './runner';
 import { type GunParams, marchedRange, shooterWaves } from './shooter';
 import { courseOf, steerRoute } from './steer';
-import { THROW_SWING, throwField, throwParamsFor, throwParts } from './throw';
+import { THROW_DIVE, THROW_SWING, type ThrowRoundsParams, throwField, throwParamsFor, throwParts } from './throw';
 import { type TimingLevelParams, checkTimingLevel, timingLevel, timingLevelAtSpeeds, timingSpeedOf } from './timing';
 import { type WalkerMap, walkerExit, walkerRouteTicks } from './walker';
 import type { WaveParams } from './waves';
@@ -48,7 +48,7 @@ export interface GenrePacingSetup extends Omit<PacingSetup, 'seed' | 'boss'> {
    * Části generátoru pro hru s průběhem (např. poslední vlna bez věcí, které nese
    * boss); `boss` = index předlohy bosse, nebo `undefined`, když ho rozpočet
    * pravidel vzal. Nesmí měnit pořadí těl úrovně a počet jen bez chování a bosse
-   * průběhu (šampion duelu připíše předlohu na konec, P47A T6).
+   * průběhu (šampion duelu připíše předlohu na konec, P47A T6, a za něj hozená věc, P51 T6).
    */
   readonly adjust?: (parts: ArcadeParts, boss: number | undefined) => ArcadeParts;
   /** Výchozí fáze (`progressionParts`), když spec nenese vlastní `phases` ani `dependsOn`. */
@@ -577,7 +577,8 @@ const questField = (foes: FieldFoes): GenrePacing => (parts, spec) => {
  * agresivity soupeře `pace` (`PACING_KNOBS.duel`) místo zrychlení po soupeřích (`rise` – obojí naráz by
  * stáhlo okna na mez dřív, než přijde finále), finále = rozzuření posledního soupeře pod polovinou HP
  * (`DUEL_ENRAGE`: delší nápřah, kratší mezera); ve `genre.v4` je poslední soupeř navíc šampion se skutečnými
- * zásahy (`withChampion`). Bez chování: hráč z místa neuhne a scéna souboje kreslí jen dvě postavy.
+ * zásahy (`withChampion`). Bez chování průběhu: hráč z místa neuhne (jen se skrčí) a scéna souboje kreslí jen dvě
+ * postavy – ve `genre.v5` (P51 T6) navíc věc, kterou soupeř každý třetí útok hodí (`withHurl`).
  */
 const duelPaced: GenrePacing = (parts, spec) => (parts.control.id !== 'duel' ? null : {
   goal: { by: 'distance', need: parts.level.length, limit: ARCADE_LIMITS.maxTicks },
@@ -589,9 +590,30 @@ const duelPaced: GenrePacing = (parts, spec) => (parts.control.id !== 'duel' ? n
   adjust: (own) => {
     const { rise: _rise, ...params } = own.control.params;
     const enraged = { ...own, control: { ...own.control, params: { ...params, pace: 1000, enrage: { ...DUEL_ENRAGE } } } };
-    return genreAtLeast(spec, FINALE_GENRE_VERSION) ? withChampion(enraged) : enraged;
+    const crowned = genreAtLeast(spec, FINALE_GENRE_VERSION) ? withChampion(enraged) : enraged;
+    return genreAtLeast(spec, FINALE5_GENRE_VERSION) ? withHurl(crowned) : crowned;
   },
 });
+
+/**
+ * Hozená věc souboje (P51 T6, `genre.v5`): předloha těla `DUEL_HURL.body` na konci úrovně (za šampionem), ovládání
+ * `duel` ji každý `DUEL_HURL.every`-tý útok oživí v ruce soupeře a hodí, robot souboje ji vidí (`hurl`) a uhne, až
+ * doletí. Telemetrie v ní vidí druhé chování (role hrozby, letí po startu). Průběh duelu nemá chování ani bosse
+ * průběhu, takže předloha na konci úrovně žádný index neposune.
+ *
+ * Změřeno na buňce `duel.default` (12 semínek, intermediate / jeho výhry s finále / novice; bez věci 12 / 12 / 7,
+ * hra 41–46 s): každý třetí útok, let 30 tiků → 12 / 12 / 7, hra 48,7–53,4 s, 180 hodů, robotu světa žádný zásah;
+ * robot, který uhýbá na švih ruky, dostal 36 zásahů a prohrál 12/12.
+ */
+function withHurl(parts: ArcadeParts): ArcadeParts {
+  const body = parts.level.bodies.length;
+  return {
+    ...parts,
+    control: { ...parts.control, params: { ...parts.control.params, hurl: { body, every: DUEL_HURL.every, flight: DUEL_HURL.flight } } },
+    bot: { ...parts.bot, params: { ...parts.bot.params, hurl: { body, flight: DUEL_HURL.flight } } },
+    level: { ...parts.level, bodies: [...parts.level.bodies, { ...DUEL_HURL.body, template: true }] },
+  };
+}
 
 /**
  * Šampion duelu (P47A T6): předloha `bossBody` soupeře s HP `foeHealth` na konci úrovně; ovládání ji otiskne
@@ -924,24 +946,28 @@ const stationPaced: GenrePacing = (parts, spec) => {
  * rychleji (rychlost kola z křivky), finále = bonusový terč posledního kola, poslední krok k výhře. Postup =
  * čas proti rozpočtu práce kol: kolo ani skóre (kombo) postup neměří a rychlosti stojí v úrovni. Jen hra po kolech.
  * Ve `genre.v4` je bonusový terč posledního kola terč-boss se 3 HP (`THROW_BOSS`, P47A T7): `shot_hit.tough` mu
- * zásahem ubere HP a kolo s výhrou čeká na jeho pád.
+ * zásahem ubere HP a kolo s výhrou čeká na jeho pád. Ve `genre.v5` (P51 T6) přiletí do posledních kol útočníci
+ * (`THROW_DIVE`): druhé chování a hustší konec hry.
  */
 const throwPaced: GenrePacing = (parts, spec, seed) => {
   const params = throwField.params.safeParse(generatorParams(spec));
   if (parts.control.id !== 'throw' || !params.success || ruleOf(parts, 'throw_rounds') === undefined) return null;
   const clock = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   const fitted = throwParamsFor(params.data, clock);
-  const built = throwParts(seed, { ...fitted, swing: true, ...(genreAtLeast(spec, FINALE_GENRE_VERSION) ? { boss: true as const } : {}) });
+  const built = throwParts(seed, { ...fitted, swing: true, ...(genreAtLeast(spec, FINALE_GENRE_VERSION) ? { boss: true as const } : {}), ...(genreAtLeast(spec, FINALE5_GENRE_VERSION) ? { dive: true as const } : {}) });
   const rounds = built.rules.find((rule) => rule.id === 'throw_rounds');
   if (rounds === undefined || fitted.budget === undefined) return null;
   const tough = built.rules.find((rule) => rule.id === 'shot_hit')?.params.tough;
+  // Útočníci (P51 T6): na hráče je vrhá ovládání, předlohu zná z kol.
+  const diver = (rounds.params as Partial<ThrowRoundsParams>).dive?.template;
+  const dive = diver === undefined ? {} : { dive: { template: diver, drop: -THROW_DIVE.drop, low: THROW_DIVE.low, reach: THROW_DIVE.reach, window: THROW_DIVE.window } };
   // Rozpočet práce kol (s), ne viditelné hodiny: kratší hodiny (`paceBudgetPct`) svět jinak nemění.
   const ticks = Math.min(ARCADE_LIMITS.maxTicks, fitted.budget * ARCADE_HZ);
   return {
     ...still({ by: 'time', need: ticks, limit: ticks }, 'bonus'),
     adjust: (own) => ({
       ...own,
-      control: { ...own.control, params: { ...own.control.params, swing: THROW_SWING.amplitude } },
+      control: { ...own.control, params: { ...own.control.params, swing: THROW_SWING.amplitude, ...dive } },
       level: built.level,
       rules: own.rules.map((rule) => (rule.id === 'throw_rounds' ? rounds : rule.id === 'shot_hit' && tough !== undefined ? { ...rule, params: { ...rule.params, tough } } : rule)),
     }),

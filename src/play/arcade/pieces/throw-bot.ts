@@ -4,7 +4,8 @@
  * žádný míček ve vzduchu (ani ten, který teprve pustil a ještě ho nevidí),
  * rozestup hodů uběhl a žádný blok věže nepadá. Pak vezme první cíl (věž
  * shora), pro který `solveThrow` najde úhel a sílu z rovnice letu, drží
- * s tím úhlem do plánovaného nabití a pustí.
+ * s tím úhlem do plánovaného nabití a pustí. Útočník na cestě k hráči (P51 T6, `THROW_DIVE`) má přednost
+ * (`diverPlan`); svět bez útočníků hraje jako dřív.
  */
 
 import { z } from 'zod';
@@ -95,6 +96,50 @@ function swingReady(state: Int32Array, recent: readonly ArcadeInput[], swing: No
   return Math.abs(swingX(state, swing.body, recent.length + 2 + swing.meet)) < reach;
 }
 
+/** Útočník (P51 T6, `THROW_DIVE`) na cestě k hráči: kinematický nepřítel, který napříč stojí a snáší se nebo se plíží po −z. */
+const diving = (state: Int32Array, body: number): boolean => {
+  const b = bodyBase(body);
+  return state[b + S.role] === ROLE.enemy && ((state[b + S.flags] as number) & FLAG.kinematic) !== 0 && state[b + S.vx] === 0 && ((state[b + S.vz] as number) < 0 || (state[b + S.vy] as number) < 0);
+};
+
+/** Úhly, které robot na útočníka zkouší (jako řešič hodu: −700..900 po 100). */
+const DIVE_AIMS = Array.from({ length: 17 }, (_, k) => (k === 7 ? 1 : -700 + 100 * k));
+
+/**
+ * Trefí hod `plan` puštěný teď útočníka `diver` dřív než cokoli jiného? Jako `simulateThrow`, jen útočníci se mezitím
+ * posunou: viděný stav je `lag` tiků starý, míček vznikne v tiku puštění a letí od dalšího (bod letu `n` = `lag + 2 + n`
+ * tiků posunu, vzor `swingReady`).
+ */
+function hitsDiver(state: Int32Array, boxes: readonly ThrowBox[], diver: number, plan: ThrowPlan, lag: number): boolean {
+  const { vz } = launchVelocity(plan.aim, plan.charge);
+  const s = THROW.ballSize;
+  const flight = throwFlight(plan);
+  for (let n = 0; n < flight.length; n += 1) {
+    const { y, z, vy } = flight[n] as (typeof flight)[number];
+    const bottom = Math.min(y, y - vy);
+    const top = Math.max(y, y - vy) + s;
+    for (const box of boxes) {
+      const bz = diving(state, box.index) ? box.z + (state[bodyBase(box.index) + S.vz] as number) * (lag + 2 + n) : box.z;
+      if (Math.abs(2 * z - vz - 2 * bz) < s + Math.abs(vz) + box.d && Math.abs(-2 * box.x) < s + box.w && bottom < box.y + box.h && box.y < top) return box.index === diver;
+    }
+  }
+  return false;
+}
+
+/**
+ * Útočníci mají přednost (P51 T6): nejbližší, dokud žije. Úhel, se kterým ho hod s nabitím `charge` puštěný teď trefí;
+ * `hold` = zatím žádný – nabíjet dál (s plným nabitím čekat); útočník, který se ještě snáší, nemá přímou dráhu, tak
+ * taky `hold`. `null` = žádný útočník na cestě k hráči.
+ */
+function diverPlan(state: Int32Array, player: number, recent: readonly ArcadeInput[], charge: number): { readonly aim: number } | 'hold' | null {
+  const boxes = boxesOfState(state, player);
+  const diver = boxes.filter((box) => diving(state, box.index)).sort((a, b) => a.z - b.z)[0];
+  if (diver === undefined) return null;
+  if ((state[bodyBase(diver.index) + S.vy] as number) < 0) return 'hold';
+  const aim = DIVE_AIMS.find((candidate) => hitsDiver(state, boxes, diver.index, { aim: candidate, charge: Math.max(1, charge) }, recent.length));
+  return aim === undefined ? 'hold' : { aim };
+}
+
 const botParams = z.object({}).strict();
 
 export const throwBot: BotPiece<z.infer<typeof botParams>> = {
@@ -105,11 +150,15 @@ export const throwBot: BotPiece<z.infer<typeof botParams>> = {
   cost: () => ({ bodies: 0, rules: 0 }),
   decide: ({ state, player, recent }): ArcadeInput => {
     if ((state[HEADER.counters + COUNTER.ammo] as number) <= 0 || busy(state, recent)) return NO_INPUT;
-    const plan = planOf(state, player);
-    if (plan === null) return NO_INPUT;
     // Nabití „teď“: pozorované (po puštění záporné = 0) plus vlastní držení od té doby.
     let charge = Math.max(0, state[bodyBase(player) + S.aux1] as number);
     for (const input of recent) if ((input.buttons & BUTTON.HOLD) !== 0) charge = Math.min(THROW.maxCharge, charge + 1);
+    // Útočník: pustit, jakmile ho hod s dnešním nabitím trefí, jinak nabíjet (svět bez útočníků hraje jako dřív).
+    const dive = diverPlan(state, player, recent, charge);
+    if (dive === 'hold') return { buttons: charge < THROW.maxCharge ? BUTTON.HOLD : 0, axis: 0 };
+    if (dive !== null) return { buttons: BUTTON.TAP, axis: dive.aim };
+    const plan = planOf(state, player);
+    if (plan === null) return NO_INPUT;
     // Tento tik držení přidá jedno nabití; puštění nabití nemění.
     if (plan.swing === undefined || charge < plan.charge) return { buttons: charge >= plan.charge ? BUTTON.TAP : BUTTON.HOLD, axis: plan.aim };
     // Pohyblivý terč: nabito předem, puštění čeká, až terč v tiku setkání stojí na čáře hodu.

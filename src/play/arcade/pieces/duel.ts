@@ -26,7 +26,7 @@ import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, type ArcadeState, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, HEADER, type RulePiece, UNIT, bodyBase, bodyHp, setBodyHp } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, type ArcadeState, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HEADER, type RulePiece, UNIT, bodyBase, bodyHp, setBodyHp } from '../contract';
 import { judgeRules } from './timing';
 
 export const DUEL_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -66,8 +66,26 @@ export const DUEL = {
  */
 export const DUEL_ENRAGE = { warn: 12, faster: 4 } as const;
 
-/** Fáze soupeře v `aux0`. */
-export const DUEL_PHASE = { ready: 0, windup: 1, open: 2, struck: 3 } as const;
+/** Fáze soupeře v `aux0`; `hurl` = hozená věc letí k hráči (jen s `hurl`, P51 T6). */
+export const DUEL_PHASE = { ready: 0, windup: 1, open: 2, struck: 3, hurl: 4 } as const;
+
+/**
+ * Hozená věc (P51 T6, jen nová hra `genre.v5`, parametr `hurl`): každý `every`-tý útok vzorce soupeř místo úderu
+ * hodí věc. Celý nápřah ji drží v ruce nad hlavou (`hand`) – tím hráč pozná, že úder nepřijde; po švihu letí
+ * `flight` tiků k hráči (`reach`) a zasáhne, až doletí: kdo v tu chvíli neuhýbá, přijde o život. Úhyb trvá
+ * `DUEL.dodge` tiků, takže úhyb na švih ruky (jako před úderem) vyprší dřív, než věc doletí – uhnout se musí, až
+ * je věc u hráče. Po zásahu běží mezera útoku jako po úderu, takže hratelnost z konstrukce (`checkDuelPattern`)
+ * platí beze změny: hod jen posune zásah o `flight` tiků. Tělo věci je předloha za tělesy úrovně (role hrozby,
+ * nic ji nesrazí); ovládání ji samo oživí v ruce, posouvá a po zásahu shodí.
+ */
+export const DUEL_HURL = {
+  every: 3,
+  flight: 30,
+  body: { role: 'hazard', kind: 'ball', x: 0, y: 0, z: 0, w: 400, h: 400, d: 400, solid: false } as BodyInit,
+  /** Spodní hrana a hloubka věci v ruce (nad hlavou soupeře, za ním) a u hráče (nad skrčeným hráčem, před ním). */
+  hand: { y: 1800, z: 2400 },
+  reach: { y: 1100, z: 400 },
+} as const;
 /**
  * Sloty čítačů: životy soupeře, pořadí útoku a úhyb, který v tomto tiku vyšel (P47B T8, jen s `dodges`;
  * slot sběru – duel nic nesbírá a HUD ho ukáže jen hře s cílem sběru).
@@ -102,11 +120,33 @@ const controlParams = z
     champion: z.object({ body: z.int().min(DUEL_FOE + 1).max(ARCADE_LIMITS.maxBodies - 1) }).strict().optional(),
     /** Úhyb jako sloveso věty (P47B T8): úder, kterému hráč uhnul, zapíše `DUEL_COUNTER.dodged`. Bez hodnoty nic. */
     dodges: z.literal(true).optional(),
+    /** Hozená věc (P51 T6, `DUEL_HURL`): index předlohy jejího těla, každý kolikátý útok a tiky letu. Bez hodnoty jen údery. */
+    hurl: z.object({ body: z.int().min(DUEL_FOE + 1).max(ARCADE_LIMITS.maxBodies - 1), every: z.int().min(2).max(8), flight: z.int().min(DUEL.dodge + 1).max(ARCADE_HZ) }).strict().optional(),
   })
   .strict();
 export type DuelControlParams = z.infer<typeof controlParams>;
 
 const S = BODY;
+
+/** Hází soupeř v útoku pořadí `attack` (od 0) věc? Každý `every`-tý, první až `every`-tý. */
+export const hurlsAt = (hurl: DuelControlParams['hurl'], attack: number): boolean => hurl !== undefined && attack % hurl.every === hurl.every - 1;
+
+/** Věc v ruce soupeře: tělo předlohy ožije nad jeho hlavou. */
+function holdHurl(state: ArcadeState, body: number): void {
+  const at = bodyBase(body);
+  state[at + S.x] = 0;
+  state[at + S.y] = DUEL_HURL.hand.y;
+  state[at + S.z] = DUEL_HURL.hand.z;
+  state[at + S.flags] = (state[at + S.flags] as number) | FLAG.alive;
+}
+
+/** Věc v letu, `left` tiků do zásahu: z ruky k hráči rovnoměrně po přímce. */
+function flyHurl(state: ArcadeState, body: number, flight: number, left: number): void {
+  const at = bodyBase(body);
+  const done = flight - left;
+  state[at + S.y] = DUEL_HURL.hand.y + Math.trunc(((DUEL_HURL.reach.y - DUEL_HURL.hand.y) * done) / flight);
+  state[at + S.z] = DUEL_HURL.hand.z + Math.trunc(((DUEL_HURL.reach.z - DUEL_HURL.hand.z) * done) / flight);
+}
 
 /** Tělo soupeře se stane šampionem: model a rozměry předlohy, HP `hp`. Jednou – korunovaný šampion HP má. */
 function crown(state: ArcadeState, template: number, hp: number): void {
@@ -193,21 +233,30 @@ export const duelControl: ControlPiece<DuelControlParams> = {
     };
     if ((state[HEADER.tick] as number) >= DUEL.lead) {
       if (left > 0) left -= 1;
+      const { hurl } = params;
+      if (phase === DUEL_PHASE.hurl && hurl !== undefined) flyHurl(state, hurl.body, hurl.flight, left);
       if (left === 0) {
-        if (phase === DUEL_PHASE.windup) {
-          // Úder: kdo zrovna neuhýbá, přijde o život.
+        const attack = state[HEADER.counters + DUEL_COUNTER.attack] as number;
+        if (phase === DUEL_PHASE.windup && hurl !== undefined && hurlsAt(hurl, attack)) {
+          // Švih s věcí v ruce: věc vyletí, zásah přijde, až doletí.
+          phase = DUEL_PHASE.hurl;
+          left = hurl.flight;
+        } else if (phase === DUEL_PHASE.windup || phase === DUEL_PHASE.hurl) {
+          // Úder (nebo doletěla věc): kdo zrovna neuhýbá, přijde o život.
           if (timer <= 0) state[p + S.aux0] = -1;
           else if (params.dodges) state[HEADER.counters + DUEL_COUNTER.dodged] = 1;
-          const index = (state[HEADER.counters + DUEL_COUNTER.attack] as number) % params.pattern.length;
+          if (phase === DUEL_PHASE.hurl && hurl !== undefined) state[bodyBase(hurl.body) + S.flags] = (state[bodyBase(hurl.body) + S.flags] as number) & ~FLAG.alive;
+          const index = attack % params.pattern.length;
           phase = DUEL_PHASE.open;
           left = moveAt(index).recover;
-          state[HEADER.counters + DUEL_COUNTER.attack] = (state[HEADER.counters + DUEL_COUNTER.attack] as number) + 1;
+          state[HEADER.counters + DUEL_COUNTER.attack] = attack + 1;
         }
         // Mezera (nebo start) skončila: další nápřah. Mezera 0 = nápřah hned po úderu.
         if (left === 0) {
-          const index = (state[HEADER.counters + DUEL_COUNTER.attack] as number) % params.pattern.length;
+          const next = state[HEADER.counters + DUEL_COUNTER.attack] as number;
           phase = DUEL_PHASE.windup;
-          left = Math.max(1, moveAt(index).windup);
+          left = Math.max(1, moveAt(next % params.pattern.length).windup);
+          if (hurl !== undefined && hurlsAt(hurl, next)) holdHurl(state, hurl.body);
         }
       }
     }

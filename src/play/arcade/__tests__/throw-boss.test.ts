@@ -64,7 +64,9 @@ describe('throw game ends with a boss target (P47A T7, genre.v4)', () => {
       const spec = specOf();
       expect(genreAtLeast(spec, FINALE_GENRE_VERSION)).toBe(true);
       for (const seed of SEEDS.slice(0, 4)) {
-        const world = worldOf(spec, seed);
+        // Stavba terče-bosse `genre.v4`: nová hra (`genre.v5`, P51 T6) má navíc útočníky, hody za ně a o jejich čas
+        // nejvýš o kolo míň – její kola, boss a hody hlídá `p51-foes.test.ts`.
+        const world = worldOf(withVersion(spec, 'genre.v4'), seed);
         const stored = worldOf(withVersion(spec, 'genre.v3'), seed);
         const rounds = roundsOf(world).rounds;
         const before = roundsOf(stored).rounds;
