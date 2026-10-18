@@ -69,6 +69,24 @@ Změřeno nad commitem T2: nová hra už nese `genre.v5`, ale nic na ni zatím n
 - **Mrtvý čas chytání se zhoršil** (7,0 → 14,9 s): mezi třemi chyceními kořist uteče a hráč jde zpět na start. T7 chytání nemá v rozsahu – zapsáno v plánu jako nález pro T7.
 - Mutace (záloha mimo repo, ne `git checkout --`): kořist bez tuhosti, soupeř míče padne po prvním zásahu, načasování nové hry na staré křivce, hodiny chytání bez rezervy → `p51-ball-catch-timing` červený; kořist-boss a soupeř bez značky nové hry, finální křivka i pro `genre.v4` → `p51-stored-v4` (a `pacing-static-b`) červený. Mutant „bez brány `segments` v `clockPaced`“ přežil, protože je ekvivalentní: spec bez `genre` pustí k průběhu jen se značkou už `pacingParts`.
 
+## T5 – aréna s díly P42 a finále běžce (`t5.json`)
+
+| Žánr | Sada | Vět | Průběh | Finále | Mrtvý čas (medián) |
+|---|---|---|---|---|---|
+| aréna se sbíráním (díly P42) | dev | 4 | 4 | **3/4** (boss, dřív 0/4) | 2,33 s (dřív 7,67 s) |
+| běžec | dev | 3 | 3 | **3/3** (boss) | – |
+| aréna se sbíráním | panel | 3 | 3 | 3/3 (dřív 2/3, m02 s díly) | 2,4 s |
+| **dev celkem** | dev | 30 | 1 | **0,93** (po T4 0,83) | 4,07 s (po T4 5,21 s) |
+| **panel P45 celkem** | panel | 40 | 1 | **0,93** (po T4 0,9) | 2,5 s |
+
+- Cíl T5 splněn: arény s díly 3/4 (≥ 3/4), běžec 3/3. Bez finále zůstala a04 („a kid catches falling leaves…“): na publikovaném semínku robot prohraje u bosse vedle překážky dílu; na semínkách 1–12 vyhraje 12/12 s bossem.
+- **Běžec h024:** boss se nenarodil – hejno pěti těl těsně před ním zaplnilo `maxActors` (12) a boss „se nevešel“. Boss nové hry (`genre.v5`, parametr pravidla `bossRoom`) přijde i do plna a má vlastní slot navíc; buňky běžce beze změny. Na h024 (otevřený holdout P47A) se jen diagnostikovalo.
+- **Aréna s díly:** ve `genre.v5` dostane průběh (`arena_collect`, `ownShape(…, parts)`), kromě dílu `chaser`. Měřeno na 12 semínkách: bez průběhu intermediate 12/12 a finále 0–1/12; s průběhem bez dalšího zásahu jen 9/12 (a01, a04) – robot dílů nevidí dopadlou překážku dílu `hazard` a s bossem a chováními u ní ztrácel životy (a01 semínko 2: všechna tři zranění u ní). Robot arény s průběhem ji proto obchází (`HAZARD_SKIRT`): a01 12/12, a02 12/12, a03 11/12, a04 12/12, vše s bossem.
+- **Sonda svědka překážky:** s průběhem se vazba role překážky z věty (`bindRoles` podle kódu role) chytí i předloh nepřátel průběhu, které leží před dílem; sonda (jedna na roli) šla po nepříteli a svědek `hazard` dílu chyběl (`assembly-parts` „roam moving hazard“ červený). Sonda teď míří nejdřív na tělo, které je ve scéně od startu (`witnessRuns`); u her bez dílů leží tělesa úrovně vždy před předlohami, takže se tam nic nemění.
+- Brány: `p51-assembly-runner.test.ts` (boss do plného stropu na ručním světě; a01 a a03 × 12 semínek: nečinný nevyhraje, přehrání = hash, intermediate ≥ 0,8, každá výhra s bossem; díl `chaser` a uložená `genre.v4` aréna s díly bez průběhu). Cílená sada (51 souborů svědků a věrnosti + průběh, díly, P51, replay brána): 3064/3068 – 4 červené `ball.score+rival` (`allowed.test.ts`, `ball-recipes.test.ts`) padají stejně i na kódu před T5 (způsobil T4), zapsané v plánu jako nález.
+- Začátečník na arénách s díly: a01 7/12, a02 11/12, a03 5/12, a04 7/12 – a02 nad pásmem 0,3–0,7 (před T5 12/12 u všech čtyř); věty s díly nejsou živé buňky, test pásmo nehlídá.
+- Mutace (záloha mimo repo): boss bez `bossRoom` → pin bosse červený; aréna s díly bez průběhu → a01 a pin „`genre.v4`/`chaser`“ červené; průběh i s dílem `chaser` → týž pin červený; robot bez obcházení překážky → a01 červený (9/12); sonda bez pořadí → `assembly-parts` „roam moving hazard“ červený.
+
 ## Rozhodnutí
 
 - **T2 – verze u žánrů bez `genre`:** chodec, klouzání, míč a chytání staví `nativeSpec` bez pole `genre`, takže `genreAtLeast(spec, FINALE5_GENRE_VERSION)` pro ně nikdy neplatí. Nová hra těchto žánrů proto dostane značku nové hry v parametrech generátoru, jako řízení v P46B (`pacedNative`, `segments: true`); uložený spec bez značky staví týž svět (`p51-stored-v4.test.ts`).

@@ -6,8 +6,8 @@ import { baseControlOf, type ArcadeParts } from '../addons';
 import { guardParts } from '../abilities';
 import { abilityButton, abilityIdsOf, guardParams, guardedHit } from '../abilities/state';
 import { AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp, graceOf, targetStateOf,
-  type ArcadeEffect, type BodyInit, type BotPiece, type ControlPiece, type PieceRef, type RulePiece, type RuleTrigger } from '../contract';
-import { arenaAxis } from './arena';
+  type ArcadeEffect, type ArcadeInput, type BodyInit, type BotPiece, type ControlPiece, type PieceRef, type RulePiece, type RuleTrigger } from '../contract';
+import { DIRECTIONS, arenaAxis, directionOfAxis } from './arena';
 import { RUNNER, RUNNER_STRUCTURE_D } from './runner';
 import { centerAt, courseSchema } from './steer';
 import { GLIDE } from './glide';
@@ -206,12 +206,35 @@ export function assemblyGateRules(rules: Readonly<Record<string, RulePiece>>): R
   }));
 }
 
+/** Odstup od překážky dílu, pod kterým robot arény s průběhem jde podél ní místo k ní (P51 T5). */
+export const HAZARD_SKIRT = 2500;
+
+/**
+ * Aréna s průběhem (P51 T5): překážka dílu (`hazard`) po dopadu leží na zemi a zraní při dotyku; robot průběhu ji
+ * nevidí. Bez průběhu se jí cesta k věcem vyhnula, s bossem a chováními ne (věta „chytá vejce“, semínko 2: tři životy
+ * u ní). Míří-li osa k překážce blíž než `HAZARD_SKIRT`, robot jde kolmo podél ní na stranu, která směr zachová nejlíp.
+ */
+function skirtHazards(state: Int32Array, player: number, parts: readonly Part[], input: ArcadeInput): ArcadeInput {
+  const heading = DIRECTIONS[directionOfAxis(input.axis)];
+  if (heading === undefined) return input;
+  const p = bodyBase(player);
+  for (const part of parts) {
+    if (part.kind !== 'hazard' || !alive(state, part.body)) continue;
+    const q = bodyBase(part.body), hx = state[q + BODY.x]! - state[p + BODY.x]!, hz = state[q + BODY.z]! - state[p + BODY.z]!;
+    if (distance(hx, hz) >= HAZARD_SKIRT || hx * heading.dx + hz * heading.dz <= 0) continue;
+    return { ...input, axis: -hz * heading.dx + hx * heading.dz >= 0 ? arenaAxis(-hz, hx) : arenaAxis(hz, -hx) };
+  }
+  return input;
+}
+
 export function makeAssemblyBot(bots: Readonly<Record<string, BotPiece>>): BotPiece<z.infer<typeof wrappedSchema>> {
   return { id: 'assembly_bot', params: wrappedSchema, roles: ['player', 'thing'], reactionTicks: 8, cost: () => ({ bodies: 0, rules: 0 }),
     decide(observation, params) {
       const native = bots[params.base.id]!;
       let input = native.decide(observation, paramsOf(native, params.base));
       const { state, player } = observation, p = bodyBase(player);
+      // Aréna s průběhem (P51 T5, `genre.v5`): bez průběhu robot jede jako dřív.
+      const paced = params.control === 'move_free' && params.base.id === 'pacing_bot';
       const ballPosition = { x: state[p + BODY.x]!, z: state[p + BODY.z]! };
       if (params.control === 'ball') for (const recent of observation.recent) {
         ballPosition.x += ((recent.buttons & BUTTON.RIGHT ? 1 : 0) - (recent.buttons & BUTTON.LEFT ? 1 : 0)) * 150;
@@ -231,7 +254,7 @@ export function makeAssemblyBot(bots: Readonly<Record<string, BotPiece>>): BotPi
           const dx = -ballPosition.x, dz = -ballPosition.z;
           if (Math.abs(dx) > 150 || Math.abs(dz) > 150) return { axis: 0, buttons: (Math.abs(dx) > 150 ? dx > 0 ? BUTTON.RIGHT : BUTTON.LEFT : 0) | (Math.abs(dz) > 150 ? dz > 0 ? BUTTON.UP : BUTTON.DOWN : 0) };
         }
-        return input;
+        return paced ? skirtHazards(state, player, params.parts, input) : input;
       }
       const b = bodyBase(target.body), held = state[HEADER.held] === target.body + 1;
       const destination = held || target.kind === 'rival';
@@ -277,7 +300,7 @@ export function makeAssemblyBot(bots: Readonly<Record<string, BotPiece>>): BotPi
       }
       if ((target.kind === 'fight' || target.kind === 'duel') && close(state, player, target.body, 1800) && (state[HEADER.tick]! + observation.recent.length) % 20 === 0) input = { ...input, buttons: input.buttons | BUTTON.ATTACK };
       if (target.kind === 'interact' || target.kind === 'deliver') input = { ...input, buttons: input.buttons | BUTTON.INTERACT };
-      return input;
+      return paced ? skirtHazards(state, player, params.parts, input) : input;
     } };
 }
 

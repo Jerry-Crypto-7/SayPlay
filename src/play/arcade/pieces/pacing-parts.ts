@@ -909,9 +909,10 @@ const throwPaced: GenrePacing = (parts, spec, seed) => {
  *   se nepostaví. Obojí je mimo P45C (`rules/**`);
  * - složená hra (díly P42, `assemblyParts`): pronásledovatel či překážka dílu u bosse, který nese poslední
  *   věci, robota shodili (aréna + díl `chaser` semínka 1–3 prohrál) – jako boss s pronásledovatelem.
+ *   `parts` = záznam díly unese (aréna se sbíráním ve `genre.v5`, P51 T5).
  */
-const ownShape = (spec: GameSpecV1, overlays = false): boolean =>
-  ((spec.rules?.length ?? 0) > 0 && !(overlays && overlayOnly(spec))) || (spec.things?.length ?? 0) > 0 || spec.assemblyParts !== undefined;
+const ownShape = (spec: GameSpecV1, overlays = false, parts = false): boolean =>
+  ((spec.rules?.length ?? 0) > 0 && !(overlays && overlayOnly(spec))) || (spec.things?.length ?? 0) > 0 || (spec.assemblyParts !== undefined && !parts);
 
 /** Verze překladu žánru, od které hra dostane průběh pod overlay šablonou a finále podle žánru (P47A, `GENRE_COMPILER_VERSION`). */
 export const FINALE_GENRE_VERSION = 'genre.v4';
@@ -978,7 +979,10 @@ export const GENRE_PACING: Partial<Record<string, GenrePacing>> = {
   voyage_race: (parts, spec, seed) => (parts.health === 1 ? null : track(3)(parts, spec, seed)),
   // Sběr a útěk (P47A T2, varianta A): ve `genre.v4` průběh i pod overlay šablonou P45B (`overlayOnly`). Quest v prostoru
   // ji ve v4 nedostane vůbec (varianta B, `withTemplate` v `compose/compile.ts`).
-  arena_collect: (parts, spec, seed) => (ownShape(spec, true) || livesAtMost(spec, 1) ? null : itemField(FIELD.collect)(parts, spec, seed)),
+  // Sběr s díly P42 (P51 T5): nová hra (`genre.v5`) průběh dostane – věty „chytá padající vejce“ (díly `catch`/`hazard`/`rival`) jinak finále
+  // neměly. Kromě dílu `chaser` (vzor skákačky): s bossem a chováními robot intermediate prohrál 12/12 semínek (bez průběhu vyhrál 11/12).
+  arena_collect: (parts, spec, seed) =>
+    (ownShape(spec, true, genreAtLeast(spec, FINALE5_GENRE_VERSION) && spec.assemblyParts?.some((part) => part.kind === 'chaser') !== true) || livesAtMost(spec, 1) ? null : itemField(FIELD.collect)(parts, spec, seed)),
   arena_escape: (parts, spec, seed) => (ownShape(spec, true) ? null : (ruleOf(parts, 'survive_time') === undefined ? itemField(FIELD.escape) : survivalField(FIELD.survival))(parts, spec, seed)),
   fight: (parts, spec, seed) => (ownShape(spec) || livesAtMost(spec, 2) ? null : fightField(FIELD.fight)(parts, spec, seed)),
   quest_spatial: (parts, spec, seed) => (ownShape(spec) ? null : questField(FIELD.quest)(parts, spec, seed)),

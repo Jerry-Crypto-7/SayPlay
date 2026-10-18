@@ -655,7 +655,10 @@ export function witnessRuns(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_
   const probes: ActionWitness[] = [];
   const probed = new Set<string>();
   const probeWorld = withoutPowerups(world);
-  for (const binding of roleBindings ?? []) {
+  // Na roli míří sonda nejdřív na tělo, které ve scéně je od startu: vazba podle kódu role (`bindRoles`) chytí i předlohy
+  // průběhu, a ve hře s díly (P51 T5, aréna s dílem `hazard`) leží díl za nimi – sonda by šla po nepříteli průběhu.
+  const present = (binding: RoleBinding): number => ((world.initial[bodyBase(binding.body) + BODY.flags] as number) & FLAG.alive) === 0 ? 1 : 0;
+  for (const binding of [...(roleBindings ?? [])].sort((a, b) => present(a) - present(b))) {
     // Jedna sonda na roli; v neúspěchu se žádná hrozba nepředpokládá.
     if (binding.player || !['hazard', 'chaser', 'patrol'].includes(binding.roleKind) || probed.has(binding.roleId)) continue;
     probed.add(binding.roleId);
