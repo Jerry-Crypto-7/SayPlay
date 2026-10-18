@@ -11,7 +11,9 @@
  * hledá až po ní), `startSelector` (startovní tlačítko hry, klikne se na něj,
  * jakmile je vidět), `surfaceSelector` (výchozí
  * `canvas, iframe`), `timeoutMs`, `harPath` (+ `harContent` omit|embed|attach),
- * `screenshotDir`, `gpu` (výchozí ano), `headless`, `viewport`.
+ * `screenshotDir`, `gpu` (výchozí ano), `headless`, `viewport`, `device`
+ * (jméno zařízení z Playwright `devices`, např. `Pixel 7` – přebije `viewport`),
+ * `cpuThrottle` (zpomalení CPU přes CDP, např. 4 jako `e2e/p35-perf.spec.ts`).
  * Výstup: jeden JSON řádek `{ t0, tPlayable, ms, playable, note, … }` na stdout;
  * `t0`/`tPlayable` jsou epoch ms, aby šly porovnat s časy v HAR.
  *
@@ -26,7 +28,14 @@
  * uprostřed pokusu se pozná až v dalším.
  *
  * Snímá se screenshot stránky (kompozitor), ne `toDataURL` plátna – WebGL bez
- * `preserveDrawingBuffer` i cizí iframe tak vidí stejně jako hráč.
+ * `preserveDrawingBuffer` i cizí iframe tak vidí stejně jako hráč. Snímek je
+ * v CSS pixelech: na telefonu s hustotou 2,6 a 4× zpomaleným CPU trval snímek
+ * v plném rozlišení přes 2 s a jeden pokus ~5 s (P50 T1); na desktopu s hustotou
+ * 1 je to totéž.
+ *
+ * `firstFrameMs` (P50 T1) = od `t0` do konce prvního snímku (`requestAnimationFrame`),
+ * ve kterém měřené WebGL plátno kreslilo – bez zrnitosti pokusů, a proto
+ * citlivější na změny před prvním snímkem než `ms`. U iframe a 2D plátna `null`.
  * `idleAfterPct` je změna plochy za 300 ms bez vstupu, změřená až po úspěchu:
  * ≥ 1 % znamená, že se plocha hýbe sama a verdikt je třeba ověřit snímkem
  * (běžící hra se hýbe; animovaná načítací obrazovka by prošla taky).
@@ -36,7 +45,7 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { chromium } from '@playwright/test';
+import { chromium, devices } from '@playwright/test';
 import sharp from 'sharp';
 
 export const CHANGE_PCT = 1;
@@ -48,7 +57,43 @@ const MIN_SIDE = 64;
 const IDLE_MS = 300;
 /** Značka ploch, které na stránce byly už před odesláním věty. */
 const STALE = 'data-ttp-stale';
+/** Epoch ms konce prvního snímku, ve kterém plátno kreslilo (`markFirstFrame`). */
+const FIRST_FRAME = 'data-ttp-first-frame';
 const POLL_MS = 100;
+
+/**
+ * Skript stránky (běží před jejími skripty): kreslicí volání WebGL zapíše své
+ * plátno do čekajících a po doběhnutí callbacku `requestAnimationFrame` dostane
+ * každé čekající plátno atribut s časem. Příznak na kontextu drží režii na
+ * jednom porovnání za volání.
+ */
+function markFirstFrame(attribute) {
+  const pending = new Set();
+  for (const type of [globalThis.WebGLRenderingContext, globalThis.WebGL2RenderingContext]) {
+    if (type === undefined) continue;
+    for (const name of ['drawArrays', 'drawElements', 'drawArraysInstanced', 'drawElementsInstanced', 'drawRangeElements']) {
+      const original = type.prototype[name];
+      if (typeof original !== 'function') continue;
+      type.prototype[name] = function (...args) {
+        if (this.__ttpDrew !== true) {
+          this.__ttpDrew = true;
+          if (typeof this.canvas?.setAttribute === 'function') pending.add(this.canvas);
+        }
+        return original.apply(this, args);
+      };
+    }
+  }
+  const request = globalThis.requestAnimationFrame.bind(globalThis);
+  globalThis.requestAnimationFrame = (callback) =>
+    request((time) => {
+      try {
+        callback(time);
+      } finally {
+        for (const canvas of pending) canvas.setAttribute(attribute, String(Date.now()));
+        pending.clear();
+      }
+    });
+}
 
 const GPU_ARGS = ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'];
 const SOFTWARE_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
@@ -86,7 +131,7 @@ async function findSurface(page, selector) {
   return best;
 }
 
-const shot = (handle) => handle.screenshot({ animations: 'allow', caret: 'hide', timeout: 2000 });
+const shot = (handle) => handle.screenshot({ animations: 'allow', caret: 'hide', scale: 'css', timeout: 2000 });
 
 /**
  * Jeden pokus: snímek → vstup → snímky do 500 ms. Vrací čas a snímky změny,
@@ -117,16 +162,21 @@ export async function measure(config) {
   const surfaceSelector = config.surfaceSelector ?? 'canvas, iframe';
   const timeoutMs = config.timeoutMs ?? 120_000;
   const gpu = config.gpu ?? true;
+  if (config.device && !devices[config.device]) throw new Error(`unknown Playwright device ${config.device}`);
+  const { defaultBrowserType: _browserType, ...device } = config.device ? devices[config.device] : {};
   const browser = await chromium.launch({ headless: config.headless ?? true, args: gpu ? GPU_ARGS : SOFTWARE_ARGS });
   const context = await browser.newContext({
     viewport: config.viewport ?? { width: 1280, height: 720 },
     deviceScaleFactor: 1,
+    ...device,
     ...(config.harPath ? { recordHar: { path: config.harPath, content: config.harContent ?? 'omit', mode: 'full' } } : {}),
   });
   if (config.harPath) mkdirSync(dirname(config.harPath), { recursive: true });
   if (config.screenshotDir) mkdirSync(config.screenshotDir, { recursive: true });
+  await context.addInitScript(markFirstFrame, FIRST_FRAME);
   const page = await context.newPage();
-  const result = { url: config.url, sentence: config.sentence ?? null, t0: 0, tPlayable: null, ms: null, playable: false, note: null, attempts: 0, inputChangePct: null, confirmChangePct: null, idleAfterPct: null, renderer: gpu ? 'gpu' : 'software', gameUrl: null };
+  if (config.cpuThrottle) await (await context.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: config.cpuThrottle });
+  const result = { url: config.url, sentence: config.sentence ?? null, t0: 0, tPlayable: null, ms: null, playable: false, note: null, attempts: 0, inputChangePct: null, confirmChangePct: null, idleAfterPct: null, firstFrameMs: null, renderer: gpu ? 'gpu' : 'software', gameUrl: null };
 
   try {
     if (config.promptSelector) {
@@ -178,6 +228,8 @@ export async function measure(config) {
         result.inputChangePct = round(pending.pct);
         result.confirmChangePct = round(hit.pct);
         result.gameUrl = page.url();
+        const frameAt = await surface.handle.getAttribute(FIRST_FRAME).catch(() => null);
+        result.firstFrameMs = frameAt === null ? null : Number(frameAt) - result.t0;
         const idleA = await shot(surface.handle);
         await wait(IDLE_MS);
         result.idleAfterPct = round((await changedPct(idleA, await shot(surface.handle))) ?? 100);
