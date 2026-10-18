@@ -18,17 +18,25 @@ import { type DraftMeta, draftGameSpecWithMeta } from '@/play/draft';
 import { saidAbilities } from '@/play/draft/controls';
 
 import { type ActionKind, type ActionRow, type ActionSentence, actionRowOf, actionSummary, readSentences } from '../p46/actions';
+import { genreOfSpec } from '../p47a/finale';
 
 export const P47B_DIR = join(process.cwd(), 'evals', 'play', 'p47b');
+
+export const P52_DIR = join(process.cwd(), 'evals', 'play', 'p52');
 
 const VERB_SETS = {
   dev: join(P47B_DIR, 'verb-dev.json'),
   holdout: join(P47B_DIR, 'verb-holdout.json'),
   p46a: join(process.cwd(), 'evals', 'play', 'p46', 'action-sentences.json'),
+  // P52: vlastní dev sada a holdout (T2); holdout jen v T11 s `P52_OPEN_HOLDOUT=1`.
+  p52: join(P52_DIR, 'dev.json'),
+  'p52-holdout': join(P52_DIR, 'holdout.json'),
 } as const;
 export type VerbSet = keyof typeof VERB_SETS;
 
 export interface VerbRow extends ActionRow {
+  /** Žánr návrhu (`genreOfSpec` z P47A) – mezery P52 jsou po žánrech. */
+  readonly genre: string;
   /** Věta se štítkem `wants: []` – past, která akci jen připomíná. */
   readonly trap: boolean;
   /** Chtěné akce, které hra nemá, s důvodem (`VERB_UNPROVED:dash`, `control shooter takes no dash`). */
@@ -41,6 +49,7 @@ export interface VerbRow extends ActionRow {
 /** Věty sady; panel P47B se štítky, věty P46A bez nich. */
 export function verbSentences(set: VerbSet, { env = process.env }: { env?: Record<string, string | undefined> } = {}): ActionSentence[] {
   if (set === 'holdout' && env.P47B_OPEN_HOLDOUT !== '1') throw new Error('p47b: the holdout is read once, by T12 only (P47B_OPEN_HOLDOUT=1)');
+  if (set === 'p52-holdout' && env.P52_OPEN_HOLDOUT !== '1') throw new Error('p52: the holdout is read once, by T11 only (P52_OPEN_HOLDOUT=1)');
   if (set === 'p46a') return readSentences(VERB_SETS.p46a);
   const corpus = JSON.parse(readFileSync(VERB_SETS[set], 'utf8')) as { sentences: (ActionSentence & { wants: ActionKind[] })[] };
   return corpus.sentences.map(({ id, text, wants }) => ({ id, text, wants }));
@@ -66,6 +75,7 @@ export async function verbRowOf(sentence: ActionSentence, meta: Pick<DraftMeta, 
   if (meta.spec.addons?.includes('shoot')) said.add('shoot');
   return {
     ...row,
+    genre: genreOfSpec(meta.spec),
     trap: sentence.wants !== undefined && sentence.wants.length === 0,
     dropped: row.wanted.filter((action) => !row.present.includes(action)).map((action) => ({ action, reason: dropReason(action, sentence.text, meta) })),
     spurious: [...said].filter((action) => !row.wanted.includes(action)),

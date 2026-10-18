@@ -69,7 +69,8 @@ describe('P47B action gauge', () => {
     expect(() => verbSentences('holdout', { env: {} })).toThrow(/P47B_OPEN_HOLDOUT/);
     expect(verbSentences('dev').every((s) => s.wants !== undefined)).toBe(true);
     expect(verbSentences('p46a').every((s) => s.wants === undefined)).toBe(true);
-    const rows = [1, 2, 3, 4, 100].map((draftMs, i) => ({ id: String(i), wanted: [], present: [], wantsAction: false, hasAction: false, botUsed: false, verbFired: false, playable: true, issues: [], control: 'runner', trap: false, dropped: [], spurious: [], draftMs }));
+    expect(() => verbSentences('p52-holdout', { env: {} })).toThrow(/P52_OPEN_HOLDOUT/);
+    const rows = [1, 2, 3, 4, 100].map((draftMs, i) => ({ id: String(i), wanted: [], present: [], wantsAction: false, hasAction: false, botUsed: false, verbFired: false, playable: true, issues: [], control: 'runner', genre: 'runner', trap: false, dropped: [], spurious: [], draftMs }));
     expect(verbSummary(rows).draftMsP95).toBe(100);
   });
 });
