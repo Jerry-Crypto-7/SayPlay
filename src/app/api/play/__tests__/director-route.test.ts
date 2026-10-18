@@ -30,7 +30,7 @@ vi.mock('@/play/director', async (importOriginal) => {
 });
 
 import { acquireSlot, releaseSlot, resetConcurrency, slotsDetail } from '@/server/paid-slots';
-import { billedLine, DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS, minCallMs, OSS_MIN_CALL_MS } from '../_director';
+import { billedLine, DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS, minCallMs, OSS_MIN_CALL_MS, resetDirectorQueue } from '../_director';
 
 const OSS = {
   WORLDSMITH_BRANCH: 'live',
@@ -80,6 +80,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
   resetProcessSpendCap();
   resetConcurrency();
+  resetDirectorQueue();
   for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
@@ -236,8 +237,10 @@ describe('the paid backup has its own pool of slots (T2a, T2b)', () => {
   it('refuses a third paid backup while two are in flight', async () => {
     stubEnv({ ...OSS, ...ASTRA_BACKUP, WORLDSMITH_FALLBACK_TIMEOUT_MS: '3000' });
     const { up, games } = await twoBackupsInFlight('api.openai.com');
-    // Dveře širší než zásoba zálohy: jeden jejich slot se půjčí třetí režii.
+    // Dveře širší než zásoba zálohy: jeden jejich slot se půjčí třetí režii a nová
+    // fronta (P53 T2) ji pustí – stará drží místa obou běžících.
     releaseSlot('play');
+    resetDirectorQueue();
     expect((await getDirector(Date.now(), 'pool-c')(`${SENTENCE} three`)).source).toBe('draft');
     expect(up.called.filter((host) => host === 'api.openai.com')).toHaveLength(2);
     expect(acquireSlot('play')).toBe(true);
@@ -263,6 +266,7 @@ describe('the paid backup has its own pool of slots (T2a, T2b)', () => {
     stubEnv({ ...OSS, ...LLAMA, WORLDSMITH_FALLBACK_TIMEOUT_MS: '3000' });
     const { up, games } = await twoBackupsInFlight('127.0.0.1:8792');
     releaseSlot('play');
+    resetDirectorQueue();
     const third = getDirector(Date.now(), 'pool-c')(`${SENTENCE} three`);
     await vi.waitFor(() => expect(up.waiting).toHaveLength(3));
     up.open();

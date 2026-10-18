@@ -93,6 +93,8 @@ export type PaidDoor = 'world' | 'generate' | 'refine' | 'play';
  * útok, který ta úloha zavírala — jen za čtyři požadavky místo tří. Druhé kolo
  * revize našlo totéž potřetí: `/api/generate` sdílelo čítač s `world`.
  *
+ * Strop `play` se od P53 T1 čte z `PLAY_DIRECTOR_SLOTS` (`playDirectorSlots`).
+ *
  * ## Invariant, na kterém rezerva stojí
  *
  * **Součet stropů VŠECH OSTATNÍCH dveří musí být menší než
@@ -114,11 +116,48 @@ export type PaidDoor = 'world' | 'generate' | 'refine' | 'play';
  * součet roven dnu, brána nikdy nekousla první a mutant, který ji vypustil,
  * proto přežil. Hlídá to týž test.
  */
+const STUDIO_CEILING = { world: MAX_WORLD_GENERATIONS, generate: 2, refine: 2 } as const;
+
+/** Strop dveří `play` bez `PLAY_DIRECTOR_SLOTS`. */
+export const DEFAULT_PLAY_DIRECTOR_SLOTS = 2;
+
+/**
+ * Nejvyšší strop `play`, při kterém invariant rezervy platí (P53 T1): pro
+ * každé dveře studia d musí `play` + strop zbylých dvou studiových dveří
+ * zůstat pod `MAX_CONCURRENT_GENERATIONS`. Nejtěsnější je d s nejmenším
+ * stropem, takže dnes 8 − 1 − (3 + 2) = **2**.
+ *
+ * Proměnná tedy zatím jen ubírá (1 = e2e fronty režiséra). Rozhodnutí P53 T1:
+ * omezit ji shora, ne zvednout `MAX_CONCURRENT_GENERATIONS` o rozdíl – to by
+ * pustilo víc placených volání v letu a o penězích nerozhoduje tahle proměnná.
+ * Kdo chce víc slotů režiséra, zvedne dno nebo sníží studiové dveře a mez se
+ * přepočítá sama.
+ */
+export const MAX_PLAY_DIRECTOR_SLOTS =
+  MAX_CONCURRENT_GENERATIONS -
+  1 -
+  (Object.values(STUDIO_CEILING).reduce((sum, ceiling) => sum + ceiling, 0) - Math.min(...Object.values(STUDIO_CEILING)));
+
+/**
+ * Strop dveří `play` z `PLAY_DIRECTOR_SLOTS`: celé číslo 1..`MAX_PLAY_DIRECTOR_SLOTS`.
+ * Cokoli jiného se odmítne řádkem logu a platí výchozí 2 – strop mimo mez by
+ * buď vzal rezervu dveřím studia, nebo zavřel AI verzi úplně.
+ */
+export function playDirectorSlots(env: Record<string, string | undefined>): number {
+  const raw = env.PLAY_DIRECTOR_SLOTS?.trim() ?? '';
+  if (raw === '') return DEFAULT_PLAY_DIRECTOR_SLOTS;
+  const value = /^\d+$/.test(raw) ? Number(raw) : Number.NaN;
+  if (value >= 1 && value <= MAX_PLAY_DIRECTOR_SLOTS) return value;
+  console.warn(
+    `[play] PLAY_DIRECTOR_SLOTS=${JSON.stringify(raw)} ignored: must be a whole number from 1 to ${String(MAX_PLAY_DIRECTOR_SLOTS)}; ` +
+      `the play door keeps ${String(DEFAULT_PLAY_DIRECTOR_SLOTS)} slots`,
+  );
+  return DEFAULT_PLAY_DIRECTOR_SLOTS;
+}
+
 export const DOOR_CEILING: Readonly<Record<PaidDoor, number>> = {
-  world: MAX_WORLD_GENERATIONS,
-  generate: 2,
-  refine: 2,
-  play: 2,
+  ...STUDIO_CEILING,
+  play: playDirectorSlots(process.env),
 };
 
 /** Kolik placených volání drží která dveře. **Čtyři čítače, jeden strop.** */

@@ -287,7 +287,7 @@ export class AdmissionQueue {
   #running = 0;
   /** Zrušení naplánovaného probuzení, nebo `null`, když žádné nestojí. */
   #cancelExpiry: (() => void) | null = null;
-  readonly #waiting: Array<{ readonly receivedAtMs: number; readonly wake: (why: Wakeup) => void }> = [];
+  readonly #waiting: Array<{ readonly id: string; readonly receivedAtMs: number; readonly wake: (why: Wakeup) => void }> = [];
 
   constructor(policy: AdmissionPolicy, deps: QueueDeps) {
     checkPolicy(policy);
@@ -330,6 +330,15 @@ export class AdmissionQueue {
   /** Kolik požadavků právě čeká na slot. */
   get queued(): number {
     return this.#waiting.length;
+  }
+
+  /**
+   * Pořadí čekajícího `id` od jedničky (1 = další na řadě), `null` = nečeká –
+   * běží, skončil, nebo ho fronta nezná. Dva čekající s týmž `id` dají první.
+   */
+  position(id: string): number | null {
+    const index = this.#waiting.findIndex((entry) => entry.id === id);
+    return index === -1 ? null : index + 1;
   }
 
   /** Kolik se jich právě zpracovává. Nikdy víc než `concurrency`. */
@@ -402,7 +411,7 @@ export class AdmissionQueue {
       };
     }
 
-    const why = await this.#slot(receipt);
+    const why = await this.#slot(id, receipt);
 
     // Probuzený kvůli vypršení slot nikdy nedostal, takže ho ani nevrací. Kdyby
     // prošel `finally` s `#release()`, snížil by `#running` za někoho jiného a
@@ -467,14 +476,14 @@ export class AdmissionQueue {
     };
   }
 
-  async #slot(receivedAtMs: number): Promise<Wakeup> {
+  async #slot(id: string, receivedAtMs: number): Promise<Wakeup> {
     if (this.#running < this.#concurrency) {
       this.#running += 1;
       return 'slot';
     }
 
     const why = await new Promise<Wakeup>((wake) => {
-      this.#waiting.push({ receivedAtMs, wake });
+      this.#waiting.push({ id, receivedAtMs, wake });
       this.#armExpiry();
     });
     if (why === 'slot') this.#running += 1;
