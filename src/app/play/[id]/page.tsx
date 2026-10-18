@@ -44,7 +44,15 @@ async function challengeOf(id: string, dare: string | string[] | undefined): Pro
 type Loaded =
   | { readonly kind: 'refused' }
   | { readonly kind: 'missing' }
-  | { readonly kind: 'game'; readonly game: PublishedGame; readonly children: readonly string[]; readonly lineage: readonly GameVersion[]; readonly honesty: Honesty | null; readonly sentence: string | null };
+  | {
+      readonly kind: 'game';
+      readonly game: PublishedGame;
+      readonly children: readonly string[];
+      readonly lineage: readonly GameVersion[];
+      readonly honesty: Honesty | null;
+      readonly sentence: string | null;
+      readonly bestDare: string | null;
+    };
 
 /**
  * Jedno načtení na požadavek, sdílené metadaty i stránkou (`cache` z Reactu).
@@ -62,9 +70,15 @@ const load = cache(async (id: string): Promise<Loaded> => {
   const versions = versionStoreFromEnv(process.env);
   const game = await versions.get(id);
   if (game === null) return { kind: 'missing' };
-  const [children, lineage, sentence] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id), sentenceOf(versions, game)]);
+  // Nejlepší běh pro ducha (P50 T6) jde s HTML, jinak by ho klient stahoval po hydrataci před prvním snímkem.
+  const [children, lineage, sentence, best] = await Promise.all([
+    versions.childrenOf(id),
+    versions.lineageOf(id),
+    sentenceOf(versions, game),
+    game.arcade === undefined ? null : versions.bestDare(id),
+  ]);
   const honesty = await honestyOf(versions, game);
-  return { kind: 'game', game, children, lineage, honesty, sentence };
+  return { kind: 'game', game, children, lineage, honesty, sentence, bestDare: best?.dareId ?? null };
 });
 
 /**
@@ -106,7 +120,7 @@ export default async function PlayGamePage({ params, searchParams }: PageProps) 
       </main>
     );
   }
-  const { game, children, lineage, honesty, sentence } = loaded;
+  const { game, children, lineage, honesty, sentence, bestDare } = loaded;
   // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
   if (game.blueprint === null && game.arcade === undefined) notFound();
   // Výzvu nese jen arkáda (P36B T5) – mřížková hra odkaz s `dare=` otevře jako obyčejnou hru.
@@ -131,6 +145,7 @@ export default async function PlayGamePage({ params, searchParams }: PageProps) 
         upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
         par={game.report.par ?? null}
         challenge={challenge}
+        bestDare={bestDare}
       />
     </>
   );

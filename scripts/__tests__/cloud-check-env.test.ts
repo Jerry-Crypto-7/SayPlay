@@ -12,6 +12,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { MAX_PLAY_DIRECTOR_SLOTS } from '../../src/server/paid-slots';
 import { checkEnv, parseEnvFile } from '../cloud/check-env.mjs';
 
 const SCRIPT = 'scripts/cloud/check-env.mjs';
@@ -143,6 +144,17 @@ describe('checkEnv – the call cap must not bite before the dollar cap (T3a)', 
   it('the primary and the fallback are checked against their own numbers', () => {
     // Záloha drahá, primár levný: nízký strop zálohy nesmí projít kvůli ceně primáru a naopak.
     expect(names({ ...GOOD, WORLDSMITH_FALLBACK_CALL_CAP: '19000', WORLDSMITH_CALL_CAP: '300' })).toEqual(['WORLDSMITH_CALL_CAP']);
+  });
+});
+
+describe('checkEnv – optional play director slots (P53 T1)', () => {
+  it('passes a missing or empty PLAY_DIRECTOR_SLOTS and every value the server takes', () => {
+    expect(checkEnv({ ...GOOD, PLAY_DIRECTOR_SLOTS: '' })).toEqual([]);
+    for (let slots = 1; slots <= MAX_PLAY_DIRECTOR_SLOTS; slots += 1) expect(checkEnv({ ...GOOD, PLAY_DIRECTOR_SLOTS: String(slots) })).toEqual([]);
+  });
+
+  it.each(['0', String(MAX_PLAY_DIRECTOR_SLOTS + 1), 'two', '1.5'])('refuses PLAY_DIRECTOR_SLOTS=%s, which the server would replace with 2', (raw) => {
+    expect(names({ ...GOOD, PLAY_DIRECTOR_SLOTS: raw })).toEqual(['PLAY_DIRECTOR_SLOTS']);
   });
 });
 

@@ -825,6 +825,15 @@ button.play-version-switch__item:not(:disabled) {
   height: 16px;
 }
 
+/* Pořadí ve frontě režiséra (P53 T3) za Full detail: klidný text na inkoustu, žádná akce. */
+.play-version-switch__note {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--sp-space-3) 0 var(--sp-space-1);
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
 /* Otevřené pole změny sedí nad dolní řadou vlevo – pilulka stavu mu uhne výš. */
 .play-hud:has(> .play-live) > .play-upgrade-status {
   bottom: calc(var(--_stack) + var(--sp-size-touch-min) + var(--sp-space-8));

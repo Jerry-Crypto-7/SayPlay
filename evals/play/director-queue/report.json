@@ -1,0 +1,241 @@
+{
+  "schema": "p53-director-burst.v1",
+  "generatedAt": "2026-10-17T19:49:50.213Z",
+  "upstream": "stub on 127.0.0.1, recorded answers src/play/director/__fixtures__/p46-answers",
+  "runs": {
+    "burst": {
+      "players": 8,
+      "slots": 2,
+      "queue": "default",
+      "delayMs": 3000,
+      "spreadMs": 2000,
+      "aiVersions": 8,
+      "modelUnavailable": 0,
+      "pending": 0,
+      "upstreamPeak": 2,
+      "upstreamCalls": 39,
+      "upstreamUnknown": 0,
+      "queuedSeen": 8,
+      "waitMedianMs": 21864,
+      "waitMaxMs": 39114,
+      "games": [
+        {
+          "id": "d01",
+          "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
+          "postStatus": 201,
+          "draftId": "ce1dc19385b498ce58b10c22b52d2595",
+          "status": "ready",
+          "versionId": "d10b0515f04abc483f9e14a90c2f1154",
+          "reason": null,
+          "queuedMax": 5,
+          "aiVersion": true,
+          "waitMs": 16113
+        },
+        {
+          "id": "d04",
+          "sentence": "shoot down paper planes over a school playground",
+          "postStatus": 201,
+          "draftId": "3c07181207014d35df560e2c10d0f68e",
+          "status": "ready",
+          "versionId": "4e9f64b0d9e14764b149587bc4487ce9",
+          "reason": null,
+          "queuedMax": 5,
+          "aiVersion": true,
+          "waitMs": 2794
+        },
+        {
+          "id": "f01",
+          "sentence": "a dragon guards its gold hoard from greedy knights inside a volcano",
+          "postStatus": 201,
+          "draftId": "dfbf589a1b6f1100c6e26e3b87d0c911",
+          "status": "ready",
+          "versionId": "4d11277e150f26c653b05f4b7dd3fa6f",
+          "reason": null,
+          "queuedMax": 6,
+          "aiVersion": true,
+          "waitMs": 2555
+        },
+        {
+          "id": "f03",
+          "sentence": "An elf archer shoots goblins from the treetops.",
+          "postStatus": 201,
+          "draftId": "7e87cc6b7c4679f5cdec8e17514f3fa5",
+          "status": "ready",
+          "versionId": "4159efaa574c967cae56704ca7e8847e",
+          "reason": null,
+          "queuedMax": 1,
+          "aiVersion": true,
+          "waitMs": 15357
+        },
+        {
+          "id": "f10",
+          "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
+          "postStatus": 201,
+          "draftId": "1f5d21142777870bd5093b8c320158c6",
+          "status": "ready",
+          "versionId": "03df8e9c0b7270a871cb799e7766bab3",
+          "reason": null,
+          "queuedMax": 3,
+          "aiVersion": true,
+          "waitMs": 27874
+        },
+        {
+          "id": "f17",
+          "sentence": "a phoenix rises from the ashes over a burning desert",
+          "postStatus": 201,
+          "draftId": "89ab3dac6665931e5cf70e0359168c47",
+          "status": "ready",
+          "versionId": "476f0b958af2ebad9d01e133c8b5f892",
+          "reason": null,
+          "queuedMax": 4,
+          "aiVersion": true,
+          "waitMs": 27615
+        },
+        {
+          "id": "h02",
+          "sentence": "shopping cart race in a supermarket",
+          "postStatus": 201,
+          "draftId": "684f2de9df8b65bbff373b05ba7c984b",
+          "status": "ready",
+          "versionId": "39b89c7d0f12efc91c6aee209f0f6292",
+          "reason": null,
+          "queuedMax": 5,
+          "aiVersion": true,
+          "waitMs": 39114
+        },
+        {
+          "id": "h05",
+          "sentence": "boxing a kangaroo in the australian outback",
+          "postStatus": 201,
+          "draftId": "dcd29343c87c98f4e4a048662d048747",
+          "status": "ready",
+          "versionId": "ca99627d4ebaf2135a5fdbd74fa6a90f",
+          "reason": null,
+          "queuedMax": 6,
+          "aiVersion": true,
+          "waitMs": 38862
+        }
+      ]
+    },
+    "overflow": {
+      "players": 8,
+      "slots": 2,
+      "queue": 2,
+      "delayMs": 3000,
+      "spreadMs": 2000,
+      "aiVersions": 4,
+      "modelUnavailable": 4,
+      "pending": 0,
+      "upstreamPeak": 2,
+      "upstreamCalls": 22,
+      "upstreamUnknown": 0,
+      "queuedSeen": 4,
+      "waitMedianMs": 9774,
+      "waitMaxMs": 17309,
+      "refusedQuickVersion": {
+        "draftId": "1f5d21142777870bd5093b8c320158c6",
+        "playable": true,
+        "ms": 2836,
+        "note": "surface also changes without input (21.68 % in 300 ms) – check the screenshot"
+      },
+      "games": [
+        {
+          "id": "d01",
+          "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
+          "postStatus": 201,
+          "draftId": "ce1dc19385b498ce58b10c22b52d2595",
+          "status": "ready",
+          "versionId": "d10b0515f04abc483f9e14a90c2f1154",
+          "reason": null,
+          "queuedMax": 2,
+          "aiVersion": true,
+          "waitMs": 17309
+        },
+        {
+          "id": "d04",
+          "sentence": "shoot down paper planes over a school playground",
+          "postStatus": 201,
+          "draftId": "3c07181207014d35df560e2c10d0f68e",
+          "status": "ready",
+          "versionId": "4e9f64b0d9e14764b149587bc4487ce9",
+          "reason": null,
+          "queuedMax": 1,
+          "aiVersion": true,
+          "waitMs": 2974
+        },
+        {
+          "id": "f01",
+          "sentence": "a dragon guards its gold hoard from greedy knights inside a volcano",
+          "postStatus": 201,
+          "draftId": "dfbf589a1b6f1100c6e26e3b87d0c911",
+          "status": "ready",
+          "versionId": "4d11277e150f26c653b05f4b7dd3fa6f",
+          "reason": null,
+          "queuedMax": 2,
+          "aiVersion": true,
+          "waitMs": 2729
+        },
+        {
+          "id": "f03",
+          "sentence": "An elf archer shoots goblins from the treetops.",
+          "postStatus": 201,
+          "draftId": "7e87cc6b7c4679f5cdec8e17514f3fa5",
+          "status": "ready",
+          "versionId": "4159efaa574c967cae56704ca7e8847e",
+          "reason": null,
+          "queuedMax": 1,
+          "aiVersion": true,
+          "waitMs": 16573
+        },
+        {
+          "id": "f10",
+          "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
+          "postStatus": 201,
+          "draftId": "1f5d21142777870bd5093b8c320158c6",
+          "status": "draft-final",
+          "versionId": null,
+          "reason": "MODEL_UNAVAILABLE",
+          "queuedMax": 0,
+          "aiVersion": false,
+          "waitMs": null
+        },
+        {
+          "id": "f17",
+          "sentence": "a phoenix rises from the ashes over a burning desert",
+          "postStatus": 201,
+          "draftId": "89ab3dac6665931e5cf70e0359168c47",
+          "status": "draft-final",
+          "versionId": null,
+          "reason": "MODEL_UNAVAILABLE",
+          "queuedMax": 0,
+          "aiVersion": false,
+          "waitMs": null
+        },
+        {
+          "id": "h02",
+          "sentence": "shopping cart race in a supermarket",
+          "postStatus": 201,
+          "draftId": "684f2de9df8b65bbff373b05ba7c984b",
+          "status": "draft-final",
+          "versionId": null,
+          "reason": "MODEL_UNAVAILABLE",
+          "queuedMax": 0,
+          "aiVersion": false,
+          "waitMs": null
+        },
+        {
+          "id": "h05",
+          "sentence": "boxing a kangaroo in the australian outback",
+          "postStatus": 201,
+          "draftId": "dcd29343c87c98f4e4a048662d048747",
+          "status": "draft-final",
+          "versionId": null,
+          "reason": "MODEL_UNAVAILABLE",
+          "queuedMax": 0,
+          "aiVersion": false,
+          "waitMs": null
+        }
+      ]
+    }
+  }
+}

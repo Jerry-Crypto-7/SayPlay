@@ -22,7 +22,7 @@ import { applyRepairAnswer, buildRepairRequest } from '@/play/director/repair';
 import { gameSpecHash, type GameSpecV1 } from '@/play/spec';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
-import { callDirectorModel, DIRECTOR_BUDGET_MS } from './_director';
+import { DIRECTOR_BUDGET_MS, directorCalls, directorQueuePosition } from './_director';
 import { derivedSeeds, playabilityIssues, publishReadSpec, seedFrom } from './_publish';
 import { DRAFT_FINAL_TTL_SECONDS, UPGRADE_DEADLINE_SLACK_MS } from './_upgrade';
 
@@ -32,7 +32,8 @@ export type RemixOutcome =
   | { readonly status: 'ready'; readonly versionId: string; readonly changed: readonly string[] }
   | { readonly status: 'final'; readonly reason: RemixFinalReason };
 
-export type RemixStatus = RemixOutcome | { readonly status: 'pending'; readonly job: string; readonly deadlineAt: string };
+/** `queued` (P53 T3): pořadí ve frontě na slot režiséra, 1 = další na řadě; chybí, když nečeká. */
+export type RemixStatus = RemixOutcome | { readonly status: 'pending'; readonly job: string; readonly deadlineAt: string; readonly queued?: number };
 
 /** Výpadky, po kterých má nové odeslání téže věty dostat nový pokus; ostatní jsou verdikt o větě. */
 const TRANSIENT: ReadonlySet<RemixFinalReason> = new Set(['MODEL_UNAVAILABLE', 'STORE_UNAVAILABLE', 'FAILED']);
@@ -101,8 +102,13 @@ export function remixJobId(parentId: string, sentence: string): string {
 
 const DEADLINE_MS = DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS;
 
+/** Pod jakým id čeká remix ve frontě režiséra (`upgradeQueueId` má jinou předponu). */
+const queueIdOf = (id: string): string => `remix:${id}`;
+
 function pendingOf(id: string, startedAt: number): RemixStatus {
-  return { status: 'pending', job: id, deadlineAt: new Date(startedAt + DEADLINE_MS).toISOString() };
+  const pending = { status: 'pending', job: id, deadlineAt: new Date(startedAt + DEADLINE_MS).toISOString() } as const;
+  const queued = directorQueuePosition(queueIdOf(id));
+  return queued === null ? pending : { ...pending, queued };
 }
 
 /** Práce v úložišti: `outcome: null` = někde běží, do lhůty (pak záznam vyprší). */
@@ -184,7 +190,7 @@ interface RemixRequest {
  * první volání se pak přeskočí. `keep` dostane každé takové dítě, aby ho
  * přechodný konec mohl uložit pro příští pokus.
  */
-async function runRemix(versions: VersionStore, parent: PublishedGame, request: RemixRequest, resume: GameSpecV1 | null, keep: (child: GameSpecV1) => void): Promise<RemixOutcome> {
+async function runRemix(versions: VersionStore, parent: PublishedGame, request: RemixRequest, id: string, resume: GameSpecV1 | null, keep: (child: GameSpecV1) => void): Promise<RemixOutcome> {
   const parentId = parent.version.versionId;
   try {
     await versions.canPublish();
@@ -195,30 +201,36 @@ async function runRemix(versions: VersionStore, parent: PublishedGame, request: 
 
   const seeds = derivedSeeds(seedFrom({ parentId, sentence: request.sentence.toLowerCase() }));
   let child: GameSpecV1;
-  if (resume !== null) {
-    child = resume;
-  } else {
-    const answer = await callDirectorModel(request.startedAt, request.caller, buildRemixRequest(request.sentence, parent.spec), request.sentence);
-    if (!answer.ok) return final(answer.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', parentId, `${answer.reason}: ${answer.detail}`);
-    const applied = applyRepairAnswer(parent.spec, answer.body);
-    if (!applied.ok) return final('MALFORMED', parentId, `${applied.reason}: ${applied.detail}`);
-    child = applied.spec;
-    // Stráž dřív než opravné kolo: dítě, které mění, o co věta nežádala, nemá cenu opravovat za peníze.
-    if (!remixKeeps(parent.spec, child, request.sentence)) return final('UNASKED_CHANGE', parentId, 'the patch changes control, goal or hero');
-    keep(child);
-  }
+  // Obě volání na jednom slotu (T3a): opravné kolo nečeká znovu na konci fronty za cizími větami.
+  const calls = directorCalls(request.startedAt, request.caller, queueIdOf(id));
+  try {
+    if (resume !== null) {
+      child = resume;
+    } else {
+      const answer = await calls.call(buildRemixRequest(request.sentence, parent.spec), request.sentence);
+      if (!answer.ok) return final(answer.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', parentId, `${answer.reason}: ${answer.detail}`);
+      const applied = applyRepairAnswer(parent.spec, answer.body);
+      if (!applied.ok) return final('MALFORMED', parentId, `${applied.reason}: ${applied.detail}`);
+      child = applied.spec;
+      // Stráž dřív než opravné kolo: dítě, které mění, o co věta nežádala, nemá cenu opravovat za peníze.
+      if (!remixKeeps(parent.spec, child, request.sentence)) return final('UNASKED_CHANGE', parentId, 'the patch changes control, goal or hero');
+      keep(child);
+    }
 
-  let issues = issuesOf(child, seeds);
-  if (issues.length > 0) {
-    const repair = await callDirectorModel(request.startedAt, request.caller, buildRepairRequest(child, issues), request.sentence);
-    if (!repair.ok) return final('MODEL_UNAVAILABLE', parentId, `repair: ${repair.reason}: ${repair.detail}`);
-    const repaired = applyRepairAnswer(child, repair.body);
-    if (!repaired.ok) return final('UNREPAIRED', parentId, `repair: ${repaired.reason}: ${repaired.detail}`);
-    if (!remixKeeps(parent.spec, repaired.spec, request.sentence)) return final('UNASKED_CHANGE', parentId, 'the repair changes control, goal or hero');
-    child = repaired.spec;
-    keep(child);
-    issues = issuesOf(child, seeds);
-    if (issues.length > 0) return final(blockingIssues(critique(child)).length > 0 ? 'UNREPAIRED' : 'NOT_PLAYABLE', parentId, issues.map((issue) => `${issue.code}: ${issue.evidence}`).join('; '));
+    let issues = issuesOf(child, seeds);
+    if (issues.length > 0) {
+      const repair = await calls.call(buildRepairRequest(child, issues), request.sentence);
+      if (!repair.ok) return final('MODEL_UNAVAILABLE', parentId, `repair: ${repair.reason}: ${repair.detail}`);
+      const repaired = applyRepairAnswer(child, repair.body);
+      if (!repaired.ok) return final('UNREPAIRED', parentId, `repair: ${repaired.reason}: ${repaired.detail}`);
+      if (!remixKeeps(parent.spec, repaired.spec, request.sentence)) return final('UNASKED_CHANGE', parentId, 'the repair changes control, goal or hero');
+      child = repaired.spec;
+      keep(child);
+      issues = issuesOf(child, seeds);
+      if (issues.length > 0) return final(blockingIssues(critique(child)).length > 0 ? 'UNREPAIRED' : 'NOT_PLAYABLE', parentId, issues.map((issue) => `${issue.code}: ${issue.evidence}`).join('; '));
+    }
+  } finally {
+    calls.close();
   }
   if (gameSpecHash(child) === gameSpecHash(parent.spec)) return final('UNCHANGED', parentId, 'the model returned the parent');
 
@@ -300,7 +312,7 @@ async function settle(versions: VersionStore, parent: PublishedGame, request: Re
     if (stored === null) {
       if (!(await versions.claimUpgradeVerdict(recordKey(id), JSON.stringify(running), ttlOf(running)))) return await followStored(versions, id, parentId, request.startedAt);
     } else await writeRecord(versions, id, running);
-    const outcome = await runRemix(versions, parent, request, resume, (kept) => {
+    const outcome = await runRemix(versions, parent, request, id, resume, (kept) => {
       child = kept;
     });
     const again = outcome.status === 'final' && TRANSIENT.has(outcome.reason);

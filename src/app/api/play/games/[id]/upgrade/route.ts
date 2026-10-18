@@ -1,7 +1,8 @@
 /**
  * `GET /api/play/games/:id/upgrade` – je autorská verze návrhu hotová?
  *
- * `{ status: 'pending', deadlineAt }` (ISO, P27C T1) | `{ status: 'ready', versionId }` |
+ * `{ status: 'pending', deadlineAt, queued? }` (ISO, P27C T1; `queued` = pořadí
+ * ve frontě režiséra, P53 T3) | `{ status: 'ready', versionId }` |
  * `{ status: 'draft-final', reason }`. Proces, který POST viděl, odpoví
  * z paměti hned. Proces, který o návrhu neví (serverless, restart), práci
  * **sám spustí** z věty uložené u návrhu a počká nejvýš `UPGRADE_WAIT_MS`;

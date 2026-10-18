@@ -48,7 +48,7 @@ import { type BotHand, botHand } from './bot-hand';
 import { type Clip, startClip } from './clip';
 import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
-import { type LoadedGhost, loadGhost } from './GhostSlot';
+import { bestOnce, type LoadedGhost, loadGhost } from './GhostSlot';
 import { isTyping } from './input';
 import { heroActionOf } from './action-cue/cues';
 import { verbLine, verbLineShown } from './action-cue/verb-line';
@@ -264,6 +264,8 @@ export interface ArcadePlayProps {
   readonly par?: Par | null;
   /** Výzva kamaráda z odkazu `?dare=` (P36B T7): cíl na kartě startu a v HUD, výsledek proti ní. */
   readonly challenge?: Dare | null;
+  /** Id výzvy nejlepšího běhu ze stránky (P50 T6), `null` = žádný; chybí = duch se zeptá `GET /api/play/games/:id`. */
+  readonly bestDare?: string | null;
 }
 
 const END_PAUSE_MS = 600;
@@ -378,6 +380,7 @@ function ArcadePlayGame({
   inFeed = false,
   par = null,
   challenge = null,
+  bestDare,
   physicsReady,
 }: ArcadePlayProps & { readonly physicsReady: boolean }) {
   const [liveOpen, setLiveOpen] = useState(false);
@@ -652,13 +655,15 @@ function ArcadePlayGame({
 
   // Duch (P37B T8, `GHOST.md`): kamarád z odkazu výzvy, jinak nejlepší běh hry – jednou na aktivní
   // hru z úložiště. Id kamarádovy výzvy nese adresa `/play/[id]?dare=`, stránka ji ověřila (`challenge`).
+  // Nejlepší běh poslala stránka (P50 T6) – jen pro první načtení, další se ptá úložiště znovu.
   const [ghost, setGhost] = useState<LoadedGhost | null>(null);
+  const [pageBest] = useState(() => bestOnce(bestDare));
   useEffect(() => {
     if (offline || !active) return;
     const friend = challenge === null ? null : new URLSearchParams(window.location.search).get('dare');
     let live = true;
     let loaded: LoadedGhost | null = null;
-    void loadGhost(versionId, friend, arcade).then((found) => {
+    void loadGhost(versionId, friend, arcade, fetch, pageBest()).then((found) => {
       loaded = found;
       if (live) setGhost(found);
       else found?.source.dispose();
@@ -668,7 +673,7 @@ function ArcadePlayGame({
       setGhost(null);
       loaded?.source.dispose();
     };
-  }, [offline, active, versionId, challenge, arcade]);
+  }, [offline, active, versionId, challenge, arcade, pageBest]);
 
   // Sonda času do ovladatelné hry (P32D T2): první tik, ve kterém jádro zpracovalo
   // skutečný vstup hráče, a čas té chvíle na `arcade-stage`. Harness

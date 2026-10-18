@@ -12,7 +12,7 @@ Duch je průhledný hrdina dřívějšího běhu, který závodí vedle hráče:
 
 ## Zapojení krok za krokem
 
-1. **Odkud vzít id výzvy.** Kamarád: `?dare=<dareId>` v adrese `/play/[id]`; stránka ho ověřila v `challengeOf` (`challenge !== null` = platná výzva téhle hry). Nejlepší běh: `bestDare.dareId` z `GET /api/play/games/:id` (P37C T2). Kamarád má přednost.
+1. **Odkud vzít id výzvy.** Kamarád: `?dare=<dareId>` v adrese `/play/[id]`; stránka ho ověřila v `challengeOf` (`challenge !== null` = platná výzva téhle hry). Nejlepší běh: `bestDare.dareId` z `GET /api/play/games/:id` (P37C T2); stránka `/play/[id]` ho pro první načtení pošle v props (`bestDare`, P50 T6), další načtení se ptá dveří. Kamarád má přednost.
 2. **Načíst zdroj** v `ArcadePlay.tsx` – mimo render, jednou na hru:
    ```tsx
    const [ghost, setGhost] = useState<GhostReplay | null>(null);

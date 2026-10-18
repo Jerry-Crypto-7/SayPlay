@@ -22,7 +22,7 @@ import { Button, Icon } from './ui';
 
 export type UpgradeView =
   | { readonly kind: 'idle' }
-  | { readonly kind: 'working'; readonly since: number; readonly deadlineAt: number }
+  | { readonly kind: 'working'; readonly since: number; readonly deadlineAt: number; readonly queued?: number }
   | { readonly kind: 'ready'; readonly versionId: string }
   | { readonly kind: 'final'; readonly reason: DraftFinalReason }
   | { readonly kind: 'offline' }
@@ -51,17 +51,27 @@ const REASONS: ReadonlySet<string> = new Set<DraftFinalReason>([
   'FAILED',
 ]);
 
-type Answer = { readonly status: 'pending'; readonly deadlineAt: number | null } | { readonly status: 'ready'; readonly versionId: string } | { readonly status: 'final'; readonly reason: DraftFinalReason };
+type Answer = { readonly status: 'pending'; readonly deadlineAt: number | null; readonly queued: number | null } | { readonly status: 'ready'; readonly versionId: string } | { readonly status: 'final'; readonly reason: DraftFinalReason };
+
+/** `queued` ze stavu `pending` (P53 T3): pořadí ve frontě režiséra od 1, cokoli jiného `null` = nečeká. */
+export function queuedOf(value: unknown): number | null {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 1 ? value : null;
+}
+
+/** Pořadí ve frontě slovy, pro pilulku i pro remix: „next“ / „#3“. */
+export function placeInLine(queued: number): string {
+  return queued === 1 ? 'next' : `#${String(queued)}`;
+}
 
 /** Odpověď serveru, nebo `null`, když se jí nedá rozumět (počítá se jako chyba). */
 function answerOf(body: unknown): Answer | null {
   if (typeof body !== 'object' || body === null) return null;
-  const { status, versionId, reason, deadlineAt } = body as Record<string, unknown>;
+  const { status, versionId, reason, deadlineAt, queued } = body as Record<string, unknown>;
   if (status === 'ready' && typeof versionId === 'string') return { status, versionId };
   if (status === 'draft-final') return { status: 'final', reason: typeof reason === 'string' && REASONS.has(reason) ? (reason as DraftFinalReason) : 'FAILED' };
   if (status === 'pending') {
     const deadline = typeof deadlineAt === 'string' ? Date.parse(deadlineAt) : Number.NaN;
-    return { status, deadlineAt: Number.isFinite(deadline) ? deadline : null };
+    return { status, deadlineAt: Number.isFinite(deadline) ? deadline : null, queued: queuedOf(queued) };
   }
   return null;
 }
@@ -74,6 +84,7 @@ export function followUpgrade(url: string, onView: (view: UpgradeView) => void):
   const control = new AbortController();
   const since = Date.now();
   let deadlineAt = since + PROVISIONAL_DEADLINE_MS;
+  let queued: number | null = null;
   let failures = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -106,9 +117,10 @@ export function followUpgrade(url: string, onView: (view: UpgradeView) => void):
     failures = 0;
     if (answer.status === 'ready') return onView({ kind: 'ready', versionId: answer.versionId });
     if (answer.status === 'final') return onView({ kind: 'final', reason: answer.reason });
-    if ((answer.deadlineAt !== null && answer.deadlineAt !== deadlineAt) || recovered) {
+    if ((answer.deadlineAt !== null && answer.deadlineAt !== deadlineAt) || answer.queued !== queued || recovered) {
       deadlineAt = answer.deadlineAt ?? deadlineAt;
-      onView({ kind: 'working', since, deadlineAt });
+      queued = answer.queued;
+      onView({ kind: 'working', since, deadlineAt, ...(queued === null ? {} : { queued }) });
     }
     later(POLL_MS);
   };
@@ -166,6 +178,8 @@ const RETRYABLE: ReadonlySet<DraftFinalReason> = new Set(['MODEL_UNAVAILABLE', '
 export interface UpgradeNotice {
   readonly text: string;
   readonly action: { readonly kind: 'open' | 'retry'; readonly label: string } | null;
+  /** Krátký viditelný text v pilulce – jen pořadí ve frontě režiséra (P53 T3). */
+  readonly note?: string;
 }
 
 /**
@@ -178,7 +192,9 @@ export function noticeOf(view: UpgradeView, title: string | null = null): Upgrad
     case 'idle':
       return null;
     case 'working':
-      return { text: QUICK_VERSION + QUICK_VERSION_REST, action: null };
+      if (view.queued === undefined) return { text: QUICK_VERSION + QUICK_VERSION_REST, action: null };
+      // Fronta (P53 T3) jen mění konec věty kitu: čekání ve frontě není chyba, rychlá verze se hraje dál.
+      return { text: `${QUICK_VERSION} · the full-detail one is ${placeInLine(view.queued)} in line`, action: null, note: view.queued === 1 ? 'Next in line' : `${placeInLine(view.queued)} in line` };
     case 'ready':
       return { text: `${FULL_READY}${title === null ? '' : `: “${title}”`}`, action: { kind: 'open', label: PLAY_FULL } };
     case 'final':
@@ -266,6 +282,11 @@ export function UpgradeBanner({ request, sentence, quick = null }: { readonly re
           {ready ? <Icon name="check" /> : <span className="sp-status__dot" aria-hidden="true" />}
           {FULL_LABEL}
         </button>
+        {notice.note !== undefined && (
+          <span className="play-version-switch__note" data-testid="upgrade-queued" aria-hidden="true">
+            {notice.note}
+          </span>
+        )}
       </aside>
     );
   }

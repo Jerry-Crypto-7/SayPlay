@@ -37,7 +37,7 @@ import { actionEvidence, lostActions } from '@/play/fidelity/action-evidence';
 import { extractIntent } from '@/play/intent/extract';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
-import { DIRECTOR_BUDGET_MS, getDirector } from './_director';
+import { DIRECTOR_BUDGET_MS, directorQueuePosition, directorSlotFree, getDirector } from './_director';
 import { derivedSeeds, playabilityIssues, publishReadSpec, seedFrom } from './_publish';
 
 export type DraftFinalReason =
@@ -59,8 +59,16 @@ export type UpgradeOutcome =
   | { readonly status: 'ready'; readonly versionId: string; readonly adds?: readonly UpgradeAdd[] }
   | { readonly status: 'draft-final'; readonly reason: DraftFinalReason };
 
-/** `deadlineAt` (ISO): do kdy se má klient ptát – start práce + rozpočet režie + rezerva (P27C T1). */
-export type UpgradeStatus = UpgradeOutcome | { readonly status: 'pending'; readonly deadlineAt: string };
+/**
+ * `deadlineAt` (ISO): do kdy se má klient ptát – start práce + rozpočet režie + rezerva (P27C T1).
+ * `queued` (P53 T3): pořadí ve frontě na slot režiséra, 1 = další na řadě; chybí, když nečeká.
+ */
+export type UpgradeStatus = UpgradeOutcome | { readonly status: 'pending'; readonly deadlineAt: string; readonly queued?: number };
+
+/** Pod jakým id čeká upgrade návrhu ve frontě režiséra; remix má vlastní předponu, takže se id nepotkají. */
+export function upgradeQueueId(draftId: string): string {
+  return `upgrade:${draftId}`;
+}
 
 /**
  * Rezerva nad rozpočtem režie: kompilace, zápis dítěte a zpoždění dotazu.
@@ -69,7 +77,7 @@ export type UpgradeStatus = UpgradeOutcome | { readonly status: 'pending'; reado
 export const UPGRADE_DEADLINE_SLACK_MS = 15_000;
 
 /** `pending` práce, která začala `startedAt` (`Date.now()` příchodu požadavku). */
-export function pendingSince(startedAt: number): UpgradeStatus {
+export function pendingSince(startedAt: number): Extract<UpgradeStatus, { readonly status: 'pending' }> {
   return { status: 'pending', deadlineAt: new Date(startedAt + DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS).toISOString() };
 }
 
@@ -237,7 +245,7 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
   const directorStarted = performance.now();
   // Neprošlý keypoint jde modelu k opravě dřív, než publikace hru odmítne (P26 T10a).
   const check = (spec: GameSpecV1) => playabilityIssues(spec, seeds);
-  const directed = await director(request.startedAt, request.caller, check)(request.sentence);
+  const directed = await director(request.startedAt, request.caller, check, undefined, upgradeQueueId(draftId))(request.sentence);
   // Hra režiséra, kterou kontrola odmítla (demo 15. 10., 4 z 10: běžec ani auto nehrají honičku a zóny), nese pořád
   // bosse, úseky a vzhled – zkusí se už jen roub na rychlou hru, sama hra režiséra ne.
   const rejected = directed.source === 'draft' ? rejectedSpecOf(directed.failure) : null;
@@ -261,9 +269,11 @@ export async function directUpgrade(versions: VersionStore, draft: PublishedGame
   let adds = quick === null ? undefined : upgradeAddsOf(quick, picked.played);
   let source: DirectorSource = rejected === null ? directed.source : 'authored';
   // AI verze bez novinky, kterou hráč hraje (P46E T4): jeden druhý pokus s pokynem. Ani ten nic nepřidá, nebo
-  // nevyjde – publikuje se první; `adds: []` ho ukáže.
-  if (quick !== null && adds?.length === 0) {
-    const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE)(request.sentence);
+  // nevyjde – publikuje se první; `adds: []` ho ukáže. Bez volného slotu (P53 T3a) se pokus přeskočí:
+  // režie svůj slot už pustila a druhé čekání by hotovou verzi zdrželo za cizími větami.
+  if (quick !== null && adds?.length === 0 && directorSlotFree()) {
+    // `false`: slot se mezi kontrolou výš a voláním (čtení vypínače a cache po síti) mohl obsadit – pak se nečeká.
+    const nudged = await director(request.startedAt, request.caller, check, ADD_NUDGE, upgradeQueueId(draftId), false)(request.sentence);
     const again = nudged.source === 'draft' ? null : await upgradeCandidate(draft, nudged.spec, seeds, intent, before);
     const added = again === null ? [] : upgradeAddsOf(quick, again.played);
     if (again !== null && added.length > 0 && nudged.source !== 'draft') [upgraded, preservingSeeds, adds, source] = [again.spec, again.seeds, added, nudged.source];
@@ -452,9 +462,11 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   return job.done;
 }
 
-/** Stav bez čekání: `null` = proces o návrhu neví. */
+/** Stav bez čekání: `null` = proces o návrhu neví. Čekající na slot režiséra nese `queued`. */
 export function knownUpgrade(draftId: string): UpgradeStatus | null {
   const job = jobs().get(draftId);
   if (job === undefined) return null;
-  return job.outcome ?? pendingSince(job.startedAt);
+  if (job.outcome !== null) return job.outcome;
+  const queued = directorQueuePosition(upgradeQueueId(draftId));
+  return queued === null ? pendingSince(job.startedAt) : { ...pendingSince(job.startedAt), queued };
 }
