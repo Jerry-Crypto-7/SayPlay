@@ -87,6 +87,20 @@ Změřeno nad commitem T2: nová hra už nese `genre.v5`, ale nic na ni zatím n
 - Začátečník na arénách s díly: a01 7/12, a02 11/12, a03 5/12, a04 7/12 – a02 nad pásmem 0,3–0,7 (před T5 12/12 u všech čtyř); věty s díly nejsou živé buňky, test pásmo nehlídá.
 - Mutace (záloha mimo repo): boss bez `bossRoom` → pin bosse červený; aréna s díly bez průběhu → a01 a pin „`genre.v4`/`chaser`“ červené; průběh i s dílem `chaser` → týž pin červený; robot bez obcházení překážky → a01 červený (9/12); sonda bez pořadí → `assembly-parts` „roam moving hazard“ červený.
 
+## T6 – nepřátelé na stanovišti (`t6-station.json`)
+
+| Věta (panel) | Chování | Finále | Mrtvý čas |
+|---|---|---|---|
+| m04 „bake cookies“ | **0 → 3** (`enemy:static+spawned`, `hazard:chase+spawned`, `hazard:roam+spawned`) | `climax` → `climax` | 1,8 → 1,5 s |
+| u03 „a penguin chef stirs…“ | **0 → 2** (`enemy:static+spawned`, `hazard:roam+spawned`) | `climax` → `climax` | 1,98 → 1,98 s |
+| stanoviště na panelu (medián) | 0 → 2 | 0,67 (d03 s díly P42 mimo rozsah) | 1,8 → 1,65 s |
+
+- Nová hra (`genre.v5`) má dva vrhače zezadu kuchyně (`STATION_FOES`, chování `sniper`): první přijde se začátkem druhého kola, druhý (větší, role nepřítele) se spěchem. Po varování 0,8 s hodí výstřel přes řadu u pultu; hráč uhne podél pultu a práce v dosahu běží dál. Robot úkolu uhýbá sám (`quest-bot.ts`, `close`/`rowStep`), obecný úhyb průběhu se přeskočí (`pacing_bot.own`). Vrhači vezmou robotu ~2,5 s, takže před spěchem odpadne tolik kol, kolik ten čas pokryje (`STATION_FOES.seconds`); hodiny zůstávají.
+- Buňka `quest.station` × 12 semínek (`p51-foes.test.ts`): intermediate 12/12, finále 12/12, novice 7/12 (bez nepřátel 12 / 12 / 9), 2–3 chování telemetrie na každém běhu, hra 30,9–36,2 s. Robot bez úhybu prohrál 12/12 (tři zásahy) – hrozba je skutečná.
+- Zkoušené a zamítnuté (čísla v komentáři `STATION_FOES`): flanker od druhého kola (0/12, výpad každé ~2 s), vrhač z rohů s obecným úhybem (0/12 na 40 s hodinách), pevné kolo navíc pryč (otočilo délku „one / three pancakes“ v `quest-rounds.test.ts`).
+- Dev sada stanoviště nemá; jiné řádky gauge se nezměnily. Brány: replay brána, `p51-stored-v4`, `station-rush`, `pacing-static-b`, `field-news`, `quest-rounds` a další testy stanoviště a průběhu zelené (`swarm` časový rozpočet padá jen pod zátěží, sám zelený).
+- Mutace (záloha mimo repo): bez vrhačů ve v5 → `p51-foes` červený; vrhači i ve `genre.v4` → `p51-foes` a `station-rush` červené; robot bez úhybu → `p51-foes` červený (intermediate 0/12). `p51-stored-v4` stanoviště nehlídá – dev sada žádné nemá.
+
 ## Rozhodnutí
 
 - **T2 – verze u žánrů bez `genre`:** chodec, klouzání, míč a chytání staví `nativeSpec` bez pole `genre`, takže `genreAtLeast(spec, FINALE5_GENRE_VERSION)` pro ně nikdy neplatí. Nová hra těchto žánrů proto dostane značku nové hry v parametrech generátoru, jako řízení v P46B (`pacedNative`, `segments: true`); uložený spec bez značky staví týž svět (`p51-stored-v4.test.ts`).
@@ -98,3 +112,6 @@ Změřeno nad commitem T2: nová hra už nese `genre.v5`, ale nic na ni zatím n
 - **T4 – finále chytání je kořist na tři chycení:** první dvě chycení jí uberou HP a hráče vrátí na start, třetí vyhraje (`CATCH_FINALE`); hodiny 430 % `catchSeconds` (47 s u buňky `roam.catch`): 33 s → intermediate 6/12, 44 s → novice 4/12, 47 s → intermediate 12/12, novice 5/12.
 - **T4 – finále načasování je posledních 20 kol rychlostí 100:** plynulá křivka P45C dá konec nejvýš ~1,3× hustší, telemetrie chce 1,5× (`climax`). Nová hra (`genre.v5`) hraje první část rychlostí prvního kola a posledních 20 kol rychle (`TIMING_FINALE`); 19 kol → začátečník 3/12, 22 → 11/12.
 - **T4 – ohlášení finále `round` ve scéně** (míč a chytání) zůstává na T9; scéna dnes `round` neohlásí.
+- **T6 – druhý vrhač má roli nepřítele (`enemy`):** se stejnou rolí `hazard` jako první dala telemetrie na semínku 12 buňky jediný podpis (těla i výstřely `hazard:roam`); větší vrhač s vlastní rolí je druhý druh hrozby, který přijde se spěchem, a dvě chování drží na všech 12 semíncích.
+- **T6 – `station-rush.test.ts` staví strukturu spěchu jako `genre.v4`:** test popisuje spěch P47A, jak ho postavila `genre.v4`; nová hra má navíc vrhače a o jejich čas míň kol, její spěch a kopie hlídá `p51-foes.test.ts` (konzervativní čtení – žádná dřívější aserce se nezmírnila).
+- **T6 – banner stanoviště nové hry:** s prvním vrhačem ohlásí „Here they come!“ (`buildUp`, jako hry s chováním bez úseků), pak „Rush order!“; `field-news.test.ts` to u buňky `quest.station` čeká.

@@ -105,7 +105,8 @@ describe('station quest ends with a rush round (P47A T5, genre.v4)', () => {
       expect(storedInteract.rush, 'v3 has no rush').toBeUndefined();
       const storedLast = boilLimit(storedBoil, roundsOf(stored) - 1);
       for (const seed of SEEDS) {
-        const world = worldOf(spec, seed);
+        // Stavba spěchu `genre.v4`; nová hra (`genre.v5`) má navíc vrhače a o jejich čas míň kol (`p51-foes.test.ts`).
+        const world = worldOf(withVersion(spec, 'genre.v4'), seed);
         const rounds = roundsOf(world);
         const interact = interactOf(world);
         const rush = interact.rush!;

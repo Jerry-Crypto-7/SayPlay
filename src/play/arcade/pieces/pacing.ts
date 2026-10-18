@@ -204,6 +204,8 @@ const botParams = z
     points: z.int().min(1).optional(),
     /** Tep: robot mince tepu nevidí (`withoutCoins`). */
     pulse: pulseRef.optional(),
+    /** Základní robot uhýbá tělům chování sám (`PacingSetup.ownDodge`): `dodge` se přeskočí. */
+    own: z.literal(true).optional(),
   })
   .strict();
 
@@ -380,7 +382,7 @@ export function makePacingBot(bots: Readonly<Record<string, BotPiece>>): BotPiec
       const seen = params.behaviours === undefined ? goal : seenByBase(goal, params.behaviours);
       const own = parseOnce(native, params.base.params);
       const input = native.decide(seen, params.steady === true ? own : scaledOnce(params.control, own, intensityOf(observation.state, params.keeper)));
-      return params.behaviours === undefined ? input : dodge(observation, params.behaviours, params.control, input);
+      return params.behaviours === undefined || params.own === true ? input : dodge(observation, params.behaviours, params.control, input);
     },
   };
 }
@@ -399,6 +401,8 @@ const ruleParams = z
     schedule: z.array(z.object({ atPermille: z.int().min(1).max(1000), template: z.int().min(1), count: z.int().min(1).max(PACING.maxActors), entry: z.int().min(0).max(3) }).strict()).max(32),
     /** Místa vstupu `[x, z]` po dvojicích; `track` = `z` je odstup před hráčem. */
     spots: z.array(z.int()).min(2).max(16),
+    /** Místa vstupu těl chování, když jinde než ostatní spawny (`PacingSetup.foeSpots`, stanoviště P51 T6). */
+    foeSpots: z.array(z.int()).min(2).max(16).optional(),
     space: z.enum(['plane', 'track']),
     maxActors: z.int().min(1).max(PACING.maxActors),
     /** Předloha bosse, který přijde i přes plný `maxActors` (P51 T5, `genre.v5`) – má vlastní slot navíc. */
@@ -478,19 +482,21 @@ export const pacingRule: RulePiece<PacingRuleParams> = {
     const due = params.schedule.filter((entry) => entry.atPermille > before && entry.atPermille <= reached && !stale(entry));
     if (due.length === 0) return effects;
     let room = params.maxActors - actorsAlive(state, new Set(params.schedule.map((entry) => entry.template)));
-    const spots = params.spots.length >> 1;
-    const order = params.space === 'plane' ? spotsAway(state, player, params.spots) : [];
     const p = bodyBase(player);
     for (const entry of due) {
       const ref = params.behaviours?.find((candidate) => candidate.template === entry.template);
       const group = ref === undefined ? undefined : BEHAVIOURS[ref.id].group;
+      // Tělo chování na vlastních místech, je-li svět má (stanoviště: kopie na pultu, nepřátelé zezadu kuchyně).
+      const places = ref !== undefined && params.foeSpots !== undefined ? params.foeSpots : params.spots;
+      const spots = places.length >> 1;
+      const order = params.space === 'plane' ? spotsAway(state, player, places) : [];
       // Boss nové hry (`bossRoom`) přijde i do plna: hejno těsně před ním by mu jinak vzalo poslední místo a finále by nebylo (P51 T5).
       for (let k = 0; k < entry.count && (room > 0 || entry.template === params.bossRoom); k += 1, room -= 1) {
         // Hejno přijde celé na jednom místě, po `spacing` vedle sebe (rovina) nebo za sebou (trať).
         const at = params.space === 'plane' ? (order[group === undefined ? k % spots : 0] as number) : (entry.entry + (group === undefined ? k : 0)) % spots;
         const shift = group === undefined ? 0 : Math.trunc(((2 * k - entry.count + 1) * group.spacing) / 2);
-        const x = (params.spots[2 * at] as number) + (params.space === 'plane' ? shift : 0);
-        const z = (params.spots[2 * at + 1] as number) + (params.space === 'track' ? (state[p + BODY.z] as number) + shift : 0);
+        const x = (places[2 * at] as number) + (params.space === 'plane' ? shift : 0);
+        const z = (places[2 * at + 1] as number) + (params.space === 'track' ? (state[p + BODY.z] as number) + shift : 0);
         // Výška předlohy: těla chování i boss stojí na zemi (0), stanoviště finále (T14) na pultu.
         effects.push({ kind: 'spawn', template: entry.template, x, y: state[bodyBase(entry.template) + BODY.y] as number, z, vx: 0, vy: 0, vz: 0 });
       }
@@ -516,6 +522,10 @@ export interface PacingSetup {
   readonly goal: PacingGoal;
   readonly space: BehaviourSpace;
   readonly spots: readonly number[];
+  /** Místa vstupu těl chování a bosse, když jinde než `spots` (stanoviště P51 T6: `spots` = kopie na pultu). */
+  readonly foeSpots?: readonly number[];
+  /** Základní robot uhýbá tělům chování sám (stanoviště P51 T6, `quest-bot.ts` `rowStep`); `pacing_bot` neuhýbá. */
+  readonly ownDodge?: true;
   /** Předlohy spawnů (`template: true`); prázdné = jen křivka bez spawnů. */
   readonly behaviours: readonly PacingActor[];
   /** Hra dostane jen tolik z `behaviours`, losem ze streamu `pacing` před rozvrhem; bez pole všechny. */
@@ -716,14 +726,14 @@ export function withPacing(parts: ArcadeParts, setup: PacingSetup): ArcadeParts 
   const edge = setup.space === 'plane' && shooters.length > 0 && typeof half === 'number' ? { half } : {};
   const clear = setup.clear === undefined || setup.clear.length === 0 ? {} : { clear: setup.clear.map((step) => ({ role: ROLE[step.role], at: Math.max(1, step.at) })) };
   const rule: PieceRef | null = schedule.length === 0 && setup.finale === undefined && refs.length === 0 ? null : {
-    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], space: setup.space, maxActors: PACING.maxActors, ...bossRoom, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved, ...edge, ...clear, ...pulse },
+    id: 'pacing', params: { keeper, schedule, spots: [...setup.spots], ...(setup.foeSpots === undefined ? {} : { foeSpots: [...setup.foeSpots] }), space: setup.space, maxActors: PACING.maxActors, ...bossRoom, ...(setup.finale === undefined ? {} : { finale: setup.finale }), ...moved, ...edge, ...clear, ...pulse },
   };
   const slots = (schedule.length === 0 ? 0 : PACING.maxActors + (setup.boss?.room === true ? 1 : 0)) + (shooters.length === 0 ? 0 : PACING.maxShots) + (pulses.length === 0 ? 0 : PACING.heartbeatCoins);
   const steady = setup.steady === true ? { steady: true as const } : {};
   return {
     ...parts,
     control: { id: 'pacing_control', params: { base: parts.control, goal: setup.goal, keeper, ...moved, ...(refs.length === 0 ? {} : { space: setup.space }), ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1, ...(setup.spark === true ? { spark: true } : {}) } }) } },
-    bot: { id: 'pacing_bot', params: { base: parts.bot, control: nativeControlId(parts.control), keeper, ...moved, ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1 } }) } },
+    bot: { id: 'pacing_bot', params: { base: parts.bot, control: nativeControlId(parts.control), keeper, ...moved, ...steady, ...(pulses.length === 0 ? {} : { pulse: { keeper: keeper + 1, template: keeper - 1 } }), ...(setup.ownDodge === true ? { own: true } : {}) } },
     level: { ...parts.level, bodies, spawnSlots: (parts.level.spawnSlots ?? 0) + slots },
     rules: rule === null ? parts.rules : [...parts.rules, rule],
   };

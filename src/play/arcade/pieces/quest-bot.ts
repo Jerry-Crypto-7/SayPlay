@@ -16,14 +16,18 @@
  * - Když žádný cíl nestihne, uhýbá: ze směrů, které po `PLAN.horizon` tiků drží
  *   mezeru `PLAN.cap`, ten, který ho nejvíc přiblíží nejbližšímu cíli (obejde
  *   pronásledovatele obloukem); jinak ten s největší mezerou.
+ * - Stanoviště s nepřáteli (P51 T6, `close`): stojí u pultu a výstřelům vrhačů
+ *   uhýbá podél něj, v dosahu cíle dál drží (`rowStep`).
  */
 
 import { z } from 'zod';
 
 import { type ArcadeInput, BODY, BUTTON, type BotPiece, FLAG, HEADER, NO_INPUT, ROLE, UNIT, bodyBase, targetStateOf } from '../contract';
 import { compiledInteractWhen, interactRecord, isLocked } from '../rules/interact';
-import { ARENA, DIRECTIONS, axisOfDirection, chaseParams, chaseSpeedOf, directionOfAxis, graceLeft } from './arena';
+import { ARENA, DIRECTIONS, arenaAxis, axisOfDirection, chaseParams, chaseSpeedOf, directionOfAxis, graceLeft } from './arena';
 import { predict } from './arena-bot';
+import { telegraphOf } from './behaviours';
+import { SHOT, SNIPER } from './behaviours/sniper';
 
 const REACTION = 8;
 /** Rezerva tiků držení navíc. */
@@ -45,6 +49,8 @@ const botParams = z
     interact: compiledInteractWhen.shape.interact,
     /** Pronásledovatelé útěku téhle rychlosti (jako ovládání `move_free`). */
     chase: chaseParams.optional(),
+    /** Stanoviště s nepřáteli (`genre.v5`, P51 T6): stát u pultu a výstřelům uhýbat podél něj (`closeRow`, `rowStep`). */
+    close: z.literal(true).optional(),
   })
   .strict();
 type QuestBotParams = z.infer<typeof botParams>;
@@ -151,6 +157,109 @@ function blocked(at: Point, k: number, size: number, rocks: readonly Box[], half
   return false;
 }
 
+/**
+ * Stanoviště s nepřáteli (P51 T6, `close`): robot stojí u pultu (řada `closeRow`, hráč přitisknutý k pevnému tělesu
+ * pod cílem) a výstřelům ostřelovačů zezadu kuchyně uhýbá sám, jen podél pultu (`rowStep`): výstřel přeletí řadu
+ * v pásu `x ± half` v okně tiků a robot v něm nesmí stát. Obecný úhyb průběhu (`dodgeShot`) ho kolmo vyvedl z dosahu
+ * a do přeletu nechal stát, i když cíl ležel za přímkou výstřelu (věta m04: hra 35 → 50 s, buňka `quest.station`
+ * na 40 s hodinách 0/12). `slack` = rezerva dosahu a místa, `pad` = tiky rezervy okna, `edge` = rezerva pásu,
+ * `horizon` = jak daleko plánuje.
+ */
+const CLOSE = { slack: 200, pad: 6, edge: 60, horizon: 150 } as const;
+
+/** Řada u pultu pod cílem: `z` hráče přitisknutého k tělesu a úsek `x`, odkud cíl dosáhne; cíl bez tělesa pod sebou `null`. */
+function closeRow(target: Box, size: number, rocks: readonly Box[], reach: number): { readonly z: number; readonly from: number; readonly to: number } | null {
+  const counter = rocks.find((rock) => Math.abs(target.x - rock.x) <= rock.w / 2 && Math.abs(target.z - rock.z) <= rock.d / 2);
+  if (counter === undefined) return null;
+  const across = reach + Math.floor((size + target.w) / 2) - CLOSE.slack;
+  return { z: counter.z - Math.ceil((counter.d + size) / 2), from: target.x - across, to: target.x + across };
+}
+
+/** Přelet výstřelu přes řadu pultu: pás `x ± half`, kde hráč nesmí stát v tikách `from`..`until` od teď. */
+interface Crossing {
+  readonly x: number;
+  readonly half: number;
+  readonly from: number;
+  readonly until: number;
+}
+
+/** Výstřel z `(x, z)` rychlostí `(vx, vz)`, který vyletí za `delay` tiků, přes řadu `row`; od řady pryč = `null`. */
+function crossingOf(x: number, z: number, vx: number, vz: number, delay: number, row: number, size: number): Crossing | null {
+  if (vz <= 0) return null;
+  const at = delay + (row - z) / vz;
+  // Výstřel se hráče dotýká, dokud je po ose z blíž než polovina obou hloubek; mezitím uletí i do strany.
+  const span = (size + SHOT.d) / 2 / vz;
+  if (at + span + CLOSE.pad < 0) return null;
+  return { x: x + vx * (at - delay), half: (size + SHOT.w) / 2 + Math.abs(vx) * span + CLOSE.edge, from: at - span - CLOSE.pad, until: at + span + CLOSE.pad };
+}
+
+/** Přelety výstřelů ve vzduchu a těch, které ostřelovač ve varování teprve vystřelí (pohled je `lag` tiků starý). */
+function crossingsOf(state: Int32Array, player: number, lag: number, row: number, size: number): Crossing[] {
+  const out: Crossing[] = [];
+  for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+    const base = bodyBase(body);
+    const role = state[base + BODY.role];
+    if (body === player || (role !== ROLE.hazard && role !== ROLE.enemy) || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const [x, z, vx, vz] = [state[base + BODY.x] as number, state[base + BODY.z] as number, state[base + BODY.vx] as number, state[base + BODY.vz] as number];
+    let crossing: Crossing | null = null;
+    if (state[base + BODY.w] === SHOT.w && state[base + BODY.d] === SHOT.d && state[base + BODY.h] === SHOT.h) crossing = crossingOf(x + vx * lag, z + vz * lag, vx, vz, 0, row, size);
+    else {
+      const warning = telegraphOf(state, body);
+      if (warning?.kind !== 'line') continue;
+      // Výstřel letí od ostřelovače k zamčenému cíli rychlostí `SNIPER.plane.shot` (`fireShot`).
+      const dx = warning.aim.x - x;
+      const dz = warning.aim.z - z;
+      const gap = Math.max(1, Math.floor(Math.sqrt(dx * dx + dz * dz)));
+      crossing = crossingOf(x, z, Math.trunc((dx * SNIPER.plane.shot) / gap), Math.trunc((dz * SNIPER.plane.shot) / gap), warning.ticksLeft - lag, row, size);
+    }
+    if (crossing !== null) out.push(crossing);
+  }
+  return out;
+}
+
+/** Chtěná rychlost v ose x k bodu `to` jako robot jde (`rowStep`): plnou, a brzdit, když by brzdná dráha došla za `to`. */
+function rowWant(x: number, v: number, to: number): number {
+  const d = to - x;
+  if (Math.abs(d) <= CLOSE.slack / 2) return 0;
+  const toward = Math.sign(d) * v;
+  const brake = toward <= 0 ? 0 : (toward * (Math.ceil(toward / ARENA.friction) + 1)) / 2;
+  return Math.abs(d) <= brake ? 0 : Math.sign(d) * ARENA.speed;
+}
+
+/** První tik, kdy robot na cestě k `to` (zrychlení a brzda `move_free`) stojí v pásu přeletu; bezpečná cesta = `Infinity`. */
+function rowDanger(x0: number, v0: number, to: number, crossings: readonly Crossing[]): number {
+  let x = x0;
+  let v = v0;
+  for (let t = 0; t <= CLOSE.horizon; t += 1) {
+    for (const c of crossings) if (t >= c.from && t <= c.until && Math.abs(x - c.x) < c.half) return t;
+    const want = rowWant(x, v, to);
+    const rate = want === 0 ? ARENA.friction : ARENA.accel;
+    v = want > v ? Math.min(want, v + rate) : Math.max(want, v - rate);
+    x += v;
+  }
+  return Number.POSITIVE_INFINITY;
+}
+
+/**
+ * Krok podél pultu: kam dojít – zůstat, nejbližší místo v dosahu cíle (`from`..`to`), jeho kraj, nebo kraj pásu
+ * přeletu. Přednost má cesta, která pásem v jeho okně nevede, pak místo v dosahu, pak kratší cesta; bez bezpečné
+ * ta, kde robot do pásu vstoupí nejpozději.
+ */
+function rowStep(me: { readonly x: number; readonly vx: number }, row: { readonly from: number; readonly to: number }, crossings: readonly Crossing[], limit: number): number {
+  const clamp = (value: number): number => Math.max(-limit, Math.min(limit, value));
+  const near = Math.max(row.from, Math.min(row.to, me.x));
+  const candidates = [near, me.x, row.from, row.to, ...crossings.flatMap((c) => [c.x - c.half - CLOSE.edge, c.x + c.half + CLOSE.edge])].map(clamp);
+  const score = (to: number): readonly number[] => [rowDanger(me.x, me.vx, to, crossings), to >= row.from && to <= row.to ? 1 : 0, -Math.abs(to - me.x)];
+  let best = near;
+  let bestScore = score(near);
+  for (const to of candidates) {
+    const own = score(to);
+    const k = own.findIndex((value, index) => value !== bestScore[index]);
+    if (k >= 0 && (own[k] as number) > (bestScore[k] as number)) [best, bestScore] = [to, own];
+  }
+  return rowWant(me.x, me.vx, best);
+}
+
 /** Nejbližší volný směr k bodu `to` (osa pro `move_free`). */
 function steer(me: Point, to: Point, size: number, rocks: readonly Box[], half: number): number {
   const dx = to.x - me.x;
@@ -206,10 +315,19 @@ function decide(state: Int32Array, player: number, recent: readonly ArcadeInput[
   const byDistance = [...open].sort((a, b) => gapOf(me, size, a) - gapOf(me, size, b));
   const goal = (interact.order === true ? [open[0]!] : byDistance).find(safe);
   if (goal !== undefined) {
-    if (gapOf(me, size, goal) > reach) return { buttons: 0, axis: steer(me, goal, size, rocks, half) };
     // Zámek po kroku: pustit, pokud robot od té doby ještě nepustil.
     const released = recent.some((input) => (input.buttons & BUTTON.INTERACT) === 0);
-    if (record.body === goal.index && isLocked(record) && !released) return NO_INPUT;
+    const locked = record.body === goal.index && isLocked(record) && !released;
+    // U pultu (P51 T6): k řadě pod cílem a podél ní mimo přelety výstřelů; v dosahu cestou už držet.
+    const row = params.close === true ? closeRow(goal, size, rocks, reach) : null;
+    if (row !== null) {
+      const use = gapOf(me, size, goal) <= reach && !locked ? BUTTON.INTERACT : 0;
+      if (row.z - me.z > CLOSE.slack) return { buttons: use, axis: arenaAxis(Math.max(row.from, Math.min(row.to, me.x)) - me.x, row.z - me.z) };
+      const want = rowStep(me, row, crossingsOf(state, player, lag, row.z, size), limit);
+      return { buttons: use, axis: want === 0 ? 0 : arenaAxis(want, 0) };
+    }
+    if (gapOf(me, size, goal) > reach) return { buttons: 0, axis: steer(me, goal, size, rocks, half) };
+    if (locked) return NO_INPUT;
     return { buttons: BUTTON.INTERACT, axis: 0 };
   }
 

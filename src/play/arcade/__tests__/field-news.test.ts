@@ -31,13 +31,14 @@ import { type CompiledInteract, interactAt } from '../rules/interact';
 import { runBot } from '../verify';
 
 /** Buňky šesti žánrů P47A (útěk dvakrát: přežití a útěk s věcmi) a finále, které musí ohlásit. */
-const CELLS: readonly { readonly id: string; readonly finale: PacingBeat; readonly segments: readonly PacingBeat[] }[] = [
+const CELLS: readonly { readonly id: string; readonly finale: PacingBeat; readonly segments: readonly PacingBeat[]; readonly buildUp?: true }[] = [
   { id: 'arena.collect', finale: 'boss', segments: ['segment2', 'segment3'] },
   { id: 'arena.escape+collect', finale: 'boss', segments: ['segment2', 'segment3'] },
   // Přežití má jedno chování (T8), quest úsek 3 = kolo bosse: nového nepřítele nese jen úsek 2.
   { id: 'arena.escape', finale: 'shower', segments: ['segment2'] },
   { id: 'quest.spatial', finale: 'boss', segments: ['segment2'] },
-  { id: 'quest.station', finale: 'rush', segments: [] },
+  // Stanoviště nové hry (`genre.v5`, P51 T6): první vrhač přijde s druhým kolem a banner ho ohlásí jako stupňování.
+  { id: 'quest.station', finale: 'rush', segments: [], buildUp: true },
   { id: 'duel.default', finale: 'champion', segments: [] },
   { id: 'throw.default', finale: 'bossTarget', segments: [] },
 ];
@@ -171,7 +172,7 @@ describe('field segments and genre.v4 finales are announced in the tick the worl
         expect(news.every((item) => item.news === 'newFoe'), where).toBe(true);
         // Každá chvíle jednou, v pořadí, ve kterém je svět má; finále i úseky opravdu přišly.
         expect(new Set(run.shown.map(([beat]) => beat)).size, `${where}: once each`).toBe(run.shown.length);
-        expect(run.shown.map(([beat]) => beat).sort(), `${where}: shown`).toEqual([...cell.segments, cell.finale].sort());
+        expect(run.shown.map(([beat]) => beat).sort(), `${where}: shown`).toEqual([...(cell.buildUp === true ? ['buildUp' as const] : []), ...cell.segments, cell.finale].sort());
         const order = pacingBeatOrderOf(world);
         expect(run.shown.map(([beat]) => order.indexOf(beat)), `${where}: order`).toEqual([...run.shown.map(([beat]) => order.indexOf(beat))].sort((a, b) => a - b));
         for (const [beat, from] of run.shown) {
@@ -181,6 +182,10 @@ describe('field segments and genre.v4 finales are announced in the tick the worl
             // Nový nepřítel: první tělo předlohy, kterou plocha ještě neměla, přišlo právě v tomhle tiku.
             expect(label, at).toBe('New foe: Frog');
             expect(run.arrivals, at).toContain(from);
+          } else if (beat === 'buildUp') {
+            // Stupňování: banner přijde v tiku, kdy na plochu vstoupí první nepřítel.
+            expect(label, at).toBe('Here they come!');
+            expect(from, at).toBe(run.arrivals[0]);
           } else {
             expect(beat, at).toBe(cell.finale);
             expect(label, at).toBe(FINALE_TEXT[beat]);

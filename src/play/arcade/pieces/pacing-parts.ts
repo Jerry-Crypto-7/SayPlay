@@ -789,6 +789,31 @@ export const STATION_PACE = {
   rushSeconds: 9,
 } as const;
 
+/**
+ * Nepřátelé stanoviště (`genre.v5`, P51 T6): dva vrhači zezadu kuchyně (chování `sniper`) – `first` přijde se
+ * začátkem druhého kola, `rush` (větší, role nepřítele) se spěchem, bez spěchu s posledním kolem. Po varování
+ * (0,8 s) hodí výstřel pomaleji, než hráč běží, přes řadu u pultu: uhne se podél pultu a práce v dosahu běží dál
+ * (robot `quest-bot.ts`, `rowStep`). Vstupují u zadní stěny blízko středu (`spots`), ne na pultu jako kopie
+ * stanovišť: přímka výstřelu je skoro kolmá na pult a pás, kde hráč nesmí stát, má ~2 m – úkrok nechá stanoviště
+ * v dosahu; z rohů kuchyně letí šikmo a pás má ~3 m. `seconds` = čas, který vrhači robotu vezmou: o tolik kol před
+ * spěchem míň, kolik ho po zaokrouhlení pokryjí (`stationRush`), hodiny zůstávají – kratší kola tak odpadnou spíš
+ * a hra s víc stanovišti zůstane delší než s méně (`quest-rounds.test.ts`; pevné kolo navíc to obrátilo, 30,4 < 31,6 s).
+ *
+ * Změřeno na buňce `quest.station` (12 semínek, intermediate / jeho výhry s finále / novice; bez nepřátel 12 / 12 / 9,
+ * hra 33,2 s v průměru, novice dobíhá 37,5–40 s na 40 s hodinách):
+ * - flanker od druhého kola: 0 / 0 / 0 – výpad každé ~2 s, robot nedodělal stanoviště a přetečení mu vzalo životy;
+ * - vrhač z rohů s obecným úhybem průběhu (`dodgeShot`): 0/12 (hodiny), věta m04 hra 35 → 50 s;
+ * - vrhač u zadní stěny, robot uhýbá podél pultu sám, bez krácení kol: 12 / 12 / 0, hra 35,7 s – začátečník za hodinami;
+ * - o kolo míň (2,4 s) a druhý vrhač se spěchem: 12 / 12 / 7, hra 33,1 s, telemetrie 2–3 chování na běh. Druhý vrhač
+ *   s rolí `hazard` jako první dal na semínku 12 jen jeden podpis (těla i výstřely `hazard:roam`).
+ */
+export const STATION_FOES = {
+  first: BEHAVIOURS.sniper.body,
+  rush: { ...BEHAVIOURS.sniper.body, role: 'enemy', w: 1100, h: 2000, d: 1100 } as BodyInit,
+  spots: [-UNIT / 2, -4500, UNIT / 2, -4500] as readonly number[],
+  seconds: 2.5,
+} as const;
+
 interface StationRush {
   /** O tolik kol míň než generátor: nejmíň takové, aby odhad robota nepřetáhl hru bez spěchu (hodiny zůstávají). */
   readonly drop: number;
@@ -801,9 +826,11 @@ interface StationRush {
  * Spěch stanoviště (P47A T5): držení a pečení na `STATION_PACE.rush`-tinu; kola spěchu (s kopiemi stanovišť,
  * `own + extra` stanovišť) od konce, dokud jejich odhad robota (`stationRoundSeconds`) nedá `rushSeconds`.
  * Bez spěchu běží `all − drop − 1` kol dvou stanovišť a poslední kolo dvojí; se spěchem tolik kol ubereme,
- * aby odhad nebyl delší. Aspoň kolo 0 zůstane bez spěchu; `null` = na spěch nezbude kolo.
+ * aby odhad nebyl delší. Aspoň kolo 0 zůstane bez spěchu; `null` = na spěch nezbude kolo. `foes` = čas (s), který
+ * vezmou nepřátelé nové hry (`STATION_FOES.seconds`): o tolik celých kol před spěchem míň, kolik ho po zaokrouhlení
+ * odhad kola pokryje, pokud kolo 0 zůstane.
  */
-function stationRush(interact: CompiledInteract, own: number, extra: number, all: number): StationRush | null {
+function stationRush(interact: CompiledInteract, own: number, extra: number, all: number, foes = 0): StationRush | null {
   const after = interact.ready?.after ?? QUEST.ready.after;
   const hold = Math.floor(interact.hold / STATION_PACE.rush);
   const quick = Math.max(1, Math.floor(after / STATION_PACE.rush));
@@ -818,7 +845,8 @@ function stationRush(interact: CompiledInteract, own: number, extra: number, all
   while (drop < STATION_PACE.drop && (all - drop - rushRounds) * plain + rushRounds * rushed > today + plain / 2) drop += 1;
   const from = all - drop - rushRounds;
   if (from < 1) return null;
-  return { drop, limit: boilRounds({ hold, after: quick, window: interact.ready?.window ?? QUEST.ready.window }, all - drop).floor, interact: { round: from, hold, after: quick } };
+  const cut = Math.min(Math.round(foes / plain), from - 1);
+  return { drop: drop + cut, limit: boilRounds({ hold, after: quick, window: interact.ready?.window ?? QUEST.ready.window }, all - drop - cut).floor, interact: { round: from - cut, hold, after: quick } };
 }
 
 /**
@@ -829,7 +857,9 @@ function stationRush(interact: CompiledInteract, own: number, extra: number, all
  * Ve `genre.v4` (P47A T5) jsou poslední kola spěch (`stationRush`): kopie přijdou s jeho prvním kolem, úkoly se
  * střídají rychleji (`interact.rush`, držení a pečení na `STATION_PACE.rush`-tinu) a lhůta kol spěchu je dolní mez
  * křivky z kroku spěchu (`boilRounds` nad krokem spěchu), kratší než dnešní poslední – konec běhu zhoustne
- * (`climax` telemetrie).
+ * (`climax` telemetrie). Ve `genre.v5` (P51 T6) přijdou vrhači `STATION_FOES`: první jako jediný krok rozvrhu se
+ * začátkem druhého kola, druhý se spěchem jako spawn bosse (bez `boss_beat` – chování není `boss`, finále zůstává
+ * `round`), a robot úkolu uhýbá sám (`ownDodge`, `close`).
  */
 const stationPaced: GenrePacing = (parts, spec) => {
   const waves = ruleOf(parts, 'arena_waves')?.params as WaveParams | undefined;
@@ -837,7 +867,9 @@ const stationPaced: GenrePacing = (parts, spec) => {
   const stations = parts.level.bodies.filter((body) => body.role === 'target');
   const count = Math.min(STATION_PACE.extra, stations.length);
   const use = ruleOf(parts, 'interact')?.params as { readonly when: { readonly interact: CompiledInteract } } | undefined;
-  const rush = genreAtLeast(spec, FINALE_GENRE_VERSION) && use !== undefined ? stationRush(use.when.interact, stations.length, count, (waves?.waves.length ?? 0) + 1) : null;
+  // Nepřátelé jen s robotem úkolu, kterému jde říct, ať uhýbá sám (`close`); robot pod obalem by neuhnul vůbec.
+  const armed = genreAtLeast(spec, FINALE5_GENRE_VERSION) && parts.bot.params.interact !== undefined;
+  const rush = genreAtLeast(spec, FINALE_GENRE_VERSION) && use !== undefined ? stationRush(use.when.interact, stations.length, count, (waves?.waves.length ?? 0) + 1, armed ? STATION_FOES.seconds : 0) : null;
   const drop = rush?.drop ?? STATION_PACE.drop;
   const rounds = (waves?.waves.length ?? 0) + 1 - drop;
   if (waves === undefined || waves.until !== 'targets' || boil === undefined || stations.length === 0 || rounds < 3) return null;
@@ -853,11 +885,24 @@ const stationPaced: GenrePacing = (parts, spec) => {
   // Spěch: kola od `rush.interact.round` na dolní mezi křivky z kroku spěchu, ostatní kola jako dřív.
   const limits = rush === null ? curve : curve.map((limit, round) => (round < rush.interact.round ? limit : rush.limit));
   const shorter = (own: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> => ({ ...own, rounds, ...(rush === null ? {} : { rush: rush.interact }) });
+  const doubled = waveStart(rush?.interact.round ?? rounds - 1, rounds);
+  // Nepřátelé nové hry: první se začátkem druhého kola (rozvrh jen na tom postupu), druhý se spěchem jako jediný spawn mimo los.
+  const second = waveStart(1, rounds);
+  const foes: Partial<GenrePacingSetup> = !armed ? {} : {
+    behaviours: [{ body: STATION_FOES.first, behaviour: 'sniper' }],
+    budget: 1,
+    from: second,
+    until: second + 1,
+    boss: { body: STATION_FOES.rush, at: doubled, behaviour: 'sniper' },
+    foeSpots: STATION_FOES.spots,
+    ownDodge: true,
+  };
   return {
     ...still({ by: 'wave', need: rounds, limit: ARCADE_LIMITS.maxTicks }, 'round'),
     spots: [-reach, station.z, reach, station.z],
+    ...foes,
     // Kopie stanovišť přijdou se spěchem (bez něj s posledním kolem).
-    extra: { body: station, at: waveStart(rush?.interact.round ?? rounds - 1, rounds), count },
+    extra: { body: station, at: doubled, count },
     adjust: (own) => {
       const fewer = withRule(own, 'arena_waves', (params) => ({ ...params, waves: (params as WaveParams).waves.slice(drop) }));
       const timed = withRule(fewer, 'boil_over', (params) => ({ ...params, limits }));
@@ -866,7 +911,9 @@ const stationPaced: GenrePacing = (parts, spec) => {
         return { ...params, when: { ...when, interact: shorter(when.interact) } };
       });
       const interact = ruled.bot.params.interact as Readonly<Record<string, unknown>> | undefined;
-      return interact === undefined ? ruled : { ...ruled, bot: { ...ruled.bot, params: { ...ruled.bot.params, interact: shorter(interact) } } };
+      // Robot hry s nepřáteli uhýbá výstřelům sám, podél pultu (`quest-bot.ts`, `rowStep`); `pacing_bot` neuhýbá (`ownDodge`).
+      const close = armed ? { close: true } : {};
+      return interact === undefined ? ruled : { ...ruled, bot: { ...ruled.bot, params: { ...ruled.bot.params, interact: shorter(interact), ...close } } };
     },
   };
 };
@@ -1079,6 +1126,8 @@ export function pacingParts(parts: ArcadeParts, spec: GameSpecV1, seed: number, 
   const level = carried.length === 0 ? adjusted.level : { ...adjusted.level, bodies: adjusted.level.bodies.map((body, index) => (carried.includes(index) ? { ...body, template: true } : body)) };
   const built = withPacing({ ...adjusted, level }, {
     seed, goal: setup.goal, space: setup.space, spots: setup.spots,
+    ...(setup.foeSpots === undefined ? {} : { foeSpots: setup.foeSpots }),
+    ...(setup.ownDodge === true ? { ownDodge: true } : {}),
     behaviours: moving ? setup.behaviours : [], budget: moving ? setup.budget : 0,
     ...(moving && setup.pick !== undefined ? { pick: setup.pick } : {}),
     ...(setup.from === undefined ? {} : { from: setup.from }),
