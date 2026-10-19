@@ -330,12 +330,12 @@ const PLAY_GENRES: readonly PlayGenre[] = [
     play: [{ x0: -0.6, y0: 0, z0: RIVAL_Z - 0.6, x1: 0.6, y1: 1.8, z1: RIVAL_Z + 0.6 }],
   },
   {
-    // Přistání (`placeLander`): loď 50 m nad zemí, plocha 26 m do strany; koridor od lodi na plochu.
+    // Přistání (`placeLander`): loď 50 m nad zemí, plocha 26 m do strany; sloup nad plochou do trojnásobku výšky lodi.
     id: 'lander',
     place: (camera, look) => placeLander(camera, look, 0, 50, 0, LANDER_PAD, 3),
     area: [{ x0: -7.5, x1: 7.5, ...ALL_Z }],
     hero: { x: 0, y: 50, z: 0, r: 1, h: 3 },
-    play: [{ x0: -1, y0: 0, z0: -6, x1: 32, y1: 53, z1: 6 }],
+    play: [{ x0: 20, y0: 0, z0: -6, x1: 32, y1: 9.5, z1: 6 }],
   },
 ];
 

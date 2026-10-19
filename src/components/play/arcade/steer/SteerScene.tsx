@@ -608,11 +608,12 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard, namedPad }
   }, [layout, half]);
   const landmarkGround = useMemo(() => (x: number, z: number): number => islands.heightAt(x, z) ?? (sea ? WATER_LEVEL : 0), [islands, sea]);
   const landmarkBend = useMemo(() => (z: number) => ({ x: centerOf(layout.course, z) }), [layout]);
-  // Přistání (P54B T15a): koridor od lodi dolů na plochu – bod ani kus nestojí tam, kam loď sedá.
+  // Přistání (P54B T15a): sloup nad plochou, kam loď sedá (loď samu hlídá obdélník hrdiny). Celý koridor od lodi
+  // na plochu by byl obdélník přes celý záběr – kamera rámuje právě loď a plochu – a bod by nestál nikde.
   const landmarkPlay = useMemo((): readonly Volume[] => {
     const { pad, hero } = layout;
     if (pad === null) return [];
-    return [{ x0: Math.min(pad.x - pad.w / 2, hero.x - hero.w / 2), y0: pad.y, z0: Math.min(pad.z - pad.d / 2, hero.z - hero.d / 2), x1: Math.max(pad.x + pad.w / 2, hero.x + hero.w / 2), y1: hero.y + hero.h, z1: Math.max(pad.z + pad.d / 2, hero.z + hero.d / 2) }];
+    return [{ x0: pad.x - pad.w / 2, y0: pad.y, z0: pad.z - pad.d / 2, x1: pad.x + pad.w / 2, y1: pad.y + pad.h + 3 * hero.h, z1: pad.z + pad.d / 2 }];
   }, [layout]);
 
   return (

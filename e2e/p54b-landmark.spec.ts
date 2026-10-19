@@ -11,7 +11,10 @@ import type { LandmarkReport } from '../src/components/play/arcade/look/Landmark
  * skutečnými dveřmi `POST /api/play/games`, ukázka robota se odtiká ručními hodinami do
  * tiku 150 (jako `scripts/play-look-shots.mjs shots`) a sonda `__playLandmark` promítne
  * skupinu `userData.landmark` živou kamerou. Bod mimo záběr se nikde neprojeví chybou –
- * proto počet: v záběru aspoň 16 z 18 snímků. Hrdinu bod ani rámující kusy nezakryjí:
+ * proto počet: na desktopu v záběru aspoň 14 z 18 snímků. Mimo jsou aréna a agar (T8: robot do
+ * tiku 150 odejde od stěny, za kterou je vidět zem) a od T15a poletování a souboj: bod se v obraze
+ * nesmí potkat s hrou a boční záběr celý vyplní pás trubek, resp. oba rytíři uprostřed – bod pak
+ * nestojí vůbec, nebo jen napůl u kraje. Na telefonu se počet měří a zapisuje. Hrdinu bod ani rámující kusy nezakryjí:
  * z paprsků kamery, které trefí hrdinu, jich ≥ 90 % netrefí nic z T8 dřív (hrdina je vidět
  * aspoň z 90 % plochy jako před úlohou – T8 kameru nemění, přidává jen tyhle kusy).
  * Kusy nevrhají stín, takže jejich viditelné sítě jsou všechna kreslicí volání navíc: ≤ 3.
@@ -27,7 +30,7 @@ interface Sentence {
 
 const GENRES: readonly Sentence[] = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p46g/genres.json'), 'utf8')) as { sentences: Sentence[] }).sentences;
 const TICKS = 150;
-const LEAST_IN_VIEW = 16;
+const LEAST_IN_VIEW = 14;
 const HERO_VISIBLE = 0.9;
 const MOST_CALLS = 3;
 
