@@ -59,7 +59,8 @@ const ROAMING: readonly AddonId[] = ['shoot', 'collect', 'lives'];
  * - walker: všech 5 jen v bludišti (P52 T5 úder, T6 dash, štít a střelba – nepřátelé na cestě ke východu,
  *   `walkerFoeCells`; střela letí směrem chůze), v plížení jen krádež (strážný nebo věc, `generatorTakes`);
  *   v útěku bludištěm robot pronásledovatele do dosahu nepustí (dash, štít VERB_UNPROVED 4/4).
- * - move_free: střelba zůstává doplňkem `+shoot` (akce střelby v aréně sloveso nedokáže); dash a štít
+ * - move_free: střelba jen v chytání (P52 T7b, včely na cestě ke kořisti, kterou střela nesebere), jinde zůstává
+ *   doplňkem `+shoot` (akce střelby tam sloveso nedokáže, `generatorTakes`); dash a štít
  *   v útěku, kde pronásledovatel chytá (`arena_eat` s `grace`), a v souboji (`fight`, P47B T6), kde
  *   berou úder soupeře – souboj jen je (`FIGHT_ABILITIES`): úder má vlastní Attack a krást není co.
  *   Quest (`quest_spatial`, P52 T5) jen úder: robot s ním dojde k pronásledovateli. Sběr se dvěma akcemi
@@ -105,7 +106,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
     labels: [],
     mechanics: LIVES_AND_TIMER,
     addons: ['shoot', 'chaser', 'lives'],
-    abilities: ['strike', 'dash', 'shield', 'grab'],
+    abilities: ALL_ABILITIES,
   }),
   // P39 T14: terč střelnice nese věc z věty (mince, duch) a kreslí se jejím modelem.
   shooter: arcade({ setting: true, counts: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy', 'target'], mechanics: LIVES_AND_TIMER, abilities: ['grab', 'shield'] }),

@@ -187,12 +187,13 @@ const ARENA_PRESS = 3;
 
 /**
  * Robot arény před pronásledovateli utíká, takže by úder, dash ani štít nikdy nepoužil.
- * S připravenou akcí jde k nejbližšímu tělu rolí `roles` v dosahu `ARENA_SEEK`; jinak `undefined`.
+ * S připravenou akcí jde k nejbližšímu tělu rolí `roles` v dosahu `ARENA_SEEK` mimo `spare`; jinak `undefined`.
  */
-function seekAxis(state: Int32Array, player: number, roles: readonly number[]): number | undefined {
+function seekAxis(state: Int32Array, player: number, roles: readonly number[], spare?: number): number | undefined {
   const p = bodyBase(player);
   let best: { dx: number; dz: number; d: number } | undefined;
   for (const body of bodiesOf(state, player, roles)) {
+    if (body === spare) continue;
     const dx = (state[bodyBase(body) + BODY.x] as number) - (state[p + BODY.x] as number);
     const dz = (state[bodyBase(body) + BODY.z] as number) - (state[p + BODY.z] as number);
     const d = Math.max(Math.abs(dx), Math.abs(dz));
@@ -383,7 +384,11 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
     if (slot.id === 'shoot') {
       // Robot `+shoot` mačká FIRE; tady stejné rozhodnutí na tlačítko akce.
       const seen = { ...observation, recent: recent.map((r) => ((r.buttons & slot.button) !== 0 ? { ...r, buttons: r.buttons | BUTTON.FIRE } : r)) };
-      if ((shootStep(seen, { buttons: 0, axis: input.axis }, base, owned).buttons & BUTTON.FIRE) !== 0) buttons |= slot.button;
+      // Kořist chytání (P52 T7b) střela nesebere: na ni ne.
+      const aimed = params.spare === undefined ? owned : (body: number): boolean => body !== params.spare && owned(body);
+      if ((shootStep(seen, { buttons: 0, axis: input.axis }, base, aimed).buttons & BUTTON.FIRE) !== 0) buttons |= slot.button;
+      // Chytání: robot arény by včelu obešel jako větší buňku a kořist utíká rychleji než on – jde ke včele a sestřelí ji.
+      if (base.id === 'arena_bot' && params.spare !== undefined) seek.push(...ENEMY);
       continue;
     }
     if (slot.id === 'strike' || slot.id === 'grab') {
@@ -407,7 +412,7 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
     if (threat !== null && (slot.ready || slot.activeUntil >= threat.at)) hold = threat.body;
     if (slot.ready || slot.activeUntil >= n) guarding = true;
   }
-  const toward = seek.length === 0 ? undefined : seekAxis(state, player, seek);
+  const toward = seek.length === 0 ? undefined : seekAxis(state, player, seek, params.spare);
   if (toward !== undefined) return { buttons, axis: toward };
   if (hold < 0 && guarding && base.id === 'runner_bot' && parts.length > 0) {
     const lane = partLane(state, player, recent, parts);

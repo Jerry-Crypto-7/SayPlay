@@ -40,9 +40,9 @@ const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
  * Generátory režimu, kde robot akce použije a ověření je dokáže (P46A T10, matice T9 a živé
  * věty); souboj (`fight`) od P47B T6 jen s akcemi `FIGHT_ABILITIES`, let (`glide_course`, matice P47B T9) všechny,
  * quest (`quest_spatial`, P52 T5) jen úder, plížení bludištěm (`walker_stealth`, P52 T6) jen krádež, míč (`ball_pitch`,
- * P52 T7) jen štít. Ostatní generátory nikdo neměřil.
+ * P52 T7) jen štít, chytání (`arena_catch`, P52 T7b) jen střelbu. Ostatní generátory nikdo neměřil.
  */
-export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth', 'walker_stealth', 'fight', 'glide_course', 'quest_spatial', 'ball_pitch']);
+export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'arena_catch', 'walker_labyrinth', 'walker_stealth', 'fight', 'glide_course', 'quest_spatial', 'ball_pitch']);
 
 /** Souboj má vlastní úder (Attack) a nic ke krádeži: bere jen dash a štít proti úderu soupeře (P47B T6). */
 export const FIGHT_ABILITIES: readonly AbilityId[] = ['dash', 'shield'];
@@ -56,8 +56,17 @@ const QUEST_ABILITIES: readonly AbilityId[] = ['strike'];
  */
 const STEALTH_ABILITIES: readonly AbilityId[] = ['grab'];
 
+/**
+ * Útěk a sběr v aréně: všechno kromě střelby. Střela tam nemá na co (`enemiesFor('move_free')` je prázdné); bere ji jen
+ * chytání (P52 T7b), kde stojí včely na cestě ke kořisti.
+ */
+const ARENA_ABILITIES: readonly AbilityId[] = ['strike', 'dash', 'shield', 'grab'];
+
 /** Akce, které generátor bere jen některé; generátor mimo seznam bere všechny, které bere jeho ovládání. */
-const GENERATOR_ONLY: Readonly<Record<string, readonly AbilityId[]>> = { fight: FIGHT_ABILITIES, quest_spatial: QUEST_ABILITIES, walker_stealth: STEALTH_ABILITIES, ball_pitch: ['shield'] };
+const GENERATOR_ONLY: Readonly<Record<string, readonly AbilityId[]>> = {
+  fight: FIGHT_ABILITIES, quest_spatial: QUEST_ABILITIES, walker_stealth: STEALTH_ABILITIES, ball_pitch: ['shield'],
+  arena_escape: ARENA_ABILITIES, arena_collect: ARENA_ABILITIES, arena_catch: ['shoot'],
+};
 
 /** Bere hra generátoru `generator` (bez generátoru staví trať ovládání) akci `id`? Čte i měřidlo P47B. */
 export const generatorTakes = (generator: string | undefined, id: AbilityId): boolean =>

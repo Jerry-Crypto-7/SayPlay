@@ -18,7 +18,7 @@ import { type MarchEntry, shooterOpenUntil } from '../pieces/shooter';
 import { grabRule } from './grab';
 import { dashRule, fightGuardRule, shieldRule } from './guard';
 import { HARMFUL_PARTS, HARMFUL_ROLES, abilityIdsOf } from './state';
-import { shootAbility } from './shoot';
+import { catchPreyOf, shootAbility } from './shoot';
 import { AROUND_CONTROLS, strikeRule } from './strike';
 
 export interface AbilityContext extends AddonContext {
@@ -297,5 +297,7 @@ export function applyAbilities(parts: ArcadeParts, context: AddonContext): Arcad
   for (const id of APPLY_ORDER) if (ids.includes(id)) next = ABILITY_PIECES[id].apply(next, { ...context, keeper, slot: ids.indexOf(id) });
   // Robot akcí (T6) zná role, před kterými dash a štít chrání – stejné jako jejich pravidla.
   const harm = [...new Set(next.rules.flatMap((rule) => (rule.id === dashRule.id || rule.id === shieldRule.id ? (rule.params.roles as (typeof HARMFUL_ROLES)[number][]) : [])))];
-  return { ...next, control: wrapControl(next, { abilities: { keeper, ids: [...ids] } }), bot: wrapBot(next, { keeper, ids: [...ids], harm }) };
+  // Kořist chytání (P52 T7b) střela nesebere: robot na ni nestřílí.
+  const prey = ids.includes('shoot') ? catchPreyOf(next) : undefined;
+  return { ...next, control: wrapControl(next, { abilities: { keeper, ids: [...ids] } }), bot: wrapBot(next, { keeper, ids: [...ids], harm, ...(prey === undefined ? {} : { spare: prey }) }) };
 }

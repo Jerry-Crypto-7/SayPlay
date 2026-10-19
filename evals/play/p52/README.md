@@ -71,9 +71,18 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - **Gauge po T7** (proti T6): P52 dev 0,65 / 0,79 / 0,79 → **0,82 / 0,85 / 0,85** (d07, d08, d19–d22 nově 1 / 1 / 1), P47B dev 0,88 / 0,92 / 0,90 → **0,92 / 0,92 / 0,90** (v53, v55 nově 1 / 1 / 1), P46A a finále P51 (0,97) beze změny, past 0. p95 návrhu P52 dev 1,5 s, P47B dev 2,2 s, P46A 2,5 s – měřeno při zátěži stroje 72 % CPU (medián P46A 0,84 → 1,15 s bez jediné změněné věty); přeměřit v klidu v T10.
 - **Předchozí pád:** `p46-fixtures.test.ts` o01 („A rabbit steals carrots…“) chce `adds: ['boss']`, dostane i `action` – padá i na kódu před T7, tedy z dřívější úlohy; patří do regresní vlny T10.
 
+## T7b – střelba v chytání
+
+- Kořist chytání je role nepřítele: střela ji zabila a robot prohrál 4/4. Teď ji střela nesebere (`shot_hit` `spare`) a robot na ni nestřílí; cílem jsou dvě včely na přímce start → kořist (`CATCH_BEES`: první 6 m od startu, nejvýš 35 % cesty, druhá v 65 %). Dotyk včely vrátí hrdinu na start. Kořist utíká rychleji než hrdina a cestu stočí jinam, proto robot s připravenou střelou jde ke včele v dosahu 8 m a sestřelí ji (bez toho semínko 16 nedokázalo sloveso).
+- Střelu jako akci bere z volného pohybu jen chytání (`GENERATOR_ONLY`); útěk a sběr dál úder, dash, štít a krádež, souboj a quest beze změny.
+- **Gauge po T7b** (proti T7): P52 dev 0,82 / 0,85 / 0,85 → **0,85 / 0,88 / 0,88** (d10 nově 1 / 1 / 1), P47B dev, P46A a finále P51 beze změny, past 0. p95 návrhu P52 dev 1,4 s, P47B dev 1,7 s, P46A 2,3 s (stroj dál vytížený, přeměřit v T10).
+- **Vyváženost** d10 na semínkách 1–20: novice 9/20 (bez akce 8/20), intermediate 19/20 (20/20); ověření 20/20, intermediate sestřelí včelu do 60. tiku, novice do 73.
+- **Zbývá:** d09 („catches falling snowflakes … shoots tiny snowballs at the crows“) jde do jiného žánru než volný pohyb a akci nemá – mimo T7b. Včely se kreslí modelem kořisti (hra nemá roli `enemy` s popiskem z věty) – nález T7b-R1.
+
 ## Rozhodnutí
 
 - T1: větev P51 na origin není (`git ls-remote` bez ní); sloučena lokální `features/P51-…`, která `origin/main` už obsahuje – fast-forward bez merge commitu.
 - T5: quest s úderem drží bránu P41 (novice 0,3–0,7, intermediate ≥ 0,8), ne „vyhraje stejně jako bez úderu“ – quest bez úderu je v pásmu sám, takže platí brána; srovnání s hrou bez akce zůstává jen u bludiště, které je lehké už bez úderu (novice 10/10).
 - T6: plížení bere jen krádež – jiné akce v něm nikdo neměřil a věty sady chtějí jen ji. Brána vyváženosti chodce je „vyhraje stejně jako bez akce“: buňky chodce jsou mimo pásmo P41 už bez akcí (novice 20/20).
 - T7: míč bere jen štít, střílečka krádež a štít; střelba je u střílečky vlastní mechanika, akci nedostane. Přílety k hrdinovi (střela soupeře, kořist) jen do tiku, kdy hra jistě běží – hra, která skončí dřív, akci nedostane (kompozice ji zahodí), místo aby slibovala sloveso, které nejde použít. Brána vyváženosti „vyhraje stejně jako bez akce“ (±0,1 na semínkách 1–10, d07, d08, d19, d21), jako u chodce. Střelba ve volném pohybu (`arena_catch`) oddělena do T7b – kořist je tam nepřítel a střela by ji zabila, potřebuje vlastní návrh.
+- T7b: cílem střelby v chytání jsou včely, které hrdinu vrátí na start (ne jen body navíc) – bez toho by sloveso nic neměnilo. Brána vyváženosti „vyhraje stejně jako bez akce“ na semínkách 1–20 (na 1–10 vychází rozdíl novice přesně 0,1, na hraně); chytání bez akce zůstává bajt po bajtu (otisky semínek 1–3 v testu).

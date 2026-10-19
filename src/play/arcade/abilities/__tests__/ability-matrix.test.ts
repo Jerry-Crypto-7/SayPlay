@@ -7,6 +7,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { CAPABILITIES } from '@/play/capabilities';
+import { draftGameSpecWithMeta } from '@/play/draft';
 import { type GenreSpec } from '@/play/genre/contract';
 import { compileGenre } from '@/play/genre/index';
 import { type AbilityId, type ControlId, readGameSpec } from '../../../spec';
@@ -42,10 +43,17 @@ const FIXTURES: Partial<Record<ControlId, object>> = {
   shooter,
 };
 
+/** Dvojice, kterou bere jen jiný generátor než fixtura ovládání: střelba volného pohybu jen v chytání (P52 T7b). */
+const CELL_FIXTURES: Readonly<Record<string, object>> = {
+  'move_free+shoot': draftGameSpecWithMeta('A puppy catches soap bubbles in the backyard and spits water at the bees.', 1).spec,
+};
+
+const fixtureOf = (control: ControlId, ability: AbilityId): object => CELL_FIXTURES[`${control}+${ability}`] ?? (FIXTURES[control] as object);
+
 const CELLS = (Object.keys(CAPABILITIES) as ControlId[]).flatMap((control) => CAPABILITIES[control].abilities.map((ability) => [control, ability] as const));
 
 beforeAll(async () => {
-  for (const fixture of Object.values(FIXTURES)) {
+  for (const fixture of [...Object.values(FIXTURES), ...Object.values(CELL_FIXTURES)]) {
     const read = readGameSpec(fixture);
     if (read.ok) await preloadPhysics(read.value, loadRapier);
   }
@@ -90,7 +98,7 @@ describe('P46A ability matrix', () => {
 /** Robot intermediate akci zmáčkne a ověření dokáže sloveso na 4 semínkách; `extra` přepíše položky hry ovládání. */
 function expectProved(control: ControlId, ability: AbilityId, extra: object = {}): void {
   for (const seed of SEEDS) {
-    const read = readGameSpec({ ...(FIXTURES[control] as object), ...extra, abilities: [ability] });
+    const read = readGameSpec({ ...fixtureOf(control, ability), ...extra, abilities: [ability] });
     if (!read.ok) throw new Error(`${control}: ${read.issues.join('; ')}`);
     const made = arcadeWorldOf(read.value, seed);
     if (!made.ok) throw new Error(`${control} seed ${seed}: ${made.issues.join('; ')}`);
