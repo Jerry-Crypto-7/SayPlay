@@ -2886,6 +2886,89 @@ button.play-feed-card {
   background: var(--sp-surface);
 }
 
+/* Akce karty (T10): sloupec na okraji mezi počtem a „Next“, jen v náhledu robota –
+ * při hraní by překážel ovládání a výsledek nese tytéž akce v listu `PostRun`. */
+.play-reel-actions {
+  --_row: var(--sp-size-hud-pill);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-space-3);
+}
+
+.play-pager-slide:has([data-testid='play-demo']) .play-reel-actions,
+.play-pager-slide:has([data-testid='play-demo']) > .play-reel-lineage {
+  display: flex;
+}
+
+.play-reel-action {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-space-1);
+  width: 56px;
+  text-align: center;
+}
+
+.play-reel-action .sp-hud-btn {
+  color: var(--sp-text);
+  cursor: pointer;
+}
+
+.play-reel-action-caption,
+.play-reel-action-count {
+  padding: 0 var(--sp-space-1);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  font-size: var(--sp-text-caption-size);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.play-reel-action-count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hláška sdílení vlevo od sloupce, jako nad dolní řadou HUD. */
+.play-reel-action .play-status:not(:empty) {
+  position: absolute;
+  top: 0;
+  right: calc(100% + var(--sp-space-2));
+  width: max-content;
+  max-width: 240px;
+  padding: var(--sp-space-2) var(--sp-space-3);
+  border-radius: var(--sp-radius-md);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  font-size: var(--sp-text-label-size);
+  text-align: left;
+  box-shadow: var(--sp-shadow-sm);
+}
+
+.play-reel-action .play-status:empty {
+  position: absolute;
+}
+
+.play-reel-lineage {
+  position: absolute;
+  left: var(--sp-space-3);
+  right: 56px;
+  bottom: var(--sp-space-2);
+  z-index: 2;
+  display: none;
+  justify-content: center;
+}
+
+.play-reel-lineage .play-lineage {
+  margin: 0;
+  padding: 0 var(--sp-space-2);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+}
+
 @media (max-width: 1023px) {
   .play-reel {
     height: calc(100dvh - var(--sp-size-tabbar) - var(--sp-space-4) - env(safe-area-inset-bottom, 0px));

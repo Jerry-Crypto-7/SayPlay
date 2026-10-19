@@ -36,6 +36,7 @@ import type { FeedPreview } from '@/play/version/version';
 import { loopEvent } from '../loop-client';
 import { FeedNext } from './feed-next';
 import { countCanvases, feedMode, previewFor } from './preview';
+import { ReelActions } from './ReelActions';
 import { type GameDetail, ReelCard } from './ReelCard';
 import { cardImage, createSnapshotCache } from './snapshot-cache';
 import { StageHost } from './StageHost';
@@ -257,6 +258,26 @@ export function ReelFeed() {
   );
   const pick = useCallback((versionId: string) => go(games.findIndex((game) => game.versionId === versionId)), [games, go]);
 
+  // Remix z karty (T10): řádek hned za rodičem, feed na něj skočí, jakmile je v seznamu –
+  // aktivní karta se odvozuje z `?g=`, takže dřív by skok neměl kam. Titul a cíl karty přijdou z detailu.
+  const [arrived, setArrived] = useState<string | null>(null);
+  const remixed = useCallback((parent: FeedGame, versionId: string) => {
+    setFeed((prev) => {
+      if (prev.kind !== 'ready') return prev;
+      const rows = prev.games.filter((game) => game.versionId !== versionId);
+      rows.splice(rows.findIndex((game) => game.versionId === parent.versionId) + 1, 0, { versionId, title: parent.title, archetype: parent.archetype, remixes: 0 });
+      return { ...prev, games: rows };
+    });
+    setArrived(versionId);
+  }, []);
+  useEffect(() => {
+    if (arrived === null) return;
+    const at = games.findIndex((game) => game.versionId === arrived);
+    if (at === -1) return;
+    setArrived(null);
+    go(at);
+  }, [arrived, games, go]);
+
   // Dosednutí po tahu nebo kolečku: aktivní je karta, na které feed stojí; adresa se jen přepíše.
   const settle = useCallback(() => {
     const element = reel.current;
@@ -387,9 +408,10 @@ export function ReelFeed() {
 
   const swipeFrom = useRef<number | null>(null);
   const onRailDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    // Zachycení by klepnutí na tlačítko přesměrovalo na okraj a klik by se ztratil.
-    if (event.target instanceof Element && event.target.closest('button') !== null) return;
     swipeFrom.current = event.clientY;
+    // Tah smí začít i na tlačítku (sloupec akcí T10 leží na okraji), jen bez zachycení –
+    // to by klepnutí na tlačítko přesměrovalo na okraj a klik by se ztratil.
+    if (event.target instanceof Element && event.target.closest('button') !== null) return;
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const onRailUp = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -432,13 +454,21 @@ export function ReelFeed() {
   const known = new Map<string, KnownGame>();
   for (const [versionId, entry] of details) if (entry !== 'error') known.set(versionId, { goal: entry.spec.tutorial.goalLine, mood: entry.spec.theme.mood });
   const rail = (
-    <div className="play-pager-rail" data-testid="feed-rail" onPointerDown={onRailDown} onPointerUp={onRailUp} onPointerCancel={() => (swipeFrom.current = null)}>
+    // Zachytávací fáze: kolo sdílení na okraji stisk dál nepustí (`ShareButton`), tah přes něj ale platí.
+    <div className="play-pager-rail" data-testid="feed-rail" onPointerDownCapture={onRailDown} onPointerUpCapture={onRailUp} onPointerCancelCapture={() => (swipeFrom.current = null)}>
       <button type="button" className="play-pager-step" data-testid="feed-prev" onClick={() => go(index - 1)} disabled={index === 0} aria-label="Previous game">
         ↑
       </button>
       <span className="play-pager-count" aria-live="polite">
         {index + 1}/{games.length}
       </span>
+      <ReelActions
+        key={current.versionId}
+        versionId={current.versionId}
+        title={current.title}
+        remixes={currentDetail !== undefined && currentDetail !== 'error' ? currentDetail.children.length : current.remixes}
+        onRemixed={(versionId) => remixed(current, versionId)}
+      />
       <button type="button" className="play-pager-step" data-testid="feed-next" onClick={() => go(index + 1)} disabled={index >= games.length - 1} aria-label="Next game">
         ↓
       </button>

@@ -1,0 +1,100 @@
+'use client';
+
+/**
+ * Akce karty feedu (P54A T10): sloupec na okraji aktivní karty – Remix, Dare,
+ * Share a počet remixů. Je vidět jen v náhledu robota (`play.css`): při hraní
+ * by překážel ovládání a výsledek nese tytéž akce v listu `PostRun`.
+ *
+ * - **Remix** otevře list s `RemixBox`. Práce běží bez přesměrování
+ *   (`useRemixJob(…, false)`); hotový remix feed vloží hned za tuto kartu a
+ *   přejde na něj (`onRemixed`).
+ * - **Dare** před vlastním během = „Play to dare“: ťuk na scénu jako hráčův
+ *   (stisk a puštění na místě – feed ho přehraje hře, `ReelFeed` T9), hra se
+ *   převezme a po výhře nabídne výzvu `PostRun`.
+ * - **Share** je kolo sdílení z HUD (`ShareButton variant="hud"`).
+ */
+
+import { useEffect, useRef, useState } from 'react';
+
+import { RemixBox, useRemixJob } from '../RemixBox';
+import { ShareButton } from '../ShareButton';
+import { CHANGE_ONE_THING } from '../starters';
+import { Icon, Sheet } from '../ui';
+
+/** Id ukazatele simulovaného ťuku; skutečný ukazatel je v tu chvíli puštěný (klik přišel po `pointerup`). */
+const DARE_POINTER = 1;
+
+/** Ťuk na střed scény aktivní karty – cestou skutečného ťuku, aby hru převzal feed sám. */
+function tapStage(from: Element): void {
+  const stage = from.closest('[data-testid="feed-current"]')?.querySelector('[data-testid="arcade-stage"]');
+  if (stage === null || stage === undefined) return;
+  const box = stage.getBoundingClientRect();
+  const at = { bubbles: true, cancelable: true, clientX: box.left + box.width / 2, clientY: box.top + box.height / 2, pointerId: DARE_POINTER, pointerType: 'mouse', isPrimary: true };
+  stage.dispatchEvent(new PointerEvent('pointerdown', at));
+  stage.dispatchEvent(new PointerEvent('pointerup', at));
+}
+
+export function ReelActions({
+  versionId,
+  title,
+  remixes,
+  onRemixed,
+}: {
+  readonly versionId: string;
+  readonly title: string;
+  readonly remixes: number;
+  /** Hotový remix této hry (id nové verze). */
+  readonly onRemixed: (versionId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const job = useRemixJob(versionId, false);
+  const ready = job.view.kind === 'ready' ? job.view.versionId : null;
+  // Feed posílá novou funkci při každém vykreslení; hotový remix se ohlásí jednou.
+  const latest = useRef(onRemixed);
+  useEffect(() => {
+    latest.current = onRemixed;
+  });
+  useEffect(() => {
+    if (ready === null) return;
+    setOpen(false);
+    latest.current(ready);
+  }, [ready]);
+
+  return (
+    <div className="play-reel-actions" data-testid="feed-actions">
+      <div className="play-reel-action">
+        <button type="button" className="sp-hud-btn play-hud-round" data-testid="feed-remix" aria-label="Remix this game" aria-haspopup="dialog" onClick={() => setOpen(true)}>
+          <Icon name="wand" />
+        </button>
+        <span className="play-reel-action-caption">Remix</span>
+        {remixes > 0 && (
+          <span className="play-reel-action-count" data-testid="feed-remix-count">
+            {remixes}
+          </span>
+        )}
+      </div>
+      <div className="play-reel-action">
+        <button
+          type="button"
+          className="sp-hud-btn play-hud-round"
+          data-testid="feed-dare"
+          aria-label="Play to dare a friend"
+          onClick={(event) => {
+            event.currentTarget.blur();
+            tapStage(event.currentTarget);
+          }}
+        >
+          <Icon name="trophy" />
+        </button>
+        <span className="play-reel-action-caption">Play to dare</span>
+      </div>
+      <div className="play-reel-action">
+        <ShareButton versionId={versionId} title={title} variant="hud" />
+        <span className="play-reel-action-caption">Share</span>
+      </div>
+      <Sheet open={open} title={CHANGE_ONE_THING} onClose={() => setOpen(false)}>
+        <RemixBox job={job} />
+      </Sheet>
+    </div>
+  );
+}

@@ -55,6 +55,16 @@ async function publish(request: APIRequestContext): Promise<Row[]> {
 
 const probe = (page: Page): Promise<FeedProbe> => page.evaluate(() => window.__playFeed!());
 
+/** Výhra „rukou“ jako v `p36-dare.spec.ts`: lidský běh, jen takový posílá výzvu. */
+async function winByHand(page: Page): Promise<void> {
+  const end = await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    return (window.__playShell as unknown as { handPlay: (until: 'end') => { runState: string } }).handPlay('end');
+  });
+  expect(end.runState).toBe('won');
+}
+
 /**
  * Aktivní karta dosedla v okně feedu. Klik Playwrightu posouvá tlačítko do
  * pohledu i uvnitř feedu – na kartě, která ještě jede, by posunul feed o kartu dál.
@@ -219,6 +229,75 @@ test.describe('/play – bot preview in the feed', () => {
       expect(await scrollTop()).toBe(top);
       expect(new URL(page.url()).searchParams.get('g')).toBe(rows[3].versionId);
       expect(['play', 'result']).toContain((await probe(page)).mode);
+    });
+  });
+
+  test('desktop: Remix on the card sends the sentence and the new game comes right after it (T10)', async ({ page, request }) => {
+    test.setTimeout(90_000);
+    // Hotový remix je skutečná publikovaná hra; dveře remixu odpoví jako u čipu (201 s odkazem).
+    const base = JSON.parse(readFileSync(join(process.cwd(), 'src/play/arcade/__fixtures__/runner.json'), 'utf8')) as Record<string, unknown>;
+    const made = await request.post('/api/play/games', { data: { spec: { ...base, title: 'Reels runner through the canyon, harder' } } });
+    expect(made.status(), await made.text()).toBeLessThan(300);
+    const remix = ((await made.json()) as { versionId: string }).versionId;
+    const sent: string[] = [];
+    await page.route(`**/api/play/games/${rows[0].versionId}/remix`, (route) => {
+      if (route.request().method() !== 'POST') return route.continue();
+      sent.push((route.request().postDataJSON() as { sentence: string }).sentence);
+      return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ url: `/play/${remix}` }) });
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/play?g=${rows[0].versionId}`);
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    await expectPreview(page, rows[0]);
+
+    await expect(page.getByTestId('feed-actions')).toBeVisible();
+    await page.getByTestId('feed-remix').click();
+    const sheet = page.getByRole('dialog');
+    await expect(sheet).toBeVisible();
+    await sheet.getByTestId('remix-input').fill('Make it harder');
+    await sheet.getByTestId('remix-submit').click();
+
+    await expectPreview(page, { ...rows[0], versionId: remix });
+    expect(sent).toEqual(['Make it harder']);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.locator('[data-testid="feed-card"][data-active="true"]')).toHaveAttribute('data-index', '1');
+    await expect(page.locator(`[data-testid="feed-card"][data-version-id="${rows[1].versionId}"]`)).toHaveAttribute('data-index', '2');
+    expect(new URL(page.url()).searchParams.get('g')).toBe(remix);
+    // Přechod na remix je skok: zpět v prohlížeči vrátí původní hru.
+    await page.goBack();
+    await expectPreview(page, rows[0]);
+  });
+
+  test.describe('dare', () => {
+    // Vlastní volající: strop výzev je 1 za 10 s a `p36-dare.spec.ts` jde nad týmž serverem.
+    test.use({ extraHTTPHeaders: { 'x-forwarded-for': '198.51.100.54' } });
+
+    test('desktop: Play to dare hands the game over and a win shares a ?dare= link (T10)', async ({ page }) => {
+      test.setTimeout(90_000);
+      await page.addInitScript(() => {
+        const shared: ShareData[] = [];
+        Object.assign(window, { __shared: shared });
+        Object.defineProperty(navigator, 'share', { configurable: true, value: async (data: ShareData) => void shared.push(data) });
+      });
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`/play?g=${rows[0].versionId}`);
+      await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+      await expectPreview(page, rows[0]);
+
+      await page.getByTestId('feed-dare').click();
+      await expect.poll(async () => (await probe(page)).mode).toBe('play');
+      // Akce karty patří náhledu; při hraní překáží ovládání, výsledek má vlastní.
+      await expect(page.getByTestId('feed-actions')).toBeHidden();
+
+      const posted = page.waitForResponse((response) => response.url().endsWith(`/api/play/games/${rows[0].versionId}/dare`) && response.request().method() === 'POST');
+      await winByHand(page);
+      const dare = (await (await posted).json()) as { dareId: string };
+      const postrun = page.getByTestId('play-postrun');
+      await expect(postrun).toBeVisible();
+      await postrun.getByTestId('play-share').click();
+      await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared.length)).toBe(1);
+      const shared = await page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared[0]!);
+      expect(shared.url).toMatch(new RegExp(`/play/${rows[0].versionId}\\?via=share&dare=${dare.dareId}$`));
     });
   });
 

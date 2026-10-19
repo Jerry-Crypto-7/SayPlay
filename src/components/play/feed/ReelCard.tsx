@@ -22,6 +22,7 @@ import type { FeedPreview } from '@/play/version/version';
 import { ArcadePlay } from '../arcade/ArcadePlay';
 import { WithPlayEnv } from '../arcade/look/play-env';
 import { beatText, type FeedGame, moodTone } from '../Feed';
+import { Lineage } from '../Lineage';
 import { Icon } from '../ui';
 import { feedMode } from './preview';
 import { cardImage } from './snapshot-cache';
@@ -158,6 +159,12 @@ function ActiveSlide({
         />
       </WithPlayEnv>
       {preview !== null && <TapHint goal={detail.spec.tutorial.goalLine} beat={game.beat ?? null} />}
+      {/* Rodokmen remixu nebo AI verze pod náhledem (T10); počet remixů nese sloupec akcí. */}
+      {detail.lineage.length >= 2 && (
+        <div className="play-reel-lineage">
+          <Lineage lineage={detail.lineage} remixes={0} aiVersion={detail.relation === 'upgrade'} />
+        </div>
+      )}
     </>
   );
 }
