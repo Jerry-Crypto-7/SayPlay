@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import { expect, test, type APIRequestContext, type Browser, type BrowserContextOptions, type Page } from '@playwright/test';
 
+import { browserRenderer } from '../scripts/browser-renderer';
 import { startGame } from './play-start';
 
 /**
@@ -25,7 +26,8 @@ import { startGame } from './play-start';
  * Test nic netvrdí, jen zapisuje čísla; spadne jen na chybě stránky.
  */
 
-test.use({ launchOptions: { args: ['--js-flags=--expose-gc', '--enable-precise-memory-info'] } });
+// Vlastní `launchOptions` přepíše ty z konfigurace – bez `browserRenderer()` by plátno kreslil SwiftShader (~3 FPS).
+test.use({ launchOptions: { args: [...browserRenderer().args, '--js-flags=--expose-gc', '--enable-precise-memory-info'] } });
 
 const FIXTURES = [
   ['runner.json', 'Feed runner through the canyon'],
