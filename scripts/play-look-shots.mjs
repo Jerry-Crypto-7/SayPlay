@@ -121,7 +121,8 @@ async function shots(options) {
   try {
     for (const sentence of chosen(options)) {
       const game = await publish(base, sentence.text);
-      await page.goto(`${base}/play/${game.versionId}`);
+      // Meze 120 s: SwiftShader kreslí na CPU a pod souběžnými běhy (CPU 100 %, 19. 10.) výchozích 30 s nestačí.
+      await page.goto(`${base}/play/${game.versionId}`, { timeout: 120_000 });
       await page.locator('canvas').first().waitFor({ timeout: 60_000 });
       await settle(page);
       const state = await demoTo(page, ticks);
@@ -130,7 +131,7 @@ async function shots(options) {
       // Kamera dojede k hrdinovi, který stojí: hodiny jsou ruční a nikdo netiká.
       await sleep(1500);
       await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
-      await page.screenshot({ path: join(out, `${sentence.id}.png`) });
+      await page.screenshot({ path: join(out, `${sentence.id}.png`), timeout: 120_000 });
       // Ovládání, které plocha opravdu kreslí: souboj má ve specu `move_free`, ve hře `fight`.
       const stage = await page.getByTestId('arcade-stage').getAttribute('data-control').catch(() => null);
       const row = { id: sentence.id, text: sentence.text, want: sentence.genre, ...game, stage, tick: state?.tick ?? null, runState: state?.runState ?? null, meshes: render.meshes, calls: render.calls };
