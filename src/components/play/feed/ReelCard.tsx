@@ -11,7 +11,7 @@
  */
 
 import Link from 'next/link';
-import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
@@ -191,7 +191,6 @@ export function ReelCard({
   active,
   detail,
   live,
-  rail,
   host,
   preview,
   shot,
@@ -202,8 +201,6 @@ export function ReelCard({
   readonly detail: GameDetail | 'error' | undefined;
   /** Feed je vidět – jen tehdy aktivní hra běží. */
   readonly live: boolean;
-  /** Listovací okraj; nese ho jen aktivní karta. */
-  readonly rail: ReactNode;
   /** Trvalé plátno feedu – aktivní karta do něj kreslí svou scénu. */
   readonly host: StageTunnel;
   readonly preview: FeedPreview | null | undefined;
@@ -218,7 +215,6 @@ export function ReelCard({
       {active ? (
         <div ref={slide} className="play-pager-slide" data-testid="feed-current" data-version-id={game.versionId}>
           <ActiveSlide game={game} detail={detail} live={live} host={host} preview={preview} round={round} />
-          {rail}
         </div>
       ) : (
         <div className="play-poster play-reel-poster" data-tone={moodTone(spec?.theme.mood ?? '')} aria-hidden="true">

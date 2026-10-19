@@ -31,7 +31,7 @@ const DARE_POINTER = 1;
 
 /** Ťuk na střed scény aktivní karty – cestou skutečného ťuku, aby hru převzal feed sám. */
 function tapStage(from: Element): void {
-  const stage = from.closest('[data-testid="feed-current"]')?.querySelector('[data-testid="arcade-stage"]');
+  const stage = from.closest('.play-reel-frame')?.querySelector('[data-testid="feed-current"] [data-testid="arcade-stage"]');
   if (stage === null || stage === undefined) return;
   const box = stage.getBoundingClientRect();
   const at = { bubbles: true, cancelable: true, clientX: box.left + box.width / 2, clientY: box.top + box.height / 2, pointerId: DARE_POINTER, pointerType: 'mouse', isPrimary: true };

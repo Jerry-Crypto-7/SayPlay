@@ -1477,6 +1477,21 @@ button.play-version-switch__item:not(:disabled) {
     margin: 0;
   }
 
+  /* Pole hned pod nadpisem: tip prvního návštěvníka a nápady by ho v úzkém
+   * sloupci odsunuly pod okraj obrazovky. */
+  .play-side .play-create {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .play-side .play-first-visit {
+    order: 1;
+  }
+
+  .play-side .play-ideas {
+    order: 2;
+  }
+
   .play-side .play-hero {
     font-size: var(--sp-text-title-l-size);
     line-height: var(--sp-text-title-l-leading);
@@ -2829,7 +2844,12 @@ button.play-feed-card {
 /* P54A */
 /* Snap feed (T6): karta přes celou výšku feedu, tah dosedne vždy na další.
  * Karty mimo okno ±3 drží mezera téže výšky. Pod 1024 px je feed vysoký jako
- * obrazovka bez plovoucího tab baru kitu, na desktopu zatím jako dřívější slide. */
+ * obrazovka bez plovoucího tab baru kitu, na desktopu jako dřívější slide.
+ * Okraj (`.play-pager-rail`) leží v obalu, ne v kartě – na telefonu přes pravý kraj. */
+.play-reel-frame {
+  position: relative;
+}
+
 .play-reel {
   height: min(52dvh, 560px);
   overflow-y: auto;
@@ -2901,7 +2921,7 @@ button.play-feed-card {
 .play-reel-hint {
   position: absolute;
   left: 0;
-  right: var(--_rail, 56px);
+  right: 56px;
   bottom: var(--sp-space-8);
   z-index: 2;
   display: none;
@@ -2933,7 +2953,7 @@ button.play-feed-card {
   gap: var(--sp-space-3);
 }
 
-.play-pager-slide:has([data-testid='play-demo']) .play-reel-actions,
+.play-reel-frame:has([data-testid='play-demo']) .play-reel-actions,
 .play-pager-slide:has([data-testid='play-demo']) > .play-reel-lineage {
   display: flex;
 }
@@ -2992,7 +3012,7 @@ button.play-feed-card {
 .play-reel-lineage {
   position: absolute;
   left: var(--sp-space-3);
-  right: var(--_rail, 56px);
+  right: 56px;
   bottom: var(--sp-space-2);
   z-index: 2;
   display: none;
@@ -3019,38 +3039,31 @@ button.play-feed-card {
   }
 }
 
-/* Tablet a desktop (T12): sloupec akcí stojí vedle plochy, ne přes ni. Karta je
- * plocha a sloupec `--_rail`; rámeček nese plocha (scéna i plakát), ne feed. */
+/* Tablet a desktop (T12): sloupec akcí stojí vedle plochy, ne přes ni, a smí být
+ * vyšší než plocha (na 1024×768 je plocha jen ~320 px vysoká). */
 @media (min-width: 768px) {
+  .play-reel-frame {
+    display: flex;
+  }
+
   .play-reel {
-    --_rail: 72px;
-    margin: 0 auto;
-    border: 0;
-    border-radius: 0;
-    background: none;
-  }
-
-  .play-reel-card > .play-pager-slide {
-    background: none;
-  }
-
-  .play-pager-slide > .play-shell,
-  .play-reel-poster {
-    box-sizing: border-box;
-    border: var(--sp-border-base) solid var(--sp-outline);
+    flex: 1 1 auto;
+    min-width: 0;
     border-radius: var(--sp-radius-xl);
   }
 
-  .play-pager-slide > .play-shell {
-    margin-right: var(--_rail);
-  }
-
-  .play-reel-poster {
-    right: var(--_rail);
-  }
-
   .play-pager-rail {
-    width: var(--_rail);
+    position: static;
+    flex: none;
+    width: 72px;
+  }
+
+  .play-reel-hint {
+    right: 0;
+  }
+
+  .play-reel-lineage {
+    right: var(--sp-space-3);
   }
 
   .play-pager-slide > .play-shell > :is(.play-hud, .play-pause) {
@@ -3064,8 +3077,9 @@ button.play-feed-card {
 
 /* Tablet: karta nejvýš 600 px uprostřed, akce vedle. */
 @media (min-width: 768px) and (max-width: 1023px) {
-  .play-reel {
-    width: min(100%, 600px + var(--_rail));
+  .play-reel-frame {
+    width: min(100%, 600px + 72px);
+    margin: 0 auto;
   }
 }
 
@@ -3079,13 +3093,15 @@ button.play-feed-card {
   }
 
   .play-pager > * {
-    --_stage-w: min(100cqw - 72px, 1280px, (100dvh - 280px) * 16 / 9);
+    --_stage-w: min(100cqw - 72px - 2 * var(--sp-border-base), 1280px, (100dvh - 280px) * 16 / 9);
   }
 
+  /* Rámeček vně plochy, aby karta uvnitř měla přesně 16:9. */
   .play-reel {
-    width: calc(var(--_stage-w) + var(--_rail));
+    flex: none;
+    box-sizing: content-box;
+    width: var(--_stage-w);
     height: calc(var(--_stage-w) * 9 / 16);
-    margin: 0;
   }
 
   .play-pager > .play-pager-slide {
@@ -3096,6 +3112,12 @@ button.play-feed-card {
   .play-pager .play-feed {
     width: var(--_stage-w);
     margin-top: var(--sp-space-4);
+  }
+
+  /* Vedle feedu je vidět i „Make it!“ – jedna rajčatová akce na obrazovku. */
+  .play-reel-hint .play-poster-cta {
+    background: var(--sp-secondary);
+    color: var(--sp-on-secondary);
   }
 }
 

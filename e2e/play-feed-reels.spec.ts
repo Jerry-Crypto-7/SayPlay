@@ -76,10 +76,11 @@ async function expectSnapped(page: Page): Promise<void> {
         const reel = document.querySelector('[data-testid="feed-reel"]');
         const card = reel?.querySelector('[data-active="true"]');
         if (reel === null || reel === undefined || card === null || card === undefined) return Number.NaN;
-        return Math.round(card.getBoundingClientRect().top - reel.getBoundingClientRect().top - reel.clientTop);
+        // `clientTop` je celé číslo, rámeček feedu 2,5 px – dosednutá karta je do 1 px.
+        return Math.abs(card.getBoundingClientRect().top - reel.getBoundingClientRect().top - reel.clientTop);
       }),
     )
-    .toBe(0);
+    .toBeLessThan(1);
 }
 
 /** Do 2 s po dosednutí: aktivní je `row`, hraje náhled a tik roste. */
@@ -388,4 +389,28 @@ test.describe('/play – bot preview in the feed', () => {
     expect(Date.now() - resultAt).toBeGreaterThanOrEqual(9_000);
     expect((await probe(page)).versionId).toBe(rows[0].versionId);
   });
+
+  // Na 1024×768 je plocha jen ~320 px vysoká – sloupec akcí uvnitř karty tam useknul Report a „↓“.
+  for (const size of [
+    { width: 1440, height: 900 },
+    { width: 1024, height: 768 },
+  ]) {
+    test(`desktop ${String(size.width)}×${String(size.height)}: a 16:9 stage, actions beside it, three up next and no tab bar (T12)`, async ({ page }) => {
+      await page.setViewportSize(size);
+      await page.goto(`/play?g=${rows[0].versionId}`);
+      await expectPreview(page, rows[0]);
+
+      const stage = await page.locator('[data-testid="feed-current"] > .play-shell').boundingBox();
+      if (stage === null) throw new Error('stage has no box');
+      expect(Math.abs(stage.width / stage.height / (16 / 9) - 1)).toBeLessThanOrEqual(0.01);
+
+      const actions = await page.getByTestId('feed-actions').boundingBox();
+      expect(actions?.x ?? 0).toBeGreaterThanOrEqual(stage.x + stage.width);
+      for (const id of ['feed-prev', 'feed-next']) await expect(page.getByTestId(id)).toBeInViewport({ ratio: 1 });
+      for (const button of await page.getByTestId('feed-actions').getByRole('button').all()) await expect(button).toBeInViewport({ ratio: 1 });
+
+      await expect(page.getByTestId('play-feed-card')).toHaveCount(3);
+      await expect(page.locator('.play-tabbar')).toBeHidden();
+    });
+  }
 });

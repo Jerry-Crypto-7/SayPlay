@@ -88,3 +88,9 @@ FEED_THUMBS_URL=http://127.0.0.1:3291 node --experimental-strip-types scripts/p3
 
 - **Rozhodnutí P54A:** remix smí do feedu podle AC jen tím, že má rodiče (`parentId !== null`), prošel publikací a není skrytý – i remix hráčova návrhu, který sám do feedu nesmí. Pojistky: moderace všech řetězců specu při publikaci, `PLAY_FEED_HIDE`, tlačítko Report (T11).
 - **Rozhodnutí P54A:** remix se stejným titulem jako originál (čip `harder` titul nemění) originál z feedu nevytlačí, i když je novější – jinak by první „harder“ remix kurátorské hry tu hru z feedu vyměnil. Remixy jedné hry netvoří rodinu, každý je vlastní karta.
+
+## Desktopové rozložení (T12)
+
+- `desktop-1440.png` (1440×900, 19. 10. 2026) porovnaný očima s `docs/brand/reference-screens/01-home@2x.png`: levý sloupec drží pořadí reference (logo, nadpis, pole se „Surprise me“ a mikrofonem, „Make it!“, nápady), plocha je přesně 16:9 (979×551), akce stojí vedle ní a pod ní tři „Up next“. Ručně prohlédnuto i 1024×768 (všechny akce vidět), 820×1180 (karta 600 px uprostřed) a 412×915 (beze změny proti T11).
+- **Rozhodnutí P54A:** od 1024 px je „Tap to play“ žluté (`--sp-secondary`) – vedle feedu je vidět i „Make it!“ a kit dovoluje jednu rajčatovou akci na obrazovku; tvorba hry zůstává primární.
+- **Rozhodnutí P54A:** tip prvního návštěvníka a nápady jsou v levém sloupci až pod polem, jinak by na 1440×900 odsunuly pole pod okraj; hláška výpadku feedu už neříká „above“, protože pole je na desktopu vlevo.

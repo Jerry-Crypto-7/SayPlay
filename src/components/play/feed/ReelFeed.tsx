@@ -452,7 +452,7 @@ export function ReelFeed() {
     return (
       <DemoGame>
         <p className="play-feed-empty" data-testid="feed-error" role="status">
-          The feed is not available right now. You can still make a game above.
+          The feed is not available right now. You can still make your own game.
         </p>
       </DemoGame>
     );
@@ -501,6 +501,8 @@ export function ReelFeed() {
       <StageHost onLeave={onLeave}>
         {(host) => (
           <FeedNext.Provider value={next}>
+          {/* Okraj je mimo kartu: na telefonu leží přes pravý kraj feedu, od 768 px vedle plochy. */}
+          <div className="play-reel-frame">
           <div ref={reel} className="play-reel" data-testid="feed-reel">
             {games.map((game, at) =>
               Math.abs(at - index) <= WINDOW ? (
@@ -511,7 +513,6 @@ export function ReelFeed() {
                   active={at === index}
                   detail={details.get(game.versionId)}
                   live={onScreen}
-                  rail={at === index ? rail : null}
                   host={host}
                   preview={previews.get(game.versionId)}
                   shot={snapshots.get(game.versionId)}
@@ -520,6 +521,8 @@ export function ReelFeed() {
                 <div key={game.versionId} className="play-reel-gap" aria-hidden="true" />
               ),
             )}
+          </div>
+          {rail}
           </div>
           </FeedNext.Provider>
         )}

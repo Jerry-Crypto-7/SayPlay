@@ -196,14 +196,21 @@ test.describe('/play – create', () => {
     await expect(make).toHaveAttribute('aria-current', 'true');
   });
 
-  test('desktop: the sentence field sits above the feed, no tab bar', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/play');
-    await expect(page.getByTestId('play-sentence')).toBeInViewport();
-    await expect(page.getByTestId('play-new-game')).toBeHidden();
-    await expect(page.locator('h1')).toHaveCount(1);
-    const form = await page.getByTestId('play-sentence').boundingBox();
-    const feed = await page.locator('.play-pager').boundingBox();
-    expect(form!.y).toBeLessThan(feed!.y);
-  });
+  // P54A T12: od 1024 px pole v levém sloupci vedle feedu, viditelné i s tipem prvního návštěvníka.
+  for (const size of [
+    { width: 1440, height: 900 },
+    { width: 1024, height: 768 },
+  ]) {
+    test(`desktop ${String(size.width)}×${String(size.height)}: the sentence field sits in the left column beside the feed, no tab bar`, async ({ page }) => {
+      await page.setViewportSize(size);
+      await page.goto('/play');
+      await expect(page.getByTestId('play-sentence')).toBeInViewport({ ratio: 1 });
+      await expect(page.getByTestId('play-create')).toBeInViewport({ ratio: 1 });
+      await expect(page.getByTestId('play-new-game')).toBeHidden();
+      await expect(page.locator('h1')).toHaveCount(1);
+      const form = await page.getByTestId('play-sentence').boundingBox();
+      const feed = await page.locator('.play-pager').boundingBox();
+      expect(form!.x + form!.width).toBeLessThanOrEqual(feed!.x);
+    });
+  }
 });
