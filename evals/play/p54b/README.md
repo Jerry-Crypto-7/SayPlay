@@ -84,3 +84,21 @@ Dvojice telefonu drží poměr stran (výška 1200 px); dřívější ořez na 9
 **Sada.** `vitest` celá (JSON, 15 159 testů): 15 150 zelených, 3 červené + 1 soubor. Skutečná regrese jedna – brand guard našel 8 řádků surového hexu v `look/Ambient.tsx` (T10); barvy přesunuty do palety `look/index.ts` (`8cf50b98`), guard i `p54b-ambient` zelené. Zbytek prostředí: `submission-check` (ENOENT `plans/P8-…` ve worktree), `swarm` časová mez 0,056 > 0,05 ms a `rules/coverage` – samy zelené; `golden` v replay bráně pod zátěží na 180 s, sám zelený. `npm run build` exit 0. E2E proti `next start` (`FALLBACK_SMOKE_URL`): `p32-look`, `interface-language`, `p54b-landmark`, `p54b-walk-clip` 11/11.
 
 `sheet-all.png`: každá věta ve čtyřech snímcích – before, after, before-phone, after-phone.
+
+## Závěr MVP po T15a (20. 10. 2026, `e5bbf7de`)
+
+Oprava T15a ve dvou kolech. První (`43115a49`, `5d81db13`): bod i rámující kusy se v obraze vyhnou každé postavě a hracímu pásu žánru, ne jen hrdinovi. Soud po něm: desktop 14/18, telefon 13/18 – tři prohry způsobil bod sám: bludiště shora (stojící kámen „jako zbloudilý šedý sloup“), souboj (bod se vyhnul soupeři jen tam, kde začal; rytíři chodí po celém ringu) a přistání na telefonu (silo přes popředí). Druhé kolo (`3e121ad9`, `e5bbf7de`): kamera strmější než 62° bod nedostane, souboj hlídá celý ring do výšky rytířů, bod z obrazu většinou venku se nepostaví vůbec a cílová výška je třetina **kratší** strany obrazu (na telefonu na výšku dřív dvě třetiny šířky).
+
+Snímky a soud stejnými příkazy jako T15, čistý `--work` (`D:/tmp/p54b-blind-t15a-2`):
+
+| Cíl | T15 | po T15a |
+|---|---|---|
+| soud desktop ≥ 15/18 | 15/18 | **17/18** splněno |
+| soud telefon ≥ 15/18 | 10/18 | **15/18** splněno |
+| bod v záběru, desktop (`landmark-t15a.json`) | 16/18 (T8) | 13/18 – bez bodu záměrně aréna, agar, poletování, bludiště, souboj |
+| bod v záběru, telefon (`landmark-t15a-phone.json`) | – | 9/18; pět dalších stálo dřív v obraze na 0 % a už se nestaví |
+| hrdina nezakrytý | 100 % | 100 % na obou |
+
+**Fakta ze soudu.** Desktop prohrál jen rytmus („LEFT has no unclear extra creature“ – tyrkysový tvor vlevo nahoře). Telefon prohrál arénu a bludiště (nízkopolygonová liška je čitelnější než riggovaná – T14) a souboj (snímky stejné, volba náhodná). Silo na Marsu soudce teď bere jako „Mars base structure adds a believable sense of place“.
+
+**Odvozeno.** Telefon prošel přesně na hraně a tři výhry jsou remízy téměř stejných snímků („picked only to break the tie“ – souboj na desktopu, poletování, rytmus na telefonu): opakovaný soud může dát 13–16. Skutečné zlepšení telefonu proti T15 nese hlavně bod, který už nestojí na hře (věž, poletování, přistání), a kluzák s útesem (T15b). Zbývající slabina je čitelnost riggovaných postav na telefonu – T14 (po MVP).

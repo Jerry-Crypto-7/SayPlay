@@ -70,8 +70,8 @@
    "stage": "fight",
    "tick": 150,
    "runState": "running",
-   "meshes": 59,
-   "calls": 64
+   "meshes": 57,
+   "calls": 63
   },
   {
    "id": "g-quest",
@@ -112,7 +112,7 @@
    "stage": "walker",
    "tick": 150,
    "runState": "running",
-   "meshes": 55,
+   "meshes": 53,
    "calls": 38
   },
   {
@@ -126,8 +126,8 @@
    "stage": "glide",
    "tick": 150,
    "runState": "running",
-   "meshes": 228,
-   "calls": 46
+   "meshes": 226,
+   "calls": 41
   },
   {
    "id": "g-ball",
@@ -154,8 +154,8 @@
    "stage": "flap",
    "tick": 150,
    "runState": "running",
-   "meshes": 57,
-   "calls": 40
+   "meshes": 55,
+   "calls": 38
   },
   {
    "id": "g-shooter",
@@ -210,8 +210,8 @@
    "stage": "rhythm",
    "tick": 150,
    "runState": "running",
-   "meshes": 53,
-   "calls": 58
+   "meshes": 52,
+   "calls": 57
   },
   {
    "id": "g-duel",
@@ -224,8 +224,8 @@
    "stage": "duel",
    "tick": 150,
    "runState": "running",
-   "meshes": 25,
-   "calls": 31
+   "meshes": 21,
+   "calls": 27
   },
   {
    "id": "g-voyage",

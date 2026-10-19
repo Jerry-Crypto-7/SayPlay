@@ -99,7 +99,7 @@
    "tick": 150,
    "runState": "running",
    "meshes": 56,
-   "calls": 93
+   "calls": 92
   },
   {
    "id": "g-walker",
@@ -112,8 +112,8 @@
    "stage": "walker",
    "tick": 150,
    "runState": "running",
-   "meshes": 55,
-   "calls": 73
+   "meshes": 53,
+   "calls": 71
   },
   {
    "id": "g-glide",
@@ -126,8 +126,8 @@
    "stage": "glide",
    "tick": 150,
    "runState": "running",
-   "meshes": 223,
-   "calls": 80
+   "meshes": 228,
+   "calls": 88
   },
   {
    "id": "g-ball",
@@ -154,8 +154,8 @@
    "stage": "flap",
    "tick": 150,
    "runState": "running",
-   "meshes": 58,
-   "calls": 66
+   "meshes": 63,
+   "calls": 79
   },
   {
    "id": "g-shooter",
@@ -168,8 +168,8 @@
    "stage": "shooter",
    "tick": 150,
    "runState": "running",
-   "meshes": 69,
-   "calls": 97
+   "meshes": 92,
+   "calls": 148
   },
   {
    "id": "g-throw",
@@ -224,8 +224,8 @@
    "stage": "duel",
    "tick": 150,
    "runState": "running",
-   "meshes": 23,
-   "calls": 57
+   "meshes": 21,
+   "calls": 55
   },
   {
    "id": "g-voyage",
@@ -238,8 +238,8 @@
    "stage": "steer",
    "tick": 150,
    "runState": "running",
-   "meshes": 48,
-   "calls": 78
+   "meshes": 52,
+   "calls": 90
   },
   {
    "id": "g-lander",
