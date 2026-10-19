@@ -61,7 +61,8 @@ const ROAMING: readonly AddonId[] = ['shoot', 'collect', 'lives'];
  * - move_free: střelba zůstává doplňkem `+shoot` (akce střelby v aréně sloveso nedokáže); dash a štít
  *   v útěku, kde pronásledovatel chytá (`arena_eat` s `grace`), a v souboji (`fight`, P47B T6), kde
  *   berou úder soupeře – souboj jen je (`FIGHT_ABILITIES`): úder má vlastní Attack a krást není co.
- *   Agar takovou hru odmítne a rychlá verze akci zahodí.
+ *   Quest (`quest_spatial`, P52 T5) jen úder: robot s ním dojde k pronásledovateli. Sběr se dvěma akcemi
+ *   na pronásledovatele přivede o jednoho víc (`sharedChasers`). Agar takovou hru odmítne a rychlá verze akci zahodí.
  * - shooter, ball, throw, timing, rhythm: tlačítko je samo mechanika (rána, hod, stop, nota), druhé by s ním soupeřilo.
  * - duel: úder, dash a štít hraje vlastní mechanika duelu (Tap úder, Down úhyb za dash i štít), žádné
  *   druhé tlačítko – akce dá jen sloveso pravidlům (P47B T8). tap_go: mřížka bez hrdiny s fyzikou arkády.

@@ -38,17 +38,21 @@ const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
 
 /**
  * Generátory režimu, kde robot akce použije a ověření je dokáže (P46A T10, matice T9 a živé
- * věty); souboj (`fight`) od P47B T6 jen s akcemi `FIGHT_ABILITIES`, let (`glide_course`, matice P47B T9) všechny.
- * Ostatní generátory nikdo neměřil.
+ * věty); souboj (`fight`) od P47B T6 jen s akcemi `FIGHT_ABILITIES`, let (`glide_course`, matice P47B T9) všechny,
+ * quest (`quest_spatial`, P52 T5) jen úder. Ostatní generátory nikdo neměřil.
  */
-export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth', 'fight', 'glide_course']);
+export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth', 'fight', 'glide_course', 'quest_spatial']);
 
 /** Souboj má vlastní úder (Attack) a nic ke krádeži: bere jen dash a štít proti úderu soupeře (P47B T6). */
 export const FIGHT_ABILITIES: readonly AbilityId[] = ['dash', 'shield'];
 
+/** Quest: úder na pronásledovatele, ke kterému robot s připraveným úderem dojde (`abilityStep`); jiné akce nikdo neměřil. */
+const QUEST_ABILITIES: readonly AbilityId[] = ['strike'];
+
 /** Bere hra generátoru `generator` (bez generátoru staví trať ovládání) akci `id`? Čte i měřidlo P47B. */
 export const generatorTakes = (generator: string | undefined, id: AbilityId): boolean =>
-  generator === undefined || (ABILITY_GENERATORS.has(generator) && (generator !== 'fight' || FIGHT_ABILITIES.includes(id)));
+  generator === undefined ||
+  (ABILITY_GENERATORS.has(generator) && (generator !== 'fight' || FIGHT_ABILITIES.includes(id)) && (generator !== 'quest_spatial' || QUEST_ABILITIES.includes(id)));
 
 /**
  * Akce hrdiny ze sloves věty (P46A T8, `assemble`), jen akce, které ovládání bere, a jen hře,
