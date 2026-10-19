@@ -37,8 +37,11 @@ node scripts/play-look-shots.mjs shots --base http://127.0.0.1:3351 --set genres
 
 18 vět na žánr (`evals/play/p46g/genres.json`), tik 150, SwiftShader. `before/` 1280×800, `before-phone/` emulace Pixel 7 (scéna startuje na úrovni `low`). Build `5d741740` + T1 (jen komentáře), 19. 10. 2026.
 
+**T8 (`landmark-t8.json`, orientační bod a rámující kusy):** `FALLBACK_SMOKE_URL=… LANDMARK_REPORT=evals/play/p54b/landmark-t8.json npx playwright test e2e/p54b-landmark.spec.ts` (1280×800, GPU, tik 150) – bod v záběru (≥ 50 % kvádru v obraze) u 16 z 18 snímků; mimo jsou aréna a agar (aréna 40 × 40 m pod kamerou 12 m a 40°: zem 25–60 m od kamery je vidět jen u stěny, ke které hrdina má blízko – robot do tiku 150 od ní odejde). Hrdina vidět ze 100 % u všech 18 (paprsky kamery na hrdinu, které bod ani kus nezakryje), kreslicích volání navíc 1–3 (kusy nevrhají stín). Rozhodnuto bez majitele: kamera, která jede (trať, aréna, bludiště), bod veze s sebou a rámující kusy nemá – 1–2 kusy jsou jen u pevné kamery a stojí u míče (2), hodu (1) a věže (2); střelnice, rytmus a ring žádné místo nemají (u kraje obrazu blíž než hrdina je jen mýtina, pruhy nebo ring); kandidáti jdou v pořadí ze semínka a strmá kamera vezme první, který se do záběru vejde.
+
 ## Výkon
 
 **Základ zatím nezměřen.** 19. 10. 2026 běžel stroj na 100 % CPU (81 procesů Node, souběžné autopiloty): emulace Pixel 7 dala 18–20 FPS a pak 0,1 FPS (zamrzlý prohlížeč), takže běh byl zastaven a čísla se nezapsala. Výkonová brána se měří A/B hned po sobě proti buildu `features/P54B` na commitu T2 (vzhled beze změny), až bude stroj v klidu; `perf-before.json` vznikne tím prvním během.
 
 - **T7:** perf A/B T7 odložen do klidného stroje (CPU 81 %). Výplň je proto střídmá: město hustota 0,22 bez linie v dálce (louka 0,45 se třemi vrstvami), interiéry 0,25 bez linie v dálce; každý druh je jedno kreslicí volání (nejvýš 11 na sadu, město 9).
+- **T8:** perf A/B T8 odložen (CPU 82 %). Navíc 1–3 kreslicí volání na scénu (model gen3d = jedna síť, jeden materiál, bez stínu), místo bodu se hledá jednou při stavbě scény.

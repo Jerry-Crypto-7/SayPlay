@@ -11,7 +11,8 @@ import type { Look } from '@/play/arcade/look';
 import { GLIDE } from '@/play/arcade/pieces/glide';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
-import { boxEdge } from '../look/ground';
+import { type Box, boxEdge } from '../look/ground';
+import { Landmark } from '../look/Landmark';
 import { Scenery } from '../look/Scenery';
 import { Vegetation } from '../look/Vegetation';
 import type { RoadAt } from '../look/vegetation-places';
@@ -25,7 +26,11 @@ export { useGlideInput } from './glide-input';
 const BOUND = GLIDE.bound / UNIT;
 /** Koridor letu jako „cesta“ vegetace: rovný v ose, půl šířky po hranici. */
 const COURSE = (): RoadAt => ({ center: 0, half: BOUND });
-const COURSE_EDGE = boxEdge({ x0: -BOUND, x1: BOUND, z0: -Infinity, z1: Infinity });
+const COURSE_BOX: Box = { x0: -BOUND, x1: BOUND, z0: -Infinity, z1: Infinity };
+const COURSE_EDGE = boxEdge(COURSE_BOX);
+/** Orientační bod stojí za hranicí letu a jede s kamerou (P54B T8). */
+const COURSE_AREA: readonly Box[] = [COURSE_BOX];
+const LAND_Y = (): number => -0.06;
 /** Volný pás vegetace za hranicí letu (m). */
 const VEGETATION_CLEAR = 1.5;
 /** Kam zem sahá do strany za hranici (m). */
@@ -66,6 +71,7 @@ export function GlideBackdrop({ session, look, collectibleModel }: { readonly se
     {/* Zem s odstíny, skvrnami, krajnicí u hranice letu a tmavnutím do strany (P46G T7); dřív jedna barva sady. */}
     <FieldGround look={look} area={land} edge={COURSE_EDGE} y={-0.06} />
     <HorizonBackdrop look={look} seed={seed} length={length} clear={BOUND + VEGETATION_CLEAR} />
+    <Landmark look={look} seed={seed} area={COURSE_AREA} ground={LAND_Y} follow="track" />
     {bodies.map(body => <group key={body.body} ref={group => { if (group === null) groups.current.delete(body.body); else groups.current.set(body.body, group); }}>
       {body.kind === 'glide-ring' ? <group>
         {collectibleModel !== undefined && <group position={[0, -0.3, 0]}>

@@ -206,8 +206,11 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
   }
 }
 
-/** Model katalogu postavený na zem ve výšce kulisy (`modelHeight`); dokud se nenačte, nic. `cap` = sněhová čepička. */
-function SceneryModelProp({ id, cap }: { readonly id: SceneryModel; readonly cap?: string }) {
+/**
+ * Model katalogu postavený na zem ve výšce kulisy (`modelHeight`); dokud se nenačte, nic. `cap` = sněhová čepička.
+ * `cast = false`: stín jen přijímá – orientační bod a rámující kusy (P54B T8) nestojí stínový průchod navíc.
+ */
+export function SceneryModelProp({ id, cap, cast = true }: { readonly id: SceneryModel; readonly cap?: string; readonly cast?: boolean }) {
   const [model, setModel] = useState<Object3D | null>(null);
   useEffect(() => {
     let live = true;
@@ -228,9 +231,18 @@ function SceneryModelProp({ id, cap }: { readonly id: SceneryModel; readonly cap
     const center = box.getCenter(new Vector3());
     copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
     if (cap !== undefined) capSnow(copy, cap);
+    if (!cast) {
+      copy.traverse((node) => {
+        if ((node as Mesh).isMesh !== true) return;
+        // Značka rigu: `ShadowFlags` ji už nepřepíše na vrhání stínu.
+        node.userData.rigShadow = 'receive';
+        node.castShadow = false;
+        node.receiveShadow = true;
+      });
+    }
     freeze(copy);
     return copy;
-  }, [model, id, cap]);
+  }, [model, id, cap, cast]);
   return fitted === null ? null : <primitive object={fitted} />;
 }
 

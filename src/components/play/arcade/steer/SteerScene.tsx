@@ -26,7 +26,8 @@ import type { HeroAction } from '@/play/spec';
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import { FieldGround } from '../look/FieldGround';
-import { buildRoadGround } from '../look/ground';
+import { type Box, buildRoadGround } from '../look/ground';
+import { Landmark } from '../look/Landmark';
 import { type IslandSpot, buildIslands, islandPalette } from '../look/rig/terrain/islands';
 import { hash } from '../look/rig/terrain/valley';
 import { roadGeometry, stripCurve } from '../look/road-strip';
@@ -197,9 +198,23 @@ export function SteerBackdrop({
 }) {
   const voyage = useVoyageSession();
   const shape = useMemo(() => roadShapeOf(session.world), [session.world]);
+  // Silnice na startu (nejširší úsek a mantinel) pro orientační bod (P54B T8): bod jede s kamerou vedle ní.
+  const roadArea = useMemo((): readonly Box[] => {
+    const half = Math.max((course?.halfWidth ?? 5 * UNIT) / UNIT, ...shape.segments.map((segment) => segment.width / 2)) + BARRIER_W;
+    const center = shape.segments[0]?.center ?? 0;
+    return [{ x0: center - half, x1: center + half, z0: -Infinity, z1: Infinity }];
+  }, [course, shape]);
+  // Střed silnice po křivce úseků jako v `RoadBackdrop`: bod jede vedle zatáček, ne do nich.
+  const roadBend = useMemo(() => {
+    const segments = shape.segments.length > 0 ? shape.segments : segmentsOf(course).map((segment) => ({ ...segment, width: 0 }));
+    if (segments.length === 0) return undefined;
+    const curve = stripCurve(segments);
+    return (z: number) => ({ x: curve(z).center });
+  }, [course, shape]);
   return (
     <>
       {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} namedPad={namedPad} /> : <RoadBackdrop course={course} shape={shape} length={length} look={look} seed={session.world.seed} />}
+      {voyage === null && <Landmark look={look} seed={session.world.seed} area={roadArea} bend={roadBend} follow="track" />}
       {/* Slot ducha (P37-0 T3) pro silnici i plavbu. */}
       <GhostSlot ghost={ghost} session={session} />
     </>
@@ -585,9 +600,17 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard, namedPad }
   });
 
   const ground = layout.terrain === 'islands' ? SUNK : 0;
+  // Orientační bod (P54B T8) vedle kanálu: na ostrově na jeho zemi, jinde na hladině nebo zemi kaňonu; jede s kamerou.
+  const landmarkArea = useMemo((): readonly Box[] => {
+    const center = centerOf(layout.course, 0);
+    return [{ x0: center - half - SCENERY_MARGIN, x1: center + half + SCENERY_MARGIN, z0: -Infinity, z1: Infinity }];
+  }, [layout, half]);
+  const landmarkGround = useMemo(() => (x: number, z: number): number => islands.heightAt(x, z) ?? (sea ? WATER_LEVEL : 0), [islands, sea]);
+  const landmarkBend = useMemo(() => (z: number) => ({ x: centerOf(layout.course, z) }), [layout]);
 
   return (
     <>
+      <Landmark look={look} seed={session.world.seed} area={landmarkArea} ground={landmarkGround} bend={landmarkBend} follow="track" />
       {layout.terrain === 'buildings' ? (
         <RoadBackdrop course={layout.course} length={length} look={look} seed={session.world.seed} sceneryFrom={STRAIGHT_M} />
       ) : water !== null ? (

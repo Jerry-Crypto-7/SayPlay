@@ -12,6 +12,7 @@ import { walkerMapSchema, WALKER_CELL } from '@/play/arcade/pieces/walker';
 import { baseControlOf } from '@/play/arcade/addons';
 import { FieldGround } from '../look/FieldGround';
 import { boxEdge } from '../look/ground';
+import { Landmark } from '../look/Landmark';
 import { Scenery } from '../look/Scenery';
 import { VegetationAround } from '../look/Vegetation';
 import { NONE_TOWARD_CAMERA } from '../look/vegetation-places';
@@ -71,9 +72,9 @@ export function WalkerBackdrop({ session, look }: { readonly session: ArcadeSess
   }, [data, session]);
   const extent = data.size * WALKER_CELL / UNIT, centre = (data.size - 1) * WALKER_CELL / UNIT / 2;
   // Bludiště ve scéně (x zrcadlené): buňky od 0 do (size − 1) · 4 m, každá ±2 m kolem středu.
-  const { box, land, edge } = useMemo(() => {
+  const { box, land, edge, area } = useMemo(() => {
     const maze = { x0: -centre - extent / 2, x1: -centre + extent / 2, z0: centre - extent / 2, z1: centre + extent / 2 };
-    return { box: maze, land: { x0: maze.x0 - LAND_M, x1: maze.x1 + LAND_M, z0: maze.z0 - LAND_M, z1: maze.z1 + LAND_M }, edge: boxEdge(maze) };
+    return { box: maze, land: { x0: maze.x0 - LAND_M, x1: maze.x1 + LAND_M, z0: maze.z0 - LAND_M, z1: maze.z1 + LAND_M }, edge: boxEdge(maze), area: [maze] };
   }, [centre, extent]);
   return <>
     {/* Zem s odstíny a skvrnami, kolem bludiště krajnice a do dálky tmavne (P46G T7); dřív jedna barva sady. */}
@@ -83,6 +84,8 @@ export function WalkerBackdrop({ session, look }: { readonly session: ArcadeSess
     <group position={[-centre, 0, 0]}>
       <Scenery look={look} layout="sides" inner={extent / 2 + 3} from={-4} to={extent + 4} vegetation />
     </group>
+    {/* Orientační bod mimo bludiště jede s kamerou za hrdinou (P54B T8): strmá kamera vidí zem jen kousek za bludištěm. */}
+    <Landmark look={look} seed={session.world.seed} area={area} follow="camera" />
     <instancedMesh ref={mesh} args={[undefined, undefined, data.walls.length]} castShadow receiveShadow>
       <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial color={look.block?.[0] ?? look.tint[1]} roughness={1} />

@@ -28,6 +28,8 @@ import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { isTyping } from '../input';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
+import type { Box } from '../look/ground';
+import { Landmark } from '../look/Landmark';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
@@ -99,6 +101,8 @@ const SCENERY_BEHIND = 7;
 const TIMING_LAND = { x0: -40, x1: 40, z0: -20, z1: 60 } as const;
 /** Nejbližší vrstva kulisy (m od kamery 8+ m před věží): za řadou kulis (7–12 m za věží). */
 const BACKDROP_BEYOND = 26;
+/** Věž a kyv jezdce (±3 m a díl): orientační bod a rámující kusy stojí mimo (P54B T8). */
+const TIMING_AREA: readonly Box[] = [{ x0: -(TIMING.amplitude / UNIT + 2), x1: TIMING.amplitude / UNIT + 2, z0: -2, z1: 2 }];
 
 /** Model z popisku role vepsaný do kvádru těla (w × h × d, metry), postavený na zem. */
 export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
@@ -237,6 +241,7 @@ export function TimingScene({
       </group>
       {/* Kulisa za mlhou (P46G T7) za řadou kulis; vegetace ne – plocha je jen věž a kyv jezdce. */}
       <HorizonBackdrop look={scene} seed={world.seed} clear={0} beyond={BACKDROP_BEYOND} />
+      <Landmark look={scene} seed={world.seed} area={TIMING_AREA} />
       <mesh position={[0, base.h / 2, 0]}>
         <boxGeometry args={[base.w, base.h, depth]} />
         <meshStandardMaterial color={BASE_COLOR[baseKind] ?? '#475569'} roughness={0.8} />

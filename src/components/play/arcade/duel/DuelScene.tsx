@@ -35,6 +35,7 @@ import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { isTyping } from '../input';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
+import { Landmark } from '../look/Landmark';
 import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
 import { Scenery } from '../look/Scenery';
@@ -191,6 +192,8 @@ export function DuelScene({
   const look = useMemo(() => new Vector3(), []);
   const midZ = rival.z / 2;
   const duelLand = useMemo(() => ({ x0: -30, x1: 30, z0: midZ - 30, z1: midZ + 30 }), [midZ]);
+  /** Ring 4 × 9 m: orientační bod za ním, rámující kusy před ním u kraje obrazu (P54B T8). */
+  const ring = useMemo(() => [{ x0: -2, x1: 2, z0: midZ - 4.5, z1: midZ + 4.5 }], [midZ]);
   const hurlBody = hurlBodyOf(world.control);
   const hurlSize = hurlBody === undefined ? null : initialBody(world, hurlBody);
   const hurled = useRef<Group>(null);
@@ -297,6 +300,7 @@ export function DuelScene({
       <Scenery look={scene} layout="behind" inner={4} from={midZ - 12} to={midZ + 12} />
       {/* Kulisa za mlhou za řadou kulis (4–9 m za ringem). */}
       <HorizonBackdrop look={scene} seed={session.world.seed} clear={0} beyond={BACKDROP_BEYOND} />
+      <Landmark look={scene} seed={session.world.seed} area={ring} />
       <mesh position={[0, -0.1, midZ]}>
         <boxGeometry args={[4, 0.2, 9]} />
         <meshStandardMaterial color="#78716c" roughness={0.95} />

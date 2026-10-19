@@ -21,6 +21,8 @@ import { type Look, SURFACES } from '@/play/arcade/look';
 import { type GhostPlacement, worldPlacement } from '../Ghost';
 import { type GhostPose, GhostSlot } from '../GhostSlot';
 import { HorizonBackdrop } from '../look/Backdrop';
+import type { Box } from '../look/ground';
+import { Landmark } from '../look/Landmark';
 import { buildValley, PATH_HALF, PLAYABLE_HALF } from '../look/rig/terrain/valley';
 import { roadGeometry } from '../look/road-strip';
 import { Scenery } from '../look/Scenery';
@@ -40,6 +42,8 @@ const BEHIND_M = 40;
 const RUNNER_ROAD = (): RoadAt => ({ center: 0, half: PATH_HALF });
 /** Volný pás vegetace za krajem cesty (m): celá hrací plocha a půl metru. */
 const VEGETATION_CLEAR = PLAYABLE_HALF - PATH_HALF + 0.5;
+/** Hrací plocha po celé trati: orientační bod jede s kamerou vedle ní (P54B T8). */
+const RUNNER_AREA: readonly Box[] = [{ x0: -PLAYABLE_HALF, x1: PLAYABLE_HALF, z0: -Infinity, z1: Infinity }];
 
 /** Údolí ohnuté po křivce trati (P46D T3): dráha, svahy, kulisy i vegetace (P46G T4) jdou zatáčkou a kopcem spolu s těly. */
 function RunnerValley({ look, length, seed, terrain, path }: { readonly look: Look; readonly length: number; readonly seed: number; readonly terrain: RefObject<Mesh | null>; readonly path: Path | null }) {
@@ -60,6 +64,15 @@ function RunnerValley({ look, length, seed, terrain, path }: { readonly look: Lo
   }, [surface, look.fog, length, path]);
   useEffect(() => () => { lane?.surface.dispose(); lane?.edges.dispose(); lane?.marks?.dispose(); }, [lane]);
   const trackHeight = useMemo(() => (path === null ? undefined : (z: number) => path(z).y), [path]);
+  // Terén údolí ohnutého po křivce v místě (x, z) scény: `heightAt` platí pro rovné údolí.
+  const landAt = useMemo(
+    () =>
+      (x: number, z: number): number => {
+        const at = path?.(z) ?? { x: 0, y: 0 };
+        return valley.heightAt(x - at.x, z) + at.y;
+      },
+    [valley, path],
+  );
   return (
     <>
       {/* Stín jen přijímá: vlastní stín by se na rovné dráze odrážel jako akné. */}
@@ -84,6 +97,7 @@ function RunnerValley({ look, length, seed, terrain, path }: { readonly look: Lo
       <Scenery look={look} layout="sides" inner={PLAYABLE_HALF + 1.5} from={-10} to={length + 10} ground={valley.heightAt} cap={look.terrain?.cap} bend={path ?? undefined} vegetation />
       {/* Kulisa za mlhou (P46G T6) na konci údolí; pata pod zemí kryje kopce trati. */}
       <HorizonBackdrop look={look} seed={seed} length={length} clear={PLAYABLE_HALF + 1.5} skirt={RUNNER_SKIRT_M} ground={trackHeight} />
+      <Landmark look={look} seed={seed} area={RUNNER_AREA} ground={landAt} bend={path ?? undefined} follow="track" />
     </>
   );
 }

@@ -11,6 +11,8 @@ import { BODY, BODY_STRIDE, COUNTER, FLAG, HEADER, HEADER_SIZE, PHYSICS_SUBSTEPS
 import type { Look } from '@/play/arcade/look';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
+import type { Box } from '../look/ground';
+import { Landmark } from '../look/Landmark';
 import { Vegetation } from '../look/Vegetation';
 import type { RoadAt } from '../look/vegetation-places';
 import type { ArcadeSession } from '../session';
@@ -33,6 +35,8 @@ const pitchAt = (z: number): RoadAt => ({ center: 0, half: z < PITCH_CLOSE ? 7 +
 const VEGETATION_CLEAR = 1.5;
 /** Kulisa nestojí blíž než cíle a soupeř od kamery (m): cíl do 18 m před hráčem, kamera 16 m za ním, rezerva. */
 const BACKDROP_BEYOND = 42;
+/** Hřiště pro orientační bod a rámující kusy (P54B T8): míč letí do 18 m před hráčem a 3,5 m do strany, brána a koš za tím. */
+const PITCH_AREA: readonly Box[] = [{ x0: -8, x1: 8, z0: -3, z1: 22 }];
 /** Named player/goalkeeper actors stay in World; these are native sports props. */
 export const BALL_SCENE_KINDS: ReadonlySet<string> = new Set(['physics-ball', 'opponent-ball', 'goal', 'home-goal', 'hoop', 'hole', 'pin']);
 
@@ -110,6 +114,7 @@ export function BallScene({ session, look }: { readonly session: ArcadeSession; 
     {/* Vegetace sady po stranách hřiště a za ním: mýtina se rozevírá po směru střelby, ať míč ani mířidla nikdy nezajdou za strom. */}
     {look.flora !== undefined && <Vegetation flora={look.flora} seed={session.world.seed} from={PITCH_FROM} to={PITCH_TO} road={pitchAt} clear={VEGETATION_CLEAR} />}
     <HorizonBackdrop look={look} seed={session.world.seed} clear={0} beyond={BACKDROP_BEYOND} />
+    <Landmark look={look} seed={session.world.seed} area={PITCH_AREA} />
     {props.map(body => <group key={body.index} ref={group => { if (group === null) groups.current.delete(body.index); else groups.current.set(body.index, group); }}>
       {body.kind === 'pin' ? <mesh><boxGeometry args={[body.w, body.h, body.d]} /><meshStandardMaterial color={color.cream} roughness={0.5} /></mesh> : body.kind === 'hoop' ? <group>
         <mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[body.w / 2, 0.07, 8, 24]} /><meshStandardMaterial color={color.tomato} /></mesh>
