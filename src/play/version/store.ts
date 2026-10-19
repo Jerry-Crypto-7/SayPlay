@@ -129,6 +129,13 @@ export interface VersionStore {
   countLoop(versionId: string, counters: readonly LoopCounter[], voter: string): Promise<void>;
   /** Čítače smyčky a počty remixů her jedním čtením; nedostupné úložiště = prázdná mapa (feed od nejnovější). */
   loopHeat(versionIds: readonly string[]): Promise<Map<string, LoopHeat>>;
+  /**
+   * Nahlášení hry z feedu (P54A T11): hlas `voter` (hash volajícího) se započte jednou na hru po
+   * dobu života hry. Že hra existuje a není vestavěná, ověřují dveře. Výpadek je `VersionStoreUnavailable`.
+   */
+  reportGame(versionId: string, voter: string): Promise<void>;
+  /** Hry z `versionIds` s aspoň `REPORT_HIDE_VOTES` hlasy, jedním čtením; nedostupné úložiště = žádná (zbude `PLAY_FEED_HIDE`). */
+  reportHidden(versionIds: readonly string[]): Promise<Set<string>>;
   /** Hráč (P44B T3) podle id z podepsané cookie; `null` = bez uložené přezdívky, i při výpadku úložiště. */
   getPlayer(playerId: string): Promise<PlayerRecord | null>;
   /** Uloží hráče na dobu života hry. Výpadek je `VersionStoreUnavailable`. */
@@ -260,6 +267,8 @@ export const GHOST_DAILY_CAP_PER_CALLER = 10;
 
 /** Jeden volající započte hře každý čítač smyčky nejvýš jednou za den (P36B T9, nález revize T9-1). */
 export const LOOP_VOTE_TTL_SECONDS = 24 * 3600;
+/** Tolik různých volajících hru nahlásí, než zmizí z feedu (P54A T11). */
+export const REPORT_HIDE_VOTES = 3;
 /** Kolik hlasů si proces pamatuje, než paměť zahodí (pak rozhodne `SET NX` v úložišti). */
 const MAX_VOTE_MEMO = 20_000;
 /**
@@ -538,6 +547,8 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   };
   const loopKey = (counter: LoopCounter, versionId: string): string => `${prefix}:play:loop:${counter}:${versionId}`;
   const voteKey = (vote: string): string => `${prefix}:play:loop-vote:${vote}`;
+  const reportKey = (versionId: string): string => `${prefix}:play:report:${versionId}`;
+  const reportVoteKey = (versionId: string, voter: string): string => `${prefix}:play:report-vote:${versionId}:${voter}`;
   const playerKey = (playerId: string): string => `${prefix}:play:player:${playerId}`;
   const boardKey = (versionId: string): string => `${prefix}:play:board:${versionId}`;
   const boardRunKey = (versionId: string, playerId: string): string => `${prefix}:play:board-run:${versionId}:${playerId}`;
@@ -826,6 +837,23 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         );
       } catch {
         return new Map();
+      }
+    },
+    async reportGame(versionId, voter) {
+      try {
+        // Hlas žije jako hra: tři hlasy jsou vždy tři různí volající, ne jeden za tři dny.
+        if (await raw.setNx(reportVoteKey(versionId, voter), '1', limits.ttlSeconds)) await raw.incr(reportKey(versionId), limits.ttlSeconds);
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async reportHidden(versionIds) {
+      if (versionIds.length === 0) return new Set();
+      try {
+        const texts = await raw.getMany(versionIds.map(reportKey));
+        return new Set(versionIds.filter((_, index) => Number(texts[index] ?? '0') >= REPORT_HIDE_VOTES));
+      } catch {
+        return new Set();
       }
     },
     async getPlayer(playerId) {

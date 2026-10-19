@@ -85,7 +85,11 @@ rows no newer than `top`. So:
   operator's own sentences (see below); or a **remix** – a version with a parent (`parentId !== null`,
   P54A T10). Never a word draft or a hand-written spec without a parent (their titles are written by
   the caller and nothing else stands behind them);
-- not on the hide list `PLAY_FEED_HIDE` (comma-separated `versionId`s, read per request).
+- not on the hide list `PLAY_FEED_HIDE` (comma-separated `versionId`s, read per request);
+- not reported from the feed by `REPORT_HIDE_VOTES` (3) different callers (`POST /api/play/games/:id/report`,
+  P54A T11): a caller's report counts once per game for the game's life, the link keeps playing, and a
+  built-in game is hidden only through `PLAY_FEED_HIDE`. Callers are told apart by `callerOf`, so off a
+  trusted proxy (`x-forwarded-for` written by the client) three reports can come from one machine.
 
 **The feed is never empty (P37C T6).** `scripts/p37c/seed-feed.mjs` builds games from the starter
 sentences and the dev set (`evals/play/p30/dev.json`, never the sealed set) the way `POST` would,

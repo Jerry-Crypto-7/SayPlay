@@ -77,7 +77,9 @@ export async function GET(request: Request): Promise<Response> {
   const rows = await versions.recent(RECENT_CAP);
   // Čítače smyčky a počty remixů všech řádků (druhý příkaz) řadí feed (P36B T9).
   const heat = await versions.loopHeat(rows.map((row) => row.versionId));
-  const page = feedPage(rows, limit, cursor, hiddenFromEnv(process.env), heat);
+  // Skryté: provozovatel (`PLAY_FEED_HIDE`) a hry nahlášené z feedu (P54A T11, třetí příkaz).
+  const reported = await versions.reportHidden(rows.map((row) => row.versionId));
+  const page = feedPage(rows, limit, cursor, new Set([...hiddenFromEnv(process.env), ...reported]), heat);
   return markVolatileStore(
     Response.json(
       {
