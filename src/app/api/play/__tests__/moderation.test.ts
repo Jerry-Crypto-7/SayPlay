@@ -170,7 +170,7 @@ describe('PLAY_MODERATION – pravidla pro herní věty', () => {
 
   it('žádná věta z vývojové sady ani z vestavěných her není zamítnutá', () => {
     const dev = JSON.parse(readFileSync('evals/play/p30/dev.json', 'utf8')) as { sentences: { text: string }[] };
-    const builtin = JSON.parse(readFileSync('src/play/version/builtin-games.json', 'utf8')) as { origin: { sentence: string } }[];
+    const builtin = ['builtin-games.json', 'builtin-feed-games.json'].flatMap((file) => JSON.parse(readFileSync(`src/play/version/${file}`, 'utf8')) as { origin: { sentence: string } }[]);
     const sentences = [...dev.sentences.map((row) => row.text), ...builtin.map((game) => game.origin.sentence)];
     expect(sentences.length).toBeGreaterThan(50);
     expect(sentences.filter((sentence) => !moderatePrompt(sentence, PLAY_MODERATION).ok)).toEqual([]);

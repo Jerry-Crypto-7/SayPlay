@@ -45,3 +45,18 @@ Skutečné GPU tohoto stroje (přepínače `browserRenderer()` jako ostatní e2e
 - Telefon má dlouhý chvost (max 8–19 s): přechody, které se potkaly se špičkou zátěže stroje; mediány jsou stabilní.
 - Dnes se hra připojí až po ťuku na plakát – feed bez náhledu robota; T8 měří dosednutí → první snímek **náhledu** bez ťuku.
 - Rozhodnutí P54A: první běh měření (stejný den) kreslil přes SwiftShader (~3 FPS), protože vlastní `launchOptions` specu přepsaly přepínače GPU z konfigurace; spec je teď skládá a čísla výše jsou z opraveného běhu.
+
+## Kurátorský pool a snímky karet (T3)
+
+```
+node --experimental-strip-types scripts/p37c/seed-feed.mjs --builtin
+npm run build
+PLAY_STORE_DIR=<prázdný adresář> node node_modules/next/dist/bin/next start -H 127.0.0.1 -p 3291
+FEED_THUMBS_URL=http://127.0.0.1:3291 node --experimental-strip-types scripts/p37c/feed-thumbs.mjs
+```
+
+- Pool 40 her z 8 žánrů (aréna 22, úkol 7, plavba 3, běžec 3, střelnice 2, poletování, rytmus, načasování po 1), každá s náhledem robota (`preview`, nejdelší 735 B).
+- **Rozhodnutí P54A:** zmrazená sada P37C (`builtin-games.json`, 30 her `arcade-v2`) zůstává beze změny světů i id – zamyká ji `legacy-replay-v2` (soubor P54A neupravuje) a odkazy na ty hry už kolují; dostala jen náhled. Nových 10 her z dnešního jádra je v `builtin-feed-games.json`, `BUILTIN_GAMES` spojuje obě. Úplné přestavění sady by smazalo všech 30 starých id a shodilo zámek přehrání.
+- `seed-feed.mjs` na `main` padal („No playable assembly … needs loadRapier()“): skládání ze slov krokuje fyzikální sestavy dřív, než se Rapier načetl – teď se načte před návrhem.
+- Snímky: `public/feed-thumbs/<versionId>-{p,l}.webp`, 80 souborů, 7,7–39,8 KB, scéna v `startTick + 120` (nebo poslední tik okna, když robot vyhraje dřív), skutečné GPU, HUD skrytý. Spodní mez 3 KB v testu chytí prázdné plátno.
+- Kontrola očima 19. 10. (5 náhodných + nejmenší): kuchyň s pánvemi (na šířku), podmořské poletování s rourami, bambusová řeka, úkol se strážcem u podstavců (na výšku), zamlžená poušť s pronásledovatelem (nejmenší) – všechny ukazují scénu hry, žádné prázdné plátno.

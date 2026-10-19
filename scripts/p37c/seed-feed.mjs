@@ -7,7 +7,7 @@
  * vyhraje a nečinný hráč prohraje, a seřadí je podle hloubky.
  *
  *   node --experimental-strip-types scripts/p37c/seed-feed.mjs              jen spočítá a vypíše
- *   node --experimental-strip-types scripts/p37c/seed-feed.mjs --builtin    přepíše vestavěnou sadu (src/play/version/builtin-games.json)
+ *   node --experimental-strip-types scripts/p37c/seed-feed.mjs --builtin    obnoví náhledy zmrazené sady (builtin-games.json) a přepíše hry feedu (builtin-feed-games.json)
  *   PLAY_SEED_STORE_PREFIX=<předpona> KV_REST_API_URL=… KV_REST_API_TOKEN=… node --experimental-strip-types scripts/p37c/seed-feed.mjs
  *
  * **Do úložiště píše jen s `PLAY_SEED_STORE_PREFIX`** – samotné `KV_REST_API_*`
@@ -25,24 +25,32 @@ import { pathToFileURL } from 'node:url';
 if (!process.env.VITEST) await import('../ts-paths.mjs');
 const { canonicalHash } = await import('@/ir/worlddoc');
 const { draftGameSpecWithMeta } = await import('../../src/play/draft/index.ts');
-const { preloadPhysics } = await import('../../src/play/arcade/compile.ts');
 const { loadRapier } = await import('../../src/play/arcade/physics/world.ts');
 const { replay } = await import('../../src/play/arcade/kernel.ts');
 const { ARCADE_LIBRARY } = await import('../../src/play/arcade/library.ts');
 const { ARCADE_HZ } = await import('../../src/play/arcade/contract.ts');
 const { getCompiler } = await import('../../src/app/api/play/_compiler.ts');
-const { reportFor } = await import('../../src/app/api/play/_report.ts');
+const { previewFor, reportFor } = await import('../../src/app/api/play/_report.ts');
 const { IDEAS, STARTERS } = await import('../../src/components/play/starters.ts');
 const { VERSION_STORE_TIMEOUT_MS, httpVersionStore, sealVersion, writeLimitsFromEnv } = await import('../../src/play/version/index.ts');
 
-const ROOT = new URL('../../', import.meta.url);
-export const BUILTIN_PATH = new URL('src/play/version/builtin-games.json', ROOT);
+const { previewOf } = await import('../../src/play/version/preview.ts');
+const { runBot } = await import('../../src/play/arcade/verify.ts');
 
-/** Kolik nejhlubších her jde do buildu (AC: aspoň 24). */
-export const BUILTIN_COUNT = 30;
+const ROOT = new URL('../../', import.meta.url);
+/**
+ * Zmrazená sada P37C (30 her `arcade-v2`): ids a světy se nemění – zamyká je `legacy-replay-v2`
+ * a odkazy na ně už kolují. `--builtin` jí jen obnoví náhled robota (P54A T2).
+ */
+export const BUILTIN_PATH = new URL('src/play/version/builtin-games.json', ROOT);
+/** Hry feedu P54A z dnešního jádra: doplní zmrazenou sadu do `BUILTIN_COUNT`. */
+export const BUILTIN_FEED_PATH = new URL('src/play/version/builtin-feed-games.json', ROOT);
+
+/** Kolik her má vestavěný pool celkem (P54A T3: aspoň 40 z aspoň 6 žánrů). */
+export const BUILTIN_COUNT = 40;
 
 /** Vestavěná sada má pevné časy, aby soubor byl deterministický; nejhlubší je nejnovější. */
-const BUILTIN_EPOCH = Date.parse('2026-10-01T00:00:00.000Z');
+const BUILTIN_EPOCH = Date.parse('2026-10-19T00:00:00.000Z');
 
 /**
  * Semínka jako u dveří (`derivedSeeds` v `src/app/api/play/_publish.ts`), jen
@@ -81,8 +89,9 @@ export function depthOf(game) {
 
 /** Hra z věty jako z dveří, nebo důvod, proč neprošla. */
 export async function buildGame(sentence, createdAt) {
+  // Rapier před návrhem: skládání ze slov krokuje i fyzikální sestavy (jinak „No playable assembly … needs loadRapier()“).
+  await loadRapier();
   const spec = draftGameSpecWithMeta(sentence, 1).spec;
-  await preloadPhysics(spec, loadRapier);
   const compile = getCompiler();
   const seeds = feedSeeds(sentence);
   let compiled = compile(spec, seeds[0]);
@@ -102,6 +111,8 @@ export async function buildGame(sentence, createdAt) {
     arcade: compiled.value.arcade,
     report,
     origin: { sentence, seed: compiled.value.seed },
+    // Náhled robota pro feed (P54A T2) z téhož běhu, který `reportFor` právě pustil – jako u dveří.
+    preview: previewFor(compiled.value),
   };
   return { ok: true, game };
 }
@@ -167,9 +178,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   console.log(`${String(games.length)} verified games from ${String(sentences.length)} sentences (${String(failed.length)} did not pass)`);
   for (const { sentence, why } of failed) console.log(`  - ${sentence}: ${why}`);
   if (builtin) {
-    const chosen = games.slice(0, BUILTIN_COUNT);
-    writeFileSync(BUILTIN_PATH, builtinFile(chosen));
-    console.log(`builtin set: ${String(chosen.length)} games -> src/play/version/builtin-games.json`);
+    const frozen = JSON.parse(readFileSync(BUILTIN_PATH, 'utf8')).map((game) => ({ ...game, preview: previewOf(game.arcade, runBot(game.arcade)) }));
+    writeFileSync(BUILTIN_PATH, builtinFile(frozen));
+    const taken = new Set(frozen.map((game) => titleKey(game.version.title)));
+    const fresh = games.filter((game) => !taken.has(titleKey(game.version.title))).slice(0, BUILTIN_COUNT - frozen.length);
+    writeFileSync(BUILTIN_FEED_PATH, builtinFile(fresh));
+    console.log(`builtin set: ${String(frozen.length)} frozen games with previews + ${String(fresh.length)} new -> src/play/version/builtin-feed-games.json`);
   }
   const outcomes = await writeSeed(games, process.env);
   console.log(outcomes === null ? 'store: nothing written (set PLAY_SEED_STORE_PREFIX to write)' : `store ${process.env.PLAY_SEED_STORE_PREFIX}: ${JSON.stringify(outcomes)}`);

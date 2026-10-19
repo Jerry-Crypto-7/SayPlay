@@ -14,7 +14,7 @@ import { genreAnswer } from '@/play/director/__fixtures__';
 import { answered, type ScriptedOutcome } from '@/play/director/__fixtures__/branch';
 import type { GameSpecV1 } from '@/play/spec';
 import { __resetProcessVersionStore, RECENT_CAP } from '@/play/version';
-import builtinGames from '@/play/version/builtin-games.json';
+import { BUILTIN_GAMES } from '@/play/version/builtin';
 import { resetRateWindows } from '@/server/rate-limit';
 
 const director = vi.hoisted(() => ({ script: [] as unknown[], calls: 0 }));
@@ -115,7 +115,7 @@ describe('publishReadSpec – zakázané téma v textu specu', () => {
   });
 
   it('žádná vestavěná hra nemá řetězec, který by kontrola odmítla', () => {
-    expect(builtinGames.filter((game) => blockedText(game.spec) !== null).map((game) => game.version.title)).toEqual([]);
+    expect(BUILTIN_GAMES.filter((game) => blockedText(game.spec) !== null).map((game) => game.version.title)).toEqual([]);
   });
 
   it('hotový spec se zakázaným titulkem odmítnou i dveře', async () => {
