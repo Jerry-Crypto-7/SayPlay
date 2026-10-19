@@ -36,7 +36,9 @@ import type { FeedPreview } from '@/play/version/version';
 import { loopEvent } from '../loop-client';
 import { countCanvases, feedMode, previewFor } from './preview';
 import { type GameDetail, ReelCard } from './ReelCard';
+import { cardImage, createSnapshotCache } from './snapshot-cache';
 import { StageHost } from './StageHost';
+import { warmGame } from './warm';
 
 const PAGE = 12;
 /** Tah kratší než tohle je ťuk, ne listování. */
@@ -81,6 +83,9 @@ export function ReelFeed() {
   const root = useRef<HTMLElement | null>(null);
   const reel = useRef<HTMLDivElement | null>(null);
   const [onScreen, setOnScreen] = useState(true);
+  const [snapshots] = useState(() => createSnapshotCache());
+  /** Nový snímek v `snapshots` – karty se překreslí. */
+  const [, setShots] = useState(0);
   /** Příští posun k aktivní kartě je skok tlačítkem nebo klávesou – plynule. */
   const glide = useRef(false);
 
@@ -115,11 +120,11 @@ export function ReelFeed() {
     })();
   }, []);
 
-  // Aktivní hra a sousedé předem (plakát sousedů ukáže cíl); blízko konce další stránka řádků.
+  // Aktivní hra a sousedé předem (T8: +1, +2 a −1, `warm.ts`); blízko konce další stránka řádků.
   useEffect(() => {
     if (feed.kind !== 'ready' || current === undefined) return;
     want(current.versionId);
-    for (const near of [feed.games[index + 1], feed.games[index - 1]]) if (near !== undefined) want(near.versionId);
+    for (const near of [feed.games[index + 1], feed.games[index + 2], feed.games[index - 1]]) if (near !== undefined) want(near.versionId);
     if (index >= feed.games.length - 3 && feed.next !== null && !loadingMore.current) {
       loadingMore.current = true;
       const cursor = feed.next;
@@ -155,6 +160,36 @@ export function ReelFeed() {
       live = false;
     };
   }, [current, currentDetail]);
+
+  // Sousedé zahřátí, jakmile mají detail: modely, panorama, Rapier, náhled z workeru, obrázek karty.
+  useEffect(() => {
+    const landscape = window.matchMedia('(orientation: landscape)').matches;
+    for (const near of [games[index + 1], games[index + 2], games[index - 1]]) {
+      const detail = near === undefined ? undefined : details.get(near.versionId);
+      if (near === undefined || detail === undefined || detail === 'error') continue;
+      const image = cardImage(near.versionId);
+      warmGame(near.versionId, detail, snapshots.get(near.versionId) ?? (landscape ? image.landscape : image.portrait));
+    }
+  }, [games, index, details, snapshots]);
+
+  // Snímek scény, ze které hráč odchází (T8). `shown` drží hru, jejíž scéna je v plátně –
+  // `StageHost` volá `onLeave` uprostřed commitu další karty, dřív než se `shown` přepíše.
+  const shown = useRef<string | null>(null);
+  useEffect(() => {
+    shown.current = current?.versionId ?? null;
+  });
+  const onLeave = useCallback(
+    (frame: Promise<Blob | null>) => {
+      const versionId = shown.current;
+      if (versionId === null) return;
+      void frame.then((blob) => {
+        if (blob === null) return;
+        snapshots.put(versionId, blob);
+        setShots((count) => count + 1);
+      });
+    },
+    [snapshots],
+  );
 
   // Sonda pro e2e a měření: aktivní hra, režim karty, tik a kolik pláten feed kdy ukázal.
   useEffect(() => {
@@ -342,7 +377,7 @@ export function ReelFeed() {
   );
   return (
     <section ref={root} className="play-pager" aria-label="Game feed" data-testid="feed-pager">
-      <StageHost>
+      <StageHost onLeave={onLeave}>
         {(host) => (
           <div ref={reel} className="play-reel" data-testid="feed-reel">
             {games.map((game, at) =>
@@ -357,6 +392,7 @@ export function ReelFeed() {
                   rail={at === index ? rail : null}
                   host={host}
                   preview={previews.get(game.versionId)}
+                  shot={snapshots.get(game.versionId)}
                 />
               ) : (
                 <div key={game.versionId} className="play-reel-gap" aria-hidden="true" />

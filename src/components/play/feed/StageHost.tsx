@@ -9,10 +9,11 @@
  */
 
 import { Canvas, useThree } from '@react-three/fiber';
-import { Fragment, type ReactNode, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { Fragment, type ReactNode, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import type { PerspectiveCamera } from 'three';
 
+import { captureFrame } from './snapshot-cache';
 import { createStageTunnel, type Frameloop, type StageTunnel } from './stage-tunnel';
 
 const CAMERA_AT = [0, 3.4, -6.5] as const;
@@ -39,8 +40,9 @@ function FreshCamera() {
 
 function HostCanvas({ host }: { readonly host: StageTunnel }) {
   const content = useSyncExternalStore(host.subscribe, host.content, () => null);
+  useLayoutEffect(() => () => host.bind(null), [host]);
   return (
-    <Canvas {...STAGE_CANVAS} frameloop={content?.frameloop ?? 'demand'}>
+    <Canvas {...STAGE_CANVAS} frameloop={content?.frameloop ?? 'demand'} onCreated={(state) => host.bind(() => captureFrame(state))}>
       {content !== null && (
         <Fragment key={content.owner}>
           <FreshCamera />
@@ -51,8 +53,11 @@ function HostCanvas({ host }: { readonly host: StageTunnel }) {
   );
 }
 
-/** Drží jedno plátno, dokud je feed na stránce; `children` dostanou hostitele pro `ArcadeStage`. */
-export function StageHost({ children }: { readonly children: (host: StageTunnel) => ReactNode }) {
+/**
+ * Drží jedno plátno, dokud je feed na stránce; `children` dostanou hostitele pro `ArcadeStage`.
+ * `onLeave` dostane snímek scény, která z plátna odchází (T8).
+ */
+export function StageHost({ children, onLeave }: { readonly children: (host: StageTunnel) => ReactNode; readonly onLeave?: (frame: Promise<Blob | null>) => void }) {
   const [host] = useState(() => {
     if (typeof document === 'undefined') return createStageTunnel(null);
     const element = document.createElement('div');
@@ -60,6 +65,7 @@ export function StageHost({ children }: { readonly children: (host: StageTunnel)
     element.style.cssText = 'width:100%;height:100%';
     return createStageTunnel(element);
   });
+  useEffect(() => (onLeave === undefined ? undefined : host.onLeave(onLeave)), [host, onLeave]);
   return (
     <>
       {host.element !== null && createPortal(<HostCanvas host={host} />, host.element)}

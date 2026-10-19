@@ -31,11 +31,17 @@ export interface StageTunnel {
   release(owner: number): void;
   content(): StageContent | null;
   subscribe(listener: () => void): () => void;
+  /** Plátno umí zachytit, co právě ukazuje (`StageHost`, T8); `null` = plátno ještě/už není. */
+  bind(capture: (() => Promise<Blob | null>) | null): void;
+  /** Snímek scény, která odchází (`release`), dřív než ji vystřídá další – feed z něj dělá obrázek karty. */
+  onLeave(listener: (frame: Promise<Blob | null>) => void): () => void;
 }
 
 export function createStageTunnel(element: HTMLElement | null): StageTunnel {
   let current: StageContent | null = null;
   let owner: number | null = null;
+  let capture: (() => Promise<Blob | null>) | null = null;
+  const leaving = new Set<(frame: Promise<Blob | null>) => void>();
   const listeners = new Set<() => void>();
   const notify = () => {
     for (const listener of listeners) listener();
@@ -53,6 +59,10 @@ export function createStageTunnel(element: HTMLElement | null): StageTunnel {
     },
     release: (who) => {
       if (owner !== who) return;
+      if (capture !== null && current !== null && leaving.size > 0) {
+        const frame = capture();
+        for (const listener of leaving) listener(frame);
+      }
       owner = null;
       current = null;
       element?.remove();
@@ -63,6 +73,15 @@ export function createStageTunnel(element: HTMLElement | null): StageTunnel {
       listeners.add(listener);
       return () => {
         listeners.delete(listener);
+      };
+    },
+    bind: (next) => {
+      capture = next;
+    },
+    onLeave: (listener) => {
+      leaving.add(listener);
+      return () => {
+        leaving.delete(listener);
       };
     },
   };

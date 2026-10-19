@@ -15,6 +15,8 @@ import { replay } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { loadRapier } from '@/play/arcade/physics/world';
 
+import thumbs from '@/components/play/feed/feed-thumbs.json';
+
 import { BUILTIN_GAMES } from '../builtin';
 import { decodePreview } from '../preview';
 
@@ -50,5 +52,9 @@ describe('vestavěný pool feedu', () => {
         expect(readFileSync(file).subarray(8, 12).toString('latin1'), file).toBe('WEBP');
       }
     }
+  });
+
+  it('feed zná snímky právě těchto her (`feed-thumbs.json`, T8) – jiná hra by dostala 404 místo obrázku odkazu', () => {
+    expect([...thumbs].sort()).toEqual(BUILTIN_GAMES.map((game) => game.version.versionId).sort());
   });
 });

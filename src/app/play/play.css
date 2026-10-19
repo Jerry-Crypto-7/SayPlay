@@ -2827,6 +2827,23 @@ button.play-feed-card {
   cursor: default;
 }
 
+/* Obrázek karty mimo hru (T8): snímek scény z posledního odchodu, kurátorský
+ * snímek nebo obrázek odkazu přes plakát; titul a cíl na ploše, aby se četly. */
+.play-reel-shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.play-reel-poster > :is(.play-poster-title, .play-poster-goal) {
+  position: relative;
+  padding: var(--sp-space-1) var(--sp-space-3);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+}
+
 /* Náhled robota (T7): „Tap to play“ dole nad scénou, ťuk projde na scénu.
  * Poznámku ukázky nahrazuje; jakmile hraje hráč (poznámka zmizí), zmizí i on. */
 .play-reel .play-demo-note {

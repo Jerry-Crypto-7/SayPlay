@@ -6,7 +6,8 @@
  * Aktivní karta (T7) připojí hru do trvalého plátna feedu (`StageHost`) a
  * robot v ní ztlumeně hraje náhled z publikace; ťuk na scénu nebo klávesa
  * hru převezme. Nese `feed-current` a listovací okraj. Ostatní karty ukazují
- * jen plakát v tónu nálady scény (titul, cíl, když už je detail stažený).
+ * plakát v tónu nálady scény (titul, cíl, když už je detail stažený) s obrázkem
+ * hry (T8, `CardImage`).
  */
 
 import Link from 'next/link';
@@ -22,6 +23,7 @@ import { ArcadePlay } from '../arcade/ArcadePlay';
 import { WithPlayEnv } from '../arcade/look/play-env';
 import { beatText, type FeedGame, moodTone } from '../Feed';
 import { Icon } from '../ui';
+import { cardImage } from './snapshot-cache';
 import type { StageTunnel } from './stage-tunnel';
 
 export interface GameDetail {
@@ -118,6 +120,22 @@ function ActiveSlide({
   );
 }
 
+/**
+ * Obrázek karty, která nehraje (T8): snímek scény z posledního odchodu, jinak
+ * kurátorský snímek na výšku/na šířku nebo obrázek odkazu. Nenačtený obrázek
+ * (prázdné `alt`) nekreslí nic a zůstane plakát v tónu nálady pod ním.
+ */
+function CardImage({ versionId, shot }: { readonly versionId: string; readonly shot: string | undefined }) {
+  if (shot !== undefined) return <img className="play-reel-shot" data-testid="feed-shot" src={shot} alt="" />;
+  const image = cardImage(versionId);
+  return (
+    <picture>
+      <source media="(orientation: landscape)" srcSet={image.landscape} />
+      <img className="play-reel-shot" src={image.portrait} alt="" loading="lazy" decoding="async" />
+    </picture>
+  );
+}
+
 export function ReelCard({
   game,
   index,
@@ -127,6 +145,7 @@ export function ReelCard({
   rail,
   host,
   preview,
+  shot,
 }: {
   readonly game: FeedGame;
   readonly index: number;
@@ -139,6 +158,8 @@ export function ReelCard({
   /** Trvalé plátno feedu – aktivní karta do něj kreslí svou scénu. */
   readonly host: StageTunnel;
   readonly preview: FeedPreview | null | undefined;
+  /** Snímek scény z posledního odchodu z karty (`snapshot-cache.ts`). */
+  readonly shot: string | undefined;
 }) {
   const spec = detail !== undefined && detail !== 'error' ? detail.spec : null;
   return (
@@ -150,6 +171,7 @@ export function ReelCard({
         </div>
       ) : (
         <div className="play-poster play-reel-poster" data-tone={moodTone(spec?.theme.mood ?? '')} aria-hidden="true">
+          <CardImage versionId={game.versionId} shot={shot} />
           <span className="play-poster-title">{spec?.title ?? game.title}</span>
           {spec !== null && <span className="play-poster-goal">{spec.tutorial.goalLine}</span>}
         </div>

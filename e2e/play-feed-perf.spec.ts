@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { expect, test, type APIRequestContext, type Browser, type BrowserContextOptions, type Page } from '@playwright/test';
 
 import { browserRenderer } from '../scripts/browser-renderer';
-import { startGame } from './play-start';
 
 /**
  * Měření feedu na `/play` (P54A T1). Tag `@measure` ho drží mimo běžné
@@ -15,13 +14,14 @@ import { startGame } from './play-start';
  * Šest her z fixtur se publikuje skutečnými dveřmi, řádky feedu dodá
  * `page.route` (do skutečného feedu jde jen verze od režiséra, jako
  * v `play-feed.spec.ts`). Na desktopu 1440×900 a na Pixel 7 s CPU ×4 (CDP)
- * projde 10 přechodů tlačítkem „next“, 3 běhy, každý v čerstvém kontextu.
+ * projde 20 přechodů tlačítkem „next“/„previous“, 3 běhy, každý v čerstvém kontextu.
  *
- * Přechod se měří ve stránce, ne v Node: `t0` = klik na „next“, `posterMs` =
- * plakát nové hry, `tap` = klik na plakát (dnes se hra bez ťuku nepřipojí),
- * `swapToFirstDrawMs` / `tapToFirstDrawMs` = první `draw*` na WebGL kontextu
- * vytvořeném po ťuku. Kontexty a kreslení počítá init skript obalem
- * `getContext` a `draw*`, long tasks `PerformanceObserver`.
+ * Přechod se měří ve stránce, ne v Node (od T8 bez ťuku – aktivní karta hraje
+ * náhled robota sama): `t0` = klik, `shownMs` = karta nové hry v `preview`,
+ * `swapToPreviewMs` = první snímek, ve kterém se tik náhledu posunul a kreslilo
+ * se (baseline T1 měřila klik → plakát → ťuk → první `draw*` nového kontextu).
+ * Kontexty a kreslení počítá init skript obalem `getContext` a `draw*`, long
+ * tasks `PerformanceObserver`.
  *
  * Test nic netvrdí, jen zapisuje čísla; spadne jen na chybě stránky.
  */
@@ -53,8 +53,8 @@ const PROFILES: readonly { id: string; options: BrowserContextOptions; cpu: numb
   },
 ];
 
-/** Tam a zpět přes šest her: 10 přechodů. */
-const MOVES = [1, 1, 1, 1, 1, -1, -1, -1, -1, -1] as const;
+/** Dvakrát tam a zpět přes šest her: 20 přechodů (T8 měří heap po dvaceti). */
+const MOVES = [1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1] as const;
 const REPEATS = Number(process.env.PERF_REPEATS ?? 3);
 const FPS_MS = 2_000;
 const LONG_TASK_WINDOW_MS = 500;
@@ -73,6 +73,8 @@ interface Row {
 interface FeedProbe {
   contexts: { createdAt: number; firstDrawAt: number | null }[];
   getContextCalls: number;
+  /** Poslední volání `draw*` na kterémkoli kontextu. */
+  lastDrawAt: number;
   longTasks: { start: number; duration: number }[];
   fps(ms: number): Promise<{ fpsP50: number | null; fpsP5: number | null; drawnFps: number }>;
 }
@@ -90,6 +92,7 @@ function installFeedProbe(): void {
   const probe = {
     contexts: [] as { createdAt: number; firstDrawAt: number | null }[],
     getContextCalls: 0,
+    lastDrawAt: 0,
     longTasks: [] as { start: number; duration: number }[],
     fps(ms: number) {
       return new Promise<{ fpsP50: number | null; fpsP5: number | null; drawnFps: number }>((resolve) => {
@@ -139,6 +142,7 @@ function installFeedProbe(): void {
       if (typeof original !== 'function') continue;
       proto[name] = function (this: object, ...args: unknown[]) {
         drawsThisFrame += 1;
+        probe.lastDrawAt = performance.now();
         const entry = seen.get(this);
         if (entry !== undefined && entry.firstDrawAt === null) entry.firstDrawAt = performance.now();
         return original.apply(this, args);
@@ -173,30 +177,34 @@ const heap = (page: Page): Promise<number> =>
     return (performance as unknown as { memory: { usedJSHeapSize: number } }).memory.usedJSHeapSize;
   });
 
-/** Plakát cílové hry na místě – titul v plakátu aktuálního slidu. */
-async function waitPoster(page: Page, row: Row): Promise<number> {
-  await page.waitForFunction(
-    ({ versionId, title }) => {
-      const slide = document.querySelector('[data-testid="feed-current"]');
-      return slide?.getAttribute('data-version-id') === versionId && (slide.querySelector('[data-testid="feed-poster"]')?.textContent ?? '').includes(title);
-    },
-    { versionId: row.versionId, title: row.title },
-    { timeout: 60_000 },
+/**
+ * První snímek běžícího náhledu cílové hry (T8): `__playFeed()` ukazuje cílovou
+ * hru v `preview` (`shownAt`), pak snímek, ve kterém se tik posunul a kreslilo
+ * se – jeho `lastDrawAt`. Sleduje se po snímcích ve stránce, ne dotazy z Node.
+ */
+async function waitPreview(page: Page, row: Row): Promise<{ shownAt: number; firstFrameAt: number }> {
+  return page.evaluate(
+    (versionId) =>
+      new Promise<{ shownAt: number; firstFrameAt: number }>((resolve, reject) => {
+        const started = performance.now();
+        let shown: { at: number; tick: number } | null = null;
+        const frame = () => {
+          const now = window.__playFeed?.();
+          if (shown === null && now?.versionId === versionId && now.mode === 'preview' && document.querySelector('[data-testid="feed-current"] .play-shell') !== null) {
+            shown = { at: performance.now(), tick: now.tick };
+          }
+          const drawn = window.__feedProbe!.lastDrawAt;
+          if (shown !== null && now !== undefined && now.tick > shown.tick && drawn > shown.at) {
+            resolve({ shownAt: shown.at, firstFrameAt: drawn });
+            return;
+          }
+          if (performance.now() - started > 60_000) reject(new Error(`no running preview of ${versionId}`));
+          else requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+    row.versionId,
   );
-  return page.evaluate(() => performance.now());
-}
-
-/** Ťuk na plakát a čekání na první `draw*` kontextu, který vznikl po něm. */
-async function tapAndFirstDraw(page: Page): Promise<{ tap: number; firstDraw: number }> {
-  const tap = await page.evaluate(() => {
-    const at = performance.now();
-    (document.querySelector('[data-testid="feed-current"] [data-testid="feed-poster"]') as HTMLButtonElement).click();
-    return at;
-  });
-  const firstDraw = await page
-    .waitForFunction((after) => window.__feedProbe!.contexts.find((c) => c.createdAt >= after && c.firstDrawAt !== null)?.firstDrawAt ?? null, tap, { timeout: 60_000 })
-    .then((handle) => handle.jsonValue() as Promise<number>);
-  return { tap, firstDraw };
 }
 
 async function measureOnce(browser: Browser, rows: readonly Row[], profile: (typeof PROFILES)[number]) {
@@ -210,10 +218,10 @@ async function measureOnce(browser: Browser, rows: readonly Row[], profile: (typ
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: profile.cpu });
   try {
     await page.goto('/play');
-    await waitPoster(page, rows[0]);
     // Feed stojí pod polem pro větu; hra hraje, jen když je feed aspoň z poloviny vidět (`onScreen`).
+    await page.getByTestId('feed-current').waitFor({ timeout: 60_000 });
     await page.evaluate(() => document.querySelector('[data-testid="feed-current"]')?.scrollIntoView({ block: 'start' }));
-    await tapAndFirstDraw(page);
+    await waitPreview(page, rows[0]);
     await sleep(1_000);
     const heapBefore = await heap(page);
     const transitions: unknown[] = [];
@@ -226,24 +234,19 @@ async function measureOnce(browser: Browser, rows: readonly Row[], profile: (typ
         (document.querySelector(`[data-testid="${testId}"]`) as HTMLButtonElement).click();
         return at0;
       }, move > 0 ? 'feed-next' : 'feed-prev');
-      const poster = await waitPoster(page, row);
-      const { tap, firstDraw } = await tapAndFirstDraw(page);
-      // Hra čeká na první dotek (P33 T11); FPS se měří při hraní, proto ji pustí sonda jako ťuk na scénu.
-      await startGame(page);
+      const { shownAt, firstFrameAt } = await waitPreview(page, row);
+      // FPS běžícího náhledu robota – scéna i logika jako při hraní, bez ťuku.
       const fps = await page.evaluate((ms) => window.__feedProbe!.fps(ms), FPS_MS);
-      const longTasks = await page.evaluate(({ t0: from, tap: mounted, window: span }) => {
-        const tasks = window.__feedProbe!.longTasks;
-        const within = (start: number) => tasks.filter((t) => t.duration > 50 && t.start >= start && t.start < start + span);
-        return { afterSwap: within(from), afterTap: within(mounted) };
-      }, { t0, tap, window: LONG_TASK_WINDOW_MS });
+      const longTasks = await page.evaluate(({ from, span }) => window.__feedProbe!.longTasks.filter((t) => t.duration > 50 && t.start >= from && t.start < from + span), {
+        from: t0,
+        span: LONG_TASK_WINDOW_MS,
+      });
       transitions.push({
         to: row.title,
-        posterMs: poster - t0,
-        tapToFirstDrawMs: firstDraw - tap,
-        swapToFirstDrawMs: firstDraw - t0,
-        longTasksAfterSwap: longTasks.afterSwap.length,
-        longTasksAfterTap: longTasks.afterTap.length,
-        longestTaskAfterTapMs: Math.max(0, ...longTasks.afterTap.map((t) => t.duration)),
+        shownMs: shownAt - t0,
+        swapToPreviewMs: firstFrameAt - t0,
+        longTasksAfterSwap: longTasks.length,
+        longestTaskAfterSwapMs: Math.max(0, ...longTasks.map((t) => t.duration)),
         ...fps,
       });
     }
@@ -252,6 +255,8 @@ async function measureOnce(browser: Browser, rows: readonly Row[], profile: (typ
       getContextCalls: window.__feedProbe!.getContextCalls,
       contextsCreated: window.__feedProbe!.contexts.length,
       canvasesInDom: document.querySelectorAll('canvas').length,
+      feedContexts: window.__playFeed?.().contexts ?? null,
+      snapshotsInDom: document.querySelectorAll('[data-testid="feed-shot"]').length,
     }));
     return { transitions, heapBefore, heapAfter, ...counts, errors };
   } finally {
@@ -275,12 +280,11 @@ function summarise(runs: readonly Run[]) {
   const pick = (key: string) => stats(all.map((t) => t[key] as number | null));
   return {
     transitions: all.length,
-    posterMs: pick('posterMs'),
-    tapToFirstDrawMs: pick('tapToFirstDrawMs'),
-    swapToFirstDrawMs: pick('swapToFirstDrawMs'),
+    shownMs: pick('shownMs'),
+    swapToPreviewMs: pick('swapToPreviewMs'),
     longTasksAfterSwap: pick('longTasksAfterSwap'),
-    longTasksAfterTap: pick('longTasksAfterTap'),
-    longestTaskAfterTapMs: pick('longestTaskAfterTapMs'),
+    longestTaskAfterSwapMs: pick('longestTaskAfterSwapMs'),
+    transitionsWithLongTask: all.filter((t) => (t.longTasksAfterSwap as number) > 0).length,
     fpsP50: pick('fpsP50'),
     fpsP5: pick('fpsP5'),
     drawnFps: pick('drawnFps'),
@@ -288,6 +292,7 @@ function summarise(runs: readonly Run[]) {
     contextsCreated: stats(runs.map((r) => r.contextsCreated)),
     heapBeforeMb: stats(runs.map((r) => r.heapBefore / 2 ** 20)),
     heapAfterMb: stats(runs.map((r) => r.heapAfter / 2 ** 20)),
+    heapGrowthMb: stats(runs.map((r) => (r.heapAfter - r.heapBefore) / 2 ** 20)),
   };
 }
 
@@ -298,11 +303,11 @@ test('@measure feed: swap to first frame, long tasks, FPS and WebGL contexts × 
   mkdirSync(join(out, '..'), { recursive: true });
   const rows = await publish(request);
   const report: Record<string, unknown> = {
-    version: 'p54a-feed-perf-v1',
+    version: 'p54a-feed-perf-v2',
     measuredAt: new Date().toISOString(),
     browser: browser.version(),
     note:
-      'Phone profile is emulation: Pixel 7 viewport with touch, CPU throttled ×4 via CDP on this machine\'s GPU. Per transition: click on next → poster of the new game → tap → first draw call on the WebGL context created after the tap. Summary = median/min/max over all transitions of all runs.',
+      'Phone profile is emulation: Pixel 7 viewport with touch, CPU throttled ×4 via CDP on this machine\'s GPU. Per transition: click on next (the active card switches at once, the glide follows) → the new game\'s card in preview mode (shownMs) → first frame where the preview tick advanced and something was drawn (swapToPreviewMs). FPS = 2 s of the running bot preview. Summary = median/min/max over all transitions of all runs.',
     repeats: REPEATS,
     moves: MOVES,
     games: rows.map((row) => row.title),
