@@ -103,6 +103,13 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - **Replay brána** 284 / 284. **Finále P51:** kód od T9 beze změny (jen test), gauge P47A dev 0,97 = T1.
 - **Gauge** beze změny proti T9: P52 dev 0,94 / 0,97 / 0,97, P47B dev 0,96 / 0,96 / 0,94, P46A 1 / 1 / 0,95, past 0, vše hratelné. p95 návrhu 2,7 / 4,0 / 4,3 s – stroj byl plně vytížený: mediány proti T6 plošně 1,3–1,8×, i u žánrů, na které P52 po T6 nesáhl (rytmus v92 2,7×, plošinovka d37 2,9×). Brána ≤ 2 s v T11 v klidu.
 
+## T5-R1 – sběr v aréně jen s úderem
+
+- **Proč:** úder zabil jediného pronásledovatele sběru (vlny ho za hru přivedou jednoho) a zbytek hry byl prázdný – novice na semínkách 1–20 17/20, bez akce 9/20.
+- **Změna:** ve `genre.v5` sběr jen s úderem dostane doplnění zničených (`restock` v `sharedChasers`), bez vln navíc. Otisk sběru s úderem se vědomě posunul `5c0da6ca` → `83990b73`; `genre.v4` týž svět (`250a2f1b` i před změnou).
+- **Vyváženost (semínka 1–20):** věta testu novice 14/20 = 0,7 (1–10 7/10), intermediate 18/20; d01 novice 14/20, intermediate 20/20 (bez akce 13/20). Obě na horní hraně pásma. Vlna navíc jako u úderu s ochranou dala větě testu 13/20, ale d01 17/20 – nad pásmem, proto jen doplnění.
+- **Gauge:** žádný řádek P52 dev, P47B dev ani P46A se nepohnul (d01 1 / 1 / 1), finále P51 dev 0,97; žádná buňka `p41/difficulty.json` úder nenese. 3 mutace červené (bez doplnění, vlna navíc pro úder sám, bez hranice verze), replay 305/305 (golden sám – v souběhu přetekl časový strop kompilace).
+
 ## Rozhodnutí
 
 - T1: větev P51 na origin není (`git ls-remote` bez ní); sloučena lokální `features/P51-…`, která `origin/main` už obsahuje – fast-forward bez merge commitu.

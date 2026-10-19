@@ -267,19 +267,22 @@ function duelVerbs(parts: ArcadeParts, ids: readonly AbilityId[]): ArcadeParts {
  * - quest s úderem: druhé kolo jednoho (novice 9/10 proti 6/10 bez úderu, takhle 7/10; semínka 1–20 13/20 proti 11/20);
  * - sběr v aréně s úderem a dashem nebo štítem: každá vlna od první s pronásledovatelem jednoho. Sběr jich jinak za hru
  *   přivede jednoho (`wavesChasers`), takže druhé sloveso by se nedokázalo nikdy (novice s dashem 9/10 proti 4/10
- *   bez akcí, takhle 6/10; semínka 1–20 14/20, se štítem 13/20).
+ *   bez akcí, takhle 6/10; semínka 1–20 14/20, se štítem 13/20);
+ * - sběr v aréně jen s úderem (T5-R1): jen doplnění zničených. Úder jinak zabil jediného pronásledovatele a zbytek hry
+ *   byl prázdný (novice 17/20 proti 9/20 bez akce).
  * Útěk (živý pronásledovatel od startu) zůstane.
  */
 function sharedChasers(parts: ArcadeParts, spec: AddonContext['spec'], ids: readonly AbilityId[]): ArcadeParts {
   if (!ids.includes('strike') || !genreAtLeast(spec, FINALE5_GENRE_VERSION)) return parts;
   const live = parts.level.bodies.filter((body) => body.role === 'chaser' && body.template !== true).length;
   const quest = baseBotOf(parts.bot).id === 'quest_bot';
-  if (!quest && (live > 0 || !(ids.includes('dash') || ids.includes('shield')))) return parts;
+  if (!quest && live > 0) return parts;
+  const guard = ids.includes('dash') || ids.includes('shield');
   const bump = (native: PieceRef): PieceRef => {
     if (native.id !== 'arena_waves' || native.params.chaser === undefined) return native;
     const waves = native.params.waves as readonly { readonly chasers?: number }[];
     const first = waves.findIndex((wave) => (wave.chasers ?? 0) > 0);
-    const extra = (k: number): boolean => (quest ? k === 0 : first >= 0 && k >= first);
+    const extra = (k: number): boolean => (quest ? k === 0 : guard && first >= 0 && k >= first);
     return { ...native, params: { ...native.params, restock: live, waves: waves.map((wave, k) => (extra(k) ? { ...wave, chasers: (wave.chasers ?? 0) + 1 } : wave)) } };
   };
   return { ...parts, rules: parts.rules.map((rule) => mapUnderlying(rule, bump)) };

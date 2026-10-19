@@ -32,7 +32,8 @@ function worldOf(spec: GameSpecV1, seed: number): ArcadeWorld {
   return made.world;
 }
 
-const wins = (spec: GameSpecV1, profile: BotProfile): number => SEEDS.filter((seed) => runBot(worldOf(spec, seed), ARCADE_LIBRARY, { profile }).outcome === 'won').length / SEEDS.length;
+const wins = (spec: GameSpecV1, profile: BotProfile, seeds: readonly number[] = SEEDS): number =>
+  seeds.filter((seed) => runBot(worldOf(spec, seed), ARCADE_LIBRARY, { profile }).outcome === 'won').length / seeds.length;
 
 /** Brána obtížnosti (P41): novice 0,3–0,7, intermediate aspoň 0,8. */
 function expectBalanced(spec: GameSpecV1): void {
@@ -166,13 +167,30 @@ describe('P52 T5: arena collect with strike and a guard', () => {
     expectBalanced(arenaSpec(text, abilities));
   }, 300_000);
 
-  it('every chaser wave brings one more and restocks struck chasers only for strike with a guard in genre.v5', () => {
+  // T5-R1: úder sám zabil jediného pronásledovatele sběru a zbytek hry byl prázdný – novice 17/20 (bez akce 9/20).
+  it.each([
+    ['the test sentence', arenaSpec(ARENA.dash[0], ['strike'])],
+    ['d01', draftGameSpecWithMeta('a kid catches raindrops in a jar on the porch and kicks away the hailstones', 1).spec],
+  ])('collect with strike alone (%s): novice stays in the band and intermediate wins on seeds 1–20', (_name, spec) => {
+    expect(spec.genre).toMatchObject({ id: 'arena', mode: 'collect' });
+    expect(spec.abilities).toEqual(['strike']);
+    const seeds = Array.from({ length: 20 }, (_, index) => index + 1);
+    expect(wins(spec, 'intermediate', seeds), 'intermediate').toBeGreaterThanOrEqual(0.8);
+    const novice = wins(spec, 'novice', seeds);
+    expect(novice, 'novice').toBeGreaterThanOrEqual(0.3);
+    expect(novice, 'novice').toBeLessThanOrEqual(0.7);
+  }, 300_000);
+
+  it('every chaser wave brings one more for strike with a guard, strike alone only restocks, in genre.v5', () => {
     const [text] = ARENA.dash;
     expect(waves(worldOf(arenaSpec(text, ['dash', 'strike']), 1))).toMatchObject({ restock: 0, chasers: [2, 1] });
     expect(waves(worldOf(arenaSpec(text, ['shield', 'strike']), 1))).toMatchObject({ restock: 0, chasers: [2, 1] });
-    for (const abilities of [['strike'], ['dash']] as const) expect(waves(worldOf(arenaSpec(text, abilities), 1))).toMatchObject({ restock: undefined, chasers: [1, 0] });
-    const v4 = arenaSpec(text, ['dash', 'strike']);
-    expect(waves(worldOf({ ...v4, genre: { ...v4.genre!, compilerVersion: 'genre.v4' } }, 1))).toMatchObject({ restock: undefined, chasers: [1, 0] });
+    expect(waves(worldOf(arenaSpec(text, ['strike']), 1))).toMatchObject({ restock: 0, chasers: [1, 0] });
+    expect(waves(worldOf(arenaSpec(text, ['dash']), 1))).toMatchObject({ restock: undefined, chasers: [1, 0] });
+    for (const abilities of [['dash', 'strike'], ['strike']] as const) {
+      const v4 = arenaSpec(text, abilities);
+      expect(waves(worldOf({ ...v4, genre: { ...v4.genre!, compilerVersion: 'genre.v4' } }, 1))).toMatchObject({ restock: undefined, chasers: [1, 0] });
+    }
   });
 
   it('a wave restocks the chasers the hero destroyed, a wave without restock does not', () => {
@@ -194,10 +212,14 @@ describe('P52 T5: arena collect with strike and a guard', () => {
   });
 
   it('arena games without strike and a guard, and genre.v4, build the same world as before', () => {
-    // Otisky změřené před T5 (část aréna): sběr s úderem, s dashem a dvojice ve `genre.v4`.
+    // Otisky změřené před T5 (část aréna): sběr s dashem a dvojice ve `genre.v4`; úder sám ve `genre.v4` z T5-R1.
+    // Sběr jen s úderem ve `genre.v5` se v T5-R1 vědomě posunul (5c0da6ca → doplnění zničených).
     const [text] = ARENA.dash;
-    const v4 = arenaSpec(text, ['dash', 'strike']);
-    const specs = [arenaSpec(text, ['strike']), arenaSpec(text, ['dash']), { ...v4, genre: { ...v4.genre!, compilerVersion: 'genre.v4' } }];
-    expect(specs.map((spec) => canonicalHash(worldOf(spec, 1)))).toEqual(['5c0da6ca', '8e3d1b45', '6d1e1888']);
+    const v4 = (abilities: readonly AbilityId[]): GameSpecV1 => {
+      const spec = arenaSpec(text, abilities);
+      return { ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v4' } };
+    };
+    const specs = [arenaSpec(text, ['strike']), arenaSpec(text, ['dash']), v4(['dash', 'strike']), v4(['strike'])];
+    expect(specs.map((spec) => canonicalHash(worldOf(spec, 1)))).toEqual(['83990b73', '8e3d1b45', '6d1e1888', '250a2f1b']);
   });
 });
