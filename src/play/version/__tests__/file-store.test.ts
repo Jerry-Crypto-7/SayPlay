@@ -71,7 +71,8 @@ describe('fileVersionStore', () => {
     expect((await restarted.get(child.version.versionId))?.version.parentId).toBe(parent.version.versionId);
     expect(await restarted.childrenOf(parent.version.versionId)).toEqual([child.version.versionId]);
     expect((await restarted.lineageOf(child.version.versionId)).map((version) => version.versionId)).toEqual([parent.version.versionId, child.version.versionId]);
-    expect((await restarted.recent(RECENT_CAP)).map((row) => row.versionId)).toEqual([parent.version.versionId]);
+    // Remix s rodičem má řádek feedu taky (P54A T10).
+    expect((await restarted.recent(RECENT_CAP)).map((row) => row.versionId).sort()).toEqual([parent.version.versionId, child.version.versionId].sort());
     expect((await restarted.loopHeat([parent.version.versionId])).get(parent.version.versionId)).toMatchObject({ finishes: 2, starts: 1, retries: 1, shares: 1, bounces: 1, remixes: 1 });
   });
 
