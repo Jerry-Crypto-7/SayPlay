@@ -1,8 +1,8 @@
 {
  "about": "P54B T8/T15a: landmark in view at tick 150 (e2e/p54b-landmark.spec.ts), 1280x800",
- "measuredAt": "2026-10-19T21:35:55.198Z",
+ "measuredAt": "2026-10-19T23:05:11.359Z",
  "ticks": 150,
- "inView": 14,
+ "inView": 13,
  "of": 18,
  "rows": [
   {
@@ -17,8 +17,8 @@
    "framing": [],
    "calls": 1,
    "heroVisible": 1,
-   "heroSamples": 5,
-   "heroHeightPx": 261
+   "heroSamples": 6,
+   "heroHeightPx": 253
   },
   {
    "id": "g-race",
@@ -62,8 +62,8 @@
    "framing": [],
    "calls": 1,
    "heroVisible": 1,
-   "heroSamples": 8,
-   "heroHeightPx": 94
+   "heroSamples": 9,
+   "heroHeightPx": 93
   },
   {
    "id": "g-fight",
@@ -114,16 +114,16 @@
    "id": "g-walker",
    "control": "walker",
    "tick": 150,
-   "landmark": "gen3d-standing-stone",
-   "scale": 2,
-   "distance": 27.5,
-   "inFrame": 0.99,
-   "inView": true,
+   "landmark": null,
+   "scale": null,
+   "distance": null,
+   "inFrame": null,
+   "inView": false,
    "framing": [],
-   "calls": 1,
+   "calls": 0,
    "heroVisible": 1,
-   "heroSamples": 23,
-   "heroHeightPx": 81
+   "heroSamples": 19,
+   "heroHeightPx": 76
   },
   {
    "id": "g-glide",
@@ -211,8 +211,8 @@
    ],
    "calls": 2,
    "heroVisible": 1,
-   "heroSamples": 13,
-   "heroHeightPx": 79
+   "heroSamples": 12,
+   "heroHeightPx": 89
   },
   {
    "id": "g-timing",
@@ -257,16 +257,16 @@
    "id": "g-duel",
    "control": "duel",
    "tick": 150,
-   "landmark": "gen3d-stone-water-well",
-   "scale": 3,
-   "distance": 25.1,
-   "inFrame": 0.5,
+   "landmark": null,
+   "scale": null,
+   "distance": null,
+   "inFrame": null,
    "inView": false,
    "framing": [],
-   "calls": 1,
+   "calls": 0,
    "heroVisible": 1,
    "heroSamples": 21,
-   "heroHeightPx": 250
+   "heroHeightPx": 249
   },
   {
    "id": "g-voyage",

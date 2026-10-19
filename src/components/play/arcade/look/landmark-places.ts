@@ -42,8 +42,12 @@ const HERO_KEEP_M = 2;
 const TARGET_TALL = 0.3;
 /** Bod je „v záběru“, když je v obraze aspoň tolik z jeho kvádru (sonda `__playLandmark`, výběr kandidáta). */
 export const IN_VIEW_SHARE = 0.5;
-/** Strmější kamera (° pod vodorovnou) orientační bod nedostane: bludiště 63–70° ano, aréna 40° ne. */
-const STEEPEST_DEG = 55;
+/**
+ * Strmější kamera (° pod vodorovnou) orientační bod nedostane: svislice se v ní rozbíhají od středu a stojící
+ * kámen leží – bludiště 63–70° („zbloudilý šedý sloup“ v soudu T15a) ano, souboj v aréně 60° (svatyně v záběru
+ * 0,73, soud bez výtky) a aréna 40° ne. simplified: práh mezi dvěma pevnými kamerami, novou kameru 60–65° posoudit snímkem.
+ */
+const STEEPEST_DEG = 62;
 /** Rezerva, se kterou výběr kandidáta bere bod jako v záběru. */
 const IN_VIEW_MARGIN = 0.15;
 /** Rámující kus jen z rekvizit do téhle výšky (m): v popředí by vyšší zakryl půl obrazu. */

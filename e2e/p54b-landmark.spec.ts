@@ -30,7 +30,12 @@ interface Sentence {
 
 const GENRES: readonly Sentence[] = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p46g/genres.json'), 'utf8')) as { sentences: Sentence[] }).sentences;
 const TICKS = 150;
-const LEAST_IN_VIEW = 14;
+/**
+ * Bez bodu v záběru zůstane pět scén záměrně (T15a): aréna a agar (za stěnou velké arény je jen proužek země),
+ * poletování (trubky vyplní boční záběr), bludiště (kamera 63° – bod shora jako ležící sloup) a souboj
+ * (rytíři chodí po celém ringu, který vyplní šířku obrazu). Dřív 16, pak 14 – každé snížení je jedna z nich.
+ */
+const LEAST_IN_VIEW = 13;
 const HERO_VISIBLE = 0.9;
 const MOST_CALLS = 3;
 
