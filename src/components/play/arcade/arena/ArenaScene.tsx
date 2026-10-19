@@ -43,7 +43,7 @@ import type { Look } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { DIRECTIONS, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
-import { FIGHT, FIGHT_PHASE, attackCooldownOf, facingOf, phaseOf, phaseTicksLeft, strikeDirectionOf } from '@/play/arcade/pieces/fight';
+import { FIGHT, FIGHT_PHASE, type FightControlParams, attackCooldownOf, facingOf, phaseOf, phaseTicksLeft, strikeDirectionOf } from '@/play/arcade/pieces/fight';
 import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
@@ -492,7 +492,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
   const introClock = useIntroClock();
 
   // Souboj (P32E T6): hlídka zásahů, hodiny kresby a to, co kreslí z nich.
-  const watch = useMemo(() => (fight ? createFightWatch() : null), [fight]);
+  const watch = useMemo(() => (fight ? createFightWatch((baseControlOf(session.world.control).params as FightControlParams).telegraph) : null), [fight, session]);
   const initial = useMemo(() => instantiate(session.world), [session]);
   /** HP na startu (tělo z živé změny: v chvíli, kdy přibylo); 0 = tělo nebojuje. */
   const startHp = useMemo(

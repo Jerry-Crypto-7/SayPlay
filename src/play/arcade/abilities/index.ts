@@ -14,6 +14,7 @@ import { type AbilityId, type BodyInit, type PieceRef, mapUnderlying, nativeRule
 import { type AddonContext, type ArcadeParts, baseBotOf, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
 import { ballOpenUntil } from '../pieces/ball';
 import { type BossBeatParams, bossBeat, bossBeatHit } from '../pieces/boss';
+import { FIGHT } from '../pieces/fight';
 import { FINALE5_GENRE_VERSION, genreAtLeast } from '../pieces/pacing-parts';
 import { type MarchEntry, shooterOpenUntil } from '../pieces/shooter';
 import { grabRule } from './grab';
@@ -150,13 +151,18 @@ const withBaseControl = (control: PieceRef, edit: (base: PieceRef) => PieceRef):
 /**
  * Souboj v aréně (P47B T6): úder soupeře rozhoduje ovládání souboje, ne náraz – ochranu (`guard`) dostane ono
  * a sloveso pravidlo odraženého úderu (`fightGuardRule`). Dash bere úder dřív než štít, proto štít zná jeho slot.
+ *
+ * Dash i štít naráz (P52 T9, jen `genre.v5`): soupeř se napřahuje `FIGHT.pairTelegraph` tiků místo 30. S 30 vyhrál
+ * novice 1/10 (štít na A) a 3/10 (dash na A) proti 6/10 bez akcí – volba ze dvou ochran mu pozdní reakcí častěji
+ * nevyjde, zápas se táhne a soupeři i flanker průběhu berou životy. Se 40 tiky 5/10 a 6/10, intermediate 9/10.
  */
 function fightGuard(parts: ArcadeParts, context: AbilityContext, id: 'dash' | 'shield'): ArcadeParts {
   const known = baseControlOf(parts.control).params.guard as { readonly dash?: number } | undefined;
   const dash = id === 'dash' ? context.slot : known?.dash;
+  const slower = known !== undefined && genreAtLeast(context.spec, FINALE5_GENRE_VERSION) ? { telegraph: FIGHT.pairTelegraph } : {};
   const control = withBaseControl(parts.control, (fight) => ({
     ...fight,
-    params: { ...fight.params, guard: { ...((fight.params.guard as object | undefined) ?? {}), keeper: context.keeper, ...(id === 'dash' ? { dash: context.slot } : { shield: true }) } },
+    params: { ...fight.params, ...slower, guard: { ...((fight.params.guard as object | undefined) ?? {}), keeper: context.keeper, ...(id === 'dash' ? { dash: context.slot } : { shield: true }) } },
   }));
   return { ...parts, control, rules: [...parts.rules, { id: fightGuardRule.id, params: { keeper: context.keeper, verb: id, ...(dash === undefined ? {} : { dash }) } }] };
 }
