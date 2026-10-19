@@ -8,7 +8,7 @@
  * stojí a snímek čeká, až se dotáhnou modely. Plátno bez textu stránky.
  * `--set genres` vezme místo nich jednu větu na žánr (`evals/play/p46g/genres.json`, P46G T7).
  *
- *   node scripts/play-look-shots.mjs shots --base http://127.0.0.1:3251 --out evals/play/p46g/before [--ticks 150] [--only forest-race,city-runner] [--gpu] [--set genres]
+ *   node scripts/play-look-shots.mjs shots --base http://127.0.0.1:3251 --out evals/play/p46g/before [--ticks 150] [--only forest-race,city-runner] [--gpu] [--set genres] [--profile pixel7]
  *   node scripts/play-look-shots.mjs diff <dirA> <dirB>
  *   node scripts/play-look-shots.mjs perf --base http://127.0.0.1:3251 --out evals/play/p46g/perf-before.json [--repeats 3] [--only …]
  *
@@ -55,6 +55,13 @@ async function browserFor(gpu) {
   const { chromium } = require('@playwright/test');
   const angle = gpu ? ['--use-gl=angle', '--use-angle=d3d11', '--ignore-gpu-blocklist'] : ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
   return chromium.launch({ args: angle });
+}
+
+/** Kontext Playwrightu pro Pixel 7 (bez volby prohlížeče, ta jde z `browserFor`). */
+function pixel7() {
+  const { devices } = require('@playwright/test');
+  const { defaultBrowserType: _browser, ...device } = devices['Pixel 7'];
+  return device;
 }
 
 /** Rychlá verze věty; stejná věta dá stejnou hru (semínko z věty). */
@@ -107,8 +114,10 @@ async function shots(options) {
   const ticks = Number(options.ticks ?? TICKS);
   mkdirSync(out, { recursive: true });
   const browser = await browserFor(options.gpu === true);
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-  const manifest = { ticks, renderer: options.gpu === true ? 'd3d11' : 'swiftshader', viewport: '1280x800', shots: [] };
+  // `--profile pixel7` (P54B T2): telefon – úzký dotykový pohled, scéna startuje na úrovni `low`.
+  const phone = options.profile === 'pixel7';
+  const page = phone ? await (await browser.newContext(pixel7())).newPage() : await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const manifest = { ticks, renderer: options.gpu === true ? 'd3d11' : 'swiftshader', viewport: phone ? 'Pixel 7' : '1280x800', shots: [] };
   try {
     for (const sentence of chosen(options)) {
       const game = await publish(base, sentence.text);
@@ -190,8 +199,7 @@ async function perf(options) {
   const base = options.base;
   if (typeof base !== 'string') throw new Error('perf needs --base <url>');
   const repeats = Number(options.repeats ?? 3);
-  const { devices } = require('@playwright/test');
-  const { defaultBrowserType: _browser, ...PIXEL_7 } = devices['Pixel 7'];
+  const PIXEL_7 = pixel7();
   const browser = await browserFor(true);
   const rows = [];
   try {
