@@ -3,7 +3,8 @@
  * které staví `scripts/assets/rigged/import-cc0.mjs`. Generátor zapisuje i třídu, rozměr
  * (v první póze idle, výška 1,8 m) a záložní barvu, takže tady se jen překládá do tvaru
  * manifestu. Manifest zná stavy `CLIP_STATES`: postava bez běhu běží svou chůzí, chybějící
- * skok, zásah nebo smrt je `procedural`; chůze, vítězství a útok zůstávají v JSON pro T5.
+ * skok, zásah nebo smrt je `procedural`; chůze a výhra jdou do manifestu, jen když je postava
+ * má (P54B T5), útok zůstává v JSON.
  *
  * Identita: slovo, které už jmenuje dřívější záznam manifestu (identita nebo holé id), si
  * postava nevezme – model s klipy by v `identityEntry` přebil dnešní statický model
@@ -38,10 +39,12 @@ export const RIGGED_P54_ENTRIES: readonly AssetEntry[] = rigged.characters.map((
     forward: '+z',
     clips: {
       idle: clips.idle ?? PROCEDURAL,
+      ...(clips.walk === undefined ? {} : { walk: clips.walk }),
       run: clips.run ?? clips.walk ?? PROCEDURAL,
       jump: clips.jump ?? PROCEDURAL,
       hit: clips.hit ?? PROCEDURAL,
       die: clips.die ?? PROCEDURAL,
+      ...(clips.win === undefined ? {} : { win: clips.win }),
     },
     fallback: character.fallback,
     license: character.license,

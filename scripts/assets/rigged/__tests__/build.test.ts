@@ -10,7 +10,7 @@ import riggedP32 from '../../../../src/assets/rigged-p32.json';
 import { HERO_MAX_BYTES, MAX_BYTES, MAX_TEXTURE, MAX_TRIANGLES, readGlb } from '../build.mjs';
 
 const ROOT = join(__dirname, '..', '..', '..', '..');
-const STATES = ['idle', 'run', 'jump', 'shoot', 'hit', 'die'];
+const STATES = ['idle', 'walk', 'run', 'jump', 'shoot', 'hit', 'die', 'win'];
 
 interface Accessor { readonly bufferView?: number; readonly byteOffset?: number; readonly count: number }
 interface BufferView { readonly byteOffset?: number; readonly byteLength: number }

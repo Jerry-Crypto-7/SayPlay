@@ -34,16 +34,26 @@ const FADE_S = 0.15;
 /** Nejdelší krok animace za jeden snímek. */
 const MAX_MIXER_STEP_S = 0.1;
 /** Klipy, které dohrají jednou a zůstanou v poslední póze. */
-const ONCE: ReadonlySet<ClipState> = new Set(['shoot', 'hit', 'die']);
-/** Náhrada za stav, na který postava klip nemá. */
+export const ONCE: ReadonlySet<ClipState> = new Set(['shoot', 'hit', 'die', 'win']);
+/**
+ * Náhrada za stav, na který postava klip nemá. Chůze a běh se zastoupí navzájem
+ * (P54B T5): postava bez chůze jde svým během, příšera P54 bez běhu běží chůzí.
+ */
 const FALLBACK: Readonly<Record<ClipState, readonly ClipState[]>> = {
   idle: ['idle'],
-  run: ['run', 'idle'],
+  walk: ['walk', 'run', 'idle'],
+  run: ['run', 'walk', 'idle'],
   jump: ['jump', 'run', 'idle'],
   shoot: ['shoot', 'idle'],
   hit: ['hit', 'idle'],
   die: ['die', 'idle'],
+  win: ['win', 'idle'],
 };
+
+/** Klip, který postava pro stav těla opravdu hraje: první z řetězce náhrad, který má. */
+export function playedClip(state: ClipState, hasClip: (state: ClipState) => boolean): ClipState {
+  return FALLBACK[state].find(hasClip) ?? 'idle';
+}
 
 /**
  * Pohyb stavu bez klipu, přičtený k postavě (`since` = sekundy ve stavu, `h` výška těla,
@@ -67,10 +77,12 @@ export interface HeldState {
 /**
  * Jeden snímek `useFrame` pro pohyb bez klipu: čas ve stavu roste, nový stav ho
  * vynuluje, a `proceduralPose` dostane stav jen tehdy, když na něj postava klip nemá.
- * Skok bez klipu, který skončí během nebo klidem, je dopad.
+ * Chůze bez klipu je běh (hraje jeho klip, bez něj poskakuje jako on). Skok bez klipu,
+ * který skončí během, chůzí nebo klidem, je dopad.
  */
-export function poseTick(group: Group | null, held: HeldState | null, now: ClipState, hasClip: (state: ClipState) => boolean, step: number, h: number): HeldState {
-  const landed = held?.state === 'jump' && (now === 'run' || now === 'idle') && !hasClip('jump');
+export function poseTick(group: Group | null, held: HeldState | null, body: ClipState, hasClip: (state: ClipState) => boolean, step: number, h: number): HeldState {
+  const now = body === 'walk' && !hasClip('walk') ? 'run' : body;
+  const landed = held?.state === 'jump' && (now === 'run' || now === 'walk' || now === 'idle') && !hasClip('jump');
   const sinceLand = landed ? 0 : (held?.sinceLand ?? Infinity) + step;
   const next = held?.state === now ? { state: now, since: held.since + step, sinceLand } : { state: now, since: 0, sinceLand };
   if (group !== null) proceduralPose(group, hasClip(now) ? null : now, next.since, h, sinceLand);
@@ -90,12 +102,13 @@ export interface ToyFrame {
 
 /**
  * Pohled bez toho, co postava hraje klipem (P45D T13): klip má přednost a hračka by ho
- * zdvojila – poskok navrch klipu běhu. Klip kryje, z čeho ho volí `clipOf`: běh chůzi,
- * skok vzlet i dopad, střelba výstřel hráče (úder nepřítele klip nemá), zásah zásah,
- * smrt pád i zásah, kterým tělo zaniklo. Výhra a nesení klip nemají nikdy.
+ * zdvojila – poskok navrch klipu běhu. Klip kryje, z čeho ho volí `clipOf`: běh nebo
+ * chůze krok, skok vzlet i dopad, střelba výstřel hráče (úder nepřítele klip nemá),
+ * zásah zásah, smrt pád i zásah, kterým tělo zaniklo, výhra oslavu (P54B T5).
+ * Nesení klip nemá nikdy.
  */
 export function unclippedView(view: ToyView, hasClip: (state: ClipState) => boolean): ToyView {
-  const still = hasClip('run');
+  const still = hasClip('run') || hasClip('walk');
   const dieClip = !view.alive && hasClip('die');
   return {
     ...view,
@@ -106,6 +119,7 @@ export function unclippedView(view: ToyView, hasClip: (state: ClipState) => bool
     alive: view.alive || dieClip,
     hit: view.hit && !hasClip('hit') && !dieClip,
     attack: view.attack && !(view.shot && hasClip('shoot')),
+    won: view.won && !hasClip('win'),
   };
 }
 
@@ -221,11 +235,12 @@ export function RiggedModel({
       toyPose.current = toyPoseOf(unclippedView(frame.view, hasClip), bodyClass, previous, frame.tick, !toyMotionOn());
       applyToy({ group: holder.current }, toyPose.current, h, yaw?.() ?? 0);
     }
-    const wanted = FALLBACK[now].find((candidate) => rig.actions.has(candidate)) ?? 'idle';
+    const wanted = playedClip(now, hasClip);
     if (wanted !== playing.current) {
       const next = rig.actions.get(wanted);
       const before = playing.current === null ? undefined : rig.actions.get(playing.current);
-      if (next !== undefined) {
+      // Příšera P54 bez běhu má pro chůzi i běh jeden klip, tedy jednu akci: přepnutí ji nechá hrát.
+      if (next !== undefined && next !== before) {
         next.reset().setEffectiveWeight(1).fadeIn(playing.current === null ? 0 : FADE_S).play();
         before?.fadeOut(FADE_S);
       }
