@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { BODY, BUTTON, HEADER, bodyBase } from '../src/play/arcade/contract';
+import { BODY, BUTTON, FLAG, HEADER, bodyBase } from '../src/play/arcade/contract';
 import { nativeSpec } from '../src/play/compose/native';
 import { capture, openNative, replayState, ticks } from './play-native-input';
 
@@ -31,7 +31,9 @@ for (const phase of ['staged', 'live'] as const) test.describe(`P41 ball ${phase
     const recorded = await capture(page), state = await replayState(world, recorded);
     expect(recorded.inputs.some(e => (e.buttons & BUTTON.HOLD) !== 0)).toBe(true);
     expect(recorded.inputs.some(e => e.axis > 0 && (e.buttons & BUTTON.TAP) !== 0)).toBe(true);
-    const ball = bodyBase(state[HEADER.spawnBase]!);
+    // Živá hra (finále P51) má před výkopem hráče na hřišti i míč soupeře; hráčův je poslední spawnutý.
+    const spawned = Array.from({ length: state[HEADER.bodyCount]! - state[HEADER.spawnBase]! }, (_, i) => bodyBase(state[HEADER.spawnBase]! + i));
+    const ball = spawned.filter(b => (state[b + BODY.flags]! & FLAG.ball) !== 0).at(-1)!;
     expect(state[ball + BODY.vx]).toBeGreaterThan(0);
     expect(state[ball + BODY.vz]).toBeGreaterThan(0);
     expect(state[ball + BODY.z]).toBeGreaterThan(0);

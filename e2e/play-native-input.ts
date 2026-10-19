@@ -39,7 +39,8 @@ export async function openNative(page: Page, request: APIRequestContext, phase: 
 
 /** Reconstruct only recorded human inputs; exact browser hash guards every slot. */
 export async function replayState(world: ArcadeWorld, recorded: Capture) {
-  if (world.control.id === 'ball') await loadRapier();
+  // Ovládání míče od P51 balí `pacing_control`; Rapier je jednou načtený a levný, čeká se vždy.
+  await loadRapier();
   const state = instantiate(world), program = loadProgram(world, ARCADE_LIBRARY);
   let next = 0;
   try {
