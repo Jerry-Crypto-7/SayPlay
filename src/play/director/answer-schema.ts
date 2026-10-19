@@ -12,7 +12,7 @@ import { THINGS_MAX, logicSchema, modelRulesSchema, thingsSchema } from '../arca
 import { COUNT_PARAMS, COUNT_ROLES, type CountRole, type GenreModule, genreSpecSchema, ruleRoleSchema } from '../genre/contract';
 import { GENRE_MODULES, paramBoundsOf } from '../genre/index';
 import { ROLE_KINDS } from '../spec';
-import { recipeSchema } from '../compose/recipe';
+import { directorRecipeSchema } from '../compose/recipe';
 import { glideCourseParams } from '../arcade/pieces/glide';
 import { walkerParamsSchema } from '../arcade/pieces/walker';
 import { ballParams } from '../arcade/pieces/ball';
@@ -146,8 +146,10 @@ export const nativeRecipeParams = {
   walk: walkerParamsSchema.pick({ size: true, speed: true, paceBudgetPct: true, corridorRisePermille: true }).partial().extend({ lives: z.int().min(1).max(9).optional() }),
   ball: ballParams.pick({ targets: true, shotRecoveryTicks: true, shotRecoveryRiseTicks: true, paceSeconds: true }).partial(),
 } as const;
-const recipeParamBounds = Object.values(GENRE_MODULES).reduce<Record<string, { min: number; max: number }>>((all, module) => {
-  for (const [key, range] of Object.entries(paramBoundsOf(module as GenreModule))) {
+// P54C: kostra (`staged`) ani žánr z `DIRECTOR_PENDING` meze nerozšíří – jinak by se schéma odpovědi pohnulo dřív, než je režisér nabídne.
+const offered = (module: GenreModule): boolean => !DIRECTOR_PENDING.has(module.id) && module.modes.some((mode) => module.availability(mode) !== 'staged');
+const recipeParamBounds = (Object.values(GENRE_MODULES) as GenreModule[]).filter(offered).reduce<Record<string, { min: number; max: number }>>((all, module) => {
+  for (const [key, range] of Object.entries(paramBoundsOf(module))) {
     const old = all[key];
     all[key] = old === undefined ? range : { min: Math.min(old.min, range.min), max: Math.max(old.max, range.max) };
   }
@@ -166,7 +168,7 @@ for (const schema of Object.values(nativeRecipeParams)) {
 export const recipeParamsSchema = z.object(Object.fromEntries(Object.entries(recipeParamBounds).map(([key, range]) => [key, z.int().min(range.min).max(range.max).optional()]))).strict();
 const contentShape = genreSpecSchema.options[0].omit({ genre: true, mode: true, params: true });
 export const recipeAnswerSchema = contentShape.extend({
-  recipe: recipeSchema,
+  recipe: directorRecipeSchema,
   params: recipeParamsSchema.optional(),
   unmet: z.array(z.object({ actor: z.string().min(1).max(60), verb: z.string().min(1).max(40), object: z.string().min(1).max(60).nullable() }).strict()).max(64),
 }).strict();

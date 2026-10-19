@@ -16,5 +16,15 @@ export const recipeSchema = z.object({
 }).strict();
 export type Recipe = z.infer<typeof recipeSchema>;
 
+/**
+ * Recept, jak ho dostane režisér (P54C): bez kusů os nových žánrů, dokud je T14 nenabídne. Schéma odpovědi,
+ * otisk kompaktního promptu i nahrávky odpovědí P46 tak zůstanou beze změny.
+ */
+export const directorRecipeSchema = recipeSchema.extend({
+  move: z.enum(['stationary', ...MOVES]),
+  actions: z.array(z.enum(ACTIONS)).max(ACTIONS.length).refine(unique, 'Duplicate action'),
+  objective: z.enum([...OBJECTIVES, 'interact']),
+});
+
 /** Stable key; ordering of independent pieces cannot create a second cell. */
 export const recipeKey = (recipe: Recipe): string => [recipe.move, [...recipe.actions].sort().join('+'), recipe.objective, [...recipe.threats].sort().join('+')].join('/');
