@@ -1,5 +1,5 @@
 import { ARCADE_HZ, ARCADE_LIMITS, type AbilityId, type AddonId } from '../arcade/contract';
-import { CAPABILITIES } from '../capabilities';
+import { CAPABILITIES, DUEL_HITS, duelHitOf } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/modules';
@@ -10,7 +10,7 @@ import { nativeSpec } from './native';
 import { timeOfDayFor } from '../arcade/look';
 import { BALL_DIFFICULTY } from './ball-difficulty';
 import { singular } from '../draft/lexicon';
-import { type AbilityWord, abilitiesOfControl, abilityHint, abilityWordsOf } from '../draft/controls';
+import { ABILITY_WORDS, type AbilityWord, abilitiesOfControl, abilityHint, abilityWordsOf } from '../draft/controls';
 import { RULE_TEMPLATES, type RuleTemplate, TEMPLATE_NAMES, type TemplateName, type TemplateSlot, says, templateParts, templatesFor } from '../arcade/rules/templates';
 import { FINALE_GENRE_VERSION, genreAtLeast } from '../arcade/pieces/pacing-parts';
 
@@ -84,7 +84,9 @@ function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
   // Akce z odpovědi režiséra (P46E T4) za akcemi věty; dvě tlačítka bere `abilitiesOfControl`.
   const said = [...new Set([...(assembly.abilities ?? []), ...(assembly.content.abilities ?? [])])].filter((id) => generatorTakes(generator, id));
   if (said.length === 0 || spec.control === undefined) return spec;
-  const abilities = abilitiesOfControl(said, spec.control);
+  // Duel nese na zásahu soupeře jedno sloveso (P52 T8): úder před střelbou a krádeží, další zásah by nic nedělal.
+  const hit = spec.control === 'duel' ? duelHitOf(said) : undefined;
+  const abilities = abilitiesOfControl(hit === undefined ? said : said.filter((id) => id === hit || !(DUEL_HITS as readonly AbilityId[]).includes(id)), spec.control);
   if (abilities.length === 0) return spec;
   const heard = assembly.saidWords ?? {};
   const words = abilityWordsOf(abilities, heard);
@@ -98,12 +100,14 @@ function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
 }
 
 /**
- * Nápověda souboje se slovesy věty (P47B T10): „to strike“ dostane slovo úderu, „to dodge“ slovo
- * dashe nebo štítu („Tap right or Space to shove, tap left or Down to dodge.“). Akce bez slova věty
- * nechá obecné sloveso; nad 80 znaků zůstane nápověda žánru.
+ * Nápověda souboje se slovesy věty (P47B T10): „to strike“ dostane slovo zásahu (úder, střelba nebo
+ * krádež – `duelHitOf`, P52 T8), „to dodge“ slovo dashe nebo štítu („Tap right or Space to shove, tap
+ * left or Down to dodge.“). Úder bez slova věty nechá obecné sloveso, střelba a krádež své („to shoot“);
+ * nad 80 znaků zůstane nápověda žánru.
  */
 function duelHint(hint: string, abilities: readonly AbilityId[], heard: Readonly<Partial<Record<AbilityId, AbilityWord>>>): string {
-  const strike = abilities.includes('strike') ? heard.strike : undefined;
+  const hit = duelHitOf(abilities);
+  const strike = hit === undefined ? undefined : (heard[hit] ?? (hit === 'strike' ? undefined : ABILITY_WORDS[hit][0]));
   const dodge = abilities.filter((id) => id === 'dash' || id === 'shield').map((id) => heard[id]).find((word) => word !== undefined);
   let said = hint;
   if (strike !== undefined) said = said.replace(/\bto strike\b/, `to ${strike.toLowerCase()}`);

@@ -9,6 +9,7 @@
  * tagem `p46a-api`; staví na něm power-upy P46C a režisér P46E.
  */
 
+import { duelHitOf } from '../../capabilities';
 import { type AbilityId, type BodyInit, type PieceRef, mapUnderlying, nativeRule } from '../contract';
 import { type AddonContext, type ArcadeParts, baseBotOf, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
 import { ballOpenUntil } from '../pieces/ball';
@@ -244,11 +245,12 @@ export const ABILITY_RULES = { [strikeRule.id]: strikeRule, [grabRule.id]: grabR
 
 /**
  * Duel (P47B T8) hraje úder (Tap) a úhyb (Down) vlastní mechanikou: žádné tlačítko ani tělo akcí, jen
- * sloveso – úder na zásahu soupeře (`judge`), dash a štít na úhybu, který vyšel (`duel_dodge`).
+ * sloveso – úder, střelba nebo krádež (P52 T8) na zásahu soupeře (`judge`), dash a štít na úhybu, který vyšel (`duel_dodge`).
  */
 function duelVerbs(parts: ArcadeParts, ids: readonly AbilityId[]): ArcadeParts {
   const dodges = ids.filter((id): id is 'dash' | 'shield' => id === 'dash' || id === 'shield');
-  const rules = parts.rules.map((rule) => mapUnderlying(rule, (native) => (native.id === 'judge' && ids.includes('strike') ? { ...native, params: { ...native.params, verb: 'strike' } } : native)));
+  const hit = duelHitOf(ids);
+  const rules = parts.rules.map((rule) => mapUnderlying(rule, (native) => (native.id === 'judge' && hit !== undefined ? { ...native, params: { ...native.params, verb: hit } } : native)));
   const control = dodges.length === 0 ? parts.control : withBaseControl(parts.control, (duel) => ({ ...duel, params: { ...duel.params, dodges: true } }));
   return { ...parts, control, rules: [...rules, ...dodges.map((verb) => ({ id: 'duel_dodge', params: { verb } }))] };
 }

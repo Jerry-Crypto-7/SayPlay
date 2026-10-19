@@ -68,10 +68,18 @@ const ROAMING: readonly AddonId[] = ['shoot', 'collect', 'lives'];
  * - shooter, ball (P52 T7): hrdina stojí, střílí vlastní mechanikou a nikam nedojde – štít bere střelu soupeře a krádež
  *   kořist, které k němu zepředu přiletí, jen dokud hra jistě běží (`withIncoming`); míč jen štít (`generatorTakes`).
  * - throw, timing, rhythm: tlačítko je samo mechanika (hod, stop, nota), druhé by s ním soupeřilo.
- * - duel: úder, dash a štít hraje vlastní mechanika duelu (Tap úder, Down úhyb za dash i štít), žádné
- *   druhé tlačítko – akce dá jen sloveso pravidlům (P47B T8). tap_go: mřížka bez hrdiny s fyzikou arkády.
+ * - duel: všech 5 hraje vlastní mechanika duelu (Tap úder, Down úhyb za dash i štít), žádné druhé tlačítko –
+ *   akce dá jen sloveso pravidlům (P47B T8). Střelba a krádež (P52 T8) jsou sloveso zásahu soupeře jako úder:
+ *   „duels the sheriff, firing a ray gun“ je přestřelka za poledne, „duels a rival to snatch the ticket“ souboj
+ *   o věc – žánr zůstane duelem, který věta řekla. tap_go: mřížka bez hrdiny s fyzikou arkády.
  */
 const ALL_ABILITIES: readonly AbilityId[] = ['shoot', 'strike', 'dash', 'shield', 'grab'];
+
+/** Akce zásahu soupeře v duelu v pořadí přednosti: úder je vlastní mechanika duelu, střelba a krádež jen jeho sloveso (P52 T8). */
+export const DUEL_HITS = ['strike', 'shoot', 'grab'] as const;
+
+/** Akce, kterou v duelu nese zásah soupeře: první z `DUEL_HITS`, kterou hra má. Ostatní zásahy duel nebere (`withAbilities`). */
+export const duelHitOf = (ids: readonly AbilityId[]): (typeof DUEL_HITS)[number] | undefined => DUEL_HITS.find((id) => ids.includes(id));
 
 const arcade = (
   entry: Omit<ControlCapability, 'counts' | 'setting' | 'maxRoles' | 'addons' | 'abilities'> & { readonly setting?: boolean; readonly counts?: boolean; readonly addons?: readonly AddonId[]; readonly abilities?: readonly AbilityId[] },
@@ -115,7 +123,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   // P30B T4: díl věže („pancakes“), nota rytmu („lily pads“) a mantinel závodu („crocodiles“) taky.
   timing: arcade({ setting: true, cues: 'stack, stop the bar', roles: ['block', 'miss'], finish: false, labels: ['block'], mechanics: LIVES_AND_TIMER }),
   rhythm: arcade({ setting: true, cues: 'tap on the beat', roles: ['note', 'miss'], finish: false, labels: ['player', 'note'], mechanics: LIVES_AND_TIMER }),
-  duel: arcade({ setting: true, cues: 'fight, boxing', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER, abilities: ['strike', 'dash', 'shield'] }),
+  duel: arcade({ setting: true, cues: 'fight, boxing', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER, abilities: ALL_ABILITIES }),
 };
 
 export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.control ?? 'tap_go';

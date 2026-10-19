@@ -107,8 +107,8 @@ function expectProved(control: ControlId, ability: AbilityId, extra: object = {}
     expect(verdict.failures, `seed ${seed}`).toEqual([]);
     expect(verdict.verbs.find((proof) => proof.verb === ability)?.changed, `seed ${seed}`).toBe(true);
     const run = runBot(made.world, undefined, { profile: 'intermediate' });
-    // Duel (P47B T8) hraje akce vlastním úderem (Tap) a úhybem (Down), ne tlačítkem A.
-    const button = control !== 'duel' ? BUTTON.ACTION_A : ability === 'strike' ? BUTTON.TAP : BUTTON.DOWN;
+    // Duel (P47B T8) hraje akce vlastním úderem (Tap – úder, střelba, krádež, P52 T8) a úhybem (Down), ne tlačítkem A.
+    const button = control !== 'duel' ? BUTTON.ACTION_A : ability === 'dash' || ability === 'shield' ? BUTTON.DOWN : BUTTON.TAP;
     expect(run.inputs.some((event) => (event.buttons & button) !== 0), `seed ${seed}: never pressed`).toBe(true);
   }
 }
