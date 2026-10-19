@@ -47,6 +47,8 @@ import { RUNNER_FOES } from './pieces/pacing-parts';
 import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
+import { walkerFoeCells } from './pieces/walker';
+import { walkerShot } from './pieces/walker-bot';
 import { census, shotHit } from './pieces/shots';
 import { abilityBotParams, abilityButton, abilityControlParams, tickAbilities } from './abilities/state';
 import { powerupControlParams, tickPowerup } from './powerups/state';
@@ -120,7 +122,7 @@ export interface AddonPiece<P = unknown> {
 const noParams = z.object({}).strict();
 
 /** Náraz do nového nepřítele: bez životů prohra, se životy ztráta života a vteřina milosti (P36A T2). */
-export const hitParamsFor = (role: 'enemy' | 'chaser', health: number | undefined): Readonly<Record<string, unknown>> =>
+export const hitParamsFor = (role: 'enemy' | 'chaser' | 'hazard', health: number | undefined): Readonly<Record<string, unknown>> =>
   health === undefined ? { role, effect: 'lose' } : { role, effect: 'damage', grace: HIT_GRACE };
 
 /** `+lives`: tři životy. Náraz pak ubere život místo prohry – pravidla ovládání to podle `health` udělají sama. */
@@ -390,6 +392,8 @@ export function enemiesFor(control: string, level: ArcadeLevel, options: EnemyOp
     const slabs = level.bodies.filter((body) => body.role === 'platform' && body.kinematic !== true).sort((a, b) => a.z - b.z);
     return slabs.slice(1, -1).flatMap((slab, index) => (index % 2 === 0 ? [enemy(0, slab.y + slab.h, slab.z + slab.d / 2 - 900)] : []));
   }
+  // Bludiště (P52 T5): nepřítel na cestě ke východu, jinudy robot nejde.
+  if (control === 'walker') return walkerFoeCells(level).map(({ x, z }) => enemy(x, 0, z));
   if (control === 'flap') {
     const lower = level.bodies.filter((body) => body.role === 'obstacle' && body.y === 0).sort((a, b) => a.z - b.z);
     return lower.flatMap((pipe, index) => {
@@ -447,6 +451,7 @@ function covered(state: Int32Array, target: number): boolean {
 export const shootStep = ({ state, player, recent }: ArcadeObservation, input: ArcadeInput, base: PieceRef, owns?: (body: number) => boolean): ArcadeInput => {
   if (recent.some((seen) => (seen.buttons & BUTTON.FIRE) !== 0)) return input;
   if (base.id === 'arena_bot' && census(state).projectiles > 0) return input;
+  if (base.id === 'walker_bot') return walkerShot({ state, player, recent }, base.params.speed as number, SHOOT.range, owns) ? { ...input, buttons: input.buttons | BUTTON.FIRE } : input;
   const p = bodyBase(player);
   let px = state[p + BODY.x] as number;
   let pz = (state[p + BODY.z] as number) + (state[p + BODY.vz] as number) * recent.length;
@@ -553,7 +558,8 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
     const foes = control === 'move_free' ? bodies.filter((body) => body.role === 'enemy').length : enemies.length;
     const rules: PieceRef[] = [
       ...parts.rules,
-      { id: 'blaster', params: { template, aim: control === 'move_free' ? 'heading' : 'forward' } },
+      // Pohled shora (aréna, bludiště od P52 T6): střela letí směrem pohybu.
+      { id: 'blaster', params: { template, aim: control === 'move_free' || control === 'walker' ? 'heading' : 'forward' } },
       { id: control === 'glide' ? 'glide_shot_hit' : 'shot_hit', params: {} },
     ];
     // Aréna náraz do buňky řeší sama (`arena_eat`).

@@ -43,7 +43,7 @@ import type { Look } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { DIRECTIONS, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
-import { FIGHT, FIGHT_PHASE, attackCooldownOf, facingOf, phaseOf, phaseTicksLeft, strikeDirectionOf } from '@/play/arcade/pieces/fight';
+import { FIGHT, FIGHT_PHASE, type FightControlParams, attackCooldownOf, facingOf, phaseOf, phaseTicksLeft, strikeDirectionOf } from '@/play/arcade/pieces/fight';
 import { type ToyPose, toyPoseOf, toyViewOf } from '@/play/arcade/toy-motion';
 import type { HeroAction } from '@/play/spec';
 
@@ -353,9 +353,10 @@ export function partOf(view: BodyView): Part {
   return 'block';
 }
 
-/** Model z popisku role; věc bez modelu (`undefined`) je zářící drahokam. */
-export function modelOf(part: Part, cast: Cast): string | undefined {
-  return part === 'hero' ? cast.player : part === 'chaser' || part === 'foe' ? cast.chaser : part === 'enemy' ? cast.enemy : part === 'item' ? cast.props.coin : undefined;
+/** Model z popisku role; věc bez modelu (`undefined`) je zářící drahokam. Kořist chytání (`kind` `prey`) má svůj, když ho obsazení nese. */
+export function modelOf(part: Part, cast: Cast, kind?: string): string | undefined {
+  if (part === 'enemy') return kind === 'prey' ? (cast.prey ?? cast.enemy) : cast.enemy;
+  return part === 'hero' ? cast.player : part === 'chaser' || part === 'foe' ? cast.chaser : part === 'item' ? cast.props.coin : undefined;
 }
 
 const FALLBACK: Readonly<Record<Part, string>> = { hero: brand['sky-deep'], chaser: brand.alarm, enemy: brand['tomato-deep'], foe: brand.alarm, item: brand.sun, block: FENCE_COLOR };
@@ -460,8 +461,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
   const drawn = useMemo(() => views.map((view, i) => drawnOf(view, parts[i]!)), [views, parts]);
   const rigged = useMemo(
     () =>
-      parts.map((part) => {
-        const id = part === 'item' ? undefined : modelOf(part, cast);
+      parts.map((part, i) => {
+        const id = part === 'item' ? undefined : modelOf(part, cast, views[i]!.kind);
         return id === undefined ? undefined : riggedCharacter(id);
       }),
     [parts, cast],
@@ -477,7 +478,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
   const toyPoses = useRef<(ToyPose | undefined)[]>([]);
   /** Pohled a tik, ze kterých hraje hračku riggovaná postava (T13) – v hit-stopu stojí jako póza modelu. */
   const toyFrames = useRef<(ToyFrame | undefined)[]>([]);
-  const bodyClasses = useMemo(() => parts.map((part) => bodyClassOf(modelOf(part, cast) ?? '')), [parts, cast]);
+  const bodyClasses = useMemo(() => parts.map((part, i) => bodyClassOf(modelOf(part, cast, views[i]!.kind) ?? '')), [parts, cast, views]);
   /** Tik, kdy se probuzený pronásledovatel (kopie od `spawnBase`) poprvé ukázal. */
   const woke = useRef(new Map<number, number>());
   const glows = useMemo(() => new Map<Material, Material>(), []);
@@ -492,7 +493,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
   const introClock = useIntroClock();
 
   // Souboj (P32E T6): hlídka zásahů, hodiny kresby a to, co kreslí z nich.
-  const watch = useMemo(() => (fight ? createFightWatch() : null), [fight]);
+  const watch = useMemo(() => (fight ? createFightWatch((baseControlOf(session.world.control).params as FightControlParams).telegraph) : null), [fight, session]);
   const initial = useMemo(() => instantiate(session.world), [session]);
   /** HP na startu (tělo z živé změny: v chvíli, kdy přibylo); 0 = tělo nebojuje. */
   const startHp = useMemo(
@@ -783,7 +784,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
             </group>
           );
         }
-        const model = modelOf(part, cast);
+        const model = modelOf(part, cast, view.kind);
         const spark = part === 'item' && view.kind === SPARK_KIND;
         const character = rigged[view.index];
         const fighter = startHp[view.index]! > 0;

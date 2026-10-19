@@ -56,17 +56,30 @@ const ROAMING: readonly AddonId[] = ['shoot', 'collect', 'lives'];
  * proletí. Štít poletování dostane jen každého druhého (`guardAbility`), robot poletování výšku k dotyku nesrovnává
  * a trubky nehlídá.
  * Co ostatním ovládáním chybí, má důvod:
- * - walker: jen krádež – bludiště nemá místo pro nepřítele a v útěku bludištěm robot pronásledovatele
- *   do dosahu nepustí (úder, dash, štít VERB_UNPROVED 4/4).
- * - move_free: střelba zůstává doplňkem `+shoot` (akce střelby v aréně sloveso nedokáže); dash a štít
+ * - walker: všech 5 jen v bludišti (P52 T5 úder, T6 dash, štít a střelba – nepřátelé na cestě ke východu,
+ *   `walkerFoeCells`; střela letí směrem chůze), v plížení jen krádež (strážný nebo věc, `generatorTakes`);
+ *   v útěku bludištěm robot pronásledovatele do dosahu nepustí (dash, štít VERB_UNPROVED 4/4).
+ * - move_free: střelba jen v chytání (P52 T7b, včely na cestě ke kořisti, kterou střela nesebere), jinde zůstává
+ *   doplňkem `+shoot` (akce střelby tam sloveso nedokáže, `generatorTakes`); dash a štít
  *   v útěku, kde pronásledovatel chytá (`arena_eat` s `grace`), a v souboji (`fight`, P47B T6), kde
  *   berou úder soupeře – souboj jen je (`FIGHT_ABILITIES`): úder má vlastní Attack a krást není co.
- *   Agar takovou hru odmítne a rychlá verze akci zahodí.
- * - shooter, ball, throw, timing, rhythm: tlačítko je samo mechanika (rána, hod, stop, nota), druhé by s ním soupeřilo.
- * - duel: úder, dash a štít hraje vlastní mechanika duelu (Tap úder, Down úhyb za dash i štít), žádné
- *   druhé tlačítko – akce dá jen sloveso pravidlům (P47B T8). tap_go: mřížka bez hrdiny s fyzikou arkády.
+ *   Quest (`quest_spatial`, P52 T5) jen úder: robot s ním dojde k pronásledovateli. Sběr se dvěma akcemi
+ *   na pronásledovatele přivede o jednoho víc (`sharedChasers`). Agar takovou hru odmítne a rychlá verze akci zahodí.
+ * - shooter, ball (P52 T7): hrdina stojí, střílí vlastní mechanikou a nikam nedojde – štít bere střelu soupeře a krádež
+ *   kořist, které k němu zepředu přiletí, jen dokud hra jistě běží (`withIncoming`); míč jen štít (`generatorTakes`).
+ * - throw, timing, rhythm: tlačítko je samo mechanika (hod, stop, nota), druhé by s ním soupeřilo.
+ * - duel: všech 5 hraje vlastní mechanika duelu (Tap úder, Down úhyb za dash i štít), žádné druhé tlačítko –
+ *   akce dá jen sloveso pravidlům (P47B T8). Střelba a krádež (P52 T8) jsou sloveso zásahu soupeře jako úder:
+ *   „duels the sheriff, firing a ray gun“ je přestřelka za poledne, „duels a rival to snatch the ticket“ souboj
+ *   o věc – žánr zůstane duelem, který věta řekla. tap_go: mřížka bez hrdiny s fyzikou arkády.
  */
 const ALL_ABILITIES: readonly AbilityId[] = ['shoot', 'strike', 'dash', 'shield', 'grab'];
+
+/** Akce zásahu soupeře v duelu v pořadí přednosti: úder je vlastní mechanika duelu, střelba a krádež jen jeho sloveso (P52 T8). */
+export const DUEL_HITS = ['strike', 'shoot', 'grab'] as const;
+
+/** Akce, kterou v duelu nese zásah soupeře: první z `DUEL_HITS`, kterou hra má. Ostatní zásahy duel nebere (`withAbilities`). */
+export const duelHitOf = (ids: readonly AbilityId[]): (typeof DUEL_HITS)[number] | undefined => DUEL_HITS.find((id) => ids.includes(id));
 
 const arcade = (
   entry: Omit<ControlCapability, 'counts' | 'setting' | 'maxRoles' | 'addons' | 'abilities'> & { readonly setting?: boolean; readonly counts?: boolean; readonly addons?: readonly AddonId[]; readonly abilities?: readonly AbilityId[] },
@@ -82,8 +95,8 @@ const arcade = (
 
 export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   glide: arcade({ setting: true, cues: 'swim or fly in three dimensions', roles: ['glide_ring', 'glide_reef'], finish: true, labels: ['player', 'enemy', 'finish', 'glide_rival', 'glide_pursuer'], mechanics: ['timer'], addons: ['shoot'], abilities: ALL_ABILITIES }),
-  walker: arcade({ setting: true, cues: 'walk through a maze', roles: ['wall', 'coin', 'guard', 'chaser'], finish: true, labels: ['player', 'coin', 'finish', 'guard', 'chaser'], mechanics: ['health', 'timer'], addons: ['lives'], abilities: ['grab'] }),
-  ball: arcade({ setting: true, cues: 'aim and shoot a ball', roles: ['target', 'goalkeeper'], finish: true, labels: ['player', 'goalkeeper'], mechanics: ['timer'], addons: [] }),
+  walker: arcade({ setting: true, cues: 'walk through a maze', roles: ['wall', 'coin', 'guard', 'chaser'], finish: true, labels: ['player', 'coin', 'finish', 'guard', 'chaser'], mechanics: ['health', 'timer'], addons: ['lives'], abilities: ALL_ABILITIES }),
+  ball: arcade({ setting: true, cues: 'aim and shoot a ball', roles: ['target', 'goalkeeper'], finish: true, labels: ['player', 'goalkeeper'], mechanics: ['timer'], addons: [], abilities: ['shield'] }),
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12, addons: [], abilities: [] },
   // P26D T9: počty od 2 čte generátor – běžec mince a řady překážek, plošinovka a poletování mince, střelnice terče a nepřátele.
   runner: arcade({ setting: true, counts: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player', 'obstacle', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'], abilities: ALL_ABILITIES }),
@@ -101,16 +114,16 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
     labels: [],
     mechanics: LIVES_AND_TIMER,
     addons: ['shoot', 'chaser', 'lives'],
-    abilities: ['strike', 'dash', 'shield', 'grab'],
+    abilities: ALL_ABILITIES,
   }),
   // P39 T14: terč střelnice nese věc z věty (mince, duch) a kreslí se jejím modelem.
-  shooter: arcade({ setting: true, counts: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy', 'target'], mechanics: LIVES_AND_TIMER }),
+  shooter: arcade({ setting: true, counts: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy', 'target'], mechanics: LIVES_AND_TIMER, abilities: ['grab', 'shield'] }),
   throw: arcade({ setting: true, cues: 'hold, release', roles: ['target'], finish: false, note: 'archetype combat_lite', labels: ['player', 'target'], mechanics: ['timer'] }),
   // P27A T4: načasování, rytmus a souboj kreslí kulisy za hrací plochou; soupeř souboje a závodu nese model z popisku.
   // P30B T4: díl věže („pancakes“), nota rytmu („lily pads“) a mantinel závodu („crocodiles“) taky.
   timing: arcade({ setting: true, cues: 'stack, stop the bar', roles: ['block', 'miss'], finish: false, labels: ['block'], mechanics: LIVES_AND_TIMER }),
   rhythm: arcade({ setting: true, cues: 'tap on the beat', roles: ['note', 'miss'], finish: false, labels: ['player', 'note'], mechanics: LIVES_AND_TIMER }),
-  duel: arcade({ setting: true, cues: 'fight, boxing', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER, abilities: ['strike', 'dash', 'shield'] }),
+  duel: arcade({ setting: true, cues: 'fight, boxing', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER, abilities: ALL_ABILITIES }),
 };
 
 export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.control ?? 'tap_go';

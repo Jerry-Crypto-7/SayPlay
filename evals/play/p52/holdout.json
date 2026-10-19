@@ -1,0 +1,313 @@
+{
+ "about": "P52 T2 holdout: 40 sentences written blind on 2026-10-18 by a subagent that saw only the five hero actions with verb examples, the record shape and the split (30 hero action, 10 enemy-only verb) – no code, no lexicon, no plan, no other sentence set. `wants` = hero actions in sentence order, `family` = first wanted action or `enemy`.",
+ "sentences": [
+  {
+   "id": "h01",
+   "text": "spy squirrel in a bank vault cartwheeling away from sweeping laser beams",
+   "family": "dash",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "h02",
+   "text": "Mail carrier doing her route as angry dogs bite at her ankles.",
+   "family": "enemy",
+   "wants": []
+  },
+  {
+   "id": "h03",
+   "text": "My grandma is a wizard and she lobs fireballs at trolls on the way to the bakery.",
+   "family": "shoot",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "h04",
+   "text": "goblin that pockets the king's crown and bonks the royal butler on the head with it",
+   "family": "grab",
+   "wants": [
+    "grab",
+    "strike"
+   ]
+  },
+  {
+   "id": "h05",
+   "text": "astronaut putting up a force field while asteroids smash into the space station",
+   "family": "shield",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "h06",
+   "text": "viking duel on a frozen lake where you swing a huge axe at your opponent",
+   "family": "strike",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "h07",
+   "text": "Sneak a toy car through the living room while your big brother guards the hallway.",
+   "family": "enemy",
+   "wants": []
+  },
+  {
+   "id": "h08",
+   "text": "ninja runner who flings shurikens at rooftop sentries and darts sideways past chimneys",
+   "family": "shoot",
+   "wants": [
+    "shoot",
+    "dash"
+   ]
+  },
+  {
+   "id": "h09",
+   "text": "hungry bear at the foot of a waterfall snagging salmon as they tumble down",
+   "family": "grab",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "h10",
+   "text": "fox thief who bolts past the dozing farmer and nabs eggs from the henhouse",
+   "family": "dash",
+   "wants": [
+    "dash",
+    "grab"
+   ]
+  },
+  {
+   "id": "h11",
+   "text": "tiny mouse has to cross the kitchen floor while the cat keeps trying to grab it",
+   "family": "enemy",
+   "wants": []
+  },
+  {
+   "id": "h12",
+   "text": "Witch duel on a windy cliff, raise an ice wall then fire lightning at your rival.",
+   "family": "shield",
+   "wants": [
+    "shield",
+    "shoot"
+   ]
+  },
+  {
+   "id": "h13",
+   "text": "Robot boxer in a junkyard ring uppercutting rusty opponents until they fall apart.",
+   "family": "strike",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "h14",
+   "text": "a pigeon soaring over new york pelting tourists with breadcrumbs",
+   "family": "shoot",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "h15",
+   "text": "a scuba diver exploring a shipwreck where octopus tentacles snatch at her flippers",
+   "family": "enemy",
+   "wants": []
+  },
+  {
+   "id": "h16",
+   "text": "Raccoon creeping around a campsite at night pinching marshmallows from sleeping campers.",
+   "family": "grab",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "h17",
+   "text": "street basketball player in a park juking past two giant defenders",
+   "family": "dash",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "h18",
+   "text": "Turtle knight on a pirate beach bouncing cannonballs back with his shell.",
+   "family": "shield",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "h19",
+   "text": "Gladiator penguin in the colosseum jabs rivals with a frozen fish and fends off spears with a pot lid.",
+   "family": "strike",
+   "wants": [
+    "strike",
+    "shield"
+   ]
+  },
+  {
+   "id": "h20",
+   "text": "a baby dragon tiptoeing through a castle library while librarians throw spellbooks at it",
+   "family": "enemy",
+   "wants": []
+  },
+  {
+   "id": "h21",
+   "text": "A submarine in a maze of sunken ruins torpedoes sharks and nets the gold they drop.",
+   "family": "shoot",
+   "wants": [
+    "shoot",
+    "grab"
+   ]
+  },
+  {
+   "id": "h22",
+   "text": "A magnet robot in a metal maze yanking keys off the walls to open doors.",
+   "family": "grab",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "h23",
+   "text": "A snail racing to the finish line while rabbits sprint past him, laughing.",
+   "family": "enemy",
+   "wants": []
+  },
+  {
+   "id": "h24",
+   "text": "skateboarding zombie diving out of the way of buses and smacking street signs",
+   "family": "dash",
+   "wants": [
+    "dash",
+    "strike"
+   ]
+  },
+  {
+   "id": "h25",
+   "text": "a medieval goalkeeper in a muddy field warding off flaming soccer balls with a wooden door",
+   "family": "shield",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "h26",
+   "text": "sumo hamster body-slamming other hamsters out of a cage arena",
+   "family": "strike",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "h27",
+   "text": "Desert cowboy sniping alien drones from the roof of a speeding train.",
+   "family": "shoot",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "h28",
+   "text": "Hiker inching across a rope bridge as a volcano spits glowing rocks everywhere.",
+   "family": "enemy",
+   "wants": []
+  },
+  {
+   "id": "h29",
+   "text": "A kid with a bucket under a giant pinata in the sky, scooping up all the falling candy.",
+   "family": "grab",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "h30",
+   "text": "cardboard knight in a schoolyard shielding himself from water balloons with a lunch tray then sprinting past the bullies",
+   "family": "shield",
+   "wants": [
+    "shield",
+    "dash"
+   ]
+  },
+  {
+   "id": "h31",
+   "text": "Dragonfly racer flying through a swamp and boosting past frogs that snap at it.",
+   "family": "dash",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "h32",
+   "text": "you're a hot air balloon drifting over a canyon and eagles keep swooping down to peck at you",
+   "family": "enemy",
+   "wants": []
+  },
+  {
+   "id": "h33",
+   "text": "a lumberjack lost in an enchanted hedge maze clobbering walking mushrooms with a frying pan",
+   "family": "strike",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "h34",
+   "text": "scarecrow in a cornfield hurling pumpkins at the crows",
+   "family": "shoot",
+   "wants": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "h35",
+   "text": "pirate girl on a treasure hunt across jungle islands looting chests guarded by crabs",
+   "family": "grab",
+   "wants": [
+    "grab"
+   ]
+  },
+  {
+   "id": "h36",
+   "text": "An otter sliding down an icy mountain while yetis chuck snowballs from the ridges.",
+   "family": "enemy",
+   "wants": []
+  },
+  {
+   "id": "h37",
+   "text": "elf healer protecting her village from a meteor shower with a glowing dome",
+   "family": "shield",
+   "wants": [
+    "shield"
+   ]
+  },
+  {
+   "id": "h38",
+   "text": "Space matador hopping aside every time the cyborg bull charges at him.",
+   "family": "dash",
+   "wants": [
+    "dash"
+   ]
+  },
+  {
+   "id": "h39",
+   "text": "Sneak through the museum as a cat burglar and karate chop the security robots.",
+   "family": "strike",
+   "wants": [
+    "strike"
+   ]
+  },
+  {
+   "id": "h40",
+   "text": "Space taxi pilot flying passengers home while police cruisers raise energy barriers across the lanes",
+   "family": "enemy",
+   "wants": []
+  }
+ ]
+}

@@ -1,0 +1,2850 @@
+{
+ "schema": "p52-measure.v1",
+ "label": "after T1",
+ "commit": "e3b2fd4a",
+ "compiler": "play-compiler-v11/arcade-v2",
+ "profile": "intermediate",
+ "verbs": {
+  "p52": {
+   "summary": {
+    "n": 40,
+    "wanting": 34,
+    "hasAction": 0.12,
+    "botUsed": 0.24,
+    "verbFired": 0.24,
+    "traps": 6,
+    "spuriousRate": 0.5,
+    "draftMsP95": 3577
+   },
+   "rows": [
+    {
+     "id": "d01",
+     "control": "move_free",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1276
+    },
+    {
+     "id": "d02",
+     "control": "steer",
+     "wanted": [
+      "strike"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "strike",
+       "reason": "lexicon misses the verb"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 374
+    },
+    {
+     "id": "d03",
+     "control": "move_free",
+     "wanted": [
+      "strike"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "quest.spatial",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "strike",
+       "reason": "generator quest_spatial takes no strike"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 466
+    },
+    {
+     "id": "d04",
+     "control": "move_free",
+     "wanted": [
+      "strike"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "quest.spatial",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "strike",
+       "reason": "generator quest_spatial takes no strike"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 531
+    },
+    {
+     "id": "d05",
+     "control": "walker",
+     "wanted": [
+      "strike"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "strike",
+       "reason": "control walker takes no strike"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 360
+    },
+    {
+     "id": "d06",
+     "control": "walker",
+     "wanted": [
+      "strike"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "strike",
+       "reason": "control walker takes no strike"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 680
+    },
+    {
+     "id": "d07",
+     "control": "ball",
+     "wanted": [
+      "shield"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:ball",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "control ball takes no shield"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 580
+    },
+    {
+     "id": "d08",
+     "control": "ball",
+     "wanted": [
+      "shield"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:ball",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "control ball takes no shield"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 182
+    },
+    {
+     "id": "d09",
+     "control": "shooter",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "shooter",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1081
+    },
+    {
+     "id": "d10",
+     "control": "move_free",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:move_free",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shoot",
+       "reason": "control move_free takes no shoot"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 91
+    },
+    {
+     "id": "d11",
+     "control": "walker",
+     "wanted": [
+      "dash"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "control walker takes no dash"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 716
+    },
+    {
+     "id": "d12",
+     "control": "walker",
+     "wanted": [
+      "dash"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "control walker takes no dash"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 724
+    },
+    {
+     "id": "d13",
+     "control": "walker",
+     "wanted": [
+      "shield"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "control walker takes no shield"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 274
+    },
+    {
+     "id": "d14",
+     "control": "walker",
+     "wanted": [
+      "shield"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "control walker takes no shield"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 268
+    },
+    {
+     "id": "d15",
+     "control": "walker",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shoot",
+       "reason": "control walker takes no shoot"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 893
+    },
+    {
+     "id": "d16",
+     "control": "walker",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shoot",
+       "reason": "control walker takes no shoot"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 757
+    },
+    {
+     "id": "d17",
+     "control": "walker",
+     "wanted": [
+      "grab"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "grab",
+       "reason": "generator walker_stealth takes no grab"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 381
+    },
+    {
+     "id": "d18",
+     "control": "walker",
+     "wanted": [
+      "grab"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "grab",
+       "reason": "generator walker_stealth takes no grab"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 1033
+    },
+    {
+     "id": "d19",
+     "control": "shooter",
+     "wanted": [
+      "shoot",
+      "grab"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "shooter",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "grab",
+       "reason": "control shooter takes no grab"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 338
+    },
+    {
+     "id": "d20",
+     "control": "shooter",
+     "wanted": [
+      "shoot",
+      "grab"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "shooter",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "grab",
+       "reason": "control shooter takes no grab"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 296
+    },
+    {
+     "id": "d21",
+     "control": "shooter",
+     "wanted": [
+      "shield",
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "shooter",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "control shooter takes no shield"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 262
+    },
+    {
+     "id": "d22",
+     "control": "shooter",
+     "wanted": [
+      "shield",
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "shooter",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "lexicon misses the verb"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 299
+    },
+    {
+     "id": "d23",
+     "control": "duel",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "duel",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shoot",
+       "reason": "control duel takes no shoot"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 42
+    },
+    {
+     "id": "d24",
+     "control": "duel",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "duel",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shoot",
+       "reason": "control duel takes no shoot"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 42
+    },
+    {
+     "id": "d25",
+     "control": "duel",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "duel",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "grab",
+       "reason": "lexicon misses the verb"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 42
+    },
+    {
+     "id": "d26",
+     "control": "duel",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "duel",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "grab",
+       "reason": "control duel takes no grab"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 28
+    },
+    {
+     "id": "d27",
+     "control": "runner",
+     "wanted": [
+      "dash"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "VERB_UNPROVED:dash"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 3793
+    },
+    {
+     "id": "d28",
+     "control": "runner",
+     "wanted": [
+      "shield"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "lexicon misses the verb"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 1946
+    },
+    {
+     "id": "d29",
+     "control": "runner",
+     "wanted": [
+      "dash"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "lexicon misses the verb"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 1825
+    },
+    {
+     "id": "d30",
+     "control": "steer",
+     "wanted": [
+      "dash"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "lexicon misses the verb"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 684
+    },
+    {
+     "id": "d31",
+     "control": "platform",
+     "wanted": [
+      "dash"
+     ],
+     "present": [
+      "dash"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1198
+    },
+    {
+     "id": "d32",
+     "control": "runner",
+     "wanted": [
+      "dash"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "VERB_UNPROVED:dash"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 3577
+    },
+    {
+     "id": "d33",
+     "control": "move_free",
+     "wanted": [
+      "dash",
+      "shield"
+     ],
+     "present": [
+      "dash",
+      "shield",
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.fight",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 328
+    },
+    {
+     "id": "d34",
+     "control": "runner",
+     "wanted": [
+      "dash",
+      "shield"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "VERB_UNPROVED:dash"
+      },
+      {
+       "action": "shield",
+       "reason": "VERB_UNPROVED:shield"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 6242
+    },
+    {
+     "id": "d35",
+     "control": "shooter",
+     "wanted": [],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "shooter",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 274
+    },
+    {
+     "id": "d36",
+     "control": "runner",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1130
+    },
+    {
+     "id": "d37",
+     "control": "platform",
+     "wanted": [],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": true,
+     "dropped": [],
+     "spurious": [
+      "shoot"
+     ],
+     "draftMs": 1257
+    },
+    {
+     "id": "d38",
+     "control": "move_free",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 730
+    },
+    {
+     "id": "d39",
+     "control": "runner",
+     "wanted": [],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": true,
+     "dropped": [],
+     "spurious": [
+      "grab"
+     ],
+     "draftMs": 1452
+    },
+    {
+     "id": "d40",
+     "control": "steer",
+     "wanted": [],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": true,
+     "dropped": [],
+     "spurious": [
+      "shoot"
+     ],
+     "draftMs": 827
+    }
+   ]
+  },
+  "p47b-dev": {
+   "summary": {
+    "n": 65,
+    "wanting": 50,
+    "hasAction": 0.7,
+    "botUsed": 0.76,
+    "verbFired": 0.74,
+    "traps": 15,
+    "spuriousRate": 0,
+    "draftMsP95": 3720
+   },
+   "rows": [
+    {
+     "id": "v02",
+     "control": "duel",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "duel",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 341
+    },
+    {
+     "id": "v03",
+     "control": "move_free",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1685
+    },
+    {
+     "id": "v04",
+     "control": "platform",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 859
+    },
+    {
+     "id": "v05",
+     "control": "glide",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:glide",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 669
+    },
+    {
+     "id": "v06",
+     "control": "runner",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1840
+    },
+    {
+     "id": "v07",
+     "control": "duel",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "duel",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 41
+    },
+    {
+     "id": "v08",
+     "control": "steer",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 979
+    },
+    {
+     "id": "v10",
+     "control": "glide",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:glide",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 515
+    },
+    {
+     "id": "v11",
+     "control": "move_free",
+     "wanted": [
+      "shield",
+      "strike"
+     ],
+     "present": [
+      "shield",
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.fight",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 333
+    },
+    {
+     "id": "v13",
+     "control": "move_free",
+     "wanted": [
+      "dash",
+      "strike"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "VERB_UNPROVED:dash"
+      },
+      {
+       "action": "strike",
+       "reason": "VERB_UNPROVED:strike"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 1923
+    },
+    {
+     "id": "v15",
+     "control": "glide",
+     "wanted": [
+      "dash"
+     ],
+     "present": [
+      "dash"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:glide",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 583
+    },
+    {
+     "id": "v16",
+     "control": "steer",
+     "wanted": [
+      "dash"
+     ],
+     "present": [
+      "dash"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 579
+    },
+    {
+     "id": "v17",
+     "control": "walker",
+     "wanted": [
+      "dash"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "control walker takes no dash"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 794
+    },
+    {
+     "id": "v18",
+     "control": "runner",
+     "wanted": [
+      "dash"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "VERB_UNPROVED:dash"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 3554
+    },
+    {
+     "id": "v20",
+     "control": "platform",
+     "wanted": [
+      "dash"
+     ],
+     "present": [
+      "dash"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 619
+    },
+    {
+     "id": "v21",
+     "control": "runner",
+     "wanted": [
+      "dash"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "VERB_UNPROVED:dash"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 3618
+    },
+    {
+     "id": "v22",
+     "control": "platform",
+     "wanted": [
+      "dash"
+     ],
+     "present": [
+      "dash"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 754
+    },
+    {
+     "id": "v24",
+     "control": "glide",
+     "wanted": [
+      "dash",
+      "shoot"
+     ],
+     "present": [
+      "dash",
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:glide",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 4285
+    },
+    {
+     "id": "v27",
+     "control": "runner",
+     "wanted": [
+      "dash",
+      "grab"
+     ],
+     "present": [
+      "dash",
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 2324
+    },
+    {
+     "id": "v28",
+     "control": "move_free",
+     "wanted": [
+      "dash"
+     ],
+     "present": [
+      "dash"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1363
+    },
+    {
+     "id": "v29",
+     "control": "move_free",
+     "wanted": [
+      "shield"
+     ],
+     "present": [
+      "shield"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1281
+    },
+    {
+     "id": "v30",
+     "control": "glide",
+     "wanted": [
+      "shield"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:glide",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "dropped without a recorded reason"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 562
+    },
+    {
+     "id": "v32",
+     "control": "move_free",
+     "wanted": [
+      "shield"
+     ],
+     "present": [
+      "shield",
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.fight",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 303
+    },
+    {
+     "id": "v34",
+     "control": "move_free",
+     "wanted": [
+      "shield"
+     ],
+     "present": [
+      "shield"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1248
+    },
+    {
+     "id": "v36",
+     "control": "move_free",
+     "wanted": [
+      "shield"
+     ],
+     "present": [
+      "shield",
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.fight",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 250
+    },
+    {
+     "id": "v38",
+     "control": "steer",
+     "wanted": [
+      "shield"
+     ],
+     "present": [
+      "shield"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 601
+    },
+    {
+     "id": "v39",
+     "control": "glide",
+     "wanted": [
+      "shield"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:glide",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "dropped without a recorded reason"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 598
+    },
+    {
+     "id": "v40",
+     "control": "move_free",
+     "wanted": [
+      "shield",
+      "strike"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "VERB_UNPROVED:shield"
+      },
+      {
+       "action": "strike",
+       "reason": "VERB_UNPROVED:strike"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 2115
+    },
+    {
+     "id": "v41",
+     "control": "walker",
+     "wanted": [
+      "shield",
+      "shoot"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "control walker takes no shield"
+      },
+      {
+       "action": "shoot",
+       "reason": "control walker takes no shoot"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 284
+    },
+    {
+     "id": "v42",
+     "control": "move_free",
+     "wanted": [
+      "shield",
+      "dash"
+     ],
+     "present": [
+      "shield",
+      "dash"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.escape",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 467
+    },
+    {
+     "id": "v44",
+     "control": "shooter",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "shooter",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 303
+    },
+    {
+     "id": "v45",
+     "control": "walker",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shoot",
+       "reason": "control walker takes no shoot"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 697
+    },
+    {
+     "id": "v47",
+     "control": "glide",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:glide",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 3720
+    },
+    {
+     "id": "v49",
+     "control": "steer",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1267
+    },
+    {
+     "id": "v50",
+     "control": "glide",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:glide",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 3941
+    },
+    {
+     "id": "v51",
+     "control": "steer",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 784
+    },
+    {
+     "id": "v52",
+     "control": "shooter",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "shooter",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 289
+    },
+    {
+     "id": "v53",
+     "control": "shooter",
+     "wanted": [
+      "shoot",
+      "grab"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "shooter",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "grab",
+       "reason": "control shooter takes no grab"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 277
+    },
+    {
+     "id": "v54",
+     "control": "duel",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "duel",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shoot",
+       "reason": "control duel takes no shoot"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 42
+    },
+    {
+     "id": "v55",
+     "control": "shooter",
+     "wanted": [
+      "shield",
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "shooter",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "shield",
+       "reason": "control shooter takes no shield"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 301
+    },
+    {
+     "id": "v57",
+     "control": "move_free",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 857
+    },
+    {
+     "id": "v60",
+     "control": "steer",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 546
+    },
+    {
+     "id": "v61",
+     "control": "walker",
+     "wanted": [
+      "grab"
+     ],
+     "present": [],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "grab",
+       "reason": "generator walker_stealth takes no grab"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 391
+    },
+    {
+     "id": "v62",
+     "control": "runner",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1722
+    },
+    {
+     "id": "v63",
+     "control": "move_free",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 847
+    },
+    {
+     "id": "v66",
+     "control": "runner",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 2286
+    },
+    {
+     "id": "v67",
+     "control": "duel",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "duel",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "grab",
+       "reason": "control duel takes no grab"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 44
+    },
+    {
+     "id": "v68",
+     "control": "move_free",
+     "wanted": [
+      "grab",
+      "strike"
+     ],
+     "present": [
+      "grab",
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.escape",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 770
+    },
+    {
+     "id": "v69",
+     "control": "platform",
+     "wanted": [
+      "grab",
+      "shoot"
+     ],
+     "present": [
+      "grab",
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 2622
+    },
+    {
+     "id": "v70",
+     "control": "runner",
+     "wanted": [
+      "grab",
+      "dash"
+     ],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": false,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [
+      {
+       "action": "dash",
+       "reason": "VERB_UNPROVED:dash"
+      }
+     ],
+     "spurious": [],
+     "draftMs": 3818
+    },
+    {
+     "id": "v72",
+     "control": "steer",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 372
+    },
+    {
+     "id": "v75",
+     "control": "steer",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 368
+    },
+    {
+     "id": "v76",
+     "control": "runner",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1136
+    },
+    {
+     "id": "v77",
+     "control": "runner",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1314
+    },
+    {
+     "id": "v79",
+     "control": "platform",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 446
+    },
+    {
+     "id": "v80",
+     "control": "move_free",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 863
+    },
+    {
+     "id": "v81",
+     "control": "rhythm",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "rhythm",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 144
+    },
+    {
+     "id": "v82",
+     "control": "move_free",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 790
+    },
+    {
+     "id": "v83",
+     "control": "walker",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 865
+    },
+    {
+     "id": "v86",
+     "control": "runner",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1211
+    },
+    {
+     "id": "v87",
+     "control": "move_free",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 827
+    },
+    {
+     "id": "v88",
+     "control": "platform",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 584
+    },
+    {
+     "id": "v90",
+     "control": "move_free",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 751
+    },
+    {
+     "id": "v91",
+     "control": "ball",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "control:ball",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 451
+    },
+    {
+     "id": "v92",
+     "control": "rhythm",
+     "wanted": [],
+     "present": [],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "rhythm",
+     "trap": true,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 310
+    }
+   ]
+  },
+  "p46a": {
+   "summary": {
+    "n": 20,
+    "wanting": 19,
+    "hasAction": 1,
+    "botUsed": 1,
+    "verbFired": 0.89,
+    "traps": 0,
+    "spuriousRate": null,
+    "draftMsP95": 3214
+   },
+   "rows": [
+    {
+     "id": "a01",
+     "control": "runner",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 3455
+    },
+    {
+     "id": "a02",
+     "control": "runner",
+     "wanted": [
+      "strike",
+      "shoot"
+     ],
+     "present": [
+      "strike",
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 2015
+    },
+    {
+     "id": "a03",
+     "control": "steer",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1189
+    },
+    {
+     "id": "a04",
+     "control": "steer",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1036
+    },
+    {
+     "id": "a05",
+     "control": "runner",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1567
+    },
+    {
+     "id": "a06",
+     "control": "move_free",
+     "wanted": [
+      "grab",
+      "dash"
+     ],
+     "present": [
+      "grab",
+      "dash"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.escape",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 875
+    },
+    {
+     "id": "a07",
+     "control": "runner",
+     "wanted": [
+      "dash",
+      "strike"
+     ],
+     "present": [
+      "dash",
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 3214
+    },
+    {
+     "id": "a08",
+     "control": "move_free",
+     "wanted": [
+      "shield"
+     ],
+     "present": [
+      "shield"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1676
+    },
+    {
+     "id": "a09",
+     "control": "platform",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1098
+    },
+    {
+     "id": "a10",
+     "control": "walker",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:walker",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 2777
+    },
+    {
+     "id": "a11",
+     "control": "glide",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:glide",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 2374
+    },
+    {
+     "id": "a12",
+     "control": "platform",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1080
+    },
+    {
+     "id": "a13",
+     "control": "move_free",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 783
+    },
+    {
+     "id": "a14",
+     "control": "steer",
+     "wanted": [
+      "dash",
+      "shoot"
+     ],
+     "present": [
+      "dash",
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 719
+    },
+    {
+     "id": "a15",
+     "control": "move_free",
+     "wanted": [
+      "shield"
+     ],
+     "present": [
+      "shield"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.escape",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 374
+    },
+    {
+     "id": "a16",
+     "control": "steer",
+     "wanted": [
+      "shoot"
+     ],
+     "present": [
+      "shoot"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "control:steer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 608
+    },
+    {
+     "id": "a17",
+     "control": "runner",
+     "wanted": [],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": false,
+     "hasAction": false,
+     "botUsed": false,
+     "verbFired": false,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [],
+     "spurious": [
+      "strike"
+     ],
+     "draftMs": 1170
+    },
+    {
+     "id": "a18",
+     "control": "runner",
+     "wanted": [
+      "grab"
+     ],
+     "present": [
+      "grab"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "runner",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 2751
+    },
+    {
+     "id": "a19",
+     "control": "platform",
+     "wanted": [
+      "strike"
+     ],
+     "present": [
+      "strike"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "platformer",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 938
+    },
+    {
+     "id": "a20",
+     "control": "move_free",
+     "wanted": [
+      "shield"
+     ],
+     "present": [
+      "shield"
+     ],
+     "wantsAction": true,
+     "hasAction": true,
+     "botUsed": true,
+     "verbFired": true,
+     "playable": true,
+     "issues": [],
+     "genre": "arena.collect",
+     "trap": false,
+     "dropped": [],
+     "spurious": [],
+     "draftMs": 1487
+    }
+   ]
+  }
+ },
+ "finale": {
+  "set": "p51",
+  "dev": {
+   "sentences": 30,
+   "built": 30,
+   "playable": 30,
+   "pacedShare": 1,
+   "reasons": {},
+   "finaleShare": 0.97,
+   "bossShare": 0.47,
+   "behavioursMedian": 1,
+   "deadTimeMedianS": 2.5,
+   "risingShare": 0.97,
+   "segmentChanges2Share": 0.23
+  },
+  "panel": {
+   "sentences": 40,
+   "built": 40,
+   "playable": 40,
+   "pacedShare": 0.98,
+   "reasons": {
+    "assembly": 1
+   },
+   "finaleShare": 0.93,
+   "bossShare": 0.57,
+   "behavioursMedian": 2,
+   "deadTimeMedianS": 2.5,
+   "risingShare": 1,
+   "segmentChanges2Share": 0.45
+  }
+ }
+}

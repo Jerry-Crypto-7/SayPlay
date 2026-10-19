@@ -14,6 +14,7 @@ import { ABILITY_SLOTS, AXIS_MAX, type AbilityId, type ArcadeInput, type ArcadeO
 import { arenaAxis } from '../pieces/arena';
 import { fightMove, fightSight } from '../pieces/fight-bot';
 import { RUNNER } from '../pieces/runner';
+import { wallAhead } from '../pieces/runner-bot';
 import { ABILITY_BUTTONS, ABILITY_TIMING, type AbilityBot, abilityActive, abilityCooldown, cooldownOf } from './state';
 import { inStrikeReachWithin } from './strike';
 
@@ -173,19 +174,26 @@ function oncoming(targets: readonly number[], contact: (body: number) => number,
 }
 
 /** Roboti ovládání s pohledem shora (`AROUND_CONTROLS`): úder a krádež sahají kolem hrdiny. */
-const AROUND_BOTS: readonly string[] = ['arena_bot', 'walker_bot'];
+const AROUND_BOTS: readonly string[] = ['arena_bot', 'walker_bot', 'quest_bot'];
 
 /** Aréna: s připravenou akcí proti pronásledovateli jde robot k nejbližšímu blíž než tohle. */
 const ARENA_SEEK = 8 * UNIT;
 
 /**
- * Robot arény před pronásledovateli utíká, takže by úder, dash ani štít nikdy nepoužil.
- * S připravenou akcí jde k nejbližšímu tělu rolí `roles` v dosahu `ARENA_SEEK`; jinak `undefined`.
+ * Aréna (P52 T5): dash a štít zmáčknout, až dotyk padne nejvýš tolik tiků po pohledu navíc k jeho stáří. Pronásledovatel
+ * míří, kam hrdina doběhne, takže hrdině, který k němu jde, ustupuje: dotyk přijde vždy později, než říká odhad.
  */
-function seekAxis(state: Int32Array, player: number, roles: readonly number[]): number | undefined {
+const ARENA_PRESS = 3;
+
+/**
+ * Robot arény před pronásledovateli utíká, takže by úder, dash ani štít nikdy nepoužil.
+ * S připravenou akcí jde k nejbližšímu tělu rolí `roles` v dosahu `ARENA_SEEK` mimo `spare`; jinak `undefined`.
+ */
+function seekAxis(state: Int32Array, player: number, roles: readonly number[], spare?: number): number | undefined {
   const p = bodyBase(player);
   let best: { dx: number; dz: number; d: number } | undefined;
   for (const body of bodiesOf(state, player, roles)) {
+    if (body === spare) continue;
     const dx = (state[bodyBase(body) + BODY.x] as number) - (state[p + BODY.x] as number);
     const dz = (state[bodyBase(body) + BODY.z] as number) - (state[p + BODY.z] as number);
     const d = Math.max(Math.abs(dx), Math.abs(dz));
@@ -270,7 +278,7 @@ const SHARED = -1;
  * podle indexu těla (i mrtvého), takže se mezi tiky nemění; pohyblivá těla
  * (soupeřova auta) se nepočítají. Vrací slot akce, nebo `SHARED`.
  */
-function ownerOf(state: Int32Array, ids: readonly AbilityId[], harm: readonly number[], fire: boolean): (body: number) => number {
+function ownerOf(state: Int32Array, ids: readonly AbilityId[], harm: readonly number[], fire: boolean, arena: boolean): (body: number) => number {
   const order = [...ids.keys()].sort((a, b) => Number(ids[b] === 'shoot') - Number(ids[a] === 'shoot'));
   if (order.length + (fire ? 1 : 0) < 2) return () => SHARED;
   const owners = new Map<number, number>();
@@ -278,15 +286,17 @@ function ownerOf(state: Int32Array, ids: readonly AbilityId[], harm: readonly nu
   const byRole = new Map<number, number[]>();
   for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
     const b = bodyBase(i);
-    if (((state[b + BODY.flags] as number) & FLAG.kinematic) !== 0) continue;
+    // Aréna (P52 T5): pronásledovatelé jsou pohybliví a sběr jich přivede jen pár, které úder i dash zničí –
+    // dostanou vlastníka všichni, střídavě podle indexu, ať jedna akce nevezme oba.
+    if (!arena && ((state[b + BODY.flags] as number) & FLAG.kinematic) !== 0) continue;
     const role = state[b + BODY.role] as number;
     let mine = byRole.get(role);
     if (mine === undefined) byRole.set(role, (mine = order.filter((slot) => rolesOf(ids[slot] as AbilityId, harm).includes(role))));
     const rank = ranks.get(role) ?? 0;
     const rivals = mine.length + (fire && role === ROLE.enemy && !ids.includes('shoot') ? 1 : 0);
-    if (rivals < 2 || rank >= mine.length) continue;
+    if (rivals < 2 || (!arena && rank >= mine.length)) continue;
     ranks.set(role, rank + 1);
-    owners.set(i, mine[rank] as number);
+    owners.set(i, mine[rank % mine.length] as number);
   }
   return (body) => owners.get(body) ?? SHARED;
 }
@@ -305,6 +315,10 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   // Trubky poletování (P47B T9) robot proletí mezerou: dotyk s nimi, který vidí bez výšky, by akci vybil před nepřítelem.
   // Útes klouzání (P47B T11) robot obletí taky: přímka k němu vybila štít a nepřítel v další obruči přišel v cooldownu.
   const harm = params.harm.map((role) => ROLE[role]).filter((role) => !(steer || flap || base.id === 'glide_bot') || role !== ROLE.obstacle);
+  // Běžec se zdmi (P52 T4): dash a štít bere jen zeď. Řadě s průchodem robot uhne jako bez akce – prorážet každou
+  // řadu dalo začátečníkovi 10/10 – a akce mu zůstane připravená na zeď.
+  const saving = base.id === 'runner_bot' && (base.params as { readonly walls?: true }).walls === true && !wallAhead(state, player);
+  const guardHarm = saving ? harm.filter((role) => role !== ROLE.obstacle) : harm;
   const around = AROUND_BOTS.includes(base.id);
   const slots = slotsOf(observation, params);
   if (base.id === 'fight_bot') return fightStep(observation, input, slots, params.keeper);
@@ -320,7 +334,7 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   };
   // Přidělení prochází všechna těla: spočítá se až u prvního těla, na kterém záleží (většinu tiků žádné).
   let assignment: ((body: number) => number) | undefined;
-  const assigned = (body: number): number => (assignment ??= ownerOf(state, params.ids, harm, fire))(body);
+  const assigned = (body: number): number => (assignment ??= ownerOf(state, params.ids, harm, fire, base.id === 'arena_bot'))(body);
   const horizon = steer ? STEER_COMMIT_TICKS : COMMIT_TICKS;
   // Živé díly složené hry, které zraní (P47B T4): dash a štít je berou jako náraz.
   const parts = (params.parts ?? []).filter((body) => alive(state, body));
@@ -365,10 +379,16 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
     const owned = mine(index);
     // I v aktivním okně: robot, který po stisku zase uteče, by se štítem (40 tiků) nikdy nedotkl.
     if (base.id === 'arena_bot' && (slot.ready || slot.activeUntil >= n) && slot.id !== 'shoot' && slot.id !== 'grab') seek.push(...(slot.id === 'strike' ? STRUCK : harm));
+    // Quest (P52 T5): robot jde po stanicích a pronásledovateli se vyhne – s připraveným úderem k němu dojde jako aréna.
+    if (base.id === 'quest_bot' && slot.id === 'strike' && (slot.ready || slot.activeUntil >= n)) seek.push(...STRUCK);
     if (slot.id === 'shoot') {
       // Robot `+shoot` mačká FIRE; tady stejné rozhodnutí na tlačítko akce.
       const seen = { ...observation, recent: recent.map((r) => ((r.buttons & slot.button) !== 0 ? { ...r, buttons: r.buttons | BUTTON.FIRE } : r)) };
-      if ((shootStep(seen, { buttons: 0, axis: input.axis }, base, owned).buttons & BUTTON.FIRE) !== 0) buttons |= slot.button;
+      // Kořist chytání (P52 T7b) střela nesebere: na ni ne.
+      const aimed = params.spare === undefined ? owned : (body: number): boolean => body !== params.spare && owned(body);
+      if ((shootStep(seen, { buttons: 0, axis: input.axis }, base, aimed).buttons & BUTTON.FIRE) !== 0) buttons |= slot.button;
+      // Chytání: robot arény by včelu obešel jako větší buňku a kořist utíká rychleji než on – jde ke včele a sestřelí ji.
+      if (base.id === 'arena_bot' && params.spare !== undefined) seek.push(...ENEMY);
       continue;
     }
     if (slot.id === 'strike' || slot.id === 'grab') {
@@ -384,15 +404,15 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
       if (threat !== null && (slot.ready || slot.activeUntil >= threat.at)) hold = threat.body;
       continue;
     }
-    const threat = oncoming(parts.length === 0 ? of(harm) : [...of(harm), ...parts], contact, owned);
+    const threat = oncoming(parts.length === 0 ? of(guardHarm) : [...of(guardHarm), ...parts], contact, owned);
     // Dash i štít (blok) chrání jen po okno: zmáčknout, až dotyk padne do jeho první půlky.
     // Náboj štítu spotřebovaný v posledních tikách robot ještě nevidí – riziko jednoho zásahu.
     const active = ABILITY_TIMING[slot.id].active;
-    if (threat !== null && slot.ready && threat.at >= n + 1 && threat.at <= n + Math.floor(active / 2)) buttons |= slot.button;
+    if (threat !== null && slot.ready && threat.at >= n + 1 && threat.at <= n + (base.id === 'arena_bot' ? ARENA_PRESS : Math.floor(active / 2))) buttons |= slot.button;
     if (threat !== null && (slot.ready || slot.activeUntil >= threat.at)) hold = threat.body;
     if (slot.ready || slot.activeUntil >= n) guarding = true;
   }
-  const toward = seek.length === 0 ? undefined : seekAxis(state, player, seek);
+  const toward = seek.length === 0 ? undefined : seekAxis(state, player, seek, params.spare);
   if (toward !== undefined) return { buttons, axis: toward };
   if (hold < 0 && guarding && base.id === 'runner_bot' && parts.length > 0) {
     const lane = partLane(state, player, recent, parts);

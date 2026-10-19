@@ -12,11 +12,12 @@ import { expect, it } from 'vitest';
 
 import { ARCADE_COMPILER_VERSION } from '@/play/arcade/compile';
 
-import { P47B_DIR, type VerbRow, type VerbSet, verbRow, verbSentences, verbSummary } from './actions';
+import { P47B_DIR, P52_DIR, type VerbRow, type VerbSet, verbRow, verbSentences, verbSummary } from './actions';
 
 it('measures whether each labelled sentence gets, uses and proves its action', async () => {
   const set = (process.env.P47B_SET ?? 'dev') as VerbSet;
-  const out = process.env.P47B_OUT ?? join(P47B_DIR, `baseline-${set}.json`);
+  // P52 (T2): sady `p52` a `p52-holdout` píší do `evals/play/p52/`; holdout jen s `P52_OPEN_HOLDOUT=1`.
+  const out = process.env.P47B_OUT ?? (set.startsWith('p52') ? join(P52_DIR, `${set}.json`) : join(P47B_DIR, `baseline-${set}.json`));
   const rows: VerbRow[] = [];
   for (const sentence of verbSentences(set)) rows.push(await verbRow(sentence));
   const summary = verbSummary(rows);

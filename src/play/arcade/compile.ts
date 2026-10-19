@@ -15,6 +15,7 @@ import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { type ArcadeParts, addonControlParams, addonLives, applyAddons, baseControlOf, mapUnderlying, underlyingRule } from './addons';
 import { applyAbilities } from './abilities';
+import { HARMFUL_PARTS } from './abilities/state';
 import { placePowerups, wantsPowerups } from './powerups/placement';
 import {
   ARCADE_HZ,
@@ -38,7 +39,7 @@ import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHas
 import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { progressionParts } from './pieces/progression-parts';
-import { pacingParts } from './pieces/pacing-parts';
+import { FINALE5_GENRE_VERSION, genreAtLeast, pacingParts } from './pieces/pacing-parts';
 import { assemblyGate, assemblyParts } from './pieces/assembly-parts';
 import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
@@ -89,6 +90,19 @@ function countParams(spec: GameSpecV1): Record<string, number> {
 const limitSeconds = (seconds: number): number => Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, seconds));
 
 /** Ovládání, trať a pravidla, která se liší podle `control`. */
+/**
+ * Zdi běžce (P52 T4, `walls`): nová hra ze vzorů s dashem nebo štítem, které nemají co zastavit – padající
+ * díl, který zraní (`HARMFUL_PARTS`, P47B T4), je bere sám a jeho hra zůstane, jak byla. Plyne z akcí specu,
+ * ne z uloženého parametru: akce, kterou `compose` zahodí, vezme zeď s sebou a robot trať projde jako dřív.
+ */
+const runnerWalls = (spec: GameSpecV1): { readonly walls?: 1 } =>
+  genreAtLeast(spec, FINALE5_GENRE_VERSION) &&
+  (spec.controlParams as { readonly patterns?: number } | undefined)?.patterns === 1 &&
+  spec.abilities?.some((id) => id === 'dash' || id === 'shield') === true &&
+  spec.assemblyParts?.some((part) => HARMFUL_PARTS.includes(part.kind)) !== true
+    ? { walls: 1 }
+    : {};
+
 function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
   const counts = countParams(spec);
   if (spec.control === 'ball') return ballPitch.parts(seed, ballPitch.params.parse(ownParams(spec) ?? {}), health);
@@ -143,7 +157,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     // and HUD use the shorter deadline. Without it the legacy remix clamp is unchanged.
     return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, throwParamsFor(params, clock)), health: undefined };
   }
-  const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });
+  const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts, ...runnerWalls(spec) });
   // Se životy náraz ubere život, překážka zmizí, běh jede dál a vteřinu milosti další náraz nic nebere (P36A T2).
   const rules: PieceRef[] = [
     { id: 'hit', params: health === undefined ? { role: 'obstacle', effect: 'lose' } : { role: 'obstacle', effect: 'damage', grace: HIT_GRACE } },
@@ -156,7 +170,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
   // Trať z úseků (P36A T4) zrychlí na začátku každého úseku, jinak na třetinách tratě.
   const ramp = level.sectionStarts ?? rampMarks(level.length);
   const control: PieceRef = { id: 'runner', params: { speed: params.speed, ramp, ...(params.feel === undefined ? {} : { feel: params.feel }) } };
-  return { control, bot: { id: 'runner_bot', params: {} }, level, rules };
+  return { control, bot: { id: 'runner_bot', params: params.walls === 1 ? { walls: true } : {} }, level, rules };
 }
 
 /** Generátor, který ovládání staví bez `controlParams.generator`. */

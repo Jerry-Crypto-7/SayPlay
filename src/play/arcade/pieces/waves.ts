@@ -195,6 +195,11 @@ const waveParams = z
     pause: z.int().min(1).max(5 * ARCADE_HZ).optional(),
     /** Předloha jiskry tepu (P47A T9, `isSpark`): vlna věcí na její kopie nečeká. Bez ní jako dřív. */
     spark: body.optional(),
+    /**
+     * Pronásledovatelé na startu (P52 T5): vlna navíc doplní ty, které hrdina zničil (úder, dash, štít), na počet
+     * podle plánu vln. Bez něj jako dřív – zničený pronásledovatel se nevrátí.
+     */
+    restock: z.int().min(0).max(4).optional(),
     /** Vlny od druhé: věci (x, z po dvojicích), noví pronásledovatelé, noví soupeři, HP soupeřů, tik začátku. */
     waves: z
       .array(
@@ -304,7 +309,10 @@ export const arenaWaves: RulePiece<WaveParams> = {
     if (params.item !== undefined) {
       for (let k = 0; k + 1 < items.length; k += 2) effects.push({ kind: 'spawn', template: params.item, x: items[k]!, y: 0, z: items[k + 1]!, vx: 0, vy: 0, vz: 0 });
     }
-    if (params.chaser !== undefined) effects.push(...enter(state, player, params.spots, params.chaser, next.chasers ?? 0, params.entryDistance === undefined ? undefined : params.entryDistance + Math.max(0, 1 - waveOf(state)) * 2000));
+    // Doplnění: plán do téhle vlny (start + noví z dřívějších vln) minus živí.
+    const planned = params.restock === undefined ? 0 : params.waves.slice(0, waveOf(state)).reduce((sum, wave) => sum + (wave.chasers ?? 0), params.restock);
+    const lost = params.restock === undefined ? 0 : Math.max(0, planned - aliveWith(state, ROLE.chaser).length);
+    if (params.chaser !== undefined) effects.push(...enter(state, player, params.spots, params.chaser, (next.chasers ?? 0) + lost,params.entryDistance === undefined ? undefined : params.entryDistance + Math.max(0, 1 - waveOf(state)) * 2000));
     effects.push({ kind: 'count', counter: WAVE_COUNTER, amount: 1 });
     return effects;
   },
