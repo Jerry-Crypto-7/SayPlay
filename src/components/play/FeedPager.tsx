@@ -2,8 +2,7 @@
 
 /**
  * Feed na `/play`: od P54A T6 snap feed karet `feed/ReelFeed.tsx`. Tenhle
- * soubor zůstává jako obal pro `page.tsx` (`FeedPager`, `FeaturedGame`) a
- * testy (`TapToPlay`).
+ * soubor zůstává jako obal pro `page.tsx` (`FeedPager`, `FeaturedGame`).
  */
 
 import Link from 'next/link';
@@ -16,8 +15,6 @@ import { moodTone } from './Feed';
 import type { GameDetail } from './feed/ReelCard';
 import { feedPage, ReelFeed } from './feed/ReelFeed';
 import { Icon } from './ui';
-
-export { TapToPlay } from './feed/ReelCard';
 
 /** Od této šířky stojí doporučená hra vedle pole (kit 05-layout, `lg`). */
 const FEATURED_FROM = '(min-width: 1024px)';

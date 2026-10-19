@@ -1,8 +1,8 @@
 /**
  * Feed nečeká sám na prohru (P33 T8). Hra ve feedu se dřív rozběhla bez
- * hráče a za 2,7 s ukázala „You lost“ – první dojem produktu. Teď místo hry
- * stojí plakát s „Tap to play“ a hra se připojí až po klepnutí. Karty feedu
- * říkají cíl hry, ne větu mechaniky, která byla u všech stejná.
+ * hráče a za 2,7 s ukázala „You lost“ – první dojem produktu. Od P54A T7 hraje
+ * na kartě náhled robota (ten neprohrává) s nápovědou „Tap to play“ a ťuk hru
+ * převezme. Karty feedu říkají cíl hry, ne větu mechaniky, která byla u všech stejná.
  */
 
 import { createElement } from 'react';
@@ -14,20 +14,18 @@ vi.mock('../arcade/ArcadePlay', () => ({ ArcadePlay: () => null }));
 vi.mock('../arcade/look/play-env', () => ({ WithPlayEnv: ({ children }: { children: unknown }) => children }));
 
 const { Feed, moodTone } = await import('../Feed');
-const { TapToPlay } = await import('../FeedPager');
+const { TapHint } = await import('../feed/ReelCard');
 const { beatFor } = await import('../PostRun');
 
-function Game() {
-  return createElement('canvas', { 'data-testid': 'mounted-game' });
-}
-
 describe('the feed poster', () => {
-  it('does not mount the game before the tap', () => {
-    const html = renderToStaticMarkup(createElement(TapToPlay, { title: 'Fox Steals Eggs', goal: 'Collect 5 eggs, then reach the exit.', mood: 'calm', children: createElement(Game) }));
-    expect(html).not.toContain('mounted-game');
+  // P54A T7: nad náhledem robota stojí jen nápověda – ťuk musí projít na scénu, kde hru převezme.
+  it('says "Tap to play" over the bot preview without catching the tap', () => {
+    const html = renderToStaticMarkup(createElement(TapHint, { goal: 'Collect 5 eggs, then reach the exit.', beat: 37 }));
     expect(html).toContain('Tap to play');
     expect(html).toContain('Collect 5 eggs');
-    expect(html).toContain('data-testid="feed-poster"');
+    expect(html).toContain('37% beat this');
+    expect(html).not.toContain('<button');
+    expect(html).toContain('aria-hidden="true"');
   });
 
   it('colours the scene by mood, never purple, with a neutral fallback', () => {
@@ -67,7 +65,7 @@ describe('feed cards', () => {
   });
 
   it('the poster says the clear rate only when there is one', () => {
-    const poster = (beat: number | null) => renderToStaticMarkup(createElement(TapToPlay, { title: 'Fox', goal: 'Collect 5 eggs.', mood: 'calm', beat, children: createElement(Game) }));
+    const poster = (beat: number | null) => renderToStaticMarkup(createElement(TapHint, { goal: 'Collect 5 eggs.', beat }));
     expect(poster(0)).toContain('0% beat this');
     expect(poster(null)).not.toContain('beat this');
   });

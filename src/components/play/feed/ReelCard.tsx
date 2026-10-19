@@ -3,24 +3,26 @@
 /**
  * Jedna karta snap feedu (P54A T6): přesně výška feedu, dosedá po jedné.
  *
- * Aktivní karta je dnešní slide feedu – plakát „Tap to play“, po klepnutí
- * `ArcadePlay` – a nese `feed-current` a listovací okraj. Ostatní karty
- * ukazují jen plakát v tónu nálady scény (titul, cíl, když už je detail
- * stažený); plátno má jen aktivní karta.
+ * Aktivní karta (T7) připojí hru do trvalého plátna feedu (`StageHost`) a
+ * robot v ní ztlumeně hraje náhled z publikace; ťuk na scénu nebo klávesa
+ * hru převezme. Nese `feed-current` a listovací okraj. Ostatní karty ukazují
+ * jen plakát v tónu nálady scény (titul, cíl, když už je detail stažený).
  */
 
 import Link from 'next/link';
-import { type ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
 import type { Par } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
+import type { FeedPreview } from '@/play/version/version';
 
 import { ArcadePlay } from '../arcade/ArcadePlay';
 import { WithPlayEnv } from '../arcade/look/play-env';
 import { beatText, type FeedGame, moodTone } from '../Feed';
 import { Icon } from '../ui';
+import type { StageTunnel } from './stage-tunnel';
 
 export interface GameDetail {
   readonly spec: GameSpecV1;
@@ -30,32 +32,19 @@ export interface GameDetail {
   readonly lineage: readonly GameVersion[];
   /** Hra publikovaná před P36B par nemá. */
   readonly report?: { readonly par?: Par };
+  /** Náhled robota z publikace (P54A T2); starší hra ho nemá. */
+  readonly preview?: FeedPreview;
 }
 
 /**
- * Plakát hry ve feedu (P33 T8): hra se připojí až po klepnutí. Rozběhnutá
- * sama od sebe prohrála dřív, než hráč pochopil ovládání, a první, co na
- * `/play` viděl, bylo „You lost“. `key` podle verze vrátí plakát u každé hry.
+ * „Tap to play“ nad náhledem robota (P54A T7, dřív plakát P33 T8 – hra bez
+ * hráče prohrála dřív, než pochopil ovládání; náhled robota neprohrává).
+ * Ťuk projde skrz na scénu, kde ho převezme `take()` v `ArcadePlay`. Zmizí,
+ * jakmile hraje hráč (`play-demo` v kartě chybí).
  */
-export function TapToPlay({
-  title,
-  goal,
-  mood,
-  beat = null,
-  children,
-}: {
-  readonly title: string;
-  readonly goal: string;
-  readonly mood: string;
-  /** „N% beat this“ (P37C T5); `null` = málo pokusů, řádek chybí. */
-  readonly beat?: number | null;
-  readonly children: ReactNode;
-}) {
-  const [started, setStarted] = useState(false);
-  if (started) return children;
+export function TapHint({ goal, beat = null }: { readonly goal: string; readonly beat?: number | null }) {
   return (
-    <button type="button" className="play-poster" data-testid="feed-poster" data-tone={moodTone(mood)} onClick={() => setStarted(true)}>
-      <span className="play-poster-title">{title}</span>
+    <div className="play-reel-hint" data-testid="feed-hint" aria-hidden="true">
       <span className="play-poster-goal">{goal}</span>
       {beat !== null && (
         <span className="sp-label play-poster-beat" data-testid="feed-poster-beat">
@@ -66,12 +55,25 @@ export function TapToPlay({
         <Icon name="play" />
         Tap to play
       </span>
-    </button>
+    </div>
   );
 }
 
-function ActiveSlide({ game, detail, live }: { readonly game: FeedGame; readonly detail: GameDetail | 'error' | undefined; readonly live: boolean }) {
-  if (detail === undefined) {
+function ActiveSlide({
+  game,
+  detail,
+  live,
+  host,
+  preview,
+}: {
+  readonly game: FeedGame;
+  readonly detail: GameDetail | 'error' | undefined;
+  readonly live: boolean;
+  readonly host: StageTunnel;
+  /** `undefined` = náhled se ještě počítá, `null` = hra hraje bez něj. */
+  readonly preview: FeedPreview | null | undefined;
+}) {
+  if (detail === undefined || (detail !== 'error' && detail.arcade !== undefined && preview === undefined)) {
     return (
       <p className="play-pager-note" role="status">
         Loading {game.title}…
@@ -94,8 +96,8 @@ function ActiveSlide({ game, detail, live }: { readonly game: FeedGame; readonly
     );
   }
   return (
-    <TapToPlay key={game.versionId} title={detail.spec.title} goal={detail.spec.tutorial.goalLine} mood={detail.spec.theme.mood} beat={game.beat ?? null}>
-      <WithPlayEnv theme={detail.spec.theme} versionId={game.versionId}>
+    <>
+      <WithPlayEnv key={game.versionId} theme={detail.spec.theme} versionId={game.versionId}>
         <ArcadePlay
           versionId={game.versionId}
           spec={detail.spec}
@@ -107,9 +109,12 @@ function ActiveSlide({ game, detail, live }: { readonly game: FeedGame; readonly
           active={live}
           inFeed
           par={detail.report?.par ?? null}
+          preview={preview ?? undefined}
+          host={host}
         />
       </WithPlayEnv>
-    </TapToPlay>
+      {preview !== null && <TapHint goal={detail.spec.tutorial.goalLine} beat={game.beat ?? null} />}
+    </>
   );
 }
 
@@ -120,6 +125,8 @@ export function ReelCard({
   detail,
   live,
   rail,
+  host,
+  preview,
 }: {
   readonly game: FeedGame;
   readonly index: number;
@@ -129,13 +136,16 @@ export function ReelCard({
   readonly live: boolean;
   /** Listovací okraj; nese ho jen aktivní karta. */
   readonly rail: ReactNode;
+  /** Trvalé plátno feedu – aktivní karta do něj kreslí svou scénu. */
+  readonly host: StageTunnel;
+  readonly preview: FeedPreview | null | undefined;
 }) {
   const spec = detail !== undefined && detail !== 'error' ? detail.spec : null;
   return (
     <article className="play-reel-card" data-testid="feed-card" data-index={index} data-version-id={game.versionId} data-active={active} aria-label={game.title}>
       {active ? (
         <div className="play-pager-slide" data-testid="feed-current" data-version-id={game.versionId}>
-          <ActiveSlide game={game} detail={detail} live={live} />
+          <ActiveSlide game={game} detail={detail} live={live} host={host} preview={preview} />
           {rail}
         </div>
       ) : (

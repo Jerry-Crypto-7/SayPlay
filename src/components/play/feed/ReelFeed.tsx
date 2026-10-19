@@ -8,8 +8,9 @@
  * Řádky jdou po stránkách z `GET /api/play/games?recent=N&cursor=C`, detail
  * hry z `GET /api/play/games/<id>` – pro aktivní kartu a její sousedy. V DOM
  * je nejvýš 7 karet (aktivní ±3), ostatní pozice drží prázdná mezera téže
- * výšky, takže posun i dosednutí platí pro celý seznam. Plátno má jen aktivní
- * karta (`ReelCard`).
+ * výšky, takže posun i dosednutí platí pro celý seznam. Plátno je jedno po
+ * celou dobu feedu (`StageHost`, T7) a kreslí do něj jen aktivní karta –
+ * náhled robota, po ťuku hra hráče (`ReelCard`).
  *
  * `?g=<versionId>` drží aktivní hru. Dosednutí po tahu ji jen přepíše
  * (`replaceState`), skok – šipky, PageUp/PageDown, tlačítko, tah po okraji,
@@ -30,8 +31,12 @@ import { WithPlayEnv } from '../arcade/look/play-env';
 import { isTyping as typing } from '../arcade/input';
 import demo from '../demo-game.json';
 import { Feed, type FeedGame, type KnownGame } from '../Feed';
+import type { FeedPreview } from '@/play/version/version';
+
 import { loopEvent } from '../loop-client';
+import { countCanvases, feedMode, previewFor } from './preview';
 import { type GameDetail, ReelCard } from './ReelCard';
+import { StageHost } from './StageHost';
 
 const PAGE = 12;
 /** Tah kratší než tohle je ťuk, ne listování. */
@@ -40,6 +45,8 @@ const SWIPE_PX = 40;
 const WINDOW = 3;
 /** Bez `scrollend`: tolik ms bez `scroll` znamená dosednutí. */
 const SETTLE_MS = 150;
+/** Plynulý posun ke kartě trvá pod sekundu; starší cíl už dosednutí nepřebije. */
+const AIM_MS = 1500;
 
 type FeedState = { readonly kind: 'loading' } | { readonly kind: 'error' } | { readonly kind: 'ready'; readonly games: readonly FeedGame[]; readonly next: string | null };
 
@@ -134,20 +141,54 @@ export function ReelFeed() {
     }
   }, [feed, current, index, want]);
 
+  // Náhled robota aktivní hry: z detailu, starší hra z workeru (T4).
+  const [previews, setPreviews] = useState<ReadonlyMap<string, FeedPreview | null>>(new Map());
+  const currentDetail = current === undefined ? undefined : details.get(current.versionId);
+  useEffect(() => {
+    if (current === undefined || currentDetail === undefined || currentDetail === 'error' || currentDetail.arcade === undefined) return;
+    const versionId = current.versionId;
+    let live = true;
+    void previewFor(versionId, currentDetail.preview, currentDetail.arcade).then((preview) => {
+      if (live) setPreviews((prev) => (prev.has(versionId) ? prev : new Map(prev).set(versionId, preview)));
+    });
+    return () => {
+      live = false;
+    };
+  }, [current, currentDetail]);
+
+  // Sonda pro e2e a měření: aktivní hra, režim karty, tik a kolik pláten feed kdy ukázal.
+  useEffect(() => {
+    window.__playFeed = () => {
+      const card = document.querySelector('[data-testid="feed-current"]');
+      return { versionId: card?.getAttribute('data-version-id') ?? null, mode: feedMode(card), tick: window.__playShell?.tick() ?? 0, contexts: countCanvases(document) };
+    };
+    return () => {
+      delete window.__playFeed;
+    };
+  }, []);
+  useEffect(() => {
+    countCanvases(document);
+  }, [index]);
+
   // Adresa bez `?g=` nebo s hrou, která ve feedu není: doplnit bez nového záznamu historie.
   useEffect(() => {
     if (current !== undefined && found === -1) window.history.replaceState(null, '', `?g=${current.versionId}`);
   }, [current, found]);
 
   // Feed sjede k aktivní kartě: po skoku plynule, po načtení a po Back hned.
+  // `aim`: kam feed jede. Výměna karet v okně ±3 během plynulého posunu přiměje
+  // prohlížeč dosednout zpět na kartu, ze které jel – takové dosednutí se nepočítá.
   const hasGames = games.length > 0;
+  const aim = useRef<{ readonly index: number; readonly at: number } | null>(null);
   useEffect(() => {
     const element = reel.current;
     if (element === null || !hasGames) return;
     const top = index * element.clientHeight;
     const behavior = glide.current ? 'smooth' : 'instant';
     glide.current = false;
-    if (Math.abs(element.scrollTop - top) > 1) element.scrollTo({ top, behavior });
+    if (Math.abs(element.scrollTop - top) <= 1) return;
+    aim.current = { index, at: performance.now() };
+    element.scrollTo({ top, behavior });
   }, [index, hasGames]);
 
   const go = useCallback(
@@ -168,6 +209,14 @@ export function ReelFeed() {
     const element = reel.current;
     if (element === null || element.clientHeight === 0) return;
     const target = Math.round(element.scrollTop / element.clientHeight);
+    const wanted = aim.current;
+    if (wanted !== null && performance.now() - wanted.at < AIM_MS) {
+      if (target !== wanted.index) {
+        element.scrollTo({ top: wanted.index * element.clientHeight, behavior: 'instant' });
+        return;
+      }
+      aim.current = null;
+    }
     const game = games[target];
     if (game === undefined || target === index) return;
     if (current !== undefined) loopEvent('next_game', current.versionId);
@@ -202,26 +251,35 @@ export function ReelFeed() {
     return () => observer.disconnect();
   }, [feed.kind, hasGames]);
 
-  // ↑/↓ listují, jen když klávesu nepoužila hra (ta volá `preventDefault`).
-  // Hra se připojuje líně a její posluchače mohou přijít po tomhle, proto až po doběhnutí události.
-  // PageUp/PageDown žádná hra nebere: listují hned a stránku pod feedem neposunou.
+  // Klávesy feedu. Posluchač je jeden po celou dobu feedu v zachytávací fázi okna, takže
+  // běží před hrou karty (ta se připojuje později): PageUp/PageDown žádná hra nebere a
+  // v náhledu robota nebo na výsledku šipky ↑/↓ patří feedu – hra je nevidí a náhled
+  // nepřevezmou. Když hraje hráč, ↑/↓ listují, jen když klávesu nepoužila hra (`preventDefault`),
+  // proto až po doběhnutí události.
+  const keys = useRef({ go, index, onScreen });
+  useEffect(() => {
+    keys.current = { go, index, onScreen };
+  });
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (!onScreen || event.repeat || event.altKey || event.ctrlKey || event.metaKey || typing(event.target)) return;
-      if (event.key === 'PageDown' || event.key === 'PageUp') {
+      const now = keys.current;
+      if (!now.onScreen || event.altKey || event.ctrlKey || event.metaKey || typing(event.target)) return;
+      const step = event.key === 'ArrowDown' || event.key === 'PageDown' ? 1 : event.key === 'ArrowUp' || event.key === 'PageUp' ? -1 : 0;
+      if (step === 0) return;
+      if (event.key.startsWith('Page') || feedMode(document.querySelector('[data-testid="feed-current"]')) !== 'play') {
         event.preventDefault();
-        go(index + (event.key === 'PageDown' ? 1 : -1));
+        event.stopImmediatePropagation();
+        if (!event.repeat) now.go(now.index + step);
         return;
       }
-      const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0;
-      if (step === 0) return;
+      if (event.repeat) return;
       window.setTimeout(() => {
-        if (!event.defaultPrevented) go(index + step);
+        if (!event.defaultPrevented) now.go(now.index + step);
       }, 0);
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [go, index, onScreen]);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, []);
 
   const swipeFrom = useRef<number | null>(null);
   const onRailDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -284,15 +342,29 @@ export function ReelFeed() {
   );
   return (
     <section ref={root} className="play-pager" aria-label="Game feed" data-testid="feed-pager">
-      <div ref={reel} className="play-reel" data-testid="feed-reel">
-        {games.map((game, at) =>
-          Math.abs(at - index) <= WINDOW ? (
-            <ReelCard key={game.versionId} game={game} index={at} active={at === index} detail={details.get(game.versionId)} live={onScreen} rail={at === index ? rail : null} />
-          ) : (
-            <div key={game.versionId} className="play-reel-gap" aria-hidden="true" />
-          ),
+      <StageHost>
+        {(host) => (
+          <div ref={reel} className="play-reel" data-testid="feed-reel">
+            {games.map((game, at) =>
+              Math.abs(at - index) <= WINDOW ? (
+                <ReelCard
+                  key={game.versionId}
+                  game={game}
+                  index={at}
+                  active={at === index}
+                  detail={details.get(game.versionId)}
+                  live={onScreen}
+                  rail={at === index ? rail : null}
+                  host={host}
+                  preview={previews.get(game.versionId)}
+                />
+              ) : (
+                <div key={game.versionId} className="play-reel-gap" aria-hidden="true" />
+              ),
+            )}
+          </div>
         )}
-      </div>
+      </StageHost>
       <Feed games={games} current={current.versionId} known={known} onPick={pick} />
     </section>
   );

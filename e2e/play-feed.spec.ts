@@ -52,16 +52,12 @@ async function serveFeed(page: Page, rows: readonly Row[]): Promise<void> {
 
 /**
  * Viditelná hra: `?g=`, slide feedu a titul v HUD musí mluvit o téže verzi.
- * Od P33 T8 stojí místo hry plakát a hra se bez klepnutí nepřipojí.
+ * Od P54A T7 na kartě hned hraje náhled robota v jediném plátně feedu.
  */
 async function expectShowing(page: Page, row: Row): Promise<void> {
   await expectActive(page, row);
-  const poster = page.getByTestId('feed-poster');
-  await expect(poster).toContainText(row.title, { timeout: 30_000 });
-  await expect(poster).toContainText('Tap to play');
-  await expect(page.getByTestId('feed-current').locator('canvas')).toHaveCount(0);
-  await poster.click();
   await expect(page.locator('.play-hud-title')).toHaveText(row.title, { timeout: 30_000 });
+  await expect(page.getByTestId('feed-hint')).toContainText('Tap to play');
   await expect(page.getByTestId('arcade-stage').locator('canvas')).toHaveCount(1, { timeout: 30_000 });
   await expect(page.locator('canvas')).toHaveCount(1);
 }
@@ -174,7 +170,7 @@ test.describe('/play – vertical feed', () => {
     await serveFeed(page, rows);
     await page.goto(`/play?g=${rows[1].versionId}`);
     await expectActive(page, rows[1]);
-    await expect(page.getByTestId('feed-poster')).toContainText(rows[1].title, { timeout: 30_000 });
+    await expect(page.locator('.play-hud-title')).toHaveText(rows[1].title, { timeout: 30_000 });
     const reel = page.getByTestId('feed-reel');
     await reel.scrollIntoViewIfNeeded();
     const card = await page.getByTestId('feed-current').boundingBox();
@@ -201,6 +197,8 @@ test.describe('/play – vertical feed', () => {
     await expect(page.getByTestId('feed-card')).toHaveCount(7);
     await expect(page.locator('.play-reel-gap')).toHaveCount(23);
     await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    // Feed bere klávesy, až když je vidět – IO to řekne až v příštím snímku.
+    await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
     const entries = await page.evaluate(() => window.history.length);
     await page.keyboard.press('PageDown');
     await expectActive(page, many[16]);
@@ -227,6 +225,10 @@ test.describe('/play – vertical feed', () => {
     await page.goto('/play');
     await expectShowing(page, rows[0]);
     await page.getByTestId('feed-current').scrollIntoViewIfNeeded();
+    // Od P54A T7 hraje na kartě robot (až když je feed vidět); běh hráče začne klávesou, kterou hra bere.
+    await expect(page.getByTestId('feed-hint')).toBeVisible({ timeout: 30_000 });
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.getByTestId('feed-hint')).toBeHidden();
     const outcome = await page.evaluate(() => window.__playShell!.playWitness());
     expect(outcome.runState).not.toBe('running');
     await expect(page.getByTestId('play-outcome')).toBeVisible();
