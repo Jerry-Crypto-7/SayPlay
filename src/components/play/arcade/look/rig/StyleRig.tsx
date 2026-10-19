@@ -21,6 +21,7 @@ import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mes
 
 import type { Look, LookId } from '@/play/arcade/look';
 
+import { Ambient } from '../Ambient';
 import { LOOK_FAMILY } from './grade';
 import { Post, useQualityTier } from './Post';
 import { TIER_SETTINGS } from './quality';
@@ -272,6 +273,8 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <Sun look={look} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       <ShadowFlags />
       <SceneryWindow />
+      {/* Život v pozadí kolem orientačního bodu scény (P54B T10). */}
+      <Ambient look={look} tier={tier} />
       <Post look={look} family={LOOK_FAMILY[lookId]} tier={tier} />
     </>
   );
