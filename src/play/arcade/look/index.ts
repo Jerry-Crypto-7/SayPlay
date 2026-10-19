@@ -15,6 +15,7 @@
  */
 
 import { CASTLE_FILL, CAVE_FILL, CITY_FILL, FACTORY_FILL, GRAVEYARD_FILL, LIVING_ROOM_FILL, MALL_FILL, OCEAN_FILL, SPACE_FILL, SUPERMARKET_FILL, UNDERWATER_FILL, VOLCANO_FILL } from './fill';
+import { placeMood, placeTime } from './sentence';
 import settingKits from './setting-kits.json';
 
 /** Počasí a denní doba nad sadou (P29D): živá změna je píše do logu, sdílená verze do `theme`. */
@@ -23,11 +24,7 @@ export type Weather = (typeof WEATHERS)[number];
 export const TIMES_OF_DAY = ['day', 'dusk', 'night'] as const;
 export type TimeOfDay = (typeof TIMES_OF_DAY)[number];
 
-export function timeOfDayFor(setting: string): TimeOfDay | null {
-  if (/\b(?:at night|nighttime|night-time|midnight)\b/i.test(setting) || /^night$/i.test(setting.trim())) return 'night';
-  if (/\b(?:dusk|sunset|evening)\b/i.test(setting)) return 'dusk';
-  return null;
-}
+export { moodFor, placeMood, sentenceSky, timeOfDayFor, weatherFor } from './sentence';
 
 export const LOOK_IDS = [
   'meadow',
@@ -652,24 +649,16 @@ export function withKit(props: readonly SceneryKind[], kit: readonly KitModel[])
 /** Podzim z věty (P46G T4): jen slovo, „waterfall“ ani „falling“ ne. */
 const AUTUMN = /\bautumn\w*|\bfall\b/;
 
-/** Nálada z věty (P46G T5): co věta řekne o světle, scéna ukáže. */
-export type Mood = 'spooky' | 'storm' | 'gloom' | 'fog' | 'bright' | 'dusk';
+/**
+ * Nálada z věty (P46G T5): co věta řekne o světle, scéna ukáže. `cozy` čte jen věta (P54B T11) a
+ * ukládá se jako soumrak (`sentenceSky`); `snow` dává jen počasí `theme.weather`.
+ */
+export type Mood = 'spooky' | 'storm' | 'gloom' | 'fog' | 'bright' | 'dusk' | 'cozy' | 'snow';
 
-/** Slova → nálada. Pořadí rozhoduje: strašidelný temný les je strašidelný, bouřka je tmavá i bez „dark“. */
-const MOOD_WORDS: readonly (readonly [Mood, RegExp])[] = [
-  ['spooky', /\b(?:spooky|haunted|creepy)\b/],
-  ['storm', /\b(?:storm|stormy|rain|rainy|raining)\b/],
-  ['gloom', /\b(?:dark|darkness|gloomy|shadowy)\b/],
-  ['fog', /\b(?:fog|foggy|mist|misty)\b/],
-  ['bright', /\b(?:sunny|bright)\b/],
-  ['dusk', /\b(?:sunset|dusk)\b/],
-];
-
-/** Nálada ze slov místa i nálady specu; `null` = věta o světle nic neřekne a sada zůstane, jaká byla. */
-export function moodFor(setting: string, mood: string): Mood | null {
-  const text = `${setting} ${mood}`.toLowerCase();
-  return MOOD_WORDS.find(([, pattern]) => pattern.test(text))?.[0] ?? null;
-}
+/** Počasí → nálada světla; jasno světlo nemění. */
+const WEATHER_MOODS: Readonly<Record<Weather, 'storm' | 'snow' | 'fog' | null>> = { clear: null, rain: 'storm', snow: 'snow', fog: 'fog' };
+/** Přednost nálad, když místo říká jednu a počasí druhou (strašidelno v dešti zůstane strašidelné). */
+const MOOD_ORDER: readonly Exclude<Mood, 'dusk' | 'cozy'>[] = ['spooky', 'storm', 'gloom', 'snow', 'fog', 'bright'];
 
 /**
  * Úprava sady náladou: obloha, obzor (= barva mlhy) a polokoule zespodu jdou
@@ -690,7 +679,9 @@ interface MoodShift {
  * Tóny oblohy mají zelenou aspoň jako modrou: směs s rudou oblohou sopky tak
  * jde přes šedou, ne přes fialovou.
  */
-const MOOD_SHIFTS: Readonly<Record<Exclude<Mood, 'dusk'>, MoodShift>> = {
+const MOOD_SHIFTS: Readonly<Record<Exclude<Mood, 'dusk' | 'cozy'>, MoodShift>> = {
+  // Sněžení (P54B T11, jen z počasí): zatažené světlé šedomodré nebe, měkké slunce, dohled blíž.
+  snow: { tone: '#d6dee6', lightTone: '#eef2f6', amount: 0.5, light: 1, sun: 0.55, glow: 0.3, fog: [0.55, 0.75] },
   // Šero: tlumené světlo, tmavší mlha, studené barvy.
   gloom: { tone: '#283a3a', lightTone: '#a9bdc8', amount: 0.65, light: 0.9, sun: 0.45, glow: 0.15, fog: [0.6, 0.8] },
   // Strašidelno: šero do zelenomodra (ne do fialova) a hustší mlha.
@@ -751,9 +742,10 @@ function withMood(look: Look, shift: MoodShift): Look {
 
 /**
  * Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem, rekvizity prostředí, podzim),
- * jízda hrdiny, denní doba a nálada. Noc přebije náladu; věta bez slov nálady a denní doby má sadu beze změny.
+ * jízda hrdiny, denní doba, počasí a nálada. Noc přebije náladu; věta bez slov nálady a denní doby má sadu beze změny.
+ * Místo a náladu specu čte postaru (`placeMood`), novou větu nese uložená denní doba a počasí (P54B T11, `sentenceSky`).
  */
-export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay }): Look {
+export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay; readonly weather?: Weather }): Look {
   const look = LOOKS[lookOf(theme)];
   const setting = theme.setting.toLowerCase();
   const ground = PLACE_GROUNDS.find(([pattern]) => pattern.test(setting))?.[1] ?? look.ground;
@@ -766,9 +758,11 @@ export function sceneLook(theme: { readonly setting: string; readonly mood: stri
     ground === look.ground && !afloat && !ride && kit.length === 0 && surface === look.surface && !autumn
       ? look
       : { ...look, ground, afloat, surface, props: withKit(look.props, kit), ...(ride ? { ride } : {}), ...(autumn ? { flora: { ...look.flora!, autumn } } : {}) };
-  const mood = moodFor(theme.setting, theme.mood);
-  const time = theme.timeOfDay ?? timeOfDayFor(theme.setting) ?? (mood === 'dusk' ? 'dusk' : null);
+  const said = placeMood(theme.setting, theme.mood);
+  const time = theme.timeOfDay ?? placeTime(theme.setting) ?? (said === 'dusk' ? 'dusk' : null);
   if (time === 'night') return { ...placed, ...NIGHT, exposure: Math.min(placed.exposure, 1) };
   const timed = time === 'dusk' ? { ...placed, ...DUSK } : placed;
-  return mood === null || mood === 'dusk' ? timed : withMood(timed, MOOD_SHIFTS[mood]);
+  const sky = theme.weather === undefined ? null : WEATHER_MOODS[theme.weather];
+  const mood = MOOD_ORDER.find((entry) => entry === said || entry === sky);
+  return mood === undefined ? timed : withMood(timed, MOOD_SHIFTS[mood]);
 }
