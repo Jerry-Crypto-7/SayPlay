@@ -42,6 +42,20 @@ Píše ho `P54C_OUT=baseline npx vitest run --config vitest.measure.mts evals/pl
 - **`e2e/play-ball.spec.ts` byl na `main` červený** (4/4) a nesouvisel s větami: od P51 balí ovládání míče `pacing_control`, takže pomocník `replayState` (`e2e/play-native-input.ts`) nenačetl Rapier, a živá hra má před výkopem hráče na hřišti i míč soupeře z finále, na který test mířil. Pomocník teď Rapier čeká vždy a test bere posledně spawnutý míč; 4/4 zelené.
 - Mimo T3: hláška poctivosti „The obstacles isn't here yet“ má špatný tvar slovesa pro množné číslo (copy P44, ne žánry).
 
+## T4 – kostra osmi žánrů a ovládání pruhů
+
+- **Osm žánrů je zapsaných, ale nehraje.** `catch`, `whack`, `defense`, `slice`, `hop`, `crowd`, `merge`, `push` (režim `default`) mají varianty schématu, `FOE_DOES` a `COUNT_PARAMS`; `compile` hází „not live“ a buňky v `compose/allowed.ts` mají stav `staged`.
+- **Nový stav `staged` místo plánovaného `fallback`.** Kostra s `fallback` by u vět bez jasného slovesa stála v pořadí před běžcem a `compose()` zkouší celé pořadí – spadla by. `classifyGenre` žánry `staged` z pořadí vyřadí; úloha, která žánr pouští živě, přepne jeho buňku na `ready`.
+- **Kusy os záměru** (`intent/contract.ts`) mají vlastní seznamy, ne hlavní `MOVES`/`ACTIONS`/`OBJECTIVES` – ty typují slovník sloves (kotvy a přestavba) a `action-cue/cues.ts` (soubor P54A):
+  - `GENRE_MOVES`: `lanes`, `hop`, `crowd`, `drop`;
+  - `GENRE_ACTIONS`: `whack`, `slice`, `merge`, `push`;
+  - `GENRE_OBJECTIVES`: `defend`.
+- **Ovládání** `lanes`, `hop`, `crowd`, `merge`, `push` je v `CONTROLS`, `CAPABILITIES`, `STAGES` a `CONTROL_PARAMS`. Čtení modelem nabízí jen `READ_CONTROLS` (všechna kromě `STAGED_CONTROLS` ve `spec.ts`), takže dotaz na model se nemění; úloha, která ovládání pustí živě, ho z `STAGED_CONTROLS` vyjme.
+- **Pruhy** (`src/play/arcade/pieces/lanes.ts`): osa −1000..1000 → pruh 0–4 po pásmech šířky 400, šipky o pruh, `TAP` ťuk a `HOLD` držení do těla hráče (`aux0` pruh, `aux1` ťuk/tiky držení). Scéna-kostra `src/components/play/arcade/genres/lanes/LaneScene.tsx` kreslí pět pásů a kvádry těl; `lanes-input.ts` dělí plátno na pět svislých pásů (prst = ťuk a držení v pruhu, tah drží osu), šipky/A-D posunou, mezerník ťuk a držení. V `ArcadeStage.tsx` 4 řádky: import, dvouřádková větev scény (formátovač ternár nezalomí jinak) a hák vstupu. Scény `hop`, `crowd`, `merge`, `push` přidají úlohy svých žánrů.
+- **Schéma režiséra se nemění.** Varianta žánru vzniká jen z režimů `ready` (`readyModes` v `director/answer-schema.ts`), kostry žádný nemají, takže JSON Schema odpovědi i jeho test zůstaly beze změny. Přepíše se vědomě, až první žánr pustí režim `ready` (T5–T8).
+- **Nic se nepohnulo:** `P54C_CHECK=1 … start.measure.ts` (věty P30 dev a živé buňky = `start.json`), replay brána, `difficulty.test.ts` (buňky `staged` se neměří; golden `freeze.ts` přeskočí žánry mimo `parameter-bounds.json`), `lanes.test.ts`.
+- Modely pro P54B: `models-wanted.md`.
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.

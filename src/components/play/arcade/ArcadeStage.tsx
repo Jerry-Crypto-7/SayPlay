@@ -33,6 +33,7 @@ import { comboOf } from './effects/feel';
 import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
+import { LaneScene, useLanesInput } from './genres/lanes/LaneScene';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
 import { HudBoosts, boostKeepers } from './PowerupBadge';
@@ -740,6 +741,8 @@ const StageCanvas = memo(function StageCanvas({
             <RunnerWorld {...world} />
           ) : stage.scene === 'platform' ? (
             <PlatformWorld {...world} />
+          ) : stage.scene === 'lanes' ? (
+            <LaneScene session={session} />
           ) : (
             <World {...world} control={control} />
           )}
@@ -817,6 +820,7 @@ export default function ArcadeStage({
   useArenaInput(session, surface, enabled && input === 'arena');
   useTapInput(session, surface, enabled && input === 'tap', control === 'rhythm');
   useDuelInput(session, surface, enabled && input === 'duel');
+  useLanesInput(session, surface, enabled && input === 'lanes');
   // Pauza a konec běhu kreslí jen na požádání (P28E T2, F-33): hodiny stojí, obraz se nemění.
   // Po konci ale ještě END_CLIP_MS naplno – klip pádu či oslavy (P28C T3) by jinak stál na prvním snímku.
   const ticking = useSyncExternalStore(session.subscribe, () => session.snapshot().runState === 'running' && !session.paused(), () => true);
