@@ -123,6 +123,10 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - **Gauge:** P52 dev, P47B dev ani P46A bez pohnutého řádku (d10 1 / 1 / 1); chytání bez střely týž spec (role jen hráč a kořist).
 - **Holdout:** hledání slova „spit“ přes `evals/play` při kontrole dopadu vypsalo i věty souborů holdoutu P47B a P52. Oprava slovníku byla napsaná předtím; podle nich se nic neměnilo (jen zúžení na „spit X at“, aby holé „spits at kids“ z P30/P37 zůstalo, jak bylo).
 
+## T11 – holdout a konečné měření
+
+Holdout otevřený jednou (`holdout-opened.json`, otisk sedí): 0,13 / 0,23 / 0,23, past 0,2 – cíl nesplněn; dev sady 0,94–1. Všechny vypadlé akce mají důvod „slovník nezná sloveso“. Párový soud na panelu P45: podíl B 0,525 (B 4, A 2, remízy 34; cíl ≥ 0,6). Čísla, intervaly, slovesa, která zbyla, a párový soud: `final.md`, data `final.json`.
+
 ## Rozhodnutí
 
 - T1: větev P51 na origin není (`git ls-remote` bez ní); sloučena lokální `features/P51-…`, která `origin/main` už obsahuje – fast-forward bez merge commitu.
@@ -132,4 +136,5 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - T7b: cílem střelby v chytání jsou včely, které hrdinu vrátí na start (ne jen body navíc) – bez toho by sloveso nic neměnilo. Brána vyváženosti „vyhraje stejně jako bez akce“ na semínkách 1–20 (na 1–10 vychází rozdíl novice přesně 0,1, na hraně); chytání bez akce zůstává bajt po bajtu (otisky semínek 1–3 v testu).
 - T8: duel dostal akci, výchozí přesměrování bránu nedrželo. Souboj v aréně (`FIGHT_ABILITIES`) střelbu ani krádež nebere; přesměrování na střílečku (střelba) a sběr v aréně (krádež) dalo gauge stejné 1 / 1 / 1, ale vzalo duelu jeho přestřelku za poledne – „cowboy duel at high noon, first to shoot wins“ (P36A T11) spadl na střílečku – a ve sběru zmizel lístek i koruna z věty (mince, květina). Duel se slovesem zásahu nechá hru, kterou věta řekla, a změnu drží v souborech plánu.
 - T9: pákou je délka nápřahu soupeře (síla hrozby), ne flanker průběhu. Odebrat flankera nebo ho vyměnit za přepadníka dalo novice 0,7–0,8 (nad pásmem), pozdější příchod nic nezměnil (rozvrh ho staví na vrchol křivky) a dash či štít proti výpadu chování jen +0,1. Změna sedí v `abilities/index.ts` (`fightGuard` – jen tam se ví, že hra nese obě ochrany) a ve scéně souboje (`FightFx`, `ArenaScene`); `fight-bot.ts` beze změny, robot čte zbývající tiky telegrafu ze stavu.
+- T11: stroj byl celou dobu na 80–100 % CPU od testů jiného projektu (9 min čekání na klid bez výsledku). Holdout se otevřel i tak – akce, robot a sloveso na zátěži nezávisí; p95 je zapsaný s poznámkou o zátěži a holdout se kvůli času znovu nepouštěl. Soud A = `origin/main` `5d741740` (P51 sloučený squashem), B = větev; buildy ve zvláštním worktree, rychlá verze bez klíče modelu, souběh 1.
 - T10: e2e `offline-chain` z AC v repu není (žádný spec toho jména), přeskočen. Pád `play-share` na hlášce o úložišti jen v paměti se neopravuje – vzniká z prostředí e2e (souborové úložiště), ne z P52, a oprava by sahala na sdílení mimo plán.
