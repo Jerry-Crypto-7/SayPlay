@@ -55,7 +55,7 @@ import { WalkerBackdrop, WALKER_SCENE_KINDS, placeWalker } from './walker/Walker
 import { BallBackdrop, BALL_SCENE_KINDS, placeBall } from './ball/BallScene';
 import { SteerBackdrop, placeChase } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
-import { type ToyTarget, applyToy, toyMotionOn, toyTickOf } from './toy/applyToy';
+import { type ToyTarget, applyToy, toyIdleOf, toyMotionOn, toyTickOf } from './toy/applyToy';
 import { bodyClassOf, motionOf } from './toy/body-class';
 import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
 import { WorldBackdrop } from './WorldBackdrop';
@@ -541,9 +541,9 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       if ((control === 'platform' || control === 'walker') && moving !== null && (Math.hypot(moving.vx, moving.vz) * ARCADE_HZ) / UNIT > TURN_MIN_MPS) {
         yaws.current[view.index] = turnToward(yaws.current[view.index], headingOf(moving.vx, moving.vz), turn);
       }
-      // Hračková póza (P45D T7) podle stavu a třídy těla; mrtvý se převrhne, zásah blikne, výhra slaví.
+      // Hračková póza (P45D T7) podle stavu a třídy těla; mrtvý se převrhne, zásah blikne, výhra slaví, stojící dýchá (P54B T6).
       if (inner !== null && inner !== undefined && moving !== null) {
-        const toy = toyPoseOf(moving, bodyClasses[view.index] ?? 'prop', toyPoses.current[view.index] ?? null, toyTick, reduced);
+        const toy = toyPoseOf(moving, bodyClasses[view.index] ?? 'prop', toyPoses.current[view.index] ?? null, toyTick, reduced, toyIdleOf(session, view.index));
         toyPoses.current[view.index] = toy;
         applyToy(toyTargetOf(inner), toy, view.h, yaws.current[view.index] ?? 0);
       }

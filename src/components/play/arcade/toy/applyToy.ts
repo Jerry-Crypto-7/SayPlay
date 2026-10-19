@@ -9,7 +9,7 @@
 import type { Object3D } from 'three';
 
 import { ARCADE_HZ, HEADER } from '@/play/arcade/contract';
-import type { ToyPose } from '@/play/arcade/toy-motion';
+import type { ToyIdle, ToyPose } from '@/play/arcade/toy-motion';
 
 import { squashPose, tiltTo } from '../characterMotion';
 import { reducedMotion } from '../effects/feel';
@@ -56,6 +56,12 @@ export const toyMotionOn = (): boolean => typeof window !== 'undefined' && !toyO
  */
 export const toyTickOf = (session: Pick<ArcadeSession, 'state' | 'alpha' | 'endedFor'>): number =>
   (session.state()[HEADER.tick] as number) + session.alpha() + (session.endedFor() * ARCADE_HZ) / 1000;
+
+/**
+ * Nečinná vrstva těla `index` (P54B T6): fáze z indexu a semínka hry, čas z `toyTickOf`.
+ * Jen statickému modelu – riggovaná postava hraje klip `idle`; vypíná ji týž `reduced` (`toyMotionOn`).
+ */
+export const toyIdleOf = (session: Pick<ArcadeSession, 'world'>, index: number): ToyIdle => ({ index, seed: session.world.seed });
 
 /** Cíl poslední pózy podle skupiny – sonda záběru (`heroToy`, P45D T14) z něj čte díly a deformaci. */
 const applied = new WeakMap<Object3D, ToyTarget>();

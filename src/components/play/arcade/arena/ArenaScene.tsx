@@ -62,7 +62,7 @@ import { RiggedModel, type ToyFrame } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
 import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
-import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
+import { applyToy, toyIdleOf, toyMotionOn, toyTickOf } from '../toy/applyToy';
 import { bodyClassOf } from '../toy/body-class';
 import { type Cast, FittedModel, toyTargetOf } from '../World';
 import { ArenaFloor } from './ArenaFloor';
@@ -633,7 +633,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
         if (inner !== null && inner !== undefined) {
           const before = toyPoses.current[view.index] ?? null;
           const memory = blow === null || before === null || before.attackAt === blow - BLOW_PEAK_TICKS ? before : { ...before, attackAt: blow - BLOW_PEAK_TICKS };
-          const toy = toyPoseOf(moving, bodyClasses[view.index]!, memory, toyTick, reduced);
+          // Statický model stojící bez události dýchá a rozhlíží se (P54B T6); riggovaná postava hraje klip `idle`.
+          const toy = toyPoseOf(moving, bodyClasses[view.index]!, memory, toyTick, reduced, toyIdleOf(session, view.index));
           toyPoses.current[view.index] = toy;
           applyToy(toyTargetOf(inner), toy, drawn[view.index]!.h);
           // Zásah bojovníka ukáže záblesk barvy (`drawFighter`); model by blikáním záblesk schoval.

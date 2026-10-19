@@ -38,7 +38,7 @@ describe('toyPoseOf – hračkový pohyb z pohledu těla a třídy těla', () =>
     for (const body of BODY_CLASSES) expect(run(views, body)).toEqual(run(views, body));
   });
 
-  it('stojící tělo bez události je v klidu – žádná klidová smyčka', () => {
+  it('bez nečinné vrstvy (P54B T6) je stojící tělo bez události v klidu', () => {
     for (const body of BODY_CLASSES) {
       for (const pose of run(repeat(seconds(3), view()), body)) expect(amplitudes(pose)).toEqual(ZERO);
     }
