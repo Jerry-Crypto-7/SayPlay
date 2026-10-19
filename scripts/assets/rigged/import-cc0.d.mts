@@ -10,6 +10,8 @@ export declare const HEIGHT_M: number;
 export declare const STATE_CLIPS: Readonly<Record<string, readonly string[]>>;
 export declare const STATES: readonly string[];
 export declare const PACK_NAMES: Readonly<Record<string, string>>;
+export declare const SKIN_TONES: readonly string[];
+export declare function skinToneOf(id: string): string;
 
 export declare interface Character {
   readonly source?: string;
@@ -32,6 +34,7 @@ export type Built =
       readonly textures: number;
       readonly dims: [number, number, number];
       readonly fallback: string;
+      readonly skinTone: string | null;
       readonly purpleShare: number;
     }
   | { readonly ok: false; readonly reason: string };

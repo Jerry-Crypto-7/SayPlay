@@ -13,7 +13,7 @@ import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { describe, expect, it } from 'vitest';
 
-import { CACHE_DIR, CHARACTERS, HEIGHT_M, MAX_TEXTURE, MAX_TRIANGLES, clipMap, importCharacter, missingClips, processDocument } from '../import-cc0.mjs';
+import { CACHE_DIR, CHARACTERS, HEIGHT_M, MAX_TEXTURE, MAX_TRIANGLES, SKIN_TONES, clipMap, importCharacter, missingClips, processDocument, skinToneOf } from '../import-cc0.mjs';
 
 /** `#rrggbb` → lineární RGBA, jak ho nese `baseColorFactor`. */
 const linear = (hex: string): [number, number, number, number] => {
@@ -186,6 +186,40 @@ describe('processDocument (P54B T3)', () => {
     if (!built.ok) return;
     expect(built.simplifiedFrom).toBe(7200);
     expect(built.triangles).toBeLessThanOrEqual(MAX_TRIANGLES);
+  });
+});
+
+describe('natural skin of the Ultimate Animated Character humans (P54B)', () => {
+  const UAC_HUMAN = { ...CHARACTER, source: 'quaternius-ultimate-animated-character' };
+  const BLACK = linear('#1f1f1f');
+  /** Postava, jejíž materiály barvy `skin` se jmenují `Skin` jako v balíku UAC. */
+  const withSkin = (colours: Colour | readonly Colour[], skin: Colour = BLACK, columns = 1): Document => {
+    const doc = rig(colours, ['Idle', 'Walk'], columns);
+    for (const material of doc.getRoot().listMaterials()) if (material.getBaseColorFactor()[0] === skin[0]) material.setName('Skin');
+    return doc;
+  };
+
+  it('paints the near-black skin with the tone of the id; other packs and green goblin skin keep theirs', async () => {
+    expect(await processDocument(withSkin(BLACK), UAC_HUMAN)).toMatchObject({ ok: true, fallback: skinToneOf('q-test') });
+    expect(await processDocument(withSkin(BLACK), { ...CHARACTER, source: 'quaternius-ultimate-monsters' })).toMatchObject({ ok: true, fallback: '#1f1f1f' });
+    const goblin = linear('#595d2b');
+    expect(await processDocument(withSkin(goblin, goblin), UAC_HUMAN)).toMatchObject({ ok: true, fallback: '#595d2b' });
+  });
+
+  it('the purple verdict reads the author palette: the added skin does not outvote a purple shirt', async () => {
+    expect(await processDocument(withSkin([BLACK, BLACK, PURPLE], BLACK, 3), UAC_HUMAN)).toMatchObject({ ok: false, reason: expect.stringMatching(/purple/) });
+  });
+
+  it('the tones are warm skin colours, none grey or black, and the humans get all of them', () => {
+    for (const tone of SKIN_TONES) {
+      const [r, g, b] = [1, 3, 5].map((at) => parseInt(tone.slice(at, at + 2), 16));
+      expect(r! > g! && g! > b!).toBe(true);
+      expect((r! - b!) / r!).toBeGreaterThan(0.25);
+      expect(r!).toBeGreaterThan(80);
+    }
+    const humans = CHARACTERS.filter((character) => character.source === UAC_HUMAN.source);
+    expect(new Set(humans.map((character) => skinToneOf(character.id))).size).toBe(SKIN_TONES.length);
+    expect(skinToneOf('q-chef')).toBe(skinToneOf('q-chef'));
   });
 });
 

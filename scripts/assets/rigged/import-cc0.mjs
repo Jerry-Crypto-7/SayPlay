@@ -15,6 +15,7 @@
  *   volání; malovaná textura zůstane, zmenšená nejvýš na `MAX_TEXTURE`;
  * - postava, jejíž převažující odstín je fialový (`isPurple` je barevná rodina
  *   s největší plochou, šedé a černé se nepočítají), se vyřadí – pravidlo projektu;
+ * - lidé UAC dostanou místo autorovy skoro černé kůže přirozený odstín (`SKIN_TONES`);
  * - nad `MAX_TRIANGLES` se zjednoduší (meshopt), co se nevejde, se vyřadí;
  * - kořen `RiggedRoot` ji postaví na podstavu a zmenší na 1,8 m – měřeno
  *   v první póze klipu `idle` přes kosti, ne v T-póze;
@@ -493,6 +494,44 @@ async function surface(doc, posedList) {
 
 const hex = (linear) => `#${toSrgb(linear).map((value) => Math.round(value * 255).toString(16).padStart(2, '0')).join('')}`;
 
+/**
+ * Přirozené odstíny kůže (sRGB) od světlé po tmavě hnědou. Lidé balíku UAC mají
+ * kůži skoro černou (lineárně 0,013) s bílýma očima – autorova silueta, ve hře
+ * pro spotřebitele ale karikatura; dostanou jeden z těchto odstínů podle id.
+ */
+export const SKIN_TONES = ['#f2d0b1', '#e3b48f', '#c99068', '#a8714a', '#7d4e31', '#5a3622'];
+
+/** Odstín kůže postavy: stálý podle id (sha256), ať přestavba nic nepřehodí. */
+export const skinToneOf = (id) => SKIN_TONES[createHash('sha256').update(id).digest()[0] % SKIN_TONES.length];
+
+/**
+ * Primitiva se skoro černým materiálem `Skin` lidí UAC, sebraná před zapečením
+ * (pak je materiál jeden). Zelená kůže skřeta a zombie černá není a zůstane.
+ */
+function skinPrimitives(doc, character) {
+  if (character.source !== UAC) return [];
+  const out = [];
+  for (const mesh of doc.getRoot().listMeshes()) {
+    for (const primitive of mesh.listPrimitives()) {
+      const material = primitive.getMaterial();
+      if (material?.getName() === 'Skin' && material.getBaseColorTexture() === null && Math.max(...material.getBaseColorFactor().slice(0, 3)) < 0.05) out.push(primitive);
+    }
+  }
+  return out;
+}
+
+/** Zapečenou barvu kůže přepíše přirozeným odstínem postavy. */
+function paintSkin(doc, primitives, id) {
+  const linear = [1, 3, 5].map((at) => toLinear(parseInt(skinToneOf(id).slice(at, at + 2), 16) / 255));
+  const buffer = doc.getRoot().listBuffers()[0];
+  for (const primitive of primitives) {
+    const count = primitive.getAttribute('POSITION').getCount();
+    const colours = new Float32Array(count * 3);
+    for (let i = 0; i < count; i += 1) colours.set(linear, i * 3);
+    primitive.setAttribute('COLOR_0', doc.createAccessor().setType('VEC3').setArray(colours).setBuffer(buffer));
+  }
+}
+
 /** Barevná rodina pod tímhle podílem plochy je detail (jazyk pandy), ne odstín postavy. */
 const DETAIL_SHARE = 0.05;
 
@@ -598,9 +637,16 @@ export async function processDocument(doc, character) {
     animation.dispose();
   }
 
+  const skin = skinPrimitives(doc, character);
   const textures = await bakeColours(doc);
-  const { predominant, purpleShare, fallback } = colourStats(await surface(doc, posedPrimitives(doc, clips.idle)));
-  if (predominant === 'purple') return { ok: false, reason: `purple is the predominant hue (${Math.round(purpleShare * 100)} % of the surface)` };
+  let stats = colourStats(await surface(doc, posedPrimitives(doc, clips.idle)));
+  if (stats.predominant === 'purple') return { ok: false, reason: `purple is the predominant hue (${Math.round(stats.purpleShare * 100)} % of the surface)` };
+  // Fialovou rozhoduje paleta autora: přidaná kůže by přehlasovala fialovou košili (q-bald-man, 21 % plochy).
+  if (skin.length > 0) {
+    paintSkin(doc, skin, character.id);
+    stats = colourStats(await surface(doc, posedPrimitives(doc, clips.idle)));
+  }
+  const { purpleShare, fallback } = stats;
 
   await doc.transform(prune(), dedup());
   joinSkinned(doc);
@@ -634,7 +680,8 @@ export async function processDocument(doc, character) {
   const report = await validator.validateBytes(new Uint8Array(bytes), { uri: `${character.id}.glb`, maxIssues: 50 });
   if (report.issues.numErrors > 0) return { ok: false, reason: `glTF validator: ${report.issues.messages.filter((m) => m.severity === 0).map((m) => m.code).join(', ')}` };
   const dims = [size.x, size.y, size.z].map((value) => Math.round(value * scale * 100) / 100);
-  return { ok: true, bytes, clips, triangles, simplifiedFrom, textures, dims, fallback, purpleShare: Math.round(purpleShare * 1000) / 1000 };
+  const skinTone = skin.length > 0 ? skinToneOf(character.id) : null;
+  return { ok: true, bytes, clips, triangles, simplifiedFrom, textures, dims, fallback, skinTone, purpleShare: Math.round(purpleShare * 1000) / 1000 };
 }
 
 /** Postava z cache → výsledek `processDocument` a sha256 zdrojového souboru. */
@@ -689,6 +736,7 @@ async function main() {
       simplifiedFrom: built.simplifiedFrom,
       textures: built.textures,
       purpleShare: built.purpleShare,
+      ...(built.skinTone === null ? {} : { skinTone: built.skinTone }),
       bytes: built.bytes.length,
       sha256: createHash('sha256').update(built.bytes).digest('hex'),
       license: source.license,
@@ -726,14 +774,18 @@ async function register(characters, packs) {
   const { renderDisclosure } = await import('../../license-gate.mjs');
   const file = path.join(ROOT, 'disclosure.json');
   const disclosure = JSON.parse(await readFile(file, 'utf8'));
-  // Vlastní položky jsou jen GLB `q-*`; licenci balíku, kterou už registr má (`cc0/promote.mjs`), nechá být.
-  disclosure.entries = disclosure.entries.filter((entry) => !(entry.kind === 'asset' && entry.name.startsWith(`public${PUBLIC_PREFIX}/q-`)));
-  for (const character of characters) {
-    disclosure.entries.push({
+  // Vlastní položky jsou jen GLB `q-*` a zůstanou na svém místě; licenci balíku, kterou už registr má (`cc0/promote.mjs`), nechá být.
+  const own = (entry) => entry.kind === 'asset' && entry.name.startsWith(`public${PUBLIC_PREFIX}/q-`);
+  const at = disclosure.entries.findIndex(own);
+  disclosure.entries = disclosure.entries.filter((entry) => !own(entry));
+  disclosure.entries.splice(
+    at === -1 ? disclosure.entries.length : at,
+    0,
+    ...characters.map((character) => ({
       name: `public${character.path}`,
       kind: 'asset',
       firstParty: false,
-      reason: `Rigged animated character "${character.name}" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.`,
+      reason: `Rigged animated character "${character.name}" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours${character.skinTone ? `, near-black skin recoloured to the natural tone ${character.skinTone}` : ''}, re-rooted on its base at 1.8 m.`,
       source: `${character.pack} – ${character.page} (${character.source})`,
       authorOrProvider: character.author,
       license: character.license,
@@ -741,8 +793,8 @@ async function register(characters, packs) {
       attribution: `${character.name} from ${character.pack} by ${character.author} (${character.license}), ${character.page}`,
       reviewNote: `Pack licence text stored at public/${LICENSES}/${character.packId}.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.`,
       scope: 'prod',
-    });
-  }
+    })),
+  );
   for (const id of packs) {
     const character = characters.find((candidate) => candidate.packId === id);
     if (disclosure.entries.some((entry) => entry.name === `public/${LICENSES}/${id}.txt`)) continue;

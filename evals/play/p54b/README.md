@@ -20,6 +20,8 @@ Dev sada `evals/play/p30/dev.json` (60 vět) přes `draftGameSpec` – rychlá v
 
 **T11 (`census-t11.json`, nálada, počasí a denní doba z celé věty):** světlo jmenuje 7 vět, změní se u všech 7 (dřív 4) – přibyly `d03` (bouřka → déšť), `d16` („snowy“ → sněžení), `j10` (šero mimo místo věty → noc); světlo změněné celkem 7/59, žádná věta bez slov světla. Odlišných modelů beze změny (medián 19, min 13). 30 ručně označených vět (`p54b-sentence-mood.test.ts`): precision 1,0, recall 1,0 (36 štítků). Pozn.: měřeno nad commitem T3 (import riggovaných postav) – obsazení `d10` (pirát místo kostlivce) se od `census-t7.json` liší kvůli T3, ne kvůli T11.
 
+**Kůže postav (oprava po T3, rozhodnuto bez majitele, vratné):** 46 lidí z Ultimate Animated Character má místo autorovy skoro černé kůže s bílýma očima (silueta, ve hře pro spotřebitele karikatura) přirozený odstín ze šesti (`SKIN_TONES` v `import-cc0.mjs`, od `#f2d0b1` po `#5a3622`, stálý podle id); zelená kůže skřetů a zombie zůstala a o vyřazení kvůli fialové dál rozhoduje paleta autora, takže sada 122 postav je stejná.
+
 ## Důkaz, že vzhled není v hashi
 
 `src/play/arcade/__tests__/p54b-look-not-hashed.test.ts`: šest vět ze šesti žánrů, týž spec s jinou sadou, náladou, počasím a denní dobou postaví svět se stejným `canonicalHash`, stejným počátečním stavem a robot ho za 600 tiků dohraje se stejným hashem. Zelené na `5d741740`; mutace (`theme.look` přimíchaný do semínka v `arcadeWorldOf`) test zčervená. `theme` do hashe nevstupuje – architektura P54B platí.
