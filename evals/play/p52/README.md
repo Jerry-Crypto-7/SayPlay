@@ -93,6 +93,16 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - **Vyváženost po T9:** štít na A novice 5/10 (9/20), dash na A 6/10 (12/20), intermediate 9/10 (19/20); věta d33 novice 6/10 (12/20), intermediate 9/10 (19/20). Telegraf 50 dal 5/10 a 6/10, ale na 20 semínkách 0,65 a 0,7 – na hraně, proto 40.
 - **Gauge po T9:** P52 dev beze změny 0,94 / 0,97 / 0,97 (d33, jediná věta sad se soubojem s oběma ochranami, 1 / 1 / 1), finále P51 dev 0,97. P47B dev a P46A souboj s oběma ochranami nemají – jejich světy se nehnuly. Žádná buňka `evals/play/p41/difficulty.json` dash ani štít nenese, otisky řádků se neposunuly.
 
+## T10 – sloveso na tlačítku a regrese
+
+- **Popisek:** mechanismus P47B T10 (`abilityWordsOf` + `AbilityButton`) nese sloveso věty i u nových akcí, `hero-action.ts` beze změny. `p52-action-label.test.ts` drží úder v bludišti → „Punch“ a krádež ve střílečce → „Snatch“.
+- **Celá sada** (pod zátěží jiných relací): 14 824 / 14 835. Sériově zelené: `p32-heavy`, `compile-report`, `swarm` a `rules/coverage.test.ts` (sám 89 s; v celé sadě přetekl 120s limit přípravy, takže spadl celý soubor bez hlášky). `submission-check` hledá `plans/P8-odevzdani.md`, který ve worktree není (plány se necommitují).
+- **`p46-fixtures` o01** („A rabbit steals carrots and runs from a fox“): AI verze teď dostane akci krádeže, upgrade proti rychlé verzi přidá „action“. `p46e/after.json` přeměřen offline z nahrávek – souhrn `action` 1 → 2, jiný řádek se nehnul.
+- **Build** `npm run build` exit 0. Záložní `.ts` z mutací v `tmp/` a `scratch-*.measure.ts` tsc buildu typově kontroluje – patří mimo repo (scratchpad), jinak build spadne.
+- **E2e** (build zvlášť, `next start` na 3301, `FALLBACK_SMOKE_URL`): 27 / 29. `interface-language` (tlačítko akce) samo zelené – v sadě nestihlo 5s přesměrování po návrhu. `play-share` „copies the link“ čeká hlášku o úložišti jen v paměti, ale s `PLAY_STORE_DIR` (nastavuje ho i `playwright.config.ts`) je úložiště souborové a hláška se neukáže – P52 sdílení ani úložiště nemění. `p35-perf` a `p36-dare` zelené.
+- **Replay brána** 284 / 284. **Finále P51:** kód od T9 beze změny (jen test), gauge P47A dev 0,97 = T1.
+- **Gauge** beze změny proti T9: P52 dev 0,94 / 0,97 / 0,97, P47B dev 0,96 / 0,96 / 0,94, P46A 1 / 1 / 0,95, past 0, vše hratelné. p95 návrhu 2,7 / 4,0 / 4,3 s – stroj byl plně vytížený: mediány proti T6 plošně 1,3–1,8×, i u žánrů, na které P52 po T6 nesáhl (rytmus v92 2,7×, plošinovka d37 2,9×). Brána ≤ 2 s v T11 v klidu.
+
 ## Rozhodnutí
 
 - T1: větev P51 na origin není (`git ls-remote` bez ní); sloučena lokální `features/P51-…`, která `origin/main` už obsahuje – fast-forward bez merge commitu.
@@ -102,3 +112,4 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - T7b: cílem střelby v chytání jsou včely, které hrdinu vrátí na start (ne jen body navíc) – bez toho by sloveso nic neměnilo. Brána vyváženosti „vyhraje stejně jako bez akce“ na semínkách 1–20 (na 1–10 vychází rozdíl novice přesně 0,1, na hraně); chytání bez akce zůstává bajt po bajtu (otisky semínek 1–3 v testu).
 - T8: duel dostal akci, výchozí přesměrování bránu nedrželo. Souboj v aréně (`FIGHT_ABILITIES`) střelbu ani krádež nebere; přesměrování na střílečku (střelba) a sběr v aréně (krádež) dalo gauge stejné 1 / 1 / 1, ale vzalo duelu jeho přestřelku za poledne – „cowboy duel at high noon, first to shoot wins“ (P36A T11) spadl na střílečku – a ve sběru zmizel lístek i koruna z věty (mince, květina). Duel se slovesem zásahu nechá hru, kterou věta řekla, a změnu drží v souborech plánu.
 - T9: pákou je délka nápřahu soupeře (síla hrozby), ne flanker průběhu. Odebrat flankera nebo ho vyměnit za přepadníka dalo novice 0,7–0,8 (nad pásmem), pozdější příchod nic nezměnil (rozvrh ho staví na vrchol křivky) a dash či štít proti výpadu chování jen +0,1. Změna sedí v `abilities/index.ts` (`fightGuard` – jen tam se ví, že hra nese obě ochrany) a ve scéně souboje (`FightFx`, `ArenaScene`); `fight-bot.ts` beze změny, robot čte zbývající tiky telegrafu ze stavu.
+- T10: e2e `offline-chain` z AC v repu není (žádný spec toho jména), přeskočen. Pád `play-share` na hlášce o úložišti jen v paměti se neopravuje – vzniká z prostředí e2e (souborové úložiště), ne z P52, a oprava by sahala na sdílení mimo plán.
