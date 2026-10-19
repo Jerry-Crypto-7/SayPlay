@@ -19,14 +19,12 @@ import { expect, it } from 'vitest';
 
 import { loadRapier } from '../../../src/play/arcade/physics/world';
 import { liveCells } from '../../../src/play/compose/allowed';
-import { draftGameSpecWithMeta } from '../../../src/play/draft/draft';
-import { classifyGenre } from '../../../src/play/genre/classify';
+
+import { rowOf, type Row } from './rows';
 
 const DIR = join(process.cwd(), 'evals', 'play', 'p54c');
 const OUT = join(DIR, 'start.json');
 const DETERMINISM = /Math\.random|Date\.now|performance\.now/;
-
-interface Row { readonly id: string; readonly classify: string; readonly fallback: boolean; readonly draft: string | null; readonly cell: string | null; readonly error?: string }
 
 /** `grep -rnE "Math\.random|Date\.now|performance\.now"` nad třemi stromy jádra, cesty s `/`. */
 function determinismGrep(): string[] {
@@ -54,17 +52,7 @@ function replayGate(): { readonly passed: number; readonly failed: number; reado
 it('records the P54C starting state', async () => {
   await loadRapier();
   const dev = JSON.parse(readFileSync(join(process.cwd(), 'evals', 'play', 'p30', 'dev.json'), 'utf8')) as { sentences: { id: string; text: string }[] };
-  const rows: Row[] = dev.sentences.map(({ id, text }) => {
-    const ranking = classifyGenre(text, null);
-    const top = ranking.ranked[0]!;
-    const base = { id, classify: `${top.genre}.${top.mode}`, fallback: ranking.fallback };
-    try {
-      const meta = draftGameSpecWithMeta(text, 1);
-      return { ...base, draft: meta.genre === null ? null : `${meta.genre.genre}.${meta.genre.mode}`, cell: meta.composition?.cellId ?? null };
-    } catch (error) {
-      return { ...base, draft: null, cell: null, error: (error as Error).message.slice(0, 160) };
-    }
-  });
+  const rows: Row[] = dev.sentences.map(({ id, text }) => rowOf(id, text));
   const live = liveCells().map(cell => cell.id);
 
   if (process.env.P54C_CHECK === '1') {
