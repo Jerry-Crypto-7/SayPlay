@@ -234,7 +234,7 @@ async function runRemix(versions: VersionStore, parent: PublishedGame, request: 
   }
   if (gameSpecHash(child) === gameSpecHash(parent.spec)) return final('UNCHANGED', parentId, 'the model returned the parent');
 
-  const published = await publishReadSpec(versions, child, seeds, parentId);
+  const published = await publishReadSpec(versions, child, seeds, parentId, { relation: 'remix' });
   if (!published.ok) {
     const reason: RemixFinalReason = published.response.status === 503 ? 'STORE_UNAVAILABLE' : published.response.status === 422 ? 'NOT_PLAYABLE' : 'FAILED';
     return final(reason, parentId, (published.issues ?? [String(published.response.status)]).join('; '));

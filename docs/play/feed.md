@@ -80,11 +80,16 @@ rows no newer than `top`. So:
 
 `feedEligible(game, hidden)` decides, separately from "can be opened by link":
 
-- `publishEligible` – the game passed the publish gate, which also screens every string of the spec;
+- `publishEligible` – the game passed the publish gate; its text screen covers only the denied topics
+  (`PLAY_DENIED_TOPICS`), not slurs, scam links or spam, so the rule below is what keeps a caller's
+  own text out;
 - one of: `relation === 'upgrade'` – the director's authored version; `curated` – a game from the
-  operator's own sentences (see below); or a **remix** – a version with a parent (`parentId !== null`,
-  P54A T10). Never a word draft or a hand-written spec without a parent (their titles are written by
-  the caller and nothing else stands behind them);
+  operator's own sentences (see below); or `relation === 'remix'` – a **remix the server built**
+  (P54A T10): a chip, a verified recipe or a sentence through the model on `POST /api/play/games/:id/remix`.
+  Never a word draft or a hand-written spec, with or without `parentId` (review finding T10-1: the
+  caller names any parent and writes the title, and nothing else stands behind them);
+- remix rows live in their own list (`REMIX_CAP` = 40) and are read after the main list and after the
+  built-in games, so a flood of free chip remixes never pushes a curated game or an AI version out;
 - not on the hide list `PLAY_FEED_HIDE` (comma-separated `versionId`s, read per request);
 - not reported from the feed by `REPORT_HIDE_VOTES` (3) different callers (`POST /api/play/games/:id/report`,
   P54A T11): a caller's report counts once per game for the game's life, the link keeps playing, and a

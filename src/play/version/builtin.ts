@@ -66,7 +66,9 @@ export function withBuiltinGames(inner: VersionStore, games: readonly PublishedG
     async recent(limit) {
       const stored = await inner.recent(limit);
       const had = new Set(stored.map((row) => row.versionId));
-      return [...stored, ...rows.filter((row) => !had.has(row.versionId))].slice(0, limit);
+      // Remixy až za vestavěnou sadou (nález revize T10-1 #2): jejich řádky nevytlačí kurátorské hry.
+      const remixes = stored.filter((row) => row.relation === 'remix');
+      return [...stored.filter((row) => row.relation !== 'remix'), ...rows.filter((row) => !had.has(row.versionId)), ...remixes].slice(0, limit);
     },
     async countLoop(versionId, counters, voter) {
       try {

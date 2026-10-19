@@ -92,8 +92,9 @@ export interface VersionStore {
   /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
   /**
-   * Nejnovější autorské verze (`relation: 'upgrade'`, `publishEligible`), od
-   * nejnovější, bez vypršelých; nedostupné úložiště je `[]`.
+   * Řádky feedu bez vypršelých: nejdřív hlavní seznam (autorské verze a seed, od
+   * nejnovější), za ním remixy (`relation: 'remix'`, nejvýš `REMIX_CAP`) – remix tak
+   * z prvních `limit` řádků nevytlačí žádnou hru hlavního seznamu. Nedostupné úložiště je `[]`.
    */
   recent(limit: number): Promise<RecentGame[]>;
   /**
@@ -297,7 +298,7 @@ export interface LoopHeat {
 export interface RecentGame extends GameVersion {
   readonly archetype: string;
   /** Chybí jen u hry ze seedu feedu a z vestavěné sady (P37C T6), ta má místo toho `curated`. */
-  readonly relation?: 'upgrade';
+  readonly relation?: 'upgrade' | 'remix';
   /** Věta provozovatele, hra ověřená robotem (P37C T6, `feature` a vestavěná sada). */
   readonly curated?: true;
   /** `spec.tutorial.goalLine` a `spec.theme.mood` pro kartu; řádky zapsané před D-R1 je nemají. */
@@ -307,6 +308,12 @@ export interface RecentGame extends GameVersion {
 
 /** Kolik publikací si feed pamatuje. */
 export const RECENT_CAP = 200;
+
+/**
+ * Kolik remixů si feed pamatuje – ve vlastním seznamu (nález revize T10-1 #2): remix
+ * čipem nestojí placené volání, a ve společném seznamu by jich 200 vytlačilo seed i AI verze.
+ */
+export const REMIX_CAP = 40;
 
 /** Řádek feedu z hry: verze, archetyp, cíl a nálada pro kartu. */
 export function feedRowOf(game: PublishedGame): RecentGame {
@@ -503,6 +510,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const lineageKey = (versionId: string): string => `${prefix}:play:lineage:${versionId}`;
   const quotaKey = (): string => `${prefix}:play:quota:${quotaDay(now())}`;
   const recentKey = `${prefix}:play:recent`;
+  const remixKey = `${prefix}:play:recent-remix`;
   const verdictKey = (draftId: string): string => `${prefix}:play:upgrade-final:${draftId}`;
   const dareKey = (dareId: string): string => `${prefix}:play:dare:${dareId}`;
   const dareQuotaKey = (): string => `${prefix}:play:dare-quota:${quotaDay(now())}`;
@@ -606,15 +614,16 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         throw new VersionStoreUnavailable(thrown);
       }
       // Trychtýř (P44B T12): hra je nová právě jednou (`SET NX` výš); výpadek čítače publikaci neshodí.
-      const stage = BUILTIN_IDS.has(game.version.versionId) ? null : publishStageOf({ parentId: game.version.parentId, relation: game.relation });
+      const stage = BUILTIN_IDS.has(game.version.versionId) ? null : publishStageOf({ parentId: game.version.parentId, ...(game.relation === 'upgrade' ? { relation: 'upgrade' as const } : {}) });
       if (stage !== null) await raw.incr(funnelKey(funnelDayOf(now()), stage), FUNNEL_TTL_SECONDS).catch(() => undefined);
-      // Do feedu autorská verze od režiséra a od P54A T10 i remix (`feedEligible`). Ruční
-      // spec ani návrh ze slov ne (nález revize T4-1): jejich titul píše volající a feed
-      // by ho zdarma ukázal každému návštěvníkovi `/play`. Remix je rozhodnutí plánu P54A –
-      // řetězce specu prošly moderací publikace a hru jde skrýt (`PLAY_FEED_HIDE`).
-      if (feedEligible({ versionId: game.version.versionId, relation: game.relation, parentId: game.version.parentId, publishEligible: game.report.publishEligible }, NOTHING_HIDDEN)) {
+      // Do feedu autorská verze od režiséra a od P54A T10 i remix, který postavil server
+      // (`relation: 'remix'`, `feedEligible`). Ruční spec ani návrh ze slov ne, ani s
+      // `parentId` (nálezy revize T4-1 a T10-1): jejich titul píše volající a feed by ho
+      // zdarma ukázal každému návštěvníkovi `/play`. Remix jde do vlastního seznamu.
+      if (feedEligible({ versionId: game.version.versionId, relation: game.relation, publishEligible: game.report.publishEligible }, NOTHING_HIDDEN)) {
         try {
-          await raw.pushCapped(recentKey, JSON.stringify(feedRowOf(game)), RECENT_CAP, limits.ttlSeconds);
+          if (game.relation === 'remix') await raw.pushCapped(remixKey, JSON.stringify(feedRowOf(game)), REMIX_CAP, limits.ttlSeconds);
+          else await raw.pushCapped(recentKey, JSON.stringify(feedRowOf(game)), RECENT_CAP, limits.ttlSeconds);
         } catch {
           // Feed je navigace: hra je uložená a odkaz na ni platí, i když se do feedu nedostala.
         }
@@ -693,17 +702,19 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
     },
     async recent(limit) {
       try {
-        const rows = await raw.head(recentKey, Math.min(limit, RECENT_CAP));
+        const rows = [...(await raw.head(recentKey, Math.min(limit, RECENT_CAP))), ...(await raw.head(remixKey, REMIX_CAP))];
         // Seznam žije od poslední publikace, hra od své – vypršelá hra by vedla na 404.
         const oldest = now() - limits.ttlSeconds * 1000;
-        return rows.flatMap((text) => {
-          try {
-            const row = JSON.parse(text) as RecentGame;
-            return Date.parse(row.createdAt) > oldest ? [row] : [];
-          } catch {
-            return [];
-          }
-        });
+        return rows
+          .flatMap((text) => {
+            try {
+              const row = JSON.parse(text) as RecentGame;
+              return Date.parse(row.createdAt) > oldest ? [row] : [];
+            } catch {
+              return [];
+            }
+          })
+          .slice(0, limit);
       } catch {
         return [];
       }

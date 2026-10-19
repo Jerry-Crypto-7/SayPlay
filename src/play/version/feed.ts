@@ -26,28 +26,26 @@ import { type LoopHeat, RECENT_CAP, type RecentGame } from './store';
 /** Co feed o hře potřebuje vědět, aby rozhodl, jestli ji ukáže. */
 export interface FeedCandidate {
   readonly versionId: string;
-  readonly relation?: 'upgrade';
+  readonly relation?: 'upgrade' | 'remix';
   /** Hra ze seedu feedu nebo z vestavěné sady (P37C T6); nese ji jen řádek seznamu. */
   readonly curated?: true;
-  /** Rodič verze; u remixu hra, ze které vznikl (P54A T10). */
-  readonly parentId: string | null;
   readonly publishEligible: boolean;
 }
 
 /**
  * Do feedu autorská verze od režiséra (`relation: 'upgrade'`), hra ze seedu
- * provozovatele (`curated`, věty napsal on, ne návštěvník) nebo remix (P54A
- * T10, má rodiče) – vždy jen ta, která prošla branou publikace (včetně moderace
- * všech řetězců specu) a kterou provozovatel neskryl (`PLAY_FEED_HIDE`).
- * Hráčova hra bez rodiče do feedu nejde.
+ * provozovatele (`curated`, věty napsal on, ne návštěvník) nebo remix, který
+ * postavil server (`relation: 'remix'` – čip, ověřený recept, věta přes model;
+ * P54A T10) – vždy jen ta, která prošla branou publikace a kterou provozovatel
+ * neskryl (`PLAY_FEED_HIDE`). Hráčova hra do feedu nejde, ani s `parentId`
+ * (nález revize T10-1): rodiče si volající napíše sám a titul specu taky.
  */
 export function feedEligible(game: FeedCandidate, hidden: ReadonlySet<string>): boolean {
-  return game.publishEligible && (game.relation === 'upgrade' || game.curated === true || game.parentId !== null) && !hidden.has(game.versionId);
+  return game.publishEligible && (game.relation === 'upgrade' || game.relation === 'remix' || game.curated === true) && !hidden.has(game.versionId);
 }
 
-/** Remix: má rodiče, ale není autorská verze ani hra provozovatele. */
 function isRemix(row: RecentGame): boolean {
-  return row.parentId !== null && row.relation !== 'upgrade' && row.curated !== true;
+  return row.relation === 'remix';
 }
 
 /** `PLAY_FEED_HIDE` – čárkami oddělená `versionId`; mezery a prázdné položky se ignorují. */

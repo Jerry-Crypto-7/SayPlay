@@ -480,6 +480,9 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     expect(remix.status).toBe(201);
     const remixId = ((await remix.json()) as { versionId: string }).versionId;
     expect((await createGame(post('/api/play/games', { spec: switchPuzzle }))).status).toBeLessThan(300);
+    // Ruční spec, který si napíše rodiče, je pořád ruční spec (nález revize T10-1): oběma dveřmi.
+    expect((await createGame(post('/api/play/games', { spec: switchPuzzle, parentId: first.body.versionId }))).status).toBe(201);
+    expect((await remixGame(post(`/api/play/games/${second.body.versionId}/remix`, { spec: switchPuzzle }), params(second.body.versionId))).status).toBe(201);
     // Z návrhu, ručního specu a remixu jde do feedu jen remix (P54A T10).
     expect((await feed('?recent=24')).body.games.map((g: { versionId: string }) => g.versionId)).toEqual([remixId]);
 

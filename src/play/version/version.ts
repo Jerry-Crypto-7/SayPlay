@@ -51,8 +51,12 @@ export interface PublishedGame {
    * hrát (P25E R1). Jen pro poctivou hlášku – na rozdíl od `origin` upgrade nespouští.
    */
   readonly sentence?: string;
-  /** `'upgrade'` = autorská verze návrhu `version.parentId`, ne remix. */
-  readonly relation?: 'upgrade';
+  /**
+   * `'upgrade'` = autorská verze návrhu `version.parentId`, ne remix. `'remix'` = dítě,
+   * které postavil server – čip, ověřený recept nebo věta přes model (P54A T10, nález
+   * revize T10-1); remix z hotového specu nebo `parentId` v `POST /api/play/games` ho nemá.
+   */
+  readonly relation?: 'upgrade' | 'remix';
   readonly timings?: PlayTimings;
   /** Okno robotova běhu pro náhled ve feedu (P54A T2); hra publikovaná dřív ho nemá. */
   readonly preview?: FeedPreview;
