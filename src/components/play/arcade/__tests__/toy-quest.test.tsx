@@ -252,8 +252,8 @@ const CRAFTS = [
  * přičte houpání a natočení k vnější skupině. `moving` = robot hraje; jinak stav stojí a běží jen tiky.
  * Hladina je rovná – vlnu kreslí moře, ne plavidlo.
  */
-function playCraft(craft: (typeof CRAFTS)[number], moving: boolean): number[][] {
-  stubPage();
+function playCraft(craft: (typeof CRAFTS)[number], moving: boolean, reduce = false): number[][] {
+  stubPage(reduce);
   const world = craft.world();
   const layout = voyageLayoutOf(world);
   expect(layout).not.toBeNull();
@@ -294,9 +294,18 @@ function playCraft(craft: (typeof CRAFTS)[number], moving: boolean): number[][] 
 }
 
 describe('the voyage craft moves by its body class and stands when it does not move (P45D T12)', () => {
-  it.each(CRAFTS.map((craft) => [craft.name, craft] as const))('%s: a craft that does not move stands still on a calm sea while the ticks run', (_, craft) => {
-    const samples = playCraft(craft, false);
+  // P54B T6: mimo reduced-motion stojící letec dýchá vrstvou nečinnosti (výjimka brandu T1, `toy-motion.ts`);
+  // přesné stání platí pod reduced-motion, kde je vrstva vypnutá.
+  it.each(CRAFTS.map((craft) => [craft.name, craft] as const))('%s: a craft that does not move stands still on a calm sea under reduced motion', (_, craft) => {
+    const samples = playCraft(craft, false, true);
     for (const sample of samples) expect(sample).toEqual(samples[0]);
+  });
+
+  it.each(CRAFTS.map((craft) => [craft.name, craft] as const))('%s: a craft that does not move only idles in place – no drift, no turn (P54B T6)', (_, craft) => {
+    const samples = playCraft(craft, false);
+    // Vnější skupina celá a vnitřní poloha x/z – nečinná vrstva smí jen vznášet, dýchat a vlnit tělo na místě.
+    const fixed = (sample: readonly number[]): number[] => [...sample.slice(0, 9), sample[9]!, sample[11]!];
+    for (const sample of samples) expect(fixed(sample)).toEqual(fixed(samples[0]!));
   });
 
   it.each(CRAFTS.map((craft) => [craft.name, craft] as const))('%s: a craft under way bobs or tilts', (_, craft) => {
