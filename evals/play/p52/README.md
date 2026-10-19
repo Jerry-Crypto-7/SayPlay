@@ -58,7 +58,15 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - v01, v09 a v14 z AC jsou v otevřeném holdoutu P47B – neměří se, platí za ně obdoby d01–d06.
 - **Mimo T5:** sběr jen s úderem (beze změny od P47B, otisk `5c0da6ca` drží test) má na semínkách 1–20 novice 0,85 (bez akce 0,45) – mimo pásmo už před P52; zapsané v plánu jako nález.
 
+## T6 – dash, štít, střelba a krádež v chodci
+
+- **Bludiště** bere všech pět akcí: dash, štít a střelba míří na nepřátele z T5 na cestě ke východu. Střela letí směrem chůze (`aim: 'heading'`) a zeď ji zastaví; robot střílí, jen když je nejbližší tělo v ose chůze nepřítel, který patří střelbě (`walkerShot`). **Plížení** bere jen krádež – okrade strážného ve vstupní chodbě nebo sebere věc a jiskry; okradený strážný přestane hlídat.
+- **Vedlejší nález:** s chodcem, který bere štít, dala věta d06 „gnomes that block the paths“ hrdinovi štít. Opraveno ve slovníku: vztažná věta za množným jménem, které hrdina není, patří nepříteli.
+- **Gauge po T6** (proti T5): P52 dev 0,41 / 0,56 / 0,56 → **0,65 / 0,79 / 0,79** (d11–d18 nově 1 / 1 / 1), P47B dev 0,80 / 0,84 / 0,82 → **0,88 / 0,92 / 0,90** (v17, v41, v45, v61 nově 1 / 1 / 1), P46A a finále P51 (0,97 / 0,93) beze změny, past 0. p95 návrhu 1,4–2,0 s (měřidla sériově).
+- **Vyváženost:** všech 12 vět T6 na semínkách 1–20 novice i intermediate 20/20, stejně jako bez akce.
+
 ## Rozhodnutí
 
 - T1: větev P51 na origin není (`git ls-remote` bez ní); sloučena lokální `features/P51-…`, která `origin/main` už obsahuje – fast-forward bez merge commitu.
 - T5: quest s úderem drží bránu P41 (novice 0,3–0,7, intermediate ≥ 0,8), ne „vyhraje stejně jako bez úderu“ – quest bez úderu je v pásmu sám, takže platí brána; srovnání s hrou bez akce zůstává jen u bludiště, které je lehké už bez úderu (novice 10/10).
+- T6: plížení bere jen krádež – jiné akce v něm nikdo neměřil a věty sady chtějí jen ji. Brána vyváženosti chodce je „vyhraje stejně jako bez akce“: buňky chodce jsou mimo pásmo P41 už bez akcí (novice 20/20).
