@@ -34,6 +34,7 @@ import { Feed, type FeedGame, type KnownGame } from '../Feed';
 import type { FeedPreview } from '@/play/version/version';
 
 import { loopEvent } from '../loop-client';
+import { FeedNext } from './feed-next';
 import { countCanvases, feedMode, previewFor } from './preview';
 import { type GameDetail, ReelCard } from './ReelCard';
 import { cardImage, createSnapshotCache } from './snapshot-cache';
@@ -299,6 +300,14 @@ export function ReelFeed() {
     const onKey = (event: KeyboardEvent) => {
       const now = keys.current;
       if (!now.onScreen || event.altKey || event.ctrlKey || event.metaKey || typing(event.target)) return;
+      // Esc při hraní nebo na výsledku (T9): z hry ven na další kartu, ne pauza. Otevřený list nebo pauzu zavře jako dřív.
+      if (event.key === 'Escape') {
+        if (feedMode(document.querySelector('[data-testid="feed-current"]')) === 'preview' || document.querySelector('[role="dialog"]') !== null) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (!event.repeat) now.go(now.index + 1);
+        return;
+      }
       const step = event.key === 'ArrowDown' || event.key === 'PageDown' ? 1 : event.key === 'ArrowUp' || event.key === 'PageUp' ? -1 : 0;
       if (step === 0) return;
       if (event.key.startsWith('Page') || feedMode(document.querySelector('[data-testid="feed-current"]')) !== 'play') {
@@ -314,6 +323,49 @@ export function ReelFeed() {
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
+  }, []);
+
+  const next = useCallback(() => keys.current.go(keys.current.index + 1), []);
+
+  // Ťuk, nebo tah po scéně? (T9) V náhledu robota tah posouvá feed (`touch-action: pan-y`), takže
+  // stisk scény hra hned nedostane – posluchač feedu je v zachytávací fázi okna dřív než převzetí
+  // v `ArcadePlay`. Puštění bez posunu je ťuk: stisk se zopakuje na scéně, převezme hru a dál
+  // do hry nejde (`document` v zachytávací fázi), takže ovládání hry nevidí stisk bez puštění.
+  useEffect(() => {
+    let pressed: PointerEvent | null = null;
+    let replay: PointerEvent | null = null;
+    const onDown = (event: PointerEvent) => {
+      if (event === replay || !(event.target instanceof Element) || event.target.closest('[data-testid="arcade-stage"]') === null) return;
+      const card = event.target.closest('[data-testid="feed-current"]');
+      if (card === null || feedMode(card) !== 'preview') return;
+      event.stopImmediatePropagation();
+      pressed = event;
+    };
+    const onUp = (event: PointerEvent) => {
+      const down = pressed;
+      pressed = null;
+      if (down === null || event.pointerId !== down.pointerId || !(down.target instanceof Element) || !down.target.isConnected) return;
+      if (Math.hypot(event.clientX - down.clientX, event.clientY - down.clientY) >= SWIPE_PX) return;
+      replay = new PointerEvent('pointerdown', { bubbles: true, cancelable: true, clientX: down.clientX, clientY: down.clientY, pointerId: down.pointerId, pointerType: down.pointerType, isPrimary: true });
+      down.target.dispatchEvent(replay);
+      replay = null;
+    };
+    const onCancel = () => {
+      pressed = null;
+    };
+    const stopReplay = (event: PointerEvent) => {
+      if (event === replay) event.stopPropagation();
+    };
+    window.addEventListener('pointerdown', onDown, true);
+    window.addEventListener('pointerup', onUp, true);
+    window.addEventListener('pointercancel', onCancel, true);
+    document.addEventListener('pointerdown', stopReplay, true);
+    return () => {
+      window.removeEventListener('pointerdown', onDown, true);
+      window.removeEventListener('pointerup', onUp, true);
+      window.removeEventListener('pointercancel', onCancel, true);
+      document.removeEventListener('pointerdown', stopReplay, true);
+    };
   }, []);
 
   const swipeFrom = useRef<number | null>(null);
@@ -379,6 +431,7 @@ export function ReelFeed() {
     <section ref={root} className="play-pager" aria-label="Game feed" data-testid="feed-pager">
       <StageHost onLeave={onLeave}>
         {(host) => (
+          <FeedNext.Provider value={next}>
           <div ref={reel} className="play-reel" data-testid="feed-reel">
             {games.map((game, at) =>
               Math.abs(at - index) <= WINDOW ? (
@@ -399,6 +452,7 @@ export function ReelFeed() {
               ),
             )}
           </div>
+          </FeedNext.Provider>
         )}
       </StageHost>
       <Feed games={games} current={current.versionId} known={known} onPick={pick} />

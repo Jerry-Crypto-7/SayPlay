@@ -11,7 +11,7 @@
  */
 
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
@@ -23,6 +23,7 @@ import { ArcadePlay } from '../arcade/ArcadePlay';
 import { WithPlayEnv } from '../arcade/look/play-env';
 import { beatText, type FeedGame, moodTone } from '../Feed';
 import { Icon } from '../ui';
+import { feedMode } from './preview';
 import { cardImage } from './snapshot-cache';
 import type { StageTunnel } from './stage-tunnel';
 
@@ -61,13 +62,54 @@ export function TapHint({ goal, beat = null }: { readonly goal: string; readonly
   );
 }
 
+/** Výsledek běhu bez vstupu tak dlouho vrátí kartu do náhledu robota (T9). */
+const RESULT_IDLE_MS = 10_000;
+
+/**
+ * Kolikrát se karta vrátila z výsledku do náhledu (T9): po `RESULT_IDLE_MS` na
+ * výsledku bez stisku nebo klávesy se číslo zvedne a hra se připojí znovu – nová
+ * relace začíná náhledem robota. Režim čte z DOM jako sonda (`feedMode`).
+ */
+function useResultIdle(slide: RefObject<HTMLElement | null>, enabled: boolean): number {
+  const [round, setRound] = useState(0);
+  useEffect(() => {
+    if (!enabled) return;
+    let since: number | null = null;
+    const input = () => {
+      if (since !== null) since = performance.now();
+    };
+    const timer = window.setInterval(() => {
+      if (feedMode(slide.current) !== 'result') {
+        since = null;
+        return;
+      }
+      since ??= performance.now();
+      if (performance.now() - since >= RESULT_IDLE_MS) {
+        since = null;
+        setRound((count) => count + 1);
+      }
+    }, 250);
+    window.addEventListener('pointerdown', input, true);
+    window.addEventListener('keydown', input, true);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('pointerdown', input, true);
+      window.removeEventListener('keydown', input, true);
+    };
+  }, [slide, enabled]);
+  return round;
+}
+
 function ActiveSlide({
   game,
   detail,
   live,
   host,
   preview,
+  round,
 }: {
+  /** Návrat z výsledku do náhledu – nový klíč hry (`useResultIdle`). */
+  readonly round: number;
   readonly game: FeedGame;
   readonly detail: GameDetail | 'error' | undefined;
   readonly live: boolean;
@@ -99,7 +141,7 @@ function ActiveSlide({
   }
   return (
     <>
-      <WithPlayEnv key={game.versionId} theme={detail.spec.theme} versionId={game.versionId}>
+      <WithPlayEnv key={`${game.versionId}-${String(round)}`} theme={detail.spec.theme} versionId={game.versionId}>
         <ArcadePlay
           versionId={game.versionId}
           spec={detail.spec}
@@ -162,11 +204,13 @@ export function ReelCard({
   readonly shot: string | undefined;
 }) {
   const spec = detail !== undefined && detail !== 'error' ? detail.spec : null;
+  const slide = useRef<HTMLDivElement | null>(null);
+  const round = useResultIdle(slide, active && preview !== null && preview !== undefined);
   return (
     <article className="play-reel-card" data-testid="feed-card" data-index={index} data-version-id={game.versionId} data-active={active} aria-label={game.title}>
       {active ? (
-        <div className="play-pager-slide" data-testid="feed-current" data-version-id={game.versionId}>
-          <ActiveSlide game={game} detail={detail} live={live} host={host} preview={preview} />
+        <div ref={slide} className="play-pager-slide" data-testid="feed-current" data-version-id={game.versionId}>
+          <ActiveSlide game={game} detail={detail} live={live} host={host} preview={preview} round={round} />
           {rail}
         </div>
       ) : (

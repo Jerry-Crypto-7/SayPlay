@@ -153,5 +153,99 @@ test.describe('/play – bot preview in the feed', () => {
       if (inputs.length > 0) expect(inputs[0]?.tick).toBe(0);
       expect((await probe(page)).contexts).toBe(1);
     });
+
+    test('a swipe on the scene moves the feed in preview and belongs to the game in play (T9)', async ({ page, context }) => {
+      await page.goto(`/play?g=${rows[1].versionId}`);
+      await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+      await expectPreview(page, rows[1]);
+      const cdp = await context.newCDPSession(page);
+      const stageBox = async () => {
+        const box = await page.getByTestId('feed-current').getByTestId('arcade-stage').boundingBox();
+        if (box === null) throw new Error('stage has no box');
+        return box;
+      };
+      /**
+       * Skutečný dotykový tah (CDP), ne myš – posun feedu dělá prohlížeč sám. Prst
+       * před puštěním chvíli stojí: `touchEnd` hned po posledním `touchMove` nechá
+       * Chromium přes CDP stát na půl cesty bez dosednutí i na holé stránce se snapem
+       * bez jediného skriptu (změřeno 19. 10.: 373/535 px ze 700, se 200 ms 704).
+       */
+      const swipe = async (from: number, to: number) => {
+        const box = await stageBox();
+        const x = box.x + box.width / 3;
+        const at = (share: number) => [{ x, y: box.y + box.height * share }];
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at(from) });
+        for (let step = 1; step <= 8; step += 1) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: at(from + ((to - from) * step) / 8) });
+        await page.waitForTimeout(200);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      };
+      const tapStage = async () => {
+        const box = await stageBox();
+        await page.touchscreen.tap(box.x + box.width / 3, box.y + box.height / 2);
+        await expect.poll(async () => (await probe(page)).mode).toBe('play');
+      };
+      const scrollTop = () => page.getByTestId('feed-reel').evaluate((reel) => reel.scrollTop);
+
+      // Náhled: tah nahoru po scéně posune feed na další hru a hru nepřevezme.
+      await swipe(0.75, 0.2);
+      await expectPreview(page, rows[2]);
+
+      // Z hraní ven vede tlačítko „Next“ na okraji karty (flap bez vstupu běží přes 15 s).
+      await tapStage();
+      await page.getByTestId('feed-next').tap();
+      await expectPreview(page, rows[3]);
+
+      // Hraní: tah po scéně patří hře – feed stojí a adresa se nemění. Hra na tah
+      // reagovat smí, třeba i koncem běhu; zpátky do náhledu ale nesmí.
+      await tapStage();
+      const top = await scrollTop();
+      await swipe(0.75, 0.2);
+      await page.waitForTimeout(600);
+      expect(await scrollTop()).toBe(top);
+      expect(new URL(page.url()).searchParams.get('g')).toBe(rows[3].versionId);
+      expect(['play', 'result']).toContain((await probe(page)).mode);
+    });
+  });
+
+  test('desktop: Esc and ↓ leave a game for the next card, the result offers Next game and falls back to preview (T9)', async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/play?g=${rows[0].versionId}`);
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    await expectPreview(page, rows[0]);
+
+    // Esc při hraní: další karta, ne pauza hry.
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(async () => (await probe(page)).mode).toBe('play');
+    await page.keyboard.press('Escape');
+    await expectPreview(page, rows[1]);
+    await expect(page.getByTestId('play-paused')).toHaveCount(0);
+
+    // ↓ při hraní, když ji hra nevzala: další karta.
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(async () => (await probe(page)).mode).toBe('play');
+    await page.keyboard.press('ArrowDown');
+    await expectPreview(page, rows[2]);
+
+    // Konec běhu (runner bez vstupu prohraje): PostRun nabídne „Next game“.
+    await page.keyboard.press('ArrowUp');
+    await expectPreview(page, rows[1]);
+    await page.keyboard.press('ArrowUp');
+    await expectPreview(page, rows[0]);
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(async () => (await probe(page)).mode, { timeout: 30_000 }).toBe('result');
+    await expectSnapped(page);
+    await page.getByTestId('play-next-game').click();
+    await expectPreview(page, rows[1]);
+
+    // Výsledek bez vstupu: po 10 s karta zpět v náhledu robota.
+    await page.keyboard.press('ArrowUp');
+    await expectPreview(page, rows[0]);
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(async () => (await probe(page)).mode, { timeout: 30_000 }).toBe('result');
+    const resultAt = Date.now();
+    await expect.poll(async () => (await probe(page)).mode, { timeout: 20_000 }).toBe('preview');
+    expect(Date.now() - resultAt).toBeGreaterThanOrEqual(9_000);
+    expect((await probe(page)).versionId).toBe(rows[0].versionId);
   });
 });

@@ -2827,6 +2827,17 @@ button.play-feed-card {
   cursor: default;
 }
 
+/* Gesta (T9): v náhledu robota tah po scéně posouvá feed (ťuk hru převezme), při
+ * hraní patří tah hře a feed stojí – ven vede okraj karty, Esc, výsledek a Back. */
+/* Scéna má `touch-action: none` přímo v `style` (`ArcadeStage`, P54B) – náhled ho musí přebít. */
+.play-pager-slide:has([data-testid='play-demo']) .play-stage {
+  touch-action: pan-y !important;
+}
+
+.play-reel:has(.play-shell):not(:has([data-testid='play-demo'], [data-testid='play-outcome'])) {
+  overflow: hidden;
+}
+
 /* Obrázek karty mimo hru (T8): snímek scény z posledního odchodu, kurátorský
  * snímek nebo obrázek odkazu přes plakát; titul a cíl na ploše, aby se četly. */
 .play-reel-shot {
