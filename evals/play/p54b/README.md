@@ -51,3 +51,36 @@ node scripts/play-look-shots.mjs shots --base http://127.0.0.1:3351 --set genres
 - **T8:** perf A/B T8 odložen (CPU 82 %). Navíc 1–3 kreslicí volání na scénu (model gen3d = jedna síť, jeden materiál, bez stínu), místo bodu se hledá jednou při stavbě scény.
 - **T9:** perf A/B T9 odložen (CPU 41–67 %, souběžná T10 ve stejném worktree – rozpracované typy by build neprošly a druhý prohlížeč by čísla zkreslil). Prstenec a rohové shluky arény se stěnami (g-arena, g-fight, g-quest; agar stěnu nemá a je beze změny) přidají nejvýš 6 kreslicích volání: 6 druhů z vegetace sady, každý jedna instancovaná síť bez stínu (`p54b-arena-ring.test.ts`). 45–83 kusů na arénu 40 × 40 m, 2–4 shluky; odlišných modelů výzdoby 8–9 (6 modelů prstence + 2–3 tvary výzdoby podlahy) přes 18 sad × 50 semínek.
 - **T10:** perf A/B T10 odložen (CPU 30–100 %, kolísá se souběžnými autopiloty; základ `perf-before.json` zatím není). Život v pozadí přidá 1–2 kreslicí volání na scénu (druh = jedna `InstancedMesh` z jednoduchých tvarů bez stínu; louka 2, město, poušť a sníh 0); pohyb počítá jen vertex shader, CPU za snímek posune jednu skupinu za orientačním bodem. Kusů na `high`/`medium` 4–40 (ptáci 10, motýli 8, ryby 12, skákající ryby 4, netopýři 10, jiskry 24, prach 40, hvězdy 4), `low` polovinu. Umístění pinuje `p54b-ambient.test.ts` (10 kamer žánrů × 2 poměry × 15 sad: v záběru, za hrdinou, před koncem mlhy, celým rozkmitem v patě orientačního bodu – mimo plochu i kruh hrdiny); shader všech 8 druhů přeložen a vykreslen v headless Chromiu (SwiftShader), živá hra zatím nezkontrolována.
+- **T15:** `perf-after.json` nevznikl – stroj 19. 10. ve 22–23 h na 58–100 % CPU (souběžné autopiloty P54A, P54C a dvou cizích projektů). Náhradní údaj, ne FPS: kreslicí volání ze snímků T15 proti T2 v emulaci telefonu +0 až +22 na scénu (medián +2; nejvíc úkol v hradu +22 a aréna +8, agar +9, kluzák +12), na desktopu medián +2. Brána ≥ 40 FPS a A/B ≥ −10 % zůstává neověřená a je podmínkou sloučení.
+
+## Závěr MVP (T15, 19. 10. 2026, `8cf50b98`)
+
+Snímky `after/` a `after-phone/` stejnými příkazy jako T2 (sada `genres`, tik 150, SwiftShader, `--out evals/play/p54b/after[-phone]`, telefon s `--profile pixel7`). Slepý soud:
+
+```
+node scripts/play-p46g-blind.mjs judge --dir evals/play/p54b --pass-at 15 --work D:/tmp/p54b-blind
+node scripts/play-p46g-blind.mjs sheet --dir evals/play/p54b
+```
+
+Dvojice telefonu drží poměr stran (výška 1200 px); dřívější ořez na 960×600 by soudci nechal jen pruh ze středu. Tři odpovědi telefonu napoprvé chyběly (`claude.exe` ENOENT během aktualizace CLI ve 22:20) a byly položeny znovu; ostatních 33 je z prvního kola.
+
+| Cíl | Naměřeno | |
+|---|---|---|
+| soud desktop ≥ 15/18 | **15/18** | splněno |
+| soud telefon ≥ 15/18 | **10/18** | nesplněno |
+| hrdina s kostrou ≥ 60 % | 30/59 = 51 % | nesplněno (beze změny od T4) |
+| nepřítel s kostrou ≥ 40 % | 56/59 = 95 % | splněno |
+| odlišné modely medián ≥ 15, min ≥ 10 | 19 / 13 | splněno |
+| světlo u vět, které ho jmenují | 7/7 | splněno |
+| FPS Pixel 7 ≥ 40, A/B ≥ −10 % | nezměřeno | stroj přetížený |
+| sada, build, e2e, replay brána | zelené po opravě (níž) | splněno |
+
+**Fakta ze soudu.** Desktop prohrál bludiště (jasně oranžová nízkopolygonová liška je vidět líp než riggovaná), flappy (chýše za trubkami „zakrývá ptáka“) a rytmus („tyrkysový předmět nad drahou“ – jeřáb města). Telefon prohrál osm: flappy („průsvitný strom v mezeře“), věž („monolit na věži“), rytmus („tmavá stavba“), přistání na Marsu („silo v záběru“), souboj rytířů („pochodeň zakrývá rytíře“), aréna (hrdina a liška si jsou podobní), plošinovka (bez konkrétní vady) a kluzák (oba snímky stejné, volba náhodná). Kde „po“ vyhrálo, důvodem je skoro vždy riggovaná postava („fox-shaped“, „wolves clearly shaped like wolves“), orientační bod nebo ptáci.
+
+**Závěr (odvozeno).** Pět z osmi proher telefonu má jednu příčinu: orientační bod se hledá „nejblíž středu obrazu“ a z hry se vyhýbá jen kruhu hrdiny, ne obdélníku hracích předmětů na obrazovce. Na úzkém obrazu telefonu tak u pevné boční kamery stojí přímo za trubkami, věží nebo drahou; rámující kus u souboje se vyhýbá jen hrdinovi, ne soupeři. Test T8 (`p54b-landmark.spec.ts`) to nezachytí, protože měří jen desktop 1280×800 a zakrytí hrdiny. Oprava je v logice umístění, ne v datech – jde do plánu jako nález (`T15a`), stejně jako holá scéna kluzáku (`T15b`, „korálový útes“ bez útesu na obou snímcích, vada už před P54B). Čitelnost riggovaných postav na telefonu (aréna, bludiště) řeší T14.
+
+**Hrdina s kostrou 51 %.** Data opravit nejde bez porušení „přesná identita vyhrává“: zbylých 29 hrdinů jsou přesné identity bez riggované postavy (křeček, želva, astronaut, sova, lenochod…) nebo volby návrhu mimo soubory tohoto plánu (želva u „obby“, závodní auto u „rytíř jede na jednorožci“, hrad z písku u „venčím psa“) – přesné párování model–věta je mimo rozsah P54B.
+
+**Sada.** `vitest` celá (JSON, 15 159 testů): 15 150 zelených, 3 červené + 1 soubor. Skutečná regrese jedna – brand guard našel 8 řádků surového hexu v `look/Ambient.tsx` (T10); barvy přesunuty do palety `look/index.ts` (`8cf50b98`), guard i `p54b-ambient` zelené. Zbytek prostředí: `submission-check` (ENOENT `plans/P8-…` ve worktree), `swarm` časová mez 0,056 > 0,05 ms a `rules/coverage` – samy zelené; `golden` v replay bráně pod zátěží na 180 s, sám zelený. `npm run build` exit 0. E2E proti `next start` (`FALLBACK_SMOKE_URL`): `p32-look`, `interface-language`, `p54b-landmark`, `p54b-walk-clip` 11/11.
+
+`sheet-all.png`: každá věta ve čtyřech snímcích – before, after, before-phone, after-phone.

@@ -1,0 +1,395 @@
+{
+ "about": "Blind judgement of before vs after and before-phone vs after-phone: the same game at the same demo tick, side by side without labels. See README.md.",
+ "judgedAt": "2026-10-19T20:24:16.643Z",
+ "judge": {
+  "model": "claude-opus-5-5",
+  "how": "claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once",
+  "question": "First open sheet.png in the current directory with the Read tool. It shows two screenshots side by side, LEFT and RIGHT, of a small 3D video game made from the request: \"<sentence>\". Page text is hidden, so judge only the 3D scenes. Which side looks more like a believable, immersive, clear game place for this request – a place that looks like the setting the request names, that you could believe you are in, and where the path or ground you play on and the characters are easy to read? End your reply with exactly one line in this form and nothing after it:\nVERDICT: LEFT – <one short reason>\nor\nVERDICT: RIGHT – <one short reason>"
+ },
+ "order": {
+  "prng": "pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentence order, profile after profile; 0 = before is LEFT",
+  "seed": 46009
+ },
+ "total": [
+  {
+   "profile": "after",
+   "afterWins": 15,
+   "beforeWins": 3,
+   "unanswered": 0,
+   "of": 18,
+   "passAt": 15,
+   "pass": true
+  },
+  {
+   "profile": "after-phone",
+   "afterWins": 10,
+   "beforeWins": 8,
+   "unanswered": 0,
+   "of": 18,
+   "passAt": 15,
+   "pass": false
+  }
+ ],
+ "pairs": [
+  {
+   "id": "g-runner",
+   "profile": "after",
+   "sentence": "A fox runs through a forest away from a bear",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "a more natural, running fox plus birds and a treehouse make the same forest path feel more alive",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-race",
+   "profile": "after",
+   "sentence": "A jeep races through the jungle",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "Same clear track and vehicles, plus a rock or waterfall cliff that makes the jungle feel richer.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-platform",
+   "profile": "after",
+   "sentence": "A squirrel jumps over logs in a forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "Same clear layout, but the birds and treehouse make the forest feel more alive.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-arena",
+   "profile": "after",
+   "sentence": "Collect ten acorns in a forest while avoiding a fox",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "the foxes are clearly fox-shaped and there are slightly more trees, so it reads more like a forest",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-fight",
+   "profile": "after",
+   "sentence": "A bear fights three wolves in a dark forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "same forest, but the wolves are bigger and clearly shaped like wolves",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-quest",
+   "profile": "after",
+   "sentence": "A knight lights the torches in a dark castle",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "slightly richer castle surroundings with equally clear floor and characters",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-agar",
+   "profile": "after",
+   "sentence": "like agar.io but you are a fish eating smaller fish",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "nearly identical scenes, but LEFT is slightly clearer and less foggy",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-walker",
+   "profile": "after",
+   "sentence": "A fox sneaks past guards in a forest to steal eggs",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "the bright orange fox is much easier to spot in an otherwise identical forest maze",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-glide",
+   "profile": "after",
+   "sentence": "A fish swims through a coral reef",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "Effectively a tie; both are bare green scenes with no reef, and the left is only marginally brighter.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-ball",
+   "profile": "after",
+   "sentence": "A dog plays football against a fox in a meadow",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "Foxes that clearly read as foxes and a landmark stone with birds make the meadow more believable.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-flap",
+   "profile": "after",
+   "sentence": "like flappy bird but in a jungle",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "same jungle scene, but the bird and play path are easy to see, with no hut covering the bird",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-shooter",
+   "profile": "after",
+   "sentence": "A ranger shoots zombies in a forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the distant watchtower gives the forest clearing a landmark and depth that RIGHT lacks.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-throw",
+   "profile": "after",
+   "sentence": "throw acorns at targets in a forest",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "a more lifelike fox, plus a treehouse, birds and a foreground rock, make the forest feel deeper and more alive",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-timing",
+   "profile": "after",
+   "sentence": "stack blocks as high as you can",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "foreground fence and sunflower give the farm depth, and the block stack stays easy to read",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-rhythm",
+   "profile": "after",
+   "sentence": "tap to the beat with glowing tiles",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "same scene, but without RIGHT's stray teal object over the track, the lanes and tiles read more clearly",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-duel",
+   "profile": "after",
+   "sentence": "Two knights duel in a castle",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the extra stonework and birds make it feel more like a lived-in castle ruin.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-voyage",
+   "profile": "after",
+   "sentence": "A pirate ship dodges cannonballs while sailing between islands to find buried treasure",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "Same layout, but the birds and second lighthouse make the coast feel more lived-in and immersive.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-lander",
+   "profile": "after",
+   "sentence": "A rocket lands on Mars",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "the landed spacecraft on the Martian ground makes the landing scene clearer and easier to believe",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-runner",
+   "profile": "after-phone",
+   "sentence": "A fox runs through a forest away from a bear",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "the fox looks more believable and is clearly running, and the forest has a bit more depth",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-race",
+   "profile": "after-phone",
+   "sentence": "A jeep races through the jungle",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "Same clear track, slightly more jungle detail along the edge.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-platform",
+   "profile": "after-phone",
+   "sentence": "A squirrel jumps over logs in a forest",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "cleaner pine forest backdrop makes the squirrel and platforms easier to read",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-arena",
+   "profile": "after-phone",
+   "sentence": "Collect ten acorns in a forest while avoiding a fox",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "the squirrel player and the orange fox are easy to tell apart, while on the left they look alike",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-fight",
+   "profile": "after-phone",
+   "sentence": "A bear fights three wolves in a dark forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "visible forest trees and shaded wolves that clearly read as wolves against the bear",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-quest",
+   "profile": "after-phone",
+   "sentence": "A knight lights the torches in a dark castle",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "richer castle backdrop and better-centred torchlight make it more immersive and readable",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-agar",
+   "profile": "after-phone",
+   "sentence": "like agar.io but you are a fish eating smaller fish",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the player fish is shown side-on and is much easier to recognise as a fish.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-walker",
+   "profile": "after-phone",
+   "sentence": "A fox sneaks past guards in a forest to steal eggs",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "the fox is much easier to recognize, and the scenes are otherwise the same",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-glide",
+   "profile": "after-phone",
+   "sentence": "A fish swims through a coral reef",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "the scenes are identical (no visible reef or fish in either), so this pick is arbitrary",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-ball",
+   "profile": "after-phone",
+   "sentence": "A dog plays football against a fox in a meadow",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "more believable foxes and lively meadow details make it more immersive while staying just as readable",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-flap",
+   "profile": "after-phone",
+   "sentence": "like flappy bird but in a jungle",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "cleaner, readable play space with bamboo hints, while RIGHT's glitchy translucent tree clutters the gap",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-shooter",
+   "profile": "after-phone",
+   "sentence": "A ranger shoots zombies in a forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the watchtower and birds make the forest feel more real, with the same clear ranger and ground",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-throw",
+   "profile": "after-phone",
+   "sentence": "throw acorns at targets in a forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "treehouse, birds and foreground rock make it a richer, more immersive forest while the field and fox stay easy to read",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-timing",
+   "profile": "after-phone",
+   "sentence": "stack blocks as high as you can",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "the block stack is clear and uncluttered, while the right puts a confusing monolith on the tower",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-rhythm",
+   "profile": "after-phone",
+   "sentence": "tap to the beat with glowing tiles",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "cleaner, more believable street without the cluttered dark structure",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-duel",
+   "profile": "after-phone",
+   "sentence": "Two knights duel in a castle",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "both knights and the path are clear, while on the right a torch hides one knight and the rock mass is confusing",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-voyage",
+   "profile": "after-phone",
+   "sentence": "A pirate ship dodges cannonballs while sailing between islands to find buried treasure",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the lighthouse makes it feel more like a pirate island setting.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-lander",
+   "profile": "after-phone",
+   "sentence": "A rocket lands on Mars",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "clean Mars scene with a clear rocket and ground, with no out-of-place silo cluttering the view",
+   "afterWon": false,
+   "asks": 1
+  }
+ ]
+}
