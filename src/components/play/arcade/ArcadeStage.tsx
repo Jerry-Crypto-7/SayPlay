@@ -13,7 +13,7 @@
  * Vstup se jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
  */
 
-import { Canvas, addAfterEffect, useThree } from '@react-three/fiber';
+import { addAfterEffect, useThree } from '@react-three/fiber';
 import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
@@ -50,6 +50,8 @@ import { type ToyTarget, appliedToyOf } from './toy/applyToy';
 import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
 import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
+import { HostedCanvas } from '../feed/StageHost';
+import type { StageTunnel } from '../feed/stage-tunnel';
 
 /** Fire remains available when independent parts wrap the native weapon rule. */
 export function hasBlaster(rules: readonly PieceRef[]): boolean {
@@ -682,6 +684,7 @@ const StageCanvas = memo(function StageCanvas({
   surface,
   heroAction,
   ghost,
+  host,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
@@ -693,6 +696,7 @@ const StageCanvas = memo(function StageCanvas({
   readonly surface: React.RefObject<HTMLDivElement | null>;
   readonly heroAction: HeroAction;
   readonly ghost?: ArcadeGhost;
+  readonly host?: StageTunnel;
 }) {
   const base = baseControlOf(session.world.control);
   const control = base.id;
@@ -718,7 +722,7 @@ const StageCanvas = memo(function StageCanvas({
   const world = { session, cast, surface, scene: look, enabled, heroAction, ghost };
   return (
     // Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá.
-    <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'} shadows="percentage">
+    <HostedCanvas host={host} frameloop={live ? 'always' : 'demand'}>
       <RedrawOnChange session={session} />
       <FrameProbe control={control} />
       <RenderProbe />
@@ -751,7 +755,7 @@ const StageCanvas = memo(function StageCanvas({
       <PromptSpot session={session} surface={surface} />
       {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
       <Effects session={session} look={look} surface={surface} />
-    </Canvas>
+    </HostedCanvas>
   );
 });
 
@@ -765,6 +769,7 @@ export default function ArcadeStage({
   ghost,
   abilityWords,
   overlay,
+  host,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
@@ -785,6 +790,8 @@ export default function ArcadeStage({
   /* P29D */
   /** Vrstva nad plátnem (počasí a denní doba živé změny) – mimo scénu i hash. */
   readonly overlay?: ReactNode;
+  /** Trvalé plátno feedu (P54A T5, `feed/StageHost.tsx`): scéna se kreslí do něj, vlastní `<Canvas>` nevznikne. */
+  readonly host?: StageTunnel;
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
@@ -832,7 +839,7 @@ export default function ArcadeStage({
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} />
+      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} host={host} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
       {(keepers.powerup !== undefined || keepers.combo !== undefined) && <HudBoosts session={session} keepers={keepers} />}
