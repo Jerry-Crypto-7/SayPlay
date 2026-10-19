@@ -279,6 +279,13 @@ export function ReelFeed() {
     const timer = window.setTimeout(() => setThanks(false), THANKS_MS);
     return () => window.clearTimeout(timer);
   }, [thanks]);
+  // Nahlášená hra ze seznamu odejde až poté, co z ní `?g=` odjel – dřív by ji karta hledala a feed skočil na začátek.
+  const [reported, setReported] = useState<string | null>(null);
+  useEffect(() => {
+    if (reported === null || current?.versionId === reported) return;
+    setReported(null);
+    setFeed((prev) => (prev.kind === 'ready' ? { ...prev, games: prev.games.filter((game) => game.versionId !== reported) } : prev));
+  }, [reported, current]);
   useEffect(() => {
     if (arrived === null) return;
     const at = games.findIndex((game) => game.versionId === arrived);
@@ -479,7 +486,9 @@ export function ReelFeed() {
         onRemixed={(versionId) => remixed(current, versionId)}
         onReported={() => {
           setThanks(true);
-          go(index + 1);
+          setReported(current.versionId);
+          // Na poslední kartě zpět na předchozí.
+          go(index + 1 < games.length ? index + 1 : index - 1);
         }}
       />
       <button type="button" className="play-pager-step" data-testid="feed-next" onClick={() => go(index + 1)} disabled={index >= games.length - 1} aria-label="Next game">

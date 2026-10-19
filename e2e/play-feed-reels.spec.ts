@@ -298,6 +298,22 @@ test.describe('/play – bot preview in the feed', () => {
     expect(sent).toHaveLength(2);
   });
 
+  test('desktop: Report on the last card goes back to the previous one and the reported game leaves the feed (T11)', async ({ page }) => {
+    const last = rows[rows.length - 1]!;
+    await page.route(`**/api/play/games/${last.versionId}/report`, (route) => route.fulfill({ status: 204 }));
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/play?g=${last.versionId}`);
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    await expectPreview(page, last);
+
+    await page.getByTestId('feed-report').click();
+    await page.getByRole('dialog').getByTestId('feed-report-send').click();
+    await expect(page.getByTestId('feed-reported')).toBeVisible();
+    await expectPreview(page, rows[rows.length - 2]!);
+    await expect(page.locator('.play-pager-count')).toHaveText(`${String(rows.length - 1)}/${String(rows.length - 1)}`);
+    await expect(page.locator(`[data-testid="feed-card"][data-version-id="${last.versionId}"]`)).toHaveCount(0);
+  });
+
   test.describe('dare', () => {
     // Vlastní volající: strop výzev je 1 za 10 s a `p36-dare.spec.ts` jde nad týmž serverem.
     test.use({ extraHTTPHeaders: { 'x-forwarded-for': '198.51.100.54' } });
