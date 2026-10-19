@@ -116,6 +116,13 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - **Změna:** kořist chytání má vlastní model (`preyModel`, obsazení `prey`, scéna podle druhu těla), `enemyModel` chytání se střelou kořist přeskočí. Svět ani spec se nemění, chytání bez střely kreslí totéž (test drží „cell“ pro kořist i nepřítele).
 - **Co zbylo:** jméno cíle střely („bees“) ve větě nikde není – obsazení d10 nese jen „soap bubble“ a „water“ (jako překážku), záměr jen „catch“. Včely proto kreslí obecný model nepřítele, ne včelu. Vytáhnout předmět slovesa střelby ze věty je práce slovníku – nález T7b-R1-R1.
 
+## T7b-R1-R1 – včely z věty
+
+- **Příčina:** slovník rolí (`draft/lexicon.ts`) neznal „spits … at“: voda nebyla nástroj, takže z ní byla nástraha, a „the bees“ nebyl terč.
+- **Změna:** „spit X at Y“ – X je nástroj a Y terč, jako u „shoot X at Y“; holé „spits at kids“ beze změny. Chytání (záměr „catch“) s akcí střelby dá terč do obsazení jako `shoot_at` (protivník z prostředí pak nepřibude) a spec chytání se střelou nese roli `enemy` („bee“, 2) – svět ji nečte, otisky beze změny, scéna z ní kreslí model `cc0-bee`.
+- **Gauge:** P52 dev, P47B dev ani P46A bez pohnutého řádku (d10 1 / 1 / 1); chytání bez střely týž spec (role jen hráč a kořist).
+- **Holdout:** hledání slova „spit“ přes `evals/play` při kontrole dopadu vypsalo i věty souborů holdoutu P47B a P52. Oprava slovníku byla napsaná předtím; podle nich se nic neměnilo (jen zúžení na „spit X at“, aby holé „spits at kids“ z P30/P37 zůstalo, jak bylo).
+
 ## Rozhodnutí
 
 - T1: větev P51 na origin není (`git ls-remote` bez ní); sloučena lokální `features/P51-…`, která `origin/main` už obsahuje – fast-forward bez merge commitu.

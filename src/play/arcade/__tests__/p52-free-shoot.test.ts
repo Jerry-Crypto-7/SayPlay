@@ -132,13 +132,23 @@ describe('P52 T7b: shoot in arena catch', () => {
   // T7b-R1: včely (tělo druhu `enemy`) kreslil model nepřítele, který v chytání vracel kořist – dvě velikosti mýdlových bublin.
   it('bees never draw the prey model; the prey keeps its own, catch without the action draws as before', () => {
     const spec = draftGameSpecWithMeta(D10, 1).spec;
-    const plain = { ...spec, abilities: undefined };
+    const plain = { ...spec, abilities: undefined, roles: spec.roles.filter((role) => role.id !== 'enemy') };
     // Model kořisti a nepřítele chytání před T7b-R1 (popisek „soap bubble“).
     expect([preyModel(spec), preyModel(plain), enemyModel(plain)]).toEqual(['cell', 'cell', 'cell']);
-    expect(enemyModel(spec)).not.toBe('cell');
+    expect(enemyModel(spec)).toBe('cc0-bee');
     const cast = { player: 'hero', enemy: enemyModel(spec), chaser: 'chaser', props: {}, prey: preyModel(spec)! };
     expect([sceneModel('enemy', cast, 'enemy'), sceneModel('enemy', cast, 'prey')]).toEqual([enemyModel(spec), 'cell']);
     const { prey: _prey, ...bare } = cast;
     expect(sceneModel('enemy', bare, 'prey')).toBe(enemyModel(spec));
+  });
+
+  // T7b-R1-R1: „spits water at the bees“ – voda je střela, ne překážka, a včely jsou nepřítel, ze kterého scéna vezme model.
+  it('d10: the shoot target is the enemy in the cast and spec; water is no hazard; catch without shoot keeps its spec', () => {
+    const made = draftGameSpecWithMeta(D10, 1);
+    expect(made.genre?.cast).toEqual([{ label: 'soap bubble', does: 'fight' }, { label: 'bee', does: 'shoot_at' }]);
+    expect(made.spec.roles.find((role) => role.id === 'enemy')).toEqual({ id: 'enemy', kind: 'hazard', label: 'bee', count: 2 });
+    const plain = draftGameSpecWithMeta('A puppy catches soap bubbles in the backyard.', 1).spec;
+    expect(plain.controlParams?.generator).toBe('arena_catch');
+    expect([plain.abilities, plain.roles.map((role) => role.id), enemyModel(plain)]).toEqual([undefined, ['player', 'prey'], 'cell']);
   });
 });

@@ -4,7 +4,7 @@ import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/modules';
 import { DRIVE_PRESETS, NATIVE_PRESETS, TRACK_GOAL_PRESETS, assertPreset, type RecipeAssembly } from './presets';
-import { CATCH_TUNING, catchSpec } from './catch';
+import { CATCH_TUNING, catchSpec, withCatchBees } from './catch';
 import { driveSpec } from './drive';
 import { nativeSpec } from './native';
 import { timeOfDayFor } from '../arcade/look';
@@ -22,7 +22,7 @@ export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
 /** `compileRecipe` and the rule template it attached (P45B T9); `null` = none. */
 export function compileTemplated(assembly: RecipeAssembly): { readonly spec: GameSpecV1; readonly template: TemplateName | null } {
   const templated = withTemplate(compileRecipeSpec(assembly), assembly);
-  return { ...templated, spec: withDirectorExtras(withAbilities(templated.spec, assembly), assembly.content) };
+  return { ...templated, spec: withDirectorExtras(withCatchBees(withAbilities(templated.spec, assembly), assembly.content), assembly.content) };
 }
 
 /**
