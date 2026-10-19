@@ -4,8 +4,10 @@
  * kreslené skupině, dílům a deformaci (`components/play/arcade/toy/applyToy.ts`).
  * Chůze je poskok s kolébáním podle ujeté dráhy, skok natažení, dopad zmáčknutí,
  * útok nápřah – výpad – dojezd, zásah cuknutí a kymácení, smrt převržení, výhra
- * jedna oslava, nesení záklon. Stojící tělo bez události stojí (kit `09-motion.md`:
- * nic se nehýbe samo). Čte jen stav a tik (i s podílem `tick + alpha`), nikdy
+ * jedna oslava, nesení záklon. Stojící tělo bez události se smí hýbat samo
+ * (výjimka `docs/brand/REPO-NOTES.md` → „Pohyb ve 3D scéně“, 19. 10. 2026):
+ * nečinný dech a rozhlížení, které `prefers-reduced-motion` vypne. Čte jen stav
+ * a tik (i s podílem `tick + alpha`), nikdy
  * hodiny ani náhodu, a do hashovaného stavu nic nepíše.
  */
 
