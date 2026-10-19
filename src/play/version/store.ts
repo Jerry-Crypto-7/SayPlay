@@ -597,11 +597,11 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       // Trychtýř (P44B T12): hra je nová právě jednou (`SET NX` výš); výpadek čítače publikaci neshodí.
       const stage = BUILTIN_IDS.has(game.version.versionId) ? null : publishStageOf({ parentId: game.version.parentId, relation: game.relation });
       if (stage !== null) await raw.incr(funnelKey(funnelDayOf(now()), stage), FUNNEL_TTL_SECONDS).catch(() => undefined);
-      // Do feedu jen autorská verze od režiséra (nález revize T4-1): titul
-      // ručního specu, remixu i návrhu ze slov píše volající, a feed by ho
-      // zdarma ukázal každému návštěvníkovi `/play`. Autorská verze stojí
-      // placené volání pod stropy a titul jí napsal model.
-      if (feedEligible({ versionId: game.version.versionId, relation: game.relation, publishEligible: game.report.publishEligible }, NOTHING_HIDDEN)) {
+      // Do feedu autorská verze od režiséra a od P54A T10 i remix (`feedEligible`). Ruční
+      // spec ani návrh ze slov ne (nález revize T4-1): jejich titul píše volající a feed
+      // by ho zdarma ukázal každému návštěvníkovi `/play`. Remix je rozhodnutí plánu P54A –
+      // řetězce specu prošly moderací publikace a hru jde skrýt (`PLAY_FEED_HIDE`).
+      if (feedEligible({ versionId: game.version.versionId, relation: game.relation, parentId: game.version.parentId, publishEligible: game.report.publishEligible }, NOTHING_HIDDEN)) {
         try {
           await raw.pushCapped(recentKey, JSON.stringify(feedRowOf(game)), RECENT_CAP, limits.ttlSeconds);
         } catch {

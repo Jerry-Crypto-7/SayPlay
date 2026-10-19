@@ -62,14 +62,15 @@ beforeEach(() => {
 describe('feedEligible', () => {
   it('lets in only an eligible authored version nobody hid', () => {
     const id = 'a'.repeat(32);
-    expect(feedEligible({ versionId: id, relation: 'upgrade', publishEligible: true }, NONE)).toBe(true);
-    expect(feedEligible({ versionId: id, publishEligible: true }, NONE)).toBe(false);
-    expect(feedEligible({ versionId: id, relation: 'upgrade', publishEligible: false }, NONE)).toBe(false);
-    expect(feedEligible({ versionId: id, relation: 'upgrade', publishEligible: true }, new Set([id]))).toBe(false);
+    const draft = 'b'.repeat(32);
+    expect(feedEligible({ versionId: id, relation: 'upgrade', parentId: draft, publishEligible: true }, NONE)).toBe(true);
+    expect(feedEligible({ versionId: id, parentId: null, publishEligible: true }, NONE)).toBe(false);
+    expect(feedEligible({ versionId: id, relation: 'upgrade', parentId: draft, publishEligible: false }, NONE)).toBe(false);
+    expect(feedEligible({ versionId: id, relation: 'upgrade', parentId: draft, publishEligible: true }, new Set([id]))).toBe(false);
     // Hra ze seedu provozovatele (P37C T6) smí do feedu taky, pod stejnou branou a skrytím.
-    expect(feedEligible({ versionId: id, curated: true, publishEligible: true }, NONE)).toBe(true);
-    expect(feedEligible({ versionId: id, curated: true, publishEligible: false }, NONE)).toBe(false);
-    expect(feedEligible({ versionId: id, curated: true, publishEligible: true }, new Set([id]))).toBe(false);
+    expect(feedEligible({ versionId: id, curated: true, parentId: null, publishEligible: true }, NONE)).toBe(true);
+    expect(feedEligible({ versionId: id, curated: true, parentId: null, publishEligible: false }, NONE)).toBe(false);
+    expect(feedEligible({ versionId: id, curated: true, parentId: null, publishEligible: true }, new Set([id]))).toBe(false);
   });
 
   it('reads the hide list from comma-separated ids and ignores blanks', () => {

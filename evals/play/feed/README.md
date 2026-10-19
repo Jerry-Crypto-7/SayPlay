@@ -83,3 +83,8 @@ FEED_THUMBS_URL=http://127.0.0.1:3291 node --experimental-strip-types scripts/p3
 - `seed-feed.mjs` na `main` padal („No playable assembly … needs loadRapier()“): skládání ze slov krokuje fyzikální sestavy dřív, než se Rapier načetl – teď se načte před návrhem.
 - Snímky: `public/feed-thumbs/<versionId>-{p,l}.webp`, 80 souborů, 7,7–39,8 KB, scéna v `startTick + 120` (nebo poslední tik okna, když robot vyhraje dřív), skutečné GPU, HUD skrytý. Spodní mez 3 KB v testu chytí prázdné plátno.
 - Kontrola očima 19. 10. (5 náhodných + nejmenší): kuchyň s pánvemi (na šířku), podmořské poletování s rourami, bambusová řeka, úkol se strážcem u podstavců (na výšku), zamlžená poušť s pronásledovatelem (nejmenší) – všechny ukazují scénu hry, žádné prázdné plátno.
+
+## Remixy ve feedu (T10)
+
+- **Rozhodnutí P54A:** remix smí do feedu podle AC jen tím, že má rodiče (`parentId !== null`), prošel publikací a není skrytý – i remix hráčova návrhu, který sám do feedu nesmí. Pojistky: moderace všech řetězců specu při publikaci, `PLAY_FEED_HIDE`, tlačítko Report (T11).
+- **Rozhodnutí P54A:** remix se stejným titulem jako originál (čip `harder` titul nemění) originál z feedu nevytlačí, i když je novější – jinak by první „harder“ remix kurátorské hry tu hru z feedu vyměnil. Remixy jedné hry netvoří rodinu, každý je vlastní karta.

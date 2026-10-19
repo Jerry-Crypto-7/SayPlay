@@ -80,10 +80,11 @@ rows no newer than `top`. So:
 
 `feedEligible(game, hidden)` decides, separately from "can be opened by link":
 
-- `publishEligible` – the game passed the publish gate;
-- `relation === 'upgrade'` – only the director's authored version, never a word draft, a hand-written
-  spec or a remix (their titles are written by the caller) – **or** `curated`, a game from the
-  operator's own sentences (see below);
+- `publishEligible` – the game passed the publish gate, which also screens every string of the spec;
+- one of: `relation === 'upgrade'` – the director's authored version; `curated` – a game from the
+  operator's own sentences (see below); or a **remix** – a version with a parent (`parentId !== null`,
+  P54A T10). Never a word draft or a hand-written spec without a parent (their titles are written by
+  the caller and nothing else stands behind them);
 - not on the hide list `PLAY_FEED_HIDE` (comma-separated `versionId`s, read per request).
 
 **The feed is never empty (P37C T6).** `scripts/p37c/seed-feed.mjs` builds games from the starter
@@ -98,8 +99,10 @@ only when `PLAY_SEED_STORE_PREFIX` is set – the production write is a P30A ste
 On top of that, per list:
 
 - one family, one entry – of several authored versions of one draft (same `parentId`) only the
-  newest is shown;
-- one title, one entry – titles equal after lower-casing and stripping punctuation appear once.
+  newest is shown; remixes of one game are not a family, each is its own entry;
+- one title, one entry – titles equal after lower-casing and stripping punctuation appear once, and
+  the title belongs to the original: a remix with the same title as a non-remix game in the list
+  (the `harder` chip keeps the title) stays out even when it is newer.
 
 ## On `/play`
 
