@@ -85,7 +85,8 @@ describe('nearest arcade game for a sentence the draft does not know', () => {
     const spec = legacyDraft('A knight rides a dragon over a burning castle and must pop ten balloons.', 1, 'shooter');
     expect(spec.control).toBe('shooter');
     expect(heroModel(spec)).toBe('rigged:knight');
-    expect(enemyModel(spec)).toBe('cc0-dragon');
+    // Drak je od P54B T4 riggovaný létající drak Quaternius – táž identita s klipy.
+    expect(enemyModel(spec)).toBe('rigged:q-flying-dragon');
     expect(spec.title).toBe('Knight Rides Dragon');
     // Balónek má od e5b840b model z gen3d: scéna ho nakreslí a řetěz věrnosti ho započte.
     const balloons = legacyDraft('pop ten balloons at a birthday party', 1, 'shooter');

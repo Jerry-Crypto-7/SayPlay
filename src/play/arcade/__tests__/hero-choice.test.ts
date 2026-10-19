@@ -35,7 +35,8 @@ const EXPECTED: Readonly<Record<string, { readonly model: string; readonly clips
   wizard: { model: 'rigged:mage', clips: true },
   'pirate ship': { model: 'gen3d-pirate-ship', clips: false },
   cat: { model: 'rigged:pet-cat', clips: true },
-  chef: { model: 'waiter', clips: false },
+  // P54B T4: kuchař je riggovaný kuchař Quaternius, ne číšník.
+  chef: { model: 'rigged:q-chef', clips: true },
   dog: { model: 'rigged:pet-dog', clips: true },
   knight: { model: 'rigged:knight', clips: true },
   rocket: { model: 'rocket', clips: false },
@@ -44,8 +45,8 @@ const EXPECTED: Readonly<Record<string, { readonly model: string; readonly clips
 /** Nepřátelé vět: duchové (čaroděj), lední medvěd (kočka), žralok (výchozí nepřítel moře). */
 const FOES = ['ghost', 'polar bear', 'shark'];
 
-/** Živé postavy bez klipů: jen ty z `evals/play/p32/kits-missing.md`. Loď a raketa se hýbou procedurálně a stačí to. */
-const STATIC = ['chef', 'shark'];
+/** Živé postavy bez klipů: jen ty z `evals/play/p32/kits-missing.md` (kuchaře doplnila P54B T4). Loď a raketa se hýbou procedurálně a stačí to. */
+const STATIC = ['shark'];
 
 describe('hero choice by identity, then class (P32C T2)', () => {
   it.each(sentences.sentences.map((sentence) => [sentence.hero, sentence.genre] as const))('%s (%s) is picked by identity', (hero, genre) => {
@@ -88,21 +89,22 @@ describe('hero choice by identity, then class (P32C T2)', () => {
     expect(heroChoice('grey wolf', 'runner', 'runner')).toMatchObject({ model: 'rigged:q-wolf', level: 'identity' });
     // Hlava fráze před třídou: „lizard“ má třídu (liška), „wolf“ identitu – vyhraje vlk.
     expect(heroChoice('lizard wolf', 'runner', 'runner')).toMatchObject({ model: 'rigged:q-wolf', level: 'identity' });
-    expect(heroChoice('wild badger', 'runner', 'runner')).toMatchObject({ model: 'fox', level: 'class' });
+    // P54B T4: zástupce kategorie a výchozí model role se kreslí riggovanou postavou (`RIGGED_ALIAS`).
+    expect(heroChoice('wild badger', 'runner', 'runner')).toMatchObject({ model: 'rigged:q-fox', level: 'class' });
     // P37A T6: nejbližší model katalogu nad prahem je před třídou – ještěrka je želva (0,65), ne liška.
     expect(heroChoice('wild lizard', 'runner', 'runner')).toMatchObject({ model: 'turtle', level: 'near' });
     // Plavba zvíře připouští, stroj ne: vysokozdvižný vozík v závodě zůstane autem.
-    expect(heroChoice('wild badger', 'voyage', 'steer')).toMatchObject({ model: 'fox', level: 'class' });
+    expect(heroChoice('wild badger', 'voyage', 'steer')).toMatchObject({ model: 'rigged:q-fox', level: 'class' });
     expect(heroChoice('angry forklift', 'voyage', 'steer')).toMatchObject({ model: 'race-car', level: 'fallback' });
-    expect(heroChoice('stapler', 'runner', 'runner')).toMatchObject({ model: 'explorer', level: 'fallback' });
+    expect(heroChoice('stapler', 'runner', 'runner')).toMatchObject({ model: 'rigged:q-cowboy-hair', level: 'fallback' });
     expect(heroChoice('stapler', undefined, 'flap')).toMatchObject({ model: 'bird', level: 'fallback' });
-    expect(heroChoice('stapler', undefined, 'move_free', 'enemy')).toMatchObject({ model: 'robot', level: 'fallback' });
+    expect(heroChoice('stapler', undefined, 'move_free', 'enemy')).toMatchObject({ model: 'rigged:blocky-robot', level: 'fallback' });
   });
 
   it('identity beats the genre, the genre bounds only near and class', () => {
     // Věc z věty (ponožka) je hrdina i v běžci; kategorie „stroj“ běžec pustí, plavba ne.
     expect(heroChoice('sock', 'runner', 'runner')).toMatchObject({ model: 'cc0-sock', level: 'identity' });
-    expect(heroChoice('angry mech', 'runner', 'runner')).toMatchObject({ model: 'robot', level: 'class' });
+    expect(heroChoice('angry mech', 'runner', 'runner')).toMatchObject({ model: 'rigged:blocky-robot', level: 'class' });
     // Závod bez žánru bere jen vozidlo, loď nebo letadlo – i z manifestu, nejen dřívější seznam aut.
     expect(heroChoice('sailboat', undefined, 'steer')).toMatchObject({ model: 'gen3d-sailboat', level: 'identity' });
     expect(heroChoice('dog', undefined, 'steer')).toMatchObject({ model: 'race-car', level: 'fallback' });
