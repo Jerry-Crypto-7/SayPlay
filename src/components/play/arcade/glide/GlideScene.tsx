@@ -36,6 +36,13 @@ const VEGETATION_CLEAR = 1.5;
 /** Kam zem sahá do strany za hranici (m). */
 const LAND_M = 50;
 
+/**
+ * Krytí stěny útesu (P54B T15b). Čtyři stěny kolem kruhu zavírají celý průřez letu 24 × 14 m po 20 m;
+ * neprůhledné vyplnily kamerou 10 m za hrdinou celý obraz jednou barvou a útes, kulisy ani bod nebyly
+ * vidět (slepý soud T15: „no visible reef“). Průsvitné stěny dál ukazují, kam se nesmí, a scéna za nimi zůstane.
+ */
+export const REEF_WALL_OPACITY = 0.25;
+
 /** These native course bodies are drawn here; named actors remain in World. */
 export const GLIDE_SCENE_KINDS: ReadonlySet<string> = new Set(['glide-ring', 'glide-current', 'glide-reef']);
 
@@ -86,9 +93,9 @@ export function GlideBackdrop({ session, look, collectibleModel }: { readonly se
           <boxGeometry args={[0.04, 0.04, body.d * 0.7]} />
           <meshBasicMaterial color={color.cream} transparent opacity={0.35} depthWrite={false} />
         </mesh>)}
-      </group> : <mesh castShadow receiveShadow>
+      </group> : <mesh>
         <boxGeometry args={[body.w, body.h, body.d]} />
-        <meshStandardMaterial color={look.terrain?.rock ?? look.tint[1]} roughness={1} />
+        <meshStandardMaterial color={look.terrain?.rock ?? look.tint[1]} roughness={1} transparent opacity={REEF_WALL_OPACITY} depthWrite={false} />
       </mesh>}
     </group>)}
   </>;
