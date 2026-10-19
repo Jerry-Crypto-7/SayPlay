@@ -65,8 +65,15 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - **Gauge po T6** (proti T5): P52 dev 0,41 / 0,56 / 0,56 → **0,65 / 0,79 / 0,79** (d11–d18 nově 1 / 1 / 1), P47B dev 0,80 / 0,84 / 0,82 → **0,88 / 0,92 / 0,90** (v17, v41, v45, v61 nově 1 / 1 / 1), P46A a finále P51 (0,97 / 0,93) beze změny, past 0. p95 návrhu 1,4–2,0 s (měřidla sériově).
 - **Vyváženost:** všech 12 vět T6 na semínkách 1–20 novice i intermediate 20/20, stejně jako bez akce.
 
+## T7 – štít v míči, krádež a štít ve střílečce
+
+- Hrdina míče i střelnice stojí: štít bere střelu soupeře (`hazard`, náraz jako nepřítel), krádež kořist (`collectible`); obojí přiletí zepředu po ose hrdiny, první za 90 tiků, další po 180, nejvýš 3, jen dokud hra jistě běží (`ballOpenUntil`, `shooterOpenUntil`).
+- **Gauge po T7** (proti T6): P52 dev 0,65 / 0,79 / 0,79 → **0,82 / 0,85 / 0,85** (d07, d08, d19–d22 nově 1 / 1 / 1), P47B dev 0,88 / 0,92 / 0,90 → **0,92 / 0,92 / 0,90** (v53, v55 nově 1 / 1 / 1), P46A a finále P51 (0,97) beze změny, past 0. p95 návrhu P52 dev 1,5 s, P47B dev 2,2 s, P46A 2,5 s – měřeno při zátěži stroje 72 % CPU (medián P46A 0,84 → 1,15 s bez jediné změněné věty); přeměřit v klidu v T10.
+- **Předchozí pád:** `p46-fixtures.test.ts` o01 („A rabbit steals carrots…“) chce `adds: ['boss']`, dostane i `action` – padá i na kódu před T7, tedy z dřívější úlohy; patří do regresní vlny T10.
+
 ## Rozhodnutí
 
 - T1: větev P51 na origin není (`git ls-remote` bez ní); sloučena lokální `features/P51-…`, která `origin/main` už obsahuje – fast-forward bez merge commitu.
 - T5: quest s úderem drží bránu P41 (novice 0,3–0,7, intermediate ≥ 0,8), ne „vyhraje stejně jako bez úderu“ – quest bez úderu je v pásmu sám, takže platí brána; srovnání s hrou bez akce zůstává jen u bludiště, které je lehké už bez úderu (novice 10/10).
 - T6: plížení bere jen krádež – jiné akce v něm nikdo neměřil a věty sady chtějí jen ji. Brána vyváženosti chodce je „vyhraje stejně jako bez akce“: buňky chodce jsou mimo pásmo P41 už bez akcí (novice 20/20).
+- T7: míč bere jen štít, střílečka krádež a štít; střelba je u střílečky vlastní mechanika, akci nedostane. Přílety k hrdinovi (střela soupeře, kořist) jen do tiku, kdy hra jistě běží – hra, která skončí dřív, akci nedostane (kompozice ji zahodí), místo aby slibovala sloveso, které nejde použít. Brána vyváženosti „vyhraje stejně jako bez akce“ (±0,1 na semínkách 1–10, d07, d08, d19, d21), jako u chodce. Střelba ve volném pohybu (`arena_catch`) oddělena do T7b – kořist je tam nepřítel a střela by ji zabila, potřebuje vlastní návrh.

@@ -183,6 +183,14 @@ function generate(seed: number, params: BallPitchParams): ArcadeLevel {
   }
   return { bodies, length: 0, spawnSlots: params.team ? 2 : 1, counters: { ammo: params.targets * 3 + (params.segments === true ? BALL_FINALE.ammo : 0) } };
 }
+/**
+ * Do kterého tiku hra míče jistě běží (P52 T7): první gól padne nejdřív za vteřinu a každý další terč i zásah soupeře
+ * finále chce vlastní střelu, mezi střelami je zotavení nejméně 120 tiků (`ball_launch`).
+ */
+export function ballOpenUntil(level: ArcadeLevel): number {
+  const shots = level.bodies.reduce((sum, body) => sum + (body.role === 'target' ? 1 : body.role === 'enemy' && body.hp === BALL_FINALE.hp ? BALL_FINALE.hp : 0), 0);
+  return ARCADE_HZ + Math.max(0, shots - 1) * 120;
+}
 /** Soupeř-boss finále (`BALL_FINALE`) v úrovni, nebo `undefined`. */
 const rivalOf = (level: ArcadeLevel, params: BallPitchParams): number | undefined => (params.segments === true ? level.bodies.findIndex(body => body.hp === BALL_FINALE.hp && body.role === 'enemy') : undefined);
 export const ballPitch: ModeGeneratorPiece<BallPitchParams> = {

@@ -64,7 +64,9 @@ const ROAMING: readonly AddonId[] = ['shoot', 'collect', 'lives'];
  *   berou úder soupeře – souboj jen je (`FIGHT_ABILITIES`): úder má vlastní Attack a krást není co.
  *   Quest (`quest_spatial`, P52 T5) jen úder: robot s ním dojde k pronásledovateli. Sběr se dvěma akcemi
  *   na pronásledovatele přivede o jednoho víc (`sharedChasers`). Agar takovou hru odmítne a rychlá verze akci zahodí.
- * - shooter, ball, throw, timing, rhythm: tlačítko je samo mechanika (rána, hod, stop, nota), druhé by s ním soupeřilo.
+ * - shooter, ball (P52 T7): hrdina stojí, střílí vlastní mechanikou a nikam nedojde – štít bere střelu soupeře a krádež
+ *   kořist, které k němu zepředu přiletí, jen dokud hra jistě běží (`withIncoming`); míč jen štít (`generatorTakes`).
+ * - throw, timing, rhythm: tlačítko je samo mechanika (hod, stop, nota), druhé by s ním soupeřilo.
  * - duel: úder, dash a štít hraje vlastní mechanika duelu (Tap úder, Down úhyb za dash i štít), žádné
  *   druhé tlačítko – akce dá jen sloveso pravidlům (P47B T8). tap_go: mřížka bez hrdiny s fyzikou arkády.
  */
@@ -85,7 +87,7 @@ const arcade = (
 export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   glide: arcade({ setting: true, cues: 'swim or fly in three dimensions', roles: ['glide_ring', 'glide_reef'], finish: true, labels: ['player', 'enemy', 'finish', 'glide_rival', 'glide_pursuer'], mechanics: ['timer'], addons: ['shoot'], abilities: ALL_ABILITIES }),
   walker: arcade({ setting: true, cues: 'walk through a maze', roles: ['wall', 'coin', 'guard', 'chaser'], finish: true, labels: ['player', 'coin', 'finish', 'guard', 'chaser'], mechanics: ['health', 'timer'], addons: ['lives'], abilities: ALL_ABILITIES }),
-  ball: arcade({ setting: true, cues: 'aim and shoot a ball', roles: ['target', 'goalkeeper'], finish: true, labels: ['player', 'goalkeeper'], mechanics: ['timer'], addons: [] }),
+  ball: arcade({ setting: true, cues: 'aim and shoot a ball', roles: ['target', 'goalkeeper'], finish: true, labels: ['player', 'goalkeeper'], mechanics: ['timer'], addons: [], abilities: ['shield'] }),
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12, addons: [], abilities: [] },
   // P26D T9: počty od 2 čte generátor – běžec mince a řady překážek, plošinovka a poletování mince, střelnice terče a nepřátele.
   runner: arcade({ setting: true, counts: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player', 'obstacle', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'], abilities: ALL_ABILITIES }),
@@ -106,7 +108,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
     abilities: ['strike', 'dash', 'shield', 'grab'],
   }),
   // P39 T14: terč střelnice nese věc z věty (mince, duch) a kreslí se jejím modelem.
-  shooter: arcade({ setting: true, counts: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy', 'target'], mechanics: LIVES_AND_TIMER }),
+  shooter: arcade({ setting: true, counts: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy', 'target'], mechanics: LIVES_AND_TIMER, abilities: ['grab', 'shield'] }),
   throw: arcade({ setting: true, cues: 'hold, release', roles: ['target'], finish: false, note: 'archetype combat_lite', labels: ['player', 'target'], mechanics: ['timer'] }),
   // P27A T4: načasování, rytmus a souboj kreslí kulisy za hrací plochou; soupeř souboje a závodu nese model z popisku.
   // P30B T4: díl věže („pancakes“), nota rytmu („lily pads“) a mantinel závodu („crocodiles“) taky.

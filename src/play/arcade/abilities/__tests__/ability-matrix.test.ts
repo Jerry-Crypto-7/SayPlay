@@ -19,6 +19,7 @@ import duel from '../../__fixtures__/duel.json';
 import flap from '../../__fixtures__/flap.json';
 import platform from '../../__fixtures__/platform.json';
 import runner from '../../__fixtures__/runner.json';
+import shooter from '../../__fixtures__/shooter.json';
 import steer from '../../__fixtures__/steer.json';
 
 const SEEDS = [1, 2, 3, 4];
@@ -36,6 +37,9 @@ const FIXTURES: Partial<Record<ControlId, object>> = {
   walker: { ...flap, control: 'walker', controlParams: { collect: true } },
   duel,
   move_free: compileGenre({ genre: 'arena', mode: 'escape', hero: 'cat', cast: [{ label: 'polar bear', does: 'chase_me' }, { label: 'glowing fish', does: 'collect' }], setting: 'frozen lake' } as GenreSpec),
+  // P52 T7: hrdina stojí – štít a krádež berou, co k němu přiletí.
+  ball: { ...flap, control: 'ball', controlParams: { generator: 'ball_pitch', targets: 3 } },
+  shooter,
 };
 
 const CELLS = (Object.keys(CAPABILITIES) as ControlId[]).flatMap((control) => CAPABILITIES[control].abilities.map((ability) => [control, ability] as const));

@@ -39,10 +39,10 @@ const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
 /**
  * Generátory režimu, kde robot akce použije a ověření je dokáže (P46A T10, matice T9 a živé
  * věty); souboj (`fight`) od P47B T6 jen s akcemi `FIGHT_ABILITIES`, let (`glide_course`, matice P47B T9) všechny,
- * quest (`quest_spatial`, P52 T5) jen úder, plížení bludištěm (`walker_stealth`, P52 T6) jen krádež. Ostatní generátory
- * nikdo neměřil.
+ * quest (`quest_spatial`, P52 T5) jen úder, plížení bludištěm (`walker_stealth`, P52 T6) jen krádež, míč (`ball_pitch`,
+ * P52 T7) jen štít. Ostatní generátory nikdo neměřil.
  */
-export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth', 'walker_stealth', 'fight', 'glide_course', 'quest_spatial']);
+export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth', 'walker_stealth', 'fight', 'glide_course', 'quest_spatial', 'ball_pitch']);
 
 /** Souboj má vlastní úder (Attack) a nic ke krádeži: bere jen dash a štít proti úderu soupeře (P47B T6). */
 export const FIGHT_ABILITIES: readonly AbilityId[] = ['dash', 'shield'];
@@ -57,7 +57,7 @@ const QUEST_ABILITIES: readonly AbilityId[] = ['strike'];
 const STEALTH_ABILITIES: readonly AbilityId[] = ['grab'];
 
 /** Akce, které generátor bere jen některé; generátor mimo seznam bere všechny, které bere jeho ovládání. */
-const GENERATOR_ONLY: Readonly<Record<string, readonly AbilityId[]>> = { fight: FIGHT_ABILITIES, quest_spatial: QUEST_ABILITIES, walker_stealth: STEALTH_ABILITIES };
+const GENERATOR_ONLY: Readonly<Record<string, readonly AbilityId[]>> = { fight: FIGHT_ABILITIES, quest_spatial: QUEST_ABILITIES, walker_stealth: STEALTH_ABILITIES, ball_pitch: ['shield'] };
 
 /** Bere hra generátoru `generator` (bez generátoru staví trať ovládání) akci `id`? Čte i měřidlo P47B. */
 export const generatorTakes = (generator: string | undefined, id: AbilityId): boolean =>

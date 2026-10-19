@@ -11,8 +11,10 @@
 
 import { type AbilityId, type BodyInit, type PieceRef, mapUnderlying, nativeRule } from '../contract';
 import { type AddonContext, type ArcadeParts, baseBotOf, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
+import { ballOpenUntil } from '../pieces/ball';
 import { type BossBeatParams, bossBeat, bossBeatHit } from '../pieces/boss';
 import { FINALE5_GENRE_VERSION, genreAtLeast } from '../pieces/pacing-parts';
+import { type MarchEntry, shooterOpenUntil } from '../pieces/shooter';
 import { grabRule } from './grab';
 import { dashRule, fightGuardRule, shieldRule } from './guard';
 import { HARMFUL_PARTS, HARMFUL_ROLES, abilityIdsOf } from './state';
@@ -50,6 +52,28 @@ function addFoes(parts: ArcadeParts, context: AddonContext, every = 1): ArcadePa
   };
 }
 
+/**
+ * Míč a střelnice (P52 T7): hrdina stojí na místě, takže štít a krádež mají cíl, jen když k němu sám přiletí – střela
+ * soupeře (`hazard`, náraz jako nepřítel) nebo kořist (`collectible`). Letí zepředu po ose hrdiny, první dorazí za `first`
+ * tiků, další po `gap` (štít se nabije za 120), nejvýš `most`, a jen dokud hra jistě běží (`ballOpenUntil`,
+ * `shooterOpenUntil`) – jinak by sloveso nebylo čím dokázat.
+ */
+const INCOMING = { first: 90, gap: 180, most: 3, speed: 40, size: 500, y: 600 } as const;
+const STANDING: readonly string[] = ['ball', 'shooter'];
+
+function withIncoming(parts: ArcadeParts, context: AddonContext, role: 'hazard' | 'collectible'): ArcadeParts {
+  const base = baseControlOf(parts.control);
+  const until = base.id === 'ball' ? ballOpenUntil(parts.level) : shooterOpenUntil(parts.level, base.params.march as readonly MarchEntry[] | undefined);
+  const { first, gap, most, speed, size, y } = INCOMING;
+  const bodies: BodyInit[] = [];
+  for (let at = first; at <= until && bodies.length < most; at += gap) {
+    bodies.push({ role, kind: role === 'hazard' ? 'sniper_shot' : 'coin', x: 0, y, z: speed * at, w: size, h: size, d: size, solid: false, kinematic: true, vz: -speed });
+  }
+  if (bodies.length === 0) return { ...parts, issues: [...(parts.issues ?? []), 'abilities: the game ends before anything reaches the hero'] };
+  const rules = role === 'hazard' ? [...parts.rules, { id: 'hit', params: hitParamsFor('hazard', context.health) }] : parts.rules;
+  return { ...parts, level: { ...parts.level, bodies: [...parts.level.bodies, ...bodies] }, rules };
+}
+
 /** Pohled shora: úder a krádež sahají kolem hrdiny (`AROUND_CONTROLS`). */
 const aroundOf = (parts: ArcadeParts): { around?: true } => (AROUND_CONTROLS.includes(baseControlOf(parts.control).id) ? { around: true } : {});
 
@@ -74,7 +98,7 @@ export const grabAbility: AbilityPiece = {
   id: 'grab',
   apply: (parts, context) => {
     const loot = parts.level.bodies.some((body) => body.role === 'collectible' && body.template !== true);
-    const armed = loot ? parts : withFoes(parts, context);
+    const armed = STANDING.includes(baseControlOf(parts.control).id) ? withIncoming(parts, context, 'collectible') : loot ? parts : withFoes(parts, context);
     return { ...armed, rules: [...armed.rules, { id: grabRule.id, params: { keeper: context.keeper, slot: context.slot, verb: 'grab', ...aroundOf(parts) } }] };
   },
 };
@@ -146,7 +170,7 @@ function guardAbility(id: 'dash' | 'shield'): AbilityPiece {
       // Soupeři řízení jsou `enemy` bez nárazu, proto nepřátele přidat i vedle nich (jako `+shoot`); svodidla řízení je nenahradí.
       // Let (P47B T9): nepřítel v každé druhé mezeře trubek (obruči) křižuje dráhu. Nepřátelé poletování jsou ~110 tiků
       // od sebe a štít se nabíjí 120 – dostane jen každého druhého, jinak by na dalšího nebyl nabitý (robot 0/10).
-      const parts = metHarm(start).length === 0 ? addFoes(start, context, id === 'shield' && control === 'flap' ? 2 : 1) : start;
+      const parts = STANDING.includes(control) ? withIncoming(start, context, 'hazard') : metHarm(start).length === 0 ? addFoes(start, context, id === 'shield' && control === 'flap' ? 2 : 1) : start;
       if (id === 'shield') return shieldParts(parts, context.keeper);
       const roles = harmOf(parts);
       if (roles.length === 0) return parts;

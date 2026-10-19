@@ -122,7 +122,7 @@ export interface AddonPiece<P = unknown> {
 const noParams = z.object({}).strict();
 
 /** Náraz do nového nepřítele: bez životů prohra, se životy ztráta života a vteřina milosti (P36A T2). */
-export const hitParamsFor = (role: 'enemy' | 'chaser', health: number | undefined): Readonly<Record<string, unknown>> =>
+export const hitParamsFor = (role: 'enemy' | 'chaser' | 'hazard', health: number | undefined): Readonly<Record<string, unknown>> =>
   health === undefined ? { role, effect: 'lose' } : { role, effect: 'damage', grace: HIT_GRACE };
 
 /** `+lives`: tři životy. Náraz pak ubere život místo prohry – pravidla ovládání to podle `health` udělají sama. */
