@@ -39,6 +39,8 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'rhythm', mode: 'default', hero: 'drummer frog', cast: [{ label: 'lily pad', does: 'collect' }], setting: 'pond at night' },
   { genre: 'duel', mode: 'default', hero: 'cowboy', cast: [{ label: 'outlaw', does: 'fight' }], setting: 'dusty town' },
   { genre: 'flap', mode: 'default', hero: 'fish', cast: [{ label: 'pearl', does: 'collect' }], setting: 'underwater reef' },
+  // P54C T5: chytání v pěti pruzích.
+  { genre: 'catch', mode: 'default', hero: 'bear', cast: [{ label: 'apple', does: 'collect' }, { label: 'bomb', does: 'avoid' }], setting: 'orchard' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */
@@ -123,11 +125,14 @@ describe('genre contract (P32-0 T3)', () => {
   });
 });
 
-/** Kostra P54C T4: osm žánrů je v kontraktu, ale nehraje – nikdo je nevybere, dokud jejich úloha nepřepne buňku. */
-const STAGED = ['catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push'] as const;
+/**
+ * Kostra P54C T4: osm žánrů je v kontraktu, ale nehraje – nikdo je nevybere, dokud jejich úloha nepřepne buňku.
+ * T5 přepnulo chytání (`catch`), zbylých sedm čeká.
+ */
+const STAGED = ['whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push'] as const;
 
 describe('staged genres (P54C T4)', () => {
-  it('registers the eight new genres with one default mode, staged, and a compile that refuses', () => {
+  it('registers the remaining new genres with one default mode, staged, and a compile that refuses', () => {
     for (const genre of STAGED) {
       expect(GENRES).toContain(genre);
       expect(GENRE_MODES[genre]).toEqual(['default']);

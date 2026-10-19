@@ -56,6 +56,39 @@ Píše ho `P54C_OUT=baseline npx vitest run --config vitest.measure.mts evals/pl
 - **Nic se nepohnulo:** `P54C_CHECK=1 … start.measure.ts` (věty P30 dev a živé buňky = `start.json`), replay brána, `difficulty.test.ts` (buňky `staged` se neměří; golden `freeze.ts` přeskočí žánry mimo `parameter-bounds.json`), `lanes.test.ts`.
 - Modely pro P54B: `models-wanted.md`.
 
+## T5 – Chytání (`catch`)
+
+- **Hra.** Věci padají v pěti pruzích jako kinematická tělesa a lapací čáru (koš hrdiny, 1,2 m) protnou v jednom tiku, spočitatelném ze semínka (`landingTick`). O věci rozhoduje jen ten tik: hrdina v jejím pruhu ovoce chytí (10 bodů × kombo, čítač `items`), bombu dostane do koše (−1 život). Propadlé ovoce: první čtyři bez trestu, každé další −1 život. Výhra = chytit `items` (výchozí 30, meze 10–50), prohra = životy došly.
+- **Průběh.** Po třetinách cíle padá rychleji (věc je vidět 90, 56 a 32 tiků) a hustěji (rozestup 80–110, 55–75, 38–52 tiků); bomb přibývá (25, 45, 60 % ovoce má bombu v témž tiku v jiném pruhu, polovina z nich v pruhu, kterým hráč k ovoci prochází – kdo přijde pozdě, chytí bombu). Ovoce je `items + volná + životy − 1`, takže hra vždy skončí nejpozději posledním. Cíl pod 30 natáhne rozestupy, ať hra trvá aspoň půl minuty.
+- **Nečinný hráč nic nechytí:** prvních `volná + životy` kusů ovoce nepadá do startovního pruhu – nečinný přijde o životy dřív, než mu cokoli spadne do koše.
+- **Kusy:** generátor a pravidla `src/play/arcade/pieces/catch-fall.ts` (`catch_fall`, `catch_goal`, kontrola „hratelné z konstrukce“ `checkCatchLevel`), robot `catch-fall-bot.ts` (jede do pruhu nejbližšího dopadu ovoce v obraze, reakce 8 tiků, bomby mine sám, protože padají vedle ovoce), modul `src/play/genre/catch.ts` (`ready`; `draftFill` čte `collect` a `avoid` z obsazení, každého jiného nepřítele hraje jako bombu a předmět „catches X“ jako ovoce), buňka `catch.default` je živá (recept přesunutý z `STAGED_PRESETS` do `PRESETS`). Svědci: `collect` (ovoce v koši), `hazard` (sonda stojí v pruhu bomby, až je vidět), pohyb `lanes` – `allowed.test.ts` dokáže všechny kusy receptu.
+- **Scéna** `src/components/play/arcade/genres/catch/CatchScene.tsx`: pruhy zepředu, koruna, ze které věci padají, hrdina s košem, modely z knihovny podle popisku (výchozí jablko `cc0-apple`, bomba primitivem v barvách kitu, když model nemá). Plátnu zapíše `data-lane-edges`, podle kterých prst trefí pruh (`lanes-input.ts` je teď čte), a `data-player-x`. `LaneScene.tsx` vybírá scénu žánru podle pravidla světa (`LaneStage`); v `ArcadeStage.tsx` se změnily 2 řádky (import a větev `lanes` dostane props jako ostatní scény).
+- **HUD:** pilulka postupu kitu („9/30“ s vejcem) a životy – žádný nový popisek (`collected`, `lives` v `HUD_COUNTER_LABELS` jsou).
+
+### Měření (20 semínek)
+
+| Brána | Výsledek |
+|---|---|
+| G1 robot světa | 20/20 výher, 33,0–35,0 s |
+| G2 nečinný | 0/20 výher (20/20 prohra) |
+| G3 `difficulty.json` | novice 10/20 = 0,50, intermediate 20/20 = 1,00, 0 chyb, 0 neshod replaye |
+| G6 čítač chycených | robot 30/30 na všech semínkách, nečinný 0 |
+| G4 | Node: přehrání záznamu robota = hash běhu; Chromium: záznam prstu z Pixelu 7 přehraný v Node = hash prohlížeče (`e2e/play-catch.spec.ts`) |
+| G5 | 3 životy, kombo až ×5 (robot dosáhne ≥ ×3), bonus na konci, hvězdy ≥ 1 a výzva (Dare) přehraná serverem se otevře u kamaráda (e2e) |
+
+- **E2E** (`next start` na 3321, emulace Pixel 7): `play-catch.spec.ts` 3/3 – prst vyhraje za 35,2 s se 30 chycenými, záznam prstu = hash v Node, výzva přehraná serverem se otevře u kamaráda, nečinný prohraje s 0 chycenými, scéna 17 sítí při 4× pomalejším CPU (strop 200); `p35-perf.spec.ts` 17/17, `interface-language.spec.ts` 3/3.
+- **Ladění volných propadlých** (začátečník, semínka 1–20 / 1–60; intermediate a robot 1,0 všude): 2 → 0,15; 3 → 0,35 / 0,43; 4 → 0,50 / 0,57 – zvoleno 4. Rychlost poslední třetiny je hrana: věc viditelná 33 tiků místo 32 dá začátečníkovi 0,95 (dojede i přes tři pruhy).
+- **Mutace (obě červené, soubor obnovený ze zálohy):** bomba v koši bez ztráty života → `catch-fall.test.ts` „a bomb in the lane takes a life“ červený; ovoce smí do startovního pruhu hned na začátku → kontrola úrovně a G1–G6 červené, a s vypnutou kontrolou úrovně G6 „idle caught: expected 1 to be 0“.
+- **Nic jiného se nepohnulo:** replay brána 80/80 (7 souborů), věty P30 dev = `start.json` (`P54C_CHECK=1`), grep determinismu 6 řádků jako na startu. V `start.json` přibyla jen živá buňka `catch.default` (55 místo 54). V `difficulty.json` přibyly jen řádky `catch.default`; ostatní řádky zůstaly bajt po bajtu.
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.
+- T5: chytání je `ready` a jeho buňka živá, ale režisér ho do T14 nenabízí (`DIRECTOR_PENDING` v `director/answer-schema.ts`) – jinak by se vygenerovaný prompt pohnul o řádky žánru a buňky (rozpočet 15 000 B přetekl na 15 112); verze kompaktního promptu zůstala `475462bd`, stejná jako na T4.
+- T5: modul nemá narážky (`cues: []`) a `lanes` zůstává ve `STAGED_CONTROLS`, takže klasifikátor ani čtení modelem se nemění; věty k žánru vede až T13, proto e2e publikuje spec buňky přes `POST /api/play/games {spec}`.
+- T5: meze `items` 10–50 místo 10–60 z kostry – `objective.count` ve specu unese nejvýš 50.
+- T5: pilulku postupu HUD dává pravidlo `finish_collected` s cílem (HUD čte `collectNeed`, soubor P54A se neměnil); svět nemá tělo cíle, takže nevystřelí – vyhrává `catch_goal`.
+- T5: oprava kostry T4 v `pieces/lanes.ts` – pruh v `aux0` je relativní ke startovnímu, protože `BodyInit` `aux0` nastavit neumí a nově postavený hráč by jinak bez vstupu odjel do pruhu 0 (test v `lanes.test.ts`); přidaný sdílený `laneOfX`.
+- T5: `difficulty.json` – řádky `roam.catch` mají od P52 jiný koncový hash, než jaký je uložený (souhrn i `specHash` stejné, ověřeno na čistém T4); měření je přepíše, ale úloha je nechala bajt po bajtu a přidala jen řádky chytání.
+- T5: výsledková karta arkády ukazuje u prohrané hry v pruzích „0 % of the way“ (`ArcadePlay.tsx` počítá postup z dráhy; soubor P54A) – nechané, k řešení pro vlastníka HUD.
+- T5: `p46-fixtures.test.ts` (nahrané odpovědi režiséra vůči verzi kompaktního promptu) je červený už od T4 – T4 přidal hodnoty do výčtů receptu, které verze hashuje; T5 ho nemění ani neopravuje (oprava = nové nahrání odpovědí, patří k T14).

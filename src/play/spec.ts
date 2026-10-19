@@ -265,7 +265,8 @@ export type ControlId = (typeof CONTROLS)[number];
 
 /**
  * Ovládání nových žánrů P54C (T4), která ještě nehrají. Čtení modelem (`read/`) je nenabízí, aby se jeho
- * dotaz nezměnil dřív, než je některá živá buňka hraje; úloha žánru, která buňku přepne na živou, ovládání odsud vyjme.
+ * dotaz nezměnil dřív, než je některá živá buňka hraje. `lanes` hraje od T5 chytání, ale v seznamu zůstává:
+ * věty k novým žánrům posílá až klasifikátor (T13), který ho odsud vyjme spolu se čtením modelem.
  */
 export const STAGED_CONTROLS: readonly ControlId[] = ['lanes', 'hop', 'crowd', 'merge', 'push'];
 

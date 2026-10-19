@@ -125,7 +125,8 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   rhythm: arcade({ setting: true, cues: 'tap on the beat', roles: ['note', 'miss'], finish: false, labels: ['player', 'note'], mechanics: LIVES_AND_TIMER }),
   duel: arcade({ setting: true, cues: 'fight, boxing', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER, abilities: ALL_ABILITIES }),
   // P54C T4: ovládání nových žánrů ještě nemají svět, takže nic nečtou; co jeho svět čte, doplní úloha žánru.
-  lanes: arcade({ cues: 'five lanes: catch falling things, whack moles, slice fruit, defend the lanes', roles: [], finish: false, labels: [], mechanics: [] }),
+  // T5 chytání: padající věc (`coin`) a bomba (`hazard`) nesou model z popisku, životy berou bomby a propadlé ovoce, scéna kreslí sadu prostředí.
+  lanes: arcade({ setting: true, cues: 'five lanes: catch falling things, whack moles, slice fruit, defend the lanes', roles: ['coin', 'hazard'], finish: false, labels: ['player', 'coin', 'hazard'], mechanics: LIVES_AND_TIMER }),
   hop: arcade({ cues: 'hop across busy lanes, crossy road, frogger', roles: [], finish: false, labels: [], mechanics: [] }),
   crowd: arcade({ cues: 'grow a crowd through gates, count masters', roles: [], finish: false, labels: [], mechanics: [] }),
   merge: arcade({ cues: 'drop and merge, suika, 2048', roles: [], finish: false, labels: [], mechanics: [] }),

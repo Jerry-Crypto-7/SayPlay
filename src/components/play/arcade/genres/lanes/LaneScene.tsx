@@ -12,14 +12,25 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import type { Mesh } from 'three';
 
 import { color } from '@/brand/tokens';
-import { BODY, FLAG, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, FLAG, ROLE, UNIT, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { LANES, laneX } from '@/play/arcade/pieces/lanes';
 
 import { bodiesOf, bodiesStale, drawsNothing } from '../../bodies';
 import { renderHeld } from '../../effects/render-feel';
 import type { ArcadeSession } from '../../session';
+import type { WorldProps } from '../../World';
+import { CatchScene } from '../catch/CatchScene';
 
 export { useLanesInput } from './lanes-input';
+
+/**
+ * Scéna žánru v pruzích podle pravidla světa (P54C T5): chytání kreslí `CatchScene`, žánr bez
+ * vlastní scény kostru pruhů. Další žánry pruhů (T6–T8) přidají svou větev sem, ne do `ArcadeStage`.
+ */
+export function LaneStage(props: Omit<WorldProps, 'control' | 'backdrop'>) {
+  if (nativeRule(props.session.world.rules, 'catch_fall') !== undefined) return <CatchScene {...props} />;
+  return <LaneScene session={props.session} />;
+}
 
 const LANE_LENGTH = 40;
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;

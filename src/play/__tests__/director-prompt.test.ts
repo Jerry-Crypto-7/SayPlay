@@ -18,7 +18,7 @@ import { EMISSION_MODEL } from '@/model/prompt';
 import { goldenPrompts } from '../../../evals/play/golden';
 import runnerFixture from '../arcade/__fixtures__/runner.json';
 import shooterFixture from '../arcade/__fixtures__/shooter.json';
-import { GENRE_ANSWER_SCHEMA, readyModes } from '../director/answer-schema';
+import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, readyModes } from '../director/answer-schema';
 import { buildCompactRequest } from '../director/compact';
 import { COURSE_LINE, DIRECTOR_PROMPT_VERSION, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
 import { readDirectorAnswer } from '../director/read';
@@ -101,7 +101,13 @@ describe('director prompt', () => {
   it('offers live recipe movement names without exposing low-level control specs', () => {
     for (const system of [directorSystemPrompt(), buildCompactRequest('x', null).system]) {
       expect(system).not.toMatch(/tap_go|CONTROLS|controlParams/);
-      for (const cell of liveCells()) expect(system).toContain(`- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`);
+      for (const cell of liveCells()) {
+        const line = `- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`;
+        // P54C T5: živý žánr, který režisér pozná až v T14, v promptu není – ani buňkou, ani řádkem žánru.
+        if (DIRECTOR_PENDING.has(cell.preset.genre)) expect(system, cell.id).not.toContain(line);
+        else expect(system).toContain(line);
+      }
+      for (const genre of DIRECTOR_PENDING) expect(system).not.toMatch(new RegExp(`^- ${genre} \\(`, 'm'));
       expect(system).toContain('unmet');
     }
   });

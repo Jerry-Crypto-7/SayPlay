@@ -5,6 +5,8 @@ import type { IntentTriple } from '@/play/intent/contract';
 import type { GameRole, GameSpecV1 } from '@/play/spec';
 
 import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, RUN_STATE, UNIT, bodyBase, bodyHp } from './contract';
+import { axisOfLane, laneOfX } from './pieces/lanes';
+import { CATCH } from './pieces/catch-fall';
 import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
 import { ballKeeperProbeInput } from './pieces/ball-probe';
@@ -162,6 +164,8 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
       return { axis: 0, buttons: state[p + BODY.y]! < desired && state[p + BODY.vy]! < 50 ? BUTTON.TAP : 0 };
     }
   }
+  // Chytání (P54C T5): sonda hraje jako robot, dokud bomba visí nad obrazem; pak stojí v jejím pruhu, ať do koše spadne právě ona.
+  if (control === 'lanes' && roleAt(state, target) === ROLE.hazard) return state[t + BODY.y]! > CATCH.viewTop ? normal : { buttons: 0, axis: axisOfLane(laneOfX(state[t + BODY.x]!)) };
   if (control === 'move_free' || control === 'fight') return { buttons: 0, axis: axisOfDirection(directionToward(dx, dz)) };
   if (control === 'steer' && roleAt(state, target) === ROLE.chaser) return { buttons: BUTTON.DOWN, axis: 0 };
   if (control === 'glide' && roleAt(state, target) === ROLE.chaser) return { buttons: BUTTON.HOLD, axis: 0 };
@@ -260,7 +264,7 @@ export class WitnessRecorder {
     this.race = this.control === 'steer' && this.world.rules.some(rule => rule.id === 'rival_finish' && !('land' in rule.params)) ||
       this.control === 'glide' && this.world.rules.some(rule => rule.id === 'glide_finish' && rule.params.race === true);
     this.stack = this.control === 'timing' && baseControlOf(this.world.control).params.mode === 'stack';
-    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk' };
+    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk', lanes: 'lanes' };
     this.movementVerb = this.control === 'steer' && baseControlOf(this.world.control).params.land !== undefined ? 'glide' : movement[this.control];
     this.start = world.initial;
     for (const binding of this.bindings.values()) {
@@ -424,6 +428,13 @@ export class WitnessRecorder {
     }
     // Akce Grab (P46A) bere věc v dosahu bez dotyku: věc hry je sebraná stejně jako dotykem.
     if (ref.id === 'ability_grab' && effect.kind === 'despawn' && (roleAt(state, effect.body) === ROLE.collectible || this.binding(effect.body, state)?.roleKind === 'collectible')) this.add('collect', player, effect.body, tick, 'grabbed-ability', state);
+    // Chytání (P54C T5): věc, kterou pravidlo dopadu odebere nad zemí, padla hrdinovi do koše – ovoce je chycené,
+    // bomba ho zranila. Co propadlo, zmizí až na zemi a nedokazuje nic.
+    if (ref.id === 'catch_fall' && effect.kind === 'despawn' && state[bodyBase(effect.body) + BODY.y]! > 0) {
+      const code = roleAt(state, effect.body);
+      if (code === ROLE.collectible) this.add('collect', player, effect.body, tick, 'caught-in-lane', state);
+      else if (code === ROLE.hazard) this.harm(effect.body, player, tick, 'falling-bomb-caught', state);
+    }
     if (effect.kind === 'despawn' && effect.body === origin.held && other >= 0 && other !== origin.held && ref.id === 'rule_contact') this.add('deliver', player, origin.held, tick, 'carried-to-destination', state);
     if (effect.kind === 'hit' && effect.amount > 0) {
       if (effect.by === player) {

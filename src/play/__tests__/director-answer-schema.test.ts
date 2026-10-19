@@ -16,7 +16,7 @@ import { z } from 'zod';
 import steer from '../arcade/__fixtures__/steer.json';
 import { modelRulesSchema } from '../arcade/rules/schema';
 import { goldenPrompts } from '../../../evals/play/golden';
-import { GENRE_ANSWER_SCHEMA, strictSchema } from '../director/answer-schema';
+import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, strictSchema } from '../director/answer-schema';
 import { readGenreAnswer, readLegacyRecipeContent, readRecipeAnswer, readRecipeContent } from '../director/read';
 import { liveCells } from '../compose/allowed';
 import { draftGameSpecWithMeta } from '../draft';
@@ -174,7 +174,8 @@ describe('director answer schema (strict mode)', () => {
 
 // P32B T4: nová hra je `GenreSpec`; hru skládá modul žánru, ne model.
 describe('director answer schema for a GenreSpec', () => {
-  const READY = Object.values(GENRE_MODULES).flatMap((module) => module.modes.filter((mode) => (module.availability as (mode: string) => string)(mode) === 'ready').map((mode) => `${module.id}.${mode}`));
+  // P54C T5: živý žánr, který režisér pozná až v T14 (`DIRECTOR_PENDING`), schéma odpovědi zatím nenabízí.
+  const READY = Object.values(GENRE_MODULES).filter((module) => !DIRECTOR_PENDING.has(module.id)).flatMap((module) => module.modes.filter((mode) => (module.availability as (mode: string) => string)(mode) === 'ready').map((mode) => `${module.id}.${mode}`));
 
   it('offers exactly the ready modes of every genre, with the module param bounds', () => {
     const legacyVariants = (GENRE_SPEC.anyOf as Json[]).filter(variant => 'genre' in (variant.properties as Json));

@@ -33,7 +33,7 @@ import { comboOf } from './effects/feel';
 import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
-import { LaneScene, useLanesInput } from './genres/lanes/LaneScene';
+import { LaneStage, useLanesInput } from './genres/lanes/LaneScene';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
 import { HudBoosts, boostKeepers } from './PowerupBadge';
@@ -742,7 +742,7 @@ const StageCanvas = memo(function StageCanvas({
           ) : stage.scene === 'platform' ? (
             <PlatformWorld {...world} />
           ) : stage.scene === 'lanes' ? (
-            <LaneScene session={session} />
+            <LaneStage {...world} />
           ) : (
             <World {...world} control={control} />
           )}

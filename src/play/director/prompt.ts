@@ -26,7 +26,7 @@ import { DEPTH_PARAM_BOUNDS, GENRE_MODULES } from '../genre/index';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
 import { ROLE_KINDS } from '../spec';
 
-import { GENRE_ANSWER_SCHEMA, readyModes } from './answer-schema';
+import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, readyModes } from './answer-schema';
 
 /** Úvod plného promptu; kompaktní má vlastní kratší. */
 export const GENRE_RULES =
@@ -132,7 +132,7 @@ export function genrePromptLines(): string {
   });
   return [
     'LIVE COMBINATIONS (move | actions | objective | threats; - means empty array; select one; staged unavailable):',
-    ...new Set(liveCells().map(cell => `- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`)),
+    ...new Set(liveCells().filter(cell => !DIRECTOR_PENDING.has(cell.preset.genre)).map(cell => `- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`)),
     'LEGACY GENRES (compatibility format; recipe answers omit genre/mode):',
     ...genres,
     // P46E T5: s „(else null)“ a jedním příkladem vyplnil gpt-oss-20b bosse 0×, akce 2× a úseky 2× z 25 nahrávek.

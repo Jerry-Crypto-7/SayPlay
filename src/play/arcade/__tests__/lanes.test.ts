@@ -12,10 +12,9 @@ import { LANES, LANE_START, axisOfLane, heldTicks, laneOf, laneOfAxis, laneX, la
 
 const PLAYER = 0;
 
+/** Tělo hráče, jak ho postaví `buildWorld`: `x = 0` a pracovní sloty nulové (`BodyInit` `aux0` nemá). */
 function freshState(): Int32Array {
-  const state = new Int32Array(HEADER_SIZE + 2 * BODY_STRIDE);
-  state[bodyBase(PLAYER) + BODY.aux0] = LANE_START;
-  return state;
+  return new Int32Array(HEADER_SIZE + 2 * BODY_STRIDE);
 }
 
 /** Krok ovládání a posun hráče o jeho rychlost, jak to po ovládání udělá jádro. */
@@ -44,6 +43,13 @@ describe('lanes control (P54C T4)', () => {
       expect(axisOfLane(lane)).not.toBe(0);
       expect(laneOfAxis(axisOfLane(lane))).toBe(lane);
     }
+  });
+
+  // P54C T5: dřív byl pruh v `aux0` absolutní, takže nově postavený hráč (aux0 = 0) bez vstupu odjel do pruhu 0.
+  it('starts in the middle lane and stays there without input', () => {
+    const state = play(idle(30));
+    expect(laneOf(state, PLAYER)).toBe(LANE_START);
+    expect(state[bodyBase(PLAYER) + BODY.x]).toBe(laneX(LANE_START));
   });
 
   it('moves the hero to the lane the axis picks and keeps it when the axis lets go', () => {

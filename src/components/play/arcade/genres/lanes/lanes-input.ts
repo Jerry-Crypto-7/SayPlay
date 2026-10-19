@@ -13,8 +13,16 @@ import { LANES, axisOfLane } from '@/play/arcade/pieces/lanes';
 import { isTyping } from '../../input';
 import type { ArcadeSession } from '../../session';
 
-/** Vodorovná poloha prstu na plátně (0 = levý okraj, 1 = pravý) → osa pruhu pod ním. */
-export const laneAxisAt = (fraction: number): number => axisOfLane(Math.min(LANES.count - 1, Math.max(0, Math.floor(fraction * LANES.count))));
+/**
+ * Vodorovná poloha prstu na plátně (0 = levý okraj, 1 = pravý) → osa pruhu pod ním. `edges` jsou hranice
+ * pruhů, které scéna promítla na plátno (`data-lane-edges`, zleva doprava, P54C T5); bez nich pět stejných pásů.
+ */
+export function laneAxisAt(fraction: number, edges?: readonly number[]): number {
+  const lane = edges !== undefined && edges.length === LANES.count - 1 && edges.every(Number.isFinite)
+    ? edges.filter((edge) => fraction >= edge).length
+    : Math.min(LANES.count - 1, Math.max(0, Math.floor(fraction * LANES.count)));
+  return axisOfLane(lane);
+}
 
 export function useLanesInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
   useEffect(() => {
@@ -23,7 +31,7 @@ export function useLanesInput(session: ArcadeSession, target: React.RefObject<HT
     let finger: number | null = null;
     const axisAt = (event: PointerEvent): number => {
       const box = element.getBoundingClientRect();
-      return laneAxisAt((event.clientX - box.left) / Math.max(1, box.width));
+      return laneAxisAt((event.clientX - box.left) / Math.max(1, box.width), element.dataset.laneEdges?.split(',').map(Number));
     };
     const onDown = (event: PointerEvent) => {
       if (finger !== null) return;
