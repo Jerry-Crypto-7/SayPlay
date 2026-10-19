@@ -2789,6 +2789,57 @@ button.play-feed-card {
   }
 }
 
+/* P54A */
+/* Snap feed (T6): karta přes celou výšku feedu, tah dosedne vždy na další.
+ * Karty mimo okno ±3 drží mezera téže výšky. Pod 1024 px je feed vysoký jako
+ * obrazovka bez plovoucího tab baru kitu, na desktopu zatím jako dřívější slide. */
+.play-reel {
+  height: min(52dvh, 560px);
+  overflow-y: auto;
+  overscroll-behavior-x: none;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+}
+
+.play-reel::-webkit-scrollbar {
+  display: none;
+}
+
+.play-reel-card,
+.play-reel-gap {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.play-reel-card > .play-pager-slide {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.play-reel-poster {
+  cursor: default;
+}
+
+@media (max-width: 1023px) {
+  .play-reel {
+    height: calc(100dvh - var(--sp-size-tabbar) - var(--sp-space-4) - env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 700px) {
+  .play-reel {
+    border: 0;
+    border-radius: 0;
+  }
+}
+
 /* P27C */
 /* Stav AI verze nad hrou (P34 T4, kit `.sp-status` a `.sp-toast`). Od P34 T5
  * leží pilulka běžící práce, hotová verze i poznámka o konci bez AI verze
