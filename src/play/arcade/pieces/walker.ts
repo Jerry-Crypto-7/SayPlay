@@ -96,6 +96,29 @@ export function walkerExit(map: WalkerMap, segments: boolean | undefined): numbe
 /** Tiky cesty robota plnou rychlostí od startu k východu (`goal`): postup průběhu chodce měří čas proti ní. */
 export const walkerRouteTicks = (map: WalkerMap, speed: number, goal: number): number => Math.ceil((walkerPath(map, map.size + 1, goal).length - 1) * WALKER_CELL / speed);
 
+/** Nepřátelé k úderu v bludišti (P52 T5): `count` polí cesty ke východu, rovnoměrně, bez prvních a posledních `clear`. */
+export const WALKER_FOES = { count: 3, clear: 2 } as const;
+
+/**
+ * Pole pro nepřátele akcí (`enemiesFor`): bludiště nemá kam jinam – robot jde po nejkratší cestě a cokoli
+ * mimo ni by nepotkal. Bludiště se čte z hotové úrovně (zdi a východ), akce ho dostanou až po generátoru.
+ */
+export function walkerFoeCells(level: ArcadeLevel): { x: number; z: number }[] {
+  const size = Math.round(level.length / WALKER_CELL) + 2;
+  const at = (body: BodyInit): number => walkerCell({ size, open: [] }, body.x, body.z);
+  const walls = new Set(level.bodies.filter((body) => body.kind === 'wall').map(at));
+  const exit = level.bodies.find((body) => body.role === 'goal');
+  if (exit === undefined) return [];
+  const map = { size, open: Array.from({ length: size * size }, (_, cell) => cell).filter((cell) => !walls.has(cell)) };
+  const path = walkerPath(map, size + 1, at(exit));
+  const span = path.length - 1 - 2 * WALKER_FOES.clear;
+  if (span < WALKER_FOES.count + 1) return [];
+  return Array.from({ length: WALKER_FOES.count }, (_, index) => {
+    const cell = path[WALKER_FOES.clear + Math.round(((index + 1) * span) / (WALKER_FOES.count + 1))] as number;
+    return { x: (cell % size) * WALKER_CELL, z: Math.floor(cell / size) * WALKER_CELL };
+  });
+}
+
 export const walkerVelocity = (input: ArcadeInput, speed: number): { vx: number; vz: number } => {
   let x = Math.max(-AXIS_MAX, Math.min(AXIS_MAX, input.axis));
   if (input.buttons & BUTTON.LEFT) x = -AXIS_MAX;

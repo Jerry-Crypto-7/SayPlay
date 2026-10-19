@@ -47,6 +47,7 @@ import { RUNNER_FOES } from './pieces/pacing-parts';
 import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
+import { walkerFoeCells } from './pieces/walker';
 import { census, shotHit } from './pieces/shots';
 import { abilityBotParams, abilityButton, abilityControlParams, tickAbilities } from './abilities/state';
 import { powerupControlParams, tickPowerup } from './powerups/state';
@@ -390,6 +391,8 @@ export function enemiesFor(control: string, level: ArcadeLevel, options: EnemyOp
     const slabs = level.bodies.filter((body) => body.role === 'platform' && body.kinematic !== true).sort((a, b) => a.z - b.z);
     return slabs.slice(1, -1).flatMap((slab, index) => (index % 2 === 0 ? [enemy(0, slab.y + slab.h, slab.z + slab.d / 2 - 900)] : []));
   }
+  // Bludiště (P52 T5): nepřítel na cestě ke východu, jinudy robot nejde.
+  if (control === 'walker') return walkerFoeCells(level).map(({ x, z }) => enemy(x, 0, z));
   if (control === 'flap') {
     const lower = level.bodies.filter((body) => body.role === 'obstacle' && body.y === 0).sort((a, b) => a.z - b.z);
     return lower.flatMap((pipe, index) => {

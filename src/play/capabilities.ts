@@ -56,8 +56,8 @@ const ROAMING: readonly AddonId[] = ['shoot', 'collect', 'lives'];
  * proletí. Štít poletování dostane jen každého druhého (`guardAbility`), robot poletování výšku k dotyku nesrovnává
  * a trubky nehlídá.
  * Co ostatním ovládáním chybí, má důvod:
- * - walker: jen krádež – bludiště nemá místo pro nepřítele a v útěku bludištěm robot pronásledovatele
- *   do dosahu nepustí (úder, dash, štít VERB_UNPROVED 4/4).
+ * - walker: krádež a úder (P52 T5 – nepřátelé na cestě bludištěm, `walkerFoeCells`); v útěku bludištěm robot
+ *   pronásledovatele do dosahu nepustí (dash, štít VERB_UNPROVED 4/4).
  * - move_free: střelba zůstává doplňkem `+shoot` (akce střelby v aréně sloveso nedokáže); dash a štít
  *   v útěku, kde pronásledovatel chytá (`arena_eat` s `grace`), a v souboji (`fight`, P47B T6), kde
  *   berou úder soupeře – souboj jen je (`FIGHT_ABILITIES`): úder má vlastní Attack a krást není co.
@@ -82,7 +82,7 @@ const arcade = (
 
 export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   glide: arcade({ setting: true, cues: 'swim or fly in three dimensions', roles: ['glide_ring', 'glide_reef'], finish: true, labels: ['player', 'enemy', 'finish', 'glide_rival', 'glide_pursuer'], mechanics: ['timer'], addons: ['shoot'], abilities: ALL_ABILITIES }),
-  walker: arcade({ setting: true, cues: 'walk through a maze', roles: ['wall', 'coin', 'guard', 'chaser'], finish: true, labels: ['player', 'coin', 'finish', 'guard', 'chaser'], mechanics: ['health', 'timer'], addons: ['lives'], abilities: ['grab'] }),
+  walker: arcade({ setting: true, cues: 'walk through a maze', roles: ['wall', 'coin', 'guard', 'chaser'], finish: true, labels: ['player', 'coin', 'finish', 'guard', 'chaser'], mechanics: ['health', 'timer'], addons: ['lives'], abilities: ['strike', 'grab'] }),
   ball: arcade({ setting: true, cues: 'aim and shoot a ball', roles: ['target', 'goalkeeper'], finish: true, labels: ['player', 'goalkeeper'], mechanics: ['timer'], addons: [] }),
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12, addons: [], abilities: [] },
   // P26D T9: počty od 2 čte generátor – běžec mince a řady překážek, plošinovka a poletování mince, střelnice terče a nepřátele.
