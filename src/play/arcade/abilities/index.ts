@@ -10,7 +10,7 @@
  */
 
 import { type AbilityId, type BodyInit, type PieceRef, mapUnderlying, nativeRule } from '../contract';
-import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
+import { type AddonContext, type ArcadeParts, baseBotOf, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
 import { type BossBeatParams, bossBeat, bossBeatHit } from '../pieces/boss';
 import { FINALE5_GENRE_VERSION, genreAtLeast } from '../pieces/pacing-parts';
 import { grabRule } from './grab';
@@ -230,21 +230,25 @@ function duelVerbs(parts: ArcadeParts, ids: readonly AbilityId[]): ArcadeParts {
 }
 
 /**
- * Sběr v aréně (P52 T5): úder i dash nebo štít berou pronásledovatele a každý ho zničí. Sběr ve vlnách jich přivede
- * za hru jednoho (`wavesChasers`), takže druhé sloveso by se nedokázalo nikdy – v `genre.v5` přijde první vlna
- * s pronásledovatelem o jednoho víc. Úroveň s živým pronásledovatelem od startu (útěk) zůstane.
+ * Pronásledovatelé pro úder (P52 T5), jen `genre.v5`: úder (a dash nebo štít) pronásledovatele zničí, takže by hru
+ * začátečníkovi vyprázdnil. Zničené proto další vlna doplní (`restock`) a vlny přivedou pronásledovatele navíc:
+ * - quest s úderem: druhé kolo jednoho (novice 9/10 proti 6/10 bez úderu, takhle 7/10; semínka 1–20 13/20 proti 11/20);
+ * - sběr v aréně s úderem a dashem nebo štítem: každá vlna od první s pronásledovatelem jednoho. Sběr jich jinak za hru
+ *   přivede jednoho (`wavesChasers`), takže druhé sloveso by se nedokázalo nikdy (novice s dashem 9/10 proti 4/10
+ *   bez akcí, takhle 6/10; semínka 1–20 14/20, se štítem 13/20).
+ * Útěk (živý pronásledovatel od startu) zůstane.
  */
 function sharedChasers(parts: ArcadeParts, spec: AddonContext['spec'], ids: readonly AbilityId[]): ArcadeParts {
-  if (!ids.includes('strike') || !(ids.includes('dash') || ids.includes('shield')) || !genreAtLeast(spec, FINALE5_GENRE_VERSION)) return parts;
-  if (parts.level.bodies.some((body) => body.role === 'chaser' && body.template !== true)) return parts;
-  let bumped = false;
+  if (!ids.includes('strike') || !genreAtLeast(spec, FINALE5_GENRE_VERSION)) return parts;
+  const live = parts.level.bodies.filter((body) => body.role === 'chaser' && body.template !== true).length;
+  const quest = baseBotOf(parts.bot).id === 'quest_bot';
+  if (!quest && (live > 0 || !(ids.includes('dash') || ids.includes('shield')))) return parts;
   const bump = (native: PieceRef): PieceRef => {
-    if (bumped || native.id !== 'arena_waves' || native.params.chaser === undefined) return native;
+    if (native.id !== 'arena_waves' || native.params.chaser === undefined) return native;
     const waves = native.params.waves as readonly { readonly chasers?: number }[];
     const first = waves.findIndex((wave) => (wave.chasers ?? 0) > 0);
-    if (first < 0) return native;
-    bumped = true;
-    return { ...native, params: { ...native.params, waves: waves.map((wave, k) => (k === first ? { ...wave, chasers: (wave.chasers as number) + 1 } : wave)) } };
+    const extra = (k: number): boolean => (quest ? k === 0 : first >= 0 && k >= first);
+    return { ...native, params: { ...native.params, restock: live, waves: waves.map((wave, k) => (extra(k) ? { ...wave, chasers: (wave.chasers ?? 0) + 1 } : wave)) } };
   };
   return { ...parts, rules: parts.rules.map((rule) => mapUnderlying(rule, bump)) };
 }

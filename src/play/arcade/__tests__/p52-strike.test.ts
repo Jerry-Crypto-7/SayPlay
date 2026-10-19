@@ -12,9 +12,11 @@ import { generatorTakes } from '../../compose/compile';
 import { draftGameSpecWithMeta } from '../../draft';
 import type { GameSpecV1 } from '../../spec';
 import { arcadeWorldOf } from '../compile';
-import { ABILITIES, type AbilityId, type ArcadeWorld, underlyingRule } from '../contract';
+import { ABILITIES, type AbilityId, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule, underlyingRule } from '../contract';
+import { instantiate } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { loadRapier } from '../physics/world';
+import { WAVE_COUNTER, type WaveParams, arenaWaves } from '../pieces/waves';
 import { WALKER_CELL, WALKER_FOES, walkerExit, walkerFoeCells, walkerLabyrinth, walkerMaze, walkerPath } from '../pieces/walker';
 import { type BotProfile, runBot, verifyArcade } from '../verify';
 
@@ -31,6 +33,20 @@ function worldOf(spec: GameSpecV1, seed: number): ArcadeWorld {
 }
 
 const wins = (spec: GameSpecV1, profile: BotProfile): number => SEEDS.filter((seed) => runBot(worldOf(spec, seed), ARCADE_LIBRARY, { profile }).outcome === 'won').length / SEEDS.length;
+
+/** Brána obtížnosti (P41): novice 0,3–0,7, intermediate aspoň 0,8. */
+function expectBalanced(spec: GameSpecV1): void {
+  expect(wins(spec, 'intermediate'), 'intermediate').toBeGreaterThanOrEqual(0.8);
+  const novice = wins(spec, 'novice');
+  expect(novice, 'novice').toBeGreaterThanOrEqual(0.3);
+  expect(novice, 'novice').toBeLessThanOrEqual(0.7);
+}
+
+/** Vlny světa: doplnění zničených a kolik pronásledovatelů která vlna přivede (`arena_waves`). */
+function waves(world: ArcadeWorld): { readonly restock: number | undefined; readonly chasers: number[] } {
+  const params = world.rules.map(underlyingRule).find((rule) => rule.id === 'arena_waves')?.params as { readonly restock?: number; readonly waves: readonly { readonly chasers?: number }[] };
+  return { restock: params.restock, chasers: params.waves.map((wave) => wave.chasers ?? 0) };
+}
 
 const WALKER = {
   old: 'a hero walks through a stone labyrinth and punches the skeletons in his way',
@@ -105,6 +121,19 @@ describe('P52 T5: strike in spatial quests', () => {
     expect(used / SEEDS.length).toBeGreaterThanOrEqual(0.9);
   }, 300_000);
 
+  // Bez doplnění úder zabil jediného pronásledovatele a novice vyhrál 9/10 (bez úderu 6/10).
+  it.each(Object.entries(QUEST))('%s: novice stays in the band and intermediate wins', (_name, text) => {
+    expectBalanced(draftGameSpecWithMeta(text, 1).spec);
+  }, 300_000);
+
+  it('a quest with strike restocks struck chasers and brings one more in round two, only in genre.v5', () => {
+    const spec = draftGameSpecWithMeta(QUEST.towers, 1).spec;
+    // Kola questu: jeden pronásledovatel od startu, vlny žádného dalšího.
+    expect(waves(worldOf(spec, 1))).toEqual({ restock: 1, chasers: [1, 0] });
+    expect(waves(worldOf({ ...spec, abilities: undefined }, 1))).toEqual({ restock: undefined, chasers: [0, 0] });
+    expect(waves(worldOf({ ...spec, genre: { ...spec.genre!, compilerVersion: 'genre.v4' } }, 1))).toEqual({ restock: undefined, chasers: [0, 0] });
+  });
+
   it('a quest takes strike only', () => {
     expect(ABILITIES.filter((id) => generatorTakes('quest_spatial', id))).toEqual(['strike']);
   });
@@ -117,10 +146,6 @@ const ARENA = {
 } as const;
 
 const arenaSpec = (text: string, abilities: readonly AbilityId[]): GameSpecV1 => ({ ...draftGameSpecWithMeta(text, 1).spec, abilities: [...abilities] });
-
-/** Kolik vln sběru přivede pronásledovatele (počty z `arena_waves`). */
-const waveChasers = (world: ArcadeWorld): number[] =>
-  ((world.rules.map(underlyingRule).find((rule) => rule.id === 'arena_waves')?.params.waves ?? []) as readonly { readonly chasers?: number }[]).map((wave) => wave.chasers ?? 0);
 
 describe('P52 T5: arena collect with strike and a guard', () => {
   it.each(Object.entries(ARENA))('%s and strike: verification proves both on seed 1 and the intermediate bot uses both', (_name, [text, abilities]) => {
@@ -136,13 +161,36 @@ describe('P52 T5: arena collect with strike and a guard', () => {
     expect(both / SEEDS.length).toBeGreaterThanOrEqual(0.6);
   }, 300_000);
 
-  it('the first chaser wave brings one more chaser only for strike with a guard in genre.v5', () => {
+  // Bez doplnění a vln navíc vyhrál novice s dashem a úderem 9/10 (bez akcí 4/10).
+  it.each(Object.entries(ARENA))('%s and strike: novice stays in the band and intermediate wins', (_name, [text, abilities]) => {
+    expectBalanced(arenaSpec(text, abilities));
+  }, 300_000);
+
+  it('every chaser wave brings one more and restocks struck chasers only for strike with a guard in genre.v5', () => {
     const [text] = ARENA.dash;
-    expect(waveChasers(worldOf(arenaSpec(text, ['dash', 'strike']), 1))).toEqual([2, 0]);
-    expect(waveChasers(worldOf(arenaSpec(text, ['strike']), 1))).toEqual([1, 0]);
-    expect(waveChasers(worldOf(arenaSpec(text, ['dash']), 1))).toEqual([1, 0]);
+    expect(waves(worldOf(arenaSpec(text, ['dash', 'strike']), 1))).toMatchObject({ restock: 0, chasers: [2, 1] });
+    expect(waves(worldOf(arenaSpec(text, ['shield', 'strike']), 1))).toMatchObject({ restock: 0, chasers: [2, 1] });
+    for (const abilities of [['strike'], ['dash']] as const) expect(waves(worldOf(arenaSpec(text, abilities), 1))).toMatchObject({ restock: undefined, chasers: [1, 0] });
     const v4 = arenaSpec(text, ['dash', 'strike']);
-    expect(waveChasers(worldOf({ ...v4, genre: { ...v4.genre!, compilerVersion: 'genre.v4' } }, 1))).toEqual([1, 0]);
+    expect(waves(worldOf({ ...v4, genre: { ...v4.genre!, compilerVersion: 'genre.v4' } }, 1))).toMatchObject({ restock: undefined, chasers: [1, 0] });
+  });
+
+  it('a wave restocks the chasers the hero destroyed, a wave without restock does not', () => {
+    const world = worldOf(arenaSpec(ARENA.dash[0], ['dash', 'strike']), 1);
+    const state = instantiate(world);
+    const player = 0;
+    const params = nativeRule(world.rules, 'arena_waves')!.params as WaveParams;
+    // Všechny věci první vlny sebrané a pronásledovatelé druhé vlny zničení: čeká se na třetí.
+    for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+      const role = state[bodyBase(i) + BODY.role];
+      if (role === ROLE.collectible || role === ROLE.chaser) state[bodyBase(i) + BODY.flags] = (state[bodyBase(i) + BODY.flags] as number) & ~FLAG.alive;
+    }
+    state[HEADER.counters + COUNTER[WAVE_COUNTER]] = 1;
+    const chasers = (rule: WaveParams): number =>
+      arenaWaves.fire({ state, player, other: -1, source: -1 } as never, rule).filter((effect) => effect.kind === 'spawn' && effect.template === rule.chaser).length;
+    expect(chasers(params)).toBe(1 + 2);
+    const { restock: _restock, ...plain } = params;
+    expect(chasers(plain)).toBe(1);
   });
 
   it('arena games without strike and a guard, and genre.v4, build the same world as before', () => {

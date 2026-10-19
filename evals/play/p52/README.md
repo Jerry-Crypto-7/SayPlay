@@ -43,6 +43,22 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - **Zbývá:** d35 („enemy turrets fire at a little robot…“) staví střílečku – hrdina střílí, protože je to mechanika žánru, ne akce ze slovesa; gauge ji jako past nepočítá. d25 („…and the captain grabs the treasure map“) – kapitán není hrdina věty, nechává se na T8.
 - Uložené hry: spec nese akce i doplňky, slovník čte jen nový návrh – replay brána, `golden.test.ts` a `p51-stored-v4.test.ts` zelené.
 
+## T5 – úder v bludišti, questu a sběru se dvěma akcemi
+
+- **Bludiště** (d05, d06): nepřátelé stojí na cestě ke východu (`walkerFoeCells`), robot je cestou udeří. **Quest** (d03, d04): `quest_spatial` bere jen úder, robot s připraveným úderem dojde k pronásledovateli. **Sběr s úderem a dashem nebo štítem** (v13, v40): sběr ve vlnách přivedl za hru jednoho pronásledovatele a obě akce ho zničí, takže druhé sloveso nešlo dokázat; robot teď pronásledovatele přiděluje akcím střídavě a dash/štít mačká až těsně před dotykem (`ARENA_PRESS`). d01 (aréna, chytání) fungovala už před T5.
+- **Vyváženost:** úder pronásledovatele zničí natrvalo, takže začátečník vyhrával skoro vždy (quest 9/10 proti 6/10 bez úderu, sběr s dashem a úderem 9/10 proti 4/10 bez akcí). Ve `genre.v5` proto další vlna zničené doplní (`restock` v `arena_waves`) a vlny přivedou pronásledovatele navíc: quest ve druhém kole jednoho, sběr se dvěma akcemi v každé vlně od první s pronásledovatelem jednoho (`sharedChasers` v `abilities/index.ts`). Novice / intermediate po změně, semínka 1–10 (test) a 1–20 (semínka brány P41):
+
+| Buňka | 1–10 | 1–20 | bez akce 1–20 |
+|---|---|---|---|
+| quest s úderem (d03, d04) | 0,7 / 1 | 0,65 / 0,95 | 0,55 / 0,95 |
+| sběr, dash + úder (v13) | 0,6 / 0,9 | 0,7 / 0,95 | 0,45 / 0,95 |
+| sběr, štít + úder (v40) | 0,6 / 0,9 | 0,65 / 0,9 | 0,45 / 0,95 |
+
+- **Gauge po T5** (proti T4): P52 dev 0,29 / 0,44 / 0,44 → **0,41 / 0,56 / 0,56** (d03–d06 nově 1 / 1 / 1), P47B dev 0,76 / 0,80 / 0,78 → **0,80 / 0,84 / 0,82** (v13, v40 nově 1 / 1 / 1), P46A 1 / 1 / 0,95 beze změny, finále P51 dev 0,97 a panel 0,93 beze změny; vše hratelné. p95 návrhu 2,7–3,4 s – čtyři měření běžela souběžně, brána se posoudí v T11.
+- v01, v09 a v14 z AC jsou v otevřeném holdoutu P47B – neměří se, platí za ně obdoby d01–d06.
+- **Mimo T5:** sběr jen s úderem (beze změny od P47B, otisk `5c0da6ca` drží test) má na semínkách 1–20 novice 0,85 (bez akce 0,45) – mimo pásmo už před P52; zapsané v plánu jako nález.
+
 ## Rozhodnutí
 
 - T1: větev P51 na origin není (`git ls-remote` bez ní); sloučena lokální `features/P51-…`, která `origin/main` už obsahuje – fast-forward bez merge commitu.
+- T5: quest s úderem drží bránu P41 (novice 0,3–0,7, intermediate ≥ 0,8), ne „vyhraje stejně jako bez úderu“ – quest bez úderu je v pásmu sám, takže platí brána; srovnání s hrou bez akce zůstává jen u bludiště, které je lehké už bez úderu (novice 10/10).
