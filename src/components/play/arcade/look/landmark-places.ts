@@ -38,10 +38,12 @@ const FOOT = 0.35;
 const AREA_GAP_M = 1;
 /** Kruh hrdiny: tolik metrů od kraje jeho těla nic nestojí. */
 const HERO_KEEP_M = 2;
-/** Orientační bod vysoký asi takový podíl výšky obrazu. */
+/** Orientační bod vysoký asi takový podíl kratší strany obrazu: na výšku třetina výšky telefonu = dvě třetiny šířky a bod zabral popředí (T15a). */
 const TARGET_TALL = 0.3;
 /** Bod je „v záběru“, když je v obraze aspoň tolik z jeho kvádru (sonda `__playLandmark`, výběr kandidáta). */
 export const IN_VIEW_SHARE = 0.5;
+/** Strmější kamera (° pod vodorovnou) orientační bod nedostane: bludiště 63–70° ano, aréna 40° ne. */
+const STEEPEST_DEG = 55;
 /** Rezerva, se kterou výběr kandidáta bere bod jako v záběru. */
 const IN_VIEW_MARGIN = 0.15;
 /** Rámující kus jen z rekvizit do téhle výšky (m): v popředí by vyšší zakryl půl obrazu. */
@@ -264,11 +266,14 @@ const toward = (camera: PerspectiveCamera, x: number, z: number): number => Math
 const forward = new Vector3();
 
 /**
- * Orientační bod podle herní kamery; `null` = sada žádný nemá. Kandidáti jdou v pořadí ze semínka
- * (`landmarkPicks`): první, jehož nejlepší místo je v záběru (`IN_VIEW_SHARE`), vyhrává; nevejde-li
- * se žádný, stojí ten, kterého je v záběru nejvíc.
+ * Orientační bod podle herní kamery; `null` = sada žádný nemá, nebo se do záběru nevejde. Kandidáti
+ * jdou v pořadí ze semínka (`landmarkPicks`): první, jehož nejlepší místo je v záběru i s rezervou,
+ * vyhrává; jinak ten, kterého je v záběru nejvíc – ale aspoň `IN_VIEW_SHARE`. Bod z obrazu většinou
+ * venku (bludiště shora, souboj, kluzák na výšku) byl jen „zbloudilý sloup“ u kraje (T15a).
  */
 export function placeLandmark(input: PlaceInput): Placed | null {
+  // Kamera, která kouká strmě dolů (bludiště), vidí bod jen shora – bez obrysu proti nebi je to šedý sloup na zemi.
+  if (input.camera.getWorldDirection(forward).y < -Math.sin(STEEPEST_DEG * (Math.PI / 180))) return null;
   let best: { readonly placed: Placed; readonly share: number } | null = null;
   for (const id of landmarkPicks(input.look, input.seed).order) {
     const found = bestSpot(input, id);
@@ -276,7 +281,7 @@ export function placeLandmark(input: PlaceInput): Placed | null {
     if (found !== null && found.share >= IN_VIEW_SHARE + IN_VIEW_MARGIN) return found.placed;
     if (found !== null && (best === null || found.share > best.share)) best = found;
   }
-  return best?.placed ?? null;
+  return best !== null && best.share >= IN_VIEW_SHARE ? best.placed : null;
 }
 
 /** Nejlepší místo jednoho kandidáta a kolik ho je v záběru. */
@@ -289,6 +294,7 @@ function bestSpot({ camera, look, area, hero, play = [], ground = flat }: PlaceI
   const [fogNear, fogFar] = look.fog;
   const heroFar = hero === null ? 0 : heroRect(camera, hero).far;
   const blocks = playRects(camera, look, hero, play);
+  const target = TARGET_TALL * Math.min(1, camera.aspect);
   let best: { placed: Placed; share: number } | null = null;
   let bestScore = -Infinity;
   // simplified: mřížka 31 × 37 × 4 míst na kandidáta se projde jednou při stavbě scény (nejvýš ~14 tisíc promítnutí); hustší by nic nezměnila.
@@ -315,7 +321,7 @@ function bestSpot({ camera, look, area, hero, play = [], ground = flat }: PlaceI
         const tall = Math.max(0, Math.min(rect.maxY, 1) - Math.max(rect.minY, -1)) / 2;
         const fog = clamp((distance - fogNear) / (fogFar - fogNear), 0, 1);
         // Záběr rozhoduje nejvíc: o desetinu víc v obraze váží víc než posun o pětinu obrazu ke středu.
-        const score = 6 * share - 1.5 * centre - 1.5 * fog - 3 * Math.abs(tall - TARGET_TALL);
+        const score = 6 * share - 1.5 * centre - 1.5 * fog - 3 * Math.abs(tall - target);
         if (score > bestScore) {
           bestScore = score;
           best = { placed: { id, x, y, z, scale, turn: toward(camera, x, z) }, share };

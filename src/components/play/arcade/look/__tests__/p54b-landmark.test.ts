@@ -194,21 +194,24 @@ describe('P54B T8: výběr ze semínka', () => {
 });
 
 /**
- * Kolik bodu musí být v záběru. Bludiště kouká 63–70° dolů a zem vidí jen do ~30 m od kamery,
- * kde stojí bludiště samo: za ním je v obraze nanejvýš pata bodu. Souboj kouká 60° dolů z 13–14 m:
- * zem 25 m od kamery leží na horním kraji obrazu, bod v pásmu 25–60 m je celý nad ním. Poletování
- * na výšku má úzký obraz (±15° do strany) a koridor letu ±12 m – mimo koridor je obraz vždy mimo.
+ * Kamery, které bod nedostanou (P54B T15a – v soudu stál u bludiště shora jako „zbloudilý sloup“).
+ * Bludiště kouká 63–70° dolů: bod by byl vidět jen shora, bez obrysu. Souboj kouká 60° dolů z 13–14 m:
+ * zem 25 m od kamery leží na horním kraji obrazu, bod v pásmu 25–60 m je celý nad ním.
  */
-const LEAST_IN_FRAME: Readonly<Record<string, number>> = { 'walker desktop': 0.1, 'walker phone': 0, 'fight desktop': 0, 'fight phone': 0, 'glide phone': 0 };
+const NO_ROOM = new Set(['walker desktop', 'walker phone', 'fight desktop', 'fight phone']);
 
 describe('P54B T8: umístění podle kamery žánru', () => {
   for (const aspect of [DESKTOP, PHONE]) {
     for (const genre of GENRES) {
-      const least = LEAST_IN_FRAME[`${genre.id} ${aspect < 1 ? 'phone' : 'desktop'}`] ?? 0.5;
-      it(`${genre.id} ${aspect < 1 ? 'na výšku' : 'na šířku'}: bod v záběru (${least}), 25–60 m, 1,5–3×, za hrou a mimo hrací plochu`, () => {
+      const key = `${genre.id} ${aspect < 1 ? 'phone' : 'desktop'}`;
+      it(`${genre.id} ${aspect < 1 ? 'na výšku' : 'na šířku'}: ${NO_ROOM.has(key) ? 'bez bodu' : 'bod v záběru, 25–60 m, 1,5–3×, za hrou a mimo hrací plochu'}`, () => {
         const look = LOOKS.forest;
         const camera = cameraOf(genre, aspect, look);
         const placed = placeLandmark({ camera, look, seed: 7, area: genre.area, hero: genre.hero, ground: genre.ground });
+        if (NO_ROOM.has(key)) {
+          expect(placed).toBeNull();
+          return;
+        }
         expect(placed).not.toBeNull();
         const { id, x, y, z, scale } = placed!;
         const distance = Math.hypot(x - camera.position.x, z - camera.position.z);
@@ -223,10 +226,44 @@ describe('P54B T8: umístění podle kamery žánru', () => {
         // Za hrou: celý bod je od kamery dál než hrdina.
         expect(rect.near).toBeGreaterThan(hero.far);
         expect(rect.far).toBeLessThan(look.fog[1]);
-        expect(inFrame(rect)).toBeGreaterThanOrEqual(least);
+        expect(inFrame(rect)).toBeGreaterThanOrEqual(0.5);
       });
     }
   }
+
+  it.each(LOOK_IDS)('%s: postavený bod je v záběru aspoň z poloviny – zbytek z obrazu nikdy nečouhá', (lookId) => {
+    const look = LOOKS[lookId];
+    for (const aspect of [DESKTOP, PHONE]) {
+      for (const genre of GENRES) {
+        for (const seed of [3, 7, 11]) {
+          const camera = cameraOf(genre, aspect, look);
+          const placed = placeLandmark({ camera, look, seed, area: genre.area, hero: genre.hero, ground: genre.ground });
+          if (placed === null) continue;
+          const rect = rectOf(camera, placed.x, placed.y, placed.z, footOf(placed.id, placed.scale), modelHeight(placed.id) * placed.scale);
+          expect(inFrame(rect), `${genre.id} ${aspect} ${seed}`).toBeGreaterThanOrEqual(0.5);
+        }
+      }
+    }
+  });
+
+  it('na výšku je bod vysoký nejvýš asi polovinu šířky obrazu, ne třetinu jeho výšky (silo přistání v T15a)', () => {
+    // Na šířku se cíl nemění: kratší strana obrazu je jeho výška.
+    // Obraz telefonu je 2,2× vyšší než široký: třetina výšky = dvě třetiny šířky a bod zabere popředí.
+    const wide: string[] = [];
+    for (const lookId of ['forest', 'space', 'castle', 'jungle'] as const) {
+      const look = LOOKS[lookId];
+      for (const genre of [...GENRES, ...PLAY_GENRES]) {
+        const camera = cameraOf(genre, PHONE, look);
+        const placed = placeLandmark({ camera, look, seed: 7, area: genre.area, hero: genre.hero, ground: genre.ground, play: 'play' in genre ? (genre as PlayGenre).play : [] });
+        if (placed === null) continue;
+        const rect = rectOf(camera, placed.x, placed.y, placed.z, footOf(placed.id, placed.scale), modelHeight(placed.id) * placed.scale);
+        const tall = (Math.min(rect.maxY, 1) - Math.max(rect.minY, -1)) / 2;
+        // Do 0,55: nejmenší měřítko (1,5×) a konec mlhy nedovolí věži nebo stromovému domu menší; dřív až 0,69.
+        if (tall / PHONE > 0.55) wide.push(`${lookId} ${genre.id} ${placed.id} ${(tall / PHONE).toFixed(2)}`);
+      }
+    }
+    expect(wide).toEqual([]);
+  });
 
   it.each(LOOK_IDS)('%s: běžec na šířku i na výšku má bod v záběru před koncem mlhy', (lookId) => {
     const look = LOOKS[lookId];
@@ -316,7 +353,7 @@ const PLAY_GENRES: readonly PlayGenre[] = [
     play: [{ x0: -2, y0: 0, z0: -2, x1: 2, y1: 0.5, z1: 60 }],
   },
   {
-    // `DuelScene`: boční kamera na −x mezi rytíři; soupeř je `frame = 'target'`.
+    // `DuelScene`: boční kamera na −x mezi rytíři; rytíři chodí po celém ringu, scéna ho předá v `play` do výšky postav.
     id: 'duel',
     place: (camera, look) => {
       const tan = Math.tan((camera.fov * Math.PI) / 360);
@@ -327,7 +364,7 @@ const PLAY_GENRES: readonly PlayGenre[] = [
     },
     area: [{ x0: -2, x1: 2, z0: RIVAL_Z / 2 - 4.5, z1: RIVAL_Z / 2 + 4.5 }],
     hero: { x: 0, y: 0, z: 0, r: 0.6, h: 1.6 },
-    play: [{ x0: -0.6, y0: 0, z0: RIVAL_Z - 0.6, x1: 0.6, y1: 1.8, z1: RIVAL_Z + 0.6 }],
+    play: [{ x0: -2, y0: 0, z0: RIVAL_Z / 2 - 4.5, x1: 2, y1: 1.25 * 1.6, z1: RIVAL_Z / 2 + 4.5 }],
   },
   {
     // Přistání (`placeLander`): loď 50 m nad zemí, plocha 26 m do strany; sloup nad plochou do trojnásobku výšky lodi.

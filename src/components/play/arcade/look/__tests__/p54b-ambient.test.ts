@@ -214,7 +214,9 @@ describe('P54B T10: život je v záběru, mimo hrací plochu a mimo kruh hrdiny'
         for (const lookId of LIVING) {
           const look = LOOKS[lookId];
           const camera = cameraOf(genre, aspect, look.fog[1]);
-          const landmark = placeLandmark({ camera, look, seed: 7, area: genre.area, hero: genre.hero, ground: genre.ground })!;
+          const landmark = placeLandmark({ camera, look, seed: 7, area: genre.area, hero: genre.hero, ground: genre.ground });
+          // Bod, který se do záběru nevejde, se nepostaví (T15a) – a bez něj není ani život kolem něj.
+          if (landmark === null) continue;
           const column = footOf(landmark);
           const far = heroFar(camera, genre.hero);
           for (const kind of look.ambient) {

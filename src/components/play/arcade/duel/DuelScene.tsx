@@ -36,6 +36,7 @@ import { isTyping } from '../input';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
 import { Landmark } from '../look/Landmark';
+import type { Volume } from '../look/landmark-places';
 import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
 import { Scenery } from '../look/Scenery';
@@ -194,6 +195,8 @@ export function DuelScene({
   const duelLand = useMemo(() => ({ x0: -30, x1: 30, z0: midZ - 30, z1: midZ + 30 }), [midZ]);
   /** Ring 4 × 9 m: orientační bod za ním, rámující kusy před ním u kraje obrazu (P54B T8). */
   const ring = useMemo(() => [{ x0: -2, x1: 2, z0: midZ - 4.5, z1: midZ + 4.5 }], [midZ]);
+  /** Rytíři chodí po celém ringu: bod nesmí stát v obraze za kterýmkoli místem, kde mohou být (P54B T15a), ne jen za tím, kde začali. */
+  const ringPlay = useMemo<Volume[]>(() => [{ x0: -2, y0: 0, z0: midZ - 4.5, x1: 2, y1: 1.25 * Math.max(hero.h, rival.h), z1: midZ + 4.5 }], [midZ, hero.h, rival.h]);
   const hurlBody = hurlBodyOf(world.control);
   const hurlSize = hurlBody === undefined ? null : initialBody(world, hurlBody);
   const hurled = useRef<Group>(null);
@@ -300,7 +303,7 @@ export function DuelScene({
       <Scenery look={scene} layout="behind" inner={4} from={midZ - 12} to={midZ + 12} />
       {/* Kulisa za mlhou za řadou kulis (4–9 m za ringem). */}
       <HorizonBackdrop look={scene} seed={session.world.seed} clear={0} beyond={BACKDROP_BEYOND} />
-      <Landmark look={scene} seed={session.world.seed} area={ring} />
+      <Landmark look={scene} seed={session.world.seed} area={ring} play={ringPlay} />
       <mesh position={[0, -0.1, midZ]}>
         <boxGeometry args={[4, 0.2, 9]} />
         <meshStandardMaterial color="#78716c" roughness={0.95} />
