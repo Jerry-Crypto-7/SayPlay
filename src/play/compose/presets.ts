@@ -26,6 +26,21 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
 };
 
 /**
+ * Recipes of the eight P54C genres (T4). They stay out of `PRESETS` – every PRESETS entry is a
+ * live cell and a `sourceFor` reading – until the genre's own task makes its cell live.
+ */
+export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
+  'catch.default': { move: 'lanes', actions: ['collect'], objective: 'collect', threats: ['hazard'] },
+  'whack.default': { move: 'lanes', actions: ['whack'], objective: 'defeat', threats: [] },
+  'defense.default': { move: 'lanes', actions: ['shoot'], objective: 'defend', threats: ['chaser'] },
+  'slice.default': { move: 'lanes', actions: ['slice'], objective: 'score', threats: ['hazard'] },
+  'hop.default': { move: 'hop', actions: [], objective: 'reach', threats: ['obstacle'] },
+  'crowd.default': { move: 'crowd', actions: [], objective: 'defeat', threats: ['obstacle'] },
+  'merge.default': { move: 'drop', actions: ['merge'], objective: 'score', threats: [] },
+  'push.default': { move: 'roam', actions: ['push'], objective: 'defeat', threats: ['rival'] },
+};
+
+/**
  * What the sentence asked for, passed by `assemble` (P45B T9): its words and the requested
  * actions the recipe cannot play. Only an assembly carrying it gets a rule template.
  */

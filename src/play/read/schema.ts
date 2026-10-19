@@ -10,7 +10,7 @@
 
 import { z } from 'zod';
 
-import { CONTROLS } from '../spec';
+import { READ_CONTROLS } from '../spec';
 
 /**
  * Třídy slovesa – legenda ručních štítků `evals/play/demand/labels.json`.
@@ -32,7 +32,7 @@ const word = z.string().min(1).max(40);
 export const readingSchema = z
   .object({
     /** Ovládání, které nejlíp hraje hlavní sloveso věty. */
-    control: z.enum(CONTROLS),
+    control: z.enum(READ_CONTROLS),
     /** Slovesa věty v pořadí důležitosti; první je hlavní. */
     verbs: z.array(z.object({ word, class: z.enum(VERB_CLASSES) }).strict()).max(4),
     /** Za koho hráč hraje, 1–3 slova z věty. */

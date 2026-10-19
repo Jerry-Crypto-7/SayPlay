@@ -17,6 +17,7 @@ import { arenaCollect, arenaEat, arenaEscape, arenaLevel, growTo, moveFreeContro
 import { arenaCatch, arenaCatchContact } from './pieces/arena-catch';
 import { arenaBot } from './pieces/arena-bot';
 import { FIGHT_RULES, fightArena, fightControl } from './pieces/fight';
+import { lanesControl } from './pieces/lanes';
 import { fightBot } from './pieces/fight-bot';
 import { flapControl, flapTrack } from './pieces/flap';
 import { flapBot } from './pieces/flap-bot';
@@ -102,6 +103,8 @@ const BASE_CONTROLS = {
   timing: timingControl,
   rhythm: rhythmControl,
   duel: duelControl,
+  // P54C T4: pět pruhů sdílených chytáním, boucháním, obranou a krájením; hraje až s generátorem žánru.
+  lanes: lanesControl,
 } as const;
 
 const PHASE_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };

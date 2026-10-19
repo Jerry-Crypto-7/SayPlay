@@ -18,7 +18,7 @@
 
 import type { Reading, VerbClass } from '../read/schema';
 
-import { type CastRole, GENRES, GENRE_MODES, type GenreId, type GenreMode, type GenreModule } from './contract';
+import { type CastRole, GENRES, GENRE_MODES, type GenreId, type GenreMode, type GenreModule, type ModeAvailability } from './contract';
 import { FAMILIES, type VerbFamily } from './families';
 import { GENRE_MODULES } from './index';
 
@@ -269,7 +269,10 @@ export function verbPlayedBy(forms: readonly string[], genre: string, mode: stri
 /** Věta (a čtení modelem, když je) → všechny režimy seřazené od nejlepšího. */
 export function classifyGenre(sentence: string, reading: Reading | null, modules: GenreModules = GENRE_MODULES): GenreRanking {
   const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
-  const scores = new Map<string, { score: number; why: string[] }>(PAIRS.map((p) => [key(p), { score: 0, why: [] }]));
+  const availability = (p: Pair): ModeAvailability => (modules[p.genre] as GenreModule).availability(p.mode as never);
+  // Kostra žánru (P54C T4, `staged`) nehraje: v pořadí není vůbec, ani na konci – skladatel i návrh zkoušejí celé pořadí.
+  const pairs = PAIRS.filter((p) => availability(p) !== 'staged');
+  const scores = new Map<string, { score: number; why: string[] }>(pairs.map((p) => [key(p), { score: 0, why: [] }]));
   const add = (p: Pair, points: number, why: string): void => {
     const entry = scores.get(key(p));
     if (entry === undefined) return;
@@ -321,10 +324,9 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     if (reading.roles.some((role) => role.kind === 'chaser')) add(ESCAPE, 1, 'reading: chaser');
   }
 
-  const availability = (p: Pair): 'ready' | 'fallback' => (modules[p.genre] as GenreModule).availability(p.mode as never);
   // Režim, který hraje náhradu, jde za všechny `ready`, které něco slyšely; věta bez narážky dá `ready` v pořadí `unheard`.
   const tier = (p: Pair, score: number): number => (score > 0 ? 0 : 2 + 2 * unheard(p)) + (availability(p) === 'ready' ? 0 : 1);
-  const ranked = PAIRS.map((p, index) => {
+  const ranked = pairs.map((p, index) => {
     const entry = scores.get(key(p)) ?? { score: 0, why: [] };
     return { choice: { genre: p.genre, mode: p.mode, score: entry.score, why: entry.why.join(', ') || 'no cue' }, index };
   })

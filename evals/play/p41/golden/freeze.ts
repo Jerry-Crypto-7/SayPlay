@@ -70,6 +70,8 @@ export interface Variant {
 export function variants(): Variant[] {
   const out: Variant[] = [];
   for (const genre of GENRES) {
+    // Zmrazené jsou žánry z doby zmrazení; nové žánry (P54C) hlídají vlastní brány, ne tahle sada.
+    if (!Object.hasOwn(frozenParameterBounds, genre)) continue;
     for (const mode of GENRE_MODES[genre] as readonly string[]) {
       const at = `${genre}.${mode}`;
       const base = { genre, mode, hero: HERO, setting: SETTING };
@@ -82,7 +84,7 @@ export function variants(): Variant[] {
       for (const [key, value] of Object.entries(DEPTH_VALUES)) add(`depth:${key}`, { ...base, params: { [key]: value } });
       // Inputs are frozen too. New optional parameters must not silently enter
       // the old min/max fixtures; worlds and expected replay hashes stay intact.
-      const bounds = frozenParameterBounds[genre];
+      const bounds = frozenParameterBounds[genre as keyof typeof frozenParameterBounds];
       if (Object.keys(bounds).length > 0) {
         add('params:min', { ...base, params: Object.fromEntries(Object.entries(bounds).map(([key, range]) => [key, range.min])) });
         add('params:max', { ...base, params: Object.fromEntries(Object.entries(bounds).map(([key, range]) => [key, range.max])) });

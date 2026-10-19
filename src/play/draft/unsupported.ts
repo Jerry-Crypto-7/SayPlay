@@ -124,6 +124,11 @@ const ARCADE_CLOSEST: Readonly<Record<Exclude<ControlId, 'tap_go'>, string>> = {
   timing: 'a timing game',
   rhythm: 'a rhythm game',
   duel: 'a duel',
+  lanes: 'a lane game',
+  hop: 'a road-crossing game',
+  crowd: 'a crowd runner',
+  merge: 'a merge game',
+  push: 'a sumo game',
 };
 
 /** Hra žánru (P32B T2) se jmenuje podle žánru a režimu – ovládání pahýlu je jen dnešní náhrada. */

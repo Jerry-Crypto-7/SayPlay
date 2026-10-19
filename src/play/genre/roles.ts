@@ -105,6 +105,14 @@ const GENRE_FOE: Readonly<Record<GenreId, string>> = {
   rhythm: 'wrong note',
   duel: 'rival',
   flap: 'pipe',
+  catch: 'bomb',
+  whack: 'mole',
+  defense: 'goblin',
+  slice: 'bomb',
+  hop: 'car',
+  crowd: 'wall',
+  merge: 'fruit',
+  push: 'rival',
 };
 
 const placeRoles = (setting: string): PlaceRoles | null => {

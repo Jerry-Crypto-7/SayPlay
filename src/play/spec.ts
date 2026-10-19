@@ -260,8 +260,17 @@ export const tutorialSchema = z
  * a **bez výchozí hodnoty**: default by ho vepsal do každého přečteného specu
  * a pohnul `specHash` všech dnešních her.
  */
-export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'glide', 'walker', 'ball'] as const;
+export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'glide', 'walker', 'ball', 'lanes', 'hop', 'crowd', 'merge', 'push'] as const;
 export type ControlId = (typeof CONTROLS)[number];
+
+/**
+ * Ovládání nových žánrů P54C (T4), která ještě nehrají. Čtení modelem (`read/`) je nenabízí, aby se jeho
+ * dotaz nezměnil dřív, než je některá živá buňka hraje; úloha žánru, která buňku přepne na živou, ovládání odsud vyjme.
+ */
+export const STAGED_CONTROLS: readonly ControlId[] = ['lanes', 'hop', 'crowd', 'merge', 'push'];
+
+/** Ovládání, mezi kterými volí čtení modelem: všechna kromě `STAGED_CONTROLS`, v pořadí `CONTROLS`. */
+export const READ_CONTROLS = CONTROLS.filter((id) => !STAGED_CONTROLS.includes(id)) as unknown as readonly [ControlId, ...ControlId[]];
 
 /**
  * Doplňky arkády (P26D), seznam v `arcade/contract.ts`. Pole ve specu je
@@ -467,6 +476,12 @@ export const CONTROL_PARAMS = {
   timing: timingParamsSchema,
   rhythm: rhythmParamsSchema,
   duel: duelParamsSchema,
+  // P54C T4: ovládání nových žánrů zatím bez vlastních parametrů – generátor žánru a jeho ladění nese `DELEGATION`.
+  lanes: z.object({}).strict(),
+  hop: z.object({}).strict(),
+  crowd: z.object({}).strict(),
+  merge: z.object({}).strict(),
+  push: z.object({}).strict(),
 } as const;
 
 /**
@@ -495,6 +510,11 @@ const SPEC_CONTROL_PARAMS = {
   timing: delegated(timingParamsSchema),
   rhythm: delegated(rhythmParamsSchema),
   duel: delegated(duelParamsSchema),
+  lanes: delegated(CONTROL_PARAMS.lanes),
+  hop: delegated(CONTROL_PARAMS.hop),
+  crowd: delegated(CONTROL_PARAMS.crowd),
+  merge: delegated(CONTROL_PARAMS.merge),
+  push: delegated(CONTROL_PARAMS.push),
 } as const;
 
 export const gameSpecSchema = z
@@ -519,6 +539,11 @@ export const gameSpecSchema = z
         SPEC_CONTROL_PARAMS.timing,
         SPEC_CONTROL_PARAMS.rhythm,
         SPEC_CONTROL_PARAMS.duel,
+        SPEC_CONTROL_PARAMS.lanes,
+        SPEC_CONTROL_PARAMS.hop,
+        SPEC_CONTROL_PARAMS.crowd,
+        SPEC_CONTROL_PARAMS.merge,
+        SPEC_CONTROL_PARAMS.push,
       ])
       .optional(),
     addons: z.array(z.enum(ADDONS)).max(3).optional(),

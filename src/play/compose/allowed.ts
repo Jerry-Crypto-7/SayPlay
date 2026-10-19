@@ -2,7 +2,7 @@ import { CATCH_TUNING } from './catch';
 import { LEGACY_DIFFICULTY } from './legacy-difficulty';
 import { withCounts, type GenreSpec } from '../genre/contract';
 import type { Recipe } from './recipe';
-import { CATCH_PRESETS, catchPresetOf, DRIVE_PRESETS, NATIVE_PRESETS, PRESETS, TRACK_GOAL_PRESETS, trackGoalPresetOf, drivePresetOf, nativePresetOf, presetOf, type RecipeAssembly } from './presets';
+import { CATCH_PRESETS, catchPresetOf, DRIVE_PRESETS, NATIVE_PRESETS, PRESETS, STAGED_PRESETS, TRACK_GOAL_PRESETS, trackGoalPresetOf, drivePresetOf, nativePresetOf, presetOf, type RecipeAssembly } from './presets';
 
 interface Cell {
   readonly id: string;
@@ -55,6 +55,8 @@ const BASE_ALLOWED: readonly AllowedCell[] = [
       ...(recipe.actions.includes('shoot') ? [{ label: 'eel', does: 'shoot_at' as const }] : []),
     ] },
   })),
+  // P54C T4: the eight new genres are known but never selected; each genre task flips its own line to live.
+  ...Object.entries(STAGED_PRESETS).map(([id, recipe]): AllowedCell => ({ id, recipe, status: 'staged', preset: null })),
 ];
 
 export const ALLOWED: readonly AllowedCell[] = BASE_ALLOWED.map((cell): AllowedCell => {

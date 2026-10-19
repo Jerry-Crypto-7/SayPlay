@@ -1089,6 +1089,14 @@ const GENRE_SETTING: Readonly<Record<GenreId, string>> = {
   rhythm: 'neon stage',
   duel: 'dusty town',
   flap: 'bright sky',
+  catch: 'orchard',
+  whack: 'garden',
+  defense: 'castle walls',
+  slice: 'dojo',
+  hop: 'busy road',
+  crowd: 'race track',
+  merge: 'candy shop',
+  push: 'sumo ring',
 };
 const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };
 
@@ -1498,10 +1506,10 @@ export function draftChoiceOrder(sentence: string, ranking: GenreRanking, readin
  */
 export function draftForControl(sentence: string, control: ControlId, seed = 1): GameSpecV1 | null {
   if (control === 'tap_go') return draftGrid(sentence, seed, scoreArchetypes(sentence)).spec;
-  // Native recipe controls do not have a legacy single-control template.
-  if (control === 'glide' || control === 'walker' || control === 'ball') return null;
+  // Native recipe controls and the P54C genre controls do not have a legacy single-control template.
+  if (!Object.hasOwn(DEFAULT_CHOICE, control)) return null;
   const pick = pickControl(sentence.toLowerCase());
-  return draftArcade(sentence, seed, pick?.control === control ? pick : DEFAULT_CHOICE[control]);
+  return draftArcade(sentence, seed, pick?.control === control ? pick : DEFAULT_CHOICE[control as ControlChoice['control']]);
 }
 
 /** Věta → validní `GameSpecV1`, nikdy `null`, nikdy výjimka. */

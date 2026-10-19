@@ -124,6 +124,12 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   timing: arcade({ setting: true, cues: 'stack, stop the bar', roles: ['block', 'miss'], finish: false, labels: ['block'], mechanics: LIVES_AND_TIMER }),
   rhythm: arcade({ setting: true, cues: 'tap on the beat', roles: ['note', 'miss'], finish: false, labels: ['player', 'note'], mechanics: LIVES_AND_TIMER }),
   duel: arcade({ setting: true, cues: 'fight, boxing', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER, abilities: ALL_ABILITIES }),
+  // P54C T4: ovládání nových žánrů ještě nemají svět, takže nic nečtou; co jeho svět čte, doplní úloha žánru.
+  lanes: arcade({ cues: 'five lanes: catch falling things, whack moles, slice fruit, defend the lanes', roles: [], finish: false, labels: [], mechanics: [] }),
+  hop: arcade({ cues: 'hop across busy lanes, crossy road, frogger', roles: [], finish: false, labels: [], mechanics: [] }),
+  crowd: arcade({ cues: 'grow a crowd through gates, count masters', roles: [], finish: false, labels: [], mechanics: [] }),
+  merge: arcade({ cues: 'drop and merge, suika, 2048', roles: [], finish: false, labels: [], mechanics: [] }),
+  push: arcade({ cues: 'push rivals out of the ring, sumo', roles: [], finish: false, labels: [], mechanics: [] }),
 };
 
 export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.control ?? 'tap_go';

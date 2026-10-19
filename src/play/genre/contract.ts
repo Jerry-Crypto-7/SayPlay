@@ -40,8 +40,12 @@ export const GENRE_COMPILER_VERSION = 'genre.v5';
  */
 export const livesMechanic = (): GameSpecV1['mechanics'][number] => ({ id: 'health', params: { max: START_LIVES } });
 
-/** Od P36A T10/T11 jedenáct žánrů: pět z P32 a šest vrácených ovládání (střelba, hod, načasování, rytmus, souboj, poletování). */
-export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'flap'] as const;
+/**
+ * Od P36A T10/T11 jedenáct žánrů: pět z P32 a šest vrácených ovládání (střelba, hod, načasování, rytmus, souboj, poletování).
+ * P54C T4 přidá osm nových smyček jako kostry (`stagedGenre`): chytání, bouchání, obrana pruhů, krájení, přeskákání silnice,
+ * dav a brány, pouštění a slučování, vytlačování z ringu. Hrají až po úloze svého žánru.
+ */
+export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'flap', 'catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push'] as const;
 export type GenreId = (typeof GENRES)[number];
 
 export const GENRE_MODES = {
@@ -56,6 +60,14 @@ export const GENRE_MODES = {
   rhythm: ['default'],
   duel: ['default'],
   flap: ['default'],
+  catch: ['default'],
+  whack: ['default'],
+  defense: ['default'],
+  slice: ['default'],
+  hop: ['default'],
+  crowd: ['default'],
+  merge: ['default'],
+  push: ['default'],
 } as const satisfies Readonly<Record<GenreId, readonly [string, ...string[]]>>;
 export type GenreMode<G extends GenreId = GenreId> = (typeof GENRE_MODES)[G][number];
 
@@ -178,6 +190,14 @@ export const genreSpecSchema = z.discriminatedUnion('genre', [
   variant('rhythm'),
   variant('duel'),
   variant('flap'),
+  variant('catch'),
+  variant('whack'),
+  variant('defense'),
+  variant('slice'),
+  variant('hop'),
+  variant('crowd'),
+  variant('merge'),
+  variant('push'),
 ]);
 export type GenreSpec = z.infer<typeof genreSpecSchema>;
 export type GenreSpecOf<G extends GenreId> = Extract<GenreSpec, { readonly genre: G }>;
@@ -201,6 +221,15 @@ export const FOE_DOES: Readonly<Record<GenreId, CastRole>> = {
   rhythm: 'scenery',
   duel: 'fight',
   flap: 'avoid',
+  // P54C: padající bomba, krtek k úderu, nepřítel vlny, bomba mezi ovocem, auto na silnici, překážka davu, soupeř v ringu.
+  catch: 'avoid',
+  whack: 'shoot_at',
+  defense: 'shoot_at',
+  slice: 'avoid',
+  hop: 'avoid',
+  crowd: 'avoid',
+  merge: 'scenery',
+  push: 'fight',
 };
 
 /**
@@ -262,8 +291,11 @@ export function legacyCast(input: unknown): unknown {
 
 export type ParamBounds = Readonly<Record<string, { readonly min: number; readonly max: number }>>;
 
-/** `ready` = režim hraje, co slibuje; `fallback` = hraje náhradu a klasifikátor ho volí až naposled. */
-export type ModeAvailability = 'ready' | 'fallback';
+/**
+ * `ready` = režim hraje, co slibuje; `fallback` = hraje náhradu a klasifikátor ho volí až naposled;
+ * `staged` (P54C T4) = kostra, která nehraje vůbec – klasifikátor ani režisér ji nevidí a překlad hází.
+ */
+export type ModeAvailability = 'ready' | 'fallback' | 'staged';
 
 export interface GenreModule<G extends GenreId = GenreId> {
   readonly id: G;
@@ -283,6 +315,25 @@ export interface GenreModule<G extends GenreId = GenreId> {
   compile(spec: GenreSpecOf<G>): GameSpecV1;
   /** Co jde z věty vyčíst bez AI; `reading` je čtení modelem, když je k dispozici. */
   draftFill(sentence: string, reading: Reading | null): Partial<GenreSpecOf<G>>;
+}
+
+/**
+ * Kostra žánru (P54C T4): žánr je v kontraktu, schématu i registrech, ale nehraje. Nemá narážky, je `staged`
+ * (klasifikátor ani režisér ho nevidí) a překlad hází. Úloha žánru ji nahradí modulem, který hraje.
+ */
+export function stagedGenre<G extends GenreId>(id: G, heroClasses: readonly ModelClass[], paramBounds: ParamBounds = {}): GenreModule<G> {
+  return {
+    id,
+    modes: GENRE_MODES[id] as unknown as readonly GenreMode<G>[],
+    cues: [],
+    heroClasses,
+    paramBounds,
+    availability: () => 'staged',
+    compile: () => {
+      throw new Error(`Genre ${id} is not live yet`);
+    },
+    draftFill: (sentence, reading) => ({ genre: id, mode: 'default', ...draftRoles(sentence, reading) }) as Partial<GenreSpecOf<G>>,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -309,6 +360,15 @@ export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode
   rhythm: {},
   duel: {},
   flap: {},
+  // P54C T4: řádky nových žánrů předem, ať je úlohy žánrů běžící souběžně nepíšou do téhož místa; meze drží modul žánru.
+  catch: { default: { collectible: 'items' } },
+  whack: { default: { enemy: 'targets' } },
+  defense: { default: { enemy: 'enemies' } },
+  slice: { default: { collectible: 'items' } },
+  hop: {},
+  crowd: {},
+  merge: {},
+  push: { default: { enemy: 'rivals' } },
 };
 
 const countParamsOf = (spec: Pick<GenreSpec, 'genre' | 'mode'>): Readonly<Partial<Record<CountRole, string>>> =>

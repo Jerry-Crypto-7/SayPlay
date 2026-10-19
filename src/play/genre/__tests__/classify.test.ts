@@ -104,7 +104,9 @@ describe('classifyGenre', () => {
 
   it('ranks every mode of every genre once and gives a sentence with no cue the arena collect, the runner last', () => {
     const result = classifyGenre('A key inside a glass box on a pedestal behind a locked gate.', null, genreDoubles());
-    const modes = GENRES.flatMap((genre) => GENRE_MODES[genre]).length;
+    // Kostry P54C (T4, `staged`) v pořadí nejsou vůbec.
+    const doubles = genreDoubles();
+    const modes = GENRES.flatMap((genre) => GENRE_MODES[genre].filter((mode) => doubles[genre].availability(mode as never) !== 'staged')).length;
     expect(result.ranked).toHaveLength(modes);
     expect(new Set(result.ranked.map((choice) => `${choice.genre}.${choice.mode}`)).size).toBe(modes);
     expect(result.ranked[0]).toMatchObject({ genre: 'arena', mode: 'collect', score: 0 });

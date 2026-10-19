@@ -13,7 +13,10 @@ import { describe, expect, it } from 'vitest';
 import { compileArcade } from '@/play/arcade/compile';
 import { readGameSpec } from '@/play/spec';
 
-import { GENRES, GENRE_COMPILER_VERSION, GENRE_MODES, type GenreSpec, genreSpecSchema } from '../contract';
+import { ALLOWED, liveCells } from '@/play/compose/allowed';
+
+import { classifyGenre } from '../classify';
+import { COUNT_PARAMS, FOE_DOES, GENRES, GENRE_COMPILER_VERSION, GENRE_MODES, type GenreSpec, genreSpecSchema } from '../contract';
 import penguin from '../__fixtures__/penguin.json';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '../index';
 
@@ -57,9 +60,9 @@ describe('genre contract (P32-0 T3)', () => {
     }
   });
 
-  it('has a sample for every genre and mode', () => {
+  it('has a sample for every genre and mode that plays', () => {
     const covered = SAMPLES.map((sample) => `${sample.genre}.${sample.mode}`);
-    const expected = GENRES.flatMap((genre) => GENRE_MODES[genre].map((mode) => `${genre}.${mode}`));
+    const expected = GENRES.flatMap((genre) => GENRE_MODES[genre].filter((mode) => GENRE_MODULES[genre].availability(mode as never) !== 'staged').map((mode) => `${genre}.${mode}`));
     expect(covered.sort()).toEqual(expected.sort());
   });
 
@@ -117,6 +120,41 @@ describe('genre contract (P32-0 T3)', () => {
     const fill = GENRE_MODULES.arena.draftFill('A cat collects glowing fish on a frozen lake while a polar bear chases it', null);
     expect(fill.genre).toBe('arena');
     expect(fill.hero).toBe('cat');
+  });
+});
+
+/** Kostra P54C T4: osm žánrů je v kontraktu, ale nehraje – nikdo je nevybere, dokud jejich úloha nepřepne buňku. */
+const STAGED = ['catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push'] as const;
+
+describe('staged genres (P54C T4)', () => {
+  it('registers the eight new genres with one default mode, staged, and a compile that refuses', () => {
+    for (const genre of STAGED) {
+      expect(GENRES).toContain(genre);
+      expect(GENRE_MODES[genre]).toEqual(['default']);
+      const module = GENRE_MODULES[genre];
+      expect(module.availability('default' as never)).toBe('staged');
+      expect(module.cues).toEqual([]);
+      expect(() => module.compile({ genre, mode: 'default', hero: 'fox', setting: 'forest' } as never)).toThrow(/not live/);
+      expect(FOE_DOES[genre]).toBeDefined();
+      expect(COUNT_PARAMS[genre]).toBeDefined();
+      expect(genreSpecSchema.safeParse({ genre, mode: 'default', hero: 'fox', setting: 'forest' }).success).toBe(true);
+    }
+  });
+
+  it('the classifier never ranks a staged genre, even when the sentence names it', () => {
+    const sentences = ['whack the moles before they hide', 'slice the flying fruit but not the bombs', 'catch the falling apples', 'defend the castle from waves of goblins', 'merge the fruits in a jar', 'a crowd runs through gates', 'hop across the busy road', 'push rivals out of the ring', 'a cozy game'];
+    for (const sentence of sentences) {
+      const ranked = classifyGenre(sentence, null).ranked;
+      expect(ranked.filter((choice) => (STAGED as readonly string[]).includes(choice.genre)), sentence).toEqual([]);
+    }
+  });
+
+  it('every staged genre has a staged cell and no live one', () => {
+    for (const genre of STAGED) {
+      const cell = ALLOWED.find((entry) => entry.id === `${genre}.default`);
+      expect(cell?.status, genre).toBe('staged');
+      expect(liveCells().some((entry) => entry.preset.genre === genre)).toBe(false);
+    }
   });
 });
 
