@@ -50,6 +50,14 @@ const WINDOW = 3;
 const SETTLE_MS = 150;
 /** Plynulý posun ke kartě trvá pod sekundu; starší cíl už dosednutí nepřebije. */
 const AIM_MS = 1500;
+/** Kolikrát zkusit detail hry znovu po 429; okno stropu je 10 s (`RATE_WINDOW_MS`). */
+const DETAIL_RETRIES = 3;
+
+/** Čekání podle `retry-after` (sekundy), nejvýš okno stropu; bez hlavičky 1 s. */
+function retryAfterMs(response: Response): number {
+  const seconds = Number(response.headers.get('retry-after'));
+  return Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds, 10) * 1000 : 1000;
+}
 
 type FeedState = { readonly kind: 'loading' } | { readonly kind: 'error' } | { readonly kind: 'ready'; readonly games: readonly FeedGame[]; readonly next: string | null };
 
@@ -112,8 +120,17 @@ export function ReelFeed() {
     void (async () => {
       let detail: GameDetail | 'error' = 'error';
       try {
-        const response = await fetch(`/api/play/games/${versionId}`);
-        if (response.ok) detail = (await response.json()) as GameDetail;
+        // Strop frekvence (429) chytí rychlé listování i s přednačtenými sousedy: počkat, kolik
+        // řekne server, a zkusit znovu – jinak by karta zůstala „nenačtená“, dokud hráč nepřijde znovu.
+        for (let attempt = 0; ; attempt += 1) {
+          const response = await fetch(`/api/play/games/${versionId}`);
+          if (response.status === 429 && attempt < DETAIL_RETRIES) {
+            await new Promise((resolve) => window.setTimeout(resolve, retryAfterMs(response)));
+            continue;
+          }
+          if (response.ok) detail = (await response.json()) as GameDetail;
+          break;
+        }
       } catch {
         // Výpadek sítě: karta řekne, že se hra nenačetla, a feed jde listovat dál.
       }

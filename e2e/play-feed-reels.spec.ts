@@ -125,6 +125,21 @@ test.describe('/play – bot preview in the feed', () => {
     await expect(page.locator('canvas')).toHaveCount(1);
   });
 
+  test('a game detail refused by the rate cap loads after retry-after instead of a dead card', async ({ page }) => {
+    // Úzká obrazovka: od 1024 px stahuje detail první hry i `FeaturedGame` a 429 by schytal on.
+    await page.setViewportSize({ width: 412, height: 915 });
+    let refused = 0;
+    await page.route(`**/api/play/games/${rows[0].versionId}`, (route) => {
+      if (refused > 0) return route.continue();
+      refused += 1;
+      return route.fulfill({ status: 429, headers: { 'retry-after': '1' }, contentType: 'application/json', body: '{"error":{"code":"RATE_LIMITED"}}' });
+    });
+    await page.goto(`/play?g=${rows[0].versionId}`);
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    await expectPreview(page, rows[0]);
+    expect(refused).toBe(1);
+  });
+
   test.describe('phone', () => {
     // Pixel 7 bez `defaultBrowserType` – ten ve skupině nastavit nejde a prohlížeč je tentýž.
     const { defaultBrowserType: _browser, ...pixel7 } = devices['Pixel 7'];
