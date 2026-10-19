@@ -1,0 +1,129 @@
+{
+  "$comment": "Balík modelů pro žánry P54C (P54B T12), odpověď na model-requests.json. id = stálé id scény (sceneModelOf(label, character) ho vrátí; rigged:q-… je postava s kostrou T3), class = třída pohybu z catalog-motion.json nebo manifestu, height = doporučená výška těla ve scéně v metrech (typická velikost věci, P54C ji smí přebít). Vše z katalogu, nic nového v public/. Krtka katalog ani cache CC0 nemá a gen3d ho třikrát nevyrobil (P45E, P45F, P45I) – zastupují ho zvířata, která vylézají z nory.",
+  "version": 1,
+  "items": {
+    "fruit": {
+      "character": false,
+      "models": [
+        { "id": "cc0-apple", "label": "apple", "class": "prop", "height": 0.4 },
+        { "id": "gen3d-banana", "label": "banana", "class": "biped", "height": 0.4 },
+        { "id": "gen3d-orange", "label": "orange", "class": "prop", "height": 0.4 },
+        { "id": "gen3d-suika", "label": "watermelon", "class": "prop", "height": 0.6 },
+        { "id": "gen3d-pineapple", "label": "pineapple", "class": "biped", "height": 0.6 },
+        { "id": "gen3d-pear", "label": "pear", "class": "biped", "height": 0.4 }
+      ]
+    },
+    "bomb": {
+      "character": false,
+      "models": [
+        { "id": "cc0-bomb", "label": "bomb", "class": "biped", "height": 0.5 },
+        { "id": "gen3d-dynamite", "label": "dynamite", "class": "biped", "height": 0.5 },
+        { "id": "cc0-fire-grenade", "label": "grenade", "class": "biped", "height": 0.4 },
+        { "id": "gen3d-tnt-crate", "label": "tnt crate", "class": "prop", "height": 0.6 },
+        { "id": "gen3d-explosive-barrel", "label": "explosive barrel", "class": "biped", "height": 0.8 }
+      ]
+    },
+    "mole": {
+      "character": true,
+      "models": [
+        { "id": "hamster", "label": "hamster", "class": "quadruped", "height": 0.5 },
+        { "id": "gen3d-meerkat", "label": "meerkat", "class": "prop", "height": 0.6 },
+        { "id": "gen3d-hedgehog", "label": "hedgehog", "class": "quadruped", "height": 0.5 }
+      ]
+    },
+    "hammer": {
+      "character": false,
+      "models": [
+        { "id": "cc0-hammer", "label": "hammer", "class": "biped", "height": 0.9 },
+        { "id": "gen3d-sledgehammer", "label": "sledgehammer", "class": "biped", "height": 1.0 },
+        { "id": "gen3d-war-hammer", "label": "war hammer", "class": "biped", "height": 1.0 },
+        { "id": "cc0-tool-hammer", "label": "tool hammer", "class": "biped", "height": 0.8 }
+      ]
+    },
+    "tower": {
+      "character": false,
+      "models": [
+        { "id": "watchtower", "label": "tower", "class": "biped", "height": 3.5 },
+        { "id": "gen3d-cannon-tower", "label": "cannon tower", "class": "biped", "height": 3 },
+        { "id": "gen3d-wizard-tower", "label": "wizard tower", "class": "biped", "height": 3.5 },
+        { "id": "gen3d-castle-tower", "label": "castle tower", "class": "biped", "height": 3.5 },
+        { "id": "gen3d-laser-turret", "label": "laser turret", "class": "biped", "height": 2 }
+      ]
+    },
+    "wave-enemy": {
+      "character": true,
+      "models": [
+        { "id": "rigged:q-big-orc", "label": "orc", "class": "monster", "height": 1.6 },
+        { "id": "rigged:q-cute-cyclops", "label": "cyclops", "class": "monster", "height": 1.4 },
+        { "id": "rigged:q-big-frog", "label": "frogman", "class": "monster", "height": 1.4 },
+        { "id": "cc0-zombie", "label": "zombie", "class": "biped", "height": 1.6 },
+        { "id": "cc0-skeleton", "label": "skeleton", "class": "biped", "height": 1.6 },
+        { "id": "slime", "label": "slime", "class": "biped", "height": 0.8 },
+        { "id": "gen3d-spider", "label": "spider", "class": "quadruped", "height": 0.8 }
+      ]
+    },
+    "car": {
+      "character": false,
+      "models": [
+        { "id": "race-car", "label": "car", "class": "vehicle", "height": 1 },
+        { "id": "cc0-car-taxi", "label": "taxi", "class": "vehicle", "height": 1.4 },
+        { "id": "cc0-car-sedan", "label": "sedan", "class": "vehicle", "height": 1.4 },
+        { "id": "gen3d-police-car", "label": "police car", "class": "vehicle", "height": 1.5 },
+        { "id": "cc0-van", "label": "van", "class": "vehicle", "height": 2 },
+        { "id": "cc0-bus", "label": "bus", "class": "vehicle", "height": 3 },
+        { "id": "cc0-garbage-truck", "label": "truck", "class": "vehicle", "height": 3 }
+      ]
+    },
+    "log": {
+      "character": false,
+      "models": [
+        { "id": "cc0-wood-log", "label": "log", "class": "prop", "height": 0.6 },
+        { "id": "gen3d-rolling-log", "label": "rolling log", "class": "prop", "height": 0.6 },
+        { "id": "gen3d-fallen-log", "label": "fallen log", "class": "prop", "height": 0.6 },
+        { "id": "gen3d-driftwood-log", "label": "driftwood log", "class": "prop", "height": 0.5 }
+      ]
+    },
+    "crowd": {
+      "character": true,
+      "models": [
+        { "id": "rigged:q-casual-man", "label": "tourist", "class": "humanoid", "height": 1.8 },
+        { "id": "rigged:q-casual-woman", "label": "wife", "class": "humanoid", "height": 1.7 },
+        { "id": "rigged:q-businessman", "label": "boss", "class": "humanoid", "height": 1.8 },
+        { "id": "rigged:q-businesswoman", "label": "businesswoman", "class": "humanoid", "height": 1.7 },
+        { "id": "rigged:q-worker", "label": "plumber", "class": "humanoid", "height": 1.8 },
+        { "id": "rigged:q-cowgirl", "label": "cowgirl", "class": "humanoid", "height": 1.7 }
+      ]
+    },
+    "ring": {
+      "character": false,
+      "models": [
+        { "id": "gen3d-boxing-ring", "label": "boxing ring", "class": "prop", "height": 1.5 },
+        { "id": "gen3d-wooden-fence", "label": "wooden fence", "class": "prop", "height": 1 },
+        { "id": "tire-barrier", "label": "guardrail", "class": "prop", "height": 0.6 },
+        { "id": "cc0-traffic-barrier", "label": "traffic barrier", "class": "prop", "height": 1 }
+      ]
+    },
+    "merge": {
+      "character": false,
+      "models": [
+        { "id": "gen3d-red-cherry", "label": "cherry", "class": "biped", "height": 0.3 },
+        { "id": "gen3d-strawberry", "label": "strawberry", "class": "biped", "height": 0.4 },
+        { "id": "gen3d-lemon", "label": "lemon", "class": "prop", "height": 0.53 },
+        { "id": "gen3d-orange", "label": "orange", "class": "prop", "height": 0.7 },
+        { "id": "gen3d-pineapple", "label": "pineapple", "class": "biped", "height": 0.93 },
+        { "id": "gen3d-suika", "label": "watermelon", "class": "prop", "height": 1.24 }
+      ]
+    },
+    "fish": {
+      "character": true,
+      "models": [
+        { "id": "cc0-goldfish", "label": "fish", "class": "swimmer", "height": 0.4 },
+        { "id": "cc0-clownfish", "label": "clownfish", "class": "swimmer", "height": 0.4 },
+        { "id": "gen3d-pufferfish", "label": "pufferfish", "class": "swimmer", "height": 0.5 },
+        { "id": "cc0-swordfish", "label": "swordfish", "class": "swimmer", "height": 0.8 },
+        { "id": "cc0-anglerfish", "label": "anglerfish", "class": "swimmer", "height": 0.6 },
+        { "id": "cc0-shark", "label": "shark", "class": "swimmer", "height": 1.2 }
+      ]
+    }
+  }
+}
