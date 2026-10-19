@@ -524,7 +524,7 @@ export function ReelFeed() {
           </FeedNext.Provider>
         )}
       </StageHost>
-      <Feed games={games} current={current.versionId} known={known} onPick={pick} />
+      <Feed games={games} index={index} known={known} shot={(versionId) => snapshots.get(versionId)} onPick={pick} />
       {thanks && (
         <p className="sp-toast" data-testid="feed-reported" role="status">
           Thanks. We&apos;ll take a look.
