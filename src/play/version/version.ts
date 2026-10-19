@@ -54,6 +54,21 @@ export interface PublishedGame {
   /** `'upgrade'` = autorská verze návrhu `version.parentId`, ne remix. */
   readonly relation?: 'upgrade';
   readonly timings?: PlayTimings;
+  /** Okno robotova běhu pro náhled ve feedu (P54A T2); hra publikovaná dřív ho nemá. */
+  readonly preview?: FeedPreview;
+}
+
+/**
+ * Náhled robota na kartě feedu (P54A T2): klient tiše dopočte stav do
+ * `startTick` a dokola přehrává `startTick..endTick`. `inputs` jsou robotovy
+ * vstupy před `endTick` v run-length řetězci (`encodeInputs` v `preview.ts`) –
+ * držená osa je jeden záznam. `hash` = `hashArcade` stavu v `endTick`.
+ */
+export interface FeedPreview {
+  readonly startTick: number;
+  readonly endTick: number;
+  readonly inputs: string;
+  readonly hash: string;
 }
 
 export function sealVersion(compiled: CompiledGame, parentId: string | null, now: () => number): GameVersion {

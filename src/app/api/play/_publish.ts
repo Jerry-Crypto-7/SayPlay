@@ -30,7 +30,7 @@ import { sharedStoreFromEnv } from '@/server/spend-store';
 import { getCompiler } from './_compiler';
 import { startCustomEnv } from './_env';
 import { blockedText, fail, SENTENCE_BLOCKED, VERSION_ID_PATTERN } from './_errors';
-import { reportFor } from './_report';
+import { previewFor, reportFor } from './_report';
 import { scheduleVoice } from './_voice';
 
 /** Nejdelší věta, kterou dveře vezmou. Delší je 413, ne oříznutí. */
@@ -259,6 +259,7 @@ export async function publishReadSpec(
     const keypoints = report.keypoints.filter((keypoint) => !keypoint.passed).map((keypoint) => keypoint.assertionId);
     return { ok: false, response: fail(422, 'NOT_PUBLISHABLE', 'the game did not pass its own checks', undefined, { keypoints }), issues: ['NOT_PUBLISHABLE', ...keypoints] };
   }
+  const preview = previewFor(compiled.value);
 
   const version = sealVersion(compiled.value, parentId, Date.now);
   const game: PublishedGame = {
@@ -267,6 +268,7 @@ export async function publishReadSpec(
     blueprint: compiled.value.blueprint,
     ...(compiled.value.arcade === undefined ? {} : { arcade: compiled.value.arcade }),
     report,
+    ...(preview === null ? {} : { preview }),
     ...(extras.origin === undefined ? {} : { origin: extras.origin }),
     ...(extras.sentence === undefined ? {} : { sentence: extras.sentence }),
     ...(extras.relation === undefined ? {} : { relation: extras.relation }),
