@@ -117,6 +117,16 @@ function closedChain(pass: 'jump' | 'slide'): Pick<RunnerPattern, 'fits' | 'buil
   };
 }
 
+/**
+ * Zeď (P52 T4): řada přes všechny pruhy z překážek, které se nepřeskočí ani nepodklouznou. Projde ji jen
+ * dash nebo štít věty, bez nich stojí život. Druhy věty, které se míjí jen jiným pruhem; věta bez nich bedny.
+ */
+export function wallRow(rng: CompileRng, kinds: readonly ObstacleKind[]): RowLanes {
+  const own = withPass(kinds, 'lane');
+  const pool: readonly ObstacleKind[] = own.length > 0 ? own : ['crate'];
+  return lanesOf(() => rng.pick(pool));
+}
+
 /** Jedna stavba dané délky. */
 function structure(kind: StructureKind): Pick<RunnerPattern, 'fits' | 'build' | 'check'> {
   const [min, max] = STRUCTURES[kind].length;

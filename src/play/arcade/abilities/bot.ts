@@ -14,6 +14,7 @@ import { ABILITY_SLOTS, AXIS_MAX, type AbilityId, type ArcadeInput, type ArcadeO
 import { arenaAxis } from '../pieces/arena';
 import { fightMove, fightSight } from '../pieces/fight-bot';
 import { RUNNER } from '../pieces/runner';
+import { wallAhead } from '../pieces/runner-bot';
 import { ABILITY_BUTTONS, ABILITY_TIMING, type AbilityBot, abilityActive, abilityCooldown, cooldownOf } from './state';
 import { inStrikeReachWithin } from './strike';
 
@@ -305,6 +306,10 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
   // Trubky poletování (P47B T9) robot proletí mezerou: dotyk s nimi, který vidí bez výšky, by akci vybil před nepřítelem.
   // Útes klouzání (P47B T11) robot obletí taky: přímka k němu vybila štít a nepřítel v další obruči přišel v cooldownu.
   const harm = params.harm.map((role) => ROLE[role]).filter((role) => !(steer || flap || base.id === 'glide_bot') || role !== ROLE.obstacle);
+  // Běžec se zdmi (P52 T4): dash a štít bere jen zeď. Řadě s průchodem robot uhne jako bez akce – prorážet každou
+  // řadu dalo začátečníkovi 10/10 – a akce mu zůstane připravená na zeď.
+  const saving = base.id === 'runner_bot' && (base.params as { readonly walls?: true }).walls === true && !wallAhead(state, player);
+  const guardHarm = saving ? harm.filter((role) => role !== ROLE.obstacle) : harm;
   const around = AROUND_BOTS.includes(base.id);
   const slots = slotsOf(observation, params);
   if (base.id === 'fight_bot') return fightStep(observation, input, slots, params.keeper);
@@ -384,7 +389,7 @@ export function abilityStep(observation: ArcadeObservation, input: ArcadeInput, 
       if (threat !== null && (slot.ready || slot.activeUntil >= threat.at)) hold = threat.body;
       continue;
     }
-    const threat = oncoming(parts.length === 0 ? of(harm) : [...of(harm), ...parts], contact, owned);
+    const threat = oncoming(parts.length === 0 ? of(guardHarm) : [...of(guardHarm), ...parts], contact, owned);
     // Dash i štít (blok) chrání jen po okno: zmáčknout, až dotyk padne do jeho první půlky.
     // Náboj štítu spotřebovaný v posledních tikách robot ještě nevidí – riziko jednoho zásahu.
     const active = ABILITY_TIMING[slot.id].active;
