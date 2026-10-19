@@ -48,6 +48,7 @@ import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
 import { walkerFoeCells } from './pieces/walker';
+import { walkerShot } from './pieces/walker-bot';
 import { census, shotHit } from './pieces/shots';
 import { abilityBotParams, abilityButton, abilityControlParams, tickAbilities } from './abilities/state';
 import { powerupControlParams, tickPowerup } from './powerups/state';
@@ -450,6 +451,7 @@ function covered(state: Int32Array, target: number): boolean {
 export const shootStep = ({ state, player, recent }: ArcadeObservation, input: ArcadeInput, base: PieceRef, owns?: (body: number) => boolean): ArcadeInput => {
   if (recent.some((seen) => (seen.buttons & BUTTON.FIRE) !== 0)) return input;
   if (base.id === 'arena_bot' && census(state).projectiles > 0) return input;
+  if (base.id === 'walker_bot') return walkerShot({ state, player, recent }, base.params.speed as number, SHOOT.range, owns) ? { ...input, buttons: input.buttons | BUTTON.FIRE } : input;
   const p = bodyBase(player);
   let px = state[p + BODY.x] as number;
   let pz = (state[p + BODY.z] as number) + (state[p + BODY.vz] as number) * recent.length;
@@ -556,7 +558,8 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
     const foes = control === 'move_free' ? bodies.filter((body) => body.role === 'enemy').length : enemies.length;
     const rules: PieceRef[] = [
       ...parts.rules,
-      { id: 'blaster', params: { template, aim: control === 'move_free' ? 'heading' : 'forward' } },
+      // Pohled shora (aréna, bludiště od P52 T6): střela letí směrem pohybu.
+      { id: 'blaster', params: { template, aim: control === 'move_free' || control === 'walker' ? 'heading' : 'forward' } },
       { id: control === 'glide' ? 'glide_shot_hit' : 'shot_hit', params: {} },
     ];
     // Aréna náraz do buňky řeší sama (`arena_eat`).

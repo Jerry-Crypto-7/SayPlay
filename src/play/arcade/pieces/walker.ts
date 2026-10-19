@@ -191,6 +191,8 @@ export function walkerVisible(state: ArcadeState, player: number, guard: number,
 export const walkerCaught: RulePiece<z.infer<typeof caughtParams>> = {
   id: 'walker_caught', params: caughtParams, roles: ['player', 'enemy'], trigger: 'tick', cost: () => ({ bodies: 0, rules: 1 }),
   fire({ state, player }, params) {
+    // Okradený strážný (krádež, P52 T6) z bludiště odešel: mrtvé tělo nehlídá.
+    if ((state[bodyBase(params.body) + BODY.flags]! & FLAG.alive) === 0) return [];
     return walkerVisible(state, player, params.body, params, params.range) ? [{ kind: 'damage', amount: 1, grace: 60 }] : [];
   },
 };

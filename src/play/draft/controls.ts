@@ -339,6 +339,10 @@ function heroDoes(text: string, at: number, end: number, hero: ReadonlySet<strin
   const prev = before[before.length - 1];
   if (prev === undefined) return false;
   if (SUBORDINATORS.has(prev)) return /ing\b/.test(text.slice(at, end));
+  // Vztažná věta patří předchůdci (P52 T6): „kicks the angry gnomes that block the paths“ – množné jméno, které
+  // hrdina není, je nepřítel a jeho sloveso hrdinovi tlačítko nedá.
+  const antecedent = before[before.length - 2];
+  if ((prev === 'that' || prev === 'who') && antecedent !== undefined && !hero.has(antecedent) && !hero.has(singular(antecedent)) && singular(antecedent) !== antecedent) return false;
   if (LINKERS.has(prev)) return true;
   const said = text.slice(at, end).split(' ')[0]!;
   if (shootsAtTheHero(text, at, said, before)) return false;
