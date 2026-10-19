@@ -2887,12 +2887,19 @@ button.play-feed-card {
 /* Gesta (T9): v náhledu robota tah po scéně posouvá feed (ťuk hru převezme), při
  * hraní patří tah hře a feed stojí – ven vede okraj karty, Esc, výsledek a Back. */
 /* Scéna má `touch-action: none` přímo v `style` (`ArcadeStage`, P54B) – náhled ho musí přebít. */
-.play-pager-slide:has([data-testid='play-demo']) .play-stage {
+/* Méně pohybu (T13, `data-still`): hra stojí na tiku 0 s `play-first-prompt` – pro feed jako náhled. */
+.play-pager-slide:is(:has([data-testid='play-demo']), [data-still='true']:has([data-testid='play-first-prompt'])) .play-stage {
   touch-action: pan-y !important;
 }
 
-.play-reel:has(.play-shell):not(:has([data-testid='play-demo'], [data-testid='play-outcome'])) {
+.play-reel:has(.play-shell):not(:has([data-testid='play-demo'], [data-still='true'] [data-testid='play-first-prompt'], [data-testid='play-outcome'])) {
   overflow: hidden;
+}
+
+/* Fokus po přechodu (T13) leží na kartě; obrys uvnitř, karta ořezává přesah. */
+.play-reel-card:focus-visible {
+  outline: var(--sp-border-thick) solid var(--sp-focus);
+  outline-offset: calc(-1 * var(--sp-border-thick));
 }
 
 /* Obrázek karty mimo hru (T8): snímek scény z posledního odchodu, kurátorský
@@ -2933,8 +2940,13 @@ button.play-feed-card {
   pointer-events: none;
 }
 
-.play-pager-slide:has([data-testid='play-demo']) > .play-reel-hint {
+.play-pager-slide:is(:has([data-testid='play-demo']), [data-still='true']:has([data-testid='play-first-prompt'])) > .play-reel-hint {
   display: flex;
+}
+
+/* „Tap to play“ feedu místo vlastní výzvy hry „Tap to start“. */
+.play-pager-slide[data-still='true'] .play-first-prompt {
+  display: none;
 }
 
 .play-reel-hint .play-poster-goal {
@@ -2953,8 +2965,8 @@ button.play-feed-card {
   gap: var(--sp-space-3);
 }
 
-.play-reel-frame:has([data-testid='play-demo']) .play-reel-actions,
-.play-pager-slide:has([data-testid='play-demo']) > .play-reel-lineage {
+.play-reel-frame:has([data-testid='play-demo'], [data-still='true'] [data-testid='play-first-prompt']) .play-reel-actions,
+.play-pager-slide:is(:has([data-testid='play-demo']), [data-still='true']:has([data-testid='play-first-prompt'])) > .play-reel-lineage {
   display: flex;
 }
 

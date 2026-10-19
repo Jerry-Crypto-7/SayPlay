@@ -52,7 +52,11 @@ export function previewFor(versionId: string, stored: FeedPreview | undefined, w
   return job;
 }
 
-export type FeedMode = 'preview' | 'play' | 'result';
+/** `still` = hra stojí na tiku 0 a čeká na první dotek (méně pohybu, nebo hra bez náhledu). */
+export type FeedMode = 'preview' | 'still' | 'play' | 'result';
+
+/** Hráč kartu ještě nepřevzal: tah posouvá feed a sloupec akcí je vidět. */
+export const untaken = (mode: FeedMode): boolean => mode === 'preview' || mode === 'still';
 
 export interface FeedProbe {
   readonly versionId: string | null;
@@ -90,5 +94,7 @@ export function feedMode(card: Element | null): FeedMode {
   if (card === null || card.querySelector('.play-shell') === null) return 'preview';
   if (card.querySelector('[data-testid="play-outcome"]') !== null) return 'result';
   if (card.querySelector('[data-testid="play-demo"]') !== null) return 'preview';
+  // Jen karta bez náhledu kvůli méně pohybu (`data-still`): po převzetí náhledu stojí tik na 0 taky.
+  if (card.getAttribute('data-still') === 'true' && card.querySelector('[data-testid="play-first-prompt"]') !== null) return 'still';
   return 'play';
 }

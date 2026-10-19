@@ -36,7 +36,7 @@ interface Row {
 
 interface FeedProbe {
   readonly versionId: string | null;
-  readonly mode: 'preview' | 'play' | 'result';
+  readonly mode: 'preview' | 'still' | 'play' | 'result';
   readonly tick: number;
   readonly contexts: number;
 }
@@ -413,4 +413,53 @@ test.describe('/play – bot preview in the feed', () => {
       await expect(page.locator('.play-tabbar')).toBeHidden();
     });
   }
+
+  test.describe('reduced motion and keyboard (T13)', () => {
+    test.use({ contextOptions: { reducedMotion: 'reduce' } });
+
+    test('desktop: no bot preview, tick 0 until Enter, focus follows the card and Tab reaches the actions', async ({ page }) => {
+      test.setTimeout(90_000);
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`/play?g=${rows[0].versionId}`);
+      await expect.poll(async () => (await probe(page)).mode, { timeout: 30_000 }).toBe('still');
+      await expect(page.getByTestId('feed-hint')).toBeVisible();
+      await expect(page.getByTestId('feed-actions')).toBeVisible();
+
+      // ↓ = další karta bez animace, fokus na ní; robot nehraje, hodiny stojí.
+      await page.keyboard.press('ArrowDown');
+      await expect.poll(async () => (await probe(page)).versionId).toBe(rows[1].versionId);
+      await expect(page.locator('[data-testid="feed-card"][data-active="true"]')).toBeFocused();
+      await expect(page.locator('[data-testid="feed-card"][data-active="true"]')).toHaveAttribute('aria-label', rows[1].title);
+      await expect.poll(async () => (await probe(page)).mode, { timeout: 30_000 }).toBe('still');
+      for (let check = 0; check < 4; check += 1) {
+        await page.waitForTimeout(500);
+        expect(await probe(page)).toMatchObject({ mode: 'still', tick: 0 });
+      }
+
+      // Tab projde akce v pořadí; Enter na Remixu otevře list a hru nepřevezme.
+      const labels: string[] = [];
+      for (let step = 0; step < 12 && !labels.includes('Report this game'); step += 1) {
+        await page.keyboard.press('Tab');
+        // Jen sloupec akcí – karta před ním má vlastní tlačítka HUD (i „Share“).
+        labels.push(await page.evaluate(() => (document.activeElement?.closest('[data-testid="feed-actions"]') ? (document.activeElement.getAttribute('aria-label') ?? '') : '')));
+      }
+      expect(labels.filter((label) => label !== '')).toEqual(['Remix this game', 'Play to dare a friend', 'Share', 'Report this game']);
+      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Shift+Tab');
+      await expect(page.getByRole('button', { name: 'Remix this game' })).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('dialog')).toBeVisible();
+      expect(await probe(page)).toMatchObject({ mode: 'still', tick: 0 });
+      await page.keyboard.press('Escape');
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+
+      // Enter na kartě = hrát: první vstup padne do tiku 0 hráčova běhu.
+      await page.locator('[data-testid="feed-card"][data-active="true"]').focus();
+      await page.keyboard.press('Enter');
+      await expect.poll(async () => (await probe(page)).mode).toBe('play');
+      await expect.poll(async () => (await probe(page)).tick).toBeGreaterThan(0);
+      await expect(page.getByTestId('feed-hint')).toBeHidden();
+    });
+  });
 });

@@ -11,7 +11,7 @@
  */
 
 import Link from 'next/link';
-import { type RefObject, useEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
@@ -60,6 +60,21 @@ export function TapHint({ goal, beat = null }: { readonly goal: string; readonly
         Tap to play
       </span>
     </div>
+  );
+}
+
+const REDUCE = '(prefers-reduced-motion: reduce)';
+
+/** Méně pohybu (T13): karta nepřehrává robota, hra stojí na tiku 0 a čeká na ťuk. */
+function useReducedMotion(): boolean {
+  return useSyncExternalStore(
+    (change) => {
+      const query = window.matchMedia(REDUCE);
+      query.addEventListener('change', change);
+      return () => query.removeEventListener('change', change);
+    },
+    () => window.matchMedia(REDUCE).matches,
+    () => false,
   );
 }
 
@@ -118,7 +133,8 @@ function ActiveSlide({
   /** `undefined` = náhled se ještě počítá, `null` = hra hraje bez něj. */
   readonly preview: FeedPreview | null | undefined;
 }) {
-  if (detail === undefined || (detail !== 'error' && detail.arcade !== undefined && preview === undefined)) {
+  const still = useReducedMotion();
+  if (detail === undefined || (detail !== 'error' && detail.arcade !== undefined && preview === undefined && !still)) {
     return (
       <p className="play-pager-note" role="status">
         Loading {game.title}…
@@ -142,7 +158,7 @@ function ActiveSlide({
   }
   return (
     <>
-      <WithPlayEnv key={`${game.versionId}-${String(round)}`} theme={detail.spec.theme} versionId={game.versionId}>
+      <WithPlayEnv key={`${game.versionId}-${String(round)}-${String(still)}`} theme={detail.spec.theme} versionId={game.versionId}>
         <ArcadePlay
           versionId={game.versionId}
           spec={detail.spec}
@@ -154,11 +170,11 @@ function ActiveSlide({
           active={live}
           inFeed
           par={detail.report?.par ?? null}
-          preview={preview ?? undefined}
+          preview={still ? undefined : (preview ?? undefined)}
           host={host}
         />
       </WithPlayEnv>
-      {preview !== null && <TapHint goal={detail.spec.tutorial.goalLine} beat={game.beat ?? null} />}
+      {(still || preview !== null) && <TapHint goal={detail.spec.tutorial.goalLine} beat={game.beat ?? null} />}
       {/* Rodokmen remixu nebo AI verze pod náhledem (T10); počet remixů nese sloupec akcí. */}
       {detail.lineage.length >= 2 && (
         <div className="play-reel-lineage">
@@ -210,10 +226,11 @@ export function ReelCard({
   const spec = detail !== undefined && detail !== 'error' ? detail.spec : null;
   const slide = useRef<HTMLDivElement | null>(null);
   const round = useResultIdle(slide, active && preview !== null && preview !== undefined);
+  const still = useReducedMotion();
   return (
-    <article className="play-reel-card" data-testid="feed-card" data-index={index} data-version-id={game.versionId} data-active={active} aria-label={game.title}>
+    <article tabIndex={-1} className="play-reel-card" data-testid="feed-card" data-index={index} data-version-id={game.versionId} data-active={active} aria-label={game.title}>
       {active ? (
-        <div ref={slide} className="play-pager-slide" data-testid="feed-current" data-version-id={game.versionId}>
+        <div ref={slide} className="play-pager-slide" data-testid="feed-current" data-version-id={game.versionId} data-still={still}>
           <ActiveSlide game={game} detail={detail} live={live} host={host} preview={preview} round={round} />
         </div>
       ) : (

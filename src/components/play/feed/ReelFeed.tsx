@@ -28,6 +28,7 @@ import type { GameSpecV1 } from '@/play/spec';
 
 import { ArcadePlay } from '../arcade/ArcadePlay';
 import { WithPlayEnv } from '../arcade/look/play-env';
+import { reducedMotion } from '../arcade/effects/feel';
 import { isTyping as typing } from '../arcade/input';
 import demo from '../demo-game.json';
 import { Feed, type FeedGame, type KnownGame } from '../Feed';
@@ -35,7 +36,7 @@ import type { FeedPreview } from '@/play/version/version';
 
 import { loopEvent } from '../loop-client';
 import { FeedNext } from './feed-next';
-import { countCanvases, feedMode, previewFor } from './preview';
+import { countCanvases, feedMode, previewFor, untaken } from './preview';
 import { ReelActions } from './ReelActions';
 import { type GameDetail, ReelCard } from './ReelCard';
 import { cardImage, createSnapshotCache } from './snapshot-cache';
@@ -240,11 +241,13 @@ export function ReelFeed() {
     const element = reel.current;
     if (element === null || !hasGames) return;
     const top = index * element.clientHeight;
-    const behavior = glide.current ? 'smooth' : 'instant';
+    const glided = glide.current;
     glide.current = false;
+    // Klávesnice a čtečka (T13): po přechodu stojí fokus na kartě; méně pohybu = bez animace.
+    if (glided) element.querySelector<HTMLElement>('[data-active="true"]')?.focus({ preventScroll: true });
     if (Math.abs(element.scrollTop - top) <= 1) return;
     aim.current = { index, at: performance.now() };
-    element.scrollTo({ top, behavior });
+    element.scrollTo({ top, behavior: glided && !reducedMotion() ? 'smooth' : 'instant' });
   }, [index, hasGames]);
 
   const go = useCallback(
@@ -356,10 +359,15 @@ export function ReelFeed() {
       if (!now.onScreen || event.altKey || event.ctrlKey || event.metaKey || typing(event.target)) return;
       // Esc při hraní nebo na výsledku (T9): z hry ven na další kartu, ne pauza. Otevřený list nebo pauzu zavře jako dřív.
       if (event.key === 'Escape') {
-        if (feedMode(document.querySelector('[data-testid="feed-current"]')) === 'preview' || document.querySelector('[role="dialog"]') !== null) return;
+        if (untaken(feedMode(document.querySelector('[data-testid="feed-current"]'))) || document.querySelector('[role="dialog"]') !== null) return;
         event.preventDefault();
         event.stopImmediatePropagation();
         if (!event.repeat) now.go(now.index + 1);
+        return;
+      }
+      // Enter a mezerník na tlačítku okraje (T13) stisknou tlačítko, hru nepřevezmou.
+      if ((event.key === 'Enter' || event.key === ' ') && event.target instanceof Element && event.target.closest('.play-pager-rail') !== null) {
+        event.stopImmediatePropagation();
         return;
       }
       const step = event.key === 'ArrowDown' || event.key === 'PageDown' ? 1 : event.key === 'ArrowUp' || event.key === 'PageUp' ? -1 : 0;
@@ -391,7 +399,7 @@ export function ReelFeed() {
     const onDown = (event: PointerEvent) => {
       if (event === replay || !(event.target instanceof Element) || event.target.closest('[data-testid="arcade-stage"]') === null) return;
       const card = event.target.closest('[data-testid="feed-current"]');
-      if (card === null || feedMode(card) !== 'preview') return;
+      if (card === null || !untaken(feedMode(card))) return;
       event.stopImmediatePropagation();
       pressed = event;
     };
