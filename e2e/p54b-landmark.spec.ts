@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { expect, type Page, test } from '@playwright/test';
+import { type APIRequestContext, devices, expect, type Page, test } from '@playwright/test';
 
 import type { FrameReport } from '../src/components/play/arcade/ArcadeStage';
 import type { LandmarkReport } from '../src/components/play/arcade/look/Landmark';
@@ -85,7 +85,7 @@ async function demoTo(page: Page): Promise<number | null> {
   }, TICKS);
 }
 
-async function measure(page: Page, sentence: Sentence, url: string): Promise<Row> {
+async function measure(page: Page, sentence: Sentence, url: string, shots: string | undefined): Promise<Row> {
   await page.goto(url);
   await page.locator('canvas').first().waitFor({ timeout: 60_000 });
   await settle(page);
@@ -97,8 +97,7 @@ async function measure(page: Page, sentence: Sentence, url: string): Promise<Row
   await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
   const control = await page.getByTestId('arcade-stage').getAttribute('data-control');
   const [report, frame] = await page.evaluate(() => [window.__playLandmark?.() ?? null, window.__playFrame?.() ?? null] as const) as [LandmarkReport | null, FrameReport | null];
-  const shots = process.env.LANDMARK_SHOTS;
-  if (shots !== undefined && shots !== '') {
+  if (shots !== undefined) {
     mkdirSync(shots, { recursive: true });
     await page.screenshot({ path: join(shots, `${sentence.id}.png`) });
   }
@@ -120,16 +119,17 @@ async function measure(page: Page, sentence: Sentence, url: string): Promise<Row
   };
 }
 
-test('a landmark stands in view at tick 150 in at least 16 of 18 genre scenes and covers no hero', async ({ page, request }) => {
-  test.setTimeout(GENRES.length * 120_000);
-  await page.setViewportSize({ width: 1280, height: 800 });
+/** Výstup profilu: telefon dostane k cestě zprávy i adresáři snímků příponu `-phone`. */
+const outOf = (path: string | undefined, phone: boolean): string | undefined => (path === undefined || path === '' ? undefined : phone ? path.replace(/(\.json)?$/, (ext) => `-phone${ext}`) : path);
+
+async function sweep(page: Page, request: APIRequestContext, phone: boolean): Promise<void> {
   const rows: Row[] = [];
   for (const sentence of GENRES) {
     try {
       const response = await request.post('/api/play/games', { data: { sentence: sentence.text } });
       expect(response.status(), await response.text()).toBeLessThan(300);
       const { url } = (await response.json()) as { url: string };
-      rows.push(await measure(page, sentence, url));
+      rows.push(await measure(page, sentence, url, outOf(process.env.LANDMARK_SHOTS, phone)));
     } catch (error) {
       rows.push({ id: sentence.id, control: null, tick: null, landmark: null, scale: null, distance: null, inFrame: null, inView: false, framing: [], calls: 0, heroVisible: null, heroSamples: 0, heroHeightPx: null, error: String(error).slice(0, 300) });
     }
@@ -137,15 +137,35 @@ test('a landmark stands in view at tick 150 in at least 16 of 18 genre scenes an
     test.info().annotations.push({ type: row.id, description: `${row.control} ${row.landmark} in=${row.inFrame} view=${row.inView} framing=${row.framing.length} calls=${row.calls} hero=${row.heroVisible}${row.error === undefined ? '' : ` ERROR ${row.error}`}` });
   }
   const inView = rows.filter((row) => row.inView).length;
-  const out = process.env.LANDMARK_REPORT;
-  if (out !== undefined && out !== '') {
+  const out = outOf(process.env.LANDMARK_REPORT, phone);
+  if (out !== undefined) {
     mkdirSync(dirname(out), { recursive: true });
-    writeFileSync(out, `${JSON.stringify({ about: 'P54B T8: landmark in view at tick 150 (e2e/p54b-landmark.spec.ts), 1280x800', measuredAt: new Date().toISOString(), ticks: TICKS, inView, of: rows.length, rows }, null, 1)}\n`);
+    writeFileSync(out, `${JSON.stringify({ about: `P54B T8/T15a: landmark in view at tick 150 (e2e/p54b-landmark.spec.ts), ${phone ? 'Pixel 7' : '1280x800'}`, measuredAt: new Date().toISOString(), ticks: TICKS, inView, of: rows.length, rows }, null, 1)}\n`);
   }
+  test.info().annotations.push({ type: 'inView', description: `${inView}/${rows.length}` });
   for (const row of rows) {
     expect.soft(row.error, row.id).toBeUndefined();
     if (row.heroVisible !== null) expect.soft(row.heroVisible, `${row.id}: hrdina zakrytý`).toBeGreaterThanOrEqual(HERO_VISIBLE);
     expect.soft(row.calls, `${row.id}: kreslicí volání navíc`).toBeLessThanOrEqual(MOST_CALLS);
   }
-  expect(inView, rows.filter((row) => !row.inView).map((row) => row.id).join(', ')).toBeGreaterThanOrEqual(LEAST_IN_VIEW);
+  // Na telefonu se počet jen měří a zapisuje (P54B T15a): úzký obraz má za hrou méně místa, které nic nezakryje.
+  if (!phone) expect(inView, rows.filter((row) => !row.inView).map((row) => row.id).join(', ')).toBeGreaterThanOrEqual(LEAST_IN_VIEW);
+}
+
+test('a landmark stands in view at tick 150 in most genre scenes and covers no play', async ({ page, request }) => {
+  test.setTimeout(GENRES.length * 120_000);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await sweep(page, request, false);
+});
+
+// Bez `defaultBrowserType`: ten ve skupině testů Playwright nepovolí (vynutil by nový worker).
+const { defaultBrowserType: _browser, ...PIXEL_7 } = devices['Pixel 7'];
+
+test.describe('Pixel 7', () => {
+  test.use(PIXEL_7);
+
+  test('the landmark count on a phone is measured and written down, it covers no play', async ({ page, request }) => {
+    test.setTimeout(GENRES.length * 120_000);
+    await sweep(page, request, true);
+  });
 });

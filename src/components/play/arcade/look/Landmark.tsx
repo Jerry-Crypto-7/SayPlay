@@ -15,6 +15,10 @@
  * v popředí by s jedoucí kamerou ujely z obrazu, nebo jako vezené klouzaly po zemi;
  * kraje obrazu u trati rámují řady kulis, které kolem ní ubíhají.
  *
+ * Bod ani kus se v obraze nepotká s ničím, co se hraje (P54B T15a): s kvádrem každého uzlu
+ * sondy záběru (`userData.frame` = `hero` / `target` – hrdina, soupeř, nepřátelé, noty, věž)
+ * ani s pásem, který scéna předá v `play` (trubky poletování, pruhy rytmu, koridor přistání).
+ *
  * Skupina bodu nese `userData.landmark` (id modelu), kusy `userData.framing`. Sonda
  * `window.__playLandmark()` vrátí, jak jsou v záběru a kolik z hrdiny zakrývají.
  * Jen vzhled: jádro o nich neví, stín nevrhají – kus je jedno kreslicí volání.
@@ -28,7 +32,7 @@ import type { Look } from '@/play/arcade/look';
 
 import type { Box } from './ground';
 import { restCamera } from './intro';
-import { footOf, frameShare, type HeroBox, IN_VIEW_SHARE, keepOff, type Placed, placeFraming, placeLandmark, type ScreenRect, screenRect } from './landmark-places';
+import { footOf, frameShare, type HeroBox, IN_VIEW_SHARE, keepOff, type Placed, placeFraming, placeLandmark, type ScreenRect, screenRect, type Volume } from './landmark-places';
 import { isInk } from './rig/InkOutline';
 import { SceneryModelProp } from './Scenery';
 
@@ -44,6 +48,8 @@ export interface LandmarkProps {
   readonly bend?: (z: number) => { readonly x: number };
   /** Výška terénu (m); bez ní rovina y = 0. */
   readonly ground?: (x: number, z: number) => number;
+  /** Hrací pásy žánru, které uzly sondy záběru nepokryjí (předměty, které teprve přijedou); bod ani kus je v obraze nezakryje. */
+  readonly play?: readonly Volume[];
 }
 
 interface Placement {
@@ -80,6 +86,21 @@ function heroBoxOf(hero: Object3D | null): HeroBox | null {
   if (box.isEmpty()) return { x: at.x, y: at.y, z: at.z, ...HERO_NOMINAL };
   const size = box.getSize(new Vector3());
   return { x: at.x, y: box.min.y, z: at.z, r: Math.max(HERO_NOMINAL.r, size.x / 2, size.z / 2), h: Math.max(HERO_NOMINAL.h, size.y) };
+}
+
+/** Kvádry viditelných cílů sondy záběru (soupeř, nepřátelé, noty, věž); nenačtený model nahradí `HERO_NOMINAL`. */
+function targetsOf(scene: Object3D): Volume[] {
+  const volumes: Volume[] = [];
+  scene.traverse((node) => {
+    if (node.userData.frame !== 'target' || !shown(node)) return;
+    const box = new Box3().setFromObject(node);
+    if (box.isEmpty()) {
+      const at = node.getWorldPosition(new Vector3());
+      box.set(new Vector3(at.x - HERO_NOMINAL.r, at.y, at.z - HERO_NOMINAL.r), new Vector3(at.x + HERO_NOMINAL.r, at.y + HERO_NOMINAL.h, at.z + HERO_NOMINAL.r));
+    }
+    volumes.push({ x0: box.min.x, y0: box.min.y, z0: box.min.z, x1: box.max.x, y1: box.max.y, z1: box.max.z });
+  });
+  return volumes;
 }
 
 export interface PieceReport {
@@ -184,7 +205,7 @@ function Piece({ placed, register, mark }: { readonly placed: Placed; readonly r
   );
 }
 
-export function Landmark({ look, seed, area, follow, bend, ground }: LandmarkProps) {
+export function Landmark({ look, seed, area, follow, bend, ground, play }: LandmarkProps) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const scene = useThree((three) => three.scene);
   const width = useThree((three) => three.size.width);
@@ -198,10 +219,11 @@ export function Landmark({ look, seed, area, follow, bend, ground }: LandmarkPro
 
   // Nová sada, semínko, plocha nebo velikost obrazu = nové místo. Plochu scény často staví každý snímek znovu: klíčem je její obsah.
   const areaKey = JSON.stringify(area);
+  const playKey = JSON.stringify(play ?? []);
   useEffect(() => {
     waited.current = 0;
     setPlacement(null);
-  }, [look, seed, areaKey, follow, bend, ground, width, height]);
+  }, [look, seed, areaKey, playKey, follow, bend, ground, width, height]);
 
   useFrame(() => {
     if (placement === null) {
@@ -212,7 +234,7 @@ export function Landmark({ look, seed, area, follow, bend, ground }: LandmarkPro
       }
       restCamera(camera, rest);
       const hero = heroBoxOf(heroNodeOf(scene));
-      const input = { camera: rest, look, seed, area, hero, ground };
+      const input = { camera: rest, look, seed, area, hero, play: [...(play ?? []), ...targetsOf(scene)], ground };
       setPlacement({ landmark: placeLandmark(input), framing: follow === undefined ? placeFraming(input) : [], eye: [rest.position.x, rest.position.z] });
       return;
     }

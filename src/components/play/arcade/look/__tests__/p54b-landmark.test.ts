@@ -20,16 +20,17 @@ import { LOOK_IDS, LOOKS, type Look, modelHeight, SCENERY_MODELS } from '@/play/
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { GLIDE } from '@/play/arcade/pieces/glide';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
+import { TIMING } from '@/play/arcade/pieces/timing';
 
 import { isPurple, toSrgb } from '../../../../../../scripts/assets/cc0/palette.mjs';
 import { placeBall } from '../../ball/camera';
 import { placeGlide } from '../../glide/camera';
-import { placeChase } from '../../steer/SteerScene';
+import { placeChase, placeLander } from '../../steer/SteerScene';
 import { placeAngled, placePlatform, placeRunner, placeSide } from '../../track-camera';
 import { placeWalker } from '../../walker/view';
 import type { Box } from '../ground';
 import { applyIntro, restCamera } from '../intro';
-import { type HeroBox, keepOff, LANDMARK_FAR_M, LANDMARK_NEAR_M, landmarkPicks, placeFraming, placeLandmark } from '../landmark-places';
+import { type HeroBox, keepOff, LANDMARK_FAR_M, LANDMARK_NEAR_M, landmarkPicks, placeFraming, placeLandmark, type Volume } from '../landmark-places';
 import { PLAYABLE_HALF } from '../rig/terrain/valley';
 
 const PUBLIC = join(__dirname, '..', '..', '..', '..', '..', '..', 'public');
@@ -128,7 +129,7 @@ function inFrame(rect: Rect): number {
   return (w * h) / ((rect.maxX - rect.minX) * (rect.maxY - rect.minY));
 }
 
-const overlaps = (a: Rect, b: Rect): boolean => a.minX < b.maxX && b.minX < a.maxX && a.minY < b.maxY && b.minY < a.maxY;
+const overlaps = (a: Omit<Rect, 'near' | 'far'>, b: Omit<Rect, 'near' | 'far'>): boolean => a.minX < b.maxX && b.minX < a.maxX && a.minY < b.maxY && b.minY < a.maxY;
 const onArea = (area: readonly Box[], x: number, z: number, r: number): boolean => area.some((box) => x + r > box.x0 && x - r < box.x1 && z + r > box.z0 && z - r < box.z1);
 /** Poloměr paty, se kterým hledání počítá (`FOOT` v `landmark-places.ts`). */
 const footOf = (id: string, scale: number): number => 0.35 * modelHeight(id as never) * scale;
@@ -267,6 +268,139 @@ describe('P54B T8: rámující kusy nezakryjí hrdinu', () => {
   it('aspoň polovina pevných kamer na šířku dostane rámující kus', () => {
     const framed = GENRES.filter((genre) => placeFraming({ camera: cameraOf(genre, DESKTOP, LOOKS.castle), look: LOOKS.castle, seed: 11, area: genre.area, hero: genre.hero, ground: genre.ground }).length > 0);
     expect(framed.length).toBeGreaterThanOrEqual(GENRES.length / 2);
+  });
+});
+
+/**
+ * P54B T15a: žánry, kde v T15 bod nebo rámující kus stál v obraze na hře (`judge.json`, telefon):
+ * bod za trubkami poletování, na věži, nad pruhy rytmu, v místě přistání a pochodeň před soupeřem
+ * v souboji. Hrací objemy jsou ty, které scéna předá nebo označí (`play`, `userData.frame`).
+ */
+interface PlayGenre extends Genre {
+  readonly play: readonly Volume[];
+}
+
+const TIMING_TOP = (TIMING.baseH + 10 * TIMING.blockH) / UNIT;
+const RIVAL_Z = 3;
+const LANDER_PAD = { index: 0, x: 26, y: 0, z: 0, w: 12, h: 0.5, d: 12 } as const;
+
+const PLAY_GENRES: readonly PlayGenre[] = [
+  { ...GENRES.find((genre) => genre.id === 'flap')!, play: [{ x0: -1.5, y0: -0.4, z0: -Infinity, x1: 1.5, y1: FLAP.ceiling / UNIT, z1: Infinity }] },
+  {
+    // `TimingScene`: kamera před věží, výš na výšku; průsvitný sloupec tolerance (`frame = 'target'`) do výšky celé věže.
+    id: 'timing',
+    place: (camera, look) => {
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const dist = Math.max(10 / (2 * tan * camera.aspect), 7 / (2 * tan), 8);
+      const y = TIMING.baseH / UNIT;
+      camera.position.set(0, y + (camera.aspect < 1 ? 3.5 : 1.5), -dist);
+      look.set(0, y, 0);
+      camera.lookAt(look);
+    },
+    area: [{ x0: -(TIMING.amplitude / UNIT + 2), x1: TIMING.amplitude / UNIT + 2, z0: -2, z1: 2 }],
+    hero: { x: 0, y: TIMING.baseH / UNIT, z: 0, r: 1.5, h: TIMING.blockH / UNIT },
+    play: [{ x0: -1.5, y0: 0, z0: -0.6, x1: 1.5, y1: TIMING_TOP + 1, z1: -0.5 }],
+  },
+  {
+    // `RhythmScene`: kamera za lištou, na výšku couvne a zvedne se; pruhy jedou 60 m do mlhy.
+    id: 'rhythm',
+    place: (camera, look) => {
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const back = Math.max(4.5, 4.8 / (2 * tan * camera.aspect) - 1);
+      camera.position.set(0, 3.2 * (back / 4.5), -back);
+      look.set(0, 0, 9);
+      camera.lookAt(look);
+    },
+    area: [{ x0: -3, x1: 3, z0: -3, z1: 60 }],
+    hero: { x: 0, y: 0, z: 0, r: 2, h: 0.3 },
+    play: [{ x0: -2, y0: 0, z0: -2, x1: 2, y1: 0.5, z1: 60 }],
+  },
+  {
+    // `DuelScene`: boční kamera na −x mezi rytíři; soupeř je `frame = 'target'`.
+    id: 'duel',
+    place: (camera, look) => {
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const dist = Math.max(6 / (2 * tan * camera.aspect), 3.2 / (2 * tan), 5);
+      camera.position.set(-dist, 1.4, RIVAL_Z / 2);
+      look.set(0, 1.1, RIVAL_Z / 2);
+      camera.lookAt(look);
+    },
+    area: [{ x0: -2, x1: 2, z0: RIVAL_Z / 2 - 4.5, z1: RIVAL_Z / 2 + 4.5 }],
+    hero: { x: 0, y: 0, z: 0, r: 0.6, h: 1.6 },
+    play: [{ x0: -0.6, y0: 0, z0: RIVAL_Z - 0.6, x1: 0.6, y1: 1.8, z1: RIVAL_Z + 0.6 }],
+  },
+  {
+    // Přistání (`placeLander`): loď 50 m nad zemí, plocha 26 m do strany; koridor od lodi na plochu.
+    id: 'lander',
+    place: (camera, look) => placeLander(camera, look, 0, 50, 0, LANDER_PAD, 3),
+    area: [{ x0: -7.5, x1: 7.5, ...ALL_Z }],
+    hero: { x: 0, y: 50, z: 0, r: 1, h: 3 },
+    play: [{ x0: -1, y0: 0, z0: -6, x1: 32, y1: 53, z1: 6 }],
+  },
+];
+
+/**
+ * Obdélník kvádru mezi blízkou rovinou kamery a koncem mlhy – nezávisle na `volumeRect`: hustě
+ * navzorkované hrany, nekonečná osa utnutá daleko za mlhou. Vzorky obdélník nanejvýš o kousek zmenší.
+ */
+function clippedRect(camera: PerspectiveCamera, volume: Volume, far: number): Omit<Rect, 'near' | 'far'> | null {
+  const cut = (value: number, at: number): number => Math.max(at - 5 * far, Math.min(at + 5 * far, value));
+  const lo = [cut(volume.x0, camera.position.x), cut(volume.y0, camera.position.y), cut(volume.z0, camera.position.z)];
+  const hi = [cut(volume.x1, camera.position.x), cut(volume.y1, camera.position.y), cut(volume.z1, camera.position.z)];
+  let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity];
+  for (let axis = 0; axis < 3; axis += 1) {
+    for (let corner = 0; corner < 4; corner += 1) {
+      for (let step = 0; step <= 2000; step += 1) {
+        const point = [0, 1, 2].map((other, k) => (other === axis ? lo[other]! + ((hi[other]! - lo[other]!) * step) / 2000 : (corner >> (k > axis ? k - 1 : k)) & 1 ? hi[other]! : lo[other]!));
+        const at = new Vector3(point[0], point[1], point[2]);
+        const depth = -at.clone().applyMatrix4(camera.matrixWorldInverse).z;
+        if (depth < camera.near || depth > far) continue;
+        at.project(camera);
+        [minX, maxX, minY, maxY] = [Math.min(minX, at.x), Math.max(maxX, at.x), Math.min(minY, at.y), Math.max(maxY, at.y)];
+      }
+    }
+  }
+  return minX > maxX ? null : { minX, maxX, minY, maxY };
+}
+
+const heroVolume = (hero: HeroBox): Volume => ({ x0: hero.x - hero.r, y0: hero.y, z0: hero.z - hero.r, x1: hero.x + hero.r, y1: hero.y + hero.h, z1: hero.z + hero.r });
+
+describe('P54B T15a: bod ani rámující kus se v obraze nepotká s hrou', () => {
+  for (const aspect of [DESKTOP, PHONE]) {
+    for (const genre of PLAY_GENRES) {
+      it(`${genre.id} ${aspect < 1 ? 'na výšku' : 'na šířku'}: ani bod, ani kus nezakryje hrdinu, soupeře ani hrací pás`, () => {
+        for (const lookId of ['forest', 'castle', 'jungle', 'meadow', 'city', 'desert'] as const) {
+          const look = LOOKS[lookId];
+          const camera = cameraOf(genre, aspect, look);
+          const blocks = [...genre.play, heroVolume(genre.hero)].map((volume) => clippedRect(camera, volume, look.fog[1])).filter((rect) => rect !== null);
+          for (const seed of [7, 11]) {
+            const input = { camera, look, seed, area: genre.area, hero: genre.hero, play: genre.play, ground: genre.ground };
+            const landmark = placeLandmark(input);
+            const pieces = placeFraming(input);
+            for (const placed of [...(landmark === null ? [] : [landmark]), ...pieces]) {
+              const rect = rectOf(camera, placed.x, placed.y, placed.z, footOf(placed.id, placed.scale), modelHeight(placed.id) * placed.scale);
+              for (const block of blocks) expect(overlaps(rect, block), `${lookId} ${seed} ${placed.id}`).toBe(false);
+            }
+          }
+        }
+      });
+    }
+  }
+
+  it('bez hracích objemů by bod zakryl hru – scény T15 chybu opravdu ukážou', () => {
+    // Na výšku bod poletování stál za trubkami a na věži; tytéž kamery bez `play` to zopakují.
+    const hits = PLAY_GENRES.filter((genre) => {
+      const look = LOOKS.jungle;
+      const camera = cameraOf(genre, PHONE, look);
+      const placed = placeLandmark({ camera, look, seed: 7, area: genre.area, hero: genre.hero, ground: genre.ground });
+      if (placed === null) return false;
+      const rect = rectOf(camera, placed.x, placed.y, placed.z, footOf(placed.id, placed.scale), modelHeight(placed.id) * placed.scale);
+      return genre.play.some((volume) => {
+        const block = clippedRect(camera, volume, look.fog[1]);
+        return block !== null && overlaps(rect, block);
+      });
+    });
+    expect(hits.map((genre) => genre.id)).toEqual(expect.arrayContaining(['flap', 'timing']));
   });
 });
 

@@ -8,8 +8,11 @@
  * nejvíc v záběru, nejblíž středu obrazu, co nejméně v mlze a vysoký asi třetinu obrazu.
  *
  * Rámující kusy: 1–2 rekvizity sady u levého a pravého kraje obrazu v popředí – blíž
- * kameře než hrdina, zčásti za krajem obrazu, mimo hrací plochu a mimo kruh hrdiny;
- * jejich obdélník na obrazovce se s hrdinovým nepotká, takže ho nezakryjí.
+ * kameře než hrdina, zčásti za krajem obrazu, mimo hrací plochu a mimo kruh hrdiny.
+ *
+ * Obdélník bodu ani kusu na obrazovce se nepotká s obdélníkem žádného hracího objemu
+ * (P54B T15a): hrdina, postavy a předměty, které scéna označí, a pásy žánru (trubky
+ * poletování, pruhy rytmu, koridor přistání). Kde se nic nevejde, bod se nepostaví.
  *
  * Jen vzhled: jádro o nich neví a z běhových streamů se neodebere ani jedna hodnota.
  */
@@ -46,8 +49,8 @@ const FRAMING_TALLEST_M = 3.5;
 /** Kraj obrazu (NDC) a výšky, přes které paprsek hledá zem pod rámujícím kusem. */
 const FRAMING_EDGES = [0.8, 0.9, 1, 1.1, 1.2] as const;
 const FRAMING_ROWS = [-1.1, -0.9, -0.7, -0.5, -0.3, -0.1] as const;
-/** Odstup obdélníku rámujícího kusu od hrdinova na obrazovce (NDC). */
-const HERO_PAD = 0.08;
+/** Odstup obdélníku bodu a rámujícího kusu od obdélníku hracího objemu na obrazovce (NDC). */
+const PLAY_PAD = 0.08;
 
 /** Sůl semínka – stream orientačního bodu je jiný než každý stream jádra i výzdoby. */
 const SALT = 0x1a4d3a7c;
@@ -81,8 +84,28 @@ export interface PlaceInput {
   readonly area: readonly Box[];
   /** Hrdina; `null` = scéna ho (zatím) nemá. */
   readonly hero: HeroBox | null;
+  /** Hrací objemy kromě hrdiny (postavy, předměty, pásy žánru): bod ani kus je na obrazovce nezakryje. */
+  readonly play?: readonly Volume[];
   /** Výška terénu (m); bez ní rovina y = 0. */
   readonly ground?: (x: number, z: number) => number;
+}
+
+/** Kvádr ve scéně (m, min–max); nekonečná osa = pás bez konce (trať, koridor letu). */
+export interface Volume {
+  readonly x0: number;
+  readonly y0: number;
+  readonly z0: number;
+  readonly x1: number;
+  readonly y1: number;
+  readonly z1: number;
+}
+
+/** Obdélník v obraze (NDC). */
+export interface Rect {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
 }
 
 /** Obdélník kvádru v obraze (NDC) a hloubka jeho nejbližšího a nejvzdálenějšího rohu před kamerou (m). */
@@ -123,6 +146,57 @@ export function frameShare(rect: ScreenRect): number {
   const w = Math.max(0, Math.min(rect.maxX, 1) - Math.max(rect.minX, -1));
   const h = Math.max(0, Math.min(rect.maxY, 1) - Math.max(rect.minY, -1));
   return (w * h) / Math.max(1e-9, (rect.maxX - rect.minX) * (rect.maxY - rect.minY));
+}
+
+/** Hrany kvádru jako dvojice rohů (bit 1 = x, 2 = y, 4 = z). */
+const EDGES = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]] as const;
+const corners = Array.from({ length: 8 }, () => new Vector3());
+const onEdge = new Vector3();
+
+/**
+ * Obdélník části kvádru mezi blízkou rovinou kamery a hloubkou `far` (konec mlhy); `null` = celý mimo.
+ * Vrcholy oříznutého kvádru leží na jeho hranách, takže stačí oříznout dvanáct hran a promítnout jejich konce:
+ * pás trati, který začíná za kamerou, tak dostane obdélník viditelného kusu, ne nekonečno.
+ */
+export function volumeRect(camera: PerspectiveCamera, volume: Volume, far: number): Rect | null {
+  // Nekonečnou osu stačí utnout kus za koncem mlhy: dál je všechno za `far`.
+  const reach = 3 * far;
+  const eye = camera.position;
+  const lo = [Math.max(volume.x0, eye.x - reach), Math.max(volume.y0, eye.y - reach), Math.max(volume.z0, eye.z - reach)] as const;
+  const hi = [Math.min(volume.x1, eye.x + reach), Math.min(volume.y1, eye.y + reach), Math.min(volume.z1, eye.z + reach)] as const;
+  if (lo[0] > hi[0] || lo[1] > hi[1] || lo[2] > hi[2]) return null;
+  corners.forEach((point, i) => point.set(i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]).applyMatrix4(camera.matrixWorldInverse));
+  let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity];
+  for (const [a, b] of EDGES) {
+    const [p, q] = [corners[a]!, corners[b]!];
+    // Hloubka podél hrany je lineární: úsek, kde leží mezi `near` a `far`.
+    const [dp, dq] = [-p.z, -q.z];
+    let [t0, t1] = [0, 1];
+    if (dq === dp) {
+      if (dp < camera.near || dp > far) continue;
+    } else {
+      const [tNear, tFar] = [(camera.near - dp) / (dq - dp), (far - dp) / (dq - dp)];
+      [t0, t1] = [Math.max(0, Math.min(tNear, tFar)), Math.min(1, Math.max(tNear, tFar))];
+      if (t0 > t1) continue;
+    }
+    for (const t of [t0, t1]) {
+      onEdge.copy(p).lerp(q, t).applyMatrix4(camera.projectionMatrix);
+      minX = Math.min(minX, onEdge.x);
+      maxX = Math.max(maxX, onEdge.x);
+      minY = Math.min(minY, onEdge.y);
+      maxY = Math.max(maxY, onEdge.y);
+    }
+  }
+  return minX > maxX ? null : { minX, maxX, minY, maxY };
+}
+
+/** Obdélníky se potkají, i s odstupem `PLAY_PAD`. */
+const meets = (a: Rect, b: Rect): boolean => a.minX < b.maxX + PLAY_PAD && b.minX - PLAY_PAD < a.maxX && a.minY < b.maxY + PLAY_PAD && b.minY - PLAY_PAD < a.maxY;
+
+/** Obdélníky hracích objemů a hrdiny v obraze kamery. */
+function playRects(camera: PerspectiveCamera, look: Look, hero: HeroBox | null, play: readonly Volume[]): Rect[] {
+  const volumes = hero === null ? play : [...play, { x0: hero.x - hero.r, y0: hero.y, z0: hero.z - hero.r, x1: hero.x + hero.r, y1: hero.y + hero.h, z1: hero.z + hero.r }];
+  return volumes.map((volume) => volumeRect(camera, volume, look.fog[1])).filter((rect): rect is Rect => rect !== null);
 }
 
 const clamp = (value: number, low: number, high: number): number => Math.max(low, Math.min(high, value));
@@ -206,7 +280,7 @@ export function placeLandmark(input: PlaceInput): Placed | null {
 }
 
 /** Nejlepší místo jednoho kandidáta a kolik ho je v záběru. */
-function bestSpot({ camera, look, area, hero, ground = flat }: PlaceInput, id: SceneryModel): { readonly placed: Placed; readonly share: number } | null {
+function bestSpot({ camera, look, area, hero, play = [], ground = flat }: PlaceInput, id: SceneryModel): { readonly placed: Placed; readonly share: number } | null {
   const height = modelHeight(id);
   const eye = camera.position;
   camera.getWorldDirection(forward).setY(0);
@@ -214,6 +288,7 @@ function bestSpot({ camera, look, area, hero, ground = flat }: PlaceInput, id: S
   forward.normalize();
   const [fogNear, fogFar] = look.fog;
   const heroFar = hero === null ? 0 : heroRect(camera, hero).far;
+  const blocks = playRects(camera, look, hero, play);
   let best: { placed: Placed; share: number } | null = null;
   let bestScore = -Infinity;
   // simplified: mřížka 31 × 37 × 4 míst na kandidáta se projde jednou při stavbě scény (nejvýš ~14 tisíc promítnutí); hustší by nic nezměnila.
@@ -233,6 +308,8 @@ function bestSpot({ camera, look, area, hero, ground = flat }: PlaceInput, id: S
         const rect = rectOf(camera, x, y, z, r, h);
         // Celý před koncem mlhy (tam končí i kamera, `FarAtFog`) a celý za hrou.
         if (rect.behind || rect.far >= fogFar || rect.near <= heroFar) continue;
+        // Za hrou, ale ne za ní v obraze: hrdina, soupeř, trubky ani pruhy se bodem nepřekryjí.
+        if (blocks.some((block) => meets(rect, block))) continue;
         const share = frameShare(rect);
         const centre = Math.abs(clamp((rect.minX + rect.maxX) / 2, -1, 1));
         const tall = Math.max(0, Math.min(rect.maxY, 1) - Math.max(rect.minY, -1)) / 2;
@@ -271,10 +348,11 @@ function groundHit(camera: PerspectiveCamera, ndcX: number, ndcY: number, ground
  * 1–2 rámující kusy u kraje obrazu v popředí. Scéna, kde u kraje obrazu blíž než hrdina
  * žádná zem mimo hrací plochu není (aréna shora, střelnice s mýtinou), nedostane žádný.
  */
-export function placeFraming({ camera, look, seed, area, hero, ground = flat }: PlaceInput): Placed[] {
+export function placeFraming({ camera, look, seed, area, hero, play = [], ground = flat }: PlaceInput): Placed[] {
   const { framing } = landmarkPicks(look, seed);
   if (framing.length === 0) return [];
   const heroBox = hero === null ? null : heroRect(camera, hero);
+  const blocks = playRects(camera, look, hero, play);
   const placed: Placed[] = [];
   for (const [index, side] of [[0, -1], [1, 1]] as const) {
     const id = framing[index]!;
@@ -293,8 +371,8 @@ export function placeFraming({ camera, look, seed, area, hero, ground = flat }: 
           const y = footY(ground, hit.x, hit.z, r);
           const rect = rectOf(camera, hit.x, y, hit.z, r, h);
           if (rect.behind) continue;
-          // Popředí: blíž kameře než hrdina; na obrazovce se s ním nepotká.
-          if (heroBox !== null && ((rect.near + rect.far) / 2 >= heroBox.near || (rect.minX < heroBox.maxX + HERO_PAD && heroBox.minX - HERO_PAD < rect.maxX && rect.minY < heroBox.maxY + HERO_PAD && heroBox.minY - HERO_PAD < rect.maxY))) continue;
+          // Popředí: blíž kameře než hrdina; na obrazovce se nepotká s ním ani s jiným hracím objemem.
+          if ((heroBox !== null && (rect.near + rect.far) / 2 >= heroBox.near) || blocks.some((block) => meets(rect, block))) continue;
           const share = frameShare(rect);
           const tall = Math.max(0, Math.min(rect.maxY, 1) - Math.max(rect.minY, -1)) / 2;
           // Zčásti za krajem obrazu a nejvýš tři čtvrtiny výšky obrazu – rám, ne zeď.
