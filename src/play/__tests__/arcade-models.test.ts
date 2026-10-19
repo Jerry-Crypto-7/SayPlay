@@ -77,9 +77,9 @@ describe('arcade model choice from role labels', () => {
 
   it('a named thing without its own model takes the nearest model, never the robot or the spike', () => {
     expect(enemyModel(withLabel(shooter, 'enemy', 'animals'))).toBe('dog');
-    // Vlk katalog nemá; „wolves“ → „wolf“ → blízký pes, ne robot ani bodák.
-    expect(enemyModel(withLabel(shooter, 'enemy', 'wolves'))).toBe('dog');
-    expect(propModels(withLabel(platform, 'spikes', 'wolves')).spikes).toBe('dog');
+    // Vlk má od P54B T3 vlastní postavu s klipy (Quaternius); dřív byl blízkým psem.
+    expect(enemyModel(withLabel(shooter, 'enemy', 'wolves'))).toBe('rigged:q-wolf');
+    expect(propModels(withLabel(platform, 'spikes', 'wolves')).spikes).toBe('rigged:q-wolf');
     // Nejbližší model pod prahem čtení (aligátor → krokodýl 0,55) jen jako poslední možnost před robotem.
     expect(enemyModel(withLabel(shooter, 'enemy', 'alligators'))).toBe('gen3d-crocodile');
     expect(propModels(withLabel(flap, 'pipe', 'alligators')).pipe).toBe('gen3d-crocodile');

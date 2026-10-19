@@ -84,10 +84,10 @@ describe('hero choice by identity, then class (P32C T2)', () => {
   });
 
   it('reports near, class and fallback when the sentence names no model', () => {
-    // Blízká identita ve stejné třídě: vlk → pes, jen protože vlk v manifestu není.
-    expect(heroChoice('grey wolf', 'runner', 'runner')).toMatchObject({ model: 'dog', level: 'near' });
-    // Blízká identita před třídou: „lizard“ má třídu (liška), „wolf“ blízkou identitu (pes) – vyhraje pes.
-    expect(heroChoice('lizard wolf', 'runner', 'runner')).toMatchObject({ model: 'dog', level: 'near' });
+    // Vlk má od P54B T3 vlastní riggovanou postavu Quaternius – dřív byl blízkou identitou psa (`WORD_MODEL`).
+    expect(heroChoice('grey wolf', 'runner', 'runner')).toMatchObject({ model: 'rigged:q-wolf', level: 'identity' });
+    // Hlava fráze před třídou: „lizard“ má třídu (liška), „wolf“ identitu – vyhraje vlk.
+    expect(heroChoice('lizard wolf', 'runner', 'runner')).toMatchObject({ model: 'rigged:q-wolf', level: 'identity' });
     expect(heroChoice('wild badger', 'runner', 'runner')).toMatchObject({ model: 'fox', level: 'class' });
     // P37A T6: nejbližší model katalogu nad prahem je před třídou – ještěrka je želva (0,65), ne liška.
     expect(heroChoice('wild lizard', 'runner', 'runner')).toMatchObject({ model: 'turtle', level: 'near' });

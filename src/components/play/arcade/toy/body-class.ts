@@ -1,7 +1,7 @@
 /**
  * Třída těla modelu scény (P45D T5): model katalogu ji má v `catalog-motion.json`
  * (T2), riggovaná postava podle třídy svého záznamu manifestu (`rigged.json`,
- * `rigged-p32.json`), primitiv ptáček létá, všechno ostatní je předmět.
+ * `rigged-p32.json`, `rigged-p54.json`), primitiv ptáček létá, všechno ostatní je předmět.
  */
 
 import motion from '@/assets/catalog-motion.json';
@@ -9,6 +9,7 @@ import { RIGGED_PREFIX } from '@/play/arcade/models';
 import type { BodyClass } from '@/play/arcade/toy-motion';
 import { BASE_ENTRIES } from '@/play/assets/entries/base';
 import { RIGGED_P32_ENTRIES } from '@/play/assets/entries/rigged-p32';
+import { RIGGED_P54_ENTRIES } from '@/play/assets/entries/rigged-p54';
 import type { ModelClass } from '@/play/genre/contract';
 
 /** Třída modelu → třída těla, stejně jako `scripts/p45d/motion-class.mjs` (`BODY_OF_CLASS`). */
@@ -49,7 +50,7 @@ const MODELS = motion.models as unknown as Readonly<Record<string, ModelMotion>>
 
 /** Záznam pohybu modelu katalogu (T2); riggovaná postava ani primitiv ho nemají. */
 export const motionOf = (modelId: string): ModelMotion | undefined => MODELS[modelId];
-const RIGGED: ReadonlyMap<string, ModelClass> = new Map([...BASE_ENTRIES, ...RIGGED_P32_ENTRIES].map((entry) => [entry.id, entry.class]));
+const RIGGED: ReadonlyMap<string, ModelClass> = new Map([...BASE_ENTRIES, ...RIGGED_P32_ENTRIES, ...RIGGED_P54_ENTRIES].map((entry) => [entry.id, entry.class]));
 
 export function bodyClassOf(modelId: string): BodyClass {
   const id = modelId.startsWith(RIGGED_PREFIX) ? modelId.slice(RIGGED_PREFIX.length) : modelId;

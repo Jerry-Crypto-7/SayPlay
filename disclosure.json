@@ -90361,6 +90361,1896 @@
       ],
       "attribution": "OpenAI, https://openai.com/policies/business-terms",
       "reviewNote": "Paid fallback of the director (gpt-6-astra): called only when the deployment sets WORLDSMITH_FALLBACK_ENDPOINT=openai:https://api.openai.com with the owner's key, under its own spend cap, and only after the primary director failed or stalled. Without that configuration the product never calls it. The game spec it returns is AI-generated output."
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-person.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Person\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/BaseCharacter.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Person from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blue-soldier-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Blue Soldier (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/BlueSoldier_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Blue Soldier (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blue-soldier.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Blue Soldier\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/BlueSoldier_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Blue Soldier from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-casual-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Casual Woman\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Casual_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Casual Woman from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-casual-man.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Casual Man\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Casual_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Casual Man from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-casual-woman-b.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Casual Woman B\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Casual2_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Casual Woman B from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-casual-man-b.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Casual Man B\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Casual2_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Casual Man B from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-casual-woman-c.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Casual Woman C\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Casual3_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Casual Woman C from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-casual-man-c.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Casual Man C\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Casual3_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Casual Man C from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-chef.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Chef\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Chef_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Chef from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-chef-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Chef (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Chef_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Chef (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-chef-hat.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Chef with Hat\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Chef_Hat.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Chef with Hat from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cow-costume.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cow Costume\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Cow.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cow Costume from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cowboy.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cowboy\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Cowboy_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cowboy from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cowgirl.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cowgirl\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Cowboy_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cowgirl from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cowboy-hair.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cowboy (hair)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Cowboy_Hair.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cowboy (hair) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-doctor.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Doctor\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Doctor_Male_Young.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Doctor from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-doctor-old.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Old Doctor\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Doctor_Male_Old.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Old Doctor from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-doctor-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Doctor (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Doctor_Female_Young.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Doctor (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-doctor-woman-old.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Old Doctor (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Doctor_Female_Old.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Old Doctor (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-elf.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Elf\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Elf.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Elf from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-goblin.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Goblin\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Goblin_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Goblin from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-goblin-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Goblin (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Goblin_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Goblin (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-samurai.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Samurai\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Kimono_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Samurai from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-kimono-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Kimono (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Kimono_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Kimono (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-knight.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Knight\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Knight_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Knight from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-golden-knight.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Golden Knight\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Knight_Golden_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Golden Knight from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-golden-knight-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Golden Knight (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Knight_Golden_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Golden Knight (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-ninja-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Ninja (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Ninja_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Ninja (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-ninja-hair.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Ninja (hair)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Ninja_Male_Hair.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Ninja (hair) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-sand-ninja.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Sand Ninja\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Ninja_Sand.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Sand Ninja from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-sand-ninja-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Sand Ninja (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Ninja_Sand_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Sand Ninja (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-grandma.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Grandma\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/OldClassy_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Grandma from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-grandpa.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Grandpa\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/OldClassy_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Grandpa from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-pirate.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Pirate\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Pirate_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Pirate from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-pirate-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Pirate (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Pirate_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Pirate (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-pug-costume.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Pug Costume\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Pug.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Pug Costume from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-soldier.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Soldier\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Soldier_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Soldier from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-soldier-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Soldier (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Soldier_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Soldier (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-businessman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Businessman\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Suit_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Businessman from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-businesswoman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Businesswoman\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Suit_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Businesswoman from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-viking.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Viking\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Viking_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Viking from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-viking-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Viking (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Viking_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Viking (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-viking-helmet.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Viking with Helmet\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/VikingHelmet.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Viking with Helmet from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-witch.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Witch\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Witch.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Witch from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-wizard.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Wizard\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Wizard.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Wizard from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-worker.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Worker\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Worker_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Worker from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-worker-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Worker (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Worker_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Worker (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-zombie.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Zombie\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Zombie_Male.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Zombie from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-zombie-woman.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Zombie (woman)\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Character Pack – https://quaternius.com/packs/ultimatedanimatedcharacter.html (quaternius-ultimate-animated-character/glTF/Zombie_Female.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Zombie (woman) from Quaternius Ultimate Animated Character Pack by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-alpaca.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Alpaca\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Alpaca.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Alpaca from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-bull.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Bull\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Bull.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Bull from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cow.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cow\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Cow.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cow from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-deer.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Deer\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Deer.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Deer from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-donkey.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Donkey\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Donkey.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Donkey from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-fox.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Fox\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Fox.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Fox from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-horse.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Horse\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Horse.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Horse from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-white-horse.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"White Horse\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Horse_White.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "White Horse from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-husky.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Husky\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Husky.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Husky from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-shiba.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Shiba Inu\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/ShibaInu.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Shiba Inu from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-stag.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Stag\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Stag.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Stag from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-wolf.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Wolf\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Animated Animals – https://quaternius.com/packs/ultimateanimatedanimals.html (quaternius-ultimate-animated-animals/glTF/Wolf.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Wolf from Quaternius Ultimate Animated Animals by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cleric.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cleric\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius RPG Characters – https://quaternius.com/packs/rpgcharacters.html (quaternius-rpg-characters/glTF/Cleric.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cleric from Quaternius RPG Characters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/rpgcharacters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-rpg-characters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-monk.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Monk\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius RPG Characters – https://quaternius.com/packs/rpgcharacters.html (quaternius-rpg-characters/glTF/Monk.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Monk from Quaternius RPG Characters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/rpgcharacters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-rpg-characters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-ranger.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Ranger\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius RPG Characters – https://quaternius.com/packs/rpgcharacters.html (quaternius-rpg-characters/glTF/Ranger.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Ranger from Quaternius RPG Characters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/rpgcharacters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-rpg-characters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-rogue.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Rogue\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius RPG Characters – https://quaternius.com/packs/rpgcharacters.html (quaternius-rpg-characters/glTF/Rogue.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Rogue from Quaternius RPG Characters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/rpgcharacters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-rpg-characters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-warrior.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Warrior\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius RPG Characters – https://quaternius.com/packs/rpgcharacters.html (quaternius-rpg-characters/glTF/Warrior.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Warrior from Quaternius RPG Characters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/rpgcharacters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-rpg-characters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-rpg-wizard.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"RPG Wizard\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius RPG Characters – https://quaternius.com/packs/rpgcharacters.html (quaternius-rpg-characters/glTF/Wizard.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "RPG Wizard from Quaternius RPG Characters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/rpgcharacters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-rpg-characters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-alien-tall.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Tall Alien\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Alien_Tall.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Tall Alien from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-cactus.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cactus Monster\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Cactus.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cactus Monster from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-chicken.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Chicken\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Chicken.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Chicken from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-crab.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Crab\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Crab.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Crab from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-cyclops.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cyclops\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Cyclops.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cyclops from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-fawn.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Fawn\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Deer.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Fawn from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-demon.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Demon\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Demon.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Demon from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-ghost.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Ghost\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Ghost.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Ghost from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-green-demon.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Green Demon\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/GreenDemon.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Green Demon from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-mushroom.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Mushroom Monster\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Mushroom.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Mushroom Monster from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-panda.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Panda\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Panda.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Panda from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-penguin.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Penguin\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Penguin.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Penguin from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-skull.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Skull Monster\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Skull.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Skull Monster from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-tree.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Tree Monster\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Tree.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Tree Monster from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-cute-yeti.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Yeti\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Cute Animated Monsters – https://quaternius.com/packs/cutemonsters.html (quaternius-cute-monsters/glTF/Yeti.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Yeti from Quaternius Cute Animated Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/cutemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-birb.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Birb\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Birb.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Birb from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-blue-demon.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Blue Demon\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/BlueDemon.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Blue Demon from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-bunny.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Bunny Monster\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Bunny.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Bunny Monster from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-cactoro.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cactoro\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Cactoro.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cactoro from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-demon.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Big Demon\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Demon.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Big Demon from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-dino.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Dino\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Dino.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Dino from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-fish.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Fishman\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Fish.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Fishman from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-frog.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Frog Monster\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Frog.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Frog Monster from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-monkroose.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Monkroose\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Monkroose.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Monkroose from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-mushroom-king.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Mushroom King\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/MushroomKing.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Mushroom King from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-ninja.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Ninja Monster\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Ninja.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Ninja Monster from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-orc.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Orc\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Orc.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Orc from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-orc-skull.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Skull Orc\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Orc_Skull.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Skull Orc from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-tribal.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Tribal\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Tribal.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Tribal from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-big-yeti.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Big Yeti\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Big/glTF/Yeti.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Big Yeti from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-birb.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Birb Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Birb.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Birb Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-cactoro.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cactoro Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Cactoro.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cactoro Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-cat.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cat Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Cat.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cat Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-chicken.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Chicken Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Chicken.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Chicken Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-dog.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Dog Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Dog.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Dog Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-fish.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Fish Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Fish.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Fish Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-green.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Green Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/GreenBlob.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Green Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-spiky.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Spiky Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/GreenSpikyBlob.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Spiky Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-mushnub.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Mushnub\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Mushnub.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Mushnub from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-mushnub-evolved.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Mushnub Evolved\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Mushnub_Evolved.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Mushnub Evolved from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-ninja.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Ninja Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Ninja.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Ninja Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-orc.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Orc Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Orc.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Orc Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-pink.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Pink Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/PinkBlob.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Pink Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-blob-yeti.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Yeti Blob\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Blob/glTF/Yeti.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Yeti Blob from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-flying-alpaking.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Alpaking\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Flying/glTF/Alpaking.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Alpaking from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-flying-alpaking-evolved.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Alpaking Evolved\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Flying/glTF/Alpaking_Evolved.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Alpaking Evolved from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-flying-armabee.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Armabee\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Flying/glTF/Armabee.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Armabee from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-flying-armabee-evolved.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Armabee Evolved\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Flying/glTF/Armabee_Evolved.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Armabee Evolved from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-flying-dragon.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Dragon\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Flying/glTF/Dragon.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Dragon from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-flying-dragon-evolved.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Dragon Evolved\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Flying/glTF/Dragon_Evolved.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Dragon Evolved from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-flying-goleling.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Goleling\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Flying/glTF/Goleling.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Goleling from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-flying-goleling-evolved.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Goleling Evolved\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Flying/glTF/Goleling_Evolved.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Goleling Evolved from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-flying-squidle.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Squidle\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Flying/glTF/Squidle.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Squidle from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/q-flying-tribal.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Flying Tribal\" for arcade roles (P54B T3); clips reduced to the game states and resampled, material colours baked into vertex colours, re-rooted on its base at 1.8 m.",
+      "source": "Quaternius Ultimate Monsters – https://quaternius.com/packs/ultimatemonsters.html (quaternius-ultimate-monsters/Flying/glTF/Tribal.gltf)",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Flying Tribal from Quaternius Ultimate Monsters by Quaternius (quaternius.com) (CC0-1.0), https://quaternius.com/packs/ultimatemonsters.html",
+      "reviewNote": "Pack licence text stored at public/assets/worldstream/cc0/licenses/quaternius-ultimate-monsters.txt; source file sha256 recorded in src/assets/rigged-p54.json by scripts/assets/rigged/import-cc0.mjs.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-character.txt",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Licence text shipped with the quaternius-ultimate-animated-character pack, kept as evidence for its CC0 models.",
+      "source": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in src/assets/rigged-p54.json"
+      ],
+      "attribution": "quaternius-ultimate-animated-character by Quaternius (quaternius.com), CC0 1.0",
+      "reviewNote": "Covers only CC0 1.0 material; every model it lists has its own disclosure record.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/cc0/licenses/quaternius-ultimate-animated-animals.txt",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Licence text shipped with the quaternius-ultimate-animated-animals pack, kept as evidence for its CC0 models.",
+      "source": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in src/assets/rigged-p54.json"
+      ],
+      "attribution": "quaternius-ultimate-animated-animals by Quaternius (quaternius.com), CC0 1.0",
+      "reviewNote": "Covers only CC0 1.0 material; every model it lists has its own disclosure record.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/cc0/licenses/quaternius-rpg-characters.txt",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Licence text shipped with the quaternius-rpg-characters pack, kept as evidence for its CC0 models.",
+      "source": "https://quaternius.com/packs/rpgcharacters.html",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in src/assets/rigged-p54.json"
+      ],
+      "attribution": "quaternius-rpg-characters by Quaternius (quaternius.com), CC0 1.0",
+      "reviewNote": "Covers only CC0 1.0 material; every model it lists has its own disclosure record.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/cc0/licenses/quaternius-cute-monsters.txt",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Licence text shipped with the quaternius-cute-monsters pack, kept as evidence for its CC0 models.",
+      "source": "https://quaternius.com/packs/cutemonsters.html",
+      "authorOrProvider": "Quaternius (quaternius.com)",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "none – CC0 waives attribution; credit is given voluntarily in src/assets/rigged-p54.json"
+      ],
+      "attribution": "quaternius-cute-monsters by Quaternius (quaternius.com), CC0 1.0",
+      "reviewNote": "Covers only CC0 1.0 material; every model it lists has its own disclosure record.",
+      "scope": "prod"
     }
   ]
 }

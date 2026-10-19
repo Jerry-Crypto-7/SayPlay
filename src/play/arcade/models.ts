@@ -25,6 +25,7 @@ import rigged from '@/assets/rigged.json';
 import { BASE_ENTRIES } from '../assets/entries/base';
 import { CATALOG_ENTRIES } from '../assets/entries/catalog';
 import { RIGGED_P32_ENTRIES } from '../assets/entries/rigged-p32';
+import { RIGGED_P54_ENTRIES } from '../assets/entries/rigged-p54';
 import type { AssetEntry } from '../assets/manifest';
 import { controlOf, readsLabel } from '../capabilities';
 import type { GenreId, ModelClass } from '../genre/contract';
@@ -431,8 +432,11 @@ export interface ModelChoice {
   readonly entry: AssetEntry | undefined;
 }
 
-/** Manifest hrdinů (P32C): riggované postavy a tučňák napřed, animovaní hrdinové vět P32, pak modely katalogu. */
-const MANIFEST: readonly AssetEntry[] = [...BASE_ENTRIES, ...RIGGED_P32_ENTRIES, ...CATALOG_ENTRIES];
+/**
+ * Manifest hrdinů (P32C): riggované postavy a tučňák napřed, animovaní hrdinové vět P32, modely
+ * katalogu a nakonec postavy Quaternius (P54B T3) – shoda skóre tak nechá dnešní postavu.
+ */
+const MANIFEST: readonly AssetEntry[] = [...BASE_ENTRIES, ...RIGGED_P32_ENTRIES, ...CATALOG_ENTRIES, ...RIGGED_P54_ENTRIES];
 
 const animated = (entry: AssetEntry): boolean => Object.values(entry.clips).some((clip) => clip !== PROCEDURAL_CLIP);
 
