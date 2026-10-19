@@ -19,7 +19,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { color } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, UNIT, bodyBase, nativeRule, rampedSpeed } from '@/play/arcade/contract';
-import { type Look, SURFACES } from '@/play/arcade/look';
+import { type Look, SURFACES, sparseLandmarks } from '@/play/arcade/look';
 import { STEER, type SteerCourse } from '@/play/arcade/pieces/steer';
 import type { HeroAction } from '@/play/spec';
 
@@ -285,17 +285,16 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
           )}
         </>
       )}
-      {look.flora !== undefined ? (
-        <>
-          <Vegetation flora={look.flora} seed={seed} from={-60} to={span} road={roadAt} clear={VEGETATION_CLEAR} />
-          {/* Vedle vegetace jedna řídká řada kulis po ose celé cesty: řada na úsek by na krátkých úsecích kulisy zahustila. */}
-          <Scenery look={look} layout="sides" inner={widest / 2 + SCENERY_MARGIN} from={-10} to={span - 2} bend={centerAt} vegetation />
-        </>
+      {look.flora !== undefined && <Vegetation flora={look.flora} seed={seed} from={-60} to={span} road={roadAt} clear={VEGETATION_CLEAR} />}
+      {sparseLandmarks(look) ? (
+        // Vedle vegetace jedna řídká řada kulis po ose celé cesty: řada na úsek by na krátkých úsecích kulisy zahustila.
+        <Scenery look={look} layout="sides" inner={widest / 2 + SCENERY_MARGIN} from={-10} to={span - 2} bend={centerAt} vegetation />
       ) : (
+        // Hustá řada na úsek; vedle výplně (P54B T7) bez druhů výplně, ty kreslí `Vegetation`.
         segments.map((segment, i) =>
           segment.far - segment.near < sceneryFrom ? null : (
             <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>
-              <Scenery look={look} layout="sides" inner={segment.width / 2 + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
+              <Scenery look={look} layout="sides" inner={segment.width / 2 + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} vegetation={look.flora !== undefined} />
             </group>
           ),
         )

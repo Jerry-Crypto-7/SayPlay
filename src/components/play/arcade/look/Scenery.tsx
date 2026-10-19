@@ -11,7 +11,7 @@
 import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Box3, type Group, Mesh, type Object3D, Vector3 } from 'three';
 
-import { type Flora, floraIds, isSceneryModel, landmarks, type Look, modelHeight, type PropKind, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
+import { type Flora, floraIds, isSceneryModel, landmarks, type Look, modelHeight, type PropKind, type SceneryKind, type SceneryModel, sparseLandmarks } from '@/play/arcade/look';
 
 import { UNDER_PANORAMA } from './under-panorama';
 import { loadFlatModel, type PlantModel, paintedPlant, plantMaterial } from './load';
@@ -314,13 +314,14 @@ const FOOT = 0.7;
  * `ground` = výška terénu pod kulisou (údolí běžce, P32A T3), `cap` = barva sněhové čepičky,
  * `tallest` = strop výšky řady v popředí (v metrech scény, už se `size`), `bend` = posun po
  * zakřivené trati běžce (P46D T3, `runner/path.ts`): kulisa stojí vedle zatáčky, ne v ní.
- * `vegetation` = scéna kreslí vegetaci sady (`Vegetation.tsx`): řada nese jen stavby a věci, řídce a střídavě.
+ * `vegetation` = scéna kreslí vegetaci sady (`Vegetation.tsx`): řada nese jen stavby a věci, vedle přírody řídce
+ * a střídavě; vedle výplně (P54B T7, `sparseLandmarks`) zůstane hustá.
  */
 export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap, tallest, bend, vegetation = false }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string; readonly tallest?: SceneryCap; readonly bend?: (z: number) => { readonly x: number; readonly y: number }; readonly vegetation?: boolean }) {
   const side = tallest?.side;
   const height = tallest === undefined ? undefined : tallest.height / size;
   const props = useMemo(() => (vegetation ? landmarks(look) : look.props), [look, vegetation]);
-  const sparse = vegetation && look.flora !== undefined;
+  const sparse = vegetation && sparseLandmarks(look);
   const places = useMemo(() => sceneryPlaces(props, layout, inner, from, to, side === undefined || height === undefined ? undefined : { side, height }, sparse), [props, layout, inner, from, to, side, height, sparse]);
   const plants = useMemo(() => (look.flora === undefined ? new Set<string>() : floraIds(look.flora)), [look.flora]);
   const heights = useMemo(

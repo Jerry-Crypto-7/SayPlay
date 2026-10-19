@@ -55,9 +55,9 @@ const hueOf = (hex: string | Color): number => {
 };
 
 describe('rozmístění vegetace', () => {
-  it('sady s vegetací jsou les, džungle, louka, poušť, pláž a sníh', () => {
-    // Pláž a sníh od P46G T8; město ne – řada domů vedle vegetace by zřídla na jeden dům za 24 m.
-    expect(FLORAS.map(([id]) => id)).toEqual(['meadow', 'forest', 'jungle', 'desert', 'beach', 'snow']);
+  it('vegetaci nebo výplň má každá sada', () => {
+    // Pláž a sníh od P46G T8, ostatní sady výplň od P54B T7 – řada domů vedle ní zůstane hustá (`sparseLandmarks`).
+    expect(FLORAS.map(([id]) => id)).toEqual([...LOOK_IDS]);
   });
 
   it('tatáž hra dá tutéž vegetaci, jiné semínko jinou', () => {
@@ -230,6 +230,9 @@ describe('druhy a barvy', () => {
     const forest = landmarks(LOOKS.forest);
     expect(forest.length).toBeGreaterThan(0);
     expect(forest.filter((prop) => floraIds(FOREST).has(prop) || ['tree', 'pine', 'palm', 'cactus'].includes(prop))).toEqual([]);
-    expect(landmarks(LOOKS.city)).toBe(LOOKS.city.props);
+    // Výplň města (P54B T7) nebere domy ani taxík: řada kulis zůstane celá.
+    expect(landmarks(LOOKS.city)).toEqual(LOOKS.city.props);
+    const { flora: _flora, ...bare } = LOOKS.city;
+    expect(landmarks(bare)).toBe(LOOKS.city.props);
   });
 });

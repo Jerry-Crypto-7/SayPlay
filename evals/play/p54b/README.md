@@ -16,6 +16,8 @@ Dev sada `evals/play/p30/dev.json` (60 vět) přes `draftGameSpec` – rychlá v
 
 **Před (`census-before.json`, 19. 10. 2026, `5d741740`):** hrdina s kostrou 18/59 (31 %), nepřítel s kostrou 1/59, odlišných modelů medián 12 (min 7, max 25), světlo změněné 4/59. Světlo jmenuje 7 vět, změní se jen u 4 – chybí `j10` („dark forest“ v hradu), `d03` („during a thunderstorm“), `d16` („snowy mountain village“). Čísla sedí přesně na výzkum.
 
+**T7 (`census-t7.json`, výplň sad bez vegetace):** odlišných modelů medián 19 (min 13, max 25) – cíl ≥ 15 / ≥ 10 splněn. Výplň (`look/fill.ts`) má všech 12 sad bez vegetace, 7–11 druhů na sadu; řada kulis vedle ní zůstane hustá (`sparseLandmarks`). Hrdina s kostrou a světlo beze změny (18/59, 4/59).
+
 ## Důkaz, že vzhled není v hashi
 
 `src/play/arcade/__tests__/p54b-look-not-hashed.test.ts`: šest vět ze šesti žánrů, týž spec s jinou sadou, náladou, počasím a denní dobou postaví svět se stejným `canonicalHash`, stejným počátečním stavem a robot ho za 600 tiků dohraje se stejným hashem. Zelené na `5d741740`; mutace (`theme.look` přimíchaný do semínka v `arcadeWorldOf`) test zčervená. `theme` do hashe nevstupuje – architektura P54B platí.
@@ -32,3 +34,5 @@ node scripts/play-look-shots.mjs shots --base http://127.0.0.1:3351 --set genres
 ## Výkon
 
 **Základ zatím nezměřen.** 19. 10. 2026 běžel stroj na 100 % CPU (81 procesů Node, souběžné autopiloty): emulace Pixel 7 dala 18–20 FPS a pak 0,1 FPS (zamrzlý prohlížeč), takže běh byl zastaven a čísla se nezapsala. Výkonová brána se měří A/B hned po sobě proti buildu `features/P54B` na commitu T2 (vzhled beze změny), až bude stroj v klidu; `perf-before.json` vznikne tím prvním během.
+
+- **T7:** perf A/B T7 odložen do klidného stroje (CPU 81 %). Výplň je proto střídmá: město hustota 0,22 bez linie v dálce (louka 0,45 se třemi vrstvami), interiéry 0,25 bez linie v dálce; každý druh je jedno kreslicí volání (nejvýš 11 na sadu, město 9).
