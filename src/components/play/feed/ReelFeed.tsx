@@ -53,6 +53,8 @@ const SETTLE_MS = 150;
 const AIM_MS = 1500;
 /** Kolikrát zkusit detail hry znovu po 429; okno stropu je 10 s (`RATE_WINDOW_MS`). */
 const DETAIL_RETRIES = 3;
+/** Jak dlouho visí poděkování za nahlášení. */
+const THANKS_MS = 3000;
 
 /** Čekání podle `retry-after` (sekundy), nejvýš okno stropu; bez hlavičky 1 s. */
 function retryAfterMs(response: Response): number {
@@ -270,6 +272,13 @@ export function ReelFeed() {
     });
     setArrived(versionId);
   }, []);
+  // Poděkování za nahlášení (T11) přežije přechod na další kartu, akce karty ne.
+  const [thanks, setThanks] = useState(false);
+  useEffect(() => {
+    if (!thanks) return;
+    const timer = window.setTimeout(() => setThanks(false), THANKS_MS);
+    return () => window.clearTimeout(timer);
+  }, [thanks]);
   useEffect(() => {
     if (arrived === null) return;
     const at = games.findIndex((game) => game.versionId === arrived);
@@ -468,6 +477,10 @@ export function ReelFeed() {
         title={current.title}
         remixes={currentDetail !== undefined && currentDetail !== 'error' ? currentDetail.children.length : current.remixes}
         onRemixed={(versionId) => remixed(current, versionId)}
+        onReported={() => {
+          setThanks(true);
+          go(index + 1);
+        }}
       />
       <button type="button" className="play-pager-step" data-testid="feed-next" onClick={() => go(index + 1)} disabled={index >= games.length - 1} aria-label="Next game">
         ↓
@@ -503,6 +516,11 @@ export function ReelFeed() {
         )}
       </StageHost>
       <Feed games={games} current={current.versionId} known={known} onPick={pick} />
+      {thanks && (
+        <p className="sp-toast" data-testid="feed-reported" role="status">
+          Thanks. We&apos;ll take a look.
+        </p>
+      )}
     </section>
   );
 }

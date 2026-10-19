@@ -268,6 +268,36 @@ test.describe('/play – bot preview in the feed', () => {
     await expectPreview(page, rows[0]);
   });
 
+  test('desktop: Report on the card asks once, thanks the player and moves to the next card (T11)', async ({ page }) => {
+    // První hlas dveře odmítnou (úložiště nedostupné): karta zůstane a list řekne proč; druhý jde skutečnými dveřmi.
+    const sent: number[] = [];
+    await page.route(`**/api/play/games/${rows[0].versionId}/report`, async (route) => {
+      if (route.request().method() !== 'POST') return route.continue();
+      if (sent.push(Date.now()) === 1) return route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":{"code":"STORE_UNAVAILABLE"}}' });
+      const real = await route.fetch();
+      expect(real.status()).toBe(204);
+      return route.fulfill({ response: real });
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/play?g=${rows[0].versionId}`);
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    await expectPreview(page, rows[0]);
+
+    await page.getByTestId('feed-report').click();
+    const sheet = page.getByRole('dialog');
+    await expect(sheet).toBeVisible();
+    expect(sent).toHaveLength(0);
+    await sheet.getByTestId('feed-report-send').click();
+    await expect(sheet.getByRole('alert')).toHaveText("The report didn't go through. Try again.");
+    await expect(page.locator('[data-testid="feed-card"][data-active="true"]')).toHaveAttribute('data-index', '0');
+
+    await sheet.getByTestId('feed-report-send').click();
+    await expect(page.getByTestId('feed-reported')).toHaveText("Thanks. We'll take a look.");
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expectPreview(page, rows[1]);
+    expect(sent).toHaveLength(2);
+  });
+
   test.describe('dare', () => {
     // Vlastní volající: strop výzev je 1 za 10 s a `p36-dare.spec.ts` jde nad týmž serverem.
     test.use({ extraHTTPHeaders: { 'x-forwarded-for': '198.51.100.54' } });

@@ -12,6 +12,9 @@
  *   (stisk a puštění na místě – feed ho přehraje hře, `ReelFeed` T9), hra se
  *   převezme a po výhře nabídne výzvu `PostRun`.
  * - **Share** je kolo sdílení z HUD (`ShareButton variant="hud"`).
+ * - **Report** (T11) se jednou zeptá v listu a pošle hlas
+ *   `POST /api/play/games/:id/report`; přijatý hlas ohlásí feedu (`onReported`),
+ *   který poděkuje a přejde na další kartu. Kit nemá ikonu „…“, list je menu.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -19,7 +22,9 @@ import { useEffect, useRef, useState } from 'react';
 import { RemixBox, useRemixJob } from '../RemixBox';
 import { ShareButton } from '../ShareButton';
 import { CHANGE_ONE_THING } from '../starters';
-import { Icon, Sheet } from '../ui';
+import { Button, Icon, Sheet } from '../ui';
+
+type ReportView = 'closed' | 'asking' | 'sending' | 'failed';
 
 /** Id ukazatele simulovaného ťuku; skutečný ukazatel je v tu chvíli puštěný (klik přišel po `pointerup`). */
 const DARE_POINTER = 1;
@@ -39,14 +44,36 @@ export function ReelActions({
   title,
   remixes,
   onRemixed,
+  onReported,
 }: {
   readonly versionId: string;
   readonly title: string;
   readonly remixes: number;
   /** Hotový remix této hry (id nové verze). */
   readonly onRemixed: (versionId: string) => void;
+  /** Dveře hlas přijaly. */
+  readonly onReported: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [report, setReport] = useState<ReportView>('closed');
+  // Karta je klíčovaná hrou: hráč, který mezitím odjel jinam, už na další kartu posunout nechce.
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+  const sendReport = async () => {
+    setReport('sending');
+    const ok = await fetch(`/api/play/games/${versionId}/report`, { method: 'POST' }).then(
+      (response) => response.ok,
+      () => false,
+    );
+    if (!alive.current) return;
+    setReport(ok ? 'closed' : 'failed');
+    if (ok) onReported();
+  };
   const job = useRemixJob(versionId, false);
   const ready = job.view.kind === 'ready' ? job.view.versionId : null;
   // Feed posílá novou funkci při každém vykreslení; hotový remix se ohlásí jednou.
@@ -92,8 +119,25 @@ export function ReelActions({
         <ShareButton versionId={versionId} title={title} variant="hud" />
         <span className="play-reel-action-caption">Share</span>
       </div>
+      <div className="play-reel-action">
+        <button type="button" className="sp-hud-btn play-hud-round" data-testid="feed-report" aria-label="Report this game" aria-haspopup="dialog" onClick={() => setReport('asking')}>
+          <Icon name="flag" />
+        </button>
+        <span className="play-reel-action-caption">Report</span>
+      </div>
       <Sheet open={open} title={CHANGE_ONE_THING} onClose={() => setOpen(false)}>
         <RemixBox job={job} />
+      </Sheet>
+      <Sheet open={report !== 'closed'} title="Report this game?" onClose={() => setReport('closed')}>
+        <p>Reported games leave the feed while we check them.</p>
+        {report === 'failed' && (
+          <p className="sp-field-error" role="alert">
+            The report didn&apos;t go through. Try again.
+          </p>
+        )}
+        <Button size="l" className="sp-btn--block" data-testid="feed-report-send" disabled={report === 'sending'} aria-busy={report === 'sending'} onClick={() => void sendReport()}>
+          Report
+        </Button>
       </Sheet>
     </div>
   );
