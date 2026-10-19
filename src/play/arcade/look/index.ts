@@ -474,6 +474,18 @@ export interface Skyline {
 export const AMBIENT_KINDS = ['birds', 'butterflies', 'fish', 'jumping-fish', 'bats', 'sparks', 'dust', 'meteors'] as const;
 export type AmbientKind = (typeof AMBIENT_KINDS)[number];
 
+/** Barvy života v pozadí: teplé a neutrální (nic fialového), světlé září. Paleta patří sem, ne do `.tsx` (brand guard). */
+export const AMBIENT_COLOURS: Readonly<Record<AmbientKind, readonly string[]>> = {
+  birds: ['#2f3437', '#3b342d', '#4a443c'],
+  butterflies: ['#f59e0b', '#facc15', '#fb923c', '#fafaf9', '#38bdf8'],
+  fish: ['#f97316', '#facc15', '#0ea5e9', '#e2e8f0'],
+  'jumping-fish': ['#cbd5e1', '#94a3b8', '#e2e8f0'],
+  bats: ['#57534e', '#6b625a', '#78716c'],
+  sparks: ['#fbbf24', '#f97316', '#fde68a'],
+  dust: ['#fff7e6', '#ffedd5', '#fef3c7'],
+  meteors: ['#fff6e8', '#e0f2fe', '#fde68a'],
+};
+
 export interface Look {
   /** Pozadí i barva mlhy. */
   readonly sky: string;

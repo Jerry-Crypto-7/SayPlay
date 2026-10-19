@@ -40,7 +40,7 @@ import {
   Vector3,
 } from 'three';
 
-import { AMBIENT_KINDS, type AmbientKind, type Look, modelHeight, type SceneryModel } from '@/play/arcade/look';
+import { AMBIENT_COLOURS, AMBIENT_KINDS, type AmbientKind, type Look, modelHeight, type SceneryModel } from '@/play/arcade/look';
 
 import { toyMotionOn } from '../toy/applyToy';
 import { restCamera } from './intro';
@@ -104,16 +104,16 @@ const fish = (): BufferGeometry =>
 const mote = (): BufferGeometry => new OctahedronGeometry(1, 0);
 const streak = (): BufferGeometry => new OctahedronGeometry(1, 0).scale(0.07, 0.07, 1);
 
-/** Druhy života; barvy teplé a neutrální (nic fialového), světlé září. */
+/** Druhy života; barvy z palety `AMBIENT_COLOURS`, světlé září. */
 export const LIFE: Readonly<Record<AmbientKind, LifeSpec>> = {
-  birds: { count: 10, shape: bird, motion: 'circle', band: [0.9, 1.25], add: [0.5, 2.5], front: false, path: 0.85, lift: 0.35, body: 0.55, speed: [0.3, 0.55], flap: [7, 0.15, 0.45], colours: ['#2f3437', '#3b342d', '#4a443c'] },
-  butterflies: { count: 8, shape: butterfly, motion: 'flutter', band: [0.1, 0.55], add: [0.4, 0.6], front: true, path: 0.8, lift: 0.3, body: 0.22, speed: [0.6, 1], flap: [17, 0.35, 0.9], colours: ['#f59e0b', '#facc15', '#fb923c', '#fafaf9', '#38bdf8'] },
-  fish: { count: 12, shape: fish, motion: 'circle', band: [0.15, 0.85], add: [0.3, 0.5], front: true, path: 0.85, lift: 0.2, body: 0.35, speed: [0.35, 0.6], wiggle: 9, colours: ['#f97316', '#facc15', '#0ea5e9', '#e2e8f0'] },
-  'jumping-fish': { count: 4, shape: fish, motion: 'leap', band: [0, 0], add: [0, 0], front: true, path: 0.85, lift: 1.2, body: 0.32, speed: [0.2, 0.3], wiggle: 12, shown: 0.18, colours: ['#cbd5e1', '#94a3b8', '#e2e8f0'] },
-  bats: { count: 10, shape: bat, motion: 'circle', band: [0.5, 1.1], add: [0.5, 1.5], front: false, path: 0.85, lift: 0.5, body: 0.38, speed: [0.8, 1.2], flap: [15, 0, 0.7], colours: ['#57534e', '#6b625a', '#78716c'] },
-  sparks: { count: 24, shape: mote, motion: 'rise', band: [0.8, 0.95], add: [0, 0], front: false, path: 0.6, lift: 5, body: 0.12, speed: [0.25, 0.45], colours: ['#fbbf24', '#f97316', '#fde68a'], glow: 3 },
-  dust: { count: 40, shape: mote, motion: 'drift', band: [0.1, 0.9], add: [0.3, 0.5], front: true, path: 0.85, lift: 0.6, body: 0.09, speed: [0.5, 0.9], colours: ['#fff7e6', '#ffedd5', '#fef3c7'], glow: 1.6 },
-  meteors: { count: 4, shape: streak, motion: 'fall', band: [1.3, 2], add: [3, 8], front: false, path: 0.9, lift: 6, body: 1.2, speed: [0.08, 0.14], shown: 0.12, colours: ['#fff6e8', '#e0f2fe', '#fde68a'], glow: 3 },
+  birds: { count: 10, shape: bird, motion: 'circle', band: [0.9, 1.25], add: [0.5, 2.5], front: false, path: 0.85, lift: 0.35, body: 0.55, speed: [0.3, 0.55], flap: [7, 0.15, 0.45], colours: AMBIENT_COLOURS.birds },
+  butterflies: { count: 8, shape: butterfly, motion: 'flutter', band: [0.1, 0.55], add: [0.4, 0.6], front: true, path: 0.8, lift: 0.3, body: 0.22, speed: [0.6, 1], flap: [17, 0.35, 0.9], colours: AMBIENT_COLOURS.butterflies },
+  fish: { count: 12, shape: fish, motion: 'circle', band: [0.15, 0.85], add: [0.3, 0.5], front: true, path: 0.85, lift: 0.2, body: 0.35, speed: [0.35, 0.6], wiggle: 9, colours: AMBIENT_COLOURS.fish },
+  'jumping-fish': { count: 4, shape: fish, motion: 'leap', band: [0, 0], add: [0, 0], front: true, path: 0.85, lift: 1.2, body: 0.32, speed: [0.2, 0.3], wiggle: 12, shown: 0.18, colours: AMBIENT_COLOURS['jumping-fish'] },
+  bats: { count: 10, shape: bat, motion: 'circle', band: [0.5, 1.1], add: [0.5, 1.5], front: false, path: 0.85, lift: 0.5, body: 0.38, speed: [0.8, 1.2], flap: [15, 0, 0.7], colours: AMBIENT_COLOURS.bats },
+  sparks: { count: 24, shape: mote, motion: 'rise', band: [0.8, 0.95], add: [0, 0], front: false, path: 0.6, lift: 5, body: 0.12, speed: [0.25, 0.45], colours: AMBIENT_COLOURS.sparks, glow: 3 },
+  dust: { count: 40, shape: mote, motion: 'drift', band: [0.1, 0.9], add: [0.3, 0.5], front: true, path: 0.85, lift: 0.6, body: 0.09, speed: [0.5, 0.9], colours: AMBIENT_COLOURS.dust, glow: 1.6 },
+  meteors: { count: 4, shape: streak, motion: 'fall', band: [1.3, 2], add: [3, 8], front: false, path: 0.9, lift: 6, body: 1.2, speed: [0.08, 0.14], shown: 0.12, colours: AMBIENT_COLOURS.meteors, glow: 3 },
 };
 
 /** Kusů na úrovni kvality: `low` polovinu. */
