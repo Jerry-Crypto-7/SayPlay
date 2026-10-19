@@ -11,16 +11,23 @@
  * Rozmístění je z vlastního streamu `pure-rand` nasoleného semínkem hry:
  * tatáž hra má tutéž výzdobu, jiná hra jinou, a z běhových streamů jádra se
  * neodebere ani jedna hodnota – hash replaye se nehne.
+ *
+ * Za hranou (P54B T9) stojí kusy sady 0,5–2 m z její vegetace (`arenaRingPlaces`):
+ * prstenec v mezeře mezi hranou a stěnou po stranách a vzadu a 2–4 shluky
+ * u předních rohů, blíž kameře. Strana kamery (−z) prstenec nemá: co by bylo nižší
+ * než přední stěna, ta zakryje, a co vyšší, zakrylo by paty hrdiny u přední hrany.
+ * Druh je jedna instancovaná síť bez stínu (`ringMesh`), druhů nejvýš `RING_KINDS`.
  */
 
 import { uniformFloat64 } from 'pure-rand/distribution/uniformFloat64';
 import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
-import { type BufferGeometry, Color } from 'three';
+import { type BufferGeometry, Color, InstancedMesh, type Material, Matrix4, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
 import type { Look } from '@/play/arcade/look';
 
-import { arenaPalette } from './arenaFloor';
+import { reachOf } from '../../vegetation-places';
+import { ARENA_WALL_GAP, arenaPalette } from './arenaFloor';
 import { Faces, type Vertex } from './islands';
 import { hash, mix, noise } from './valley';
 
@@ -103,6 +110,190 @@ export function arenaDecorPlaces({ look, half, seed, keep }: ArenaDecorOptions):
     pieces.push({ kind, x, z, size, turn });
   }
   return pieces;
+}
+
+/** Kus sady za hranou arény (P54B T9): model katalogu z vegetace sady. */
+export interface RingPiece {
+  readonly id: string;
+  /** Pata ve scéně (m). */
+  readonly x: number;
+  readonly z: number;
+  /** Výška kusu (m), `RING_LOWEST`–`RING_TALLEST`. */
+  readonly height: number;
+  readonly turn: number;
+  /** Násobek barvy po složkách, každá 0,92–1,08 – jako vegetace. */
+  readonly shade: readonly [r: number, g: number, b: number];
+  /** Poloměr půdorysu (m): kružnice opsaná modelu z rozměrů v katalogu. */
+  readonly reach: number;
+  /** Rohový shluk, do kterého kus patří; `null` = prstenec. */
+  readonly cluster: number | null;
+}
+
+/** Nejvýš tolik druhů v prstenci a shlucích: druh = instancovaná síť = kreslicí volání. */
+export const RING_KINDS = 6;
+/** Výška kusu (m): nižší by za hranou zanikl, vyšší by přerostl stěnu i hrdinu. */
+export const RING_LOWEST = 0.5;
+export const RING_TALLEST = 2;
+/** Sůl prstence – stream jiný než výzdoba podlahy, vegetace i orientační bod. */
+const RING_SALT = 0x3a9c51e7;
+/** Nejširší půdorys kusu (m): kus stojí těsně za hranou a zády se nejvýš opře o stěnu. */
+const RING_REACH = 0.9;
+/** Strom nebo balvan středu vegetace se do prstence vejde stažený pod tuhle výšku (m), pak ± náhoda. */
+const RING_NATURAL = 1.6;
+/** Mezera mezi kusy prstence (m): nejmenší a rozpětí; druhá mocnina náhody kusy shlukuje do dvojic. */
+const RING_SPACING = [0.2, 2.8] as const;
+/** Střed rohového shluku za hranou (m): před nejširší rohovou věží (hrad sahá 3,1 m) – a rozptyl kusů kolem něj. */
+const CLUSTER_AT = 3.6;
+const CLUSTER_SPREAD = [0.7, 1.4] as const;
+
+interface RingSpecies {
+  readonly id: string;
+  /** Výška druhu v sadě (m). */
+  readonly height: number;
+  /** Poloměr půdorysu na metr výšky. */
+  readonly ratio: number;
+  /** Druh středu vegetace (strom, balvan, keř v květináči) – dává prstenci výšku. */
+  readonly tall: boolean;
+}
+
+function ringSpecies(look: Look): RingSpecies[] {
+  if (look.flora === undefined) return [];
+  const seen = new Set<string>();
+  const pool: RingSpecies[] = [];
+  for (const layer of ['near', 'mid'] as const) {
+    for (const { id, height } of look.flora[layer]) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const ratio = reachOf(id);
+      // Plochý široký kus (palouk květin) by se do mezery nevešel ani v nejmenší výšce.
+      if (ratio * RING_LOWEST <= RING_REACH) pool.push({ id, height, ratio, tall: layer === 'mid' });
+    }
+  }
+  return pool;
+}
+
+/** Modely, ze kterých prstenec sady vybírá: drobnosti a střed její vegetace. */
+export const arenaRingPool = (look: Look): string[] => ringSpecies(look).map((species) => species.id);
+
+/** Vzdálenost bodu od hrací plochy (čtverec ±`half`); na ploše 0. */
+const offFloor = (half: number, x: number, z: number): number => Math.hypot(Math.max(0, Math.abs(x) - half), Math.max(0, Math.abs(z) - half));
+const tone = (value: number): number => Math.min(1.08, Math.max(0.92, value));
+
+function shuffled<T>(list: readonly T[], next: () => number): T[] {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(next() * (i + 1));
+    [out[i], out[j]] = [out[j]!, out[i]!];
+  }
+  return out;
+}
+
+/** Výška kusu: druh ve své velikosti v sadě × náhoda × `boost`, v mezích a s půdorysem nejvýš `RING_REACH`. */
+const heightOf = (species: RingSpecies, boost: number, u: number): number =>
+  Math.min(RING_TALLEST, RING_REACH / species.ratio, Math.max(RING_LOWEST, Math.min(species.height, RING_NATURAL) * (0.8 + 0.5 * u) * boost));
+
+/**
+ * Prstenec a rohové shluky (P54B T9). Půdorys žádného kusu nesahá na hrací plochu
+ * ani do `keep` – jádro o kusech neví, kus v cestě by hráč viděl jako překážku, kterou projde.
+ */
+export function arenaRingPlaces({ look, half, seed, keep }: ArenaDecorOptions): RingPiece[] {
+  const rng = xoroshiro128plus((seed ^ RING_SALT) | 0);
+  const next = (): number => uniformFloat64(rng);
+  // První výstupy xoroshiro nasoleného blízkými semínky jsou skoro stejné: dva se zahodí (jako u orientačního bodu).
+  next();
+  next();
+  const pool = ringSpecies(look);
+  // Většinou drobnosti, k nim dva druhy středu pro výšku; chybí-li jedny, doplní je druhé.
+  const low = shuffled(pool.filter((species) => !species.tall), next);
+  const high = shuffled(pool.filter((species) => species.tall), next);
+  const kinds = [...low.slice(0, RING_KINDS - 2), ...high.slice(0, 2)];
+  kinds.push(...[...low.slice(RING_KINDS - 2), ...high.slice(2)].slice(0, RING_KINDS - kinds.length));
+  if (kinds.length === 0) return [];
+  // Druhy jdou z balíčku: každý se ukáže, než se některý zopakuje, a pořadí přesto nemá periodu.
+  let deck: RingSpecies[] = [];
+  const draw = (): RingSpecies => {
+    if (deck.length === 0) deck = shuffled(kinds, next);
+    return deck[deck.length - 1]!;
+  };
+  const pieces: RingPiece[] = [];
+  /** Postaví kus, pokud jeho půdorys nesahá na plochu ani do `keep`; jinak druh zůstane v balíčku na příště. */
+  const put = (species: RingSpecies, x: number, z: number, height: number, cluster: number | null): void => {
+    const reach = species.ratio * height;
+    const turn = next() * Math.PI * 2;
+    const light = 0.92 + 0.16 * next();
+    const hue = (next() - 0.5) * 0.04;
+    // Kus u hrany stojí přesně `reach` od ní – bez tolerance by ho zaokrouhlení odmítlo pořád znovu.
+    if (offFloor(half, x, z) < reach - 1e-9 || keep.some((spot) => Math.hypot(x - spot.x, z - spot.z) < spot.r + reach)) return;
+    deck.pop();
+    pieces.push({ id: species.id, x, z, height, turn, shade: [tone(light + hue), light, tone(light - hue)], reach, cluster });
+  };
+
+  // Prstenec po stranách (±x) a vzadu (+z): kus těsně za hranou, střed nejdál v mezeře před stěnou.
+  for (const [nx, nz] of [[1, 0], [-1, 0], [0, 1]] as const) {
+    for (let t = -half; ; ) {
+      const species = draw();
+      const height = heightOf(species, 1, next());
+      const reach = species.ratio * height;
+      const along = t + reach;
+      if (along + reach > half) break;
+      const out = half + reach + next() * Math.max(0, ARENA_WALL_GAP - reach);
+      put(species, nx === 0 ? along : nx * out, nz === 0 ? along : out, height, null);
+      t = along + reach + RING_SPACING[0] + RING_SPACING[1] * next() ** 2;
+    }
+  }
+
+  // Rohové shluky u předních rohů (blíž kameře): před přední stěnou vždy, vedle boční se semínkem – celkem 2–4.
+  let cluster = 0;
+  for (const sx of [-1, 1]) {
+    const centres: (readonly [number, number])[] = [[sx * (half - 0.5 + 2.5 * next()), -(half + CLUSTER_AT + 0.8 * next())]];
+    if (next() < 0.5) centres.push([sx * (half + CLUSTER_AT + 0.8 * next()), -(half - 0.5 + 2.5 * next())]);
+    for (const [cx, cz] of centres) {
+      const count = 3 + Math.floor(next() * 3);
+      const spin = next() * Math.PI * 2;
+      for (let k = 0; k < count; k += 1) {
+        const species = draw();
+        // Prostřední kus je největší, kolem něj menší: shluk má vršek, ne řadu stejných.
+        const height = heightOf(species, k === 0 ? 1.3 : 0.85, next());
+        const angle = spin + (k * Math.PI * 2) / (count - 1) + (next() - 0.5) * 0.6;
+        const r = k === 0 ? 0 : CLUSTER_SPREAD[0] + (CLUSTER_SPREAD[1] - CLUSTER_SPREAD[0]) * next();
+        put(species, cx + Math.cos(angle) * r, cz + Math.sin(angle) * r, height, cluster);
+      }
+      cluster += 1;
+    }
+  }
+  return pieces;
+}
+
+/** Kusy po druzích: scéna kreslí každý druh jednou instancovanou sítí. */
+export function ringKindsOf(pieces: readonly RingPiece[]): Map<string, RingPiece[]> {
+  const kinds = new Map<string, RingPiece[]>();
+  for (const piece of pieces) {
+    const list = kinds.get(piece.id);
+    if (list === undefined) kinds.set(piece.id, [piece]);
+    else list.push(piece);
+  }
+  return kinds;
+}
+
+/**
+ * Síť jednoho druhu: geometrie vysoká 1 s patou v počátku (`paintedPlant`), instance
+ * natočená, ve výšce kusu a s jeho odstínem. Stín jen přijímá – vrhání by stálo další
+ * volání ve stínovém průchodu; značka rigu (`rigShadow`) to drží.
+ */
+export function ringMesh(pieces: readonly RingPiece[], geometry: BufferGeometry, material: Material): InstancedMesh {
+  const mesh = new InstancedMesh(geometry, material, pieces.length);
+  const matrix = new Matrix4();
+  const scale = new Vector3();
+  const color = new Color();
+  pieces.forEach((piece, i) => {
+    mesh.setMatrixAt(i, matrix.makeRotationY(piece.turn).scale(scale.setScalar(piece.height)).setPosition(piece.x, 0, piece.z));
+    mesh.setColorAt(i, color.setRGB(piece.shade[0], piece.shade[1], piece.shade[2]));
+  });
+  mesh.castShadow = false;
+  mesh.receiveShadow = true;
+  mesh.userData = { rigShadow: 'receive', terrain: 'arena-ring' };
+  mesh.computeBoundingSphere();
+  return mesh;
 }
 
 /** Trojúhelník s normálou od `inside` ven – kus se pak dá skládat bez hlídání pořadí vrcholů. */
