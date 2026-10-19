@@ -16,7 +16,7 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
-import { chaserModel, chaserName, enemyModel, heroModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
+import { chaserModel, chaserName, enemyModel, heroModel, preyModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
 import { bossKindOf } from '@/play/arcade/pieces/pacing';
 import { targetModelOf } from '@/play/arcade/target-model';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
@@ -406,7 +406,8 @@ function ArcadePlayGame({
     // Boss od režiséra (P46E T4) dostane model své věci z obsazení, když ji katalog má.
     const bossKind = spec.boss === undefined ? null : bossKindOf(arcade);
     const bossModel = spec.boss === undefined ? undefined : (riggedModelOf(spec.boss.role) ?? sceneModelOf(spec.boss.role, true));
-    return { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props,
+    const prey = preyModel(spec);
+    return { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props, ...(prey === undefined ? {} : { prey }),
     ...(bossKind === null || bossModel === undefined ? {} : { boss: { kind: bossKind, model: bossModel } }),
     things: Object.fromEntries(spec.roles.flatMap(role => {
       if (role.id === 'pad' && role.label === 'landing pad') return [];

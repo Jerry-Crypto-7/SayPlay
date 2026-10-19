@@ -17,7 +17,10 @@ import type { AbilityBot } from '../abilities/state';
 import { baseBotOf } from '../addons';
 import { arcadeWorldOf } from '../compile';
 import { AXIS_MAX, type ArcadeWorld, BODY, BUTTON, FLAG, HEADER, type PieceRef, ROLE, UNIT, bodyBase, underlyingRule } from '../contract';
+import { modelOf as sceneModel } from '@/components/play/arcade/arena/ArenaScene';
+
 import { ARCADE_LIBRARY } from '../library';
+import { enemyModel, preyModel } from '../models';
 import { loadRapier } from '../physics/world';
 import { arenaCatchContact } from '../pieces/arena-catch';
 import { shotHit } from '../pieces/shots';
@@ -124,5 +127,18 @@ describe('P52 T7b: shoot in arena catch', () => {
     const plain = { ...draftGameSpecWithMeta(D10, 1).spec, abilities: undefined };
     // Otisky změřené před T7b.
     expect(SEEDS.slice(0, 3).map((seed) => canonicalHash(worldOf(plain, seed)))).toEqual(['aaae4c22', '6b864419', '36eee058']);
+  });
+
+  // T7b-R1: včely (tělo druhu `enemy`) kreslil model nepřítele, který v chytání vracel kořist – dvě velikosti mýdlových bublin.
+  it('bees never draw the prey model; the prey keeps its own, catch without the action draws as before', () => {
+    const spec = draftGameSpecWithMeta(D10, 1).spec;
+    const plain = { ...spec, abilities: undefined };
+    // Model kořisti a nepřítele chytání před T7b-R1 (popisek „soap bubble“).
+    expect([preyModel(spec), preyModel(plain), enemyModel(plain)]).toEqual(['cell', 'cell', 'cell']);
+    expect(enemyModel(spec)).not.toBe('cell');
+    const cast = { player: 'hero', enemy: enemyModel(spec), chaser: 'chaser', props: {}, prey: preyModel(spec)! };
+    expect([sceneModel('enemy', cast, 'enemy'), sceneModel('enemy', cast, 'prey')]).toEqual([enemyModel(spec), 'cell']);
+    const { prey: _prey, ...bare } = cast;
+    expect(sceneModel('enemy', bare, 'prey')).toBe(enemyModel(spec));
   });
 });

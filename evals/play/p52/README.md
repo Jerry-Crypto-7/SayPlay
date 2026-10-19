@@ -110,6 +110,12 @@ Slovník akcí hrdiny je v `src/play/draft/controls.ts` (`ABILITY_CUES`, `heroDo
 - **Vyváženost (semínka 1–20):** věta testu novice 14/20 = 0,7 (1–10 7/10), intermediate 18/20; d01 novice 14/20, intermediate 20/20 (bez akce 13/20). Obě na horní hraně pásma. Vlna navíc jako u úderu s ochranou dala větě testu 13/20, ale d01 17/20 – nad pásmem, proto jen doplnění.
 - **Gauge:** žádný řádek P52 dev, P47B dev ani P46A se nepohnul (d01 1 / 1 / 1), finále P51 dev 0,97; žádná buňka `p41/difficulty.json` úder nenese. 3 mutace červené (bez doplnění, vlna navíc pro úder sám, bez hranice verze), replay 305/305 (golden sám – v souběhu přetekl časový strop kompilace).
 
+## T7b-R1 – včely chytání nekreslí model kořisti
+
+- **Proč:** včely (tělo druhu `enemy`) i kořist (druh `prey`) kreslil slot `enemy` a `enemyModel` v chytání vracel popisek kořisti – d10 ukázal dvě velikosti mýdlových bublin.
+- **Změna:** kořist chytání má vlastní model (`preyModel`, obsazení `prey`, scéna podle druhu těla), `enemyModel` chytání se střelou kořist přeskočí. Svět ani spec se nemění, chytání bez střely kreslí totéž (test drží „cell“ pro kořist i nepřítele).
+- **Co zbylo:** jméno cíle střely („bees“) ve větě nikde není – obsazení d10 nese jen „soap bubble“ a „water“ (jako překážku), záměr jen „catch“. Včely proto kreslí obecný model nepřítele, ne včelu. Vytáhnout předmět slovesa střelby ze věty je práce slovníku – nález T7b-R1-R1.
+
 ## Rozhodnutí
 
 - T1: větev P51 na origin není (`git ls-remote` bez ní); sloučena lokální `features/P51-…`, která `origin/main` už obsahuje – fast-forward bez merge commitu.
