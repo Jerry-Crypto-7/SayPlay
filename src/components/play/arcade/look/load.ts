@@ -239,6 +239,15 @@ export function setPlantWind(on: boolean): void {
   if (depthMaterial !== null) depthMaterial.needsUpdate = true;
 }
 
+/**
+ * Síla větru scény do uniformy. Shader se zapne první nenulovou silou a sestup na `low` ho už nevypne, jen ztiší:
+ * sestup přichází, když zařízení nestíhá, a překlad programů by ho zasekl (P37B T7, `quality.ts`).
+ */
+export function blowPlantWind(strength: number): void {
+  plantWind.strength.value = strength;
+  if (strength > 0) setPlantWind(true);
+}
+
 /** Materiál všech rostlin: barva z vrcholů (a z instance), oboustranný pro zdroje, které oboustranné byly. */
 export function plantMaterial(double: boolean): MeshStandardMaterial {
   let material = plantMaterials.get(double);

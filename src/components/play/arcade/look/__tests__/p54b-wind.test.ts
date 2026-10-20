@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { LOOK_IDS, LOOKS, sceneLook } from '@/play/arcade/look';
 
-import { plantDepthMaterial, plantMaterial, plantWindFor, setPlantWind } from '../load';
+import { blowPlantWind, plantDepthMaterial, plantMaterial, plantWind, plantWindFor, setPlantWind } from '../load';
 import { QUALITY_TIERS } from '../rig/quality';
 
 const shaderOf = (source: { vertexShader: string; fragmentShader: string }) => ({ vertexShader: source.vertexShader, fragmentShader: source.fragmentShader, uniforms: {} as Record<string, unknown> });
@@ -63,6 +63,19 @@ describe('wind in the vegetation (P54B T13)', () => {
     setPlantWind(true);
     expect(material.customProgramCacheKey()).not.toBe(calm);
     expect(material.version).toBeGreaterThan(before);
+  });
+
+  it('silences the wind on a drop to low without recompiling the plants', () => {
+    const material = plantMaterial(false);
+    blowPlantWind(0);
+    expect(compiled(material).vertexShader).not.toContain('plantWindTime');
+    blowPlantWind(0.04);
+    const on = material.version;
+    expect(plantWind.strength.value).toBe(0.04);
+    blowPlantWind(0);
+    expect(plantWind.strength.value).toBe(0);
+    expect(material.version).toBe(on);
+    expect(compiled(material).vertexShader).toContain('uniform float plantWindStrength;');
   });
 
   it('sways the shadow copy with the plant', () => {
