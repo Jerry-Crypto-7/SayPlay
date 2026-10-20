@@ -156,3 +156,24 @@ Snímky `after/` a `after-phone/` a soud stejnými příkazy jako T15 (build `58
 **Odvozeno.** Telefon je o jednu výhru pod cílem a dvě ze čtyř proher jsou náhoda snímku (póza agaru, rytmus téměř shodný); T15a upozornil, že opakovaný soud dá 13–16. Trvalá slabina je jediná: riggovaná liška na telefonu v aréně a bludišti. Datová oprava v rámci úlohy není – vrátit lišku na statický model by vzalo hrdinovi kostru (cíl T4). Patří do nálezu; T15 má už tři odvozené úlohy (T15a–c), proto jde do commitu jako přetečení.
 
 **Sada.** `vitest` celá (JSON, 15 204 testů): 15 196 zelených. Červené: `compile-report` (p90 kompilace 645 > 500 ms) a `rules/coverage` – samy zelené, pády z vytíženého stroje (CPU 100 %); `submission-check` ENOENT `plans/P8-…` ve worktree. Replay brána zelená (`golden` napoprvé na časové mezi p90, sám 8/8). E2E proti `next start`: `p32-look`, `interface-language`, `p54b-landmark`, `p54b-walk-clip` 12/12. Build `58a47982`, od něj se změnily jen skripty a měření.
+
+## Trojúhelníky scény jízdy (T15d, 20. 10. 2026, `3a949d66`)
+
+**Fakta – kdo nesl 589k.** Jízda (`steer`, „game in a car with shooting and racing“) na Moto G (`low`) kreslila 589k trojúhelníků za snímek proti 13k v P41 (6. 10.): vegetace P46G (17. 10., z `main`) 318k v obraze, ve stínovém průchodu ty samé stínící stromy celým oknem trati znovu (+172k), zbytek 98k hlavně sítě po celé délce trati kreslené celé dvakrát (zem 25 680, mantinely 18 540 přes 765 m, plochý pás a okraje vrhaly stín).
+
+**Oprava.** (1) Vegetace každý snímek vybere z okna instance, které vidí kamera nebo stínová kamera slunce; stínící jdou napřed a stínový průchod kreslí jen jejich předponu. (2) Telefon kreslí rostliny zjednodušené meshoptimizerem při načtení (20 %, strop chyby 1 % výšky). (3) Cesta, mantinely a zem jízdy se kreslí jen kolem kamery, plochý pás jízdy i běžce stín jen přijímá.
+
+| Měření (`perf-t15d.json`) | před (`58a47982`) | po (`3a949d66`) |
+|---|---|---|
+| trojúhelníky drive, Moto G, e2e `play-perf` medián 3 běhů | 566 479 | **79 876** (strop 150k splněn) |
+| volání / FPS tamtéž | 63 / 59,9 | 58 / 59,9 |
+| trojúhelníky drive, desktop | 947k (P54A) | 496 198 (plné modely, širší záběr; cíl jen telefon) |
+| A/B Pixel 7 prokládaně, 30 scén, medián změny | – | **−1,8 %** (brána −5 % splněna); víc volání jen 4 scény: tři o 1, `g-duel` 18 → 27 (27 měly v T14 obě verze – základ teď zachytil jinou chvíli hry) |
+
+Pin `e2e/play-perf.spec.ts` (drive telefon ≤ 150k) proti buildu před opravou spadne (566 479), proti opravě projde.
+
+**Snímky telefonu** (12 vět, `--profile pixel7 --gpu`, před|po): jízdy 0,19–0,34 % pixelů jinak, poušť pixelově shodná na pohled; běžci 4,5 % (póza riggované lišky, míchač běží v reálném čase), plošinovky do 3,1 % (animovaná voda, otáčející se krystaly). Žádná rostlina, kus cesty ani mantinel nezmizel; zjednodušené rostliny na telefonu od plných k nerozeznání.
+
+**Výkon za snímek.** Stroj byl po celé měření vytížený (6 scén se zamrzlým vzorkem 0,1 FPS, přeměřeny). Jednotlivé scény kolísají −34 až +8 % při stejném nebo menším počtu volání; jízdy a běžci s hustou vegetací leží spíš v minusu (`forest-runner` −13 %, `g-race` −15 %, `city-race` −19 %, poušť naopak +2 až +6 %). Profil procesoru (CDP, `forest-race` a `g-race`, Pixel 7 CPU 4×): nový ořez stojí ~0,3–0,4 ms hlavního vlákna na snímek (`setFromProjectionMatrix` 0,11, `intersectsSphere` 0,07–0,10, nahrání bufferu 0,13–0,16) z 27–33 ms; celkový čas za snímek A/B se prohodil podle pořadí měření (32,3 → 30,6 ms, pak 28,4 → 33,1 ms).
+
+**Odvozeno.** Ořez je ~1 % času snímku; poklesy jednotlivých scén jsou šum vytíženého stroje (známé ±10–15 % při 2 opakováních), ne cena opravy. Telefon na reálném GPU ušetří trojúhelníky, které emulace s GPU stroje nezatěžuje – proto FPS v e2e beze změny (59,9 obě verze).
