@@ -133,6 +133,22 @@ describe('POST …/remix { sentence }', () => {
     expect(upstream.calls).toBe(1);
   });
 
+  it('remix větou kurátorské hry jde do feedu jako remix, remix ruční hry ne (revize /ship P54A)', async () => {
+    const parentId = await publish(chaseEscape);
+    upstream.script = [[{ op: 'replace', path: '/theme', value: { setting: 'snowy supermarket at night', mood: 'frantic' } }]];
+    const own = await remixed(parentId, 'add snow');
+    expect(own.status).toBe('ready');
+    expect((await store().get(own.versionId))?.relation).toBeUndefined();
+
+    // Tatáž hra ze seedu provozovatele (`feature`, ne vestavěná sada): dítě smí do feedu.
+    const curated = await publish({ ...chaseEscape, title: 'Supermarket dash' });
+    await store().feature((await store().get(curated))!);
+    upstream.script = [[{ op: 'replace', path: '/theme', value: { setting: 'snowy supermarket at night', mood: 'frantic' } }]];
+    const child = await remixed(curated, 'add snow');
+    expect(child.status).toBe('ready');
+    expect((await store().get(child.versionId))?.relation).toBe('remix');
+  });
+
   it('„make enemies faster“ změní jen rychlost pronásledovatele', async () => {
     const parentId = await publish(chaseEscape);
     upstream.script = [[{ op: 'replace', path: '/mechanics/0/params/speed', value: 'fast' }]];

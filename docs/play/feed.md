@@ -80,11 +80,28 @@ rows no newer than `top`. So:
 
 `feedEligible(game, hidden)` decides, separately from "can be opened by link":
 
-- `publishEligible` – the game passed the publish gate;
-- `relation === 'upgrade'` – only the director's authored version, never a word draft, a hand-written
-  spec or a remix (their titles are written by the caller) – **or** `curated`, a game from the
-  operator's own sentences (see below);
-- not on the hide list `PLAY_FEED_HIDE` (comma-separated `versionId`s, read per request).
+- `publishEligible` – the game passed the publish gate; its text screen covers only the denied topics
+  (`PLAY_DENIED_TOPICS`), not slurs, scam links or spam, so the rule below is what keeps a caller's
+  own text out;
+- one of: `relation === 'upgrade'` – the director's authored version; `curated` – a game from the
+  operator's own sentences (see below); or `relation === 'remix'` – a **remix the server built**
+  (P54A T10): a chip, a verified recipe or a sentence through the model on `POST /api/play/games/:id/remix`.
+  Never a word draft or a hand-written spec, with or without `parentId` (review finding T10-1: the
+  caller names any parent and writes the title, and nothing else stands behind them);
+- remix rows live in their own list (`REMIX_CAP` = 40) and are read after the main list and after the
+  built-in games, so a flood of free chip remixes never pushes a curated game or an AI version out;
+- not on the hide list `PLAY_FEED_HIDE` (comma-separated `versionId`s, read per request);
+- not reported from the feed by `REPORT_HIDE_VOTES` (3) different callers (`POST /api/play/games/:id/report`,
+  P54A T11): a caller's report counts once per game for the game's life, the link keeps playing, and a
+  built-in game is hidden only through `PLAY_FEED_HIDE`. Callers are told apart by the trusted address
+  (`trustedCallerKey`, Vercel's `x-vercel-forwarded-for`); without one (`x-forwarded-for` written by the
+  client) all callers together are one vote, so off Vercel reports never hide a game. One person with
+  three addresses (mobile data, Wi-Fi, a VPN) still counts as three callers, so the operator can undo
+  it (P54A T11a): each vote up to the hide threshold puts the game on top of the reported list
+  (`play:reported`, the latest 500 entries), `scripts/p37c/reported.mjs` prints each game's id, votes
+  and title and names the store it read, and `PLAY_FEED_KEEP`
+  (comma-separated `versionId`s, read per request) takes a game out of the votes, so it comes back
+  without deleting any key – `PLAY_FEED_HIDE` still hides it.
 
 **The feed is never empty (P37C T6).** `scripts/p37c/seed-feed.mjs` builds games from the starter
 sentences and the dev set (`evals/play/p30/dev.json`, never the sealed set) the way `POST` would,
@@ -98,8 +115,10 @@ only when `PLAY_SEED_STORE_PREFIX` is set – the production write is a P30A ste
 On top of that, per list:
 
 - one family, one entry – of several authored versions of one draft (same `parentId`) only the
-  newest is shown;
-- one title, one entry – titles equal after lower-casing and stripping punctuation appear once.
+  newest is shown; remixes of one game are not a family, each is its own entry;
+- one title, one entry – titles equal after lower-casing and stripping punctuation appear once, and
+  the title belongs to the original: a remix with the same title as a non-remix game in the list
+  (the `harder` chip keeps the title) stays out even when it is newer.
 
 ## On `/play`
 

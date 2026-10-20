@@ -19,11 +19,16 @@
  */
 
 import type { GameVersion } from '../contracts';
+import feedBuiltin from './builtin-feed-games.json';
 import builtin from './builtin-games.json';
 import { feedRowOf, type VersionStore } from './store';
 import type { PublishedGame } from './version';
 
-export const BUILTIN_GAMES = builtin as unknown as readonly PublishedGame[];
+/**
+ * Zmrazená sada P37C (`builtin-games.json`, světy `arcade-v2` zamčené `legacy-replay-v2`) a hry feedu P54A
+ * z dnešního jádra (`builtin-feed-games.json`); obě s náhledem robota (`preview`).
+ */
+export const BUILTIN_GAMES = [...builtin, ...feedBuiltin] as unknown as readonly PublishedGame[];
 
 /** Id vestavěných her – `put` je nepočítá do denního stropu publikací návštěvníků. */
 export const BUILTIN_IDS: ReadonlySet<string> = new Set(BUILTIN_GAMES.map((game) => game.version.versionId));
@@ -61,7 +66,9 @@ export function withBuiltinGames(inner: VersionStore, games: readonly PublishedG
     async recent(limit) {
       const stored = await inner.recent(limit);
       const had = new Set(stored.map((row) => row.versionId));
-      return [...stored, ...rows.filter((row) => !had.has(row.versionId))].slice(0, limit);
+      // Remixy až za vestavěnou sadou (nález revize T10-1 #2): jejich řádky nevytlačí kurátorské hry.
+      const remixes = stored.filter((row) => row.relation === 'remix');
+      return [...stored.filter((row) => row.relation !== 'remix'), ...rows.filter((row) => !had.has(row.versionId)), ...remixes].slice(0, limit);
     },
     async countLoop(versionId, counters, voter) {
       try {

@@ -1,0 +1,1451 @@
+{
+  "version": "p54a-feed-perf-v2",
+  "measuredAt": "2026-10-19T17:12:06.913Z",
+  "browser": "151.0.7922.34",
+  "note": "Phone profile is emulation: Pixel 7 viewport with touch, CPU throttled ×4 via CDP on this machine's GPU. Per transition: click on next (the active card switches at once, the glide follows) → the new game's card in preview mode (shownMs) → first frame where the preview tick advanced and something was drawn (swapToPreviewMs). FPS = 2 s of the running bot preview. Summary = median/min/max over all transitions of all runs.",
+  "repeats": 3,
+  "moves": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1
+  ],
+  "games": [
+    "Feed runner through the canyon",
+    "Feed platform over the rooftops",
+    "Feed flap between the pipes",
+    "Feed rhythm on four lanes",
+    "Feed arena with hungry fish",
+    "Feed shooter in the asteroid belt"
+  ],
+  "results": {
+    "desktop": {
+      "profile": "desktop",
+      "cpuThrottle": 1,
+      "summary": {
+        "transitions": 60,
+        "shownMs": {
+          "median": 75.2,
+          "min": 25.3,
+          "max": 364.9
+        },
+        "swapToPreviewMs": {
+          "median": 164.7,
+          "min": 82.8,
+          "max": 433.8
+        },
+        "longTasksAfterSwap": {
+          "median": 1,
+          "min": 0,
+          "max": 3
+        },
+        "longestTaskAfterSwapMs": {
+          "median": 72.5,
+          "min": 0,
+          "max": 404
+        },
+        "transitionsWithLongTask": 47,
+        "fpsP50": {
+          "median": 59.9,
+          "min": 59.9,
+          "max": 59.9
+        },
+        "fpsP5": {
+          "median": 59.5,
+          "min": 30,
+          "max": 59.9
+        },
+        "drawnFps": {
+          "median": 59.4,
+          "min": 50.4,
+          "max": 60.9
+        },
+        "getContextCalls": {
+          "median": 1,
+          "min": 1,
+          "max": 1
+        },
+        "contextsCreated": {
+          "median": 1,
+          "min": 1,
+          "max": 1
+        },
+        "heapBeforeMb": {
+          "median": 36.7,
+          "min": 36.6,
+          "max": 37
+        },
+        "heapAfterMb": {
+          "median": 48.7,
+          "min": 48.7,
+          "max": 52.8
+        },
+        "heapGrowthMb": {
+          "median": 12.1,
+          "min": 12,
+          "max": 15.8
+        }
+      },
+      "runs": [
+        {
+          "transitions": [
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 77.39999997615814,
+              "swapToPreviewMs": 324.0999999642372,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 151,
+              "fpsP50": 59.88023952095874,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 59.901163079847144
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 119.29999995231628,
+              "swapToPreviewMs": 322.7999999523163,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 169,
+              "fpsP50": 59.88023952095874,
+              "fpsP5": 59.88023952095548,
+              "drawnFps": 60.82967690466692
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 61.19999998807907,
+              "swapToPreviewMs": 235.89999997615814,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 192,
+              "fpsP50": 59.88023952095874,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 53.19148936138693
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 72.10000002384186,
+              "swapToPreviewMs": 130.10000002384186,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.880239520962,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 58.997050147492615
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 216.79999995231628,
+              "swapToPreviewMs": 231.0999999642372,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 90,
+              "fpsP50": 59.880239520962,
+              "fpsP5": 59.52380952380566,
+              "drawnFps": 57.47126436713133
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 38.60000002384186,
+              "swapToPreviewMs": 122.30000001192093,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.880239520962,
+              "fpsP5": 59.52380952380566,
+              "drawnFps": 59.34866091502045
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 108.09999996423721,
+              "swapToPreviewMs": 166.5,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 66,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 58.8998702206249
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 86.80000001192093,
+              "swapToPreviewMs": 148.60000002384186,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 62,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 59.17748271847886
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 97,
+              "swapToPreviewMs": 200.69999998807907,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 84,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 59.98800239952005
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 167.80000001192093,
+              "swapToPreviewMs": 217.9000000357628,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 122,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 60.23496614822971
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 121,
+              "swapToPreviewMs": 205.80000001192093,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 78,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 60.90559632497025
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 69.30000001192093,
+              "swapToPreviewMs": 120,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 59.78179644227303
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 43.40000003576279,
+              "swapToPreviewMs": 107.60000002384186,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 60,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 57.9681175346649
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 31.69999998807907,
+              "swapToPreviewMs": 123.90000003576279,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 67,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523824994,
+              "drawnFps": 60.43956043848082
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 37,
+              "swapToPreviewMs": 100.69999998807907,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 404,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523799216,
+              "drawnFps": 58.899870219923905
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 26.19999998807907,
+              "swapToPreviewMs": 86.89999997615814,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523799216,
+              "drawnFps": 60.09436304977214
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 51.39999997615814,
+              "swapToPreviewMs": 106.09999996423721,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523824994,
+              "drawnFps": 60.24696275606547
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 25.30000001192093,
+              "swapToPreviewMs": 85.80000001192093,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 52,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523824994,
+              "drawnFps": 60.184033822789
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 28.099999964237213,
+              "swapToPreviewMs": 105.59999996423721,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 51,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.88023952094243,
+              "drawnFps": 60.430504918982976
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 48.60000002384186,
+              "swapToPreviewMs": 196.10000002384186,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 90,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.88023952094243,
+              "drawnFps": 59.838436222200016
+            }
+          ],
+          "heapBefore": 38832763,
+          "heapAfter": 55358078,
+          "getContextCalls": 1,
+          "contextsCreated": 1,
+          "canvasesInDom": 1,
+          "feedContexts": 1,
+          "snapshotsInDom": 3,
+          "errors": []
+        },
+        {
+          "transitions": [
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 264.0999999642372,
+              "swapToPreviewMs": 433.80000001192093,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 171,
+              "fpsP50": 59.88023952095874,
+              "fpsP5": 30.030030030029867,
+              "drawnFps": 57.36519179995395
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 178.89999997615814,
+              "swapToPreviewMs": 263.60000002384186,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 93,
+              "fpsP50": 59.88023952095874,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 59.44649815130949
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 164.19999998807907,
+              "swapToPreviewMs": 181.60000002384186,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 106,
+              "fpsP50": 59.880239520962,
+              "fpsP5": 59.52380952380566,
+              "drawnFps": 55.83806959849717
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 75.79999995231628,
+              "swapToPreviewMs": 127,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.880239520962,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 58.79129091794213
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 364.9000000357628,
+              "swapToPreviewMs": 380.60000002384186,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 78,
+              "fpsP50": 59.880239520962,
+              "fpsP5": 30.120481927710184,
+              "drawnFps": 56.48305508313842
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 186.29999995231628,
+              "swapToPreviewMs": 199.19999998807907,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 78,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.88023952095548,
+              "drawnFps": 59.29838548863174
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 55.60000002384186,
+              "swapToPreviewMs": 117.80000001192093,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 56,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 58.601509734503935
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 280.0999999642372,
+              "swapToPreviewMs": 298.69999998807907,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 133,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 30.030030030030687,
+              "drawnFps": 55.94405594405595
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 252.69999998807907,
+              "swapToPreviewMs": 273.30000001192093,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 89,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 59.517904970448896
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 201.70000004768372,
+              "swapToPreviewMs": 320.9000000357628,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 117,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 58.32793259918006
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 198.30000001192093,
+              "swapToPreviewMs": 210.30000001192093,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 81,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 59.443528647430675
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 47.10000002384186,
+              "swapToPreviewMs": 105.69999998807907,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 60.175054704595205
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 33.5,
+              "swapToPreviewMs": 121.19999998807907,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 59,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523799216,
+              "drawnFps": 60.24696275642298
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 121.39999997615814,
+              "swapToPreviewMs": 126.39999997615814,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 30.030030030027405,
+              "drawnFps": 54.51182711900143
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 86.89999997615814,
+              "swapToPreviewMs": 190.39999997615814,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 137,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523799216,
+              "drawnFps": 56.95159114752469
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 50.80000001192093,
+              "swapToPreviewMs": 151.30000001192093,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 63,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.88023952094243,
+              "drawnFps": 60.54891061519491
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 74.69999998807907,
+              "swapToPreviewMs": 141.39999997615814,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 55,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.88023952094243,
+              "drawnFps": 60.14215418225714
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 125.90000003576279,
+              "swapToPreviewMs": 187.10000002384186,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 57,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523824994,
+              "drawnFps": 58.741537236858036
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 39.19999998807907,
+              "swapToPreviewMs": 254.29999995231628,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 107,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.88023952094243,
+              "drawnFps": 60.228969637349955
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 306.19999998807907,
+              "swapToPreviewMs": 370,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 172,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 30.030030030027405,
+              "drawnFps": 50.381603232403926
+            }
+          ],
+          "heapBefore": 38468837,
+          "heapAfter": 51016426,
+          "getContextCalls": 1,
+          "contextsCreated": 1,
+          "canvasesInDom": 1,
+          "feedContexts": 1,
+          "snapshotsInDom": 3,
+          "errors": []
+        },
+        {
+          "transitions": [
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 111.80000001192093,
+              "swapToPreviewMs": 342.39999997615814,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 104,
+              "fpsP50": 59.88023952095874,
+              "fpsP5": 59.52380952380888,
+              "drawnFps": 58.610241891422035
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 74.69999998807907,
+              "swapToPreviewMs": 243.80000001192093,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 126,
+              "fpsP50": 59.880239520962,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 59.859330573153066
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 164.10000002384186,
+              "swapToPreviewMs": 177.19999998807907,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 86,
+              "fpsP50": 59.880239520962,
+              "fpsP5": 30.030030030030687,
+              "drawnFps": 57.422899857120456
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 63.700000047683716,
+              "swapToPreviewMs": 162.80000001192093,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.880239520962,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 59.853359270856686
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 32.59999996423721,
+              "swapToPreviewMs": 111.79999995231628,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 148,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 55.21289295760774
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 85.19999998807907,
+              "swapToPreviewMs": 135.0999999642372,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.88023952095548,
+              "drawnFps": 60.325057334449184
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 28.5,
+              "swapToPreviewMs": 82.80000001192093,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 60.4788324093777
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 103.20000004768372,
+              "swapToPreviewMs": 157.70000004768372,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 56,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 60.28898854154198
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 29.69999998807907,
+              "swapToPreviewMs": 135.69999998807907,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 60,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.88023952095548,
+              "drawnFps": 60.678404457820264
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 44.19999998807907,
+              "swapToPreviewMs": 210.69999998807907,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 107,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 60.56093323512819
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 43.39999997615814,
+              "swapToPreviewMs": 144.19999998807907,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 60,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 59.523809523799216,
+              "drawnFps": 58.75323640848519
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 47.30000001192093,
+              "swapToPreviewMs": 110.19999998807907,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 90,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523812105,
+              "drawnFps": 57.16273983598979
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 36.80000001192093,
+              "swapToPreviewMs": 134.0999999642372,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 59,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.88023952094243,
+              "drawnFps": 60.82361152657285
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 30.100000023841858,
+              "swapToPreviewMs": 106.80000001192093,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523799216,
+              "drawnFps": 59.916117436660144
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 32,
+              "swapToPreviewMs": 128.5,
+              "longTasksAfterSwap": 0,
+              "longestTaskAfterSwapMs": 0,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.88023952094243,
+              "drawnFps": 59.28066155260878
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 172.60000002384186,
+              "swapToPreviewMs": 177.80000001192093,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 78,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523799216,
+              "drawnFps": 58.80887116974986
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 56.09999996423721,
+              "swapToPreviewMs": 130.80000001192093,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 61,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523799216,
+              "drawnFps": 57.62829748124592
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 142.30000001192093,
+              "swapToPreviewMs": 168.80000001192093,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 65,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523799216,
+              "drawnFps": 57.48275517447553
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 125.70000004768372,
+              "swapToPreviewMs": 222.70000004768372,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 93,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.88023952094243,
+              "drawnFps": 60.30100667939559
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 164.60000002384186,
+              "swapToPreviewMs": 215.39999997615814,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 97,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 59.523809523799216,
+              "drawnFps": 58.99705014889907
+            }
+          ],
+          "heapBefore": 38422133,
+          "heapAfter": 51058366,
+          "getContextCalls": 1,
+          "contextsCreated": 1,
+          "canvasesInDom": 1,
+          "feedContexts": 1,
+          "snapshotsInDom": 3,
+          "errors": []
+        }
+      ]
+    },
+    "pixel7-cpu4": {
+      "profile": "pixel7-cpu4",
+      "cpuThrottle": 4,
+      "summary": {
+        "transitions": 60,
+        "shownMs": {
+          "median": 590.1,
+          "min": 182.8,
+          "max": 8815.2
+        },
+        "swapToPreviewMs": {
+          "median": 894.2,
+          "min": 355.4,
+          "max": 9018.9
+        },
+        "longTasksAfterSwap": {
+          "median": 3,
+          "min": 1,
+          "max": 5
+        },
+        "longestTaskAfterSwapMs": {
+          "median": 327.5,
+          "min": 89,
+          "max": 7883
+        },
+        "transitionsWithLongTask": 60,
+        "fpsP50": {
+          "median": 30,
+          "min": 12,
+          "max": 59.9
+        },
+        "fpsP5": {
+          "median": 10,
+          "min": 1.2,
+          "max": 20
+        },
+        "drawnFps": {
+          "median": 25.9,
+          "min": 8.5,
+          "max": 42
+        },
+        "getContextCalls": {
+          "median": 1,
+          "min": 1,
+          "max": 2
+        },
+        "contextsCreated": {
+          "median": 1,
+          "min": 1,
+          "max": 2
+        },
+        "heapBeforeMb": {
+          "median": 36.5,
+          "min": 35.3,
+          "max": 40.3
+        },
+        "heapAfterMb": {
+          "median": 51.8,
+          "min": 43.5,
+          "max": 52
+        },
+        "heapGrowthMb": {
+          "median": 11.7,
+          "min": 7,
+          "max": 16.5
+        }
+      },
+      "runs": [
+        {
+          "transitions": [
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 1632,
+              "swapToPreviewMs": 1918.5,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 523,
+              "fpsP50": 20,
+              "fpsP5": 5.455537370431009,
+              "drawnFps": 17.87576344406376
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 371.2999999523163,
+              "swapToPreviewMs": 650.7999999523163,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 152,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 12.004801920768411,
+              "drawnFps": 34.93013972014329
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 269.7999999523163,
+              "swapToPreviewMs": 633.0999999642372,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 133,
+              "fpsP50": 30.030030030030687,
+              "fpsP5": 10,
+              "drawnFps": 26.538234716098092
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 284.4000000357628,
+              "swapToPreviewMs": 689.5,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 202,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 11.990407673860702,
+              "drawnFps": 35.92814371278858
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 263.60000002384186,
+              "swapToPreviewMs": 618,
+              "longTasksAfterSwap": 4,
+              "longestTaskAfterSwapMs": 89,
+              "fpsP50": 12.004801920768411,
+              "fpsP5": 1.154068090017311,
+              "drawnFps": 8.464449312835644
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 365.60000002384186,
+              "swapToPreviewMs": 621.4000000357628,
+              "longTasksAfterSwap": 4,
+              "longestTaskAfterSwapMs": 345,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 10,
+              "drawnFps": 27.981811822315507
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 1709.5999999642372,
+              "swapToPreviewMs": 2084.5,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 1472,
+              "fpsP50": 30.030030030030687,
+              "fpsP5": 8.568980291345277,
+              "drawnFps": 26.441827978132906
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 843.6000000238419,
+              "swapToPreviewMs": 1087.199999988079,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 495,
+              "fpsP50": 30.030030030033966,
+              "fpsP5": 12.004801920767887,
+              "drawnFps": 29.961050633640564
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 930.3999999761581,
+              "swapToPreviewMs": 1152.300000011921,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 537,
+              "fpsP50": 30.030030030033966,
+              "fpsP5": 10,
+              "drawnFps": 26.201305121459193
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 8815.199999988079,
+              "swapToPreviewMs": 9018.899999976158,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 7883,
+              "fpsP50": 20,
+              "fpsP5": 8.56898029134501,
+              "drawnFps": 19.667617268283255
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 715.3000000119209,
+              "swapToPreviewMs": 1012.6000000238419,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 323,
+              "fpsP50": 30.120481927713485,
+              "fpsP5": 14.992503748124955,
+              "drawnFps": 30.49380287231954
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 550.3000000119209,
+              "swapToPreviewMs": 710.6999999880791,
+              "longTasksAfterSwap": 5,
+              "longestTaskAfterSwapMs": 155,
+              "fpsP50": 30.030030030027405,
+              "fpsP5": 9.990009990010135,
+              "drawnFps": 25.77830656355348
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 327.5,
+              "swapToPreviewMs": 466.4000000357628,
+              "longTasksAfterSwap": 4,
+              "longestTaskAfterSwapMs": 151,
+              "fpsP50": 59.88023952094243,
+              "fpsP5": 20,
+              "drawnFps": 37.15630418583803
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 418.4000000357628,
+              "swapToPreviewMs": 528.4000000357628,
+              "longTasksAfterSwap": 4,
+              "longestTaskAfterSwapMs": 172,
+              "fpsP50": 59.88023952094243,
+              "fpsP5": 20,
+              "drawnFps": 41.962233988909816
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 319.69999998807907,
+              "swapToPreviewMs": 495.60000002384186,
+              "longTasksAfterSwap": 4,
+              "longestTaskAfterSwapMs": 170,
+              "fpsP50": 30.030030030033966,
+              "fpsP5": 10,
+              "drawnFps": 25.7056700771569
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 229,
+              "swapToPreviewMs": 355.39999997615814,
+              "longTasksAfterSwap": 4,
+              "longestTaskAfterSwapMs": 101,
+              "fpsP50": 59.88023952094243,
+              "fpsP5": 12.01923076923119,
+              "drawnFps": 37.95635019704716
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 632.0999999642372,
+              "swapToPreviewMs": 751.5,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 337,
+              "fpsP50": 29.940119760484258,
+              "fpsP5": 7.4962518740632955,
+              "drawnFps": 18.07788146741263
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 1819.6000000238419,
+              "swapToPreviewMs": 2054.100000023842,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 1581,
+              "fpsP50": 30.030030030027405,
+              "fpsP5": 10,
+              "drawnFps": 27.841547403573628
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 496.7000000476837,
+              "swapToPreviewMs": 664.6000000238419,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 255,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 12.004801920767887,
+              "drawnFps": 37.51048812968399
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 1877.5,
+              "swapToPreviewMs": 1971.5999999642372,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 990,
+              "fpsP50": 29.940119760484258,
+              "fpsP5": 12.019230769229088,
+              "drawnFps": 25.365562518350362
+            }
+          ],
+          "heapBefore": 37039121,
+          "heapAfter": 54336978,
+          "getContextCalls": 1,
+          "contextsCreated": 1,
+          "canvasesInDom": 1,
+          "feedContexts": 1,
+          "snapshotsInDom": 3,
+          "errors": []
+        },
+        {
+          "transitions": [
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 693,
+              "swapToPreviewMs": 1859.8999999761581,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 375,
+              "fpsP50": 30.030030030030687,
+              "fpsP5": 10,
+              "drawnFps": 26.178010471204196
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 771.1000000238419,
+              "swapToPreviewMs": 1401,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 446,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 11.990407673860963,
+              "drawnFps": 32.062348936444195
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 205.19999998807907,
+              "swapToPreviewMs": 918.6000000238419,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 147,
+              "fpsP50": 30.030030030030687,
+              "fpsP5": 6.666666666666667,
+              "drawnFps": 23.72192099134258
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 360.7999999523163,
+              "swapToPreviewMs": 914.6999999880791,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 268,
+              "fpsP50": 30.030030030030687,
+              "fpsP5": 7.496251874063091,
+              "drawnFps": 23.82370458578121
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 182.80000001192093,
+              "swapToPreviewMs": 759.5,
+              "longTasksAfterSwap": 4,
+              "longestTaskAfterSwapMs": 196,
+              "fpsP50": 30.030030030030687,
+              "fpsP5": 5.455537370431009,
+              "drawnFps": 18.86979839087799
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 354,
+              "swapToPreviewMs": 443.4000000357628,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 155,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 12.004801920768411,
+              "drawnFps": 34.9580503393844
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 2553.5,
+              "swapToPreviewMs": 2922.599999964237,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 2433,
+              "fpsP50": 59.523809523824994,
+              "fpsP5": 20,
+              "drawnFps": 34.376245515937704
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 1186.300000011921,
+              "swapToPreviewMs": 1538.5,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 728,
+              "fpsP50": 30.030030030027405,
+              "fpsP5": 12.004801920767887,
+              "drawnFps": 25.93516209460893
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 1167.199999988079,
+              "swapToPreviewMs": 1412.199999988079,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 761,
+              "fpsP50": 20,
+              "fpsP5": 7.501875468867053,
+              "drawnFps": 18.853882410977803
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 2270.699999988079,
+              "swapToPreviewMs": 2450.100000023842,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 1101,
+              "fpsP50": 29.94011976047774,
+              "fpsP5": 6.662225183211257,
+              "drawnFps": 17.947056184149798
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 541.5,
+              "swapToPreviewMs": 825.1000000238419,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 236,
+              "fpsP50": 29.940119760484258,
+              "fpsP5": 8.561643835616758,
+              "drawnFps": 21.83829952441038
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 815.5,
+              "swapToPreviewMs": 1048.7999999523163,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 389,
+              "fpsP50": 29.94011976047774,
+              "fpsP5": 8.57632933104642,
+              "drawnFps": 21.182266009852217
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 632.8000000119209,
+              "swapToPreviewMs": 794,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 460,
+              "fpsP50": 20,
+              "fpsP5": 7.496251874062887,
+              "drawnFps": 18.432285603308216
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 640.6999999880791,
+              "swapToPreviewMs": 873.6000000238419,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 256,
+              "fpsP50": 30.030030030027405,
+              "fpsP5": 8.57632933104642,
+              "drawnFps": 23.800456968368618
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 337.60000002384186,
+              "swapToPreviewMs": 609.1000000238419,
+              "longTasksAfterSwap": 4,
+              "longestTaskAfterSwapMs": 161,
+              "fpsP50": 30.030030030033966,
+              "fpsP5": 8.568980291345543,
+              "drawnFps": 24.329692154771617
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 568.6000000238419,
+              "swapToPreviewMs": 802.3999999761581,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 319,
+              "fpsP50": 30.030030030027405,
+              "fpsP5": 7.496251874062887,
+              "drawnFps": 20.817843866171003
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 1448.1000000238419,
+              "swapToPreviewMs": 1711.199999988079,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 1129,
+              "fpsP50": 30.030030030027405,
+              "fpsP5": 10.010010010010593,
+              "drawnFps": 23.735350837734902
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 248.80000001192093,
+              "swapToPreviewMs": 441.60000002384186,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 178,
+              "fpsP50": 29.940119760471216,
+              "fpsP5": 10,
+              "drawnFps": 25.55156994697375
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 474.5999999642372,
+              "swapToPreviewMs": 825.7999999523163,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 332,
+              "fpsP50": 30.03003003004053,
+              "fpsP5": 15.015015015013702,
+              "drawnFps": 32.47552034659595
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 1047.5,
+              "swapToPreviewMs": 1300.2999999523163,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 800,
+              "fpsP50": 14.992503748126591,
+              "fpsP5": 5.99880023995159,
+              "drawnFps": 13.047260075384205
+            }
+          ],
+          "heapBefore": 38303149,
+          "heapAfter": 45658802,
+          "getContextCalls": 1,
+          "contextsCreated": 1,
+          "canvasesInDom": 1,
+          "feedContexts": 1,
+          "snapshotsInDom": 3,
+          "errors": []
+        },
+        {
+          "transitions": [
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 849.6000000238419,
+              "swapToPreviewMs": 1282.699999988079,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 340,
+              "fpsP50": 30.030030030029046,
+              "fpsP5": 8.576329331046285,
+              "drawnFps": 23.415776379063242
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 1697.5999999642372,
+              "swapToPreviewMs": 2437.699999988079,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 1426,
+              "fpsP50": 30.030030030030687,
+              "fpsP5": 10,
+              "drawnFps": 30.885722825728884
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 222.60000002384186,
+              "swapToPreviewMs": 712.3999999761581,
+              "longTasksAfterSwap": 4,
+              "longestTaskAfterSwapMs": 109,
+              "fpsP50": 30.030030030030687,
+              "fpsP5": 8.568980291345277,
+              "drawnFps": 27.599333809027346
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 223,
+              "swapToPreviewMs": 627.1000000238419,
+              "longTasksAfterSwap": 4,
+              "longestTaskAfterSwapMs": 216,
+              "fpsP50": 59.88023952095548,
+              "fpsP5": 9.990009990010135,
+              "drawnFps": 28.2976716478863
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 416.89999997615814,
+              "swapToPreviewMs": 1073.199999988079,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 292,
+              "fpsP50": 12.004801920768411,
+              "fpsP5": 5.452562704471058,
+              "drawnFps": 10.514766389148743
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 1493.699999988079,
+              "swapToPreviewMs": 1588.699999988079,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 1324,
+              "fpsP50": 30.030030030030687,
+              "fpsP5": 7.501875468867258,
+              "drawnFps": 27.42409402546523
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 1573.5999999642372,
+              "swapToPreviewMs": 1839.8999999761581,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 1179,
+              "fpsP50": 20,
+              "fpsP5": 6.002400960383944,
+              "drawnFps": 18.963022106778766
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 811.7999999523163,
+              "swapToPreviewMs": 987.1999999880791,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 491,
+              "fpsP50": 30.030030030033966,
+              "fpsP5": 7.501875468867462,
+              "drawnFps": 24.294709703009552
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 2491.900000035763,
+              "swapToPreviewMs": 2767.5,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 2219,
+              "fpsP50": 30.030030030027405,
+              "fpsP5": 12.004801920767887,
+              "drawnFps": 29.59747434850749
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 1008.4000000357628,
+              "swapToPreviewMs": 1220.7000000476837,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 668,
+              "fpsP50": 29.94011976047774,
+              "fpsP5": 8.568980291345543,
+              "drawnFps": 22.3463687150838
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 547.3000000119209,
+              "swapToPreviewMs": 710.1999999880791,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 290,
+              "fpsP50": 29.94011976047774,
+              "fpsP5": 6.002400960384206,
+              "drawnFps": 18.78212732294191
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 2123.899999976158,
+              "swapToPreviewMs": 2543.899999976158,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 1919,
+              "fpsP50": 29.94011976047774,
+              "fpsP5": 10,
+              "drawnFps": 22.451071306162863
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 442.5,
+              "swapToPreviewMs": 667.5,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 253,
+              "fpsP50": 30.030030030033966,
+              "fpsP5": 15.015015015013702,
+              "drawnFps": 35.17986324447533
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 397.7000000476837,
+              "swapToPreviewMs": 615.7000000476837,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 270,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 14.992503748126591,
+              "drawnFps": 40.598079017724466
+            },
+            {
+              "to": "Feed shooter in the asteroid belt",
+              "shownMs": 611.6000000238419,
+              "swapToPreviewMs": 1036.5,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 212,
+              "fpsP50": 29.940119760484258,
+              "fpsP5": 8.576329331045883,
+              "drawnFps": 20.922586429835484
+            },
+            {
+              "to": "Feed arena with hungry fish",
+              "shownMs": 553.8000000119209,
+              "swapToPreviewMs": 740.6999999880791,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 294,
+              "fpsP50": 59.88023952091634,
+              "fpsP5": 15.015015015016983,
+              "drawnFps": 38.636474788477585
+            },
+            {
+              "to": "Feed rhythm on four lanes",
+              "shownMs": 246.5,
+              "swapToPreviewMs": 438.89999997615814,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 122,
+              "fpsP50": 30.120481927713485,
+              "fpsP5": 12.004801920767887,
+              "drawnFps": 31.323024908705804
+            },
+            {
+              "to": "Feed flap between the pipes",
+              "shownMs": 544.6000000238419,
+              "swapToPreviewMs": 676.7000000476837,
+              "longTasksAfterSwap": 2,
+              "longestTaskAfterSwapMs": 369,
+              "fpsP50": 59.880239520968516,
+              "fpsP5": 10.010010010010593,
+              "drawnFps": 33.69339014924016
+            },
+            {
+              "to": "Feed platform over the rooftops",
+              "shownMs": 337.7999999523163,
+              "swapToPreviewMs": 564.0999999642372,
+              "longTasksAfterSwap": 3,
+              "longestTaskAfterSwapMs": 202,
+              "fpsP50": 59.523809523799216,
+              "fpsP5": 10,
+              "drawnFps": 30.705229793977857
+            },
+            {
+              "to": "Feed runner through the canyon",
+              "shownMs": 2394.899999976158,
+              "swapToPreviewMs": 2828.300000011921,
+              "longTasksAfterSwap": 1,
+              "longestTaskAfterSwapMs": 1854,
+              "fpsP50": 14.992503748126591,
+              "fpsP5": 6.002400960384469,
+              "drawnFps": 15.93546138121611
+            }
+          ],
+          "heapBefore": 42205951,
+          "heapAfter": 54480920,
+          "getContextCalls": 2,
+          "contextsCreated": 2,
+          "canvasesInDom": 1,
+          "feedContexts": 1,
+          "snapshotsInDom": 3,
+          "errors": []
+        }
+      ]
+    }
+  }
+}

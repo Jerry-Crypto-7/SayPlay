@@ -110,7 +110,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const candidate = candidates.find(option => option.label.toLowerCase() === sentence.toLowerCase());
     // A stale/unavailable verified chip never silently becomes a model job.
     if (candidate === undefined) return fail(422, 'SPEC_REJECTED', 'this verified change is not available for this game');
-    const published = await publishReadSpec(versions, candidate.spec, [verifiedSeed], id);
+    const published = await publishReadSpec(versions, candidate.spec, [verifiedSeed], id, { relation: 'remix' });
     return published.ok ? publishedResponse(published.value) : published.response;
   }
 
@@ -145,7 +145,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     child = read.value;
   }
   const childSeed = chip !== undefined ? chipSeed : (seed ?? seedFrom(child));
-  const published = await publishReadSpec(versions, child, seed !== undefined ? [seed] : derivedSeeds(childSeed), id);
+  // Do feedu jen dítě čipu (`relation: 'remix'`); hotový spec píše volající i s titulem (nález revize T10-1).
+  const published = await publishReadSpec(versions, child, seed !== undefined ? [seed] : derivedSeeds(childSeed), id, chip !== undefined ? { relation: 'remix' } : {});
   return published.ok ? publishedResponse(published.value) : published.response;
 }
 

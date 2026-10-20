@@ -1,15 +1,20 @@
 'use client';
 
 /**
- * Seznam feedu vedle hrající hry na široké obrazovce (P23-D T4, P27B T4).
- * Karta nese barevný pruh podle nálady scény, titul, cíl hry, „N% beat this“
- * (od deseti pokusů, P37C T5) a počet remixů (jen když nějaký je); klepnutí přepne hru ve feedu. Na úzkém displeji ho
- * CSS schová – listuje se tlačítky a okrajem.
+ * „Up next“ pod plochou feedu od `lg` (P54A T12; dřív celý seznam vedle hry,
+ * P23-D T4, P27B T4): tři další karty jako náhledy – snímek scény z posledního
+ * odchodu, jinak obrázek karty (`cardImage`) na podkladu v tónu nálady – s titulem,
+ * „N% beat this“ (od deseti pokusů, P37C T5) a počtem remixů (jen když nějaký je);
+ * klepnutí přepne hru ve feedu. Pod `lg` ho CSS schová – listuje se tahem a okrajem.
  *
- * Cíl a náladu nese detail hry, který feed stahuje jen pro aktuální a další
- * hru (`known`); ostatní karty mají titul a neutrální pruh. Věta archetypu z
- * registru tu od P33 T8 není: byla stejná u tučňáka i hasiče.
+ * Náladu nese detail hry, který feed stahuje pro aktuální hru a sousedy
+ * (`known`); ostatní náhledy mají neutrální podklad.
  */
+
+import { cardImage } from './feed/snapshot-cache';
+
+/** Kolik dalších karet „Up next“ ukáže. */
+const UP_NEXT = 3;
 
 export interface FeedGame {
   readonly versionId: string;
@@ -46,20 +51,26 @@ export function moodTone(mood: string): MoodTone {
 
 export function Feed({
   games,
-  current,
+  index,
   known,
+  shot,
   onPick,
 }: {
   readonly games: readonly FeedGame[];
-  readonly current: string;
+  /** Pořadí aktivní karty; „Up next“ jsou karty za ní. */
+  readonly index: number;
   readonly known: ReadonlyMap<string, KnownGame>;
+  /** Snímek scény z posledního odchodu z karty (`snapshot-cache.ts`). */
+  readonly shot: (versionId: string) => string | undefined;
   readonly onPick: (versionId: string) => void;
 }) {
+  const next = games.slice(index + 1, index + 1 + UP_NEXT);
+  if (next.length === 0) return null;
   return (
-    <nav className="play-feed" aria-label="More games">
-      <h2 className="play-starters-title">More games</h2>
+    <nav className="play-feed" aria-label="Up next">
+      <h2 className="play-starters-title">Up next</h2>
       <ul className="play-feed-list">
-        {games.map((game) => {
+        {next.map((game) => {
           const facts = known.get(game.versionId);
           return (
             <li key={game.versionId}>
@@ -68,11 +79,10 @@ export function Feed({
                 className="play-feed-card"
                 data-testid="play-feed-card"
                 data-tone={facts === undefined ? undefined : moodTone(facts.mood)}
-                aria-current={game.versionId === current ? 'true' : undefined}
                 onClick={() => onPick(game.versionId)}
               >
+                <img className="play-feed-thumb" src={shot(game.versionId) ?? cardImage(game.versionId).landscape} alt="" loading="lazy" decoding="async" />
                 <span className="play-feed-title">{game.title}</span>
-                {facts !== undefined && <span className="play-feed-pitch">{facts.goal}</span>}
                 {typeof game.beat === 'number' && (
                   <span className="sp-label sp-muted play-feed-beat" data-testid="play-feed-beat">
                     {beatText(game.beat)}

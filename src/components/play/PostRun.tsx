@@ -37,7 +37,7 @@
  */
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 import type { ShareRun } from '@/play/score/share-text';
 import type { Stars as StarCount } from '@/play/score/stars';
@@ -46,6 +46,7 @@ import { isTyping } from './arcade/input';
 import { type BestOutcome, type Dare, dareVerdict } from './best';
 import { dareResult } from './board-client';
 import { beatText } from './Feed';
+import { FeedNext } from './feed/feed-next';
 import { Leaderboard } from './Leaderboard';
 import { PlayingAs } from './NicknameSheet';
 import { RemixBox, type RemixJob } from './RemixBox';
@@ -355,6 +356,8 @@ export function PostRun({
 
   const result = runResult(facts, record, challenge);
   const { won } = facts;
+  // Ve feedu (P54A T9) vede z výsledku „Next game“ na další kartu.
+  const next = useContext(FeedNext);
   // Co server o tomhle běhu řekl po přehrání (P44B T9); `null`, dokud výzva není `ready`.
   const verified = won && dare?.state === 'ready' ? dareResult(dare.dareId) : null;
   // Žebříček až po ověření běhu: dřív by ukázal stav před tímhle zápisem.
@@ -451,6 +454,11 @@ export function PostRun({
                 <Button variant="secondary" aria-haspopup="dialog" onClick={() => setChanging(true)}>
                   {REMIX_IT}
                 </Button>
+                {next !== null && (
+                  <Button variant="secondary" data-testid="play-next-game" onClick={next}>
+                    Next game
+                  </Button>
+                )}
               </div>
               <div className="play-result-links">
                 <ShareButton versionId={versionId} variant="link" size="s" copy label={COPY_LINK} live={live} />

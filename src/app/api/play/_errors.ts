@@ -23,6 +23,7 @@ export type PlayErrorCode =
   | 'UNWINNABLE'
   | 'NOT_PUBLISHABLE'
   | 'NOT_FOUND'
+  | 'FORBIDDEN'
   | 'UNKNOWN_PARENT'
   | 'VERSION_CONFLICT'
   | 'DISABLED'
