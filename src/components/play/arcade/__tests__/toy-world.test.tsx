@@ -62,8 +62,8 @@ afterEach(() => {
 });
 
 /** Náhrada okna nese i `performance`: Rapier v kroku míče čte hodiny přes `window.performance` a bez nich spadne na „unreachable“. */
-function stubPage(search: string): void {
-  vi.stubGlobal('window', { location: { search }, matchMedia: () => ({ matches: false }), addEventListener: () => undefined, removeEventListener: () => undefined, performance });
+function stubPage(search: string, reduce = false): void {
+  vi.stubGlobal('window', { location: { search }, matchMedia: () => ({ matches: reduce }), addEventListener: () => undefined, removeEventListener: () => undefined, performance });
 }
 
 function fixtureWorld(name: string): ArcadeWorld {
@@ -118,13 +118,13 @@ type Sample = readonly number[];
 const sampleOf = (group: Group): Sample => [...group.position.toArray(), group.rotation.x, group.rotation.y, group.rotation.z, ...group.scale.toArray()].map((value) => value + 0);
 
 /**
- * Hra robota `ticks` tiků; s `mount` běží po každém tiku dva snímky scény (podíl 0 a 0,5).
- * Každý snímek ověří, že scéna do stavu nic nezapsala.
+ * Hra robota `ticks` tiků (se `still` bez vstupu – hrdina stojí); s `mount` běží po každém tiku
+ * dva snímky scény (podíl 0 a 0,5). Každý snímek ověří, že scéna do stavu nic nezapsala.
+ * `player` = model hrdiny z popisku; prázdný je předmět.
  */
-function play(world: ArcadeWorld, { mount, ticks = 120 }: { readonly mount: boolean; readonly ticks?: number }): { readonly samples: Sample[]; readonly hash: string } {
+function play(world: ArcadeWorld, { mount, ticks = 120, still = false, player = '' }: { readonly mount: boolean; readonly ticks?: number; readonly still?: boolean; readonly player?: string }): { readonly samples: Sample[]; readonly hash: string } {
   const program = loadProgram(world, ARCADE_LIBRARY);
-  const bot = runBot(world);
-  const byTick = new Map(bot.inputs.map((event) => [event.tick, event]));
+  const byTick = new Map(still ? [] : runBot(world).inputs.map((event) => [event.tick, event]));
   const state = instantiate(world);
   const prev = state.slice();
   let alpha = 0;
@@ -141,7 +141,7 @@ function play(world: ArcadeWorld, { mount, ticks = 120 }: { readonly mount: bool
   } as unknown as ArcadeSession;
   const control = baseControlOf(world.control).id;
   hooks.frame = undefined;
-  const hero = mount ? wire(World({ session, control, cast: { player: '', enemy: '', chaser: '', props: {} }, surface: { current: null }, scene: { block: undefined } as never, enabled: true, heroAction: 'none' })) : undefined;
+  const hero = mount ? wire(World({ session, control, cast: { player, enemy: '', chaser: '', props: {} }, surface: { current: null }, scene: { block: undefined } as never, enabled: true, heroAction: 'none' })) : undefined;
   if (mount && (hero === undefined || hooks.frame === undefined)) throw new Error(`${control}: no hero pose group or frame`);
   const samples: Sample[] = [];
   try {
@@ -187,6 +187,27 @@ describe('toy motion in every scene drawn by the shared world (P45D T7)', () => 
   it.each(Object.keys(WORLDS))('%s: ?toy=off leaves the hero at rest, only turned where it walks', (control) => {
     stubPage('?toy=off');
     for (const sample of play(WORLDS[control]!(), { mount: true }).samples) expect(atRest(sample), `${control}: ${sample.join(', ')}`).toBe(true);
+  });
+});
+
+describe('idle life of a standing hero in the shared world (P54B T6)', () => {
+  /** Různé pózy hrdiny za poslední dvě sekundy stání (tik 2–4 s, nečinná vrstva už rozjetá). */
+  const posesWhileStanding = (samples: readonly Sample[]): number => new Set(samples.slice(-240).map((sample) => sample.join(','))).size;
+
+  // Rytíř je statický model katalogu třídy biped; riggovaná postava (`rigged:`) hraje klip `idle` a vrstvu nedostane.
+  const standing = { ticks: 240, still: true, player: 'knight' } as const;
+
+  it('platform: a knight left standing without input keeps breathing, and the run hashes the same', () => {
+    stubPage('');
+    const world = WORLDS.platform!();
+    const mounted = play(world, { mount: true, ...standing });
+    expect(posesWhileStanding(mounted.samples)).toBeGreaterThan(100);
+    expect(mounted.hash).toBe(play(world, { mount: false, ...standing }).hash);
+  });
+
+  it('platform: under prefers-reduced-motion the standing knight stands still', () => {
+    stubPage('', true);
+    expect(posesWhileStanding(play(WORLDS.platform!(), { mount: true, ...standing }).samples)).toBe(1);
   });
 });
 

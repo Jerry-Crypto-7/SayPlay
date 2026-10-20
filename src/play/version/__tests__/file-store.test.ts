@@ -13,7 +13,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { markVolatileStore } from '@/app/api/play/_publish';
 
 import builtinGames from '../builtin-games.json';
-import { __resetProcessVersionStore, DEFAULT_WRITE_LIMITS, fileStoreDirFromEnv, fileVersionStore, RECENT_CAP, versionStoreFromEnv } from '../store';
+import { __resetProcessVersionStore, DEFAULT_WRITE_LIMITS, fileStoreDirFromEnv, fileVersionStore, RECENT_CAP, REMIX_CAP, versionStoreFromEnv } from '../store';
 import type { PublishedGame } from '../version';
 
 /** Disk, který přejmenování odmítne – antivir drží soubor (Windows EPERM) nebo je plný. */
@@ -35,8 +35,8 @@ vi.mock('node:fs', async (importOriginal) => {
 
 const games = builtinGames as unknown as PublishedGame[];
 const parent = games[0]!;
-/** Dítě rodiče: jiná vestavěná hra s `parentId` – tvar jako remix. */
-const child: PublishedGame = { ...games[1]!, version: { ...games[1]!.version, parentId: parent.version.versionId } };
+/** Dítě rodiče: jiná vestavěná hra s `parentId` – tvar jako remix, který postavil server. */
+const child: PublishedGame = { ...games[1]!, relation: 'remix', version: { ...games[1]!.version, parentId: parent.version.versionId } };
 
 const dirs: string[] = [];
 
@@ -71,7 +71,8 @@ describe('fileVersionStore', () => {
     expect((await restarted.get(child.version.versionId))?.version.parentId).toBe(parent.version.versionId);
     expect(await restarted.childrenOf(parent.version.versionId)).toEqual([child.version.versionId]);
     expect((await restarted.lineageOf(child.version.versionId)).map((version) => version.versionId)).toEqual([parent.version.versionId, child.version.versionId]);
-    expect((await restarted.recent(RECENT_CAP)).map((row) => row.versionId)).toEqual([parent.version.versionId]);
+    // Remix s rodičem má řádek feedu taky (P54A T10).
+    expect((await restarted.recent(RECENT_CAP)).map((row) => row.versionId).sort()).toEqual([parent.version.versionId, child.version.versionId].sort());
     expect((await restarted.loopHeat([parent.version.versionId])).get(parent.version.versionId)).toMatchObject({ finishes: 2, starts: 1, retries: 1, shares: 1, bounces: 1, remixes: 1 });
   });
 
@@ -213,6 +214,22 @@ describe('fileVersionStore', () => {
     const dir = freshDir();
     await fileVersionStore(dir).put(parent);
     expect(readdirSync(dir).filter((name) => !name.endsWith('.json'))).toEqual([]);
+  });
+
+  it('remixy feed nezaplaví a ruční spec s rodičem do něj nejde (nález revize T10-1)', async () => {
+    const store = fileVersionStore(freshDir());
+    await store.feature(parent);
+    const handWritten: PublishedGame = { ...games[1]!, version: { ...child.version, versionId: 'f'.repeat(32) } };
+    expect(await store.put(handWritten)).toBe('stored');
+    const remixes = Array.from({ length: REMIX_CAP + 5 }, (_, n): PublishedGame => ({ ...child, version: { ...child.version, versionId: n.toString(16).padStart(32, '0') } }));
+    for (const remix of remixes) expect(await store.put(remix)).toBe('stored');
+
+    const rows = await store.recent(RECENT_CAP);
+    expect(rows.map((row) => row.versionId)).toContain(parent.version.versionId);
+    expect(rows.map((row) => row.versionId)).not.toContain(handWritten.version.versionId);
+    expect(rows.filter((row) => row.relation === 'remix')).toHaveLength(REMIX_CAP);
+    // Hlavní seznam má přednost: remix z prvních řádků nevytlačí kurátorskou hru.
+    expect((await store.recent(1)).map((row) => row.versionId)).toEqual([parent.version.versionId]);
   });
 });
 

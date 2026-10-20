@@ -16,7 +16,7 @@ import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Look } from '@/play/arcade/look';
 
-import { GRADES, GradeEffect, type GradeFamily } from './grade';
+import { GradeEffect, type GradeFamily, gradeFor } from './grade';
 import { GAP_MS, type QualityState, type QualityTier, TIER_SETTINGS, bloomThreshold, sampleQuality, startQuality } from './quality';
 
 /** FPS se měří po půlsekundách. */
@@ -60,6 +60,11 @@ export function useQualityTier(surface: RefObject<HTMLDivElement | null>): Quali
 
 /** Skládač kreslí snímek s touto prioritou (`useFrame`). */
 const COMPOSER_PRIORITY = 1;
+/**
+ * Priorita `useFrame` po všem, co scéna za snímek hýbe (kamera, hrdina, slunce mají 0), a před kresbou
+ * skládače. Kladná priorita bere R3F kreslení – smí ji mít jen to, co běží pod rigem, který skládač má vždy.
+ */
+export const BEFORE_COMPOSER = COMPOSER_PRIORITY - 0.5;
 
 /**
  * Pro sondu `__playRender`: efekty skládače v pořadí (`data-post` plátna) –
@@ -77,7 +82,7 @@ function PostProbe({ effects }: { readonly effects: string }) {
       delete gl.domElement.dataset.post;
     };
   }, [gl, effects]);
-  useFrame(() => gl.info.reset(), COMPOSER_PRIORITY - 0.5);
+  useFrame(() => gl.info.reset(), BEFORE_COMPOSER);
   return null;
 }
 
@@ -86,16 +91,16 @@ function PostProbe({ effects }: { readonly effects: string }) {
  * jednoho průchodu. Rodinu, kterou efektu nastavil, zapíše plátnu (`data-grade`,
  * sonda `__playRender`): bez ladění ve skládači sonda nic nehlásí.
  */
-export function Grading({ family }: { readonly family: GradeFamily }) {
+export function Grading({ family, tier }: { readonly family: GradeFamily; readonly tier: QualityTier }) {
   const gl = useThree((three) => three.gl);
   const effect = useMemo(() => new GradeEffect(), []);
   useEffect(() => {
-    effect.grade = GRADES[family];
+    effect.grade = gradeFor(family, tier);
     gl.domElement.dataset.grade = family;
     return () => {
       delete gl.domElement.dataset.grade;
     };
-  }, [effect, family, gl]);
+  }, [effect, family, tier, gl]);
   useEffect(() => () => effect.dispose(), [effect]);
   return <primitive object={effect} dispose={null} />;
 }
@@ -132,7 +137,7 @@ export function Post({ look, family, tier }: { readonly look: Look; readonly fam
         {aa === 'smaa' ? <SMAA /> : <></>}
         {bloom ? <Bloom mipmapBlur luminanceThreshold={bloomThreshold(look)} luminanceSmoothing={0.1} intensity={0.8} /> : <></>}
         <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
-        <Grading family={family} />
+        <Grading family={family} tier={tier} />
       </EffectComposer>
     </>
   );

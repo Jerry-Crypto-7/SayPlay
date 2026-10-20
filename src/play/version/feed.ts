@@ -26,24 +26,43 @@ import { type LoopHeat, RECENT_CAP, type RecentGame } from './store';
 /** Co feed o hře potřebuje vědět, aby rozhodl, jestli ji ukáže. */
 export interface FeedCandidate {
   readonly versionId: string;
-  readonly relation?: 'upgrade';
+  readonly relation?: 'upgrade' | 'remix';
   /** Hra ze seedu feedu nebo z vestavěné sady (P37C T6); nese ji jen řádek seznamu. */
   readonly curated?: true;
   readonly publishEligible: boolean;
 }
 
 /**
- * Do feedu jen autorská verze od režiséra (`relation: 'upgrade'`) nebo hra ze
- * seedu provozovatele (`curated`, věty napsal on, ne návštěvník), která prošla
- * branou publikace a kterou provozovatel neskryl (`PLAY_FEED_HIDE`).
+ * Do feedu autorská verze od režiséra (`relation: 'upgrade'`), hra ze seedu
+ * provozovatele (`curated`, věty napsal on, ne návštěvník) nebo remix, který
+ * postavil server (`relation: 'remix'` – čip, ověřený recept, věta přes model;
+ * P54A T10) – vždy jen ta, která prošla branou publikace a kterou provozovatel
+ * neskryl (`PLAY_FEED_HIDE`). Hráčova hra do feedu nejde, ani s `parentId`
+ * (nález revize T10-1): rodiče si volající napíše sám a titul specu taky.
  */
 export function feedEligible(game: FeedCandidate, hidden: ReadonlySet<string>): boolean {
-  return game.publishEligible && (game.relation === 'upgrade' || game.curated === true) && !hidden.has(game.versionId);
+  return game.publishEligible && (game.relation === 'upgrade' || game.relation === 'remix' || game.curated === true) && !hidden.has(game.versionId);
+}
+
+function isRemix(row: RecentGame): boolean {
+  return row.relation === 'remix';
 }
 
 /** `PLAY_FEED_HIDE` – čárkami oddělená `versionId`; mezery a prázdné položky se ignorují. */
 export function hiddenFromEnv(env: Record<string, string | undefined>): ReadonlySet<string> {
-  return new Set((env.PLAY_FEED_HIDE ?? '').split(',').map((id) => id.trim()).filter((id) => id !== ''));
+  return idList(env.PLAY_FEED_HIDE);
+}
+
+/**
+ * `PLAY_FEED_KEEP` – hry, které hlasy z feedu neskryjí (P54A T11a): provozovatel hru vrátí bez
+ * mazání klíčů hlasů. `PLAY_FEED_HIDE` platí i pro ně. Zápis jako `PLAY_FEED_HIDE`.
+ */
+export function keptFromEnv(env: Record<string, string | undefined>): ReadonlySet<string> {
+  return idList(env.PLAY_FEED_KEEP);
+}
+
+function idList(text: string | undefined): ReadonlySet<string> {
+  return new Set((text ?? '').split(',').map((id) => id.trim()).filter((id) => id !== ''));
 }
 
 interface Cursor {
@@ -165,24 +184,55 @@ function byLoop(rows: readonly RecentGame[], heat: ReadonlyMap<string, LoopHeat>
 }
 
 /**
+ * Skrytí jde po linii remixů dolů: remix nese titul a texty rodiče, takže remix skryté hry
+ * (i remix jejího remixu) by ji vrátil do feedu pod novým id (nález revize /ship P54A).
+ */
+function withHiddenRemixes(rows: readonly RecentGame[], hidden: ReadonlySet<string>): ReadonlySet<string> {
+  const parentOf = new Map(rows.filter(isRemix).map((row) => [row.versionId, row.parentId] as const));
+  const out = new Set(hidden);
+  for (const versionId of parentOf.keys()) {
+    // Id je hash obsahu i rodiče, kruh v linii vzniknout nemůže; strop kroků jen pojistka délky.
+    let at: string | null | undefined = versionId;
+    for (let step = 0; at != null && step <= parentOf.size; step += 1) {
+      if (out.has(at)) {
+        out.add(versionId);
+        break;
+      }
+      at = parentOf.get(at);
+    }
+  }
+  return out;
+}
+
+/** Rodiče remixů v seznamu: hlasy skrytí se ptají i na ně, rodič nemusí být mezi řádky. */
+export function remixParents(rows: readonly RecentGame[]): string[] {
+  return rows.filter(isRemix).flatMap((row) => (row.parentId === null ? [] : [row.parentId]));
+}
+
+/**
  * Jedna stránka feedu ze všech řádků seznamu. Z jedné rodiny (autorské verze
  * téhož návrhu, tj. téhož `parentId`) jde jen nejnovější a z her se stejným
  * titulkem po normalizaci taky – takže se neopakují ani v jedné stránce, ani
- * napříč stránkami. `heat` (čítače smyčky) pak rozhodne pořadí (`byLoop`).
+ * napříč stránkami. Remixy jedné hry rodinu netvoří, každý je vlastní karta;
+ * titul ale patří originálu – remix se stejným titulem (čip `harder` titul
+ * nemění) originál z feedu nevytlačí, i když je novější. `heat` (čítače
+ * smyčky) pak rozhodne pořadí (`byLoop`).
  */
 export function feedPage(rows: readonly RecentGame[], limit: number, cursor: Cursor | null, hidden: ReadonlySet<string>, heat: ReadonlyMap<string, LoopHeat> = new Map()): FeedPage {
   const sorted = [...rows].sort(newerFirst);
   const top = cursor?.top ?? sorted[0];
   if (top === undefined) return { games: [], next: null };
+  const blocked = withHiddenRemixes(rows, hidden);
+  // Řádek seznamu zapsala jen způsobilá publikace (`put`); tady rozhoduje skrytí a relace.
+  const eligible = sorted.filter((row) => newerFirst(row, top) >= 0 && feedEligible({ ...row, publishEligible: true }, blocked));
+  const originals = new Set(eligible.filter((row) => !isRemix(row)).map((row) => titleKey(row.title)));
   const families = new Set<string>();
   const titles = new Set<string>();
-  const shown = sorted.filter((row) => {
-    if (newerFirst(row, top) < 0) return false;
-    // Řádek seznamu zapsala jen způsobilá publikace (`put`); tady rozhoduje skrytí a relace.
-    if (!feedEligible({ ...row, publishEligible: true }, hidden)) return false;
-    const family = row.parentId ?? row.versionId;
+  const shown = eligible.filter((row) => {
+    const remix = isRemix(row);
+    const family = remix ? row.versionId : (row.parentId ?? row.versionId);
     const title = titleKey(row.title);
-    if (families.has(family) || titles.has(title)) return false;
+    if (families.has(family) || titles.has(title) || (remix && originals.has(title))) return false;
     families.add(family);
     titles.add(title);
     return true;

@@ -15,8 +15,11 @@ import { GENRE_MODULES } from '../genre/index';
 
 import { BASE_ENTRIES } from './entries/base';
 
-/** Stavy hrdiny, které renderer přehrává; `procedural` = pohyb dopočítá kód, model klip nemá. */
-export const CLIP_STATES = ['idle', 'run', 'jump', 'hit', 'die'] as const;
+/**
+ * Stavy hrdiny, které renderer přehrává; `procedural` = pohyb dopočítá kód, model klip nemá.
+ * Chůze a výhra jsou nepovinné (P54B T5): bez nich `RiggedModel` hraje běh, resp. klid.
+ */
+export const CLIP_STATES = ['idle', 'walk', 'run', 'jump', 'hit', 'die', 'win'] as const;
 
 const clip = z.string().min(1).max(64);
 
@@ -34,7 +37,7 @@ export const assetEntrySchema = z
     pivot: z.enum(['base', 'center']),
     /** Osa, kam model míří. */
     forward: z.enum(['+z', '-z', '+x', '-x']),
-    clips: z.object({ idle: clip, run: clip, jump: clip, hit: clip, die: clip }).strict(),
+    clips: z.object({ idle: clip, walk: clip.optional(), run: clip, jump: clip, hit: clip, die: clip, win: clip.optional() }).strict(),
     /** Barva náhradního tvaru, dokud se model nenačte. */
     fallback: z.string().regex(/^#[0-9a-f]{6}$/),
     license: z.string().min(1),

@@ -18,6 +18,8 @@ export interface MotionView {
   readonly hit: boolean;
   /** Tělo v tomhle tiku vystřelilo nebo hodilo (hráči naskočilo čekání zbraně). */
   readonly shot: boolean;
+  /** Hráč vyhrál běh (P54B T5); chybí = nevyhrál. */
+  readonly won?: boolean;
 }
 
 /**
@@ -78,21 +80,30 @@ export function poseOf(view: MotionView, previous: Pose | null, tick: number): P
   return { bob, lean, squash, flash, grounded: view.grounded, landedAt, hitAt, shotAt };
 }
 
-/** Stavy, na které manifest riggovaných postav mapuje klipy (`src/assets/rigged.json`). */
-export const CLIP_STATES = ['idle', 'run', 'jump', 'shoot', 'hit', 'die'] as const;
+/** Stavy, na které manifest riggovaných postav mapuje klipy (`src/assets/rigged.json`, `rigged-p54.json`). */
+export const CLIP_STATES = ['idle', 'walk', 'run', 'jump', 'shoot', 'hit', 'die', 'win'] as const;
 export type ClipState = (typeof CLIP_STATES)[number];
+
+/**
+ * Do téhle rychlosti (m/s) postava jde, nad ní běží (P54B T5). Plošinovka běží
+ * až 6,6 m/s a rozjede se za 9 tiků, běžec jede od 7 m/s – chůzi tak hraje
+ * pomalý krok (dotyková páčka, rozjezd, dobrzdění), ne plný běh.
+ */
+export const WALK_MAX_MPS = 2.5;
 
 /**
  * Klip riggované postavy z téhož pohledu a pózy, ze kterých `poseOf` hýbe
  * statickými modely (`pose` = výsledek `poseOf` pro tentýž tik). Přednost:
- * smrt, zásah, střelba, skok, běh, klid.
+ * smrt, výhra, zásah, střelba, skok, běh, chůze, klid.
  */
 export function clipOf(view: MotionView, pose: Pose, tick: number): ClipState {
   if (!view.alive) return 'die';
+  if (view.won === true) return 'win';
   if (pose.flash > 0) return 'hit';
   if (tick - pose.shotAt < SHOT_TICKS) return 'shoot';
   if (!view.grounded) return 'jump';
-  return Math.hypot(metresPerSecond(view.vx), metresPerSecond(view.vz)) > RUN_MIN ? 'run' : 'idle';
+  const speed = Math.hypot(metresPerSecond(view.vx), metresPerSecond(view.vz));
+  return speed > WALK_MAX_MPS ? 'run' : speed > RUN_MIN ? 'walk' : 'idle';
 }
 
 /**
@@ -117,6 +128,7 @@ export function viewOf(state: Int32Array, prev: Int32Array, index: number): Moti
     alive,
     hit,
     shot: player && (state[cooldown] as number) > (prev[cooldown] as number),
+    won: player && (state[HEADER.runState] as number) === RUN_STATE.won,
   };
 }
 

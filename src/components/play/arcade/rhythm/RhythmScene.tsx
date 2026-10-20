@@ -29,6 +29,9 @@ import { playTone } from '@/play/audio';
 import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
+import type { Box } from '../look/ground';
+import { Landmark } from '../look/Landmark';
+import type { Volume } from '../look/landmark-places';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { type BodyModel, beatPoseOf, initialBody } from '../timing/TimingScene';
@@ -45,6 +48,10 @@ const TRACK_M = 60;
 const RHYTHM_LAND = { x0: -30, x1: 30, z0: -10, z1: TRACK_M + 20 } as const;
 /** Nejbližší vrstva kulisy (m od kamery 4,5+ m před lištou): za koncem pruhů. */
 const BACKDROP_BEYOND = TRACK_M + 12;
+/** Pruhy, po kterých jedou noty z 60 m: orientační bod a rámující kusy stojí vedle nich (P54B T8). */
+const LANES_AREA: readonly Box[] = [{ x0: -(RHYTHM.lanes * RHYTHM.laneW) / UNIT / 2 - 1, x1: (RHYTHM.lanes * RHYTHM.laneW) / UNIT / 2 + 1, z0: -3, z1: TRACK_M }];
+/** Pruhy s notami, které teprve přijedou (P54B T15a): bod ani kus se s nimi v obraze nepotká. */
+const LANES_PLAY: readonly Volume[] = [{ x0: -(RHYTHM.lanes * RHYTHM.laneW) / UNIT / 2, y0: 0, z0: -2, x1: (RHYTHM.lanes * RHYTHM.laneW) / UNIT / 2, y1: 0.5, z1: TRACK_M }];
 const HERO_M = { w: 0.8, h: 1.5, d: 0.6 };
 const HERO_GAP_M = 0.7;
 const HERO_Z_M = 0.6;
@@ -154,6 +161,7 @@ export function RhythmScene({
       <FieldGround look={scene} area={RHYTHM_LAND} y={-0.06} under />
       {/* Kulisa za mlhou až za koncem pruhů: noty jedou z 60 m. */}
       <HorizonBackdrop look={scene} seed={session.world.seed} clear={0} beyond={BACKDROP_BEYOND} />
+      <Landmark look={scene} seed={session.world.seed} area={LANES_AREA} play={LANES_PLAY} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, TRACK_M / 2 - 2]}>
         <planeGeometry args={[RHYTHM.lanes * laneW + 0.4, TRACK_M]} />
         <meshStandardMaterial color="#0f172a" roughness={1} />

@@ -160,16 +160,24 @@ export function inkCount(root: Object3D): number {
 }
 
 /**
- * Obrys rodičovské skupiny: vlož jako dítě skupiny těla. Každý snímek dorovná obaly
- * nově dotažených sítí (podstrom těla má jednotky až desítky uzlů).
+ * Obrys po kolika snímcích dorovná obaly: riggovaná postava má v podstromu kostru (zombie
+ * 26 uzlů) a průchod každý snímek za každé tělo stál telefon (Pixel 7, CPU 4×) ~0,8 ms
+ * snímku (P54B T15c). Nově dotažený model je bez obrysu nejvýš dva snímky.
+ */
+const INK_SCAN_FRAMES = 3;
+
+/**
+ * Obrys rodičovské skupiny: vlož jako dítě skupiny těla. Každý `INK_SCAN_FRAMES`. snímek
+ * dorovná obaly nově dotažených sítí; první snímek hned.
  */
 export function InkOutline({ ink }: { readonly ink: Ink }) {
   const anchor = useRef<Group>(null);
   const size = useThree((three) => three.size);
+  const frames = useRef(0);
   useFrame(() => {
     setInkViewport(size.width, size.height);
     const parent = anchor.current?.parent;
-    if (parent != null) inkMeshes(parent, ink);
+    if (parent != null && frames.current++ % INK_SCAN_FRAMES === 0) inkMeshes(parent, ink);
   });
   return <group ref={anchor} />;
 }

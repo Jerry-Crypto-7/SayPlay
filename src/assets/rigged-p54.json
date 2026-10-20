@@ -1,0 +1,4795 @@
+{
+  "$comment": "Animované CC0 postavy Quaternius s kostrou a klipy (P54B T3). Generuje scripts/assets/rigged/import-cc0.mjs – needitovat ručně. clips: stav hry → jméno klipu v GLB (idle/walk/run/jump/hit/die/win/shoot); dims v metrech v první póze idle; excluded = vyřazené s důvodem.",
+  "version": 1,
+  "characters": [
+    {
+      "id": "q-person",
+      "name": "Person",
+      "tags": [
+        "person",
+        "human"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.74,
+        1.8,
+        0.58
+      ],
+      "fallback": "#a8714a",
+      "path": "/assets/worldstream/rigged/q-person.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "shoot": "Punch"
+      },
+      "triangles": 2104,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#a8714a",
+      "bytes": 380176,
+      "sha256": "81435b730a454bc66dfa66f3da47544ea6c3c0da6c0f3ead847c4b22ee45f3c4",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/BaseCharacter.gltf",
+      "sourceSha256": "8c8018dd52654a301f20add4ed51d0951257d5a2ec6d865cde98c06d0613e208"
+    },
+    {
+      "id": "q-blue-soldier-woman",
+      "name": "Blue Soldier (woman)",
+      "tags": [
+        "soldier",
+        "trooper",
+        "guard"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.83,
+        1.8,
+        0.85
+      ],
+      "fallback": "#8b7643",
+      "path": "/assets/worldstream/rigged/q-blue-soldier-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 7066,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#e3b48f",
+      "bytes": 737388,
+      "sha256": "e39a46608c53f02761c36f7926ceec00c1cf3aade2966219f31b8f50df81c96b",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/BlueSoldier_Female.gltf",
+      "sourceSha256": "8d34cffce30c2f917004ba771821afcd5049f71db819514919b4c632fa81ff46"
+    },
+    {
+      "id": "q-blue-soldier",
+      "name": "Blue Soldier",
+      "tags": [
+        "soldier",
+        "trooper",
+        "guard"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.71,
+        1.8,
+        0.64
+      ],
+      "fallback": "#2a364b",
+      "path": "/assets/worldstream/rigged/q-blue-soldier.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2994,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#5a3622",
+      "bytes": 504784,
+      "sha256": "47ad241abf5d1f5fb651b7596ddcaa6ec4dceb2030d017aa84f9d41520398f95",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/BlueSoldier_Male.gltf",
+      "sourceSha256": "d47a3a9c2c3c6f78ccd423658386db2138c689c801d39dc00b8c77cda85ddd06"
+    },
+    {
+      "id": "q-casual-woman",
+      "name": "Casual Woman",
+      "tags": [
+        "woman",
+        "lady"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.86
+      ],
+      "fallback": "#5c3e2a",
+      "path": "/assets/worldstream/rigged/q-casual-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6624,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#5a3622",
+      "bytes": 717968,
+      "sha256": "5b3b26d174d38264f5165130db3fc455ae9f74bba209db4c33a945c5af6768a1",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Casual_Female.gltf",
+      "sourceSha256": "87327963ab0f37d004c7340d130808727f3d67b724c3d41aad01fd63c7d6fc8a"
+    },
+    {
+      "id": "q-casual-man",
+      "name": "Casual Man",
+      "tags": [
+        "man",
+        "guy"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.7,
+        1.8,
+        0.72
+      ],
+      "fallback": "#5c3e2a",
+      "path": "/assets/worldstream/rigged/q-casual-man.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6492,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#5a3622",
+      "bytes": 708652,
+      "sha256": "ac22366356afd00d17c1f8ff0222a0bf92c738696e896eceab37b1eac437a316",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Casual_Male.gltf",
+      "sourceSha256": "db66b2424af60d7799760795ca63c8a5be1c8af64e9f134217f0a3ff9e405379"
+    },
+    {
+      "id": "q-casual-woman-b",
+      "name": "Casual Woman B",
+      "tags": [
+        "woman",
+        "lady"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.81
+      ],
+      "fallback": "#7f403d",
+      "path": "/assets/worldstream/rigged/q-casual-woman-b.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6752,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0.096,
+      "skinTone": "#e3b48f",
+      "bytes": 726896,
+      "sha256": "08511051344af061b0839175f56f6f72b8c350bed53d1d7fdcb2d429ed8413d5",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Casual2_Female.gltf",
+      "sourceSha256": "b614bfe01ae69e0d9dfdfb6ff74fb53abfcc32be59858a9b89fb05ffd3062324"
+    },
+    {
+      "id": "q-casual-man-b",
+      "name": "Casual Man B",
+      "tags": [
+        "man",
+        "guy"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.6
+      ],
+      "fallback": "#a8714a",
+      "path": "/assets/worldstream/rigged/q-casual-man-b.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 3216,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0.156,
+      "skinTone": "#a8714a",
+      "bytes": 497708,
+      "sha256": "e5bb5b79cd325b507a1d83ab06449d88707b64610f051faca211f19fdc39db0d",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Casual2_Male.gltf",
+      "sourceSha256": "9e8f23af968979cc6945d11015d9fd3cb1e94d53c3b91c39cac39a80e7490a79"
+    },
+    {
+      "id": "q-casual-woman-c",
+      "name": "Casual Woman C",
+      "tags": [
+        "woman",
+        "lady"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.8
+      ],
+      "fallback": "#49433a",
+      "path": "/assets/worldstream/rigged/q-casual-woman-c.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 8444,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#e3b48f",
+      "bytes": 718456,
+      "sha256": "a460383fbe6b56d9fea1dae23b6216d2b96b207d45b8a1012ae11853858fbbc6",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Casual3_Female.gltf",
+      "sourceSha256": "75cb6d7fa20674cb6b1dc3ad4e3c6d0d1de03f0128817ba60dcc4fad4ca008a2"
+    },
+    {
+      "id": "q-casual-man-c",
+      "name": "Casual Man C",
+      "tags": [
+        "man",
+        "guy"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.62
+      ],
+      "fallback": "#49433a",
+      "path": "/assets/worldstream/rigged/q-casual-man-c.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 4920,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#7d4e31",
+      "bytes": 599652,
+      "sha256": "9f9a9f083be8085e5130e5d7792386fcd228f77f9937e50a78e43c2075d7de47",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Casual3_Male.gltf",
+      "sourceSha256": "f84ec360f53796287cfdb6082ad82fd76464dc34845759ca7f1f2ee9e7604057"
+    },
+    {
+      "id": "q-chef",
+      "name": "Chef",
+      "tags": [
+        "chef",
+        "cook"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.66
+      ],
+      "fallback": "#9c9c9c",
+      "path": "/assets/worldstream/rigged/q-chef.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 5452,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#7d4e31",
+      "bytes": 655776,
+      "sha256": "ba75881c0fcc5e4e4e66e4282f49a00f716f3fbc110bb2c9586fccb1dc83ef1f",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Chef_Male.gltf",
+      "sourceSha256": "e503dbd75f595863689e7e1d5181624be34ce191e5231e3e9ce82b83d55aa134"
+    },
+    {
+      "id": "q-chef-woman",
+      "name": "Chef (woman)",
+      "tags": [
+        "chef",
+        "cook"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.8
+      ],
+      "fallback": "#8b886b",
+      "path": "/assets/worldstream/rigged/q-chef-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 8768,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#f2d0b1",
+      "bytes": 721184,
+      "sha256": "59673941bb26bfb190fdbc18a5a018b55a343e18a9e160a676a70448d786cbda",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Chef_Female.gltf",
+      "sourceSha256": "3e1959fe0432026b521ff04ff83df4e4487790948cbb182b0a92b08998d9beda"
+    },
+    {
+      "id": "q-chef-hat",
+      "name": "Chef with Hat",
+      "tags": [
+        "chef",
+        "cook",
+        "baker"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.6,
+        1.8,
+        0.53
+      ],
+      "fallback": "#f5f4e9",
+      "path": "/assets/worldstream/rigged/q-chef-hat.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 3048,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#f2d0b1",
+      "bytes": 508180,
+      "sha256": "dd2ce6394fbe71d7b41c49991af666d9fe61a9676053bff40401346f02b16f3a",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Chef_Hat.gltf",
+      "sourceSha256": "920c21e1d02dcf9a87832a285e08a3a7dcb4b869793cd4c51bb445ca39f1ea25"
+    },
+    {
+      "id": "q-cow-costume",
+      "name": "Cow Costume",
+      "tags": [
+        "cow-costume",
+        "mascot"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.89,
+        1.8,
+        0.71
+      ],
+      "fallback": "#111111",
+      "path": "/assets/worldstream/rigged/q-cow-costume.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2332,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#e3b48f",
+      "bytes": 444244,
+      "sha256": "a5ec1d585f5fa0a1b993f8c7e480cf1330a3751f2b01c3dce863905ad4d62fc5",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Cow.gltf",
+      "sourceSha256": "6e9753857a7bab6b7caa440c433fac8e172fa5319099b3e148d982f49df270b4"
+    },
+    {
+      "id": "q-cowboy",
+      "name": "Cowboy",
+      "tags": [
+        "cowboy",
+        "sheriff",
+        "rancher"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.69,
+        1.8,
+        0.74
+      ],
+      "fallback": "#f2d0b1",
+      "path": "/assets/worldstream/rigged/q-cowboy.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 3176,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#f2d0b1",
+      "bytes": 509792,
+      "sha256": "cc48f1fb4664d15816290b5ccf92c176014738b7c6157a410895d7089237d683",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Cowboy_Male.gltf",
+      "sourceSha256": "91e20fef76c4ac9a3bd73b786727b68b3d4a14848d63987180db88ee88fd2ee0"
+    },
+    {
+      "id": "q-cowgirl",
+      "name": "Cowgirl",
+      "tags": [
+        "cowgirl",
+        "cowboy",
+        "rancher"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.69,
+        1.8,
+        0.78
+      ],
+      "fallback": "#8b7643",
+      "path": "/assets/worldstream/rigged/q-cowgirl.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6840,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#a8714a",
+      "bytes": 744576,
+      "sha256": "5b216f03dd0e07dae018a9c3e035383a78cdca4acd61ff2633cdfe46a32492bb",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Cowboy_Female.gltf",
+      "sourceSha256": "fdf0c238b0ad0047bc3342c9dc0535abb50ed65986044e53b07e3d7576f3ff60"
+    },
+    {
+      "id": "q-cowboy-hair",
+      "name": "Cowboy (hair)",
+      "tags": [
+        "cowboy",
+        "rancher"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.7,
+        1.8,
+        0.72
+      ],
+      "fallback": "#5c3914",
+      "path": "/assets/worldstream/rigged/q-cowboy-hair.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6560,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#e3b48f",
+      "bytes": 716572,
+      "sha256": "de3a02e7b55895bb58a44981dbc409942eddaf1603dc7c9d3ce0e59e9869c550",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Cowboy_Hair.gltf",
+      "sourceSha256": "6d220031f05f2887562645356560eb451b0a308e8b7b0a0c587f3e463b526079"
+    },
+    {
+      "id": "q-doctor",
+      "name": "Doctor",
+      "tags": [
+        "doctor",
+        "medic",
+        "scientist"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.7,
+        1.8,
+        0.72
+      ],
+      "fallback": "#9c7e3f",
+      "path": "/assets/worldstream/rigged/q-doctor.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6498,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#e3b48f",
+      "bytes": 709152,
+      "sha256": "26a0fea1fea2554ec615a07aa0ae90db0633d7e7cf90c1cda57b01f09e96a088",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Doctor_Male_Young.gltf",
+      "sourceSha256": "4f39182b6ecff6affac27f7c4cb2abf9529d68be4a77cc71343b40a83fe6e0cd"
+    },
+    {
+      "id": "q-doctor-old",
+      "name": "Old Doctor",
+      "tags": [
+        "doctor",
+        "medic",
+        "scientist"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.62
+      ],
+      "fallback": "#9c9c9c",
+      "path": "/assets/worldstream/rigged/q-doctor-old.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 5006,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#7d4e31",
+      "bytes": 613400,
+      "sha256": "05478709b3964bf2929d4f6ef349b941cbad41a59e2738d11d62081d80738055",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Doctor_Male_Old.gltf",
+      "sourceSha256": "882741dd558d5a4e91704c6ef88f2979f9c34d956f2da6ce83aca80e5f43a6ab"
+    },
+    {
+      "id": "q-doctor-woman",
+      "name": "Doctor (woman)",
+      "tags": [
+        "doctor",
+        "medic",
+        "nurse"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.8
+      ],
+      "fallback": "#9c7a43",
+      "path": "/assets/worldstream/rigged/q-doctor-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 8530,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#7d4e31",
+      "bytes": 722948,
+      "sha256": "4e0254671f4d5e21bf7b3c95c1547af8aadbcd2d6e2572db1a3bee16692ae4ff",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Doctor_Female_Young.gltf",
+      "sourceSha256": "2fd5082696aca804d77555eff96f6e07c11549e4f03661ce2467e2b9f881e5ab"
+    },
+    {
+      "id": "q-doctor-woman-old",
+      "name": "Old Doctor (woman)",
+      "tags": [
+        "doctor",
+        "medic",
+        "nurse"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.81
+      ],
+      "fallback": "#9c9c9c",
+      "path": "/assets/worldstream/rigged/q-doctor-woman-old.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6790,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#7d4e31",
+      "bytes": 730284,
+      "sha256": "6387ce30da5aec8cf02de4d4d67672b838eece5b286ed531690fa43bff84fb12",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Doctor_Female_Old.gltf",
+      "sourceSha256": "7574bea268ed05f11bb1e4a16fdf36ab6302051b5514f20e12f4befb4c99b172"
+    },
+    {
+      "id": "q-elf",
+      "name": "Elf",
+      "tags": [
+        "elf"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.77,
+        1.8,
+        0.77
+      ],
+      "fallback": "#e3b48f",
+      "path": "/assets/worldstream/rigged/q-elf.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2594,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#e3b48f",
+      "bytes": 478296,
+      "sha256": "7c252abdceda87af890daea04cc67aec4044d0169ea8774c38e78b7bdc248800",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Elf.gltf",
+      "sourceSha256": "f1f480b79f274a20e414eaa0a2c76bd2aa40ac8e29f1178d6208af74cc69eb88"
+    },
+    {
+      "id": "q-goblin",
+      "name": "Goblin",
+      "tags": [
+        "goblin"
+      ],
+      "class": "monster",
+      "dims": [
+        0.91,
+        1.8,
+        0.6
+      ],
+      "fallback": "#5a5b2c",
+      "path": "/assets/worldstream/rigged/q-goblin.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2462,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 439120,
+      "sha256": "86888a556e02f089b78c4b7c341d1b6e98f007c51e411b3b0d841e9ec2d2f985",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Goblin_Male.gltf",
+      "sourceSha256": "cab2cbe315e34f1f223fac6754c1e0c3f635060b7ebd516b95e5efbc9ba2c9ea"
+    },
+    {
+      "id": "q-goblin-woman",
+      "name": "Goblin (woman)",
+      "tags": [
+        "goblin"
+      ],
+      "class": "monster",
+      "dims": [
+        0.9,
+        1.8,
+        0.81
+      ],
+      "fallback": "#252021",
+      "path": "/assets/worldstream/rigged/q-goblin-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6972,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 752632,
+      "sha256": "7c2dd31db6e30cd722fa8fb8f25e6343a166458f1852e3f15f4b6af0ba3dfa3d",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Goblin_Female.gltf",
+      "sourceSha256": "a4985db6a2fd3e04f49d6ec5464d196c70147695a89194aa08a1e146601c6d7e"
+    },
+    {
+      "id": "q-samurai",
+      "name": "Samurai",
+      "tags": [
+        "samurai",
+        "kimono"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.71,
+        1.8,
+        0.59
+      ],
+      "fallback": "#c5c5c5",
+      "path": "/assets/worldstream/rigged/q-samurai.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2540,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#a8714a",
+      "bytes": 448796,
+      "sha256": "5d6da674f85a0510eade67452a3d541b5b9636d543f0e8f301d425e887ba857a",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Kimono_Male.gltf",
+      "sourceSha256": "0be982ad6230c46f4277a0bdd77cf6f0af5cbc9319a025a4bdf62ad3ac1dfcf0"
+    },
+    {
+      "id": "q-kimono-woman",
+      "name": "Kimono (woman)",
+      "tags": [
+        "kimono"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.74,
+        1.8,
+        0.75
+      ],
+      "fallback": "#c5c5c5",
+      "path": "/assets/worldstream/rigged/q-kimono-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 9236,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#7d4e31",
+      "bytes": 722884,
+      "sha256": "2f2f832c3bd8cf653e4d1de85bfaa18a90281f3a8cafb9f3d76611d8af576102",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Kimono_Female.gltf",
+      "sourceSha256": "8d3e909be3b854b1715855aed3c371a102788811a5c2673a0aee39fdb0a32df3"
+    },
+    {
+      "id": "q-knight",
+      "name": "Knight",
+      "tags": [
+        "knight"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.65,
+        1.8,
+        0.7
+      ],
+      "fallback": "#4b4b4b",
+      "path": "/assets/worldstream/rigged/q-knight.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2992,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#a8714a",
+      "bytes": 526996,
+      "sha256": "5b0ecd362602cbc00786caf403c82148321746c9701393b1d2894dd80786dc32",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Knight_Male.gltf",
+      "sourceSha256": "7d71328d850869b2afca41cbe5436f8be19cefb6cd996afaff3e8a7b870188af"
+    },
+    {
+      "id": "q-golden-knight",
+      "name": "Golden Knight",
+      "tags": [
+        "knight",
+        "paladin"
+      ],
+      "class": "humanoid",
+      "dims": [
+        1.01,
+        1.8,
+        0.63
+      ],
+      "fallback": "#8b7c2f",
+      "path": "/assets/worldstream/rigged/q-golden-knight.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2964,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#a8714a",
+      "bytes": 524144,
+      "sha256": "ed0699e06f90be0ee3a50bf1559d85c3449583a916078801a33993b6b2e182ca",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Knight_Golden_Male.gltf",
+      "sourceSha256": "96b5ac2f7b46fd279bc28bb9eda54a9e1d8d6aa2ffded19fbeb33d3e7c09265f"
+    },
+    {
+      "id": "q-golden-knight-woman",
+      "name": "Golden Knight (woman)",
+      "tags": [
+        "knight",
+        "paladin"
+      ],
+      "class": "humanoid",
+      "dims": [
+        1,
+        1.8,
+        0.86
+      ],
+      "fallback": "#8b7643",
+      "path": "/assets/worldstream/rigged/q-golden-knight-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6224,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#7d4e31",
+      "bytes": 730408,
+      "sha256": "44bc3a832593301ccc025e1742f0a270014b1f664252ae1ce63981568006c13f",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Knight_Golden_Female.gltf",
+      "sourceSha256": "dc468d46e898aa02b1ca92f19adfb1b5497721d273efb6405aa80e7155f26cc8"
+    },
+    {
+      "id": "q-ninja-woman",
+      "name": "Ninja (woman)",
+      "tags": [
+        "ninja"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.86
+      ],
+      "fallback": "#497f79",
+      "path": "/assets/worldstream/rigged/q-ninja-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 7104,
+      "textures": 0,
+      "purpleShare": 0.041,
+      "skinTone": "#f2d0b1",
+      "bytes": 748028,
+      "sha256": "90bfd838f65bcd5ea37b3ee6a2b1bd9a89abcd0414c9c4e3ffa6b3668a256c2d",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Ninja_Female.gltf",
+      "sourceSha256": "4aca0a09782739f427092c270cdd114fe01af0e17b6f600157ac90ad9c8ec32e"
+    },
+    {
+      "id": "q-ninja-hair",
+      "name": "Ninja (hair)",
+      "tags": [
+        "ninja"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.66
+      ],
+      "fallback": "#497f79",
+      "path": "/assets/worldstream/rigged/q-ninja-hair.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 8024,
+      "textures": 0,
+      "purpleShare": 0.04,
+      "skinTone": "#7d4e31",
+      "bytes": 748472,
+      "sha256": "265752f1c71435cddcdadb8f0b1917b23531b812cf3f6c5e491b01dec97e43ca",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Ninja_Male_Hair.gltf",
+      "sourceSha256": "f7c55a17f858bfbecd0006d531840d7c2447ec37b4b40845a7561f75f5b69cd7"
+    },
+    {
+      "id": "q-sand-ninja",
+      "name": "Sand Ninja",
+      "tags": [
+        "ninja"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.73,
+        1.8,
+        0.56
+      ],
+      "fallback": "#7c704b",
+      "path": "/assets/worldstream/rigged/q-sand-ninja.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2720,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0.083,
+      "skinTone": "#e3b48f",
+      "bytes": 487544,
+      "sha256": "98993f1507232a13d53c5f302590f4a098384c49eed569434f360051969eb319",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Ninja_Sand.gltf",
+      "sourceSha256": "34b70012a7b2955d256f340703271330416d5e4b5abee53d62558cfad27f3129"
+    },
+    {
+      "id": "q-sand-ninja-woman",
+      "name": "Sand Ninja (woman)",
+      "tags": [
+        "ninja"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.86
+      ],
+      "fallback": "#5a3622",
+      "path": "/assets/worldstream/rigged/q-sand-ninja-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 7104,
+      "textures": 0,
+      "purpleShare": 0.041,
+      "skinTone": "#5a3622",
+      "bytes": 748028,
+      "sha256": "93dcba33929293eb7a39309c6338e06e2bfb5b9a233f2f7f16cc13270fdeaa53",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Ninja_Sand_Female.gltf",
+      "sourceSha256": "e99369ce13d5850d5cdcf4a4aa5d93ad3e79c09ed00f1ba2444afc5f4933c648"
+    },
+    {
+      "id": "q-grandma",
+      "name": "Grandma",
+      "tags": [
+        "grandma",
+        "granny",
+        "grandmother"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.61,
+        1.8,
+        0.69
+      ],
+      "fallback": "#9c9c9c",
+      "path": "/assets/worldstream/rigged/q-grandma.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 7008,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#7d4e31",
+      "bytes": 733688,
+      "sha256": "1fc18d046927ef4138fa2ab9b98f87dbf6b614681d8d3517f39346c19aa26896",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/OldClassy_Female.gltf",
+      "sourceSha256": "0c116d90c588f357e6537f12bdab5f377f6cb30590f29826092824dc55f7c5eb"
+    },
+    {
+      "id": "q-grandpa",
+      "name": "Grandpa",
+      "tags": [
+        "grandpa",
+        "grandfather",
+        "gentleman"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.61,
+        1.8,
+        0.56
+      ],
+      "fallback": "#9c9c9c",
+      "path": "/assets/worldstream/rigged/q-grandpa.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 5432,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#7d4e31",
+      "bytes": 651732,
+      "sha256": "4df3eb91c9d868faa6682b2d58b6089f1e5a38d40c467c6fe8e428bba6436dfb",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/OldClassy_Male.gltf",
+      "sourceSha256": "9ac226f58ee2f80acb2cd4c66f15cfb210937ee1744b9465425f796aa900d9b8"
+    },
+    {
+      "id": "q-pirate",
+      "name": "Pirate",
+      "tags": [
+        "pirate",
+        "buccaneer",
+        "captain"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.64,
+        1.8,
+        0.64
+      ],
+      "fallback": "#a8714a",
+      "path": "/assets/worldstream/rigged/q-pirate.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2724,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#a8714a",
+      "bytes": 474036,
+      "sha256": "610cea9aa955b296604e6e7a04b4aa993d3c436bebf5f2f400311a15bf80d3fc",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Pirate_Male.gltf",
+      "sourceSha256": "b372461f1ca937385729c015fc7062671095b7b49b9e4f38f8a054d72c2a80e6"
+    },
+    {
+      "id": "q-pirate-woman",
+      "name": "Pirate (woman)",
+      "tags": [
+        "pirate",
+        "buccaneer"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.61,
+        1.8,
+        0.65
+      ],
+      "fallback": "#7f6132",
+      "path": "/assets/worldstream/rigged/q-pirate-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 9460,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#7d4e31",
+      "bytes": 747800,
+      "sha256": "8df0242b1eeb3ad03ab7ffde3e12d4a696dcbe73a6a81a8a3789a0c64f18c465",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Pirate_Female.gltf",
+      "sourceSha256": "766ca84f2b277879ddc724e2d1bd626f4d02c724243c3a1cfda3021245a48578"
+    },
+    {
+      "id": "q-pug-costume",
+      "name": "Pug Costume",
+      "tags": [
+        "pug-costume",
+        "mascot"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.82,
+        1.8,
+        0.63
+      ],
+      "fallback": "#111111",
+      "path": "/assets/worldstream/rigged/q-pug-costume.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2124,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#5a3622",
+      "bytes": 423284,
+      "sha256": "a817fef51e572e564358ac99289ae3e74148f2e64c9425cccecf3980ceb9a5f9",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Pug.gltf",
+      "sourceSha256": "5840f1367fd3ed2f28b662a969a4496aff774a33ce0bee0e80ed92032c6ef392"
+    },
+    {
+      "id": "q-soldier",
+      "name": "Soldier",
+      "tags": [
+        "soldier"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.71,
+        1.8,
+        0.64
+      ],
+      "fallback": "#3a4b28",
+      "path": "/assets/worldstream/rigged/q-soldier.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2994,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#5a3622",
+      "bytes": 505096,
+      "sha256": "db3a0b9ba09b1e8ce3df27f9f680b4e866f685a125e242184adc9f9656886160",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Soldier_Male.gltf",
+      "sourceSha256": "d1482e21910ed8b68541558efe9b79cc12666cfe26607d19ed2ebe64e27bc9d0"
+    },
+    {
+      "id": "q-soldier-woman",
+      "name": "Soldier (woman)",
+      "tags": [
+        "soldier"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.81
+      ],
+      "fallback": "#7f3d21",
+      "path": "/assets/worldstream/rigged/q-soldier-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 7066,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#a8714a",
+      "bytes": 737272,
+      "sha256": "d9e0a8a2a27673e07a9533391d9ed940731a377c217d4b1c6dd61215cf7cdeca",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Soldier_Female.gltf",
+      "sourceSha256": "5289293709f02a7cc42ec8b388ba2488f95446f7840398b9d1d3c9544033839d"
+    },
+    {
+      "id": "q-businessman",
+      "name": "Businessman",
+      "tags": [
+        "businessman",
+        "agent",
+        "spy"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.7,
+        1.8,
+        0.72
+      ],
+      "fallback": "#8a6d40",
+      "path": "/assets/worldstream/rigged/q-businessman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "SwordSlash"
+      },
+      "triangles": 6518,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#c99068",
+      "bytes": 713524,
+      "sha256": "4dfbf94a5b8ac691d4e6c4d98fbc14f3f0e200b2d64cd9dcf874abf2b411af4a",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Suit_Male.gltf",
+      "sourceSha256": "d89d245d10c81ee637116b3400657dad2873ec1bbfb7f90579b2f77a8779fa5b"
+    },
+    {
+      "id": "q-businesswoman",
+      "name": "Businesswoman",
+      "tags": [
+        "businesswoman",
+        "manager"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.81
+      ],
+      "fallback": "#3f321d",
+      "path": "/assets/worldstream/rigged/q-businesswoman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6810,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#5a3622",
+      "bytes": 732940,
+      "sha256": "a8bfb5f9e2b18b1a461ed2f0a305b67dbf61bbe4269e3cff34b256b2959d3515",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Suit_Female.gltf",
+      "sourceSha256": "37cbe38d428f57aff788be0f585fb9892b6115cc014c494cb19ec65c621e1f07"
+    },
+    {
+      "id": "q-viking",
+      "name": "Viking",
+      "tags": [
+        "viking"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.64,
+        1.8,
+        0.68
+      ],
+      "fallback": "#e3b48f",
+      "path": "/assets/worldstream/rigged/q-viking.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6264,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#e3b48f",
+      "bytes": 735060,
+      "sha256": "e46670df75f097abebad037c0a4143cb981dd1e3ce517bbfda396bc4dd12c05b",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Viking_Male.gltf",
+      "sourceSha256": "2b04e1f077813a8a6b4df951eb5c866ad17b20aec7db62f73e753d99e2d16d8e"
+    },
+    {
+      "id": "q-viking-woman",
+      "name": "Viking (woman)",
+      "tags": [
+        "viking",
+        "shieldmaiden"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.72,
+        1.8,
+        0.8
+      ],
+      "fallback": "#6b3521",
+      "path": "/assets/worldstream/rigged/q-viking-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 7320,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#5a3622",
+      "bytes": 754076,
+      "sha256": "3436aa1becb043f3a4b8de4d0ee8280b3d9beb0ea2a6f8b1abd82a5655a586db",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Viking_Female.gltf",
+      "sourceSha256": "08926d623cdaea514b7ec558def1e958111603fe9097ceca0df0ff1f74669197"
+    },
+    {
+      "id": "q-viking-helmet",
+      "name": "Viking with Helmet",
+      "tags": [
+        "viking"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.68,
+        1.8,
+        0.58
+      ],
+      "fallback": "#f2d0b1",
+      "path": "/assets/worldstream/rigged/q-viking-helmet.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6498,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#f2d0b1",
+      "bytes": 766604,
+      "sha256": "5f852512b5198ae41ef7dfd2cc9ec06e960261a81598f920b1a48717391eaa95",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/VikingHelmet.gltf",
+      "sourceSha256": "1d458ba5ea81fcf63c1443fd8c127b6491cc1e19019652e50de13e705a161328"
+    },
+    {
+      "id": "q-witch",
+      "name": "Witch",
+      "tags": [
+        "witch"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.74,
+        1.8,
+        0.72
+      ],
+      "fallback": "#d1d1d1",
+      "path": "/assets/worldstream/rigged/q-witch.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 7066,
+      "textures": 0,
+      "purpleShare": 0.031,
+      "skinTone": "#a8714a",
+      "bytes": 741860,
+      "sha256": "5569a3e0d1f1c51add9c1f8a211f980ca89c744a8720d04731da9b4643bbb93a",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Witch.gltf",
+      "sourceSha256": "32d5c49fa0a3d4215116fd9eb7d672cd34367a19b6abb88f1a63aba7de882511"
+    },
+    {
+      "id": "q-wizard",
+      "name": "Wizard",
+      "tags": [
+        "wizard",
+        "sorcerer"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.77,
+        1.8,
+        0.77
+      ],
+      "fallback": "#c99068",
+      "path": "/assets/worldstream/rigged/q-wizard.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6482,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#c99068",
+      "bytes": 735484,
+      "sha256": "2a9f0dd2f38b493f009da82881ccfc12a18bc4b195ef95af91f764664e12b359",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Wizard.gltf",
+      "sourceSha256": "baa9cd2d9f1ab3452d6e47d6efc5d4c6c8381fe16a44fc710df46bf16bc7fce8"
+    },
+    {
+      "id": "q-worker",
+      "name": "Worker",
+      "tags": [
+        "worker",
+        "builder"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.69,
+        1.8,
+        0.7
+      ],
+      "fallback": "#5a3622",
+      "path": "/assets/worldstream/rigged/q-worker.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 2524,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#5a3622",
+      "bytes": 450432,
+      "sha256": "215fc7f5102aae6e60faa757d3dbf7c7da209ff66d275259068d3825b3e54ed8",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Worker_Male.gltf",
+      "sourceSha256": "324e2c95c31d11b9b48171d78fe3a0715cb9e58cea77ebc7a5b0de4936bc7b9e"
+    },
+    {
+      "id": "q-worker-woman",
+      "name": "Worker (woman)",
+      "tags": [
+        "worker",
+        "builder"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.68,
+        1.8,
+        0.79
+      ],
+      "fallback": "#7f6132",
+      "path": "/assets/worldstream/rigged/q-worker-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 5856,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "skinTone": "#a8714a",
+      "bytes": 680652,
+      "sha256": "f12b7e96a3f6b694b9d6d208e67dcb9ddbee0bb61dbd9a4d10eee83861a8f417",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Worker_Female.gltf",
+      "sourceSha256": "a1cb51a7bde7758884e8e83f7e8569cb6fede8f95bf4cfaf55102f468921c0d9"
+    },
+    {
+      "id": "q-zombie",
+      "name": "Zombie",
+      "tags": [
+        "zombie",
+        "undead"
+      ],
+      "class": "monster",
+      "dims": [
+        0.75,
+        1.8,
+        0.59
+      ],
+      "fallback": "#3a4e34",
+      "path": "/assets/worldstream/rigged/q-zombie.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 4046,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0.178,
+      "bytes": 626956,
+      "sha256": "5e41ef38f0ae5a79c189d1fcbd5d7a5a36e554120cc380184b78aa419a325d88",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Zombie_Male.gltf",
+      "sourceSha256": "b29faf715aa2ee8180d0df3a314404ba1d3a7c3c7fe6e2a4c53733ad39912099"
+    },
+    {
+      "id": "q-zombie-woman",
+      "name": "Zombie (woman)",
+      "tags": [
+        "zombie"
+      ],
+      "class": "monster",
+      "dims": [
+        0.72,
+        1.8,
+        0.75
+      ],
+      "fallback": "#3b2415",
+      "path": "/assets/worldstream/rigged/q-zombie-woman.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "win": "Victory",
+        "shoot": "Punch"
+      },
+      "triangles": 6650,
+      "simplifiedFrom": 9750,
+      "textures": 0,
+      "purpleShare": 0.097,
+      "bytes": 731900,
+      "sha256": "7f9bed0f3c776483c53918f4845d3853ddbdb0a5e7e25ad6f2c66a4e8854272d",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Character Pack",
+      "packId": "quaternius-ultimate-animated-character",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "source": "quaternius-ultimate-animated-character/glTF/Zombie_Female.gltf",
+      "sourceSha256": "ec5e14a401c41e1c7babe3cbf83562f5ff9d00926cbd35b460a8d62b5a35a044"
+    },
+    {
+      "id": "q-alpaca",
+      "name": "Alpaca",
+      "tags": [
+        "alpaca",
+        "llama"
+      ],
+      "class": "animal",
+      "dims": [
+        0.42,
+        1.8,
+        1.43
+      ],
+      "fallback": "#7a5f3e",
+      "path": "/assets/worldstream/rigged/q-alpaca.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack_Headbutt"
+      },
+      "triangles": 2060,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 460256,
+      "sha256": "4f6a9a9276f69b383d40972ad80d2def635613d738ac2a6f3014f575040ec1c7",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Alpaca.gltf",
+      "sourceSha256": "5009bfa756c7b7af5e02263d47a6d9088cadaada2240b41b4e87f31327b0e063"
+    },
+    {
+      "id": "q-bull",
+      "name": "Bull",
+      "tags": [
+        "bull",
+        "ox",
+        "buffalo"
+      ],
+      "class": "animal",
+      "dims": [
+        0.99,
+        1.8,
+        3.17
+      ],
+      "fallback": "#2e2e2e",
+      "path": "/assets/worldstream/rigged/q-bull.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack_Headbutt"
+      },
+      "triangles": 2418,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 563184,
+      "sha256": "9aec8a8ad699ab83e5c4e7706c3d26ad10cc0fc8ab85edddd744c95933bceea6",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Bull.gltf",
+      "sourceSha256": "535da2992eb125d517725159a2eddeb520b72595bcb3021985fc43d2c84bff76"
+    },
+    {
+      "id": "q-cow",
+      "name": "Cow",
+      "tags": [
+        "cow",
+        "cattle"
+      ],
+      "class": "animal",
+      "dims": [
+        0.91,
+        1.8,
+        3.17
+      ],
+      "fallback": "#865d2e",
+      "path": "/assets/worldstream/rigged/q-cow.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack_Headbutt"
+      },
+      "triangles": 2450,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 566960,
+      "sha256": "3338d001aa71ba219b00bdcdb2fdc3d43de76b762af69fc28aadaa275939b48b",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Cow.gltf",
+      "sourceSha256": "b04af067688d9fadf1395b4456dbf3117c2f760fb49e704ee5c8b6391fc8adb5"
+    },
+    {
+      "id": "q-deer",
+      "name": "Deer",
+      "tags": [
+        "deer",
+        "doe"
+      ],
+      "class": "animal",
+      "dims": [
+        0.61,
+        1.8,
+        1.85
+      ],
+      "fallback": "#946344",
+      "path": "/assets/worldstream/rigged/q-deer.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack_Headbutt"
+      },
+      "triangles": 2098,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 519104,
+      "sha256": "58ee31a4a6c6be7330c8509aa158dfebb89da45aca1306926f68db508ede2343",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Deer.gltf",
+      "sourceSha256": "b8afd0647e7a74332ce802c8326dfefe1a2b76da67ab925a631aaddb5ae9bdd4"
+    },
+    {
+      "id": "q-donkey",
+      "name": "Donkey",
+      "tags": [
+        "donkey",
+        "mule"
+      ],
+      "class": "animal",
+      "dims": [
+        0.53,
+        1.8,
+        2.14
+      ],
+      "fallback": "#787a79",
+      "path": "/assets/worldstream/rigged/q-donkey.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack_Headbutt"
+      },
+      "triangles": 2000,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 566292,
+      "sha256": "3b0c02172ac20c825da17469ee51287191830b239358514c9379c5364ce6725f",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Donkey.gltf",
+      "sourceSha256": "4cbb2eb7d057789c945b6445d99d0c73b76c0caf7ac9b37ce88a04ca718be2ff"
+    },
+    {
+      "id": "q-fox",
+      "name": "Fox",
+      "tags": [
+        "fox"
+      ],
+      "class": "animal",
+      "dims": [
+        0.71,
+        1.8,
+        3.78
+      ],
+      "fallback": "#b67343",
+      "path": "/assets/worldstream/rigged/q-fox.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack"
+      },
+      "triangles": 1848,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 534228,
+      "sha256": "8ad99c7120f4fc5a838ae4a2db4ee6f7134f07cf3fd1e805e54267dac8bb4508",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Fox.gltf",
+      "sourceSha256": "2f36e3c9c75ecddda85c5f9944e98ee1e88e7c679a546534aff1cea8ecde64c7"
+    },
+    {
+      "id": "q-horse",
+      "name": "Horse",
+      "tags": [
+        "horse",
+        "pony",
+        "stallion"
+      ],
+      "class": "animal",
+      "dims": [
+        0.53,
+        1.8,
+        2.12
+      ],
+      "fallback": "#7a5432",
+      "path": "/assets/worldstream/rigged/q-horse.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack_Headbutt"
+      },
+      "triangles": 2182,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 575640,
+      "sha256": "03b0d8a1a116180e2f350e45f866c91c4261586d8f806717136770613695800a",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Horse.gltf",
+      "sourceSha256": "3deb61550dff1d2786d04b6e8559d63ad3907d6ab606ba28ce0af074ed96341b"
+    },
+    {
+      "id": "q-white-horse",
+      "name": "White Horse",
+      "tags": [
+        "horse",
+        "mare"
+      ],
+      "class": "animal",
+      "dims": [
+        0.53,
+        1.8,
+        2.12
+      ],
+      "fallback": "#b2b2a3",
+      "path": "/assets/worldstream/rigged/q-white-horse.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack_Headbutt"
+      },
+      "triangles": 2182,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 575640,
+      "sha256": "70ba2d3ced149451f2b09efd3c265248539e23ed6cf6a94b4b66a7f49eba339c",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Horse_White.gltf",
+      "sourceSha256": "f137ee67bd565244f7441f35b5594a597588cda8b60ab109e2041cf13c58e1dd"
+    },
+    {
+      "id": "q-husky",
+      "name": "Husky",
+      "tags": [
+        "husky",
+        "dog"
+      ],
+      "class": "animal",
+      "dims": [
+        0.56,
+        1.8,
+        2.2
+      ],
+      "fallback": "#484945",
+      "path": "/assets/worldstream/rigged/q-husky.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack"
+      },
+      "triangles": 1920,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 532292,
+      "sha256": "736ac8bdbadd1b1b0f19b9858e39b64594824ce777f4d35fc69446b1faaa7164",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Husky.gltf",
+      "sourceSha256": "0cfd85ddfcc5c07caf1bdeb296b21017b0da4c8558a92086daf4a172e0bf8d97"
+    },
+    {
+      "id": "q-shiba",
+      "name": "Shiba Inu",
+      "tags": [
+        "shiba",
+        "dog"
+      ],
+      "class": "animal",
+      "dims": [
+        0.62,
+        1.8,
+        2.43
+      ],
+      "fallback": "#99703c",
+      "path": "/assets/worldstream/rigged/q-shiba.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack"
+      },
+      "triangles": 1950,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 516528,
+      "sha256": "31efc9f3b9fb1d0b36cd8aa0ecec9109417b443c8def763e303f22abdbe9c370",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/ShibaInu.gltf",
+      "sourceSha256": "3236979b94a840eb72d9ce091b1361da327a96f5ce068e666680297480f30f6b"
+    },
+    {
+      "id": "q-stag",
+      "name": "Stag",
+      "tags": [
+        "stag",
+        "elk",
+        "reindeer"
+      ],
+      "class": "animal",
+      "dims": [
+        0.85,
+        1.8,
+        1.62
+      ],
+      "fallback": "#866844",
+      "path": "/assets/worldstream/rigged/q-stag.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack_Headbutt"
+      },
+      "triangles": 3670,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 607220,
+      "sha256": "553961721eeb17d5131873f2bcf812c5f427c4d45d044f2da2cbd5380b9c149e",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Stag.gltf",
+      "sourceSha256": "170b964909d16d1ab4d428b1d714f25016913d32481acd9c3d62923192583be6"
+    },
+    {
+      "id": "q-wolf",
+      "name": "Wolf",
+      "tags": [
+        "wolf"
+      ],
+      "class": "animal",
+      "dims": [
+        0.71,
+        1.8,
+        3.55
+      ],
+      "fallback": "#777972",
+      "path": "/assets/worldstream/rigged/q-wolf.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Gallop",
+        "jump": "Gallop_Jump",
+        "hit": "Idle_HitReact1",
+        "die": "Death",
+        "shoot": "Attack"
+      },
+      "triangles": 1962,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 548028,
+      "sha256": "f3eb118316768b46577ea55b15e693289060d7c2fe4d1d3c96b6a9f569e6466d",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Animated Animals",
+      "packId": "quaternius-ultimate-animated-animals",
+      "page": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "source": "quaternius-ultimate-animated-animals/glTF/Wolf.gltf",
+      "sourceSha256": "cc02e9d128b5715f352ee8bea086f97a35f1d875d240de99b0f9f2775c37d415"
+    },
+    {
+      "id": "q-cleric",
+      "name": "Cleric",
+      "tags": [
+        "cleric",
+        "priest",
+        "healer"
+      ],
+      "class": "humanoid",
+      "dims": [
+        1,
+        1.8,
+        1.38
+      ],
+      "fallback": "#595045",
+      "path": "/assets/worldstream/rigged/q-cleric.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "shoot": "Punch"
+      },
+      "triangles": 5104,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 894640,
+      "sha256": "92b7cff32f6b7584c104c43e19a18b0005923b049f51ee522b33f9c07df8fb34",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius RPG Characters",
+      "packId": "quaternius-rpg-characters",
+      "page": "https://quaternius.com/packs/rpgcharacters.html",
+      "source": "quaternius-rpg-characters/glTF/Cleric.gltf",
+      "sourceSha256": "6497456a3fa1c151d7a6ab4f7b4c343ee416c23d9454505b950c93ea558e4601"
+    },
+    {
+      "id": "q-monk",
+      "name": "Monk",
+      "tags": [
+        "monk"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.95,
+        1.8,
+        0.5
+      ],
+      "fallback": "#725a3f",
+      "path": "/assets/worldstream/rigged/q-monk.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "shoot": "Attack"
+      },
+      "triangles": 6714,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 749212,
+      "sha256": "18ef9b6cb366bfbd3c4c84482fbac2d03f02f836e3eb1d70623732a576a5e2b0",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius RPG Characters",
+      "packId": "quaternius-rpg-characters",
+      "page": "https://quaternius.com/packs/rpgcharacters.html",
+      "source": "quaternius-rpg-characters/glTF/Monk.gltf",
+      "sourceSha256": "085c049ebb593e0edbef9f0dd1f62fce70f668f6be7be99f3a1aa5378c83e8a2"
+    },
+    {
+      "id": "q-ranger",
+      "name": "Ranger",
+      "tags": [
+        "ranger",
+        "archer",
+        "hunter"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.73,
+        1.8,
+        1.23
+      ],
+      "fallback": "#443320",
+      "path": "/assets/worldstream/rigged/q-ranger.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "shoot": "Punch"
+      },
+      "triangles": 3806,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 684032,
+      "sha256": "9fa1558a758159c8bdd24ea22b3c1472b91cec9a8d1790031f7fe9c7a31d4e33",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius RPG Characters",
+      "packId": "quaternius-rpg-characters",
+      "page": "https://quaternius.com/packs/rpgcharacters.html",
+      "source": "quaternius-rpg-characters/glTF/Ranger.gltf",
+      "sourceSha256": "2732741d5e21c20760d7f3dd9d71812d4b796f466be1a6cba212f45483dd56ed"
+    },
+    {
+      "id": "q-rogue",
+      "name": "Rogue",
+      "tags": [
+        "rogue",
+        "thief"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.66,
+        1.8,
+        0.89
+      ],
+      "fallback": "#341513",
+      "path": "/assets/worldstream/rigged/q-rogue.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "shoot": "Punch"
+      },
+      "triangles": 2326,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 665856,
+      "sha256": "aa879beeebc630c09d08e725f9d328e80bd0dcd315b2781b8d51e221518672e1",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius RPG Characters",
+      "packId": "quaternius-rpg-characters",
+      "page": "https://quaternius.com/packs/rpgcharacters.html",
+      "source": "quaternius-rpg-characters/glTF/Rogue.gltf",
+      "sourceSha256": "5a9eaca0871cd69f554747a1d42870b3bca702ba721d941d909fc530cf18afb8"
+    },
+    {
+      "id": "q-warrior",
+      "name": "Warrior",
+      "tags": [
+        "warrior",
+        "fighter"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.86,
+        1.8,
+        1.53
+      ],
+      "fallback": "#403527",
+      "path": "/assets/worldstream/rigged/q-warrior.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "shoot": "Punch"
+      },
+      "triangles": 5402,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 804244,
+      "sha256": "d86fa9a680fec0d8106f71b0d1ccc9e842406037fd16869c8461be6c9c43823d",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius RPG Characters",
+      "packId": "quaternius-rpg-characters",
+      "page": "https://quaternius.com/packs/rpgcharacters.html",
+      "source": "quaternius-rpg-characters/glTF/Warrior.gltf",
+      "sourceSha256": "2bab905ce12d279e1d099c2a8de0b1ef31c9f5e8d1959b41d24470b4f4181add"
+    },
+    {
+      "id": "q-rpg-wizard",
+      "name": "RPG Wizard",
+      "tags": [
+        "wizard",
+        "mage"
+      ],
+      "class": "humanoid",
+      "dims": [
+        0.82,
+        1.8,
+        1.21
+      ],
+      "fallback": "#8a8a8a",
+      "path": "/assets/worldstream/rigged/q-rpg-wizard.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "hit": "RecieveHit",
+        "die": "Death",
+        "shoot": "Punch"
+      },
+      "triangles": 5376,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0.001,
+      "bytes": 897176,
+      "sha256": "eae6348d077a7c70a0d91d8e7eb7fda22d1bc8526f9e0bf2ada27a41256849bf",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius RPG Characters",
+      "packId": "quaternius-rpg-characters",
+      "page": "https://quaternius.com/packs/rpgcharacters.html",
+      "source": "quaternius-rpg-characters/glTF/Wizard.gltf",
+      "sourceSha256": "320de17289857db6794e4eef55101ce3427e755319a4384fb6d9d9ca5206b41b"
+    },
+    {
+      "id": "q-cute-alien-tall",
+      "name": "Tall Alien",
+      "tags": [
+        "alien"
+      ],
+      "class": "monster",
+      "dims": [
+        1.72,
+        1.8,
+        1.34
+      ],
+      "fallback": "#356367",
+      "path": "/assets/worldstream/rigged/q-cute-alien-tall.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1592,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0.174,
+      "bytes": 269240,
+      "sha256": "ee595b16edfa9e74691bd6b5af7dc9b163521f301e8e9f6c68e32c562bc71074",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Alien_Tall.gltf",
+      "sourceSha256": "5235f4751b9ed4bb41968840904b9249166b24c3ba02c4c7001629e2c2daccb4"
+    },
+    {
+      "id": "q-cute-cactus",
+      "name": "Cactus Monster",
+      "tags": [
+        "cactus-monster"
+      ],
+      "class": "monster",
+      "dims": [
+        1.91,
+        1.8,
+        1.17
+      ],
+      "fallback": "#244717",
+      "path": "/assets/worldstream/rigged/q-cute-cactus.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1500,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0.067,
+      "bytes": 314764,
+      "sha256": "0d06b765be1e24509827f9e7ac795cc021351a9b99b6ddd2b4ad5b7d3d447769",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Cactus.gltf",
+      "sourceSha256": "0ae5c2c43d4d82726a1a917f2af8f8a48084b7ad89265a90409a278c9e271596"
+    },
+    {
+      "id": "q-cute-chicken",
+      "name": "Chicken",
+      "tags": [
+        "chicken",
+        "hen"
+      ],
+      "class": "bird",
+      "dims": [
+        2.52,
+        1.8,
+        1.72
+      ],
+      "fallback": "#76651c",
+      "path": "/assets/worldstream/rigged/q-cute-chicken.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1040,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 282116,
+      "sha256": "91349bf994302286d3c2ace62f3964fdf4a6989e057d8b95d38f7d31e6e7bfbe",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Chicken.gltf",
+      "sourceSha256": "eefd2179dded3cd046cb1ccb002d98feedc2a929d6eed764f41994ecb546f2b7"
+    },
+    {
+      "id": "q-cute-crab",
+      "name": "Crab",
+      "tags": [
+        "crab"
+      ],
+      "class": "animal",
+      "dims": [
+        2.93,
+        1.8,
+        1.62
+      ],
+      "fallback": "#551f1f",
+      "path": "/assets/worldstream/rigged/q-cute-crab.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1820,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0.009,
+      "bytes": 290132,
+      "sha256": "5a6d1801ee9c1a31ce667a55e69d678431b9b6b21c9d539007564ca96f0b978c",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Crab.gltf",
+      "sourceSha256": "603fbbbb83b940f71a37af09047949894b0f20ef28a198d76d43fcdf40529736"
+    },
+    {
+      "id": "q-cute-cyclops",
+      "name": "Cyclops",
+      "tags": [
+        "cyclops"
+      ],
+      "class": "monster",
+      "dims": [
+        1.76,
+        1.8,
+        1.58
+      ],
+      "fallback": "#7b6140",
+      "path": "/assets/worldstream/rigged/q-cute-cyclops.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 972,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 299776,
+      "sha256": "9945eeae5302884ff631481836170e1aa71153695a11d0a1e22fe71309f9c4b9",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Cyclops.gltf",
+      "sourceSha256": "641c85bac1e7009b0ded1179fcf470e2f46719cd414da97515fa05343e87ba9b"
+    },
+    {
+      "id": "q-cute-fawn",
+      "name": "Fawn",
+      "tags": [
+        "fawn",
+        "deer"
+      ],
+      "class": "animal",
+      "dims": [
+        1.78,
+        1.8,
+        1.36
+      ],
+      "fallback": "#433327",
+      "path": "/assets/worldstream/rigged/q-cute-fawn.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1180,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 303732,
+      "sha256": "c57291ebc48cb1fc095d9d775a4b560b74ecd7223c315db6be840461d018c999",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Deer.gltf",
+      "sourceSha256": "d97b3a935c8112cbcefed00171fe216c1e62d3597521893ba7aa40d23ecb34f8"
+    },
+    {
+      "id": "q-cute-demon",
+      "name": "Demon",
+      "tags": [
+        "demon",
+        "devil",
+        "imp"
+      ],
+      "class": "monster",
+      "dims": [
+        2.17,
+        1.8,
+        1.56
+      ],
+      "fallback": "#621d1d",
+      "path": "/assets/worldstream/rigged/q-cute-demon.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1640,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 295124,
+      "sha256": "fef76a2d41e8a99978d1f551c17ba1f6b88c7aab50bb763b8d9e33e008243629",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Demon.gltf",
+      "sourceSha256": "89e8a15ec263b57299935a0751a819d8c344c78e9fdecb30ef76a01613efbc44"
+    },
+    {
+      "id": "q-cute-ghost",
+      "name": "Ghost",
+      "tags": [
+        "ghost",
+        "spirit"
+      ],
+      "class": "monster",
+      "dims": [
+        1.86,
+        1.8,
+        1.87
+      ],
+      "fallback": "#858585",
+      "path": "/assets/worldstream/rigged/q-cute-ghost.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1000,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 211856,
+      "sha256": "7e3fb022a15b002debfbf234be6819592e3c86c706005ae7964d0a64ee02eb91",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Ghost.gltf",
+      "sourceSha256": "1ad3bb4f71a1050d74a6583e4f6a59d70e7189ed198c59aacf710e47d78dadd2"
+    },
+    {
+      "id": "q-cute-green-demon",
+      "name": "Green Demon",
+      "tags": [
+        "demon",
+        "imp"
+      ],
+      "class": "monster",
+      "dims": [
+        1.85,
+        1.8,
+        1.56
+      ],
+      "fallback": "#216544",
+      "path": "/assets/worldstream/rigged/q-cute-green-demon.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1280,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0.012,
+      "bytes": 288896,
+      "sha256": "fa41d8d54068ea32728f6c5d08c8727d97975a078a2552c5e2ea13ccde95fc14",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/GreenDemon.gltf",
+      "sourceSha256": "e027a129ae5ec7d995dab28af44ca8ade43880f9489defec99d60ef04fb62bf0"
+    },
+    {
+      "id": "q-cute-mushroom",
+      "name": "Mushroom Monster",
+      "tags": [
+        "mushroom-monster"
+      ],
+      "class": "monster",
+      "dims": [
+        1.66,
+        1.8,
+        1.67
+      ],
+      "fallback": "#636249",
+      "path": "/assets/worldstream/rigged/q-cute-mushroom.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 868,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0.012,
+      "bytes": 213792,
+      "sha256": "44eadd0bc385fb2e87cae8eafe08cc7399b646230ad353812c34a36424e489cb",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Mushroom.gltf",
+      "sourceSha256": "9a47d42b2f8f7ae9caf0d1bf3bdf6dc037457f2f6e75d14ef0c209bb7e14a76e"
+    },
+    {
+      "id": "q-cute-panda",
+      "name": "Panda",
+      "tags": [
+        "panda"
+      ],
+      "class": "animal",
+      "dims": [
+        1.99,
+        1.8,
+        1.61
+      ],
+      "fallback": "#757575",
+      "path": "/assets/worldstream/rigged/q-cute-panda.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1428,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0.011,
+      "bytes": 253160,
+      "sha256": "4c615dfdd281fd5b94c42c8b8ceb41bcdce32345c9c6026ccc3884c20c45ee35",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Panda.gltf",
+      "sourceSha256": "774087a972bcabbefb0753df2543fca1d072e3527be0d8b298b4dfcb374593c3"
+    },
+    {
+      "id": "q-cute-penguin",
+      "name": "Penguin",
+      "tags": [
+        "penguin"
+      ],
+      "class": "bird",
+      "dims": [
+        2.52,
+        1.8,
+        1.72
+      ],
+      "fallback": "#323232",
+      "path": "/assets/worldstream/rigged/q-cute-penguin.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1040,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 208572,
+      "sha256": "6d0f1a1ee88ffad8fb8037793ee742176d266229efd7f5c24aca20d4573eb101",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Penguin.gltf",
+      "sourceSha256": "eba50d9ccc63465ebf5e4c7223995688812a3f0690466bc39994aa564584dbad"
+    },
+    {
+      "id": "q-cute-skull",
+      "name": "Skull Monster",
+      "tags": [
+        "skull"
+      ],
+      "class": "monster",
+      "dims": [
+        1.69,
+        1.8,
+        1.69
+      ],
+      "fallback": "#797651",
+      "path": "/assets/worldstream/rigged/q-cute-skull.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 450,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 337152,
+      "sha256": "b10c06f589faa48eae148771f0357c2fc59e89fecd3541f4a63fc8e2afbefef5",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Skull.gltf",
+      "sourceSha256": "78fbc82a830fcddd42742ffc63b8d134f9ce0fb88c93317fffb66dc31a29a6a4"
+    },
+    {
+      "id": "q-cute-tree",
+      "name": "Tree Monster",
+      "tags": [
+        "treant",
+        "tree-monster"
+      ],
+      "class": "monster",
+      "dims": [
+        1.77,
+        1.8,
+        1.09
+      ],
+      "fallback": "#413220",
+      "path": "/assets/worldstream/rigged/q-cute-tree.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1368,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0,
+      "bytes": 322160,
+      "sha256": "9c153973c7db77fc130bbb276c5ae06ba1e205160fdafecbbfbc025d85308c36",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Tree.gltf",
+      "sourceSha256": "e51a249ea05a5300be0a87fd562040b85b7fa505aa1f0cb4e147eac071f1f17a"
+    },
+    {
+      "id": "q-cute-yeti",
+      "name": "Yeti",
+      "tags": [
+        "yeti",
+        "bigfoot",
+        "sasquatch"
+      ],
+      "class": "monster",
+      "dims": [
+        1.81,
+        1.8,
+        1.55
+      ],
+      "fallback": "#849399",
+      "path": "/assets/worldstream/rigged/q-cute-yeti.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1292,
+      "simplifiedFrom": null,
+      "textures": 512,
+      "purpleShare": 0.015,
+      "bytes": 258500,
+      "sha256": "20954a2f5eed1c00998473382eeed3105ac559b95450f28116fdd8e1303118b8",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Cute Animated Monsters",
+      "packId": "quaternius-cute-monsters",
+      "page": "https://quaternius.com/packs/cutemonsters.html",
+      "source": "quaternius-cute-monsters/glTF/Yeti.gltf",
+      "sourceSha256": "22605d71e70270da0c9991b5d36f499a7799501d160588ad2fa52a65a7bea1e9"
+    },
+    {
+      "id": "q-big-birb",
+      "name": "Birb",
+      "tags": [
+        "birb"
+      ],
+      "class": "monster",
+      "dims": [
+        1.86,
+        1.8,
+        0.99
+      ],
+      "fallback": "#355a97",
+      "path": "/assets/worldstream/rigged/q-big-birb.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 5704,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 417696,
+      "sha256": "2da73be6c1fd526330efa885ee8b6fe7ecf7e6ed2124fcad12391cdcb5305ca0",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Birb.gltf",
+      "sourceSha256": "d2422f23943125b397078377026172d36ccfd5a657057ffc3803be4a9e983307"
+    },
+    {
+      "id": "q-big-blue-demon",
+      "name": "Blue Demon",
+      "tags": [
+        "demon"
+      ],
+      "class": "monster",
+      "dims": [
+        2.14,
+        1.8,
+        1.28
+      ],
+      "fallback": "#31627a",
+      "path": "/assets/worldstream/rigged/q-big-blue-demon.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 5800,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 409120,
+      "sha256": "d0d8d0fa51894498f175f8eef60924b6f437cca0b7fee87ec51d802c3f4f606c",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/BlueDemon.gltf",
+      "sourceSha256": "9eb899fc619dff9a973669e0962452990c8ec44d4501dd41fe4f4fe5afd631f4"
+    },
+    {
+      "id": "q-big-bunny",
+      "name": "Bunny Monster",
+      "tags": [
+        "bunny"
+      ],
+      "class": "monster",
+      "dims": [
+        1.68,
+        1.8,
+        0.9
+      ],
+      "fallback": "#b0bcb1",
+      "path": "/assets/worldstream/rigged/q-big-bunny.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 6648,
+      "simplifiedFrom": 8284,
+      "textures": 0,
+      "purpleShare": 0.055,
+      "bytes": 467080,
+      "sha256": "5d16c755c536e3952c002ad601d6a134a7f783948b8b25591edace43ce2fe380",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Bunny.gltf",
+      "sourceSha256": "89fce228bdcefac4e498378fa061b9d928bca01b680101530648f8b28c9c9ad9"
+    },
+    {
+      "id": "q-big-cactoro",
+      "name": "Cactoro",
+      "tags": [
+        "cactoro"
+      ],
+      "class": "monster",
+      "dims": [
+        1.54,
+        1.8,
+        1.02
+      ],
+      "fallback": "#5e8231",
+      "path": "/assets/worldstream/rigged/q-big-cactoro.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 6398,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 447688,
+      "sha256": "df9c63991c54b101a53a659fa2a7816863b5ec95d596c9cbeb5b1d71115fac09",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Cactoro.gltf",
+      "sourceSha256": "29051fc39751fa5b3af69f7bce77297c620651b1b2235bbd644962bd6a895461"
+    },
+    {
+      "id": "q-big-demon",
+      "name": "Big Demon",
+      "tags": [
+        "demon"
+      ],
+      "class": "monster",
+      "dims": [
+        2.24,
+        1.8,
+        1.22
+      ],
+      "fallback": "#731924",
+      "path": "/assets/worldstream/rigged/q-big-demon.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 6712,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 467668,
+      "sha256": "d47a473519c5013ed7f79e968d9edc1560b88f79bd2ef8aeeb1a69dd2f06668e",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Demon.gltf",
+      "sourceSha256": "9ce361b41a0e80d42a70f6325169b9c70a6e3304b8d856b8344a2b7f185067af"
+    },
+    {
+      "id": "q-big-dino",
+      "name": "Dino",
+      "tags": [
+        "dino"
+      ],
+      "class": "monster",
+      "dims": [
+        1.92,
+        1.8,
+        1.15
+      ],
+      "fallback": "#a68418",
+      "path": "/assets/worldstream/rigged/q-big-dino.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 5414,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 408900,
+      "sha256": "d5e1d88af311ac563afab68e2e1e72b713d5be82a6f9e59f29c7dab70ba2fdde",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Dino.gltf",
+      "sourceSha256": "d7c57a4ad6444f9c845ecdc13782a7430fcb377594a00f719cd2d37b9434b6de"
+    },
+    {
+      "id": "q-big-fish",
+      "name": "Fishman",
+      "tags": [
+        "fishman",
+        "merman"
+      ],
+      "class": "monster",
+      "dims": [
+        1.64,
+        1.8,
+        1.2
+      ],
+      "fallback": "#027897",
+      "path": "/assets/worldstream/rigged/q-big-fish.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 6854,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 448100,
+      "sha256": "a995f8344aa196eb9ebf4285f04450967884de21a24d26b7bc5a6a9b9bd882de",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Fish.gltf",
+      "sourceSha256": "9549f80351ad7c8e97c6894662a80fb42e4df8ebc7588b6912ea8f9e2ec6b9b1"
+    },
+    {
+      "id": "q-big-frog",
+      "name": "Frog Monster",
+      "tags": [
+        "frogman"
+      ],
+      "class": "monster",
+      "dims": [
+        2.31,
+        1.8,
+        1.2
+      ],
+      "fallback": "#a8830c",
+      "path": "/assets/worldstream/rigged/q-big-frog.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 5016,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 378092,
+      "sha256": "906805b829143b8c1482fb8125c05276199413e1be00067c2e40aa42287c6413",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Frog.gltf",
+      "sourceSha256": "8a73522affc7483fbd43736e95d5581ff993685312995d2c7ebb112eb7d5c004"
+    },
+    {
+      "id": "q-big-monkroose",
+      "name": "Monkroose",
+      "tags": [
+        "monkroose"
+      ],
+      "class": "monster",
+      "dims": [
+        2.08,
+        1.8,
+        1.05
+      ],
+      "fallback": "#80a950",
+      "path": "/assets/worldstream/rigged/q-big-monkroose.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 5824,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 424412,
+      "sha256": "316329dd1ca916e5905a3e55e312d0b7a337f979318e511fab03943f505cc58c",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Monkroose.gltf",
+      "sourceSha256": "4e984e22bef1a49da0ff92154f5747d3e61997637937532bc066867f08e8e719"
+    },
+    {
+      "id": "q-big-mushroom-king",
+      "name": "Mushroom King",
+      "tags": [
+        "mushroom-king"
+      ],
+      "class": "monster",
+      "dims": [
+        1.77,
+        1.8,
+        1.08
+      ],
+      "fallback": "#a68d72",
+      "path": "/assets/worldstream/rigged/q-big-mushroom-king.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 6044,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 420952,
+      "sha256": "bf6bbc99959834b40fdc479c712b919e683e6168cb9cddd0354773035be59116",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/MushroomKing.gltf",
+      "sourceSha256": "ccf27e126b881d80a2046c3ab96ddd94eb996837480e783142009ecd6629a3a4"
+    },
+    {
+      "id": "q-big-ninja",
+      "name": "Ninja Monster",
+      "tags": [
+        "ninja"
+      ],
+      "class": "monster",
+      "dims": [
+        1.94,
+        1.8,
+        1.7
+      ],
+      "fallback": "#1e1e1e",
+      "path": "/assets/worldstream/rigged/q-big-ninja.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 5964,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 438376,
+      "sha256": "3a10c0b20f0d43f60a0ac560e5ef7c15afc0846ad20468140b701b0604d2f508",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Ninja.gltf",
+      "sourceSha256": "f1042e533bd24b98ceee179eaf4119517051fd745feb8d71af1b78a4ac3c88a3"
+    },
+    {
+      "id": "q-big-orc",
+      "name": "Orc",
+      "tags": [
+        "orc",
+        "ogre"
+      ],
+      "class": "monster",
+      "dims": [
+        1.93,
+        1.8,
+        0.99
+      ],
+      "fallback": "#748735",
+      "path": "/assets/worldstream/rigged/q-big-orc.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 6648,
+      "simplifiedFrom": 7344,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 453120,
+      "sha256": "b7a430e4be20e3013b56b17f86d5adb570b63ae86ed840e362a77da72fab48d6",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Orc.gltf",
+      "sourceSha256": "e61a37f8d9b2eee28928bdfad2c55e0798cc0a212e925cc5dcc66b243526c1a3"
+    },
+    {
+      "id": "q-big-orc-skull",
+      "name": "Skull Orc",
+      "tags": [
+        "orc"
+      ],
+      "class": "monster",
+      "dims": [
+        1.86,
+        1.8,
+        0.98
+      ],
+      "fallback": "#748735",
+      "path": "/assets/worldstream/rigged/q-big-orc-skull.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 6648,
+      "simplifiedFrom": 7364,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 458208,
+      "sha256": "2f3f33fe8cb4698efb3c4fc22bcfb4060b42e8a58a295ca5f502331b4202a5a7",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Orc_Skull.gltf",
+      "sourceSha256": "e27e3acf826e9f5cad021c647bd3ce6f1c82d2aaa3530c03ee442df4828a710e"
+    },
+    {
+      "id": "q-big-tribal",
+      "name": "Tribal",
+      "tags": [
+        "shaman"
+      ],
+      "class": "monster",
+      "dims": [
+        1.58,
+        1.8,
+        0.69
+      ],
+      "fallback": "#7a2c1d",
+      "path": "/assets/worldstream/rigged/q-big-tribal.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 6620,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 501096,
+      "sha256": "3951bfed179acda8efb1220367d82443680d382c890a7a7536b9f19e4b0f26e1",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Tribal.gltf",
+      "sourceSha256": "ffe686b0f0e7a2fb968ea9829358f059df903d2a60c9a94bd3516b1c3d42b7c4"
+    },
+    {
+      "id": "q-big-yeti",
+      "name": "Big Yeti",
+      "tags": [
+        "yeti"
+      ],
+      "class": "monster",
+      "dims": [
+        2.2,
+        1.8,
+        1.04
+      ],
+      "fallback": "#a3a4a2",
+      "path": "/assets/worldstream/rigged/q-big-yeti.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run",
+        "jump": "Jump",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 6094,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 421148,
+      "sha256": "490d463a988e458e1d62aeeb840cab4031af920a1e61486beb8286bc6b926a12",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Yeti.gltf",
+      "sourceSha256": "ab60f4fbc1c2e1fdc3ed4f63023dc2185240dbd55751df568099557b29af6fd5"
+    },
+    {
+      "id": "q-blob-birb",
+      "name": "Birb Blob",
+      "tags": [
+        "birb"
+      ],
+      "class": "monster",
+      "dims": [
+        1.92,
+        1.8,
+        1.89
+      ],
+      "fallback": "#355a96",
+      "path": "/assets/worldstream/rigged/q-blob-birb.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 3164,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 162100,
+      "sha256": "203583fe9b24cf6c5e026d93c73f3dd595ccd3d98126310fb22c6f3ebead1e2b",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Birb.gltf",
+      "sourceSha256": "af555c16465c10e1ea4c1c3a8e6df15d199fc3cbcbfa4b3c788e1aff685ce11f"
+    },
+    {
+      "id": "q-blob-cactoro",
+      "name": "Cactoro Blob",
+      "tags": [
+        "cactoro"
+      ],
+      "class": "monster",
+      "dims": [
+        2.05,
+        1.8,
+        1.84
+      ],
+      "fallback": "#9e632a",
+      "path": "/assets/worldstream/rigged/q-blob-cactoro.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 2388,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 128752,
+      "sha256": "469f8697c80d243b7b16e15fcf7eac14bb9bb01f52cf26eaf350615b44bed4ce",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Cactoro.gltf",
+      "sourceSha256": "a11045fd73ea27f43ddc4ba989e76d29acf569c8a6e6de865f0b3794fc637434"
+    },
+    {
+      "id": "q-blob-cat",
+      "name": "Cat Blob",
+      "tags": [
+        "cat"
+      ],
+      "class": "animal",
+      "dims": [
+        1.94,
+        1.8,
+        1.59
+      ],
+      "fallback": "#a7712b",
+      "path": "/assets/worldstream/rigged/q-blob-cat.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1772,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 102608,
+      "sha256": "42cfc9f6e07c999474aad605073480b4383b11b80c58dff5d33a3b5222f2a852",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Cat.gltf",
+      "sourceSha256": "59aba7e4ea6da3ac11be9d5220304e649de8cb8cf975eef588d30a003c6cd275"
+    },
+    {
+      "id": "q-blob-chicken",
+      "name": "Chicken Blob",
+      "tags": [
+        "chicken"
+      ],
+      "class": "bird",
+      "dims": [
+        1.8,
+        1.8,
+        1.61
+      ],
+      "fallback": "#a2a3a1",
+      "path": "/assets/worldstream/rigged/q-blob-chicken.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 2904,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 132316,
+      "sha256": "5fa10fdcb85ee8efd7a7d0b13d4b49763589cae4ba29549bd5ee9aeb01a5257e",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Chicken.gltf",
+      "sourceSha256": "a8ad394817989e1e68c111a3a60b3203b203a3ab4563350b4f3a6e1b5a6c98b1"
+    },
+    {
+      "id": "q-blob-dog",
+      "name": "Dog Blob",
+      "tags": [
+        "dog"
+      ],
+      "class": "animal",
+      "dims": [
+        2.09,
+        1.8,
+        1.69
+      ],
+      "fallback": "#cc9129",
+      "path": "/assets/worldstream/rigged/q-blob-dog.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1392,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 75684,
+      "sha256": "4a58dc3f4be8712727fe65161712a21060a66ae2ea229697f7a6115d672e3ac7",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Dog.gltf",
+      "sourceSha256": "21ed475bbf4d5fb7016085290f79663ad7107aedd2a5856318f2716c7ecc6402"
+    },
+    {
+      "id": "q-blob-fish",
+      "name": "Fish Blob",
+      "tags": [
+        "fish-blob"
+      ],
+      "class": "monster",
+      "dims": [
+        1.84,
+        1.8,
+        1.86
+      ],
+      "fallback": "#047796",
+      "path": "/assets/worldstream/rigged/q-blob-fish.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 3346,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 151644,
+      "sha256": "46a0f3c6846ad65e277b8701bedf1ea97fceb145aeb4d33f060131ec4cc19bdd",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Fish.gltf",
+      "sourceSha256": "97f6439faff6a85a4ea390a4eb85a54feaa358db8436d920af0be5a1a0432d7e"
+    },
+    {
+      "id": "q-blob-green",
+      "name": "Green Blob",
+      "tags": [
+        "blob",
+        "slime"
+      ],
+      "class": "monster",
+      "dims": [
+        2.17,
+        1.8,
+        2.12
+      ],
+      "fallback": "#3d5235",
+      "path": "/assets/worldstream/rigged/q-blob-green.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1520,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 79336,
+      "sha256": "1b729f8960567d50439b90f50be955a61ee3adad006ba75cd17bf8655e8aa547",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/GreenBlob.gltf",
+      "sourceSha256": "e2d2049ebe8d243bd0f60a3f48a7e174444f641ebc40cbea2f6c23cb97a82519"
+    },
+    {
+      "id": "q-blob-spiky",
+      "name": "Spiky Blob",
+      "tags": [
+        "blob",
+        "slime"
+      ],
+      "class": "monster",
+      "dims": [
+        1.52,
+        1.8,
+        1.8
+      ],
+      "fallback": "#3d5235",
+      "path": "/assets/worldstream/rigged/q-blob-spiky.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 4888,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 210628,
+      "sha256": "289e059a35e796294086b703ae448718a5dd435e17fed3a41da10f21b579ecc0",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/GreenSpikyBlob.gltf",
+      "sourceSha256": "ff55e6424f20576cac02578d012b3527af642ef15e7bab4abd2fd8d1f51b3e7e"
+    },
+    {
+      "id": "q-blob-mushnub",
+      "name": "Mushnub",
+      "tags": [
+        "mushnub"
+      ],
+      "class": "monster",
+      "dims": [
+        1.5,
+        1.8,
+        1.5
+      ],
+      "fallback": "#a58c72",
+      "path": "/assets/worldstream/rigged/q-blob-mushnub.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1248,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 68176,
+      "sha256": "31b91111efcca3580d274197df2a648ae06468a859401b369cde18fb3a98a314",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Mushnub.gltf",
+      "sourceSha256": "15e44e46e6c52ff677d946c70d41c4cbb1acb6598e7ec09f8642ee942d7751e2"
+    },
+    {
+      "id": "q-blob-mushnub-evolved",
+      "name": "Mushnub Evolved",
+      "tags": [
+        "mushnub"
+      ],
+      "class": "monster",
+      "dims": [
+        1.39,
+        1.8,
+        1.43
+      ],
+      "fallback": "#a58c72",
+      "path": "/assets/worldstream/rigged/q-blob-mushnub-evolved.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 3072,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 156876,
+      "sha256": "6cbed9276e949d7449fb8e5635926be3996d30eafe6843fc7e5c6c7c5482683c",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Mushnub_Evolved.gltf",
+      "sourceSha256": "ea6c90e8522eeeba7c6c4cece3a031706de55e9b7e660b362f261a4e5bfaff95"
+    },
+    {
+      "id": "q-blob-ninja",
+      "name": "Ninja Blob",
+      "tags": [
+        "ninja"
+      ],
+      "class": "monster",
+      "dims": [
+        1.48,
+        1.8,
+        1.59
+      ],
+      "fallback": "#1d1d1d",
+      "path": "/assets/worldstream/rigged/q-blob-ninja.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 2160,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 107688,
+      "sha256": "31acff9fc08177f39dbdf1c74a4c16d28ea51c96275b94c73b85be07e6678afd",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Ninja.gltf",
+      "sourceSha256": "41974ce0c56d660950e554d672742e056776518a888e376341bebcce5951178e"
+    },
+    {
+      "id": "q-blob-orc",
+      "name": "Orc Blob",
+      "tags": [
+        "orc"
+      ],
+      "class": "monster",
+      "dims": [
+        2.01,
+        1.8,
+        1.26
+      ],
+      "fallback": "#738636",
+      "path": "/assets/worldstream/rigged/q-blob-orc.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 2296,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 133092,
+      "sha256": "b89a99183024c24d927fe15ad51f6b14174f53ddb5ae7d72a40ecaf6df6baaee",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Orc.gltf",
+      "sourceSha256": "23d3e6e15c9594e8d958e642208ddade1f369e31b762caf2b14c4ef89358b026"
+    },
+    {
+      "id": "q-blob-pink",
+      "name": "Pink Blob",
+      "tags": [
+        "blob",
+        "slime"
+      ],
+      "class": "monster",
+      "dims": [
+        1.64,
+        1.8,
+        1.55
+      ],
+      "fallback": "#8f92a0",
+      "path": "/assets/worldstream/rigged/q-blob-pink.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 1030,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 60088,
+      "sha256": "1a7d64d2aacecbcc94de913ad08dfc4a3b7153c040474b5177bb4ec8dee1d5a1",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/PinkBlob.gltf",
+      "sourceSha256": "0cc6c64f3e2bad775a7ff82b3ccc11e26359266967a765740655cdaccc5c7ff4"
+    },
+    {
+      "id": "q-blob-yeti",
+      "name": "Yeti Blob",
+      "tags": [
+        "yeti"
+      ],
+      "class": "monster",
+      "dims": [
+        1.88,
+        1.8,
+        1.91
+      ],
+      "fallback": "#a2a3a1",
+      "path": "/assets/worldstream/rigged/q-blob-yeti.glb",
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "jump": "Jump",
+        "hit": "HitRecieve",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Bite_Front"
+      },
+      "triangles": 2136,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 115444,
+      "sha256": "a95df93c060650098b65ac1c49fca899c73e262651d6a3043c443472e8e40e6c",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Yeti.gltf",
+      "sourceSha256": "44b0627cc65112756642f2d0de529a1fba9d74c4fbc9829b572d90625bbb842f"
+    },
+    {
+      "id": "q-flying-alpaking",
+      "name": "Alpaking",
+      "tags": [
+        "alpaking"
+      ],
+      "class": "monster",
+      "dims": [
+        3.62,
+        1.8,
+        1.9
+      ],
+      "fallback": "#645c42",
+      "path": "/assets/worldstream/rigged/q-flying-alpaking.glb",
+      "clips": {
+        "idle": "Flying_Idle",
+        "run": "Fast_Flying",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 2508,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 143804,
+      "sha256": "8594cc9d6666591feaa6aeaa312098ac89124a0429cd5099466e4b1592ce4a88",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Alpaking.gltf",
+      "sourceSha256": "91763421d7f193d0a6693094031b251f5aee1c8c689ef04ef43124e5797cfba7"
+    },
+    {
+      "id": "q-flying-alpaking-evolved",
+      "name": "Alpaking Evolved",
+      "tags": [
+        "alpaking"
+      ],
+      "class": "monster",
+      "dims": [
+        2.44,
+        1.8,
+        1.69
+      ],
+      "fallback": "#645c42",
+      "path": "/assets/worldstream/rigged/q-flying-alpaking-evolved.glb",
+      "clips": {
+        "idle": "Flying_Idle",
+        "run": "Fast_Flying",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 4684,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 256936,
+      "sha256": "33daec1f7462d79e8e8bce33e016110804a8243d568df8ad85f5067ceff41269",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Alpaking_Evolved.gltf",
+      "sourceSha256": "c91321aa08a94c58f4a05d73e1469adf4d0caec5472abeaccdb67ae001212c50"
+    },
+    {
+      "id": "q-flying-armabee",
+      "name": "Armabee",
+      "tags": [
+        "armabee"
+      ],
+      "class": "monster",
+      "dims": [
+        4.1,
+        1.8,
+        1.97
+      ],
+      "fallback": "#1e1f22",
+      "path": "/assets/worldstream/rigged/q-flying-armabee.glb",
+      "clips": {
+        "idle": "Flying_Idle",
+        "run": "Fast_Flying",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 2280,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 138020,
+      "sha256": "a98118e9293e5268225d2fdae9dd4a1657ed23086a1ca06a938b061b94fd0fad",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Armabee.gltf",
+      "sourceSha256": "10ca05955ab7f7f6e2f9bd8fd85f28ed1351c945e390b1fd0fa84428b43a5916"
+    },
+    {
+      "id": "q-flying-armabee-evolved",
+      "name": "Armabee Evolved",
+      "tags": [
+        "armabee"
+      ],
+      "class": "monster",
+      "dims": [
+        3.62,
+        1.8,
+        1.72
+      ],
+      "fallback": "#1e1f22",
+      "path": "/assets/worldstream/rigged/q-flying-armabee-evolved.glb",
+      "clips": {
+        "idle": "Flying_Idle",
+        "run": "Fast_Flying",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 3200,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 186212,
+      "sha256": "4b0314da55df7abe18c7d0956ab013bd6912a3c6c96ac8a30e7e3a9b73ad81e9",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Armabee_Evolved.gltf",
+      "sourceSha256": "1ad3e42c088e01e0c179d54537c63efad0dd185031df61d2833b9f1709362730"
+    },
+    {
+      "id": "q-flying-dragon",
+      "name": "Dragon",
+      "tags": [
+        "dragon",
+        "wyvern"
+      ],
+      "class": "monster",
+      "dims": [
+        5.22,
+        1.8,
+        2.92
+      ],
+      "fallback": "#965221",
+      "path": "/assets/worldstream/rigged/q-flying-dragon.glb",
+      "clips": {
+        "idle": "Flying_Idle",
+        "run": "Fast_Flying",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 4562,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 241864,
+      "sha256": "aa2981b93d7c777525af07c12101a1ff7742a6728513b926d83fe1665206610f",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Dragon.gltf",
+      "sourceSha256": "d219a29b5e928da26c24218a64284bbf999b88484a508ac6c01e0edad9f1f56c"
+    },
+    {
+      "id": "q-flying-dragon-evolved",
+      "name": "Dragon Evolved",
+      "tags": [
+        "dragon"
+      ],
+      "class": "monster",
+      "dims": [
+        2.78,
+        1.8,
+        1.7
+      ],
+      "fallback": "#965221",
+      "path": "/assets/worldstream/rigged/q-flying-dragon-evolved.glb",
+      "clips": {
+        "idle": "Flying_Idle",
+        "run": "Fast_Flying",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 6649,
+      "simplifiedFrom": 7440,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 425572,
+      "sha256": "71a4356da1adf28d57f48dc36f8595a45464d06b86f50213f98d58b9322f8880",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Dragon_Evolved.gltf",
+      "sourceSha256": "39ba6ea24b5f27acf68bbf4c19fe80ba070dbec167ff14bbe933453303426f5c"
+    },
+    {
+      "id": "q-flying-goleling",
+      "name": "Goleling",
+      "tags": [
+        "goleling",
+        "golem"
+      ],
+      "class": "monster",
+      "dims": [
+        5.11,
+        1.8,
+        2.29
+      ],
+      "fallback": "#738636",
+      "path": "/assets/worldstream/rigged/q-flying-goleling.glb",
+      "clips": {
+        "idle": "Flying_Idle",
+        "run": "Fast_Flying",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 3696,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 208232,
+      "sha256": "c956dce234dc8e6a50578125e26071bf941373ab3e99c9a25eb378eba810ddd0",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Goleling.gltf",
+      "sourceSha256": "fad1c4d98e88b21a139fadd74e96c370f1c8ece8d1ae8c4b3bec80d1d7163c29"
+    },
+    {
+      "id": "q-flying-goleling-evolved",
+      "name": "Goleling Evolved",
+      "tags": [
+        "goleling",
+        "golem"
+      ],
+      "class": "monster",
+      "dims": [
+        3.08,
+        1.8,
+        1.53
+      ],
+      "fallback": "#738636",
+      "path": "/assets/worldstream/rigged/q-flying-goleling-evolved.glb",
+      "clips": {
+        "idle": "Flying_Idle",
+        "run": "Fast_Flying",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 5864,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 295500,
+      "sha256": "75f501baf8a5e262aa5026dc8f80379af96f54294c94d3e090074ce4abcc4dad",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Goleling_Evolved.gltf",
+      "sourceSha256": "a36f8c1636b692d44fd74fbca07e1164ad14acc5db71300a92d5e51bc1a476ca"
+    },
+    {
+      "id": "q-flying-squidle",
+      "name": "Squidle",
+      "tags": [
+        "squidle"
+      ],
+      "class": "monster",
+      "dims": [
+        3.32,
+        1.8,
+        2.02
+      ],
+      "fallback": "#2a6f8b",
+      "path": "/assets/worldstream/rigged/q-flying-squidle.glb",
+      "clips": {
+        "idle": "Flying_Idle",
+        "run": "Fast_Flying",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 4880,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 328624,
+      "sha256": "9c11cdbaf8bb74358d21ee17a80ff94db9e9eb9b7f40577c5cc3bbb7fcdadd94",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Squidle.gltf",
+      "sourceSha256": "ed41b8a3e4a49d0eb9522e52d3055a85e7c051607c6f1092aeb4242e0c87c77b"
+    },
+    {
+      "id": "q-flying-tribal",
+      "name": "Flying Tribal",
+      "tags": [
+        "tiki"
+      ],
+      "class": "monster",
+      "dims": [
+        1.38,
+        1.8,
+        0.92
+      ],
+      "fallback": "#792b1d",
+      "path": "/assets/worldstream/rigged/q-flying-tribal.glb",
+      "clips": {
+        "idle": "Flying_Idle",
+        "run": "Fast_Flying",
+        "hit": "HitReact",
+        "die": "Death",
+        "win": "Yes",
+        "shoot": "Punch"
+      },
+      "triangles": 5252,
+      "simplifiedFrom": null,
+      "textures": 0,
+      "purpleShare": 0,
+      "bytes": 345724,
+      "sha256": "580742b31fc97732b25335c2289e191d63a3c4f06f7de48148448e7980e83fc0",
+      "license": "CC0-1.0",
+      "author": "Quaternius (quaternius.com)",
+      "pack": "Quaternius Ultimate Monsters",
+      "packId": "quaternius-ultimate-monsters",
+      "page": "https://quaternius.com/packs/ultimatemonsters.html",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Tribal.gltf",
+      "sourceSha256": "689db4c3375bc14a82a831f8fc575c0791a85bee40d1fe42ec8ac16545940afa"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "q-bald-man",
+      "source": "quaternius-ultimate-animated-character/glTF/Casual_Bald.gltf",
+      "reason": "purple is the predominant hue (21 % of the surface)"
+    },
+    {
+      "id": "q-ninja",
+      "source": "quaternius-ultimate-animated-character/glTF/Ninja_Male.gltf",
+      "reason": "purple is the predominant hue (8 % of the surface)"
+    },
+    {
+      "id": "q-cute-alien",
+      "source": "quaternius-cute-monsters/glTF/Alien.gltf",
+      "reason": "purple is the predominant hue (86 % of the surface)"
+    },
+    {
+      "id": "q-cute-bat",
+      "source": "quaternius-cute-monsters/glTF/Bat.gltf",
+      "reason": "no clip for idle"
+    },
+    {
+      "id": "q-cute-bee",
+      "source": "quaternius-cute-monsters/glTF/Bee.gltf",
+      "reason": "no clip for idle"
+    },
+    {
+      "id": "q-cute-cthulhu",
+      "source": "quaternius-cute-monsters/glTF/Cthulhu.gltf",
+      "reason": "no clip for idle"
+    },
+    {
+      "id": "q-cute-pig",
+      "source": "quaternius-cute-monsters/glTF/Pig.gltf",
+      "reason": "purple is the predominant hue (88 % of the surface)"
+    },
+    {
+      "id": "q-cute-dragon",
+      "source": "quaternius-cute-monsters/glTF/YellowDragon.gltf",
+      "reason": "no clip for idle"
+    },
+    {
+      "id": "q-big-alien",
+      "source": "quaternius-ultimate-monsters/Big/glTF/Alien.gltf",
+      "reason": "purple is the predominant hue (71 % of the surface)"
+    },
+    {
+      "id": "q-blob-alien",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Alien.gltf",
+      "reason": "purple is the predominant hue (52 % of the surface)"
+    },
+    {
+      "id": "q-blob-pigeon",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Pigeon.gltf",
+      "reason": "purple is the predominant hue (74 % of the surface)"
+    },
+    {
+      "id": "q-blob-wizard",
+      "source": "quaternius-ultimate-monsters/Blob/glTF/Wizard.gltf",
+      "reason": "purple is the predominant hue (57 % of the surface)"
+    },
+    {
+      "id": "q-flying-demon",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Demon.gltf",
+      "reason": "no clip for walk or run"
+    },
+    {
+      "id": "q-flying-ghost",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Ghost.gltf",
+      "reason": "purple is the predominant hue (87 % of the surface)"
+    },
+    {
+      "id": "q-flying-ghost-skull",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Ghost_Skull.gltf",
+      "reason": "purple is the predominant hue (72 % of the surface)"
+    },
+    {
+      "id": "q-flying-glub",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Glub.gltf",
+      "reason": "purple is the predominant hue (59 % of the surface)"
+    },
+    {
+      "id": "q-flying-glub-evolved",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Glub_Evolved.gltf",
+      "reason": "purple is the predominant hue (62 % of the surface)"
+    },
+    {
+      "id": "q-flying-hywirl",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Hywirl.gltf",
+      "reason": "purple is the predominant hue (95 % of the surface)"
+    },
+    {
+      "id": "q-flying-pigeon",
+      "source": "quaternius-ultimate-monsters/Flying/glTF/Pigeon.gltf",
+      "reason": "purple is the predominant hue (55 % of the surface)"
+    }
+  ]
+}

@@ -12,6 +12,7 @@
  *
  *   node scripts/play-p46g-blind.mjs judge [--seed 46009] [--work D:/tmp/p46g-blind] [--concurrency 3]
  *   node scripts/play-p46g-blind.mjs sheet
+ *   node scripts/play-p46g-blind.mjs judge --dir evals/play/p54b --pass-at 15 --work D:/tmp/p54b-blind   (P54B T15: věty žánrů, desktop i telefon)
  *
  * `judge` zapíše `evals/play/p46g/judge.json` (projde, když „po“ vyhraje aspoň 10 z 12);
  * listy dvojic a odpovědi leží ve `--work` mimo repo a hotová odpověď se nepřeptává.
@@ -66,12 +67,17 @@ function args() {
   return out;
 }
 
-/** Dvojice bez popisků: dva snímky 960×600 vedle sebe, mezi nimi bílý pruh. */
+/**
+ * Dvojice bez popisků: dva snímky vedle sebe, mezi nimi bílý pruh. Desktop 960×600; telefon na výšku
+ * (P54B T15) vysoký 1200 px v poměru stran – oříznutí na 960×600 by soudci nechalo jen pruh ze středu.
+ */
 async function pair(leftFile, rightFile, out) {
   const sharp = require('sharp');
-  const [left, right] = await Promise.all([leftFile, rightFile].map((file) => sharp(file).resize(960, 600).png().toBuffer()));
-  await sharp({ create: { width: 960 * 2 + 24, height: 600, channels: 3, background: '#ffffff' } })
-    .composite([{ input: left, left: 0, top: 0 }, { input: right, left: 960 + 24, top: 0 }])
+  const { width: sourceWidth, height: sourceHeight } = await sharp(leftFile).metadata();
+  const [width, height] = sourceWidth >= sourceHeight ? [960, 600] : [Math.round((1200 * sourceWidth) / sourceHeight), 1200];
+  const [left, right] = await Promise.all([leftFile, rightFile].map((file) => sharp(file).resize(width, height).png().toBuffer()));
+  await sharp({ create: { width: width * 2 + 24, height, channels: 3, background: '#ffffff' } })
+    .composite([{ input: left, left: 0, top: 0 }, { input: right, left: width + 24, top: 0 }])
     .png()
     .toFile(out);
 }
@@ -103,22 +109,46 @@ function ask(sheet, sentence) {
   });
 }
 
+/**
+ * Kde leží snímky a které dvojice se soudí. Bez voleb sada P46G; `--dir evals/play/p54b`
+ * (P54B T15) vezme věty žánrů (`--set genres`) a dvě dvojice adresářů, desktop
+ * `before:after` a telefon `before-phone:after-phone` (`--pairs`), s prahem `--pass-at`
+ * na každou dvojici zvlášť.
+ */
+function layout(options) {
+  const dir = typeof options.dir === 'string' ? resolve(ROOT, options.dir) : P46G;
+  const own = dir === P46G;
+  const set = typeof options.set === 'string' ? options.set : own ? 'sentences' : 'genres';
+  const pairs = typeof options.pairs === 'string' ? options.pairs : own ? 'before:after' : 'before:after,before-phone:after-phone';
+  return {
+    dir,
+    sentences: readJson(join(ROOT, 'evals', 'play', 'p46g', `${set}.json`)).sentences,
+    profiles: pairs.split(',').map((entry) => {
+      const [before, after] = entry.split(':');
+      return { before, after };
+    }),
+    passAt: typeof options['pass-at'] === 'string' ? Number(options['pass-at']) : PASS_AT,
+  };
+}
+
 async function judge(options) {
+  const { dir, sentences: base, profiles, passAt } = layout(options);
   const seed = typeof options.seed === 'string' ? Number(options.seed) : SEED;
   const work = resolve(typeof options.work === 'string' ? options.work : 'D:/tmp/p46g-blind');
   const concurrency = Number(options.concurrency ?? 3);
   mkdirSync(work, { recursive: true });
-  const { sentences } = readJson(join(P46G, 'sentences.json'));
+  // Jedna dvojice adresářů = jeden profil; id ve `work` nese profil, ať se odpovědi nepletou.
+  const sentences = profiles.flatMap(({ before, after }) => base.map((sentence) => ({ ...sentence, key: profiles.length === 1 ? sentence.id : `${after}-${sentence.id}`, before, after })));
   const left = sides(seed, sentences.length);
   for (const [index, sentence] of sentences.entries()) {
-    const files = ['before', 'after'].map((side) => join(P46G, side, `${sentence.id}.png`));
-    if (!files.every(existsSync)) throw new Error(`${sentence.id}: missing before or after shot`);
+    const files = [sentence.before, sentence.after].map((side) => join(dir, side, `${sentence.id}.png`));
+    if (!files.every(existsSync)) throw new Error(`${sentence.key}: missing before or after shot`);
     const [before, after] = files;
-    const file = join(work, `${sentence.id}-pair.png`);
+    const file = join(work, `${sentence.key}-pair.png`);
     if (!existsSync(file)) await pair(left[index] === 'before' ? before : after, left[index] === 'before' ? after : before, file);
   }
 
-  const queue = sentences.map((sentence, index) => ({ sentence, index })).filter(({ sentence }) => !existsSync(join(work, `${sentence.id}-answer.json`)));
+  const queue = sentences.map((sentence, index) => ({ sentence: { ...sentence, id: sentence.key }, index })).filter(({ sentence }) => !existsSync(join(work, `${sentence.id}-answer.json`)));
   const worker = async () => {
     for (let job = queue.shift(); job !== undefined; job = queue.shift()) {
       const attempts = [];
@@ -137,38 +167,47 @@ async function judge(options) {
   await Promise.all(Array.from({ length: concurrency }, worker));
 
   const pairs = sentences.map((sentence, index) => {
-    const { attempts } = readJson(join(work, `${sentence.id}-answer.json`));
+    const { attempts } = readJson(join(work, `${sentence.key}-answer.json`));
     const parsed = attempts.at(-1).parsed;
     const afterSide = left[index] === 'after' ? 'LEFT' : 'RIGHT';
-    return { id: sentence.id, sentence: sentence.text, afterSide, verdict: parsed?.verdict ?? null, reason: parsed?.reason ?? null, afterWon: parsed ? parsed.verdict === afterSide : null, asks: attempts.length };
+    return { id: sentence.id, ...(profiles.length === 1 ? {} : { profile: sentence.after }), sentence: sentence.text, afterSide, verdict: parsed?.verdict ?? null, reason: parsed?.reason ?? null, afterWon: parsed ? parsed.verdict === afterSide : null, asks: attempts.length };
   });
-  const afterWins = pairs.filter((entry) => entry.afterWon === true).length;
+  const totalOf = (list) => {
+    const afterWins = list.filter((entry) => entry.afterWon === true).length;
+    return { afterWins, beforeWins: list.filter((entry) => entry.afterWon === false).length, unanswered: list.filter((entry) => entry.afterWon === null).length, of: list.length, passAt, pass: afterWins >= passAt };
+  };
+  const totals = profiles.map(({ after }) => ({ profile: after, ...totalOf(pairs.filter((entry) => entry.profile === undefined || entry.profile === after)) }));
   const result = {
-    about: 'P46G T9 blind judgement: the same game at the same demo tick, before P46G (T1 2c95c85c, evals/play/p46g/before) and after (evals/play/p46g/after), side by side without labels. See README.md.',
+    about: dir === P46G
+      ? 'P46G T9 blind judgement: the same game at the same demo tick, before P46G (T1 2c95c85c, evals/play/p46g/before) and after (evals/play/p46g/after), side by side without labels. See README.md.'
+      : `Blind judgement of ${profiles.map(({ before, after }) => `${before} vs ${after}`).join(' and ')}: the same game at the same demo tick, side by side without labels. See README.md.`,
     judgedAt: new Date().toISOString(),
     judge: { model: MODEL, how: 'claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once', question: question('<sentence>') },
-    order: { prng: 'pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentences.json order; 0 = before is LEFT', seed },
-    total: { afterWins, beforeWins: pairs.filter((entry) => entry.afterWon === false).length, unanswered: pairs.filter((entry) => entry.afterWon === null).length, of: pairs.length, passAt: PASS_AT, pass: afterWins >= PASS_AT },
+    order: { prng: 'pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentence order, profile after profile; 0 = before is LEFT', seed },
+    total: profiles.length === 1 ? totals[0] : totals,
     pairs,
   };
-  writeJson(join(P46G, 'judge.json'), result);
-  console.log(`after wins ${afterWins} / ${pairs.length} (pass at ${PASS_AT}) -> ${join(P46G, 'judge.json')}`);
+  writeJson(join(dir, 'judge.json'), result);
+  for (const total of totals) console.log(`${total.profile}: after wins ${total.afterWins} / ${total.of} (pass at ${passAt})`);
+  console.log(`-> ${join(dir, 'judge.json')}`);
 }
 
 const dataUrl = (path) => `data:image/png;base64,${readFileSync(path).toString('base64')}`;
 const escape = (text) => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
-/** List pro majitele: dvě dvojice na řádek, nad každou věta, pod snímky „before“ / „after“. */
-async function sheet() {
-  const { sentences } = readJson(join(P46G, 'sentences.json'));
-  const cell = (sentence) => `<div class="pair"><div class="text">${escape(sentence.text)}</div><div class="row">${['before', 'after']
-    .map((side) => `<figure><img src="${dataUrl(join(P46G, side, `${sentence.id}.png`))}"><figcaption>${side}</figcaption></figure>`)
+/** List pro majitele: dvě věty na řádek, nad každou věta, pod snímky s popiskem adresáře („before“ / „after“ …). */
+async function sheet(options) {
+  const { dir, sentences, profiles } = layout(options);
+  const sideList = profiles.flatMap(({ before, after }) => [before, after]);
+  const cell = (sentence) => `<div class="pair"><div class="text">${escape(sentence.text)}</div><div class="row">${sideList
+    .map((side) => `<figure><img src="${dataUrl(join(dir, side, `${sentence.id}.png`))}"><figcaption>${side}</figcaption></figure>`)
     .join('')}</div></div>`;
+  // Výška pevná, šířka podle snímku: desktop 16 : 10 i telefon na výšku ve stejné řadě.
   const html = `<!doctype html><html><head><style>
 body{margin:0;padding:24px;background:#f4f4f2;font:600 26px Arial,sans-serif;color:#111}
 .grid{display:grid;grid-template-columns:repeat(2,auto);gap:36px 48px}
 .text{margin:0 0 10px}.row{display:flex;gap:12px}figure{margin:0}
-img{width:600px;height:375px;display:block;border:2px solid #111}
+img{height:375px;width:auto;display:block;border:2px solid #111}
 figcaption{font:600 24px Arial,sans-serif;padding-top:6px}
 </style></head><body><div class="grid">${sentences.map(cell).join('')}</div></body></html>`;
   const { chromium } = require('@playwright/test');
@@ -178,20 +217,20 @@ figcaption{font:600 24px Arial,sans-serif;padding-top:6px}
     await page.setContent(html);
     const width = await page.evaluate(() => document.querySelector('.grid').scrollWidth + 48);
     await page.setViewportSize({ width, height: 1200 });
-    await page.screenshot({ path: join(P46G, 'sheet-all.png'), fullPage: true });
+    await page.screenshot({ path: join(dir, 'sheet-all.png'), fullPage: true });
   } finally {
     await browser.close();
   }
-  console.log(`sheet -> ${join(P46G, 'sheet-all.png')}`);
+  console.log(`sheet -> ${join(dir, 'sheet-all.png')}`);
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   const options = args();
   if (options._[0] === 'judge') await judge(options);
-  else if (options._[0] === 'sheet') await sheet();
+  else if (options._[0] === 'sheet') await sheet(options);
   else {
-    console.error('usage: node scripts/play-p46g-blind.mjs judge [--seed <n>] [--work <dir>] [--concurrency 3] | sheet');
+    console.error('usage: node scripts/play-p46g-blind.mjs judge|sheet [--dir evals/play/p54b] [--set genres] [--pairs before:after,before-phone:after-phone] [--pass-at 15] [--seed <n>] [--work <dir>] [--concurrency 3]');
     process.exit(2);
   }
 }

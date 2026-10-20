@@ -21,6 +21,7 @@
 import type { GenerationBranch } from '@/server/pipeline';
 
 import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
+import { sentenceSky } from '../arcade/look';
 import { bossKindOf, segmentNewsOf } from '../arcade/pieces/pacing';
 import { abilityHint, abilityWordsOf } from '../draft/controls';
 import { loadRapier } from '../arcade/physics/world';
@@ -216,7 +217,17 @@ function withBuiltExtras(spec: GameSpecV1, played: { readonly boss: boolean; rea
   return { ...rest, ...(boss === undefined || !played.boss ? {} : { boss }), ...(segments === undefined || !played.segmented ? {} : { segments }) };
 }
 
+/**
+ * Počasí a denní doba z věty (P54B T11) i pro AI verzi: režisér `theme` píše sám a déšť nebo noc z věty
+ * by po výměně návrhu za AI verzi zmizely. Pole, které odpověď má, zůstane; do hashe světlo nepatří.
+ */
 export async function direct(sentence: string, deps: DirectorDeps): Promise<DirectedGame> {
+  const game = await directSpec(sentence, deps);
+  const sky = sentenceSky(sentence, game.spec.theme);
+  return Object.keys(sky).length === 0 ? game : { ...game, spec: { ...game.spec, theme: { ...game.spec.theme, ...sky } } };
+}
+
+async function directSpec(sentence: string, deps: DirectorDeps): Promise<DirectedGame> {
   const started = deps.now();
   const intent = extractIntent(sentence);
   if (intent.items.some(item => item.essential && item.axis === 'move' && item.verb === 'ball')) await loadRapier();

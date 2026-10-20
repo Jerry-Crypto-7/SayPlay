@@ -1,0 +1,140 @@
+{
+ "profile": "Pixel 7, CPU 4x, d3d11",
+ "repeats": 3,
+ "windowMs": 10000,
+ "measuredAt": "2026-10-20T00:14:36.443Z",
+ "rows": [
+  {
+   "id": "forest-runner",
+   "genre": "runner",
+   "fpsMedian": 56,
+   "samples": [
+    56.8,
+    53.8,
+    56
+   ],
+   "calls": 63
+  },
+  {
+   "id": "forest-race",
+   "genre": "race",
+   "fpsMedian": 56.4,
+   "samples": [
+    56.4,
+    56.6,
+    55.8
+   ],
+   "calls": 66
+  },
+  {
+   "id": "forest-platform",
+   "genre": "platformer",
+   "fpsMedian": 58.3,
+   "samples": [
+    58,
+    58.9,
+    58.3
+   ],
+   "calls": 55
+  },
+  {
+   "id": "jungle-runner",
+   "genre": "runner",
+   "fpsMedian": 56.6,
+   "samples": [
+    55.9,
+    56.6,
+    58.1
+   ],
+   "calls": 59
+  },
+  {
+   "id": "jungle-race",
+   "genre": "race",
+   "fpsMedian": 56.9,
+   "samples": [
+    58,
+    55.3,
+    56.9
+   ],
+   "calls": 86
+  },
+  {
+   "id": "jungle-platform",
+   "genre": "platformer",
+   "fpsMedian": 57.7,
+   "samples": [
+    57.7,
+    58.2,
+    57.6
+   ],
+   "calls": 52
+  },
+  {
+   "id": "desert-runner",
+   "genre": "runner",
+   "fpsMedian": 57.8,
+   "samples": [
+    57.8,
+    57.7,
+    58.1
+   ],
+   "calls": 70
+  },
+  {
+   "id": "desert-race",
+   "genre": "race",
+   "fpsMedian": 58.5,
+   "samples": [
+    56.5,
+    58.6,
+    58.5
+   ],
+   "calls": 77
+  },
+  {
+   "id": "desert-platform",
+   "genre": "platformer",
+   "fpsMedian": 57.4,
+   "samples": [
+    57,
+    57.9,
+    57.4
+   ],
+   "calls": 77
+  },
+  {
+   "id": "city-runner",
+   "genre": "runner",
+   "fpsMedian": 45,
+   "samples": [
+    43.1,
+    45,
+    47.5
+   ],
+   "calls": 100
+  },
+  {
+   "id": "city-race",
+   "genre": "race",
+   "fpsMedian": 45.3,
+   "samples": [
+    45.3,
+    53,
+    44
+   ],
+   "calls": 112
+  },
+  {
+   "id": "city-platform",
+   "genre": "platformer",
+   "fpsMedian": 55,
+   "samples": [
+    54.4,
+    55,
+    55.2
+   ],
+   "calls": 75
+  }
+ ]
+}

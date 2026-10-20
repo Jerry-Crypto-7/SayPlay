@@ -41,7 +41,7 @@ import { headingOf, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
-import { loadBodyModel, toyPartsOf } from './look/load';
+import { loadBodyModel, rimLit, toyPartsOf } from './look/load';
 import { deformBody } from './look/toy-deform';
 import { HeroActionBody } from './hero-action/HeroActionBody';
 import { type Ink, InkOutline } from './look/rig/InkOutline';
@@ -55,7 +55,7 @@ import { WalkerBackdrop, WALKER_SCENE_KINDS, placeWalker } from './walker/Walker
 import { BallBackdrop, BALL_SCENE_KINDS, placeBall } from './ball/BallScene';
 import { SteerBackdrop, placeChase } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
-import { type ToyTarget, applyToy, toyMotionOn, toyTickOf } from './toy/applyToy';
+import { type ToyTarget, applyToy, toyIdleOf, toyMotionOn, toyTickOf } from './toy/applyToy';
 import { bodyClassOf, motionOf } from './toy/body-class';
 import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
 import { WorldBackdrop } from './WorldBackdrop';
@@ -174,6 +174,8 @@ interface Fit {
   readonly fill?: boolean;
   /** Role, která se hýbe (P45D T7): díly a deformace z `catalog-motion.json` pro `applyToy`. */
   readonly posed?: boolean;
+  /** Postava – hrdina, nepřítel, soupeř (P54B T14): okrajový svit `rimLit`. */
+  readonly rim?: boolean;
 }
 
 /** Díly a deformace vepsaného modelu, který se hýbe – smyčka `World` je najde pod vnitřní skupinou pózy. */
@@ -186,8 +188,10 @@ export function toyTargetOf(inner: Object3D): ToyTarget {
 }
 
 /** Klon modelu vepsaný do kvádru těla; tělo, které se hýbe, dostane vlastní deformaci a pivoty s živou maticí. */
-export function fitModel(model: Object3D, { id, w, h, d, character = false, fill = false, posed = false }: Fit): Object3D {
+export function fitModel(model: Object3D, { id, w, h, d, character = false, fill = false, posed = false, rim = false }: Fit): Object3D {
   const copy = model.clone(true);
+  // Svit před deformací: kopie deformace volá úpravu shaderu zdroje, svit tak nese i ohnuté tělo.
+  if (rim) rimLit(copy);
   const box = new Box3().setFromObject(copy);
   const size = box.getSize(new Vector3());
   const along = (length: number): number => Math.max(length, 1e-3);
@@ -204,7 +208,7 @@ export function fitModel(model: Object3D, { id, w, h, d, character = false, fill
   return copy;
 }
 
-export function FittedModel({ id, w, h, d, fallback, character = false, fill = false, posed = false }: Fit & { readonly fallback: string }) {
+export function FittedModel({ id, w, h, d, fallback, character = false, fill = false, posed = false, rim = false }: Fit & { readonly fallback: string }) {
   const [model, setModel] = useState<Object3D | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
@@ -216,8 +220,8 @@ export function FittedModel({ id, w, h, d, fallback, character = false, fill = f
     };
   }, [id, posed]);
   const fitted = useMemo(
-    () => (model === null || model === undefined ? null : fitModel(model, { id, w, h, d, character, fill, posed })),
-    [model, id, w, h, d, character, fill, posed],
+    () => (model === null || model === undefined ? null : fitModel(model, { id, w, h, d, character, fill, posed, rim })),
+    [model, id, w, h, d, character, fill, posed, rim],
   );
   if (fitted !== null) return <primitive object={fitted} />;
   return (
@@ -543,9 +547,9 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       if ((control === 'platform' || control === 'walker') && moving !== null && (Math.hypot(moving.vx, moving.vz) * ARCADE_HZ) / UNIT > TURN_MIN_MPS) {
         yaws.current[view.index] = turnToward(yaws.current[view.index], headingOf(moving.vx, moving.vz), turn);
       }
-      // Hračková póza (P45D T7) podle stavu a třídy těla; mrtvý se převrhne, zásah blikne, výhra slaví.
+      // Hračková póza (P45D T7) podle stavu a třídy těla; mrtvý se převrhne, zásah blikne, výhra slaví, stojící dýchá (P54B T6).
       if (inner !== null && inner !== undefined && moving !== null) {
-        const toy = toyPoseOf(moving, bodyClasses[view.index] ?? 'prop', toyPoses.current[view.index] ?? null, toyTick, reduced);
+        const toy = toyPoseOf(moving, bodyClasses[view.index] ?? 'prop', toyPoses.current[view.index] ?? null, toyTick, reduced, toyIdleOf(session, view.index));
         toyPoses.current[view.index] = toy;
         applyToy(toyTargetOf(inner), toy, view.h, yaws.current[view.index] ?? 0);
       }
@@ -696,6 +700,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
                   fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
                   character={POSED_ROLES.has(view.role) && view.h >= Math.max(view.w, view.d)}
                   posed={POSED_ROLES.has(view.role)}
+                  rim={POSED_ROLES.has(view.role)}
                 />
               </group>
             )}

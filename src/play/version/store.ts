@@ -92,8 +92,9 @@ export interface VersionStore {
   /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
   /**
-   * Nejnovější autorské verze (`relation: 'upgrade'`, `publishEligible`), od
-   * nejnovější, bez vypršelých; nedostupné úložiště je `[]`.
+   * Řádky feedu bez vypršelých: nejdřív hlavní seznam (autorské verze a seed, od
+   * nejnovější), za ním remixy (`relation: 'remix'`, nejvýš `REMIX_CAP`) – remix tak
+   * z prvních `limit` řádků nevytlačí žádnou hru hlavního seznamu. Nedostupné úložiště je `[]`.
    */
   recent(limit: number): Promise<RecentGame[]>;
   /**
@@ -129,6 +130,20 @@ export interface VersionStore {
   countLoop(versionId: string, counters: readonly LoopCounter[], voter: string): Promise<void>;
   /** Čítače smyčky a počty remixů her jedním čtením; nedostupné úložiště = prázdná mapa (feed od nejnovější). */
   loopHeat(versionIds: readonly string[]): Promise<Map<string, LoopHeat>>;
+  /**
+   * Nahlášení hry z feedu (P54A T11): hlas `voter` (hash volajícího) se započte jednou na hru po
+   * dobu života hry. Že hra existuje a není vestavěná, ověřují dveře. Výpadek je `VersionStoreUnavailable`.
+   */
+  reportGame(versionId: string, voter: string): Promise<void>;
+  /** Hry z `versionIds` s aspoň `REPORT_HIDE_VOTES` hlasy, jedním čtením; nedostupné úložiště = žádná (zbude `PLAY_FEED_HIDE`). */
+  reportHidden(versionIds: readonly string[]): Promise<Set<string>>;
+  /**
+   * Nahlášené hry pro provozovatele (P54A T11a, `scripts/p37c/reported.mjs`): id a počet hlasů, od
+   * hry s nejnovějším hlasem do skrytí (`REPORT_HIDE_VOTES`), nejvýš `REPORTED_KEPT` záznamů seznamu
+   * (hra v něm leží až třikrát, čtení vrací každou jednou). Vestavěnou hru dveře nezapíšou, tady tedy
+   * není. Výpadek je `VersionStoreUnavailable` – prázdný seznam by lhal.
+   */
+  reportedGames(): Promise<{ readonly versionId: string; readonly votes: number }[]>;
   /** Hráč (P44B T3) podle id z podepsané cookie; `null` = bez uložené přezdívky, i při výpadku úložiště. */
   getPlayer(playerId: string): Promise<PlayerRecord | null>;
   /** Uloží hráče na dobu života hry. Výpadek je `VersionStoreUnavailable`. */
@@ -260,6 +275,10 @@ export const GHOST_DAILY_CAP_PER_CALLER = 10;
 
 /** Jeden volající započte hře každý čítač smyčky nejvýš jednou za den (P36B T9, nález revize T9-1). */
 export const LOOP_VOTE_TTL_SECONDS = 24 * 3600;
+/** Tolik různých volajících hru nahlásí, než zmizí z feedu (P54A T11). */
+export const REPORT_HIDE_VOTES = 3;
+/** Kolik naposledy nahlášených her si seznam pro provozovatele pamatuje (P54A T11a). */
+export const REPORTED_KEPT = 500;
 /** Kolik hlasů si proces pamatuje, než paměť zahodí (pak rozhodne `SET NX` v úložišti). */
 const MAX_VOTE_MEMO = 20_000;
 /**
@@ -288,7 +307,7 @@ export interface LoopHeat {
 export interface RecentGame extends GameVersion {
   readonly archetype: string;
   /** Chybí jen u hry ze seedu feedu a z vestavěné sady (P37C T6), ta má místo toho `curated`. */
-  readonly relation?: 'upgrade';
+  readonly relation?: 'upgrade' | 'remix';
   /** Věta provozovatele, hra ověřená robotem (P37C T6, `feature` a vestavěná sada). */
   readonly curated?: true;
   /** `spec.tutorial.goalLine` a `spec.theme.mood` pro kartu; řádky zapsané před D-R1 je nemají. */
@@ -298,6 +317,12 @@ export interface RecentGame extends GameVersion {
 
 /** Kolik publikací si feed pamatuje. */
 export const RECENT_CAP = 200;
+
+/**
+ * Kolik remixů si feed pamatuje – ve vlastním seznamu (nález revize T10-1 #2): remix
+ * čipem nestojí placené volání, a ve společném seznamu by jich 200 vytlačilo seed i AI verze.
+ */
+export const REMIX_CAP = 40;
 
 /** Řádek feedu z hry: verze, archetyp, cíl a nálada pro kartu. */
 export function feedRowOf(game: PublishedGame): RecentGame {
@@ -494,6 +519,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const lineageKey = (versionId: string): string => `${prefix}:play:lineage:${versionId}`;
   const quotaKey = (): string => `${prefix}:play:quota:${quotaDay(now())}`;
   const recentKey = `${prefix}:play:recent`;
+  const remixKey = `${prefix}:play:recent-remix`;
   const verdictKey = (draftId: string): string => `${prefix}:play:upgrade-final:${draftId}`;
   const dareKey = (dareId: string): string => `${prefix}:play:dare:${dareId}`;
   const dareQuotaKey = (): string => `${prefix}:play:dare-quota:${quotaDay(now())}`;
@@ -538,6 +564,9 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   };
   const loopKey = (counter: LoopCounter, versionId: string): string => `${prefix}:play:loop:${counter}:${versionId}`;
   const voteKey = (vote: string): string => `${prefix}:play:loop-vote:${vote}`;
+  const reportKey = (versionId: string): string => `${prefix}:play:report:${versionId}`;
+  const reportVoteKey = (versionId: string, voter: string): string => `${prefix}:play:report-vote:${versionId}:${voter}`;
+  const reportedKey = `${prefix}:play:reported`;
   const playerKey = (playerId: string): string => `${prefix}:play:player:${playerId}`;
   const boardKey = (versionId: string): string => `${prefix}:play:board:${versionId}`;
   const boardRunKey = (versionId: string, playerId: string): string => `${prefix}:play:board-run:${versionId}:${playerId}`;
@@ -595,15 +624,16 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         throw new VersionStoreUnavailable(thrown);
       }
       // Trychtýř (P44B T12): hra je nová právě jednou (`SET NX` výš); výpadek čítače publikaci neshodí.
-      const stage = BUILTIN_IDS.has(game.version.versionId) ? null : publishStageOf({ parentId: game.version.parentId, relation: game.relation });
+      const stage = BUILTIN_IDS.has(game.version.versionId) ? null : publishStageOf({ parentId: game.version.parentId, ...(game.relation === 'upgrade' ? { relation: 'upgrade' as const } : {}) });
       if (stage !== null) await raw.incr(funnelKey(funnelDayOf(now()), stage), FUNNEL_TTL_SECONDS).catch(() => undefined);
-      // Do feedu jen autorská verze od režiséra (nález revize T4-1): titul
-      // ručního specu, remixu i návrhu ze slov píše volající, a feed by ho
-      // zdarma ukázal každému návštěvníkovi `/play`. Autorská verze stojí
-      // placené volání pod stropy a titul jí napsal model.
+      // Do feedu autorská verze od režiséra a od P54A T10 i remix, který postavil server
+      // (`relation: 'remix'`, `feedEligible`). Ruční spec ani návrh ze slov ne, ani s
+      // `parentId` (nálezy revize T4-1 a T10-1): jejich titul píše volající a feed by ho
+      // zdarma ukázal každému návštěvníkovi `/play`. Remix jde do vlastního seznamu.
       if (feedEligible({ versionId: game.version.versionId, relation: game.relation, publishEligible: game.report.publishEligible }, NOTHING_HIDDEN)) {
         try {
-          await raw.pushCapped(recentKey, JSON.stringify(feedRowOf(game)), RECENT_CAP, limits.ttlSeconds);
+          if (game.relation === 'remix') await raw.pushCapped(remixKey, JSON.stringify(feedRowOf(game)), REMIX_CAP, limits.ttlSeconds);
+          else await raw.pushCapped(recentKey, JSON.stringify(feedRowOf(game)), RECENT_CAP, limits.ttlSeconds);
         } catch {
           // Feed je navigace: hra je uložená a odkaz na ni platí, i když se do feedu nedostala.
         }
@@ -682,17 +712,19 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
     },
     async recent(limit) {
       try {
-        const rows = await raw.head(recentKey, Math.min(limit, RECENT_CAP));
+        const rows = [...(await raw.head(recentKey, Math.min(limit, RECENT_CAP))), ...(await raw.head(remixKey, REMIX_CAP))];
         // Seznam žije od poslední publikace, hra od své – vypršelá hra by vedla na 404.
         const oldest = now() - limits.ttlSeconds * 1000;
-        return rows.flatMap((text) => {
-          try {
-            const row = JSON.parse(text) as RecentGame;
-            return Date.parse(row.createdAt) > oldest ? [row] : [];
-          } catch {
-            return [];
-          }
-        });
+        return rows
+          .flatMap((text) => {
+            try {
+              const row = JSON.parse(text) as RecentGame;
+              return Date.parse(row.createdAt) > oldest ? [row] : [];
+            } catch {
+              return [];
+            }
+          })
+          .slice(0, limit);
       } catch {
         return [];
       }
@@ -826,6 +858,38 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         );
       } catch {
         return new Map();
+      }
+    },
+    async reportGame(versionId, voter) {
+      try {
+        // Hlas žije jako hra: tři hlasy jsou vždy tři různí volající, ne jeden za tři dny.
+        if (await raw.setNx(reportVoteKey(versionId, voter), '1', limits.ttlSeconds)) {
+          // Hlasy do skrytí hru zapíšou do seznamu nahlášených navrch (T11a): provozovatel vidí, co
+          // kontrolovat. Každý z nich, ne jen první – výpadek mezi příkazy u prvního by jinak skrytou
+          // hru nechal mimo seznam navždy (nález revize T11a-1 #1); čtení duplicity sloučí.
+          if ((await raw.incr(reportKey(versionId), limits.ttlSeconds)) <= REPORT_HIDE_VOTES) await raw.pushCapped(reportedKey, versionId, REPORTED_KEPT, limits.ttlSeconds);
+        }
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async reportedGames() {
+      try {
+        // Hra, jejíž hlasy vypršely, se při novém prvním hlasu zapíše znovu.
+        const ids = [...new Set(await raw.head(reportedKey, REPORTED_KEPT))];
+        const texts = ids.length === 0 ? [] : await raw.getMany(ids.map(reportKey));
+        return ids.map((versionId, index) => ({ versionId, votes: Number(texts[index] ?? '0') }));
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async reportHidden(versionIds) {
+      if (versionIds.length === 0) return new Set();
+      try {
+        const texts = await raw.getMany(versionIds.map(reportKey));
+        return new Set(versionIds.filter((_, index) => Number(texts[index] ?? '0') >= REPORT_HIDE_VOTES));
+      } catch {
+        return new Set();
       }
     },
     async getPlayer(playerId) {

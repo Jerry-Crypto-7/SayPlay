@@ -21,7 +21,8 @@ import { PHYSICS_NOT_LOADED, preloadPhysics } from '@/play/arcade/compile';
 import { loadRapier } from '@/play/arcade/physics/world';
 import type { Honesty } from '@/play/draft/unsupported';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
-import { type PlayTimings, type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
+import { type PlayTimings, type PublishedGame, type PutOutcome, RECENT_CAP, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
+import { BUILTIN_IDS } from '@/play/version/builtin';
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
 import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
@@ -30,7 +31,7 @@ import { sharedStoreFromEnv } from '@/server/spend-store';
 import { getCompiler } from './_compiler';
 import { startCustomEnv } from './_env';
 import { blockedText, fail, SENTENCE_BLOCKED, VERSION_ID_PATTERN } from './_errors';
-import { reportFor } from './_report';
+import { previewFor, reportFor } from './_report';
 import { scheduleVoice } from './_voice';
 
 /** Nejdelší věta, kterou dveře vezmou. Delší je 413, ne oříznutí. */
@@ -233,6 +234,20 @@ export function playabilityIssues(spec: GameSpecV1, seeds: readonly number[]): R
   return issues;
 }
 
+/**
+ * Smí remix tohohle rodiče do feedu? Jen když do feedu smí rodič sám: verze od režiséra,
+ * remix, vestavěná hra, nebo kurátorský řádek, který feed ještě drží. Ruční spec a návrh
+ * ze slov ne – jejich titul napsal volající a remix by ho přenesl do feedu.
+ */
+async function remixParentFeedable(versions: VersionStore, parentId: string | null): Promise<boolean> {
+  if (parentId === null) return false;
+  if (BUILTIN_IDS.has(parentId)) return true;
+  const parent = await versions.get(parentId);
+  if (parent === null) return false;
+  if (parent.relation === 'upgrade' || parent.relation === 'remix') return true;
+  return (await versions.recent(RECENT_CAP)).some((row) => row.versionId === parentId && row.curated === true);
+}
+
 export async function publishReadSpec(
   versions: VersionStore,
   spec: GameSpecV1,
@@ -259,17 +274,21 @@ export async function publishReadSpec(
     const keypoints = report.keypoints.filter((keypoint) => !keypoint.passed).map((keypoint) => keypoint.assertionId);
     return { ok: false, response: fail(422, 'NOT_PUBLISHABLE', 'the game did not pass its own checks', undefined, { keypoints }), issues: ['NOT_PUBLISHABLE', ...keypoints] };
   }
+  const preview = previewFor(compiled.value);
 
   const version = sealVersion(compiled.value, parentId, Date.now);
+  // Remix nese titul a texty rodiče: do feedu jen dítě rodiče, který do feedu smí (nález revize T10-2 #1).
+  const relation = extras.relation === 'remix' && !(await remixParentFeedable(versions, parentId)) ? undefined : extras.relation;
   const game: PublishedGame = {
     version,
     spec,
     blueprint: compiled.value.blueprint,
     ...(compiled.value.arcade === undefined ? {} : { arcade: compiled.value.arcade }),
     report,
+    ...(preview === null ? {} : { preview }),
     ...(extras.origin === undefined ? {} : { origin: extras.origin }),
     ...(extras.sentence === undefined ? {} : { sentence: extras.sentence }),
-    ...(extras.relation === undefined ? {} : { relation: extras.relation }),
+    ...(relation === undefined ? {} : { relation }),
     ...(extras.timings === undefined ? {} : { timings: { ...extras.timings, compileMs, verifyMs } }),
   };
 

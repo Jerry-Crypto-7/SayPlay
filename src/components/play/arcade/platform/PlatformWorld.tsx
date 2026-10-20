@@ -25,7 +25,8 @@ import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { GhostSlot } from '../GhostSlot';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
-import { mix } from '../look/ground';
+import { type Box, mix } from '../look/ground';
+import { Landmark } from '../look/Landmark';
 import { VegetationAround } from '../look/Vegetation';
 import { LAYERS, type Layer, type Side } from '../look/vegetation-places';
 import { type Block, buildBlocks, streetBlocks, urbanLook } from '../look/rig/terrain/city-blocks';
@@ -89,6 +90,7 @@ function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; re
       <Scenery look={look} layout="behind" inner={11} from={-20} to={length + 20} y={BANK} size={1.6} vegetation={look.flora !== undefined} />
       {/* Kulisa za mlhou (P46G T7) z břehu, za řadou kulis a vegetací. */}
       <HorizonBackdrop look={look} seed={world.seed} length={length} clear={0} ground={AT_BANK} beyond={BACKDROP_BEYOND} />
+      <Landmark look={look} seed={world.seed} area={SLAB_AREA} ground={ON_BANK} follow="track" />
     </>
   );
 }
@@ -97,6 +99,9 @@ function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; re
 const BANK = WATER + 0.25;
 const SLAB_HALF = PLATFORM.slabW / UNIT / 2;
 const BANK_FROM = SLAB_HALF + 3;
+/** Pás desek po celé trati: orientační bod stojí za ním na břehu a jede s boční kamerou (P54B T8). */
+const SLAB_AREA: readonly Box[] = [{ x0: -SLAB_HALF, x1: SLAB_HALF, z0: -Infinity, z1: Infinity }];
+const ON_BANK = (): number => BANK;
 /** Vegetace plošinovky jen za tratí: před kamerou (−x) a na koncích nic. */
 const BEHIND_ONLY: Readonly<Record<Side, readonly Layer[]>> = { '-x': [], '+x': LAYERS, '-z': [], '+z': [] };
 /** Dům pod deskou o kousek uvnitř její hrany (m) – zezadu ho kryje pás pod lemem střechy. */

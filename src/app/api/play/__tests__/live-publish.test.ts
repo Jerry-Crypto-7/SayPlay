@@ -11,8 +11,12 @@ import runner from '@/play/arcade/__fixtures__/runner.json';
 import { type ArcadeRole, type ArcadeWorld, BODY, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { type LivePatch, liveRemixSpec } from '@/play/arcade/live';
+import { replay } from '@/play/arcade/kernel';
+import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 import { __resetProcessVersionStore } from '@/play/version';
+import { decodePreview } from '@/play/version/preview';
+import type { FeedPreview } from '@/play/version/version';
 import { resetRateWindows } from '@/server/rate-limit';
 
 import { resetConcurrency } from '@/server/paid-slots';
@@ -124,6 +128,16 @@ describe('liveRemixSpec', () => {
     expect(child).toEqual(parentSpec);
     expect(dropped).toBe(2);
     expect(liveRemixSpec(parentSpec, world, [])).toEqual({ spec: parentSpec, dropped: 0 });
+  });
+});
+
+describe('GET /api/play/games/:id – bot preview for the feed (P54A T2)', () => {
+  it('a published arcade game carries a preview whose window replays to its hash', async () => {
+    const id = await publish(parentSpec);
+    const stored = await game(id);
+    const preview = stored.preview as FeedPreview;
+    expect(preview.endTick).toBeGreaterThan(preview.startTick);
+    expect(replay(stored.arcade as ArcadeWorld, decodePreview(preview).inputs, ARCADE_LIBRARY, preview.endTick).hash).toBe(preview.hash);
   });
 });
 

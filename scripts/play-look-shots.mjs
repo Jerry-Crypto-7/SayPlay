@@ -8,9 +8,10 @@
  * stojí a snímek čeká, až se dotáhnou modely. Plátno bez textu stránky.
  * `--set genres` vezme místo nich jednu větu na žánr (`evals/play/p46g/genres.json`, P46G T7).
  *
- *   node scripts/play-look-shots.mjs shots --base http://127.0.0.1:3251 --out evals/play/p46g/before [--ticks 150] [--only forest-race,city-runner] [--gpu] [--set genres]
+ *   node scripts/play-look-shots.mjs shots --base http://127.0.0.1:3251 --out evals/play/p46g/before [--ticks 150] [--only forest-race,city-runner] [--gpu] [--set genres] [--profile pixel7]
  *   node scripts/play-look-shots.mjs diff <dirA> <dirB>
  *   node scripts/play-look-shots.mjs perf --base http://127.0.0.1:3251 --out evals/play/p46g/perf-before.json [--repeats 3] [--only …]
+ *   node scripts/play-look-shots.mjs perf --base <před> --out before.json --vs <po> --out-vs after.json [--repeats 2]   (A/B prokládaně)
  *
  * `diff` porovná snímky dvou běhů pixel po pixelu (podíl pixelů, které se liší
  * o víc než 8 v některém kanálu) – opakovatelnost sady. `perf` měří FPS
@@ -55,6 +56,13 @@ async function browserFor(gpu) {
   const { chromium } = require('@playwright/test');
   const angle = gpu ? ['--use-gl=angle', '--use-angle=d3d11', '--ignore-gpu-blocklist'] : ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
   return chromium.launch({ args: angle });
+}
+
+/** Kontext Playwrightu pro Pixel 7 (bez volby prohlížeče, ta jde z `browserFor`). */
+function pixel7() {
+  const { devices } = require('@playwright/test');
+  const { defaultBrowserType: _browser, ...device } = devices['Pixel 7'];
+  return device;
 }
 
 /** Rychlá verze věty; stejná věta dá stejnou hru (semínko z věty). */
@@ -107,12 +115,15 @@ async function shots(options) {
   const ticks = Number(options.ticks ?? TICKS);
   mkdirSync(out, { recursive: true });
   const browser = await browserFor(options.gpu === true);
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-  const manifest = { ticks, renderer: options.gpu === true ? 'd3d11' : 'swiftshader', viewport: '1280x800', shots: [] };
+  // `--profile pixel7` (P54B T2): telefon – úzký dotykový pohled, scéna startuje na úrovni `low`.
+  const phone = options.profile === 'pixel7';
+  const page = phone ? await (await browser.newContext(pixel7())).newPage() : await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const manifest = { ticks, renderer: options.gpu === true ? 'd3d11' : 'swiftshader', viewport: phone ? 'Pixel 7' : '1280x800', shots: [] };
   try {
     for (const sentence of chosen(options)) {
       const game = await publish(base, sentence.text);
-      await page.goto(`${base}/play/${game.versionId}`);
+      // Meze 120 s: SwiftShader kreslí na CPU a pod souběžnými běhy (CPU 100 %, 19. 10.) výchozích 30 s nestačí.
+      await page.goto(`${base}/play/${game.versionId}`, { timeout: 120_000 });
       await page.locator('canvas').first().waitFor({ timeout: 60_000 });
       await settle(page);
       const state = await demoTo(page, ticks);
@@ -121,7 +132,7 @@ async function shots(options) {
       // Kamera dojede k hrdinovi, který stojí: hodiny jsou ruční a nikdo netiká.
       await sleep(1500);
       await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
-      await page.screenshot({ path: join(out, `${sentence.id}.png`) });
+      await page.screenshot({ path: join(out, `${sentence.id}.png`), timeout: 120_000 });
       // Ovládání, které plocha opravdu kreslí: souboj má ve specu `move_free`, ve hře `fight`.
       const stage = await page.getByTestId('arcade-stage').getAttribute('data-control').catch(() => null);
       const row = { id: sentence.id, text: sentence.text, want: sentence.genre, ...game, stage, tick: state?.tick ?? null, runState: state?.runState ?? null, meshes: render.meshes, calls: render.calls };
@@ -186,58 +197,78 @@ const median = (values) => {
   return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 };
 
+/** Jedno měření scény: FPS za 10 s ukázky v emulaci Pixel 7 (CPU 4×) a kreslicí volání na konci. */
+async function measureOnce(browser, base, versionId) {
+  const context = await browser.newContext(pixel7());
+  const page = await context.newPage();
+  await (await context.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: 4 });
+  try {
+    await page.goto(`${base}/play/${versionId}`);
+    await page.locator('canvas').first().waitFor({ timeout: 60_000 });
+    await settle(page);
+    await page.evaluate(() => {
+      // Ukázka v reálném čase (karta pauzy, jako `p32-look`); po konci se pouští znovu.
+      const again = () => {
+        const button = document.querySelector('[data-testid="play-demo-start"]') ?? document.querySelector('[data-testid="play-demo-yours"]') ?? document.querySelector('[data-testid="play-pause"]');
+        button?.click();
+      };
+      window.__lookAgain = setInterval(again, 500);
+    });
+    await sleep(1500);
+    const fps = await sampleFps(page, 10_000);
+    return { fps, calls: await page.evaluate(() => window.__playRender?.().calls ?? null) };
+  } finally {
+    await context.close();
+  }
+}
+
+/**
+ * `--vs <url> --out-vs <file>` (P54B T14): A/B prokládaně scénu po scéně – opakování měří A B,
+ * pak B A, takže obě verze nesou stejnou zátěž stroje. Vytížený stroj nikdy nebude v klidu
+ * (rozhodnutí majitele 20. 10.) a běh A celý před B na něm dal ±24 % oběma směry.
+ */
 async function perf(options) {
   const base = options.base;
   if (typeof base !== 'string') throw new Error('perf needs --base <url>');
+  const bases = typeof options.vs === 'string' ? [base, options.vs] : [base];
   const repeats = Number(options.repeats ?? 3);
-  const { devices } = require('@playwright/test');
-  const { defaultBrowserType: _browser, ...PIXEL_7 } = devices['Pixel 7'];
   const browser = await browserFor(true);
-  const rows = [];
+  const rows = bases.map(() => []);
   try {
     // Zahřátí: první stránka čerstvého prohlížeče překládá shadery a měřila 0,2 FPS (13. 10.), ne scénu.
-    const warm = await browser.newPage();
-    await warm.goto(`${base}/play/${(await publish(base, chosen(options)[0].text)).versionId}`);
-    await warm.locator('canvas').first().waitFor({ timeout: 60_000 });
-    await settle(warm);
-    await warm.close();
+    for (const url of bases) {
+      const warm = await browser.newPage();
+      await warm.goto(`${url}/play/${(await publish(url, chosen(options)[0].text)).versionId}`);
+      await warm.locator('canvas').first().waitFor({ timeout: 60_000 });
+      await settle(warm);
+      await warm.close();
+    }
     for (const sentence of chosen(options)) {
-      const game = await publish(base, sentence.text);
-      const samples = [];
-      let calls = null;
+      const games = await Promise.all(bases.map((url) => publish(url, sentence.text)));
+      const samples = bases.map(() => []);
+      const calls = bases.map(() => null);
       for (let run = 0; run < repeats; run += 1) {
-        const context = await browser.newContext(PIXEL_7);
-        const page = await context.newPage();
-        await (await context.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: 4 });
-        try {
-          await page.goto(`${base}/play/${game.versionId}`);
-          await page.locator('canvas').first().waitFor({ timeout: 60_000 });
-          await settle(page);
-          await page.evaluate(() => {
-            // Ukázka v reálném čase (karta pauzy, jako `p32-look`); po konci se pouští znovu.
-            const again = () => {
-              const button = document.querySelector('[data-testid="play-demo-start"]') ?? document.querySelector('[data-testid="play-demo-yours"]') ?? document.querySelector('[data-testid="play-pause"]');
-              button?.click();
-            };
-            window.__lookAgain = setInterval(again, 500);
-          });
-          await sleep(1500);
-          samples.push(await sampleFps(page, 10_000));
-          calls = await page.evaluate(() => window.__playRender?.().calls ?? null);
-        } finally {
-          await context.close();
+        // Pořadí A B, B A, A B…: rostoucí zátěž by jinak vždy dopadla na B (20. 10.: B druhé = −5,5 % medián).
+        const order = run % 2 === 0 ? [...bases.entries()] : [...bases.entries()].reverse();
+        for (const [index, url] of order) {
+          const measured = await measureOnce(browser, url, games[index].versionId);
+          samples[index].push(measured.fps);
+          calls[index] = measured.calls;
         }
       }
-      const row = { id: sentence.id, genre: game.genre, fpsMedian: Math.round(median(samples) * 10) / 10, samples: samples.map((fps) => Math.round(fps * 10) / 10), calls };
-      rows.push(row);
-      console.log(`${sentence.id}: ${row.fpsMedian} FPS (${row.samples.join(' ')}), ${calls} volání`);
+      for (const [index, url] of bases.entries()) {
+        const row = { id: sentence.id, genre: games[index].genre, fpsMedian: Math.round(median(samples[index]) * 10) / 10, samples: samples[index].map((fps) => Math.round(fps * 10) / 10), calls: calls[index] };
+        rows[index].push(row);
+        console.log(`${sentence.id}${bases.length > 1 ? ` [${url}]` : ''}: ${row.fpsMedian} FPS (${row.samples.join(' ')}), ${row.calls} volání`);
+      }
     }
   } finally {
     await browser.close();
   }
-  const report = { profile: 'Pixel 7, CPU 4x, d3d11', repeats, windowMs: 10_000, measuredAt: new Date().toISOString(), rows };
-  if (typeof options.out === 'string') writeJson(resolve(ROOT, options.out), report);
-  return report;
+  const reports = bases.map((url, index) => ({ profile: 'Pixel 7, CPU 4x, d3d11', base: url, interleavedWith: bases.length > 1 ? bases[1 - index] : undefined, repeats, windowMs: 10_000, measuredAt: new Date().toISOString(), rows: rows[index] }));
+  if (typeof options.out === 'string') writeJson(resolve(ROOT, options.out), reports[0]);
+  if (reports[1] !== undefined && typeof options['out-vs'] === 'string') writeJson(resolve(ROOT, options['out-vs']), reports[1]);
+  return reports[0];
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);

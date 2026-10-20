@@ -228,6 +228,8 @@ export function CreateGame() {
         onMake={() => fill(sentence)}
         onPlay={() => document.querySelector('.play-pager')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
       />
+      {/* Levý sloupec od `lg` (T12): pole i feed jsou vidět pořád, hlavní obsah je feed. */}
+      <TabBar rail active="play" onMake={() => fill(sentence)} onPlay={() => document.querySelector('.play-pager')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
     </>
   );
 }

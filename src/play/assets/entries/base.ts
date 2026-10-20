@@ -43,10 +43,13 @@ const RIGGED_ENTRIES: readonly AssetEntry[] = rigged.characters.map((character) 
   forward: '+z',
   clips: {
     idle: character.clips.idle,
+    // Chůze a výhra (P54B T5) jen tam, kde je GLB má; jinak `RiggedModel` hraje běh, resp. klid.
+    ...(character.clips.walk === undefined ? {} : { walk: character.clips.walk }),
     run: character.clips.run,
     jump: character.clips.jump,
     hit: character.clips.hit ?? 'procedural',
     die: character.clips.die,
+    ...(character.clips.win === undefined ? {} : { win: character.clips.win }),
   },
   license: character.license,
 }));

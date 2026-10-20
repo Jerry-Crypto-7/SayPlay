@@ -30,12 +30,54 @@ export function introLeft(elapsed: number): number {
   return -((INTRO_SETTLE + 1) * u ** 3 + INTRO_SETTLE * u ** 2);
 }
 
-/** Posune už postavenou herní kameru po dráze průletu; `look` je bod, na který kamera míří. */
+/** Průlet, který `applyIntro` na kameru naposledy použil (`camera.userData.intro`): zbytek a bod pohledu. */
+interface IntroMark {
+  left: number;
+  readonly look: [number, number, number];
+}
+
+/**
+ * Posune už postavenou herní kameru po dráze průletu; `look` je bod, na který kamera míří.
+ * Zbytek průletu a bod pohledu si kamera pamatuje – `restCamera` z nich vrátí herní pohled.
+ */
 export function applyIntro(camera: PerspectiveCamera, look: Vector3, left: number): void {
+  const mark = (camera.userData.intro ??= { left: 0, look: [0, 0, 0] }) as IntroMark;
+  mark.left = left;
+  mark.look[0] = look.x;
+  mark.look[1] = look.y;
+  mark.look[2] = look.z;
   if (left === 0) return;
   camera.position.sub(look).multiplyScalar(1 + INTRO_PULL * left).add(look);
   camera.position.y += INTRO_RISE * left;
   camera.lookAt(look);
+}
+
+/**
+ * Herní kamera bez průletu (P54B T8): `out` dostane objektiv a polohu `camera`, a běží-li
+ * průlet, polohu vrácenou na herní pohled – orientační bod se staví podle záběru hry, ne
+ * podle širokého úvodu. Scéna bez průletu (střelnice, hod, rytmus…) kameru nechá, jak je.
+ */
+export function restCamera(camera: PerspectiveCamera, out: PerspectiveCamera): PerspectiveCamera {
+  if (out.fov !== camera.fov || out.aspect !== camera.aspect || out.near !== camera.near || out.far !== camera.far) {
+    out.fov = camera.fov;
+    out.aspect = camera.aspect;
+    out.near = camera.near;
+    out.far = camera.far;
+    out.updateProjectionMatrix();
+  }
+  out.up.copy(camera.up);
+  out.position.copy(camera.position);
+  out.quaternion.copy(camera.quaternion);
+  const mark = camera.userData.intro as IntroMark | undefined;
+  if (mark !== undefined && mark.left !== 0) {
+    const [x, y, z] = mark.look;
+    const pull = 1 + INTRO_PULL * mark.left;
+    out.position.y -= INTRO_RISE * mark.left;
+    out.position.set(x + (out.position.x - x) / pull, y + (out.position.y - y) / pull, z + (out.position.z - z) / pull);
+    out.lookAt(x, y, z);
+  }
+  out.updateMatrixWorld();
+  return out;
 }
 
 /**

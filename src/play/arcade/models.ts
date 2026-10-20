@@ -12,7 +12,10 @@
  *
  * Hráče, nepřítele a soupeře vybírá od P32C `heroChoice` z manifestu hrdinů
  * (`src/play/assets/entries/*`): identita, blízká identita, třída, výchozí
- * model role – a hlásí, na které úrovni vybral.
+ * model role – a hlásí, na které úrovni vybral. Od P54B T4 kreslí scéna postavu
+ * s kostrou všude, kde ji má: postava T3 stejného jména přebije statický model,
+ * kategorie dá postavu nejbližšího jména (`KIN`) a výchozí `fox`, `explorer`,
+ * `robot` mají riggovaného zástupce (`RIGGED_ALIAS`); mřížka čte `modelOf` beze změny.
  *
  * Čisté funkce mimo React (P26 T5): tabulka schopností `src/play/capabilities.ts`
  * tvrdí, které popisky vykreslení čte, a test to ověřuje právě tady.
@@ -21,10 +24,12 @@
 import catalog from '@/assets/catalog-index.json';
 
 import rigged from '@/assets/rigged.json';
+import riggedP54 from '@/assets/rigged-p54.json';
 
 import { BASE_ENTRIES } from '../assets/entries/base';
 import { CATALOG_ENTRIES } from '../assets/entries/catalog';
 import { RIGGED_P32_ENTRIES } from '../assets/entries/rigged-p32';
+import { RIGGED_P54_ENTRIES } from '../assets/entries/rigged-p54';
 import type { AssetEntry } from '../assets/manifest';
 import { controlOf, readsLabel } from '../capabilities';
 import type { GenreId, ModelClass } from '../genre/contract';
@@ -185,23 +190,36 @@ function categoryModel(label: string): string | undefined {
 }
 
 /**
- * Lidé z vět mimo hry (P37A T6), které katalog nemá a vektory popisků nenajdou: model postavy
- * jen pro scénu. Do `CATEGORY` nepatří – `modelOf` čte i návrh (`twist.ts`, `topicHero`).
+ * Postavy z vět, které katalog nemá a vektory popisků nenajdou (lidé P37A T6), od P54B T4
+ * riggovaná postava nejbližšího jména: lidé a profese → Ultimate Animated Character, děti →
+ * dětské postavy P26B, zvířata → Ultimate Animated Animals, příšery → Ultimate Monsters.
+ * Jen pro scénu: do `CATEGORY` nepatří – `modelOf` čte návrh a mřížka, která postavy s kostrou nekreslí.
  */
-const PEOPLE: ReadonlyArray<readonly [model: string, words: readonly string[]]> = [
-  ['gen3d-investor', ['boss', 'manager', 'supervisor', 'landlord', 'banker', 'accountant', 'lawyer', 'auditor', 'recruiter', 'salesman', 'client', 'interviewer', 'examiner', 'inspector', 'advisor', 'adviser', 'clerk', 'principal', 'professor', 'judge', 'critic', 'coworker', 'co-worker', 'colleague', 'receptionist', 'cashier', 'operator', 'telemarketer']],
-  ['gen3d-mom', ['wife', 'girlfriend', 'sister', 'aunt', 'granny', 'grandmother', 'mum']],
-  ['kid', ['toddler', 'son', 'daughter', 'teenager']],
-  ['explorer', ['husband', 'boyfriend', 'dad', 'father', 'brother', 'uncle', 'cousin', 'friend', 'roommate', 'partner', 'neighbor', 'neighbour', 'stranger', 'coach', 'relative', 'bully', 'dentist', 'in-law', 'parent', 'ex']],
+export const KIN: ReadonlyArray<readonly [id: string, words: readonly string[]]> = [
+  ['q-businessman', ['boss', 'manager', 'supervisor', 'landlord', 'banker', 'accountant', 'lawyer', 'auditor', 'salesman', 'client', 'interviewer', 'examiner', 'inspector', 'advisor', 'adviser', 'clerk', 'principal', 'professor', 'judge', 'critic', 'coworker', 'co-worker', 'colleague', 'cashier', 'operator', 'telemarketer']],
+  ['q-businesswoman', ['recruiter', 'receptionist']],
+  ['q-casual-woman', ['wife', 'girlfriend', 'sister', 'aunt', 'granny', 'grandmother', 'mum', 'heroine']],
+  ['boy-a', ['toddler', 'son', 'teenager']],
+  ['girl-a', ['daughter']],
+  ['q-casual-man', ['husband', 'boyfriend', 'dad', 'father', 'brother', 'uncle', 'cousin', 'friend', 'roommate', 'partner', 'neighbor', 'neighbour', 'stranger', 'coach', 'relative', 'bully', 'in-law', 'parent', 'ex', 'skater', 'tourist']],
+  ['q-doctor', ['dentist', 'surgeon', 'vet', 'veterinarian', 'paramedic']],
+  ['q-worker', ['plumber', 'mechanic', 'electrician', 'janitor', 'handyman', 'carpenter', 'miner']],
+  ['q-wolf', ['jackal', 'hyena']],
+  ['q-deer', ['antelope', 'gazelle', 'impala']],
+  ['q-stag', ['caribou']],
+  ['q-bull', ['yak']],
+  ['q-cow', ['calf', 'heifer']],
+  ['q-horse', ['foal', 'colt', 'steed']],
+  ['q-big-orc', ['beast', 'creature', 'critter', 'mutant']],
 ];
 
-const PERSON_OF: ReadonlyMap<string, string> = new Map(PEOPLE.flatMap(([model, words]) => words.map((word) => [word, model] as const)));
+const KIN_OF: ReadonlyMap<string, string> = new Map(KIN.flatMap(([id, words]) => words.map((word) => [word, id] as const)));
 
-/** Člověk z `PEOPLE` pro první slovo odzadu, které tam je. */
-function personModel(label: string): string | undefined {
+/** Postava z `KIN` (id scény) pro první slovo odzadu, které tam je. */
+function kinModel(label: string): string | undefined {
   for (const word of wordsOf(label).reverse()) {
-    const found = lookup(word, (form) => PERSON_OF.get(form));
-    if (found !== undefined) return found;
+    const found = lookup(word, (form) => KIN_OF.get(form));
+    if (found !== undefined) return `${RIGGED_PREFIX}${found}`;
   }
   return undefined;
 }
@@ -245,11 +263,14 @@ function nearestModel(label: string, loose = false): string | undefined {
 
 /**
  * Model, který scéna pro popisek kreslí, v pořadí `choose` bez hranic tříd: `modelOf`,
- * před kategorií nejbližší model katalogu a u postav i člověk z `PEOPLE`. Čtou ho rekvizity
- * a řetěz věrnosti; návrh dál čte `modelOf`, ať se žánr a role věty nemění.
+ * před kategorií nejbližší model katalogu a u postav i postava z `KIN`. Postava se statickým
+ * modelem, za který stojí riggovaná (`RIGGED_ALIAS`), dostane tu riggovanou – jako `heroChoice`.
+ * Čtou ho rekvizity a řetěz věrnosti; návrh dál čte `modelOf`, ať se žánr a role věty nemění.
  */
 export function sceneModelOf(label: string, character: boolean): string | undefined {
-  return tagModel(label, true) ?? nearestModel(label) ?? (character ? (categoryModel(label) ?? personModel(label) ?? riggedModelOf(label)) : undefined);
+  if (!character) return tagModel(label, true) ?? nearestModel(label);
+  const found = tagModel(label, true) ?? nearestModel(label) ?? kinModel(label) ?? categoryModel(label) ?? riggedModelOf(label);
+  return found === undefined ? undefined : rigAlias(found);
 }
 
 /**
@@ -438,8 +459,11 @@ export interface ModelChoice {
   readonly entry: AssetEntry | undefined;
 }
 
-/** Manifest hrdinů (P32C): riggované postavy a tučňák napřed, animovaní hrdinové vět P32, pak modely katalogu. */
-const MANIFEST: readonly AssetEntry[] = [...BASE_ENTRIES, ...RIGGED_P32_ENTRIES, ...CATALOG_ENTRIES];
+/**
+ * Manifest hrdinů (P32C): riggované postavy a tučňák napřed, animovaní hrdinové vět P32, modely
+ * katalogu a nakonec postavy Quaternius (P54B T3) – shoda skóre tak nechá dnešní postavu.
+ */
+const MANIFEST: readonly AssetEntry[] = [...BASE_ENTRIES, ...RIGGED_P32_ENTRIES, ...CATALOG_ENTRIES, ...RIGGED_P54_ENTRIES];
 
 const animated = (entry: AssetEntry): boolean => Object.values(entry.clips).some((clip) => clip !== PROCEDURAL_CLIP);
 
@@ -448,19 +472,60 @@ const sceneId = (entry: AssetEntry): string => (animated(entry) ? `${RIGGED_PREF
 
 const bareId = (id: string): string => id.replace(/^(cc0|gen3d)-/, '');
 
-/** Slovo identity nebo holé id („rival-car“) → záznamy v pořadí manifestu. */
-const BY_IDENTITY: ReadonlyMap<string, readonly AssetEntry[]> = (() => {
-  const index = new Map<string, AssetEntry[]>();
-  for (const entry of MANIFEST) {
-    for (const word of new Set([...entry.identity, bareId(entry.id)])) index.set(word, [...(index.get(word) ?? []), entry]);
-  }
-  return index;
-})();
-
 const ENTRY_OF_MODEL: ReadonlyMap<string, AssetEntry> = new Map(MANIFEST.map((entry) => [sceneId(entry), entry]));
 
 /** Id katalogu z `nearest.json` → záznam manifestu (postava s klipy dostane id scény s předponou). */
 const ENTRY_OF_ID: ReadonlyMap<string, AssetEntry> = new Map(MANIFEST.map((entry) => [entry.id, entry]));
+
+/**
+ * Riggovaná postava za statický model (P54B T4): výchozí hrdinové `fox` a `explorer`, výchozí
+ * nepřítel `robot` (data `genre/roles.ts` se nemění) a zástupce příšer `goblin`. Postava převezme
+ * identitu statického modelu (`NAMES`) a kategorie, nejbližší i výchozí model se na ni přeloží
+ * (`rigAlias`). Mřížka (`modelOf`) kreslí dál statický model – postavy s kostrou neumí.
+ */
+export const RIGGED_ALIAS: Readonly<Record<string, string>> = { fox: 'q-fox', explorer: 'q-cowboy-hair', robot: 'blocky-robot', goblin: 'q-big-orc' };
+
+/** Statický model s riggovaným zástupcem → id scény té postavy; jiný model beze změny. */
+const rigAlias = (model: string): string => {
+  const id = RIGGED_ALIAS[model];
+  return id === undefined ? model : `${RIGGED_PREFIX}${id}`;
+};
+
+/**
+ * Slova, která postavě T3 nepatří, i když je má v tagu: statický model je přesnější identita.
+ * Vědec není doktor, zdravotní sestra není doktorka, lama není alpaka, „dino“ je dinosaurus
+ * (ne růžová příšera) a zlobr není ork.
+ */
+const KEEP_STATIC: ReadonlySet<string> = new Set(['scientist', 'nurse', 'llama', 'dino', 'ogre']);
+
+/** Plné tagy postav T3 (`rigged-p54.json`): `rigged-p54.ts` z nich dává identitě jen volná slova, výběr čte všechna. */
+const P54_TAGS: ReadonlyMap<string, readonly string[]> = new Map(riggedP54.characters.map((character) => [character.id, character.tags.filter((tag) => !KEEP_STATIC.has(tag))]));
+
+/**
+ * Slova, která záznam jmenují při výběru: identita, u postav T3 plné tagy a u zástupce
+ * z `RIGGED_ALIAS` i identita statického modelu. Riggovaná liška JE liška: stejné slovo
+ * a klipy (`identityEntry`) ji postaví před statickou; rovnost nechá dřívější postavu s klipy.
+ */
+const NAMES: ReadonlyMap<AssetEntry, readonly string[]> = new Map(
+  MANIFEST.map((entry) => {
+    const stood = Object.entries(RIGGED_ALIAS).flatMap(([model, id]) => {
+      const source = id === entry.id ? ENTRY_OF_ID.get(model) : undefined;
+      return source === undefined ? [] : [...source.identity, bareId(source.id)];
+    });
+    return [entry, [...new Set([...entry.identity, ...(P54_TAGS.get(entry.id) ?? []), ...stood])]];
+  }),
+);
+
+const namesOf = (entry: AssetEntry): readonly string[] => NAMES.get(entry) ?? entry.identity;
+
+/** Slovo identity nebo holé id („rival-car“) → záznamy v pořadí manifestu. */
+const BY_IDENTITY: ReadonlyMap<string, readonly AssetEntry[]> = (() => {
+  const index = new Map<string, AssetEntry[]>();
+  for (const entry of MANIFEST) {
+    for (const word of new Set([...namesOf(entry), bareId(entry.id)])) index.set(word, [...(index.get(word) ?? []), entry]);
+  }
+  return index;
+})();
 
 /** Třída modelu scény; věc mimo manifest je rekvizita, primitiv `bird` pták. */
 const classOfModel = (model: string): ModelClass => ENTRY_OF_MODEL.get(model)?.class ?? (model === 'bird' ? 'bird' : 'prop');
@@ -495,7 +560,7 @@ function identityEntry(label: string, fits: (kind: ModelClass) => boolean): Asse
     const found = (before === undefined ? undefined : lookup(word, (form) => BY_IDENTITY.get(`${before}-${form}`))) ?? lookup(word, (form) => BY_IDENTITY.get(form));
     if (found === undefined) continue;
     const own = new Set([word, ...singulars(word)]);
-    const score = (entry: AssetEntry): number => 4 * entry.identity.filter((tag) => said.has(tag)).length + (animated(entry) ? 2 : 0) + (own.has(bareId(entry.id)) ? 1 : 0);
+    const score = (entry: AssetEntry): number => 4 * namesOf(entry).filter((tag) => said.has(tag)).length + (animated(entry) ? 2 : 0) + (own.has(bareId(entry.id)) ? 1 : 0);
     const pool = found.filter((entry) => fits(entry.class));
     return pool.length === 0 ? undefined : pool.reduce((top, entry) => (score(entry) > score(top) ? entry : top));
   }
@@ -520,8 +585,11 @@ function rideOf(label: string, fits: (kind: ModelClass) => boolean): AssetEntry 
  * ne nižší tělo jádra `race-car`, které na telefonu nedá 4 % výšky obrazu (`play-frame`).
  */
 function choose(label: string, bounds: Bounds, options: { readonly withClass: boolean; readonly ride?: boolean; readonly loose?: boolean; readonly fallback?: string }): ModelChoice | undefined {
-  const pick = (model: string | undefined, level: ChoiceLevel, fits: (kind: ModelClass) => boolean): ModelChoice | undefined =>
-    model !== undefined && fits(classOfModel(model)) ? { model, level, entry: ENTRY_OF_MODEL.get(model) } : undefined;
+  const pick = (found: string | undefined, level: ChoiceLevel, fits: (kind: ModelClass) => boolean): ModelChoice | undefined => {
+    const model = found === undefined ? undefined : rigAlias(found);
+    return model !== undefined && fits(classOfModel(model)) ? { model, level, entry: ENTRY_OF_MODEL.get(model) } : undefined;
+  };
+  const fallback = options.fallback === undefined ? undefined : rigAlias(options.fallback);
   const named = identityEntry(label, bounds.identity);
   const tagged = pick(tagModel(label, false), 'identity', bounds.identity);
   const ride = options.ride === true ? rideOf(label, bounds.rest) : undefined;
@@ -532,10 +600,10 @@ function choose(label: string, bounds: Bounds, options: { readonly withClass: bo
     pick(nearModel(label), 'near', bounds.rest) ??
     pick(nearestModel(label), 'near', bounds.rest) ??
     (ride === undefined ? undefined : { model: sceneId(ride), level: 'near', entry: ride }) ??
-    (options.withClass ? (pick(categoryModel(label), 'class', bounds.rest) ?? pick(personModel(label), 'class', bounds.rest)) : undefined) ??
+    (options.withClass ? (pick(kinModel(label), 'class', bounds.rest) ?? pick(categoryModel(label), 'class', bounds.rest)) : undefined) ??
     // P39 T9: věc z věty bez modelu dostane nejbližší model i pod prahem čtení – vlkodlak za vlka, ne robot.
     (options.loose === true ? pick(nearestModel(label, true), 'near', bounds.rest) : undefined) ??
-    (options.fallback === undefined ? undefined : { model: options.fallback, level: 'fallback', entry: ENTRY_OF_MODEL.get(options.fallback) })
+    (fallback === undefined ? undefined : { model: fallback, level: 'fallback', entry: ENTRY_OF_MODEL.get(fallback) })
   );
 }
 

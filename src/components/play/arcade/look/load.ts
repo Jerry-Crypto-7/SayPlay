@@ -5,16 +5,17 @@
  * slitý 5, takže řada domů podél trati nestojí stovky kreslicích volání navíc.
  */
 
-import type { Bone, Material, Mesh, Object3D, Side, SkinnedMesh, Texture, TypedArray } from 'three';
-import { Box3, BufferAttribute, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, FrontSide, Group, Matrix4, Mesh as MeshClass, MeshStandardMaterial, SRGBColorSpace, SkinnedMesh as SkinnedMeshClass, Vector3 } from 'three';
+import type { AnimationClip, Bone, KeyframeTrack, Material, Mesh, Object3D, Side, SkinnedMesh, Texture, TypedArray, WebGLProgramParametersWithUniforms } from 'three';
+import { Box3, BufferAttribute, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, FrontSide, Group, Matrix4, Mesh as MeshClass, MeshDepthMaterial, MeshStandardMaterial, PropertyBinding, SRGBColorSpace, SkinnedMesh as SkinnedMeshClass, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-import type { Flora } from '@/play/arcade/look';
+import { type Flora, type Look, LOOK_WIND, type LookId } from '@/play/arcade/look';
 import { modelPath } from '@/play/arcade/models';
 
 import type { ToyPart } from '../toy/applyToy';
 import { type MotionPart, motionOf } from '../toy/body-class';
+import type { QualityTier } from './rig/quality';
 import { plantPaint } from './vegetation-places';
 
 const modelCache = new Map<string, Promise<Object3D | null>>();
@@ -156,13 +157,50 @@ function bakePlant(model: Object3D): PlantModel | null {
 
 const plantCache = new Map<string, Promise<PlantModel | null>>();
 const paintedCache = new Map<string, Promise<PlantModel | null>>();
+const simpleCache = new Map<string, Promise<BufferAttribute | null>>();
+
+/**
+ * Zjednodušená rostlina telefonu (P54B T15d): pětina trojúhelníků, tvar nejvýš o 1 % výšky jinak
+ * (strom 7 m o 7 cm, u kraje cesty pod 5 px telefonu). Hranice barev drží, ploše stínované modely
+ * smí slévat i přes hrany (`Permissive`). Rostlina pod `SIMPLE_FROM` trojúhelníků zůstane celá.
+ */
+const SIMPLE_SHARE = 0.2;
+const SIMPLE_ERROR = 0.01;
+const SIMPLE_FROM = 600;
+
+/** Indexy zjednodušené rostliny nad jejími vrcholy; `null` = kreslit celou (malá, nebo se zjednodušovač nenačetl). */
+function simpleIndex(id: string, geometry: BufferGeometry): Promise<BufferAttribute | null> {
+  let pending = simpleCache.get(id);
+  if (pending === undefined) {
+    const position = geometry.getAttribute('position');
+    const count = geometry.index?.count ?? position.count;
+    pending =
+      count / 3 < SIMPLE_FROM
+        ? Promise.resolve(null)
+        : import('meshoptimizer/simplifier')
+            .then(async ({ MeshoptSimplifier }) => {
+              await MeshoptSimplifier.ready;
+              const indices = geometry.index === null ? Uint32Array.from({ length: count }, (_, i) => i) : Uint32Array.from(geometry.index.array);
+              const positions = new Float32Array(position.count * 3);
+              for (let i = 0; i < position.count; i += 1) positions.set([position.getX(i), position.getY(i), position.getZ(i)], i * 3);
+              const colors = geometry.getAttribute('color').array as Float32Array;
+              const target = Math.floor((count * SIMPLE_SHARE) / 3) * 3;
+              const [simple] = MeshoptSimplifier.simplifyWithAttributes(indices, positions, 3, colors, 3, [1, 1, 1], null, target, SIMPLE_ERROR, ['Permissive']);
+              return new BufferAttribute(simple, 1);
+            })
+            .catch(() => null);
+    simpleCache.set(id, pending);
+  }
+  return pending;
+}
 
 /**
  * Rostlina `id` obarvená vegetací sady (`plantPaint`: listí, jehličí, podzim). Poloha,
- * normály a indexy se sdílejí mezi sadami, barvy má každá vlastní. Cache jako modely – nic se neuvolňuje.
+ * normály a indexy se sdílejí mezi sadami, barvy má každá vlastní; `simple` (telefon)
+ * vezme indexy zjednodušené (`simpleIndex`). Cache jako modely – nic se neuvolňuje.
  */
-export function paintedPlant(id: string, flora: Flora): Promise<PlantModel | null> {
-  const key = `${id}|${flora.leaf}|${flora.autumn === true}`;
+export function paintedPlant(id: string, flora: Flora, simple = false): Promise<PlantModel | null> {
+  const key = `${id}|${flora.leaf}|${flora.autumn === true}|${simple}`;
   let pending = paintedCache.get(key);
   if (pending === undefined) {
     let baked = plantCache.get(id);
@@ -170,7 +208,7 @@ export function paintedPlant(id: string, flora: Flora): Promise<PlantModel | nul
       baked = loadModel(id).then((model) => (model === null ? null : bakePlant(model)));
       plantCache.set(id, baked);
     }
-    pending = baked.then((plant) => {
+    pending = baked.then(async (plant) => {
       if (plant === null) return null;
       const paint = plantPaint(id, flora);
       const source = plant.geometry.getAttribute('color') as BufferAttribute;
@@ -178,7 +216,7 @@ export function paintedPlant(id: string, flora: Flora): Promise<PlantModel | nul
       const color = new Color();
       for (let i = 0; i < source.count; i += 1) paint(color.fromBufferAttribute(source, i)).toArray(colors, i * 3);
       const geometry = new BufferGeometry();
-      geometry.setIndex(plant.geometry.index);
+      geometry.setIndex((simple ? await simpleIndex(id, plant.geometry) : null) ?? plant.geometry.index);
       geometry.setAttribute('position', plant.geometry.getAttribute('position'));
       geometry.setAttribute('normal', plant.geometry.getAttribute('normal'));
       geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
@@ -190,16 +228,83 @@ export function paintedPlant(id: string, flora: Flora): Promise<PlantModel | nul
   return pending;
 }
 
+/**
+ * Vítr ve vegetaci (P54B T13): koruna se kývá, pata stojí – výchylka roste se čtvercem výšky vrcholu
+ * (rostlina z `bakePlant` má výšku 1 a patu v y = 0). Fáze z polohy rostliny ve světě, kmit podle
+ * její výšky (tráva rychleji než strom), směr ve světě pro všechny stejný. Čas a sílu nese `plantWind`,
+ * nastavuje je `Wind` v rigu. Vypnutý vítr shader vůbec nemá: `low` a omezený pohyb nestojí nic.
+ */
+export const plantWind = { time: { value: 0 }, strength: { value: 0 } };
+let windOn = false;
+
+/** Výchylka vrcholu koruny při větru 1 (podíl výšky rostliny); kmit se k ní přičítá od −0,7 do 1,3. */
+const BREEZE = 0.035;
+
+const WIND_HEAD = '\nuniform float plantWindTime;\nuniform float plantWindStrength;';
+const WIND_BODY = `
+{
+	mat4 windWorld = modelMatrix;
+#ifdef USE_INSTANCING
+	windWorld = modelMatrix * instanceMatrix;
+#endif
+	float windRate = 3.2 / sqrt(max(length(windWorld[1].xyz), 0.3));
+	float windPhase = dot(windWorld[3].xz, vec2(0.35, 0.21));
+	float windSway = 0.3 + 0.7 * sin(plantWindTime * windRate + windPhase) + 0.3 * sin(plantWindTime * windRate * 2.3 + windPhase * 1.7);
+	vec3 windDir = normalize(transpose(mat3(windWorld)) * vec3(0.93, 0.0, 0.37));
+	transformed += windDir * (plantWindStrength * windSway * transformed.y * transformed.y);
+}`;
+
+function windShader(shader: WebGLProgramParametersWithUniforms): void {
+  if (!windOn) return;
+  shader.uniforms.plantWindTime = plantWind.time;
+  shader.uniforms.plantWindStrength = plantWind.strength;
+  shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>${WIND_HEAD}`).replace('#include <begin_vertex>', `#include <begin_vertex>${WIND_BODY}`);
+}
+
+/** Síla větru scény: sada × nálada; na `low`, při omezeném pohybu a v sadě bez větru 0. */
+export const plantWindFor = (look: Pick<Look, 'wind'>, lookId: LookId, tier: QualityTier, motion: boolean): number =>
+  tier === 'low' || !motion ? 0 : BREEZE * LOOK_WIND[lookId] * (look.wind ?? 1);
+
 const plantMaterials = new Map<boolean, MeshStandardMaterial>();
+let depthMaterial: MeshDepthMaterial | null = null;
+
+/** Zapne nebo vypne vítr všem rostlinám; three přeloží jen jejich programy (a příště vezme hotové). */
+export function setPlantWind(on: boolean): void {
+  if (on === windOn) return;
+  windOn = on;
+  for (const material of plantMaterials.values()) material.needsUpdate = true;
+  if (depthMaterial !== null) depthMaterial.needsUpdate = true;
+}
+
+/**
+ * Síla větru scény do uniformy. Shader se zapne první nenulovou silou a sestup na `low` ho už nevypne, jen ztiší:
+ * sestup přichází, když zařízení nestíhá, a překlad programů by ho zasekl (P37B T7, `quality.ts`).
+ */
+export function blowPlantWind(strength: number): void {
+  plantWind.strength.value = strength;
+  if (strength > 0) setPlantWind(true);
+}
 
 /** Materiál všech rostlin: barva z vrcholů (a z instance), oboustranný pro zdroje, které oboustranné byly. */
 export function plantMaterial(double: boolean): MeshStandardMaterial {
   let material = plantMaterials.get(double);
   if (material === undefined) {
     material = new MeshStandardMaterial({ vertexColors: true, roughness: 0.9, side: double ? DoubleSide : FrontSide });
+    material.onBeforeCompile = windShader;
+    material.customProgramCacheKey = () => (windOn ? 'plant-wind' : 'plant');
     plantMaterials.set(double, material);
   }
   return material;
+}
+
+/** Stín rostliny, která ho vrhá (`customDepthMaterial`): kývá se s ní, jinak by se koruna kývala ve vlastním nehybném stínu. */
+export function plantDepthMaterial(): MeshDepthMaterial {
+  if (depthMaterial === null) {
+    depthMaterial = new MeshDepthMaterial();
+    depthMaterial.onBeforeCompile = windShader;
+    depthMaterial.customProgramCacheKey = () => (windOn ? 'plant-depth-wind' : 'plant-depth');
+  }
+  return depthMaterial;
 }
 
 /** Mapy, které se do vrcholů rozepsat nedají – model s kteroukoli z nich zůstane, jak je. */
@@ -258,6 +363,81 @@ export function glowingCopy(source: Material, intensity: number): Material {
   };
   glow.customProgramCacheKey = () => `${source.customProgramCacheKey()}+glow`;
   return glow;
+}
+
+/** Klon materiálu i s úpravou shaderu, kterou `clone()` nepřenese – záblesk zásahu bojovníka (`FightFx`). */
+export function patchedClone<T extends Material>(source: T): T {
+  const copy = source.clone() as T;
+  copy.onBeforeCompile = source.onBeforeCompile;
+  copy.customProgramCacheKey = source.customProgramCacheKey;
+  return copy;
+}
+
+/**
+ * Okrajový svit postav (P54B T14): hrdina, nepřítel a riggované postavy mají na hranách siluety
+ * světlo barvy oblohy sady (`light[0]`) – Fresnel normály a směru ke kameře, přičtený k záři před
+ * světly, takže ho ACES, ladění i mlha zpracují jako zbytek těla. Na telefonu (`low` bez AO a bloomu)
+ * se riggovaná postava slévala se zemí (soud T15a: low-poly liška čitelnější než riggovaná).
+ * Barvu a sílu nesou sdílené uniformy (`setCharacterRim` v rigu): sada, nálada ani úroveň kvality
+ * program nepřekládají. Svítí na každé úrovni – pár operací na pixel postavy.
+ */
+export const characterRim = { color: { value: new Color() }, strength: { value: 0 } };
+
+/**
+ * Záře svitu na samé hraně siluety; dovnitř těla slábne s mocninou `RIM_POWER`. Svit má barvu těla
+ * s podílem `RIM_WHITE` bílé: čistá barva oblohy (0,45, mocnina 3) lišku z kamery za zády vybělila
+ * celou a slepý soud telefonu dal přednost syté postavě bez svitu (5 z 10). Bílý podíl zvedne i černého medvěda.
+ */
+export const RIM_STRENGTH = 0.35;
+const RIM_POWER = '4.0';
+const RIM_WHITE = '0.25';
+
+const RIM_HEAD = '\nuniform vec3 rimColor;\nuniform float rimStrength;';
+const RIM_BODY = `\n\ttotalEmissiveRadiance += rimColor * mix(diffuseColor.rgb, vec3(1.0), ${RIM_WHITE}) * (rimStrength * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), ${RIM_POWER}));`;
+
+/** Barva svitu z palety scény (obloha polokoule, nálada a denní doba už v ní jsou). */
+export function setCharacterRim(look: Pick<Look, 'light'>): void {
+  characterRim.color.value.set(look.light[0]);
+  characterRim.strength.value = RIM_STRENGTH;
+}
+
+function rimShader(shader: WebGLProgramParametersWithUniforms): void {
+  shader.uniforms.rimColor = characterRim.color;
+  shader.uniforms.rimStrength = characterRim.strength;
+  shader.fragmentShader = shader.fragmentShader.replace('#include <common>', `#include <common>${RIM_HEAD}`).replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>${RIM_BODY}`);
+}
+
+const rimCopies = new WeakMap<Material, Material>();
+
+/**
+ * Kopie materiálu se svitem, jedna na zdroj (sdílený materiál slitých těl tak dál kreslí mince bez
+ * svitu). Kopie nese `userData.rim` i v klonech, aby se svit nevložil dvakrát. Neosvětlený materiál
+ * (bez záře) zůstane.
+ */
+export function rimMaterial(source: Material): Material {
+  if (source.userData.rim === true || !('emissive' in source)) return source;
+  let copy = rimCopies.get(source);
+  if (copy === undefined) {
+    copy = source.clone();
+    copy.userData.rim = true;
+    copy.onBeforeCompile = (shader, renderer) => {
+      source.onBeforeCompile(shader, renderer);
+      rimShader(shader);
+    };
+    copy.customProgramCacheKey = () => `${source.customProgramCacheKey()}+rim`;
+    rimCopies.set(source, copy);
+  }
+  return copy;
+}
+
+/** Svit všem sítím pod `root` – klon těla postavy nebo načtená riggovaná postava; zdrojové materiály se nemění. */
+export function rimLit(root: Object3D): Object3D {
+  root.traverse((node) => {
+    const mesh = node as Mesh;
+    if (mesh.isMesh !== true) return;
+    mesh.material = Array.isArray(mesh.material) ? mesh.material.map(rimMaterial) : rimMaterial(mesh.material);
+  });
+  return root;
 }
 
 const constant = (count: number, values: readonly number[]): Float32BufferAttribute =>
@@ -409,6 +589,43 @@ export function mergeRig(root: Object3D): Object3D {
     for (const source of sources) source.removeFromParent();
   }
   return root;
+}
+
+/** Odchylka od klidu, pod kterou je hodnota stopy klidová (vývoz z Blenderu má šum do ~1e-6). */
+const REST_EPS = 1e-5;
+
+/** Klidová hodnota vlastnosti uzlu, kterou stopa klipu přepisuje; jiné vlastnosti žádnou nemají. */
+function restOf(node: Object3D, property: string): readonly number[] | null {
+  if (property === 'position') return node.position.toArray();
+  if (property === 'quaternion') return node.quaternion.toArray();
+  if (property === 'scale') return node.scale.toArray();
+  return null;
+}
+
+/** Stopa po celou dobu na klidové hodnotě kosti (natočení i jako −q). */
+function atRest(track: KeyframeTrack, root: Object3D): boolean {
+  const { nodeName, objectName, propertyName, propertyIndex } = PropertyBinding.parseTrackName(track.name);
+  const node = objectName === undefined && propertyIndex === undefined ? PropertyBinding.findNode(root, nodeName) : null;
+  const rest = node === null ? null : restOf(node as Object3D, propertyName);
+  const size = track.getValueSize();
+  // Kubická stopa glTF nese u každého klíče i tečny: velikost hodnoty nesedí a stopa zůstane.
+  if (rest === null || size !== rest.length) return false;
+  const values = track.values;
+  const sign = propertyName === 'quaternion' && rest.reduce((sum, value, i) => sum + value * values[i]!, 0) < 0 ? -1 : 1;
+  return values.every((value, i) => Math.abs(value - sign * rest[i % size]!) <= REST_EPS * Math.max(1, Math.abs(rest[i % size]!)));
+}
+
+/**
+ * Klipy bez stop, které drží kost celou dobu v klidu (P54B T15c). Quaternius a KayKit vyvážejí
+ * posun, natočení i měřítko každé kosti v každém klipu a 65–80 % stop se z klidu nehne; míchač
+ * je přesto každý snímek vyhodnotí, smíchá a zapíše. Riggované zombie střelnice (69 stop,
+ * 44–52 v klidu) tím stály telefon (Pixel 7, CPU 4×) 11 % FPS. Kost, na kterou klip nesahá,
+ * drží míchač v hodnotě z doby navázání (`PropertyMixer`, zbytek váhy do 1) – tedy v klidu,
+ * na který by ji klidová stopa nastavila: póza ani prolnutí klipů se nezmění. Mění klipy na
+ * místě – volá se jednou na načtený model, před klonováním.
+ */
+export function dropRestTracks(clips: readonly AnimationClip[], root: Object3D): void {
+  for (const clip of clips) clip.tracks = clip.tracks.filter((track) => !atRest(track, root));
 }
 
 /** Nejvýš tolik pohyblivých dílů na tělo – každý je síť (a obrys) navíc. */

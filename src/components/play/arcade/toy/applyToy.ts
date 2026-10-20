@@ -9,7 +9,7 @@
 import type { Object3D } from 'three';
 
 import { ARCADE_HZ, HEADER } from '@/play/arcade/contract';
-import type { ToyPose } from '@/play/arcade/toy-motion';
+import type { ToyIdle, ToyPose } from '@/play/arcade/toy-motion';
 
 import { squashPose, tiltTo } from '../characterMotion';
 import { reducedMotion } from '../effects/feel';
@@ -44,8 +44,18 @@ export const WING = 0.6;
 export const LEG = 0.5;
 export const TAIL = 0.5;
 
-/** Měřidlo a srovnání vypnou hračkový pohyb adresou `?toy=off` (P45D T3, T15). */
-const toyOff = (): boolean => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('toy') === 'off';
+let toySearch = { search: '', off: false };
+
+/**
+ * Měřidlo a srovnání vypnou hračkový pohyb adresou `?toy=off` (P45D T3, T15). Adresa se čte
+ * znovu, jen když se změní: ptá se každý snímek každé tělo (P54B T15c).
+ */
+const toyOff = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const { search } = window.location;
+  if (search !== toySearch.search) toySearch = { search, off: new URLSearchParams(search).get('toy') === 'off' };
+  return toySearch.off;
+};
 
 /** Jediný vypínač hračkového pohybu: bez `prefers-reduced-motion` a bez `?toy=off`. */
 export const toyMotionOn = (): boolean => typeof window !== 'undefined' && !toyOff() && !reducedMotion();
@@ -56,6 +66,12 @@ export const toyMotionOn = (): boolean => typeof window !== 'undefined' && !toyO
  */
 export const toyTickOf = (session: Pick<ArcadeSession, 'state' | 'alpha' | 'endedFor'>): number =>
   (session.state()[HEADER.tick] as number) + session.alpha() + (session.endedFor() * ARCADE_HZ) / 1000;
+
+/**
+ * Nečinná vrstva těla `index` (P54B T6): fáze z indexu a semínka hry, čas z `toyTickOf`.
+ * Jen statickému modelu – riggovaná postava hraje klip `idle`; vypíná ji týž `reduced` (`toyMotionOn`).
+ */
+export const toyIdleOf = (session: Pick<ArcadeSession, 'world'>, index: number): ToyIdle => ({ index, seed: session.world.seed });
 
 /** Cíl poslední pózy podle skupiny – sonda záběru (`heroToy`, P45D T14) z něj čte díly a deformaci. */
 const applied = new WeakMap<Object3D, ToyTarget>();

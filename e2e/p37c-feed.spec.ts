@@ -24,8 +24,7 @@ test('a fresh instance without a store shows the built-in games, not an empty fe
   const shown = await current.getAttribute('data-version-id');
   expect(games.map((game) => game.versionId)).toContain(shown);
 
-  // Plakát hry, klepnutí ji rozběhne v plátně.
-  await page.getByTestId('feed-poster').click();
+  // Na kartě hned hraje náhled robota v plátně feedu (P54A T7).
   await expect(current.locator('canvas')).toHaveCount(1, { timeout: 30_000 });
 
   // Další hra feedu je jiná vestavěná hra.

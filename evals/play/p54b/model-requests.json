@@ -1,0 +1,17 @@
+{
+  "$comment": "Žádosti žánrů P54C o modely – pevný seznam z plánu P54B T12 (P54C běží v jiném worktree a sem nepíše). Odpověď je model-pack.json; min = kolik odlišných modelů položka potřebuje.",
+  "requests": [
+    { "item": "fruit", "for": "fruit and bomb – fruit to slice", "min": 3 },
+    { "item": "bomb", "for": "fruit and bomb – the bomb not to slice", "min": 3 },
+    { "item": "mole", "for": "mole and hammer – the critter popping out of a hole", "min": 3 },
+    { "item": "hammer", "for": "mole and hammer – the mallet", "min": 3 },
+    { "item": "tower", "for": "tower defence – the tower", "min": 3 },
+    { "item": "wave-enemy", "for": "tower defence – enemies of a wave", "min": 3 },
+    { "item": "car", "for": "cross the road – cars in the lanes", "min": 3 },
+    { "item": "log", "for": "cross the road – logs across the river", "min": 3 },
+    { "item": "crowd", "for": "crowd runner – a crowd figure that idles and cheers", "min": 3 },
+    { "item": "ring", "for": "push-out ring – the ring and its rail", "min": 3 },
+    { "item": "merge", "for": "merge – items in 6 sizes, smallest first", "min": 6 },
+    { "item": "fish", "for": "fishing and eat-to-grow – fish", "min": 3 }
+  ]
+}

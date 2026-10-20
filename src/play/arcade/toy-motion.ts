@@ -4,13 +4,16 @@
  * kreslené skupině, dílům a deformaci (`components/play/arcade/toy/applyToy.ts`).
  * Chůze je poskok s kolébáním podle ujeté dráhy, skok natažení, dopad zmáčknutí,
  * útok nápřah – výpad – dojezd, zásah cuknutí a kymácení, smrt převržení, výhra
- * jedna oslava, nesení záklon. Stojící tělo bez události stojí (kit `09-motion.md`:
- * nic se nehýbe samo). Čte jen stav a tik (i s podílem `tick + alpha`), nikdy
+ * jedna oslava, nesení záklon. Stojící tělo bez události se smí hýbat samo
+ * (výjimka `docs/brand/REPO-NOTES.md` → „Pohyb ve 3D scéně“, 19. 10. 2026):
+ * nečinný dech a rozhlížení (`ToyIdle`, P54B T6), které `prefers-reduced-motion`
+ * vypne. Čte jen stav a tik (i s podílem `tick + alpha`), nikdy
  * hodiny ani náhodu, a do hashovaného stavu nic nepíše.
  */
 
 import { strike } from '@/components/play/arcade/hero-action/actions';
 import { HIT_S, FALL_S, fallOf, headingOf, jumpStretchOf, landSquashOf, recoilOf, wobbleOf } from '@/components/play/arcade/characterMotion';
+import { hash } from '@/components/play/arcade/look/ground';
 
 import { ARCADE_HZ, BODY, COUNTER, FLAG, HEADER, ROLE, RUN_STATE, UNIT, bodyBase, targetStateOf } from './contract';
 import { type MotionView, viewOf } from './motion';
@@ -69,6 +72,8 @@ export interface ToyPose {
   readonly openedAt: number;
   /** Tik, kdy póza poprvé viděla konec běhu. */
   readonly endedAt: number;
+  /** Tik, od kdy tělo stojí bez události – od něj se rozjede nečinná vrstva. */
+  readonly calmAt: number;
   /** Ujetá dráha (m) – fáze kroku, mávnutí a kol. */
   readonly travel: number;
   /** Tik posledního snímku (i s podílem). */
@@ -103,6 +108,34 @@ const OPEN_S = 0.42;
 /** Nepřítel do téhle vzdálenosti (jednotky jádra) od hráče je ten, kdo udeřil. */
 const REACH = 3 * UNIT;
 
+/**
+ * Nečinná vrstva (P54B T6) těla `index` ve hře se semínkem `seed`: z nich fáze a perioda
+ * dechu a rozhlédnutí, ať dvě těla nedýchají v jednom rytmu. Scéna ji předá jen statickému
+ * modelu – riggovaná postava hraje klip `idle` a vrstvu nedostane.
+ */
+export interface ToyIdle {
+  readonly index: number;
+  readonly seed: number;
+}
+
+/** Síla celé nečinné vrstvy: 1 = hodnoty níž, 0 = stojící tělo stojí. Jediné místo, kde ji ztlumit. */
+const IDLE_STRENGTH = 1;
+/** Dech bipeda a čtyřnožce: zmáčknutí ±2 % výšky, perioda 2,5–3,5 s podle těla. */
+const BREATH = 0.02;
+const BREATH_MIN_S = 2.5;
+const BREATH_SPAN_S = 1;
+/** Rozhlédnutí: ±15° jednou za 4–7 s podle těla, střídavě na obě strany; otočka, pohled, otočka zpět. */
+const GLANCE = (15 * Math.PI) / 180;
+const GLANCE_MIN_S = 4;
+const GLANCE_SPAN_S = 3;
+const GLANCE_TURN_S = 0.4;
+const GLANCE_HOLD_S = 0.8;
+/** Letec se vznáší ±4 % výšky v rytmu dechu, plavec vlní ocasem a ploutvemi dvakrát rychleji. */
+const HOVER = 0.04;
+const SWIM_WAVE = 0.3;
+/** Po zastavení nebo události se vrstva rozjede za tolik sekund – bez skoku do půlky rozhlédnutí. */
+const IDLE_FADE_S = 0.6;
+
 const NEVER = -1_000_000;
 const AT_REST = {
   hop: 0, roll: 0, pitch: 0, yaw: 0, squash: 0, lunge: 0, recoil: 0, wobble: 0, fall: 0,
@@ -110,7 +143,7 @@ const AT_REST = {
 } as const;
 const REST: ToyPose = {
   ...AT_REST, grounded: true, airAt: NEVER, landedAt: NEVER, hitAt: NEVER, attackAt: NEVER,
-  diedAt: NEVER, wonAt: NEVER, openedAt: NEVER, endedAt: NEVER, travel: 0, at: 0,
+  diedAt: NEVER, wonAt: NEVER, openedAt: NEVER, endedAt: NEVER, calmAt: NEVER, travel: 0, at: 0,
 };
 
 const HOSTILE: ReadonlySet<number> = new Set([ROLE.enemy, ROLE.chaser]);
@@ -193,6 +226,40 @@ function gaitOf(body: BodyClass, view: ToyView, travel: number, gait: number) {
   }
 }
 
+/** Kam rozhlédnutí došlo `u` s po začátku okna: otočka, pohled, otočka zpět; mimo okno 0. */
+function glanceOf(u: number): number {
+  if (u < GLANCE_TURN_S) return easeInOut(u / GLANCE_TURN_S);
+  if (u < GLANCE_TURN_S + GLANCE_HOLD_S) return 1;
+  return easeInOut(clamp01(1 - (u - GLANCE_TURN_S - GLANCE_HOLD_S) / GLANCE_TURN_S));
+}
+
+/**
+ * Nečinná vrstva stojícího těla v tiku `tick`: dech a rozhlédnutí, vznášení, vlnění; předmět
+ * a vozidlo stojí. Periody a fáze jsou hash indexu těla a semínka hry, `weight` 0..1 ji
+ * rozjíždí po zastavení.
+ */
+function idleOf(body: BodyClass, { index, seed }: ToyIdle, tick: number, weight: number) {
+  const t = tick / ARCADE_HZ;
+  const breathS = BREATH_MIN_S + BREATH_SPAN_S * hash(4 * index, seed);
+  const breath = t / breathS + hash(4 * index + 1, seed);
+  switch (body) {
+    case 'biped':
+    case 'quadruped': {
+      const glanceS = GLANCE_MIN_S + GLANCE_SPAN_S * hash(4 * index + 2, seed);
+      const cycle = t / glanceS + hash(4 * index + 3, seed);
+      const round = Math.floor(cycle);
+      const side = round % 2 === 0 ? 1 : -1;
+      return { squash: weight * BREATH * Math.sin(2 * Math.PI * breath), yaw: weight * side * GLANCE * glanceOf((cycle - round) * glanceS) };
+    }
+    case 'flyer':
+      return { hop: weight * HOVER * Math.sin(2 * Math.PI * breath) };
+    case 'swimmer':
+      return { sway: weight * SWIM_WAVE * Math.sin(4 * Math.PI * breath) };
+    default:
+      return {};
+  }
+}
+
 /**
  * Platí události a rychlost stavu v tiku `tick`? Po konci běhu stav stojí a tik kresby běží
  * dál (`toyTickOf`): zásah, útok a rychlost posledního tiku platí jen v tiku konce – jinak by
@@ -205,8 +272,10 @@ export const toyEventsLive = (view: ToyView, previous: ToyPose | null, tick: num
  * Póza těla pro tik `tick` (smí mít podíl). `previous` je póza minulého snímku
  * téhož těla; `reduced` = `prefers-reduced-motion`: žádná amplituda, stav se
  * ukáže okamžitě – mrtvý leží, otevřený díl je otevřený, zásah jen blikne.
+ * S `idle` stojící tělo bez události dýchá a rozhlíží se (P54B T6); pohyb
+ * i událost vrstvu utnou, `reduced` ji vypne.
  */
-export function toyPoseOf(view: ToyView, body: BodyClass, previous: ToyPose | null, tick: number, reduced: boolean): ToyPose {
+export function toyPoseOf(view: ToyView, body: BodyClass, previous: ToyPose | null, tick: number, reduced: boolean, idle?: ToyIdle): ToyPose {
   const before = previous ?? { ...REST, at: tick };
   // Událost patří celému tiku: další snímek téhož tiku ji nezačne znovu.
   const now = Math.floor(tick);
@@ -224,7 +293,7 @@ export function toyPoseOf(view: ToyView, body: BodyClass, previous: ToyPose | nu
   const free = body === 'flyer' || body === 'swimmer';
   const speed = live ? Math.hypot(metresPerSecond(view.vx), free ? metresPerSecond(view.vy) : 0, metresPerSecond(view.vz)) : 0;
   const travel = before.travel + speed * (Math.max(0, tick - before.at) / ARCADE_HZ);
-  const memory = { grounded: view.grounded, airAt, landedAt, hitAt, attackAt, diedAt, wonAt, openedAt, endedAt, travel, at: tick };
+  const memory = { grounded: view.grounded, airAt, landedAt, hitAt, attackAt, diedAt, wonAt, openedAt, endedAt, calmAt: NEVER, travel, at: tick };
 
   const hit = since(hitAt) / HIT_S;
   const flash = hit < 1 ? 1 - hit : 0;
@@ -237,12 +306,17 @@ export function toyPoseOf(view: ToyView, body: BodyClass, previous: ToyPose | nu
   if (reduced) return { ...AT_REST, ...memory, flash, open };
 
   const gait = (free || view.grounded) && speed > RUN_MIN ? clamp01((speed - RUN_MIN) / (GAIT_FULL - RUN_MIN)) : 0;
-  const walk: Partial<Record<keyof typeof AT_REST, number>> = gait > 0 ? gaitOf(body, view, travel, gait) : {};
   const air = !view.grounded && !free ? -jumpStretchOf(since(airAt)) : landSquashOf(since(landedAt));
   const attack = since(attackAt) / ATTACK_S;
   const swing = attack < 1 ? strike(attack) : 0;
   const cheering = since(wonAt) / (CHEER_HOP_S * CHEER_HOPS);
   const cheer = view.won && cheering < 1 ? Math.abs(Math.sin(CHEER_HOPS * Math.PI * cheering)) : 0;
+  // Stojí bez události: nejde, neletí, nedopadá, neútočí, nedoznívá zásah, neslaví, neotevírá se.
+  const calm = gait === 0 && (free || view.grounded) && air === 0 && attack >= 1 && hit >= 1 && !(view.won && cheering < 1) && !(view.opened && since(openedAt) < OPEN_S);
+  const calmAt = !calm ? NEVER : before.calmAt === NEVER ? now : before.calmAt;
+  const settled = IDLE_STRENGTH * easeInOut(clamp01(since(calmAt) / IDLE_FADE_S));
+  // Chůze, nebo nečinná vrstva stojícího těla – nikdy obojí.
+  const walk: Partial<Record<keyof typeof AT_REST, number>> = gait > 0 ? gaitOf(body, view, travel, gait) : calm && idle !== undefined ? idleOf(body, idle, tick, settled) : {};
 
   return {
     hop: clean(walk.hop ?? 0),
@@ -262,5 +336,6 @@ export function toyPoseOf(view: ToyView, body: BodyClass, previous: ToyPose | nu
     stride: clean(walk.stride ?? 0),
     open,
     ...memory,
+    calmAt,
   };
 }

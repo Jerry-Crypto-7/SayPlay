@@ -19,7 +19,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LOOKS, LOOK_IDS } from '@/play/arcade/look';
 
-import { GRADES, type GradeEffect } from '../look/rig/grade';
+import { GRADES, type GradeEffect, gradeFor } from '../look/rig/grade';
 import { Grading, Post, opaqueAo } from '../look/rig/Post';
 import { TIER_SETTINGS } from '../look/rig/quality';
 
@@ -104,11 +104,14 @@ describe('colour grade wiring', () => {
   });
 
   it('the grade effect gets the family’s values and reports the family to the canvas', () => {
-    const tree = Grading({ family: 'dark' }) as Element;
+    const tree = Grading({ family: 'dark', tier: 'low' }) as Element;
     for (const effect of hooks.effects) effect();
     const effect = tree.props.object as GradeEffect;
     expect(effect.uniforms.get('gamma')!.value).toBe(GRADES.dark.gamma);
     expect((effect.uniforms.get('lift')!.value as Vector3).toArray()).toEqual([...GRADES.dark.lift]);
+    // Telefonní úroveň dostane kontrast navíc (P54B T14).
+    expect(effect.uniforms.get('contrast')!.value).toBe(gradeFor('dark', 'low').contrast);
+    expect(effect.uniforms.get('contrast')!.value).toBeGreaterThan(GRADES.dark.contrast);
     expect(hooks.dataset.grade).toBe('dark');
   });
 });

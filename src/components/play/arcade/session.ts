@@ -12,10 +12,12 @@
  */
 
 import { ARCADE_HZ, AXIS_MAX, type ArcadeEffect, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase, BODY } from '@/play/arcade/contract';
-import { type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
+import { type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, step, worldHasPhysics } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { type LiveEntry, type LivePatch, acceptLive, stepLive } from '@/play/arcade/live';
 import { type BotRun, runBot } from '@/play/arcade/verify';
+import { decodePreview } from '@/play/version/preview';
+import type { FeedPreview } from '@/play/version/version';
 
 export const TICK_MS = 1000 / ARCADE_HZ;
 /** Víc času najednou (skrytá záložka, zamrzlý snímek) se zahodí – hra se nedohraje bez hráče. */
@@ -74,7 +76,14 @@ export interface ArcadeSession {
    * konec ukázky nechá stav stát, dokud ho `restart` nepustí hráči.
    */
   startDemo(): void;
-  /** `null` = hraje člověk; `verified` = konec má výsledek i hash publikace (`null`, dokud běží). */
+  /**
+   * Náhled robota na kartě feedu (P54A T4): tiše – bez kreslení a bez
+   * posluchačů efektů – dopočte stav do `preview.startTick`, pak v reálném
+   * čase hraje okno do `endTick` a po `PREVIEW_GAP_MS` znovu od `startTick`.
+   * Stisky hráče se zahodí jako v ukázce; `restart` vrátí hráči čistou relaci.
+   */
+  startPreview(preview: FeedPreview): void;
+  /** `null` = hraje člověk; `verified` = konec má výsledek i hash publikace (`null`, dokud běží); `preview` = náhled ve feedu. */
   demo(): DemoState | null;
   /** Hraje člověk: ne ukázka, ne záznam robota přehraný `playInputs` (P27D T4 – jen takový běh se počítá). */
   humanRun(): boolean;
@@ -101,7 +110,11 @@ export type ArcadeEventListener = (events: readonly ArcadeEffect[], tick: number
 export interface DemoState {
   readonly ended: boolean;
   readonly verified: boolean | null;
+  readonly preview?: true;
 }
+
+/** Pauza mezi opakováními náhledu – čas kresby, do stavu ani hashe nejde. */
+export const PREVIEW_GAP_MS = 600;
 
 /**
  * `waitForInput`: hodiny stojí až do prvního stisku (poletování – ptáček by
@@ -137,6 +150,10 @@ export function createArcadeSession(
   let script: BotRun | null = null;
   let cursor = 0;
   let demoView: DemoState | null = null;
+  // Náhled ve feedu (P54A T4): okno, vstupy robota, stav v `startTick` k opakování a čas kresby v pauze.
+  let preview: { readonly endTick: number; readonly startTick: number; readonly inputs: readonly InputEvent[] } | null = null;
+  let previewStart: Int32Array | null = null;
+  let previewGap = 0;
   // Běh dohraný `playInputs` (záznam robota přes sondu) do restartu – nehrál ho člověk.
   let replayed = false;
   // Některý běh relace už skončil (P37C T7) – restart ho nesmaže, pozvánka LiveBox na něm stojí.
@@ -174,7 +191,7 @@ export function createArcadeSession(
         state = run.state;
       }
     }
-    if (effects.length > 0 && script === null && !replayed) for (const listener of eventListeners) listener(effects, tick);
+    if (effects.length > 0 && script === null && preview === null && !replayed) for (const listener of eventListeners) listener(effects, tick);
   };
 
   /** Krok ukázky: vstup robota pro tenhle tik – týž výběr jako `playInputs`. */
@@ -188,15 +205,39 @@ export function createArcadeSession(
 
   /** Jeden tik ze sebraných stisků: osa stisku přebije drženou (klik = zamiř a vystřel, i když se pustí dřív, než tik padne). */
   const flush = (): void => {
-    // Ukázku hraje robot: sebrané stisky hráče se nepoužijí a `restart` je zahodí.
+    // Ukázku i náhled hraje robot: sebrané stisky hráče se nepoužijí a `restart` je zahodí.
     if (script !== null) return scriptedTick(script.inputs);
+    if (preview !== null) return scriptedTick(preview.inputs);
     tickOnce(pending | heldButtons, pendingAxis !== 0 ? pendingAxis : held);
     pending = 0;
     pendingAxis = 0;
   };
 
   /** Hodiny: odtiká celé kroky z akumulátoru; vrací podíl rozběhnutého tiku 0..1. */
+  /** Náhled na začátek okna: bez fyziky kopie stavu v `startTick`, s fyzikou (Rapier mimo pole stavu) znovu tichý dopočet. */
+  const rewindPreview = (): void => {
+    if (preview === null) return;
+    cursor = 0;
+    previewGap = 0;
+    accumulator = 0;
+    if (previewStart !== null) state.set(previewStart);
+    else {
+      state = instantiate(world);
+      prev = Int32Array.from(state);
+      while ((state[HEADER.tick] as number) < preview.startTick && outcomeOf(state) === 'running') scriptedTick(preview.inputs);
+    }
+    prev.set(state);
+  };
+
   const clockAdvance = (ms: number): number => {
+    // Konec okna náhledu: pauza v čase kresby, pak znovu od `startTick` – i když okno skončilo výhrou.
+    if (preview !== null && !halted && (state[HEADER.tick] as number) >= preview.endTick) {
+      previewGap += Math.min(Math.max(ms, 0), MAX_FRAME_MS);
+      if (previewGap < PREVIEW_GAP_MS) return 1;
+      rewindPreview();
+      notify();
+      return 0;
+    }
     if (outcomeOf(state) !== 'running') {
       ended += Math.min(Math.max(ms, 0), MAX_FRAME_MS);
       return 1;
@@ -207,7 +248,7 @@ export function createArcadeSession(
     accumulator += Math.min(Math.max(ms, 0), MAX_FRAME_MS);
     let stepped = false;
     // Epsilon: 30 × (1000/60) v plovoucí čárce je o chlup pod 500 a tik by se ztratil.
-    while (accumulator >= TICK_MS - 1e-6 && outcomeOf(state) === 'running') {
+    while (accumulator >= TICK_MS - 1e-6 && outcomeOf(state) === 'running' && (preview === null || (state[HEADER.tick] as number) < preview.endTick)) {
       accumulator -= TICK_MS;
       flush();
       stepped = true;
@@ -276,7 +317,11 @@ export function createArcadeSession(
       return () => listeners.delete(listener);
     },
     restart: () => {
-      if (outcomeOf(state) !== 'running') endedOnce = true;
+      // Okno náhledu skončené výhrou robota není běh relace.
+      if (preview === null && outcomeOf(state) !== 'running') endedOnce = true;
+      preview = null;
+      previewStart = null;
+      previewGap = 0;
       state = instantiate(world);
       prev = Int32Array.from(state);
       log = [];
@@ -336,11 +381,24 @@ export function createArcadeSession(
       halted = false;
       notify();
     },
+    startPreview: (window) => {
+      session.restart();
+      const decoded = decodePreview(window);
+      preview = { startTick: decoded.startTick, endTick: decoded.endTick, inputs: decoded.inputs };
+      demoView = { ended: false, verified: null, preview: true };
+      // Tichý dopočet: tiky bez záznamu a bez posluchačů, kreslení se dozví jednou na konci.
+      while ((state[HEADER.tick] as number) < preview.startTick && outcomeOf(state) === 'running') scriptedTick(preview.inputs);
+      prev.set(state);
+      previewStart = worldHasPhysics(world) ? null : Int32Array.from(state);
+      started = true;
+      halted = false;
+      notify();
+    },
     demo: () => demoView,
-    humanRun: () => script === null && !replayed,
-    playedOnce: () => endedOnce || outcomeOf(state) !== 'running',
+    humanRun: () => script === null && preview === null && !replayed,
+    playedOnce: () => endedOnce || (preview === null && outcomeOf(state) !== 'running'),
     live: (patch) => {
-      if (script !== null || replayed || outcomeOf(state) !== 'running') return 'The game is not being played right now.';
+      if (script !== null || preview !== null || replayed || outcomeOf(state) !== 'running') return 'The game is not being played right now.';
       const entry: LiveEntry = { tick: state[HEADER.tick] as number, patch };
       const verdict = acceptLive(world, state, patchLog, entry);
       if (!verdict.ok) return verdict.reason;

@@ -1,0 +1,659 @@
+{
+ "task": "T15d",
+ "profile": "Pixel 7, CPU 4x, d3d11",
+ "windowMs": 10000,
+ "base": "58a47982 (T14, D:/tmp/p54b-base-t13, next start -p 3352)",
+ "build": "3a949d66",
+ "method": "Prokládaně scénu po scéně (play-look-shots.mjs perf --vs, --repeats 2: A B, B A). Brána −5 % platí pro medián změny přes 30 scén; jednotlivá scéna smí kolísat, nemá-li víc volání. Scény se vzorkem < 1 FPS (stránka 10 s stála) v kterékoli verzi přeměřeny; jungle-platform měl zamrzlý vzorek základu i podruhé.",
+ "scenes": 30,
+ "medianDeltaPct": -1.8,
+ "worstDeltaPct": -33.9,
+ "triangles": {
+  "note": "e2e/play-perf.spec.ts, PERF_GAMES=drive, 3 běhy, medián; počítáno na úrovni WebGL (obraz i stín).",
+  "phoneBefore": {
+   "trianglesMedian": 566479,
+   "callsMedian": 63,
+   "fpsP50": 59.9
+  },
+  "phoneAfter": {
+   "trianglesMedian": 79876,
+   "callsMedian": 58,
+   "fpsP50": 59.9
+  },
+  "desktopAfter": {
+   "trianglesMedian": 496198,
+   "callsMedian": 96,
+   "fpsP50": 59.9
+  }
+ },
+ "runs": [
+  {
+   "label": "sentences, A B × 2 (z výpisu konzole – zápis JSON spadl na chybějící složku)",
+   "repeats": 2,
+   "rows": [
+    {
+     "id": "forest-runner",
+     "before": {
+      "fpsMedian": 35.4,
+      "samples": [
+       30.6,
+       40.2
+      ],
+      "calls": 62
+     },
+     "after": {
+      "fpsMedian": 30.8,
+      "samples": [
+       26.2,
+       35.3
+      ],
+      "calls": 60
+     },
+     "deltaPct": -13
+    },
+    {
+     "id": "forest-race",
+     "before": {
+      "fpsMedian": 46.6,
+      "samples": [
+       45.1,
+       48
+      ],
+      "calls": 65
+     },
+     "after": {
+      "fpsMedian": 43.3,
+      "samples": [
+       41.2,
+       45.4
+      ],
+      "calls": 62
+     },
+     "deltaPct": -7.1
+    },
+    {
+     "id": "forest-platform",
+     "before": {
+      "fpsMedian": 45.1,
+      "samples": [
+       45.1,
+       45
+      ],
+      "calls": 55
+     },
+     "after": {
+      "fpsMedian": 45.6,
+      "samples": [
+       45.8,
+       45.4
+      ],
+      "calls": 52
+     },
+     "deltaPct": 1.1
+    },
+    {
+     "id": "jungle-runner",
+     "before": {
+      "fpsMedian": 37.1,
+      "samples": [
+       39.1,
+       35.2
+      ],
+      "calls": 57
+     },
+     "after": {
+      "fpsMedian": 38.5,
+      "samples": [
+       38,
+       39.1
+      ],
+      "calls": 55
+     },
+     "deltaPct": 3.8
+    },
+    {
+     "id": "jungle-race",
+     "before": {
+      "fpsMedian": 39.6,
+      "samples": [
+       47.6,
+       31.6
+      ],
+      "calls": 56
+     },
+     "after": {
+      "fpsMedian": 36.7,
+      "samples": [
+       35.8,
+       37.7
+      ],
+      "calls": 51
+     },
+     "deltaPct": -7.3
+    },
+    {
+     "id": "desert-platform",
+     "before": {
+      "fpsMedian": 42.1,
+      "samples": [
+       37.7,
+       46.4
+      ],
+      "calls": 46
+     },
+     "after": {
+      "fpsMedian": 37,
+      "samples": [
+       28.4,
+       45.6
+      ],
+      "calls": 35
+     },
+     "deltaPct": -12.1
+    },
+    {
+     "id": "city-runner",
+     "before": {
+      "fpsMedian": 32.1,
+      "samples": [
+       37.1,
+       27
+      ],
+      "calls": 101
+     },
+     "after": {
+      "fpsMedian": 31.5,
+      "samples": [
+       35.5,
+       27.6
+      ],
+      "calls": 95
+     },
+     "deltaPct": -1.9
+    },
+    {
+     "id": "city-platform",
+     "before": {
+      "fpsMedian": 32.7,
+      "samples": [
+       25.9,
+       39.5
+      ],
+      "calls": 75
+     },
+     "after": {
+      "fpsMedian": 32.5,
+      "samples": [
+       26.3,
+       38.8
+      ],
+      "calls": 70
+     },
+     "deltaPct": -0.6
+    }
+   ],
+   "order": "A B, B A"
+  },
+  {
+   "label": "genres, A B × 2",
+   "repeats": 2,
+   "rows": [
+    {
+     "id": "g-runner",
+     "before": {
+      "fpsMedian": 31.3,
+      "samples": [
+       27.7,
+       34.8
+      ],
+      "calls": 63
+     },
+     "after": {
+      "fpsMedian": 32.2,
+      "samples": [
+       31.6,
+       32.7
+      ],
+      "calls": 59
+     },
+     "deltaPct": 2.9
+    },
+    {
+     "id": "g-race",
+     "before": {
+      "fpsMedian": 46.1,
+      "samples": [
+       39.8,
+       52.4
+      ],
+      "calls": 58
+     },
+     "after": {
+      "fpsMedian": 39.2,
+      "samples": [
+       45.9,
+       32.5
+      ],
+      "calls": 49
+     },
+     "deltaPct": -15
+    },
+    {
+     "id": "g-platform",
+     "before": {
+      "fpsMedian": 45.7,
+      "samples": [
+       45.6,
+       45.8
+      ],
+      "calls": 55
+     },
+     "after": {
+      "fpsMedian": 43.9,
+      "samples": [
+       43.4,
+       44.3
+      ],
+      "calls": 52
+     },
+     "deltaPct": -3.9
+    },
+    {
+     "id": "g-arena",
+     "before": {
+      "fpsMedian": 39.6,
+      "samples": [
+       34.9,
+       44.4
+      ],
+      "calls": 42
+     },
+     "after": {
+      "fpsMedian": 33.5,
+      "samples": [
+       33.9,
+       33.1
+      ],
+      "calls": 38
+     },
+     "deltaPct": -15.4
+    },
+    {
+     "id": "g-fight",
+     "before": {
+      "fpsMedian": 37.4,
+      "samples": [
+       29.4,
+       45.3
+      ],
+      "calls": 63
+     },
+     "after": {
+      "fpsMedian": 36.5,
+      "samples": [
+       35,
+       38
+      ],
+      "calls": 57
+     },
+     "deltaPct": -2.4
+    },
+    {
+     "id": "g-quest",
+     "before": {
+      "fpsMedian": 37.1,
+      "samples": [
+       37.2,
+       36.9
+      ],
+      "calls": 49
+     },
+     "after": {
+      "fpsMedian": 39.2,
+      "samples": [
+       37.9,
+       40.4
+      ],
+      "calls": 41
+     },
+     "deltaPct": 5.7
+    },
+    {
+     "id": "g-agar",
+     "before": {
+      "fpsMedian": 50,
+      "samples": [
+       49.2,
+       50.8
+      ],
+      "calls": 37
+     },
+     "after": {
+      "fpsMedian": 54,
+      "samples": [
+       54,
+       54
+      ],
+      "calls": 32
+     },
+     "deltaPct": 8
+    },
+    {
+     "id": "g-walker",
+     "before": {
+      "fpsMedian": 48.2,
+      "samples": [
+       51.9,
+       44.4
+      ],
+      "calls": 38
+     },
+     "after": {
+      "fpsMedian": 39.6,
+      "samples": [
+       37,
+       42.3
+      ],
+      "calls": 31
+     },
+     "deltaPct": -17.8
+    },
+    {
+     "id": "g-glide",
+     "before": {
+      "fpsMedian": 43.8,
+      "samples": [
+       45.1,
+       42.4
+      ],
+      "calls": 46
+     },
+     "after": {
+      "fpsMedian": 40.6,
+      "samples": [
+       36.7,
+       44.4
+      ],
+      "calls": 35
+     },
+     "deltaPct": -7.3
+    },
+    {
+     "id": "g-ball",
+     "before": {
+      "fpsMedian": 36,
+      "samples": [
+       38.7,
+       33.2
+      ],
+      "calls": 78
+     },
+     "after": {
+      "fpsMedian": 35.4,
+      "samples": [
+       36.2,
+       34.6
+      ],
+      "calls": 73
+     },
+     "deltaPct": -1.7
+    },
+    {
+     "id": "g-flap",
+     "before": {
+      "fpsMedian": 44.7,
+      "samples": [
+       47.8,
+       41.6
+      ],
+      "calls": 45
+     },
+     "after": {
+      "fpsMedian": 42.7,
+      "samples": [
+       45.9,
+       39.6
+      ],
+      "calls": 46
+     },
+     "deltaPct": -4.5
+    },
+    {
+     "id": "g-shooter",
+     "before": {
+      "fpsMedian": 29,
+      "samples": [
+       28.5,
+       29.5
+      ],
+      "calls": 40
+     },
+     "after": {
+      "fpsMedian": 29.1,
+      "samples": [
+       27.3,
+       30.9
+      ],
+      "calls": 37
+     },
+     "deltaPct": 0.3
+    },
+    {
+     "id": "g-timing",
+     "before": {
+      "fpsMedian": 41.9,
+      "samples": [
+       42.8,
+       41
+      ],
+      "calls": 35
+     },
+     "after": {
+      "fpsMedian": 27.7,
+      "samples": [
+       22.4,
+       33
+      ],
+      "calls": 32
+     },
+     "deltaPct": -33.9
+    },
+    {
+     "id": "g-rhythm",
+     "before": {
+      "fpsMedian": 22.5,
+      "samples": [
+       33.2,
+       11.8
+      ],
+      "calls": 58
+     },
+     "after": {
+      "fpsMedian": 23.2,
+      "samples": [
+       13.6,
+       32.8
+      ],
+      "calls": 59
+     },
+     "deltaPct": 3.1
+    },
+    {
+     "id": "g-duel",
+     "before": {
+      "fpsMedian": 25.8,
+      "samples": [
+       19.8,
+       31.7
+      ],
+      "calls": 18
+     },
+     "after": {
+      "fpsMedian": 27.4,
+      "samples": [
+       24.1,
+       30.6
+      ],
+      "calls": 27
+     },
+     "deltaPct": 6.2
+    },
+    {
+     "id": "g-lander",
+     "before": {
+      "fpsMedian": 47.3,
+      "samples": [
+       49.2,
+       45.4
+      ],
+      "calls": 18
+     },
+     "after": {
+      "fpsMedian": 50.2,
+      "samples": [
+       46,
+       54.5
+      ],
+      "calls": 19
+     },
+     "deltaPct": 6.1
+    }
+   ],
+   "order": "A B, B A"
+  },
+  {
+   "label": "věty se zamrzlým vzorkem v prvním kole, znovu",
+   "repeats": 2,
+   "rows": [
+    {
+     "id": "jungle-platform",
+     "before": {
+      "fpsMedian": 21.5,
+      "samples": [
+       0.1,
+       42.8
+      ],
+      "calls": 52
+     },
+     "after": {
+      "fpsMedian": 42.9,
+      "samples": [
+       41.4,
+       44.4
+      ],
+      "calls": 48
+     },
+     "deltaPct": 99.5
+    },
+    {
+     "id": "desert-runner",
+     "before": {
+      "fpsMedian": 41.1,
+      "samples": [
+       32.9,
+       49.3
+      ],
+      "calls": 70
+     },
+     "after": {
+      "fpsMedian": 41.9,
+      "samples": [
+       39.3,
+       44.5
+      ],
+      "calls": 60
+     },
+     "deltaPct": 1.9
+    },
+    {
+     "id": "desert-race",
+     "before": {
+      "fpsMedian": 45.8,
+      "samples": [
+       43.5,
+       48.1
+      ],
+      "calls": 77
+     },
+     "after": {
+      "fpsMedian": 48.5,
+      "samples": [
+       47.5,
+       49.5
+      ],
+      "calls": 69
+     },
+     "deltaPct": 5.9
+    },
+    {
+     "id": "city-race",
+     "before": {
+      "fpsMedian": 32.7,
+      "samples": [
+       35.1,
+       30.3
+      ],
+      "calls": 111
+     },
+     "after": {
+      "fpsMedian": 26.5,
+      "samples": [
+       27.1,
+       25.9
+      ],
+      "calls": 107
+     },
+     "deltaPct": -19
+    }
+   ],
+   "order": "A B, B A"
+  },
+  {
+   "label": "žánry se zamrzlým vzorkem v prvním kole, znovu",
+   "repeats": 2,
+   "rows": [
+    {
+     "id": "g-throw",
+     "before": {
+      "fpsMedian": 48.3,
+      "samples": [
+       50.7,
+       46
+      ],
+      "calls": 59
+     },
+     "after": {
+      "fpsMedian": 49,
+      "samples": [
+       49.3,
+       48.7
+      ],
+      "calls": 54
+     },
+     "deltaPct": 1.4
+    },
+    {
+     "id": "g-voyage",
+     "before": {
+      "fpsMedian": 44.2,
+      "samples": [
+       42.3,
+       46.1
+      ],
+      "calls": 46
+     },
+     "after": {
+      "fpsMedian": 40.2,
+      "samples": [
+       39.6,
+       40.7
+      ],
+      "calls": 43
+     },
+     "deltaPct": -9
+    }
+   ],
+   "order": "A B, B A"
+  }
+ ]
+}
