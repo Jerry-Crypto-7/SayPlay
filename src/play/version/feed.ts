@@ -50,7 +50,19 @@ function isRemix(row: RecentGame): boolean {
 
 /** `PLAY_FEED_HIDE` – čárkami oddělená `versionId`; mezery a prázdné položky se ignorují. */
 export function hiddenFromEnv(env: Record<string, string | undefined>): ReadonlySet<string> {
-  return new Set((env.PLAY_FEED_HIDE ?? '').split(',').map((id) => id.trim()).filter((id) => id !== ''));
+  return idList(env.PLAY_FEED_HIDE);
+}
+
+/**
+ * `PLAY_FEED_KEEP` – hry, které hlasy z feedu neskryjí (P54A T11a): provozovatel hru vrátí bez
+ * mazání klíčů hlasů. `PLAY_FEED_HIDE` platí i pro ně. Zápis jako `PLAY_FEED_HIDE`.
+ */
+export function keptFromEnv(env: Record<string, string | undefined>): ReadonlySet<string> {
+  return idList(env.PLAY_FEED_KEEP);
+}
+
+function idList(text: string | undefined): ReadonlySet<string> {
+  return new Set((text ?? '').split(',').map((id) => id.trim()).filter((id) => id !== ''));
 }
 
 interface Cursor {

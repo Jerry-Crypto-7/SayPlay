@@ -137,6 +137,12 @@ export interface VersionStore {
   reportGame(versionId: string, voter: string): Promise<void>;
   /** Hry z `versionIds` s aspoň `REPORT_HIDE_VOTES` hlasy, jedním čtením; nedostupné úložiště = žádná (zbude `PLAY_FEED_HIDE`). */
   reportHidden(versionIds: readonly string[]): Promise<Set<string>>;
+  /**
+   * Nahlášené hry pro provozovatele (P54A T11a, `scripts/p37c/reported.mjs`): id a počet hlasů, od
+   * naposledy poprvé nahlášené, nejvýš `REPORTED_KEPT`. Vestavěnou hru dveře nezapíšou, tady tedy
+   * není. Výpadek je `VersionStoreUnavailable` – prázdný seznam by lhal.
+   */
+  reportedGames(): Promise<{ readonly versionId: string; readonly votes: number }[]>;
   /** Hráč (P44B T3) podle id z podepsané cookie; `null` = bez uložené přezdívky, i při výpadku úložiště. */
   getPlayer(playerId: string): Promise<PlayerRecord | null>;
   /** Uloží hráče na dobu života hry. Výpadek je `VersionStoreUnavailable`. */
@@ -270,6 +276,8 @@ export const GHOST_DAILY_CAP_PER_CALLER = 10;
 export const LOOP_VOTE_TTL_SECONDS = 24 * 3600;
 /** Tolik různých volajících hru nahlásí, než zmizí z feedu (P54A T11). */
 export const REPORT_HIDE_VOTES = 3;
+/** Kolik naposledy nahlášených her si seznam pro provozovatele pamatuje (P54A T11a). */
+export const REPORTED_KEPT = 500;
 /** Kolik hlasů si proces pamatuje, než paměť zahodí (pak rozhodne `SET NX` v úložišti). */
 const MAX_VOTE_MEMO = 20_000;
 /**
@@ -557,6 +565,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const voteKey = (vote: string): string => `${prefix}:play:loop-vote:${vote}`;
   const reportKey = (versionId: string): string => `${prefix}:play:report:${versionId}`;
   const reportVoteKey = (versionId: string, voter: string): string => `${prefix}:play:report-vote:${versionId}:${voter}`;
+  const reportedKey = `${prefix}:play:reported`;
   const playerKey = (playerId: string): string => `${prefix}:play:player:${playerId}`;
   const boardKey = (versionId: string): string => `${prefix}:play:board:${versionId}`;
   const boardRunKey = (versionId: string, playerId: string): string => `${prefix}:play:board-run:${versionId}:${playerId}`;
@@ -853,7 +862,20 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
     async reportGame(versionId, voter) {
       try {
         // Hlas žije jako hra: tři hlasy jsou vždy tři různí volající, ne jeden za tři dny.
-        if (await raw.setNx(reportVoteKey(versionId, voter), '1', limits.ttlSeconds)) await raw.incr(reportKey(versionId), limits.ttlSeconds);
+        if (await raw.setNx(reportVoteKey(versionId, voter), '1', limits.ttlSeconds)) {
+          // První hlas hru zapíše do seznamu nahlášených (T11a): provozovatel vidí, co kontrolovat.
+          if ((await raw.incr(reportKey(versionId), limits.ttlSeconds)) === 1) await raw.pushCapped(reportedKey, versionId, REPORTED_KEPT, limits.ttlSeconds);
+        }
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async reportedGames() {
+      try {
+        // Hra, jejíž hlasy vypršely, se při novém prvním hlasu zapíše znovu.
+        const ids = [...new Set(await raw.head(reportedKey, REPORTED_KEPT))];
+        const texts = ids.length === 0 ? [] : await raw.getMany(ids.map(reportKey));
+        return ids.map((versionId, index) => ({ versionId, votes: Number(texts[index] ?? '0') }));
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }

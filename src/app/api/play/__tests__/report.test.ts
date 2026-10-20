@@ -8,12 +8,13 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { __resetProcessVersionStore } from '@/play/version';
+import { __resetProcessVersionStore, DEFAULT_WRITE_LIMITS, httpVersionStore, memoryVersionStore, VersionStoreUnavailable } from '@/play/version';
 import { BUILTIN_GAMES } from '@/play/version/builtin';
-import { REPORT_HIDE_VOTES } from '@/play/version/store';
+import { REPORT_HIDE_VOTES, REPORTED_KEPT } from '@/play/version/store';
 import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '@/server/rate-limit';
 
-import { callerOf } from '../_publish';
+import { reportedRows, storeFrom } from '../../../../../scripts/p37c/reported.mjs';
+import { callerOf, store } from '../_publish';
 import { POST as reportGame } from '../games/[id]/report/route';
 import { POST as remixGame } from '../games/[id]/remix/route';
 import { GET as listGames } from '../games/route';
@@ -102,5 +103,80 @@ describe('POST /api/play/games/:id/report (P54A T11)', () => {
     expect(refused.status).toBe(429);
     expect(refused.headers.get('retry-after')).not.toBeNull();
     expect(await feedIds()).toEqual([remix]);
+  });
+});
+
+/** Provozovatel vidí nahlášené hry a vrátí neprávem skrytou (P54A T11a, nález revize T11-1). */
+describe('reported games for the operator (P54A T11a)', () => {
+  const builtinIds = BUILTIN_GAMES.map((game) => game.version.versionId).join(',');
+
+  beforeEach(() => {
+    resetRateWindows();
+    __resetProcessVersionStore();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    __resetProcessVersionStore();
+  });
+
+  it('PLAY_FEED_KEEP brings back a game three votes hid; PLAY_FEED_HIDE still hides it', async () => {
+    vi.stubEnv('PLAY_FEED_HIDE', builtinIds);
+    const remix = await publishedRemix();
+    vi.stubEnv('VERCEL', '1');
+    for (const ip of ['203.0.113.60', '203.0.113.61', '203.0.113.62']) expect((await report(remix, ip)).status).toBe(204);
+    expect(await feedIds()).toEqual([]);
+
+    vi.stubEnv('PLAY_FEED_KEEP', ` ${'0'.repeat(32)} , ${remix} ,`);
+    expect(await feedIds()).toEqual([remix]);
+    vi.stubEnv('PLAY_FEED_HIDE', `${builtinIds},${remix}`);
+    expect(await feedIds()).toEqual([]);
+  });
+
+  it('lists a game from its first vote, once, with votes and title, and never a built-in game', async () => {
+    vi.stubEnv('PLAY_FEED_HIDE', builtinIds);
+    const remix = await publishedRemix();
+    vi.stubEnv('VERCEL', '1');
+    expect(await reportedRows(store())).toEqual([]);
+
+    expect((await report(remix, '203.0.113.70')).status).toBe(204);
+    const title = (await store().get(remix))!.version.title;
+    expect(await reportedRows(store())).toEqual([{ versionId: remix, votes: 1, title }]);
+    expect((await report(remix, '203.0.113.71')).status).toBe(204);
+    expect((await report(BUILTIN, '203.0.113.72')).status).toBe(204);
+    expect(await reportedRows(store())).toEqual([{ versionId: remix, votes: 2, title }]);
+  });
+
+  it('orders by first vote, keeps the latest REPORTED_KEPT games, and an outage is an error, not an empty list', async () => {
+    const id = (n: number): string => n.toString(16).padStart(32, '0');
+    const versions = memoryVersionStore();
+    await versions.reportGame(id(0), 'a');
+    await versions.reportGame(id(1), 'a');
+    // Další hlas hru v seznamu neposune: provozovatel ji už viděl.
+    await versions.reportGame(id(0), 'b');
+    expect(await versions.reportedGames()).toEqual([
+      { versionId: id(1), votes: 1 },
+      { versionId: id(0), votes: 2 },
+    ]);
+
+    for (let n = 2; n <= REPORTED_KEPT; n += 1) await versions.reportGame(id(n), 'a');
+    const listed = (await versions.reportedGames()).map((row) => row.versionId);
+    expect(listed).toHaveLength(REPORTED_KEPT);
+    expect(listed[0]).toBe(id(REPORTED_KEPT));
+    expect(listed).not.toContain(id(0));
+    expect(listed).toContain(id(1));
+
+    const down: typeof fetch = () => Promise.reject(new Error('connect ECONNREFUSED'));
+    const unreachable = httpVersionStore({ url: 'https://store.test', token: 't', prefix: 'test', timeoutMs: 1_000, limits: DEFAULT_WRITE_LIMITS }, down);
+    await expect(unreachable.reportedGames()).rejects.toBeInstanceOf(VersionStoreUnavailable);
+  });
+
+  it('the script reads the shared store only with an explicit prefix and both store variables', () => {
+    const kv = { KV_REST_API_URL: 'https://store.test', KV_REST_API_TOKEN: 'token' };
+    expect(() => storeFrom(['--prefix'], kv)).toThrow(/--prefix/);
+    expect(() => storeFrom(['--prefix', '--json'], kv)).toThrow(/--prefix/);
+    expect(() => storeFrom(['--prefix', 'worldsmith:spend'], {})).toThrow(/KV_REST_API_URL/);
+    expect(storeFrom(['--prefix', 'worldsmith:spend'], kv).id).toBe('http');
+    expect(() => storeFrom([], { VERCEL: '1' })).toThrow(/--prefix/);
   });
 });

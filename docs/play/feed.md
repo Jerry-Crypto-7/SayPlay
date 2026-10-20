@@ -96,7 +96,11 @@ rows no newer than `top`. So:
   built-in game is hidden only through `PLAY_FEED_HIDE`. Callers are told apart by the trusted address
   (`trustedCallerKey`, Vercel's `x-vercel-forwarded-for`); without one (`x-forwarded-for` written by the
   client) all callers together are one vote, so off Vercel reports never hide a game. One person with
-  three addresses (mobile data, Wi-Fi, a VPN) still counts as three callers.
+  three addresses (mobile data, Wi-Fi, a VPN) still counts as three callers, so the operator can undo
+  it (P54A T11a): a game's first vote puts it on the reported list (`play:reported`, the latest 500),
+  `scripts/p37c/reported.mjs` prints each game's id, votes and title, and `PLAY_FEED_KEEP`
+  (comma-separated `versionId`s, read per request) takes a game out of the votes, so it comes back
+  without deleting any key – `PLAY_FEED_HIDE` still hides it.
 
 **The feed is never empty (P37C T6).** `scripts/p37c/seed-feed.mjs` builds games from the starter
 sentences and the dev set (`evals/play/p30/dev.json`, never the sealed set) the way `POST` would,
