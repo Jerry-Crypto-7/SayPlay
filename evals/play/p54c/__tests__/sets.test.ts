@@ -115,4 +115,24 @@ describe('P54C sets', () => {
     expect(holdout.filter((s) => dev.has(normalizeSentence(s.text))).map((s) => s.id)).toEqual([]);
     expect(new Set(holdout.map((s) => normalizeSentence(s.text))).size).toBe(holdout.length);
   });
+
+  // T16 (pin): holdout otevřený dvakrát je dev sada. Záznam otevření nese otisk zapečetěné sady a `final.json` je
+  // z téhož otevření – jeho souhrn sedí na řádky všech 80 vět, takže číslo ve zprávě nejde přepsat bez nového měření.
+  it('was opened once for the final report, and final.json summarises exactly its 80 rows (T16)', () => {
+    const opened = JSON.parse(readLf(join(DIR, 'holdout-opened.json'))) as { sha256: string; commit: string };
+    const final = JSON.parse(readLf(join(DIR, 'final.json'))) as {
+      sha256: string;
+      commit: string;
+      summary: { targetGenre: { hit: number; of: number }; distractorStays: { hit: number; of: number }; playable: { hit: number; of: number } };
+      rows: { id: string; family: string; genreOk: boolean; bot: { wins: boolean } }[];
+    };
+    expect(opened.sha256).toBe(P54C_HOLDOUT_SHA256);
+    expect(final.sha256).toBe(P54C_HOLDOUT_SHA256);
+    expect(final.commit).toBe(opened.commit);
+    expect(final.rows.map((row) => row.id)).toEqual(HOLDOUT().sentences.map((s) => s.id));
+    const targets = final.rows.filter((row) => row.family === 'target');
+    expect(final.summary.targetGenre).toMatchObject({ hit: targets.filter((row) => row.genreOk).length, of: 60 });
+    expect(final.summary.distractorStays).toMatchObject({ hit: final.rows.filter((row) => row.family === 'distractor' && row.genreOk).length, of: 20 });
+    expect(final.summary.playable).toMatchObject({ hit: final.rows.filter((row) => row.bot.wins).length, of: 80 });
+  });
 });

@@ -443,6 +443,15 @@ Nová verze promptu → 25 odpovědí nahraných znovu (`record.cmd`, 25 volán�
 - **E2E** (`next start` na 3321, prázdné `PLAY_STORE_DIR`, `PLAY_LAB=1`, `FALLBACK_SMOKE_URL`): `play-catch` 3/3, `play-whack` 3/3, `play-defense` 3/3, `play-slice` 3/3, `play-hop` 3/3, `play-crowd` 3/3 (po opravě testu), `play-merge` 3/3, `play-push` 3/3, `play-ball` 4/4, `p36-dare` 4/4, `interface-language` 3/3, `p35-perf` 17/17, `play-physics-determinism` 8/8, `play-share` 4/5 (týž červený test jako v T15, na `main` od P40, soubor P54A).
   - **`play-crowd` nestabilní – opraveno v testu.** V sadě a pak v jednom ze tří samostatných běhů dav prošel 29 bran místo 30 (hra vyhraná, test chce přesně 30). Příčina: `touchMove` přes CDP doručí Chromium jako `pointermove` až s dalším snímkem, takže ruční tik občas přečetl starou osu; robot pak tah opakoval (102–110 tahů prstu v běhu). Test po každém tahu počká jeden snímek (`requestAnimationFrame`): 4/4 běhy 30/30 a stálých 17 tahů. Táž mezera stála v `play-catch` a `play-merge` (zelené, ale stejný vzor), opravené stejně, oba 2× zelené; `play-push` čeká dva snímky už od T12. Kód hry se nemění.
 
+## T16 – zapečetěný holdout (`final.json`, `final.md`, `holdout-opened.json`)
+
+Holdout otevřený jednou (`holdout.measure.ts`: otisk se ověří, `holdout-opened.json` se zapíše před prvním čtením vět a druhý běh odmítne). Cesta produkce bez modelu, semínko 1. Celá zpráva v `final.md`.
+
+- **Správný žánr u cílových vět 37/60 = 0,62 – brána 0,8 nesplněná.** MVP 14/32 (chytání 2/8, bouchání 4/8, obrana 3/8, krájení 5/8), po odevzdání 23/28 (přeskákání 6/7, dav 4/7, slučování 7/7, vytlačování 6/7).
+- Rušivé věty 20/20 mimo nové žánry, hratelné 80/80, výhra 30–90 s 76/80 (cílové 59/60), nečinný prohraje 80/80, přehrání 80/80.
+- Klasifikátor a návrh se shodují u všech 80 vět – minutí vzniká při čtení věty. Minuté věty popisují žánr jinými slovy než dev sada („pop up“, „smash“, „falling … basket“, „swipe … split“, „x2 gates“).
+- **Pin:** `__tests__/sets.test.ts` – záznam otevření i `final.json` nesou otisk zapečetěné sady a stejný commit, řádky jsou přesně 80 vět holdoutu a souhrn bran sedí na řádky. Přepsané číslo v souhrnu test shodí (ověřeno, `final.json` obnovený ze zálohy).
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.
@@ -598,4 +607,7 @@ Nová verze promptu → 25 odpovědí nahraných znovu (`record.cmd`, 25 volán�
 - T14b: živě jen 60 z 80 vět (fáze 3, pasti, 3 věty na žánr pruhů) – se 25 nahrávkami P46E to drží strop 200 volání s T14 dohromady (190); žánry pruhů změřil celé T14 a jejich řádky prompt nemění, takže vzorek hlídá jen, že je zhuštění nerozbilo.
 - T14b: odpovědi a souhrn T14 přejmenované (`director-answers-t14.json`, `director-t14.json`), ne přepsané – nová verze promptu by je jinak smazala a čísla MVP by zmizela.
 - T14b: „každá hra režiséra projde robotem“ čtené jako výhra robota, nečinný prohraje, replay sedí (57/57). Pět her pod 30 s jde do T14br1, ne do T14b: oprava sedí v mezích modulů hop, merge a push, pohne promptem režiséra a znovu nahrávkami P46E, na které už z 200 volání nezbývá.
+- T16: holdout otevřený před routovanými nálezy T14br1 a T12r1, jak určuje pořadí dávek plánu (dávka 12 po dávce 11) – číslo popisuje kód po fázi 3, ne po nálezech; T14br1 by na holdoutu pohnul nejvýš délkou výhry (věty s číslem), žánr nemění.
+- T16: „správný žánr“ = žánr hry z návrhu (co hráč dostane); klasifikátor zapsaný vedle a shoduje se u všech vět. Brána délky výhry počítá všech 80 vět, jak ji AC píše; cílové věty zvlášť (59/60).
+- T16: minuté cílové věty přečtené jen pro popis vzoru ve zprávě; podle nich se nic neladí a holdout dál platí jako spotřebovaný (další měření chce nový).
 - T14b: neživé recepty odpovědi (3 nahrávky P46E, p06) neopravené – AC připouští rychlou verzi s důvodem a rozdělení řádku `run, jump` zpět by přeteklo 15 000 B a chtělo další nahrávání; zapsané jako T14br2.

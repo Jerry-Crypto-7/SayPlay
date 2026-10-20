@@ -1,0 +1,1734 @@
+{
+ "schema": "p54c-final.v1",
+ "about": "P54C T16: the sealed holdout (holdout.json, 60 targets + 20 distractors by an independent author) opened once. Classifier and quick draft on seed 1 with Rapier loaded (production path without a model); bot = verifyArcade on the drafted game. genreOk: a target plays its genre, a distractor plays none of the eight new genres. See final.md.",
+ "commit": "c6431250",
+ "sha256": "c3d545c53a59d8569f264466818bf3172fbba49a9914928d1efd7b6e650eca68",
+ "gates": {
+  "targetGenre": 0.8,
+  "distractorStays": 0.85,
+  "playable": 1,
+  "winSeconds": 0.9
+ },
+ "summary": {
+  "targetGenre": {
+   "hit": 37,
+   "of": 60,
+   "share": 0.617,
+   "gate": 0.8
+  },
+  "targetClassify": {
+   "hit": 37,
+   "of": 60,
+   "share": 0.617
+  },
+  "distractorStays": {
+   "hit": 20,
+   "of": 20,
+   "share": 1,
+   "gate": 0.85,
+   "playedNew": []
+  },
+  "playable": {
+   "hit": 80,
+   "of": 80,
+   "share": 1,
+   "gate": 1,
+   "notWon": []
+  },
+  "winSeconds": {
+   "hit": 76,
+   "of": 80,
+   "share": 0.95,
+   "gate": 0.9,
+   "targets": {
+    "hit": 59,
+    "of": 60,
+    "share": 0.983
+   },
+   "outside": [
+    "h55: arena.collect 21.7 s",
+    "h58: throw.default 27.1 s",
+    "h65: voyage.race 28.1 s",
+    "h80: throw.default 13.8 s"
+   ]
+  },
+  "idleLoses": {
+   "hit": 80,
+   "of": 80,
+   "share": 1
+  },
+  "replayEqual": {
+   "hit": 80,
+   "of": 80,
+   "share": 1
+  },
+  "byGenre": {
+   "catch": {
+    "phase": "mvp",
+    "genre": {
+     "hit": 2,
+     "of": 8,
+     "share": 0.25
+    },
+    "classify": {
+     "hit": 2,
+     "of": 8,
+     "share": 0.25
+    },
+    "botWins": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "winSeconds": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "played": {
+     "arena.escape": 3,
+     "catch.default": 2,
+     "arena.collect": 2,
+     "runner.default": 1
+    }
+   },
+   "whack": {
+    "phase": "mvp",
+    "genre": {
+     "hit": 4,
+     "of": 8,
+     "share": 0.5
+    },
+    "classify": {
+     "hit": 4,
+     "of": 8,
+     "share": 0.5
+    },
+    "botWins": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "winSeconds": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "played": {
+     "whack.default": 4,
+     "arena.escape": 1,
+     "quest.spatial": 3
+    }
+   },
+   "defense": {
+    "phase": "mvp",
+    "genre": {
+     "hit": 3,
+     "of": 8,
+     "share": 0.375
+    },
+    "classify": {
+     "hit": 3,
+     "of": 8,
+     "share": 0.375
+    },
+    "botWins": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "winSeconds": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "played": {
+     "arena.collect": 2,
+     "runner.default": 2,
+     "defense.default": 3,
+     "shooter.default": 1
+    }
+   },
+   "slice": {
+    "phase": "mvp",
+    "genre": {
+     "hit": 5,
+     "of": 8,
+     "share": 0.625
+    },
+    "classify": {
+     "hit": 5,
+     "of": 8,
+     "share": 0.625
+    },
+    "botWins": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "winSeconds": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "played": {
+     "slice.default": 5,
+     "throw.default": 1,
+     "platformer.default": 1,
+     "quest.spatial": 1
+    }
+   },
+   "hop": {
+    "phase": "after-submission",
+    "genre": {
+     "hit": 6,
+     "of": 7,
+     "share": 0.857
+    },
+    "classify": {
+     "hit": 6,
+     "of": 7,
+     "share": 0.857
+    },
+    "botWins": {
+     "hit": 7,
+     "of": 7,
+     "share": 1
+    },
+    "winSeconds": {
+     "hit": 7,
+     "of": 7,
+     "share": 1
+    },
+    "played": {
+     "hop.default": 6,
+     "platformer.default": 1
+    }
+   },
+   "crowd": {
+    "phase": "after-submission",
+    "genre": {
+     "hit": 4,
+     "of": 7,
+     "share": 0.571
+    },
+    "classify": {
+     "hit": 4,
+     "of": 7,
+     "share": 0.571
+    },
+    "botWins": {
+     "hit": 7,
+     "of": 7,
+     "share": 1
+    },
+    "winSeconds": {
+     "hit": 6,
+     "of": 7,
+     "share": 0.857
+    },
+    "played": {
+     "crowd.default": 4,
+     "arena.collect": 1,
+     "voyage.race": 1,
+     "runner.default": 1
+    }
+   },
+   "merge": {
+    "phase": "after-submission",
+    "genre": {
+     "hit": 7,
+     "of": 7,
+     "share": 1
+    },
+    "classify": {
+     "hit": 7,
+     "of": 7,
+     "share": 1
+    },
+    "botWins": {
+     "hit": 7,
+     "of": 7,
+     "share": 1
+    },
+    "winSeconds": {
+     "hit": 7,
+     "of": 7,
+     "share": 1
+    },
+    "played": {
+     "merge.default": 7
+    }
+   },
+   "push": {
+    "phase": "after-submission",
+    "genre": {
+     "hit": 6,
+     "of": 7,
+     "share": 0.857
+    },
+    "classify": {
+     "hit": 6,
+     "of": 7,
+     "share": 0.857
+    },
+    "botWins": {
+     "hit": 7,
+     "of": 7,
+     "share": 1
+    },
+    "winSeconds": {
+     "hit": 7,
+     "of": 7,
+     "share": 1
+    },
+    "played": {
+     "push.default": 6,
+     "voyage.race": 1
+    }
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "h01",
+   "family": "target",
+   "genre": "catch",
+   "classify": "arena.escape",
+   "draft": "arena.escape",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 40,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h02",
+   "family": "distractor",
+   "genre": null,
+   "classify": "arena.escape",
+   "draft": "arena.escape",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 40,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h03",
+   "family": "target",
+   "genre": "defense",
+   "classify": "arena.collect",
+   "draft": "arena.collect",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h04",
+   "family": "target",
+   "genre": "slice",
+   "classify": "slice.default",
+   "draft": "slice.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 42.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h05",
+   "family": "target",
+   "genre": "hop",
+   "classify": "hop.default",
+   "draft": "hop.default",
+   "cell": "assembled.hop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 40.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h06",
+   "family": "target",
+   "genre": "whack",
+   "classify": "whack.default",
+   "draft": "whack.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 34.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h07",
+   "family": "target",
+   "genre": "merge",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "cell": "assembled.drop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 56.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h08",
+   "family": "distractor",
+   "genre": null,
+   "classify": "duel.default",
+   "draft": "duel.default",
+   "cell": "assembled.stationary",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 48.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h09",
+   "family": "target",
+   "genre": "crowd",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
+   "cell": "assembled.crowd",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h10",
+   "family": "target",
+   "genre": "push",
+   "classify": "push.default",
+   "draft": "push.default",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 53.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h11",
+   "family": "target",
+   "genre": "slice",
+   "classify": "slice.default",
+   "draft": "slice.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 42.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h12",
+   "family": "target",
+   "genre": "catch",
+   "classify": "catch.default",
+   "draft": "catch.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h13",
+   "family": "distractor",
+   "genre": null,
+   "classify": "quest.spatial",
+   "draft": "quest.spatial",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 50.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h14",
+   "family": "target",
+   "genre": "whack",
+   "classify": "whack.default",
+   "draft": "whack.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 34.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h15",
+   "family": "target",
+   "genre": "defense",
+   "classify": "runner.default",
+   "draft": "runner.default",
+   "cell": "assembled.run",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 60.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h16",
+   "family": "target",
+   "genre": "hop",
+   "classify": "hop.default",
+   "draft": "hop.default",
+   "cell": "assembled.hop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 40.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h17",
+   "family": "target",
+   "genre": "merge",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "cell": "assembled.drop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 56.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h18",
+   "family": "distractor",
+   "genre": null,
+   "classify": "voyage.race",
+   "draft": "runner.default",
+   "cell": "assembled.run",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 63.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h19",
+   "family": "target",
+   "genre": "push",
+   "classify": "platformer.default",
+   "draft": "voyage.race",
+   "cell": "assembled.drive",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 32.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h20",
+   "family": "target",
+   "genre": "crowd",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
+   "cell": "assembled.crowd",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h21",
+   "family": "target",
+   "genre": "catch",
+   "classify": "arena.collect",
+   "draft": "arena.collect",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 58.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h22",
+   "family": "target",
+   "genre": "slice",
+   "classify": "slice.default",
+   "draft": "slice.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 42.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h23",
+   "family": "distractor",
+   "genre": null,
+   "classify": "platformer.default",
+   "draft": "platformer.default",
+   "cell": "assembled.jump",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 41.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h24",
+   "family": "target",
+   "genre": "defense",
+   "classify": "defense.default",
+   "draft": "defense.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 47.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h25",
+   "family": "target",
+   "genre": "whack",
+   "classify": "arena.collect",
+   "draft": "arena.escape",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 40,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h26",
+   "family": "target",
+   "genre": "merge",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "cell": "assembled.drop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 56.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h27",
+   "family": "target",
+   "genre": "hop",
+   "classify": "platformer.default",
+   "draft": "platformer.default",
+   "cell": "assembled.jump",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 51,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h28",
+   "family": "distractor",
+   "genre": null,
+   "classify": "arena.collect",
+   "draft": "runner.default",
+   "cell": "assembled.run",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 60.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h29",
+   "family": "target",
+   "genre": "push",
+   "classify": "push.default",
+   "draft": "push.default",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 53.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h30",
+   "family": "target",
+   "genre": "catch",
+   "classify": "arena.escape",
+   "draft": "arena.escape",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 40,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h31",
+   "family": "target",
+   "genre": "crowd",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
+   "cell": "assembled.crowd",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h32",
+   "family": "distractor",
+   "genre": null,
+   "classify": "shooter.default",
+   "draft": "shooter.default",
+   "cell": "assembled.stationary",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 56.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h33",
+   "family": "target",
+   "genre": "slice",
+   "classify": "slice.default",
+   "draft": "slice.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 42.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h34",
+   "family": "target",
+   "genre": "whack",
+   "classify": "whack.default",
+   "draft": "whack.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 34.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h35",
+   "family": "target",
+   "genre": "defense",
+   "classify": "defense.default",
+   "draft": "defense.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 47.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h36",
+   "family": "distractor",
+   "genre": null,
+   "classify": "quest.station",
+   "draft": "quest.station",
+   "cell": "assembled.stationary",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 31.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h37",
+   "family": "target",
+   "genre": "merge",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "cell": "assembled.drop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 56.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h38",
+   "family": "target",
+   "genre": "hop",
+   "classify": "hop.default",
+   "draft": "hop.default",
+   "cell": "assembled.hop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 40.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h39",
+   "family": "target",
+   "genre": "catch",
+   "classify": "catch.default",
+   "draft": "catch.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h40",
+   "family": "target",
+   "genre": "push",
+   "classify": "push.default",
+   "draft": "push.default",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 53.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h41",
+   "family": "distractor",
+   "genre": null,
+   "classify": "throw.default",
+   "draft": "throw.default",
+   "cell": "assembled.stationary",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 33.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h42",
+   "family": "target",
+   "genre": "crowd",
+   "classify": "arena.collect",
+   "draft": "arena.collect",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h43",
+   "family": "target",
+   "genre": "slice",
+   "classify": "arena.collect",
+   "draft": "throw.default",
+   "cell": "assembled.stationary",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 33.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h44",
+   "family": "target",
+   "genre": "defense",
+   "classify": "shooter.default",
+   "draft": "shooter.default",
+   "cell": "assembled.stationary",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 56.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h45",
+   "family": "target",
+   "genre": "whack",
+   "classify": "quest.spatial",
+   "draft": "quest.spatial",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 41,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h46",
+   "family": "distractor",
+   "genre": null,
+   "classify": "arena.escape",
+   "draft": "quest.spatial",
+   "cell": "assembled.walk",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 50.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h47",
+   "family": "target",
+   "genre": "catch",
+   "classify": "throw.default",
+   "draft": "runner.default",
+   "cell": "assembled.run",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 63.3,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h48",
+   "family": "target",
+   "genre": "merge",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "cell": "assembled.drop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 56.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h49",
+   "family": "target",
+   "genre": "hop",
+   "classify": "hop.default",
+   "draft": "hop.default",
+   "cell": "assembled.hop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 40.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h50",
+   "family": "distractor",
+   "genre": null,
+   "classify": "quest.station",
+   "draft": "runner.default",
+   "cell": "assembled.run",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 62.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h51",
+   "family": "target",
+   "genre": "push",
+   "classify": "push.default",
+   "draft": "push.default",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 53.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h52",
+   "family": "target",
+   "genre": "slice",
+   "classify": "slice.default",
+   "draft": "slice.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 42.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h53",
+   "family": "target",
+   "genre": "crowd",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
+   "cell": "assembled.crowd",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h54",
+   "family": "target",
+   "genre": "whack",
+   "classify": "quest.spatial",
+   "draft": "quest.spatial",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 41,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h55",
+   "family": "distractor",
+   "genre": null,
+   "classify": "arena.collect",
+   "draft": "arena.collect",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 21.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h56",
+   "family": "target",
+   "genre": "defense",
+   "classify": "defense.default",
+   "draft": "defense.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 47.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h57",
+   "family": "target",
+   "genre": "catch",
+   "classify": "arena.escape",
+   "draft": "arena.escape",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 40,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h58",
+   "family": "distractor",
+   "genre": null,
+   "classify": "throw.default",
+   "draft": "throw.default",
+   "cell": "assembled.ball",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 27.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h59",
+   "family": "target",
+   "genre": "merge",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "cell": "assembled.drop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 56.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h60",
+   "family": "target",
+   "genre": "hop",
+   "classify": "hop.default",
+   "draft": "hop.default",
+   "cell": "assembled.hop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 40.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h61",
+   "family": "target",
+   "genre": "slice",
+   "classify": "platformer.default",
+   "draft": "platformer.default",
+   "cell": "assembled.jump",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 41.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h62",
+   "family": "distractor",
+   "genre": null,
+   "classify": "arena.escape",
+   "draft": "quest.spatial",
+   "cell": "assembled.walk",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 50.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h63",
+   "family": "target",
+   "genre": "whack",
+   "classify": "whack.default",
+   "draft": "whack.default",
+   "cell": "assembled.lanes",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 34.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h64",
+   "family": "target",
+   "genre": "push",
+   "classify": "push.default",
+   "draft": "push.default",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 53.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h65",
+   "family": "target",
+   "genre": "crowd",
+   "classify": "voyage.race",
+   "draft": "voyage.race",
+   "cell": "assembled.glide",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 28.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h66",
+   "family": "target",
+   "genre": "defense",
+   "classify": "arena.fight",
+   "draft": "runner.default",
+   "cell": "assembled.run",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 62.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h67",
+   "family": "distractor",
+   "genre": null,
+   "classify": "quest.station",
+   "draft": "runner.default",
+   "cell": "assembled.run",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 63.3,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h68",
+   "family": "target",
+   "genre": "catch",
+   "classify": "arena.escape",
+   "draft": "arena.collect",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 57.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h69",
+   "family": "distractor",
+   "genre": null,
+   "classify": "quest.station",
+   "draft": "runner.default",
+   "cell": "assembled.run",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 63.3,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h70",
+   "family": "target",
+   "genre": "slice",
+   "classify": "quest.spatial",
+   "draft": "quest.spatial",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 50.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h71",
+   "family": "target",
+   "genre": "merge",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "cell": "assembled.drop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 56.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h72",
+   "family": "distractor",
+   "genre": null,
+   "classify": "throw.default",
+   "draft": "throw.default",
+   "cell": "assembled.stationary",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 33.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h73",
+   "family": "target",
+   "genre": "hop",
+   "classify": "hop.default",
+   "draft": "hop.default",
+   "cell": "assembled.hop",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 40.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h74",
+   "family": "target",
+   "genre": "whack",
+   "classify": "quest.spatial",
+   "draft": "quest.spatial",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 41,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h75",
+   "family": "distractor",
+   "genre": null,
+   "classify": "timing.stack",
+   "draft": "timing.stack",
+   "cell": "assembled.stationary",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 30,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h76",
+   "family": "target",
+   "genre": "push",
+   "classify": "push.default",
+   "draft": "push.default",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 53.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h77",
+   "family": "target",
+   "genre": "defense",
+   "classify": "arena.collect",
+   "draft": "arena.collect",
+   "cell": "assembled.roam",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h78",
+   "family": "target",
+   "genre": "crowd",
+   "classify": "runner.default",
+   "draft": "runner.default",
+   "cell": "assembled.run",
+   "fellBack": false,
+   "genreOk": false,
+   "classifyOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 60.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h79",
+   "family": "distractor",
+   "genre": null,
+   "classify": "rhythm.default",
+   "draft": "rhythm.default",
+   "cell": "assembled.stationary",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h80",
+   "family": "distractor",
+   "genre": null,
+   "classify": "throw.default",
+   "draft": "throw.default",
+   "cell": "assembled.ball",
+   "fellBack": false,
+   "genreOk": true,
+   "classifyOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 13.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  }
+ ]
+}
