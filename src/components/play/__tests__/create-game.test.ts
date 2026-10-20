@@ -55,7 +55,14 @@ describe('CreateGame', () => {
     expect(cards.map(([, text]) => text)).toEqual(IDEAS.map((idea) => idea.sentence));
   });
 
-  it('offers only Make and Play in the tab bar, Make active on arrival', () => {
-    expect([...markup.matchAll(/class="sp-tabbar__item( is-active)?"[^>]*>.*?<\/svg>(\w+)</g)].map(([, active, label]) => `${label}${active ? '*' : ''}`)).toEqual(['Make*', 'Play']);
+  // P54A T12: vedle lišty telefonu nese tytéž dvě položky navigace levého sloupce od `lg`, tam je hlavní obsah feed.
+  it('offers only Make and Play in the tab bar, Make active on arrival, and the same two in the desktop side nav with Play active', () => {
+    const tabs = (nav: string) =>
+      [...(markup.match(new RegExp(`<nav class="${nav}"[^>]*>(.*?)</nav>`))?.[1] ?? '').matchAll(/class="sp-tabbar__item( is-active)?"[^>]*>.*?<\/svg>(\w+)</g)].map(
+        ([, active, label]) => `${label}${active ? '*' : ''}`,
+      );
+    expect(markup.match(/<nav /g)).toHaveLength(2);
+    expect(tabs('sp-tabbar play-tabbar')).toEqual(['Make*', 'Play']);
+    expect(tabs('play-side-nav')).toEqual(['Make', 'Play*']);
   });
 });
