@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { feedEligible, feedPage, type RecentGame } from '@/play/version';
+import { feedEligible, feedPage, remixParents, type RecentGame } from '@/play/version';
 import { RUNTIME_VERSION } from '@/sim/interpreter';
 
 const NONE: ReadonlySet<string> = new Set();
@@ -74,10 +74,21 @@ describe('remixes on a feed page (P54A T10)', () => {
     expect(shownIds([harder, original])).toEqual([original.versionId]);
   });
 
-  it('a hidden original leaves its title to the remix', () => {
+  it('a hidden original takes its remixes and their remixes out with it (/ship review finding)', () => {
     const original = row(20, { curated: true, title: 'Cake carry' });
     const harder = row(21, { parentId: original.versionId, relation: 'remix', title: 'Cake carry' });
-    expect(shownIds([harder, original], new Set([original.versionId]))).toEqual([harder.versionId]);
+    const again = row(22, { parentId: harder.versionId, relation: 'remix', title: 'Cake carry – Ice' });
+    const other = row(23, { curated: true, title: 'Hamster escape' });
+    expect(shownIds([other, again, harder, original], new Set([original.versionId]))).toEqual([other.versionId]);
+    // Rodič mimo seznam (vypadl z 200 řádků), skrytý hlasy: jeho remix jde ven taky.
+    expect(shownIds([other, again, harder], new Set([original.versionId]))).toEqual([other.versionId]);
+  });
+
+  it('remixParents names the parent of every remix row, not of AI versions', () => {
+    const original = row(24, { curated: true, title: 'Rope bridge' });
+    const remix = row(25, { parentId: original.versionId, relation: 'remix', title: 'Rope bridge – Ice' });
+    const upgrade = row(26, { parentId: id(99), relation: 'upgrade', title: 'Rope bridge deluxe' });
+    expect(remixParents([upgrade, remix, original])).toEqual([original.versionId]);
   });
 
   it("a player's game without a parent is not on the page, its remix is", () => {

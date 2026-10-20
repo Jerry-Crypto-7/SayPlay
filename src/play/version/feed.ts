@@ -184,6 +184,32 @@ function byLoop(rows: readonly RecentGame[], heat: ReadonlyMap<string, LoopHeat>
 }
 
 /**
+ * Skrytí jde po linii remixů dolů: remix nese titul a texty rodiče, takže remix skryté hry
+ * (i remix jejího remixu) by ji vrátil do feedu pod novým id (nález revize /ship P54A).
+ */
+function withHiddenRemixes(rows: readonly RecentGame[], hidden: ReadonlySet<string>): ReadonlySet<string> {
+  const parentOf = new Map(rows.filter(isRemix).map((row) => [row.versionId, row.parentId] as const));
+  const out = new Set(hidden);
+  for (const versionId of parentOf.keys()) {
+    // Id je hash obsahu i rodiče, kruh v linii vzniknout nemůže; strop kroků jen pojistka délky.
+    let at: string | null | undefined = versionId;
+    for (let step = 0; at != null && step <= parentOf.size; step += 1) {
+      if (out.has(at)) {
+        out.add(versionId);
+        break;
+      }
+      at = parentOf.get(at);
+    }
+  }
+  return out;
+}
+
+/** Rodiče remixů v seznamu: hlasy skrytí se ptají i na ně, rodič nemusí být mezi řádky. */
+export function remixParents(rows: readonly RecentGame[]): string[] {
+  return rows.filter(isRemix).flatMap((row) => (row.parentId === null ? [] : [row.parentId]));
+}
+
+/**
  * Jedna stránka feedu ze všech řádků seznamu. Z jedné rodiny (autorské verze
  * téhož návrhu, tj. téhož `parentId`) jde jen nejnovější a z her se stejným
  * titulkem po normalizaci taky – takže se neopakují ani v jedné stránce, ani
@@ -196,8 +222,9 @@ export function feedPage(rows: readonly RecentGame[], limit: number, cursor: Cur
   const sorted = [...rows].sort(newerFirst);
   const top = cursor?.top ?? sorted[0];
   if (top === undefined) return { games: [], next: null };
+  const blocked = withHiddenRemixes(rows, hidden);
   // Řádek seznamu zapsala jen způsobilá publikace (`put`); tady rozhoduje skrytí a relace.
-  const eligible = sorted.filter((row) => newerFirst(row, top) >= 0 && feedEligible({ ...row, publishEligible: true }, hidden));
+  const eligible = sorted.filter((row) => newerFirst(row, top) >= 0 && feedEligible({ ...row, publishEligible: true }, blocked));
   const originals = new Set(eligible.filter((row) => !isRemix(row)).map((row) => titleKey(row.title)));
   const families = new Set<string>();
   const titles = new Set<string>();

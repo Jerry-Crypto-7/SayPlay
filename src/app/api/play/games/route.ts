@@ -18,7 +18,7 @@ import { draftGameSpecWithMeta } from '@/play/draft';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { honestyOf } from '@/play/draft/unsupported';
 import { readBeforeDraft } from '@/play/read/client';
-import { beatOf, decodeCursor, feedPage, hiddenFromEnv, keptFromEnv, RECENT_CAP } from '@/play/version';
+import { beatOf, decodeCursor, feedPage, hiddenFromEnv, keptFromEnv, RECENT_CAP, remixParents } from '@/play/version';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody, refuseSentence } from '../_errors';
@@ -80,7 +80,9 @@ export async function GET(request: Request): Promise<Response> {
   // Skryté: provozovatel (`PLAY_FEED_HIDE`) a hry nahlášené z feedu (P54A T11, třetí příkaz),
   // kromě her, které provozovatel z hlasů vyjmul (`PLAY_FEED_KEEP`, T11a).
   const kept = keptFromEnv(process.env);
-  const reported = await versions.reportHidden(rows.map((row) => row.versionId).filter((id) => !kept.has(id)));
+  // Rodiče remixů taky: skrytý rodič skryje i remix (`feedPage`), i když sám v seznamu už není.
+  const asked = [...new Set([...rows.map((row) => row.versionId), ...remixParents(rows)])];
+  const reported = await versions.reportHidden(asked.filter((id) => !kept.has(id)));
   const page = feedPage(rows, limit, cursor, new Set([...hiddenFromEnv(process.env), ...reported]), heat);
   return markVolatileStore(
     Response.json(
