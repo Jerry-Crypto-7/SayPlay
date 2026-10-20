@@ -483,8 +483,14 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     // Ruční spec, který si napíše rodiče, je pořád ruční spec (nález revize T10-1): oběma dveřmi.
     expect((await createGame(post('/api/play/games', { spec: switchPuzzle, parentId: first.body.versionId }))).status).toBe(201);
     expect((await remixGame(post(`/api/play/games/${second.body.versionId}/remix`, { spec: switchPuzzle }), params(second.body.versionId))).status).toBe(201);
-    // Z návrhu, ručního specu a remixu jde do feedu jen remix (P54A T10).
-    expect((await feed('?recent=24')).body.games.map((g: { versionId: string }) => g.versionId)).toEqual([remixId]);
+    // Čip nad ručním specem nese jeho titul dál (nález revize T10-2 #1): ani `reskin` ho do feedu nepustí.
+    const handwritten = await createGame(post('/api/play/games', { spec: { ...switchPuzzle, title: 'Caller text' } }));
+    const handwrittenId = ((await handwritten.json()) as { versionId: string }).versionId;
+    const reskinned = await remixGame(post(`/api/play/games/${handwrittenId}/remix`, { chip: 'reskin' }), params(handwrittenId));
+    expect(reskinned.status).toBe(201);
+    // Z návrhu, ručního specu ani z jejich remixů do feedu nejde nic: rodič sám do feedu nesmí.
+    expect(remixId).not.toBe(handwrittenId);
+    expect((await feed('?recent=24')).body.games).toEqual([]);
 
     vi.setSystemTime(1_700_000_001_000);
     const a = await authoredOf(first.body.versionId, 'a'.repeat(32));
@@ -493,6 +499,9 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     // Remix autorské verze se počítá na její kartě. Čip `harder` titul nemění, takže remixy
     // `first` i `a` mají titul `a` – originál z feedu nevytlačí a samy na stránce nejsou.
     expect((await remixGame(post(`/api/play/games/${a}/remix`, { chip: 'harder' }), params(a))).status).toBe(201);
+    // Remix autorské verze řádek feedu dostane – jen ho feed skryje kvůli shodnému titulu.
+    const remixRows = (await versionStoreFromEnv(process.env).recent(RECENT_CAP)).filter((row) => row.relation === 'remix');
+    expect(remixRows.map((row) => row.parentId)).toEqual([a]);
 
     const { status, body } = await feed('?recent=24');
     expect(status).toBe(200);
