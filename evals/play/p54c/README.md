@@ -474,7 +474,9 @@ Holý Rapier 0.19.3 (sloupek dvou koulí): po `setEnabled(false)` spodní koule 
 
 - `physics/step.ts`: zmizelé těleso se z Rapieru odebere, vrácený slot dostane nové (dřív vypnout / zapnout).
 - Pin `src/play/arcade/__tests__/physics-despawn.test.ts` (soused spadne, vzdálená koule stojí); se starým `step.ts` červený 2/2.
-- Sady `src/play/arcade` + `evals/play/p41` 2712/2712 (míč, slučování, vytlačování, replay brána `legacy-replay-v2`, determinismus), `tsc` 0. **Neověřeno:** 120 běhů buněk `ball.*` z `difficulty.json` proti uloženým hashům a e2e `play-physics-determinism`.
+- Sady `src/play/arcade` + `evals/play/p41` 2712/2712 (míč, slučování, vytlačování, replay brána `legacy-replay-v2`, determinismus), `tsc` 0; e2e `play-physics-determinism` 8/8 (Node = Chromium i u slučování a vytlačování) a `play-physics-replay` 1/1.
+- **Staré hry míče nejsou bit po bitu – a být nemohou.** 120 běhů buněk `ball.*` z `difficulty.json` (20 semínek × 2 profily) se starým `step.ts` 120/120 shodných, s opravou má **56 jiný hash: všech 40 `ball.defeat`, 16 z 40 `ball.score+rival`, `ball.score` 0**. Výhra i tick výhry jsou stejné ve 120/120 a replay každého nového běhu sedí. Proč: v těch hrách mizí fyzikální těleso (`ball.defeat` s1: 7 úmrtí a návratů za běh) a odebrání změní vnitřní uspořádání Rapieru – první rozdíl stavu je až v tiku 229, 149 tiků po prvním zmizení, o 1 jednotku zaokrouhlení u volně se kutálejícího míče. Nic nezamrzne; je to šum floatů, ne chyba hry.
+- Zúžení opravy nepomohlo: odebírat jen fyzikální tělesa (překážky dál vypínat) i jen mrtvá fyzikální tělesa (nesené dál vypínat) dalo stejných 56 běhů s týmiž novými hashi. Bit po bitu by staré hry zůstaly jen s dvojí cestou podle žánru – zamítnuto, ponechalo by známou chybu Rapieru v publikovaných hrách míče. Uložené hashe těchto běhů nehlídá žádná brána (zmrazené přehrávky `golden/` míč nemají, `difficulty.test.ts` čte souhrn; `replay` volá mimo testy jen `arcade/compile.ts`, `arcade/verify.ts` a `verify/solve.ts`); v `difficulty.json` je přepsaných jen těch 56 hashů, souhrn a ostatní řádky beze změny.
 
 ## Rozhodnutí
 
