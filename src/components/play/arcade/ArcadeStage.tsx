@@ -36,6 +36,7 @@ import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { LaneStage, useLanesInput } from './genres/lanes/LaneScene';
 import { HopScene } from './genres/hop/HopScene';
 import { CrowdScene } from './genres/crowd/CrowdScene';
+import { MergeScene } from './genres/merge/MergeScene';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
 import { HudBoosts, boostKeepers } from './PowerupBadge';
@@ -749,6 +750,8 @@ const StageCanvas = memo(function StageCanvas({
             <HopScene {...world} />
           ) : stage.scene === 'crowd' ? (
             <CrowdScene {...world} />
+          ) : stage.scene === 'merge' ? (
+            <MergeScene {...world} />
           ) : (
             <World {...world} control={control} />
           )}

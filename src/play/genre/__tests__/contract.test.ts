@@ -8,9 +8,10 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { compileArcade } from '@/play/arcade/compile';
+import { loadRapier } from '@/play/arcade/physics/world';
 import { readGameSpec } from '@/play/spec';
 
 import { ALLOWED, liveCells } from '@/play/compose/allowed';
@@ -51,6 +52,8 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'hop', mode: 'default', hero: 'chicken', cast: [{ label: 'taxi', does: 'avoid' }, { label: 'barn', does: 'reach' }], setting: 'farm road' },
   // P54C T10: dav a brány.
   { genre: 'crowd', mode: 'default', hero: 'penguin', cast: [{ label: 'saw', does: 'avoid' }, { label: 'giant', does: 'fight' }], setting: 'icy road' },
+  // P54C T11: pouštění a slučování (Rapier – načtený v `beforeAll`).
+  { genre: 'merge', mode: 'default', hero: 'cat', cast: [{ label: 'planet', does: 'collect' }], setting: 'outer space' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */
@@ -64,6 +67,11 @@ function firstWinningSeed(spec: Parameters<typeof compileArcade>[0]): ReturnType
 }
 
 describe('genre contract (P32-0 T3)', () => {
+  // Slučování (P54C T11) hraje na Rapieru; dveře publikace ho čekají vždy (`preloadPhysics`).
+  beforeAll(async () => {
+    await loadRapier();
+  });
+
   it('registers exactly the genres with the modes of the contract', () => {
     expect(Object.keys(GENRE_MODULES).sort()).toEqual([...GENRES].sort());
     for (const genre of GENRES) {
@@ -138,9 +146,9 @@ describe('genre contract (P32-0 T3)', () => {
 /**
  * Kostra P54C T4: osm žánrů je v kontraktu, ale nehraje – nikdo je nevybere, dokud jejich úloha nepřepne buňku.
  * T5 přepnulo chytání (`catch`), T6 bouchání (`whack`), T7 obranu pruhů (`defense`), T8 krájení (`slice`),
- * T9 přeskákání silnice (`hop`), T10 dav a brány (`crowd`), zbylé dva čekají.
+ * T9 přeskákání silnice (`hop`), T10 dav a brány (`crowd`), T11 pouštění a slučování (`merge`), zbývá vytlačování.
  */
-const STAGED = ['merge', 'push'] as const;
+const STAGED = ['push'] as const;
 
 describe('staged genres (P54C T4)', () => {
   it('registers the remaining new genres with one default mode, staged, and a compile that refuses', () => {

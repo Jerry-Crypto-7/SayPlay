@@ -29,7 +29,7 @@ export interface ControlCapability {
   /** Co model musí dodržet navíc (archetyp, cíl). */
   readonly note?: string;
   /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče a id rolí (`enemy`, `coin`, `obstacle`, `target` – P26 T12; `barrier`, `note`, `block` – P30B T4; `finish` – P35 T3; nástrahy `spikes`, `pipe`, `hazard` – P39 T9). */
-  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'turbo' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard' | 'glide_rival' | 'glide_pursuer' | 'guard' | 'chaser' | 'goalkeeper' | 'boss')[];
+  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'turbo' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard' | 'glide_rival' | 'glide_pursuer' | 'guard' | 'chaser' | 'goalkeeper' | 'boss' | 'item')[];
   /** Mechaniky, které kompilátor čte – mění svět. */
   readonly mechanics: 'all' | readonly MechanicId[];
   /** Počty rolí (`count`) mění svět. */
@@ -133,7 +133,8 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   hop: arcade({ setting: true, cues: 'hop across busy lanes, crossy road, frogger', roles: ['obstacle', 'finish'], finish: true, labels: ['player', 'obstacle'], mechanics: LIVES_AND_TIMER }),
   // T10 dav a brány: překážka v pruhu (`obstacle`) a obr na konci (`boss`) nesou model z popisku; životy berou překážky.
   crowd: arcade({ setting: true, cues: 'grow a crowd through gates, count masters', roles: ['obstacle', 'boss'], finish: false, labels: ['player', 'obstacle', 'boss'], mechanics: LIVES_AND_TIMER }),
-  merge: arcade({ cues: 'drop and merge, suika, 2048', roles: [], finish: false, labels: [], mechanics: [] }),
+  // T11 slučování: slučovaný předmět (`item`) nese model z popisku (výchozí ovoce = řada ovoce); životy bere přetečení nádoby.
+  merge: arcade({ setting: true, cues: 'drop and merge, suika, 2048', roles: ['item'], finish: false, labels: ['player', 'item'], mechanics: LIVES_AND_TIMER }),
   push: arcade({ cues: 'push rivals out of the ring, sumo', roles: [], finish: false, labels: [], mechanics: [] }),
 };
 

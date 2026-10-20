@@ -307,7 +307,7 @@ function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: numb
 }
 
 /** Pravidla, jejichž zásah nebo sebrání zvedá kombo nové hry (P46C T3). */
-const COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit', 'ability_strike', 'checkpoint', 'catch_fall', 'whack_hit', 'defense_hit', 'slice_cut', 'hop_cross', 'crowd_gate'];
+const COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit', 'ability_strike', 'checkpoint', 'catch_fall', 'whack_hit', 'defense_hit', 'slice_cut', 'hop_cross', 'crowd_gate', 'merge_join'];
 /** Totéž pro uložené hry se `scoring` (P36A): bez úderu. */
 const LEGACY_COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit'];
 
@@ -356,7 +356,7 @@ function reachableTarget(spec: GameSpecV1, seed: number, target: number): number
 }
 
 /** Chce spec fyzikální tělesa (P29A T13)? Jen pak se smí stahovat Rapier. */
-export const specNeedsPhysics = (spec: GameSpecV1): boolean => spec.control === 'ball' || (spec.things ?? []).some((thing) => thing.physics === true);
+export const specNeedsPhysics = (spec: GameSpecV1): boolean => spec.control === 'ball' || spec.control === 'merge' || (spec.things ?? []).some((thing) => thing.physics === true);
 
 /**
  * Načte Rapier, když ho hra potřebuje; hra bez fyziky modul nestáhne. Jádro je

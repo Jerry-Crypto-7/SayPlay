@@ -486,6 +486,10 @@ export class WitnessRecorder {
         else this.breached.push(effect.body);
       }
     }
+    // Slučování (P54C T11): předmět, který vypustil pust hráče, je puštěný (kámen po trpělivosti nedokazuje nic);
+    // předmět, který vytvořilo pravidlo sloučení ze dvou stejných předmětů v kontaktu, dokazuje sloučení.
+    if (ref.id === 'merge_drop' && effect.kind === 'spawn' && roleAt(state, effect.template) === ROLE.collectible) this.add('drop', player, effect.template, tick, 'item-dropped', state);
+    if (ref.id === 'merge_join' && effect.kind === 'spawn') this.add('merge', player, effect.template, tick, 'equal-items-merged', state);
     // Výhra obrany: žádný nepřítel už nejde a hradba drží – hrdina ji ubránil.
     if (ref.id === 'defense_goal' && effect.kind === 'win') {
       const keep = [...this.bindings.values()].find((binding) => binding.roleId === 'castle');

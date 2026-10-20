@@ -19,7 +19,8 @@ export const STAGES = {
   lanes: { scene: 'lanes', input: 'lanes' },
   hop: { scene: 'hop', input: 'hop' },
   crowd: { scene: 'crowd', input: 'lanes' },
-  merge: { scene: 'merge', input: 'lanes' },
+  // P54C T11: vstup slučování (tah posouvá dávkovač, puštění prstu pustí předmět) si zapíná scéna sama.
+  merge: { scene: 'merge', input: 'merge' },
   push: { scene: 'push', input: 'arena' },
 } as const;
 export type Stage = (typeof STAGES)[keyof typeof STAGES];
