@@ -554,8 +554,9 @@ function ArcadePlayGame({
     const onPointer = (event: PointerEvent) => {
       if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) take();
     };
+    // Ve feedu Tab a Esc hru nepřevezmou – klávesnice musí dojít k akcím karty (revize /ship P54A).
     const onKey = (event: KeyboardEvent) => {
-      if (!event.repeat && !isTyping(event.target)) take();
+      if (inFeed ? wakesGame(event) : !event.repeat && !isTyping(event.target)) take();
     };
     window.addEventListener('pointerdown', onPointer, true);
     window.addEventListener('keydown', onKey, true);

@@ -151,6 +151,58 @@ test.describe('/play – bot preview in the feed', () => {
     expect(refused).toBe(1);
   });
 
+  /** Detail bez `preview`, jako u hry publikované před P54A: náhled musí spočítat worker. */
+  const withoutPreview = (page: Page) =>
+    page.route(`**/api/play/games/${rows[0].versionId}`, async (route) => {
+      const response = await route.fetch();
+      const { preview: _stored, ...game } = (await response.json()) as Record<string, unknown>;
+      await route.fulfill({ response, json: game });
+    });
+
+  test('desktop: an older game without a stored preview gets one from the worker (test-gap review)', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await withoutPreview(page);
+    await page.goto(`/play?g=${rows[0].versionId}`);
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    await expectPreview(page, rows[0]);
+  });
+
+  test('desktop: a failed worker leaves the card still, browsable and with its actions (Codex review)', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.addInitScript(() => {
+      // Worker, který se nenačte: prohlížeč pošle `error` a odpověď nepřijde.
+      class Broken extends EventTarget {
+        onmessage: ((event: MessageEvent) => void) | null = null;
+        onerror: ((event: Event) => void) | null = null;
+        postMessage(): void {
+          setTimeout(() => this.onerror?.(new Event('error')), 0);
+        }
+        terminate(): void {}
+      }
+      Object.defineProperty(window, 'Worker', { configurable: true, value: Broken });
+    });
+    await withoutPreview(page);
+    await page.goto(`/play?g=${rows[0].versionId}`);
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    await expect.poll(async () => (await probe(page)).mode, { timeout: 30_000 }).toBe('still');
+    expect((await probe(page)).tick).toBe(0);
+    await expect(page.getByTestId('feed-remix')).toBeVisible();
+    await expect(page.getByTestId('feed-report')).toBeVisible();
+    await page.keyboard.press('ArrowDown');
+    await expect.poll(async () => (await probe(page)).versionId).toBe(rows[1].versionId);
+  });
+
+  test('desktop: Tab moves through the card in preview without taking the game over (Codex review)', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/play?g=${rows[0].versionId}`);
+    await page.getByTestId('feed-reel').scrollIntoViewIfNeeded();
+    await expectPreview(page, rows[0]);
+    for (let press = 0; press < 4; press += 1) await page.keyboard.press('Tab');
+    await page.keyboard.press('Shift+Tab');
+    expect((await probe(page)).mode).toBe('preview');
+    await expect(page.getByTestId('feed-remix')).toBeVisible();
+  });
+
   test.describe('phone', () => {
     // Pixel 7 bez `defaultBrowserType` – ten ve skupině nastavit nejde a prohlížeč je tentýž.
     const { defaultBrowserType: _browser, ...pixel7 } = devices['Pixel 7'];

@@ -226,7 +226,9 @@ export function ReelCard({
   const spec = detail !== undefined && detail !== 'error' ? detail.spec : null;
   const slide = useRef<HTMLDivElement | null>(null);
   const round = useResultIdle(slide, active && preview !== null && preview !== undefined);
-  const still = useReducedMotion();
+  // Hra bez náhledu (méně pohybu, nebo worker náhled nespočítal) stojí na tiku 0 a čeká na hráče:
+  // feed se dál posouvá a akce karty zůstanou vidět (revize /ship P54A).
+  const still = useReducedMotion() || preview === null;
   return (
     <article tabIndex={-1} className="play-reel-card" data-testid="feed-card" data-index={index} data-version-id={game.versionId} data-active={active} aria-label={game.title}>
       {active ? (
