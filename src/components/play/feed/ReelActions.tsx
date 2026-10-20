@@ -31,7 +31,10 @@ const DARE_POINTER = 1;
 
 /** Ťuk na střed scény aktivní karty – cestou skutečného ťuku, aby hru převzal feed sám. */
 function tapStage(from: Element): void {
-  const stage = from.closest('.play-reel-frame')?.querySelector('[data-testid="feed-current"] [data-testid="arcade-stage"]');
+  const frame = from.closest('.play-reel-frame');
+  // Fokus z tlačítka na kartu jako po přechodu (T13): mezerník pak dostane hra, ne znovu „Play to dare“.
+  frame?.querySelector<HTMLElement>('[data-active="true"]')?.focus({ preventScroll: true });
+  const stage = frame?.querySelector('[data-testid="feed-current"] [data-testid="arcade-stage"]');
   if (stage === null || stage === undefined) return;
   const box = stage.getBoundingClientRect();
   const at = { bubbles: true, cancelable: true, clientX: box.left + box.width / 2, clientY: box.top + box.height / 2, pointerId: DARE_POINTER, pointerType: 'mouse', isPrimary: true };
@@ -106,10 +109,7 @@ export function ReelActions({
           className="sp-hud-btn play-hud-round"
           data-testid="feed-dare"
           aria-label="Play to dare a friend"
-          onClick={(event) => {
-            event.currentTarget.blur();
-            tapStage(event.currentTarget);
-          }}
+          onClick={(event) => tapStage(event.currentTarget)}
         >
           <Icon name="trophy" />
         </button>
