@@ -8,6 +8,7 @@ import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type Arcad
 import { axisOfLane, laneOfX } from './pieces/lanes';
 import { CATCH } from './pieces/catch-fall';
 import { WHACK, holeOpen } from './pieces/whack';
+import { SLICE, heightAt } from './pieces/slice';
 import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
 import { ballKeeperProbeInput } from './pieces/ball-probe';
@@ -167,6 +168,11 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
   }
   // Obrana pruhů (P54C T7): sonda nestřílí ani nestaví – nepřítel dojde k hradbě a vezme život.
   if (control === 'lanes' && roleAt(state, target) === ROLE.chaser && world.rules.some((ref) => ref.id === 'defense_hit')) return NO_INPUT;
+  // Krájení (P54C T8): sonda hraje jako robot, dokud bomba nevyletí do výšky řezu; pak švihne do jejího pruhu.
+  if (control === 'lanes' && roleAt(state, target) === ROLE.hazard && world.rules.some((ref) => ref.id === 'slice_cut')) {
+    const now = observation.tick + observation.recent.length;
+    return heightAt(state[t + BODY.y]!, state[t + BODY.vy]!, observation.tick, now) >= SLICE.cutY && (state[t + BODY.flags]! & FLAG.grounded) === 0 ? { buttons: BUTTON.TAP, axis: axisOfLane(laneOfX(state[t + BODY.x]!)) } : normal;
+  }
   // Bouchání (P54C T6): sonda hraje jako robot, dokud hodný cíl nevykoukne z díry; pak do ní bouchne.
   if (control === 'lanes' && roleAt(state, target) === ROLE.hazard && world.rules.some((ref) => ref.id === 'whack_hit')) return holeOpen(state, target) ? { buttons: BUTTON.TAP, axis: axisOfLane(laneOfX(state[t + BODY.x]!)) } : normal;
   // Chytání (P54C T5): sonda hraje jako robot, dokud bomba visí nad obrazem; pak stojí v jejím pruhu, ať do koše spadne právě ona.
@@ -259,6 +265,8 @@ export class WitnessRecorder {
   private readonly struckGood: number[] = [];
   /** Nepřátelé obrany pruhů (P54C T7), kteří v tomhle tiku prošli hradbou; zranili, jen když tik opravdu ubral život. */
   private readonly breached: number[] = [];
+  /** Bomby krájení (P54C T8) rozseknuté v tomhle tiku; zranily, jen když tik opravdu ubral život. */
+  private readonly slicedBombs: number[] = [];
 
   constructor(world: ArcadeWorld, bindings: readonly RoleBinding[], run: 'winner' | 'probe', runId: string) {
     this.world = { ...world, rules: world.rules.map(underlyingRule) };
@@ -453,6 +461,13 @@ export class WitnessRecorder {
         this.add('defeat', player, effect.body, tick, 'target-whacked', state);
       } else if (code === ROLE.hazard) this.struckGood.push(effect.body);
     }
+    // Krájení (P54C T8): věc, kterou pravidlo švihu odebere ve výšce řezu (ne na zemi), byla rozseknutá – ovoce je
+    // dokázané krájení, bomba hráče zranila, ubral-li tik život (`afterTick`). Co dopadlo na zem, nedokazuje nic.
+    if (ref.id === 'slice_cut' && effect.kind === 'despawn' && state[bodyBase(effect.body) + BODY.y]! >= SLICE.cutY && (state[bodyBase(effect.body) + BODY.flags]! & FLAG.grounded) === 0) {
+      const code = roleAt(state, effect.body);
+      if (code === ROLE.collectible) this.add('slice', player, effect.body, tick, 'sliced-at-cut-height', state);
+      else if (code === ROLE.hazard) this.slicedBombs.push(effect.body);
+    }
     // Obrana pruhů (P54C T7): zásah, jehož útočník je šíp z luku hrdiny (druh `bolt`), dokazuje střelbu; nepřítel, kterého
     // pravidlo zásahu odebere na nule HP, padl. Kdo odejde s HP, prošel hradbou – zranil, ubral-li tik život (`afterTick`).
     if (ref.id === 'defense_hit') {
@@ -613,6 +628,10 @@ export class WitnessRecorder {
       for (const body of this.breached) this.harm(body, player, tick, 'enemy-broke-through', state);
     }
     this.breached.length = 0;
+    if (this.slicedBombs.length > 0 && state[HEADER.counters + COUNTER.health]! < before[HEADER.counters + COUNTER.health]!) {
+      for (const body of this.slicedBombs) this.harm(body, player, tick, 'bomb-sliced', state);
+    }
+    this.slicedBombs.length = 0;
     const p = bodyBase(player);
     for (let body = 0; body < state[BODY_COUNT]!; body += 1) {
       const binding = this.binding(body, state);

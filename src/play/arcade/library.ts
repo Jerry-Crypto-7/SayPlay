@@ -24,6 +24,8 @@ import { WHACK_RULES, whackHoles } from './pieces/whack';
 import { whackBot } from './pieces/whack-bot';
 import { DEFENSE_RULES, laneDefense } from './pieces/lane-defense';
 import { defenseBot } from './pieces/lane-defense-bot';
+import { SLICE_RULES, sliceArcs } from './pieces/slice';
+import { sliceBot } from './pieces/slice-bot';
 import { fightBot } from './pieces/fight-bot';
 import { flapControl, flapTrack } from './pieces/flap';
 import { flapBot } from './pieces/flap-bot';
@@ -78,6 +80,7 @@ const BASE_BOTS = {
   catch_bot: catchBot,
   whack_bot: whackBot,
   defense_bot: defenseBot,
+  slice_bot: sliceBot,
 } as const;
 
 /**
@@ -102,6 +105,8 @@ export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
   whack_holes: whackHoles,
   // P54C T7: obrana pěti pruhů.
   lane_defense: laneDefense,
+  // P54C T8: krájení věcí, které vylétají v pěti pruzích.
+  slice_arcs: sliceArcs,
 };
 
 const BASE_CONTROLS = {
@@ -130,7 +135,7 @@ const PROGRESSION_CONTROLS = { ...FIGHT_CONTROLS, pacing_control: makePacingCont
 const PROGRESSION_BOTS = { ...PHASE_BOTS, pacing_bot: makePacingBot(PHASE_BOTS) as BotPiece };
 const NATIVE_LIBRARY: ArcadeLibrary = {
   controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece },
-  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES, ...CATCH_RULES, ...WHACK_RULES, ...DEFENSE_RULES },
+  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES, ...CATCH_RULES, ...WHACK_RULES, ...DEFENSE_RULES, ...SLICE_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

@@ -29,6 +29,8 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'whack.default': { move: 'lanes', actions: ['whack'], objective: 'defeat', threats: [] },
   // P54C T7: obrana pruhů je živá.
   'defense.default': { move: 'lanes', actions: ['shoot'], objective: 'defend', threats: ['chaser'] },
+  // P54C T8: krájení je živé.
+  'slice.default': { move: 'lanes', actions: ['slice'], objective: 'score', threats: ['hazard'] },
 };
 
 /**
@@ -36,7 +38,6 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
  * live cell and a `sourceFor` reading – until the genre's own task makes its cell live.
  */
 export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
-  'slice.default': { move: 'lanes', actions: ['slice'], objective: 'score', threats: ['hazard'] },
   'hop.default': { move: 'hop', actions: [], objective: 'reach', threats: ['obstacle'] },
   'crowd.default': { move: 'crowd', actions: [], objective: 'defeat', threats: ['obstacle'] },
   'merge.default': { move: 'drop', actions: ['merge'], objective: 'score', threats: [] },
