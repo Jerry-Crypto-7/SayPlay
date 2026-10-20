@@ -1,0 +1,621 @@
+[
+ {
+  "id": "d01",
+  "source": "P46E d01, git a035e5ad",
+  "model": "gpt-oss-20b",
+  "promptVersion": "33df2757",
+  "recordedAt": "2026-10-20T20:18:06.520Z",
+  "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
+  "answer": {
+   "plan": "runner",
+   "spec": {
+    "hero": "hedgehog",
+    "cast": [
+     {
+      "label": "fox",
+      "does": "avoid",
+      "verb": "chase",
+      "states": null,
+      "patrol": false
+     }
+    ],
+    "heroAction": "none",
+    "setting": "mushroom hill",
+    "palette": "forest",
+    "counts": {
+     "enemy": 1,
+     "collectible": null,
+     "target": null
+    },
+    "ruleRoles": [
+     {
+      "id": "fox",
+      "kind": "chaser",
+      "label": "fox",
+      "count": 1
+     }
+    ],
+    "things": [
+     {
+      "role": "fox",
+      "start": "hidden",
+      "physics": null
+     }
+    ],
+    "rules": [
+     {
+      "id": "fox_chase",
+      "verb": "chase",
+      "when": {
+       "contact": [
+        "player",
+        "fox"
+       ]
+      },
+      "if": [
+       {
+        "notHolding": true
+       }
+      ],
+      "do": [
+       {
+        "damage": 1
+       }
+      ]
+     }
+    ],
+    "logic": {
+     "vars": null,
+     "timers": [
+      {
+       "id": "phase1"
+      }
+     ],
+     "phases": [
+      {
+       "id": "first"
+      },
+      {
+       "id": "second"
+      }
+     ],
+     "events": null
+    },
+    "boss": {
+     "role": "fox",
+     "name": "Sneaky Fox",
+     "attack": "charge"
+    },
+    "abilities": [],
+    "segments": [
+     "newFoe",
+     "moving",
+     "faster"
+    ],
+    "recipe": {
+     "phases": [
+      {
+       "start": 0,
+       "speedPercent": 100,
+       "add": null
+      },
+      {
+       "start": 60,
+       "speedPercent": 120,
+       "add": null
+      }
+     ],
+     "dependsOn": null,
+     "move": "run",
+     "actions": [],
+     "objective": "survive",
+     "threats": [
+      "chaser"
+     ]
+    },
+    "params": null,
+    "unmet": []
+   }
+  }
+ },
+ {
+  "id": "o01",
+  "source": "P46E o01, git a035e5ad",
+  "model": "gpt-oss-20b",
+  "promptVersion": "33df2757",
+  "recordedAt": "2026-10-20T20:16:13.748Z",
+  "sentence": "A rabbit steals carrots and runs from a fox",
+  "answer": {
+   "plan": "Create an arena‑escape game where a rabbit collects carrots while evading a fox.",
+   "spec": {
+    "hero": "rabbit",
+    "cast": [
+     {
+      "label": "fox",
+      "does": "chase_me",
+      "verb": "chase",
+      "states": null,
+      "patrol": false
+     },
+     {
+      "label": "carrot",
+      "does": "collect",
+      "verb": "collect",
+      "states": null,
+      "patrol": false
+     }
+    ],
+    "heroAction": "none",
+    "setting": "forest trail",
+    "palette": "forest",
+    "counts": {
+     "enemy": 1,
+     "collectible": 1,
+     "target": 0
+    },
+    "ruleRoles": [
+     {
+      "id": "fox",
+      "kind": "chaser",
+      "label": "fox",
+      "count": 1
+     },
+     {
+      "id": "carrot",
+      "kind": "collectible",
+      "label": "carrot",
+      "count": 1
+     }
+    ],
+    "things": [
+     {
+      "role": "fox",
+      "start": "hidden",
+      "physics": null
+     },
+     {
+      "role": "carrot",
+      "start": "hidden",
+      "physics": null
+     }
+    ],
+    "rules": [
+     {
+      "id": "fox_chase",
+      "verb": "chase",
+      "when": {
+       "contact": [
+        "player",
+        "fox"
+       ]
+      },
+      "if": [
+       {
+        "notHolding": true
+       }
+      ],
+      "do": [
+       {
+        "damage": 1
+       }
+      ]
+     }
+    ],
+    "logic": {
+     "vars": null,
+     "timers": [
+      {
+       "id": "escape_timer"
+      }
+     ],
+     "phases": [
+      {
+       "id": "start"
+      },
+      {
+       "id": "escape"
+      }
+     ],
+     "events": null
+    },
+    "boss": {
+     "role": "fox",
+     "name": "Big Bad Fox",
+     "attack": "charge"
+    },
+    "abilities": [
+     "dash"
+    ],
+    "segments": [
+     "newFoe",
+     "moving",
+     "faster"
+    ],
+    "recipe": {
+     "phases": [
+      {
+       "start": 0,
+       "speedPercent": 100,
+       "add": null
+      },
+      {
+       "start": 60,
+       "speedPercent": 120,
+       "add": null
+      }
+     ],
+     "dependsOn": null,
+     "move": "run",
+     "actions": [
+      "collect"
+     ],
+     "objective": "escape",
+     "threats": [
+      "chaser"
+     ]
+    },
+    "params": null,
+    "unmet": []
+   }
+  }
+ },
+ {
+  "id": "o04",
+  "source": "P46E o04, git a035e5ad",
+  "model": "gpt-oss-20b",
+  "promptVersion": "33df2757",
+  "recordedAt": "2026-10-20T20:16:39.054Z",
+  "sentence": "racing car escapes police and shoots enemies",
+  "answer": {
+   "plan": "Create a racing‑shooting car game where the player evades police chasers while blasting enemy drones on a winding highway.",
+   "spec": {
+    "hero": "car",
+    "cast": [
+     {
+      "label": "police",
+      "does": "chase_me",
+      "verb": "chase",
+      "states": null,
+      "patrol": true
+     },
+     {
+      "label": "enemy",
+      "does": "shoot_at",
+      "verb": "shoot",
+      "states": null,
+      "patrol": false
+     }
+    ],
+    "heroAction": "none",
+    "setting": "open highway",
+    "palette": "desert",
+    "counts": {
+     "enemy": 5,
+     "collectible": null,
+     "target": null
+    },
+    "ruleRoles": [
+     {
+      "id": "police",
+      "kind": "chaser",
+      "label": "police car",
+      "count": 1
+     },
+     {
+      "id": "enemy",
+      "kind": "enemy",
+      "label": "enemy drone",
+      "count": 5
+     }
+    ],
+    "things": [
+     {
+      "role": "police",
+      "start": "hidden",
+      "physics": null
+     },
+     {
+      "role": "enemy",
+      "start": "hidden",
+      "physics": null
+     }
+    ],
+    "rules": [
+     {
+      "id": "police_chase",
+      "verb": "chase",
+      "when": {
+       "contact": [
+        "player",
+        "police"
+       ]
+      },
+      "if": [
+       {
+        "notHolding": true
+       }
+      ],
+      "do": [
+       {
+        "damage": 1
+       }
+      ]
+     }
+    ],
+    "logic": {
+     "vars": null,
+     "timers": [
+      {
+       "id": "race_timer"
+      }
+     ],
+     "phases": [
+      {
+       "id": "start"
+      },
+      {
+       "id": "mid"
+      },
+      {
+       "id": "end"
+      }
+     ],
+     "events": null
+    },
+    "boss": {
+     "role": "police",
+     "name": "Police Pursuit",
+     "attack": "charge"
+    },
+    "abilities": [
+     "dash",
+     "shoot"
+    ],
+    "segments": [
+     "newFoe",
+     "moving",
+     "faster"
+    ],
+    "recipe": {
+     "phases": [
+      {
+       "start": 0,
+       "speedPercent": 100,
+       "add": null
+      },
+      {
+       "start": 30,
+       "speedPercent": 120,
+       "add": null
+      },
+      {
+       "start": 60,
+       "speedPercent": 100,
+       "add": null
+      }
+     ],
+     "dependsOn": null,
+     "move": "drive",
+     "actions": [
+      "shoot",
+      "push"
+     ],
+     "objective": "escape",
+     "threats": [
+      "chaser"
+     ]
+    },
+    "params": {
+     "lengthM": 500,
+     "speed": 1,
+     "density": 0,
+     "fullRowPct": 0,
+     "ride": 0,
+     "items": 1,
+     "obstacles": 5,
+     "lives": 3,
+     "targetScore": 0,
+     "timeLimit": 60,
+     "difficulty": 0,
+     "entryDistance": 6000,
+     "chaseLead": 0,
+     "seconds": 20,
+     "pursuitCeiling": 90,
+     "itemSizePct": 100,
+     "chasers": 1,
+     "chaserSpeed": 70,
+     "enemies": 5,
+     "enemyHp": 3,
+     "enemySpeed": 50,
+     "playerHp": 3,
+     "hazards": 0,
+     "turbo": 0,
+     "roadWidth": 5000,
+     "roadEntryWidth": 5000,
+     "crashBudget": 3,
+     "namedLandingTarget": 0,
+     "touchdownSpeed": 30,
+     "gravityRisePct": 0,
+     "topSpeed": 200,
+     "gravity": 400,
+     "paceBudgetPct": 50,
+     "count": 5,
+     "targetWidthPct": 50,
+     "movingTargets": 0,
+     "waves": 5,
+     "targets": 5,
+     "goal": null,
+     "spareThrows": 0,
+     "rounds": null,
+     "bpm": null,
+     "roundRise": null,
+     "rows": null,
+     "rivals": null,
+     "half": null,
+     "preySpeed": null,
+     "drift": null,
+     "grip": null,
+     "brakeDrift": null,
+     "clearancePermille": null,
+     "clearanceRisePermille": null,
+     "size": null,
+     "corridorRisePermille": null,
+     "shotRecoveryTicks": null,
+     "shotRecoveryRiseTicks": null,
+     "paceSeconds": null
+    },
+    "unmet": []
+   }
+  }
+ },
+ {
+  "id": "p06",
+  "source": "P54C T14b dev p06, evals/play/p54c/director-answers.json",
+  "model": "gpt-oss-20b",
+  "promptVersion": "33df2757",
+  "recordedAt": "2026-10-20T20:11:53.352Z",
+  "sentence": "knock the knights off the round table platform",
+  "answer": {
+   "plan": "push",
+   "spec": {
+    "hero": "fox",
+    "cast": [
+     {
+      "label": "knight",
+      "does": "fight",
+      "verb": "push",
+      "states": null,
+      "patrol": false
+     }
+    ],
+    "heroAction": "knit",
+    "setting": "round table platform",
+    "palette": "castle",
+    "counts": {
+     "enemy": 1,
+     "collectible": null,
+     "target": null
+    },
+    "ruleRoles": [
+     {
+      "id": "knight",
+      "kind": "chaser",
+      "label": "knight",
+      "count": 1
+     }
+    ],
+    "things": [
+     {
+      "role": "knight",
+      "start": "hidden",
+      "physics": null
+     }
+    ],
+    "rules": [
+     {
+      "id": "startPhase",
+      "verb": "wait",
+      "when": {
+       "phase": "first"
+      },
+      "if": null,
+      "do": [
+       {
+        "startTimer": {
+         "timer": "phase1",
+         "ticks": 60
+        }
+       }
+      ]
+     },
+     {
+      "id": "phase1Timer",
+      "verb": "wait",
+      "when": {
+       "timer": "phase1"
+      },
+      "if": null,
+      "do": [
+       {
+        "goPhase": "second"
+       },
+       {
+        "wave": {
+         "role": "knight",
+         "count": 1,
+         "at": "edge"
+        }
+       }
+      ]
+     },
+     {
+      "id": "secondPhase",
+      "verb": "wait",
+      "when": {
+       "phase": "second"
+      },
+      "if": null,
+      "do": [
+       {
+        "toggle": "knight"
+       },
+       {
+        "despawn": "self"
+       }
+      ]
+     }
+    ],
+    "logic": {
+     "vars": null,
+     "timers": [
+      {
+       "id": "phase1"
+      }
+     ],
+     "phases": [
+      {
+       "id": "first"
+      },
+      {
+       "id": "second"
+      }
+     ],
+     "events": null
+    },
+    "boss": {
+     "role": "knight",
+     "name": "Sir Bump",
+     "attack": "stomp"
+    },
+    "abilities": [
+     "dash"
+    ],
+    "segments": [
+     "newFoe",
+     "moving",
+     "faster"
+    ],
+    "recipe": {
+     "phases": [
+      {
+       "start": 0,
+       "speedPercent": 100,
+       "add": null
+      }
+     ],
+     "dependsOn": null,
+     "move": "jump",
+     "actions": [
+      "push"
+     ],
+     "objective": "defeat",
+     "threats": [
+      "chaser"
+     ]
+    },
+    "params": null,
+    "unmet": []
+   }
+  }
+ }
+]

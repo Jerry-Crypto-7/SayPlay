@@ -136,7 +136,7 @@ export const GENRE_PITCH: Readonly<Partial<Record<GenreId, string>>> = {
 const DEPTH_SAID: Readonly<Record<keyof typeof DEPTH_PARAM_BOUNDS, string>> = { lives: '"3 lives"', targetScore: '"score 200 points"', timeLimit: 'seconds before the player loses' };
 
 /** Recept jako položka tabulky živých kombinací: `akce/cíl/hrozby`, víc kusů spojuje `+`, prázdné pole je `-`. */
-const recipeEntry = (recipe: LiveCell['recipe']): string => `${recipe.actions.join('+') || '-'}/${recipe.objective}/${recipe.threats.join('+') || '-'}`;
+export const recipeEntry = (recipe: Pick<LiveCell['recipe'], 'actions' | 'objective' | 'threats'>): string => `${recipe.actions.join('+') || '-'}/${recipe.objective}/${recipe.threats.join('+') || '-'}`;
 
 /**
  * Nabídka žánrů a smlouva rolí (`genre/roles.ts`) pro oba prompty: tabulka živých
