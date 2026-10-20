@@ -3,10 +3,10 @@
  "sentence": "my dog chasing the mailman,around the backyard lol",
  "axis": "control:move_free",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:13:44.459Z",
- "ms": 6582,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:17:55.284Z",
+ "ms": 4744,
  "answer": {
   "plan": "Arena escape with a dog chasing a mailman around the backyard",
   "spec": {
@@ -25,7 +25,23 @@
    "heroAction": "chop",
    "setting": "backyard",
    "palette": "forest",
-   "params": null,
+   "params": {
+    "entryDistance": 8000,
+    "chaseLead": 30,
+    "seconds": 30,
+    "items": 1,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 1,
+    "chaserSpeed": 70,
+    "enemies": 1,
+    "enemyHp": 3,
+    "enemySpeed": 60,
+    "playerHp": 3,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 30
+   },
    "counts": {
     "enemy": 1,
     "collectible": null
@@ -38,37 +54,60 @@
      "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "mailman",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "mailman_spawn",
-     "verb": "spawn",
+     "id": "start",
+     "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "mailman",
-        "at": "player"
+       "startTimer": {
+        "timer": "chase",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "mailman_chase",
-     "verb": "chase",
+     "id": "chase",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "mailman"
-      ]
+      "timer": "chase"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "mailman",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "escape",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -77,22 +116,22 @@
     "vars": null,
     "timers": [
      {
-      "id": "escape_timer"
+      "id": "chase"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "escape"
+      "id": "second"
      }
     ],
     "events": null
    },
    "boss": {
     "role": "mailman",
-    "name": "Mailman",
+    "name": "Mailman Marauder",
     "attack": "charge"
    },
    "abilities": [

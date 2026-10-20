@@ -3,12 +3,12 @@
  "sentence": "toaster tornado",
  "axis": "arena.escape",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:13:13.893Z",
- "ms": 5326,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:17:35.455Z",
+ "ms": 5268,
  "answer": {
-  "plan": "Create an arena‑escape game where a toaster is chased by a tornado in a meadow.",
+  "plan": "Create an arena‑escape game where a toaster hero is chased by a tornado in a meadow. The game will feature a simple timer‑driven wave system that spawns the tornado after a short delay, then continues to chase the toaster until the player escapes or loses. No explicit player actions are required beyond moving to avoid the tornado.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -24,8 +24,24 @@
    ],
    "heroAction": null,
    "setting": "meadow",
-   "palette": "meadow",
-   "params": null,
+   "palette": "forest",
+   "params": {
+    "entryDistance": 8000,
+    "chaseLead": 30,
+    "seconds": 30,
+    "items": null,
+    "pursuitCeiling": 120,
+    "itemSizePct": null,
+    "chasers": 1,
+    "chaserSpeed": 70,
+    "enemies": 1,
+    "enemyHp": 3,
+    "enemySpeed": 80,
+    "playerHp": 3,
+    "lives": 1,
+    "targetScore": 0,
+    "timeLimit": 30
+   },
    "counts": {
     "enemy": 1,
     "collectible": null
@@ -38,34 +54,60 @@
      "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "tornado",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "tornado_spawn",
-     "verb": "spawn",
+     "id": "spawn_tornado",
+     "verb": "wait",
      "when": {
       "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "tornado",
-        "at": "player"
+       "startTimer": {
+        "timer": "delay",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "tornado_move",
-     "verb": "move",
+     "id": "begin_chase",
+     "verb": "wait",
      "when": {
-      "phase": "start"
+      "timer": "delay"
      },
      "if": null,
      "do": [
       {
-       "toggle": "tornado"
+       "goPhase": "chase"
+      },
+      {
+       "wave": {
+        "role": "tornado",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "tornado_chase",
+     "verb": "chase",
+     "when": {
+      "phase": "chase"
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
       }
      ]
     }
@@ -74,7 +116,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "tornado_timer"
+      "id": "delay"
      }
     ],
     "phases": [
@@ -92,12 +134,8 @@
     "name": "Whirling Tornado",
     "attack": "charge"
    },
-   "abilities": [],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "abilities": null,
+   "segments": null
   }
  },
  "failure": null

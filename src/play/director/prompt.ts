@@ -125,6 +125,11 @@ export const GENRE_PITCH: Readonly<Partial<Record<GenreId, string>>> = {
   whack: 'hit shoot_at targets popping out of holes; "whack the rats popping out of pipes"',
   defense: 'shoot foe waves marching down lanes at the reach place; "defend the fort from waves of trolls"',
   slice: 'slice what flies up in lanes, never bombs; "slice the flying oranges"',
+  // T14b: žánry fáze 3.
+  hop: 'hop across traffic lanes to reach, past avoid; "a goose crosses a busy motorway"',
+  crowd: 'gates grow your crowd to beat a fight boss; "grow a wolf pack through gates"',
+  merge: 'drop collect items, two alike merge; "merge matching shells in a bucket"',
+  push: 'push fight rivals out of a ring; "a walrus shoves seals off the iceberg"',
 };
 
 /** Co o parametru hloubky (P36A T8) říká věta – v závorce za mezí. */
@@ -145,37 +150,45 @@ export function genrePromptLines(): string {
     const params = Object.entries(module.paramBounds).map(([key, range]) => `${key} ${String(range.min)}..${String(range.max)}`);
     const counted = COUNT_ROLES.filter((role) => modes.some((mode) => (COUNT_PARAMS[module.id] as Readonly<Record<string, Partial<Record<string, string>> | undefined>>)[mode]?.[role] !== undefined));
     const pitch = GENRE_PITCH[module.id];
+    // P54C T14b: jediný režim `default` stojí v záhlaví, ne v řádku žánru.
+    const listed = modes.length === 1 && modes[0] === 'default' ? '' : `modes ${modes.join('|')}; `;
     return [
-      `- ${module.id} (${[...module.cues, ...(pitch === undefined ? [] : [pitch])].join(', ')}): modes ${modes.join('|')}; hero ${module.heroClasses.join('/')}${params.length === 0 ? '' : `; params ${params.join(', ')}`}${counted.length === 0 ? '' : `; counts ${counted.join('/')}`}`,
+      `- ${module.id} (${[...module.cues, ...(pitch === undefined ? [] : [pitch])].join(', ')}): ${listed}hero ${module.heroClasses.join('/')}${params.length === 0 ? '' : `; params ${params.join(', ')}`}${counted.length === 0 ? '' : `; counts ${counted.join('/')}`}`,
     ];
   });
   // P54C T14: po pohybech (dřív řádek na buňku s „ | “) – čtyři žánry pruhů se tak vešly do rozpočtu bajtů.
+  // T14b: pohyby se stejnými kombinacemi sdílejí řádek (`- run, jump: …`).
   const cells = liveCells().filter((cell) => !DIRECTOR_PENDING.has(cell.preset.genre));
-  const moves = [...new Set(cells.map((cell) => cell.recipe.move))];
+  const rows = new Map<string, string[]>();
+  for (const move of new Set(cells.map((cell) => cell.recipe.move))) {
+    const entries = [...new Set(cells.filter((cell) => cell.recipe.move === move).map((cell) => recipeEntry(cell.recipe)))].join(', ');
+    rows.set(entries, [...(rows.get(entries) ?? []), move]);
+  }
   return [
     'LIVE COMBINATIONS (move: actions/objective/threats; + joins, - = none; select one):',
-    ...moves.map((move) => `- ${move}: ${[...new Set(cells.filter((cell) => cell.recipe.move === move).map((cell) => recipeEntry(cell.recipe)))].join(', ')}`),
-    'LEGACY GENRES (recipe answers omit genre/mode):',
+    ...[...rows].map(([entries, moves]) => `- ${moves.join(', ')}: ${entries}`),
+    'LEGACY GENRES (recipe answers omit genre/mode; mode default unless listed):',
     ...genres,
     // P46E T5: s „(else null)“ a jedním příkladem vyplnil gpt-oss-20b bosse 0×, akce 2× a úseky 2× z 25 nahrávek.
     `NEW IN YOUR VERSION – the quick version lacks them, so fill all three; null only when the sentence has no foe and no action: boss {role: cast label of the foe that comes last, name: what the player sees, attack: ${BOSS_ATTACKS.join('|')}}; abilities: 1–2 hero actions on buttons the sentence implies (${ABILITIES.join('|')}); segments: exactly 3 changes the run brings in order (${SEGMENT_NEWS.join('|')}). EXAMPLES: runner "a rabbit steals carrots and runs from a fox" {"boss":{"role":"fox","name":"Big Bad Fox","attack":"charge"},"abilities":["grab","dash"],"segments":["newFoe","narrow","faster"]}; driving "a car escapes police and shoots enemies" {"boss":{"role":"police car","name":"police helicopter","attack":"drop"},"abilities":["shoot","dash"],"segments":["newFoe","moving","faster"]}; platformer "a monkey jumps across jungle platforms" {"boss":{"role":"snake","name":"Giant Python","attack":"stomp"},"abilities":["dash"],"segments":["trap","moving","newFoe"]}`,
-    'Preserve all essential movement, actions, goals and threats together; driving + racing + shooting cannot become stationary shooting.',
     'hero: 1-3 English words naming the player ("pirate ship", "wizard"); choose compatible movement.',
     // P39: obsazení místo jednoho `enemy` – každá věc věty a co s ní dělá její sloveso.
     'cast: every thing the sentence names except the hero and the place, each {label, does}; does = what the verb at that thing makes it:',
     ...CAST_DOES.map((does) => `- ${does}: ${CAST_DOES_LINES[does]}`),
-    'Never claim a nearby mechanic plays a different action: list every unsupported actor-verb-object triple in unmet, [] only if nothing was omitted. Null cast when nothing is named.',
-    `setting: where it happens, <=80 chars. palette: the scene set that best shows it, or null: ${LOOK_IDS.join('|')}. params: only for a number the sentence says, else null.`,
+    'unmet: every actor-verb-object triple not played, [] only if nothing was omitted; never claim a nearby mechanic plays it. Null cast when nothing is named.',
+    `setting: where it happens, <=80 chars. palette: the scene set that best shows it, or null: ${LOOK_IDS.join('|')}.`,
     'counts: how many the sentence says ("grab 5 coins" = collectible 5): enemy for shoot_at|chase_me|avoid|fight, collectible for collect, target for reach|throw_at; only roles the genre counts, else null.',
-    `Every genre takes params ${(Object.entries(DEPTH_PARAM_BOUNDS) as [keyof typeof DEPTH_PARAM_BOUNDS, { min: number; max: number }][])
+    // P54C T14b: dvě věty o parametrech v jedné.
+    `params: only numbers the sentence says, else null; every genre takes ${(Object.entries(DEPTH_PARAM_BOUNDS) as [keyof typeof DEPTH_PARAM_BOUNDS, { min: number; max: number }][])
       .map(([key, range]) => `${key} ${String(range.min)}..${String(range.max)} (${DEPTH_SAID[key]})`)
-      .join(', ')} when the sentence says them.`,
-    "Keep the user's nouns, numbers and names. Cast labels are singular (\"rock\", not \"rocks\"). A cast thing is never what the player holds, sprays or throws.",
+      .join(', ')}.`,
     // P38: výchozí bod je odhad ze slov, ne kostra – „ponech a přidej jednu věc“ držel AI verzi u návrhu.
-    // P54C T14: „keyword guess“ a „replace errors“ nese už štítek výchozího bodu ve zprávě (`startingPoint`).
-    'The starting point is not a constraint; preserve the sentence.',
-    'Multiple actions must coexist in the live recipe. Labels, generic wins and score prove no verb; runtime effects must witness every requested triple.',
-    'A sentence in another language is read for its meaning; every label you write stays English.',
+    // P54C T14: „keyword guess“ a „replace errors“ nese už štítek výchozího bodu ve zprávě (`startingPoint`);
+    // T14b: „preserve the sentence“ je totéž co první věta tohoto řádku.
+    "Keep the user's nouns, numbers and names; the starting point is not a constraint. Cast labels are singular (\"rock\", not \"rocks\"). A cast thing is never what the player holds, sprays or throws.",
+    // P54C T14b: věta „Preserve all essential movement…“ (P38) sloučená sem.
+    'Multiple actions must coexist in the live recipe; keep all essential movement, goals and threats too (driving + racing + shooting never becomes stationary shooting). Labels, generic wins and score prove no verb; runtime effects must witness every requested triple.',
+    'Read any language for its meaning; every label you write stays English.',
     'Checklist and main verb (in the request) are what the keyword reader found. FULL INTENT is authoritative; a suggested genre is not proof.',
   ].join('\n');
 }
@@ -215,12 +228,14 @@ export function directorUser(sentence: string, draft: GenreSpec | null): string 
  */
 export function rulesPromptLines(): string {
   return [
-    'rules: for a verb of the sentence the genre cannot play (carry, push, open, pull, give…) and for the course (logic below); else null. Each rule {id, verb, when, if, do}; verb = that sentence verb, one lowercase English word – the robot must see every rule fire while it wins (a lose or damage rule: when a robot walks into it), or the game is refused.',
+    'rules: for a verb of the sentence the genre cannot play (carry, push, open, pull, give…) and for the course (logic below); else null. Each rule {id, verb, when, if, do}; verb = that sentence verb, one lowercase English word; the robot must see every rule fire while it wins (a lose or damage rule: by walking into it) or the game is refused.',
     `when: {"contact":[role,role]} | {"press":"action"|"alt"} | {"every":ticks60Hz} | {"counter":{"name":"score"|"items"|"health","atLeast":n}} | {"hit":role} | {"interact":{"role","radius":m,"hold":ticks,"states":2|3}} (hold Use at it; only as the winning rule, do {"win":true}, won when all targets are done; one per game, not with +shoot/+chaser). if (all hold, or null): {"holding":role} | {"notHolding":true} | {"counter":{"name","atLeast"|"below"}} | {"near":{"role","within":m}}. do: {"score":n} {"damage":n} {"win":true} {"lose":true} {"despawn":"other"|"self"|"held"} {"spawn":{"role","at":"player"|"other"}} {"count":{"counter","amount"}} {"respawn":true} {"checkpoint":"other"|"self"} {"grab":"other"|"self"} {"release":true} {"throwHeld":true} {"push":"other"|"self"} {"toggle":role} (bodies of that role switch once).`,
     `A role is "player" or an id from ruleRoles [{id, kind, label, count}] (kind: ${ROLE_KINDS.filter((kind) => kind !== 'player').join('|')}). things [{role, start:"hidden"}] = starts invisible until toggled. In arena or quest a rule that wins plays in a walled yard: carried things in front, the goal behind the gate.`,
-    'RULE EXAMPLE: {"ruleRoles":[{"id":"key","kind":"key","label":"golden key","count":null},{"id":"door","kind":"door","label":"castle door","count":null},{"id":"stairs","kind":"exit","label":"tower stairs","count":null}],"things":null,"rules":[{"id":"take_key","verb":"carry","when":{"contact":["player","key"]},"if":[{"notHolding":true}],"do":[{"grab":"other"}]},{"id":"open_door","verb":"open","when":{"contact":["player","door"]},"if":[{"holding":"key"}],"do":[{"toggle":"door"},{"despawn":"held"}]},{"id":"climb","verb":"climb","when":{"contact":["player","stairs"]},"if":null,"do":[{"win":true}]}]}',
-    'logic – REQUIRED when the sentence has a course (survive, defend, waves, escape, race, rescue, fight, a time limit, stages), else null: {"vars":[{id,start}],"timers":[{id}],"phases":[{id}] (2–4, first is the start),"events":[id]}. Every phase and timer you declare must be entered/started by one rule and read by another: the first phase is entered at tick 0, so {"when":{"phase":first}} starts a timer once (never restart it with every); a later phase needs goPhase; the genre keeps its goal. Its rules – when: {"timer":id} (ran out) | {"phase":id} (entered) | {"phaseExit":id} | {"var":{"name","atLeast"|"below"}} | {"event":id}; if: {"var":…} | {"inPhase":id} | {"timerRunning":id} | {"timerStopped":id}; do: {"set":{"var","value"}} {"add":{"var","amount"}} {"goPhase":id} {"startTimer":{"timer","ticks"}} {"stopTimer":id} {"emit":id} {"wave":{"role","count","at":"edge"|"player"|"other"}} (bodies of a role appear at once).',
-    'LOGIC EXAMPLE: {"ruleRoles":[{"id":"bat","kind":"chaser","label":"bat","count":null}],"things":null,"logic":{"vars":null,"timers":[{"id":"dusk"}],"phases":[{"id":"day"},{"id":"night"}],"events":null},"rules":[{"id":"sunset","verb":"wait","when":{"phase":"day"},"if":null,"do":[{"startTimer":{"timer":"dusk","ticks":900}}]},{"id":"fall","verb":"darken","when":{"timer":"dusk"},"if":null,"do":[{"goPhase":"night"}]},{"id":"swarm","verb":"swarm","when":{"phase":"night"},"if":null,"do":[{"wave":{"role":"bat","count":1,"at":"edge"}}]}]}',
+    // P54C T14b: příklady bez polí `count` a `things` s null – přísné schéma odpovědi je doplní samo.
+    'RULE EXAMPLE: {"ruleRoles":[{"id":"key","kind":"key","label":"golden key"},{"id":"door","kind":"door","label":"castle door"},{"id":"stairs","kind":"exit","label":"tower stairs"}],"rules":[{"id":"take_key","verb":"carry","when":{"contact":["player","key"]},"if":[{"notHolding":true}],"do":[{"grab":"other"}]},{"id":"open_door","verb":"open","when":{"contact":["player","door"]},"if":[{"holding":"key"}],"do":[{"toggle":"door"},{"despawn":"held"}]},{"id":"climb","verb":"climb","when":{"contact":["player","stairs"]},"if":null,"do":[{"win":true}]}]}',
+    // P54C T14b: jak se fáze a časovač zapojí, říká `COURSE_LINE` u každé věty – tady to stálo podruhé.
+    'logic – REQUIRED when the sentence has a course (survive, defend, waves, escape, race, rescue, fight, a time limit, stages), else null: {"vars":[{id,start}],"timers":[{id}],"phases":[{id}] (2–4, first is the start, entered at tick 0),"events":[id]}, wired as the Course line says. Its rules – when: {"timer":id} (ran out) | {"phase":id} (entered) | {"phaseExit":id} | {"var":{"name","atLeast"|"below"}} | {"event":id}; if: {"var":…} | {"inPhase":id} | {"timerRunning":id} | {"timerStopped":id}; do: {"set":{"var","value"}} {"add":{"var","amount"}} {"goPhase":id} {"startTimer":{"timer","ticks"}} {"stopTimer":id} {"emit":id} {"wave":{"role","count","at":"edge"|"player"|"other"}} (bodies of a role appear at once).',
+    'LOGIC EXAMPLE: {"ruleRoles":[{"id":"bat","kind":"chaser","label":"bat"}],"logic":{"vars":null,"timers":[{"id":"dusk"}],"phases":[{"id":"day"},{"id":"night"}],"events":null},"rules":[{"id":"sunset","verb":"wait","when":{"phase":"day"},"if":null,"do":[{"startTimer":{"timer":"dusk","ticks":900}}]},{"id":"fall","verb":"darken","when":{"timer":"dusk"},"if":null,"do":[{"goPhase":"night"}]},{"id":"swarm","verb":"swarm","when":{"phase":"night"},"if":null,"do":[{"wave":{"role":"bat","count":1,"at":"edge"}}]}]}',
   ].join('\n');
 }
 

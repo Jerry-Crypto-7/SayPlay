@@ -7,7 +7,7 @@
  * 3 životy – každý vezme pád hrdiny z ringu. Hodiny `PUSH.seconds`.
  *
  * Věty sem vede klasifikátor (T13b, sloveso `push`: vystrčit soupeře z ringu, plošiny nebo kry; „sumo“) a skladba hraje
- * recept buňky `push.default` celý (`wholeGame`: akce `push` na pohybu `roam`); režisér ho nenabízí (`DIRECTOR_PENDING`).
+ * recept buňky `push.default` celý (`wholeGame`: akce `push` na pohybu `roam`); režisér ho nabízí od T14b.
  */
 
 import { PUSH } from '../arcade/pieces/push-ring';

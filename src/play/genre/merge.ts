@@ -8,7 +8,7 @@
  * 3 životy – každý vezme nádoba, která přeteče (něco nad víkem déle než 1 s).
  *
  * Věty sem vede klasifikátor (T13b, sloveso `merge`: stejné kusy, kusy v nádobě, „suika“, „2048“) a skladba hraje
- * recept buňky `merge.default` celý; režisér ho nenabízí (`DIRECTOR_PENDING`).
+ * recept buňky `merge.default` celý; režisér ho nabízí od T14b.
  */
 
 import { MERGE, MERGE_ITEM } from '../arcade/pieces/merge-drop';

@@ -9,7 +9,8 @@
  *
  *   P54C_GROUPS=catch,whack,defense,slice,trap P54C_CALL_BUDGET=48 node D:/claude/_shared/gpu-lock.mjs -- powershell -NoProfile -ExecutionPolicy Bypass -File ops/llm/start.ps1 -Role fallback -Fallback gpt-oss-20b -Then evals/play/p54c/director.cmd
  *
- * - `P54C_GROUPS`: žánry dev sady (`catch`, `whack`, … `push`) a `trap`; bez ní všech 80 vět.
+ * - `P54C_GROUPS`: žánry dev sady (`catch`, `whack`, … `push`) a `trap`; bez ní (a bez `P54C_IDS`) všech 80 vět.
+ * - `P54C_IDS`: jednotlivé věty navíc k `P54C_GROUPS` (T14b: vzorek žánrů pruhů, `c01,c02,…`).
  * - `P54C_CALL_BUDGET`: kolik volání smí běh udělat; víc vybraných vět, než strop pustí, běh odmítne před prvním
  *   voláním a větev nad stropem nic neodešle.
  * - `P54C_JUDGE_ONLY=1`: bez modelu – nahrané odpovědi znovu projdou `direct()` (po změně cesty čtení) a souhrn se
@@ -18,6 +19,9 @@
  *
  * Cena za hru je z tokenů volání a ceníku Groq pro gpt-oss-20b (0,075 / 0,30 USD za 1M tokenů vstupu / výstupu,
  * `docs/specs/2026-09-29-sladeni-dokumentace.md`). Rychlá verze (`draftGameSpecWithMeta`) se měří nad celou sadou bez modelu.
+ *
+ * T14b (nový prompt, režisér nabízí i žánry fáze 3): odpovědi a souhrn T14 (prompt `b830dc2d`, všech 80 vět) leží
+ * v `director-answers-t14.json` a `director-t14.json`; souhrn T14 se do `director.json` opisuje jako `t14Summary`.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -43,6 +47,8 @@ import { rowOf } from './rows';
 const DIR = join(process.cwd(), 'evals', 'play', 'p54c');
 const ANSWERS = join(DIR, 'director-answers.json');
 const OUT = join(DIR, 'director.json');
+/** Souhrn běhu T14 (prompt `b830dc2d`) – T14b ho nechává vedle, ať čísla MVP zůstanou čitelná. */
+const T14 = join(DIR, 'director-t14.json');
 /** Ceník Groq pro gpt-oss-20b, USD za 1M tokenů (P30: `docs/specs/2026-09-29-sladeni-dokumentace.md`). */
 const GROQ = { usdPerMTokIn: 0.075, usdPerMTokOut: 0.3 } as const;
 /** Brána T14: podíl vět, u kterých režisér zvolí žánr klasifikátoru nebo očekávaný žánr. */
@@ -164,7 +170,8 @@ it('measures the compact director over the P54C dev set (T14)', async () => {
   await loadRapier();
   const dev = (JSON.parse(readFileSync(join(DIR, 'dev.json'), 'utf8')) as { sentences: DevSentence[] }).sentences;
   const groups = process.env.P54C_GROUPS?.split(',').map((group) => group.trim()) ?? null;
-  const picked = dev.filter((sentence) => groups === null || groups.includes(sentence.family === 'trap' ? 'trap' : genreOf(sentence.expect)!));
+  const ids = process.env.P54C_IDS?.split(',').map((id) => id.trim()) ?? null;
+  const picked = dev.filter((sentence) => (groups === null && ids === null) || (groups?.includes(sentence.family === 'trap' ? 'trap' : genreOf(sentence.expect)!) ?? false) || (ids?.includes(sentence.id) ?? false));
   const judgeOnly = process.env.P54C_JUDGE_ONLY === '1';
   const endpoint = process.env.P54C_DIRECTOR_ENDPOINT ?? 'llamacpp:http://127.0.0.1:8792';
   const model = process.env.P54C_DIRECTOR_MODEL ?? 'gpt-oss-20b';
@@ -242,12 +249,13 @@ it('measures the compact director over the P54C dev set (T14)', async () => {
     OUT,
     `${JSON.stringify({
       schema: 'p54c-director.v1',
-      about: 'P54C T14: first answer of the compact director (one call per sentence, no repair round, no examples) over evals/play/p54c/dev.json; answers in director-answers.json. answer.ok = the genre the answer names is the classifier genre or the expected genre; game = what direct() returned, botWins from verifyArcade on that game. See README.md (T14).',
+      about: 'P54C T14/T14b: first answer of the compact director (one call per sentence, no repair round, no examples) over evals/play/p54c/dev.json; answers in director-answers.json. answer.ok = the genre the answer names is the classifier genre or the expected genre; game = what direct() returned, botWins from verifyArcade on that game. t14Summary = the T14 run (prompt b830dc2d, all 80 sentences, director-t14.json). See README.md (T14, T14b).',
       commit: execFileSync('git', ['--no-replace-objects', 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim(),
       model: stored.model === model || Object.keys(stored.answers).length === 0 ? model : stored.model,
       endpoint,
       liveCalls: Object.keys(answers).length,
       summary,
+      ...(existsSync(T14) ? { t14Summary: (JSON.parse(readFileSync(T14, 'utf8')) as { summary: unknown }).summary } : {}),
       rows,
     }, null, 1)}\n`,
   );

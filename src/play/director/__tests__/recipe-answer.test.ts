@@ -56,7 +56,8 @@ describe('P41 recipe answers', () => {
   it('offers exactly current live recipes and requires honest unmet without nearest-action claims', () => {
     const prompt = genrePromptLines();
     // P54C T5: buňky žánru, který režisér ještě nenabízí (`DIRECTOR_PENDING`), v tabulce nejsou. T14: tabulka po pohybech.
-    const row = (move: string) => prompt.split('\n').find((line) => line.startsWith(`- ${move}: `))?.split(': ')[1]?.split(', ') ?? [];
+    // T14b: pohyby se stejnými kombinacemi sdílejí řádek (`- run, jump: …`).
+    const row = (move: string) => prompt.split('\n').find((line) => line.startsWith('- ') && line.slice(2, line.indexOf(': ')).split(', ').includes(move))?.split(': ')[1]?.split(', ') ?? [];
     for (const cell of liveCells().filter((live) => !DIRECTOR_PENDING.has(live.preset.genre))) expect(row(cell.recipe.move), cell.id).toContain(`${cell.recipe.actions.join('+') || '-'}/${cell.recipe.objective}/${cell.recipe.threats.join('+') || '-'}`);
     expect(prompt).not.toContain('nearest one for the rest');
     expect(prompt).not.toContain('Every action the player does in the sentence must be playable');

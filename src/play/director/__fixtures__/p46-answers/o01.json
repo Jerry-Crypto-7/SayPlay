@@ -3,28 +3,26 @@
  "sentence": "A rabbit steals carrots and runs from a fox",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:11:41.836Z",
- "ms": 15315,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:16:13.748Z",
+ "ms": 7752,
  "answer": {
-  "plan": "Create an arena‑escape game where a rabbit collects carrots while evading a fox on a forest trail.",
+  "plan": "Create an arena‑escape game where a rabbit collects carrots while evading a fox.",
   "spec": {
-   "genre": "arena",
-   "mode": "escape",
    "hero": "rabbit",
    "cast": [
-    {
-     "label": "carrot",
-     "does": "collect",
-     "verb": "steal",
-     "states": null,
-     "patrol": false
-    },
     {
      "label": "fox",
      "does": "chase_me",
      "verb": "chase",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "carrot",
+     "does": "collect",
+     "verb": "collect",
      "states": null,
      "patrol": false
     }
@@ -32,34 +30,45 @@
    "heroAction": "none",
    "setting": "forest trail",
    "palette": "forest",
-   "params": null,
    "counts": {
     "enemy": 1,
-    "collectible": 1
+    "collectible": 1,
+    "target": 0
    },
    "ruleRoles": [
-    {
-     "id": "carrot",
-     "kind": "collectible",
-     "label": "carrot",
-     "count": null
-    },
     {
      "id": "fox",
      "kind": "chaser",
      "label": "fox",
-     "count": null
+     "count": 1
+    },
+    {
+     "id": "carrot",
+     "kind": "collectible",
+     "label": "carrot",
+     "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "fox",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "carrot",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "catch_carrot",
-     "verb": "collect",
+     "id": "fox_chase",
+     "verb": "chase",
      "when": {
       "contact": [
        "player",
-       "carrot"
+       "fox"
       ]
      },
      "if": [
@@ -69,10 +78,7 @@
      ],
      "do": [
       {
-       "grab": "other"
-      },
-      {
-       "score": 10
+       "damage": 1
       }
      ]
     }
@@ -104,9 +110,34 @@
    ],
    "segments": [
     "newFoe",
-    "narrow",
+    "moving",
     "faster"
-   ]
+   ],
+   "recipe": {
+    "phases": [
+     {
+      "start": 0,
+      "speedPercent": 100,
+      "add": null
+     },
+     {
+      "start": 60,
+      "speedPercent": 120,
+      "add": null
+     }
+    ],
+    "dependsOn": null,
+    "move": "run",
+    "actions": [
+     "collect"
+    ],
+    "objective": "escape",
+    "threats": [
+     "chaser"
+    ]
+   },
+   "params": null,
+   "unmet": []
   }
  },
  "failure": null

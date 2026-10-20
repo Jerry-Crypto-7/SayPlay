@@ -3,12 +3,12 @@
  "sentence": "Hamster escapes a supermarket Roomba",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:12:21.796Z",
- "ms": 14463,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:16:47.571Z",
+ "ms": 8517,
  "answer": {
-  "plan": "Arena escape with a roaming Roomba chaser and collectible coins in a supermarket setting",
+  "plan": "Arena escape with a hamster evading a supermarket Roomba, featuring timed phases and a roaming chaser.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -67,93 +67,69 @@
      "count": 5
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "roomba",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "coin",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "roomba_spawn",
-     "verb": "spawn",
+     "id": "startTimer",
+     "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "roomba",
-        "at": "player"
+       "startTimer": {
+        "timer": "escape",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "coin_wave",
-     "verb": "wave",
+     "id": "phaseTransition",
+     "verb": "wait",
      "when": {
-      "phase": "start"
+      "timer": "escape"
      },
      "if": null,
      "do": [
       {
+       "goPhase": "second"
+      },
+      {
        "wave": {
-        "role": "coin",
-        "count": 5,
+        "role": "roomba",
+        "count": 1,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "roomba_chase",
-     "verb": "chase",
-     "when": {
-      "phase": "start"
-     },
-     "if": null,
-     "do": [
-      {
-       "toggle": "roomba"
-      }
-     ]
-    },
-    {
-     "id": "roomba_stop",
-     "verb": "stop",
-     "when": {
-      "timer": "roomba_timer"
-     },
-     "if": null,
-     "do": [
-      {
-       "toggle": "roomba"
-      }
-     ]
-    },
-    {
-     "id": "roomba_timer_start",
+     "id": "chaserWave",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "roomba_timer",
-        "ticks": 600
+       "wave": {
+        "role": "roomba",
+        "count": 1,
+        "at": "edge"
        }
-      }
-     ]
-    },
-    {
-     "id": "roomba_timer_end",
-     "verb": "wait",
-     "when": {
-      "timer": "roomba_timer"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "end"
       }
      ]
     }
@@ -162,15 +138,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "roomba_timer"
+      "id": "escape"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "end"
+      "id": "second"
      }
     ],
     "events": null

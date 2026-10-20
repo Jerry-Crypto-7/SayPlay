@@ -3,36 +3,36 @@
  "answers": "src/play/director/__fixtures__/p46-answers",
  "summary": {
   "n": 25,
-  "authored": 22,
-  "ready": 25,
-  "readyShare": 1,
+  "authored": 19,
+  "ready": 22,
+  "readyShare": 0.88,
   "keptRules": 1,
   "keptLogic": 1,
-  "adds": 0.36,
-  "onlyCharacters": 8,
-  "boss": 9,
-  "action": 2,
-  "segments": 0,
+  "adds": 0.5,
+  "onlyCharacters": 5,
+  "boss": 8,
+  "action": 3,
+  "segments": 1,
   "actionLost": 0,
-  "reasons": {}
+  "reasons": {
+   "MALFORMED": 3
+  }
  },
  "rows": [
   {
    "id": "d01",
    "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
-   "status": "ready",
-   "reason": null,
+   "directed": "draft",
+   "directedReason": "MALFORMED",
+   "status": "draft-final",
+   "reason": "MALFORMED",
    "rules": [
     0,
-    0
+    null
    ],
-   "keptRules": true,
-   "keptLogic": true,
-   "adds": [
-    "characters"
-   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
    "actionLost": false
   },
   {
@@ -121,6 +121,7 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
+    "action",
     "characters"
    ],
    "actionLost": false
@@ -128,8 +129,8 @@
   {
    "id": "h02",
    "sentence": "shopping cart race in a supermarket",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": null,
    "status": "ready",
    "reason": null,
    "rules": [
@@ -139,7 +140,7 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "characters"
+    "action"
    ],
    "actionLost": false
   },
@@ -165,8 +166,8 @@
   {
    "id": "j08",
    "sentence": "a wizard defends a crystal tower from flying skeletons",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -182,12 +183,12 @@
    "id": "m01",
    "sentence": "toaster tornado",
    "directed": "authored",
-   "directedReason": null,
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
     2,
-    3
+    2
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -198,12 +199,12 @@
    "id": "m03",
    "sentence": "Grandma kart",
    "directed": "authored",
-   "directedReason": null,
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
     3,
-    4
+    3
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -255,7 +256,7 @@
    "reason": null,
    "rules": [
     0,
-    1
+    0
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -283,20 +284,17 @@
   {
    "id": "o01",
    "sentence": "A rabbit steals carrots and runs from a fox",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
-   "status": "ready",
-   "reason": null,
+   "directed": "draft",
+   "directedReason": "MALFORMED",
+   "status": "draft-final",
+   "reason": "MALFORMED",
    "rules": [
     3,
-    3
+    null
    ],
-   "keptRules": true,
-   "keptLogic": true,
-   "adds": [
-    "boss",
-    "action"
-   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
    "actionLost": false
   },
   {
@@ -320,8 +318,8 @@
   {
    "id": "o03",
    "sentence": "Racing car escaping and shooting enemies",
-   "directed": "draft",
-   "directedReason": "UNREPAIRED",
+   "directed": "authored",
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -331,7 +329,6 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss",
     "characters"
    ],
    "actionLost": false
@@ -339,20 +336,17 @@
   {
    "id": "o04",
    "sentence": "racing car escapes police and shoots enemies",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
-   "status": "ready",
-   "reason": null,
+   "directed": "draft",
+   "directedReason": "MALFORMED",
+   "status": "draft-final",
+   "reason": "MALFORMED",
    "rules": [
     3,
-    4
+    null
    ],
-   "keptRules": true,
-   "keptLogic": true,
-   "adds": [
-    "boss",
-    "characters"
-   ],
+   "keptRules": null,
+   "keptLogic": null,
+   "adds": [],
    "actionLost": false
   },
   {
@@ -376,8 +370,8 @@
   {
    "id": "o06",
    "sentence": "Jumping arcade game in the forest",
-   "directed": "authored",
-   "directedReason": null,
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -386,19 +380,22 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "boss",
+    "characters"
+   ],
    "actionLost": false
   },
   {
    "id": "o07",
    "sentence": "A ninja frog jumps across lily pads in a swamp",
    "directed": "authored",
-   "directedReason": null,
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
     3,
-    4
+    3
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -436,23 +433,26 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "boss"
+   ],
    "actionLost": false
   },
   {
    "id": "s021",
    "sentence": "obby game with lava and spinning bars",
    "directed": "authored",
-   "directedReason": null,
+   "directedReason": "VERB_UNPROVED",
    "status": "ready",
    "reason": null,
    "rules": [
     3,
-    4
+    3
    ],
    "keptRules": true,
    "keptLogic": true,
    "adds": [
+    "segments",
     "characters"
    ],
    "actionLost": false

@@ -3,72 +3,39 @@
  "sentence": "shopping cart race in a supermarket",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:14:17.304Z",
- "ms": 11304,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:18:16.112Z",
+ "ms": 4462,
  "answer": {
-  "plan": "Create a simple race‑style voyage game where the player drives a shopping cart through a supermarket, using a two‑phase timer logic to start the race and declare victory.",
+  "plan": "Create a fast‑paced supermarket race where the player drives a shopping cart through aisles, dodging shelves and collecting items before time runs out.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
    "hero": "shopping cart",
    "cast": [],
-   "heroAction": "none",
+   "heroAction": "dig",
    "setting": "supermarket",
    "palette": "supermarket",
    "params": {
     "hazards": 0,
-    "turbo": 0,
-    "roadWidth": 3600,
-    "roadEntryWidth": 3600,
-    "crashBudget": 1,
+    "turbo": 1,
+    "roadWidth": 5000,
+    "roadEntryWidth": 5000,
+    "crashBudget": 3,
     "namedLandingTarget": 0,
-    "touchdownSpeed": 15,
-    "gravityRisePct": 0,
-    "lengthM": 200,
-    "topSpeed": 200,
-    "gravity": 400,
-    "lives": 1,
+    "touchdownSpeed": 30,
+    "gravityRisePct": 10,
+    "lengthM": 400,
+    "topSpeed": 250,
+    "gravity": 800,
+    "lives": 3,
     "targetScore": 0,
-    "timeLimit": 0
+    "timeLimit": 60
    },
    "ruleRoles": [],
    "things": [],
-   "rules": [
-    {
-     "id": "start_timer",
-     "verb": "wait",
-     "when": {
-      "phase": "start"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "race",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "go_finish",
-     "verb": "wait",
-     "when": {
-      "timer": "race"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "finish"
-      },
-      {
-       "win": true
-      }
-     ]
-    }
-   ],
+   "rules": [],
    "logic": {
     "vars": null,
     "timers": [
@@ -81,13 +48,18 @@
       "id": "start"
      },
      {
-      "id": "finish"
+      "id": "mid"
+     },
+     {
+      "id": "end"
      }
     ],
     "events": null
    },
    "boss": null,
-   "abilities": [],
+   "abilities": [
+    "dash"
+   ],
    "segments": null
   }
  },

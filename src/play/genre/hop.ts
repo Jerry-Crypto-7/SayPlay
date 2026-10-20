@@ -7,7 +7,7 @@
  * uberou život a vrátí hrdinu na poslední trávu, orel vezme toho, kdo 6 s neskočí.
  *
  * Věty sem vede klasifikátor (T13b, sloveso `cross`: přes silnici, provoz, koleje, řeku po kládách; „crossy road“,
- * „frogger“) a skladba hraje recept buňky `hop.default` celý; režisér ho nenabízí (`DIRECTOR_PENDING`).
+ * „frogger“) a skladba hraje recept buňky `hop.default` celý; režisér ho nabízí od T14b.
  */
 
 import { HOP } from '../arcade/pieces/hop';

@@ -3,12 +3,12 @@
  "sentence": "obby game with lava and spinning bars",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:14:43.101Z",
- "ms": 7001,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:18:38.709Z",
+ "ms": 5438,
  "answer": {
-  "plan": "Create a platformer where the hero must jump over lava and avoid spinning bars, with timed phases that spawn new bars.",
+  "plan": "Create a platformer where the hero must jump over lava and avoid spinning bars, with a simple two‑phase timer that triggers a wave of new bars.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -19,7 +19,7 @@
      "does": "avoid",
      "verb": "hazard",
      "states": null,
-     "patrol": null
+     "patrol": false
     },
     {
      "label": "bar",
@@ -31,16 +31,23 @@
    ],
    "heroAction": "none",
    "setting": "floating islands",
-   "palette": "jungle",
-   "params": null,
+   "palette": "cave",
+   "params": {
+    "lengthM": 200,
+    "difficulty": 1,
+    "items": 2,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": null
+   },
    "counts": {
-    "collectible": null
+    "collectible": 2
    },
    "ruleRoles": [
     {
      "id": "bar",
      "kind": "hazard",
-     "label": "bar",
+     "label": "spinning bar",
      "count": null
     },
     {
@@ -50,53 +57,65 @@
      "count": null
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "bar",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "lava",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
      "id": "startPhase",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
        "startTimer": {
-        "timer": "barwave",
-        "ticks": 120
+        "timer": "phase1",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "spawnBar",
-     "verb": "spawn",
-     "when": {
-      "timer": "barwave"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "bar",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "resetTimer",
+     "id": "phase1Timer",
      "verb": "wait",
      "when": {
-      "timer": "barwave"
+      "timer": "phase1"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "barwave",
-        "ticks": 120
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "bar",
+        "count": 3,
+        "at": "edge"
        }
+      }
+     ]
+    },
+    {
+     "id": "phase2",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "toggle": "bar"
       }
      ]
     }
@@ -105,15 +124,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "barwave"
+      "id": "phase1"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "active"
+      "id": "second"
      }
     ],
     "events": null

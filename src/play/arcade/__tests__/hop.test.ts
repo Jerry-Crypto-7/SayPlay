@@ -152,14 +152,14 @@ describe('hop genre is live (P54C T9)', () => {
     expect(readGenreSpec({ genre: 'hop', mode: 'default', hero: 'fox', setting: 'forest', params: { rows: HOP.rows.max + 1 } }).ok).toBe(false);
   });
 
-  // Věty k žánru vede od T13b klasifikátor; režisér ho nabídne až při opakování T14 (T14b).
-  it('is chosen by the classifier (T13b) and the director does not offer it yet', () => {
+  // Věty k žánru vede od T13b klasifikátor, režisér ho nabízí od T14b.
+  it('is chosen by the classifier (T13b) and offered by the director (T14b)', () => {
     for (const sentence of ['a chicken crosses the busy road', 'crossy road with a frog', 'hop across the river on logs']) {
       expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).toBe('hop');
     }
-    expect(DIRECTOR_PENDING.has('hop')).toBe(true);
+    expect(DIRECTOR_PENDING.has('hop')).toBe(false);
     const variants = (GENRE_ANSWER_SCHEMA.properties as Record<string, { anyOf: { properties: Record<string, { enum?: unknown[] }> }[] }>).spec.anyOf;
-    expect(variants.flatMap((variant) => variant.properties.genre?.enum ?? [])).not.toContain('hop');
+    expect(variants.flatMap((variant) => variant.properties.genre?.enum ?? [])).toContain('hop');
   });
 });
 

@@ -161,14 +161,14 @@ describe('merge genre is live (P54C T11)', () => {
     expect(game.objective.description).toContain('gems');
   });
 
-  // Věty k žánru vede od T13b klasifikátor; režisér ho nabídne až při opakování T14 (T14b).
-  it('is chosen by the classifier (T13b) and the director does not offer it yet', () => {
+  // Věty k žánru vede od T13b klasifikátor, režisér ho nabízí od T14b.
+  it('is chosen by the classifier (T13b) and offered by the director (T14b)', () => {
     for (const sentence of ['merge the fruits in a jar', 'drop and merge planets like suika', 'combine two gems into a bigger gem']) {
       expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).toBe('merge');
     }
-    expect(DIRECTOR_PENDING.has('merge')).toBe(true);
+    expect(DIRECTOR_PENDING.has('merge')).toBe(false);
     const variants = (GENRE_ANSWER_SCHEMA.properties as Record<string, { anyOf: { properties: Record<string, { enum?: unknown[] }> }[] }>).spec.anyOf;
-    expect(variants.flatMap((variant) => variant.properties.genre?.enum ?? [])).not.toContain('merge');
+    expect(variants.flatMap((variant) => variant.properties.genre?.enum ?? [])).toContain('merge');
   });
 });
 

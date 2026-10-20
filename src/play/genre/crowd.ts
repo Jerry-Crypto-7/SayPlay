@@ -7,7 +7,7 @@
  * Hloubka: 30 dvojic bran ve třech úsecích, které houstnou; síla obra plyne z délky trati; 3 životy – bere je překážka.
  *
  * Věty sem vede klasifikátor (T13b, sloveso `grow`: dav nebo růst a brány, „grow your army“, „count masters“) a skladba
- * hraje recept buňky `crowd.default` celý; režisér ho nenabízí (`DIRECTOR_PENDING`).
+ * hraje recept buňky `crowd.default` celý; režisér ho nabízí od T14b.
  */
 
 import { CROWD } from '../arcade/pieces/crowd';

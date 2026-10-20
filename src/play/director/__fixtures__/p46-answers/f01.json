@@ -3,10 +3,10 @@
  "sentence": "a dragon guards its gold hoard from greedy knights inside a volcano",
  "axis": "arena.collect",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:12:50.619Z",
- "ms": 7427,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:17:13.114Z",
+ "ms": 4895,
  "answer": {
   "plan": "Create a defense‑style volcano game where a dragon protects its gold hoard from greedy knights.",
   "spec": {
@@ -24,7 +24,7 @@
     {
      "label": "gold hoard",
      "does": "reach",
-     "verb": "guard",
+     "verb": "defend",
      "states": null,
      "patrol": false
     }
@@ -50,55 +50,81 @@
      "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "knight",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "hoard",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
      "id": "spawn_knights",
      "verb": "spawn",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "wave": {
+       "spawn": {
         "role": "knight",
-        "count": 5,
-        "at": "edge"
+        "at": "player"
        }
       }
      ]
     },
     {
-     "id": "spawn_more_knights",
-     "verb": "spawn",
+     "id": "start_timer",
+     "verb": "wait",
      "when": {
-      "timer": "midnight"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "wave": {
-        "role": "knight",
-        "count": 5,
-        "at": "edge"
+       "startTimer": {
+        "timer": "defense",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "guard_hoard",
-     "verb": "protect",
+     "id": "phase_transition",
+     "verb": "wait",
      "when": {
-      "phase": "start"
+      "timer": "defense"
      },
      "if": null,
      "do": [
       {
-       "toggle": "hoard"
+       "goPhase": "second"
       },
       {
-       "despawn": "held"
+       "wave": {
+        "role": "knight",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "defend_hoard",
+     "verb": "defend",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 100
       }
      ]
     }
@@ -107,23 +133,23 @@
     "vars": null,
     "timers": [
      {
-      "id": "midnight"
+      "id": "defense"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "midnight"
+      "id": "second"
      }
     ],
     "events": null
    },
    "boss": {
     "role": "greedy knight",
-    "name": "Lord Blackblade",
-    "attack": "charge"
+    "name": "Gold‑Hoarding Knight",
+    "attack": "shoot"
    },
    "abilities": [],
    "segments": null

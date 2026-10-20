@@ -3,12 +3,12 @@
  "sentence": "An elf archer shoots goblins from the treetops.",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:12:57.419Z",
- "ms": 6800,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:17:18.197Z",
+ "ms": 5082,
  "answer": {
-  "plan": "Create a shooter game where an elf archer battles goblins perched on treetops, featuring wave‑based spawning and a simple timer‑driven phase system.",
+  "plan": "Create a shooter game where an elf archer battles goblins perched on treetops, with a simple wave‑based timer mechanic.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -25,7 +25,16 @@
    "heroAction": "none",
    "setting": "forest clearing",
    "palette": "forest",
-   "params": null,
+   "params": {
+    "targetWidthPct": 50,
+    "movingTargets": 0,
+    "waves": null,
+    "enemies": null,
+    "targets": null,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": null
+   },
    "counts": {
     "enemy": null,
     "target": null
@@ -38,10 +47,16 @@
      "count": null
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "goblin",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "start_wave",
+     "id": "spawn_wave",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -50,17 +65,17 @@
      "do": [
       {
        "startTimer": {
-        "timer": "wave_timer",
+        "timer": "wave",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "wave_spawn",
+     "id": "wave_start",
      "verb": "wait",
      "when": {
-      "timer": "wave_timer"
+      "timer": "wave"
      },
      "if": null,
      "do": [
@@ -74,15 +89,15 @@
      ]
     },
     {
-     "id": "next_phase",
+     "id": "wave_end",
      "verb": "wait",
      "when": {
-      "timer": "wave_timer"
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "second"
+       "goPhase": "first"
       }
      ]
     }
@@ -91,7 +106,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave_timer"
+      "id": "wave"
      }
     ],
     "phases": [
@@ -113,8 +128,8 @@
     "shoot"
    ],
    "segments": [
-    "newFoe",
     "moving",
+    "newFoe",
     "faster"
    ]
   }

@@ -3,12 +3,12 @@
  "sentence": "boxing a kangaroo in the australian outback",
  "axis": "duel",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:14:23.144Z",
- "ms": 5839,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:18:21.591Z",
+ "ms": 5479,
  "answer": {
-  "plan": "Create an arena‑style boxing match where the player fights a kangaroo in the Australian outback, with timed phases that spawn additional kangaroo opponents.",
+  "plan": "Create an arena‑style boxing game where the player fights a kangaroo in the Australian outback, with timed phases that spawn the kangaroo and trigger a second round.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -20,26 +20,28 @@
      "verb": "box",
      "states": 2,
      "patrol": false
-    },
-    {
-     "label": "bush",
-     "does": "scenery",
-     "verb": "none",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "rock",
-     "does": "avoid",
-     "verb": "jump over",
-     "states": null,
-     "patrol": false
     }
    ],
    "heroAction": "paint",
    "setting": "australian outback",
    "palette": "desert",
-   "params": null,
+   "params": {
+    "entryDistance": 8000,
+    "chaseLead": 0,
+    "seconds": 60,
+    "items": 1,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 1,
+    "chaserSpeed": 70,
+    "enemies": 1,
+    "enemyHp": 5,
+    "enemySpeed": 60,
+    "playerHp": 5,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 60
+   },
    "counts": {
     "enemy": 1,
     "collectible": null
@@ -52,54 +54,62 @@
      "count": 1
     },
     {
-     "id": "rock",
-     "kind": "hazard",
-     "label": "rock",
+     "id": "boxer",
+     "kind": "exit",
+     "label": "boxer",
      "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "kangaroo",
+     "start": "hidden",
+     "physics": true
+    }
+   ],
    "rules": [
     {
-     "id": "contact_kangaroo",
-     "verb": "fight",
+     "id": "startRound",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "kangaroo"
-      ]
+      "phase": "first"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "damage": 1
-      },
-      {
-       "grab": "other"
+       "startTimer": {
+        "timer": "round",
+        "ticks": 60
+       }
       }
      ]
     },
     {
-     "id": "contact_rock",
-     "verb": "jump",
+     "id": "spawnKangaroo",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "rock"
-      ]
+      "timer": "round"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "damage": 1
+       "spawn": {
+        "role": "kangaroo",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "secondPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -108,7 +118,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "round"
      }
     ],
     "phases": [

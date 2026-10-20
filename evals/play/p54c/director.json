@@ -1,11 +1,229 @@
 {
  "schema": "p54c-director.v1",
- "about": "P54C T14: first answer of the compact director (one call per sentence, no repair round, no examples) over evals/play/p54c/dev.json; answers in director-answers.json. answer.ok = the genre the answer names is the classifier genre or the expected genre; game = what direct() returned, botWins from verifyArcade on that game. See README.md (T14).",
- "commit": "cbfd58c7",
+ "about": "P54C T14/T14b: first answer of the compact director (one call per sentence, no repair round, no examples) over evals/play/p54c/dev.json; answers in director-answers.json. answer.ok = the genre the answer names is the classifier genre or the expected genre; game = what direct() returned, botWins from verifyArcade on that game. t14Summary = the T14 run (prompt b830dc2d, all 80 sentences, director-t14.json). See README.md (T14, T14b).",
+ "commit": "0b9895d7",
  "model": "gpt-oss-20b",
  "endpoint": "llamacpp:http://127.0.0.1:8792",
- "liveCalls": 80,
+ "liveCalls": 60,
  "summary": {
+  "gate": 0.8,
+  "answerGenreOk": {
+   "hit": 57,
+   "of": 60,
+   "share": 0.95
+  },
+  "gameGenreOk": {
+   "hit": 57,
+   "of": 60,
+   "share": 0.95
+  },
+  "byGroup": {
+   "catch": {
+    "answer": {
+     "hit": 3,
+     "of": 3,
+     "share": 1
+    },
+    "game": {
+     "hit": 3,
+     "of": 3,
+     "share": 1
+    },
+    "answerGenres": {
+     "catch": 3
+    }
+   },
+   "whack": {
+    "answer": {
+     "hit": 3,
+     "of": 3,
+     "share": 1
+    },
+    "game": {
+     "hit": 3,
+     "of": 3,
+     "share": 1
+    },
+    "answerGenres": {
+     "whack": 3
+    }
+   },
+   "defense": {
+    "answer": {
+     "hit": 3,
+     "of": 3,
+     "share": 1
+    },
+    "game": {
+     "hit": 3,
+     "of": 3,
+     "share": 1
+    },
+    "answerGenres": {
+     "defense": 3
+    }
+   },
+   "slice": {
+    "answer": {
+     "hit": 3,
+     "of": 3,
+     "share": 1
+    },
+    "game": {
+     "hit": 3,
+     "of": 3,
+     "share": 1
+    },
+    "answerGenres": {
+     "slice": 3
+    }
+   },
+   "hop": {
+    "answer": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "game": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "answerGenres": {
+     "hop": 8
+    }
+   },
+   "crowd": {
+    "answer": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "game": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "answerGenres": {
+     "crowd": 8
+    }
+   },
+   "merge": {
+    "answer": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "game": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "answerGenres": {
+     "merge": 8
+    }
+   },
+   "push": {
+    "answer": {
+     "hit": 7,
+     "of": 8,
+     "share": 0.875
+    },
+    "game": {
+     "hit": 8,
+     "of": 8,
+     "share": 1
+    },
+    "answerGenres": {
+     "push": 7,
+     "none": 1
+    }
+   },
+   "trap": {
+    "answer": {
+     "hit": 14,
+     "of": 16,
+     "share": 0.875
+    },
+    "game": {
+     "hit": 13,
+     "of": 16,
+     "share": 0.813
+    },
+    "answerGenres": {
+     "runner": 2,
+     "arena": 4,
+     "quest": 1,
+     "platformer": 2,
+     "voyage": 1,
+     "push": 1,
+     "throw": 1,
+     "shooter": 1,
+     "merge": 1,
+     "rhythm": 1,
+     "timing": 1
+    }
+   }
+  },
+  "formats": {
+   "recipe": 1,
+   "legacy": 59,
+   "none": 0
+  },
+  "games": {
+   "authored": 57,
+   "botWins": 57,
+   "botFailures": [],
+   "quickVersion": 3,
+   "fallbackReasons": {
+    "VERB_UNPROVED": 55,
+    "UNREPAIRED": 2,
+    "MALFORMED": 1,
+    "none": 2
+   }
+  },
+  "directorMs": {
+   "p50": 5116,
+   "p95": 6462,
+   "max": 7526,
+   "label": "local RTX 3090, llama.cpp gpt-oss-20b – not Groq"
+  },
+  "cost": {
+   "pricing": {
+    "usdPerMTokIn": 0.075,
+    "usdPerMTokOut": 0.3
+   },
+   "perGameUsd": {
+    "mean": 0.000413,
+    "max": 0.000536
+   },
+   "tokens": {
+    "inMean": 3721,
+    "outMean": 446
+   }
+  },
+  "prompt": {
+   "version": "33df2757",
+   "systemBytes": 11898,
+   "requestBytes": {
+    "mean": 12831,
+    "max": 13006
+   },
+   "budgetBytes": 15000
+  },
+  "quickDraftMs": {
+   "cold": {
+    "p95": 1214.5,
+    "max": 1669.1
+   },
+   "warm": {
+    "p95": 1070.9,
+    "max": 1219.4
+   },
+   "sentences": 80
+  }
+ },
+ "t14Summary": {
   "gate": 0.8,
   "answerGenreOk": {
    "hit": 76,
@@ -243,41 +461,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: honey hazard bear has no action witness; rule verbs dropped: spawn, collect",
-    "genre": "catch.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 34,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 5407,
-   "requestBytes": 12908,
-   "tokens": {
-    "inputTokens": 3710,
-    "outputTokens": 428
-   },
-   "usd": 0.000407
-  },
-  {
-   "id": "c02",
-   "family": "target",
-   "expect": "catch.default",
-   "classify": "catch.default",
-   "draft": "catch.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "catch",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: apple hazard hero has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_fruit\",\"verb\":\"spawn\",\"when\":{\"phase\":\"fir",
+    "failure": "ACTION_LOST: ACTION_LOST: honey hazard bear has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first",
     "genre": "catch.default",
     "control": "lanes",
     "ok": true,
@@ -289,81 +473,13 @@
      "failures": []
     }
    },
-   "ms": 4521,
-   "requestBytes": 12873,
+   "ms": 5919,
+   "requestBytes": 12910,
    "tokens": {
-    "inputTokens": 3698,
-    "outputTokens": 439
+    "inputTokens": 3741,
+    "outputTokens": 395
    },
-   "usd": 0.000409
-  },
-  {
-   "id": "c03",
-   "family": "target",
-   "expect": "catch.default",
-   "classify": "catch.default",
-   "draft": "catch.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "catch",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: fish hazard penguin has no action witness",
-    "genre": "catch.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 35,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 3812,
-   "requestBytes": 12871,
-   "tokens": {
-    "inputTokens": 3701,
-    "outputTokens": 336
-   },
-   "usd": 0.000378
-  },
-  {
-   "id": "c04",
-   "family": "target",
-   "expect": "catch.default",
-   "classify": "catch.default",
-   "draft": "catch.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "catch",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: star hazard hero has no action witness; rule verbs dropped: spawn, fall, catch",
-    "genre": "catch.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 35,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 3884,
-   "requestBytes": 12850,
-   "tokens": {
-    "inputTokens": 3690,
-    "outputTokens": 381
-   },
-   "usd": 0.000391
+   "usd": 0.000399
   },
   {
    "id": "c05",
@@ -379,7 +495,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: egg hazard chef has no action witness; ACTION_LOST: bomb hazard chef has no action witness",
+    "failure": "ACTION_LOST: ACTION_LOST: egg hazard chef has no action witness; ACTION_LOST: bomb hazard chef has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id",
     "genre": "catch.default",
     "control": "lanes",
     "ok": true,
@@ -391,81 +507,13 @@
      "failures": []
     }
    },
-   "ms": 4118,
-   "requestBytes": 12967,
+   "ms": 5587,
+   "requestBytes": 12969,
    "tokens": {
-    "inputTokens": 3720,
-    "outputTokens": 418
+    "inputTokens": 3751,
+    "outputTokens": 424
    },
-   "usd": 0.000404
-  },
-  {
-   "id": "c06",
-   "family": "target",
-   "expect": "catch.default",
-   "classify": "catch.default",
-   "draft": "catch.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "catch",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: mine hazard hero has no action witness; ACTION_LOST: nugget hazard hero has no action witness; rule verbs dropped: wait",
-    "genre": "catch.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 35,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 3932,
-   "requestBytes": 12924,
-   "tokens": {
-    "inputTokens": 3712,
-    "outputTokens": 348
-   },
-   "usd": 0.000383
-  },
-  {
-   "id": "c07",
-   "family": "target",
-   "expect": "catch.default",
-   "classify": "catch.default",
-   "draft": "catch.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "catch",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: catch, avoid",
-    "genre": "catch.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 35,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 3774,
-   "requestBytes": 12790,
-   "tokens": {
-    "inputTokens": 3684,
-    "outputTokens": 330
-   },
-   "usd": 0.000375
+   "usd": 0.000409
   },
   {
    "id": "c08",
@@ -481,7 +529,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: kid run has no action witness; ACTION_LOST: present hazard kid has no action witness; rule verbs dropped: catch, avoid",
+    "failure": "ACTION_LOST: ACTION_LOST: kid run has no action witness; ACTION_LOST: present hazard kid has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"cat",
     "genre": "catch.default",
     "control": "lanes",
     "ok": true,
@@ -493,13 +541,13 @@
      "failures": []
     }
    },
-   "ms": 3884,
-   "requestBytes": 12954,
+   "ms": 5863,
+   "requestBytes": 12956,
    "tokens": {
-    "inputTokens": 3713,
-    "outputTokens": 349
+    "inputTokens": 3744,
+    "outputTokens": 496
    },
-   "usd": 0.000383
+   "usd": 0.00043
   },
   {
    "id": "w01",
@@ -514,41 +562,8 @@
    },
    "game": {
     "source": "authored",
-    "fallbackReason": null,
-    "genre": "whack.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 34.7,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 4298,
-   "requestBytes": 12776,
-   "tokens": {
-    "inputTokens": 3683,
-    "outputTokens": 388
-   },
-   "usd": 0.000393
-  },
-  {
-   "id": "w02",
-   "family": "target",
-   "expect": "whack.default",
-   "classify": "whack.default",
-   "draft": "whack.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "whack",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: alien interact has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"alien_spawn\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"}",
+    "failure": "VERB_UNPROVED: RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"wave\",\"ti",
     "genre": "whack.default",
     "control": "lanes",
     "ok": true,
@@ -560,46 +575,13 @@
      "failures": []
     }
    },
-   "ms": 6261,
-   "requestBytes": 12843,
+   "ms": 5293,
+   "requestBytes": 12778,
    "tokens": {
-    "inputTokens": 3699,
-    "outputTokens": 455
+    "inputTokens": 3714,
+    "outputTokens": 402
    },
-   "usd": 0.000414
-  },
-  {
-   "id": "w03",
-   "family": "target",
-   "expect": "whack.default",
-   "classify": "whack.default",
-   "draft": "whack.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "whack",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": null,
-    "genre": "whack.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 33.9,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 6215,
-   "requestBytes": 12829,
-   "tokens": {
-    "inputTokens": 3695,
-    "outputTokens": 454
-   },
-   "usd": 0.000413
+   "usd": 0.000399
   },
   {
    "id": "w04",
@@ -615,127 +597,25 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero bonk gopher has no action witness; ACTION_LOST: hero walk has no action witness",
+    "failure": "ACTION_LOST: ACTION_LOST: hero bonk gopher has no action witness; ACTION_LOST: hero walk has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spa",
     "genre": "whack.default",
     "control": "lanes",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 34.7,
+     "seconds": 33.9,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5414,
-   "requestBytes": 12831,
+   "ms": 5464,
+   "requestBytes": 12833,
    "tokens": {
-    "inputTokens": 3700,
-    "outputTokens": 381
+    "inputTokens": 3731,
+    "outputTokens": 395
    },
-   "usd": 0.000392
-  },
-  {
-   "id": "w05",
-   "family": "target",
-   "expect": "whack.default",
-   "classify": "whack.default",
-   "draft": "whack.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "whack",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero fight bug has no action witness; ACTION_LOST: bug interact drain has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"i",
-    "genre": "whack.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 34.7,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 5607,
-   "requestBytes": 12835,
-   "tokens": {
-    "inputTokens": 3698,
-    "outputTokens": 399
-   },
-   "usd": 0.000397
-  },
-  {
-   "id": "w06",
-   "family": "target",
-   "expect": "whack.default",
-   "classify": "whack.default",
-   "draft": "whack.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "whack",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hammer whack has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"i",
-    "genre": "whack.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 34.7,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 5981,
-   "requestBytes": 12799,
-   "tokens": {
-    "inputTokens": 3689,
-    "outputTokens": 398
-   },
-   "usd": 0.000396
-  },
-  {
-   "id": "w07",
-   "family": "target",
-   "expect": "whack.default",
-   "classify": "whack.default",
-   "draft": "whack.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "whack",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: wait",
-    "genre": "whack.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 34.7,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 4679,
-   "requestBytes": 12760,
-   "tokens": {
-    "inputTokens": 3668,
-    "outputTokens": 336
-   },
-   "usd": 0.000376
+   "usd": 0.000398
   },
   {
    "id": "w08",
@@ -751,25 +631,25 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: shoot, jump, spawn",
+    "failure": "VERB_UNPROVED: RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"pop_balloon\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"balloon\"]},\"if\":[{\"notHolding\":true}],\"do\":",
     "genre": "whack.default",
     "control": "lanes",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 33.9,
+     "seconds": 32.6,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5564,
-   "requestBytes": 12854,
+   "ms": 6462,
+   "requestBytes": 12856,
    "tokens": {
-    "inputTokens": 3698,
-    "outputTokens": 430
+    "inputTokens": 3729,
+    "outputTokens": 518
    },
-   "usd": 0.000406
+   "usd": 0.000435
   },
   {
    "id": "f01",
@@ -785,7 +665,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: wait, spawn",
+    "failure": "VERB_UNPROVED: rule verbs dropped: wait",
     "genre": "defense.default",
     "control": "lanes",
     "ok": true,
@@ -797,81 +677,13 @@
      "failures": []
     }
    },
-   "ms": 4643,
-   "requestBytes": 12840,
+   "ms": 5673,
+   "requestBytes": 12842,
    "tokens": {
-    "inputTokens": 3693,
-    "outputTokens": 398
+    "inputTokens": 3724,
+    "outputTokens": 463
    },
-   "usd": 0.000396
-  },
-  {
-   "id": "f02",
-   "family": "target",
-   "expect": "defense.default",
-   "classify": "defense.default",
-   "draft": "defense.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "defense",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero survive has no action witness; ACTION_LOST: hero duel wall has no action witness; rule verbs dropped: spawn, protect",
-    "genre": "defense.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 47.8,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 4334,
-   "requestBytes": 12835,
-   "tokens": {
-    "inputTokens": 3687,
-    "outputTokens": 329
-   },
-   "usd": 0.000375
-  },
-  {
-   "id": "f03",
-   "family": "target",
-   "expect": "defense.default",
-   "classify": "defense.default",
-   "draft": "defense.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "defense",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero stop skeleton has no action witness; rule verbs dropped: wait, spawn, contact",
-    "genre": "defense.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 47.8,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 6123,
-   "requestBytes": 12793,
-   "tokens": {
-    "inputTokens": 3680,
-    "outputTokens": 405
-   },
-   "usd": 0.000398
+   "usd": 0.000418
   },
   {
    "id": "f04",
@@ -887,7 +699,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: wait, hit",
+    "failure": "VERB_UNPROVED: RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"wave_time",
     "genre": "defense.default",
     "control": "lanes",
     "ok": true,
@@ -899,115 +711,13 @@
      "failures": []
     }
    },
-   "ms": 5580,
-   "requestBytes": 12839,
+   "ms": 6112,
+   "requestBytes": 12841,
    "tokens": {
-    "inputTokens": 3691,
-    "outputTokens": 430
+    "inputTokens": 3722,
+    "outputTokens": 446
    },
-   "usd": 0.000406
-  },
-  {
-   "id": "f05",
-   "family": "target",
-   "expect": "defense.default",
-   "classify": "defense.default",
-   "draft": "defense.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "defense",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: RULE_INVALID: /logic/phases/1: no rule enters phase idle – add a rule with {\"goPhase\":\"idle\"}; rules as written: [{\"id\":\"spawn_crab_wave\",\"verb\":\"spawn\",\"when\":{\"phase\":\"wave\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"crab\",\"count\":3",
-    "genre": "defense.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 47.8,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 5519,
-   "requestBytes": 12882,
-   "tokens": {
-    "inputTokens": 3704,
-    "outputTokens": 418
-   },
-   "usd": 0.000403
-  },
-  {
-   "id": "f06",
-   "family": "target",
-   "expect": "defense.default",
-   "classify": "defense.default",
-   "draft": "defense.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "defense",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero guard shop has no action witness; rule verbs dropped: spawn, attack",
-    "genre": "defense.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 47.8,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 4454,
-   "requestBytes": 12859,
-   "tokens": {
-    "inputTokens": 3697,
-    "outputTokens": 314
-   },
-   "usd": 0.000371
-  },
-  {
-   "id": "f07",
-   "family": "target",
-   "expect": "defense.default",
-   "classify": "defense.default",
-   "draft": "defense.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "defense",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: spawn, shoot",
-    "genre": "defense.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 47.8,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 4613,
-   "requestBytes": 12845,
-   "tokens": {
-    "inputTokens": 3700,
-    "outputTokens": 341
-   },
-   "usd": 0.00038
+   "usd": 0.000413
   },
   {
    "id": "f08",
@@ -1023,7 +733,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: spawn, shoot",
+    "failure": "VERB_UNPROVED: RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"alien_wave\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"wave\":{\"role\":\"alien\",\"count\":",
     "genre": "defense.default",
     "control": "lanes",
     "ok": true,
@@ -1035,13 +745,13 @@
      "failures": []
     }
    },
-   "ms": 4993,
-   "requestBytes": 12751,
+   "ms": 5098,
+   "requestBytes": 12753,
    "tokens": {
-    "inputTokens": 3665,
-    "outputTokens": 341
+    "inputTokens": 3696,
+    "outputTokens": 350
    },
-   "usd": 0.000377
+   "usd": 0.000382
   },
   {
    "id": "s01",
@@ -1055,27 +765,21 @@
     "ok": true
    },
    "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: slice glide has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"start_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if",
+    "source": "draft",
+    "fallbackReason": "UNREPAIRED",
+    "failure": "UNREPAIRED: RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"wave\",\"ticks",
     "genre": "slice.default",
     "control": "lanes",
     "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 42.2,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
+    "bot": null
    },
-   "ms": 5008,
-   "requestBytes": 12779,
+   "ms": 5777,
+   "requestBytes": 12781,
    "tokens": {
-    "inputTokens": 3679,
-    "outputTokens": 349
+    "inputTokens": 3710,
+    "outputTokens": 413
    },
-   "usd": 0.000381
+   "usd": 0.000402
   },
   {
    "id": "s02",
@@ -1091,109 +795,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: ninja slice tossed has no action witness; ACTION_LOST: bomb hazard ninja has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase action_phase – add a rule with {\"goPhase\":\"action_phase\"}; rules a",
-    "genre": "slice.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 42.2,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 4688,
-   "requestBytes": 12926,
-   "tokens": {
-    "inputTokens": 3715,
-    "outputTokens": 330
-   },
-   "usd": 0.000378
-  },
-  {
-   "id": "s03",
-   "family": "target",
-   "expect": "slice.default",
-   "classify": "slice.default",
-   "draft": "slice.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "slice",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero glide has no action witness; rule verbs dropped: spawn, cut, miss",
-    "genre": "slice.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 42.2,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 5430,
-   "requestBytes": 12790,
-   "tokens": {
-    "inputTokens": 3677,
-    "outputTokens": 362
-   },
-   "usd": 0.000384
-  },
-  {
-   "id": "s04",
-   "family": "target",
-   "expect": "slice.default",
-   "classify": "slice.default",
-   "draft": "slice.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "slice",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero glide has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_pumpkin\",\"verb\":\"spawn\",\"when\":{\"timer\":\"spawn_ti",
-    "genre": "slice.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 42.2,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 5752,
-   "requestBytes": 12818,
-   "tokens": {
-    "inputTokens": 3685,
-    "outputTokens": 503
-   },
-   "usd": 0.000427
-  },
-  {
-   "id": "s05",
-   "family": "target",
-   "expect": "slice.default",
-   "classify": "slice.default",
-   "draft": "slice.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "slice",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: wait",
+    "failure": "ACTION_LOST: ACTION_LOST: ninja slice tossed has no action witness; ACTION_LOST: bomb hazard ninja has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [",
     "genre": "slice.default",
     "control": "lanes",
     "ok": true,
@@ -1205,81 +807,13 @@
      "failures": []
     }
    },
-   "ms": 4540,
-   "requestBytes": 12703,
+   "ms": 6653,
+   "requestBytes": 12928,
    "tokens": {
-    "inputTokens": 3655,
-    "outputTokens": 362
+    "inputTokens": 3746,
+    "outputTokens": 489
    },
-   "usd": 0.000383
-  },
-  {
-   "id": "s06",
-   "family": "target",
-   "expect": "slice.default",
-   "classify": "slice.default",
-   "draft": "slice.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "slice",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: samurai throw has no action witness; RULE_INVALID: /logic/timers/0: no rule starts timer wave_timer – add a rule with {\"startTimer\":{\"timer\":\"wave_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"w",
-    "genre": "slice.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 42.2,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 5210,
-   "requestBytes": 12835,
-   "tokens": {
-    "inputTokens": 3689,
-    "outputTokens": 370
-   },
-   "usd": 0.000388
-  },
-  {
-   "id": "s07",
-   "family": "target",
-   "expect": "slice.default",
-   "classify": "slice.default",
-   "draft": "slice.default",
-   "answer": {
-    "format": "legacy",
-    "genre": "slice",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero fight slime has no action witness; ACTION_LOST: they hazard hero has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase active – add a rule with {\"goPhase\":\"active\"}; rules as written: [{\"i",
-    "genre": "slice.default",
-    "control": "lanes",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 42.2,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 5643,
-   "requestBytes": 12834,
-   "tokens": {
-    "inputTokens": 3688,
-    "outputTokens": 413
-   },
-   "usd": 0.0004
+   "usd": 0.000428
   },
   {
    "id": "s08",
@@ -1295,7 +829,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero glide has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase action – add a rule with {\"goPhase\":\"action\"}; rules as written: [{\"id\":\"slice_donut\",\"verb\":\"slice\",\"when\":{\"contact\":[\"player\"",
+    "failure": "ACTION_LOST: ACTION_LOST: hero glide has no action witness; RULE_INVALID: /rules/0/do/2: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"slice_donut\",\"verb\":\"slice\",\"when\":{\"contact\":[\"player\",\"donut\"",
     "genre": "slice.default",
     "control": "lanes",
     "ok": true,
@@ -1307,1074 +841,1090 @@
      "failures": []
     }
    },
-   "ms": 5411,
-   "requestBytes": 12829,
+   "ms": 6115,
+   "requestBytes": 12831,
    "tokens": {
-    "inputTokens": 3690,
-    "outputTokens": 361
+    "inputTokens": 3721,
+    "outputTokens": 494
    },
-   "usd": 0.000385
+   "usd": 0.000427
   },
   {
    "id": "o01",
    "family": "target",
    "expect": "hop.default",
-   "classify": "runner.default",
-   "draft": "runner.default",
+   "classify": "hop.default",
+   "draft": "hop.default",
    "answer": {
     "format": "legacy",
-    "genre": "runner",
+    "genre": "hop",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: traffic obstacle chicken has no action witness",
-    "genre": "runner.default",
-    "control": "runner",
+    "failure": "ACTION_LOST: ACTION_LOST: chicken run has no action witness; ACTION_LOST: traffic obstacle chicken has no action witness; RULE_INVALID: /rules/2/do/0/spawn/at: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"st",
+    "genre": "hop.default",
+    "control": "hop",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 60.2,
+     "seconds": 40.7,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 6668,
-   "requestBytes": 12884,
+   "ms": 4637,
+   "requestBytes": 12830,
    "tokens": {
-    "inputTokens": 3700,
-    "outputTokens": 390
+    "inputTokens": 3724,
+    "outputTokens": 290
    },
-   "usd": 0.000395
+   "usd": 0.000366
   },
   {
    "id": "o02",
    "family": "target",
    "expect": "hop.default",
-   "classify": "platformer.default",
-   "draft": "runner.default",
+   "classify": "hop.default",
+   "draft": "hop.default",
    "answer": {
     "format": "legacy",
-    "genre": "platformer",
+    "genre": "hop",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: traffic obstacle frog has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase night – add a rule with {\"goPhase\":\"night\"}; rules as written: [{\"id\":\"spawnTraffic\",\"verb\":\"spawn\",\"when\":{\"phase\":\"",
-    "genre": "runner.default",
-    "control": "runner",
-    "ok": false,
+    "failure": "ACTION_LOST: ACTION_LOST: frog run has no action witness; ACTION_LOST: frog jump has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"startPhase\"",
+    "genre": "hop.default",
+    "control": "hop",
+    "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 60.2,
+     "seconds": 40.7,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5742,
-   "requestBytes": 12920,
+   "ms": 5775,
+   "requestBytes": 12857,
    "tokens": {
-    "inputTokens": 3709,
-    "outputTokens": 457
+    "inputTokens": 3725,
+    "outputTokens": 434
    },
-   "usd": 0.000415
+   "usd": 0.00041
   },
   {
    "id": "o03",
    "family": "target",
    "expect": "hop.default",
-   "classify": "runner.default",
-   "draft": "runner.default",
+   "classify": "hop.default",
+   "draft": "hop.default",
    "answer": {
     "format": "legacy",
-    "genre": "runner",
+    "genre": "hop",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: traffic obstacle hero has no action witness; RULE_INVALID: /rules/2/do/0/spawn/at: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"startPhase\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"i",
-    "genre": "runner.default",
-    "control": "runner",
+    "failure": "ACTION_LOST: ACTION_LOST: hero run has no action witness; ACTION_LOST: traffic obstacle hero has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":",
+    "genre": "hop.default",
+    "control": "hop",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 60.2,
+     "seconds": 40.7,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 9257,
-   "requestBytes": 12860,
+   "ms": 4516,
+   "requestBytes": 12784,
    "tokens": {
-    "inputTokens": 3694,
-    "outputTokens": 998
+    "inputTokens": 3707,
+    "outputTokens": 453
    },
-   "usd": 0.000576
+   "usd": 0.000414
   },
   {
    "id": "o04",
    "family": "target",
    "expect": "hop.default",
-   "classify": "platformer.default",
-   "draft": "platformer.default",
+   "classify": "hop.default",
+   "draft": "hop.default",
    "answer": {
     "format": "legacy",
-    "genre": "platformer",
+    "genre": "hop",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: busy reach has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase night – add a rule with {\"goPhase\":\"night\"}; rules as written: [{\"id\":\"carSpawn\",\"verb\":\"spawn\",\"when\":{\"phase\":\"night\"},\"if\":nu",
-    "genre": "platformer.default",
-    "control": "platform",
+    "failure": "ACTION_LOST: ACTION_LOST: bunny jump has no action witness; ACTION_LOST: busy reach has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"carSpawn",
+    "genre": "hop.default",
+    "control": "hop",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 51,
+     "seconds": 7,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 6695,
-   "requestBytes": 12867,
+   "ms": 5655,
+   "requestBytes": 12818,
    "tokens": {
-    "inputTokens": 3697,
+    "inputTokens": 3716,
     "outputTokens": 551
    },
-   "usd": 0.000443
+   "usd": 0.000444
   },
   {
    "id": "o05",
    "family": "target",
    "expect": "hop.default",
-   "classify": "voyage.race",
-   "draft": "runner.default",
+   "classify": "hop.default",
+   "draft": "hop.default",
    "answer": {
     "format": "legacy",
-    "genre": "runner",
-    "ok": false
+    "genre": "hop",
+    "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: traffic obstacle car has no action witness; ACTION_LOST: car glide has no action witness; ACTION_LOST: car drive has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase race – add a rule with {\"g",
-    "genre": "runner.default",
-    "control": "runner",
-    "ok": false,
+    "failure": "ACTION_LOST: ACTION_LOST: car run has no action witness; ACTION_LOST: traffic obstacle car has no action witness; ACTION_LOST: car glide has no action witness; ACTION_LOST: car drive has no action witness; RULE_INVALID: /logic/timers/0: no ",
+    "genre": "hop.default",
+    "control": "hop",
+    "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 33.2,
+     "seconds": 40.7,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 6381,
-   "requestBytes": 12955,
+   "ms": 5681,
+   "requestBytes": 12854,
    "tokens": {
-    "inputTokens": 3726,
-    "outputTokens": 487
+    "inputTokens": 3732,
+    "outputTokens": 548
    },
-   "usd": 0.000426
+   "usd": 0.000444
   },
   {
    "id": "o06",
    "family": "target",
    "expect": "hop.default",
-   "classify": "platformer.default",
-   "draft": "platformer.default",
+   "classify": "hop.default",
+   "draft": "hop.default",
    "answer": {
     "format": "legacy",
-    "genre": "platformer",
+    "genre": "hop",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: move, stop",
-    "genre": "platformer.default",
-    "control": "platform",
+    "failure": "ACTION_LOST: ACTION_LOST: hero jump has no action witness; RULE_INVALID: /rules/2/do/0/spawn/at: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"startPhase\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\"",
+    "genre": "hop.default",
+    "control": "hop",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 46.1,
+     "seconds": 40.7,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5897,
-   "requestBytes": 12808,
+   "ms": 4730,
+   "requestBytes": 12784,
    "tokens": {
-    "inputTokens": 3681,
-    "outputTokens": 417
+    "inputTokens": 3709,
+    "outputTokens": 418
    },
-   "usd": 0.000401
+   "usd": 0.000404
   },
   {
    "id": "o07",
    "family": "target",
    "expect": "hop.default",
-   "classify": "voyage.race",
-   "draft": "voyage.race",
+   "classify": "hop.default",
+   "draft": "hop.default",
    "answer": {
     "format": "legacy",
-    "genre": "runner",
-    "ok": false
+    "genre": "hop",
+    "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: squirrel cross full has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase running – add a rule with {\"goPhase\":\"running\"}; rules as written: [{\"id\":\"spawn_tractor\",\"verb\":\"spawn\",\"when\":{\"timer",
-    "genre": "runner.default",
-    "control": "runner",
-    "ok": false,
+    "failure": "ACTION_LOST: ACTION_LOST: squirrel cross full has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"startPhase\",\"verb\":\"wait\",\"when\":{\"phase\":\"fir",
+    "genre": "hop.default",
+    "control": "hop",
+    "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 60.2,
+     "seconds": 40.7,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 6247,
-   "requestBytes": 12816,
+   "ms": 4636,
+   "requestBytes": 12791,
    "tokens": {
-    "inputTokens": 3678,
-    "outputTokens": 571
+    "inputTokens": 3705,
+    "outputTokens": 358
    },
-   "usd": 0.000447
+   "usd": 0.000385
   },
   {
    "id": "o08",
    "family": "target",
    "expect": "hop.default",
-   "classify": "platformer.default",
-   "draft": "platformer.default",
+   "classify": "hop.default",
+   "draft": "hop.default",
    "answer": {
     "format": "legacy",
-    "genre": "platformer",
+    "genre": "hop",
     "ok": true
    },
    "game": {
     "source": "authored",
-    "fallbackReason": null,
-    "genre": "platformer.default",
-    "control": "platform",
+    "fallbackReason": "VERB_UNPROVED",
+    "failure": "ACTION_LOST: ACTION_LOST: hero jump has no action witness; RULE_INVALID: /logic/timers/0: no rule starts timer river_timer – add a rule with {\"startTimer\":{\"timer\":\"river_timer\",\"ticks\":…}}; rules as written: [{\"id\":\"spawn_log\",\"verb\":\"wait",
+    "genre": "hop.default",
+    "control": "hop",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 46.1,
+     "seconds": 40.7,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5531,
-   "requestBytes": 12786,
+   "ms": 5204,
+   "requestBytes": 12740,
    "tokens": {
-    "inputTokens": 3675,
-    "outputTokens": 442
+    "inputTokens": 3693,
+    "outputTokens": 412
    },
-   "usd": 0.000408
+   "usd": 0.000401
   },
   {
    "id": "r01",
    "family": "target",
    "expect": "crowd.default",
-   "classify": "quest.spatial",
-   "draft": "quest.spatial",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
    "answer": {
     "format": "legacy",
-    "genre": "quest",
+    "genre": "crowd",
     "ok": true
    },
    "game": {
-    "source": "draft",
-    "fallbackReason": "UNREPAIRED",
-    "failure": "UNREPAIRED: NOT_PLAYABLE: bot_wins: the bot lost at tick 970, -6 m into the track; ACTION_LOST: hero grow army has no action witness; ACTION_LOST: hero interact has no action witness",
-    "genre": "quest.spatial",
-    "control": "move_free",
+    "source": "authored",
+    "fallbackReason": "VERB_UNPROVED",
+    "failure": "ACTION_LOST: ACTION_LOST: hero grow army has no action witness; ACTION_LOST: hero interact has no action witness; rule verbs dropped: reach",
+    "genre": "crowd.default",
+    "control": "crowd",
     "ok": true,
-    "bot": null
+    "bot": {
+     "botWins": true,
+     "seconds": 35.6,
+     "idleLoses": true,
+     "replayEqual": true,
+     "failures": []
+    }
    },
-   "ms": 6104,
-   "requestBytes": 12962,
+   "ms": 5211,
+   "requestBytes": 12796,
    "tokens": {
-    "inputTokens": 3722,
-    "outputTokens": 559
+    "inputTokens": 3707,
+    "outputTokens": 456
    },
-   "usd": 0.000447
+   "usd": 0.000415
   },
   {
    "id": "r02",
    "family": "target",
    "expect": "crowd.default",
-   "classify": "runner.default",
-   "draft": "runner.default",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
    "answer": {
     "format": "legacy",
-    "genre": "runner",
+    "genre": "crowd",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: RULE_INVALID: /logic/phases/1: no rule enters phase mid – add a rule with {\"goPhase\":\"mid\"}; rules as written: [{\"id\":\"enter_gate\",\"verb\":\"reach\",\"when\":{\"contact\":[\"player\",\"gate\"]},\"if\":null,\"do\":[{\"score\":10}]},{\"id\":\"coll",
-    "genre": "runner.default",
-    "control": "runner",
+    "failure": "ACTION_LOST: ACTION_LOST: crowd run has no action witness; ACTION_LOST: crowd defeat has no action witness; rule verbs dropped: wait",
+    "genre": "crowd.default",
+    "control": "crowd",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 62.6,
+     "seconds": 35.6,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5451,
-   "requestBytes": 12913,
+   "ms": 4032,
+   "requestBytes": 12886,
    "tokens": {
-    "inputTokens": 3715,
-    "outputTokens": 457
+    "inputTokens": 3739,
+    "outputTokens": 328
    },
-   "usd": 0.000416
+   "usd": 0.000379
   },
   {
    "id": "r03",
    "family": "target",
    "expect": "crowd.default",
-   "classify": "runner.default",
-   "draft": "runner.default",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
    "answer": {
     "format": "legacy",
-    "genre": "runner",
+    "genre": "crowd",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: count multiply crowd has no action witness; rule verbs dropped: collect",
-    "genre": "runner.default",
-    "control": "runner",
+    "failure": "ACTION_LOST: ACTION_LOST: count run has no action witness; ACTION_LOST: count multiply crowd has no action witness; rule verbs dropped: wait",
+    "genre": "crowd.default",
+    "control": "crowd",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 62.6,
+     "seconds": 35.6,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 9612,
-   "requestBytes": 12851,
+   "ms": 7438,
+   "requestBytes": 12783,
    "tokens": {
-    "inputTokens": 3689,
-    "outputTokens": 1059
+    "inputTokens": 3703,
+    "outputTokens": 861
    },
-   "usd": 0.000594
+   "usd": 0.000536
   },
   {
    "id": "r04",
    "family": "target",
    "expect": "crowd.default",
-   "classify": "arena.collect",
-   "draft": "arena.collect",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
    "answer": {
     "format": "legacy",
-    "genre": "arena",
+    "genre": "crowd",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero lead mob has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase gate – add a rule with {\"goPhase\":\"gate\"}; rules as written: [{\"id\":\"spawn_penguins\",\"verb\":\"spawn\",\"when\":{\"phase\":\"start\"},",
-    "genre": "arena.collect",
-    "control": "move_free",
+    "failure": "ACTION_LOST: ACTION_LOST: hero lead mob has no action witness",
+    "genre": "crowd.default",
+    "control": "crowd",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 57.7,
+     "seconds": 35.6,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 10177,
-   "requestBytes": 12890,
+   "ms": 7526,
+   "requestBytes": 12837,
    "tokens": {
-    "inputTokens": 3699,
-    "outputTokens": 1157
+    "inputTokens": 3720,
+    "outputTokens": 857
    },
-   "usd": 0.000625
+   "usd": 0.000536
   },
   {
    "id": "r05",
    "family": "target",
    "expect": "crowd.default",
-   "classify": "arena.fight",
-   "draft": "arena.collect",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
    "answer": {
     "format": "legacy",
-    "genre": "arena",
+    "genre": "crowd",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero collect soldier has no action witness; ACTION_LOST: hero duel boss has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase battle – add a rule with {\"goPhase\":\"battle\"}; rules as written: [{",
-    "genre": "arena.fight",
-    "control": "move_free",
+    "failure": "ACTION_LOST: ACTION_LOST: hero collect soldier has no action witness; ACTION_LOST: hero duel boss has no action witness; rule verbs dropped: collect, wait, duel",
+    "genre": "crowd.default",
+    "control": "crowd",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 50.9,
+     "seconds": 35.6,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 4990,
-   "requestBytes": 12949,
+   "ms": 4551,
+   "requestBytes": 12896,
    "tokens": {
-    "inputTokens": 3719,
-    "outputTokens": 397
+    "inputTokens": 3739,
+    "outputTokens": 422
    },
-   "usd": 0.000398
+   "usd": 0.000407
   },
   {
    "id": "r06",
    "family": "target",
    "expect": "crowd.default",
-   "classify": "arena.fight",
-   "draft": "duel.default",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
    "answer": {
     "format": "legacy",
-    "genre": "arena",
+    "genre": "crowd",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero duel bear has no action witness",
-    "genre": "arena.fight",
-    "control": "move_free",
+    "failure": "ACTION_LOST: ACTION_LOST: hero duel bear has no action witness; rule verbs dropped: wait",
+    "genre": "crowd.default",
+    "control": "crowd",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 59.9,
+     "seconds": 35.6,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5473,
-   "requestBytes": 12843,
+   "ms": 4073,
+   "requestBytes": 12828,
    "tokens": {
-    "inputTokens": 3692,
-    "outputTokens": 353
+    "inputTokens": 3717,
+    "outputTokens": 322
    },
-   "usd": 0.000383
+   "usd": 0.000375
   },
   {
    "id": "r07",
    "family": "target",
    "expect": "crowd.default",
-   "classify": "arena.collect",
-   "draft": "quest.station",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
    "answer": {
     "format": "legacy",
-    "genre": "quest",
-    "ok": false
+    "genre": "crowd",
+    "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero pick gate has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase end – add a rule with {\"goPhase\":\"end\"}; rules as written: [{\"id\":\"pick_gate\",\"verb\":\"pick\",\"when\":{\"contact\":[\"player\",\"gat",
-    "genre": "quest.station",
-    "control": "move_free",
-    "ok": false,
+    "failure": "ACTION_LOST: ACTION_LOST: hero pick gate has no action witness; ACTION_LOST: hero interact wall has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"i",
+    "genre": "crowd.default",
+    "control": "crowd",
+    "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 29.1,
+     "seconds": 35.6,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 6072,
-   "requestBytes": 13059,
+   "ms": 4545,
+   "requestBytes": 12855,
    "tokens": {
-    "inputTokens": 3748,
-    "outputTokens": 420
+    "inputTokens": 3724,
+    "outputTokens": 353
    },
-   "usd": 0.000407
+   "usd": 0.000385
   },
   {
    "id": "r08",
    "family": "target",
    "expect": "crowd.default",
-   "classify": "runner.default",
-   "draft": "runner.default",
+   "classify": "crowd.default",
+   "draft": "crowd.default",
    "answer": {
     "format": "legacy",
-    "genre": "runner",
+    "genre": "crowd",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: fight",
-    "genre": "runner.default",
-    "control": "runner",
+    "failure": "ACTION_LOST: ACTION_LOST: hero run has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"start\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"",
+    "genre": "crowd.default",
+    "control": "crowd",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 62.6,
+     "seconds": 35.6,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 4872,
-   "requestBytes": 12896,
+   "ms": 4590,
+   "requestBytes": 12875,
    "tokens": {
-    "inputTokens": 3703,
-    "outputTokens": 365
+    "inputTokens": 3731,
+    "outputTokens": 317
    },
-   "usd": 0.000387
+   "usd": 0.000375
   },
   {
    "id": "m01",
    "family": "target",
    "expect": "merge.default",
-   "classify": "quest.station",
-   "draft": "quest.station",
+   "classify": "merge.default",
+   "draft": "merge.default",
    "answer": {
     "format": "legacy",
-    "genre": "quest",
+    "genre": "merge",
     "ok": true
    },
    "game": {
-    "source": "draft",
-    "fallbackReason": "UNREPAIRED",
-    "failure": "UNREPAIRED: RULE_INVALID: /logic/phases/1: no rule enters phase play – add a rule with {\"goPhase\":\"play\"}; rules as written: [{\"id\":\"drop_fruit\",\"verb\":\"throw\",\"when\":{\"contact\":[\"player\",\"fruit\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"grab\":\"",
-    "genre": "quest.station",
-    "control": "move_free",
+    "source": "authored",
+    "fallbackReason": "VERB_UNPROVED",
+    "failure": "VERB_UNPROVED: rule verbs dropped: drop, merge, reach",
+    "genre": "merge.default",
+    "control": "merge",
     "ok": true,
-    "bot": null
+    "bot": {
+     "botWins": true,
+     "seconds": 56.4,
+     "idleLoses": true,
+     "replayEqual": true,
+     "failures": []
+    }
    },
-   "ms": 5905,
-   "requestBytes": 12901,
+   "ms": 5101,
+   "requestBytes": 12759,
    "tokens": {
-    "inputTokens": 3703,
-    "outputTokens": 429
+    "inputTokens": 3696,
+    "outputTokens": 378
    },
-   "usd": 0.000406
+   "usd": 0.000391
   },
   {
    "id": "m02",
    "family": "target",
    "expect": "merge.default",
-   "classify": "quest.station",
-   "draft": "quest.station",
+   "classify": "merge.default",
+   "draft": "merge.default",
    "answer": {
     "format": "legacy",
-    "genre": "quest",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": null,
-    "genre": "quest.station",
-    "control": "move_free",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 1.6,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 6154,
-   "requestBytes": 12855,
-   "tokens": {
-    "inputTokens": 3699,
-    "outputTokens": 500
-   },
-   "usd": 0.000427
-  },
-  {
-   "id": "m03",
-   "family": "target",
-   "expect": "merge.default",
-   "classify": "quest.station",
-   "draft": "quest.station",
-   "answer": {
-    "format": "legacy",
-    "genre": "quest",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero merge animal has no action witness; rule verbs dropped: wait",
-    "genre": "quest.station",
-    "control": "move_free",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 34.8,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 6010,
-   "requestBytes": 12962,
-   "tokens": {
-    "inputTokens": 3718,
-    "outputTokens": 469
-   },
-   "usd": 0.00042
-  },
-  {
-   "id": "m04",
-   "family": "target",
-   "expect": "merge.default",
-   "classify": "arena.collect",
-   "draft": "arena.collect",
-   "answer": {
-    "format": "legacy",
-    "genre": "arena",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": null,
-    "genre": "arena.collect",
-    "control": "move_free",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 42.4,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 4405,
-   "requestBytes": 12774,
-   "tokens": {
-    "inputTokens": 3672,
-    "outputTokens": 336
-   },
-   "usd": 0.000376
-  },
-  {
-   "id": "m05",
-   "family": "target",
-   "expect": "merge.default",
-   "classify": "quest.station",
-   "draft": "quest.station",
-   "answer": {
-    "format": "legacy",
-    "genre": "quest",
-    "ok": true
-   },
-   "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: wait, spawn",
-    "genre": "quest.station",
-    "control": "move_free",
-    "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 1.4,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
-   },
-   "ms": 9781,
-   "requestBytes": 12943,
-   "tokens": {
-    "inputTokens": 3715,
-    "outputTokens": 979
-   },
-   "usd": 0.000572
-  },
-  {
-   "id": "m06",
-   "family": "target",
-   "expect": "merge.default",
-   "classify": "quest.station",
-   "draft": "quest.station",
-   "answer": {
-    "format": "legacy",
-    "genre": "quest",
+    "genre": "merge",
     "ok": true
    },
    "game": {
     "source": "draft",
     "fallbackReason": "UNREPAIRED",
-    "failure": "UNREPAIRED: NOT_PLAYABLE: bot_wins: the bot lost at tick 1801, -5 m into the track; VERB_UNPROVED: the robot won without the rule for \"score\" ever firing",
-    "genre": "quest.station",
-    "control": "move_free",
+    "failure": "UNREPAIRED: RULE_INVALID: /rules/3/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"spawn_planet\",\"verb\":\"spawn\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"planet\",\"at\":\"player\"}}",
+    "genre": "merge.default",
+    "control": "merge",
     "ok": true,
     "bot": null
    },
-   "ms": 5907,
-   "requestBytes": 12873,
+   "ms": 5536,
+   "requestBytes": 12739,
    "tokens": {
-    "inputTokens": 3697,
-    "outputTokens": 400
+    "inputTokens": 3694,
+    "outputTokens": 444
    },
-   "usd": 0.000397
+   "usd": 0.00041
+  },
+  {
+   "id": "m03",
+   "family": "target",
+   "expect": "merge.default",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "answer": {
+    "format": "legacy",
+    "genre": "merge",
+    "ok": true
+   },
+   "game": {
+    "source": "authored",
+    "fallbackReason": "VERB_UNPROVED",
+    "failure": "VERB_UNPROVED: rule verbs dropped: collect, merge",
+    "genre": "merge.default",
+    "control": "merge",
+    "ok": true,
+    "bot": {
+     "botWins": true,
+     "seconds": 56.4,
+     "idleLoses": true,
+     "replayEqual": true,
+     "failures": []
+    }
+   },
+   "ms": 4333,
+   "requestBytes": 12824,
+   "tokens": {
+    "inputTokens": 3711,
+    "outputTokens": 334
+   },
+   "usd": 0.000379
+  },
+  {
+   "id": "m04",
+   "family": "target",
+   "expect": "merge.default",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "answer": {
+    "format": "legacy",
+    "genre": "merge",
+    "ok": true
+   },
+   "game": {
+    "source": "authored",
+    "fallbackReason": "VERB_UNPROVED",
+    "failure": "VERB_UNPROVED: rule verbs dropped: merge",
+    "genre": "merge.default",
+    "control": "merge",
+    "ok": true,
+    "bot": {
+     "botWins": true,
+     "seconds": 26,
+     "idleLoses": true,
+     "replayEqual": true,
+     "failures": []
+    }
+   },
+   "ms": 5641,
+   "requestBytes": 12747,
+   "tokens": {
+    "inputTokens": 3696,
+    "outputTokens": 368
+   },
+   "usd": 0.000388
+  },
+  {
+   "id": "m05",
+   "family": "target",
+   "expect": "merge.default",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "answer": {
+    "format": "legacy",
+    "genre": "merge",
+    "ok": true
+   },
+   "game": {
+    "source": "authored",
+    "fallbackReason": "VERB_UNPROVED",
+    "failure": "VERB_UNPROVED: rule verbs dropped: drop, merge",
+    "genre": "merge.default",
+    "control": "merge",
+    "ok": true,
+    "bot": {
+     "botWins": true,
+     "seconds": 54.8,
+     "idleLoses": true,
+     "replayEqual": true,
+     "failures": []
+    }
+   },
+   "ms": 4706,
+   "requestBytes": 12785,
+   "tokens": {
+    "inputTokens": 3702,
+    "outputTokens": 466
+   },
+   "usd": 0.000417
+  },
+  {
+   "id": "m06",
+   "family": "target",
+   "expect": "merge.default",
+   "classify": "merge.default",
+   "draft": "merge.default",
+   "answer": {
+    "format": "legacy",
+    "genre": "merge",
+    "ok": true
+   },
+   "game": {
+    "source": "authored",
+    "fallbackReason": "VERB_UNPROVED",
+    "failure": "VERB_UNPROVED: rule verbs dropped: drop, merge",
+    "genre": "merge.default",
+    "control": "merge",
+    "ok": true,
+    "bot": {
+     "botWins": true,
+     "seconds": 56.4,
+     "idleLoses": true,
+     "replayEqual": true,
+     "failures": []
+    }
+   },
+   "ms": 4783,
+   "requestBytes": 12727,
+   "tokens": {
+    "inputTokens": 3692,
+    "outputTokens": 445
+   },
+   "usd": 0.00041
   },
   {
    "id": "m07",
    "family": "target",
    "expect": "merge.default",
-   "classify": "throw.default",
-   "draft": "throw.default",
+   "classify": "merge.default",
+   "draft": "merge.default",
    "answer": {
     "format": "legacy",
-    "genre": "throw",
+    "genre": "merge",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: drop, throw, fuse",
-    "genre": "throw.default",
-    "control": "throw",
+    "failure": "VERB_UNPROVED: RULE_INVALID: /rules/4/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"drop_gems\",\"verb\":\"drop\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"spawn\":{\"role\":\"gem\",\"at\":\"player\"}}]},{",
+    "genre": "merge.default",
+    "control": "merge",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 33.7,
+     "seconds": 56.4,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 4917,
-   "requestBytes": 12813,
+   "ms": 5547,
+   "requestBytes": 12745,
    "tokens": {
-    "inputTokens": 3684,
-    "outputTokens": 400
+    "inputTokens": 3696,
+    "outputTokens": 532
    },
-   "usd": 0.000396
+   "usd": 0.000437
   },
   {
    "id": "m08",
    "family": "target",
    "expect": "merge.default",
-   "classify": "quest.station",
-   "draft": "quest.station",
+   "classify": "merge.default",
+   "draft": "merge.default",
    "answer": {
     "format": "legacy",
-    "genre": "quest",
+    "genre": "merge",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: spawn, wait",
-    "genre": "quest.station",
-    "control": "move_free",
+    "failure": "VERB_UNPROVED: rule verbs dropped: spawn, merge, overflow",
+    "genre": "merge.default",
+    "control": "merge",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 34.8,
+     "seconds": 56.4,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 7038,
-   "requestBytes": 12870,
+   "ms": 5181,
+   "requestBytes": 12745,
    "tokens": {
-    "inputTokens": 3696,
-    "outputTokens": 619
+    "inputTokens": 3692,
+    "outputTokens": 419
    },
-   "usd": 0.000463
+   "usd": 0.000403
   },
   {
    "id": "p01",
    "family": "target",
    "expect": "push.default",
-   "classify": "arena.collect",
-   "draft": "arena.collect",
+   "classify": "push.default",
+   "draft": "push.default",
    "answer": {
     "format": "legacy",
-    "genre": "arena",
+    "genre": "push",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
     "failure": "VERB_UNPROVED: rule verbs dropped: wait",
-    "genre": "arena.escape",
-    "control": "move_free",
+    "genre": "push.default",
+    "control": "push",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 52.8,
+     "seconds": 53.4,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 7831,
-   "requestBytes": 12768,
+   "ms": 4887,
+   "requestBytes": 12758,
    "tokens": {
-    "inputTokens": 3678,
-    "outputTokens": 735
+    "inputTokens": 3706,
+    "outputTokens": 365
    },
-   "usd": 0.000496
+   "usd": 0.000387
   },
   {
    "id": "p02",
    "family": "target",
    "expect": "push.default",
-   "classify": "arena.collect",
-   "draft": "arena.collect",
+   "classify": "push.default",
+   "draft": "push.default",
    "answer": {
     "format": "legacy",
-    "genre": "arena",
+    "genre": "push",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero kick penguin has no action witness; rule verbs dropped: push, drop",
-    "genre": "arena.collect",
-    "control": "move_free",
+    "failure": "ACTION_LOST: ACTION_LOST: hero kick penguin has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first",
+    "genre": "push.default",
+    "control": "push",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 42.4,
+     "seconds": 19.8,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 6372,
-   "requestBytes": 12848,
+   "ms": 4659,
+   "requestBytes": 12805,
    "tokens": {
-    "inputTokens": 3703,
-    "outputTokens": 515
+    "inputTokens": 3725,
+    "outputTokens": 391
    },
-   "usd": 0.000432
+   "usd": 0.000397
   },
   {
    "id": "p03",
    "family": "target",
    "expect": "push.default",
-   "classify": "platformer.default",
-   "draft": "voyage.race",
+   "classify": "push.default",
+   "draft": "push.default",
    "answer": {
     "format": "legacy",
-    "genre": "platformer",
+    "genre": "push",
     "ok": true
    },
    "game": {
-    "source": "draft",
-    "fallbackReason": "MALFORMED",
-    "failure": "DANGLING_REFERENCE: /logic/phases/1: no rule enters phase end – add a rule with {\"goPhase\":\"end\"}; /rules/2/do/1: \"self\" is the first role of a contact that is not the player",
-    "genre": null,
-    "control": "steer",
-    "ok": false,
-    "bot": null
+    "source": "authored",
+    "fallbackReason": "VERB_UNPROVED",
+    "failure": "ACTION_LOST: ACTION_LOST: car drive has no action witness; ACTION_LOST: rival rival car has no action witness; rule verbs dropped: wait, push",
+    "genre": "push.default",
+    "control": "push",
+    "ok": true,
+    "bot": {
+     "botWins": true,
+     "seconds": 19.8,
+     "idleLoses": true,
+     "replayEqual": true,
+     "failures": []
+    }
    },
-   "ms": 6081,
-   "requestBytes": 12847,
+   "ms": 5099,
+   "requestBytes": 12823,
    "tokens": {
-    "inputTokens": 3696,
-    "outputTokens": 486
+    "inputTokens": 3723,
+    "outputTokens": 402
    },
-   "usd": 0.000423
+   "usd": 0.0004
   },
   {
    "id": "p04",
    "family": "target",
    "expect": "push.default",
-   "classify": "arena.collect",
-   "draft": "arena.collect",
+   "classify": "push.default",
+   "draft": "push.default",
    "answer": {
     "format": "legacy",
-    "genre": "arena",
+    "genre": "push",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero kick robot has no action witness",
-    "genre": "arena.fight",
-    "control": "move_free",
+    "failure": "ACTION_LOST: ACTION_LOST: hero kick robot has no action witness; RULE_INVALID: /rules/2/do/1: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"spawn_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{",
+    "genre": "push.default",
+    "control": "push",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 42.1,
+     "seconds": 19.8,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 9645,
-   "requestBytes": 12848,
+   "ms": 4858,
+   "requestBytes": 12818,
    "tokens": {
-    "inputTokens": 3695,
-    "outputTokens": 1018
+    "inputTokens": 3721,
+    "outputTokens": 406
    },
-   "usd": 0.000583
+   "usd": 0.000401
   },
   {
    "id": "p05",
    "family": "target",
    "expect": "push.default",
-   "classify": "duel.default",
-   "draft": "duel.default",
+   "classify": "push.default",
+   "draft": "push.default",
    "answer": {
     "format": "legacy",
-    "genre": "duel",
+    "genre": "push",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hippo bump rival has no action witness; ACTION_LOST: rival rival hippo has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase idle – add a rule with {\"goPhase\":\"idle\"}; rules as written: [{\"id\":",
-    "genre": "duel.default",
-    "control": "duel",
+    "failure": "ACTION_LOST: ACTION_LOST: hippo bump rival has no action witness; ACTION_LOST: rival rival hippo has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"",
+    "genre": "push.default",
+    "control": "push",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 48.7,
+     "seconds": 53.4,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 4645,
-   "requestBytes": 12813,
+   "ms": 4541,
+   "requestBytes": 12811,
    "tokens": {
-    "inputTokens": 3693,
-    "outputTokens": 418
+    "inputTokens": 3727,
+    "outputTokens": 362
    },
-   "usd": 0.000402
+   "usd": 0.000388
   },
   {
    "id": "p06",
    "family": "target",
    "expect": "push.default",
-   "classify": "platformer.default",
-   "draft": "platformer.default",
+   "classify": "push.default",
+   "draft": "push.default",
    "answer": {
-    "format": "legacy",
-    "genre": "platformer",
-    "ok": true
+    "format": "recipe",
+    "genre": null,
+    "recipe": "jump/push/defeat/chaser",
+    "ok": false
    },
    "game": {
-    "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero knock knight has no action witness; rule verbs dropped: spawn, move, knock",
-    "genre": "platformer.default",
-    "control": "platform",
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "MALFORMED_SPEC: recipe is not a live combination: jump/push/defeat/chaser",
+    "genre": "push.default",
+    "control": "push",
     "ok": true,
-    "bot": {
-     "botWins": true,
-     "seconds": 42.3,
-     "idleLoses": true,
-     "replayEqual": true,
-     "failures": []
-    }
+    "bot": null
    },
-   "ms": 5443,
-   "requestBytes": 12772,
+   "ms": 6311,
+   "requestBytes": 12760,
    "tokens": {
-    "inputTokens": 3672,
-    "outputTokens": 433
+    "inputTokens": 3705,
+    "outputTokens": 470
    },
-   "usd": 0.000405
+   "usd": 0.000419
   },
   {
    "id": "p07",
    "family": "target",
    "expect": "push.default",
-   "classify": "arena.collect",
-   "draft": "arena.collect",
+   "classify": "push.default",
+   "draft": "push.default",
    "answer": {
     "format": "legacy",
-    "genre": "arena",
+    "genre": "push",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero kick crab has no action witness; rule verbs dropped: shrink, spawn, kick",
-    "genre": "arena.escape",
-    "control": "move_free",
+    "failure": "ACTION_LOST: ACTION_LOST: hero kick crab has no action witness; RULE_INVALID: /rules/1/do/2/spawn/at: \"other\" needs a contact, a hit or a near condition; rules as written: [{\"id\":\"start\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\"",
+    "genre": "push.default",
+    "control": "push",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 40,
+     "seconds": 53.4,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5798,
-   "requestBytes": 12820,
+   "ms": 4650,
+   "requestBytes": 12800,
    "tokens": {
-    "inputTokens": 3692,
-    "outputTokens": 430
+    "inputTokens": 3721,
+    "outputTokens": 399
    },
-   "usd": 0.000406
+   "usd": 0.000399
   },
   {
    "id": "p08",
    "family": "target",
    "expect": "push.default",
-   "classify": "arena.collect",
-   "draft": "arena.collect",
+   "classify": "push.default",
+   "draft": "push.default",
    "answer": {
     "format": "legacy",
-    "genre": "arena",
+    "genre": "push",
     "ok": true
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: bull kick cowboy has no action witness",
-    "genre": "arena.fight",
-    "control": "move_free",
+    "failure": "ACTION_LOST: ACTION_LOST: bull kick cowboy has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"start_wave\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"",
+    "genre": "push.default",
+    "control": "push",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 64.8,
+     "seconds": 53.4,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 7559,
-   "requestBytes": 12867,
+   "ms": 4955,
+   "requestBytes": 12837,
    "tokens": {
-    "inputTokens": 3709,
-    "outputTokens": 744
+    "inputTokens": 3735,
+    "outputTokens": 420
    },
-   "usd": 0.000501
+   "usd": 0.000406
   },
   {
    "id": "x01",
@@ -2390,7 +1940,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: police catch thief has no action witness",
+    "failure": "ACTION_LOST: ACTION_LOST: police catch thief has no action witness; rule verbs dropped: wait, spawn, catch",
     "genre": "runner.default",
     "control": "runner",
     "ok": true,
@@ -2402,13 +1952,13 @@
      "failures": []
     }
    },
-   "ms": 5344,
-   "requestBytes": 12906,
+   "ms": 4838,
+   "requestBytes": 12908,
    "tokens": {
-    "inputTokens": 3709,
-    "outputTokens": 470
+    "inputTokens": 3740,
+    "outputTokens": 443
    },
-   "usd": 0.000419
+   "usd": 0.000413
   },
   {
    "id": "x02",
@@ -2418,25 +1968,31 @@
    "draft": "duel.default",
    "answer": {
     "format": "legacy",
-    "genre": "duel",
+    "genre": "arena",
     "ok": true
    },
    "game": {
-    "source": "draft",
-    "fallbackReason": "UNREPAIRED",
-    "failure": "UNREPAIRED: NOT_PLAYABLE: bot_wins: the bot lost at tick 241, 3 m into the track; ACTION_LOST: knight defend has no action witness; ACTION_LOST: knight duel has no action witness",
-    "genre": "duel.default",
-    "control": "duel",
+    "source": "authored",
+    "fallbackReason": "VERB_UNPROVED",
+    "failure": "ACTION_LOST: ACTION_LOST: knight defend has no action witness; ACTION_LOST: knight duel has no action witness; VERB_UNPROVED: the robot did not win with the \"shoot\" ability; VERB_UNPROVED: the robot did not win with the \"dash\" ability; rule",
+    "genre": "arena.fight",
+    "control": "move_free",
     "ok": true,
-    "bot": null
+    "bot": {
+     "botWins": true,
+     "seconds": 1.4,
+     "idleLoses": true,
+     "replayEqual": true,
+     "failures": []
+    }
    },
-   "ms": 5520,
-   "requestBytes": 12832,
+   "ms": 5190,
+   "requestBytes": 12834,
    "tokens": {
-    "inputTokens": 3700,
-    "outputTokens": 479
+    "inputTokens": 3731,
+    "outputTokens": 511
    },
-   "usd": 0.000421
+   "usd": 0.000433
   },
   {
    "id": "x03",
@@ -2450,21 +2006,27 @@
     "ok": true
    },
    "game": {
-    "source": "draft",
-    "fallbackReason": "UNREPAIRED",
-    "failure": "UNREPAIRED: RULE_INVALID: /logic/phases/1: no rule enters phase build – add a rule with {\"goPhase\":\"build\"}; rules as written: [{\"id\":\"wolf_chase\",\"verb\":\"chase\",\"when\":{\"contact\":[\"player\",\"wolf\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage",
+    "source": "authored",
+    "fallbackReason": "VERB_UNPROVED",
+    "failure": "ACTION_LOST: ACTION_LOST: hero build has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with {\"goPhase\":\"second\"}; rules as written: [{\"id\":\"startTimer\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\"",
     "genre": "quest.spatial",
     "control": "move_free",
     "ok": true,
-    "bot": null
+    "bot": {
+     "botWins": true,
+     "seconds": 23.7,
+     "idleLoses": true,
+     "replayEqual": true,
+     "failures": []
+    }
    },
-   "ms": 6251,
-   "requestBytes": 12923,
+   "ms": 5443,
+   "requestBytes": 12925,
    "tokens": {
-    "inputTokens": 3724,
-    "outputTokens": 514
+    "inputTokens": 3755,
+    "outputTokens": 550
    },
-   "usd": 0.000434
+   "usd": 0.000447
   },
   {
    "id": "x04",
@@ -2479,26 +2041,25 @@
    },
    "game": {
     "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: frog jump has no action witness; ACTION_LOST: frog reach island has no action witness",
+    "fallbackReason": null,
     "genre": "platformer.default",
     "control": "platform",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 1,
+     "seconds": 47.2,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5046,
-   "requestBytes": 12905,
+   "ms": 3146,
+   "requestBytes": 12907,
    "tokens": {
-    "inputTokens": 3708,
-    "outputTokens": 415
+    "inputTokens": 3739,
+    "outputTokens": 241
    },
-   "usd": 0.000403
+   "usd": 0.000353
   },
   {
    "id": "x05",
@@ -2514,7 +2075,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: car speed has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase running – add a rule with {\"goPhase\":\"running\"}; rules as written: [{\"id\":\"startTimer\",\"verb\":\"wait\",\"when\":{\"phase\":\"start\"},\"if",
+    "failure": "ACTION_LOST: ACTION_LOST: car speed has no action witness",
     "genre": null,
     "control": "steer",
     "ok": false,
@@ -2526,13 +2087,13 @@
      "failures": []
     }
    },
-   "ms": 4212,
-   "requestBytes": 12843,
+   "ms": 2564,
+   "requestBytes": 12845,
    "tokens": {
-    "inputTokens": 3688,
-    "outputTokens": 349
+    "inputTokens": 3719,
+    "outputTokens": 189
    },
-   "usd": 0.000381
+   "usd": 0.000336
   },
   {
    "id": "x06",
@@ -2542,31 +2103,31 @@
    "draft": "quest.station",
    "answer": {
     "format": "legacy",
-    "genre": "platformer",
+    "genre": "push",
     "ok": false
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
     "failure": "ACTION_LOST: ACTION_LOST: hero interact switch has no action witness; ACTION_LOST: hero interact door has no action witness; rule verbs dropped: push, activate, open, reach",
-    "genre": "platformer.default",
-    "control": "platform",
+    "genre": "push.default",
+    "control": "push",
     "ok": false,
     "bot": {
      "botWins": true,
-     "seconds": 51,
+     "seconds": 19.8,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 6051,
-   "requestBytes": 13004,
+   "ms": 5250,
+   "requestBytes": 13006,
    "tokens": {
-    "inputTokens": 3732,
-    "outputTokens": 485
+    "inputTokens": 3763,
+    "outputTokens": 502
    },
-   "usd": 0.000425
+   "usd": 0.000433
   },
   {
    "id": "x07",
@@ -2582,7 +2143,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: hero catch has no action witness; rule verbs dropped: throw, wait",
+    "failure": "ACTION_LOST: ACTION_LOST: hero catch has no action witness",
     "genre": "throw.default",
     "control": "throw",
     "ok": true,
@@ -2594,13 +2155,13 @@
      "failures": []
     }
    },
-   "ms": 5482,
-   "requestBytes": 12842,
+   "ms": 4448,
+   "requestBytes": 12844,
    "tokens": {
-    "inputTokens": 3697,
-    "outputTokens": 413
+    "inputTokens": 3728,
+    "outputTokens": 487
    },
-   "usd": 0.000401
+   "usd": 0.000426
   },
   {
    "id": "x08",
@@ -2616,25 +2177,25 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: wait",
+    "failure": "VERB_UNPROVED: RULE_INVALID: /rules/0/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"shoot_alien\",\"verb\":\"shoot\",\"when\":{\"contact\":[\"player\",\"alien\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"damage\"",
     "genre": "shooter.default",
     "control": "shooter",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 56.2,
+     "seconds": 57.3,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 4410,
-   "requestBytes": 12740,
+   "ms": 5196,
+   "requestBytes": 12742,
    "tokens": {
-    "inputTokens": 3665,
-    "outputTokens": 347
+    "inputTokens": 3696,
+    "outputTokens": 570
    },
-   "usd": 0.000379
+   "usd": 0.000448
   },
   {
    "id": "x09",
@@ -2650,25 +2211,25 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: crowd cheer has no action witness",
+    "failure": "ACTION_LOST: ACTION_LOST: crowd cheer has no action witness; rule verbs dropped: wait",
     "genre": "arena.collect",
     "control": "move_free",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 27.1,
+     "seconds": 45.1,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5771,
-   "requestBytes": 12884,
+   "ms": 4937,
+   "requestBytes": 12886,
    "tokens": {
-    "inputTokens": 3701,
-    "outputTokens": 442
+    "inputTokens": 3732,
+    "outputTokens": 456
    },
-   "usd": 0.00041
+   "usd": 0.000417
   },
   {
    "id": "x10",
@@ -2683,26 +2244,25 @@
    },
    "game": {
     "source": "authored",
-    "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: cat catch mouse has no action witness",
+    "fallbackReason": null,
     "genre": "runner.default",
     "control": "runner",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 62.6,
+     "seconds": 63.3,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 4779,
-   "requestBytes": 12847,
+   "ms": 5116,
+   "requestBytes": 12849,
    "tokens": {
-    "inputTokens": 3694,
-    "outputTokens": 343
+    "inputTokens": 3725,
+    "outputTokens": 510
    },
-   "usd": 0.00038
+   "usd": 0.000432
   },
   {
    "id": "x11",
@@ -2718,25 +2278,25 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: fight, collect",
+    "failure": "ACTION_LOST: ACTION_LOST: boxer fight rival has no action witness; VERB_UNPROVED: the robot did not win with the \"dash\" ability; rule verbs dropped: wait",
     "genre": "arena.fight",
     "control": "move_free",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 50.9,
+     "seconds": 1.4,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5044,
-   "requestBytes": 12818,
+   "ms": 5132,
+   "requestBytes": 12820,
    "tokens": {
-    "inputTokens": 3691,
-    "outputTokens": 387
+    "inputTokens": 3722,
+    "outputTokens": 490
    },
-   "usd": 0.000393
+   "usd": 0.000426
   },
   {
    "id": "x12",
@@ -2752,25 +2312,25 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: RULE_INVALID: /logic/phases/1: no rule enters phase wave – add a rule with {\"goPhase\":\"wave\"}; rules as written: [{\"id\":\"snakeContact\",\"verb\":\"chase\",\"when\":{\"contact\":[\"player\",\"snake\"]},\"if\":[{\"notHolding\":true}],\"do\":[{\"da",
+    "failure": "VERB_UNPROVED: VERB_UNPROVED: the robot did not win with the \"shoot\" ability; VERB_UNPROVED: the robot did not win with the \"dash\" ability; rule verbs dropped: wait, collect",
     "genre": "arena.collect",
     "control": "move_free",
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 38.6,
+     "seconds": 1.4,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5371,
-   "requestBytes": 12855,
+   "ms": 4712,
+   "requestBytes": 12857,
    "tokens": {
-    "inputTokens": 3696,
-    "outputTokens": 439
+    "inputTokens": 3727,
+    "outputTokens": 483
    },
-   "usd": 0.000409
+   "usd": 0.000424
   },
   {
    "id": "x13",
@@ -2786,7 +2346,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: rabbit run has no action witness; rule verbs dropped: jump",
+    "failure": "ACTION_LOST: ACTION_LOST: rabbit run has no action witness; rule verbs dropped: wait",
     "genre": "platformer.default",
     "control": "platform",
     "ok": true,
@@ -2798,13 +2358,13 @@
      "failures": []
     }
    },
-   "ms": 4893,
-   "requestBytes": 12952,
+   "ms": 5131,
+   "requestBytes": 12954,
    "tokens": {
-    "inputTokens": 3720,
-    "outputTokens": 327
+    "inputTokens": 3751,
+    "outputTokens": 591
    },
-   "usd": 0.000377
+   "usd": 0.000459
   },
   {
    "id": "x14",
@@ -2814,31 +2374,31 @@
    "draft": "runner.default",
    "answer": {
     "format": "legacy",
-    "genre": "quest",
-    "ok": true
+    "genre": "merge",
+    "ok": false
    },
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "ACTION_LOST: ACTION_LOST: traffic obstacle hero has no action witness; ACTION_LOST: hero race has no action witness; ACTION_LOST: hero reach has no action witness; rule verbs dropped: wait, reach",
-    "genre": "quest.station",
-    "control": "move_free",
-    "ok": true,
+    "failure": "ACTION_LOST: ACTION_LOST: traffic obstacle hero has no action witness; ACTION_LOST: hero race has no action witness; ACTION_LOST: hero reach has no action witness; RULE_INVALID: /logic/phases/1: no rule enters phase second – add a rule with",
+    "genre": "merge.default",
+    "control": "merge",
+    "ok": false,
     "bot": {
      "botWins": true,
-     "seconds": 1.4,
+     "seconds": 56.4,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 5116,
-   "requestBytes": 12903,
+   "ms": 4535,
+   "requestBytes": 12905,
    "tokens": {
-    "inputTokens": 3704,
-    "outputTokens": 401
+    "inputTokens": 3735,
+    "outputTokens": 433
    },
-   "usd": 0.000398
+   "usd": 0.00041
   },
   {
    "id": "x15",
@@ -2854,7 +2414,7 @@
    "game": {
     "source": "authored",
     "fallbackReason": "VERB_UNPROVED",
-    "failure": "VERB_UNPROVED: rule verbs dropped: wait",
+    "failure": "VERB_UNPROVED: RULE_INVALID: /rules/2/do/1: \"self\" is the first role of a contact that is not the player; rules as written: [{\"id\":\"startTimer\",\"verb\":\"wait\",\"when\":{\"phase\":\"first\"},\"if\":null,\"do\":[{\"startTimer\":{\"timer\":\"beat\",\"ticks\":60}",
     "genre": "rhythm.default",
     "control": "rhythm",
     "ok": true,
@@ -2866,13 +2426,13 @@
      "failures": []
     }
    },
-   "ms": 4709,
-   "requestBytes": 12748,
+   "ms": 5257,
+   "requestBytes": 12750,
    "tokens": {
-    "inputTokens": 3677,
-    "outputTokens": 379
+    "inputTokens": 3708,
+    "outputTokens": 569
    },
-   "usd": 0.000389
+   "usd": 0.000449
   },
   {
    "id": "x16",
@@ -2894,19 +2454,19 @@
     "ok": true,
     "bot": {
      "botWins": true,
-     "seconds": 31.5,
+     "seconds": 29.8,
      "idleLoses": true,
      "replayEqual": true,
      "failures": []
     }
    },
-   "ms": 4253,
-   "requestBytes": 12847,
+   "ms": 5076,
+   "requestBytes": 12849,
    "tokens": {
-    "inputTokens": 3699,
-    "outputTokens": 312
+    "inputTokens": 3730,
+    "outputTokens": 463
    },
-   "usd": 0.000371
+   "usd": 0.000419
   }
  ]
 }

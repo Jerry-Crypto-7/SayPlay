@@ -3,29 +3,109 @@
  "sentence": "a phoenix rises from the ashes over a burning desert",
  "axis": "flap",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:13:08.566Z",
- "ms": 4357,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:17:30.186Z",
+ "ms": 5992,
  "answer": {
-  "plan": "Create a simple flap‑style game where the phoenix rises over a burning desert, with a two‑phase timer that triggers a visual change but no win/lose conditions.",
+  "plan": "Create a flap‑style game where a phoenix rises over a burning desert, collecting ashes while avoiding rising fire hazards.",
   "spec": {
    "genre": "flap",
    "mode": "default",
    "hero": "phoenix",
    "cast": [],
-   "heroAction": null,
+   "heroAction": "fix",
    "setting": "desert",
    "palette": "desert",
    "params": null,
-   "ruleRoles": [],
-   "things": null,
-   "rules": [],
+   "ruleRoles": [
+    {
+     "id": "fire",
+     "kind": "hazard",
+     "label": "fire burst",
+     "count": null
+    },
+    {
+     "id": "ash",
+     "kind": "collectible",
+     "label": "ash",
+     "count": null
+    }
+   ],
+   "things": [
+    {
+     "role": "fire",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "ash",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
+   "rules": [
+    {
+     "id": "startPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "rise",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "risePhase",
+     "verb": "wait",
+     "when": {
+      "timer": "rise"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "wave": {
+        "role": "fire",
+        "count": 3,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "collectAsh",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "ash"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 10
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    }
+   ],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "phase2"
+      "id": "rise"
      }
     ],
     "phases": [
@@ -39,8 +119,14 @@
     "events": null
    },
    "boss": null,
-   "abilities": [],
-   "segments": null
+   "abilities": [
+    "dash"
+   ],
+   "segments": [
+    "moving",
+    "trap",
+    "faster"
+   ]
   }
  },
  "failure": null

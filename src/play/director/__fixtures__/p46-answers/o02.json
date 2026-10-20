@@ -3,12 +3,12 @@
  "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:11:51.470Z",
- "ms": 9632,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:16:21.512Z",
+ "ms": 7762,
  "answer": {
-  "plan": "Create an arena‑style game where Amanita mushrooms battle bulls, dodge them, and fire at them.",
+  "plan": "Arena fight with Amanita mushrooms vs bulls, featuring chase, escape, and shooting mechanics.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -46,9 +46,25 @@
    "heroAction": "fix",
    "setting": "forest trail",
    "palette": "forest",
-   "params": null,
+   "params": {
+    "entryDistance": 12000,
+    "chaseLead": 60,
+    "seconds": 60,
+    "items": 5,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 2,
+    "chaserSpeed": 70,
+    "enemies": 2,
+    "enemyHp": 5,
+    "enemySpeed": 80,
+    "playerHp": 5,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 60
+   },
    "counts": {
-    "enemy": 3,
+    "enemy": 2,
     "collectible": 1
    },
    "ruleRoles": [
@@ -56,7 +72,7 @@
      "id": "bull",
      "kind": "chaser",
      "label": "bull",
-     "count": 3
+     "count": 2
     },
     {
      "id": "acorn",
@@ -65,13 +81,24 @@
      "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "bull",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "acorn",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
      "id": "bull_spawn",
      "verb": "spawn",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
@@ -87,7 +114,7 @@
      "id": "bull_wave",
      "verb": "wave",
      "when": {
-      "phase": "wave"
+      "timer": "wave_timer"
      },
      "if": null,
      "do": [
@@ -104,7 +131,7 @@
      "id": "bull_chase",
      "verb": "chase",
      "when": {
-      "phase": "wave"
+      "phase": "second"
      },
      "if": null,
      "do": [
@@ -117,7 +144,7 @@
      "id": "bull_shoot",
      "verb": "shoot",
      "when": {
-      "phase": "wave"
+      "phase": "second"
      },
      "if": null,
      "do": [
@@ -136,17 +163,17 @@
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "wave"
+      "id": "second"
      }
     ],
     "events": null
    },
    "boss": {
     "role": "bull",
-    "name": "Rampaging Bull",
+    "name": "Charging Bull",
     "attack": "charge"
    },
    "abilities": [

@@ -308,7 +308,7 @@ Píše ho `P54C_OUT=baseline npx vitest run --config vitest.measure.mts evals/pl
   - parametry hloubky s příkladem v závorce za mezí.
   Strop logiky P45B (≤ 1 500 znaků nad `main`) taky drží. Verze kompaktního promptu `4ff1d2c9` → `b830dc2d`. Požadavek, jak jde modelu (systém + věta + FULL INTENT, bez příkladů jako produkce): průměr 12 856 B, max 13 059 B, systém 11 896 B.
 
-### Živý běh (`director.measure.ts` → `director.json`, odpovědi `director-answers.json`)
+### Živý běh (`director.measure.ts` → od T14b `director-t14.json`, odpovědi `director-answers-t14.json`)
 
 gpt-oss-20b lokálně (llama.cpp, RTX 3090; Groq klíč na stroji není, viz Rozhodnutí), kompaktní režisér jako produkce, jedno volání na větu bez opravného kola, všech 80 vět dev sady. **Volání: 80 dev + 25 nové nahrávky P46E = 105 z 200, 0 USD.**
 
@@ -387,6 +387,52 @@ gpt-oss-20b lokálně (llama.cpp, RTX 3090; Groq klíč na stroji není, viz Roz
 - **Měření mimo P54C, přepsané vědomě:** `evals/play/rules/coverage-p41.json` (dočasný běh `measureVerbCoverage()` přes `vitest.measure.mts`, `tsx` v checkoutu není): čtyři věty poptávky se navrhnou jako nový žánr – s016 („runner where you pick gates that multiply or divide your army“) dav, s036 („a chicken crossing an endless road like crossy road“) přeskákání, s113 („sumo push everyone off an ice platform“) vytlačování, s126 slučování. s016 přešla z „dílek“ na „nic“, protože měřidlo zná jen stará ovládání (dílky 86 → 85, bez pokrytí 114 → 115, po šablonách 77 → 78). `p46e/after.json` se nemění (žádná věta P46E se nepohnula, `p46-fixtures.test.ts` zelený).
 - **Testy** (po souborech, žádná celá složka): `src/play/genre` + `src/play/compose` (bez `difficulty`, ta je v bráně) + `draft*.test.ts` + testy T9–T12 + testy s větami dosahu (duel P47B/P51/P52, schopnosti, záměr, slovník, věrnost, režisér vč. `p46-fixtures` a `director-prompt`, sady a měřidla `evals/play/*/__tests__`, arkáda P51/P52 a pruhy T5–T8) **4 538/4 538** ve 143 souborech; `coverage.test.ts` sám 25/25; replay brána **80/80** (`p41-report.json` vrácený); `P54C_CHECK=1 start.measure.ts` zelený; `classify.measure.ts` (brána ≥ 0,85 a pasti) zelený; `tsc` 0. Prompt režiséra `b830dc2d` se nepohnul.
 - **Pin:** `classify.test.ts` – každá dev věta všech osmi žánrů jde do svého žánru, pasti tam, kde byly v T2, a P30 dev se proti `start.json` pohne jen o `T13_MOVED` (5 vět). `draft.test.ts` – šest vět fáze 3 dojde návrhem do hry svého žánru (vlastní ovládání, buňka, bez dílů) s rolemi z modulu (duck, tractor, bee + bear, planet, sumo wrestler).
+
+## T14b – režisér nabízí i žánry fáze 3 (přeskákání, dav, slučování, vytlačování)
+
+- **Schéma a prompt:** `DIRECTOR_PENDING` je prázdný, takže režisér dostane varianty `hop`, `crowd`, `merge` a `push` oběma tvary (recept i `GenreSpec`) a jejich řádky v promptu: jedna věta s příkladem (`GENRE_PITCH`), např. `- push (push fight rivals out of a ring; "a walrus shoves seals off the iceberg"): hero …; params rivals 3..9; counts enemy`. V tabulce živých kombinací přibyly řádky `hop`, `crowd` a `drop`; `push/defeat/rival` stojí v řádku `roam`.
+- **Délka promptu:** čtyři žánry přidaly 853 B. Zhuštění bez změny obsahu vrátilo nejdelší požadavek (40 zlatých vět) na **14 970 B** (strop 15 000 B beze změny):
+  - jediný režim `default` se v řádku žánru nevypisuje (záhlaví „mode default unless listed“);
+  - pohyby se stejnými kombinacemi sdílejí řádek tabulky (`- run, jump: …`);
+  - zapojení fází a časovače jen v řádku Course u věty, ne podruhé v pokynech logiky;
+  - sloučené věty pokynů (parametry, „preserve the sentence“, „Preserve all essential movement…“);
+  - příklady pravidel bez polí `count` a `things` s hodnotou null.
+  Verze kompaktního promptu `b830dc2d` → `33df2757`. Požadavek, jak jde modelu (bez příkladů jako produkce): průměr 12 831 B, max 13 006 B, systém 11 898 B.
+
+### Živý běh (`director.json`, odpovědi `director-answers.json`)
+
+gpt-oss-20b lokálně jako T14 (llama.cpp, RTX 3090, 0 USD), kompaktní režisér, jedno volání na větu bez opravného kola. Věty: 32 fáze 3, 16 pastí a vzorek 12 vět žánrů pruhů (3 na žánr, včetně c05 a s02 z nálezu T14). **Volání: 60 dev + 25 nové nahrávky P46E = 85; s T14 (105) celkem 190 z 200.** Souhrn T14 nad všemi 80 větami zůstává v `director-t14.json` a v `director.json` jako `t14Summary`.
+
+| Skupina | Žánr odpovědi = klasifikátor nebo očekávaný | Hra z `direct()` |
+|---|---|---|
+| hop, crowd, merge | **24/24** (8/8 každý) | 23 režisérových her, 1 rychlá verze (m02) |
+| push | 7/8 (p06 recept `jump/push/defeat/chaser`, který není živý) | 7 režisérových her, p06 rychlá verze vytlačování |
+| vzorek pruhů | **12/12** | 11 režisérových her, 1 rychlá verze (s01) |
+| pasti | 14/16 (x06 „push crates onto switches“ → vytlačování, x14 „merge into traffic and race“ → slučování) | 16 režisérových her; x05 hra bez žánru (recept), x06 a x14 nový žánr |
+| **celkem** | **57/60 = 0,95** (brána 0,8; T14 76/80) | 57 režisérových her, **robot vyhraje 57/57**; 3× rychlá verze s důvodem |
+
+- Model odpověděl starým tvarem 59× z 60, receptem jednou (p06).
+- **Rychlá verze s důvodem (3):** s01 a m02 `UNREPAIRED` (pravidla odpovědi: fáze, do které nic nevede; „self“ v kontaktu bez hráče), p06 `MALFORMED` (recept, který není živá kombinace).
+- **Délka výhry mimo 30–90 s u 5 her nového žánru:** o04 přeskákání 7 s (`rows 10`), m04 slučování 26 s (`lives 1`), p02–p04 vytlačování 19,8 s (`rivals 3` / `counts.enemy 3`). Ani jedna věta číslo neříká – model meze vyplnil sám a dolní konec mezí modulu dává výhru pod 30 s. Robot je vyhraje, nečinný prohraje, replay sedí. Neopraveno (nález níž).
+- **Pasti:** x06 hrála v T14 skákačku, teď vytlačování (sloveso push); obě jsou mimo očekávaný úkol. x14 („merge into traffic“) dostala slučování – slovo merge v jiném významu.
+- **Cena za hru** (tokeny × ceník Groq): průměr **0,00041 USD**, max 0,00054 USD (3 721 tokenů vstupu, 446 výstupu v průměru). **Doba volání** (lokálně, ne Groq): p50 5,1 s, p95 6,5 s.
+- **Rychlá verze** (80 vět, Rapier načtený): p95 1,21 s studená, 1,07 s zahřátá – pod 2 s, T14b kód návrhu nemění.
+
+### Nahrávky P46E znovu (`evals/play/p46e/`)
+
+Nová verze promptu → 25 odpovědí nahraných znovu (`record.cmd`, 25 volání, žádné selhání volání) a `after.json` přeměřený. `ready` **25 → 22**, `direct()` dá hru z odpovědi u 19 místo 22; `adds` 0,36 → 0,50 (boss 9 → 8, akce 2 → 3, úseky 0 → 1, jen postavy 8 → 5). Tři nové pády jsou `MALFORMED`: model odpověděl receptem, který není živá kombinace – d01 `run/-/survive/chaser`, o01 `run/collect/escape/chaser`, o04 `drive/push+shoot/escape/chaser` (AI verze vyjde přes roub na rychlou hru). Soud logiky P45B (`director-logic.json`): `logic_proved` raw 0 → 0, s opravou vstupu do fáze 3 → 0 z 25. Jako u T14 jde o nové odpovědi, šum nahrávky a změnu promptu nerozlišuji; tři ze čtyř neživých receptů (i p06 dev) stojí na pohybech `run` a `jump`, které teď sdílejí řádek tabulky – hypotéza, neověřená.
+
+### Testy
+
+- `director-prompt.test.ts`: osm nových žánrů ve schématu oběma tvary a v promptu s větou a příkladem, `DIRECTOR_PENDING` prázdný, každý pohyb stojí v tabulce právě jednou a každá nabízená buňka v něm je, rozpočet 15 000 B.
+- `director.test.ts` (**pin**): odpověď s kterýmkoli z osmi nových žánrů dá hru toho žánru na jeho ovládání – receptem i u věty, kterou klíčová slova hrají jinak, starým tvarem u věty žánru – a robot ji vyhraje (36/36).
+- Testy T9–T12 „klasifikátor ano, režisér zatím ne“ drží opak: režisér žánr nabízí.
+- Cílené: `src/play/director` (vč. `p46-fixtures` 26/26) + `src/play/__tests__/director-*` + `evals/play/p46e` + `evals/play/p54c/__tests__` **1 039/1 039**, `director.test.ts` 36/36, `director-prompt` + `recipe-answer` + testy čtyř žánrů 157/157; `tsc` 0.
+
+### Nálezy pro další úlohy
+
+- Model vyplní počty a parametry, které věta neříká, a dolní mez modulu (`rows 10`, `rivals 3`, `lives 1`) dá výhru pod 30 s → T14br1.
+- Neživé recepty odpovědi (`run/-/survive/chaser`, `jump/push/defeat/chaser`, …) spadnou na rychlou verzi → T14br2.
 
 ## Rozhodnutí
 
@@ -540,3 +586,7 @@ gpt-oss-20b lokálně (llama.cpp, RTX 3090; Groq klíč na stroji není, viz Roz
 - T13b: AC role nežádá, ale bez úpravy `draftFill` by „help the duck cross the highway“ hrál pirát (výchozí hrdina řeky), „sumo wrestlers push each other“ liška a dav by měl hrdinu „crowd“ nebo „swarm“ – opravené jen v modulech fáze 3 (sdílené čtení rolí beze změny). Zbývá zapsané, neopravené: místo „plus“ / „gates“ / „bigger ones“ u r02, r05, r08, m03 (čte ho `draft.ts` sám, ne modul), o08 bez hrdiny dostane piráta, r05 má bosse „boss“.
 - T13b: `coverage-p41.json` přeměřený dočasným během `measureVerbCoverage()` přes `vitest.measure.mts` (v checkoutu není `tsx`, kterým se píše `--write-p41`); soubor běhu smazaný. Pod zátěží 76 souborů `coverage.test.ts` znovu nedoběhl `beforeAll` (120 s), sám 25/25.
 - T13b: hledání původu vět šlo přes `grep --exclude=holdout.json` a skript, který sealované sady (`holdout`, `test-200`, `sealed`) přeskakuje jménem; jeden `grep -rlF` nad `evals/` vypsal jméno `p45/sealed-100.json` (jen jméno souboru, ne obsah) – `holdout.json` P54C otevřený ani prohledaný nebyl.
+- T14b: živě jen 60 z 80 vět (fáze 3, pasti, 3 věty na žánr pruhů) – se 25 nahrávkami P46E to drží strop 200 volání s T14 dohromady (190); žánry pruhů změřil celé T14 a jejich řádky prompt nemění, takže vzorek hlídá jen, že je zhuštění nerozbilo.
+- T14b: odpovědi a souhrn T14 přejmenované (`director-answers-t14.json`, `director-t14.json`), ne přepsané – nová verze promptu by je jinak smazala a čísla MVP by zmizela.
+- T14b: „každá hra režiséra projde robotem“ čtené jako výhra robota, nečinný prohraje, replay sedí (57/57). Pět her pod 30 s jde do T14br1, ne do T14b: oprava sedí v mezích modulů hop, merge a push, pohne promptem režiséra a znovu nahrávkami P46E, na které už z 200 volání nezbývá.
+- T14b: neživé recepty odpovědi (3 nahrávky P46E, p06) neopravené – AC připouští rychlou verzi s důvodem a rozdělení řádku `run, jump` zpět by přeteklo 15 000 B a chtělo další nahrávání; zapsané jako T14br2.

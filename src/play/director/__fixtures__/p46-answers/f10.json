@@ -3,12 +3,12 @@
  "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
  "axis": "arena.fight",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:13:04.209Z",
- "ms": 6788,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:17:24.194Z",
+ "ms": 5997,
  "answer": {
-  "plan": "Create an arena‑style fight where a stone golem battles grave robbers inside an ancient desert temple, with timed waves and a final boss encounter.",
+  "plan": "arena fight with stone golem vs grave robbers in an ancient desert temple",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -17,7 +17,7 @@
     {
      "label": "grave robber",
      "does": "fight",
-     "verb": "attack",
+     "verb": "crush",
      "states": null,
      "patrol": true
     },
@@ -32,10 +32,26 @@
    "heroAction": "none",
    "setting": "ancient desert temple",
    "palette": "desert",
-   "params": null,
+   "params": {
+    "entryDistance": 12000,
+    "chaseLead": 60,
+    "seconds": 60,
+    "items": 5,
+    "pursuitCeiling": 120,
+    "itemSizePct": 120,
+    "chasers": 3,
+    "chaserSpeed": 70,
+    "enemies": 3,
+    "enemyHp": 5,
+    "enemySpeed": 80,
+    "playerHp": 7,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 60
+   },
    "counts": {
     "enemy": 3,
-    "collectible": 2
+    "collectible": 5
    },
    "ruleRoles": [
     {
@@ -48,22 +64,59 @@
      "id": "gem",
      "kind": "collectible",
      "label": "gem",
-     "count": 2
-    },
-    {
-     "id": "boss",
-     "kind": "chaser",
-     "label": "Ancient Guardian",
-     "count": 1
+     "count": 5
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "robber",
+     "start": "hidden",
+     "physics": null
+    },
+    {
+     "role": "gem",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
      "id": "spawnRobbers",
      "verb": "spawn",
      "when": {
-      "phase": "start"
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "robber",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawnGems",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "gem",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "waveRobbers",
+     "verb": "wave",
+     "when": {
+      "phase": "second"
      },
      "if": null,
      "do": [
@@ -77,52 +130,19 @@
      ]
     },
     {
-     "id": "spawnGems",
-     "verb": "spawn",
+     "id": "waveGems",
+     "verb": "wave",
      "when": {
-      "phase": "start"
+      "phase": "second"
      },
      "if": null,
      "do": [
       {
        "wave": {
         "role": "gem",
-        "count": 2,
+        "count": 5,
         "at": "edge"
        }
-      }
-     ]
-    },
-    {
-     "id": "spawnBoss",
-     "verb": "spawn",
-     "when": {
-      "phase": "mid"
-     },
-     "if": null,
-     "do": [
-      {
-       "wave": {
-        "role": "boss",
-        "count": 1,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "robberAttack",
-     "verb": "attack",
-     "when": {
-      "contact": [
-       "player",
-       "robber"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "damage": 1
       }
      ]
     }
@@ -131,30 +151,26 @@
     "vars": null,
     "timers": [
      {
-      "id": "mid"
+      "id": "phase1"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "mid"
-     },
-     {
-      "id": "end"
+      "id": "second"
      }
     ],
     "events": null
    },
    "boss": {
-    "role": "boss",
-    "name": "Ancient Guardian",
+    "role": "grave robber",
+    "name": "Dread Tomb Keeper",
     "attack": "charge"
    },
    "abilities": [
-    "dash",
-    "strike"
+    "dash"
    ],
    "segments": [
     "newFoe",

@@ -15,10 +15,13 @@ import { compileRecipe } from '../compose/compile';
 
 import { isDeepStrictEqual } from 'node:util';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { memoryAnswerStore } from '@/server/answer-cache';
 
+import { arcadeWorldOf } from '../arcade/compile';
+import { loadRapier } from '../arcade/physics/world';
+import { verifyArcade } from '../arcade/verify';
 import { GENRE_ANSWERS, answerFixture, genreAnswer } from '../director/__fixtures__';
 import { answered, failed, fakeBranch, type FakeBranch } from '../director/__fixtures__/branch';
 import { GENRE_ANSWER_SCHEMA } from '../director/answer-schema';
@@ -104,6 +107,11 @@ const CONTROL_OF_MODE: Readonly<Record<string, string>> = {
   'whack.default': 'lanes',
   'defense.default': 'lanes',
   'slice.default': 'lanes',
+  // P54C T14b: čtyři žánry fáze 3, každý na svém ovládání.
+  'hop.default': 'hop',
+  'crowd.default': 'crowd',
+  'merge.default': 'merge',
+  'push.default': 'push',
 };
 
 /** Režim → věta, jejíž hlavní sloveso ho hraje (kontrola věrnosti, P32B T5); hrdina fox a nepřítel wolf jako v `genreAnswer`. */
@@ -129,10 +137,18 @@ const SENTENCE_OF_MODE: Readonly<Record<string, string>> = {
   'whack.default': 'A fox whacks wolves popping out of holes in a dark forest',
   'defense.default': 'A fox defends its den from waves of wolves in a dark forest',
   'slice.default': 'A fox slices flying acorns in a dark forest but not the wolf',
+  'hop.default': 'A fox crosses a busy road in a dark forest past a wolf',
+  'crowd.default': 'A fox leads a crowd of foxes through gates in a dark forest past a wolf',
+  'merge.default': 'A fox drops acorns into a jar in a dark forest and merges matching ones',
+  'push.default': 'A fox pushes wolves out of a ring in a dark forest',
 };
 
-/** Věta, ve které klíčová slova žádný žánr pruhů nečtou – žánr hry tu může dát jedině odpověď režiséra. */
+/** Věta, ve které klíčová slova žádný nový žánr nečtou – žánr hry tu může dát jedině odpověď režiséra. */
 const NEUTRAL = 'A fox in a dark forest';
+
+// P54C T14b: slučování a vytlačování běží na Rapieru – návrh je bez něj nesloží (a návrh věty se pamatuje), takže
+// se načte před prvním testem, jako v route `games`.
+beforeAll(() => loadRapier());
 
 function clock(): () => number {
   let tick = 0;
@@ -211,23 +227,31 @@ describe('direct – the model answers', () => {
 });
 
 // P54C T14 (pin): režisér, který nový žánr jen jmenuje a pak ho nepostaví, vypadá jako fungující – hra by byla
-// rychlá verze nebo jiný žánr se jménem z odpovědi. Odpověď se žánrem pruhů musí dát hru toho žánru na `lanes`.
-describe('direct – an answer naming a lane genre builds that genre (P54C T14)', () => {
-  const LANE_GENRES = ['catch', 'whack', 'defense', 'slice'] as const;
+// rychlá verze nebo jiný žánr se jménem z odpovědi. Odpověď s novým žánrem musí dát hru toho žánru na jeho ovládání
+// (pruhy T14, fáze 3 T14b) a robot ji musí vyhrát.
+describe('direct – an answer naming a new genre builds that genre and the bot wins it (P54C T14, T14b)', () => {
+  const NEW_GENRES = ['catch', 'whack', 'defense', 'slice', 'hop', 'crowd', 'merge', 'push'] as const;
 
-  it.each(LANE_GENRES)('%s: the recipe answer builds it even where the keyword reader plays another game', async (genre) => {
+  const botWins = (spec: GameSpecV1) => {
+    const made = arcadeWorldOf(spec, 1);
+    return made.ok && verifyArcade(made.world, undefined, made.roleBindings).bot.outcome === 'won';
+  };
+
+  it.each(NEW_GENRES)('%s: the recipe answer builds it even where the keyword reader plays another game', async (genre) => {
     const cell = liveCells().find((live) => live.preset.genre === genre)!;
     expect(draftGameSpec(NEUTRAL).genre?.id).not.toBe(genre);
     const answer = { plan: 'play the sentence', spec: { recipe: cell.recipe, unmet: [], hero: 'fox', cast: [{ label: 'acorn', does: 'collect' }, { label: 'wolf', does: FOE_DOES[genre] }], setting: 'dark forest' } };
     const game = await run(fakeBranch([answered(answer)]), { maxRepairRounds: 0 }, NEUTRAL);
-    expect(game, genre).toMatchObject({ source: 'authored', calls: 1, spec: { control: 'lanes', genre: { id: genre, mode: 'default' } } });
+    expect(game, genre).toMatchObject({ source: 'authored', calls: 1, spec: { control: CONTROL_OF_MODE[`${genre}.default`], genre: { id: genre, mode: 'default' } } });
     expect(game.spec.roles.find((role) => role.kind === 'player')?.label).toBe('fox');
+    expect(botWins(game.spec), genre).toBe(true);
   }, 60_000);
 
-  it.each(LANE_GENRES)('%s: the legacy GenreSpec answer builds it for a sentence of the genre', async (genre) => {
+  it.each(NEW_GENRES)('%s: the legacy GenreSpec answer builds it for a sentence of the genre', async (genre) => {
     const { answer } = GENRE_ANSWERS.find(({ name }) => name === `${genre}.default`)!;
     const game = await run(fakeBranch([answered(answer)]), { maxRepairRounds: 0 }, SENTENCE_OF_MODE[`${genre}.default`]);
-    expect(game, genre).toMatchObject({ source: 'authored', calls: 1, spec: { control: 'lanes', genre: { id: genre, mode: 'default' } } });
+    expect(game, genre).toMatchObject({ source: 'authored', calls: 1, spec: { control: CONTROL_OF_MODE[`${genre}.default`], genre: { id: genre, mode: 'default' } } });
+    expect(botWins(game.spec), genre).toBe(true);
   }, 60_000);
 });
 

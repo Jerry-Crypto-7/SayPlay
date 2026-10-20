@@ -173,14 +173,14 @@ describe('push genre is live (P54C T12)', () => {
     expect(sumo.objective.description).toContain('sumo wrestlers');
   });
 
-  // Věty k žánru vede od T13b klasifikátor; režisér ho nabídne až při opakování T14 (T14b).
-  it('is chosen by the classifier (T13b) and the director does not offer it yet', () => {
+  // Věty k žánru vede od T13b klasifikátor, režisér ho nabízí od T14b.
+  it('is chosen by the classifier (T13b) and offered by the director (T14b)', () => {
     for (const sentence of ['a sumo wrestler pushes rivals out of a bouncy ring', 'push the other robots off the platform', 'shove everyone out of the ring']) {
       expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).toBe('push');
     }
-    expect(DIRECTOR_PENDING.has('push')).toBe(true);
+    expect(DIRECTOR_PENDING.has('push')).toBe(false);
     const variants = (GENRE_ANSWER_SCHEMA.properties as Record<string, { anyOf: { properties: Record<string, { enum?: unknown[] }> }[] }>).spec.anyOf;
-    expect(variants.flatMap((variant) => variant.properties.genre?.enum ?? [])).not.toContain('push');
+    expect(variants.flatMap((variant) => variant.properties.genre?.enum ?? [])).toContain('push');
   });
 });
 

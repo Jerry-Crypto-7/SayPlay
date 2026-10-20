@@ -3,28 +3,19 @@
  "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
  "axis": "control:ball",
  "model": "gpt-oss-20b",
- "promptVersion": "b830dc2d",
- "directorPromptVersion": "bc4f1618",
- "recordedAt": "2026-10-20T06:13:59.260Z",
- "ms": 6990,
+ "promptVersion": "33df2757",
+ "directorPromptVersion": "b6bcf3fa",
+ "recordedAt": "2026-10-20T20:18:06.520Z",
+ "ms": 5294,
  "answer": {
-  "plan": "Create a platform‑style runner where a hedgehog rolls down a mushroom hill while dodging foxes.",
+  "plan": "runner",
   "spec": {
-   "genre": "platformer",
-   "mode": "default",
    "hero": "hedgehog",
    "cast": [
     {
      "label": "fox",
      "does": "avoid",
-     "verb": "obstacle",
-     "states": null,
-     "patrol": false
-    },
-    {
-     "label": "mushroom",
-     "does": "scenery",
-     "verb": "static",
+     "verb": "chase",
      "states": null,
      "patrol": false
     }
@@ -32,84 +23,44 @@
    "heroAction": "none",
    "setting": "mushroom hill",
    "palette": "forest",
-   "params": null,
    "counts": {
-    "collectible": null
+    "enemy": 1,
+    "collectible": null,
+    "target": null
    },
    "ruleRoles": [
     {
      "id": "fox",
-     "kind": "hazard",
+     "kind": "chaser",
      "label": "fox",
-     "count": null
-    },
-    {
-     "id": "mushroom",
-     "kind": "prop",
-     "label": "mushroom",
-     "count": null
+     "count": 1
     }
    ],
-   "things": null,
+   "things": [
+    {
+     "role": "fox",
+     "start": "hidden",
+     "physics": null
+    }
+   ],
    "rules": [
     {
-     "id": "avoid_fox",
-     "verb": "avoid",
+     "id": "fox_chase",
+     "verb": "chase",
      "when": {
       "contact": [
        "player",
        "fox"
       ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
        "damage": 1
-      },
-      {
-       "lose": true
-      }
-     ]
-    },
-    {
-     "id": "roll_start",
-     "verb": "roll",
-     "when": {
-      "phase": "start"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "roll",
-        "ticks": 600
-       }
-      }
-     ]
-    },
-    {
-     "id": "roll_timer",
-     "verb": "wait",
-     "when": {
-      "timer": "roll"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "end"
-      }
-     ]
-    },
-    {
-     "id": "end_phase",
-     "verb": "end",
-     "when": {
-      "phase": "end"
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
       }
      ]
     }
@@ -118,15 +69,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "roll"
+      "id": "phase1"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "end"
+      "id": "second"
      }
     ],
     "events": null
@@ -134,14 +85,37 @@
    "boss": {
     "role": "fox",
     "name": "Sneaky Fox",
-    "attack": "stomp"
+    "attack": "charge"
    },
    "abilities": [],
    "segments": [
+    "newFoe",
     "moving",
-    "trap",
-    "newFoe"
-   ]
+    "faster"
+   ],
+   "recipe": {
+    "phases": [
+     {
+      "start": 0,
+      "speedPercent": 100,
+      "add": null
+     },
+     {
+      "start": 60,
+      "speedPercent": 120,
+      "add": null
+     }
+    ],
+    "dependsOn": null,
+    "move": "run",
+    "actions": [],
+    "objective": "survive",
+    "threats": [
+     "chaser"
+    ]
+   },
+   "params": null,
+   "unmet": []
   }
  },
  "failure": null
