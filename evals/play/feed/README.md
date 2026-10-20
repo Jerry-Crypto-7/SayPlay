@@ -98,3 +98,7 @@ FEED_THUMBS_URL=http://127.0.0.1:3291 node --experimental-strip-types scripts/p3
 ## Telefon nad vestavěným poolem (T15, `phone-check-2026-10-20/`, `e2e/play-feed-phone.spec.ts`)
 
 20. 10. 2026 nad `next start` s prázdným úložištěm ukázalo na Pixel 7 s CPU ×4 (tahem prstu) i na desktopu 1440×900 (kolečkem) všech 12 karet jinou hru v běžícím náhledu robota v jediném plátně feedu, bez prázdného plátna a bez nepřeloženého textu, třetí karta po ťuku 5 s hrála a feed při hraní stál; dosednutí → běžící náhled vyšlo p50 139 ms na desktopu (cíl T8 ≤ 300 ms platí, v T8 165 ms) a 533 ms na telefonu (cíl ≤ 500 ms dál nesplněný, v T8 894 ms nad jinými hrami), FPS náhledu p50 60 na obou.
+
+## Regresní kontrola (T16, `final-2026-10-20.json`)
+
+20. 10. 2026 prošla celá vitest sada po dvou opravách (`blur()` u „Play to dare“ shodil brand guard, test tab baru neznal levou navigaci T12; zbývá jen ENOENT na gitignorovaném `plans/P8` a jeden časový pád zelený samostatně), build, replay/hash sada a e2e specy feedu, hry, sdílení výzvy i jazyka – červený zůstal jen jeden test `play-share`, který čeká varování o paměťovém úložišti, jenže server s `PLAY_STORE_DIR` od P40 ukládá na disk (P54A ho nezpůsobil), `play-perf` dal na telefonu 59,9 FPS u všech čtyř hlídaných her až v klidu (pod zátěží jiných relací drive 30) a soubory cizích plánů P54A proti bodu odbočení nezměnil.

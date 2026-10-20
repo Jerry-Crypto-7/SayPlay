@@ -1,0 +1,148 @@
+{
+  "version": "p54a-regression-sweep-v1",
+  "task": "P54A T16",
+  "measuredOn": "2026-10-20",
+  "commit": "5ffdb675 (build, replay suite and e2e; the full vitest run was on 60c4875d, before the fixes)",
+  "base": "5d741740 (fork point of features/P54A-feed-her-2026-10-19 from origin/main)",
+  "note": "Shared machine: other sessions ran a full vitest suite and an 8-worker Playwright suite during parts of this sweep. Timing failures were rerun alone. Builds and e2e ran against next start (webpack) with an empty PLAY_STORE_DIR on 127.0.0.1:3291, real GPU.",
+  "vitest": {
+    "command": "npx vitest run --reporter=json (full suite, before the two fixes below)",
+    "files": 684,
+    "tests": 14782,
+    "passed": 14773,
+    "failed": 3,
+    "skipped": 6,
+    "durationS": 1349,
+    "failures": [
+      {
+        "file": "src/components/play/ui/__tests__/brand-guard.test.ts",
+        "test": "brand guard – src/components/play/**/*.tsx has no backdrop-filter or blur()",
+        "class": "regression from P54A",
+        "cause": "event.currentTarget.blur() on the feed Play to dare button (T10, b2a028d1)",
+        "action": "fixed in e495aee3: focus moves to the active card instead; green"
+      },
+      {
+        "file": "src/components/play/__tests__/create-game.test.ts",
+        "test": "CreateGame offers only Make and Play in the tab bar, Make active on arrival",
+        "class": "old behaviour the plan changed",
+        "cause": "T12 (572e68e5) added the desktop side nav with the same two items, Play active",
+        "action": "test updated in 5ffdb675 to check both navs; green"
+      },
+      {
+        "file": "scripts/__tests__/submission-check.test.ts",
+        "test": "registrační značka ve skutečném plánu P8 existuje",
+        "class": "ENOENT on gitignored plans/P8-odevzdani.md (not in a worktree)",
+        "action": "none"
+      }
+    ],
+    "timingOnly": [
+      {
+        "file": "evals/play/rules/coverage.test.ts",
+        "inFullRun": "file failed in a hook, 3 tests skipped",
+        "alone": "25/25 passed"
+      }
+    ],
+    "skippedInFullRun": [
+      "evals/play/rules/coverage.test.ts – 3 tests behind the failed hook (green alone)",
+      "src/geom/__tests__/compile.test.ts – zapíše naměřená čísla pro skript",
+      "src/scene/__tests__/spec.test.ts – 2 archive round-trip tests"
+    ],
+    "afterFixes": "brand-guard 23/23 and create-game 6/6 green; full suite not rerun (the fixes touch one component without unit tests and one test file)"
+  },
+  "build": {
+    "command": "npm run build",
+    "exitCode": 0,
+    "typescript": "passed"
+  },
+  "replaySuite": {
+    "command": "npx vitest run src/play/arcade/__tests__/legacy-replay-v2.test.ts src/play/arcade/__tests__/motion-hash.test.ts evals/play/regression/golden.test.ts",
+    "files": 3,
+    "tests": 54,
+    "passed": 54
+  },
+  "ownershipDiff": {
+    "paths": "src/components/play/arcade/look src/play/genre src/play/arcade/pieces src/play/arcade/rules src/components/play/arcade/TouchControls.tsx",
+    "againstForkPoint5d741740": "empty",
+    "againstLocalMain749ca618": "15 files (pieces + genre/contract.ts) from P50/P51 commits 04700849..5d741740 already on origin/main; local main is 5 commits behind origin/main",
+    "againstOriginMain1476989e": "11 files under pieces/ from P52 (#39), merged to origin/main after the fork"
+  },
+  "e2e": {
+    "p37c-feed": { "passed": 1, "failed": 0, "note": "first spec on the fresh server" },
+    "play-feed-phone": { "passed": 2, "failed": 0 },
+    "play-feed": { "passed": 10, "failed": 0 },
+    "play-feed-reels": { "passed": 12, "failed": 0 },
+    "play-shell": { "passed": 8, "failed": 0 },
+    "play-arcade": { "passed": 12, "failed": 0 },
+    "play-share": {
+      "passed": 4,
+      "failed": 1,
+      "failing": "without a share sheet the HUD button copies the link to this version – expects the toast 'the link stops working when it restarts'",
+      "class": "not caused by P54A",
+      "cause": "the server with PLAY_STORE_DIR uses the file store and answers x-play-store: file (checked live), so the memory-store warning never shows; the file store and the header come from P40 (97fb28bc, 6. 10.), the spec last changed 30. 9.; P54A did not change ShareButton, the header or volatileVersionStore. The spec is outside the files P54A owns."
+    },
+    "p36-dare": { "passed": 4, "failed": 0 },
+    "interface-language": { "passed": 3, "failed": 0 },
+    "play-perf": {
+      "gate": "median FPS >= 40 on moto-g-power-emulated (CPU x4, Fast 4G) for drive, glide, walker, ball",
+      "run1": {
+        "measuredAt": "2026-10-20T06:41:26.963Z",
+        "passed": 0,
+        "failed": 1,
+        "failing": "drive: median FPS in phone emulation 30.0 (machine at 60-100 % CPU from other sessions)",
+        "fpsP50": {
+          "runner": { "desktop": 59.9, "phone": 59.9 },
+          "arena": { "desktop": 59.9, "phone": 59.9 },
+          "grid-collect": { "desktop": 59.9, "phone": 20.0, "gated": false },
+          "drive": { "desktop": 59.9, "phone": 30.0 },
+          "glide": { "desktop": 59.9, "phone": 59.9 },
+          "walker": { "desktop": 59.9, "phone": 59.9 },
+          "ball": { "desktop": 59.9, "phone": 59.9 }
+        },
+        "allRunsWon": true,
+        "pageErrors": 0
+      },
+      "run2Quiet": {
+        "measuredAt": "2026-10-20T07:10:02.490Z",
+        "scope": "PERF_GAMES=drive,glide,walker,ball PERF_PROFILES=moto-g-power-emulated, after the other sessions finished (CPU 30-40 %)",
+        "passed": 1,
+        "failed": 0,
+        "fpsP50Phone": { "drive": 59.9, "glide": 59.9, "walker": 59.9, "ball": 59.9 },
+        "fpsP5Phone": { "drive": 29.9, "glide": 30.0, "walker": 30.0, "ball": 30.0 }
+      },
+      "verdict": "green; the run-1 drop followed the machine load (same 568k triangles and same calls in both runs, 59.9 once the other sessions stopped)",
+      "observation": "drive draws 568k triangles per frame on the phone profile (947k desktop) against 13k in evals/play/p41/perf.json (6. 10.); /play/[id] keeps the same Canvas props after P54A (HostedCanvas without host = STAGE_CANVAS), so the growth comes from scene content outside P54A (look/**, pieces)"
+    }
+  },
+  "feed": {
+    "source": "play-feed-phone run 2026-10-20T06:30 (artifacts in phone-check-2026-10-20/ restored to the T15 run, conclusion unchanged)",
+    "phone": {
+      "distinctGames": 12,
+      "canvasesMax": 1,
+      "settleToPreviewMsP50": 675.4,
+      "settleToPreviewMsRange": [349.8, 1182.2],
+      "t8TargetP50Ms": 500,
+      "t8TargetHolds": false,
+      "fpsP50": 59.9,
+      "tapToPlayMs": 287,
+      "feedMovedWhilePlaying": false,
+      "t15": { "settleToPreviewMsP50": 533.2, "tapToPlayMs": 319 }
+    },
+    "desktop": {
+      "distinctGames": 12,
+      "canvasesMax": 1,
+      "settleToPreviewMsP50": 137.0,
+      "settleToPreviewMsRange": [82.2, 224.8],
+      "t8TargetP50Ms": 300,
+      "t8TargetHolds": true,
+      "fpsP50": 59.9,
+      "tapToPlayMs": 39,
+      "feedMovedWhilePlaying": false,
+      "t15": { "settleToPreviewMsP50": 138.6, "tapToPlayMs": 43 }
+    }
+  },
+  "restoredArtifacts": [
+    "evals/play/compiled/report.json (compile times only)",
+    "evals/play/regression/p41-report.json (timings plus entity, rule and win-tick counts; verdict fields unchanged; inferred source: genre/pieces changes in the base after the 17. 10. report, P54A touches no draft or compile file)",
+    "evals/play/feed/phone-check-2026-10-20/* (same verdicts as T15)"
+  ]
+}
