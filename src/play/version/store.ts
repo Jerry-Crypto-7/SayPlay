@@ -139,7 +139,8 @@ export interface VersionStore {
   reportHidden(versionIds: readonly string[]): Promise<Set<string>>;
   /**
    * Nahlášené hry pro provozovatele (P54A T11a, `scripts/p37c/reported.mjs`): id a počet hlasů, od
-   * naposledy poprvé nahlášené, nejvýš `REPORTED_KEPT`. Vestavěnou hru dveře nezapíšou, tady tedy
+   * hry s nejnovějším hlasem do skrytí (`REPORT_HIDE_VOTES`), nejvýš `REPORTED_KEPT` záznamů seznamu
+   * (hra v něm leží až třikrát, čtení vrací každou jednou). Vestavěnou hru dveře nezapíšou, tady tedy
    * není. Výpadek je `VersionStoreUnavailable` – prázdný seznam by lhal.
    */
   reportedGames(): Promise<{ readonly versionId: string; readonly votes: number }[]>;
@@ -863,8 +864,10 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       try {
         // Hlas žije jako hra: tři hlasy jsou vždy tři různí volající, ne jeden za tři dny.
         if (await raw.setNx(reportVoteKey(versionId, voter), '1', limits.ttlSeconds)) {
-          // První hlas hru zapíše do seznamu nahlášených (T11a): provozovatel vidí, co kontrolovat.
-          if ((await raw.incr(reportKey(versionId), limits.ttlSeconds)) === 1) await raw.pushCapped(reportedKey, versionId, REPORTED_KEPT, limits.ttlSeconds);
+          // Hlasy do skrytí hru zapíšou do seznamu nahlášených navrch (T11a): provozovatel vidí, co
+          // kontrolovat. Každý z nich, ne jen první – výpadek mezi příkazy u prvního by jinak skrytou
+          // hru nechal mimo seznam navždy (nález revize T11a-1 #1); čtení duplicity sloučí.
+          if ((await raw.incr(reportKey(versionId), limits.ttlSeconds)) <= REPORT_HIDE_VOTES) await raw.pushCapped(reportedKey, versionId, REPORTED_KEPT, limits.ttlSeconds);
         }
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);

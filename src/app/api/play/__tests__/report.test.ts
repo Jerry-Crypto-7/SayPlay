@@ -13,6 +13,8 @@ import { BUILTIN_GAMES } from '@/play/version/builtin';
 import { REPORT_HIDE_VOTES, REPORTED_KEPT } from '@/play/version/store';
 import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '@/server/rate-limit';
 
+import { fakeUpstash } from '@/play/version/__tests__/fake-upstash';
+
 import { reportedRows, storeFrom } from '../../../../../scripts/p37c/reported.mjs';
 import { callerOf, store } from '../_publish';
 import { POST as reportGame } from '../games/[id]/report/route';
@@ -147,36 +149,82 @@ describe('reported games for the operator (P54A T11a)', () => {
     expect(await reportedRows(store())).toEqual([{ versionId: remix, votes: 2, title }]);
   });
 
-  it('orders by first vote, keeps the latest REPORTED_KEPT games, and an outage is an error, not an empty list', async () => {
+  it('a vote up to the hide threshold moves a game to the top, later ones do not; keeps the latest REPORTED_KEPT entries; an outage is an error', async () => {
     const id = (n: number): string => n.toString(16).padStart(32, '0');
     const versions = memoryVersionStore();
     await versions.reportGame(id(0), 'a');
     await versions.reportGame(id(1), 'a');
-    // Další hlas hru v seznamu neposune: provozovatel ji už viděl.
     await versions.reportGame(id(0), 'b');
     expect(await versions.reportedGames()).toEqual([
-      { versionId: id(1), votes: 1 },
       { versionId: id(0), votes: 2 },
+      { versionId: id(1), votes: 1 },
+    ]);
+    await versions.reportGame(id(1), 'b');
+    await versions.reportGame(id(1), 'c');
+    await versions.reportGame(id(0), 'c');
+    // Čtvrtý hlas už hru neposune: skrytá je od třetího.
+    await versions.reportGame(id(1), 'd');
+    expect(await versions.reportedGames()).toEqual([
+      { versionId: id(0), votes: 3 },
+      { versionId: id(1), votes: 4 },
     ]);
 
+    // Seznam drží 500 záznamů: 499 nových her a poslední zápis id(0); starší zápisy id(1) vypadly.
     for (let n = 2; n <= REPORTED_KEPT; n += 1) await versions.reportGame(id(n), 'a');
     const listed = (await versions.reportedGames()).map((row) => row.versionId);
     expect(listed).toHaveLength(REPORTED_KEPT);
     expect(listed[0]).toBe(id(REPORTED_KEPT));
-    expect(listed).not.toContain(id(0));
-    expect(listed).toContain(id(1));
+    expect(listed.at(-1)).toBe(id(0));
+    expect(listed).not.toContain(id(1));
 
     const down: typeof fetch = () => Promise.reject(new Error('connect ECONNREFUSED'));
     const unreachable = httpVersionStore({ url: 'https://store.test', token: 't', prefix: 'test', timeoutMs: 1_000, limits: DEFAULT_WRITE_LIMITS }, down);
     await expect(unreachable.reportedGames()).rejects.toBeInstanceOf(VersionStoreUnavailable);
   });
 
-  it('the script reads the shared store only with an explicit prefix and both store variables', () => {
+  it('a write lost between commands on the first vote still lists the game once later votes hide it (review T11a-1 #1)', async () => {
+    // Seznamy (LPUSH, LTRIM, LRANGE) drží test sám, první LPUSH selže; zbytek je falešný Upstash.
+    const inner = fakeUpstash(new Map(), new Map());
+    const lists = new Map<string, string[]>();
+    let failPush = true;
+    const fetchImpl: typeof fetch = async (url, init) => {
+      const [command, key = '', ...args] = typeof init?.body === 'string' && String(url).endsWith('/') ? (JSON.parse(init.body) as string[]) : [];
+      if (command === 'LPUSH') {
+        if (failPush) {
+          failPush = false;
+          return new Response('down', { status: 503 });
+        }
+        lists.set(key, [args[0]!, ...(lists.get(key) ?? [])]);
+        return Response.json({ result: lists.get(key)!.length });
+      }
+      if (command === 'LTRIM') {
+        lists.set(key, (lists.get(key) ?? []).slice(0, Number(args[1]) + 1));
+        return Response.json({ result: 'OK' });
+      }
+      if (command === 'LRANGE') return Response.json({ result: (lists.get(key) ?? []).slice(0, Number(args[1]) + 1) });
+      return inner(url, init);
+    };
+    const versions = httpVersionStore({ url: 'https://store.test', token: 't', prefix: 'test', timeoutMs: 1_000, limits: DEFAULT_WRITE_LIMITS }, fetchImpl);
+    const game = 'c'.repeat(32);
+    await expect(versions.reportGame(game, 'a')).rejects.toBeInstanceOf(VersionStoreUnavailable);
+    // Opakování téhož volajícího nic nezapočte: hlas už leží.
+    await versions.reportGame(game, 'a');
+    expect(await versions.reportedGames()).toEqual([]);
+    await versions.reportGame(game, 'b');
+    await versions.reportGame(game, 'c');
+    expect(await versions.reportedGames()).toEqual([{ versionId: game, votes: 3 }]);
+  });
+
+  it('the script reads the shared store only with an explicit prefix and the pair the server would use, and says what it read', () => {
     const kv = { KV_REST_API_URL: 'https://store.test', KV_REST_API_TOKEN: 'token' };
     expect(() => storeFrom(['--prefix'], kv)).toThrow(/--prefix/);
     expect(() => storeFrom(['--prefix', '--json'], kv)).toThrow(/--prefix/);
     expect(() => storeFrom(['--prefix', 'worldsmith:spend'], {})).toThrow(/KV_REST_API_URL/);
-    expect(storeFrom(['--prefix', 'worldsmith:spend'], kv).id).toBe('http');
+    // Napůl vyplněný výslovný pár znamená jiné úložiště: token integrace se k jeho adrese neposílá (review T11a-1 #3).
+    expect(() => storeFrom(['--prefix', 'worldsmith:spend'], { ...kv, WORLDSMITH_SPEND_STORE_URL: 'https://other.test' })).toThrow(/KV_REST_API_URL/);
+    const shared = storeFrom(['--prefix', 'worldsmith:spend:preview'], kv);
+    expect(shared.store.id).toBe('http');
+    expect(shared.where).toContain('worldsmith:spend:preview');
     expect(() => storeFrom([], { VERCEL: '1' })).toThrow(/--prefix/);
   });
 });
