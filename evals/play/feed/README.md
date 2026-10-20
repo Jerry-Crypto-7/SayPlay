@@ -94,3 +94,7 @@ FEED_THUMBS_URL=http://127.0.0.1:3291 node --experimental-strip-types scripts/p3
 - `desktop-1440.png` (1440×900, 19. 10. 2026) porovnaný očima s `docs/brand/reference-screens/01-home@2x.png`: levý sloupec drží pořadí reference (logo, nadpis, pole se „Surprise me“ a mikrofonem, „Make it!“, nápady), plocha je přesně 16:9 (979×551), akce stojí vedle ní a pod ní tři „Up next“. Ručně prohlédnuto i 1024×768 (všechny akce vidět), 820×1180 (karta 600 px uprostřed) a 412×915 (beze změny proti T11).
 - **Rozhodnutí P54A:** od 1024 px je „Tap to play“ žluté (`--sp-secondary`) – vedle feedu je vidět i „Make it!“ a kit dovoluje jednu rajčatovou akci na obrazovku; tvorba hry zůstává primární.
 - **Rozhodnutí P54A:** tip prvního návštěvníka a nápady jsou v levém sloupci až pod polem, jinak by na 1440×900 odsunuly pole pod okraj; hláška výpadku feedu už neříká „above“, protože pole je na desktopu vlevo.
+
+## Telefon nad vestavěným poolem (T15, `phone-check-2026-10-20/`, `e2e/play-feed-phone.spec.ts`)
+
+20. 10. 2026 nad `next start` s prázdným úložištěm ukázalo na Pixel 7 s CPU ×4 (tahem prstu) i na desktopu 1440×900 (kolečkem) všech 12 karet jinou hru v běžícím náhledu robota v jediném plátně feedu, bez prázdného plátna a bez nepřeloženého textu, třetí karta po ťuku 5 s hrála a feed při hraní stál; dosednutí → běžící náhled vyšlo p50 139 ms na desktopu (cíl T8 ≤ 300 ms platí, v T8 165 ms) a 533 ms na telefonu (cíl ≤ 500 ms dál nesplněný, v T8 894 ms nad jinými hrami), FPS náhledu p50 60 na obou.
