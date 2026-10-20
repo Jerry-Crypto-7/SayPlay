@@ -11,13 +11,16 @@ export interface Row { readonly id: string; readonly classify: string; readonly 
 
 /**
  * Věty P30 dev, které od T13 vědomě hrají jiný žánr než na startu (`start.json`): obrana před vlnou nepřátel je
- * obrana pruhů, jak plán chce (T7: s155, j08, h03). Jiná věta P30 dev se pohnout nesmí – drží to
+ * obrana pruhů, jak plán chce (T7: s155, j08, h03). Od T13b přejít rušnou silnici je přeskákání (d05) a vytlačit
+ * soupeře z ringu vytlačování (d18, T12). Jiná věta P30 dev se pohnout nesmí – drží to
  * `start.measure.ts` (`P54C_CHECK=1`) a pin v `src/play/genre/__tests__/classify.test.ts`.
  */
 export const T13_MOVED: Readonly<Record<string, Pick<Row, 'classify' | 'draft' | 'cell'>>> = {
   s155: { classify: 'defense.default', draft: 'defense.default', cell: 'assembled.lanes' },
   h03: { classify: 'defense.default', draft: 'defense.default', cell: 'assembled.lanes' },
   j08: { classify: 'defense.default', draft: 'defense.default', cell: 'assembled.lanes' },
+  d05: { classify: 'hop.default', draft: 'hop.default', cell: 'assembled.hop' },
+  d18: { classify: 'push.default', draft: 'push.default', cell: 'assembled.roam' },
 };
 
 export function rowOf(id: string, text: string): Row {

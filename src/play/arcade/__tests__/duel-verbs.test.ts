@@ -21,8 +21,9 @@ import { abilitiesOf } from '@/components/play/arcade/ActionButton';
 import { runBot, verifyArcade } from '../verify';
 
 const SEEDS = [1, 2, 3, 4];
-// Věta psaná pro tenhle test, ne ze sad měření.
-const SUMO = 'a sumo bear shoves rivals out of the ring';
+// Věta psaná pro tenhle test, ne ze sad měření. „shoves rivals out of the ring“ hraje od P54C T13b vytlačování z ringu;
+// „around the ring“ má tytéž díly (sumo medvěd, soupeři, ring, sloveso shove) a staví týž svět duelu.
+const SUMO = 'a sumo bear shoves rivals around the ring';
 
 beforeAll(async () => {
   await loadRapier();
@@ -45,7 +46,7 @@ function withAbilities(spec: GameSpecV1, abilities: readonly AbilityId[]): GameS
 const fingerprint = (world: ArcadeWorld): string => createHash('sha256').update(JSON.stringify(world)).digest('hex').slice(0, 16);
 
 describe('P47B T8: a duel proves the sentence verbs with its own punch and dodge', () => {
-  it('"a sumo bear shoves rivals out of the ring" gives a duel with strike; the bot punches and the verb is proved', () => {
+  it('"a sumo bear shoves rivals around the ring" gives a duel with strike; the bot punches and the verb is proved', () => {
     const { spec } = draftGameSpecWithMeta(SUMO, 1);
     expect(spec.control).toBe('duel');
     expect(spec.abilities).toEqual(['strike']);

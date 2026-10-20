@@ -172,10 +172,10 @@ describe('crowd genre is live (P54C T10)', () => {
     expect(game.tutorial.goalLine).toContain('yeti');
   });
 
-  // Věty k žánru povede až T13b a režisér ho nabídne až při opakování T14.
-  it('is not chosen by the classifier yet and the director does not offer it', () => {
+  // Věty k žánru vede od T13b klasifikátor; režisér ho nabídne až při opakování T14 (T14b).
+  it('is chosen by the classifier (T13b) and the director does not offer it yet', () => {
     for (const sentence of ['a crowd runs through gates and fights a giant', 'count masters with penguins', 'grow your army through math gates']) {
-      expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).not.toBe('crowd');
+      expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).toBe('crowd');
     }
     expect(DIRECTOR_PENDING.has('crowd')).toBe(true);
     const variants = (GENRE_ANSWER_SCHEMA.properties as Record<string, { anyOf: { properties: Record<string, { enum?: unknown[] }> }[] }>).spec.anyOf;

@@ -156,7 +156,8 @@ function closestOf(draft: Pick<GameSpecV1, 'archetype' | 'control' | 'genre'>): 
 export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'archetype' | 'control' | 'genre'>): Honesty | null {
   const text = sentence.toLowerCase();
   // Obranu před vlnami hraje od P54C T13 obrana pruhů (držení postaví obránce) – hláška „neumíme“ by u ní lhala.
-  const played = (kind: UnsupportedKind): boolean => kind === 'build_place' && draft.genre?.id === 'defense';
+  // Slučování („merge watermelons like suika game“) hraje od P54C T13b žánr slučování – tentýž důvod.
+  const played = (kind: UnsupportedKind): boolean => (kind === 'build_place' && draft.genre?.id === 'defense') || (kind === 'idle' && draft.genre?.id === 'merge');
   const match = CLASSES.find((entry) => !played(entry.kind) && entry.cues.some((cue) => cue.test(text)));
   if (match === undefined) {
     // Jen dokud hra je návrh věty bez slovesa – od P36A T11 sběr v Aréně, uložené hry dřív běžec; AI verze s jinou hrou hlášku nepotřebuje.

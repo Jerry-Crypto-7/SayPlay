@@ -365,5 +365,25 @@ describe('P54C T13: a lanes genre sentence drafts its own game', () => {
   });
 });
 
+// P54C T13b: totéž pro žánry fáze 3 – vlastní ovládání, recept buňky celý (vytlačování je akce `push` na `roam`), žádné díly,
+// role z modulu: hrdina, kterého věta převádí nebo z koho je dav, co jezdí po silnici, kdo se tlačí, co se slučuje.
+describe('P54C T13b: a phase-3 genre sentence drafts its own game', () => {
+  it.each([
+    ['help the duck cross the highway and the river', 'hop', 'assembled.hop', { player: 'duck', obstacle: 'car' }],
+    ['a squirrel crosses country lanes full of tractors', 'hop', 'assembled.hop', { player: 'squirrel', obstacle: 'tractor' }],
+    ['a swarm of bees grows through flower gates and attacks the bear', 'crowd', 'assembled.crowd', { player: 'bee', boss: 'bear' }],
+    ['suika game with planets merging into the sun', 'merge', 'assembled.drop', { item: 'planet' }],
+    ['sumo wrestlers push each other out of a ring', 'push', 'assembled.roam', { player: 'sumo wrestler', rival: 'sumo wrestler' }],
+    ['a sumo wrestler pushes rivals out of a bouncy ring', 'push', 'assembled.roam', { player: 'sumo wrestler', rival: 'sumo wrestler' }],
+  ] as const)('%s → %s', (sentence, genre, cell, roles) => {
+    const meta = draftGameSpecWithMeta(sentence, 1);
+    expect(meta.genre).toMatchObject({ genre, mode: 'default' });
+    expect(meta.spec.control).toBe(genre);
+    expect(meta.composition?.cellId).toBe(cell);
+    expect(meta.composition?.recipe.parts ?? []).toEqual([]);
+    for (const [id, label] of Object.entries(roles)) expect(meta.spec.roles.find((role) => role.id === id)?.label, id).toBe(label);
+  });
+});
+
 // Composition now executes physical ball witnesses even in synchronous draft tests.
 beforeAll(async () => { await loadRapier(); });

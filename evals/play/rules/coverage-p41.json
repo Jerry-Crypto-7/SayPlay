@@ -1,13 +1,13 @@
 {
  "total": 200,
  "before": {
-  "piece": 86,
-  "none": 114
+  "piece": 85,
+  "none": 115
  },
  "after": {
-  "piece": 86,
+  "piece": 85,
   "template": 37,
-  "none": 77
+  "none": 78
  },
  "byTemplate": {
   "collect_unlock": 1,
@@ -227,8 +227,8 @@
   {
    "id": "s016",
    "verbClass": "runner",
-   "drafted": "runner",
-   "cover": "piece",
+   "drafted": "crowd",
+   "cover": "none",
    "template": null,
    "verbs": []
   },
@@ -409,7 +409,7 @@
   {
    "id": "s036",
    "verbClass": "tap_go",
-   "drafted": "runner",
+   "drafted": "hop",
    "cover": "none",
    "template": null,
    "verbs": []
@@ -1148,7 +1148,7 @@
   {
    "id": "s113",
    "verbClass": "move_free",
-   "drafted": "platform",
+   "drafted": "push",
    "cover": "template",
    "template": "push",
    "verbs": [
@@ -1273,7 +1273,7 @@
   {
    "id": "s126",
    "verbClass": "timing",
-   "drafted": "move_free",
+   "drafted": "merge",
    "cover": "none",
    "template": null,
    "verbs": [

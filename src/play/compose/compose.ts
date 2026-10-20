@@ -54,9 +54,10 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
     if (['chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at'].includes(item.does)) return { ...item, label: defaultFoe(setting, draft.genre, item.does).label };
     return item;
   });
-  if (wholeGame(cell.recipe.move)) {
-    // P54C T13: a lanes genre reads its own roles (`draftFill`: what falls, pops up, marches or flies); the intent's
-    // verbs name another game's roles there – its `catch` is a chase prey, a bear catching jars would turn into a hazard.
+  if (wholeGame(cell.recipe)) {
+    // P54C T13: a lanes genre (T13b: every whole-game genre) reads its own roles (`draftFill`: what falls, pops up,
+    // marches or flies); the intent's verbs name another game's roles there – its `catch` is a chase prey, a bear
+    // catching jars would turn into a hazard.
     const palette = draft.palette ?? (lookFor(setting) === null ? (lookFor(intent.sentence) ?? undefined) : undefined);
     return { ...draft, setting, ...(palette === undefined ? {} : { palette }), cast: cast.slice(0, 8) };
   }

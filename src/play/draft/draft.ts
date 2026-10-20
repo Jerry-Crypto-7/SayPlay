@@ -1292,8 +1292,10 @@ function draftGenre(
     itemLabel === null || goalItem ? null : thrown ? { label: itemLabel, does: 'scenery', verb: AMMO_VERB } : { label: itemLabel, does: 'collect', ...(itemVerb === undefined ? {} : { verb: itemVerb }) };
   // P54C T13: žánr pruhů čte role sám (`draftFill`: co padá, vykukuje, jde k hradbě nebo letí, koho šetřit, co bránit);
   // obecné role výš znají jen jednoho protivníka a jednu věc ke sběru – hodný cíl a bráněný hrad by zahodily.
-  // Předmět hlavního slovesa klasifikátoru („tap the ghosts…“) přibude, jen když ho modul nečetl.
-  const lanes = wholeGame(PRESETS[`${choice.genre}.${choice.mode}`]?.move ?? 'roam');
+  // Předmět hlavního slovesa klasifikátoru („tap the ghosts…“) přibude, jen když ho modul nečetl. Od T13b totéž
+  // žánry fáze 3 (přeskákání, dav, slučování, vytlačování): role jim dá jejich `draftFill`.
+  const recipe = PRESETS[`${choice.genre}.${choice.mode}`];
+  const lanes = recipe !== undefined && wholeGame(recipe);
   const cast = lanes ? castOf(fill.cast ?? [], verbThing) : castOf([
     ...(foeLabel === null ? [] : [{ label: foeLabel, does: doesOf(foeLabel, ownFoe) }]),
     ...(shotAt === null || shotAt === foeLabel ? [] : [{ label: shotAt, does: 'shoot_at' as const }]),

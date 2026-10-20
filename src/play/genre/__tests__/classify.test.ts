@@ -121,7 +121,8 @@ describe('classifyGenre', () => {
     ['a song about the sea with drums and lights', 'rhythm.default'],
     ['my rival from school at high noon', 'duel.default'],
     ['like flappy bird but underwater', 'flap.default'],
-    ['a sloth tries to cross a busy jungle highway', 'runner.default'],
+    // Přejít rušnou silnici je od P54C T13b sloveso přeskákání (P30 d05, `T13_MOVED`); jméno běhu dál rozhodne jinde.
+    ['a sloth tries to cross a frozen lake', 'runner.default'],
   ])('plays the verbless "%s" as %s', (sentence, mode) => {
     const first = classifyGenre(sentence, null, GENRE_MODULES).ranked[0];
     expect(`${first.genre}.${first.mode}`).toBe(mode);
@@ -165,7 +166,7 @@ describe('classifyGenre', () => {
 
   // P54C T13: klasifikátor, který by do nových žánrů přetáhl staré věty, dá zelené testy a jiné hry – pin nad P30 dev
   // proti startu P54C (`start.json`) a nad dev sadou P54C (živé žánry hrají svůj žánr, pasti zůstanou, kde byly v T2).
-  it('moves no P30 dev sentence off its P54C starting genre except the three defense sentences (T13)', () => {
+  it('moves no P30 dev sentence off its P54C starting genre except the three defense sentences (T13), the road crossing and the sumo ring (T13b)', () => {
     const json = (path: string) => JSON.parse(readFileSync(new URL(`../../../../evals/play/${path}`, import.meta.url), 'utf8')) as { sentences: { id: string; text: string; classify: string }[] };
     const was = new Map(json('p54c/start.json').sentences.map((row) => [row.id, row.classify]));
     const moved = Object.fromEntries(json('p30/dev.json').sentences.flatMap(({ id, text }) => {
@@ -176,11 +177,11 @@ describe('classifyGenre', () => {
     expect(moved).toEqual(Object.fromEntries(Object.entries(T13_MOVED).map(([id, row]) => [id, row.classify])));
   });
 
-  it('puts every P54C dev sentence of a routed lanes genre in its genre and leaves the traps where T2 found them', () => {
+  it('puts every P54C dev sentence of a routed genre in its genre and leaves the traps where T2 found them', () => {
     const json = (path: string) => JSON.parse(readFileSync(new URL(`../../../../evals/play/p54c/${path}`, import.meta.url), 'utf8')) as { sentences: { id: string; family: string; expect: string; text: string; classify: string }[] };
     const baseline = new Map(json('baseline.json').sentences.map((row) => [row.id, row.classify]));
-    // Žánry MVP, které klasifikátor zná od T13; přeskákání, dav, slučování a vytlačování přidá T13b.
-    const routed = new Set(['catch.default', 'whack.default', 'defense.default', 'slice.default']);
+    // Žánry MVP, které klasifikátor zná od T13, a žánry fáze 3 od T13b (přeskákání, dav, slučování, vytlačování).
+    const routed = new Set(['catch.default', 'whack.default', 'defense.default', 'slice.default', 'hop.default', 'crowd.default', 'merge.default', 'push.default']);
     const sentences = json('dev.json').sentences;
     for (const row of sentences) {
       const first = classifyGenre(row.text, null, GENRE_MODULES).ranked[0];
@@ -189,7 +190,7 @@ describe('classifyGenre', () => {
       else if (routed.has(row.expect)) expect(now, row.id).toBe(row.expect);
       else expect(routed.has(now), row.id).toBe(false);
     }
-    expect(sentences.filter((row) => routed.has(row.expect))).toHaveLength(32);
+    expect(sentences.filter((row) => routed.has(row.expect))).toHaveLength(64);
   });
 
   it('never throws on the draft corpora and never lands a new game on a legacy control', () => {

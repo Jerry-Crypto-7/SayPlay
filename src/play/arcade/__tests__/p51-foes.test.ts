@@ -215,8 +215,9 @@ describe('P51 T6: the duel foe hurls things', () => {
     expect(DUEL_CELLS.map((cell) => cell.id)).toEqual(['duel.default']);
   });
 
+  // Sumo P47B „shoves rivals out of the ring“ hraje od P54C T13b vytlačování z ringu; duel se stejnými díly je „around the ring“.
   it('drafted duels (panel f02, h05, the P47B sumo) hurl in a new game and not as stored genre.v4 games', () => {
-    for (const text of ['an ogre arm wrestles a frost giant in a smoky mountain tavern', 'boxing a kangaroo in the australian outback', 'a sumo bear shoves rivals out of the ring']) {
+    for (const text of ['an ogre arm wrestles a frost giant in a smoky mountain tavern', 'boxing a kangaroo in the australian outback', 'a sumo bear shoves rivals around the ring']) {
       const { spec } = draftGameSpecWithMeta(text, 1);
       expect(spec.control, text).toBe('duel');
       expect(hurlOf(worldOf(spec)), text).toEqual({ body: DUEL_FOE + 2, every: DUEL_HURL.every, flight: DUEL_HURL.flight });

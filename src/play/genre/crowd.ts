@@ -6,7 +6,8 @@
  *
  * Hloubka: 30 dvojic bran ve třech úsecích, které houstnou; síla obra plyne z délky trati; 3 životy – bere je překážka.
  *
- * Věty sem klasifikátor zatím nevede (T13b) a režisér ho nenabízí (`DIRECTOR_PENDING`); hraje ho buňka `crowd.default`.
+ * Věty sem vede klasifikátor (T13b, sloveso `grow`: dav nebo růst a brány, „grow your army“, „count masters“) a skladba
+ * hraje recept buňky `crowd.default` celý; režisér ho nenabízí (`DIRECTOR_PENDING`).
  */
 
 import { CROWD } from '../arcade/pieces/crowd';
@@ -29,10 +30,17 @@ const TAIL = /\s+(?:at|in|on|with|and|while|before|after|to|by)$/;
 /** První text, který se vejde do meze schématu (dlouhé popisky z věty). */
 const fit = (max: number, ...lines: readonly string[]): string => lines.find((line) => line.length <= max) ?? (lines.at(-1) as string);
 
+/** Slova davu: hrdina je ten, z koho je dav, ne dav sám (P54C T13b). */
+const GROUP = /^(?:crowd|army|mob|horde|swarm|squad|band|flock|pack|gang|team|group|troop)s?$/;
+/** Z koho je dav: „a crowd of stickmen“, „a swarm of bees“, „your zombie horde“. */
+const MEMBER = /\b(?:crowd|army|mob|horde|swarm|squad|band|flock|pack|gang|team|group)\s+of\s+([a-z]+)\b|\b(?!(?:a|an|the|your|my|his|her|their|our|growing|big|bigger|huge|giant|whole|entire|own|enemy|this|that)\b)([a-z]+)\s+(?:horde|army|crowd|mob|swarm)\b/;
+/** Místo, které věta neřekla – jen brány a čísla na nich („through plus and times gates“, „at gates“). */
+const NOT_A_PLACE = /\bgates?$|^(?:plus|times|minus|math)$/;
+
 export const crowdGenre: GenreModule<'crowd'> = {
   id: 'crowd',
   modes: ['default'],
-  // Narážky žádné: věty k žánru povede až klasifikátor (T13b), narážka by bod přidala i davům jiných her.
+  // Narážky žádné: věty k žánru vede klasifikátor jen se znakem žánru (T13b), narážka by bod přidala i davům jiných her.
   cues: [],
   heroClasses: ['humanoid', 'animal', 'robot', 'monster'],
   paramBounds: {},
@@ -66,7 +74,10 @@ export const crowdGenre: GenreModule<'crowd'> = {
     });
   },
   draftFill: (sentence, reading) => {
-    const { hero, setting, cast } = draftRoles(sentence, reading);
+    const { hero: subject, setting: place, cast } = draftRoles(sentence, reading);
+    const member = MEMBER.exec(sentence.toLowerCase());
+    const hero = member !== null ? singular((member[1] ?? member[2]) as string) : subject !== undefined && GROUP.test(subject) ? undefined : subject;
+    const setting = place !== undefined && NOT_A_PLACE.test(place) ? undefined : place;
     // Dav zná jen dvě role: s kým se na konci bije, a čemu se cestou vyhýbá. Věci ke sběru dav nemá – rostou mu brány.
     let roles = (cast ?? []).filter((item) => item.does !== 'collect').map((item): CastItem => (item.does === 'fight' || item.does === 'reach' ? { ...item, does: 'fight' } : { ...item, does: 'avoid' }));
     const named = BOSS_OBJECT.exec(sentence.toLowerCase())?.[1]?.replace(TAIL, '');

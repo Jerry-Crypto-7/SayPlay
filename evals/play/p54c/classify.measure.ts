@@ -9,7 +9,9 @@
  * `baseline` píše `baseline.json` (dnešní stav před novými žánry); jiný název píše `<název>.json`, výchozí
  * `classify.json` (T13). Mimo `baseline` přidá souhrn: na žánr kolik z 8 vět klasifikátor a návrh dají
  * očekávaný žánr, a pasti proti `baseline.json`. U `classify` hlídá bránu T13: každý živý žánr (buňka v
- * `liveCells()`) ≥ 0,85 vět návrhem a žádná past se nepohne.
+ * `liveCells()`) ≥ 0,85 vět návrhem a žádná past se nepohne. Od T13b je živých všech osm žánrů. Žánr návrhu
+ * dává skladba jen hře, kterou ověřil robot (`verifyArcade`: robot vyhraje, nečinný hráč prohraje, přehrání sedí),
+ * takže „návrh hraje žánr“ znamená i „robot ho na semínku 1 vyhrál“.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';

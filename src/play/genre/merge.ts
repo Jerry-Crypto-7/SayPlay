@@ -7,7 +7,8 @@
  * Hloubka: 6 úrovní, cíl `MERGE.need` sloučení do `MERGE.seconds` s; kdo s pustem otálí, tomu předmět zkamení;
  * 3 životy – každý vezme nádoba, která přeteče (něco nad víkem déle než 1 s).
  *
- * Věty sem klasifikátor zatím nevede (T13b) a režisér ho nenabízí (`DIRECTOR_PENDING`); hraje ho buňka `merge.default`.
+ * Věty sem vede klasifikátor (T13b, sloveso `merge`: stejné kusy, kusy v nádobě, „suika“, „2048“) a skladba hraje
+ * recept buňky `merge.default` celý; režisér ho nenabízí (`DIRECTOR_PENDING`).
  */
 
 import { MERGE, MERGE_ITEM } from '../arcade/pieces/merge-drop';
@@ -19,7 +20,9 @@ import { type CastItem, type GenreModule, castFor, draftRoles, legacySpec, lives
 export const MERGE_DEFAULTS = { item: MERGE_ITEM } as const;
 
 /** Předmět slovesa slučování („merges planets“, „drop the fruit“, „combine two gems“). */
-const MERGE_OBJECT = /\b(?:merge|combine|drop|match|fuse)(?:s|es|ed|ing)?\s+(?:the\s+|two\s+|some\s+|all\s+|matching\s+|falling\s+)*([a-z][a-z -]*)/;
+const MERGE_OBJECT = /\b(?:merge|combine|drop|match|fuse)(?:s|es|ed|ing)?\s+(?:the\s+|two\s+|some\s+|all\s+|matching\s+|falling\s+|same\s+|identical\s+|equal\s+)*([a-z][a-z -]*)/;
+/** Co se slučuje jako podmět („suika game with planets merging into the sun“, P54C T13b). */
+const MERGING = /\b(?!(?:and|then|to|they|it|them|will|can|must)\b)([a-z]+)\s+(?:merge|merges|merging|fuse|fuses|fusing)\s+(?:into|together)\b/;
 /** „merge into traffic“, „drop it“ nejsou věc v nádobě. */
 const NOT_ITEM = /^(?:it|them|into|in|on|onto|off|out|down|by|with|to|and|together)\b/;
 
@@ -29,7 +32,7 @@ const fit = (max: number, ...lines: readonly string[]): string => lines.find((li
 export const mergeGenre: GenreModule<'merge'> = {
   id: 'merge',
   modes: ['default'],
-  // Narážky žádné: věty k žánru povede až klasifikátor (T13b) – „merge into traffic“ je past dev sady.
+  // Narážky žádné: věty k žánru vede klasifikátor jen se znakem žánru (T13b) – „merge into traffic“ je past dev sady.
   cues: [],
   heroClasses: ['prop', 'animal', 'humanoid', 'robot', 'monster'],
   paramBounds: {},
@@ -62,8 +65,10 @@ export const mergeGenre: GenreModule<'merge'> = {
     const { hero, setting, cast } = draftRoles(sentence, reading);
     // Slučování zná jen jednu roli: co se pouští a slučuje. Nepřátelé věty v nádobě nemají co dělat.
     let roles = (cast ?? []).filter((item) => item.does === 'collect' || item.does === 'scenery');
-    const found = MERGE_OBJECT.exec(sentence.toLowerCase());
-    const phrase = found === null ? null : nounPhrase(found[1] as string);
+    const text = sentence.toLowerCase();
+    const found = MERGE_OBJECT.exec(text);
+    const object = found === null ? null : nounPhrase(found[1] as string);
+    const phrase = object !== null && !NOT_ITEM.test(object) ? object : (MERGING.exec(text)?.[1] ?? null);
     if (phrase !== null && !NOT_ITEM.test(phrase)) {
       const label = singular(phrase);
       roles = [{ label, does: 'collect' } satisfies CastItem, ...roles.filter((item) => item.label !== label)];

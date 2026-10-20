@@ -6,7 +6,8 @@ import { loadRapier } from '@/play/arcade/physics/world';
  * idle 8, sandbox 3), chráněné štítky 0/74, jinde jediná s126 („merge
  * watermelons like suika game“, štítek timing – slučování je poctivě idle).
  * Od P54C T13 hraje pět vět build_place obranu pruhů (držení postaví
- * obránce), takže hlášku nedostanou: neumíme 33/38.
+ * obránce), takže hlášku nedostanou: neumíme 33/38. Od P54C T13b hraje s126
+ * žánr slučování, takže mimo čtyři třídy hlášku nedostane žádná věta.
  */
 
 import { readFileSync } from 'node:fs';
@@ -56,9 +57,11 @@ describe('unsupportedGame over the demand corpus', () => {
     expect(unsupportedGame(entry.text, draftGameSpec(entry.text))).toBeNull();
   });
 
-  it.each(others)('flags only the merge game among other controls, $id: $text', (entry) => {
-    const flagged = unsupportedGame(entry.text, draftGameSpec(entry.text)) !== null;
-    expect(flagged).toBe(entry.text === 'merge watermelons like suika game');
+  // Slučování („merge watermelons like suika game“) hraje od P54C T13b žánr slučování – hláška „neumíme“ by lhala.
+  it.each(others)('flags none of the other controls, the merge game plays merge, $id: $text', (entry) => {
+    const draft = draftGameSpec(entry.text);
+    if (entry.text === 'merge watermelons like suika game') expect(draft.genre?.id).toBe('merge');
+    expect(unsupportedGame(entry.text, draft)).toBeNull();
   });
 });
 

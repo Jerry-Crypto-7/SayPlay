@@ -6,7 +6,8 @@
  * Hloubka: `rivals` soupeřů (`COUNT_PARAMS.push.default.enemy`) ve třech kolech, ve třetím se ring zmenšuje;
  * 3 životy – každý vezme pád hrdiny z ringu. Hodiny `PUSH.seconds`.
  *
- * Věty sem klasifikátor zatím nevede (T13b) a režisér ho nenabízí (`DIRECTOR_PENDING`); hraje ho buňka `push.default`.
+ * Věty sem vede klasifikátor (T13b, sloveso `push`: vystrčit soupeře z ringu, plošiny nebo kry; „sumo“) a skladba hraje
+ * recept buňky `push.default` celý (`wholeGame`: akce `push` na pohybu `roam`); režisér ho nenabízí (`DIRECTOR_PENDING`).
  */
 
 import { PUSH } from '../arcade/pieces/push-ring';
@@ -27,6 +28,8 @@ const NAMELESS = /^(?:rival|opponent|enemy|foe|competitor|challenger|contender|o
 const PUSH_OBJECT = /\b(?:push|pushes|pushed|pushing|shove|shoves|shoved|shoving|knock|knocks|knocked|knocking|bump|bumps|bumped|bumping|throw|throws|throwing)\s+(?:the\s+|all\s+|other\s+|every\s+|some\s+)*([a-z][a-z -]*?)\s+(?:out|off)\b/;
 /** „push it out“, „knock them off“ nejsou soupeř. */
 const PRONOUN = /^(?:it|him|her|them|me|you|us|everyone|everybody)$/;
+/** Kdo se přetlačuje mezi sebou („sumo wrestlers push each other out“, P54C T13b): hrdina i soupeři jsou z nich. */
+const EACH_OTHER = /^(?:two\s+|the\s+|some\s+|a\s+few\s+)?([a-z]+(?:\s+[a-z]+)?)\s+(?:push|shove|bump|knock|ram)\w*\s+(?:each other|one another)\b/;
 
 /** První text, který se vejde do meze schématu (dlouhé popisky z věty). */
 const fit = (max: number, ...lines: readonly string[]): string => lines.find((line) => line.length <= max) ?? (lines.at(-1) as string);
@@ -34,7 +37,7 @@ const fit = (max: number, ...lines: readonly string[]): string => lines.find((li
 export const pushGenre: GenreModule<'push'> = {
   id: 'push',
   modes: ['default'],
-  // Narážky žádné: věty k žánru povede až klasifikátor (T13b) – „push the cart to the top“ není ring.
+  // Narážky žádné: věty k žánru vede klasifikátor jen se znakem žánru (T13b) – „push the cart to the top“ není ring.
   cues: [],
   heroClasses: ['animal', 'humanoid', 'robot', 'monster', 'vehicle'],
   paramBounds: { rivals: { min: PUSH.rivals.min, max: PUSH.rivals.max } },
@@ -66,7 +69,9 @@ export const pushGenre: GenreModule<'push'> = {
     });
   },
   draftFill: (sentence, reading) => {
-    const { hero, setting, cast } = draftRoles(sentence, reading);
+    const { hero: subject, setting, cast } = draftRoles(sentence, reading);
+    const mutual = EACH_OTHER.exec(sentence.toLowerCase().trim())?.[1];
+    const hero = mutual === undefined ? subject : singular(mutual);
     // Ring zná jen soupeře: každý nepřítel věty se tu přetlačuje, věci ke sběru nemají kde ležet.
     let roles = (cast ?? []).filter((item) => item.does !== 'collect' && item.does !== 'reach').map((item): CastItem => ({ ...item, does: 'fight' }));
     const found = PUSH_OBJECT.exec(sentence.toLowerCase());
