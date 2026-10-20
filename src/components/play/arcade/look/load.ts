@@ -157,13 +157,50 @@ function bakePlant(model: Object3D): PlantModel | null {
 
 const plantCache = new Map<string, Promise<PlantModel | null>>();
 const paintedCache = new Map<string, Promise<PlantModel | null>>();
+const simpleCache = new Map<string, Promise<BufferAttribute | null>>();
+
+/**
+ * Zjednodušená rostlina telefonu (P54B T15d): pětina trojúhelníků, tvar nejvýš o 1 % výšky jinak
+ * (strom 7 m o 7 cm, u kraje cesty pod 5 px telefonu). Hranice barev drží, ploše stínované modely
+ * smí slévat i přes hrany (`Permissive`). Rostlina pod `SIMPLE_FROM` trojúhelníků zůstane celá.
+ */
+const SIMPLE_SHARE = 0.2;
+const SIMPLE_ERROR = 0.01;
+const SIMPLE_FROM = 600;
+
+/** Indexy zjednodušené rostliny nad jejími vrcholy; `null` = kreslit celou (malá, nebo se zjednodušovač nenačetl). */
+function simpleIndex(id: string, geometry: BufferGeometry): Promise<BufferAttribute | null> {
+  let pending = simpleCache.get(id);
+  if (pending === undefined) {
+    const position = geometry.getAttribute('position');
+    const count = geometry.index?.count ?? position.count;
+    pending =
+      count / 3 < SIMPLE_FROM
+        ? Promise.resolve(null)
+        : import('meshoptimizer/simplifier')
+            .then(async ({ MeshoptSimplifier }) => {
+              await MeshoptSimplifier.ready;
+              const indices = geometry.index === null ? Uint32Array.from({ length: count }, (_, i) => i) : Uint32Array.from(geometry.index.array);
+              const positions = new Float32Array(position.count * 3);
+              for (let i = 0; i < position.count; i += 1) positions.set([position.getX(i), position.getY(i), position.getZ(i)], i * 3);
+              const colors = geometry.getAttribute('color').array as Float32Array;
+              const target = Math.floor((count * SIMPLE_SHARE) / 3) * 3;
+              const [simple] = MeshoptSimplifier.simplifyWithAttributes(indices, positions, 3, colors, 3, [1, 1, 1], null, target, SIMPLE_ERROR, ['Permissive']);
+              return new BufferAttribute(simple, 1);
+            })
+            .catch(() => null);
+    simpleCache.set(id, pending);
+  }
+  return pending;
+}
 
 /**
  * Rostlina `id` obarvená vegetací sady (`plantPaint`: listí, jehličí, podzim). Poloha,
- * normály a indexy se sdílejí mezi sadami, barvy má každá vlastní. Cache jako modely – nic se neuvolňuje.
+ * normály a indexy se sdílejí mezi sadami, barvy má každá vlastní; `simple` (telefon)
+ * vezme indexy zjednodušené (`simpleIndex`). Cache jako modely – nic se neuvolňuje.
  */
-export function paintedPlant(id: string, flora: Flora): Promise<PlantModel | null> {
-  const key = `${id}|${flora.leaf}|${flora.autumn === true}`;
+export function paintedPlant(id: string, flora: Flora, simple = false): Promise<PlantModel | null> {
+  const key = `${id}|${flora.leaf}|${flora.autumn === true}|${simple}`;
   let pending = paintedCache.get(key);
   if (pending === undefined) {
     let baked = plantCache.get(id);
@@ -171,7 +208,7 @@ export function paintedPlant(id: string, flora: Flora): Promise<PlantModel | nul
       baked = loadModel(id).then((model) => (model === null ? null : bakePlant(model)));
       plantCache.set(id, baked);
     }
-    pending = baked.then((plant) => {
+    pending = baked.then(async (plant) => {
       if (plant === null) return null;
       const paint = plantPaint(id, flora);
       const source = plant.geometry.getAttribute('color') as BufferAttribute;
@@ -179,7 +216,7 @@ export function paintedPlant(id: string, flora: Flora): Promise<PlantModel | nul
       const color = new Color();
       for (let i = 0; i < source.count; i += 1) paint(color.fromBufferAttribute(source, i)).toArray(colors, i * 3);
       const geometry = new BufferGeometry();
-      geometry.setIndex(plant.geometry.index);
+      geometry.setIndex((simple ? await simpleIndex(id, plant.geometry) : null) ?? plant.geometry.index);
       geometry.setAttribute('position', plant.geometry.getAttribute('position'));
       geometry.setAttribute('normal', plant.geometry.getAttribute('normal'));
       geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));

@@ -79,15 +79,16 @@ function RunnerValley({ look, length, seed, terrain, path }: { readonly look: Lo
       <mesh ref={terrain} geometry={valley.geometry} material={material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'valley' }} />
       {lane !== null && (
         <>
-          <mesh geometry={lane.surface} receiveShadow>
+          {/* Pás leží na zemi: stín jen přijímá, rig by ho jinak kreslil i do stínové mapy (P54B T15d). */}
+          <mesh geometry={lane.surface} receiveShadow userData={{ rigShadow: 'receive' }}>
             <meshStandardMaterial color={surface.color} roughness={0.95} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
           </mesh>
-          <mesh geometry={lane.edges} receiveShadow>
+          <mesh geometry={lane.edges} receiveShadow userData={{ rigShadow: 'receive' }}>
             <meshStandardMaterial color={surface.edge} roughness={0.95} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
           </mesh>
           {/* Spáry prken ano, středová čára asfaltu ne: ta by vedla pod hrdinou prostředním pruhem. */}
           {lane.marks !== null && 'marks' in surface && surface.marks.kind === 'seams' && (
-            <mesh geometry={lane.marks} receiveShadow>
+            <mesh geometry={lane.marks} receiveShadow userData={{ rigShadow: 'receive' }}>
               <meshStandardMaterial color={surface.marks.color} roughness={0.95} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
             </mesh>
           )}

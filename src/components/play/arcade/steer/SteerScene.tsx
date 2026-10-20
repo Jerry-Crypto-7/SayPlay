@@ -31,7 +31,8 @@ import { Landmark } from '../look/Landmark';
 import type { Volume } from '../look/landmark-places';
 import { type IslandSpot, buildIslands, islandPalette } from '../look/rig/terrain/islands';
 import { hash } from '../look/rig/terrain/valley';
-import { roadGeometry, stripCurve } from '../look/road-strip';
+import { BEFORE_COMPOSER } from '../look/rig/Post';
+import { roadGeometry, stripCurve, windowAlongZ } from '../look/road-strip';
 import { buildWater } from '../look/rig/terrain/water';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { HorizonBackdrop } from '../look/Backdrop';
@@ -268,29 +269,39 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
     // Ostrůvky rozcestí zůstávají kvádry jádra; s mantinely jedna síť (bez UV, které pás nemá).
     const islands = (shape?.islands ?? []).map((island) => new BoxGeometry(island.w, wallH, island.d).translate(island.x, wallH / 2, island.z).deleteAttribute('uv'));
     const barriers = built.walls === null && islands.length === 0 ? null : mergeGeometries([...(built.walls === null ? [] : [built.walls]), ...islands]);
-    return { ...built, barriers };
+    const windows = [built.surface, built.edges, built.marks, barriers].filter((geometry) => geometry !== null).map(windowAlongZ);
+    return { ...built, barriers, windows };
   }, [segments, shape, surface]);
   useEffect(() => () => { road?.surface.dispose(); road?.edges.dispose(); road?.marks?.dispose(); road?.walls?.dispose(); road?.barriers?.dispose(); }, [road]);
   // Zem s odstíny, skvrnami, krajnicí podél cesty a tmavnutím do strany (P46G T3) – jedna síť místo roviny jedné barvy.
-  const ground = useMemo(() => buildRoadGround(look, strip, -60, span), [look, strip, span]);
-  useEffect(() => () => ground.dispose(), [ground]);
+  const ground = useMemo(() => {
+    const geometry = buildRoadGround(look, strip, -60, span);
+    return { geometry, window: windowAlongZ(geometry) };
+  }, [look, strip, span]);
+  useEffect(() => () => ground.geometry.dispose(), [ground]);
+  // Cesta, mantinely a zem jsou přes celou trať: kreslí se jen úsek kolem kamery (P54B T15d), kamera jízdy hledí po +z.
+  useFrame(({ camera }) => {
+    const [from, to] = [camera.position.z - ROAD_BEHIND_M, camera.position.z + (camera as PerspectiveCamera).far + ROAD_AHEAD_M];
+    for (const window of [...(road?.windows ?? []), ground.window]) window(from, to);
+  }, BEFORE_COMPOSER);
   const afloat = look.afloat === true;
   return (
     <>
-      <mesh geometry={ground} position={[0, -0.03, 0]} renderOrder={UNDER_PANORAMA}>
+      <mesh geometry={ground.geometry} position={[0, -0.03, 0]} renderOrder={UNDER_PANORAMA}>
         <meshStandardMaterial vertexColors roughness={1} depthWrite={false} />
       </mesh>
       {road !== null && (
         <>
-          <mesh geometry={road.surface} receiveShadow>
+          {/* Pás, okraje a značení leží na zemi: stín jen přijímají, rig by je jinak kreslil i do stínové mapy (P54B T15d). */}
+          <mesh geometry={road.surface} receiveShadow userData={{ rigShadow: 'receive' }}>
             {/* Závod po řece jede po hladině (`afloat`, P30B T6), jinak po povrchu sady. */}
             <meshStandardMaterial color={afloat ? look.water : surface.color} roughness={afloat ? 0.3 : 0.9} />
           </mesh>
-          <mesh geometry={road.edges} receiveShadow>
+          <mesh geometry={road.edges} receiveShadow userData={{ rigShadow: 'receive' }}>
             <meshStandardMaterial color={surface.edge} roughness={0.9} />
           </mesh>
           {road.marks !== null && !afloat && 'marks' in surface && (
-            <mesh geometry={road.marks} receiveShadow>
+            <mesh geometry={road.marks} receiveShadow userData={{ rigShadow: 'receive' }}>
               <meshStandardMaterial color={surface.marks.color} roughness={0.9} />
             </mesh>
           )}
@@ -323,6 +334,9 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
 
 /** Volný pás vegetace za krajem silnice (m): mantinel a kus krajnice, ať je na cestu vidět i v zatáčce. */
 const VEGETATION_CLEAR = BARRIER_W + 1;
+/** Okno cesty a země kolem kamery (m): za ní, a za koncem mlhy (`FarAtFog`) jako vegetace. */
+const ROAD_BEHIND_M = 15;
+const ROAD_AHEAD_M = 12;
 
 interface Segment {
   readonly near: number;

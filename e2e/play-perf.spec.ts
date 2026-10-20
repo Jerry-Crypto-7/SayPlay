@@ -328,6 +328,8 @@ test('@measure play performance: legacy and P41 movements × desktop and emulate
       if (['drive', 'glide', 'walker', 'ball'].includes(game.id) && profile.id === 'moto-g-power-emulated') {
         expect.soft(summarise(runs).fpsP50, `${game.id}: median FPS in phone emulation`).not.toBeNull();
         expect.soft(summarise(runs).fpsP50!, `${game.id}: median FPS in phone emulation`).toBeGreaterThanOrEqual(40);
+        // P54B T15d: vegetace jízdy kreslila celé okno trati dvakrát (obraz a stín) plnými modely – 589k na snímek.
+        if (game.id === 'drive') expect.soft(summarise(runs).trianglesMedian ?? Infinity, 'drive: triangles per frame in phone emulation').toBeLessThanOrEqual(150_000);
         for (const run of runs) {
           expect.soft(run.robot).toBe('startDemo');
           expect.soft(run.endState).toBe('won');

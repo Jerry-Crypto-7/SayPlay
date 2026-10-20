@@ -60,6 +60,11 @@ export function useQualityTier(surface: RefObject<HTMLDivElement | null>): Quali
 
 /** Skládač kreslí snímek s touto prioritou (`useFrame`). */
 const COMPOSER_PRIORITY = 1;
+/**
+ * Priorita `useFrame` po všem, co scéna za snímek hýbe (kamera, hrdina, slunce mají 0), a před kresbou
+ * skládače. Kladná priorita bere R3F kreslení – smí ji mít jen to, co běží pod rigem, který skládač má vždy.
+ */
+export const BEFORE_COMPOSER = COMPOSER_PRIORITY - 0.5;
 
 /**
  * Pro sondu `__playRender`: efekty skládače v pořadí (`data-post` plátna) –
@@ -77,7 +82,7 @@ function PostProbe({ effects }: { readonly effects: string }) {
       delete gl.domElement.dataset.post;
     };
   }, [gl, effects]);
-  useFrame(() => gl.info.reset(), COMPOSER_PRIORITY - 0.5);
+  useFrame(() => gl.info.reset(), BEFORE_COMPOSER);
   return null;
 }
 
