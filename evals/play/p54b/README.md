@@ -127,3 +127,13 @@ Brána A/B (žádný řádek horší než −10 %) je u obou scén **splněna**;
 **Odvozeno.** Na `low`, kde Pixel 7 začíná, vítr v shaderu není a nový build za snímek nestojí víc; brána −5 % je splněná všude, kde se měřilo v klidu. Vyšší úroveň s větrem drží 56–59 FPS. Jestli přechod `low → medium` (překlad programů rostlin s větrem) někdy hru vrátí na `low`, měření nerozhodlo – stroj byl při sondě průběhu úrovně vytížený a nevystoupal ani základ.
 
 **Rozhodnutí (bez majitele).** Obchod, supermarket, obývák, továrna, jeskyně a vesmír mají vítr 0 (pokojová rostlina se nekývá); bouřka 2,2×, fouká i v noci (světlo dál přebije noc). Zasněžené rostliny kulis mají vlastní materiál čepičky a stojí. Stromy, které vrhají stín, mají stínovou kopii s větrem. Sestup na `low` za hry vítr jen ztiší, shader nepřekládá (P37B T7).
+
+## Postavy čitelné na telefonu (T14, 20. 10. 2026, `58a47982`)
+
+**Fakta.** Hrdina, nepřítel a riggované postavy mají okrajový svit (Fresnel v `onBeforeCompile`) tónovaný barvou těla s čtvrtinou bílé, barva z oblohy sady (`light[0]`), síla 0,35, mocnina 4; `low` přidá ladění kontrast +0,08. Slepý soud telefonu (Pixel 7, `low`) proti `d49e474e`: **13/18** (práh 12, `judge-t14-phone.json`); výhry nese čitelnost postav (černý medvěd v souboji už není skvrna, běžec, aréna, míč, agar), prohry jsou téměř shodné snímky. První pokus čistou barvou oblohy (0,45, mocnina 3) lišku z kamery za zády vybělil a prohrál 5 z 10.
+
+Výkon Pixel 7 (CPU 4×) proti `d49e474e`, **prokládaně scénu po scéně** (`perf --vs`, `perf-t14.json`): medián změny přes 30 scén **+1,6 %** (brána −5 % splněna), nejhůř `g-platform` −12,1 % při stejných 55 voláních, nejlépe `g-rhythm` +16,8 %. Pět řádků s víc voláními (džungle vystoupala na vyšší úroveň s větrem, `g-race`, `g-glide`, `city-race` +1) je stejně rychlých nebo rychlejších. Pod 40 FPS čtyři scény v obou verzích (`city-runner` 36,6 → 34,9, `city-race` 31,9 → 31,7, `g-quest` 35,7 → 37,6, `g-shooter` 36,2 → 35,7) – stroj byl vytížený (CPU 58–100 %), T15a je v klidu měřil ≥ 45. První kolo žánrů (CPU 100 %) zahozeno: vzorky 0,1 FPS, kdy stránka 10 s stála, v obou verzích. Že zamrzání není svit, ukázala sonda `linkProgram`: verze po přeloží při načtení o jeden program víc, za hry stejně jako před.
+
+**Odvozeno.** Svit procesoru za snímek nic nepřidává (sdílené uniformy, kód shaderu); kolísání jednotlivých scén ±12 % při stejných voláních je šum vytíženého stroje, ne cena svitu.
+
+**Rozhodnutí (majitel, 20. 10.).** Bloom na `low` zůstává vypnutý a neměří se: na stroji, který nikdy nebude v klidu, nejde doložit ≥ 45 FPS ve všech 30 scénách, a čitelnost postav na telefonu nese svit, ne bloom.
