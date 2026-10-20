@@ -1,0 +1,30 @@
+{
+ "task": "T15c",
+ "profile": "Pixel 7, CPU 4x, d3d11",
+ "repeats": 7,
+ "windowMs": 10000,
+ "base": "8c2f3a11 (T2, D:/tmp/p54b-base-t2, next start -p 3352)",
+ "runs": [
+  {
+   "label": "confirm",
+   "build": "e5bbf7de",
+   "rows": [
+    { "id": "city-race", "before": { "measuredAt": "2026-10-20T00:52:20.646Z", "fpsMedian": 55.5, "samples": [48.5, 50.6, 48.5, 56.2, 55.5, 56.6, 56.2], "calls": 99 }, "after": { "measuredAt": "2026-10-20T00:54:30.562Z", "fpsMedian": 50.3, "samples": [50.9, 52.3, 43.6, 42.5, 51.3, 45.7, 50.3], "calls": 110 }, "deltaPct": -9.4 },
+    { "id": "g-shooter", "before": { "measuredAt": "2026-10-20T00:56:34.854Z", "fpsMedian": 57.7, "samples": [55.9, 54.9, 57.2, 57.8, 57.7, 58.1, 57.7], "calls": 64 }, "after": { "measuredAt": "2026-10-20T00:58:52.243Z", "fpsMedian": 51.2, "samples": [51.7, 52.1, 50.4, 51.2, 41, 44, 52.3], "calls": 40 }, "deltaPct": -11.3 }
+   ]
+  },
+  {
+   "label": "fixed",
+   "build": "ff19fb69",
+   "rows": [
+    { "id": "g-shooter", "before": { "measuredAt": "2026-10-20T01:45:33.886Z", "fpsMedian": 57, "samples": [57, 53.8, 56.7, 56.7, 57.7, 57.7, 57.6], "calls": 64 }, "after": { "measuredAt": "2026-10-20T01:47:51.708Z", "fpsMedian": 55.5, "samples": [56, 55, 56.4, 56.1, 54.9, 55.5, 53.8], "calls": 67 }, "deltaPct": -2.6 },
+    { "id": "city-race", "before": { "measuredAt": "2026-10-20T01:49:55.343Z", "fpsMedian": 55, "samples": [55, 50.4, 56.2, 55.1, 53.6, 50.9, 58], "calls": 97 }, "after": { "measuredAt": "2026-10-20T01:52:04.003Z", "fpsMedian": 50.9, "samples": [50.9, 52.5, 48.1, 44.8, 48.7, 52.2, 52.9], "calls": 110 }, "deltaPct": -7.5 }
+   ]
+  }
+ ],
+ "shooterCpuProfile": {
+  "note": "CDP profiler, 8 s of demo play, ms of main thread per frame (profiler inflates absolute values); build e5bbf7de + rest-track drop",
+  "before": { "busyMs": [18.5, 19.5, 22.2], "mixerMs": [0.24, 0.27, 0.32], "matrixMs": [0.81, 0.93, 1.17] },
+  "after": { "busyMs": [25, 33.2, 32.9], "mixerMs": [1.39, 1.52, 1.61], "matrixMs": [2.33, 2.5, 2.97] }
+ }
+}

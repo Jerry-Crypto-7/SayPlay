@@ -104,3 +104,18 @@ Snímky a soud stejnými příkazy jako T15, čistý `--work` (`D:/tmp/p54b-blin
 **Výkon (20. 10. 2026, 1:52–2:45, CPU v klidu 11–17 % před během).** `perf` A/B hned po sobě, Pixel 7 CPU 4×, d3d11, 3 opakování po 10 s, sada `sentences` (12) i `genres` (18): build T2 `8c2f3a11` (`perf-before-*.json`) proti `e5bbf7de` (`perf-after-*.json`). Všech 30 scén ≥ 45 FPS (před 41,7–59) – brána ≥ 40 **splněna**. Medián rozdílu −0,5 %, kreslicích volání medián +3 (nejvýš +33). Horší než −10 % jsou dva řádky: `city-race` 53,6 → 45,3 (−15,5 %) a `g-shooter` 57,6 → 50,4 (−12,5 %) – brána A/B **nesplněna**; rozptyl opakování v jednom běhu je až ±10 %, takže potvrzení chce nové měření (nález `T15c`).
 
 **Odvozeno.** Telefon prošel přesně na hraně a tři výhry jsou remízy téměř stejných snímků („picked only to break the tie“ – souboj na desktopu, poletování, rytmus na telefonu): opakovaný soud může dát 13–16. Skutečné zlepšení telefonu proti T15 nese hlavně bod, který už nestojí na hře (věž, poletování, přistání), a kluzák s útesem (T15b). Zbývající slabina je čitelnost riggovaných postav na telefonu – T14 (po MVP).
+
+## Výkon po T15c (20. 10. 2026, 2:50–3:55, `ff19fb69`)
+
+Obě scény znovu `perf --repeats 7`, A/B hned po sobě proti buildu T2 (`perf-t15c.json`):
+
+| Scéna | potvrzení (`e5bbf7de`) | po opravě (`ff19fb69`) |
+|---|---|---|
+| `g-shooter` | 57,7 → 51,2 (−11,3 %) | 57,0 → 55,5 (**−2,6 %**) |
+| `city-race` | 55,5 → 50,3 (−9,4 %) | 55,0 → 50,9 (**−7,5 %**) |
+
+Brána A/B (žádný řádek horší než −10 %) je u obou scén **splněna**; ostatních 28 se po opravě neměřilo – oprava jen ubírá práci za snímek.
+
+**Fakta.** Střelnice se potvrdila, město ne: v jeho profilu procesoru (CDP, 8 s hry) je nový build stejný jako T2 (34,2 proti 34,5 FPS), jedno opakování A/B dalo i +12 %. Střelnice v T15a kreslila **méně** volání (64 → 40), přesto potřebovala na snímek o 6–11 ms procesoru víc (profil 18–22 ms proti 25–33 ms). Příčinou je pět riggovaných zombií z T4 (dřív statický `cc0-zombie`): míchač animací +1,3 ms, přepočet matic kostí +2 ms, obrys, který každý snímek prochází podstrom každého těla, +0,8 ms, a dotaz `matchMedia` a čtení `?toy=` za každé tělo každý snímek ~1 ms.
+
+**Rozhodnutí (bez majitele).** AC chtělo ztenčit příčinu jen na `low`; všechny tři opravy jsou bezeztrátové, platí proto na každé úrovni a nic ze scény neodešlo: klipy při načtení ztratí stopy, které kost celý klip drží v klidu (65–80 % stop Quaternius a KayKit; póza i prolnutí beze změny, test `p54b-rest-tracks` + mutace červená), dotaz na omezený pohyb a `?toy=` se čtou jednou, obrys dorovná obaly každý třetí snímek. Snímek střelnice proti T15a: 0,04 % pixelů jinak. E2E `p32-look` a `p54b-walk-clip` 7/7.
