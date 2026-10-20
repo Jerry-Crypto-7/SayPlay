@@ -3,12 +3,12 @@
  "sentence": "Amanita mushrooms fight against bulls, flee from them, and shoot them.",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:35:35.042Z",
- "ms": 8684,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:11:51.470Z",
+ "ms": 9632,
  "answer": {
-  "plan": "Create an arena‑style game where Amanita mushrooms battle, evade, and shoot bulls in a forest trail.",
+  "plan": "Create an arena‑style game where Amanita mushrooms battle bulls, dodge them, and fire at them.",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -68,18 +68,35 @@
    "things": null,
    "rules": [
     {
-     "id": "bull_fight",
-     "verb": "fight",
+     "id": "bull_spawn",
+     "verb": "spawn",
      "when": {
-      "contact": [
-       "player",
-       "bull"
-      ]
+      "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "spawn": {
+        "role": "bull",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "bull_wave",
+     "verb": "wave",
+     "when": {
+      "phase": "wave"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "bull",
+        "count": 2,
+        "at": "edge"
+       }
       }
      ]
     },
@@ -87,15 +104,12 @@
      "id": "bull_chase",
      "verb": "chase",
      "when": {
-      "contact": [
-       "player",
-       "bull"
-      ]
+      "phase": "wave"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "toggle": "bull"
       }
      ]
     },
@@ -103,31 +117,12 @@
      "id": "bull_shoot",
      "verb": "shoot",
      "when": {
-      "contact": [
-       "player",
-       "bull"
-      ]
+      "phase": "wave"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
-      }
-     ]
-    },
-    {
-     "id": "acorn_collect",
-     "verb": "collect",
-     "when": {
-      "contact": [
-       "player",
-       "acorn"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "grab": "other"
+       "toggle": "bull"
       }
      ]
     }
@@ -136,15 +131,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "wave_timer"
      }
     ],
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "wave"
      }
     ],
     "events": null

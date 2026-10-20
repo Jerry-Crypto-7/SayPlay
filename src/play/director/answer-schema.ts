@@ -12,6 +12,7 @@ import { THINGS_MAX, logicSchema, modelRulesSchema, thingsSchema } from '../arca
 import { COUNT_PARAMS, COUNT_ROLES, type CountRole, type GenreModule, genreSpecSchema, ruleRoleSchema } from '../genre/contract';
 import { GENRE_MODULES, paramBoundsOf } from '../genre/index';
 import { ROLE_KINDS } from '../spec';
+import { liveCells } from '../compose/allowed';
 import { directorRecipeSchema } from '../compose/recipe';
 import { glideCourseParams } from '../arcade/pieces/glide';
 import { walkerParamsSchema } from '../arcade/pieces/walker';
@@ -66,11 +67,12 @@ export function strictSchema(node: Json): Json {
 const toJson = (schema: z.ZodType): Json => z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any', reused: 'inline', cycles: 'throw' }) as Json;
 
 /**
- * Živé žánry P54C, které režisér zatím nenabízí (T5 chytání, T6 bouchání, T7 obrana pruhů, T8 krájení): popis
- * a příklad jim dá T14, který seznam vyprázdní. Do té doby nejsou jejich režimy ve schématu odpovědi ani v promptu
- * a jejich buňky v tabulce živých kombinací – prompt režiséra (rozpočet bajtů, otisk nahraných odpovědí) se nepohne.
+ * Živé žánry, které režisér zatím nenabízí: jejich režimy nejsou ve schématu odpovědi ani v promptu a jejich buňky
+ * v tabulce živých kombinací, takže prompt režiséra (rozpočet bajtů, otisk nahraných odpovědí) se nepohne.
+ * P54C T14 nabídl čtyři žánry pruhů (chytání, bouchání, obrana, krájení) a seznam vyprázdnil; žánr fáze 3
+ * (přeskákání, dav, slučování, vytlačování) sem úloha, která ho pouští živě, přidá do opakování T14.
  */
-export const DIRECTOR_PENDING: ReadonlySet<string> = new Set(['catch', 'whack', 'defense', 'slice']);
+export const DIRECTOR_PENDING: ReadonlySet<string> = new Set<string>();
 
 /** Režimy žánru, které hrají, co slibují – jen ty režisér nabízí (P32B T4); žánr z `DIRECTOR_PENDING` žádný. */
 export const readyModes = (module: GenreModule): string[] => (DIRECTOR_PENDING.has(module.id) ? [] : module.modes.filter((mode) => module.availability(mode) === 'ready'));
@@ -168,7 +170,7 @@ for (const schema of Object.values(nativeRecipeParams)) {
 export const recipeParamsSchema = z.object(Object.fromEntries(Object.entries(recipeParamBounds).map(([key, range]) => [key, z.int().min(range.min).max(range.max).optional()]))).strict();
 const contentShape = genreSpecSchema.options[0].omit({ genre: true, mode: true, params: true });
 export const recipeAnswerSchema = contentShape.extend({
-  recipe: directorRecipeSchema,
+  recipe: directorRecipeSchema(liveCells().filter((cell) => !DIRECTOR_PENDING.has(cell.preset.genre)).map((cell) => cell.recipe)),
   params: recipeParamsSchema.optional(),
   unmet: z.array(z.object({ actor: z.string().min(1).max(60), verb: z.string().min(1).max(40), object: z.string().min(1).max(60).nullable() }).strict()).max(64),
 }).strict();

@@ -3,12 +3,12 @@
  "sentence": "A ninja frog jumps across lily pads in a swamp",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:36:11.968Z",
- "ms": 4758,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:12:34.184Z",
+ "ms": 7256,
  "answer": {
-  "plan": "Create a platformer where a ninja frog jumps across lily pads in a swamp, with a simple two‑phase timer logic that spawns a wave of lily pads and then ends the level.",
+  "plan": "Create a platformer where a ninja frog jumps across lily pads in a swamp, with a simple two‑phase timer logic that triggers a wave of lily pads appearing after a short delay.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -19,14 +19,68 @@
    "palette": "forest",
    "params": null,
    "counts": null,
-   "ruleRoles": [],
-   "things": [],
-   "rules": [],
+   "ruleRoles": [
+    {
+     "id": "pad",
+     "kind": "prop",
+     "label": "lily pad",
+     "count": null
+    }
+   ],
+   "things": null,
+   "rules": [
+    {
+     "id": "startPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "padspawn",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawnPads",
+     "verb": "spawn",
+     "when": {
+      "timer": "padspawn"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "pad",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "resetPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "afterspawn"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "start"
+      }
+     ]
+    }
+   ],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "spawn_timer"
+      "id": "padspawn"
      }
     ],
     "phases": [
@@ -34,7 +88,7 @@
       "id": "start"
      },
      {
-      "id": "mid"
+      "id": "afterspawn"
      }
     ],
     "events": null

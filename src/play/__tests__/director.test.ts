@@ -1,4 +1,4 @@
-import type { GenreSpec } from '../genre/contract';
+import { FOE_DOES, type GenreSpec } from '../genre/contract';
 import { liveCells, assemblyOfCell } from '../compose/allowed';
 import { compileRecipe } from '../compose/compile';
 /**
@@ -99,6 +99,11 @@ const CONTROL_OF_MODE: Readonly<Record<string, string>> = {
   'rhythm.default': 'rhythm',
   'duel.default': 'duel',
   'flap.default': 'flap',
+  // P54C T14: čtyři žánry pruhů režisér nabízí – všechny na ovládání `lanes`.
+  'catch.default': 'lanes',
+  'whack.default': 'lanes',
+  'defense.default': 'lanes',
+  'slice.default': 'lanes',
 };
 
 /** Režim → věta, jejíž hlavní sloveso ho hraje (kontrola věrnosti, P32B T5); hrdina fox a nepřítel wolf jako v `genreAnswer`. */
@@ -120,7 +125,14 @@ const SENTENCE_OF_MODE: Readonly<Record<string, string>> = {
   'rhythm.default': 'A fox dances in a dark forest while a wolf prowls',
   'duel.default': 'A fox duels a wolf in a dark forest',
   'flap.default': 'A fox flaps through a dark forest past a wolf',
+  'catch.default': 'A fox catches falling acorns in a dark forest and dodges a wolf',
+  'whack.default': 'A fox whacks wolves popping out of holes in a dark forest',
+  'defense.default': 'A fox defends its den from waves of wolves in a dark forest',
+  'slice.default': 'A fox slices flying acorns in a dark forest but not the wolf',
 };
+
+/** Věta, ve které klíčová slova žádný žánr pruhů nečtou – žánr hry tu může dát jedině odpověď režiséra. */
+const NEUTRAL = 'A fox in a dark forest';
 
 function clock(): () => number {
   let tick = 0;
@@ -196,6 +208,27 @@ describe('direct – the model answers', () => {
     expect(critique(compiled()).map((issue) => issue.code)).not.toContain('GOAL_UNCLEAR');
     expect(game.warnings.map((issue) => issue.code)).toContain('GOAL_UNCLEAR');
   });
+});
+
+// P54C T14 (pin): režisér, který nový žánr jen jmenuje a pak ho nepostaví, vypadá jako fungující – hra by byla
+// rychlá verze nebo jiný žánr se jménem z odpovědi. Odpověď se žánrem pruhů musí dát hru toho žánru na `lanes`.
+describe('direct – an answer naming a lane genre builds that genre (P54C T14)', () => {
+  const LANE_GENRES = ['catch', 'whack', 'defense', 'slice'] as const;
+
+  it.each(LANE_GENRES)('%s: the recipe answer builds it even where the keyword reader plays another game', async (genre) => {
+    const cell = liveCells().find((live) => live.preset.genre === genre)!;
+    expect(draftGameSpec(NEUTRAL).genre?.id).not.toBe(genre);
+    const answer = { plan: 'play the sentence', spec: { recipe: cell.recipe, unmet: [], hero: 'fox', cast: [{ label: 'acorn', does: 'collect' }, { label: 'wolf', does: FOE_DOES[genre] }], setting: 'dark forest' } };
+    const game = await run(fakeBranch([answered(answer)]), { maxRepairRounds: 0 }, NEUTRAL);
+    expect(game, genre).toMatchObject({ source: 'authored', calls: 1, spec: { control: 'lanes', genre: { id: genre, mode: 'default' } } });
+    expect(game.spec.roles.find((role) => role.kind === 'player')?.label).toBe('fox');
+  }, 60_000);
+
+  it.each(LANE_GENRES)('%s: the legacy GenreSpec answer builds it for a sentence of the genre', async (genre) => {
+    const { answer } = GENRE_ANSWERS.find(({ name }) => name === `${genre}.default`)!;
+    const game = await run(fakeBranch([answered(answer)]), { maxRepairRounds: 0 }, SENTENCE_OF_MODE[`${genre}.default`]);
+    expect(game, genre).toMatchObject({ source: 'authored', calls: 1, spec: { control: 'lanes', genre: { id: genre, mode: 'default' } } });
+  }, 60_000);
 });
 
 describe('direct – failure paths fall back to the draft, never throw', () => {

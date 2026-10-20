@@ -3,15 +3,15 @@
  "sentence": "racing car escapes police and shoots enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:35:52.916Z",
- "ms": 9065,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:12:07.332Z",
+ "ms": 8546,
  "answer": {
-  "plan": "Create a racing‑shooting car game set on an open country road where police chase the player and the player can shoot enemy cars.",
+  "plan": "Create a driving‑shooting game where a car races away from police while firing at enemy vehicles.",
   "spec": {
-   "genre": "voyage",
-   "mode": "race",
+   "genre": "shooter",
+   "mode": "default",
    "hero": "car",
    "cast": [
     {
@@ -19,7 +19,7 @@
      "does": "chase_me",
      "verb": "chase",
      "states": null,
-     "patrol": true
+     "patrol": false
     },
     {
      "label": "enemy",
@@ -33,17 +33,21 @@
    "setting": "open country",
    "palette": "desert",
    "params": null,
+   "counts": {
+    "enemy": null,
+    "target": null
+   },
    "ruleRoles": [
     {
      "id": "police",
      "kind": "chaser",
-     "label": "police car",
+     "label": "police",
      "count": null
     },
     {
      "id": "enemy",
-     "kind": "hazard",
-     "label": "enemy car",
+     "kind": "target",
+     "label": "enemy",
      "count": null
     }
    ],
@@ -58,7 +62,11 @@
        "police"
       ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
        "damage": 1
@@ -74,74 +82,26 @@
        "enemy"
       ]
      },
-     "if": null,
-     "do": [
+     "if": [
       {
-       "damage": 2
+       "notHolding": true
       }
-     ]
-    },
-    {
-     "id": "player_shoot",
-     "verb": "shoot",
-     "when": {
-      "press": "action"
-     },
-     "if": null,
+     ],
      "do": [
       {
-       "spawn": {
-        "role": "enemy",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "win_condition",
-     "verb": "reach",
-     "when": {
-      "contact": [
-       "player",
-       "finish_line"
-      ]
-     },
-     "if": null,
-     "do": [
-      {
-       "win": true
+       "damage": 1
       }
      ]
     }
    ],
-   "logic": {
-    "vars": null,
-    "timers": [
-     {
-      "id": "race_timer"
-     }
-    ],
-    "phases": [
-     {
-      "id": "start"
-     },
-     {
-      "id": "mid"
-     },
-     {
-      "id": "end"
-     }
-    ],
-    "events": null
-   },
+   "logic": null,
    "boss": {
     "role": "police",
     "name": "Police Pursuit",
     "attack": "charge"
    },
    "abilities": [
-    "shoot",
-    "dash"
+    "shoot"
    ],
    "segments": [
     "newFoe",

@@ -3,12 +3,12 @@
  "sentence": "A bee gathers honey in a windy meadow before the storm hits",
  "axis": "arena",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:36:18.780Z",
- "ms": 6811,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:12:43.192Z",
+ "ms": 9006,
  "answer": {
-  "plan": "Create a spatial quest where the bee collects honey while avoiding a looming storm in a windy meadow, using a simple phase‑based timer to trigger the storm’s arrival.",
+  "plan": "Create a quest‑style game where a bee collects honey in a windy meadow while avoiding an approaching storm, using a simple two‑phase timer to trigger the storm’s arrival.",
   "spec": {
    "genre": "quest",
    "mode": "spatial",
@@ -24,7 +24,7 @@
     {
      "label": "storm",
      "does": "avoid",
-     "verb": "hit",
+     "verb": "approach",
      "states": null,
      "patrol": null
     }
@@ -64,7 +64,7 @@
       {
        "startTimer": {
         "timer": "storm",
-        "ticks": 60
+        "ticks": 120
        }
       }
      ]
@@ -78,23 +78,51 @@
      "if": null,
      "do": [
       {
-       "toggle": "storm"
+       "goPhase": "storm"
       },
       {
-       "goPhase": "storm"
+       "toggle": "storm"
       }
      ]
     },
     {
-     "id": "stormEffect",
-     "verb": "wait",
+     "id": "collectHoney",
+     "verb": "collect",
      "when": {
-      "phase": "storm"
+      "contact": [
+       "player",
+       "honey"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "score": 10
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "avoidStorm",
+     "verb": "avoid",
+     "when": {
+      "contact": [
+       "player",
+       "storm"
+      ]
      },
      "if": null,
      "do": [
       {
        "damage": 1
+      },
+      {
+       "lose": true
       }
      ]
     }
@@ -116,17 +144,9 @@
     ],
     "events": null
    },
-   "boss": {
-    "role": "storm",
-    "name": "Tempest",
-    "attack": "drop"
-   },
+   "boss": null,
    "abilities": [],
-   "segments": [
-    "moving",
-    "faster",
-    "trap"
-   ]
+   "segments": null
   }
  },
  "failure": null

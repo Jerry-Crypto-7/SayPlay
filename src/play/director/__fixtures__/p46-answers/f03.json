@@ -3,12 +3,12 @@
  "sentence": "An elf archer shoots goblins from the treetops.",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:36:32.510Z",
- "ms": 6478,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:12:57.419Z",
+ "ms": 6800,
  "answer": {
-  "plan": "Create a shooter game where an elf archer battles goblins perched on treetops, with timed waves and a simple phase‑based logic system.",
+  "plan": "Create a shooter game where an elf archer battles goblins perched on treetops, featuring wave‑based spawning and a simple timer‑driven phase system.",
   "spec": {
    "genre": "shooter",
    "mode": "default",

@@ -3,12 +3,12 @@
  "sentence": "shoot down paper planes over a school playground",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:37:39.607Z",
- "ms": 6829,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:14:06.000Z",
+ "ms": 6739,
  "answer": {
-  "plan": "Create a shooter where a kid shoots down paper planes in a school playground, with waves of planes appearing over time.",
+  "plan": "Create a shooter where a kid shoots down paper planes flying over a school playground, with waves of planes appearing every few seconds.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -17,14 +17,14 @@
     {
      "label": "paper plane",
      "does": "shoot_at",
-     "verb": "shoot",
+     "verb": "fly",
      "states": null,
      "patrol": false
     }
    ],
    "heroAction": "none",
    "setting": "school playground",
-   "palette": "cave",
+   "palette": "city",
    "params": null,
    "counts": {
     "enemy": null,
@@ -33,7 +33,7 @@
    "ruleRoles": [
     {
      "id": "plane",
-     "kind": "target",
+     "kind": "chaser",
      "label": "paper plane",
      "count": null
     }
@@ -41,54 +41,51 @@
    "things": null,
    "rules": [
     {
-     "id": "spawn_plane",
-     "verb": "spawn",
+     "id": "start_wave",
+     "verb": "wait",
      "when": {
-      "phase": "first"
+      "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "plane",
-        "at": "player"
+       "startTimer": {
+        "timer": "wave",
+        "ticks": 120
        }
       }
      ]
     },
     {
-     "id": "wave_planes",
-     "verb": "wave",
+     "id": "spawn_plane",
+     "verb": "wait",
      "when": {
-      "phase": "second"
+      "timer": "wave"
      },
      "if": null,
      "do": [
       {
        "wave": {
         "role": "plane",
-        "count": 3,
+        "count": 1,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "shoot_plane",
-     "verb": "shoot",
+     "id": "reset_wave",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "plane"
-      ]
+      "timer": "wave"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
+       "startTimer": {
+        "timer": "wave",
+        "ticks": 120
+       }
       }
      ]
     }
@@ -97,22 +94,32 @@
     "vars": null,
     "timers": [
      {
-      "id": "t1"
+      "id": "wave"
      }
     ],
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "active"
      }
     ],
     "events": null
    },
-   "boss": null,
-   "abilities": [],
-   "segments": null
+   "boss": {
+    "role": "plane",
+    "name": "Paper Plane",
+    "attack": "shoot"
+   },
+   "abilities": [
+    "shoot"
+   ],
+   "segments": [
+    "moving",
+    "newFoe",
+    "faster"
+   ]
   }
  },
  "failure": null

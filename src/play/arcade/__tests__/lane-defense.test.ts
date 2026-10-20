@@ -151,15 +151,15 @@ describe('defense genre is live (P54C T7)', () => {
   });
 
   // P54C T13: klasifikátor obranu zná – brání se místo před mnoha; kdo se brání sám nebo jednomu, hraje dál souboj a rvačku.
-  it('is offered to sentences about holding a place against many (T13), not by the director before T14', () => {
+  it('is offered to sentences about holding a place against many (T13) and by the director (T14)', () => {
     for (const sentence of ['defend the castle from waves of goblins', 'protect the village against the orcs', 'tower defense with zombies']) {
       expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).toBe('defense');
     }
     for (const sentence of ['a knight defends himself in a sword duel', 'a mouse defends its cheese from a hungry cat']) {
       expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).not.toBe('defense');
     }
-    expect(DIRECTOR_PENDING.has('defense')).toBe(true);
-    expect(JSON.stringify(GENRE_ANSWER_SCHEMA)).not.toContain('"defense"');
+    expect(DIRECTOR_PENDING.has('defense')).toBe(false);
+    expect(JSON.stringify(GENRE_ANSWER_SCHEMA)).toContain('"defense"');
   });
 });
 

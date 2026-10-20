@@ -3,12 +3,12 @@
  "sentence": "shopping cart race in a supermarket",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:37:51.115Z",
- "ms": 11507,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:14:17.304Z",
+ "ms": 11304,
  "answer": {
-  "plan": "Create a voyage‑race game where a shopping cart races through a supermarket, avoiding obstacles and collecting items while a timer drives the progression of phases.",
+  "plan": "Create a simple race‑style voyage game where the player drives a shopping cart through a supermarket, using a two‑phase timer logic to start the race and declare victory.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -17,12 +17,27 @@
    "heroAction": "none",
    "setting": "supermarket",
    "palette": "supermarket",
-   "params": null,
+   "params": {
+    "hazards": 0,
+    "turbo": 0,
+    "roadWidth": 3600,
+    "roadEntryWidth": 3600,
+    "crashBudget": 1,
+    "namedLandingTarget": 0,
+    "touchdownSpeed": 15,
+    "gravityRisePct": 0,
+    "lengthM": 200,
+    "topSpeed": 200,
+    "gravity": 400,
+    "lives": 1,
+    "targetScore": 0,
+    "timeLimit": 0
+   },
    "ruleRoles": [],
    "things": [],
    "rules": [
     {
-     "id": "startPhase",
+     "id": "start_timer",
      "verb": "wait",
      "when": {
       "phase": "start"
@@ -31,177 +46,23 @@
      "do": [
       {
        "startTimer": {
-        "timer": "phase1",
+        "timer": "race",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "phase1Timer",
+     "id": "go_finish",
      "verb": "wait",
      "when": {
-      "timer": "phase1"
+      "timer": "race"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "phase2"
+       "goPhase": "finish"
       },
-      {
-       "wave": {
-        "role": "obstacle",
-        "count": 3,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase2",
-     "verb": "wait",
-     "when": {
-      "phase": "phase2"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "phase2",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase2Timer",
-     "verb": "wait",
-     "when": {
-      "timer": "phase2"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "phase3"
-      },
-      {
-       "wave": {
-        "role": "collectible",
-        "count": 5,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase3",
-     "verb": "wait",
-     "when": {
-      "phase": "phase3"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "phase3",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase3Timer",
-     "verb": "wait",
-     "when": {
-      "timer": "phase3"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "phase4"
-      },
-      {
-       "wave": {
-        "role": "obstacle",
-        "count": 4,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase4",
-     "verb": "wait",
-     "when": {
-      "phase": "phase4"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "phase4",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase4Timer",
-     "verb": "wait",
-     "when": {
-      "timer": "phase4"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "phase5"
-      },
-      {
-       "wave": {
-        "role": "collectible",
-        "count": 6,
-        "at": "edge"
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase5",
-     "verb": "wait",
-     "when": {
-      "phase": "phase5"
-     },
-     "if": null,
-     "do": [
-      {
-       "startTimer": {
-        "timer": "phase5",
-        "ticks": 60
-       }
-      }
-     ]
-    },
-    {
-     "id": "phase5Timer",
-     "verb": "wait",
-     "when": {
-      "timer": "phase5"
-     },
-     "if": null,
-     "do": [
-      {
-       "goPhase": "end"
-      }
-     ]
-    },
-    {
-     "id": "end",
-     "verb": "wait",
-     "when": {
-      "phase": "end"
-     },
-     "if": null,
-     "do": [
       {
        "win": true
       }
@@ -212,16 +73,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
-     },
-     {
-      "id": "phase2"
-     },
-     {
-      "id": "phase3"
-     },
-     {
-      "id": "phase4"
+      "id": "race"
      }
     ],
     "phases": [
@@ -229,13 +81,7 @@
       "id": "start"
      },
      {
-      "id": "phase2"
-     },
-     {
-      "id": "phase3"
-     },
-     {
-      "id": "phase4"
+      "id": "finish"
      }
     ],
     "events": null

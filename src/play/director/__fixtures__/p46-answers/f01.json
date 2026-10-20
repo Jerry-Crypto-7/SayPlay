@@ -3,28 +3,28 @@
  "sentence": "a dragon guards its gold hoard from greedy knights inside a volcano",
  "axis": "arena.collect",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:36:26.031Z",
- "ms": 7251,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:12:50.619Z",
+ "ms": 7427,
  "answer": {
-  "plan": "Create an arena‑style dragon‑vs‑knights volcano game with timed waves and a protected gold hoard.",
+  "plan": "Create a defense‑style volcano game where a dragon protects its gold hoard from greedy knights.",
   "spec": {
-   "genre": "arena",
-   "mode": "fight",
+   "genre": "defense",
+   "mode": "default",
    "hero": "dragon",
    "cast": [
     {
-     "label": "knight",
-     "does": "chase_me",
+     "label": "greedy knight",
+     "does": "shoot_at",
      "verb": "attack",
      "states": null,
-     "patrol": false
+     "patrol": true
     },
     {
-     "label": "gold",
+     "label": "gold hoard",
      "does": "reach",
-     "verb": "protect",
+     "verb": "guard",
      "states": null,
      "patrol": false
     }
@@ -34,68 +34,71 @@
    "palette": "volcano",
    "params": null,
    "counts": {
-    "enemy": 2,
-    "collectible": null
+    "enemy": 10
    },
    "ruleRoles": [
     {
      "id": "knight",
      "kind": "chaser",
-     "label": "knight",
-     "count": null
+     "label": "greedy knight",
+     "count": 10
     },
     {
-     "id": "gold",
+     "id": "hoard",
      "kind": "target",
      "label": "gold hoard",
-     "count": null
+     "count": 1
     }
    ],
    "things": null,
    "rules": [
     {
-     "id": "start_wave",
-     "verb": "wait",
+     "id": "spawn_knights",
+     "verb": "spawn",
      "when": {
       "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "wave_timer",
-        "ticks": 120
-       }
-      }
-     ]
-    },
-    {
-     "id": "wave_spawn",
-     "verb": "wait",
-     "when": {
-      "timer": "wave_timer"
-     },
-     "if": null,
-     "do": [
-      {
        "wave": {
         "role": "knight",
-        "count": 3,
+        "count": 5,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "protect_gold",
-     "verb": "wait",
+     "id": "spawn_more_knights",
+     "verb": "spawn",
      "when": {
-      "phase": "protect"
+      "timer": "midnight"
      },
      "if": null,
      "do": [
       {
-       "win": true
+       "wave": {
+        "role": "knight",
+        "count": 5,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "guard_hoard",
+     "verb": "protect",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "toggle": "hoard"
+      },
+      {
+       "despawn": "held"
       }
      ]
     }
@@ -104,7 +107,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave_timer"
+      "id": "midnight"
      }
     ],
     "phases": [
@@ -112,22 +115,18 @@
       "id": "start"
      },
      {
-      "id": "protect"
+      "id": "midnight"
      }
     ],
     "events": null
    },
    "boss": {
-    "role": "knight",
-    "name": "Vicious Knight",
+    "role": "greedy knight",
+    "name": "Lord Blackblade",
     "attack": "charge"
    },
    "abilities": [],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "segments": null
   }
  },
  "failure": null

@@ -131,13 +131,13 @@ describe('whack genre is live (P54C T6)', () => {
   });
 
   // P54C T13: klasifikátor bouchání zná; samotné „pop the balloons“ (věta j05 P30) zůstává úkolem po scéně.
-  it('is offered to sentences about things popping up (T13), not by the director before T14', () => {
+  it('is offered to sentences about things popping up (T13) and by the director (T14)', () => {
     for (const sentence of ['whack the moles before they hide', 'a farmer smashes the moles in his garden']) {
       expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).toBe('whack');
     }
     expect(classifyGenre('pop the balloons at the fair', null).ranked[0]?.genre).not.toBe('whack');
-    expect(DIRECTOR_PENDING.has('whack')).toBe(true);
-    expect(JSON.stringify(GENRE_ANSWER_SCHEMA)).not.toContain('"whack"');
+    expect(DIRECTOR_PENDING.has('whack')).toBe(false);
+    expect(JSON.stringify(GENRE_ANSWER_SCHEMA)).toContain('"whack"');
   });
 });
 

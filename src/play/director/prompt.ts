@@ -16,12 +16,12 @@ import { z } from 'zod';
 import { canonicalHash } from '@/ir/worlddoc';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
-import { liveCells } from '../compose/allowed';
+import { type LiveCell, liveCells } from '../compose/allowed';
 import { ABILITIES, BOSS_ATTACKS } from '../arcade/contract';
 import { LOOK_IDS } from '../arcade/look';
 import { SEGMENT_NEWS } from '../arcade/pieces/pacing';
 import { sentenceChecklist } from '../fidelity/checklist';
-import { CAST_MAX, CAST_ROLES, COUNT_PARAMS, COUNT_ROLES, type CastRole, type GenreModule, type GenreSpec } from '../genre/contract';
+import { CAST_MAX, CAST_ROLES, COUNT_PARAMS, COUNT_ROLES, type CastRole, type GenreId, type GenreModule, type GenreSpec } from '../genre/contract';
 import { DEPTH_PARAM_BOUNDS, GENRE_MODULES } from '../genre/index';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
 import { ROLE_KINDS } from '../spec';
@@ -117,8 +117,26 @@ export function renderRegistry(): string {
 }
 
 /**
- * Nabídka žánrů a smlouva rolí (`genre/roles.ts`) pro oba prompty: jeden řádek
- * na žánr s aspoň jedním režimem `ready`, pak co která role znamená.
+ * Žánry bez narážek (P54C T14: žánry pruhů vede klasifikátor slovesy se znakem žánru, `cues: []`) mají v řádku
+ * žánru místo narážek jednu větu, co se hraje a kterou roli obsazení žánr čte, a jeden příklad věty.
+ */
+export const GENRE_PITCH: Readonly<Partial<Record<GenreId, string>>> = {
+  catch: 'catch what falls in lanes, dodge bombs; "a monkey catches falling bananas"',
+  whack: 'hit shoot_at targets popping out of holes; "whack the rats popping out of pipes"',
+  defense: 'shoot foe waves marching down lanes at the reach place; "defend the fort from waves of trolls"',
+  slice: 'slice what flies up in lanes, never bombs; "slice the flying oranges"',
+};
+
+/** Co o parametru hloubky (P36A T8) říká věta – v závorce za mezí. */
+const DEPTH_SAID: Readonly<Record<keyof typeof DEPTH_PARAM_BOUNDS, string>> = { lives: '"3 lives"', targetScore: '"score 200 points"', timeLimit: 'seconds before the player loses' };
+
+/** Recept jako položka tabulky živých kombinací: `akce/cíl/hrozby`, víc kusů spojuje `+`, prázdné pole je `-`. */
+const recipeEntry = (recipe: LiveCell['recipe']): string => `${recipe.actions.join('+') || '-'}/${recipe.objective}/${recipe.threats.join('+') || '-'}`;
+
+/**
+ * Nabídka žánrů a smlouva rolí (`genre/roles.ts`) pro oba prompty: tabulka živých
+ * kombinací po pohybech, jeden řádek na žánr s aspoň jedním režimem `ready`, pak co
+ * která role znamená.
  */
 export function genrePromptLines(): string {
   const genres = (Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) => {
@@ -126,14 +144,18 @@ export function genrePromptLines(): string {
     if (modes.length === 0) return [];
     const params = Object.entries(module.paramBounds).map(([key, range]) => `${key} ${String(range.min)}..${String(range.max)}`);
     const counted = COUNT_ROLES.filter((role) => modes.some((mode) => (COUNT_PARAMS[module.id] as Readonly<Record<string, Partial<Record<string, string>> | undefined>>)[mode]?.[role] !== undefined));
+    const pitch = GENRE_PITCH[module.id];
     return [
-      `- ${module.id} (${module.cues.join(', ')}): modes ${modes.join('|')}; hero ${module.heroClasses.join('/')}${params.length === 0 ? '' : `; params ${params.join(', ')}`}${counted.length === 0 ? '' : `; counts ${counted.join('/')}`}`,
+      `- ${module.id} (${[...module.cues, ...(pitch === undefined ? [] : [pitch])].join(', ')}): modes ${modes.join('|')}; hero ${module.heroClasses.join('/')}${params.length === 0 ? '' : `; params ${params.join(', ')}`}${counted.length === 0 ? '' : `; counts ${counted.join('/')}`}`,
     ];
   });
+  // P54C T14: po pohybech (dřív řádek na buňku s „ | “) – čtyři žánry pruhů se tak vešly do rozpočtu bajtů.
+  const cells = liveCells().filter((cell) => !DIRECTOR_PENDING.has(cell.preset.genre));
+  const moves = [...new Set(cells.map((cell) => cell.recipe.move))];
   return [
-    'LIVE COMBINATIONS (move | actions | objective | threats; - means empty array; select one; staged unavailable):',
-    ...new Set(liveCells().filter(cell => !DIRECTOR_PENDING.has(cell.preset.genre)).map(cell => `- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`)),
-    'LEGACY GENRES (compatibility format; recipe answers omit genre/mode):',
+    'LIVE COMBINATIONS (move: actions/objective/threats; + joins, - = none; select one):',
+    ...moves.map((move) => `- ${move}: ${[...new Set(cells.filter((cell) => cell.recipe.move === move).map((cell) => recipeEntry(cell.recipe)))].join(', ')}`),
+    'LEGACY GENRES (recipe answers omit genre/mode):',
     ...genres,
     // P46E T5: s „(else null)“ a jedním příkladem vyplnil gpt-oss-20b bosse 0×, akce 2× a úseky 2× z 25 nahrávek.
     `NEW IN YOUR VERSION – the quick version lacks them, so fill all three; null only when the sentence has no foe and no action: boss {role: cast label of the foe that comes last, name: what the player sees, attack: ${BOSS_ATTACKS.join('|')}}; abilities: 1–2 hero actions on buttons the sentence implies (${ABILITIES.join('|')}); segments: exactly 3 changes the run brings in order (${SEGMENT_NEWS.join('|')}). EXAMPLES: runner "a rabbit steals carrots and runs from a fox" {"boss":{"role":"fox","name":"Big Bad Fox","attack":"charge"},"abilities":["grab","dash"],"segments":["newFoe","narrow","faster"]}; driving "a car escapes police and shoots enemies" {"boss":{"role":"police car","name":"police helicopter","attack":"drop"},"abilities":["shoot","dash"],"segments":["newFoe","moving","faster"]}; platformer "a monkey jumps across jungle platforms" {"boss":{"role":"snake","name":"Giant Python","attack":"stomp"},"abilities":["dash"],"segments":["trap","moving","newFoe"]}`,
@@ -142,18 +164,19 @@ export function genrePromptLines(): string {
     // P39: obsazení místo jednoho `enemy` – každá věc věty a co s ní dělá její sloveso.
     'cast: every thing the sentence names except the hero and the place, each {label, does}; does = what the verb at that thing makes it:',
     ...CAST_DOES.map((does) => `- ${does}: ${CAST_DOES_LINES[does]}`),
-    'Never claim a nearby mechanic plays a different action. List every unsupported actor-verb-object triple in unmet. Use unmet: [] only if nothing was omitted. Null cast when nothing is named; setting defaults then supply roles.',
+    'Never claim a nearby mechanic plays a different action: list every unsupported actor-verb-object triple in unmet, [] only if nothing was omitted. Null cast when nothing is named.',
     `setting: where it happens, <=80 chars. palette: the scene set that best shows it, or null: ${LOOK_IDS.join('|')}. params: only for a number the sentence says, else null.`,
     'counts: how many the sentence says ("grab 5 coins" = collectible 5): enemy for shoot_at|chase_me|avoid|fight, collectible for collect, target for reach|throw_at; only roles the genre counts, else null.',
-    `Every genre takes params ${Object.entries(DEPTH_PARAM_BOUNDS)
-      .map(([key, range]) => `${key} ${String(range.min)}..${String(range.max)}`)
-      .join(', ')} when the sentence says them: lives ("3 lives"), points to win ("score 200 points"), seconds before the player loses.`,
+    `Every genre takes params ${(Object.entries(DEPTH_PARAM_BOUNDS) as [keyof typeof DEPTH_PARAM_BOUNDS, { min: number; max: number }][])
+      .map(([key, range]) => `${key} ${String(range.min)}..${String(range.max)} (${DEPTH_SAID[key]})`)
+      .join(', ')} when the sentence says them.`,
     "Keep the user's nouns, numbers and names. Cast labels are singular (\"rock\", not \"rocks\"). A cast thing is never what the player holds, sprays or throws.",
     // P38: výchozí bod je odhad ze slov, ne kostra – „ponech a přidej jednu věc“ držel AI verzi u návrhu.
-    'The starting point is a keyword guess, not a constraint. Replace errors; preserve the sentence.',
-    'Multiple actions must coexist in the live recipe. Labels, generic wins and score do not certify verbs; actual runtime effects must witness every requested triple.',
+    // P54C T14: „keyword guess“ a „replace errors“ nese už štítek výchozího bodu ve zprávě (`startingPoint`).
+    'The starting point is not a constraint; preserve the sentence.',
+    'Multiple actions must coexist in the live recipe. Labels, generic wins and score prove no verb; runtime effects must witness every requested triple.',
     'A sentence in another language is read for its meaning; every label you write stays English.',
-    'Checklist and main verb (in the request) are what the keyword reader found. FULL INTENT is authoritative; a suggested genre is not proof. Preserve its named roles and all essential triples.',
+    'Checklist and main verb (in the request) are what the keyword reader found. FULL INTENT is authoritative; a suggested genre is not proof.',
   ].join('\n');
 }
 

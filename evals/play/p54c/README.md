@@ -195,6 +195,50 @@ Píše ho `P54C_OUT=baseline npx vitest run --config vitest.measure.mts evals/pl
 - **Testy:** `src/play/genre` + `src/play/compose` + `src/play/director` (vč. `p46-fixtures`) + `draft*.test.ts` + testy s větami dosahu (arkáda P51/P52, schopnosti, záměr, věrnost, verze, sady P42–P54C, pokrytí) **5158/5158** ve 157 souborech; replay brána **80/80**; `tsc` 0.
 - **Pin:** `classify.test.ts` – žádná věta P30 dev nezmění žánr klasifikátoru proti `start.json` kromě `T13_MOVED` a každá dev věta MVP žánru jde do svého žánru, pasti tam, kde byly v T2, a věty žánrů `staged` do žádného MVP žánru. `draft.test.ts` – jedna věta na žánr dojde návrhem do hry svého žánru (ovládání `lanes`, bez dílů, role modulu: honey jar, hodný cíl clown, bráněná věž tower, fruit a bomba).
 
+## T14 – režisér zná nové žánry (MVP: chytání, bouchání, obrana, krájení)
+
+- **Schéma odpovědi** (`director/answer-schema.ts`): `DIRECTOR_PENDING` je prázdný, takže režisér dostane varianty `catch`, `whack`, `defense` a `slice` (režim `default`), jejich meze v obálce parametrů receptu a jejich buňky v receptu odpovědi. Recept režiséra (`directorRecipeSchema(offered)` v `compose/recipe.ts`) pouští z kusů os nových žánrů jen ty, které nese nabízená živá buňka: `lanes`, `whack`, `slice`, `defend`. Kusy koster (`hop`, `crowd`, `drop`, `merge`, `push`) schéma dál odmítne (test).
+- **Prompt** (`director/prompt.ts`): žánr bez narážek má v řádku žánru jednu větu, co se hraje a kterou roli čte, a jeden příklad (`GENRE_PITCH`), např. `- whack (hit shoot_at targets popping out of holes; "whack the rats popping out of pipes"): modes default; …`. Tabulka živých kombinací má řádek `- lanes: collect/collect/hazard, whack/defeat/-, shoot/defend/chaser, slice/score/hazard`. Příklady nepoužívají podstatná jména dev vět.
+- **Délka promptu:** nové řádky přidaly 828 B, takže by nejdelší požadavek (40 zlatých vět, kompaktní s příklady a FULL INTENT) měl ~15 800 B. Zhuštění bez změny obsahu ho vrátilo na **14 968 B** (před T14 14 964 B, strop 15 000 B beze změny):
+  - tabulka živých kombinací po pohybech (`- drive: -/race/rival, shoot/race/rival, …`) místo řádku na buňku s „ | “;
+  - kratší záhlaví tabulky a starých žánrů;
+  - pryč věty, které jinde v promptu stojí znovu: „Preserve its named roles and all essential triples“, „setting defaults then supply roles“, „keyword guess … Replace errors“ (nese to štítek výchozího bodu ve zprávě);
+  - parametry hloubky s příkladem v závorce za mezí.
+  Strop logiky P45B (≤ 1 500 znaků nad `main`) taky drží. Verze kompaktního promptu `4ff1d2c9` → `b830dc2d`. Požadavek, jak jde modelu (systém + věta + FULL INTENT, bez příkladů jako produkce): průměr 12 856 B, max 13 059 B, systém 11 896 B.
+
+### Živý běh (`director.measure.ts` → `director.json`, odpovědi `director-answers.json`)
+
+gpt-oss-20b lokálně (llama.cpp, RTX 3090; Groq klíč na stroji není, viz Rozhodnutí), kompaktní režisér jako produkce, jedno volání na větu bez opravného kola, všech 80 vět dev sady. **Volání: 80 dev + 25 nové nahrávky P46E = 105 z 200, 0 USD.**
+
+| Skupina | Žánr odpovědi = klasifikátor nebo očekávaný | Hra z `direct()` |
+|---|---|---|
+| catch, whack, defense, slice | **32/32** (8/8 každý) | 32/32 režisérova hra daného žánru na `lanes`, robot vyhraje (33,9–47,8 s), nečinný prohraje, replay sedí |
+| pasti | 15/16 (x06 „push crates onto switches“: platformer místo úkolu) | 14 režisérových her, 2 rychlá verze |
+| hop, crowd, merge, push (`staged`) | 29/32 (o05, o07 běžec místo plavby, r07 úkol místo arény) | 28 režisérových her, 4 rychlá verze |
+| **celkem** | **76/80 = 0,95** (brána 0,8) | 74 režisérových her, robot vyhraje 74/74; 6× rychlá verze s důvodem |
+
+- Model odpověděl starým tvarem `GenreSpec` 80× z 80, recept ani jednou. Žádná věta mimo MVP nedostala žánr pruhů.
+- **Rychlá verze s důvodem (6, všechny starých žánrů):** r01 a m06 a x02 `UNREPAIRED` (robot hru odpovědi prohrál), m01 a x03 `UNREPAIRED` (pravidla odpovědi: fáze, do které nic nevede), p03 `MALFORMED` (visící odkaz v logice a pravidlech, `DANGLING_REFERENCE`).
+- **`VERB_UNPROVED` u 69 ze 74 režisérových her:** pravidla a průběh, které model k větě napsal, neprošly a vypadly, nebo trojici záměru žádný svědek nedokazuje. U 30 z 32 MVP vět jsou chybějící trojice tytéž, jaké rychlá verze přizná (`composition.unmet`, např. „honey hazard bear“ – záměr čte padající med jako hrozbu). **c05 a s02** navíc ztratí svědka bomby („bomb hazard chef/ninja“): `ruleRoles` odpovědi zopakují role žánru (egg, bomb) a sonda hrozby pak nic nedokáže. Hra robot vyhraje; neopraveno (nález níž).
+- **Cena za hru** (tokeny volání × ceník Groq 0,075 / 0,30 USD za 1M): průměr **0,00042 USD**, max 0,00063 USD (3 697 tokenů vstupu, 460 výstupu v průměru).
+- **Doba volání** (lokálně, ne Groq): p50 5,5 s, p95 9,3 s.
+- **Rychlá verze** (`draftGameSpecWithMeta`, 80 vět, Rapier načtený): p95 1,22 s studená, 0,82 s zahřátá (max 2,0 s). T14 kód návrhu nemění.
+- **Čtení modelem** (`src/play/read/`) beze změny: je vypnuté, dokud `PLAY_READER` není `on`, a režisér žánry pruhů volí bez něj 32/32.
+
+### Nahrávky P46E znovu (`evals/play/p46e/`)
+
+`p46-fixtures.test.ts` chce, aby každá nahraná odpověď byla z dnešního kompaktního promptu. Prompt se změnil, takže 25 odpovědí bylo nahráno znovu stejnou cestou jako v P46E T5 (`record.cmd`, gpt-oss-20b lokálně, 25 volání, žádné selhání) a `after.json` přeměřený jeho měřidlem. Výsledek: `ready` 25/25 a pravidla i logika 100 % beze změny; `adds` 0,24 → 0,36 (boss 6 → 9, akce 1 → 2), jen postavy 10 → 8; `direct()` dá hru z odpovědi u 22 místo 25 (h02, o03, o05 skončí v `direct()` jako `UNREPAIRED`, AI verze přesto vyjde přes roub na rychlou hru). j08 a nově f01 („a dragon guards its gold hoard from greedy knights“) odpověděly obranou. Soud logiky P45B nad týmiž odpověďmi (`director-logic.json`): `logic_proved` raw 2 → 0, s opravou vstupu do fáze 4 → 3 z 25. Jde o nové odpovědi modelu, ne o stejné odpovědi pod jinou cestou – rozdíl je šum nahrávky a změna promptu dohromady, příčinu jednotlivých řádků nerozlišuji.
+
+### Testy
+
+- `director-prompt.test.ts`: každý nabízený žánr má narážky nebo větu s příkladem, čtyři žánry pruhů stojí v promptu i ve schématu oběma tvary, kusy koster schéma odmítne, tabulka po pohybech obsahuje každou nabízenou buňku, rozpočet 15 000 B.
+- `director.test.ts` (**pin**): odpověď se žánrem pruhů dá hru toho žánru na `lanes` – receptem i u věty, kterou klíčová slova hrají jinak („A fox in a dark forest“), starým tvarem u věty žánru. Mutace „recept režiséra bez `lanes`“ – 4 testy receptu červené (obnoveno ze zálohy).
+- Cílené: `src/play/director` (vč. `p46-fixtures` 26/26), `src/play/__tests__/director*`, `draft.test.ts`, šev režiséra, burst P53, testy pruhů a čtyř žánrů – 1 675/1 675; `src/play/genre` + `src/play/compose` 1 912/1 912; replay brána 80/80; `tsc` 0.
+
+### Nález pro T15 / opakování T14
+
+- `ruleRoles` odpovědi, které opakují roli žánru pruhů (stejný popisek a druh jako ovoce nebo bomba), shodí svědka hrozby (c05, s02). Kandidát na opravu: u žánru pruhů takové role pravidel zahodit dřív, než se hra složí.
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.
@@ -253,3 +297,12 @@ Píše ho `P54C_OUT=baseline npx vitest run --config vitest.measure.mts evals/pl
 - T13: testy P51, P52 a P46A, které braly věty chytání a obrany jako vzorek staré hry, dostaly náhradní věty se stejnými díly a stejným účelem (bez padání a nádoby, jeden útočník); jejich původní věty teď hrají nový žánr, což je cíl plánu. Štítky sad P51 a P52 se nemění (záznam jejich měření).
 - T13: `p46e/after.json` a `rules/coverage-p41.json` přeměřené jejich měřidly bez modelu – změna je jen důsledkem vět obrany; nahrávky odpovědí režiséra a prompt `4ff1d2c9` se nemění, nové nahrání patří k T14.
 - T13: rekurzivní `grep` nad `evals/` při hledání původu vět prošel bajty souborů včetně `holdout.json` (žádný řádek z něj se nevypsal, obsah jsem neviděl); měřidlo dosahu (`scan.measure.ts`) sealované sady přeskakuje jménem dřív, než je otevře.
+- T14: živý běh jede na gpt-oss-20b lokálně (llama.cpp na RTX 3090, cesta nahrávek P46E), ne na Groq – klíč Groq na stroji není (žádný `.env*` kromě `.env.example` v repu ani worktree, `PROJECT-STATUS.md`: klíče se plánují znovu); je to týž model jako režisér dema, 0 USD, ale doba volání není doba produkce a llama.cpp má teplotu 0 (Groq výchozí). Cena za hru je z tokenů a ceníku Groq.
+- T14: jedno volání na větu (`maxRepairRounds: 0`, bez příkladů, kompaktní jako produkce) – strop 200 volání tak drží přesně a měří se první odpověď; produkce s opravným kolem může jen opravit víc.
+- T14: měřeno všech 80 vět dev, i věty žánrů `staged` (hop, crowd, merge, push) – režisér je nenabízí, správně je tedy žánr klasifikátoru; ukazují, že model žánr pruhů nepřetáhne mimo MVP.
+- T14: „režisér zvolí žánr“ = žánr, který jmenuje odpověď modelu (recept → žánr buňky, starý tvar → pole `genre`); žánr hry z `direct()` je zapsaný vedle, protože starý tvar dostane recept od skladatele a jeho žánr tak není volbou režiséra.
+- T14: `DIRECTOR_PENDING` zůstává jako prázdná množina – úloha fáze 3, která pustí žánr živě dřív než opakování T14, do něj žánr přidá a prompt se nepohne.
+- T14: místo zvýšení stropu 15 000 B zhuštěný text (tabulka po pohybech, duplicitní věty pokynů pryč); slova pokynů, která testy drží („Multiple actions must coexist in the live recipe“, „FULL INTENT is authoritative“, „Checklist and main verb …“), zůstala.
+- T14: nahrávky P46E nahrané znovu (25 volání v rámci 200) místo úpravy testu – test hlídá, že číslo `after.json` je z dnešního promptu, a stará nahrávka by to už neplatila.
+- T14: nález s `ruleRoles` (c05, s02) neopravený – AC ho nežádá (hra robot vyhraje, upgrade ji označí `VERB_UNPROVED`) a oprava by měnila skládání odpovědí všech žánrů pruhů.
+- T14: dva rekurzivní `grep` po verzi promptu `4ff1d2c9` nad `evals/` prošly bajty souborů včetně `holdout.json` (bez shody, nic se nevypsalo, obsah jsem neviděl); další hledání `holdout.json` vynechává jménem (`--exclude`).

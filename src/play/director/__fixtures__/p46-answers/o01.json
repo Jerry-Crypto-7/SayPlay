@@ -3,12 +3,12 @@
  "sentence": "A rabbit steals carrots and runs from a fox",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:35:26.354Z",
- "ms": 22270,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:11:41.836Z",
+ "ms": 15315,
  "answer": {
-  "plan": "Create an arena‑escape game where a rabbit collects carrots while evading a fox.",
+  "plan": "Create an arena‑escape game where a rabbit collects carrots while evading a fox on a forest trail.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -42,19 +42,19 @@
      "id": "carrot",
      "kind": "collectible",
      "label": "carrot",
-     "count": 1
+     "count": null
     },
     {
      "id": "fox",
      "kind": "chaser",
      "label": "fox",
-     "count": 1
+     "count": null
     }
    ],
    "things": null,
    "rules": [
     {
-     "id": "grab_carrot",
+     "id": "catch_carrot",
      "verb": "collect",
      "when": {
       "contact": [
@@ -70,22 +70,9 @@
      "do": [
       {
        "grab": "other"
-      }
-     ]
-    },
-    {
-     "id": "fox_chase",
-     "verb": "chase",
-     "when": {
-      "contact": [
-       "player",
-       "fox"
-      ]
-     },
-     "if": null,
-     "do": [
+      },
       {
-       "damage": 1
+       "score": 10
       }
      ]
     }

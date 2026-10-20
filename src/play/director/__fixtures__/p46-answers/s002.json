@@ -3,12 +3,12 @@
  "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
  "axis": "arena.escape",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:38:10.786Z",
- "ms": 6391,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:14:36.099Z",
+ "ms": 6819,
  "answer": {
-  "plan": "Create an arena‑escape game where a knight collects three keys while ghosts chase him in a haunted castle.",
+  "plan": "Create an arena‑escape game where a knight collects three keys in a haunted castle while ghosts chase him, using a simple phase‑timer logic to spawn ghosts.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -66,28 +66,16 @@
    "things": null,
    "rules": [
     {
-     "id": "spawn_keys",
+     "id": "spawn_ghost",
      "verb": "spawn",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
        "spawn": {
-        "role": "key1",
-        "at": "player"
-       }
-      },
-      {
-       "spawn": {
-        "role": "key2",
-        "at": "player"
-       }
-      },
-      {
-       "spawn": {
-        "role": "key3",
+        "role": "ghost1",
         "at": "player"
        }
       }
@@ -97,7 +85,7 @@
      "id": "ghost_wave",
      "verb": "wave",
      "when": {
-      "phase": "start"
+      "phase": "second"
      },
      "if": null,
      "do": [
@@ -111,18 +99,84 @@
      ]
     },
     {
-     "id": "ghost_chase",
-     "verb": "chase",
+     "id": "collect_key1",
+     "verb": "collect",
      "when": {
       "contact": [
        "player",
-       "ghost1"
+       "key1"
       ]
      },
      "if": null,
      "do": [
       {
-       "damage": 1
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "collect_key2",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key2"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "collect_key3",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "key3"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "grab": "other"
+      },
+      {
+       "count": {
+        "counter": "items",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "win_condition",
+     "verb": "win",
+     "when": {
+      "counter": {
+       "name": "items",
+       "atLeast": 3
+      }
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -136,25 +190,17 @@
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "mid"
+      "id": "second"
      }
     ],
     "events": null
    },
-   "boss": {
-    "role": "ghost",
-    "name": "Haunted Specter",
-    "attack": "charge"
-   },
+   "boss": null,
    "abilities": [],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "segments": null
   }
  },
  "failure": null

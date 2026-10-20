@@ -3,15 +3,15 @@
  "answers": "src/play/director/__fixtures__/p46-answers",
  "summary": {
   "n": 25,
-  "authored": 25,
+  "authored": 22,
   "ready": 25,
   "readyShare": 1,
   "keptRules": 1,
   "keptLogic": 1,
-  "adds": 0.24,
-  "onlyCharacters": 10,
-  "boss": 6,
-  "action": 1,
+  "adds": 0.36,
+  "onlyCharacters": 8,
+  "boss": 9,
+  "action": 2,
   "segments": 0,
   "actionLost": 0,
   "reasons": {}
@@ -48,7 +48,9 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "boss"
+   ],
    "actionLost": false
   },
   {
@@ -64,9 +66,7 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
@@ -102,6 +102,7 @@
    "keptLogic": true,
    "adds": [
     "boss",
+    "action",
     "characters"
    ],
    "actionLost": false
@@ -127,8 +128,8 @@
   {
    "id": "h02",
    "sentence": "shopping cart race in a supermarket",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -137,7 +138,9 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "characters"
+   ],
    "actionLost": false
   },
   {
@@ -154,7 +157,8 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss"
+    "boss",
+    "characters"
    ],
    "actionLost": false
   },
@@ -194,12 +198,12 @@
    "id": "m03",
    "sentence": "Grandma kart",
    "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directedReason": null,
    "status": "ready",
    "reason": null,
    "rules": [
     3,
-    3
+    4
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -221,9 +225,7 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {
@@ -253,7 +255,7 @@
    "reason": null,
    "rules": [
     0,
-    4
+    1
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -318,8 +320,8 @@
   {
    "id": "o03",
    "sentence": "Racing car escaping and shooting enemies",
-   "directed": "authored",
-   "directedReason": "VERB_UNPROVED",
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
@@ -329,6 +331,7 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
+    "boss",
     "characters"
    ],
    "actionLost": false
@@ -342,11 +345,12 @@
    "reason": null,
    "rules": [
     3,
-    3
+    4
    ],
    "keptRules": true,
    "keptLogic": true,
    "adds": [
+    "boss",
     "characters"
    ],
    "actionLost": false
@@ -354,17 +358,19 @@
   {
    "id": "o05",
    "sentence": "Hamster escapes a supermarket Roomba",
-   "directed": "authored",
-   "directedReason": null,
+   "directed": "draft",
+   "directedReason": "UNREPAIRED",
    "status": "ready",
    "reason": null,
    "rules": [
     3,
-    4
+    3
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [],
+   "adds": [
+    "boss"
+   ],
    "actionLost": false
   },
   {
@@ -392,7 +398,7 @@
    "reason": null,
    "rules": [
     3,
-    3
+    4
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -426,7 +432,7 @@
    "reason": null,
    "rules": [
     3,
-    4
+    3
    ],
    "keptRules": true,
    "keptLogic": true,
@@ -447,7 +453,6 @@
    "keptRules": true,
    "keptLogic": true,
    "adds": [
-    "boss",
     "characters"
    ],
    "actionLost": false

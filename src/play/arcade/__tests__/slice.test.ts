@@ -144,13 +144,13 @@ describe('slice genre is live (P54C T8)', () => {
   });
 
   // P54C T13: klasifikátor krájení zná – jen co letí nebo je ovoce; cesta džunglí mačetou krájení není.
-  it('is offered to sentences about flying things (T13), not by the director before T14', () => {
+  it('is offered to sentences about flying things (T13) and by the director (T14)', () => {
     for (const sentence of ['slice the flying fruit but not the bombs', 'a ninja slashes watermelons in the dojo', 'cut the oranges as they fly']) {
       expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).toBe('slice');
     }
     expect(classifyGenre('slice through the jungle with a machete to find the temple', null).ranked[0]?.genre).not.toBe('slice');
-    expect(DIRECTOR_PENDING.has('slice')).toBe(true);
-    expect(JSON.stringify(GENRE_ANSWER_SCHEMA)).not.toContain('"slice"');
+    expect(DIRECTOR_PENDING.has('slice')).toBe(false);
+    expect(JSON.stringify(GENRE_ANSWER_SCHEMA)).toContain('"slice"');
   });
 });
 

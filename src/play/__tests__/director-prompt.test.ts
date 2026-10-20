@@ -18,9 +18,9 @@ import { EMISSION_MODEL } from '@/model/prompt';
 import { goldenPrompts } from '../../../evals/play/golden';
 import runnerFixture from '../arcade/__fixtures__/runner.json';
 import shooterFixture from '../arcade/__fixtures__/shooter.json';
-import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, readyModes } from '../director/answer-schema';
+import { DIRECTOR_PENDING, GENRE_ANSWER_SCHEMA, readyModes, recipeAnswerSchema } from '../director/answer-schema';
 import { buildCompactRequest } from '../director/compact';
-import { COURSE_LINE, DIRECTOR_PROMPT_VERSION, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
+import { COURSE_LINE, DIRECTOR_PROMPT_VERSION, GENRE_PITCH, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
 import { readDirectorAnswer } from '../director/read';
 import { repairDeterministically } from '../director/repair';
 import { draftGameSpecWithMeta } from '../draft';
@@ -101,15 +101,53 @@ describe('director prompt', () => {
   it('offers live recipe movement names without exposing low-level control specs', () => {
     for (const system of [directorSystemPrompt(), buildCompactRequest('x', null).system]) {
       expect(system).not.toMatch(/tap_go|CONTROLS|controlParams/);
+      // P54C T14: tabulka po pohybech – řádek `- <pohyb>: akce/cíl/hrozby, …`, víc kusů spojuje `+`.
+      const rows = system.split('\n').slice(system.split('\n').findIndex((line) => line.startsWith('LIVE COMBINATIONS')) + 1);
+      const entriesOf = (move: string) => rows.find((line) => line.startsWith(`- ${move}: `))?.slice(`- ${move}: `.length).split(', ') ?? [];
       for (const cell of liveCells()) {
-        const line = `- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`;
-        // P54C T5: živý žánr, který režisér pozná až v T14, v promptu není – ani buňkou, ani řádkem žánru.
-        if (DIRECTOR_PENDING.has(cell.preset.genre)) expect(system, cell.id).not.toContain(line);
-        else expect(system).toContain(line);
+        const entry = `${cell.recipe.actions.join('+') || '-'}/${cell.recipe.objective}/${cell.recipe.threats.join('+') || '-'}`;
+        // P54C T5: živý žánr, který režisér ještě nenabízí (`DIRECTOR_PENDING`), v promptu není – ani buňkou, ani řádkem žánru.
+        if (DIRECTOR_PENDING.has(cell.preset.genre)) expect(entriesOf(cell.recipe.move), cell.id).not.toContain(entry);
+        else expect(entriesOf(cell.recipe.move), cell.id).toContain(entry);
       }
       for (const genre of DIRECTOR_PENDING) expect(system).not.toMatch(new RegExp(`^- ${genre} \\(`, 'm'));
       expect(system).toContain('unmet');
     }
+  });
+
+  // P54C T14: žánr bez narážek (žánry pruhů) by v nabídce stál jako „- catch ()“ – model by nevěděl, co hraje.
+  it('describes every offered genre: its cues or one sentence with one example sentence (P54C T14)', () => {
+    const system = directorSystemPrompt();
+    for (const module of MODULES.filter((each) => readyModes(each).length > 0)) {
+      const about = system.split('\n').find((text) => text.startsWith(`- ${module.id} (`))?.match(/^- \S+ \((.*)\): modes /)?.[1];
+      expect(about, module.id).toBeTruthy();
+      if (module.cues.length === 0) {
+        expect(GENRE_PITCH[module.id], module.id).toBeDefined();
+        expect(about, module.id).toMatch(/^[^;"]+; "[^"]+"$/);
+      }
+    }
+    for (const genre of ['catch', 'whack', 'defense', 'slice'] as const) {
+      expect(readyModes(GENRE_MODULES[genre] as GenreModule), genre).toEqual(['default']);
+      expect(system, genre).toContain(`- ${genre} (${GENRE_PITCH[genre]!}): modes default;`);
+    }
+  });
+
+  // P54C T14: odpověď smí jmenovat živé žánry pruhů oběma tvary; kusy os koster (hop, crowd, drop, merge, push) dál ne.
+  it('accepts the four lane genres as a recipe and as a legacy GenreSpec, never the staged pieces', () => {
+    const variants = (GENRE_ANSWER_SCHEMA.properties as Record<string, { anyOf: { properties: Record<string, { enum?: unknown[] }> }[] }>).spec.anyOf;
+    const genres = variants.flatMap((variant) => variant.properties.genre?.enum ?? []);
+    for (const genre of ['catch', 'whack', 'defense', 'slice']) expect(genres, genre).toContain(genre);
+    for (const genre of ['hop', 'crowd', 'merge', 'push']) expect(genres, genre).not.toContain(genre);
+    const content = { hero: 'fox', setting: 'forest', unmet: [] };
+    for (const cell of liveCells().filter((live) => ['catch', 'whack', 'defense', 'slice'].includes(live.preset.genre))) {
+      expect(recipeAnswerSchema.safeParse({ ...content, recipe: cell.recipe }).success, cell.id).toBe(true);
+    }
+    for (const recipe of [
+      { move: 'hop', actions: [], objective: 'reach', threats: [] },
+      { move: 'drop', actions: ['merge'], objective: 'score', threats: [] },
+      { move: 'roam', actions: ['push'], objective: 'defeat', threats: [] },
+      { move: 'crowd', actions: [], objective: 'defeat', threats: [] },
+    ]) expect(recipeAnswerSchema.safeParse({ ...content, recipe }).success, recipe.move).toBe(false);
   });
 
   it('keeps the registry of mechanics and archetypes for remix and repair rounds', () => {
@@ -136,6 +174,8 @@ describe('director prompt', () => {
   // P39 T11: 10 082 B – obsazení místo `enemy`/`enemyMoves`/`collectible`/`target`: tvar položky a řádek na každé `does`.
   // P45B T10: +1 500 B na průběh hry (`logic`) – řádek gramatiky a příklad s fází, časovačem a vlnou; strop 14 200 B.
   // P46E T3: řádek novinek AI verze (boss, akce, úseky) s příkladem na každý hlavní žánr – 14 964 B; strop 15 000 B.
+  // P54C T14: čtyři žánry pruhů (řádek s větou a příkladem, buňky v tabulce, +828 B) by daly ~15 800 B; tabulka živých
+  // kombinací po pohybech a zkrácené duplicitní věty pokynů – 14 968 B, strop beze změny.
   it('stays under 15 000 bytes for all forty golden sentences, with examples and the complete intent', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {

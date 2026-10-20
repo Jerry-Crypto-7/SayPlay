@@ -66,3 +66,14 @@ node D:/claude/_shared/gpu-lock.mjs -- powershell -NoProfile -ExecutionPolicy By
 **Po přenosu bosse a úseků na roub (15. 10. večer, po sloučení P46C; `after.json` přepsaný):** `onQuickGame` má nově před sebou kandidáta s bossem a scénářem úseků odpovědi (`withAiExtras`). **`adds` 6 z 25 (24 %)**, nově králík (o01) a muchomůrky (o02) s bossem. Úseky přidá pořád 0 a akce 0. Strop téhle cesty je 15 z 25: 10 odpovědí je aréna, která průběh (boss, úseky) nemá. Cíl 80 % bez bosse v aréně splnit nejde.
 
 **Oprava cestou** (`_upgrade.ts`): kandidát ověřený na prvním seedu se publikuje na prvním seedu, který drží akci věty. Když se liší, ověří se znovu i roub. Králík s touto nahrávkou předtím skončil `NOT_PLAYABLE` při publikaci.
+
+## P54C T14 (20. 10.): nové nahrávky s promptem `b830dc2d`
+
+Režisér nabízí čtyři žánry pruhů (chytání, bouchání, obrana, krájení) a prompt se zhustil (`evals/play/p54c/README.md`, T14), takže verze kompaktního promptu přešla `4ff1d2c9` → `b830dc2d` a `p46-fixtures.test.ts` chtěl nové nahrávky. Všech 25 odpovědí je nahraných znovu (`record.cmd`, gpt-oss-20b lokálně, 25 volání bez selhání, 4–15 s) a `after.json` přeměřený.
+
+- `ready` 25 z 25 a `keptRules` / `keptLogic` 100 % beze změny.
+- **`adds` 0,24 → 0,36** (9 z 25): boss 6 → 9 (nově d04, o03, o04, o05; s021 bosse ztratil), akce 1 → 2 (nově f10), úseky 0. Jen postavy 10 → 8.
+- `direct()` dá hru z odpovědi u 22 místo 25: h02, o03 a o05 skončí `UNREPAIRED` a AI verze vyjde přes roub na rychlou hru.
+- j08 a nově f01 (drak brání poklad před rytíři) odpověděly obranou; f01 tím ztratil nové postavy (`adds: []`).
+- Soud logiky P45B (`director-logic.json`): `logic_proved` raw 2 → 0, s opravou vstupu do fáze 4 → 3 z 25; logiku napíše 23 místo 25.
+- Jsou to nové odpovědi modelu, ne staré odpovědi novou cestou: rozdíl je změna promptu a šum nahrávky dohromady a po řádcích ho nerozlišuji.

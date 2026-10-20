@@ -3,28 +3,28 @@
  "sentence": "Racing car escaping and shooting enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:35:43.849Z",
- "ms": 8807,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:11:58.785Z",
+ "ms": 7314,
  "answer": {
-  "plan": "Create a racing‑shooting car game where the player drives, evades, and fires at enemies while racing to the finish line.",
+  "plan": "Create a driving‑race game where the car must outrun police while firing at them.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
    "hero": "car",
    "cast": [
     {
-     "label": "enemy",
+     "label": "police car",
      "does": "shoot_at",
      "verb": "shoot",
      "states": null,
      "patrol": false
     },
     {
-     "label": "finish_line",
-     "does": "reach",
-     "verb": "reach",
+     "label": "enemy",
+     "does": "shoot_at",
+     "verb": "shoot",
      "states": null,
      "patrol": false
     }
@@ -32,50 +32,89 @@
    "heroAction": "none",
    "setting": "open country",
    "palette": "desert",
-   "params": null,
+   "params": {
+    "hazards": 0,
+    "turbo": 1,
+    "roadWidth": 8000,
+    "roadEntryWidth": 8000,
+    "crashBudget": 3,
+    "namedLandingTarget": 0,
+    "touchdownSpeed": 30,
+    "gravityRisePct": 10,
+    "lengthM": 400,
+    "topSpeed": 300,
+    "gravity": 1200,
+    "lives": 3,
+    "targetScore": 2000,
+    "timeLimit": 60
+   },
    "ruleRoles": [
     {
-     "id": "enemy",
+     "id": "police",
      "kind": "chaser",
-     "label": "enemy",
+     "label": "police car",
      "count": null
     },
     {
-     "id": "finish",
-     "kind": "destination",
-     "label": "finish line",
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "enemy",
      "count": null
     }
    ],
    "things": null,
    "rules": [
     {
-     "id": "shoot_enemy",
-     "verb": "shoot",
+     "id": "startTimer",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "enemy"
-      ]
+      "phase": "start"
      },
      "if": null,
      "do": [
       {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
+       "startTimer": {
+        "timer": "race",
+        "ticks": 60
+       }
       }
      ]
     },
     {
-     "id": "reach_finish",
-     "verb": "reach",
+     "id": "raceTimer",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "finish"
-      ]
+      "timer": "race"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "mid"
+      }
+     ]
+    },
+    {
+     "id": "midPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "mid"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "police",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "endPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "end"
      },
      "if": null,
      "do": [
@@ -89,7 +128,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "race_timer"
+      "id": "race"
      }
     ],
     "phases": [
@@ -106,13 +145,13 @@
     "events": null
    },
    "boss": {
-    "role": "enemy",
-    "name": "Enemy Drone",
-    "attack": "shoot"
+    "role": "police car",
+    "name": "Police Pursuit",
+    "attack": "charge"
    },
    "abilities": [
-    "shoot",
-    "dash"
+    "dash",
+    "shoot"
    ],
    "segments": [
     "newFoe",

@@ -3,12 +3,12 @@
  "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
  "axis": "control:ball",
  "model": "gpt-oss-20b",
- "promptVersion": "4ff1d2c9",
- "directorPromptVersion": "0cf0988c",
- "recordedAt": "2026-10-15T15:37:32.777Z",
- "ms": 5750,
+ "promptVersion": "b830dc2d",
+ "directorPromptVersion": "bc4f1618",
+ "recordedAt": "2026-10-20T06:13:59.260Z",
+ "ms": 6990,
  "answer": {
-  "plan": "Create a rolling‑hill platformer where the hedgehog rolls downhill while dodging foxes that appear as moving obstacles.",
+  "plan": "Create a platform‑style runner where a hedgehog rolls down a mushroom hill while dodging foxes.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -19,12 +19,12 @@
      "does": "avoid",
      "verb": "obstacle",
      "states": null,
-     "patrol": true
+     "patrol": false
     },
     {
-     "label": "mushroom hill",
+     "label": "mushroom",
      "does": "scenery",
-     "verb": "terrain",
+     "verb": "static",
      "states": null,
      "patrol": false
     }
@@ -44,41 +44,72 @@
      "count": null
     },
     {
-     "id": "hill",
+     "id": "mushroom",
      "kind": "prop",
-     "label": "mushroom hill",
+     "label": "mushroom",
      "count": null
     }
    ],
    "things": null,
    "rules": [
     {
-     "id": "fox_spawn",
-     "verb": "spawn",
+     "id": "avoid_fox",
+     "verb": "avoid",
      "when": {
-      "phase": "first"
+      "contact": [
+       "player",
+       "fox"
+      ]
      },
      "if": null,
      "do": [
       {
-       "wave": {
-        "role": "fox",
-        "count": 3,
-        "at": "edge"
+       "damage": 1
+      },
+      {
+       "lose": true
+      }
+     ]
+    },
+    {
+     "id": "roll_start",
+     "verb": "roll",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "roll",
+        "ticks": 600
        }
       }
      ]
     },
     {
-     "id": "fox_move",
-     "verb": "move",
+     "id": "roll_timer",
+     "verb": "wait",
      "when": {
-      "phase": "second"
+      "timer": "roll"
      },
      "if": null,
      "do": [
       {
-       "toggle": "fox"
+       "goPhase": "end"
+      }
+     ]
+    },
+    {
+     "id": "end_phase",
+     "verb": "end",
+     "when": {
+      "phase": "end"
+     },
+     "if": null,
+     "do": [
+      {
+       "win": true
       }
      ]
     }
@@ -87,15 +118,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase_timer"
+      "id": "roll"
      }
     ],
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "end"
      }
     ],
     "events": null
