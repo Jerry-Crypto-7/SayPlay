@@ -127,7 +127,8 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   // P54C T4: ovládání nových žánrů ještě nemají svět, takže nic nečtou; co jeho svět čte, doplní úloha žánru.
   // T5 chytání: padající věc (`coin`) a bomba (`hazard`) nesou model z popisku, životy berou bomby a propadlé ovoce, scéna kreslí sadu prostředí.
   // T6 bouchání: krtek (`target`) a hodný cíl (`hazard`) nesou model z popisku, životy berou hodné cíle a schovaní krtci.
-  lanes: arcade({ setting: true, cues: 'five lanes: catch falling things, whack moles, slice fruit, defend the lanes', roles: ['coin', 'hazard', 'target'], finish: false, labels: ['player', 'coin', 'hazard', 'target'], mechanics: LIVES_AND_TIMER }),
+  // T7 obrana: nepřítel vln (`chaser`) nese model z popisku, bráněná věc (`castle`) je jen popisek (hradba je primitivum); životy berou průlomy.
+  lanes: arcade({ setting: true, cues: 'five lanes: catch falling things, whack moles, slice fruit, defend the lanes', roles: ['coin', 'hazard', 'target', 'chaser', 'castle'], finish: false, labels: ['player', 'coin', 'hazard', 'target', 'chaser'], mechanics: LIVES_AND_TIMER }),
   hop: arcade({ cues: 'hop across busy lanes, crossy road, frogger', roles: [], finish: false, labels: [], mechanics: [] }),
   crowd: arcade({ cues: 'grow a crowd through gates, count masters', roles: [], finish: false, labels: [], mechanics: [] }),
   merge: arcade({ cues: 'drop and merge, suika, 2048', roles: [], finish: false, labels: [], mechanics: [] }),

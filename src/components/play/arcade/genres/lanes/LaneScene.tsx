@@ -20,18 +20,20 @@ import { renderHeld } from '../../effects/render-feel';
 import type { ArcadeSession } from '../../session';
 import type { WorldProps } from '../../World';
 import { CatchScene } from '../catch/CatchScene';
+import { DefenseScene } from '../defense/DefenseScene';
 import { WhackScene } from '../whack/WhackScene';
 
 export { useLanesInput } from './lanes-input';
 
 /**
  * Scéna žánru v pruzích podle pravidla světa (P54C T5): chytání kreslí `CatchScene`, bouchání
- * `WhackScene` (T6), žánr bez vlastní scény kostru pruhů. Další žánry pruhů (T7–T8) přidají svou
- * větev sem, ne do `ArcadeStage`.
+ * `WhackScene` (T6), obranu pruhů `DefenseScene` (T7), žánr bez vlastní scény kostru pruhů. Další
+ * žánry pruhů (T8) přidají svou větev sem, ne do `ArcadeStage`.
  */
 export function LaneStage(props: Omit<WorldProps, 'control' | 'backdrop'>) {
   if (nativeRule(props.session.world.rules, 'catch_fall') !== undefined) return <CatchScene {...props} />;
   if (nativeRule(props.session.world.rules, 'whack_hit') !== undefined) return <WhackScene {...props} />;
+  if (nativeRule(props.session.world.rules, 'defense_hit') !== undefined) return <DefenseScene {...props} />;
   return <LaneScene session={props.session} />;
 }
 

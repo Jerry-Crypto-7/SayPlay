@@ -165,6 +165,8 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
       return { axis: 0, buttons: state[p + BODY.y]! < desired && state[p + BODY.vy]! < 50 ? BUTTON.TAP : 0 };
     }
   }
+  // Obrana pruhů (P54C T7): sonda nestřílí ani nestaví – nepřítel dojde k hradbě a vezme život.
+  if (control === 'lanes' && roleAt(state, target) === ROLE.chaser && world.rules.some((ref) => ref.id === 'defense_hit')) return NO_INPUT;
   // Bouchání (P54C T6): sonda hraje jako robot, dokud hodný cíl nevykoukne z díry; pak do ní bouchne.
   if (control === 'lanes' && roleAt(state, target) === ROLE.hazard && world.rules.some((ref) => ref.id === 'whack_hit')) return holeOpen(state, target) ? { buttons: BUTTON.TAP, axis: axisOfLane(laneOfX(state[t + BODY.x]!)) } : normal;
   // Chytání (P54C T5): sonda hraje jako robot, dokud bomba visí nad obrazem; pak stojí v jejím pruhu, ať do koše spadne právě ona.
@@ -255,6 +257,8 @@ export class WitnessRecorder {
   private readonly launched = new Map<number, { x: number; y: number; z: number; tick: number }>();
   /** Hodné cíle bouchání (P54C T6) zasažené v tomhle tiku; zranily, jen když tik opravdu ubral život. */
   private readonly struckGood: number[] = [];
+  /** Nepřátelé obrany pruhů (P54C T7), kteří v tomhle tiku prošli hradbou; zranili, jen když tik opravdu ubral život. */
+  private readonly breached: number[] = [];
 
   constructor(world: ArcadeWorld, bindings: readonly RoleBinding[], run: 'winner' | 'probe', runId: string) {
     this.world = { ...world, rules: world.rules.map(underlyingRule) };
@@ -449,6 +453,20 @@ export class WitnessRecorder {
         this.add('defeat', player, effect.body, tick, 'target-whacked', state);
       } else if (code === ROLE.hazard) this.struckGood.push(effect.body);
     }
+    // Obrana pruhů (P54C T7): zásah, jehož útočník je šíp z luku hrdiny (druh `bolt`), dokazuje střelbu; nepřítel, kterého
+    // pravidlo zásahu odebere na nule HP, padl. Kdo odejde s HP, prošel hradbou – zranil, ubral-li tik život (`afterTick`).
+    if (ref.id === 'defense_hit') {
+      if (effect.kind === 'hit' && kindAt(this.world, state, effect.by) === 'bolt') this.add('shoot', player, effect.body, tick, 'bolt-hit-in-lane', state);
+      if (effect.kind === 'despawn' && roleAt(state, effect.body) === ROLE.chaser) {
+        if (bodyHp(state, effect.body) === 0) this.add('defeat', player, effect.body, tick, 'enemy-stopped-in-lane', state);
+        else this.breached.push(effect.body);
+      }
+    }
+    // Výhra obrany: žádný nepřítel už nejde a hradba drží – hrdina ji ubránil.
+    if (ref.id === 'defense_goal' && effect.kind === 'win') {
+      const keep = [...this.bindings.values()].find((binding) => binding.roleId === 'castle');
+      this.add('defend', player, keep?.body ?? null, tick, 'held-every-wave', state);
+    }
     if (effect.kind === 'despawn' && effect.body === origin.held && other >= 0 && other !== origin.held && ref.id === 'rule_contact') this.add('deliver', player, origin.held, tick, 'carried-to-destination', state);
     if (effect.kind === 'hit' && effect.amount > 0) {
       if (effect.by === player) {
@@ -591,6 +609,10 @@ export class WitnessRecorder {
       for (const body of this.struckGood) this.harm(body, player, tick, 'good-target-whacked', state);
     }
     this.struckGood.length = 0;
+    if (this.breached.length > 0 && state[HEADER.counters + COUNTER.health]! < before[HEADER.counters + COUNTER.health]!) {
+      for (const body of this.breached) this.harm(body, player, tick, 'enemy-broke-through', state);
+    }
+    this.breached.length = 0;
     const p = bodyBase(player);
     for (let body = 0; body < state[BODY_COUNT]!; body += 1) {
       const binding = this.binding(body, state);
