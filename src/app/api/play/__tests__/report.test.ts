@@ -19,7 +19,7 @@ import { reportedRows, storeFrom } from '../../../../../scripts/p37c/reported.mj
 import { callerOf, store } from '../_publish';
 import { POST as reportGame } from '../games/[id]/report/route';
 import { POST as remixGame } from '../games/[id]/remix/route';
-import { GET as listGames } from '../games/route';
+import { GET as listGames, POST as createGame } from '../games/route';
 
 const BUILTIN = BUILTIN_GAMES[0]!.version.versionId;
 
@@ -27,16 +27,22 @@ const params = (id: string) => ({ params: Promise.resolve({ id }) });
 /** `ip` je adresa od platformy (důvěryhodná jen s `VERCEL=1`), `written` hlavička, kterou si volající píše sám. */
 const report = (id: string, ip: string, written = ip) =>
   reportGame(new Request(`http://play.test/api/play/games/${id}/report`, { method: 'POST', headers: { 'x-vercel-forwarded-for': ip, 'x-forwarded-for': written } }), params(id));
-const feedIds = async (): Promise<string[]> => {
+/**
+ * Ostatní vestavěné hry skryje provozovatel; `BUILTIN` zůstane, protože skrytý rodič
+ * by skryl i svůj remix (nález revize /ship P54A). `feedIds()` ho proto vynechá.
+ */
+const OTHER_BUILTINS = BUILTIN_GAMES.slice(1).map((game) => game.version.versionId).join(',');
+const feedIds = async (withBuiltin = false): Promise<string[]> => {
   const response = await listGames(new Request('http://play.test/api/play/games?recent=24', { headers: { 'x-forwarded-for': '192.0.2.250' } }));
   expect(response.status).toBe(200);
-  return ((await response.json()) as { games: { versionId: string }[] }).games.map((game) => game.versionId);
+  const ids = ((await response.json()) as { games: { versionId: string }[] }).games.map((game) => game.versionId);
+  return withBuiltin ? ids : ids.filter((id) => id !== BUILTIN);
 };
 
-/** Remix vestavěné hry: do feedu jde (T10), nahlásit ho jde. */
+/** Remix vestavěné hry s vlastním titulem (`reskin`): do feedu jde (T10) vedle originálu, nahlásit ho jde. */
 async function publishedRemix(): Promise<string> {
   const response = await remixGame(
-    new Request(`http://play.test/api/play/games/${BUILTIN}/remix`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '192.0.2.251' }, body: JSON.stringify({ chip: 'harder' }) }),
+    new Request(`http://play.test/api/play/games/${BUILTIN}/remix`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '192.0.2.251' }, body: JSON.stringify({ chip: 'reskin' }) }),
     params(BUILTIN),
   );
   expect(response.status).toBe(201);
@@ -56,7 +62,7 @@ describe('POST /api/play/games/:id/report (P54A T11)', () => {
 
   it('hides a game once three different callers report it; one caller reporting again does not count', async () => {
     // Feed jen s remixem: vestavěnou sadu skryje provozovatel.
-    vi.stubEnv('PLAY_FEED_HIDE', BUILTIN_GAMES.map((game) => game.version.versionId).join(','));
+    vi.stubEnv('PLAY_FEED_HIDE', OTHER_BUILTINS);
     const remix = await publishedRemix();
     expect(await feedIds()).toEqual([remix]);
     expect(REPORT_HIDE_VOTES).toBe(3);
@@ -74,18 +80,67 @@ describe('POST /api/play/games/:id/report (P54A T11)', () => {
   });
 
   it('off Vercel callers write their own address, so all of them together are one vote', async () => {
-    vi.stubEnv('PLAY_FEED_HIDE', BUILTIN_GAMES.map((game) => game.version.versionId).join(','));
+    vi.stubEnv('PLAY_FEED_HIDE', OTHER_BUILTINS);
     const remix = await publishedRemix();
     for (const ip of ['203.0.113.50', '203.0.113.51', '203.0.113.52', '203.0.113.53']) expect((await report(remix, ip)).status).toBe(204);
     expect(await feedIds()).toEqual([remix]);
   });
 
   it('a built-in game stays in the feed however many report it', async () => {
-    vi.stubEnv('PLAY_FEED_HIDE', BUILTIN_GAMES.slice(1).map((game) => game.version.versionId).join(','));
+    vi.stubEnv('PLAY_FEED_HIDE', OTHER_BUILTINS);
     vi.stubEnv('VERCEL', '1');
-    expect(await feedIds()).toEqual([BUILTIN]);
+    expect(await feedIds(true)).toEqual([BUILTIN]);
     for (const ip of ['203.0.113.20', '203.0.113.21', '203.0.113.22', '203.0.113.23']) expect((await report(BUILTIN, ip)).status).toBe(204);
-    expect(await feedIds()).toEqual([BUILTIN]);
+    expect(await feedIds(true)).toEqual([BUILTIN]);
+  });
+
+  it('a remix of a hidden game leaves the feed with it, also for votes on the parent (/ship review finding)', async () => {
+    vi.stubEnv('PLAY_FEED_HIDE', OTHER_BUILTINS);
+    const remix = await publishedRemix();
+    const again = (await remixGame(
+      new Request(`http://play.test/api/play/games/${remix}/remix`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '192.0.2.252' }, body: JSON.stringify({ chip: 'harder' }) }),
+      params(remix),
+    ));
+    expect(again.status).toBe(201);
+    const grandchild = ((await again.json()) as { versionId: string }).versionId;
+    // `harder` titul nemění: z dvou remixů s jedním titulem jde novější.
+    expect(await feedIds()).toEqual([grandchild]);
+    // Rodič skrytý hlasy (není vestavěný): jeho remix jde ven s ním.
+    vi.stubEnv('VERCEL', '1');
+    for (const ip of ['203.0.113.80', '203.0.113.81', '203.0.113.82']) expect((await report(remix, ip)).status).toBe(204);
+    expect(await feedIds()).toEqual([]);
+    // Vestavěný rodič skrytý provozovatelem: celá linie mizí.
+    vi.stubEnv('PLAY_FEED_HIDE', `${OTHER_BUILTINS},${BUILTIN}`);
+    vi.stubEnv('PLAY_FEED_KEEP', remix);
+    expect(await feedIds(true)).toEqual([]);
+  });
+
+  it('a report from another site is refused and not counted (/ship review finding)', async () => {
+    vi.stubEnv('PLAY_FEED_HIDE', OTHER_BUILTINS);
+    const remix = await publishedRemix();
+    vi.stubEnv('VERCEL', '1');
+    const from = (headers: Record<string, string>, ip: string) =>
+      reportGame(new Request(`http://play.test/api/play/games/${remix}/report`, { method: 'POST', headers: { 'x-vercel-forwarded-for': ip, ...headers } }), params(remix));
+    expect((await from({ 'sec-fetch-site': 'cross-site' }, '203.0.113.90')).status).toBe(403);
+    expect((await from({ 'sec-fetch-site': 'same-site' }, '203.0.113.91')).status).toBe(403);
+    expect((await from({ origin: 'https://evil.test', host: 'play.test' }, '203.0.113.92')).status).toBe(403);
+    expect(await reportedRows(store())).toEqual([]);
+    // Server poslouchá na jiné adrese, než kterou vidí prohlížeč: platí `host`, ne `request.url`.
+    expect((await from({ origin: 'https://sayplay.example', host: 'sayplay.example' }, '203.0.113.93')).status).toBe(204);
+    expect((await from({ 'sec-fetch-site': 'same-origin', origin: 'https://sayplay.example' }, '203.0.113.94')).status).toBe(204);
+    expect((await reportedRows(store())).map((row) => row.versionId)).toEqual([remix]);
+  });
+
+  it('a game that cannot be in the feed takes no vote and is not listed (/ship review finding)', async () => {
+    // Návrh ze slov: hra hráče bez relace, do feedu nesmí – hlas by jen zaplnil seznam provozovatele.
+    const response = await createGame(
+      new Request('http://play.test/api/play/games', { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '192.0.2.253' }, body: JSON.stringify({ sentence: 'Race through five neon gates in order.' }) }),
+    );
+    expect(response.status).toBeLessThan(300);
+    const versionId = ((await response.json()) as { url: string }).url.split('/').at(-1)!;
+    expect((await store().get(versionId))?.relation).toBeUndefined();
+    expect((await report(versionId, '203.0.113.95')).status).toBe(204);
+    expect(await reportedRows(store())).toEqual([]);
   });
 
   it('an unknown or malformed id is 404', async () => {
@@ -94,7 +149,7 @@ describe('POST /api/play/games/:id/report (P54A T11)', () => {
   });
 
   it('goes through the gate: a caller over the rate cap is refused and nothing is counted', async () => {
-    vi.stubEnv('PLAY_FEED_HIDE', BUILTIN_GAMES.map((game) => game.version.versionId).join(','));
+    vi.stubEnv('PLAY_FEED_HIDE', OTHER_BUILTINS);
     const remix = await publishedRemix();
     vi.stubEnv('VERCEL', '1');
     expect((await report(remix, '203.0.113.40')).status).toBe(204);
@@ -110,7 +165,7 @@ describe('POST /api/play/games/:id/report (P54A T11)', () => {
 
 /** Provozovatel vidí nahlášené hry a vrátí neprávem skrytou (P54A T11a, nález revize T11-1). */
 describe('reported games for the operator (P54A T11a)', () => {
-  const builtinIds = BUILTIN_GAMES.map((game) => game.version.versionId).join(',');
+  const builtinIds = OTHER_BUILTINS;
 
   beforeEach(() => {
     resetRateWindows();
