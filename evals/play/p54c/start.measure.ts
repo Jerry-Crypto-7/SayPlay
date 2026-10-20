@@ -9,7 +9,8 @@
  * ```
  *
  * `P54C_CHECK=1` nic nepíše a jen porovná věty a buňky se zapsaným `start.json`
- * (důkaz „nic se nepohnulo“ v T4).
+ * (důkaz „nic se nepohnulo“ v T4). Od T13 smějí jinak hrát jen věty `T13_MOVED`
+ * (`rows.ts`), a to přesně zapsaným žánrem.
  */
 
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
@@ -20,7 +21,7 @@ import { expect, it } from 'vitest';
 import { loadRapier } from '../../../src/play/arcade/physics/world';
 import { liveCells } from '../../../src/play/compose/allowed';
 
-import { rowOf, type Row } from './rows';
+import { T13_MOVED, rowOf, type Row } from './rows';
 
 const DIR = join(process.cwd(), 'evals', 'play', 'p54c');
 const OUT = join(DIR, 'start.json');
@@ -57,7 +58,7 @@ it('records the P54C starting state', async () => {
 
   if (process.env.P54C_CHECK === '1') {
     const start = JSON.parse(readFileSync(OUT, 'utf8')) as { sentences: Row[]; liveCells: { ids: string[] } };
-    expect(rows).toEqual(start.sentences);
+    expect(rows).toEqual(start.sentences.map((row) => (Object.hasOwn(T13_MOVED, row.id) ? { ...row, ...T13_MOVED[row.id] } : row)));
     expect(live).toEqual(start.liveCells.ids);
     return;
   }

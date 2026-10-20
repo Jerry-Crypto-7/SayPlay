@@ -56,8 +56,10 @@ import {
 } from '../genre/contract';
 import { familyOf, heroActionOf } from '../genre/families';
 import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
+import { wholeGame } from '../compose/assemble';
 import { compose, type Composition } from '../compose/compose';
 import { compileRecipe } from '../compose/compile';
+import { PRESETS } from '../compose/presets';
 import { extractIntent } from '../intent/extract';
 import type { Intent } from '../intent/contract';
 import { defaultCollectible, defaultFoe, defaultHero, defaultTarget, heroFits } from '../genre/roles';
@@ -1288,7 +1290,11 @@ function draftGenre(
   // Co hod hází, je náboj (projektil = `scenery` se slovesem hodu, P39 T14), ne věc ke sběru – ta zůstane, jak ji věta říká.
   const item: CastItem | null =
     itemLabel === null || goalItem ? null : thrown ? { label: itemLabel, does: 'scenery', verb: AMMO_VERB } : { label: itemLabel, does: 'collect', ...(itemVerb === undefined ? {} : { verb: itemVerb }) };
-  const cast = castOf([
+  // P54C T13: žánr pruhů čte role sám (`draftFill`: co padá, vykukuje, jde k hradbě nebo letí, koho šetřit, co bránit);
+  // obecné role výš znají jen jednoho protivníka a jednu věc ke sběru – hodný cíl a bráněný hrad by zahodily.
+  // Předmět hlavního slovesa klasifikátoru („tap the ghosts…“) přibude, jen když ho modul nečetl.
+  const lanes = wholeGame(PRESETS[`${choice.genre}.${choice.mode}`]?.move ?? 'roam');
+  const cast = lanes ? castOf(fill.cast ?? [], verbThing) : castOf([
     ...(foeLabel === null ? [] : [{ label: foeLabel, does: doesOf(foeLabel, ownFoe) }]),
     ...(shotAt === null || shotAt === foeLabel ? [] : [{ label: shotAt, does: 'shoot_at' as const }]),
     ...(item === null ? [] : [item]),

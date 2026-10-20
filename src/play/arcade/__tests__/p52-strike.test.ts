@@ -170,7 +170,8 @@ describe('P52 T5: arena collect with strike and a guard', () => {
   // T5-R1: úder sám zabil jediného pronásledovatele sběru a zbytek hry byl prázdný – novice 17/20 (bez akce 9/20).
   it.each([
     ['the test sentence', arenaSpec(ARENA.dash[0], ['strike'])],
-    ['d01', draftGameSpecWithMeta('a kid catches raindrops in a jar on the porch and kicks away the hailstones', 1).spec],
+    // P54C T13: d01 sbírá kapky do sklenice („in a jar“) – hraje žánr chytání; sběr s úderem drží táž věta bez sklenice.
+    ['d01', draftGameSpecWithMeta('a kid catches raindrops on the porch and kicks away the hailstones', 1).spec],
   ])('collect with strike alone (%s): novice stays in the band and intermediate wins on seeds 1–20', (_name, spec) => {
     expect(spec.genre).toMatchObject({ id: 'arena', mode: 'collect' });
     expect(spec.abilities).toEqual(['strike']);

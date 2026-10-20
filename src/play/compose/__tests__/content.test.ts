@@ -97,12 +97,16 @@ describe('named surfaces and background activities', () => {
 
 
 describe('defense is distinct from surviving', () => {
-  it.each(['defend the castle from waves of goblins', 'protect the tower from monsters'])('%s remains explicit and unmet', sentence => {
+  // P54C T13: obranu hraje žánr pruhů a ubráněná hradba ji dokazuje – dřív ji žádná hra nehrála a zůstala nesplněná.
+  it.each(['defend the castle from waves of goblins', 'protect the tower from monsters'])('%s remains explicit and the lane defense proves it', sentence => {
     const verb = sentence.split(' ')[0];
     const intent = extractIntent(sentence);
     expect(intent.items).toContainEqual(expect.objectContaining({ axis: 'unknown', verb, essential: true }));
     expect(intent.items.some(item => item.verb === 'survive' && item.essential)).toBe(false);
-    expect(draftGameSpecWithMeta(sentence, 1).composition?.unmet).toContainEqual(expect.objectContaining({ verb }));
+    const draft = draftGameSpecWithMeta(sentence, 1);
+    expect(draft.genre).toMatchObject({ genre: 'defense', mode: 'default' });
+    expect(draft.composition?.witnesses).toContainEqual(expect.objectContaining({ verb }));
+    expect(draft.composition?.unmet).not.toContainEqual(expect.objectContaining({ verb }));
   });
 });
 
@@ -136,11 +140,15 @@ it('keeps a subordinate alien throwing at the astronaut separate from avoided cr
  expect(intent.items).toContainEqual(expect.objectContaining({actor:'alien',verb:'throw',object:'astronaut'}));
  expect(draftGameSpecWithMeta(ASTRONAUT).genre?.cast).toContainEqual(expect.objectContaining({label:'crack',does:'avoid'}));
 });
-it('keeps a defensive throwing opponent and its ammunition while admitting defense',()=>{
+// P54C T13: obrana hradu před draky je obrana pruhů – drak jde k hradbě a hrad je bráněná věc; hod sněhovými koulemi
+// lane defense nehraje (střílí šípy), proto ho skladba přizná jako nesplněný.
+it('keeps a defensive throwing opponent as the wave enemy and admits the throwing it does not play',()=>{
  const draft=draftGameSpecWithMeta('defend a castle from dragons by throwing snowballs');
- expect(draft.genre?.cast).toContainEqual(expect.objectContaining({label:'dragon',does:'throw_at'}));
- expect(draft.genre?.cast).toContainEqual(expect.objectContaining({label:'snowball',does:'scenery',verb:'throw'}));
- expect(draft.composition?.unmet).toContainEqual(expect.objectContaining({verb:'defend'}));
+ expect(draft.genre).toMatchObject({genre:'defense',mode:'default'});
+ expect(draft.genre?.cast).toContainEqual(expect.objectContaining({label:'dragon',does:'shoot_at'}));
+ expect(draft.genre?.cast).toContainEqual(expect.objectContaining({label:'castle',does:'reach'}));
+ expect(draft.composition?.unmet).not.toContainEqual(expect.objectContaining({verb:'defend'}));
+ expect(draft.composition?.unmet).toContainEqual(expect.objectContaining({verb:'throw',object:'dragon'}));
 });
 
 // Composition now executes physical ball witnesses even in synchronous draft tests.

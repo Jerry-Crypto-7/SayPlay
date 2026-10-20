@@ -8,12 +8,12 @@
  * bossem; 3 životy – nepřítel u hradby ubere život, boss všechny. Robot vyhraje za 45–90 s, nečinný
  * hráč prohraje, než první vlna dojde celá.
  *
- * Klasifikátor žánr zatím nevolí (narážky přidá T13), hraje ho buňka `defense.default`; slovesa
- * „defend, protect, guard, stop“ zatím čte jen `draftFill`.
+ * Věty sem vede klasifikátor (T13, sloveso `defend` obrany v `classify.ts`: brání se místo před mnoha,
+ * „tower defense“), hraje ho buňka `defense.default`; režisér ho nabídne od T14.
  */
 
 import { DEFENSE } from '../arcade/pieces/lane-defense';
-import { nounPhrase, plural, singular } from '../draft/lexicon';
+import { nounPhrase, plural, singular, withoutPossessor } from '../draft/lexicon';
 
 import { type CastItem, type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
@@ -23,7 +23,7 @@ export const DEFENSE_DEFAULTS = { enemy: 'goblin', keep: 'castle' } as const;
 /** Bráněná věc („defend the castle“, „protect our village“, „guard the gate“). */
 const KEEP_OBJECT = /\b(?:defend|protect|guard|save|hold)(?:s|ed|ing)?\s+(?:the\s+|your\s+|our\s+|his\s+|her\s+|their\s+|my\s+)?([a-z][a-z -]*)/;
 /** Kdo jde („from waves of goblins“, „against the orcs“, „stop the skeletons“). */
-const FOE_OBJECT = /\b(?:from|against|stop|stops|stopping|repel|repels|fend off|hold off|fight off|shoot|shoots)\s+(?:the\s+|all\s+|every\s+)*(?:(?:waves?|hordes?|swarms?|armies|army|lines?|packs?)\s+of\s+)?([a-z][a-z -]*)/;
+const FOE_OBJECT = /\b(?:from|against|stop|stops|stopping|repel|repels|fend off|hold off|fight off|shoot|shoots|keep(?:s|ing)?(?= (?:the |all |those )?[a-z]+ (?:from|out of) ))\s+(?:the\s+|all\s+|every\s+)*(?:(?:waves?|hordes?|swarms?|armies|army|lines?|packs?)\s+of\s+)?([a-z][a-z -]*)/;
 /** „protect them“, „hold on“ nejsou věc ani nepřítel. */
 const PRONOUN = /^(?:it|him|her|them|me|you|us|on|out|off|up|back)\b/;
 
@@ -40,7 +40,7 @@ function objectOf(pattern: RegExp, sentence: string): string | null {
 export const defenseGenre: GenreModule<'defense'> = {
   id: 'defense',
   modes: ['default'],
-  // Narážky a slovesa věty pro žánr přidá klasifikátor (T13); do té doby ho věta sama nevybere.
+  // Narážky žádné: věty vede sloveso obrany klasifikátoru (T13) – narážka by přidala bod i rvačce („defends himself“).
   cues: [],
   heroClasses: ['humanoid', 'robot', 'animal', 'monster', 'vehicle'],
   paramBounds: {
@@ -77,7 +77,8 @@ export const defenseGenre: GenreModule<'defense'> = {
     const { hero, setting, cast } = draftRoles(sentence, reading);
     // Obrana zná jen dvě role: kdo jde k hradbě, a co se brání.
     let roles = (cast ?? []).filter((item) => item.does !== 'collect').map((item): CastItem => (item.does === 'reach' ? item : { ...item, does: 'shoot_at' }));
-    const text = sentence.toLowerCase();
+    // „from the king's guards“: vlastník není ten, kdo jde k hradbě (P54C T13).
+    const text = withoutPossessor(sentence.toLowerCase());
     const keep = objectOf(KEEP_OBJECT, text);
     const foe = objectOf(FOE_OBJECT, text);
     if (foe !== null && foe !== keep) roles = [{ label: foe, does: 'shoot_at' }, ...roles.filter((item) => item.label !== foe && item.does !== 'shoot_at')];

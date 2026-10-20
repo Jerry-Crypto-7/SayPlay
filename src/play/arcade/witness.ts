@@ -449,7 +449,8 @@ export class WitnessRecorder {
     // bomba ho zranila. Co propadlo, zmizí až na zemi a nedokazuje nic.
     if (ref.id === 'catch_fall' && effect.kind === 'despawn' && state[bodyBase(effect.body) + BODY.y]! > 0) {
       const code = roleAt(state, effect.body);
-      if (code === ROLE.collectible) this.add('collect', player, effect.body, tick, 'caught-in-lane', state);
+      // Záměr čte „catches falling apples“ jako `catch` (P54C T13) – chycená věc ho dokazuje stejně jako sběr.
+      if (code === ROLE.collectible) for (const verb of ['collect', 'catch']) this.add(verb, player, effect.body, tick, 'caught-in-lane', state);
       else if (code === ROLE.hazard) this.harm(effect.body, player, tick, 'falling-bomb-caught', state);
     }
     // Bouchání (P54C T6): cíl, který pravidlo úderu odebere ještě v okně, dostal ránu – krtek je rozbitý; hodný
@@ -459,6 +460,8 @@ export class WitnessRecorder {
       if (code === ROLE.target) {
         this.add('whack', player, effect.body, tick, 'whacked-in-hole', state);
         this.add('defeat', player, effect.body, tick, 'target-whacked', state);
+        // Záměr čte hit, pop a smash jako `interact` (úder do věci, P54C T13) – rána do cíle v díře ho dokazuje.
+        this.add('interact', player, effect.body, tick, 'whacked-in-hole', state);
       } else if (code === ROLE.hazard) this.struckGood.push(effect.body);
     }
     // Krájení (P54C T8): věc, kterou pravidlo švihu odebere ve výšce řezu (ne na zemi), byla rozseknutá – ovoce je
@@ -480,7 +483,8 @@ export class WitnessRecorder {
     // Výhra obrany: žádný nepřítel už nejde a hradba drží – hrdina ji ubránil.
     if (ref.id === 'defense_goal' && effect.kind === 'win') {
       const keep = [...this.bindings.values()].find((binding) => binding.roleId === 'castle');
-      this.add('defend', player, keep?.body ?? null, tick, 'held-every-wave', state);
+      // „protect the tower from monsters“ (P54C T13): záměr čte „protect“ jako vlastní sloveso, ubráněná hradba ho dokazuje stejně.
+      for (const verb of ['defend', 'protect']) this.add(verb, player, keep?.body ?? null, tick, 'held-every-wave', state);
     }
     if (effect.kind === 'despawn' && effect.body === origin.held && other >= 0 && other !== origin.held && ref.id === 'rule_contact') this.add('deliver', player, origin.held, tick, 'carried-to-destination', state);
     if (effect.kind === 'hit' && effect.amount > 0) {

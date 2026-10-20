@@ -143,10 +143,12 @@ describe('slice genre is live (P54C T8)', () => {
     expect(readGenreSpec({ genre: 'slice', mode: 'default', hero: 'fox', setting: 'kitchen', counts: { collectible: SLICE.items.max + 1 } }).ok).toBe(false);
   });
 
-  it('is not offered to sentences before the classifier learns it (T13), nor by the director before T14', () => {
+  // P54C T13: klasifikátor krájení zná – jen co letí nebo je ovoce; cesta džunglí mačetou krájení není.
+  it('is offered to sentences about flying things (T13), not by the director before T14', () => {
     for (const sentence of ['slice the flying fruit but not the bombs', 'a ninja slashes watermelons in the dojo', 'cut the oranges as they fly']) {
-      expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).not.toBe('slice');
+      expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).toBe('slice');
     }
+    expect(classifyGenre('slice through the jungle with a machete to find the temple', null).ranked[0]?.genre).not.toBe('slice');
     expect(DIRECTOR_PENDING.has('slice')).toBe(true);
     expect(JSON.stringify(GENRE_ANSWER_SCHEMA)).not.toContain('"slice"');
   });

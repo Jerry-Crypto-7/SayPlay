@@ -1,0 +1,827 @@
+{
+ "schema": "p54c-classify.v1",
+ "label": "classify",
+ "summary": {
+  "genres": {
+   "catch.default": {
+    "live": true,
+    "of": 8,
+    "classify": 8,
+    "draft": 8,
+    "misses": []
+   },
+   "whack.default": {
+    "live": true,
+    "of": 8,
+    "classify": 8,
+    "draft": 8,
+    "misses": []
+   },
+   "defense.default": {
+    "live": true,
+    "of": 8,
+    "classify": 8,
+    "draft": 8,
+    "misses": []
+   },
+   "slice.default": {
+    "live": true,
+    "of": 8,
+    "classify": 8,
+    "draft": 8,
+    "misses": []
+   },
+   "hop.default": {
+    "live": false,
+    "of": 8,
+    "classify": 0,
+    "draft": 0,
+    "misses": [
+     "o01: runner.default",
+     "o02: runner.default",
+     "o03: runner.default",
+     "o04: platformer.default",
+     "o05: runner.default",
+     "o06: platformer.default",
+     "o07: voyage.race",
+     "o08: platformer.default"
+    ]
+   },
+   "crowd.default": {
+    "live": false,
+    "of": 8,
+    "classify": 0,
+    "draft": 0,
+    "misses": [
+     "r01: quest.spatial",
+     "r02: runner.default",
+     "r03: runner.default",
+     "r04: arena.collect",
+     "r05: arena.collect",
+     "r06: duel.default",
+     "r07: quest.station",
+     "r08: runner.default"
+    ]
+   },
+   "merge.default": {
+    "live": false,
+    "of": 8,
+    "classify": 0,
+    "draft": 0,
+    "misses": [
+     "m01: quest.station",
+     "m02: quest.station",
+     "m03: quest.station",
+     "m04: arena.collect",
+     "m05: quest.station",
+     "m06: quest.station",
+     "m07: throw.default",
+     "m08: quest.station"
+    ]
+   },
+   "push.default": {
+    "live": false,
+    "of": 8,
+    "classify": 0,
+    "draft": 0,
+    "misses": [
+     "p01: arena.collect",
+     "p02: arena.collect",
+     "p03: voyage.race",
+     "p04: arena.collect",
+     "p05: duel.default",
+     "p06: platformer.default",
+     "p07: arena.collect",
+     "p08: arena.collect"
+    ]
+   }
+  },
+  "traps": {
+   "of": 16,
+   "unchanged": 16,
+   "changed": []
+  }
+ },
+ "sentences": [
+  {
+   "family": "target",
+   "expect": "catch.default",
+   "id": "c01",
+   "classify": "catch.default",
+   "fallback": false,
+   "draft": "catch.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "catch.default",
+   "id": "c02",
+   "classify": "catch.default",
+   "fallback": false,
+   "draft": "catch.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "catch.default",
+   "id": "c03",
+   "classify": "catch.default",
+   "fallback": false,
+   "draft": "catch.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "catch.default",
+   "id": "c04",
+   "classify": "catch.default",
+   "fallback": false,
+   "draft": "catch.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "catch.default",
+   "id": "c05",
+   "classify": "catch.default",
+   "fallback": false,
+   "draft": "catch.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "catch.default",
+   "id": "c06",
+   "classify": "catch.default",
+   "fallback": false,
+   "draft": "catch.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "catch.default",
+   "id": "c07",
+   "classify": "catch.default",
+   "fallback": false,
+   "draft": "catch.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "catch.default",
+   "id": "c08",
+   "classify": "catch.default",
+   "fallback": false,
+   "draft": "catch.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "whack.default",
+   "id": "w01",
+   "classify": "whack.default",
+   "fallback": false,
+   "draft": "whack.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "whack.default",
+   "id": "w02",
+   "classify": "whack.default",
+   "fallback": false,
+   "draft": "whack.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "whack.default",
+   "id": "w03",
+   "classify": "whack.default",
+   "fallback": false,
+   "draft": "whack.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "whack.default",
+   "id": "w04",
+   "classify": "whack.default",
+   "fallback": false,
+   "draft": "whack.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "whack.default",
+   "id": "w05",
+   "classify": "whack.default",
+   "fallback": false,
+   "draft": "whack.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "whack.default",
+   "id": "w06",
+   "classify": "whack.default",
+   "fallback": false,
+   "draft": "whack.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "whack.default",
+   "id": "w07",
+   "classify": "whack.default",
+   "fallback": false,
+   "draft": "whack.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "whack.default",
+   "id": "w08",
+   "classify": "whack.default",
+   "fallback": false,
+   "draft": "whack.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "defense.default",
+   "id": "f01",
+   "classify": "defense.default",
+   "fallback": false,
+   "draft": "defense.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "defense.default",
+   "id": "f02",
+   "classify": "defense.default",
+   "fallback": false,
+   "draft": "defense.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "defense.default",
+   "id": "f03",
+   "classify": "defense.default",
+   "fallback": false,
+   "draft": "defense.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "defense.default",
+   "id": "f04",
+   "classify": "defense.default",
+   "fallback": false,
+   "draft": "defense.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "defense.default",
+   "id": "f05",
+   "classify": "defense.default",
+   "fallback": false,
+   "draft": "defense.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "defense.default",
+   "id": "f06",
+   "classify": "defense.default",
+   "fallback": false,
+   "draft": "defense.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "defense.default",
+   "id": "f07",
+   "classify": "defense.default",
+   "fallback": false,
+   "draft": "defense.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "defense.default",
+   "id": "f08",
+   "classify": "defense.default",
+   "fallback": false,
+   "draft": "defense.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "slice.default",
+   "id": "s01",
+   "classify": "slice.default",
+   "fallback": false,
+   "draft": "slice.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "slice.default",
+   "id": "s02",
+   "classify": "slice.default",
+   "fallback": false,
+   "draft": "slice.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "slice.default",
+   "id": "s03",
+   "classify": "slice.default",
+   "fallback": false,
+   "draft": "slice.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "slice.default",
+   "id": "s04",
+   "classify": "slice.default",
+   "fallback": false,
+   "draft": "slice.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "slice.default",
+   "id": "s05",
+   "classify": "slice.default",
+   "fallback": false,
+   "draft": "slice.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "slice.default",
+   "id": "s06",
+   "classify": "slice.default",
+   "fallback": false,
+   "draft": "slice.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "slice.default",
+   "id": "s07",
+   "classify": "slice.default",
+   "fallback": false,
+   "draft": "slice.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "slice.default",
+   "id": "s08",
+   "classify": "slice.default",
+   "fallback": false,
+   "draft": "slice.default",
+   "cell": "assembled.lanes"
+  },
+  {
+   "family": "target",
+   "expect": "hop.default",
+   "id": "o01",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "family": "target",
+   "expect": "hop.default",
+   "id": "o02",
+   "classify": "platformer.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "family": "target",
+   "expect": "hop.default",
+   "id": "o03",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "family": "target",
+   "expect": "hop.default",
+   "id": "o04",
+   "classify": "platformer.default",
+   "fallback": false,
+   "draft": "platformer.default",
+   "cell": "assembled.jump"
+  },
+  {
+   "family": "target",
+   "expect": "hop.default",
+   "id": "o05",
+   "classify": "voyage.race",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "family": "target",
+   "expect": "hop.default",
+   "id": "o06",
+   "classify": "platformer.default",
+   "fallback": false,
+   "draft": "platformer.default",
+   "cell": "assembled.jump"
+  },
+  {
+   "family": "target",
+   "expect": "hop.default",
+   "id": "o07",
+   "classify": "voyage.race",
+   "fallback": false,
+   "draft": "voyage.race",
+   "cell": "assembled.drive"
+  },
+  {
+   "family": "target",
+   "expect": "hop.default",
+   "id": "o08",
+   "classify": "platformer.default",
+   "fallback": false,
+   "draft": "platformer.default",
+   "cell": "assembled.jump"
+  },
+  {
+   "family": "target",
+   "expect": "crowd.default",
+   "id": "r01",
+   "classify": "quest.spatial",
+   "fallback": false,
+   "draft": "quest.spatial",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "target",
+   "expect": "crowd.default",
+   "id": "r02",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "family": "target",
+   "expect": "crowd.default",
+   "id": "r03",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "family": "target",
+   "expect": "crowd.default",
+   "id": "r04",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "target",
+   "expect": "crowd.default",
+   "id": "r05",
+   "classify": "arena.fight",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "target",
+   "expect": "crowd.default",
+   "id": "r06",
+   "classify": "arena.fight",
+   "fallback": false,
+   "draft": "duel.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "target",
+   "expect": "crowd.default",
+   "id": "r07",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "target",
+   "expect": "crowd.default",
+   "id": "r08",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "family": "target",
+   "expect": "merge.default",
+   "id": "m01",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "target",
+   "expect": "merge.default",
+   "id": "m02",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "target",
+   "expect": "merge.default",
+   "id": "m03",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "target",
+   "expect": "merge.default",
+   "id": "m04",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "target",
+   "expect": "merge.default",
+   "id": "m05",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "target",
+   "expect": "merge.default",
+   "id": "m06",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "target",
+   "expect": "merge.default",
+   "id": "m07",
+   "classify": "throw.default",
+   "fallback": false,
+   "draft": "throw.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "target",
+   "expect": "merge.default",
+   "id": "m08",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "target",
+   "expect": "push.default",
+   "id": "p01",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "target",
+   "expect": "push.default",
+   "id": "p02",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "target",
+   "expect": "push.default",
+   "id": "p03",
+   "classify": "platformer.default",
+   "fallback": false,
+   "draft": "voyage.race",
+   "cell": "assembled.drive"
+  },
+  {
+   "family": "target",
+   "expect": "push.default",
+   "id": "p04",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "target",
+   "expect": "push.default",
+   "id": "p05",
+   "classify": "duel.default",
+   "fallback": false,
+   "draft": "duel.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "target",
+   "expect": "push.default",
+   "id": "p06",
+   "classify": "platformer.default",
+   "fallback": false,
+   "draft": "platformer.default",
+   "cell": "assembled.jump"
+  },
+  {
+   "family": "target",
+   "expect": "push.default",
+   "id": "p07",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "target",
+   "expect": "push.default",
+   "id": "p08",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "trap",
+   "expect": "arena.escape",
+   "id": "x01",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "family": "trap",
+   "expect": "duel.default",
+   "id": "x02",
+   "classify": "arena.fight",
+   "fallback": false,
+   "draft": "duel.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "trap",
+   "expect": "quest.station",
+   "id": "x03",
+   "classify": "quest.spatial",
+   "fallback": false,
+   "draft": "quest.spatial",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "trap",
+   "expect": "platformer.default",
+   "id": "x04",
+   "classify": "platformer.default",
+   "fallback": false,
+   "draft": "platformer.default",
+   "cell": "assembled.jump"
+  },
+  {
+   "family": "trap",
+   "expect": "voyage.race",
+   "id": "x05",
+   "classify": "voyage.race",
+   "fallback": false,
+   "draft": "voyage.race",
+   "cell": "assembled.drive"
+  },
+  {
+   "family": "trap",
+   "expect": "quest.spatial",
+   "id": "x06",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "quest.station",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "trap",
+   "expect": "throw.default",
+   "id": "x07",
+   "classify": "throw.default",
+   "fallback": false,
+   "draft": "throw.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "trap",
+   "expect": "shooter.default",
+   "id": "x08",
+   "classify": "shooter.default",
+   "fallback": false,
+   "draft": "shooter.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "trap",
+   "expect": "arena.collect",
+   "id": "x09",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "trap",
+   "expect": "arena.collect",
+   "id": "x10",
+   "classify": "runner.default",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "family": "trap",
+   "expect": "duel.default",
+   "id": "x11",
+   "classify": "arena.fight",
+   "fallback": false,
+   "draft": "arena.fight",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "trap",
+   "expect": "quest.spatial",
+   "id": "x12",
+   "classify": "arena.collect",
+   "fallback": false,
+   "draft": "arena.collect",
+   "cell": "assembled.roam"
+  },
+  {
+   "family": "trap",
+   "expect": "runner.default",
+   "id": "x13",
+   "classify": "platformer.default",
+   "fallback": false,
+   "draft": "platformer.default",
+   "cell": "assembled.jump"
+  },
+  {
+   "family": "trap",
+   "expect": "voyage.race",
+   "id": "x14",
+   "classify": "quest.station",
+   "fallback": false,
+   "draft": "runner.default",
+   "cell": "assembled.run"
+  },
+  {
+   "family": "trap",
+   "expect": "rhythm.default",
+   "id": "x15",
+   "classify": "rhythm.default",
+   "fallback": false,
+   "draft": "rhythm.default",
+   "cell": "assembled.stationary"
+  },
+  {
+   "family": "trap",
+   "expect": "timing.stack",
+   "id": "x16",
+   "classify": "timing.stack",
+   "fallback": false,
+   "draft": "timing.stack",
+   "cell": "assembled.stationary"
+  }
+ ]
+}

@@ -130,10 +130,12 @@ describe('whack genre is live (P54C T6)', () => {
     expect(readGenreSpec({ genre: 'whack', mode: 'default', hero: 'fox', setting: 'garden', counts: { enemy: WHACK.targets.max + 1 } }).ok).toBe(false);
   });
 
-  it('is not offered to sentences before the classifier learns it (T13), nor by the director before T14', () => {
-    for (const sentence of ['whack the moles before they hide', 'a farmer smashes the moles in his garden', 'pop the balloons at the fair']) {
-      expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).not.toBe('whack');
+  // P54C T13: klasifikátor bouchání zná; samotné „pop the balloons“ (věta j05 P30) zůstává úkolem po scéně.
+  it('is offered to sentences about things popping up (T13), not by the director before T14', () => {
+    for (const sentence of ['whack the moles before they hide', 'a farmer smashes the moles in his garden']) {
+      expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).toBe('whack');
     }
+    expect(classifyGenre('pop the balloons at the fair', null).ranked[0]?.genre).not.toBe('whack');
     expect(DIRECTOR_PENDING.has('whack')).toBe(true);
     expect(JSON.stringify(GENRE_ANSWER_SCHEMA)).not.toContain('"whack"');
   });

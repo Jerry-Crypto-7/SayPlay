@@ -8,10 +8,10 @@
   "readyShare": 1,
   "keptRules": 1,
   "keptLogic": 1,
-  "adds": 0.28,
+  "adds": 0.24,
   "onlyCharacters": 10,
-  "boss": 7,
-  "action": 2,
+  "boss": 6,
+  "action": 1,
   "segments": 0,
   "actionLost": 0,
   "reasons": {}
@@ -171,11 +171,7 @@
    ],
    "keptRules": true,
    "keptLogic": true,
-   "adds": [
-    "boss",
-    "action",
-    "characters"
-   ],
+   "adds": [],
    "actionLost": false
   },
   {

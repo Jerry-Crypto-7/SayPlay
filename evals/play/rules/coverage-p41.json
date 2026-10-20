@@ -1,17 +1,18 @@
 {
  "total": 200,
  "before": {
-  "piece": 87,
-  "none": 113
+  "piece": 86,
+  "none": 114
  },
  "after": {
-  "piece": 87,
-  "template": 36,
+  "piece": 86,
+  "template": 37,
   "none": 77
  },
  "byTemplate": {
   "collect_unlock": 1,
   "escape_countdown": 4,
+  "defend_base": 4,
   "boss_finale": 6,
   "race_clock": 3,
   "push": 3,
@@ -19,7 +20,6 @@
   "throw": 4,
   "stack": 2,
   "build_floors": 2,
-  "defend_base": 3,
   "carry": 2,
   "waves_survive": 2,
   "catch_count": 1
@@ -514,8 +514,8 @@
   {
    "id": "s047",
    "verbClass": "aim_shoot",
-   "drafted": "shooter",
-   "cover": "piece",
+   "drafted": "lanes",
+   "cover": "template",
    "template": "defend_base",
    "verbs": [
     "defend"
@@ -1539,7 +1539,7 @@
   {
    "id": "s154",
    "verbClass": "build_place",
-   "drafted": "move_free",
+   "drafted": "lanes",
    "cover": "template",
    "template": "defend_base",
    "verbs": [
@@ -1549,7 +1549,7 @@
   {
    "id": "s155",
    "verbClass": "build_place",
-   "drafted": "move_free",
+   "drafted": "lanes",
    "cover": "template",
    "template": "defend_base",
    "verbs": [
@@ -1559,7 +1559,7 @@
   {
    "id": "s156",
    "verbClass": "build_place",
-   "drafted": "move_free",
+   "drafted": "lanes",
    "cover": "none",
    "template": null,
    "verbs": [
@@ -1569,7 +1569,7 @@
   {
    "id": "s157",
    "verbClass": "build_place",
-   "drafted": "move_free",
+   "drafted": "lanes",
    "cover": "none",
    "template": null,
    "verbs": []
@@ -1588,7 +1588,7 @@
   {
    "id": "s159",
    "verbClass": "build_place",
-   "drafted": "move_free",
+   "drafted": "lanes",
    "cover": "template",
    "template": "defend_base",
    "verbs": [

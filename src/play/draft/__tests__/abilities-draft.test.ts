@@ -36,7 +36,8 @@ const GENERATED = [
   { text: 'A raccoon grabs pizza slices while dodging trash trucks', control: 'move_free', abilities: ['grab', 'dash'] },
   { text: 'A squirrel snatches acorns from crows in a windy forest', control: 'move_free', abilities: ['grab'] },
   { text: 'A cat burglar sneaks through a museum and steals diamonds', control: 'walker', abilities: ['grab'] },
-  { text: 'a wizard defends a crystal tower from flying skeletons', control: 'move_free', abilities: ['shield'] },
+  // P54C T13: obrana před vlnou („from flying skeletons“, věta j08 P30) je obrana pruhů bez akcí; štít drží obrana před jedním.
+  { text: 'a wizard defends a crystal tower from a giant skeleton', control: 'move_free', abilities: ['shield'] },
 ] as const;
 
 describe('abilities from the sentence verbs (P46A T8)', () => {

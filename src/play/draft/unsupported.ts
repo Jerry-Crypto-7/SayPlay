@@ -155,7 +155,9 @@ function closestOf(draft: Pick<GameSpecV1, 'archetype' | 'control' | 'genre'>): 
 /** Věta a hotový návrh → hláška, nebo `null`, když hra splní, co věta chtěla. */
 export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'archetype' | 'control' | 'genre'>): Honesty | null {
   const text = sentence.toLowerCase();
-  const match = CLASSES.find((entry) => entry.cues.some((cue) => cue.test(text)));
+  // Obranu před vlnami hraje od P54C T13 obrana pruhů (držení postaví obránce) – hláška „neumíme“ by u ní lhala.
+  const played = (kind: UnsupportedKind): boolean => kind === 'build_place' && draft.genre?.id === 'defense';
+  const match = CLASSES.find((entry) => !played(entry.kind) && entry.cues.some((cue) => cue.test(text)));
   if (match === undefined) {
     // Jen dokud hra je návrh věty bez slovesa – od P36A T11 sběr v Aréně, uložené hry dřív běžec; AI verze s jinou hrou hlášku nepotřebuje.
     const plain = draft.control === 'runner' || (draft.genre?.id === 'arena' && draft.genre.mode === 'collect');

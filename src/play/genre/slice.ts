@@ -8,8 +8,8 @@
  * a větších hrstí, 3 životy – bomba ve švihu a každé propadlé ovoce nad tři volná ubere život.
  * Robot vyhraje za 30–60 s, nečinný hráč prohraje, než něco rozsekne.
  *
- * Klasifikátor žánr zatím nevolí (narážky přidá T13), hraje ho buňka `slice.default`; slovesa
- * „slice, slash, chop, cut“ zatím čte jen `draftFill`.
+ * Věty sem vede klasifikátor (T13, sloveso `slice` v `classify.ts`: krájí se, co letí, „fruit ninja“),
+ * hraje ho buňka `slice.default`; režisér ho nabídne od T14.
  */
 
 import { SLICE } from '../arcade/pieces/slice';
@@ -29,6 +29,8 @@ const SLICE_OBJECT = /\b(?:slice|slash|chop|cut|split|dice)(?:s|es|ed|ing)?\s+(?
 const AVOID_OBJECT = /\b(?:but not|not the|never (?:slice|slash|cut|chop)|don'?t (?:slice|slash|cut|chop|hit|touch)|avoid|dodge|spare)\s+(?:the\s+|any\s+)?([a-z][a-z -]*)/;
 /** „slice it“, „cut through“ nejsou věc ve vzduchu. */
 const PRONOUN = /^(?:it|him|her|them|me|you|us|up|out|down|through|across)\b/;
+/** „fruit tossed in the air“, „lanterns thrown into the sky“: příčestí za jménem k věci nepatří (P54C T13). */
+const FLIGHT = / (?:tossed|thrown|flung|hurled|launched|flying|falling|rising)$/;
 
 /** První text, který se vejde do meze schématu (dlouhé popisky z věty). */
 const fit = (max: number, ...lines: readonly string[]): string => lines.find((line) => line.length <= max) ?? (lines.at(-1) as string);
@@ -36,14 +38,14 @@ const fit = (max: number, ...lines: readonly string[]): string => lines.find((li
 /** Podstatné jméno z předmětu slovesa, nebo `null`. */
 function objectOf(pattern: RegExp, sentence: string): string | null {
   const found = pattern.exec(sentence);
-  const phrase = found === null ? null : nounPhrase(found[1] as string);
+  const phrase = found === null ? null : (nounPhrase(found[1] as string)?.replace(FLIGHT, '') ?? null);
   return phrase === null || PRONOUN.test(phrase) ? null : singular(phrase);
 }
 
 export const sliceGenre: GenreModule<'slice'> = {
   id: 'slice',
   modes: ['default'],
-  // Narážky a slovesa věty pro žánr přidá klasifikátor (T13); do té doby ho věta sama nevybere.
+  // Narážky žádné: věty vede sloveso `slice` klasifikátoru (T13) – narážka by přidala bod i cestě džunglí („slice through“).
   cues: [],
   heroClasses: ['humanoid', 'robot', 'animal', 'monster'],
   paramBounds: {

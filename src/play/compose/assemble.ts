@@ -1,5 +1,5 @@
 import type { GenreSpec } from '../genre/contract';
-import type { Intent } from '../intent/contract';
+import { GENRE_MOVES, type Intent } from '../intent/contract';
 import { heroClass } from '../genre/roles';
 import { PRESETS, type RecipeAssembly } from './presets';
 import type { Recipe } from './recipe';
@@ -65,6 +65,20 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
   return { id: `assembled.${move}`, recipe, preset, assembly: 'native' };
 }
 
+/** Movement of a P54C genre that is a whole game on its own (`lanes`): its pieces are its rules. */
+export const wholeGame = (move: Recipe['move']): boolean => (GENRE_MOVES as readonly string[]).includes(move);
+
+/**
+ * The P54C genre the classifier put first (P54C T13: its verb was heard – „catches falling apples“,
+ * „slice flying watermelons“) plays its own live recipe; the movement or action the intent reads
+ * elsewhere in the sentence („flying“ is a glide, „whack“ an interaction) does not recast it.
+ * `null` for every other genre – those keep `sourceFor`.
+ */
+export function genreSource(fallback: GenreSpec): AssemblySource | null {
+  const recipe = PRESETS[`${fallback.genre}.${fallback.mode}`];
+  return recipe === undefined || !wholeGame(recipe.move) ? null : { id: `assembled.${recipe.move}`, recipe, preset: fallback, assembly: 'native' };
+}
+
 /** Actions a movement plays itself (`compileAssembly`, track addons, the arena's pickups). */
 const MOVE_ACTIONS: Partial<Record<Recipe['move'], readonly string[]>> = {
   run: ['shoot', 'collect'], jump: ['shoot', 'collect'], drive: ['shoot', 'collect'],
@@ -88,6 +102,9 @@ export const unplayed = (source: AssemblySource): number => unplayedActions(sour
  * the names its parts play from the base genre.
  */
 export function assemble(intent: Intent, source: AssemblySource, content: GenreSpec): RecipeAssembly {
+  // P54C T13: a lanes genre takes no parts, rule template or hero buttons – a hazard part would drop a second bomb
+  // into the lanes, and its generators take no abilities (`ABILITY_GENERATORS`).
+  if (wholeGame(source.recipe.move)) return { ...source.recipe, preset: 'assembled', content };
   const parts: (AssemblyPart & { label: string })[] = [];
   const phaseAt = intent.sentence.toLowerCase().search(/\band then\b|\bthen\b/);
   for (const item of intent.items) {

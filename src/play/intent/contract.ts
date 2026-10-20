@@ -26,8 +26,9 @@ export type ObjectiveId = (typeof OBJECTIVES)[number];
 
 /**
  * Kusy os nových žánrů P54C (T4). Zná je zatím jen recept (`compose/recipe.ts`), aby buňky `staged` měly tvar:
- * věta je nevyčte (`extract.ts`), slovník je nekotví (`vocab/anchors.ts`) a podnět akce je nemá. Přidají se
- * do `MOVES` / `ACTIONS` / `OBJECTIVES`, až je klasifikátor (T13) začne číst.
+ * věta je nevyčte (`extract.ts`), slovník je nekotví (`vocab/anchors.ts`) a podnět akce je nemá. Od T13 věty
+ * k žánrům vede klasifikátor a skladba hraje recept žánru celý (`genreSource` v `compose/assemble.ts`), takže
+ * do hlavních `MOVES` / `ACTIONS` / `OBJECTIVES` se nepřidávají.
  * - pohyb: `lanes` = přeskok mezi pěti pruhy, `hop` = skok po polích, `crowd` = dav dvěma pruhy, `drop` = dávkovač nad nádobou;
  * - akce: `whack` = úder do vyskočeného cíle, `slice` = švih přes letící věci, `merge` = sloučit dvě stejné, `push` = vytlačit soupeře;
  * - cíl: `defend` = nepustit vlny k hradu.

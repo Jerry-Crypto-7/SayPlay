@@ -7,8 +7,8 @@
  * a hustšího pádu, 3 životy – bomba v koši a každé propadlé ovoce nad čtyři volná ubere život.
  * Robot vyhraje za 30–60 s, nečinný hráč prohraje dřív, než něco chytí.
  *
- * Klasifikátor žánr zatím nevolí (narážky přidá T13), hraje ho buňka `catch.default`
- * a režisér, který ho vybere.
+ * Věty sem vede klasifikátor (T13, sloveso `catch` v `classify.ts`: chytá se, co padá), hraje ho buňka
+ * `catch.default`; režisér ho nabídne od T14.
  */
 
 import { CATCH } from '../arcade/pieces/catch-fall';
@@ -33,7 +33,7 @@ const fit = (max: number, ...lines: readonly string[]): string => lines.find((li
 export const catchGenre: GenreModule<'catch'> = {
   id: 'catch',
   modes: ['default'],
-  // Narážky a slovesa věty pro žánr přidá klasifikátor (T13); do té doby ho věta sama nevybere.
+  // Narážky žádné: věty vede sloveso `catch` klasifikátoru (T13) – narážka by přidala bod i honičce („catch the thief“).
   cues: [],
   heroClasses: ['animal', 'humanoid', 'robot', 'monster', 'vehicle'],
   paramBounds: {

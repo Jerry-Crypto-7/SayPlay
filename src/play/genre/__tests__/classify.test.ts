@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import { goldenPrompts } from '../../../../evals/play/golden';
 import sentenceSet from '../../../../evals/play/p32/sentences.json';
+import { T13_MOVED } from '../../../../evals/play/p54c/rows';
 import type { Reading } from '../../read/schema';
 import { readGameSpec } from '../../spec';
 import { classifyGenre, verbPlayedBy } from '../classify';
@@ -160,6 +161,35 @@ describe('classifyGenre', () => {
   // P32B T5b: karta nápadu „The floor is lava“ je hra na přežití, ne běžec přes lávu (narážka `lava`).
   it('reads "the floor is lava" as a survival escape', () => {
     expect(top('The floor is lava, for 60 seconds', GENRE_MODULES)).toMatchObject({ genre: 'arena', mode: 'escape' });
+  });
+
+  // P54C T13: klasifikátor, který by do nových žánrů přetáhl staré věty, dá zelené testy a jiné hry – pin nad P30 dev
+  // proti startu P54C (`start.json`) a nad dev sadou P54C (živé žánry hrají svůj žánr, pasti zůstanou, kde byly v T2).
+  it('moves no P30 dev sentence off its P54C starting genre except the three defense sentences (T13)', () => {
+    const json = (path: string) => JSON.parse(readFileSync(new URL(`../../../../evals/play/${path}`, import.meta.url), 'utf8')) as { sentences: { id: string; text: string; classify: string }[] };
+    const was = new Map(json('p54c/start.json').sentences.map((row) => [row.id, row.classify]));
+    const moved = Object.fromEntries(json('p30/dev.json').sentences.flatMap(({ id, text }) => {
+      const first = classifyGenre(text, null, GENRE_MODULES).ranked[0];
+      const now = `${first.genre}.${first.mode}`;
+      return now === was.get(id) ? [] : [[id, now]];
+    }));
+    expect(moved).toEqual(Object.fromEntries(Object.entries(T13_MOVED).map(([id, row]) => [id, row.classify])));
+  });
+
+  it('puts every P54C dev sentence of a routed lanes genre in its genre and leaves the traps where T2 found them', () => {
+    const json = (path: string) => JSON.parse(readFileSync(new URL(`../../../../evals/play/p54c/${path}`, import.meta.url), 'utf8')) as { sentences: { id: string; family: string; expect: string; text: string; classify: string }[] };
+    const baseline = new Map(json('baseline.json').sentences.map((row) => [row.id, row.classify]));
+    // Žánry MVP, které klasifikátor zná od T13; přeskákání, dav, slučování a vytlačování přidá T13b.
+    const routed = new Set(['catch.default', 'whack.default', 'defense.default', 'slice.default']);
+    const sentences = json('dev.json').sentences;
+    for (const row of sentences) {
+      const first = classifyGenre(row.text, null, GENRE_MODULES).ranked[0];
+      const now = `${first.genre}.${first.mode}`;
+      if (row.family === 'trap') expect(now, row.id).toBe(baseline.get(row.id));
+      else if (routed.has(row.expect)) expect(now, row.id).toBe(row.expect);
+      else expect(routed.has(now), row.id).toBe(false);
+    }
+    expect(sentences.filter((row) => routed.has(row.expect))).toHaveLength(32);
   });
 
   it('never throws on the draft corpora and never lands a new game on a legacy control', () => {

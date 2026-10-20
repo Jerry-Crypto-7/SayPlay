@@ -112,8 +112,10 @@ describe('catch genre is live (P54C T5)', () => {
     expect(game.tutorial.goalLine.length).toBeLessThanOrEqual(50);
   });
 
-  it('is not offered to sentences before the classifier learns it (T13)', () => {
-    for (const sentence of ['a fox catches falling apples', 'the police try to catch the thief', 'a squirrel hoards acorns before winter comes']) {
+  // P54C T13: klasifikátor chytání zná – jen co padá, honička („catch the thief“) zůstává honičkou.
+  it('is offered to sentences about falling things (T13), never to a chase', () => {
+    expect(classifyGenre('a fox catches falling apples', null).ranked[0]?.genre).toBe('catch');
+    for (const sentence of ['the police try to catch the thief', 'a squirrel hoards acorns before winter comes']) {
       expect(classifyGenre(sentence, null).ranked[0]?.genre, sentence).not.toBe('catch');
     }
   });
