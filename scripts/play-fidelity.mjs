@@ -686,7 +686,7 @@ async function run(options) {
 }
 
 /** `run` nad už načtenými větami: `fun` načte sadu jednou a pustí ji proti dvěma serverům. */
-async function runSentences(sentences, options) {
+export async function runSentences(sentences, options) {
   const base = options.base ?? 'http://127.0.0.1:3100';
   const runId = options.run;
   const runDir = join(DIR, 'runs', runId);

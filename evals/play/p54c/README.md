@@ -452,6 +452,15 @@ Holdout otevřený jednou (`holdout.measure.ts`: otisk se ověří, `holdout-ope
 - Klasifikátor a návrh se shodují u všech 80 vět – minutí vzniká při čtení věty. Minuté věty popisují žánr jinými slovy než dev sada („pop up“, „smash“, „falling … basket“, „swipe … split“, „x2 gates“).
 - **Pin:** `__tests__/sets.test.ts` – záznam otevření i `final.json` nesou otisk zapečetěné sady a stejný commit, řádky jsou přesně 80 vět holdoutu a souhrn bran sedí na řádky. Přepsané číslo v souhrnu test shodí (ověřeno, `final.json` obnovený ze zálohy).
 
+## T17 – slepý soud zábavy (`fun.json`)
+
+`node --experimental-strip-types evals/play/p54c/fun.mjs --base-a <server main 1476989e> --base-b <server HEAD> --gpu`: deset vět dev sady (z každého žánru jedna los ze seedu 54017, pak dvě další), klip průběhu bez modelu na obou serverech a slepý párový soudce P45 (Codex, prázdný adresář jen se `sheet.png`, strana vlevo losovaná seedem 45045). 10 volání Codexu.
+
+- **Nový žánr vyhrál 5/10 – cíl 6/10 nesplněný.** Remízy 0, levý sloupec vyhrál 5/10 (soudce stranu nenadržuje).
+- Žánry fáze 3 vyhrály 3/4 (přeskákání, vytlačování, dav; slučování prohrálo s questem), žánry pruhů 2/6 (chytání 1/2, krájení 1/2, obrana a bouchání 0/1).
+- Proč prohrávají pruhy (slova soudce): pět plošin nebo děr v prázdném poli, cíle se ukážou jen na chvíli, „little visible escalation“. Stará aréna nebo střílečka má na snímcích víc nepřátel blízko hráče a velkého nepřítele ke konci.
+- Na snímku chytání (c01) visí nad polem velká tmavá deska, která zakrývá oblohu – v testech nezachycené, k prověření.
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.
@@ -611,3 +620,6 @@ Holdout otevřený jednou (`holdout.measure.ts`: otisk se ověří, `holdout-ope
 - T16: „správný žánr“ = žánr hry z návrhu (co hráč dostane); klasifikátor zapsaný vedle a shoduje se u všech vět. Brána délky výhry počítá všech 80 vět, jak ji AC píše; cílové věty zvlášť (59/60).
 - T16: minuté cílové věty přečtené jen pro popis vzoru ve zprávě; podle nich se nic neladí a holdout dál platí jako spotřebovaný (další měření chce nový).
 - T14b: neživé recepty odpovědi (3 nahrávky P46E, p06) neopravené – AC připouští rychlou verzi s důvodem a rozdělení řádku `run, jump` zpět by přeteklo 15 000 B a chtělo další nahrávání; zapsané jako T14br2.
+- T17: „stará hra pro tutéž větu“ = hra ze serveru nad `1476989e` (P52 na `main`, odkud P54C vychází), postaveného v dočasném worktree přes `npm run build` (webpack; turbopack odmítne `node_modules` jako junction mimo kořen). Obě strany bez modelu (`draft-only`), tedy hra, kterou hráč dostane hned.
+- T17: deset dvojic doslova podle AC (strop 40 volání nevyčerpán); pokrytí všech osmi žánrů dává los po žánrech, dvě navíc padly na chytání a krájení. Z `scripts/play-fidelity.mjs` jen export `runSentences` – klip průběhu a párový soud jsou beze změny z P45.
+- T17: výsledek se neladí – je to měření po fázi 3 jako T16; řídké scény žánrů pruhů jsou podklad pro další plán, ne oprava v P54C.
