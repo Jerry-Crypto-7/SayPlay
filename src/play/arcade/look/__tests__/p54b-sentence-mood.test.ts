@@ -14,7 +14,7 @@ import { Weather } from '@/components/play/arcade/Weather';
 import type { ArcadeSession } from '@/components/play/arcade/session';
 import { draftGameSpec } from '@/play/draft';
 
-import { type Look, LOOKS, lookOf, moodFor, sceneLook, timeOfDayFor, weatherFor } from '../index';
+import { type Look, LOOKS, lookOf, moodFor, sceneLook, sentenceSky, timeOfDayFor, weatherFor } from '../index';
 
 interface Label {
   readonly time?: 'night' | 'dusk';
@@ -86,6 +86,26 @@ describe('P54B T11: nálada, počasí a denní doba z celé věty', () => {
     const { precision, recall, wrong } = score();
     expect(precision, wrong.join('\n')).toBeGreaterThanOrEqual(0.95);
     expect(recall, wrong.join('\n')).toBeGreaterThanOrEqual(0.9);
+  });
+
+  // Souhrnná laťka snese jeden falešný zásah – stráže záporu, přirovnání a „dark armor“ proto každá zvlášť.
+  it.each(LABELLED.filter(([sentence]) => /not at night|no rain|storm of|like a|as silent as|never gloomy|dark armor|snow fort/.test(sentence)))(
+    'stráž věty drží přesně štítek: %s',
+    (sentence, label) => {
+      expect({ time: timeOfDayFor(sentence), weather: weatherFor(sentence), mood: moodFor(sentence) })
+        .toEqual({ time: label.time ?? null, weather: label.weather ?? null, mood: label.mood ?? null });
+    },
+  );
+
+  it('„storm“ jako sloveso není bouřka, „a sudden storm“ ano', () => {
+    expect(weatherFor('knights storm the castle')).toBeNull();
+    expect(moodFor('knights storm the castle')).toBeNull();
+    expect(weatherFor('a sudden storm hits the castle')).toBe('rain');
+  });
+
+  it('útulná věta bez světla v místě je teplý soumrak; místo s vlastní náladou noc nepřidá', () => {
+    expect(draftGameSpec('a bear bakes pancakes in a cozy cabin').theme.timeOfDay).toBe('dusk');
+    expect(sentenceSky('a dark spooky tale', { setting: 'haunted castle', mood: '' }).timeOfDay).toBeUndefined();
   });
 
   it('návrh zapíše počasí a denní dobu z věty do theme a scéna je od prvního snímku ukáže', () => {
