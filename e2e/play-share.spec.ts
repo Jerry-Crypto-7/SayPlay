@@ -113,13 +113,17 @@ test.describe('/play/[id] – share landing', () => {
     // Od P34 T7 otevře kolo v HUD list sdílení: Dare a friend bez nabídky prohlížeče odkaz zkopíruje a list zavře.
     await page.getByTestId('play-share').click();
     await expect(page.getByRole('dialog', { name: 'Share this game' })).toBeVisible();
+    // Trvalost odkazu ověřuje tlačítko až po stisku dotazem na dveře – na jeho odpověď se čeká.
+    const lasting = page.waitForResponse((response) => response.url().endsWith(`/api/play/games/${id}`) && response.request().method() === 'GET');
     await page.getByTestId('play-share-dare').click();
     await expect(page.getByRole('dialog', { name: 'Share this game' })).toHaveCount(0);
     // P34 T6: toast mluví kitem („Link copied. Go dare someone.“ místo „Link copied“).
     await expect(page.getByText('Link copied. Go dare someone.')).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(new RegExp(`^https?://[^/]+/play/${id}\\?via=share$`));
-    // E2e server nemá sdílené úložiště (P27D T5): odkaz nesmí vypadat trvale.
-    await expect(page.getByText('the link stops working when it restarts')).toBeVisible();
+    // E2e server píše od P40 do souborového úložiště (`PLAY_STORE_DIR`, `x-play-store: file`):
+    // odkaz přežije restart, varování paměťového úložiště (P27D T5) se tedy nesmí ukázat.
+    expect((await lasting).headers()['x-play-store']).toBe('file');
+    await expect(page.getByText('the link stops working when it restarts')).toHaveCount(0);
     await context.close();
   });
 
