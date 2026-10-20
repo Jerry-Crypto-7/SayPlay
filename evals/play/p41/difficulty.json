@@ -857,7 +857,7 @@
           "chaser"
         ]
       },
-      "specHash": "27c8af629a1de3df02a11ca9ef06a315aedb184e0b24861403e48cb866ca0b8e",
+      "specHash": "ba28f2162ea417d3c8c61f7d8a832506f763443f71747f3026fcaaccb222a666",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -885,7 +885,7 @@
         "objective": "interact",
         "threats": []
       },
-      "specHash": "dbc6a9415b4353f3049e14e7ec6f157a01a4ac20555c08a789fdc643bb05af86",
+      "specHash": "803f440ae3f812c7237e1eb78e11a2270e24ac93207a948fcde7386f4a289bf2",
       "profiles": {
         "novice": {
           "runs": 20,

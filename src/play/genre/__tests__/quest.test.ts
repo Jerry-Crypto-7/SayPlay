@@ -221,3 +221,31 @@ describe('quest genre reads the cast', () => {
     expect((game.controlParams as { readonly tuning: { readonly patrol?: number } }).tuning.patrol).toBeGreaterThan(0);
   });
 });
+
+// P54C T14r2: „Cook all 2 potion“ hráč na telefonu četl jako chybu. Víc kusů = množné číslo, jeden kus = „the key“, ne „all 1 key“.
+describe('quest genre – the goal counts in plain English', () => {
+  const goalOf = (verb: string, label: string, count: number) => {
+    const game = gameOf({ genre: 'quest', mode: 'spatial', hero: 'wizard', setting: 'castle', cast: [{ label, does: 'reach', verb, states: 2 }], params: { count } });
+    return { line: game.tutorial.goalLine, description: game.objective.description };
+  };
+
+  it('two targets read plural in the goal line and the objective', () => {
+    const { line, description } = goalOf('cook', 'potion', 2);
+    expect(line).toMatch(/^Cook all 2 potions[,.]/);
+    expect(description).toMatch(/^Cook all 2 potions /);
+  });
+
+  it('one target reads singular, without "all 1"', () => {
+    const { line, description } = goalOf('find', 'key', 1);
+    expect(line).toMatch(/^Find the key[,.]/);
+    expect(description).toMatch(/^Find the key /);
+    expect(`${line} ${description}`).not.toMatch(/\ball 1\b|\bkeys\b/);
+  });
+
+  it('irregular labels and a label already plural from the sentence', () => {
+    expect(goalOf('open', 'box', 3).line).toMatch(/^Open all 3 boxes[,.]/);
+    expect(goalOf('pick', 'berry', 4).line).toMatch(/^Pick all 4 berries[,.]/);
+    expect(goalOf('light', 'candles', 5).line).toMatch(/^Light all 5 candles[,.]/);
+    expect(goalOf('pick', 'berries', 1).line).toMatch(/^Pick the berry[,.]/);
+  });
+});

@@ -6,7 +6,7 @@
  * dílna, s přetečením); stav cíle posouvá pravidlo `interact`.
  */
 
-import { readCountedNouns, nounPhrase } from '../draft/lexicon';
+import { readCountedNouns, nounPhrase, plural, singular } from '../draft/lexicon';
 import { ESCAPE } from '../arcade/pieces/arena';
 import { QUEST, questRounds, questSpatial, questStation, spatialRoundSeconds, stationRoundSeconds } from '../arcade/pieces/quest';
 import { WAVE_PLAN, wavesChasers } from '../arcade/pieces/waves';
@@ -122,6 +122,11 @@ function chaseOf(sentence: string): { readonly label: string; readonly count: nu
 
 const capital = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
 
+/** Předmět cíle pro text hráči (P54C T14r2): „the candle“ u jednoho, „all 5 candles“ u víc. */
+function questTargets(label: string, count: number): string {
+  return count === 1 ? `the ${singular(label)}` : `all ${String(count)} ${plural(singular(label), count)}`;
+}
+
 function compileQuest(spec: GenreSpecOf<'quest'>) {
   const station = spec.mode === 'station';
   // Cíl je věc, ke které se jde; bez ní věc ke sběru nebo terč (P39).
@@ -155,6 +160,7 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
   const hunter = foe?.label ?? 'hunter';
   const verbText = capital(verb);
   const each = plan.rounds > 1 ? ` in each of ${String(plan.rounds)} rounds` : '';
+  const targets = questTargets(label, count);
   return legacySpec(spec, {
     control: 'move_free',
     controlParams: {
@@ -177,15 +183,15 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
       kind: 'puzzle',
       description:
         chasers > 0
-          ? `${verbText} all ${String(count)} ${label}${each} before the ${hunter} ${chasers === 1 ? 'catches' : 'catch'} you.`
-          : `${verbText} all ${String(count)} ${label}${each} within ${String(seconds)} seconds.`,
+          ? `${verbText} ${targets}${each} before the ${hunter} ${chasers === 1 ? 'catches' : 'catch'} you.`
+          : `${verbText} ${targets}${each} within ${String(seconds)} seconds.`,
       role: 'target',
     },
     // Tři životy (P36A T2); berou je pronásledovatelé v prostoru a přetečení na místě (T3, `boil_over`).
     mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }, livesMechanic()],
     roles: [{ id: 'target', kind: 'target', label, count }, ...(chasers > 0 ? [{ id: 'hunter', kind: 'chaser' as const, label: hunter, count: chasers }] : [])],
     tutorial: {
-      goalLine: `${verbText} all ${String(count)} ${label}${plan.rounds > 1 ? `, ${String(plan.rounds)} rounds` : ''}.`,
+      goalLine: `${verbText} ${targets}${plan.rounds > 1 ? `, ${String(plan.rounds)} rounds` : ''}.`,
       // Druhá věta jen pro kartu pauzy: výzva na startu bere první (`FirstPrompt`).
       controlsHint: station ? 'Drag or arrows to move, hold Use when it is ready. Stall and it boils over.' : 'Drag or arrows to move, hold Use next to a target.',
     },
