@@ -5,16 +5,17 @@
  * slitý 5, takže řada domů podél trati nestojí stovky kreslicích volání navíc.
  */
 
-import type { AnimationClip, Bone, KeyframeTrack, Material, Mesh, Object3D, Side, SkinnedMesh, Texture, TypedArray } from 'three';
-import { Box3, BufferAttribute, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, FrontSide, Group, Matrix4, Mesh as MeshClass, MeshStandardMaterial, PropertyBinding, SRGBColorSpace, SkinnedMesh as SkinnedMeshClass, Vector3 } from 'three';
+import type { AnimationClip, Bone, KeyframeTrack, Material, Mesh, Object3D, Side, SkinnedMesh, Texture, TypedArray, WebGLProgramParametersWithUniforms } from 'three';
+import { Box3, BufferAttribute, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, FrontSide, Group, Matrix4, Mesh as MeshClass, MeshDepthMaterial, MeshStandardMaterial, PropertyBinding, SRGBColorSpace, SkinnedMesh as SkinnedMeshClass, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-import type { Flora } from '@/play/arcade/look';
+import { type Flora, type Look, LOOK_WIND, type LookId } from '@/play/arcade/look';
 import { modelPath } from '@/play/arcade/models';
 
 import type { ToyPart } from '../toy/applyToy';
 import { type MotionPart, motionOf } from '../toy/body-class';
+import type { QualityTier } from './rig/quality';
 import { plantPaint } from './vegetation-places';
 
 const modelCache = new Map<string, Promise<Object3D | null>>();
@@ -190,16 +191,74 @@ export function paintedPlant(id: string, flora: Flora): Promise<PlantModel | nul
   return pending;
 }
 
+/**
+ * Vítr ve vegetaci (P54B T13): koruna se kývá, pata stojí – výchylka roste se čtvercem výšky vrcholu
+ * (rostlina z `bakePlant` má výšku 1 a patu v y = 0). Fáze z polohy rostliny ve světě, kmit podle
+ * její výšky (tráva rychleji než strom), směr ve světě pro všechny stejný. Čas a sílu nese `plantWind`,
+ * nastavuje je `Wind` v rigu. Vypnutý vítr shader vůbec nemá: `low` a omezený pohyb nestojí nic.
+ */
+export const plantWind = { time: { value: 0 }, strength: { value: 0 } };
+let windOn = false;
+
+/** Výchylka vrcholu koruny při větru 1 (podíl výšky rostliny); kmit se k ní přičítá od −0,7 do 1,3. */
+const BREEZE = 0.035;
+
+const WIND_HEAD = '\nuniform float plantWindTime;\nuniform float plantWindStrength;';
+const WIND_BODY = `
+{
+	mat4 windWorld = modelMatrix;
+#ifdef USE_INSTANCING
+	windWorld = modelMatrix * instanceMatrix;
+#endif
+	float windRate = 3.2 / sqrt(max(length(windWorld[1].xyz), 0.3));
+	float windPhase = dot(windWorld[3].xz, vec2(0.35, 0.21));
+	float windSway = 0.3 + 0.7 * sin(plantWindTime * windRate + windPhase) + 0.3 * sin(plantWindTime * windRate * 2.3 + windPhase * 1.7);
+	vec3 windDir = normalize(transpose(mat3(windWorld)) * vec3(0.93, 0.0, 0.37));
+	transformed += windDir * (plantWindStrength * windSway * transformed.y * transformed.y);
+}`;
+
+function windShader(shader: WebGLProgramParametersWithUniforms): void {
+  if (!windOn) return;
+  shader.uniforms.plantWindTime = plantWind.time;
+  shader.uniforms.plantWindStrength = plantWind.strength;
+  shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>${WIND_HEAD}`).replace('#include <begin_vertex>', `#include <begin_vertex>${WIND_BODY}`);
+}
+
+/** Síla větru scény: sada × nálada; na `low`, při omezeném pohybu a v sadě bez větru 0. */
+export const plantWindFor = (look: Pick<Look, 'wind'>, lookId: LookId, tier: QualityTier, motion: boolean): number =>
+  tier === 'low' || !motion ? 0 : BREEZE * LOOK_WIND[lookId] * (look.wind ?? 1);
+
 const plantMaterials = new Map<boolean, MeshStandardMaterial>();
+let depthMaterial: MeshDepthMaterial | null = null;
+
+/** Zapne nebo vypne vítr všem rostlinám; three přeloží jen jejich programy (a příště vezme hotové). */
+export function setPlantWind(on: boolean): void {
+  if (on === windOn) return;
+  windOn = on;
+  for (const material of plantMaterials.values()) material.needsUpdate = true;
+  if (depthMaterial !== null) depthMaterial.needsUpdate = true;
+}
 
 /** Materiál všech rostlin: barva z vrcholů (a z instance), oboustranný pro zdroje, které oboustranné byly. */
 export function plantMaterial(double: boolean): MeshStandardMaterial {
   let material = plantMaterials.get(double);
   if (material === undefined) {
     material = new MeshStandardMaterial({ vertexColors: true, roughness: 0.9, side: double ? DoubleSide : FrontSide });
+    material.onBeforeCompile = windShader;
+    material.customProgramCacheKey = () => (windOn ? 'plant-wind' : 'plant');
     plantMaterials.set(double, material);
   }
   return material;
+}
+
+/** Stín rostliny, která ho vrhá (`customDepthMaterial`): kývá se s ní, jinak by se koruna kývala ve vlastním nehybném stínu. */
+export function plantDepthMaterial(): MeshDepthMaterial {
+  if (depthMaterial === null) {
+    depthMaterial = new MeshDepthMaterial();
+    depthMaterial.onBeforeCompile = windShader;
+    depthMaterial.customProgramCacheKey = () => (windOn ? 'plant-depth-wind' : 'plant-depth');
+  }
+  return depthMaterial;
 }
 
 /** Mapy, které se do vrcholů rozepsat nedají – model s kteroukoli z nich zůstane, jak je. */

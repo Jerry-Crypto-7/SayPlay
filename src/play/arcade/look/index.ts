@@ -547,7 +547,20 @@ export interface Look {
    * Nejvýš dva druhy – každý je jedno kreslicí volání. Prázdný = sada bez života v pozadí.
    */
   readonly ambient: readonly AmbientKind[];
+  /** Vítr ve vegetaci z nálady (P54B T13): násobek větru sady (`LOOK_WIND`), bouřka `STORM_WIND`; bez něj 1. */
+  readonly wind?: number;
 }
+
+/**
+ * Vítr ve vegetaci po sadách (P54B T13), 1 = vánek na louce. Pokojové rostliny obchodu a obýváku,
+ * jeskyně a vesmír se nekývají; pláž a oceán foukají víc, hustý les a džungle méně, pod vodou kývá proud.
+ */
+export const LOOK_WIND: Readonly<Record<LookId, number>> = {
+  meadow: 1, city: 0.6, mall: 0, supermarket: 0, living_room: 0, factory: 0, forest: 0.8, jungle: 0.6, desert: 0.8,
+  beach: 1.3, ocean: 1.2, underwater: 0.7, snow: 1.1, volcano: 0.5, cave: 0, space: 0, castle: 1, graveyard: 0.8,
+};
+/** Bouřka (déšť, bouře z věty) fouká víc než dvojnásob. */
+export const STORM_WIND = 2.2;
 
 /** Slunce za kamerou vlevo nahoře – stín padá dopředu doprava, jako v ukázce B. */
 const BEHIND_LEFT = [0.51, 0.81, -0.31] as const;
@@ -789,9 +802,11 @@ export function sceneLook(theme: { readonly setting: string; readonly mood: stri
       : { ...look, ground, afloat, surface, props: withKit(look.props, kit), ...(ride ? { ride } : {}), ...(autumn ? { flora: { ...look.flora!, autumn } } : {}) };
   const said = placeMood(theme.setting, theme.mood);
   const time = theme.timeOfDay ?? placeTime(theme.setting) ?? (said === 'dusk' ? 'dusk' : null);
-  if (time === 'night') return { ...placed, ...NIGHT, exposure: Math.min(placed.exposure, 1) };
-  const timed = time === 'dusk' ? { ...placed, ...DUSK } : placed;
   const sky = theme.weather === undefined ? null : WEATHER_MOODS[theme.weather];
   const mood = MOOD_ORDER.find((entry) => entry === said || entry === sky);
-  return mood === undefined ? timed : withMood(timed, MOOD_SHIFTS[mood]);
+  // Noc přebije náladu světla, vítr bouřky ale fouká i v noci.
+  const wind = mood === 'storm' ? { wind: STORM_WIND } : {};
+  if (time === 'night') return { ...placed, ...NIGHT, exposure: Math.min(placed.exposure, 1), ...wind };
+  const timed = time === 'dusk' ? { ...placed, ...DUSK } : placed;
+  return mood === undefined ? timed : { ...withMood(timed, MOOD_SHIFTS[mood]), ...wind };
 }

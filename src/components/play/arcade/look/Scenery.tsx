@@ -14,7 +14,7 @@ import { Box3, type Group, Mesh, type Object3D, Vector3 } from 'three';
 import { type Flora, floraIds, isSceneryModel, landmarks, type Look, modelHeight, type PropKind, type SceneryKind, type SceneryModel, sparseLandmarks } from '@/play/arcade/look';
 
 import { UNDER_PANORAMA } from './under-panorama';
-import { loadFlatModel, type PlantModel, paintedPlant, plantMaterial } from './load';
+import { loadFlatModel, type PlantModel, paintedPlant, plantDepthMaterial, plantMaterial } from './load';
 import { PlayEnv } from './play-env';
 import { capSnow } from './rig/snowcap';
 
@@ -265,7 +265,9 @@ function PlantProp({ id, flora, cap }: { readonly id: SceneryModel; readonly flo
     if (plant === null) return null;
     const made = new Mesh(plant.geometry, plantMaterial(plant.double));
     made.scale.setScalar(modelHeight(id));
+    // Zasněžená rostlina má vlastní materiál bez větru (`snowcapped`) a stojí, stín s ní.
     if (cap !== undefined) capSnow(made, cap);
+    else made.customDepthMaterial = plantDepthMaterial();
     freeze(made);
     return made;
   }, [plant, id, cap]);

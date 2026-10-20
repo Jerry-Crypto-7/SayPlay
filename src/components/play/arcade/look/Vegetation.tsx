@@ -15,10 +15,12 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { InstancedBufferAttribute, InstancedMesh, Matrix4, type PerspectiveCamera, Vector3 } from 'three';
 
-import type { Flora } from '@/play/arcade/look';
+import type { Flora, Look, LookId } from '@/play/arcade/look';
 
+import { toyMotionOn } from '../toy/applyToy';
 import type { Box } from './ground';
-import { type PlantModel, paintedPlant, plantMaterial } from './load';
+import { type PlantModel, paintedPlant, plantDepthMaterial, plantMaterial, plantWind, plantWindFor, setPlantWind } from './load';
+import type { QualityTier } from './rig/quality';
 import { type Layer, type Plant, type RoadAt, type Side, type VegetationProfile, placeAround, placeVegetation } from './vegetation-places';
 
 /** Okno kreslení: kolik metrů za kamerou, krok posunu a rezerva za koncem mlhy na korunu stromu (m). */
@@ -143,6 +145,7 @@ function Species({ id, flora, plants, cast, ground, bend, behind }: { readonly i
     // Buffer drží jen okno kolem kamery; ořez celé sady by počítal s instancemi mimo něj.
     mesh.frustumCulled = false;
     mesh.castShadow = cast;
+    if (cast) mesh.customDepthMaterial = plantDepthMaterial();
     mesh.receiveShadow = true;
     mesh.userData.rigShadow = cast ? 'both' : 'receive';
     return { mesh, matrices, colors, zs };
@@ -168,4 +171,22 @@ function Species({ id, flora, plants, cast, ground, bend, behind }: { readonly i
     built.mesh.count = hi - lo;
   });
   return built === null ? null : <primitive object={built.mesh} />;
+}
+
+/**
+ * Vítr ve vegetaci (P54B T13): sílu ze sady a nálady a čas kresby do uniforem rostlin (`plantWind`).
+ * Bouřka kmitá i rychleji. Úroveň `low` a omezený pohyb (`toyMotionOn`) vítr vypnou i ze shaderu.
+ */
+export function Wind({ look, lookId, tier }: { readonly look: Look; readonly lookId: LookId; readonly tier: QualityTier }) {
+  const strength = plantWindFor(look, lookId, tier, toyMotionOn());
+  const pace = Math.sqrt(look.wind ?? 1);
+  useEffect(() => {
+    plantWind.strength.value = strength;
+    setPlantWind(strength > 0);
+  }, [strength]);
+  useEffect(() => () => setPlantWind(false), []);
+  useFrame((_, delta) => {
+    if (strength > 0) plantWind.time.value += delta * pace;
+  });
+  return null;
 }

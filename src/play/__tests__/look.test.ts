@@ -15,7 +15,7 @@ import { sceneryPlaces } from '@/components/play/arcade/look/Scenery';
 import type { ArcadeSession } from '@/components/play/arcade/session';
 import { Weather } from '@/components/play/arcade/Weather';
 
-import { type Look, LOOKS, LOOK_IDS, PROP_KINDS, SCENERY_MODELS, isSceneryModel, kitFor, lookFor, lookOf, moodFor, sceneLook } from '../arcade/look';
+import { type Look, LOOKS, LOOK_IDS, PROP_KINDS, SCENERY_MODELS, STORM_WIND, isSceneryModel, kitFor, lookFor, lookOf, moodFor, sceneLook } from '../arcade/look';
 import settingKits from '../arcade/look/setting-kits.json';
 import { type GameSpecV1, readGameSpec } from '../spec';
 import runner from '../arcade/__fixtures__/runner.json';
@@ -238,7 +238,9 @@ describe('nálada z věty (P46G T5)', () => {
 
   it('noc přebije náladu', () => {
     const night = sceneLook({ setting: 'a forest at night', mood: 'fast' });
-    for (const setting of ['a sunny forest at night', 'a dark creepy forest at night', 'a stormy foggy forest at night']) expect(sceneLook({ setting, mood: 'fast' }), setting).toEqual(night);
+    // Vítr bouřky fouká i v noci (P54B T13); světlo je noci.
+    for (const setting of ['a sunny forest at night', 'a dark creepy forest at night', 'a stormy foggy forest at night']) expect({ ...sceneLook({ setting, mood: 'fast' }), wind: undefined }, setting).toEqual(night);
+    expect(sceneLook({ setting: 'a stormy foggy forest at night', mood: 'fast' }).wind).toBe(STORM_WIND);
     expect(sceneLook({ setting: 'a sunny forest', mood: 'dark', timeOfDay: 'night' })).toEqual(night);
   });
 
