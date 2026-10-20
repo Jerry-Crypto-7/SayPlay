@@ -137,3 +137,22 @@ Výkon Pixel 7 (CPU 4×) proti `d49e474e`, **prokládaně scénu po scéně** (`
 **Odvozeno.** Svit procesoru za snímek nic nepřidává (sdílené uniformy, kód shaderu); kolísání jednotlivých scén ±12 % při stejných voláních je šum vytíženého stroje, ne cena svitu.
 
 **Rozhodnutí (majitel, 20. 10.).** Bloom na `low` zůstává vypnutý a neměří se: na stroji, který nikdy nebude v klidu, nejde doložit ≥ 45 FPS ve všech 30 scénách, a čitelnost postav na telefonu nese svit, ne bloom.
+
+## Závěr po MVP (T15 znovu po T13–T14, 20. 10. 2026, `9a13731b`)
+
+Snímky `after/` a `after-phone/` a soud stejnými příkazy jako T15 (build `58a47982`, kód scény od něj beze změny), čistý `--work` (`D:/tmp/p54b-blind-post-t14`), proti základu T2:
+
+| Cíl | po T15a | po T13–T14 |
+|---|---|---|
+| soud desktop ≥ 15/18 | 17/18 | **18/18** splněno |
+| soud telefon ≥ 15/18 | 15/18 | **14/18** nesplněno o jednu |
+| sčítání (hrdina 51 %, nepřítel 95 %, medián 19 / min 13, světlo 7/7) | – | beze změny, shodné s `census-after.json` |
+| FPS Pixel 7 ≥ 40 | 30/30 ≥ 45 (klid) | 26/30, čtyři pod 40 v obou verzích (vytížený stroj, `perf-t14.json`) |
+| A/B proti předchozímu buildu | – | medián +1,6 %, prokládaně (brána majitele −5 %) |
+| sada, e2e, replay brána | zelené | zelené (níž) |
+
+**Fakta ze soudu telefonu.** Prohry: aréna a chodec (stejně jako po T15a – „the squirrel player and the orange fox are clearly different“, „the fox is easier to recognise“: nízkopolygonová liška základu je na telefonu čitelnější než riggovaná, svit to proti T2 nepřevrátil), agar („player character clearer than the blurry orange blob“) a rytmus („lanes look slightly brighter“, snímky téměř shodné). Výřez agaru ze čtyř běhů: rybka hráče je jednou čelem (T2), dvakrát zezadu (základ T13 bez svitu i teď) a jednou bokem (T14) – prohru nese póza ve chvíli snímku, ne svit. Souboj, po T15a prohraný, teď vyhrál.
+
+**Odvozeno.** Telefon je o jednu výhru pod cílem a dvě ze čtyř proher jsou náhoda snímku (póza agaru, rytmus téměř shodný); T15a upozornil, že opakovaný soud dá 13–16. Trvalá slabina je jediná: riggovaná liška na telefonu v aréně a bludišti. Datová oprava v rámci úlohy není – vrátit lišku na statický model by vzalo hrdinovi kostru (cíl T4). Patří do nálezu; T15 má už tři odvozené úlohy (T15a–c), proto jde do commitu jako přetečení.
+
+**Sada.** `vitest` celá (JSON, 15 204 testů): 15 196 zelených. Červené: `compile-report` (p90 kompilace 645 > 500 ms) a `rules/coverage` – samy zelené, pády z vytíženého stroje (CPU 100 %); `submission-check` ENOENT `plans/P8-…` ve worktree. Replay brána zelená (`golden` napoprvé na časové mezi p90, sám 8/8). E2E proti `next start`: `p32-look`, `interface-language`, `p54b-landmark`, `p54b-walk-clip` 12/12. Build `58a47982`, od něj se změnily jen skripty a měření.

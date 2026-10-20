@@ -42,8 +42,8 @@
    "stage": "platform",
    "tick": 150,
    "runState": "running",
-   "meshes": 72,
-   "calls": 77
+   "meshes": 64,
+   "calls": 72
   },
   {
    "id": "g-arena",
@@ -56,8 +56,8 @@
    "stage": "move_free",
    "tick": 150,
    "runState": "running",
-   "meshes": 66,
-   "calls": 105
+   "meshes": 64,
+   "calls": 98
   },
   {
    "id": "g-fight",
@@ -99,7 +99,7 @@
    "tick": 150,
    "runState": "running",
    "meshes": 56,
-   "calls": 92
+   "calls": 93
   },
   {
    "id": "g-walker",
@@ -168,8 +168,8 @@
    "stage": "shooter",
    "tick": 150,
    "runState": "running",
-   "meshes": 92,
-   "calls": 148
+   "meshes": 69,
+   "calls": 97
   },
   {
    "id": "g-throw",
@@ -238,8 +238,8 @@
    "stage": "steer",
    "tick": 150,
    "runState": "running",
-   "meshes": 52,
-   "calls": 90
+   "meshes": 40,
+   "calls": 70
   },
   {
    "id": "g-lander",
