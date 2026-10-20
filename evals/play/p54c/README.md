@@ -461,6 +461,13 @@ Holdout otevřený jednou (`holdout.measure.ts`: otisk se ověří, `holdout-ope
 - Proč prohrávají pruhy (slova soudce): pět plošin nebo děr v prázdném poli, cíle se ukážou jen na chvíli, „little visible escalation“. Stará aréna nebo střílečka má na snímcích víc nepřátel blízko hráče a velkého nepřítele ke konci.
 - Na snímku chytání (c01) visí nad polem velká tmavá deska, která zakrývá oblohu – v testech nezachycené, k prověření.
 
+## T14r1 – dvojče role žánru pruhů v odpovědi režiséra
+
+Příčina: vazba svědka (`bindRoles` v `src/play/arcade/witness.ts`) dá tělu generátoru pruhů roli, jen když je role jeho druhu jediná. Role pravidel odpovědi „bomb“ (hazard) vedle role žánru `hazard` se stejným popiskem byla druhá – bomba zůstala bez jména a svědek hrozby chyběl. Kandidáti stejného druhu a popisku teď hádání nejsou, vazba bere první (roli modulu).
+
+- Nahrané odpovědi T14 bez modelu, 32 MVP vět: c05 a s02 ztratí z chybějících trojic „bomb hazard chef/ninja“, **ostatních 30 her beze změny** (otisk specu, chybějící trojice, důvod i zdroj stejné).
+- Pin `__tests__/director-twins.test.ts`; se starou vazbou červený 2/2.
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.
@@ -623,3 +630,4 @@ Holdout otevřený jednou (`holdout.measure.ts`: otisk se ověří, `holdout-ope
 - T17: „stará hra pro tutéž větu“ = hra ze serveru nad `1476989e` (P52 na `main`, odkud P54C vychází), postaveného v dočasném worktree přes `npm run build` (webpack; turbopack odmítne `node_modules` jako junction mimo kořen). Obě strany bez modelu (`draft-only`), tedy hra, kterou hráč dostane hned.
 - T17: deset dvojic doslova podle AC (strop 40 volání nevyčerpán); pokrytí všech osmi žánrů dává los po žánrech, dvě navíc padly na chytání a krájení. Z `scripts/play-fidelity.mjs` jen export `runSentences` – klip průběhu a párový soud jsou beze změny z P45.
 - T17: výsledek se neladí – je to měření po fázi 3 jako T16; řídké scény žánrů pruhů jsou podklad pro další plán, ne oprava v P54C.
+- T14r1: oprava ve vazbě svědka, ne zahozením rolí pravidel, jak navrhovalo AC. Zahození (zkoušeno v `legacySpec`) svědka c05 a s02 vrátilo, ale pohnulo spec 21 dalších her a w03 (bouchání) z prokázané hry udělalo `VERB_UNPROVED` – jeho pravidla vlny odkazují na roli „bunny“, která by zmizela. Oprava vazby nemění žádný spec.

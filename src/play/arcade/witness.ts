@@ -51,10 +51,14 @@ const roleAt = (state: ArrayLike<number>, body: number): number => state[FIRST_B
 const live = (state: ArrayLike<number>, body: number): boolean => (state[FIRST_BODY + body * STRIDE + FLAGS_SLOT]! & ALIVE) !== 0;
 const kindAt = (world: ArcadeWorld, state: ArrayLike<number>, body: number): string => world.kinds[state[FIRST_BODY + body * STRIDE + KIND_SLOT]!] ?? '';
 
-/** Bez hádání mezi více kandidáty. Neobsazené tělo nemůže dokazovat jméno z věty. */
+/**
+ * Bez hádání mezi více kandidáty. Neobsazené tělo nemůže dokazovat jméno z věty. Kandidáti stejného druhu
+ * a popisku hádání nejsou (P54C T14r1): role pravidel odpovědi „bomb“ vedle `hazard` bomby žánru pruhů je
+ * totéž jméno, vazba bere první – roli modulu, která v `spec.roles` stojí před rolemi pravidel.
+ */
 export function bindRoles(spec: GameSpecV1, world: ArcadeWorld): readonly RoleBinding[] {
   const out: RoleBinding[] = [];
-  const unique = (roles: readonly GameRole[]): GameRole | undefined => roles.length === 1 ? roles[0] : undefined;
+  const unique = (roles: readonly GameRole[]): GameRole | undefined => roles.length === 1 || (roles.length > 1 && roles.every(role => role.kind === roles[0]!.kind && role.label === roles[0]!.label)) ? roles[0] : undefined;
   for (let body = 0; body < world.initial[HEADER.bodyCount]!; body += 1) {
     const code = roleAt(world.initial, body);
     const kind = kindAt(world, world.initial, body);
