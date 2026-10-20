@@ -143,6 +143,19 @@ describe('POST /api/play/games/:id/report (P54A T11)', () => {
     expect(await reportedRows(store())).toEqual([]);
   });
 
+  it('a lost vote write is 503 STORE_UNAVAILABLE; an unreachable store hides nothing, so the feed stays up (test-gap review)', async () => {
+    vi.stubEnv('PLAY_FEED_HIDE', OTHER_BUILTINS);
+    const remix = await publishedRemix();
+    vi.spyOn(store(), 'reportGame').mockRejectedValueOnce(new VersionStoreUnavailable('down'));
+    const lost = await report(remix, '203.0.113.96');
+    expect(lost.status).toBe(503);
+    expect(((await lost.json()) as { error: { code: string } }).error.code).toBe('STORE_UNAVAILABLE');
+
+    const down: typeof fetch = () => Promise.reject(new Error('connect ECONNREFUSED'));
+    const unreachable = httpVersionStore({ url: 'https://store.test', token: 't', prefix: 'test', timeoutMs: 1_000, limits: DEFAULT_WRITE_LIMITS }, down);
+    expect([...(await unreachable.reportHidden([remix, BUILTIN]))]).toEqual([]);
+  });
+
   it('an unknown or malformed id is 404', async () => {
     expect((await report('0'.repeat(32), '203.0.113.30')).status).toBe(404);
     expect((await report('not-a-game', '203.0.113.30')).status).toBe(404);
