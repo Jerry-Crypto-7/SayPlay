@@ -85,11 +85,13 @@ export interface FightWatch {
   maxHp(body: number): number;
   /** Zásahy od restartu (sonda). */
   hits(): number;
+  /** Délka telegrafu soupeře v ticích (`telegraph` ovládání souboje, P52 T9): nápřah se kreslí přes celou. */
+  readonly telegraph: number;
 }
 
 const fade = (age: number, span: number): number => (age >= 0 && age < span ? 1 - age / span : 0);
 
-export function createFightWatch(): FightWatch {
+export function createFightWatch(telegraph: number = FIGHT.telegraph): FightWatch {
   let tick = -1;
   let hp: number[] = [];
   let max: number[] = [];
@@ -102,6 +104,7 @@ export function createFightWatch(): FightWatch {
   let cooldown = 0;
   let swingAt = -Infinity;
   return {
+    telegraph,
     see: (state, now) => {
       const at = state[HEADER.tick] as number;
       // Restart (tik zpět) začíná čistě: HP od začátku, žádný zásah ani pád.
@@ -261,7 +264,7 @@ export function drawFighter(fighter: Fighter, state: Int32Array, body: number, a
     const left = phaseTicksLeft(state, body);
     if (phase === FIGHT_PHASE.telegraph) {
       // Nápřah: záklon a vzepětí během první třetiny, pak se chvěje; červeň sílí až k úderu.
-      const p = clamp01((FIGHT.telegraph - left + alpha) / FIGHT.telegraph);
+      const p = clamp01((watch.telegraph - left + alpha) / watch.telegraph);
       const k = smooth(clamp01(p / 0.35));
       pitch = -WINDUP_LEAN * k + 0.04 * p * Math.sin(now * 0.06);
       grow = WINDUP_GROW * k;

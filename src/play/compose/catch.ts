@@ -5,6 +5,16 @@ import type { Recipe } from './recipe';
 /** Reference prey pace and field the catch game is calibrated for (the `roam.catch` cell). */
 export const CATCH_TUNING: Readonly<Record<string, number>> = { half: 40000, preySpeed: 250, seconds: 11 };
 
+/**
+ * Včely chytání se střelou (P52 T7b-R1-R1): terč střely z věty („spits water at the bees“) je role nepřítele,
+ * ze které scéna vezme model včel (`enemyModel`). Svět ji nečte; chytání bez střely spec nemění.
+ */
+export function withCatchBees(spec: GameSpecV1, content: GenreSpec): GameSpecV1 {
+  const shoots = spec.controlParams?.generator === 'arena_catch' && spec.abilities?.includes('shoot') === true;
+  const bees = shoots ? content.cast?.find((item) => item.does === 'shoot_at')?.label : undefined;
+  return bees === undefined ? spec : { ...spec, roles: [...spec.roles, { id: 'enemy', kind: 'hazard', label: bees, count: 2 }] };
+}
+
 export function catchSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
   if (recipe.move !== 'roam' || recipe.objective !== 'catch' || recipe.actions.length || recipe.threats.length) throw new Error('Unsupported catch recipe');
   const prey = content.cast?.find(item => item.does === 'fight')?.label;

@@ -467,7 +467,7 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     return versionId;
   }
 
-  it('návrh, remix ani ruční spec do feedu nejdou; autorské verze s počtem remixů, remixovaná výš', async () => {
+  it('návrh ani ruční spec do feedu nejdou, remix ano (P54A T10); autorské verze s počtem remixů, remixovaná výš', async () => {
     // Kontrakt nad uloženými hrami: vestavěnou sadu (P37C T6) provozovatel skryje.
     vi.stubEnv('PLAY_FEED_HIDE', BUILTIN_GAMES.map((game) => game.version.versionId).join(','));
     onTestFinished(() => {
@@ -478,15 +478,30 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     const second = await publish(STARTERS[0].sentence);
     const remix = await remixGame(post(`/api/play/games/${first.body.versionId}/remix`, { chip: 'harder' }), params(first.body.versionId));
     expect(remix.status).toBe(201);
+    const remixId = ((await remix.json()) as { versionId: string }).versionId;
     expect((await createGame(post('/api/play/games', { spec: switchPuzzle }))).status).toBeLessThan(300);
+    // Ruční spec, který si napíše rodiče, je pořád ruční spec (nález revize T10-1): oběma dveřmi.
+    expect((await createGame(post('/api/play/games', { spec: switchPuzzle, parentId: first.body.versionId }))).status).toBe(201);
+    expect((await remixGame(post(`/api/play/games/${second.body.versionId}/remix`, { spec: switchPuzzle }), params(second.body.versionId))).status).toBe(201);
+    // Čip nad ručním specem nese jeho titul dál (nález revize T10-2 #1): ani `reskin` ho do feedu nepustí.
+    const handwritten = await createGame(post('/api/play/games', { spec: { ...switchPuzzle, title: 'Caller text' } }));
+    const handwrittenId = ((await handwritten.json()) as { versionId: string }).versionId;
+    const reskinned = await remixGame(post(`/api/play/games/${handwrittenId}/remix`, { chip: 'reskin' }), params(handwrittenId));
+    expect(reskinned.status).toBe(201);
+    // Z návrhu, ručního specu ani z jejich remixů do feedu nejde nic: rodič sám do feedu nesmí.
+    expect(remixId).not.toBe(handwrittenId);
     expect((await feed('?recent=24')).body.games).toEqual([]);
 
     vi.setSystemTime(1_700_000_001_000);
     const a = await authoredOf(first.body.versionId, 'a'.repeat(32));
     vi.setSystemTime(1_700_000_002_000);
     const b = await authoredOf(second.body.versionId, 'b'.repeat(32));
-    // Remix autorské verze se počítá na její kartě; do feedu sám nejde.
+    // Remix autorské verze se počítá na její kartě. Čip `harder` titul nemění, takže remixy
+    // `first` i `a` mají titul `a` – originál z feedu nevytlačí a samy na stránce nejsou.
     expect((await remixGame(post(`/api/play/games/${a}/remix`, { chip: 'harder' }), params(a))).status).toBe(201);
+    // Remix autorské verze řádek feedu dostane – jen ho feed skryje kvůli shodnému titulu.
+    const remixRows = (await versionStoreFromEnv(process.env).recent(RECENT_CAP)).filter((row) => row.relation === 'remix');
+    expect(remixRows.map((row) => row.parentId)).toEqual([a]);
 
     const { status, body } = await feed('?recent=24');
     expect(status).toBe(200);

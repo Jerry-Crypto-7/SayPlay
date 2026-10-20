@@ -579,6 +579,44 @@ interface Draft extends IntentAction {
   readonly negated: boolean;
 }
 
+/** Spojky vedlejší věty, za kterými přichází nový podmět („while sharks bite“); čte je i `heroDoes` (`draft/controls`). */
+export const CLAUSE_SUBORDINATORS: ReadonlySet<string> = new Set(['while', 'as', 'when', 'whenever', 'until', 'before', 'after', 'because']);
+
+/**
+ * Předmět slovesa je hrdina hry (P52 T3): „enemy turrets fire at a little robot crossing…“, „guards shoot at
+ * you“, „hawks grab at a field mouse running…“ – střílí a chňapá holý množný podmět na začátku věty.
+ * „kids shoot at the cans“ hrdinovi zůstane: předmět bez děje není hrdina.
+ */
+const AT_THE_PROTAGONIST = /^ at (?:(?:you|u|me|him|her|them|us)\b|(?:a|an) (?:[a-z]+ ){0,2}[a-z]+ (?:[a-z]+ing|who|that)\b)/;
+const DETERMINERS = new Set(['a', 'an', 'the', 'one', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'this', 'that']);
+/** Slovesa záměru, ze kterých má hrdina tlačítko (`INTENT_ABILITY` v `draft/controls`). */
+const HERO_BUTTON_VERBS: ReadonlySet<string> = new Set(['shoot', 'fight', 'kick']);
+/** Zájmena hrdiny ve vedlejší větě („while he shoots“). */
+const HERO_PRONOUNS = new Set(['he', 'she', 'it', 'you', 'u', 'i', 'we', 'they']);
+
+/** `before` = slova věty před slovesem `said` na `at`. */
+export function shootsAtTheHero(text: string, at: number, said: string, before: readonly string[]): boolean {
+  const prev = before[before.length - 1];
+  return prev !== undefined && before.length <= 3 && !DETERMINERS.has(before[0]!) && /s$/.test(prev) && AT_THE_PROTAGONIST.test(text.slice(at + said.length));
+}
+
+/**
+ * Sloveso na `at` dělá nepřítel (P52 T3): podmět vedlejší věty, který hrdina (`hero`) není („as hunters
+ * shoot“, „while the drones blast at him“), nebo `shootsAtTheHero`. Akce nepřítele hrdinovi tlačítko nedá.
+ */
+export function enemyDoes(text: string, at: number, hero: string | null): boolean {
+  const before = text.slice(0, at).match(/[a-z']+/g) ?? [];
+  const said = text.slice(at).match(/^[a-z']+/)?.[0] ?? '';
+  if (shootsAtTheHero(text, at, said, before)) return true;
+  const tail = before.slice(-4);
+  let from = tail.length - 1;
+  while (from >= 0 && !CLAUSE_SUBORDINATORS.has(tail[from]!)) from--;
+  if (from < 0 || from === tail.length - 1) return false;
+  const subject = tail.slice(from + 1).filter((word) => !DETERMINERS.has(word));
+  const heroHead = hero?.split(' ').pop();
+  return subject.length > 0 && subject.every((word) => !HERO_PRONOUNS.has(word) && !/ing$/.test(word) && word !== heroHead && singular(word) !== heroHead);
+}
+
 export function extractIntent(sentence: string): Intent {
   const text = withoutPossessor(sentence.toLowerCase().replace(/[’‘]/g, "'").replace(/\bthru\b/g, 'through').replace(/\bfootbal\b/g, 'football').replace(/\bn\b/g, 'and').replace(/\s+/g, ' ').trim());
   // A pseudo-cleft fronts the object: "pearls are what the swimming seal
@@ -738,11 +776,14 @@ export function extractIntent(sentence: string): Intent {
       }
     }
     const negated = inScope(hit.at);
+    // Střelba a úder nepřítele („as hunters shoot“, „turrets fire at a robot crossing“) nejsou akce hrdiny (P52 T3);
+    // jen slovesa tlačítek – „until the door unlocks“ zůstává, jak bylo.
+    const enemyAction = hit.row.emits.some(emit => emit.axis === 'action' && HERO_BUTTON_VERBS.has(emit.id)) && enemyDoes(text, hit.at, hero);
     for (const emit of hit.row.emits) {
       const verb = emit.id === 'each' ? (thing?.many === true ? 'collect' : 'reach') : emit.id === 'avoid' ? threatOf(object) : emit.id;
       // "Light all lanterns" requests interaction, not picking the lanterns up.
       // The inferred route/quantity goal is guidance, never another essential verb.
-      const base = { axis: emit.axis, verb, essential: !emit.fallback && emit.id !== 'each', said: hit.said, at: hit.at, fallback: emit.fallback, negated: negated && emit.axis !== 'threat', ...(emit.mapped ? { mapped: true as const } : {}) };
+      const base = { axis: emit.axis, verb, essential: !emit.fallback && emit.id !== 'each' && !(enemyAction && HERO_BUTTON_VERBS.has(emit.id)), said: hit.said, at: hit.at, fallback: emit.fallback, negated: negated && emit.axis !== 'threat', ...(emit.mapped ? { mapped: true as const } : {}) };
       if (emit.who === 'noun') drafts.push({ ...base, actor: hit.row.noun ?? headOf(hit.said), object: heroName });
       else if (emit.who === 'reverse' || emit.who === 'versus') {
         const opposed = emit.who === 'reverse' || /^(?:against|vs|versus)$/.test(thing?.via ?? '');

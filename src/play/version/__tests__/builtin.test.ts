@@ -76,6 +76,16 @@ describe('úložiště s vestavěnou sadou', () => {
     expect(again).toHaveLength(BUILTIN_GAMES.length + 1);
   });
 
+  it('remixy jdou až za vestavěnou sadou: do limitu ji nevytlačí (nález revize T10-1 #2)', async () => {
+    const store = withBuiltinGames(memoryVersionStore());
+    const remix: PublishedGame = { ...authored('b'.repeat(32), '2026-10-05T10:00:00.000Z'), relation: 'remix' };
+    expect(await store.put(remix)).toBe('stored');
+    expect(await store.put(authored('a'.repeat(32), '2026-10-04T10:00:00.000Z'))).toBe('stored');
+    const ids = (await store.recent(200)).map((row) => row.versionId);
+    expect(ids).toEqual(['a'.repeat(32), ...BUILTIN_GAMES.map((game) => game.version.versionId), 'b'.repeat(32)]);
+    expect((await store.recent(BUILTIN_GAMES.length + 1)).map((row) => row.versionId)).not.toContain('b'.repeat(32));
+  });
+
   // Nález revize T6-1 #1: `put` skládá rodokmen z rodokmenu rodiče v úložišti.
   it('remix i autorská verze vestavěné hry dostanou celý rodokmen', async () => {
     const store = withBuiltinGames(memoryVersionStore());

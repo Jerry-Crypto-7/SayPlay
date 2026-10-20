@@ -1431,7 +1431,13 @@ button.play-version-switch__item:not(:disabled) {
   }
 }
 
-/* Desktop: vlevo nadpis a pole (nejvýš 640), vpravo doporučená hra 16:9, feed pod tím. */
+/* Navigace levého sloupce (T12) je jen na desktopu, lišta jen pod ním. */
+.play-side-nav {
+  display: none;
+}
+
+/* Desktop (P54A T12, kit 05-layout „Left rail“): vlevo sloupec 240 px – logo,
+ * navigace, nadpis a pole –, vedle feed. Sloupec stojí, když se stránka posune. */
 @media (min-width: 1024px) {
   .play-root {
     --_side: var(--sp-space-12);
@@ -1441,44 +1447,94 @@ button.play-version-switch__item:not(:disabled) {
     display: none;
   }
 
-  .play-home {
+  .play-desk {
     display: grid;
-    grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+    grid-template-columns: 240px minmax(0, 1fr);
     gap: var(--sp-space-12);
     align-items: start;
-    max-width: 1440px;
+    max-width: calc(240px + 1280px + 72px + var(--sp-space-12) * 3);
     margin: 0 auto;
+    padding: 0 var(--_side);
+  }
+
+  .play-side {
+    position: sticky;
+    top: 0;
+    max-height: 100dvh;
+    overflow: hidden auto;
+    scrollbar-width: thin;
+  }
+
+  .play-side .play-appbar {
+    padding: var(--sp-space-6) 0 0;
+  }
+
+  .play-side .play-home {
+    padding: var(--sp-space-6) 0 var(--sp-space-8);
   }
 
   .play-create {
     margin: 0;
   }
 
+  /* Pole hned pod nadpisem: tip prvního návštěvníka a nápady by ho v úzkém
+   * sloupci odsunuly pod okraj obrazovky. */
+  .play-side .play-create {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .play-side .play-first-visit {
+    order: 1;
+  }
+
+  .play-side .play-ideas {
+    order: 2;
+  }
+
+  .play-side .play-hero {
+    font-size: var(--sp-text-title-l-size);
+    line-height: var(--sp-text-title-l-leading);
+    letter-spacing: var(--sp-text-title-l-tracking);
+  }
+
   .play-subhead {
     display: block;
   }
 
-  .play-idea-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .play-side .play-idea-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
-}
 
-.play-poster.play-featured {
-  position: relative;
-  inset: auto;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  margin-top: var(--sp-space-2);
-  border: var(--sp-border-base) solid var(--sp-outline);
-  border-radius: var(--sp-radius-xl);
-  box-shadow: var(--sp-shadow-md);
-  text-decoration: none;
-}
+  .play-side-nav {
+    order: -1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-space-1);
+    margin: 0 0 var(--sp-space-6);
+  }
 
-/* Rajčatová akce je na obrazovce jedna („Make it!“); plakát vedle zve papírovým tlačítkem. */
-.play-featured .play-poster-cta {
-  background: var(--sp-surface);
-  color: var(--sp-text);
+  .play-side-nav .sp-tabbar__item {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--sp-space-3);
+    margin: 0;
+    padding: 0 var(--sp-space-4);
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: var(--sp-text-label-size);
+    cursor: pointer;
+  }
+
+  .play-side-nav .sp-tabbar__item.is-active {
+    background: var(--sp-color-ink);
+  }
+
+  .play-side-nav .sp-icon {
+    width: 22px;
+    height: 22px;
+  }
 }
 
 .play-status {
@@ -2586,14 +2642,10 @@ a.play-button {
 }
 
 /* P27B */
-/* Svislý feed na `/play` (T4): na úzkém displeji jedna hra přes obrazovku,
- * na širokém hra vlevo a seznam dalších vpravo. Listovací okraj leží vpravo
- * přes plátno, a proto tlačítko Fire ve feedu uhne doleva. */
+/* Svislý feed na `/play` (T4): na telefonu jedna hra přes obrazovku, od tabletu
+ * karta uprostřed (P54A T12). Listovací okraj leží na telefonu vpravo přes
+ * plátno, a proto tlačítko Fire ve feedu uhne doleva. */
 .play-pager {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: var(--sp-space-4);
-  max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--sp-space-5);
   box-sizing: border-box;
@@ -2684,12 +2736,6 @@ a.play-button {
   box-shadow: none;
 }
 
-/* Karta je náhled plakátu (P33 T13): tón nálady scény jako pozadí, titul a cíl hry. */
-.play-feed-card[data-tone] {
-  border-left: 4px solid var(--_tone);
-  background: color-mix(in srgb, var(--_tone) 30%, var(--sp-surface));
-}
-
 .play-pager-slide > .play-shell {
   height: 100%;
 }
@@ -2749,14 +2795,13 @@ a.play-button {
   font-variant-numeric: tabular-nums;
 }
 
+/* „Up next“ (T12): tři další karty v řadě pod plochou, náhled 16:9 v tónu nálady. */
 .play-feed-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-space-2);
-  max-height: min(72dvh, 700px);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-space-3);
   margin: var(--sp-space-2) 0 0;
   padding: 0;
-  overflow-y: auto;
   list-style: none;
 }
 
@@ -2767,25 +2812,324 @@ button.play-feed-card {
   cursor: pointer;
 }
 
-.play-feed-card[aria-current='true'] {
-  border-color: var(--sp-secondary);
+.play-feed-thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--sp-radius-sm);
+  background: color-mix(in srgb, var(--_tone, var(--sp-color-sky)) 55%, var(--sp-bg));
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1023px) {
+  .play-pager .play-feed {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
   .play-pager {
-    display: block;
     margin: 0;
     padding: 0;
   }
 
-  .play-pager-slide {
+  /* Ukázková hra místo prázdného feedu (`DemoGame`). */
+  .play-pager > .play-pager-slide {
     height: 100dvh;
     border: 0;
     border-radius: 0;
   }
+}
+
+/* P54A */
+/* Snap feed (T6): karta přes celou výšku feedu, tah dosedne vždy na další.
+ * Karty mimo okno ±3 drží mezera téže výšky. Pod 1024 px je feed vysoký jako
+ * obrazovka bez plovoucího tab baru kitu, na desktopu jako dřívější slide.
+ * Okraj (`.play-pager-rail`) leží v obalu, ne v kartě – na telefonu přes pravý kraj. */
+.play-reel-frame {
+  position: relative;
+}
+
+.play-reel {
+  height: min(52dvh, 560px);
+  overflow-y: auto;
+  overscroll-behavior-x: none;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+}
+
+.play-reel::-webkit-scrollbar {
+  display: none;
+}
+
+.play-reel-card,
+.play-reel-gap {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.play-reel-card > .play-pager-slide {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.play-reel-poster {
+  cursor: default;
+}
+
+/* Gesta (T9): v náhledu robota tah po scéně posouvá feed (ťuk hru převezme), při
+ * hraní patří tah hře a feed stojí – ven vede okraj karty, Esc, výsledek a Back. */
+/* Scéna má `touch-action: none` přímo v `style` (`ArcadeStage`, P54B) – náhled ho musí přebít. */
+/* Méně pohybu (T13, `data-still`): hra stojí na tiku 0 s `play-first-prompt` – pro feed jako náhled. */
+.play-pager-slide:is(:has([data-testid='play-demo']), [data-still='true']:has([data-testid='play-first-prompt'])) .play-stage {
+  touch-action: pan-y !important;
+}
+
+.play-reel:has(.play-shell):not(:has([data-testid='play-demo'], [data-still='true'] [data-testid='play-first-prompt'], [data-testid='play-outcome'])) {
+  overflow: hidden;
+}
+
+/* Fokus po přechodu (T13) leží na kartě; obrys uvnitř, karta ořezává přesah. */
+.play-reel-card:focus-visible {
+  outline: var(--sp-border-thick) solid var(--sp-focus);
+  outline-offset: calc(-1 * var(--sp-border-thick));
+}
+
+/* Obrázek karty mimo hru (T8): snímek scény z posledního odchodu, kurátorský
+ * snímek nebo obrázek odkazu přes plakát; titul a cíl na ploše, aby se četly. */
+.play-reel-shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.play-reel-poster > :is(.play-poster-title, .play-poster-goal) {
+  position: relative;
+  padding: var(--sp-space-1) var(--sp-space-3);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+}
+
+/* Náhled robota (T7): „Tap to play“ dole nad scénou, ťuk projde na scénu.
+ * Poznámku ukázky nahrazuje; jakmile hraje hráč (poznámka zmizí), zmizí i on. */
+.play-reel .play-demo-note {
+  display: none;
+}
+
+.play-reel-hint {
+  position: absolute;
+  left: 0;
+  right: 56px;
+  bottom: var(--sp-space-8);
+  z-index: 2;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-space-2);
+  padding: 0 var(--sp-space-5);
+  text-align: center;
+  pointer-events: none;
+}
+
+.play-pager-slide:is(:has([data-testid='play-demo']), [data-still='true']:has([data-testid='play-first-prompt'])) > .play-reel-hint {
+  display: flex;
+}
+
+/* „Tap to play“ feedu místo vlastní výzvy hry „Tap to start“. */
+.play-pager-slide[data-still='true'] .play-first-prompt {
+  display: none;
+}
+
+.play-reel-hint .play-poster-goal {
+  padding: var(--sp-space-1) var(--sp-space-3);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+}
+
+/* Akce karty (T10): sloupec na okraji mezi počtem a „Next“, jen v náhledu robota –
+ * při hraní by překážel ovládání a výsledek nese tytéž akce v listu `PostRun`. */
+.play-reel-actions {
+  --_row: var(--sp-size-hud-pill);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-space-3);
+}
+
+.play-reel-frame:has([data-testid='play-demo'], [data-still='true'] [data-testid='play-first-prompt']) .play-reel-actions,
+.play-pager-slide:is(:has([data-testid='play-demo']), [data-still='true']:has([data-testid='play-first-prompt'])) > .play-reel-lineage {
+  display: flex;
+}
+
+.play-reel-action {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-space-1);
+  width: 56px;
+  text-align: center;
+}
+
+.play-reel-action .sp-hud-btn {
+  color: var(--sp-text);
+  cursor: pointer;
+}
+
+.play-reel-action-caption,
+.play-reel-action-count {
+  padding: 0 var(--sp-space-1);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  font-size: var(--sp-text-caption-size);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.play-reel-action-count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hláška sdílení vlevo od sloupce, jako nad dolní řadou HUD. */
+.play-reel-action .play-status:not(:empty) {
+  position: absolute;
+  top: 0;
+  right: calc(100% + var(--sp-space-2));
+  width: max-content;
+  max-width: 240px;
+  padding: var(--sp-space-2) var(--sp-space-3);
+  border-radius: var(--sp-radius-md);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  background: var(--sp-surface);
+  color: var(--sp-text);
+  font-size: var(--sp-text-label-size);
+  text-align: left;
+  box-shadow: var(--sp-shadow-sm);
+}
+
+.play-reel-action .play-status:empty {
+  position: absolute;
+}
+
+.play-reel-lineage {
+  position: absolute;
+  left: var(--sp-space-3);
+  right: 56px;
+  bottom: var(--sp-space-2);
+  z-index: 2;
+  display: none;
+  justify-content: center;
+}
+
+.play-reel-lineage .play-lineage {
+  margin: 0;
+  padding: 0 var(--sp-space-2);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface);
+}
+
+@media (max-width: 1023px) {
+  .play-reel {
+    height: calc(100dvh - var(--sp-size-tabbar) - var(--sp-space-4) - env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 767px) {
+  .play-reel {
+    border: 0;
+    border-radius: 0;
+  }
+}
+
+/* Tablet a desktop (T12): sloupec akcí stojí vedle plochy, ne přes ni, a smí být
+ * vyšší než plocha (na 1024×768 je plocha jen ~320 px vysoká). */
+@media (min-width: 768px) {
+  .play-reel-frame {
+    display: flex;
+  }
+
+  .play-reel {
+    flex: 1 1 auto;
+    min-width: 0;
+    border-radius: var(--sp-radius-xl);
+  }
+
+  .play-pager-rail {
+    position: static;
+    flex: none;
+    width: 72px;
+  }
+
+  .play-reel-hint {
+    right: 0;
+  }
+
+  .play-reel-lineage {
+    right: var(--sp-space-3);
+  }
+
+  .play-pager-slide > .play-shell > :is(.play-hud, .play-pause) {
+    right: 0;
+  }
+
+  .play-pager .play-fire {
+    right: var(--sp-space-5);
+  }
+}
+
+/* Tablet: karta nejvýš 600 px uprostřed, akce vedle. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .play-reel-frame {
+    width: min(100%, 600px + 72px);
+    margin: 0 auto;
+  }
+}
+
+/* Desktop (kit 05-layout `lg`/`xl`): plocha 16:9, nejvýš 1280×720, tak velká, aby
+ * se pod ni vešlo „Up next“; feed je kontejner, ze kterého se šířka plochy počítá. */
+@media (min-width: 1024px) {
+  .play-pager {
+    container-type: inline-size;
+    margin: 0;
+    padding: var(--sp-space-6) 0 var(--sp-space-8);
+  }
+
+  .play-pager > * {
+    --_stage-w: min(100cqw - 72px - 2 * var(--sp-border-base), 1280px, (100dvh - 280px) * 16 / 9);
+  }
+
+  /* Rámeček vně plochy, aby karta uvnitř měla přesně 16:9. */
+  .play-reel {
+    flex: none;
+    box-sizing: content-box;
+    width: var(--_stage-w);
+    height: calc(var(--_stage-w) * 9 / 16);
+  }
+
+  .play-pager > .play-pager-slide {
+    width: var(--_stage-w);
+    height: calc(var(--_stage-w) * 9 / 16);
+  }
 
   .play-pager .play-feed {
-    display: none;
+    width: var(--_stage-w);
+    margin-top: var(--sp-space-4);
+  }
+
+  /* Vedle feedu je vidět i „Make it!“ – jedna rajčatová akce na obrazovku. */
+  .play-reel-hint .play-poster-cta {
+    background: var(--sp-secondary);
+    color: var(--sp-on-secondary);
   }
 }
 

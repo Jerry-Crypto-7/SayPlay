@@ -52,8 +52,15 @@ export const HARMFUL_ROLES = ['obstacle', 'chaser', 'hazard', 'enemy'] as const;
 export const HARMFUL_PARTS: readonly string[] = ['hazard', 'chaser'];
 export const partBodies = z.array(z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1)).min(1);
 
-/** Robot akcí (P46A T6): totéž co obal ovládání a role, před kterými dash a štít chrání; `parts` = těla dílů, která zraní (P47B T4). */
-export const abilityBotParams = abilityControlParams.extend({ harm: z.array(z.enum(HARMFUL_ROLES)).max(HARMFUL_ROLES.length), parts: partBodies.optional() });
+/**
+ * Robot akcí (P46A T6): totéž co obal ovládání a role, před kterými dash a štít chrání; `parts` = těla dílů, která zraní
+ * (P47B T4); `spare` = kořist chytání, na kterou robot nestřílí (P52 T7b).
+ */
+export const abilityBotParams = abilityControlParams.extend({
+  harm: z.array(z.enum(HARMFUL_ROLES)).max(HARMFUL_ROLES.length),
+  parts: partBodies.optional(),
+  spare: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+});
 export type AbilityBot = z.infer<typeof abilityBotParams>;
 
 /** Obaly ovládání, pod kterými může ležet obal akcí (`baseControlOf` v `addons.ts`). */

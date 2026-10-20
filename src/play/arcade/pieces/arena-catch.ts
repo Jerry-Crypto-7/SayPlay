@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createCompileRng } from '@/play/compile/rng';
-import { BODY, FLAG, ROLE, UNIT, bodyBase, bodyHp, type ArcadeLevel, type ModeGeneratorPiece, type RulePiece } from '../contract';
+import { BODY, FLAG, ROLE, UNIT, bodyBase, bodyHp, type ArcadeLevel, type BodyInit, type ModeGeneratorPiece, type RulePiece } from '../contract';
 import { ARENA } from './arena';
 
 /**
@@ -20,13 +20,35 @@ export const arenaCatchParams = z.object({
   segments: z.literal(true).optional(),
 }).strict();
 export type ArenaCatchParams = z.infer<typeof arenaCatchParams>;
-const contactParams = z.object({ prey: z.int().min(1), startX: z.int(), startZ: z.int(), tough: z.literal(true).optional() }).strict();
-/** Motion is a physical precondition: standing beside a static prop is not pursuit. */
+/**
+ * Včely chytání se střelbou (P52 T7b, „spits water at the bees“): kořist střela nesebere (`shot_hit` `spare`), takže
+ * akce střelby potřebuje jiný cíl. Včely stojí na přímce start → kořist: první `near` od startu (nejvýš `at[0]` ‰
+ * cesty), kde ji robot vidí hned – kořist utíká rychleji než hrdina a cestu jinam stočí –, druhá v `at[1]` ‰.
+ * Dotyk hrdinu vrátí na start (`stings`). Velikost je nad hrdinou i po zásahu všech (bod za zásah = `ARENA.grow`),
+ * takže je robot bez střely jako větší buňku obchází.
+ */
+export const CATCH_BEES = { near: 6 * UNIT, at: [350, 650], size: 2000 } as const;
+
+/** Včely na cestě ke kořisti, která začíná na `x`, `z` (hrdina na středu). Vzdálenost po větší ose, jako hledá robot. */
+export function catchBees(x: number, z: number): BodyInit[] {
+  const far = Math.max(Math.abs(x), Math.abs(z));
+  const [first, second] = CATCH_BEES.at;
+  return [Math.min(CATCH_BEES.near, Math.trunc((far * first) / 1000)), Math.trunc((far * second) / 1000)].map((reach) => ({
+    role: 'enemy', kind: 'enemy', x: Math.trunc((x * reach) / far), y: 0, z: Math.trunc((z * reach) / far),
+    w: CATCH_BEES.size, h: ARENA.height, d: CATCH_BEES.size, solid: false,
+  }));
+}
+
+const contactParams = z.object({ prey: z.int().min(1), startX: z.int(), startZ: z.int(), tough: z.literal(true).optional(), stings: z.literal(true).optional() }).strict();
+/** Motion is a physical precondition: standing beside a static prop is not pursuit. `stings`: any other enemy (a bee) sends the hero back to the start. */
 export const arenaCatchContact: RulePiece<z.infer<typeof contactParams>> = {
   id: 'arena_catch_contact', params: contactParams, trigger: 'contact', roles: ['player', 'enemy'], cost: () => ({ bodies: 0, rules: 1 }),
   fire({ state, player, other }, params) {
-    if (other !== params.prey) return [];
     const p = bodyBase(player), q = bodyBase(other);
+    if (other !== params.prey) {
+      const bee = params.stings === true && (state[q + BODY.flags]! & FLAG.alive) !== 0 && state[q + BODY.role] === ROLE.enemy;
+      return bee && state[p + BODY.x]! ** 2 + state[p + BODY.z]! ** 2 >= UNIT * UNIT ? [{ kind: 'respawn' }] : [];
+    }
     if (!(state[q + BODY.flags]! & FLAG.alive) || !(state[q + BODY.flags]! & FLAG.kinematic) || state[q + BODY.role] !== ROLE.enemy) return [];
     if ((state[q + BODY.x]! - params.startX) ** 2 + (state[q + BODY.z]! - params.startZ) ** 2 < UNIT * UNIT) return [];
     if (state[p + BODY.x]! ** 2 + state[p + BODY.z]! ** 2 < UNIT * UNIT) return [];

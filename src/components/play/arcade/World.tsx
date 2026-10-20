@@ -85,6 +85,8 @@ const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'cei
 export interface Cast {
   readonly player: string;
   readonly enemy: string;
+  /** Kořist chytání (P52 T7b-R1): tělo druhu `prey`; včely druhu `enemy` kreslí `enemy`. */
+  readonly prey?: string;
   /** Pronásledovatel doplňku `+chaser`. */
   readonly chaser: string;
   /** Boss od režiséra (P46E T4): tělo druhu `kind` kreslí model jeho věci z obsazení místo pronásledovatele. */

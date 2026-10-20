@@ -441,6 +441,21 @@ export function marchedRange(level: ArcadeLevel, gunParams: GunParams, density: 
   return { level: { ...level, bodies }, march };
 }
 
+/**
+ * Do kterého tiku střelnice jistě běží (P52 T7): poslední nepřítel, který jde k hráči, vstoupí do dostřelu – z brány
+ * podle pochodu `march`, jinak od startu. Dřív ho nikdo nezastřelí, takže hra do té doby nevyčistí (`cleared`).
+ */
+export function shooterOpenUntil(level: ArcadeLevel, march: readonly MarchEntry[] = []): number {
+  let until = 0;
+  level.bodies.forEach((body, index) => {
+    if (body.role !== 'enemy') return;
+    const entry = march.find((item) => item.body === index);
+    const speed = -(entry?.vz ?? body.vz ?? 0);
+    if (speed > 0) until = Math.max(until, (entry?.at ?? 0) + Math.max(0, Math.ceil((body.z - SHOOTER.range) / speed)));
+  });
+  return until;
+}
+
 /** Tvrzení „hratelné z konstrukce“ nad hotovou střelnicí; prázdné pole = hratelná. */
 export function checkShooterLevel(level: ArcadeLevel, gunParams: GunParams): string[] {
   const issues: string[] = [];

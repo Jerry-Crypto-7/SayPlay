@@ -186,7 +186,14 @@ export function laneChoice(status: readonly number[], lane: number, rowZ: number
 
 export const NO_COINS: readonly (number | null)[] = [null, null, null];
 
-const botParams = z.object({}).strict();
+/** Nejbližší řada zavírá všechny pruhy (zeď, P52 T4): projde ji jen dash nebo štít. */
+export function wallAhead(state: Int32Array, player: number): boolean {
+  const row = nextRow(state, player);
+  return row !== null && row.lanes.every((lane) => lane.status === BLOCKED);
+}
+
+/** `walls` = trať má zdi (`RunnerTrackParams.walls`): robot akcí na ně šetří dash a štít (`abilityStep`). Robot běžce sám jezdí stejně. */
+const botParams = z.object({ walls: z.literal(true).optional() }).strict();
 
 export const runnerBot: BotPiece<z.infer<typeof botParams>> = {
   id: 'runner_bot',

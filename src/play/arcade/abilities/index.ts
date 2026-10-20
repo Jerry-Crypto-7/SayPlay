@@ -9,13 +9,18 @@
  * tagem `p46a-api`; staví na něm power-upy P46C a režisér P46E.
  */
 
+import { duelHitOf } from '../../capabilities';
 import { type AbilityId, type BodyInit, type PieceRef, mapUnderlying, nativeRule } from '../contract';
-import { type AddonContext, type ArcadeParts, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
+import { type AddonContext, type ArcadeParts, baseBotOf, baseControlOf, enemiesFor, enemyOptions, hitParamsFor, wrapBot, wrapControl } from '../addons';
+import { ballOpenUntil } from '../pieces/ball';
 import { type BossBeatParams, bossBeat, bossBeatHit } from '../pieces/boss';
+import { FIGHT } from '../pieces/fight';
+import { FINALE5_GENRE_VERSION, genreAtLeast } from '../pieces/pacing-parts';
+import { type MarchEntry, shooterOpenUntil } from '../pieces/shooter';
 import { grabRule } from './grab';
 import { dashRule, fightGuardRule, shieldRule } from './guard';
 import { HARMFUL_PARTS, HARMFUL_ROLES, abilityIdsOf } from './state';
-import { shootAbility } from './shoot';
+import { catchPreyOf, shootAbility } from './shoot';
 import { AROUND_CONTROLS, strikeRule } from './strike';
 
 export interface AbilityContext extends AddonContext {
@@ -49,6 +54,28 @@ function addFoes(parts: ArcadeParts, context: AddonContext, every = 1): ArcadePa
   };
 }
 
+/**
+ * Míč a střelnice (P52 T7): hrdina stojí na místě, takže štít a krádež mají cíl, jen když k němu sám přiletí – střela
+ * soupeře (`hazard`, náraz jako nepřítel) nebo kořist (`collectible`). Letí zepředu po ose hrdiny, první dorazí za `first`
+ * tiků, další po `gap` (štít se nabije za 120), nejvýš `most`, a jen dokud hra jistě běží (`ballOpenUntil`,
+ * `shooterOpenUntil`) – jinak by sloveso nebylo čím dokázat.
+ */
+const INCOMING = { first: 90, gap: 180, most: 3, speed: 40, size: 500, y: 600 } as const;
+const STANDING: readonly string[] = ['ball', 'shooter'];
+
+function withIncoming(parts: ArcadeParts, context: AddonContext, role: 'hazard' | 'collectible'): ArcadeParts {
+  const base = baseControlOf(parts.control);
+  const until = base.id === 'ball' ? ballOpenUntil(parts.level) : shooterOpenUntil(parts.level, base.params.march as readonly MarchEntry[] | undefined);
+  const { first, gap, most, speed, size, y } = INCOMING;
+  const bodies: BodyInit[] = [];
+  for (let at = first; at <= until && bodies.length < most; at += gap) {
+    bodies.push({ role, kind: role === 'hazard' ? 'sniper_shot' : 'coin', x: 0, y, z: speed * at, w: size, h: size, d: size, solid: false, kinematic: true, vz: -speed });
+  }
+  if (bodies.length === 0) return { ...parts, issues: [...(parts.issues ?? []), 'abilities: the game ends before anything reaches the hero'] };
+  const rules = role === 'hazard' ? [...parts.rules, { id: 'hit', params: hitParamsFor('hazard', context.health) }] : parts.rules;
+  return { ...parts, level: { ...parts.level, bodies: [...parts.level.bodies, ...bodies] }, rules };
+}
+
 /** Pohled shora: úder a krádež sahají kolem hrdiny (`AROUND_CONTROLS`). */
 const aroundOf = (parts: ArcadeParts): { around?: true } => (AROUND_CONTROLS.includes(baseControlOf(parts.control).id) ? { around: true } : {});
 
@@ -73,7 +100,7 @@ export const grabAbility: AbilityPiece = {
   id: 'grab',
   apply: (parts, context) => {
     const loot = parts.level.bodies.some((body) => body.role === 'collectible' && body.template !== true);
-    const armed = loot ? parts : withFoes(parts, context);
+    const armed = STANDING.includes(baseControlOf(parts.control).id) ? withIncoming(parts, context, 'collectible') : loot ? parts : withFoes(parts, context);
     return { ...armed, rules: [...armed.rules, { id: grabRule.id, params: { keeper: context.keeper, slot: context.slot, verb: 'grab', ...aroundOf(parts) } }] };
   },
 };
@@ -124,13 +151,18 @@ const withBaseControl = (control: PieceRef, edit: (base: PieceRef) => PieceRef):
 /**
  * Souboj v aréně (P47B T6): úder soupeře rozhoduje ovládání souboje, ne náraz – ochranu (`guard`) dostane ono
  * a sloveso pravidlo odraženého úderu (`fightGuardRule`). Dash bere úder dřív než štít, proto štít zná jeho slot.
+ *
+ * Dash i štít naráz (P52 T9, jen `genre.v5`): soupeř se napřahuje `FIGHT.pairTelegraph` tiků místo 30. S 30 vyhrál
+ * novice 1/10 (štít na A) a 3/10 (dash na A) proti 6/10 bez akcí – volba ze dvou ochran mu pozdní reakcí častěji
+ * nevyjde, zápas se táhne a soupeři i flanker průběhu berou životy. Se 40 tiky 5/10 a 6/10, intermediate 9/10.
  */
 function fightGuard(parts: ArcadeParts, context: AbilityContext, id: 'dash' | 'shield'): ArcadeParts {
   const known = baseControlOf(parts.control).params.guard as { readonly dash?: number } | undefined;
   const dash = id === 'dash' ? context.slot : known?.dash;
+  const slower = known !== undefined && genreAtLeast(context.spec, FINALE5_GENRE_VERSION) ? { telegraph: FIGHT.pairTelegraph } : {};
   const control = withBaseControl(parts.control, (fight) => ({
     ...fight,
-    params: { ...fight.params, guard: { ...((fight.params.guard as object | undefined) ?? {}), keeper: context.keeper, ...(id === 'dash' ? { dash: context.slot } : { shield: true }) } },
+    params: { ...fight.params, ...slower, guard: { ...((fight.params.guard as object | undefined) ?? {}), keeper: context.keeper, ...(id === 'dash' ? { dash: context.slot } : { shield: true }) } },
   }));
   return { ...parts, control, rules: [...parts.rules, { id: fightGuardRule.id, params: { keeper: context.keeper, verb: id, ...(dash === undefined ? {} : { dash }) } }] };
 }
@@ -145,7 +177,7 @@ function guardAbility(id: 'dash' | 'shield'): AbilityPiece {
       // Soupeři řízení jsou `enemy` bez nárazu, proto nepřátele přidat i vedle nich (jako `+shoot`); svodidla řízení je nenahradí.
       // Let (P47B T9): nepřítel v každé druhé mezeře trubek (obruči) křižuje dráhu. Nepřátelé poletování jsou ~110 tiků
       // od sebe a štít se nabíjí 120 – dostane jen každého druhého, jinak by na dalšího nebyl nabitý (robot 0/10).
-      const parts = metHarm(start).length === 0 ? addFoes(start, context, id === 'shield' && control === 'flap' ? 2 : 1) : start;
+      const parts = STANDING.includes(control) ? withIncoming(start, context, 'hazard') : metHarm(start).length === 0 ? addFoes(start, context, id === 'shield' && control === 'flap' ? 2 : 1) : start;
       if (id === 'shield') return shieldParts(parts, context.keeper);
       const roles = harmOf(parts);
       if (roles.length === 0) return parts;
@@ -219,13 +251,41 @@ export const ABILITY_RULES = { [strikeRule.id]: strikeRule, [grabRule.id]: grabR
 
 /**
  * Duel (P47B T8) hraje úder (Tap) a úhyb (Down) vlastní mechanikou: žádné tlačítko ani tělo akcí, jen
- * sloveso – úder na zásahu soupeře (`judge`), dash a štít na úhybu, který vyšel (`duel_dodge`).
+ * sloveso – úder, střelba nebo krádež (P52 T8) na zásahu soupeře (`judge`), dash a štít na úhybu, který vyšel (`duel_dodge`).
  */
 function duelVerbs(parts: ArcadeParts, ids: readonly AbilityId[]): ArcadeParts {
   const dodges = ids.filter((id): id is 'dash' | 'shield' => id === 'dash' || id === 'shield');
-  const rules = parts.rules.map((rule) => mapUnderlying(rule, (native) => (native.id === 'judge' && ids.includes('strike') ? { ...native, params: { ...native.params, verb: 'strike' } } : native)));
+  const hit = duelHitOf(ids);
+  const rules = parts.rules.map((rule) => mapUnderlying(rule, (native) => (native.id === 'judge' && hit !== undefined ? { ...native, params: { ...native.params, verb: hit } } : native)));
   const control = dodges.length === 0 ? parts.control : withBaseControl(parts.control, (duel) => ({ ...duel, params: { ...duel.params, dodges: true } }));
   return { ...parts, control, rules: [...rules, ...dodges.map((verb) => ({ id: 'duel_dodge', params: { verb } }))] };
+}
+
+/**
+ * Pronásledovatelé pro úder (P52 T5), jen `genre.v5`: úder (a dash nebo štít) pronásledovatele zničí, takže by hru
+ * začátečníkovi vyprázdnil. Zničené proto další vlna doplní (`restock`) a vlny přivedou pronásledovatele navíc:
+ * - quest s úderem: druhé kolo jednoho (novice 9/10 proti 6/10 bez úderu, takhle 7/10; semínka 1–20 13/20 proti 11/20);
+ * - sběr v aréně s úderem a dashem nebo štítem: každá vlna od první s pronásledovatelem jednoho. Sběr jich jinak za hru
+ *   přivede jednoho (`wavesChasers`), takže druhé sloveso by se nedokázalo nikdy (novice s dashem 9/10 proti 4/10
+ *   bez akcí, takhle 6/10; semínka 1–20 14/20, se štítem 13/20);
+ * - sběr v aréně jen s úderem (T5-R1): jen doplnění zničených. Úder jinak zabil jediného pronásledovatele a zbytek hry
+ *   byl prázdný (novice 17/20 proti 9/20 bez akce).
+ * Útěk (živý pronásledovatel od startu) zůstane.
+ */
+function sharedChasers(parts: ArcadeParts, spec: AddonContext['spec'], ids: readonly AbilityId[]): ArcadeParts {
+  if (!ids.includes('strike') || !genreAtLeast(spec, FINALE5_GENRE_VERSION)) return parts;
+  const live = parts.level.bodies.filter((body) => body.role === 'chaser' && body.template !== true).length;
+  const quest = baseBotOf(parts.bot).id === 'quest_bot';
+  if (!quest && live > 0) return parts;
+  const guard = ids.includes('dash') || ids.includes('shield');
+  const bump = (native: PieceRef): PieceRef => {
+    if (native.id !== 'arena_waves' || native.params.chaser === undefined) return native;
+    const waves = native.params.waves as readonly { readonly chasers?: number }[];
+    const first = waves.findIndex((wave) => (wave.chasers ?? 0) > 0);
+    const extra = (k: number): boolean => (quest ? k === 0 : guard && first >= 0 && k >= first);
+    return { ...native, params: { ...native.params, restock: live, waves: waves.map((wave, k) => (extra(k) ? { ...wave, chasers: (wave.chasers ?? 0) + 1 } : wave)) } };
+  };
+  return { ...parts, rules: parts.rules.map((rule) => mapUnderlying(rule, bump)) };
 }
 
 /** Pořadí skládání: kdo přidává nepřátele (střelba, úder, krádež), jde před dashem a štítem, které chrání před jejich nárazy. */
@@ -244,9 +304,11 @@ export function applyAbilities(parts: ArcadeParts, context: AddonContext): Arcad
   const hero = parts.level.bodies[0] as BodyInit;
   // Mrtvá předloha jako počítadlo komba: nic ji nekreslí ani nesrazí.
   const counter: BodyInit = { role: 'thing', kind: hero.kind, x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false, template: true };
-  let next: ArcadeParts = { ...parts, level: { ...parts.level, bodies: [...parts.level.bodies, counter] } };
+  let next: ArcadeParts = sharedChasers({ ...parts, level: { ...parts.level, bodies: [...parts.level.bodies, counter] } }, context.spec, ids);
   for (const id of APPLY_ORDER) if (ids.includes(id)) next = ABILITY_PIECES[id].apply(next, { ...context, keeper, slot: ids.indexOf(id) });
   // Robot akcí (T6) zná role, před kterými dash a štít chrání – stejné jako jejich pravidla.
   const harm = [...new Set(next.rules.flatMap((rule) => (rule.id === dashRule.id || rule.id === shieldRule.id ? (rule.params.roles as (typeof HARMFUL_ROLES)[number][]) : [])))];
-  return { ...next, control: wrapControl(next, { abilities: { keeper, ids: [...ids] } }), bot: wrapBot(next, { keeper, ids: [...ids], harm }) };
+  // Kořist chytání (P52 T7b) střela nesebere: robot na ni nestřílí.
+  const prey = ids.includes('shoot') ? catchPreyOf(next) : undefined;
+  return { ...next, control: wrapControl(next, { abilities: { keeper, ids: [...ids] } }), bot: wrapBot(next, { keeper, ids: [...ids], harm, ...(prey === undefined ? {} : { spare: prey }) }) };
 }

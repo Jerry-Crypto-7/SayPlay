@@ -53,7 +53,7 @@ describe('verified recipe remix route',()=>{
   });
   it('POST re-verifies and publishes only that server candidate at exactly the checked seed',async()=>{
     await get();const result=await post({sentence:'Make it a race'});expect(result.status).toBe(201);
-    expect(mocks.verified).toHaveBeenCalledTimes(2);expect(mocks.publish).toHaveBeenCalledWith(expect.anything(),child,[37],parentId);
+    expect(mocks.verified).toHaveBeenCalledTimes(2);expect(mocks.publish).toHaveBeenCalledWith(expect.anything(),child,[37],parentId,{relation:'remix'});
     expect(mocks.start).not.toHaveBeenCalled();expect(mocks.compiler).not.toHaveBeenCalled();
     mocks.publish.mockResolvedValueOnce({ok:true,value:{status:200,game:{version:{versionId:childId,parentId:parentId,seed:37}}}});
     const repeated=await post({sentence:'Make it a race',seed:37});expect(repeated.status).toBe(200);expect((await repeated.json()).versionId).toBe(childId);

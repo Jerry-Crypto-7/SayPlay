@@ -67,7 +67,7 @@ import { modelOf } from '../arcade/models';
 import { steerStyleFor } from '../arcade/pieces/steer';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
 
-import { abilityHint, type ControlChoice, type ControlPick, nearestControl, pickControl } from './controls';
+import { abilityHint, type ControlChoice, type ControlPick, nearestControl, pickControl, saidAbilities } from './controls';
 import { type Twist, isPerson, isScenery, twistGoal, twistOf } from './twist';
 import {
   CARE,
@@ -1253,8 +1253,12 @@ function draftGenre(
   // P38: střelba na skoku nebo běhu – protivník bez slovesa se sestřelí a `compileWith` z toho udělá doplněk `shoot`.
   const rideShot = ranking.ride === 'shoot' && (choice.genre === 'platformer' || choice.genre === 'runner');
   const ownFoe: CastRole = rideShot ? 'shoot_at' : fight ? 'fight' : FOE_DOES[choice.genre];
+  // Chytání se střelou (P52 T7b-R1-R1): terč střely („spits water at the bees“) je nepřítel, kterého hrdina sestřelí –
+  // včely na cestě ke kořisti; protivník z prostředí pak nepřibude.
+  const caught = choice.genre === 'arena' && roles.target !== null ? extractIntent(sentence) : null;
+  const shotAt = caught?.items.some((item) => item.verb === 'catch') === true && saidAbilities(sentence, caught).includes('shoot') ? singular(roles.target!) : null;
   // Protivník, kterého hra sestřelí, zůstává zvířetem prostředí; jen ten, kterému se uhýbá, je překážka trati (P46D T6).
-  const foeLabel = enemy ?? saidFoe ?? (ownHazard ? null : spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]));
+  const foeLabel = enemy ?? saidFoe ?? (ownHazard || shotAt !== null ? null : spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]));
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
   // Střílečka nic nesbírá a hod hází, co řekne věta, jinak míč – věc z prostředí by z mince udělala náboj.
@@ -1278,6 +1282,7 @@ function draftGenre(
     itemLabel === null || goalItem ? null : thrown ? { label: itemLabel, does: 'scenery', verb: AMMO_VERB } : { label: itemLabel, does: 'collect', ...(itemVerb === undefined ? {} : { verb: itemVerb }) };
   const cast = castOf([
     ...(foeLabel === null ? [] : [{ label: foeLabel, does: doesOf(foeLabel, ownFoe) }]),
+    ...(shotAt === null || shotAt === foeLabel ? [] : [{ label: shotAt, does: 'shoot_at' as const }]),
     ...(item === null ? [] : [item]),
     ...(target === null ? [] : [{ label: target, does: thrown ? ('throw_at' as const) : ('reach' as const), verb: (filledTarget?.verb ?? verb).slice(0, 24), states: choice.mode === 'station' ? (3 as const) : (2 as const) }]),
   ], spoken.map((item) => ({ label: item.label, does: item.does ?? ownFoe })));

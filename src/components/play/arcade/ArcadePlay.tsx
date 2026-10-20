@@ -16,7 +16,7 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase, nativeRule } from '@/play/arcade/contract';
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
-import { chaserModel, chaserName, enemyModel, heroModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
+import { chaserModel, chaserName, enemyModel, heroModel, preyModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
 import { bossKindOf } from '@/play/arcade/pieces/pacing';
 import { targetModelOf } from '@/play/arcade/target-model';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
@@ -26,8 +26,10 @@ import { createTension } from '@/play/audio/tension';
 import type { GameVersion } from '@/play/contracts';
 import { type Par, type RunResult, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
+import type { FeedPreview } from '@/play/version/version';
 
 import { type Best, type BestOutcome, bestGoal, type Dare, dareGoal, dareStart, readBest, settleBest } from '../best';
+import type { StageTunnel } from '../feed/stage-tunnel';
 import { AHEAD, NEW_BEST } from '../starters';
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression, loopTouch } from '../loop-client';
@@ -266,6 +268,10 @@ export interface ArcadePlayProps {
   readonly challenge?: Dare | null;
   /** Id výzvy nejlepšího běhu ze stránky (P50 T6), `null` = žádný; chybí = duch se zeptá `GET /api/play/games/:id`. */
   readonly bestDare?: string | null;
+  /** Náhled robota z publikace (P54A T2): ve feedu ho výloha hraje dokola místo celé ukázky, ťuk převezme hru. */
+  readonly preview?: FeedPreview;
+  /** Trvalé plátno feedu (P54A T5): scéna se kreslí do něj místo vlastního. */
+  readonly host?: StageTunnel;
 }
 
 const END_PAUSE_MS = 600;
@@ -381,6 +387,8 @@ function ArcadePlayGame({
   par = null,
   challenge = null,
   bestDare,
+  preview,
+  host,
   physicsReady,
 }: ArcadePlayProps & { readonly physicsReady: boolean }) {
   const [liveOpen, setLiveOpen] = useState(false);
@@ -406,7 +414,8 @@ function ArcadePlayGame({
     // Boss od režiséra (P46E T4) dostane model své věci z obsazení, když ji katalog má.
     const bossKind = spec.boss === undefined ? null : bossKindOf(arcade);
     const bossModel = spec.boss === undefined ? undefined : (riggedModelOf(spec.boss.role) ?? sceneModelOf(spec.boss.role, true));
-    return { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props,
+    const prey = preyModel(spec);
+    return { player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props, ...(prey === undefined ? {} : { prey }),
     ...(bossKind === null || bossModel === undefined ? {} : { boss: { kind: bossKind, model: bossModel } }),
     things: Object.fromEntries(spec.roles.flatMap(role => {
       if (role.id === 'pad' && role.label === 'landing pad') return [];
@@ -530,10 +539,12 @@ function ArcadePlayGame({
   // Výloha vstupní stránky (P28D T7): dokud se hráč nedotkne, hraje dokola robot ověřovače –
   // bez něj runner do tří sekund prohraje a první obrazovka ukáže „So close.“. První stisk
   // nebo ťuk na scénu výlohu ukončí v zachytávací fázi, takže ten stisk už padne do hry hráče.
-  const [attract, setAttract] = useState(offline);
+  const [attract, setAttract] = useState(offline || (inFeed && preview !== undefined));
   useEffect(() => {
     if (!attract || !active || !physicsReady) return;
-    const stopLoop = loopDemo(session);
+    // Ve feedu (P54A T5) okno náhledu robota z publikace – smyčku drží relace sama.
+    if (preview !== undefined && session.demo()?.preview !== true) session.startPreview(preview);
+    const stopLoop = preview === undefined ? loopDemo(session) : () => undefined;
     // Restart hodiny znovu zastaví; tenhle dotek je první vstup hráče, proto je hned pustí.
     const take = () => {
       setAttract(false);
@@ -543,8 +554,9 @@ function ArcadePlayGame({
     const onPointer = (event: PointerEvent) => {
       if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) take();
     };
+    // Ve feedu Tab a Esc hru nepřevezmou – klávesnice musí dojít k akcím karty (revize /ship P54A).
     const onKey = (event: KeyboardEvent) => {
-      if (!event.repeat && !isTyping(event.target)) take();
+      if (inFeed ? wakesGame(event) : !event.repeat && !isTyping(event.target)) take();
     };
     window.addEventListener('pointerdown', onPointer, true);
     window.addEventListener('keydown', onKey, true);
@@ -553,7 +565,7 @@ function ArcadePlayGame({
       window.removeEventListener('pointerdown', onPointer, true);
       window.removeEventListener('keydown', onKey, true);
     };
-  }, [attract, active, physicsReady, session]);
+  }, [attract, active, physicsReady, session, preview]);
 
   // První dotek (P33 T11): ťuk na scénu nebo klávesa pustí hodiny v zachytávací fázi,
   // takže tentýž stisk padne do tiku 0. Tlačítka mimo scénu (zvuk, info, Play again) ne.
@@ -884,6 +896,7 @@ function ArcadePlayGame({
         ghost={demo === null && ghost !== null ? ghost : undefined}
         // Sloveso věty na tlačítkách akcí (P47B T10) – jen popisek, svět ho nečte.
         abilityWords={spec.abilityWords}
+        host={host}
         overlay={
           <>
             <Weather session={session} theme={spec.theme} />

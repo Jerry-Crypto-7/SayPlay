@@ -308,13 +308,20 @@ function enemyLabel(spec: GameSpecV1): string {
   // B-R9: soupeř souboje žánru arény je role druhu `hazard` (`rival`), ne role `enemy`.
   const rival = spec.controlParams?.generator === 'fight' ? spec.roles.find((role) => role.kind === 'hazard') : undefined;
   const native = spec.control === 'walker' || spec.control === 'ball' ? spec.roles.find(role => role.kind === 'patrol') : undefined;
-  const prey = spec.controlParams?.generator === 'arena_catch' ? spec.roles.find(role => role.id === 'prey') : undefined;
+  // Chytání se střelou (P52 T7b-R1): nepřítel jsou včely na cestě, ne kořist – ta má `preyModel`.
+  const prey = spec.controlParams?.generator === 'arena_catch' && spec.abilities?.includes('shoot') !== true ? spec.roles.find(role => role.id === 'prey') : undefined;
   return spec.roles.find((role) => role.id === 'enemy')?.label ?? prey?.label ?? native?.label ?? rival?.label ?? '';
 }
 
 /** Nepřátelé střelnice: model z popisku role `enemy` (`heroChoice`), jinak robot. */
 export function enemyModel(spec: GameSpecV1): string {
   return heroChoice(enemyLabel(spec), undefined, spec.control, 'enemy').model;
+}
+
+/** Kořist chytání (P52 T7b-R1): model z popisku role `prey`, jak ji dřív kreslil `enemyModel`; jinde `undefined`. */
+export function preyModel(spec: GameSpecV1): string | undefined {
+  const prey = spec.controlParams?.generator === 'arena_catch' ? spec.roles.find((role) => role.id === 'prey') : undefined;
+  return prey === undefined ? undefined : heroChoice(prey.label, undefined, spec.control, 'enemy').model;
 }
 
 /** Popisek a model pronásledovatele: role druhu `chaser`, když pro ni je model, jinak nepřítel. */

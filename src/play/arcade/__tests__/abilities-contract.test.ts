@@ -15,7 +15,7 @@ import { hashArcade, instantiate } from '../kernel';
 import runner from '../__fixtures__/runner.json';
 import platform from '../__fixtures__/platform.json';
 import steer from '../__fixtures__/steer.json';
-import duel from '../__fixtures__/duel.json';
+import timing from '../__fixtures__/timing.json';
 
 const read = (fixture: unknown, extra: Record<string, unknown> = {}) => readGameSpec({ ...(fixture as object), ...extra });
 
@@ -50,7 +50,7 @@ describe('P46A abilities contract', () => {
     ['three abilities', runner, ['shoot', 'strike', 'dash'], /abilities/],
     ['an unknown ability', runner, ['fly'], /abilities/],
     ['the same ability twice', platform, ['dash', 'dash'], /listed twice/],
-    ['an ability the control does not take', duel, ['shoot'], /does not take shoot/],
+    ['an ability the control does not take', timing, ['shoot'], /does not take shoot/],
   ] as const)('rejects %s as MALFORMED_SPEC', (_name, fixture, abilities, issue) => {
     const result = read(fixture, { abilities });
     expect(result.ok).toBe(false);

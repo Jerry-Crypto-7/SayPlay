@@ -190,8 +190,8 @@ const judgeParams = z
     sudden: z.int().min(1).max(ARCADE_LIMITS.maxBodies).optional(),
     /** Šampion duelu (finále P47A T6): trefa po víc než `after` splněných úkolech je i zásah těla `body` za 1 HP. Bez hodnoty žádný. */
     champion: z.object({ body: z.int().min(0).max(ARCADE_LIMITS.maxBodies - 1), after: z.int().min(0).max(ARCADE_LIMITS.maxBodies) }).strict().optional(),
-    /** Duel s akcí úder (P47B T8): zásah soupeře je sloveso věty – čte ho jen důkaz slovesa. */
-    verb: z.literal('strike').optional(),
+    /** Duel s akcí úder (P47B T8), střelba nebo krádež (P52 T8): zásah soupeře je sloveso věty – čte ho jen důkaz slovesa. */
+    verb: z.enum(['strike', 'shoot', 'grab']).optional(),
   })
   .strict();
 
