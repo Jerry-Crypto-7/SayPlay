@@ -81,6 +81,31 @@ Píše ho `P54C_OUT=baseline npx vitest run --config vitest.measure.mts evals/pl
 - **Mutace (obě červené, soubor obnovený ze zálohy):** bomba v koši bez ztráty života → `catch-fall.test.ts` „a bomb in the lane takes a life“ červený; ovoce smí do startovního pruhu hned na začátku → kontrola úrovně a G1–G6 červené, a s vypnutou kontrolou úrovně G6 „idle caught: expected 1 to be 0“.
 - **Nic jiného se nepohnulo:** replay brána 80/80 (7 souborů), věty P30 dev = `start.json` (`P54C_CHECK=1`), grep determinismu 6 řádků jako na startu. V `start.json` přibyla jen živá buňka `catch.default` (55 místo 54). V `difficulty.json` přibyly jen řádky `catch.default`; ostatní řádky zůstaly bajt po bajtu.
 
+## T6 – Bouchání (`whack`)
+
+- **Hra.** Pět děr v řadě před hrdinou. Každý cíl je kinematické tělo, které stálou rychlostí stoupá „pod zemí“, a jeho výška je hodiny okna: díra je otevřená, dokud `0 ≤ y < 7200`, tedy přesně `windowOf(vy)` tiků od tiku vykouknutí spočitatelného ze semínka. Ťuk do díry v okně (pruh z osy ťuku platí hned, hrdina za ním jen dojde) = zásah: krtek dá 10 bodů × kombo a čítač `items`, hodný cíl (zajíček) vezme život. Ťuk do prázdné díry shodí kombo (další zásah ×1). Krtek, do kterého nikdo nebouchl, se po okně schová: první dva bez trestu, každý další −1 život. Výhra = rozbít `targets` krtků (výchozí 30, meze 10–50), prohra = životy došly.
+- **Průběh.** Po třetinách cíle se okno zkracuje (46–60, 32–42 a 19–28 tiků, los na krtka) a krtci chodí hustěji (rozestup 80–110, 56–76, 40–54 tiků); hodný cíl vykoukne v témž tiku jako krtek v jiné díře u 25, 40 a 55 % krtků a nejvýš čtyři krtci za sebou jsou bez něj – kdo mačká všechny díry, prohraje. V díře je naráz nejvýš jeden cíl. Krtků je `targets + 2 + životy − 1`, takže hra vždy skončí nejpozději posledním. Cíl pod 30 natáhne rozestupy.
+- **Nečinný hráč** nebouchne nikdy: nic nerozbije a prohraje po pátém schovaném krtkovi (7,6–8,9 s).
+- **Kusy:** generátor a pravidlo `src/play/arcade/pieces/whack.ts` (`whack_holes`, `whack_hit`, kontrola „hratelné z konstrukce“ `checkWhackLevel`; cíl hry je sdílené `catch_goal`), robot `whack-bot.ts` (bouchne do nejstaršího otevřeného krtka, který se do jeho ťuku nestihne schovat, hodné vynechá, reakce 8 tiků), modul `src/play/genre/whack.ts` (`ready`; `draftFill` čte předmět sloves whack/hit/pop/smash/squash/bonk/bop jako cíl a „but not / spare / avoid / don't hit X“ jako hodný cíl, každou jinou roli nepřítele hraje jako cíl), buňka `whack.default` je živá. Svědci: `whack` a `defeat` (krtek zasažený v okně), `hazard` (sonda bouchne do hodného cíle, až vykoukne), pohyb `lanes`.
+- **Scéna** `src/components/play/arcade/genres/whack/WhackScene.tsx`: kamera za hrdinou a nad ním, díry s okrajem, kladivo nad zvolenou dírou, které ťuk spustí, cíl vyjede a zajede, zásah ho zplackne. Cíle se kreslí ze zásoby 4 slotů na druh (naráz koukají nejvýš dva), modely z knihovny podle popisku (výchozí zajíček `rigged:pet-bunny`, krtek primitivem v barvách kitu – model krtka objednává P54B). Plátnu zapíše `data-lane-edges` a `data-player-x` jako chytání. Větev v `LaneStage` (`LaneScene.tsx`), `ArcadeStage.tsx` beze změny.
+- **HUD:** pilulka postupu kitu („12/30“) a životy – žádný nový popisek.
+
+### Měření (20 semínek)
+
+| Brána | Výsledek |
+|---|---|
+| G1 robot světa | 20/20 výher, 32,8–36,1 s |
+| G2 nečinný | 0/20 výher (20/20 prohra, 0 rozbitých) |
+| G3 `difficulty.json` | novice 10/20 = 0,50, intermediate 20/20 = 1,00, 0 chyb, 0 neshod replaye (60 semínek: 29/60 a 60/60) |
+| G6 čítač rozbitých | robot 30/30 na všech semínkách se všemi životy, nečinný 0 |
+| mačkání všech děr | 20/20 prohra |
+| G4 | Node: přehrání záznamu robota = hash běhu; Chromium: záznam prstu z Pixelu 7 přehraný v Node = hash prohlížeče (`e2e/play-whack.spec.ts`) |
+| G5 | 3 životy, kombo až ×5 (robot dosáhne ≥ ×3), bonus na konci, hvězdy ≥ 1 a výzva (Dare) přehraná serverem se otevře u kamaráda (e2e) |
+
+- **E2E** (`next start` na 3321, emulace Pixel 7): `play-whack.spec.ts` 3/3 – prst vyhraje za 33,9 s (tik 2031) s 30 rozbitými a všemi životy, krtek je ve scéně opravdu vidět (`__playFrame`), záznam prstu = hash v Node, výzva se otevře u kamaráda, nečinný prohraje s 0 rozbitými, scéna 21 sítí při 4× pomalejším CPU (strop 200); `p35-perf.spec.ts` 17/17, `interface-language.spec.ts` 3/3.
+- **Mutace (všechny červené, soubory obnovené ze zálohy):** hodný cíl bez ztráty života → 3 testy (pravidlo, mačkání, svědek `hazard`); schovaný krtek nikdy nestojí život → pravidlo kvóty a G2 (nečinný hraje do horizontu); prázdná díra neshodí kombo → test komba; ťuk platí i pod zemí → test okna; robot bouchá i hodné cíle → G1, G2/G6, G5, svědci a pásmo; kontrola úrovně pustí dva cíle do jedné díry → test kontroly.
+- **Nic jiného se nepohnulo:** replay brána 80/80 (7 souborů), věty P30 dev = `start.json` (`P54C_CHECK=1`), grep determinismu 6 řádků. V `start.json` přibyla jen živá buňka `whack.default` (56). V `difficulty.json` přibyly jen řádky `whack.default` (469 řádků vložených, nic smazaného).
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.
@@ -92,3 +117,13 @@ Píše ho `P54C_OUT=baseline npx vitest run --config vitest.measure.mts evals/pl
 - T5: `difficulty.json` – řádky `roam.catch` mají od P52 jiný koncový hash, než jaký je uložený (souhrn i `specHash` stejné, ověřeno na čistém T4); měření je přepíše, ale úloha je nechala bajt po bajtu a přidala jen řádky chytání.
 - T5: výsledková karta arkády ukazuje u prohrané hry v pruzích „0 % of the way“ (`ArcadePlay.tsx` počítá postup z dráhy; soubor P54A) – nechané, k řešení pro vlastníka HUD.
 - T5: `p46-fixtures.test.ts` (nahrané odpovědi režiséra vůči verzi kompaktního promptu) je červený už od T4 – T4 přidal hodnoty do výčtů receptu, které verze hashuje; T5 ho nemění ani neopravuje (oprava = nové nahrání odpovědí, patří k T14).
+- T6: bouchání je `ready` a jeho buňka živá, ale režisér ho do T14 nenabízí (`DIRECTOR_PENDING` = chytání a bouchání); verze kompaktního promptu zůstává `4ff1d2c9` a `p46-fixtures.test.ts` je zelený.
+- T6: modul nemá narážky a `lanes` zůstává ve `STAGED_CONTROLS` (klasifikátor ani čtení modelem se nemění), proto e2e publikuje spec buňky jako T5.
+- T6: meze `targets` 10–50 místo 10–60 z kostry – `objective.count` ve specu unese nejvýš 50.
+- T6: AC o schovaném krtkovi mlčí; zvolen trest jako u chytání (dva volné, pak život), jinak by nečinný hráč prohrál až na 90 s horizontu a pásmo začátečníka by nemělo páku.
+- T6: hodný cíl vykoukne vždy vedle krtka a nejvýš čtyři krtci za sebou jsou bez něj – AC to nežádá, zavírá to výhru mačkáním všech děr.
+- T6: recept buňky drží `threats: []` z T4 (hodný cíl není dokazovaná hrozba receptu); svědka `hazard` přesto dává sonda.
+- T6: ťuk do prázdné díry zapíše do počítadla komba násobič 0 a další zásah má ×1 – samotné `nextMultiplier` by po ťuku dalo ×2.
+- T6: pilulka postupu HUD má popisek `collected` (HUD soubor P54A zná jen ten cíl, `finish_collected` jako u chytání); viditelný text je jen „12/30“.
+- T6: ovládání `lanes` v `capabilities.ts` dostalo roli a popisek `target` (krtek z popisku nese model); prompt režiséra se tím nepohnul.
+- T6: svědek `hazard` bouchání se zapíše, jen když tik zásahu hodného cíle opravdu ubral život – první verze ho brala ze zmizení těla a mutace „hodný cíl bez trestu“ ho nechala zelený (svědek chytání z T5 má stejnou slabinu, nechaný beze změny).

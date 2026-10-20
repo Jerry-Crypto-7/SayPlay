@@ -25,6 +25,8 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'quest.station': { move: 'stationary', actions: ['interact'], objective: 'interact', threats: [] },
   // P54C T5: chytání je živé – jeho buňka se z `STAGED_PRESETS` přesunula sem.
   'catch.default': { move: 'lanes', actions: ['collect'], objective: 'collect', threats: ['hazard'] },
+  // P54C T6: bouchání je živé.
+  'whack.default': { move: 'lanes', actions: ['whack'], objective: 'defeat', threats: [] },
 };
 
 /**
@@ -32,7 +34,6 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
  * live cell and a `sourceFor` reading – until the genre's own task makes its cell live.
  */
 export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
-  'whack.default': { move: 'lanes', actions: ['whack'], objective: 'defeat', threats: [] },
   'defense.default': { move: 'lanes', actions: ['shoot'], objective: 'defend', threats: ['chaser'] },
   'slice.default': { move: 'lanes', actions: ['slice'], objective: 'score', threats: ['hazard'] },
   'hop.default': { move: 'hop', actions: [], objective: 'reach', threats: ['obstacle'] },

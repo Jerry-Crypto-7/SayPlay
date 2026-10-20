@@ -66,11 +66,11 @@ export function strictSchema(node: Json): Json {
 const toJson = (schema: z.ZodType): Json => z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any', reused: 'inline', cycles: 'throw' }) as Json;
 
 /**
- * Živé žánry P54C, které režisér zatím nenabízí (T5): popis a příklad jim dá T14, který seznam vyprázdní.
- * Do té doby nejsou jejich režimy ve schématu odpovědi ani v promptu a jejich buňky v tabulce živých
- * kombinací – prompt režiséra (rozpočet bajtů, otisk nahraných odpovědí) se nepohne.
+ * Živé žánry P54C, které režisér zatím nenabízí (T5 chytání, T6 bouchání): popis a příklad jim dá T14,
+ * který seznam vyprázdní. Do té doby nejsou jejich režimy ve schématu odpovědi ani v promptu a jejich buňky
+ * v tabulce živých kombinací – prompt režiséra (rozpočet bajtů, otisk nahraných odpovědí) se nepohne.
  */
-export const DIRECTOR_PENDING: ReadonlySet<string> = new Set(['catch']);
+export const DIRECTOR_PENDING: ReadonlySet<string> = new Set(['catch', 'whack']);
 
 /** Režimy žánru, které hrají, co slibují – jen ty režisér nabízí (P32B T4); žánr z `DIRECTOR_PENDING` žádný. */
 export const readyModes = (module: GenreModule): string[] => (DIRECTOR_PENDING.has(module.id) ? [] : module.modes.filter((mode) => module.availability(mode) === 'ready'));

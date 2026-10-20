@@ -307,7 +307,7 @@ function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: numb
 }
 
 /** Pravidla, jejichž zásah nebo sebrání zvedá kombo nové hry (P46C T3). */
-const COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit', 'ability_strike', 'checkpoint', 'catch_fall'];
+const COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit', 'ability_strike', 'checkpoint', 'catch_fall', 'whack_hit'];
 /** Totéž pro uložené hry se `scoring` (P36A): bez úderu. */
 const LEGACY_COMBO_SOURCES: readonly string[] = ['pickup', 'shot_hit'];
 

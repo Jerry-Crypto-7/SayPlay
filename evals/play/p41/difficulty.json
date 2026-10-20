@@ -67,6 +67,7 @@
     "quest.spatial",
     "quest.station",
     "catch.default",
+    "whack.default",
     "runner.default+shoot_at",
     "runner.default+chase_me",
     "runner.default+chase_me+shoot_at",
@@ -912,6 +913,34 @@
         ]
       },
       "specHash": "774b2c5ba09d99d7ff36fef9f56aa2b76c8e10c13487b15352e13edfdfa4bd0d",
+      "profiles": {
+        "novice": {
+          "runs": 20,
+          "wins": 10,
+          "winRate": 0.5,
+          "errors": 0,
+          "replayMismatches": 0
+        },
+        "intermediate": {
+          "runs": 20,
+          "wins": 20,
+          "winRate": 1,
+          "errors": 0,
+          "replayMismatches": 0
+        }
+      }
+    },
+    {
+      "cell": "whack.default",
+      "recipe": {
+        "move": "lanes",
+        "actions": [
+          "whack"
+        ],
+        "objective": "defeat",
+        "threats": []
+      },
+      "specHash": "7cfa1ffd431dc07eb25a0478e1d56aea35e4ccb537a5896ce8dd7102c5a1712a",
       "profiles": {
         "novice": {
           "runs": 20,
@@ -14837,6 +14866,446 @@
       "outcome": "won",
       "tick": 2071,
       "hash": "c2afef99",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 1,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 2135,
+      "hash": "d8d2c78c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2087,
+      "hash": "106f6ea5",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 2,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 2237,
+      "hash": "2c3674ff",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2048,
+      "hash": "3a059f07",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 3,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 2312,
+      "hash": "d8ac2dc5",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2169,
+      "hash": "70943e01",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 4,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 2214,
+      "hash": "736a8a90",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2106,
+      "hash": "3a36f679",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 5,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2288,
+      "hash": "13cf746c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2087,
+      "hash": "110bc59c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 6,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 2256,
+      "hash": "d2302fc7",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2059,
+      "hash": "ba6116ab",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 7,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 2190,
+      "hash": "803af533",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 7,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 1974,
+      "hash": "2739daf7",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 8,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2096,
+      "hash": "77a81978",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2138,
+      "hash": "d911b720",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 9,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 2137,
+      "hash": "18d19c80",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 9,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2038,
+      "hash": "ad533db7",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 10,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2124,
+      "hash": "0f028e47",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 10,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2067,
+      "hash": "1570cf92",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 11,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 2225,
+      "hash": "3ba1cb09",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 11,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2083,
+      "hash": "9c4a1e40",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 12,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2206,
+      "hash": "bb46894c",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2066,
+      "hash": "ac09ccf1",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 13,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2137,
+      "hash": "627ac31b",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2089,
+      "hash": "c2d51beb",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 14,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 2171,
+      "hash": "37ac86fc",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2062,
+      "hash": "82665a70",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 15,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 1958,
+      "hash": "5ce31b0b",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2053,
+      "hash": "f3528f43",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 16,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2269,
+      "hash": "d6bb06fc",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2073,
+      "hash": "418729c6",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 17,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2035,
+      "hash": "f83825a0",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2074,
+      "hash": "75e4d8c0",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 18,
+      "profile": "novice",
+      "won": true,
+      "outcome": "won",
+      "tick": 2107,
+      "hash": "b31b9f55",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2053,
+      "hash": "86f42d17",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 19,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2183,
+      "hash": "a0e198c4",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2033,
+      "hash": "c6ecbcad",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 20,
+      "profile": "novice",
+      "won": false,
+      "outcome": "lost",
+      "tick": 2285,
+      "hash": "e4212111",
+      "replayEqual": true,
+      "error": null
+    },
+    {
+      "cell": "whack.default",
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "outcome": "won",
+      "tick": 2091,
+      "hash": "e1923bcc",
       "replayEqual": true,
       "error": null
     },

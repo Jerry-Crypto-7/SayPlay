@@ -7,6 +7,7 @@ import type { GameRole, GameSpecV1 } from '@/play/spec';
 import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, RUN_STATE, UNIT, bodyBase, bodyHp } from './contract';
 import { axisOfLane, laneOfX } from './pieces/lanes';
 import { CATCH } from './pieces/catch-fall';
+import { WHACK, holeOpen } from './pieces/whack';
 import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
 import { ballKeeperProbeInput } from './pieces/ball-probe';
@@ -164,6 +165,8 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
       return { axis: 0, buttons: state[p + BODY.y]! < desired && state[p + BODY.vy]! < 50 ? BUTTON.TAP : 0 };
     }
   }
+  // Bouchání (P54C T6): sonda hraje jako robot, dokud hodný cíl nevykoukne z díry; pak do ní bouchne.
+  if (control === 'lanes' && roleAt(state, target) === ROLE.hazard && world.rules.some((ref) => ref.id === 'whack_hit')) return holeOpen(state, target) ? { buttons: BUTTON.TAP, axis: axisOfLane(laneOfX(state[t + BODY.x]!)) } : normal;
   // Chytání (P54C T5): sonda hraje jako robot, dokud bomba visí nad obrazem; pak stojí v jejím pruhu, ať do koše spadne právě ona.
   if (control === 'lanes' && roleAt(state, target) === ROLE.hazard) return state[t + BODY.y]! > CATCH.viewTop ? normal : { buttons: 0, axis: axisOfLane(laneOfX(state[t + BODY.x]!)) };
   if (control === 'move_free' || control === 'fight') return { buttons: 0, axis: axisOfDirection(directionToward(dx, dz)) };
@@ -250,6 +253,8 @@ export class WitnessRecorder {
   private readonly teamShots = new Set<string>();
   private readonly namedAmmunition: boolean;
   private readonly launched = new Map<number, { x: number; y: number; z: number; tick: number }>();
+  /** Hodné cíle bouchání (P54C T6) zasažené v tomhle tiku; zranily, jen když tik opravdu ubral život. */
+  private readonly struckGood: number[] = [];
 
   constructor(world: ArcadeWorld, bindings: readonly RoleBinding[], run: 'winner' | 'probe', runId: string) {
     this.world = { ...world, rules: world.rules.map(underlyingRule) };
@@ -435,6 +440,15 @@ export class WitnessRecorder {
       if (code === ROLE.collectible) this.add('collect', player, effect.body, tick, 'caught-in-lane', state);
       else if (code === ROLE.hazard) this.harm(effect.body, player, tick, 'falling-bomb-caught', state);
     }
+    // Bouchání (P54C T6): cíl, který pravidlo úderu odebere ještě v okně, dostal ránu – krtek je rozbitý; hodný
+    // cíl hráče zranil, ubral-li tik život (`afterTick`). Co se po okně schovalo samo, nedokazuje nic.
+    if (ref.id === 'whack_hit' && effect.kind === 'despawn' && state[bodyBase(effect.body) + BODY.y]! < WHACK.band) {
+      const code = roleAt(state, effect.body);
+      if (code === ROLE.target) {
+        this.add('whack', player, effect.body, tick, 'whacked-in-hole', state);
+        this.add('defeat', player, effect.body, tick, 'target-whacked', state);
+      } else if (code === ROLE.hazard) this.struckGood.push(effect.body);
+    }
     if (effect.kind === 'despawn' && effect.body === origin.held && other >= 0 && other !== origin.held && ref.id === 'rule_contact') this.add('deliver', player, origin.held, tick, 'carried-to-destination', state);
     if (effect.kind === 'hit' && effect.amount > 0) {
       if (effect.by === player) {
@@ -573,6 +587,10 @@ export class WitnessRecorder {
     }
     if (state[HEADER.runState] === RUN_STATE.lost) for (const loss of this.pendingLosses) this.harm(loss.body, player, tick, loss.evidence, state);
     this.pendingLosses.length = 0;
+    if (this.struckGood.length > 0 && state[HEADER.counters + COUNTER.health]! < before[HEADER.counters + COUNTER.health]!) {
+      for (const body of this.struckGood) this.harm(body, player, tick, 'good-target-whacked', state);
+    }
+    this.struckGood.length = 0;
     const p = bodyBase(player);
     for (let body = 0; body < state[BODY_COUNT]!; body += 1) {
       const binding = this.binding(body, state);
