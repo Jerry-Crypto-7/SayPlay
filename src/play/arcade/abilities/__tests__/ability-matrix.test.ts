@@ -7,6 +7,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { CAPABILITIES } from '@/play/capabilities';
+import { draftGameSpecWithMeta } from '@/play/draft';
 import { type GenreSpec } from '@/play/genre/contract';
 import { compileGenre } from '@/play/genre/index';
 import { type AbilityId, type ControlId, readGameSpec } from '../../../spec';
@@ -19,6 +20,7 @@ import duel from '../../__fixtures__/duel.json';
 import flap from '../../__fixtures__/flap.json';
 import platform from '../../__fixtures__/platform.json';
 import runner from '../../__fixtures__/runner.json';
+import shooter from '../../__fixtures__/shooter.json';
 import steer from '../../__fixtures__/steer.json';
 
 const SEEDS = [1, 2, 3, 4];
@@ -36,12 +38,22 @@ const FIXTURES: Partial<Record<ControlId, object>> = {
   walker: { ...flap, control: 'walker', controlParams: { collect: true } },
   duel,
   move_free: compileGenre({ genre: 'arena', mode: 'escape', hero: 'cat', cast: [{ label: 'polar bear', does: 'chase_me' }, { label: 'glowing fish', does: 'collect' }], setting: 'frozen lake' } as GenreSpec),
+  // P52 T7: hrdina stojí – štít a krádež berou, co k němu přiletí.
+  ball: { ...flap, control: 'ball', controlParams: { generator: 'ball_pitch', targets: 3 } },
+  shooter,
 };
+
+/** Dvojice, kterou bere jen jiný generátor než fixtura ovládání: střelba volného pohybu jen v chytání (P52 T7b). */
+const CELL_FIXTURES: Readonly<Record<string, object>> = {
+  'move_free+shoot': draftGameSpecWithMeta('A puppy catches soap bubbles in the backyard and spits water at the bees.', 1).spec,
+};
+
+const fixtureOf = (control: ControlId, ability: AbilityId): object => CELL_FIXTURES[`${control}+${ability}`] ?? (FIXTURES[control] as object);
 
 const CELLS = (Object.keys(CAPABILITIES) as ControlId[]).flatMap((control) => CAPABILITIES[control].abilities.map((ability) => [control, ability] as const));
 
 beforeAll(async () => {
-  for (const fixture of Object.values(FIXTURES)) {
+  for (const fixture of [...Object.values(FIXTURES), ...Object.values(CELL_FIXTURES)]) {
     const read = readGameSpec(fixture);
     if (read.ok) await preloadPhysics(read.value, loadRapier);
   }
@@ -86,7 +98,7 @@ describe('P46A ability matrix', () => {
 /** Robot intermediate akci zmáčkne a ověření dokáže sloveso na 4 semínkách; `extra` přepíše položky hry ovládání. */
 function expectProved(control: ControlId, ability: AbilityId, extra: object = {}): void {
   for (const seed of SEEDS) {
-    const read = readGameSpec({ ...(FIXTURES[control] as object), ...extra, abilities: [ability] });
+    const read = readGameSpec({ ...fixtureOf(control, ability), ...extra, abilities: [ability] });
     if (!read.ok) throw new Error(`${control}: ${read.issues.join('; ')}`);
     const made = arcadeWorldOf(read.value, seed);
     if (!made.ok) throw new Error(`${control} seed ${seed}: ${made.issues.join('; ')}`);
@@ -95,8 +107,8 @@ function expectProved(control: ControlId, ability: AbilityId, extra: object = {}
     expect(verdict.failures, `seed ${seed}`).toEqual([]);
     expect(verdict.verbs.find((proof) => proof.verb === ability)?.changed, `seed ${seed}`).toBe(true);
     const run = runBot(made.world, undefined, { profile: 'intermediate' });
-    // Duel (P47B T8) hraje akce vlastním úderem (Tap) a úhybem (Down), ne tlačítkem A.
-    const button = control !== 'duel' ? BUTTON.ACTION_A : ability === 'strike' ? BUTTON.TAP : BUTTON.DOWN;
+    // Duel (P47B T8) hraje akce vlastním úderem (Tap – úder, střelba, krádež, P52 T8) a úhybem (Down), ne tlačítkem A.
+    const button = control !== 'duel' ? BUTTON.ACTION_A : ability === 'dash' || ability === 'shield' ? BUTTON.DOWN : BUTTON.TAP;
     expect(run.inputs.some((event) => (event.buttons & button) !== 0), `seed ${seed}: never pressed`).toBe(true);
   }
 }

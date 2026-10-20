@@ -24,7 +24,7 @@ import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, RAMP_STEP_PCT, UNIT, bodyBase, rampMarks, rampedSpeed } from '../contract';
 import { GRAVITY } from '../kernel';
 import { PLATFORM_FEEL } from './platform';
-import { type RunnerPattern, type RunnerPatternId, type RunnerStep, SPRINT_GAPS, STRUCTURES, TRAIL, TRAIL_GAP, pickPattern } from './runner-sections';
+import { type RunnerPattern, type RunnerPatternId, type RunnerStep, SPRINT_GAPS, STRUCTURES, TRAIL, TRAIL_GAP, pickPattern, wallRow } from './runner-sections';
 
 export const RUNNER_SPEEDS = ['slow', 'normal', 'fast'] as const;
 export const RUNNER_DENSITIES = ['low', 'normal', 'high'] as const;
@@ -224,6 +224,11 @@ const generatorParams = z
      * ho píše. Bez něj náhodné řady jako dřív – uložený spec bez něj staví tentýž svět.
      */
     patterns: z.literal(1).optional(),
+    /**
+     * Zeď v každém úseku (P52 T4, `wallRow`), jen s `patterns`: nová hra s dashem nebo štítem (`compile.ts`),
+     * kde by je robot jinak nikdy nepoužil – každá řada vzorů má průchod. Bez něj trať jako dřív.
+     */
+    walls: z.literal(1).optional(),
   })
   .strict();
 export type RunnerTrackParams = z.infer<typeof generatorParams>;
@@ -357,9 +362,17 @@ function patternLayout(rng: CompileRng, params: RunnerTrackParams, rows: number,
     if (section > 0) starts.push(far as number);
     speed = Math.floor((base * (100 + RAMP_STEP_PCT * section)) / 100);
     let left = count;
+    // Zeď (P52 T4) v polovině úseku místo dalšího vzoru; zavře i startovní pruh, takže smí stát i za sprintem.
+    let walled = params.walls !== 1;
     while (left > 0) {
-      const pattern = pickPattern(rng, { step: level, kinds: params.obstacles, coins: params.coins, used: patterns, left, first: far === null, gap, afterRow, hard }, library);
-      const steps: readonly (RunnerStep | 'random')[] = pattern === null ? ['random'] : pattern.build(rng, params.obstacles, pattern.units[1] === 0 ? 0 : rng.int(pattern.units[0], Math.min(pattern.units[1], left)));
+      const wall = !walled && left <= Math.ceil(count / 2);
+      walled ||= wall;
+      // Vzor před zdí jí nechá řadu.
+      const room = walled ? left : left - 1;
+      const pattern = wall ? null : pickPattern(rng, { step: level, kinds: params.obstacles, coins: params.coins, used: patterns, left: room, first: far === null, gap, afterRow, hard }, library);
+      const steps: readonly (RunnerStep | 'random')[] = wall
+        ? [{ row: wallRow(rng, params.obstacles) }]
+        : pattern === null ? ['random'] : pattern.build(rng, params.obstacles, pattern.units[1] === 0 ? 0 : rng.int(pattern.units[0], Math.min(pattern.units[1], room)));
       if (pattern !== null) patterns.push(pattern.id);
       for (const item of steps) {
         if (item !== 'random' && 'gap' in item) {

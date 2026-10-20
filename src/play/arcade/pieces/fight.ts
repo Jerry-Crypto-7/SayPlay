@@ -78,6 +78,8 @@ export const FIGHT = {
   engage: 2300,
   /** Telegraf: 500 ms (≥ 400 ms, UI audit 29. 9.) – i s reakcí 270 ms zbude na úkrok stranou z dosahu. */
   telegraph: 30,
+  /** Telegraf souboje, ve kterém hrdina nese dash i štít (P52 T9, `genre.v5`, `fightGuard`). */
+  pairTelegraph: 40,
   /** Úder nepřítele: dosah a oblouk ±45°, výpad a jeho délka. */
   strikeReach: 2400,
   strikeArc: 707,
@@ -178,7 +180,7 @@ function swing(state: ArcadeState, player: number, enemies: readonly number[]): 
 }
 
 /** Jeden tik nepřítele `i` (ne toho, kterého hráč právě zasáhl). */
-function stepEnemy(state: ArcadeState, i: number, player: number, enemies: readonly number[], speed: number, guard?: z.infer<typeof guardParams>): void {
+function stepEnemy(state: ArcadeState, i: number, player: number, enemies: readonly number[], speed: number, guard?: z.infer<typeof guardParams>, telegraph: number = FIGHT.telegraph): void {
   const base = bodyBase(i);
   const p = bodyBase(player);
   const x = state[base + BODY.x] as number;
@@ -202,7 +204,7 @@ function stepEnemy(state: ArcadeState, i: number, player: number, enemies: reado
   }
   if (phase === FIGHT_PHASE.approach) {
     if (length(dx, dz) <= FIGHT.engage) {
-      setPhase(state, i, FIGHT_PHASE.telegraph, FIGHT.telegraph, Math.max(0, directionToward(dx, dz)));
+      setPhase(state, i, FIGHT_PHASE.telegraph, telegraph, Math.max(0, directionToward(dx, dz)));
       setVelocity(state, i, -1, 0);
       return;
     }
@@ -273,6 +275,8 @@ const controlParams = z
     step: z.int().min(1).max(FIGHT.enemySpeed.max - FIGHT.enemySpeed.min).optional(),
     /** Dash a štít hrdiny (P47B T6, `blowGuarded`): úder soupeře propustí či odrazí. */
     guard: guardParams.optional(),
+    /** Délka telegrafu soupeře v ticích (P52 T9); bez ní `FIGHT.telegraph` jako dřív. */
+    telegraph: z.int().min(FIGHT.telegraph).max(2 * FIGHT.telegraph).optional(),
   })
   .strict();
 export type FightControlParams = z.infer<typeof controlParams>;
@@ -306,7 +310,7 @@ export const fightControl: ControlPiece<FightControlParams> = {
 
     const speed = params.step === undefined ? params.enemySpeed : Math.min(FIGHT.enemySpeed.max, params.enemySpeed + params.step * waveOf(state));
     for (const i of enemies) {
-      if (!(swung && phaseOf(state, i) === FIGHT_PHASE.stagger && phaseTicksLeft(state, i) === FIGHT.stagger)) stepEnemy(state, i, player, enemies, speed, params.guard);
+      if (!(swung && phaseOf(state, i) === FIGHT_PHASE.stagger && phaseTicksLeft(state, i) === FIGHT.stagger)) stepEnemy(state, i, player, enemies, speed, params.guard, params.telegraph);
       keepInside(state, i, params.half);
     }
     keepInside(state, player, params.half);

@@ -371,8 +371,8 @@ function singularWord(word: string): string {
 
 /** Slovesa, jejichž předmět hráč drží nebo vrhá („sprays water“, „throws snowballs“); tvar -ing i minulý. */
 const TOOL_USE = /\b(?:spray|squirt|pour|splash|sprinkle|throw|toss|fling|hurl|lob|swing|wield|cast|us(?=e|ing))(?:s|es|e|ed|d|ing)? (?:the |a |an |some |his |her |its |their )?([a-z][a-z -]*)/;
-/** „shoots arrows at goblins“: předmět střelby je nástroj jen s cílem za ním, jinak je terčem („shoot the zombies“). */
-const TOOL_AIMED = /\b(?:shoot|fire|launch)(?:s|es|ed|ing)? (?:the |a |an |some |his |her |its |their )?([a-z][a-z -]*?) (at|on|into|toward|towards)\b/;
+/** „shoots arrows at goblins“: předmět střelby je nástroj jen s cílem za ním, jinak je terčem („shoot the zombies“); i „spits water at the bees“ (P52). */
+const TOOL_AIMED = /\b(?:(?:shoot|fire|launch)(?:s|es|ed|ing)?|(?:spit(?:s|ting)?|spat)(?! at\b)) (?:the |a |an |some |his |her |its |their )?([a-z][a-z -]*?) (at|on|into|toward|towards)\b/;
 
 /**
  * „shoot drones on a highway“ (P39 T14): za „on“ stojí místo, kde se střílí, ne cíl –
@@ -613,7 +613,8 @@ export function readRoles(sentence: string): SentenceRoles {
     /\b(?:defeat|destroy|knock out|knock down|hit|smash|beat)s? (?:all |every |the )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/,
     // P26 T12: co se střílí a na co se hází, jmenuje terč a nepřítele arkády („shoot the zombies“, „throw balls at ducks“).
     // T7: s „at“ je terčem to za ním, předmět je nástroj („shoots arrows at goblins“).
-    /\b(?:throw|toss|aim|fire|shoot|blast|launch)(?:s|es|ing)? (?:[a-z]+ ){0,2}?at (?!(?:night|dawn|dusk|noon|midnight|sunset|sunrise|home|school|sea|once)\b)(?:the |a |an )?([a-z][a-z -]*)/,
+    // „spits water at the bees“ (P52): plivnutí jen s tím, co letí – „a llama spits at kids“ terč dál nemá.
+    /\b(?:(?:throw|toss|aim|fire|shoot|blast|launch)(?:s|es|ing)? (?:[a-z]+ ){0,2}?|(?:spit(?:s|ting)?|spat) (?:[a-z]+ ){1,2}?)at (?!(?:night|dawn|dusk|noon|midnight|sunset|sunrise|home|school|sea|once)\b)(?:the |a |an )?([a-z][a-z -]*)/,
     /\b(?:shoot|blast|zap)(?:s|ing)? (?:down )?(?:all |every |the )?([a-z][a-z -]*)/,
     // P39: i s překlepem („againts“); „shooting game … against animals“ – žánr terčem není, čte se další výskyt.
     new RegExp(`${AGAINST} (?:the |a |an )?([a-z][a-z -]*)`),

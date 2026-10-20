@@ -1,0 +1,10 @@
+{
+ "dataset": "evals/play/p52/holdout.json",
+ "openedAt": "2026-10-19T14:55:53Z",
+ "commit": "2d3e69c411700ea98d44067229d517bbe70dfedf",
+ "sha256": "5dad1fbaac0da5066ff2a8906ce9fba5677770db33b868176b004bf32c8d3e61",
+ "lineEndings": "LF (CRLF normalized before hashing)",
+ "matchesSeal": true,
+ "runs": 1,
+ "output": "evals/play/p52/final.json"
+}

@@ -1,16 +1,16 @@
 import { ARCADE_HZ, ARCADE_LIMITS, type AbilityId, type AddonId } from '../arcade/contract';
-import { CAPABILITIES } from '../capabilities';
+import { CAPABILITIES, DUEL_HITS, duelHitOf } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/modules';
 import { DRIVE_PRESETS, NATIVE_PRESETS, TRACK_GOAL_PRESETS, assertPreset, type RecipeAssembly } from './presets';
-import { CATCH_TUNING, catchSpec } from './catch';
+import { CATCH_TUNING, catchSpec, withCatchBees } from './catch';
 import { driveSpec } from './drive';
 import { nativeSpec } from './native';
 import { timeOfDayFor } from '../arcade/look';
 import { BALL_DIFFICULTY } from './ball-difficulty';
 import { singular } from '../draft/lexicon';
-import { type AbilityWord, abilitiesOfControl, abilityHint, abilityWordsOf } from '../draft/controls';
+import { ABILITY_WORDS, type AbilityWord, abilitiesOfControl, abilityHint, abilityWordsOf } from '../draft/controls';
 import { RULE_TEMPLATES, type RuleTemplate, TEMPLATE_NAMES, type TemplateName, type TemplateSlot, says, templateParts, templatesFor } from '../arcade/rules/templates';
 import { FINALE_GENRE_VERSION, genreAtLeast } from '../arcade/pieces/pacing-parts';
 
@@ -22,7 +22,7 @@ export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
 /** `compileRecipe` and the rule template it attached (P45B T9); `null` = none. */
 export function compileTemplated(assembly: RecipeAssembly): { readonly spec: GameSpecV1; readonly template: TemplateName | null } {
   const templated = withTemplate(compileRecipeSpec(assembly), assembly);
-  return { ...templated, spec: withDirectorExtras(withAbilities(templated.spec, assembly), assembly.content) };
+  return { ...templated, spec: withDirectorExtras(withCatchBees(withAbilities(templated.spec, assembly), assembly.content), assembly.content) };
 }
 
 /**
@@ -38,17 +38,39 @@ const ATTACK_HINT = / J or Attack strikes nearby opponents\.$/;
 
 /**
  * Generátory režimu, kde robot akce použije a ověření je dokáže (P46A T10, matice T9 a živé
- * věty); souboj (`fight`) od P47B T6 jen s akcemi `FIGHT_ABILITIES`, let (`glide_course`, matice P47B T9) všechny.
- * Ostatní generátory nikdo neměřil.
+ * věty); souboj (`fight`) od P47B T6 jen s akcemi `FIGHT_ABILITIES`, let (`glide_course`, matice P47B T9) všechny,
+ * quest (`quest_spatial`, P52 T5) jen úder, plížení bludištěm (`walker_stealth`, P52 T6) jen krádež, míč (`ball_pitch`,
+ * P52 T7) jen štít, chytání (`arena_catch`, P52 T7b) jen střelbu. Ostatní generátory nikdo neměřil.
  */
-export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'walker_labyrinth', 'fight', 'glide_course']);
+export const ABILITY_GENERATORS: ReadonlySet<string> = new Set(['arena_escape', 'arena_collect', 'arena_catch', 'walker_labyrinth', 'walker_stealth', 'fight', 'glide_course', 'quest_spatial', 'ball_pitch']);
 
 /** Souboj má vlastní úder (Attack) a nic ke krádeži: bere jen dash a štít proti úderu soupeře (P47B T6). */
 export const FIGHT_ABILITIES: readonly AbilityId[] = ['dash', 'shield'];
 
+/** Quest: úder na pronásledovatele, ke kterému robot s připraveným úderem dojde (`abilityStep`); jiné akce nikdo neměřil. */
+const QUEST_ABILITIES: readonly AbilityId[] = ['strike'];
+
+/**
+ * Plížení: krádež okrade strážného, který prochází vstupní chodbou, nebo sebere věc a jiskry (`ability_grab`). Jiné akce
+ * v plížení nikdo neměřil.
+ */
+const STEALTH_ABILITIES: readonly AbilityId[] = ['grab'];
+
+/**
+ * Útěk a sběr v aréně: všechno kromě střelby. Střela tam nemá na co (`enemiesFor('move_free')` je prázdné); bere ji jen
+ * chytání (P52 T7b), kde stojí včely na cestě ke kořisti.
+ */
+const ARENA_ABILITIES: readonly AbilityId[] = ['strike', 'dash', 'shield', 'grab'];
+
+/** Akce, které generátor bere jen některé; generátor mimo seznam bere všechny, které bere jeho ovládání. */
+const GENERATOR_ONLY: Readonly<Record<string, readonly AbilityId[]>> = {
+  fight: FIGHT_ABILITIES, quest_spatial: QUEST_ABILITIES, walker_stealth: STEALTH_ABILITIES, ball_pitch: ['shield'],
+  arena_escape: ARENA_ABILITIES, arena_collect: ARENA_ABILITIES, arena_catch: ['shoot'],
+};
+
 /** Bere hra generátoru `generator` (bez generátoru staví trať ovládání) akci `id`? Čte i měřidlo P47B. */
 export const generatorTakes = (generator: string | undefined, id: AbilityId): boolean =>
-  generator === undefined || (ABILITY_GENERATORS.has(generator) && (generator !== 'fight' || FIGHT_ABILITIES.includes(id)));
+  generator === undefined || (ABILITY_GENERATORS.has(generator) && (GENERATOR_ONLY[generator]?.includes(id) ?? true));
 
 /**
  * Akce hrdiny ze sloves věty (P46A T8, `assemble`), jen akce, které ovládání bere, a jen hře,
@@ -62,7 +84,9 @@ function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
   // Akce z odpovědi režiséra (P46E T4) za akcemi věty; dvě tlačítka bere `abilitiesOfControl`.
   const said = [...new Set([...(assembly.abilities ?? []), ...(assembly.content.abilities ?? [])])].filter((id) => generatorTakes(generator, id));
   if (said.length === 0 || spec.control === undefined) return spec;
-  const abilities = abilitiesOfControl(said, spec.control);
+  // Duel nese na zásahu soupeře jedno sloveso (P52 T8): úder před střelbou a krádeží, další zásah by nic nedělal.
+  const hit = spec.control === 'duel' ? duelHitOf(said) : undefined;
+  const abilities = abilitiesOfControl(hit === undefined ? said : said.filter((id) => id === hit || !(DUEL_HITS as readonly AbilityId[]).includes(id)), spec.control);
   if (abilities.length === 0) return spec;
   const heard = assembly.saidWords ?? {};
   const words = abilityWordsOf(abilities, heard);
@@ -76,12 +100,14 @@ function withAbilities(spec: GameSpecV1, assembly: RecipeAssembly): GameSpecV1 {
 }
 
 /**
- * Nápověda souboje se slovesy věty (P47B T10): „to strike“ dostane slovo úderu, „to dodge“ slovo
- * dashe nebo štítu („Tap right or Space to shove, tap left or Down to dodge.“). Akce bez slova věty
- * nechá obecné sloveso; nad 80 znaků zůstane nápověda žánru.
+ * Nápověda souboje se slovesy věty (P47B T10): „to strike“ dostane slovo zásahu (úder, střelba nebo
+ * krádež – `duelHitOf`, P52 T8), „to dodge“ slovo dashe nebo štítu („Tap right or Space to shove, tap
+ * left or Down to dodge.“). Úder bez slova věty nechá obecné sloveso, střelba a krádež své („to shoot“);
+ * nad 80 znaků zůstane nápověda žánru.
  */
 function duelHint(hint: string, abilities: readonly AbilityId[], heard: Readonly<Partial<Record<AbilityId, AbilityWord>>>): string {
-  const strike = abilities.includes('strike') ? heard.strike : undefined;
+  const hit = duelHitOf(abilities);
+  const strike = hit === undefined ? undefined : (heard[hit] ?? (hit === 'strike' ? undefined : ABILITY_WORDS[hit][0]));
   const dodge = abilities.filter((id) => id === 'dash' || id === 'shield').map((id) => heard[id]).find((word) => word !== undefined);
   let said = hint;
   if (strike !== undefined) said = said.replace(/\bto strike\b/, `to ${strike.toLowerCase()}`);
