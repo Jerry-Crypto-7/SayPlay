@@ -1,0 +1,186 @@
+{
+ "about": "Blind judgement of before-phone vs after-phone: the same game at the same demo tick, side by side without labels. See README.md.",
+ "judgedAt": "2026-10-20T05:10:36.178Z",
+ "judge": {
+  "model": "claude-opus-5-5",
+  "how": "claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once",
+  "question": "First open sheet.png in the current directory with the Read tool. It shows two screenshots side by side, LEFT and RIGHT, of a small 3D video game made from the request: \"<sentence>\". Page text is hidden, so judge only the 3D scenes. Which side looks more like a believable, immersive, clear game place for this request – a place that looks like the setting the request names, that you could believe you are in, and where the path or ground you play on and the characters are easy to read? End your reply with exactly one line in this form and nothing after it:\nVERDICT: LEFT – <one short reason>\nor\nVERDICT: RIGHT – <one short reason>"
+ },
+ "order": {
+  "prng": "pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentence order, profile after profile; 0 = before is LEFT",
+  "seed": 46009
+ },
+ "total": {
+  "profile": "after-phone",
+  "afterWins": 13,
+  "beforeWins": 5,
+  "unanswered": 0,
+  "of": 18,
+  "passAt": 12,
+  "pass": true
+ },
+ "pairs": [
+  {
+   "id": "g-runner",
+   "sentence": "A fox runs through a forest away from a bear",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "same forest path, but the fox is clearly readable with its tail",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-race",
+   "sentence": "A jeep races through the jungle",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "Nearly identical, but the jungle plants beside the road show slightly more clearly through the fog.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-platform",
+   "sentence": "A squirrel jumps over logs in a forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "Slightly brighter lighting makes the squirrel and platforms a bit easier to read.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-arena",
+   "sentence": "Collect ten acorns in a forest while avoiding a fox",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "player and fox are easier to tell apart, and the fox clearly faces the player",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-fight",
+   "sentence": "A bear fights three wolves in a dark forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the bear is lit and readable, while on the right it's an almost featureless black blob.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-quest",
+   "sentence": "A knight lights the torches in a dark castle",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the torchlight spreads more evenly around the knight, so the play area is slightly easier to read.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-agar",
+   "sentence": "like agar.io but you are a fish eating smaller fish",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the fish clearly look like fish, while the right side shows unclear orange blobs.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-walker",
+   "sentence": "A fox sneaks past guards in a forest to steal eggs",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "richer forest-green ground gives slightly better mood and clearer contrast between floor and walls",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-glide",
+   "sentence": "A fish swims through a coral reef",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "nearly identical, but slightly richer lighting gives a bit more underwater depth.",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-ball",
+   "sentence": "A dog plays football against a fox in a meadow",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the foxes stand clearly apart from the dog, so the characters are easier to read",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-flap",
+   "sentence": "like flappy bird but in a jungle",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "same scene, but the darker edges add depth and mood without making anything harder to read.",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-shooter",
+   "sentence": "A ranger shoots zombies in a forest",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "slightly more ground shading makes the play area and ranger a bit easier to read",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-throw",
+   "sentence": "throw acorns at targets in a forest",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "Nearly identical, but the left shows slightly more forest undergrowth around the clear grassy field.",
+   "afterWon": false,
+   "asks": 1
+  },
+  {
+   "id": "g-timing",
+   "sentence": "stack blocks as high as you can",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "Nearly identical scenes, but the left's stone accents and clearer birds add slightly more detail to the setting.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-rhythm",
+   "sentence": "tap to the beat with glowing tiles",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "lanes look a bit more even with less shadow, so the path is slightly easier to read",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-duel",
+   "sentence": "Two knights duel in a castle",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "Nearly identical, but the path and characters stand out slightly more against the ground.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-voyage",
+   "sentence": "A pirate ship dodges cannonballs while sailing between islands to find buried treasure",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "Almost identical; the island scenery and road edges are framed a little more fully.",
+   "afterWon": true,
+   "asks": 1
+  },
+  {
+   "id": "g-lander",
+   "sentence": "A rocket lands on Mars",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "slightly crisper contrast makes the rocket and Martian terrain easier to read",
+   "afterWon": false,
+   "asks": 1
+  }
+ ]
+}

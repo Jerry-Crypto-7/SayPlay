@@ -11,7 +11,8 @@ import type { Look } from '@/play/arcade/look';
 import { GLIDE } from '@/play/arcade/pieces/glide';
 import { HorizonBackdrop } from '../look/Backdrop';
 import { FieldGround } from '../look/FieldGround';
-import { boxEdge } from '../look/ground';
+import { type Box, boxEdge } from '../look/ground';
+import { Landmark } from '../look/Landmark';
 import { Scenery } from '../look/Scenery';
 import { Vegetation } from '../look/Vegetation';
 import type { RoadAt } from '../look/vegetation-places';
@@ -25,11 +26,22 @@ export { useGlideInput } from './glide-input';
 const BOUND = GLIDE.bound / UNIT;
 /** Koridor letu jako „cesta“ vegetace: rovný v ose, půl šířky po hranici. */
 const COURSE = (): RoadAt => ({ center: 0, half: BOUND });
-const COURSE_EDGE = boxEdge({ x0: -BOUND, x1: BOUND, z0: -Infinity, z1: Infinity });
+const COURSE_BOX: Box = { x0: -BOUND, x1: BOUND, z0: -Infinity, z1: Infinity };
+const COURSE_EDGE = boxEdge(COURSE_BOX);
+/** Orientační bod stojí za hranicí letu a jede s kamerou (P54B T8). */
+const COURSE_AREA: readonly Box[] = [COURSE_BOX];
+const LAND_Y = (): number => -0.06;
 /** Volný pás vegetace za hranicí letu (m). */
 const VEGETATION_CLEAR = 1.5;
 /** Kam zem sahá do strany za hranici (m). */
 const LAND_M = 50;
+
+/**
+ * Krytí stěny útesu (P54B T15b). Čtyři stěny kolem kruhu zavírají celý průřez letu 24 × 14 m po 20 m;
+ * neprůhledné vyplnily kamerou 10 m za hrdinou celý obraz jednou barvou a útes, kulisy ani bod nebyly
+ * vidět (slepý soud T15: „no visible reef“). Průsvitné stěny dál ukazují, kam se nesmí, a scéna za nimi zůstane.
+ */
+export const REEF_WALL_OPACITY = 0.25;
 
 /** These native course bodies are drawn here; named actors remain in World. */
 export const GLIDE_SCENE_KINDS: ReadonlySet<string> = new Set(['glide-ring', 'glide-current', 'glide-reef']);
@@ -66,6 +78,7 @@ export function GlideBackdrop({ session, look, collectibleModel }: { readonly se
     {/* Zem s odstíny, skvrnami, krajnicí u hranice letu a tmavnutím do strany (P46G T7); dřív jedna barva sady. */}
     <FieldGround look={look} area={land} edge={COURSE_EDGE} y={-0.06} />
     <HorizonBackdrop look={look} seed={seed} length={length} clear={BOUND + VEGETATION_CLEAR} />
+    <Landmark look={look} seed={seed} area={COURSE_AREA} ground={LAND_Y} follow="track" />
     {bodies.map(body => <group key={body.body} ref={group => { if (group === null) groups.current.delete(body.body); else groups.current.set(body.body, group); }}>
       {body.kind === 'glide-ring' ? <group>
         {collectibleModel !== undefined && <group position={[0, -0.3, 0]}>
@@ -80,9 +93,9 @@ export function GlideBackdrop({ session, look, collectibleModel }: { readonly se
           <boxGeometry args={[0.04, 0.04, body.d * 0.7]} />
           <meshBasicMaterial color={color.cream} transparent opacity={0.35} depthWrite={false} />
         </mesh>)}
-      </group> : <mesh castShadow receiveShadow>
+      </group> : <mesh>
         <boxGeometry args={[body.w, body.h, body.d]} />
-        <meshStandardMaterial color={look.terrain?.rock ?? look.tint[1]} roughness={1} />
+        <meshStandardMaterial color={look.terrain?.rock ?? look.tint[1]} roughness={1} transparent opacity={REEF_WALL_OPACITY} depthWrite={false} />
       </mesh>}
     </group>)}
   </>;

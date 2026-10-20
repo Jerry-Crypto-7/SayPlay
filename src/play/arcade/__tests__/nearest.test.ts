@@ -32,14 +32,15 @@ describe('nearest catalog model', () => {
       expect(sceneModelOf(label, false), label).toBeUndefined();
       expect(sceneModelOf(label, true), label).toBeUndefined();
     }
-    expect(heroChoice('quantum physics', undefined, undefined, 'enemy')).toMatchObject({ model: 'robot', level: 'fallback' });
+    expect(heroChoice('quantum physics', undefined, undefined, 'enemy')).toMatchObject({ model: 'rigged:blocky-robot', level: 'fallback' });
   });
 
+  // P54B T4: lidé bez vlastního modelu dostanou riggovanou postavu nejbližšího jména (`KIN`).
   it('dresses the people of off-topic sentences without changing the draft', () => {
     expect(heroChoice('investor', undefined, undefined, 'enemy').model).toBe('gen3d-investor');
-    expect(heroChoice('angry boss', undefined, undefined, 'enemy')).toMatchObject({ model: 'gen3d-investor', level: 'class' });
-    expect(sceneModelOf('my wife', true)).toBe('gen3d-mom');
-    expect(sceneModelOf('toddler', true)).toBe('kid');
+    expect(heroChoice('angry boss', undefined, undefined, 'enemy')).toMatchObject({ model: 'rigged:q-businessman', level: 'class' });
+    expect(sceneModelOf('my wife', true)).toBe('rigged:q-casual-woman');
+    expect(sceneModelOf('toddler', true)).toBe('rigged:boy-a');
     expect(sceneModelOf('boss', false)).toBeUndefined();
     expect(modelOf('boss', true)).toBeUndefined();
   });

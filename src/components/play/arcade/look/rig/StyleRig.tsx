@@ -21,6 +21,9 @@ import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mes
 
 import type { Look, LookId } from '@/play/arcade/look';
 
+import { Ambient } from '../Ambient';
+import { setCharacterRim } from '../load';
+import { Wind } from '../Vegetation';
 import { LOOK_FAMILY } from './grade';
 import { Post, useQualityTier } from './Post';
 import { TIER_SETTINGS } from './quality';
@@ -261,6 +264,8 @@ function Exposure({ exposure }: { readonly exposure: number }) {
 
 export function StyleRig({ look, lookId, control, surface }: { readonly look: Look; readonly lookId: LookId; readonly control: string; readonly surface: RefObject<HTMLDivElement | null> }) {
   const tier = useQualityTier(surface);
+  // Okrajový svit postav barvou oblohy sady (P54B T14): jen uniformy, materiály se nepřekládají.
+  useEffect(() => setCharacterRim(look), [look]);
   return (
     <>
       <color attach="background" args={[look.horizon]} />
@@ -272,6 +277,9 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <Sun look={look} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       <ShadowFlags />
       <SceneryWindow />
+      {/* Život v pozadí kolem orientačního bodu scény (P54B T10) a vítr ve vegetaci (T13). */}
+      <Ambient look={look} tier={tier} />
+      <Wind look={look} lookId={lookId} tier={tier} />
       <Post look={look} family={LOOK_FAMILY[lookId]} tier={tier} />
     </>
   );

@@ -53,11 +53,12 @@ export function arenaPalette(look: Look): ArenaPalette {
   }
 }
 
-/** Mezera mezi hranou arény a stěnou, tloušťka stěny a odstup kulis za ní (m). */
-const WALL_GAP = 0.8;
+/** Mezera mezi hranou arény a stěnou (m): v ní stojí prstenec výzdoby (P54B T9). */
+export const ARENA_WALL_GAP = 0.8;
+/** Tloušťka stěny a odstup kulis za ní (m). */
 const WALL_DEPTH = 1.2;
 /** Kde za hranou arény končí stěna (m): odtud smí vegetace (P46G T7). */
-export const ARENA_WALL_END = WALL_GAP + WALL_DEPTH;
+export const ARENA_WALL_END = ARENA_WALL_GAP + WALL_DEPTH;
 const SCENERY_GAP = 2.5;
 /** Kam za hranu podlaha ještě sahá (m): za kulisy do mlhy. */
 const BEYOND = 50;
@@ -212,7 +213,7 @@ export function buildArenaFloor({ look, half }: ArenaFloorOptions): ArenaFloor {
 
   // --- Stěny ---
   const walls = new Faces();
-  const inner = half + WALL_GAP;
+  const inner = half + ARENA_WALL_GAP;
   const middle = inner + WALL_DEPTH / 2;
   const castle = look.cover === 'paving';
   const rough = castle ? 0.015 : 0.14;

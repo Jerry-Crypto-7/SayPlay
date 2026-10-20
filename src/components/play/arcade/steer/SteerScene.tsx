@@ -19,17 +19,20 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { color } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, UNIT, bodyBase, nativeRule, rampedSpeed } from '@/play/arcade/contract';
-import { type Look, SURFACES } from '@/play/arcade/look';
+import { type Look, SURFACES, sparseLandmarks } from '@/play/arcade/look';
 import { STEER, type SteerCourse } from '@/play/arcade/pieces/steer';
 import type { HeroAction } from '@/play/spec';
 
 import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import { FieldGround } from '../look/FieldGround';
-import { buildRoadGround } from '../look/ground';
+import { type Box, buildRoadGround } from '../look/ground';
+import { Landmark } from '../look/Landmark';
+import type { Volume } from '../look/landmark-places';
 import { type IslandSpot, buildIslands, islandPalette } from '../look/rig/terrain/islands';
 import { hash } from '../look/rig/terrain/valley';
-import { roadGeometry, stripCurve } from '../look/road-strip';
+import { BEFORE_COMPOSER } from '../look/rig/Post';
+import { roadGeometry, stripCurve, windowAlongZ } from '../look/road-strip';
 import { buildWater } from '../look/rig/terrain/water';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { HorizonBackdrop } from '../look/Backdrop';
@@ -197,9 +200,23 @@ export function SteerBackdrop({
 }) {
   const voyage = useVoyageSession();
   const shape = useMemo(() => roadShapeOf(session.world), [session.world]);
+  // Silnice na startu (nejširší úsek a mantinel) pro orientační bod (P54B T8): bod jede s kamerou vedle ní.
+  const roadArea = useMemo((): readonly Box[] => {
+    const half = Math.max((course?.halfWidth ?? 5 * UNIT) / UNIT, ...shape.segments.map((segment) => segment.width / 2)) + BARRIER_W;
+    const center = shape.segments[0]?.center ?? 0;
+    return [{ x0: center - half, x1: center + half, z0: -Infinity, z1: Infinity }];
+  }, [course, shape]);
+  // Střed silnice po křivce úseků jako v `RoadBackdrop`: bod jede vedle zatáček, ne do nich.
+  const roadBend = useMemo(() => {
+    const segments = shape.segments.length > 0 ? shape.segments : segmentsOf(course).map((segment) => ({ ...segment, width: 0 }));
+    if (segments.length === 0) return undefined;
+    const curve = stripCurve(segments);
+    return (z: number) => ({ x: curve(z).center });
+  }, [course, shape]);
   return (
     <>
       {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} namedPad={namedPad} /> : <RoadBackdrop course={course} shape={shape} length={length} look={look} seed={session.world.seed} />}
+      {voyage === null && <Landmark look={look} seed={session.world.seed} area={roadArea} bend={roadBend} follow="track" />}
       {/* Slot ducha (P37-0 T3) pro silnici i plavbu. */}
       <GhostSlot ghost={ghost} session={session} />
     </>
@@ -252,29 +269,39 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
     // Ostrůvky rozcestí zůstávají kvádry jádra; s mantinely jedna síť (bez UV, které pás nemá).
     const islands = (shape?.islands ?? []).map((island) => new BoxGeometry(island.w, wallH, island.d).translate(island.x, wallH / 2, island.z).deleteAttribute('uv'));
     const barriers = built.walls === null && islands.length === 0 ? null : mergeGeometries([...(built.walls === null ? [] : [built.walls]), ...islands]);
-    return { ...built, barriers };
+    const windows = [built.surface, built.edges, built.marks, barriers].filter((geometry) => geometry !== null).map(windowAlongZ);
+    return { ...built, barriers, windows };
   }, [segments, shape, surface]);
   useEffect(() => () => { road?.surface.dispose(); road?.edges.dispose(); road?.marks?.dispose(); road?.walls?.dispose(); road?.barriers?.dispose(); }, [road]);
   // Zem s odstíny, skvrnami, krajnicí podél cesty a tmavnutím do strany (P46G T3) – jedna síť místo roviny jedné barvy.
-  const ground = useMemo(() => buildRoadGround(look, strip, -60, span), [look, strip, span]);
-  useEffect(() => () => ground.dispose(), [ground]);
+  const ground = useMemo(() => {
+    const geometry = buildRoadGround(look, strip, -60, span);
+    return { geometry, window: windowAlongZ(geometry) };
+  }, [look, strip, span]);
+  useEffect(() => () => ground.geometry.dispose(), [ground]);
+  // Cesta, mantinely a zem jsou přes celou trať: kreslí se jen úsek kolem kamery (P54B T15d), kamera jízdy hledí po +z.
+  useFrame(({ camera }) => {
+    const [from, to] = [camera.position.z - ROAD_BEHIND_M, camera.position.z + (camera as PerspectiveCamera).far + ROAD_AHEAD_M];
+    for (const window of [...(road?.windows ?? []), ground.window]) window(from, to);
+  }, BEFORE_COMPOSER);
   const afloat = look.afloat === true;
   return (
     <>
-      <mesh geometry={ground} position={[0, -0.03, 0]} renderOrder={UNDER_PANORAMA}>
+      <mesh geometry={ground.geometry} position={[0, -0.03, 0]} renderOrder={UNDER_PANORAMA}>
         <meshStandardMaterial vertexColors roughness={1} depthWrite={false} />
       </mesh>
       {road !== null && (
         <>
-          <mesh geometry={road.surface} receiveShadow>
+          {/* Pás, okraje a značení leží na zemi: stín jen přijímají, rig by je jinak kreslil i do stínové mapy (P54B T15d). */}
+          <mesh geometry={road.surface} receiveShadow userData={{ rigShadow: 'receive' }}>
             {/* Závod po řece jede po hladině (`afloat`, P30B T6), jinak po povrchu sady. */}
             <meshStandardMaterial color={afloat ? look.water : surface.color} roughness={afloat ? 0.3 : 0.9} />
           </mesh>
-          <mesh geometry={road.edges} receiveShadow>
+          <mesh geometry={road.edges} receiveShadow userData={{ rigShadow: 'receive' }}>
             <meshStandardMaterial color={surface.edge} roughness={0.9} />
           </mesh>
           {road.marks !== null && !afloat && 'marks' in surface && (
-            <mesh geometry={road.marks} receiveShadow>
+            <mesh geometry={road.marks} receiveShadow userData={{ rigShadow: 'receive' }}>
               <meshStandardMaterial color={surface.marks.color} roughness={0.9} />
             </mesh>
           )}
@@ -285,17 +312,16 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
           )}
         </>
       )}
-      {look.flora !== undefined ? (
-        <>
-          <Vegetation flora={look.flora} seed={seed} from={-60} to={span} road={roadAt} clear={VEGETATION_CLEAR} />
-          {/* Vedle vegetace jedna řídká řada kulis po ose celé cesty: řada na úsek by na krátkých úsecích kulisy zahustila. */}
-          <Scenery look={look} layout="sides" inner={widest / 2 + SCENERY_MARGIN} from={-10} to={span - 2} bend={centerAt} vegetation />
-        </>
+      {look.flora !== undefined && <Vegetation flora={look.flora} seed={seed} from={-60} to={span} road={roadAt} clear={VEGETATION_CLEAR} />}
+      {sparseLandmarks(look) ? (
+        // Vedle vegetace jedna řídká řada kulis po ose celé cesty: řada na úsek by na krátkých úsecích kulisy zahustila.
+        <Scenery look={look} layout="sides" inner={widest / 2 + SCENERY_MARGIN} from={-10} to={span - 2} bend={centerAt} vegetation />
       ) : (
+        // Hustá řada na úsek; vedle výplně (P54B T7) bez druhů výplně, ty kreslí `Vegetation`.
         segments.map((segment, i) =>
           segment.far - segment.near < sceneryFrom ? null : (
             <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>
-              <Scenery look={look} layout="sides" inner={segment.width / 2 + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
+              <Scenery look={look} layout="sides" inner={segment.width / 2 + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} vegetation={look.flora !== undefined} />
             </group>
           ),
         )
@@ -308,6 +334,9 @@ function RoadBackdrop({ course, shape, length, look, seed, sceneryFrom = 0 }: { 
 
 /** Volný pás vegetace za krajem silnice (m): mantinel a kus krajnice, ať je na cestu vidět i v zatáčce. */
 const VEGETATION_CLEAR = BARRIER_W + 1;
+/** Okno cesty a země kolem kamery (m): za ní, a za koncem mlhy (`FarAtFog`) jako vegetace. */
+const ROAD_BEHIND_M = 15;
+const ROAD_AHEAD_M = 12;
 
 interface Segment {
   readonly near: number;
@@ -586,9 +615,24 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard, namedPad }
   });
 
   const ground = layout.terrain === 'islands' ? SUNK : 0;
+  // Orientační bod (P54B T8) vedle kanálu: na ostrově na jeho zemi, jinde na hladině nebo zemi kaňonu; jede s kamerou.
+  const landmarkArea = useMemo((): readonly Box[] => {
+    const center = centerOf(layout.course, 0);
+    return [{ x0: center - half - SCENERY_MARGIN, x1: center + half + SCENERY_MARGIN, z0: -Infinity, z1: Infinity }];
+  }, [layout, half]);
+  const landmarkGround = useMemo(() => (x: number, z: number): number => islands.heightAt(x, z) ?? (sea ? WATER_LEVEL : 0), [islands, sea]);
+  const landmarkBend = useMemo(() => (z: number) => ({ x: centerOf(layout.course, z) }), [layout]);
+  // Přistání (P54B T15a): sloup nad plochou, kam loď sedá (loď samu hlídá obdélník hrdiny). Celý koridor od lodi
+  // na plochu by byl obdélník přes celý záběr – kamera rámuje právě loď a plochu – a bod by nestál nikde.
+  const landmarkPlay = useMemo((): readonly Volume[] => {
+    const { pad, hero } = layout;
+    if (pad === null) return [];
+    return [{ x0: pad.x - pad.w / 2, y0: pad.y, z0: pad.z - pad.d / 2, x1: pad.x + pad.w / 2, y1: pad.y + pad.h + 3 * hero.h, z1: pad.z + pad.d / 2 }];
+  }, [layout]);
 
   return (
     <>
+      <Landmark look={look} seed={session.world.seed} area={landmarkArea} ground={landmarkGround} bend={landmarkBend} play={landmarkPlay} follow="track" />
       {layout.terrain === 'buildings' ? (
         <RoadBackdrop course={layout.course} length={length} look={look} seed={session.world.seed} sceneryFrom={STRAIGHT_M} />
       ) : water !== null ? (

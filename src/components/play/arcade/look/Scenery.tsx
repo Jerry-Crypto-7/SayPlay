@@ -11,10 +11,10 @@
 import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Box3, type Group, Mesh, type Object3D, Vector3 } from 'three';
 
-import { type Flora, floraIds, isSceneryModel, landmarks, type Look, modelHeight, type PropKind, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
+import { type Flora, floraIds, isSceneryModel, landmarks, type Look, modelHeight, type PropKind, type SceneryKind, type SceneryModel, sparseLandmarks } from '@/play/arcade/look';
 
 import { UNDER_PANORAMA } from './under-panorama';
-import { loadFlatModel, type PlantModel, paintedPlant, plantMaterial } from './load';
+import { loadFlatModel, type PlantModel, paintedPlant, plantDepthMaterial, plantMaterial } from './load';
 import { PlayEnv } from './play-env';
 import { capSnow } from './rig/snowcap';
 
@@ -206,8 +206,11 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
   }
 }
 
-/** Model katalogu postavený na zem ve výšce kulisy (`modelHeight`); dokud se nenačte, nic. `cap` = sněhová čepička. */
-function SceneryModelProp({ id, cap }: { readonly id: SceneryModel; readonly cap?: string }) {
+/**
+ * Model katalogu postavený na zem ve výšce kulisy (`modelHeight`); dokud se nenačte, nic. `cap` = sněhová čepička.
+ * `cast = false`: stín jen přijímá – orientační bod a rámující kusy (P54B T8) nestojí stínový průchod navíc.
+ */
+export function SceneryModelProp({ id, cap, cast = true }: { readonly id: SceneryModel; readonly cap?: string; readonly cast?: boolean }) {
   const [model, setModel] = useState<Object3D | null>(null);
   useEffect(() => {
     let live = true;
@@ -228,9 +231,18 @@ function SceneryModelProp({ id, cap }: { readonly id: SceneryModel; readonly cap
     const center = box.getCenter(new Vector3());
     copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
     if (cap !== undefined) capSnow(copy, cap);
+    if (!cast) {
+      copy.traverse((node) => {
+        if ((node as Mesh).isMesh !== true) return;
+        // Značka rigu: `ShadowFlags` ji už nepřepíše na vrhání stínu.
+        node.userData.rigShadow = 'receive';
+        node.castShadow = false;
+        node.receiveShadow = true;
+      });
+    }
     freeze(copy);
     return copy;
-  }, [model, id, cap]);
+  }, [model, id, cap, cast]);
   return fitted === null ? null : <primitive object={fitted} />;
 }
 
@@ -253,7 +265,9 @@ function PlantProp({ id, flora, cap }: { readonly id: SceneryModel; readonly flo
     if (plant === null) return null;
     const made = new Mesh(plant.geometry, plantMaterial(plant.double));
     made.scale.setScalar(modelHeight(id));
+    // Zasněžená rostlina má vlastní materiál bez větru (`snowcapped`) a stojí, stín s ní.
     if (cap !== undefined) capSnow(made, cap);
+    else made.customDepthMaterial = plantDepthMaterial();
     freeze(made);
     return made;
   }, [plant, id, cap]);
@@ -314,13 +328,14 @@ const FOOT = 0.7;
  * `ground` = výška terénu pod kulisou (údolí běžce, P32A T3), `cap` = barva sněhové čepičky,
  * `tallest` = strop výšky řady v popředí (v metrech scény, už se `size`), `bend` = posun po
  * zakřivené trati běžce (P46D T3, `runner/path.ts`): kulisa stojí vedle zatáčky, ne v ní.
- * `vegetation` = scéna kreslí vegetaci sady (`Vegetation.tsx`): řada nese jen stavby a věci, řídce a střídavě.
+ * `vegetation` = scéna kreslí vegetaci sady (`Vegetation.tsx`): řada nese jen stavby a věci, vedle přírody řídce
+ * a střídavě; vedle výplně (P54B T7, `sparseLandmarks`) zůstane hustá.
  */
 export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap, tallest, bend, vegetation = false }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string; readonly tallest?: SceneryCap; readonly bend?: (z: number) => { readonly x: number; readonly y: number }; readonly vegetation?: boolean }) {
   const side = tallest?.side;
   const height = tallest === undefined ? undefined : tallest.height / size;
   const props = useMemo(() => (vegetation ? landmarks(look) : look.props), [look, vegetation]);
-  const sparse = vegetation && look.flora !== undefined;
+  const sparse = vegetation && sparseLandmarks(look);
   const places = useMemo(() => sceneryPlaces(props, layout, inner, from, to, side === undefined || height === undefined ? undefined : { side, height }, sparse), [props, layout, inner, from, to, side, height, sparse]);
   const plants = useMemo(() => (look.flora === undefined ? new Set<string>() : floraIds(look.flora)), [look.flora]);
   const heights = useMemo(

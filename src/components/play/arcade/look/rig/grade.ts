@@ -9,7 +9,7 @@
  * Operace běží ve vnímaném prostoru (gama 2,2), jako tónová křivka LUT:
  * zisk·(c + zdvih·(1 − c)), pak gama, sytost a kontrast kolem středu.
  * Efekt se slije do průchodu ACES, takže na telefonu nestojí průchod navíc;
- * úroveň `low` skládač nemá a kreslí bez ladění.
+ * úroveň `low` má kontrast navíc (`gradeFor`, P54B T14).
  *
  * Nic fialového: zdvih i zisk jsou jen modré, tyrkysové nebo teplé a tmavé
  * fialové směsi, které by zdvih vytáhl nad černou, shader stáhne k modré.
@@ -20,6 +20,8 @@ import { Effect } from 'postprocessing';
 import { Uniform, Vector3 } from 'three';
 
 import type { LookId } from '@/play/arcade/look';
+
+import type { QualityTier } from './quality';
 
 export const GRADE_FAMILIES = ['green', 'warm', 'cold', 'water', 'indoor', 'dark'] as const;
 export type GradeFamily = (typeof GRADE_FAMILIES)[number];
@@ -70,6 +72,16 @@ export const GRADES: Readonly<Record<GradeFamily, Grade>> = {
 };
 
 export const gradeOf = (lookId: LookId): Grade => GRADES[LOOK_FAMILY[lookId]];
+
+/**
+ * Kontrast navíc na telefonní úrovni (P54B T14): `low` nemá AO ani bloom, kontaktní stíny
+ * a záře chybí a obraz na malém displeji splývá – postava se slévá se zemí.
+ */
+export const LOW_CONTRAST = 0.08;
+
+/** Ladění rodiny na úrovni kvality; jen uniformy, změna úrovně nic nepřekládá. */
+export const gradeFor = (family: GradeFamily, tier: QualityTier): Grade =>
+  tier === 'low' ? { ...GRADES[family], contrast: GRADES[family].contrast + LOW_CONTRAST } : GRADES[family];
 
 const FRAGMENT = /* glsl */ `
 uniform vec3 lift;

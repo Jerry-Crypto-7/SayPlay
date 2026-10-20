@@ -62,7 +62,7 @@ import { extractIntent } from '../intent/extract';
 import type { Intent } from '../intent/contract';
 import { defaultCollectible, defaultFoe, defaultHero, defaultTarget, heroFits } from '../genre/roles';
 import { AMMO_VERB } from '../genre/throw';
-import { lookFor, lookWords } from '../arcade/look';
+import { lookFor, lookWords, sentenceSky } from '../arcade/look';
 import { modelOf } from '../arcade/models';
 import { steerStyleFor } from '../arcade/pieces/steer';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
@@ -1366,7 +1366,14 @@ function boundedCounts(spec: GenreSpec, counts: Partial<Record<CountRole, number
   return kept.length === 0 ? null : Object.fromEntries(kept);
 }
 
+/** Návrh a to, co věta řekne o světle (P54B T11): počasí a denní doba do uloženého `theme`, nic jiného. */
 export function draftGameSpecWithMeta(sentence: string, seed = 1, options: DraftOptions = {}): DraftMeta {
+  const meta = draftMeta(sentence, seed, options);
+  const sky = sentenceSky(sentence, meta.spec.theme);
+  return Object.keys(sky).length === 0 ? meta : { ...meta, spec: { ...meta.spec, theme: { ...meta.spec.theme, ...sky } } };
+}
+
+function draftMeta(sentence: string, seed: number, options: DraftOptions): DraftMeta {
   const reading = options.reading ?? null;
   const modules = options.modules ?? GENRE_MODULES;
   const scores = scoreArchetypes(sentence);

@@ -11,7 +11,7 @@
  * stejnou geometrii.
  */
 
-import { BufferGeometry, Float32BufferAttribute } from 'three';
+import { BufferAttribute, BufferGeometry, Float32BufferAttribute } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import type { Surface } from '@/play/arcade/look';
@@ -145,6 +145,49 @@ export function ribbon(samples: readonly StripSample[], edge: (sample: StripSamp
   geometry.setIndex(index);
   geometry.computeVertexNormals();
   return geometry;
+}
+
+/** Index první hodnoty ≥ `value` ve vzestupném poli. */
+export function firstAtLeast(values: Float64Array, value: number): number {
+  let [lo, hi] = [0, values.length];
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (values[mid]! < value) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+/**
+ * Síť přes celou trať, kreslená jen kolem kamery (P54B T15d): trojúhelníky se seřadí podle
+ * nejmenšího z, úsek trati je pak souvislý kus indexů a `drawRange` kreslí jen ten – v obraze
+ * i ve stínu, pořád jedním voláním. Mantinely jízdy (18 540 trojúhelníků na 765 m) se jinak
+ * kreslily celé dvakrát za snímek. Vrací posun okna `[from, to]` po z.
+ */
+export function windowAlongZ(geometry: BufferGeometry): (from: number, to: number) => void {
+  const index = geometry.index!;
+  const position = geometry.getAttribute('position');
+  const count = index.count / 3;
+  const low = new Float64Array(count);
+  // Nejdelší trojúhelník po z: okno začíná o tolik dřív, ať ho neusekne (kvádry ostrůvků).
+  let longest = 0;
+  for (let t = 0; t < count; t += 1) {
+    const [a, b, c] = [0, 1, 2].map((j) => position.getZ(index.getX(t * 3 + j)));
+    low[t] = Math.min(a!, b!, c!);
+    longest = Math.max(longest, Math.max(a!, b!, c!) - low[t]!);
+  }
+  const order = Uint32Array.from({ length: count }, (_, t) => t).sort((p, q) => low[p]! - low[q]!);
+  const sorted = new Uint32Array(index.count);
+  const starts = new Float64Array(count);
+  order.forEach((t, k) => {
+    for (let j = 0; j < 3; j += 1) sorted[k * 3 + j] = index.getX(t * 3 + j);
+    starts[k] = low[t]!;
+  });
+  geometry.setIndex(new BufferAttribute(sorted, 1));
+  return (from, to) => {
+    const first = firstAtLeast(starts, from - longest);
+    geometry.setDrawRange(first * 3, (firstAtLeast(starts, to) - first) * 3);
+  };
 }
 
 /** Vzorky v `[from, to]`; krajní body dopočítané z křivky, ať kus nekončí o krok vedle. */

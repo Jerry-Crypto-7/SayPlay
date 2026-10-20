@@ -11,12 +11,16 @@
 
 import { UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
+import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
+import { SHOOTER } from '@/play/arcade/pieces/shooter';
 
 import { HorizonBackdrop } from './look/Backdrop';
 import { FieldGround } from './look/FieldGround';
 import type { Box } from './look/ground';
+import { Landmark } from './look/Landmark';
+import type { Volume } from './look/landmark-places';
 import { Scenery } from './look/Scenery';
 import { UNDER_PANORAMA } from './look/under-panorama';
 import { Vegetation, VegetationAround } from './look/Vegetation';
@@ -41,6 +45,17 @@ const RANGE_LAND: Box = { x0: -70, x1: 70, z0: -30, z1: 110 };
  * poletování – boční kamera 26–30 m od trubek a kulisy dvojnásobné velikosti za nimi.
  */
 const BEYOND = { shooter: 46, throw: 34, flap: 44 } as const;
+
+/**
+ * Hrací plocha pro orientační bod a rámující kusy (P54B T8): poletování – pás pod trubkami
+ * po celé trati; střelnice – kužel míření ±45° až do dostřelu; hod – hřiště.
+ */
+const FLAP_AREA: readonly Box[] = [{ x0: -1.5, x1: 1.5, z0: -Infinity, z1: Infinity }];
+const FLAP_GROUND = (): number => -0.4;
+/** Trubky poletování po celé trati, od země po strop (P54B T15a): bod za nimi by v obraze stál přímo v mezeře. */
+const FLAP_PLAY: readonly Volume[] = [{ x0: -1.5, y0: -0.4, z0: -Infinity, x1: 1.5, y1: FLAP.ceiling / UNIT, z1: Infinity }];
+const SHOOTER_AREA: readonly Box[] = [{ x0: -(4 + SHOOTER.range / UNIT), x1: 4 + SHOOTER.range / UNIT, z0: -2, z1: SHOOTER.range / UNIT }];
+const THROW_AREA: readonly Box[] = [THROW_FIELD];
 
 /** Podklad scény v barvách sady prostředí (P26 T11): dráha běžce, hladina pod plošinami, zem pod trubkami, rekvizity. */
 export function WorldBackdrop({ control, length, look, seed }: { readonly control: string; readonly length: number; readonly look: Look; readonly seed: number }) {
@@ -70,6 +85,8 @@ export function WorldBackdrop({ control, length, look, seed }: { readonly contro
         <Scenery look={look} layout="behind" inner={12} from={-20} to={length + 20} y={-0.4} size={2} />
         {/* Kulisa za mlhou za kulisami, pata 0,45 m pod zemí (kulisy stojí na −0,4 m); vegetace ne – pás země je úzký a za ním nebe. */}
         <HorizonBackdrop look={look} seed={seed} length={length} clear={0} beyond={BEYOND.flap} skirt={0.45} />
+        {/* Orientační bod za tratí jede s boční kamerou (P54B T8). */}
+        <Landmark look={look} seed={seed} area={FLAP_AREA} ground={FLAP_GROUND} play={FLAP_PLAY} follow="track" />
       </>
     );
   }
@@ -90,6 +107,8 @@ export function WorldBackdrop({ control, length, look, seed }: { readonly contro
           </>
         )}
         <HorizonBackdrop look={look} seed={seed} clear={0} beyond={BEYOND[control as 'shooter' | 'throw']} />
+        {/* Orientační bod za dostřelem či hřištěm a rámující kusy v popředí (P54B T8). */}
+        <Landmark look={look} seed={seed} area={control === 'shooter' ? SHOOTER_AREA : THROW_AREA} />
       </>
     );
   }

@@ -1,0 +1,892 @@
+{
+ "task": "T13",
+ "profile": "Pixel 7, CPU 4x, d3d11",
+ "windowMs": 10000,
+ "base": "ff19fb69 (T15c, D:/tmp/p54b-base-t13 = kopie .next, next start -p 3352)",
+ "build": "8ae25f6d",
+ "note": "Pixel 7 startuje na low, kde vítr vypnutý; řádky s víc voláními stouply za měření na medium/high (vítr zapnutý). První kolo vět běželo na vytíženém stroji; forest-runner a forest-race přeměřeny střídavě, forest-race navíc profilem CPU (ms hlavního vlákna na snímek, low).",
+ "runs": [
+  {
+   "label": "genres",
+   "repeats": 3,
+   "rows": [
+    {
+     "id": "g-runner",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 53.8,
+      "samples": [
+       53.6,
+       54.1,
+       53.8
+      ],
+      "calls": 63
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 56.8,
+      "samples": [
+       56.8,
+       57,
+       55.2
+      ],
+      "calls": 63
+     },
+     "deltaPct": 5.6
+    },
+    {
+     "id": "g-race",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 57.3,
+      "samples": [
+       57.4,
+       57.3,
+       38.7
+      ],
+      "calls": 54
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 58.7,
+      "samples": [
+       58.7,
+       58.7,
+       55.2
+      ],
+      "calls": 87
+     },
+     "deltaPct": 2.4
+    },
+    {
+     "id": "g-platform",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 41.3,
+      "samples": [
+       41.3,
+       44.9,
+       37.5
+      ],
+      "calls": 55
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 58.2,
+      "samples": [
+       59.1,
+       55.8,
+       58.2
+      ],
+      "calls": 55
+     },
+     "deltaPct": 40.9
+    },
+    {
+     "id": "g-arena",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 46.1,
+      "samples": [
+       35.2,
+       46.1,
+       48.2
+      ],
+      "calls": 42
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 54.6,
+      "samples": [
+       52.7,
+       54.9,
+       54.6
+      ],
+      "calls": 42
+     },
+     "deltaPct": 18.4
+    },
+    {
+     "id": "g-fight",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 56,
+      "samples": [
+       56.3,
+       56,
+       55.6
+      ],
+      "calls": 63
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 58,
+      "samples": [
+       57,
+       58,
+       58.4
+      ],
+      "calls": 91
+     },
+     "deltaPct": 3.6
+    },
+    {
+     "id": "g-quest",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 48,
+      "samples": [
+       50.4,
+       48,
+       46.8
+      ],
+      "calls": 49
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 55.1,
+      "samples": [
+       55.1,
+       55,
+       55.3
+      ],
+      "calls": 49
+     },
+     "deltaPct": 14.8
+    },
+    {
+     "id": "g-agar",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 58.9,
+      "samples": [
+       58.2,
+       58.9,
+       58.9
+      ],
+      "calls": 37
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 59.1,
+      "samples": [
+       58.3,
+       59.1,
+       59.2
+      ],
+      "calls": 37
+     },
+     "deltaPct": 0.3
+    },
+    {
+     "id": "g-walker",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 46.4,
+      "samples": [
+       57.3,
+       45.2,
+       46.4
+      ],
+      "calls": 38
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 58.2,
+      "samples": [
+       58.2,
+       58.6,
+       57.4
+      ],
+      "calls": 71
+     },
+     "deltaPct": 25.4
+    },
+    {
+     "id": "g-glide",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 42.8,
+      "samples": [
+       42.8,
+       39.8,
+       50.5
+      ],
+      "calls": 46
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 58.2,
+      "samples": [
+       59.4,
+       57.9,
+       58.2
+      ],
+      "calls": 76
+     },
+     "deltaPct": 36
+    },
+    {
+     "id": "g-ball",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 55.4,
+      "samples": [
+       45.7,
+       55.4,
+       55.7
+      ],
+      "calls": 78
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 58,
+      "samples": [
+       58,
+       57,
+       58
+      ],
+      "calls": 105
+     },
+     "deltaPct": 4.7
+    },
+    {
+     "id": "g-flap",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 58.8,
+      "samples": [
+       58.8,
+       59.3,
+       57.5
+      ],
+      "calls": 79
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 58,
+      "samples": [
+       58,
+       58.4,
+       56.8
+      ],
+      "calls": 81
+     },
+     "deltaPct": -1.4
+    },
+    {
+     "id": "g-shooter",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 48.4,
+      "samples": [
+       48.7,
+       48.4,
+       47.5
+      ],
+      "calls": 40
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 56,
+      "samples": [
+       56.5,
+       56,
+       55.1
+      ],
+      "calls": 66
+     },
+     "deltaPct": 15.7
+    },
+    {
+     "id": "g-throw",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 57.8,
+      "samples": [
+       57,
+       58.8,
+       57.8
+      ],
+      "calls": 91
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 57.5,
+      "samples": [
+       57.4,
+       58.1,
+       57.5
+      ],
+      "calls": 91
+     },
+     "deltaPct": -0.5
+    },
+    {
+     "id": "g-timing",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 59,
+      "samples": [
+       59,
+       59.1,
+       59
+      ],
+      "calls": 65
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 58.7,
+      "samples": [
+       58.5,
+       58.7,
+       58.9
+      ],
+      "calls": 65
+     },
+     "deltaPct": -0.5
+    },
+    {
+     "id": "g-rhythm",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 57.9,
+      "samples": [
+       58.5,
+       57.9,
+       51.9
+      ],
+      "calls": 59
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 56.9,
+      "samples": [
+       58.7,
+       56.8,
+       56.9
+      ],
+      "calls": 93
+     },
+     "deltaPct": -1.7
+    },
+    {
+     "id": "g-duel",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 57.4,
+      "samples": [
+       57.4,
+       55.7,
+       57.9
+      ],
+      "calls": 27
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 58.7,
+      "samples": [
+       58.8,
+       58.7,
+       58.6
+      ],
+      "calls": 55
+     },
+     "deltaPct": 2.3
+    },
+    {
+     "id": "g-voyage",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 42.3,
+      "samples": [
+       42.3,
+       42.5,
+       41.7
+      ],
+      "calls": 46
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 57.5,
+      "samples": [
+       57.5,
+       57.5,
+       58
+      ],
+      "calls": 75
+     },
+     "deltaPct": 35.9
+    },
+    {
+     "id": "g-lander",
+     "before": {
+      "measuredAt": "2026-10-20T03:20:30.439Z",
+      "fpsMedian": 54.6,
+      "samples": [
+       55.2,
+       53.9,
+       54.6
+      ],
+      "calls": 46
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:03:54.240Z",
+      "fpsMedian": 59,
+      "samples": [
+       59,
+       58.3,
+       59
+      ],
+      "calls": 45
+     },
+     "deltaPct": 8.1
+    }
+   ]
+  },
+  {
+   "label": "sentences",
+   "repeats": 3,
+   "rows": [
+    {
+     "id": "forest-runner",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 38,
+      "samples": [
+       55,
+       37.9,
+       38
+      ],
+      "calls": 63
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 32.5,
+      "samples": [
+       31.9,
+       38.2,
+       32.5
+      ],
+      "calls": 63
+     },
+     "deltaPct": -14.5
+    },
+    {
+     "id": "forest-race",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 45,
+      "samples": [
+       45.5,
+       42.7,
+       45
+      ],
+      "calls": 65
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 42.1,
+      "samples": [
+       42.7,
+       42.1,
+       39
+      ],
+      "calls": 65
+     },
+     "deltaPct": -6.4
+    },
+    {
+     "id": "forest-platform",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 41.8,
+      "samples": [
+       42.6,
+       39.4,
+       41.8
+      ],
+      "calls": 55
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 54.7,
+      "samples": [
+       29.4,
+       54.7,
+       57.7
+      ],
+      "calls": 55
+     },
+     "deltaPct": 30.9
+    },
+    {
+     "id": "jungle-runner",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 38.7,
+      "samples": [
+       37.8,
+       38.7,
+       39.4
+      ],
+      "calls": 59
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 58.1,
+      "samples": [
+       54.6,
+       58.7,
+       58.1
+      ],
+      "calls": 59
+     },
+     "deltaPct": 50.1
+    },
+    {
+     "id": "jungle-race",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 55.3,
+      "samples": [
+       36,
+       55.9,
+       55.3
+      ],
+      "calls": 87
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 57.3,
+      "samples": [
+       57.3,
+       56.8,
+       58.5
+      ],
+      "calls": 55
+     },
+     "deltaPct": 3.6
+    },
+    {
+     "id": "jungle-platform",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 57.5,
+      "samples": [
+       57.5,
+       57.4,
+       58.5
+      ],
+      "calls": 52
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 58.8,
+      "samples": [
+       59,
+       58.8,
+       58.1
+      ],
+      "calls": 52
+     },
+     "deltaPct": 2.3
+    },
+    {
+     "id": "desert-runner",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 56.9,
+      "samples": [
+       58.3,
+       56.3,
+       56.9
+      ],
+      "calls": 70
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 58,
+      "samples": [
+       58.8,
+       58,
+       57.4
+      ],
+      "calls": 100
+     },
+     "deltaPct": 1.9
+    },
+    {
+     "id": "desert-race",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 48.7,
+      "samples": [
+       45.5,
+       48.7,
+       52.5
+      ],
+      "calls": 76
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 56.3,
+      "samples": [
+       57,
+       56.3,
+       55.5
+      ],
+      "calls": 105
+     },
+     "deltaPct": 15.6
+    },
+    {
+     "id": "desert-platform",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 58.2,
+      "samples": [
+       57.3,
+       58.2,
+       59.1
+      ],
+      "calls": 46
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 58,
+      "samples": [
+       59.1,
+       58,
+       57.7
+      ],
+      "calls": 77
+     },
+     "deltaPct": -0.3
+    },
+    {
+     "id": "city-runner",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 49.8,
+      "samples": [
+       43.5,
+       49.8,
+       53.3
+      ],
+      "calls": 101
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 51,
+      "samples": [
+       53.5,
+       51,
+       50.4
+      ],
+      "calls": 101
+     },
+     "deltaPct": 2.4
+    },
+    {
+     "id": "city-race",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 52,
+      "samples": [
+       52,
+       54.4,
+       50.9
+      ],
+      "calls": 112
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 52.4,
+      "samples": [
+       49,
+       52.4,
+       53.6
+      ],
+      "calls": 110
+     },
+     "deltaPct": 0.8
+    },
+    {
+     "id": "city-platform",
+     "before": {
+      "measuredAt": "2026-10-20T03:43:40.847Z",
+      "fpsMedian": 55.2,
+      "samples": [
+       57.7,
+       55.2,
+       53.9
+      ],
+      "calls": 75
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:32:00.267Z",
+      "fpsMedian": 57.3,
+      "samples": [
+       57.3,
+       59,
+       56.4
+      ],
+      "calls": 75
+     },
+     "deltaPct": 3.8
+    }
+   ]
+  },
+  {
+   "label": "forest-round-2",
+   "repeats": 5,
+   "rows": [
+    {
+     "id": "forest-runner",
+     "before": {
+      "measuredAt": "2026-10-20T03:47:34.345Z",
+      "fpsMedian": 52,
+      "samples": [
+       52,
+       50.5,
+       54.4,
+       49.3,
+       54.1
+      ],
+      "calls": 63
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:50:42.545Z",
+      "fpsMedian": 53.9,
+      "samples": [
+       53.7,
+       56.2,
+       53.9,
+       54.5,
+       51.7
+      ],
+      "calls": 63
+     },
+     "deltaPct": 3.7
+    },
+    {
+     "id": "forest-race",
+     "before": {
+      "measuredAt": "2026-10-20T03:47:34.345Z",
+      "fpsMedian": 56.1,
+      "samples": [
+       54.5,
+       56,
+       58.1,
+       56.7,
+       56.1
+      ],
+      "calls": 102
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:50:42.545Z",
+      "fpsMedian": 56.6,
+      "samples": [
+       54.6,
+       56.6,
+       54.4,
+       57.6,
+       58.3
+      ],
+      "calls": 66
+     },
+     "deltaPct": 0.9
+    }
+   ]
+  },
+  {
+   "label": "forest-round-3",
+   "repeats": 5,
+   "rows": [
+    {
+     "id": "forest-runner",
+     "before": {
+      "measuredAt": "2026-10-20T03:53:49.471Z",
+      "fpsMedian": 54.1,
+      "samples": [
+       51.9,
+       54.1,
+       53.4,
+       57.8,
+       55.3
+      ],
+      "calls": 63
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:57:07.320Z",
+      "fpsMedian": 53.8,
+      "samples": [
+       58,
+       51.5,
+       51.2,
+       53.8,
+       57.5
+      ],
+      "calls": 63
+     },
+     "deltaPct": -0.6
+    },
+    {
+     "id": "forest-race",
+     "before": {
+      "measuredAt": "2026-10-20T03:53:49.471Z",
+      "fpsMedian": 57.2,
+      "samples": [
+       55.3,
+       58.5,
+       57.2,
+       58.2,
+       57.2
+      ],
+      "calls": 102
+     },
+     "after": {
+      "measuredAt": "2026-10-20T03:57:07.320Z",
+      "fpsMedian": 43,
+      "samples": [
+       43.6,
+       40.1,
+       39.8,
+       43,
+       43.1
+      ],
+      "calls": 65
+     },
+     "deltaPct": -24.8
+    }
+   ]
+  }
+ ],
+ "forestRaceCpuProfile": [
+  {
+   "before": {
+    "busyMs": 35.54
+   },
+   "after": {
+    "busyMs": 33.13
+   }
+  },
+  {
+   "before": {
+    "busyMs": 36.46
+   },
+   "after": {
+    "busyMs": 34.45
+   }
+  },
+  {
+   "before": {
+    "busyMs": 39.41
+   },
+   "after": {
+    "busyMs": 28.97
+   }
+  }
+ ]
+}

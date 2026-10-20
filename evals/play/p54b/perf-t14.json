@@ -1,0 +1,718 @@
+{
+ "task": "T14",
+ "profile": "Pixel 7, CPU 4x, d3d11",
+ "windowMs": 10000,
+ "base": "d49e474e (T13, D:/tmp/p54b-base-t13, next start -p 3352)",
+ "build": "58a47982",
+ "method": "Prokládaně scénu po scéně (play-look-shots.mjs perf --vs): každá scéna se změří střídavě na obou serverech, aby obě verze nesly stejnou zátěž (rozhodnutí majitele 20. 10.: klid nebude). Brána −5 % platí pro medián změny přes 30 scén; jednotlivá scéna smí kolísat, nemá-li víc volání.",
+ "discarded": "První kolo žánrů (A B × 2, CPU 100 %) zahozeno: vzorky 0,1–3,5 FPS (stránka 10 s stála) v obou verzích. Sonda linkProgram (g-race, g-ball, g-lander, A B B A × 2): verze po přeloží při načtení o jeden program víc (svit), za hry stejně programů jako před – zamrzání není svit. City-runner a city-race z prvního kola přeměřeny 4× s ostatními žánry.",
+ "scenes": 30,
+ "medianDeltaPct": 1.6,
+ "worstDeltaPct": -12.1,
+ "runs": [
+  {
+   "label": "sentences, A B × 2",
+   "repeats": 2,
+   "measuredAt": "2026-10-20T08:08:17.064Z",
+   "rows": [
+    {
+     "id": "forest-runner",
+     "before": {
+      "fpsMedian": 46,
+      "samples": [
+       47.1,
+       44.9
+      ],
+      "calls": 63
+     },
+     "after": {
+      "fpsMedian": 47.1,
+      "samples": [
+       43.5,
+       50.7
+      ],
+      "calls": 63
+     },
+     "deltaPct": 2.4
+    },
+    {
+     "id": "forest-race",
+     "before": {
+      "fpsMedian": 55.3,
+      "samples": [
+       56.5,
+       54
+      ],
+      "calls": 103
+     },
+     "after": {
+      "fpsMedian": 57.2,
+      "samples": [
+       57.8,
+       56.6
+      ],
+      "calls": 102
+     },
+     "deltaPct": 3.4
+    },
+    {
+     "id": "forest-platform",
+     "before": {
+      "fpsMedian": 57.8,
+      "samples": [
+       56.9,
+       58.7
+      ],
+      "calls": 55
+     },
+     "after": {
+      "fpsMedian": 58.6,
+      "samples": [
+       58.6,
+       58.7
+      ],
+      "calls": 55
+     },
+     "deltaPct": 1.4
+    },
+    {
+     "id": "jungle-runner",
+     "before": {
+      "fpsMedian": 52.9,
+      "samples": [
+       49.3,
+       56.4
+      ],
+      "calls": 57
+     },
+     "after": {
+      "fpsMedian": 57.2,
+      "samples": [
+       57.7,
+       56.7
+      ],
+      "calls": 88
+     },
+     "deltaPct": 8.1
+    },
+    {
+     "id": "jungle-race",
+     "before": {
+      "fpsMedian": 54.8,
+      "samples": [
+       57,
+       52.5
+      ],
+      "calls": 58
+     },
+     "after": {
+      "fpsMedian": 56.1,
+      "samples": [
+       55.7,
+       56.4
+      ],
+      "calls": 85
+     },
+     "deltaPct": 2.4
+    },
+    {
+     "id": "jungle-platform",
+     "before": {
+      "fpsMedian": 57.1,
+      "samples": [
+       55.6,
+       58.5
+      ],
+      "calls": 52
+     },
+     "after": {
+      "fpsMedian": 58.1,
+      "samples": [
+       58.1,
+       58.1
+      ],
+      "calls": 52
+     },
+     "deltaPct": 1.8
+    },
+    {
+     "id": "desert-runner",
+     "before": {
+      "fpsMedian": 56,
+      "samples": [
+       55.7,
+       56.3
+      ],
+      "calls": 70
+     },
+     "after": {
+      "fpsMedian": 55.1,
+      "samples": [
+       55.7,
+       54.4
+      ],
+      "calls": 70
+     },
+     "deltaPct": -1.6
+    },
+    {
+     "id": "desert-race",
+     "before": {
+      "fpsMedian": 52.8,
+      "samples": [
+       53,
+       52.6
+      ],
+      "calls": 76
+     },
+     "after": {
+      "fpsMedian": 51.4,
+      "samples": [
+       46.9,
+       56
+      ],
+      "calls": 76
+     },
+     "deltaPct": -2.7
+    },
+    {
+     "id": "desert-platform",
+     "before": {
+      "fpsMedian": 57.2,
+      "samples": [
+       56.8,
+       57.5
+      ],
+      "calls": 46
+     },
+     "after": {
+      "fpsMedian": 57.4,
+      "samples": [
+       56.6,
+       58.2
+      ],
+      "calls": 46
+     },
+     "deltaPct": 0.3
+    },
+    {
+     "id": "city-platform",
+     "before": {
+      "fpsMedian": 50.9,
+      "samples": [
+       51.4,
+       50.4
+      ],
+      "calls": 75
+     },
+     "after": {
+      "fpsMedian": 49.3,
+      "samples": [
+       48.9,
+       49.8
+      ],
+      "calls": 75
+     },
+     "deltaPct": -3.1
+    }
+   ],
+   "order": "A B, A B"
+  },
+  {
+   "label": "genres, A B B A × 4",
+   "repeats": 4,
+   "measuredAt": "2026-10-20T09:49:03.944Z",
+   "rows": [
+    {
+     "id": "g-runner",
+     "before": {
+      "fpsMedian": 35.6,
+      "samples": [
+       38.9,
+       34.3,
+       36.9,
+       32
+      ],
+      "calls": 63
+     },
+     "after": {
+      "fpsMedian": 40.9,
+      "samples": [
+       41.9,
+       44.5,
+       39.3,
+       39.8
+      ],
+      "calls": 63
+     },
+     "deltaPct": 14.9
+    },
+    {
+     "id": "g-race",
+     "before": {
+      "fpsMedian": 51.9,
+      "samples": [
+       52.8,
+       55.5,
+       50.9,
+       47.2
+      ],
+      "calls": 54
+     },
+     "after": {
+      "fpsMedian": 54.2,
+      "samples": [
+       56,
+       52,
+       54.8,
+       53.6
+      ],
+      "calls": 59
+     },
+     "deltaPct": 4.4
+    },
+    {
+     "id": "g-platform",
+     "before": {
+      "fpsMedian": 53,
+      "samples": [
+       53.3,
+       55.6,
+       52.7,
+       49.5
+      ],
+      "calls": 55
+     },
+     "after": {
+      "fpsMedian": 46.6,
+      "samples": [
+       47.2,
+       52.8,
+       46.1,
+       43.4
+      ],
+      "calls": 55
+     },
+     "deltaPct": -12.1
+    },
+    {
+     "id": "g-arena",
+     "before": {
+      "fpsMedian": 39.7,
+      "samples": [
+       42.6,
+       36.8,
+       44.3,
+       36.2
+      ],
+      "calls": 42
+     },
+     "after": {
+      "fpsMedian": 41,
+      "samples": [
+       44.1,
+       35.7,
+       41,
+       41.1
+      ],
+      "calls": 42
+     },
+     "deltaPct": 3.3
+    },
+    {
+     "id": "g-fight",
+     "before": {
+      "fpsMedian": 40.1,
+      "samples": [
+       37.7,
+       39.9,
+       40.3,
+       43.9
+      ],
+      "calls": 63
+     },
+     "after": {
+      "fpsMedian": 40.3,
+      "samples": [
+       40.7,
+       35.4,
+       39.9,
+       41.5
+      ],
+      "calls": 63
+     },
+     "deltaPct": 0.5
+    },
+    {
+     "id": "g-quest",
+     "before": {
+      "fpsMedian": 35.7,
+      "samples": [
+       35.7,
+       39.4,
+       35.6,
+       35.4
+      ],
+      "calls": 48
+     },
+     "after": {
+      "fpsMedian": 37.6,
+      "samples": [
+       34.8,
+       37.2,
+       39.7,
+       38
+      ],
+      "calls": 48
+     },
+     "deltaPct": 5.3
+    },
+    {
+     "id": "g-agar",
+     "before": {
+      "fpsMedian": 54.4,
+      "samples": [
+       54.4,
+       54.3,
+       56.1,
+       49.6
+      ],
+      "calls": 37
+     },
+     "after": {
+      "fpsMedian": 53.8,
+      "samples": [
+       56.1,
+       51.1,
+       51.8,
+       55.9
+      ],
+      "calls": 37
+     },
+     "deltaPct": -1.1
+    },
+    {
+     "id": "g-walker",
+     "before": {
+      "fpsMedian": 45.1,
+      "samples": [
+       42.9,
+       47.2,
+       41.3,
+       56.2
+      ],
+      "calls": 38
+     },
+     "after": {
+      "fpsMedian": 50.5,
+      "samples": [
+       50.4,
+       50.7,
+       43.2,
+       51.5
+      ],
+      "calls": 37
+     },
+     "deltaPct": 12
+    },
+    {
+     "id": "g-glide",
+     "before": {
+      "fpsMedian": 45.6,
+      "samples": [
+       41.8,
+       49.9,
+       32.8,
+       49.4
+      ],
+      "calls": 44
+     },
+     "after": {
+      "fpsMedian": 48.5,
+      "samples": [
+       42,
+       47,
+       50,
+       49.9
+      ],
+      "calls": 46
+     },
+     "deltaPct": 6.4
+    },
+    {
+     "id": "g-ball",
+     "before": {
+      "fpsMedian": 41.4,
+      "samples": [
+       46.9,
+       35.9,
+       33.9,
+       46.9
+      ],
+      "calls": 78
+     },
+     "after": {
+      "fpsMedian": 40.5,
+      "samples": [
+       40.6,
+       40.9,
+       38.9,
+       40.5
+      ],
+      "calls": 78
+     },
+     "deltaPct": -2.2
+    },
+    {
+     "id": "g-flap",
+     "before": {
+      "fpsMedian": 54.8,
+      "samples": [
+       57.5,
+       57.7,
+       52,
+       50.2
+      ],
+      "calls": 45
+     },
+     "after": {
+      "fpsMedian": 52.5,
+      "samples": [
+       52.3,
+       52.8,
+       51.1,
+       56.9
+      ],
+      "calls": 44
+     },
+     "deltaPct": -4.2
+    },
+    {
+     "id": "g-shooter",
+     "before": {
+      "fpsMedian": 36.2,
+      "samples": [
+       30.2,
+       37.5,
+       36.3,
+       36.1
+      ],
+      "calls": 40
+     },
+     "after": {
+      "fpsMedian": 35.7,
+      "samples": [
+       34.4,
+       33.8,
+       38.3,
+       37
+      ],
+      "calls": 40
+     },
+     "deltaPct": -1.4
+    },
+    {
+     "id": "g-throw",
+     "before": {
+      "fpsMedian": 50.9,
+      "samples": [
+       53.6,
+       50.2,
+       45.9,
+       51.5
+      ],
+      "calls": 59
+     },
+     "after": {
+      "fpsMedian": 49.8,
+      "samples": [
+       55.2,
+       52.4,
+       47.1,
+       36.9
+      ],
+      "calls": 59
+     },
+     "deltaPct": -2.2
+    },
+    {
+     "id": "g-timing",
+     "before": {
+      "fpsMedian": 56.5,
+      "samples": [
+       56.6,
+       58.2,
+       56.3,
+       54.3
+      ],
+      "calls": 35
+     },
+     "after": {
+      "fpsMedian": 54.8,
+      "samples": [
+       57,
+       55.3,
+       49,
+       54.4
+      ],
+      "calls": 35
+     },
+     "deltaPct": -3
+    },
+    {
+     "id": "g-rhythm",
+     "before": {
+      "fpsMedian": 43.5,
+      "samples": [
+       45.4,
+       41.6,
+       47.9,
+       34.3
+      ],
+      "calls": 59
+     },
+     "after": {
+      "fpsMedian": 50.8,
+      "samples": [
+       48.8,
+       52.8,
+       52.9,
+       40.5
+      ],
+      "calls": 59
+     },
+     "deltaPct": 16.8
+    },
+    {
+     "id": "g-duel",
+     "before": {
+      "fpsMedian": 51.2,
+      "samples": [
+       45.3,
+       55,
+       55,
+       47.5
+      ],
+      "calls": 27
+     },
+     "after": {
+      "fpsMedian": 55.2,
+      "samples": [
+       56.2,
+       55.2,
+       48.6,
+       55.2
+      ],
+      "calls": 27
+     },
+     "deltaPct": 7.8
+    },
+    {
+     "id": "g-voyage",
+     "before": {
+      "fpsMedian": 45.3,
+      "samples": [
+       41.4,
+       37.6,
+       49.8,
+       49.1
+      ],
+      "calls": 46
+     },
+     "after": {
+      "fpsMedian": 50.4,
+      "samples": [
+       42.4,
+       51.5,
+       52.8,
+       49.2
+      ],
+      "calls": 46
+     },
+     "deltaPct": 11.3
+    },
+    {
+     "id": "g-lander",
+     "before": {
+      "fpsMedian": 45.9,
+      "samples": [
+       41,
+       31.5,
+       50.8,
+       58.3
+      ],
+      "calls": 46
+     },
+     "after": {
+      "fpsMedian": 51.3,
+      "samples": [
+       23.6,
+       52,
+       50.6,
+       57.8
+      ],
+      "calls": 46
+     },
+     "deltaPct": 11.8
+    }
+   ],
+   "order": "A B, B A, A B, B A"
+  },
+  {
+   "label": "city-runner a city-race, A B B A × 4",
+   "repeats": 4,
+   "measuredAt": "2026-10-20T09:54:56.782Z",
+   "rows": [
+    {
+     "id": "city-runner",
+     "before": {
+      "fpsMedian": 36.6,
+      "samples": [
+       39,
+       37.9,
+       35.3,
+       31.6
+      ],
+      "calls": 101
+     },
+     "after": {
+      "fpsMedian": 34.9,
+      "samples": [
+       33.8,
+       37.1,
+       36,
+       33.9
+      ],
+      "calls": 101
+     },
+     "deltaPct": -4.6
+    },
+    {
+     "id": "city-race",
+     "before": {
+      "fpsMedian": 31.9,
+      "samples": [
+       32.7,
+       34.8,
+       30.7,
+       31.1
+      ],
+      "calls": 112
+     },
+     "after": {
+      "fpsMedian": 31.7,
+      "samples": [
+       30.6,
+       27.7,
+       36.4,
+       32.8
+      ],
+      "calls": 113
+     },
+     "deltaPct": -0.6
+    }
+   ],
+   "order": "A B, B A, A B, B A"
+  }
+ ]
+}

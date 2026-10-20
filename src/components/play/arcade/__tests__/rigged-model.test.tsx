@@ -11,7 +11,7 @@
  */
 
 import type { ReactElement, RefObject } from 'react';
-import { AnimationClip, Group } from 'three';
+import { type AnimationAction, AnimationClip, AnimationMixer, Group } from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ARCADE_HZ, UNIT } from '@/play/arcade/contract';
@@ -135,9 +135,20 @@ describe('a rigged character borrows toy motion for the states it has no clip fo
     // Výstřel hráče: rytíř má klip, zvířátko ne.
     expect(most(play('knight', KNIGHT, at({ attack: true, shot: true }), 40, (tick) => (tick >= 5 ? 'shoot' : 'idle')), 'z')).toBe(0);
     expect(most(play('pet-cat', PET, at({ attack: true, shot: true }), 40), 'z')).toBeGreaterThan(0.2);
-    // Výhra a nesení klip nemají nikdy.
+    // Výhru bez klipu oslaví hračka, s klipem (P54B T5) ji hraje klip sám; nesení klip nemá nikdy.
     expect(most(play('knight', KNIGHT, () => ({ ...STILL, won: true }), 40), 'y')).toBeGreaterThan(0.2);
+    expect(most(play('knight', { ...KNIGHT, win: 'Cheer' }, () => ({ ...STILL, won: true }), 40, () => 'win'), 'y')).toBe(0);
     expect(play('knight', KNIGHT, () => ({ ...STILL, carrying: true }), 5).at(-1)!.pitch).toBeLessThan(-0.1);
+  });
+
+  it('a monster that runs with its walk clip keeps playing it when the body switches between walk and run (P54B T5)', () => {
+    // Příšera P54 bez běhu: manifest dává chůzi i běhu týž klip, mixer z něj má jedinou akci.
+    const spy = vi.spyOn(AnimationMixer.prototype, 'clipAction');
+    play('q-monster', { idle: 'Idle', walk: 'Walk', run: 'Walk', jump: 'procedural', hit: 'procedural', die: 'procedural' }, () => RUNNING, 60, (tick) => (tick < 20 ? 'walk' : 'run'));
+    const walk = spy.mock.results.map((result) => result.value as AnimationAction).find((action) => action.getClip().name === 'Walk')!;
+    spy.mockRestore();
+    expect(walk.enabled).toBe(true);
+    expect(walk.getEffectiveWeight()).toBeCloseTo(1);
   });
 
   it('an arena strike shifted back peaks toward the hero in the hit tick instead of winding up away (P45D T23)', () => {

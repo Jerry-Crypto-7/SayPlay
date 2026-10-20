@@ -1,0 +1,2343 @@
+{
+ "about": "P54B scene census: dev set (evals/play/p30/dev.json) through draftGameSpec (fast version, no director). distinct = cast (hero, enemy, chaser, props) + setting scenery (landmarks) + vegetation species. lightChanged = sceneLook differs from the setting default in sky, light, sun, glow, fog or exposure. namesLight = the sentence names time of day, weather or mood. Rigged = model with a skeleton and clips (riggedCharacter).",
+ "set": "evals/play/p30/dev.json",
+ "measured": 59,
+ "skipped": [
+  {
+   "id": "d01",
+   "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+   "reason": "No playable assembly: assembled.ball: arcade: a world with physics bodies needs loadRapier() before its first step"
+  }
+ ],
+ "heroRigged": {
+  "count": 18,
+  "of": 59,
+  "share": 0.305
+ },
+ "enemyRigged": {
+  "count": 1,
+  "of": 59,
+  "share": 0.017
+ },
+ "distinct": {
+  "median": 19,
+  "min": 13,
+  "max": 25
+ },
+ "lightChanged": {
+  "count": 7,
+  "of": 59,
+  "share": 0.119
+ },
+ "namesLight": {
+  "count": 7,
+  "lit": 7,
+  "missing": []
+ },
+ "byLook": {
+  "meadow": 14,
+  "castle": 9,
+  "snow": 5,
+  "supermarket": 4,
+  "city": 4,
+  "beach": 3,
+  "jungle": 3,
+  "space": 3,
+  "factory": 2,
+  "underwater": 2,
+  "desert": 2,
+  "living_room": 2,
+  "mall": 1,
+  "cave": 1,
+  "volcano": 1,
+  "graveyard": 1,
+  "ocean": 1,
+  "forest": 1
+ },
+ "byGenre": {
+  "arena": 19,
+  "runner": 8,
+  "throw": 5,
+  "quest": 5,
+  "steer": 5,
+  "shooter": 3,
+  "timing": 3,
+  "duel": 3,
+  "platformer": 2,
+  "rhythm": 2,
+  "walker": 2,
+  "flap": 1,
+  "glide": 1
+ },
+ "rows": [
+  {
+   "id": "s039",
+   "text": "zombie shooter in a mall",
+   "look": "mall",
+   "genre": "shooter",
+   "hero": "rigged:boy-a",
+   "heroRigged": true,
+   "enemy": "cc0-zombie",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:boy-a",
+    "cc0-zombie"
+   ],
+   "scenery": [
+    "gen3d-escalator",
+    "cc0-bench",
+    "gen3d-mannequin",
+    "shelf",
+    "gen3d-clothing-rack",
+    "gen3d-fountain",
+    "gen3d-mall-kiosk"
+   ],
+   "flora": [
+    "gen3d-flower-pot",
+    "gen3d-planter-box",
+    "gen3d-shopping-bag",
+    "gen3d-gift-box",
+    "gen3d-cardboard-box",
+    "gen3d-street-trash-can",
+    "gen3d-monstera-plant",
+    "gen3d-concrete-planter-with-tree",
+    "gen3d-aloe-plant"
+   ],
+   "distinct": 18,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s037",
+   "text": "A space marine shoots alien bugs in a mining colony",
+   "look": "factory",
+   "genre": "shooter",
+   "hero": "gen3d-space-soldier",
+   "heroRigged": false,
+   "enemy": "gen3d-alien-bug",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-space-soldier",
+    "gen3d-alien-bug"
+   ],
+   "scenery": [
+    "gen3d-mining-helmet",
+    "cc0-barrel-stack",
+    "gen3d-pickaxe",
+    "gen3d-industrial-fan",
+    "gen3d-ore-crusher",
+    "gen3d-container",
+    "gen3d-mine-cart"
+   ],
+   "flora": [
+    "gen3d-cardboard-box",
+    "gen3d-oil-drum",
+    "gen3d-toxic-barrel",
+    "gen3d-tire-pile",
+    "gen3d-toolbox",
+    "gen3d-traffic-cone",
+    "gen3d-oil-barrel",
+    "potted-plant",
+    "gen3d-rooftop-water-tank"
+   ],
+   "distinct": 18,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s002",
+   "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "look": "castle",
+   "genre": "arena",
+   "hero": "rigged:knight",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:knight",
+    "robot",
+    "rigged:graveyard-ghost",
+    "key"
+   ],
+   "scenery": [
+    "gen3d-candelabra",
+    "stone-wall",
+    "gen3d-suit-of-armor",
+    "gen3d-stone-gatehouse",
+    "gen3d-haunted-portrait",
+    "gen3d-stone-water-well",
+    "gen3d-throne"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "cc0-bush",
+    "gen3d-thorn-bush",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-river-boulder",
+    "oak-tree",
+    "gen3d-beech-tree",
+    "gen3d-mossy-boulder",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 22,
+   "lightChanged": true,
+   "namesLight": true
+  },
+  {
+   "id": "s003",
+   "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "look": "supermarket",
+   "genre": "runner",
+   "hero": "hamster",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "hamster",
+    "robot",
+    "roomba",
+    "gen3d-cheese",
+    "shopping-cart"
+   ],
+   "scenery": [
+    "gen3d-checkout-counter",
+    "shopping-cart",
+    "gen3d-shopping-basket",
+    "gen3d-bread-rack",
+    "gen3d-cash-register"
+   ],
+   "flora": [
+    "gen3d-cardboard-box",
+    "gen3d-fruit-crate",
+    "gen3d-bread-basket",
+    "gen3d-potato-sack",
+    "gen3d-vegetable-basket",
+    "gen3d-flour-sack",
+    "potted-plant",
+    "gen3d-monstera-plant",
+    "gen3d-wine-barrel"
+   ],
+   "distinct": 18,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s006",
+   "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+   "look": "meadow",
+   "genre": "runner",
+   "hero": "cc0-corgi",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "cc0-corgi",
+    "robot",
+    "cc0-sausage",
+    "sprinkler"
+   ],
+   "scenery": [
+    "gen3d-street-tree",
+    "gen3d-picnic-table",
+    "gen3d-park-bench",
+    "gen3d-wooden-gate",
+    "gen3d-park-fountain",
+    "gen3d-sunflower",
+    "gen3d-street-trash-can"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 24,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s008",
+   "text": "temple run but you're a banana running from a monkey",
+   "look": "meadow",
+   "genre": "runner",
+   "hero": "gen3d-banana",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-banana",
+    "robot",
+    "cc0-monkey",
+    "stepping-stone"
+   ],
+   "scenery": [
+    "gen3d-picnic-table",
+    "gen3d-wooden-stile",
+    "gen3d-wooden-gate",
+    "gen3d-windmill",
+    "gen3d-sunflower"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 22,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s022",
+   "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+   "look": "castle",
+   "genre": "platformer",
+   "hero": "rigged:blocky-robot",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:blocky-robot",
+    "robot",
+    "crystal"
+   ],
+   "scenery": [
+    "gen3d-castle-tower",
+    "stone-wall",
+    "cc0-torch-lit",
+    "gen3d-stone-gatehouse",
+    "gen3d-drawbridge",
+    "gen3d-stone-water-well"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "cc0-bush",
+    "gen3d-thorn-bush",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-river-boulder",
+    "oak-tree",
+    "gen3d-beech-tree",
+    "gen3d-mossy-boulder",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 20,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s021",
+   "text": "obby game with lava and spinning bars",
+   "look": "beach",
+   "genre": "platformer",
+   "hero": "turtle",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "turtle",
+    "robot"
+   ],
+   "scenery": [
+    "gen3d-beach-chair",
+    "cc0-boat-row",
+    "gen3d-sandcastle",
+    "gen3d-surf-rack",
+    "gen3d-lighthouse"
+   ],
+   "flora": [
+    "gen3d-dune-grass-clump",
+    "gen3d-sea-rock",
+    "gen3d-sandstone-rock",
+    "cc0-palm-tree",
+    "gen3d-leaning-palm-tree",
+    "gen3d-pandanus-tree"
+   ],
+   "distinct": 13,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s035",
+   "text": "like flappy bird but underwater",
+   "look": "underwater",
+   "genre": "flap",
+   "hero": "bird",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "bird",
+    "robot",
+    "gen3d-pearl"
+   ],
+   "scenery": [
+    "cc0-clownfish",
+    "gen3d-sea-urchin",
+    "cc0-tang",
+    "gen3d-pearl-oyster",
+    "gen3d-jellyfish",
+    "gen3d-sunken-cannon",
+    "gen3d-octopus"
+   ],
+   "flora": [
+    "gen3d-coral",
+    "gen3d-sea-anemone",
+    "gen3d-sea-sponge",
+    "gen3d-coral-rock",
+    "gen3d-seaweed",
+    "gen3d-sea-rock",
+    "gen3d-rock-arch",
+    "gen3d-rock-pillar"
+   ],
+   "distinct": 18,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s050",
+   "text": "throwing snowballs at kids behind a snow fort",
+   "look": "snow",
+   "genre": "throw",
+   "hero": "rigged:pet-penguin",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:pet-penguin",
+    "robot",
+    "kid"
+   ],
+   "scenery": [
+    "gen3d-snowy-log-cabin",
+    "penguin",
+    "gen3d-ski-lift-tower",
+    "cc0-sled",
+    "gen3d-frozen-waterfall",
+    "gen3d-snowman-with-hat",
+    "gen3d-ice-igloo"
+   ],
+   "flora": [
+    "gen3d-snowy-rock",
+    "gen3d-river-boulder",
+    "gen3d-ice-block-pile",
+    "gen3d-frozen-shrub",
+    "gen3d-snowy-fir-tree",
+    "gen3d-bare-winter-tree",
+    "gen3d-frozen-dead-tree"
+   ],
+   "distinct": 17,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s088",
+   "text": "angry birds but with cats and cardboard boxes",
+   "look": "meadow",
+   "genre": "throw",
+   "hero": "rigged:pet-cat",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:pet-cat",
+    "robot",
+    "gen3d-cardboard-box"
+   ],
+   "scenery": [
+    "gen3d-street-tree",
+    "gen3d-picnic-table",
+    "gen3d-park-bench",
+    "gen3d-wooden-gate",
+    "gen3d-park-fountain",
+    "gen3d-sunflower",
+    "gen3d-street-trash-can"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 23,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s069",
+   "text": "candy crush but with gems in a cave",
+   "look": "cave",
+   "genre": "quest",
+   "hero": "crystal",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "crystal",
+    "robot"
+   ],
+   "scenery": [
+    "gen3d-crystal-geode",
+    "cc0-torch-lit",
+    "gen3d-glowing-mushroom",
+    "gen3d-crystal-cluster",
+    "gen3d-mine-cart"
+   ],
+   "flora": [
+    "gen3d-cave-crystal-cluster",
+    "gen3d-mushroom-cluster",
+    "mushroom",
+    "gen3d-scree-rock-pile",
+    "gen3d-energy-crystal",
+    "gen3d-stalagmite",
+    "gen3d-rock-pillar",
+    "gen3d-power-crystal"
+   ],
+   "distinct": 15,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s056",
+   "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+   "look": "city",
+   "genre": "steer",
+   "hero": "gen3d-scooter",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-scooter",
+    "robot",
+    "cc0-traffic",
+    "gen3d-finish-banner"
+   ],
+   "scenery": [
+    "townhouse",
+    "cc0-car-taxi",
+    "gen3d-telephone-pole",
+    "cc0-fire-hydrant",
+    "building",
+    "gen3d-traffic-light",
+    "gen3d-bus-stop",
+    "gen3d-flower-stall"
+   ],
+   "flora": [
+    "gen3d-planter-box",
+    "gen3d-flower-box",
+    "cc0-bush",
+    "gen3d-park-bench",
+    "gen3d-street-bollard",
+    "gen3d-street-trash-can",
+    "gen3d-concrete-planter-with-tree",
+    "gen3d-street-tree",
+    "gen3d-street-lamp"
+   ],
+   "distinct": 21,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s058",
+   "text": "boat race through a jungle river full of crocodiles",
+   "look": "jungle",
+   "genre": "steer",
+   "hero": "rowing-boat",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rowing-boat",
+    "robot",
+    "gen3d-snake",
+    "gen3d-finish-banner"
+   ],
+   "scenery": [
+    "gen3d-stone-idol-head",
+    "cc0-bamboo",
+    "gen3d-tribal-totem-pole",
+    "gen3d-jungle-waterfall",
+    "gen3d-wooden-rope-bridge",
+    "gen3d-vine-covered-rock-wall",
+    "gen3d-ruin"
+   ],
+   "flora": [
+    "cc0-bush-berries",
+    "cc0-grass",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-heliconia",
+    "gen3d-pitcher-plant",
+    "gen3d-rafflesia",
+    "cc0-palm-tree",
+    "gen3d-banana-plant",
+    "gen3d-kapok-tree",
+    "gen3d-mangrove-tree",
+    "gen3d-bamboo-cluster",
+    "gen3d-rubber-tree",
+    "gen3d-strangler-fig-tree",
+    "gen3d-cycad-palm"
+   ],
+   "distinct": 25,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s111",
+   "text": "a black hole that swallows a city, it gets bigger the more it eats",
+   "look": "city",
+   "genre": "arena",
+   "hero": "gen3d-black-hole-portal",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-black-hole-portal",
+    "robot"
+   ],
+   "scenery": [
+    "townhouse",
+    "cc0-car-taxi",
+    "gen3d-telephone-pole",
+    "cc0-fire-hydrant",
+    "building",
+    "gen3d-traffic-light",
+    "gen3d-bus-stop",
+    "gen3d-flower-stall"
+   ],
+   "flora": [
+    "gen3d-planter-box",
+    "gen3d-flower-box",
+    "cc0-bush",
+    "gen3d-park-bench",
+    "gen3d-street-bollard",
+    "gen3d-street-trash-can",
+    "gen3d-concrete-planter-with-tree",
+    "gen3d-street-tree",
+    "gen3d-street-lamp"
+   ],
+   "distinct": 19,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s095",
+   "text": "knife throwing at a spinning log",
+   "look": "meadow",
+   "genre": "throw",
+   "hero": "fox",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "fox",
+    "robot",
+    "cc0-wood-log"
+   ],
+   "scenery": [
+    "gen3d-picnic-table",
+    "gen3d-wooden-stile",
+    "gen3d-wooden-gate",
+    "gen3d-windmill",
+    "gen3d-sunflower"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 21,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s188",
+   "text": "A grandma karate fights a gang of pigeons in the park",
+   "look": "meadow",
+   "genre": "arena",
+   "hero": "gen3d-grandma",
+   "heroRigged": false,
+   "enemy": "cc0-pigeon",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-grandma",
+    "cc0-pigeon"
+   ],
+   "scenery": [
+    "gen3d-street-tree",
+    "gen3d-picnic-table",
+    "gen3d-park-bench",
+    "gen3d-wooden-gate",
+    "gen3d-park-fountain",
+    "gen3d-sunflower",
+    "gen3d-street-trash-can"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 22,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s144",
+   "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+   "look": "meadow",
+   "genre": "rhythm",
+   "hero": "gen3d-frog",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-frog",
+    "robot",
+    "cc0-lily-pad"
+   ],
+   "scenery": [
+    "gen3d-cattail-reed",
+    "gen3d-picnic-table",
+    "gen3d-fishing",
+    "gen3d-wooden-gate",
+    "gen3d-water-lily",
+    "gen3d-sunflower"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 22,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s155",
+   "text": "defend the castle from waves of goblins",
+   "look": "castle",
+   "genre": "arena",
+   "hero": "rigged:knight",
+   "heroRigged": true,
+   "enemy": "goblin",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:knight",
+    "goblin"
+   ],
+   "scenery": [
+    "gen3d-castle-tower",
+    "stone-wall",
+    "cc0-torch-lit",
+    "gen3d-stone-gatehouse",
+    "gen3d-drawbridge",
+    "gen3d-stone-water-well"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "cc0-bush",
+    "gen3d-thorn-bush",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-river-boulder",
+    "oak-tree",
+    "gen3d-beech-tree",
+    "gen3d-mossy-boulder",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 19,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "s099",
+   "text": "build the tallest pancake tower before it falls over",
+   "look": "castle",
+   "genre": "timing",
+   "hero": "rigged:knight",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:knight",
+    "robot",
+    "cc0-pancake"
+   ],
+   "scenery": [
+    "gen3d-castle-tower",
+    "stone-wall",
+    "cc0-torch-lit",
+    "gen3d-stone-gatehouse",
+    "gen3d-drawbridge",
+    "gen3d-stone-water-well"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "cc0-bush",
+    "gen3d-thorn-bush",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-river-boulder",
+    "oak-tree",
+    "gen3d-beech-tree",
+    "gen3d-mossy-boulder",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 20,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "h01",
+   "text": "a cat stealing fish from a market while dodging the fishmonger",
+   "look": "supermarket",
+   "genre": "arena",
+   "hero": "rigged:pet-cat",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:pet-cat",
+    "robot",
+    "gen3d-fishmonger",
+    "cc0-goldfish"
+   ],
+   "scenery": [
+    "cc0-cabinet-shelves",
+    "shopping-cart",
+    "cc0-can-fridge",
+    "gen3d-bread-rack",
+    "gen3d-fruit-stand",
+    "gen3d-cash-register"
+   ],
+   "flora": [
+    "gen3d-cardboard-box",
+    "gen3d-fruit-crate",
+    "gen3d-bread-basket",
+    "gen3d-potato-sack",
+    "gen3d-vegetable-basket",
+    "gen3d-flour-sack",
+    "potted-plant",
+    "gen3d-monstera-plant",
+    "gen3d-wine-barrel"
+   ],
+   "distinct": 19,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "h02",
+   "text": "shopping cart race in a supermarket",
+   "look": "supermarket",
+   "genre": "steer",
+   "hero": "shopping-cart",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "shopping-cart",
+    "robot",
+    "gen3d-finish-banner"
+   ],
+   "scenery": [
+    "gen3d-checkout-counter",
+    "shopping-cart",
+    "gen3d-shopping-basket",
+    "gen3d-bread-rack",
+    "gen3d-cash-register"
+   ],
+   "flora": [
+    "gen3d-cardboard-box",
+    "gen3d-fruit-crate",
+    "gen3d-bread-basket",
+    "gen3d-potato-sack",
+    "gen3d-vegetable-basket",
+    "gen3d-flour-sack",
+    "potted-plant",
+    "gen3d-monstera-plant",
+    "gen3d-wine-barrel"
+   ],
+   "distinct": 16,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "h03",
+   "text": "defend a castle from dragons by throwing snowballs",
+   "look": "castle",
+   "genre": "throw",
+   "hero": "fox",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "fox",
+    "robot",
+    "cc0-dragon"
+   ],
+   "scenery": [
+    "gen3d-castle-tower",
+    "stone-wall",
+    "cc0-torch-lit",
+    "gen3d-stone-gatehouse",
+    "gen3d-drawbridge",
+    "gen3d-stone-water-well"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "cc0-bush",
+    "gen3d-thorn-bush",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-river-boulder",
+    "oak-tree",
+    "gen3d-beech-tree",
+    "gen3d-mossy-boulder",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 20,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "h04",
+   "text": "a robot collects batteries on Mars",
+   "look": "space",
+   "genre": "arena",
+   "hero": "rigged:blocky-robot",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:blocky-robot",
+    "robot",
+    "gen3d-battery"
+   ],
+   "scenery": [
+    "cc0-asteroid",
+    "gen3d-fuel-silo",
+    "rocket",
+    "gen3d-moon-flag",
+    "gen3d-moon-lander",
+    "gen3d-satellite-radar-dish",
+    "gen3d-space-colony-dome"
+   ],
+   "flora": [
+    "gen3d-moon-rock",
+    "gen3d-crater-rock",
+    "gen3d-meteorite",
+    "gen3d-energy-crystal",
+    "gen3d-scree-rock-pile",
+    "gen3d-rock-pillar",
+    "gen3d-basalt-column-rock",
+    "gen3d-power-crystal",
+    "gen3d-crystal-cluster"
+   ],
+   "distinct": 19,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "h05",
+   "text": "boxing a kangaroo in the australian outback",
+   "look": "desert",
+   "genre": "duel",
+   "hero": "fox",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "fox",
+    "robot",
+    "kangaroo"
+   ],
+   "scenery": [
+    "gen3d-dingo",
+    "gen3d-buried-statue-head",
+    "gen3d-emu",
+    "gen3d-abandoned-mine-entrance",
+    "gen3d-kangaroo-sign",
+    "gen3d-eucalyptus-tree"
+   ],
+   "flora": [
+    "gen3d-sandstone-rock",
+    "cc0-grass",
+    "gen3d-prickly-pear-cactus",
+    "gen3d-desert-shrub",
+    "gen3d-yucca-plant",
+    "gen3d-mesquite-tree",
+    "gen3d-cactus",
+    "cc0-cactus-flowers",
+    "gen3d-saguaro-cactus",
+    "gen3d-cholla-cactus",
+    "gen3d-dead-desert-tree",
+    "gen3d-layered-canyon-rock"
+   ],
+   "distinct": 21,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "h06",
+   "text": "I want a game where a tiny astronaut repairs a broken spaceship by collecting glowing crystals on an icy moon while avoiding cracks in the ice and a grumpy alien that throws snowballs at him",
+   "look": "space",
+   "genre": "arena",
+   "hero": "astronaut",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "astronaut",
+    "robot",
+    "crystal"
+   ],
+   "scenery": [
+    "gen3d-planet-rover",
+    "gen3d-fuel-silo",
+    "gen3d-moon-flag",
+    "gen3d-ice-spike",
+    "gen3d-satellite-radar-dish",
+    "gen3d-space-probe"
+   ],
+   "flora": [
+    "gen3d-moon-rock",
+    "gen3d-crater-rock",
+    "gen3d-meteorite",
+    "gen3d-energy-crystal",
+    "gen3d-scree-rock-pile",
+    "gen3d-rock-pillar",
+    "gen3d-basalt-column-rock",
+    "gen3d-power-crystal",
+    "gen3d-crystal-cluster"
+   ],
+   "distinct": 18,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "h07",
+   "text": "purple elephants doing taxes on a volcano",
+   "look": "volcano",
+   "genre": "arena",
+   "hero": "cc0-elephant",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "cc0-elephant",
+    "robot"
+   ],
+   "scenery": [
+    "volcano",
+    "gen3d-magma-rock",
+    "gen3d-steam-vent",
+    "gen3d-volcano",
+    "gen3d-crystal-cluster"
+   ],
+   "flora": [
+    "gen3d-volcanic-rock",
+    "gen3d-obsidian-shard",
+    "gen3d-smoldering-stump",
+    "gen3d-magma-crystal",
+    "gen3d-scree-rock-pile",
+    "gen3d-burnt-tree",
+    "gen3d-dead-desert-tree",
+    "gen3d-basalt-column-rock"
+   ],
+   "distinct": 15,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "h08",
+   "text": "a romantic dinner date on the moon",
+   "look": "space",
+   "genre": "arena",
+   "hero": "astronaut",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "astronaut",
+    "robot",
+    "cc0-dinner"
+   ],
+   "scenery": [
+    "cc0-asteroid",
+    "gen3d-fuel-silo",
+    "rocket",
+    "gen3d-moon-flag",
+    "gen3d-moon-lander",
+    "gen3d-satellite-radar-dish",
+    "gen3d-space-colony-dome"
+   ],
+   "flora": [
+    "gen3d-moon-rock",
+    "gen3d-crater-rock",
+    "gen3d-meteorite",
+    "gen3d-energy-crystal",
+    "gen3d-scree-rock-pile",
+    "gen3d-rock-pillar",
+    "gen3d-basalt-column-rock",
+    "gen3d-power-crystal",
+    "gen3d-crystal-cluster"
+   ],
+   "distinct": 19,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "h09",
+   "text": "escape from a haunted hospital with a flashlight",
+   "look": "graveyard",
+   "genre": "runner",
+   "hero": "rigged:boy-a",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:boy-a",
+    "robot",
+    "cc0-candle",
+    "ghost"
+   ],
+   "scenery": [
+    "gen3d-iron-fence",
+    "cc0-pumpkin",
+    "gen3d-grave-lantern",
+    "gen3d-gravestone"
+   ],
+   "flora": [
+    "gen3d-broken-gravestone",
+    "gen3d-thorn-bush",
+    "cc0-bush",
+    "cc0-grass",
+    "gen3d-funeral-urn",
+    "gen3d-cemetery-bench",
+    "gen3d-haunted-tree",
+    "gen3d-bare-winter-tree",
+    "gen3d-dead-desert-tree"
+   ],
+   "distinct": 17,
+   "lightChanged": true,
+   "namesLight": true
+  },
+  {
+   "id": "h10",
+   "text": "a penguin that slides down a glacier, jumps over seals and catches fish",
+   "look": "snow",
+   "genre": "runner",
+   "hero": "rigged:pet-penguin",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:pet-penguin",
+    "robot",
+    "seal"
+   ],
+   "scenery": [
+    "gen3d-ice-cave",
+    "penguin",
+    "gen3d-frozen-waterfall",
+    "cc0-sled",
+    "gen3d-icicle",
+    "gen3d-snowman-with-hat",
+    "gen3d-iceberg"
+   ],
+   "flora": [
+    "gen3d-snowy-rock",
+    "gen3d-river-boulder",
+    "gen3d-ice-block-pile",
+    "gen3d-frozen-shrub",
+    "gen3d-snowy-fir-tree",
+    "gen3d-bare-winter-tree",
+    "gen3d-frozen-dead-tree"
+   ],
+   "distinct": 17,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "j01",
+   "text": "Explain quantum physics to my grandma.",
+   "look": "meadow",
+   "genre": "arena",
+   "hero": "gen3d-grandma",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-grandma",
+    "robot",
+    "cc0-flower"
+   ],
+   "scenery": [
+    "gen3d-dandelion",
+    "gen3d-picnic-table",
+    "gen3d-picnic-basket",
+    "gen3d-wooden-gate",
+    "gen3d-birdhouse",
+    "gen3d-sunflower",
+    "gen3d-wooden-fence"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 23,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "j02",
+   "text": "a sleepy cat naps in a cozy rainy café",
+   "look": "meadow",
+   "genre": "arena",
+   "hero": "rigged:pet-cat",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:pet-cat",
+    "robot"
+   ],
+   "scenery": [
+    "gen3d-picnic-table",
+    "gen3d-wooden-stile",
+    "gen3d-wooden-gate",
+    "gen3d-windmill",
+    "gen3d-sunflower"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 20,
+   "lightChanged": true,
+   "namesLight": true
+  },
+  {
+   "id": "j03",
+   "text": "my startup pitch to investors in a glass skyscraper",
+   "look": "city",
+   "genre": "arena",
+   "hero": "rigged:boy-a",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:boy-a",
+    "robot",
+    "gen3d-investor"
+   ],
+   "scenery": [
+    "gen3d-glass-office-tower",
+    "cc0-car-taxi",
+    "gen3d-apartment-block",
+    "cc0-fire-hydrant",
+    "gen3d-red-phone-booth",
+    "gen3d-traffic-light",
+    "gen3d-flower-stall",
+    "gen3d-billboard-sign"
+   ],
+   "flora": [
+    "gen3d-planter-box",
+    "gen3d-flower-box",
+    "cc0-bush",
+    "gen3d-park-bench",
+    "gen3d-street-bollard",
+    "gen3d-street-trash-can",
+    "gen3d-concrete-planter-with-tree",
+    "gen3d-street-tree",
+    "gen3d-street-lamp"
+   ],
+   "distinct": 20,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "j04",
+   "text": "walk my dog along the beach while eating an ice cream",
+   "look": "snow",
+   "genre": "walker",
+   "hero": "gen3d-sandcastle",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-sandcastle",
+    "robot",
+    "gen3d-ice-cream-cone",
+    "dog"
+   ],
+   "scenery": [
+    "gen3d-beach-hut",
+    "penguin",
+    "gen3d-lifeguard-tower",
+    "cc0-sled",
+    "gen3d-beach-umbrella",
+    "gen3d-snowman-with-hat",
+    "gen3d-wooden-pier"
+   ],
+   "flora": [
+    "gen3d-snowy-rock",
+    "gen3d-river-boulder",
+    "gen3d-ice-block-pile",
+    "gen3d-frozen-shrub",
+    "gen3d-snowy-fir-tree",
+    "gen3d-bare-winter-tree",
+    "gen3d-frozen-dead-tree"
+   ],
+   "distinct": 18,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "j05",
+   "text": "pop ten balloons at a birthday party",
+   "look": "meadow",
+   "genre": "quest",
+   "hero": "fox",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "fox",
+    "robot"
+   ],
+   "scenery": [
+    "gen3d-birthday-cake",
+    "gen3d-picnic-table",
+    "gen3d-party-hat",
+    "gen3d-wooden-gate",
+    "gen3d-gift-box",
+    "gen3d-sunflower"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 21,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "j06",
+   "text": "a chef flips pancakes in a busy kitchen",
+   "look": "supermarket",
+   "genre": "quest",
+   "hero": "waiter",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "waiter",
+    "robot"
+   ],
+   "scenery": [
+    "cc0-cabinet-shelves",
+    "shopping-cart",
+    "cc0-can-fridge",
+    "gen3d-bread-rack",
+    "gen3d-fruit-stand",
+    "gen3d-cash-register"
+   ],
+   "flora": [
+    "gen3d-cardboard-box",
+    "gen3d-fruit-crate",
+    "gen3d-bread-basket",
+    "gen3d-potato-sack",
+    "gen3d-vegetable-basket",
+    "gen3d-flour-sack",
+    "potted-plant",
+    "gen3d-monstera-plant",
+    "gen3d-wine-barrel"
+   ],
+   "distinct": 17,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "j07",
+   "text": "a squirrel hoards acorns before winter comes",
+   "look": "snow",
+   "genre": "arena",
+   "hero": "gen3d-squirrel",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-squirrel",
+    "robot",
+    "gen3d-acorn"
+   ],
+   "scenery": [
+    "gen3d-snowy-log-cabin",
+    "penguin",
+    "gen3d-ski-lift-tower",
+    "cc0-sled",
+    "gen3d-frozen-waterfall",
+    "gen3d-snowman-with-hat",
+    "gen3d-ice-igloo"
+   ],
+   "flora": [
+    "gen3d-snowy-rock",
+    "gen3d-river-boulder",
+    "gen3d-ice-block-pile",
+    "gen3d-frozen-shrub",
+    "gen3d-snowy-fir-tree",
+    "gen3d-bare-winter-tree",
+    "gen3d-frozen-dead-tree"
+   ],
+   "distinct": 17,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "j08",
+   "text": "a wizard defends a crystal tower from flying skeletons",
+   "look": "castle",
+   "genre": "arena",
+   "hero": "rigged:mage",
+   "heroRigged": true,
+   "enemy": "rigged:skeleton-warrior",
+   "enemyRigged": true,
+   "cast": [
+    "rigged:mage",
+    "rigged:skeleton-warrior"
+   ],
+   "scenery": [
+    "gen3d-castle-tower",
+    "stone-wall",
+    "cc0-torch-lit",
+    "gen3d-stone-gatehouse",
+    "gen3d-drawbridge",
+    "gen3d-stone-water-well"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "cc0-bush",
+    "gen3d-thorn-bush",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-river-boulder",
+    "oak-tree",
+    "gen3d-beech-tree",
+    "gen3d-mossy-boulder",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 19,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "j09",
+   "text": "a dragon burns down villages and dodges arrows from knights",
+   "look": "meadow",
+   "genre": "runner",
+   "hero": "cc0-dragon",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "cc0-dragon",
+    "robot",
+    "stepping-stone"
+   ],
+   "scenery": [
+    "gen3d-picnic-table",
+    "gen3d-wooden-stile",
+    "gen3d-wooden-gate",
+    "gen3d-windmill",
+    "gen3d-sunflower"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 21,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "j10",
+   "text": "an elf princess escapes a goblin castle through a dark forest",
+   "look": "castle",
+   "genre": "runner",
+   "hero": "gen3d-princess",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-princess",
+    "robot",
+    "crystal",
+    "goblin"
+   ],
+   "scenery": [
+    "gen3d-castle-tower",
+    "stone-wall",
+    "cc0-torch-lit",
+    "gen3d-stone-gatehouse",
+    "gen3d-drawbridge",
+    "gen3d-stone-water-well"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "cc0-bush",
+    "gen3d-thorn-bush",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-river-boulder",
+    "oak-tree",
+    "gen3d-beech-tree",
+    "gen3d-mossy-boulder",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 21,
+   "lightChanged": true,
+   "namesLight": true
+  },
+  {
+   "id": "d02",
+   "text": "teach my little brother the multiplication table",
+   "look": "meadow",
+   "genre": "arena",
+   "hero": "explorer",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "explorer",
+    "robot",
+    "cc0-flower"
+   ],
+   "scenery": [
+    "gen3d-dandelion",
+    "gen3d-picnic-table",
+    "gen3d-picnic-basket",
+    "gen3d-wooden-gate",
+    "gen3d-birdhouse",
+    "gen3d-sunflower",
+    "gen3d-wooden-fence"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 23,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d03",
+   "text": "a witch brews potions in a crooked tower during a thunderstorm",
+   "look": "castle",
+   "genre": "quest",
+   "hero": "rigged:mage",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:mage",
+    "robot"
+   ],
+   "scenery": [
+    "gen3d-crooked-tower",
+    "stone-wall",
+    "gen3d-crooked-house",
+    "gen3d-stone-gatehouse",
+    "gen3d-crooked-lamppost",
+    "gen3d-stone-water-well"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "cc0-bush",
+    "gen3d-thorn-bush",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-river-boulder",
+    "oak-tree",
+    "gen3d-beech-tree",
+    "gen3d-mossy-boulder",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 19,
+   "lightChanged": true,
+   "namesLight": true
+  },
+  {
+   "id": "d04",
+   "text": "shoot down paper planes over a school playground",
+   "look": "living_room",
+   "genre": "shooter",
+   "hero": "rigged:boy-a",
+   "heroRigged": true,
+   "enemy": "plane",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:boy-a",
+    "plane"
+   ],
+   "scenery": [
+    "cc0-couch",
+    "cc0-lamp-standing",
+    "cc0-armchair",
+    "gen3d-gramophone",
+    "gen3d-bookshelf",
+    "gen3d-television"
+   ],
+   "flora": [
+    "gen3d-flower-pot",
+    "gen3d-clay-pot",
+    "gen3d-cardboard-box",
+    "gen3d-gift-box",
+    "gen3d-agave-plant",
+    "potted-plant",
+    "gen3d-monstera-plant",
+    "gen3d-cat-tree",
+    "gen3d-aloe-plant"
+   ],
+   "distinct": 17,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d05",
+   "text": "a sloth tries to cross a busy jungle highway",
+   "look": "jungle",
+   "genre": "runner",
+   "hero": "gen3d-sloth",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-sloth",
+    "robot",
+    "gen3d-banana",
+    "gen3d-snake"
+   ],
+   "scenery": [
+    "gen3d-stone-idol-head",
+    "cc0-bamboo",
+    "gen3d-tribal-totem-pole",
+    "gen3d-jungle-waterfall",
+    "gen3d-wooden-rope-bridge",
+    "gen3d-vine-covered-rock-wall",
+    "gen3d-ruin"
+   ],
+   "flora": [
+    "cc0-bush-berries",
+    "cc0-grass",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-heliconia",
+    "gen3d-pitcher-plant",
+    "gen3d-rafflesia",
+    "cc0-palm-tree",
+    "gen3d-banana-plant",
+    "gen3d-kapok-tree",
+    "gen3d-mangrove-tree",
+    "gen3d-bamboo-cluster",
+    "gen3d-rubber-tree",
+    "gen3d-strangler-fig-tree",
+    "gen3d-cycad-palm"
+   ],
+   "distinct": 25,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d06",
+   "text": "race hot air balloons over a desert canyon",
+   "look": "desert",
+   "genre": "steer",
+   "hero": "gen3d-balloon",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-balloon",
+    "robot",
+    "gen3d-cactus",
+    "gen3d-finish-banner"
+   ],
+   "scenery": [
+    "gen3d-adobe-house",
+    "gen3d-buried-statue-head",
+    "gen3d-bedouin-tent",
+    "gen3d-abandoned-mine-entrance",
+    "gen3d-oasis-well",
+    "gen3d-stone-obelisk"
+   ],
+   "flora": [
+    "gen3d-sandstone-rock",
+    "cc0-grass",
+    "gen3d-prickly-pear-cactus",
+    "gen3d-desert-shrub",
+    "gen3d-yucca-plant",
+    "gen3d-mesquite-tree",
+    "gen3d-cactus",
+    "cc0-cactus-flowers",
+    "gen3d-saguaro-cactus",
+    "gen3d-cholla-cactus",
+    "gen3d-dead-desert-tree",
+    "gen3d-layered-canyon-rock"
+   ],
+   "distinct": 21,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d07",
+   "text": "my grandpa fixing his old car in the garage",
+   "look": "factory",
+   "genre": "quest",
+   "hero": "gen3d-grandpa",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-grandpa",
+    "robot"
+   ],
+   "scenery": [
+    "gen3d-tool-chest",
+    "cc0-barrel-stack",
+    "gen3d-car-jack",
+    "gen3d-industrial-fan",
+    "gen3d-fuel-can",
+    "gen3d-container"
+   ],
+   "flora": [
+    "gen3d-cardboard-box",
+    "gen3d-oil-drum",
+    "gen3d-toxic-barrel",
+    "gen3d-tire-pile",
+    "gen3d-toolbox",
+    "gen3d-traffic-cone",
+    "gen3d-oil-barrel",
+    "potted-plant",
+    "gen3d-rooftop-water-tank"
+   ],
+   "distinct": 17,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d08",
+   "text": "a mermaid collects pearls while avoiding jellyfish",
+   "look": "meadow",
+   "genre": "arena",
+   "hero": "gen3d-mermaid",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-mermaid",
+    "robot",
+    "gen3d-jellyfish",
+    "gen3d-pearl"
+   ],
+   "scenery": [
+    "gen3d-dandelion",
+    "gen3d-picnic-table",
+    "gen3d-picnic-basket",
+    "gen3d-wooden-gate",
+    "gen3d-birdhouse",
+    "gen3d-sunflower",
+    "gen3d-wooden-fence"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 24,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d09",
+   "text": "stack cheese wheels into a wobbly tower at a farm market",
+   "look": "meadow",
+   "genre": "timing",
+   "hero": "rigged:knight",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:knight",
+    "robot",
+    "gen3d-cheese"
+   ],
+   "scenery": [
+    "gen3d-wooden-signpost",
+    "gen3d-picnic-table",
+    "gen3d-red-barn",
+    "gen3d-wooden-gate",
+    "gen3d-white-picket-fence",
+    "gen3d-sunflower",
+    "gen3d-pitchfork"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 23,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d10",
+   "text": "a pirate duels a skeleton captain on a sinking ship",
+   "look": "ocean",
+   "genre": "duel",
+   "hero": "rigged:rogue",
+   "heroRigged": true,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "rigged:rogue",
+    "robot",
+    "rigged:q-pirate"
+   ],
+   "scenery": [
+    "cc0-boat-row",
+    "gen3d-navigation-buoy",
+    "gen3d-floating-dock",
+    "gen3d-sailboat",
+    "gen3d-lighthouse"
+   ],
+   "flora": [
+    "gen3d-sea-rock",
+    "gen3d-barnacle-rock",
+    "gen3d-river-boulder",
+    "gen3d-seaweed",
+    "gen3d-rock-pillar",
+    "gen3d-rock-arch",
+    "gen3d-basalt-column-rock"
+   ],
+   "distinct": 15,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d11",
+   "text": "tap along to the drums at a jungle festival",
+   "look": "jungle",
+   "genre": "rhythm",
+   "hero": "cc0-monkey",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "cc0-monkey",
+    "robot"
+   ],
+   "scenery": [
+    "gen3d-stone-idol-head",
+    "cc0-bamboo",
+    "gen3d-tribal-totem-pole",
+    "gen3d-jungle-waterfall",
+    "gen3d-wooden-rope-bridge",
+    "gen3d-vine-covered-rock-wall",
+    "gen3d-ruin"
+   ],
+   "flora": [
+    "cc0-bush-berries",
+    "cc0-grass",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-heliconia",
+    "gen3d-pitcher-plant",
+    "gen3d-rafflesia",
+    "cc0-palm-tree",
+    "gen3d-banana-plant",
+    "gen3d-kapok-tree",
+    "gen3d-mangrove-tree",
+    "gen3d-bamboo-cluster",
+    "gen3d-rubber-tree",
+    "gen3d-strangler-fig-tree",
+    "gen3d-cycad-palm"
+   ],
+   "distinct": 23,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d12",
+   "text": "a goldfish swims through a sunken city dodging sharks",
+   "look": "underwater",
+   "genre": "glide",
+   "hero": "cc0-goldfish",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "cc0-goldfish",
+    "robot",
+    "hoop"
+   ],
+   "scenery": [
+    "gen3d-coral-covered-archway",
+    "cc0-clownfish",
+    "gen3d-sunken-bell",
+    "cc0-tang",
+    "gen3d-sunken-lamp-post",
+    "gen3d-jellyfish",
+    "gen3d-octopus"
+   ],
+   "flora": [
+    "gen3d-coral",
+    "gen3d-sea-anemone",
+    "gen3d-sea-sponge",
+    "gen3d-coral-rock",
+    "gen3d-seaweed",
+    "gen3d-sea-rock",
+    "gen3d-rock-arch",
+    "gen3d-rock-pillar"
+   ],
+   "distinct": 18,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d13",
+   "text": "write a thank-you letter to my teacher",
+   "look": "meadow",
+   "genre": "timing",
+   "hero": "fox",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "fox",
+    "robot",
+    "gen3d-sealed-letter"
+   ],
+   "scenery": [
+    "gen3d-picnic-table",
+    "gen3d-wooden-stile",
+    "gen3d-wooden-gate",
+    "gen3d-windmill",
+    "gen3d-sunflower"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "gen3d-poppy-flower",
+    "gen3d-buttercup",
+    "cc0-bush",
+    "cc0-rock-moss",
+    "oak-tree",
+    "cc0-birch-tree",
+    "gen3d-apple-tree",
+    "gen3d-willow-tree",
+    "gen3d-olive-tree",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 21,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d14",
+   "text": "a bear sneaks into a campsite to steal honey",
+   "look": "forest",
+   "genre": "walker",
+   "hero": "gen3d-bear",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-bear",
+    "robot",
+    "exit-door"
+   ],
+   "scenery": [
+    "gen3d-log-cabin",
+    "gen3d-wooden-signpost",
+    "cc0-log-stack",
+    "gen3d-hiking-backpack",
+    "gen3d-standing-stone",
+    "gen3d-camping-chair"
+   ],
+   "flora": [
+    "cc0-bush",
+    "cc0-grass",
+    "gen3d-fern",
+    "gen3d-mushroom-cluster",
+    "gen3d-wild-strawberry-plant",
+    "gen3d-mossy-stump",
+    "gen3d-mossy-boulder",
+    "gen3d-mossy-fallen-log",
+    "cc0-tree-pine",
+    "gen3d-fir-tree",
+    "cc0-pine-tree",
+    "gen3d-larch-tree",
+    "cc0-birch-tree",
+    "oak-tree"
+   ],
+   "distinct": 23,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d15",
+   "text": "throw frisbees to a dog on a sunny beach",
+   "look": "beach",
+   "genre": "throw",
+   "hero": "turtle",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "turtle",
+    "robot"
+   ],
+   "scenery": [
+    "gen3d-beach-hut",
+    "gen3d-beach-chair",
+    "gen3d-lifeguard-tower",
+    "gen3d-sandcastle",
+    "gen3d-beach-umbrella",
+    "gen3d-lighthouse",
+    "gen3d-wooden-pier"
+   ],
+   "flora": [
+    "gen3d-dune-grass-clump",
+    "gen3d-sea-rock",
+    "gen3d-sandstone-rock",
+    "cc0-palm-tree",
+    "gen3d-leaning-palm-tree",
+    "gen3d-pandanus-tree"
+   ],
+   "distinct": 15,
+   "lightChanged": true,
+   "namesLight": true
+  },
+  {
+   "id": "d16",
+   "text": "an owl delivers letters across a snowy mountain village",
+   "look": "snow",
+   "genre": "arena",
+   "hero": "gen3d-brown-owl",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-brown-owl",
+    "robot"
+   ],
+   "scenery": [
+    "penguin",
+    "gen3d-snowy-bench",
+    "cc0-sled",
+    "gen3d-ice-igloo",
+    "gen3d-snowman-with-hat",
+    "gen3d-ice-arch"
+   ],
+   "flora": [
+    "gen3d-snowy-rock",
+    "gen3d-river-boulder",
+    "gen3d-ice-block-pile",
+    "gen3d-frozen-shrub",
+    "gen3d-snowy-fir-tree",
+    "gen3d-bare-winter-tree",
+    "gen3d-frozen-dead-tree"
+   ],
+   "distinct": 15,
+   "lightChanged": true,
+   "namesLight": true
+  },
+  {
+   "id": "d17",
+   "text": "a robot vacuum cleans the house before the family comes home",
+   "look": "living_room",
+   "genre": "arena",
+   "hero": "roomba",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "roomba",
+    "robot",
+    "townhouse"
+   ],
+   "scenery": [
+    "cc0-couch",
+    "cc0-lamp-standing",
+    "cc0-armchair",
+    "gen3d-gramophone",
+    "gen3d-bookshelf",
+    "gen3d-television"
+   ],
+   "flora": [
+    "gen3d-flower-pot",
+    "gen3d-clay-pot",
+    "gen3d-cardboard-box",
+    "gen3d-gift-box",
+    "gen3d-agave-plant",
+    "potted-plant",
+    "gen3d-monstera-plant",
+    "gen3d-cat-tree",
+    "gen3d-aloe-plant"
+   ],
+   "distinct": 18,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d18",
+   "text": "a sumo wrestler pushes rivals out of a bouncy ring",
+   "look": "city",
+   "genre": "duel",
+   "hero": "gen3d-sumo-wrestler",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "gen3d-sumo-wrestler",
+    "robot"
+   ],
+   "scenery": [
+    "townhouse",
+    "cc0-car-taxi",
+    "gen3d-telephone-pole",
+    "cc0-fire-hydrant",
+    "building",
+    "gen3d-traffic-light",
+    "gen3d-bus-stop",
+    "gen3d-flower-stall"
+   ],
+   "flora": [
+    "gen3d-planter-box",
+    "gen3d-flower-box",
+    "cc0-bush",
+    "gen3d-park-bench",
+    "gen3d-street-bollard",
+    "gen3d-street-trash-can",
+    "gen3d-concrete-planter-with-tree",
+    "gen3d-street-tree",
+    "gen3d-street-lamp"
+   ],
+   "distinct": 19,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d19",
+   "text": "plan a budget for my family vacation",
+   "look": "beach",
+   "genre": "arena",
+   "hero": "explorer",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "explorer",
+    "robot"
+   ],
+   "scenery": [
+    "gen3d-beach-chair",
+    "cc0-boat-row",
+    "gen3d-sandcastle",
+    "gen3d-surf-rack",
+    "gen3d-lighthouse"
+   ],
+   "flora": [
+    "gen3d-dune-grass-clump",
+    "gen3d-sea-rock",
+    "gen3d-sandstone-rock",
+    "cc0-palm-tree",
+    "gen3d-leaning-palm-tree",
+    "gen3d-pandanus-tree"
+   ],
+   "distinct": 13,
+   "lightChanged": false,
+   "namesLight": false
+  },
+  {
+   "id": "d20",
+   "text": "a knight rides a unicorn to rescue a prince from a cloud castle",
+   "look": "castle",
+   "genre": "steer",
+   "hero": "race-car",
+   "heroRigged": false,
+   "enemy": "robot",
+   "enemyRigged": false,
+   "cast": [
+    "race-car",
+    "robot",
+    "ghost",
+    "gen3d-finish-banner"
+   ],
+   "scenery": [
+    "gen3d-castle-tower",
+    "stone-wall",
+    "cc0-torch-lit",
+    "gen3d-stone-gatehouse",
+    "gen3d-drawbridge",
+    "gen3d-stone-water-well"
+   ],
+   "flora": [
+    "cc0-grass",
+    "gen3d-tall-grass-tuft",
+    "gen3d-wildflower-patch",
+    "cc0-bush",
+    "gen3d-thorn-bush",
+    "gen3d-mossy-rock-cluster",
+    "gen3d-river-boulder",
+    "oak-tree",
+    "gen3d-beech-tree",
+    "gen3d-mossy-boulder",
+    "gen3d-poplar-tree"
+   ],
+   "distinct": 21,
+   "lightChanged": false,
+   "namesLight": false
+  }
+ ]
+}

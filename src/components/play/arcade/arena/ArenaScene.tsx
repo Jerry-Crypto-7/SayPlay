@@ -54,6 +54,8 @@ import { FieldGround } from '../look/FieldGround';
 import { boxEdge } from '../look/ground';
 import { glowingCopy } from '../look/load';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
+import { Landmark } from '../look/Landmark';
+import { ARENA_WALL_END } from '../look/rig/terrain/arenaFloor';
 import { Scenery } from '../look/Scenery';
 import { VegetationAround } from '../look/Vegetation';
 import { LOW_TOWARD_CAMERA } from '../look/vegetation-places';
@@ -62,7 +64,7 @@ import { RiggedModel, type ToyFrame } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
 import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
-import { applyToy, toyMotionOn, toyTickOf } from '../toy/applyToy';
+import { applyToy, toyIdleOf, toyMotionOn, toyTickOf } from '../toy/applyToy';
 import { bodyClassOf } from '../toy/body-class';
 import { type Cast, FittedModel, toyTargetOf } from '../World';
 import { ArenaFloor } from './ArenaFloor';
@@ -223,6 +225,7 @@ function AgarWorld({ session, half, surface, look: scene, targets, ghost }: Aren
     const field = { x0: -side / 2, x1: side / 2, z0: -side / 2, z1: side / 2 };
     return { box: field, land: { x0: field.x0 - AGAR_LAND_M, x1: field.x1 + AGAR_LAND_M, z0: field.z0 - AGAR_LAND_M, z1: field.z1 + AGAR_LAND_M }, edge: boxEdge(field) };
   }, [side]);
+  const area = useMemo(() => [box], [box]);
   return (
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
@@ -239,6 +242,8 @@ function AgarWorld({ session, half, surface, look: scene, targets, ghost }: Aren
           <Scenery look={scene} layout="sides" inner={side / 2 + SCENERY_MARGIN} from={-side / 2} to={side / 2} vegetation />
         </group>
       ))}
+      {/* Orientační bod za hranou v horní části záběru, jede s kamerou za hráčem (P54B T8). */}
+      <Landmark look={scene} seed={session.world.seed} area={area} follow="camera" />
       {discs.map((disc) => {
         const thing = thingOf(disc.kind);
         if (thing !== null || disc.role === ROLE.obstacle) {
@@ -516,6 +521,11 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
     const hero = parts.indexOf('hero');
     return hero < 0 ? HERO_DRAWN_M : drawn[hero]!.h;
   }, [parts, drawn]);
+  /** Aréna se stěnami: orientační bod stojí až za nimi, i když jede s kamerou (P54B T8). */
+  const arenaArea = useMemo(() => {
+    const edge = half / UNIT + ARENA_WALL_END;
+    return [{ x0: -edge, x1: edge, z0: -edge, z1: edge }];
+  }, [half]);
   const fxClock = useRef(0);
   const leans = useRef<(Group | null)[]>([]);
   const fighters = useRef<(Fighter | undefined)[]>([]);
@@ -634,7 +644,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
         if (inner !== null && inner !== undefined) {
           const before = toyPoses.current[view.index] ?? null;
           const memory = blow === null || before === null || before.attackAt === blow - BLOW_PEAK_TICKS ? before : { ...before, attackAt: blow - BLOW_PEAK_TICKS };
-          const toy = toyPoseOf(moving, bodyClasses[view.index]!, memory, toyTick, reduced);
+          // Statický model stojící bez události dýchá a rozhlíží se (P54B T6); riggovaná postava hraje klip `idle`.
+          const toy = toyPoseOf(moving, bodyClasses[view.index]!, memory, toyTick, reduced, toyIdleOf(session, view.index));
           toyPoses.current[view.index] = toy;
           applyToy(toyTargetOf(inner), toy, drawn[view.index]!.h);
           // Zásah bojovníka ukáže záblesk barvy (`drawFighter`); model by blikáním záblesk schoval.
@@ -764,6 +775,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
   return (
     <>
       <ArenaFloor look={scene} half={half / UNIT} seed={session.world.seed} keep={keep} hero={heroHeight} />
+      <Landmark look={scene} seed={session.world.seed} area={arenaArea} follow="camera" />
       {views.map((view) => {
         if (view.role === ROLE.target) return null; // Cíl úkolu kreslí vrstva cílů (`TargetsMount`), ne kvádr.
         const part = parts[view.index]!;
@@ -820,7 +832,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
                       />
                     ) : (
                       <group ref={(group) => { posed.current[view.index] = group; }}>
-                        <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} posed />
+                        <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} posed rim />
                       </group>
                     )}
                   </HeroActionBody>

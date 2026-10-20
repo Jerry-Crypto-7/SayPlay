@@ -55,9 +55,10 @@ describe('arcade model choice from role labels', () => {
   it('a thing the catalog lacks gets no category and keeps the role default', () => {
     // Vzducholoď má od P46F model z gen3d (`gen3d-blimp`), věc bez modelu je teď periskop.
     expect(modelOf('periscope', true)).toBeUndefined();
-    expect(heroModel(withLabel(runner, 'player', 'periscope'))).toBe('explorer');
+    // P54B T4: výchozí průzkumník a robot se kreslí riggovanou postavou (`RIGGED_ALIAS`).
+    expect(heroModel(withLabel(runner, 'player', 'periscope'))).toBe('rigged:q-cowboy-hair');
     expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('gen3d-balloon');
-    expect(enemyModel(withLabel(shooter, 'enemy', 'angry staplers'))).toBe('robot');
+    expect(enemyModel(withLabel(shooter, 'enemy', 'angry staplers'))).toBe('rigged:blocky-robot');
     // Zástupci (hydrant za kropítko) skončili v P30B T4: kropítko má vlastní model, věc bez modelu zůstane tělem jádra.
     expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'))).toEqual({ obstacle: 'sprinkler' });
     expect(propModels(withLabel(runner, 'obstacle', 'deadlines'))).toEqual({});
@@ -77,14 +78,14 @@ describe('arcade model choice from role labels', () => {
 
   it('a named thing without its own model takes the nearest model, never the robot or the spike', () => {
     expect(enemyModel(withLabel(shooter, 'enemy', 'animals'))).toBe('dog');
-    // Vlk katalog nemá; „wolves“ → „wolf“ → blízký pes, ne robot ani bodák.
-    expect(enemyModel(withLabel(shooter, 'enemy', 'wolves'))).toBe('dog');
-    expect(propModels(withLabel(platform, 'spikes', 'wolves')).spikes).toBe('dog');
+    // Vlk má od P54B T3 vlastní postavu s klipy (Quaternius); dřív byl blízkým psem.
+    expect(enemyModel(withLabel(shooter, 'enemy', 'wolves'))).toBe('rigged:q-wolf');
+    expect(propModels(withLabel(platform, 'spikes', 'wolves')).spikes).toBe('rigged:q-wolf');
     // Nejbližší model pod prahem čtení (aligátor → krokodýl 0,55) jen jako poslední možnost před robotem.
     expect(enemyModel(withLabel(shooter, 'enemy', 'alligators'))).toBe('gen3d-crocodile');
     expect(propModels(withLabel(flap, 'pipe', 'alligators')).pipe).toBe('gen3d-crocodile');
     // Jméno, které tabulka nejbližších vůbec nezná, nechá výchozí model role.
-    expect(enemyModel(withLabel(shooter, 'enemy', 'zorbles'))).toBe('robot');
+    expect(enemyModel(withLabel(shooter, 'enemy', 'zorbles'))).toBe('rigged:blocky-robot');
   });
 
   it('a flappy bird is the bird, not the nest', () => {
@@ -106,13 +107,14 @@ describe('arcade model choice from role labels', () => {
     expect(propModels(withLabel(shooter, 'target', 'coin')).target).toBe('coin');
     expect(propModels(withLabel(shooter, 'target', 'ghosts')).target).toBe('ghost');
     // Třída postav jako u nástrah T9: „angry mech“ katalog nemá, kreslí ho robot, ne kotouč.
-    expect(propModels(withLabel(shooter, 'target', 'angry mech')).target).toBe('robot');
+    expect(propModels(withLabel(shooter, 'target', 'angry mech')).target).toBe('rigged:blocky-robot');
     expect(propModels(shooter as GameSpecV1).target).toBeUndefined();
   });
 
   // P27A T4: soupeř souboje a závodu z popisku – jen model, který popisek jmenuje, žádná kategorie.
   it('names the duel and race rival from its label, honestly', () => {
-    expect(propModels(withLabel(duel, 'rival', 'fox'))).toEqual({ rival: 'fox' });
+    // Liška je od P54B T4 riggovaná postava T3 – táž identita s klipy.
+    expect(propModels(withLabel(duel, 'rival', 'fox'))).toEqual({ rival: 'rigged:q-fox' });
     // Klokan má od P30B T4 vlastní model; vombata katalog nemá – kategorie „zvíře“ by nakreslila lišku, soupeř zůstane postavou z primitiv.
     expect(propModels(withLabel(duel, 'rival', 'kangaroo'))).toEqual({ rival: 'kangaroo' });
     expect(propModels(withLabel(duel, 'rival', 'wombat'))).toEqual({});
@@ -125,7 +127,7 @@ describe('arcade model choice from role labels', () => {
 
   // Šablona střelnice a hodu (remix uložené hry, P32B T2) zapíše jméno z věty do role, kterou scéna kreslí.
   it.each([
-    ['shoot the zombies in the mall', (spec: GameSpecV1) => enemyModel(spec), 'cc0-zombie'],
+    ['shoot the zombies in the mall', (spec: GameSpecV1) => enemyModel(spec), 'rigged:q-zombie'],
     ['space shooter against asteroids', (spec: GameSpecV1) => spec.roles.find((role) => role.id === 'enemy')?.label, 'asteroid'],
     ['throw balls at rubber ducks', (spec: GameSpecV1) => propModels(spec).target, 'rubber-duck'],
   ])('template sentence %s reaches the scene', (sentence, read, expected) => {
@@ -167,7 +169,7 @@ describe('arcade model choice from role labels', () => {
     ['knight', 'rigged:knight'],
     ['brave little girl', 'rigged:girl-a'],
     ['sock', 'cc0-sock'],
-    ['stapler', 'explorer'],
+    ['stapler', 'rigged:q-cowboy-hair'],
   ])('hero label %s → %s', (label, model) => {
     expect(heroModel(withLabel(runner, 'player', label))).toBe(model);
   });
@@ -175,8 +177,8 @@ describe('arcade model choice from role labels', () => {
   it.each([
     ['skeleton warriors', 'rigged:skeleton-warrior'],
     ['angry pirates', 'rigged:rogue'],
-    ['zombies', 'cc0-zombie'], // kostlivec není zombie – zombie má vlastní model
-    ['cardboard robots', 'robot'],
+    ['zombies', 'rigged:q-zombie'], // kostlivec není zombie – zombie má od P54B T4 vlastní postavu s klipy
+    ['cardboard robots', 'rigged:blocky-robot'],
   ])('enemy label %s → %s', (label, model) => {
     expect(enemyModel(withLabel(shooter, 'enemy', label))).toBe(model);
   });

@@ -14,6 +14,8 @@
  * Nic fialového: odstíny 250–320° tu nejsou.
  */
 
+import { CASTLE_FILL, CAVE_FILL, CITY_FILL, FACTORY_FILL, GRAVEYARD_FILL, LIVING_ROOM_FILL, MALL_FILL, OCEAN_FILL, SPACE_FILL, SUPERMARKET_FILL, UNDERWATER_FILL, VOLCANO_FILL } from './fill';
+import { placeMood, placeTime } from './sentence';
 import settingKits from './setting-kits.json';
 
 /** Počasí a denní doba nad sadou (P29D): živá změna je píše do logu, sdílená verze do `theme`. */
@@ -22,11 +24,7 @@ export type Weather = (typeof WEATHERS)[number];
 export const TIMES_OF_DAY = ['day', 'dusk', 'night'] as const;
 export type TimeOfDay = (typeof TIMES_OF_DAY)[number];
 
-export function timeOfDayFor(setting: string): TimeOfDay | null {
-  if (/\b(?:at night|nighttime|night-time|midnight)\b/i.test(setting) || /^night$/i.test(setting.trim())) return 'night';
-  if (/\b(?:dusk|sunset|evening)\b/i.test(setting)) return 'dusk';
-  return null;
-}
+export { moodFor, placeMood, sentenceSky, timeOfDayFor, weatherFor } from './sentence';
 
 export const LOOK_IDS = [
   'meadow',
@@ -256,6 +254,11 @@ export interface Flora {
   readonly density: number;
   /** Podzim („autumn“, „fall“): listí oranžové a jehličí zůstane oranžové. Píše jen `sceneLook`. */
   readonly autumn?: boolean;
+  /**
+   * Výplň sady, kterou poznávají stavby a věci (P54B T7: město, hrad, interiéry, vesmír…): řada kulis
+   * vedle ní zůstane hustá, výplň ji jen doplní. Bez příznaku je vegetace hlavní a řada řídne (`sparseLandmarks`).
+   */
+  readonly fill?: true;
 }
 
 /*
@@ -428,6 +431,9 @@ const SNOW_FLORA: Flora = {
 /** Nejvýš tolik druhů vegetace na sadu: každý druh je jedna `InstancedMesh`, tedy kreslicí volání (P46G T8). */
 export const FLORA_SPECIES = 14;
 
+/** Řada kulis řídne na jednu za krok (`LANDMARK_STEP`) jen vedle přírody; výplň (`fill`) ji nechá hustou. */
+export const sparseLandmarks = (look: Look): boolean => look.flora !== undefined && look.flora.fill !== true;
+
 /** Rekvizity z primitiv, které jsou rostlina: vedle vegetace je kulisa nekreslí. */
 const PLANT_PRIMITIVES: readonly SceneryKind[] = ['tree', 'pine', 'palm', 'cactus'];
 
@@ -460,6 +466,25 @@ export interface Skyline {
   readonly layers: readonly Silhouette[];
   readonly tone: string;
 }
+
+/**
+ * Život v pozadí sady (P54B T10, `look/Ambient.tsx`): hejno ptáků, motýli, ryby pod hladinou,
+ * ryby vyskakující z moře, netopýři, jiskry nad sopkou, prach ve světle interiéru, padající hvězdy.
+ */
+export const AMBIENT_KINDS = ['birds', 'butterflies', 'fish', 'jumping-fish', 'bats', 'sparks', 'dust', 'meteors'] as const;
+export type AmbientKind = (typeof AMBIENT_KINDS)[number];
+
+/** Barvy života v pozadí: teplé a neutrální (nic fialového), světlé září. Paleta patří sem, ne do `.tsx` (brand guard). */
+export const AMBIENT_COLOURS: Readonly<Record<AmbientKind, readonly string[]>> = {
+  birds: ['#2f3437', '#3b342d', '#4a443c'],
+  butterflies: ['#f59e0b', '#facc15', '#fb923c', '#fafaf9', '#38bdf8'],
+  fish: ['#f97316', '#facc15', '#0ea5e9', '#e2e8f0'],
+  'jumping-fish': ['#cbd5e1', '#94a3b8', '#e2e8f0'],
+  bats: ['#57534e', '#6b625a', '#78716c'],
+  sparks: ['#fbbf24', '#f97316', '#fde68a'],
+  dust: ['#fff7e6', '#ffedd5', '#fef3c7'],
+  meteors: ['#fff6e8', '#e0f2fe', '#fde68a'],
+};
 
 export interface Look {
   /** Pozadí i barva mlhy. */
@@ -512,7 +537,30 @@ export interface Look {
   readonly flora?: Flora;
   /** Kulisa za mlhou (P46G T6); bez ní je za scénou jen mlha. */
   readonly skyline?: Skyline;
+  /**
+   * Orientační bod sady (P54B T8, `Landmark.tsx`): 1–3 kandidáti, scéna postaví jednoho ze semínka
+   * hry do středu záběru za hrou. Jen modely gen3d – jedna síť, jeden materiál, jedno kreslicí volání.
+   */
+  readonly landmark: readonly SceneryModel[];
+  /**
+   * Život v pozadí (P54B T10): kreslí se kolem orientačního bodu, tedy v záběru a mimo hrací plochu.
+   * Nejvýš dva druhy – každý je jedno kreslicí volání. Prázdný = sada bez života v pozadí.
+   */
+  readonly ambient: readonly AmbientKind[];
+  /** Vítr ve vegetaci z nálady (P54B T13): násobek větru sady (`LOOK_WIND`), bouřka `STORM_WIND`; bez něj 1. */
+  readonly wind?: number;
 }
+
+/**
+ * Vítr ve vegetaci po sadách (P54B T13), 1 = vánek na louce. Pokojové rostliny obchodu a obýváku,
+ * jeskyně a vesmír se nekývají; pláž a oceán foukají víc, hustý les a džungle méně, pod vodou kývá proud.
+ */
+export const LOOK_WIND: Readonly<Record<LookId, number>> = {
+  meadow: 1, city: 0.6, mall: 0, supermarket: 0, living_room: 0, factory: 0, forest: 0.8, jungle: 0.6, desert: 0.8,
+  beach: 1.3, ocean: 1.2, underwater: 0.7, snow: 1.1, volcano: 0.5, cave: 0, space: 0, castle: 1, graveyard: 0.8,
+};
+/** Bouřka (déšť, bouře z věty) fouká víc než dvojnásob. */
+export const STORM_WIND = 2.2;
 
 /** Slunce za kamerou vlevo nahoře – stín padá dopředu doprava, jako v ukázce B. */
 const BEHIND_LEFT = [0.51, 0.81, -0.31] as const;
@@ -520,27 +568,27 @@ const BEHIND_LEFT = [0.51, 0.81, -0.31] as const;
 const OVERHEAD = [0.2, 1, -0.15] as const;
 
 export const LOOKS: Readonly<Record<LookId, Look>> = {
-  meadow: { sky: '#bae6fd', fog: [30, 90], light: ['#e0f2fe', '#166534', 0.9], sun: 1.6, ground: '#15803d', track: '#334155', water: '#0284c7', props: ['tree', 'gen3d-picnic-table', 'gen3d-wooden-stile', 'gen3d-wooden-gate', 'gen3d-windmill', 'gen3d-sunflower'], tint: ['#16a34a', '#78716c'], skyTop: '#3a86d8', horizon: '#d7ecf8', sunColor: '#fff0d4', sunDir: BEHIND_LEFT, exposure: 1, glow: 1, cover: 'grass', surface: 'dirt', flora: MEADOW_FLORA, skyline: { layers: ['peaks', 'hills', 'crowns'], tone: '#6a9a5c' } },
-  city: { sky: '#cbd5e1', fog: [25, 80], light: ['#f1f5f9', '#475569', 0.9], sun: 1.4, ground: '#64748b', track: '#1f2937', water: '#0369a1', props: ['townhouse', 'cc0-car-taxi', 'gen3d-telephone-pole', 'cc0-fire-hydrant', 'building', 'gen3d-traffic-light', 'gen3d-bus-stop', 'gen3d-flower-stall'], tint: ['#94a3b8', '#fbbf24'], skyTop: '#5b8fc7', horizon: '#dfe6ee', sunColor: '#fff1dc', sunDir: [0.45, 0.75, -0.5], exposure: 1, glow: 0.8, terrain: { lane: '#2b3036', shade: '#56606e', rock: '#8b9098' }, cover: 'paving', surface: 'asphalt', skyline: { layers: ['blocks', 'blocks'], tone: '#6c7686' } },
-  mall: { sky: '#fef3c7', fog: [20, 70], light: ['#fffbeb', '#d6d3d1', 1.1], sun: 1.1, ground: '#e7e5e4', track: '#d6d3d1', water: '#38bdf8', props: ['potted-plant', 'cc0-bench', 'shopping-cart', 'shelf', 'gen3d-gumball-machine', 'gen3d-fountain', 'gen3d-vending-machine'], tint: ['#f97316', '#0ea5e9'], skyTop: '#f3e2b8', horizon: '#fef3c7', sunColor: '#fff7e6', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', skyline: { layers: ['blocks', 'blocks'], tone: '#b09c80' } },
-  supermarket: { sky: '#f1f5f9', fog: [20, 70], light: ['#ffffff', '#cbd5e1', 1.1], sun: 1.0, ground: '#e2e8f0', track: '#cbd5e1', water: '#38bdf8', props: ['cc0-cabinet-shelves', 'shopping-cart', 'cc0-can-fridge', 'gen3d-bread-rack', 'gen3d-fruit-stand', 'gen3d-cash-register'], tint: ['#dc2626', '#16a34a'], skyTop: '#dfe5ec', horizon: '#f1f5f9', sunColor: '#ffffff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', skyline: { layers: ['blocks', 'blocks'], tone: '#9aa6b0' } },
-  living_room: { sky: '#fde68a', fog: [18, 60], light: ['#fff7ed', '#a16207', 1.0], sun: 1.1, ground: '#b45309', track: '#92400e', water: '#0ea5e9', props: ['cc0-couch', 'cc0-lamp-standing', 'cc0-armchair', 'gen3d-gramophone', 'gen3d-bookshelf', 'gen3d-television'], tint: ['#0f766e', '#f59e0b'], skyTop: '#f2d27e', horizon: '#fde68a', sunColor: '#ffe8c2', sunDir: [0.35, 0.9, -0.25], exposure: 1, glow: 0, cover: 'paving', surface: 'planks', skyline: { layers: ['blocks', 'blocks'], tone: '#a07850' } },
-  factory: { sky: '#a8a29e', fog: [20, 70], light: ['#e7e5e4', '#44403c', 0.8], sun: 1.3, ground: '#57534e', track: '#292524', water: '#155e75', props: ['steam-machine', 'cc0-barrel-stack', 'gen3d-smokestack', 'gen3d-industrial-fan', 'gen3d-crane', 'gen3d-container'], tint: ['#78716c', '#ea580c'], skyTop: '#86807a', horizon: '#b8b1aa', sunColor: '#ffe2c2', sunDir: [0.5, 0.7, -0.4], exposure: 1, glow: 0.5, cover: 'paving', surface: 'asphalt', skyline: { layers: ['blocks', 'blocks'], tone: '#6e665e' } },
-  forest: { sky: '#bbf7d0', fog: [20, 70], light: ['#dcfce7', '#14532d', 0.8], sun: 1.3, ground: '#166534', track: '#78350f', water: '#0e7490', props: ['cc0-tree-pine', 'tree', 'gen3d-forest-shrine', 'cc0-log-stack', 'gen3d-treehouse', 'gen3d-standing-stone'], tint: ['#14532d', '#57534e'], skyTop: '#4f97c9', horizon: '#cfeedd', sunColor: '#fff2cf', sunDir: BEHIND_LEFT, exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: FOREST_FLORA, skyline: { layers: ['peaks', 'crowns', 'pines'], tone: '#3f6e4c' } },
-  jungle: { sky: '#a7f3d0', fog: [15, 60], light: ['#ecfdf5', '#064e3b', 0.9], sun: 1.2, ground: '#065f46', track: '#713f12', water: '#0f766e', props: ['cc0-palm-tree', 'cc0-bamboo', 'gen3d-bamboo-hut', 'gen3d-jungle-waterfall', 'gen3d-ruin'], tint: ['#15803d', '#65a30d'], skyTop: '#3f9fb0', horizon: '#c3f0dc', sunColor: '#fff5d0', sunDir: [0.4, 0.85, -0.3], exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: JUNGLE_FLORA, skyline: { layers: ['hills', 'crowns', 'crowns'], tone: '#3c7a4e' } },
-  desert: { sky: '#fde68a', fog: [40, 120], light: ['#fffbeb', '#b45309', 1.0], sun: 2.0, ground: '#d97706', track: '#b45309', water: '#0891b2', props: ['gen3d-western-saloon', 'gen3d-buried-statue-head', 'cactus', 'gen3d-abandoned-mine-entrance', 'gen3d-camel'], tint: ['#65a30d', '#92400e'], skyTop: '#2f7dd1', horizon: '#fbe3a8', sunColor: '#ffe6b8', sunDir: [0.55, 0.7, -0.35], exposure: 0.95, glow: 1, terrain: { lane: '#e6c38c', shade: '#c47f33', rock: '#8f5530' }, cover: 'sand', surface: 'sand', flora: DESERT_FLORA, skyline: { layers: ['mesas', 'dunes', 'dunes'], tone: '#d09a5e' } },
-  beach: { sky: '#7dd3fc', fog: [40, 120], light: ['#f0f9ff', '#fcd34d', 1.0], sun: 1.9, ground: '#fcd34d', track: '#fde68a', water: '#0ea5e9', props: ['cc0-palm-tree', 'gen3d-beach-chair', 'cc0-boat-row', 'gen3d-sandcastle', 'gen3d-surf-rack', 'gen3d-lighthouse'], tint: ['#16a34a', '#a8a29e'], skyTop: '#1f8fe0', horizon: '#cdeefd', sunColor: '#fff0d0', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', surface: 'sand', flora: BEACH_FLORA, skyline: { layers: ['hills', 'coast'], tone: '#9fae8c' } },
-  ocean: { sky: '#7dd3fc', fog: [30, 100], light: ['#f0f9ff', '#0369a1', 1.0], sun: 1.7, ground: '#0284c7', track: '#0c4a6e', water: '#0369a1', props: ['cc0-boat-row', 'gen3d-navigation-buoy', 'gen3d-floating-dock', 'gen3d-sailboat', 'gen3d-lighthouse'], tint: ['#ef4444', '#64748b'], skyTop: '#1f7fd0', horizon: '#c2e6fb', sunColor: '#fff1d6', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', land: '#e9d29a', surface: 'planks', skyline: { layers: ['coast', 'coast'], tone: '#8aa0a8' } },
+  meadow: { sky: '#bae6fd', fog: [30, 90], light: ['#e0f2fe', '#166534', 0.9], sun: 1.6, ground: '#15803d', track: '#334155', water: '#0284c7', props: ['tree', 'gen3d-picnic-table', 'gen3d-wooden-stile', 'gen3d-wooden-gate', 'gen3d-windmill', 'gen3d-sunflower'], tint: ['#16a34a', '#78716c'], skyTop: '#3a86d8', horizon: '#d7ecf8', sunColor: '#fff0d4', sunDir: BEHIND_LEFT, exposure: 1, glow: 1, cover: 'grass', surface: 'dirt', flora: MEADOW_FLORA, skyline: { layers: ['peaks', 'hills', 'crowns'], tone: '#6a9a5c' }, landmark: ['gen3d-windmill', 'gen3d-standing-stone', 'gen3d-stone-water-well'], ambient: ['birds', 'butterflies'] },
+  city: { sky: '#cbd5e1', fog: [25, 80], light: ['#f1f5f9', '#475569', 0.9], sun: 1.4, ground: '#64748b', track: '#1f2937', water: '#0369a1', props: ['townhouse', 'cc0-car-taxi', 'gen3d-telephone-pole', 'cc0-fire-hydrant', 'building', 'gen3d-traffic-light', 'gen3d-bus-stop', 'gen3d-flower-stall'], tint: ['#94a3b8', '#fbbf24'], skyTop: '#5b8fc7', horizon: '#dfe6ee', sunColor: '#fff1dc', sunDir: [0.45, 0.75, -0.5], exposure: 1, glow: 0.8, terrain: { lane: '#2b3036', shade: '#56606e', rock: '#8b9098' }, cover: 'paving', surface: 'asphalt', flora: CITY_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#6c7686' }, landmark: ['gen3d-crane', 'gen3d-fountain'], ambient: [] },
+  mall: { sky: '#fef3c7', fog: [20, 70], light: ['#fffbeb', '#d6d3d1', 1.1], sun: 1.1, ground: '#e7e5e4', track: '#d6d3d1', water: '#38bdf8', props: ['potted-plant', 'cc0-bench', 'shopping-cart', 'shelf', 'gen3d-gumball-machine', 'gen3d-fountain', 'gen3d-vending-machine'], tint: ['#f97316', '#0ea5e9'], skyTop: '#f3e2b8', horizon: '#fef3c7', sunColor: '#fff7e6', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: MALL_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#b09c80' }, landmark: ['gen3d-fountain', 'gen3d-gumball-machine'], ambient: ['dust'] },
+  supermarket: { sky: '#f1f5f9', fog: [20, 70], light: ['#ffffff', '#cbd5e1', 1.1], sun: 1.0, ground: '#e2e8f0', track: '#cbd5e1', water: '#38bdf8', props: ['cc0-cabinet-shelves', 'shopping-cart', 'cc0-can-fridge', 'gen3d-bread-rack', 'gen3d-fruit-stand', 'gen3d-cash-register'], tint: ['#dc2626', '#16a34a'], skyTop: '#dfe5ec', horizon: '#f1f5f9', sunColor: '#ffffff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'paving', surface: 'paving', flora: SUPERMARKET_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#9aa6b0' }, landmark: ['gen3d-vending-machine', 'gen3d-fruit-stand'], ambient: ['dust'] },
+  living_room: { sky: '#fde68a', fog: [18, 60], light: ['#fff7ed', '#a16207', 1.0], sun: 1.1, ground: '#b45309', track: '#92400e', water: '#0ea5e9', props: ['cc0-couch', 'cc0-lamp-standing', 'cc0-armchair', 'gen3d-gramophone', 'gen3d-bookshelf', 'gen3d-television'], tint: ['#0f766e', '#f59e0b'], skyTop: '#f2d27e', horizon: '#fde68a', sunColor: '#ffe8c2', sunDir: [0.35, 0.9, -0.25], exposure: 1, glow: 0, cover: 'paving', surface: 'planks', flora: LIVING_ROOM_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#a07850' }, landmark: ['gen3d-bookshelf', 'gen3d-television'], ambient: ['dust'] },
+  factory: { sky: '#a8a29e', fog: [20, 70], light: ['#e7e5e4', '#44403c', 0.8], sun: 1.3, ground: '#57534e', track: '#292524', water: '#155e75', props: ['steam-machine', 'cc0-barrel-stack', 'gen3d-smokestack', 'gen3d-industrial-fan', 'gen3d-crane', 'gen3d-container'], tint: ['#78716c', '#ea580c'], skyTop: '#86807a', horizon: '#b8b1aa', sunColor: '#ffe2c2', sunDir: [0.5, 0.7, -0.4], exposure: 1, glow: 0.5, cover: 'paving', surface: 'asphalt', flora: FACTORY_FILL, skyline: { layers: ['blocks', 'blocks'], tone: '#6e665e' }, landmark: ['gen3d-smokestack', 'gen3d-crane'], ambient: ['dust'] },
+  forest: { sky: '#bbf7d0', fog: [20, 70], light: ['#dcfce7', '#14532d', 0.8], sun: 1.3, ground: '#166534', track: '#78350f', water: '#0e7490', props: ['cc0-tree-pine', 'tree', 'gen3d-forest-shrine', 'cc0-log-stack', 'gen3d-treehouse', 'gen3d-standing-stone'], tint: ['#14532d', '#57534e'], skyTop: '#4f97c9', horizon: '#cfeedd', sunColor: '#fff2cf', sunDir: BEHIND_LEFT, exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: FOREST_FLORA, skyline: { layers: ['peaks', 'crowns', 'pines'], tone: '#3f6e4c' }, landmark: ['gen3d-treehouse', 'gen3d-standing-stone', 'gen3d-forest-shrine'], ambient: ['birds'] },
+  jungle: { sky: '#a7f3d0', fog: [15, 60], light: ['#ecfdf5', '#064e3b', 0.9], sun: 1.2, ground: '#065f46', track: '#713f12', water: '#0f766e', props: ['cc0-palm-tree', 'cc0-bamboo', 'gen3d-bamboo-hut', 'gen3d-jungle-waterfall', 'gen3d-ruin'], tint: ['#15803d', '#65a30d'], skyTop: '#3f9fb0', horizon: '#c3f0dc', sunColor: '#fff5d0', sunDir: [0.4, 0.85, -0.3], exposure: 1, glow: 0.8, cover: 'grass', surface: 'dirt', flora: JUNGLE_FLORA, skyline: { layers: ['hills', 'crowns', 'crowns'], tone: '#3c7a4e' }, landmark: ['gen3d-jungle-waterfall', 'gen3d-ruin', 'gen3d-bamboo-hut'], ambient: ['butterflies'] },
+  desert: { sky: '#fde68a', fog: [40, 120], light: ['#fffbeb', '#b45309', 1.0], sun: 2.0, ground: '#d97706', track: '#b45309', water: '#0891b2', props: ['gen3d-western-saloon', 'gen3d-buried-statue-head', 'cactus', 'gen3d-abandoned-mine-entrance', 'gen3d-camel'], tint: ['#65a30d', '#92400e'], skyTop: '#2f7dd1', horizon: '#fbe3a8', sunColor: '#ffe6b8', sunDir: [0.55, 0.7, -0.35], exposure: 0.95, glow: 1, terrain: { lane: '#e6c38c', shade: '#c47f33', rock: '#8f5530' }, cover: 'sand', surface: 'sand', flora: DESERT_FLORA, skyline: { layers: ['mesas', 'dunes', 'dunes'], tone: '#d09a5e' }, landmark: ['gen3d-western-saloon', 'gen3d-buried-statue-head', 'gen3d-abandoned-mine-entrance'], ambient: [] },
+  beach: { sky: '#7dd3fc', fog: [40, 120], light: ['#f0f9ff', '#fcd34d', 1.0], sun: 1.9, ground: '#fcd34d', track: '#fde68a', water: '#0ea5e9', props: ['cc0-palm-tree', 'gen3d-beach-chair', 'cc0-boat-row', 'gen3d-sandcastle', 'gen3d-surf-rack', 'gen3d-lighthouse'], tint: ['#16a34a', '#a8a29e'], skyTop: '#1f8fe0', horizon: '#cdeefd', sunColor: '#fff0d0', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', surface: 'sand', flora: BEACH_FLORA, skyline: { layers: ['hills', 'coast'], tone: '#9fae8c' }, landmark: ['gen3d-lighthouse', 'gen3d-sailboat'], ambient: ['birds'] },
+  ocean: { sky: '#7dd3fc', fog: [30, 100], light: ['#f0f9ff', '#0369a1', 1.0], sun: 1.7, ground: '#0284c7', track: '#0c4a6e', water: '#0369a1', props: ['cc0-boat-row', 'gen3d-navigation-buoy', 'gen3d-floating-dock', 'gen3d-sailboat', 'gen3d-lighthouse'], tint: ['#ef4444', '#64748b'], skyTop: '#1f7fd0', horizon: '#c2e6fb', sunColor: '#fff1d6', sunDir: [0.5, 0.75, -0.4], exposure: 0.95, glow: 1, cover: 'sand', land: '#e9d29a', surface: 'planks', flora: OCEAN_FILL, skyline: { layers: ['coast', 'coast'], tone: '#8aa0a8' }, landmark: ['gen3d-lighthouse', 'gen3d-sailboat'], ambient: ['jumping-fish'] },
   // Pod vodou je nahoře světlejší hladina, ne tmavší zenit.
-  underwater: { sky: '#0e7490', fog: [8, 45], light: ['#67e8f9', '#164e63', 1.0], sun: 0.8, ground: '#155e75', track: '#0f766e', water: '#083344', props: ['gen3d-staghorn-coral', 'cc0-clownfish', 'gen3d-kelp', 'cc0-tang', 'gen3d-barnacle-rock', 'gen3d-jellyfish', 'gen3d-seahorse', 'gen3d-octopus'], tint: ['#fb7185', '#22c55e'], skyTop: '#3fb6cf', horizon: '#0e7490', sunColor: '#bff4ff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'sand', surface: 'sand', skyline: { layers: ['hills', 'crowns'], tone: '#2f6f73' } },
+  underwater: { sky: '#0e7490', fog: [8, 45], light: ['#67e8f9', '#164e63', 1.0], sun: 0.8, ground: '#155e75', track: '#0f766e', water: '#083344', props: ['gen3d-staghorn-coral', 'cc0-clownfish', 'gen3d-kelp', 'cc0-tang', 'gen3d-barnacle-rock', 'gen3d-jellyfish', 'gen3d-seahorse', 'gen3d-octopus'], tint: ['#fb7185', '#22c55e'], skyTop: '#3fb6cf', horizon: '#0e7490', sunColor: '#bff4ff', sunDir: OVERHEAD, exposure: 1, glow: 0, cover: 'sand', surface: 'sand', flora: UNDERWATER_FILL, skyline: { layers: ['hills', 'crowns'], tone: '#2f6f73' }, landmark: ['gen3d-ruin', 'gen3d-staghorn-coral', 'gen3d-octopus'], ambient: ['fish'] },
   // Ukázka B (`D:/caches/p32-style/page.html`, `renderVariant('B')`): obloha, polokoule, slunce 2,2 a expozice 0,9.
-  snow: { sky: '#e0f2fe', fog: [25, 80], light: ['#bcd6ff', '#7d8ea8', 0.9], sun: 2.2, ground: '#f8fafc', track: '#cbd5e1', water: '#7dd3fc', props: ['pine', 'penguin', 'gen3d-snowy-bench', 'cc0-sled', 'gen3d-ice-igloo', 'gen3d-snowman-with-hat', 'gen3d-ice-arch'], tint: ['#e2e8f0', '#7dd3fc'], block: ['#cbd5e1', '#f8fafc'], skyTop: '#3d7bd9', horizon: '#e4eef8', sunColor: '#ffe9cc', sunDir: BEHIND_LEFT, exposure: 0.9, glow: 1, terrain: { lane: '#a7cde4', shade: '#c7d5e6', rock: '#66727f', cap: '#f4f8fc' }, cover: 'snow', surface: 'snow', flora: SNOW_FLORA, skyline: { layers: ['peaks', 'peaks', 'pines'], tone: '#9fb4cc' } },
-  cave: { sky: '#1c1917', fog: [8, 40], light: ['#a8a29e', '#0c0a09', 0.8], sun: 0.7, ground: '#44403c', track: '#292524', water: '#155e75', props: ['gen3d-stalagmite', 'gen3d-crystal-geode', 'cc0-torch-lit', 'gen3d-glowing-mushroom', 'gen3d-crystal-cluster', 'gen3d-mine-cart'], tint: ['#2dd4bf', '#57534e'], block: ['#292524', '#57534e'], skyTop: '#0c0a09', horizon: '#292524', sunColor: '#ffd9a8', sunDir: OVERHEAD, exposure: 1.05, glow: 0, cover: 'rock', surface: 'dirt', skyline: { layers: ['peaks', 'peaks'], tone: '#6b625a' } },
-  volcano: { sky: '#7c2d12', fog: [15, 60], light: ['#fdba74', '#450a0a', 0.9], sun: 1.2, ground: '#292524', track: '#44403c', water: '#ea580c', props: ['volcano', 'gen3d-magma-rock', 'gen3d-steam-vent', 'gen3d-volcano', 'gen3d-crystal-cluster'], tint: ['#1c1917', '#f97316'], skyTop: '#2a0e0a', horizon: '#a4431d', sunColor: '#ffb27a', sunDir: [0.4, 0.7, -0.45], exposure: 1, glow: 0.6, cover: 'rock', surface: 'dirt', skyline: { layers: ['peaks', 'hills'], tone: '#5a3a2e' } },
-  space: { sky: '#020617', fog: [40, 140], light: ['#e2e8f0', '#7f1d1d', 0.7], sun: 1.6, ground: '#b45309', track: '#7c2d12', water: '#0f172a', props: ['cc0-asteroid', 'gen3d-fuel-silo', 'rocket', 'gen3d-moon-flag', 'gen3d-moon-lander', 'gen3d-satellite-radar-dish', 'gen3d-space-colony-dome'], tint: ['#22d3ee', '#78350f'], skyTop: '#01030c', horizon: '#0b1730', sunColor: '#fff6e8', sunDir: [0.6, 0.55, -0.5], exposure: 1, glow: 1, cover: 'rock', surface: 'dirt', skyline: { layers: ['peaks', 'mesas'], tone: '#8a6a50' } },
-  castle: { sky: '#bfdbfe', fog: [30, 90], light: ['#eff6ff', '#3f6212', 0.9], sun: 1.5, ground: '#4d7c0f', track: '#78716c', water: '#1d4ed8', props: ['gen3d-castle-tower', 'stone-wall', 'cc0-torch-lit', 'gen3d-stone-gatehouse', 'gen3d-drawbridge', 'gen3d-stone-water-well'], tint: ['#a8a29e', '#dc2626'], block: ['#57534e', '#a8a29e'], skyTop: '#3f7fd4', horizon: '#d6e6f7', sunColor: '#fff0d2', sunDir: [0.5, 0.75, -0.4], exposure: 1, glow: 1, cover: 'paving', surface: 'paving', skyline: { layers: ['peaks', 'hills', 'crowns'], tone: '#6f8a62' } },
+  snow: { sky: '#e0f2fe', fog: [25, 80], light: ['#bcd6ff', '#7d8ea8', 0.9], sun: 2.2, ground: '#f8fafc', track: '#cbd5e1', water: '#7dd3fc', props: ['pine', 'penguin', 'gen3d-snowy-bench', 'cc0-sled', 'gen3d-ice-igloo', 'gen3d-snowman-with-hat', 'gen3d-ice-arch'], tint: ['#e2e8f0', '#7dd3fc'], block: ['#cbd5e1', '#f8fafc'], skyTop: '#3d7bd9', horizon: '#e4eef8', sunColor: '#ffe9cc', sunDir: BEHIND_LEFT, exposure: 0.9, glow: 1, terrain: { lane: '#a7cde4', shade: '#c7d5e6', rock: '#66727f', cap: '#f4f8fc' }, cover: 'snow', surface: 'snow', flora: SNOW_FLORA, skyline: { layers: ['peaks', 'peaks', 'pines'], tone: '#9fb4cc' }, landmark: ['gen3d-iceberg', 'gen3d-ice-arch', 'gen3d-ice-igloo'], ambient: [] },
+  cave: { sky: '#1c1917', fog: [8, 40], light: ['#a8a29e', '#0c0a09', 0.8], sun: 0.7, ground: '#44403c', track: '#292524', water: '#155e75', props: ['gen3d-stalagmite', 'gen3d-crystal-geode', 'cc0-torch-lit', 'gen3d-glowing-mushroom', 'gen3d-crystal-cluster', 'gen3d-mine-cart'], tint: ['#2dd4bf', '#57534e'], block: ['#292524', '#57534e'], skyTop: '#0c0a09', horizon: '#292524', sunColor: '#ffd9a8', sunDir: OVERHEAD, exposure: 1.05, glow: 0, cover: 'rock', surface: 'dirt', flora: CAVE_FILL, skyline: { layers: ['peaks', 'peaks'], tone: '#6b625a' }, landmark: ['gen3d-stalagmite', 'gen3d-crystal-geode', 'gen3d-crystal-cluster'], ambient: ['bats'] },
+  volcano: { sky: '#7c2d12', fog: [15, 60], light: ['#fdba74', '#450a0a', 0.9], sun: 1.2, ground: '#292524', track: '#44403c', water: '#ea580c', props: ['volcano', 'gen3d-magma-rock', 'gen3d-steam-vent', 'gen3d-volcano', 'gen3d-crystal-cluster'], tint: ['#1c1917', '#f97316'], skyTop: '#2a0e0a', horizon: '#a4431d', sunColor: '#ffb27a', sunDir: [0.4, 0.7, -0.45], exposure: 1, glow: 0.6, cover: 'rock', surface: 'dirt', flora: VOLCANO_FILL, skyline: { layers: ['peaks', 'hills'], tone: '#5a3a2e' }, landmark: ['gen3d-volcano'], ambient: ['sparks'] },
+  space: { sky: '#020617', fog: [40, 140], light: ['#e2e8f0', '#7f1d1d', 0.7], sun: 1.6, ground: '#b45309', track: '#7c2d12', water: '#0f172a', props: ['cc0-asteroid', 'gen3d-fuel-silo', 'rocket', 'gen3d-moon-flag', 'gen3d-moon-lander', 'gen3d-satellite-radar-dish', 'gen3d-space-colony-dome'], tint: ['#22d3ee', '#78350f'], skyTop: '#01030c', horizon: '#0b1730', sunColor: '#fff6e8', sunDir: [0.6, 0.55, -0.5], exposure: 1, glow: 1, cover: 'rock', surface: 'dirt', flora: SPACE_FILL, skyline: { layers: ['peaks', 'mesas'], tone: '#8a6a50' }, landmark: ['gen3d-fuel-silo', 'gen3d-satellite-radar-dish', 'gen3d-space-colony-dome'], ambient: ['meteors'] },
+  castle: { sky: '#bfdbfe', fog: [30, 90], light: ['#eff6ff', '#3f6212', 0.9], sun: 1.5, ground: '#4d7c0f', track: '#78716c', water: '#1d4ed8', props: ['gen3d-castle-tower', 'stone-wall', 'cc0-torch-lit', 'gen3d-stone-gatehouse', 'gen3d-drawbridge', 'gen3d-stone-water-well'], tint: ['#a8a29e', '#dc2626'], block: ['#57534e', '#a8a29e'], skyTop: '#3f7fd4', horizon: '#d6e6f7', sunColor: '#fff0d2', sunDir: [0.5, 0.75, -0.4], exposure: 1, glow: 1, cover: 'paving', surface: 'paving', flora: CASTLE_FILL, skyline: { layers: ['peaks', 'hills', 'crowns'], tone: '#6f8a62' }, landmark: ['gen3d-castle-tower', 'gen3d-stone-gatehouse', 'gen3d-stone-water-well'], ambient: ['birds'] },
   // Noc: slunce je měsíc – studené, slabé, záře nízko.
-  graveyard: { sky: '#0f172a', fog: [10, 50], light: ['#94a3b8', '#1e293b', 0.7], sun: 0.6, ground: '#1e293b', track: '#334155', water: '#0c4a6e', props: ['gen3d-iron-fence', 'pine', 'cc0-pumpkin', 'gen3d-grave-lantern', 'gen3d-gravestone'], tint: ['#64748b', '#14532d'], skyTop: '#060b16', horizon: '#1e2a3d', sunColor: '#c9d8ee', sunDir: [0.45, 0.7, -0.45], exposure: 1, glow: 0.6, cover: 'grass', surface: 'dirt', skyline: { layers: ['hills', 'pines'], tone: '#4a5a52' } },
+  graveyard: { sky: '#0f172a', fog: [10, 50], light: ['#94a3b8', '#1e293b', 0.7], sun: 0.6, ground: '#1e293b', track: '#334155', water: '#0c4a6e', props: ['gen3d-iron-fence', 'pine', 'cc0-pumpkin', 'gen3d-grave-lantern', 'gen3d-gravestone'], tint: ['#64748b', '#14532d'], skyTop: '#060b16', horizon: '#1e2a3d', sunColor: '#c9d8ee', sunDir: [0.45, 0.7, -0.45], exposure: 1, glow: 0.6, cover: 'grass', surface: 'dirt', flora: GRAVEYARD_FILL, skyline: { layers: ['hills', 'pines'], tone: '#4a5a52' }, landmark: ['gen3d-ruin', 'gen3d-castle-tower'], ambient: ['bats'] },
 };
 
 /**
@@ -643,24 +691,16 @@ export function withKit(props: readonly SceneryKind[], kit: readonly KitModel[])
 /** Podzim z věty (P46G T4): jen slovo, „waterfall“ ani „falling“ ne. */
 const AUTUMN = /\bautumn\w*|\bfall\b/;
 
-/** Nálada z věty (P46G T5): co věta řekne o světle, scéna ukáže. */
-export type Mood = 'spooky' | 'storm' | 'gloom' | 'fog' | 'bright' | 'dusk';
+/**
+ * Nálada z věty (P46G T5): co věta řekne o světle, scéna ukáže. `cozy` čte jen věta (P54B T11) a
+ * ukládá se jako soumrak (`sentenceSky`); `snow` dává jen počasí `theme.weather`.
+ */
+export type Mood = 'spooky' | 'storm' | 'gloom' | 'fog' | 'bright' | 'dusk' | 'cozy' | 'snow';
 
-/** Slova → nálada. Pořadí rozhoduje: strašidelný temný les je strašidelný, bouřka je tmavá i bez „dark“. */
-const MOOD_WORDS: readonly (readonly [Mood, RegExp])[] = [
-  ['spooky', /\b(?:spooky|haunted|creepy)\b/],
-  ['storm', /\b(?:storm|stormy|rain|rainy|raining)\b/],
-  ['gloom', /\b(?:dark|darkness|gloomy|shadowy)\b/],
-  ['fog', /\b(?:fog|foggy|mist|misty)\b/],
-  ['bright', /\b(?:sunny|bright)\b/],
-  ['dusk', /\b(?:sunset|dusk)\b/],
-];
-
-/** Nálada ze slov místa i nálady specu; `null` = věta o světle nic neřekne a sada zůstane, jaká byla. */
-export function moodFor(setting: string, mood: string): Mood | null {
-  const text = `${setting} ${mood}`.toLowerCase();
-  return MOOD_WORDS.find(([, pattern]) => pattern.test(text))?.[0] ?? null;
-}
+/** Počasí → nálada světla; jasno světlo nemění. */
+const WEATHER_MOODS: Readonly<Record<Weather, 'storm' | 'snow' | 'fog' | null>> = { clear: null, rain: 'storm', snow: 'snow', fog: 'fog' };
+/** Přednost nálad, když místo říká jednu a počasí druhou (strašidelno v dešti zůstane strašidelné). */
+const MOOD_ORDER: readonly Exclude<Mood, 'dusk' | 'cozy'>[] = ['spooky', 'storm', 'gloom', 'snow', 'fog', 'bright'];
 
 /**
  * Úprava sady náladou: obloha, obzor (= barva mlhy) a polokoule zespodu jdou
@@ -681,7 +721,9 @@ interface MoodShift {
  * Tóny oblohy mají zelenou aspoň jako modrou: směs s rudou oblohou sopky tak
  * jde přes šedou, ne přes fialovou.
  */
-const MOOD_SHIFTS: Readonly<Record<Exclude<Mood, 'dusk'>, MoodShift>> = {
+const MOOD_SHIFTS: Readonly<Record<Exclude<Mood, 'dusk' | 'cozy'>, MoodShift>> = {
+  // Sněžení (P54B T11, jen z počasí): zatažené světlé šedomodré nebe, měkké slunce, dohled blíž.
+  snow: { tone: '#d6dee6', lightTone: '#eef2f6', amount: 0.5, light: 1, sun: 0.55, glow: 0.3, fog: [0.55, 0.75] },
   // Šero: tlumené světlo, tmavší mlha, studené barvy.
   gloom: { tone: '#283a3a', lightTone: '#a9bdc8', amount: 0.65, light: 0.9, sun: 0.45, glow: 0.15, fog: [0.6, 0.8] },
   // Strašidelno: šero do zelenomodra (ne do fialova) a hustší mlha.
@@ -742,9 +784,10 @@ function withMood(look: Look, shift: MoodShift): Look {
 
 /**
  * Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem, rekvizity prostředí, podzim),
- * jízda hrdiny, denní doba a nálada. Noc přebije náladu; věta bez slov nálady a denní doby má sadu beze změny.
+ * jízda hrdiny, denní doba, počasí a nálada. Noc přebije náladu; věta bez slov nálady a denní doby má sadu beze změny.
+ * Místo a náladu specu čte postaru (`placeMood`), novou větu nese uložená denní doba a počasí (P54B T11, `sentenceSky`).
  */
-export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay }): Look {
+export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay; readonly weather?: Weather }): Look {
   const look = LOOKS[lookOf(theme)];
   const setting = theme.setting.toLowerCase();
   const ground = PLACE_GROUNDS.find(([pattern]) => pattern.test(setting))?.[1] ?? look.ground;
@@ -757,9 +800,13 @@ export function sceneLook(theme: { readonly setting: string; readonly mood: stri
     ground === look.ground && !afloat && !ride && kit.length === 0 && surface === look.surface && !autumn
       ? look
       : { ...look, ground, afloat, surface, props: withKit(look.props, kit), ...(ride ? { ride } : {}), ...(autumn ? { flora: { ...look.flora!, autumn } } : {}) };
-  const mood = moodFor(theme.setting, theme.mood);
-  const time = theme.timeOfDay ?? timeOfDayFor(theme.setting) ?? (mood === 'dusk' ? 'dusk' : null);
-  if (time === 'night') return { ...placed, ...NIGHT, exposure: Math.min(placed.exposure, 1) };
+  const said = placeMood(theme.setting, theme.mood);
+  const time = theme.timeOfDay ?? placeTime(theme.setting) ?? (said === 'dusk' ? 'dusk' : null);
+  const sky = theme.weather === undefined ? null : WEATHER_MOODS[theme.weather];
+  const mood = MOOD_ORDER.find((entry) => entry === said || entry === sky);
+  // Noc přebije náladu světla, vítr bouřky ale fouká i v noci.
+  const wind = mood === 'storm' ? { wind: STORM_WIND } : {};
+  if (time === 'night') return { ...placed, ...NIGHT, exposure: Math.min(placed.exposure, 1), ...wind };
   const timed = time === 'dusk' ? { ...placed, ...DUSK } : placed;
-  return mood === null || mood === 'dusk' ? timed : withMood(timed, MOOD_SHIFTS[mood]);
+  return mood === undefined ? timed : { ...withMood(timed, MOOD_SHIFTS[mood]), ...wind };
 }
