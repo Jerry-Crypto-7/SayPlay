@@ -23,7 +23,7 @@ import type { ClipState } from '@/play/arcade/motion';
 import { type ToyPose, type ToyView, toyPoseOf } from '@/play/arcade/toy-motion';
 
 import { HIT_S, fallOf, jumpStretchOf, landSquashOf, squashPose, tiltPose } from './characterMotion';
-import { dropRestTracks, mergeRig } from './look/load';
+import { dropRestTracks, mergeRig, rimLit } from './look/load';
 import { applyToy, toyMotionOn } from './toy/applyToy';
 import { bodyClassOf } from './toy/body-class';
 
@@ -130,11 +130,13 @@ function loadRigged(path: string): Promise<GLTF | null> {
   if (pending === undefined) {
     // Slít jednou na načtený model (P36C T9): klony z `cloneSkinned` pak nesou jednu síť na materiál.
     // Klipy bez klidových stop (P54B T15c): míchač každé postavy počítá jen kosti, které se hýbou.
+    // Okrajový svit (T14): riggovaná je vždy postava, klony sdílejí materiály se svitem.
     pending = new GLTFLoader()
       .loadAsync(path)
       .then((gltf) => {
         mergeRig(gltf.scene);
         dropRestTracks(gltf.animations, gltf.scene);
+        rimLit(gltf.scene);
         return gltf;
       })
       .catch(() => null);

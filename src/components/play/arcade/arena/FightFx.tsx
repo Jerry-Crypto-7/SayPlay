@@ -25,6 +25,7 @@ import type { ClipState } from '@/play/arcade/motion';
 import { FIGHT, FIGHT_PHASE, attackCooldownOf, phaseOf, phaseTicksLeft } from '@/play/arcade/pieces/fight';
 
 import { HIT_STOP_MS } from '../effects/feel';
+import { patchedClone } from '../look/load';
 import { type ArcadeSession, TICK_MS } from '../session';
 
 /** Hit-stop: kresba stojí `HIT_STOP_MS` po zásahu (stejně jako mimo arénu, `effects/feel.ts`), pak ji tolik ms dotahuje k živé poloze. */
@@ -211,7 +212,8 @@ export function adoptSkin(fighter: Fighter, owned: Material[]): void {
     mesh.userData.fightSkin = true;
     const own = (material: Material): Material => {
       if (!lit(material)) return material;
-      const copy = material.clone() as SkinSlot['material'];
+      // I s úpravou shaderu (okrajový svit postavy, P54B T14) – `clone()` by ji zahodil.
+      const copy = patchedClone(material);
       owned.push(copy);
       fighter.skin.push({ material: copy, emissive: copy.emissive.clone(), intensity: copy.emissiveIntensity });
       return copy;

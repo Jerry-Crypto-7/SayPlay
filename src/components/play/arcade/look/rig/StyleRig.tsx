@@ -22,6 +22,7 @@ import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mes
 import type { Look, LookId } from '@/play/arcade/look';
 
 import { Ambient } from '../Ambient';
+import { setCharacterRim } from '../load';
 import { Wind } from '../Vegetation';
 import { LOOK_FAMILY } from './grade';
 import { Post, useQualityTier } from './Post';
@@ -263,6 +264,8 @@ function Exposure({ exposure }: { readonly exposure: number }) {
 
 export function StyleRig({ look, lookId, control, surface }: { readonly look: Look; readonly lookId: LookId; readonly control: string; readonly surface: RefObject<HTMLDivElement | null> }) {
   const tier = useQualityTier(surface);
+  // Okrajový svit postav barvou oblohy sady (P54B T14): jen uniformy, materiály se nepřekládají.
+  useEffect(() => setCharacterRim(look), [look]);
   return (
     <>
       <color attach="background" args={[look.horizon]} />

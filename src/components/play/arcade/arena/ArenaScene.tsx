@@ -831,7 +831,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets, heroA
                       />
                     ) : (
                       <group ref={(group) => { posed.current[view.index] = group; }}>
-                        <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} posed />
+                        <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} posed rim />
                       </group>
                     )}
                   </HeroActionBody>

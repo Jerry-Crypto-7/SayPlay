@@ -328,6 +328,81 @@ export function glowingCopy(source: Material, intensity: number): Material {
   return glow;
 }
 
+/** Klon materiálu i s úpravou shaderu, kterou `clone()` nepřenese – záblesk zásahu bojovníka (`FightFx`). */
+export function patchedClone<T extends Material>(source: T): T {
+  const copy = source.clone() as T;
+  copy.onBeforeCompile = source.onBeforeCompile;
+  copy.customProgramCacheKey = source.customProgramCacheKey;
+  return copy;
+}
+
+/**
+ * Okrajový svit postav (P54B T14): hrdina, nepřítel a riggované postavy mají na hranách siluety
+ * světlo barvy oblohy sady (`light[0]`) – Fresnel normály a směru ke kameře, přičtený k záři před
+ * světly, takže ho ACES, ladění i mlha zpracují jako zbytek těla. Na telefonu (`low` bez AO a bloomu)
+ * se riggovaná postava slévala se zemí (soud T15a: low-poly liška čitelnější než riggovaná).
+ * Barvu a sílu nesou sdílené uniformy (`setCharacterRim` v rigu): sada, nálada ani úroveň kvality
+ * program nepřekládají. Svítí na každé úrovni – pár operací na pixel postavy.
+ */
+export const characterRim = { color: { value: new Color() }, strength: { value: 0 } };
+
+/**
+ * Záře svitu na samé hraně siluety; dovnitř těla slábne s mocninou `RIM_POWER`. Svit má barvu těla
+ * s podílem `RIM_WHITE` bílé: čistá barva oblohy (0,45, mocnina 3) lišku z kamery za zády vybělila
+ * celou a slepý soud telefonu dal přednost syté postavě bez svitu (5 z 10). Bílý podíl zvedne i černého medvěda.
+ */
+export const RIM_STRENGTH = 0.35;
+const RIM_POWER = '4.0';
+const RIM_WHITE = '0.25';
+
+const RIM_HEAD = '\nuniform vec3 rimColor;\nuniform float rimStrength;';
+const RIM_BODY = `\n\ttotalEmissiveRadiance += rimColor * mix(diffuseColor.rgb, vec3(1.0), ${RIM_WHITE}) * (rimStrength * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), ${RIM_POWER}));`;
+
+/** Barva svitu z palety scény (obloha polokoule, nálada a denní doba už v ní jsou). */
+export function setCharacterRim(look: Pick<Look, 'light'>): void {
+  characterRim.color.value.set(look.light[0]);
+  characterRim.strength.value = RIM_STRENGTH;
+}
+
+function rimShader(shader: WebGLProgramParametersWithUniforms): void {
+  shader.uniforms.rimColor = characterRim.color;
+  shader.uniforms.rimStrength = characterRim.strength;
+  shader.fragmentShader = shader.fragmentShader.replace('#include <common>', `#include <common>${RIM_HEAD}`).replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>${RIM_BODY}`);
+}
+
+const rimCopies = new WeakMap<Material, Material>();
+
+/**
+ * Kopie materiálu se svitem, jedna na zdroj (sdílený materiál slitých těl tak dál kreslí mince bez
+ * svitu). Kopie nese `userData.rim` i v klonech, aby se svit nevložil dvakrát. Neosvětlený materiál
+ * (bez záře) zůstane.
+ */
+export function rimMaterial(source: Material): Material {
+  if (source.userData.rim === true || !('emissive' in source)) return source;
+  let copy = rimCopies.get(source);
+  if (copy === undefined) {
+    copy = source.clone();
+    copy.userData.rim = true;
+    copy.onBeforeCompile = (shader, renderer) => {
+      source.onBeforeCompile(shader, renderer);
+      rimShader(shader);
+    };
+    copy.customProgramCacheKey = () => `${source.customProgramCacheKey()}+rim`;
+    rimCopies.set(source, copy);
+  }
+  return copy;
+}
+
+/** Svit všem sítím pod `root` – klon těla postavy nebo načtená riggovaná postava; zdrojové materiály se nemění. */
+export function rimLit(root: Object3D): Object3D {
+  root.traverse((node) => {
+    const mesh = node as Mesh;
+    if (mesh.isMesh !== true) return;
+    mesh.material = Array.isArray(mesh.material) ? mesh.material.map(rimMaterial) : rimMaterial(mesh.material);
+  });
+  return root;
+}
+
 const constant = (count: number, values: readonly number[]): Float32BufferAttribute =>
   new Float32BufferAttribute(Float32Array.from({ length: count * values.length }, (_, i) => values[i % values.length]!), values.length);
 
