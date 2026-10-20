@@ -48,7 +48,7 @@ describe('the director answer, read like the quick version', () => {
       expect(read.spec.objective.description).toBe(quick.objective.description);
     }
     expect(penguin.spec.objective.description).toContain('a rock.');
-    expect(chef.spec.objective.description).toContain('pancake ');
+    expect(chef.spec.objective.description).toContain('all 2 pancakes in');
   });
 
   it('keeps -us words, names and irregular plurals whole when it makes a label singular', () => {
