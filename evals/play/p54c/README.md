@@ -468,6 +468,14 @@ Příčina: vazba svědka (`bindRoles` v `src/play/arcade/witness.ts`) dá tělu
 - Nahrané odpovědi T14 bez modelu, 32 MVP vět: c05 a s02 ztratí z chybějících trojic „bomb hazard chef/ninja“, **ostatních 30 her beze změny** (otisk specu, chybějící trojice, důvod i zdroj stejné).
 - Pin `__tests__/director-twins.test.ts`; se starou vazbou červený 2/2.
 
+## T12r1 – despawn fyzikálního tělesa
+
+Holý Rapier 0.19.3 (sloupek dvou koulí): po `setEnabled(false)` spodní koule horní koule visí ve vzduchu s rychlostí přesně 0 – nespí, nemá gravitaci. Nepomůže probudit ji (před ani po vypnutí), ani vypnout i collider; pomůže jen `removeRigidBody`. V nádobě slučování totéž: koule na zmizelé kouli visela 140 tiků a vzdálená koule se po cizím despawnu sama rozjela o 0,26 m.
+
+- `physics/step.ts`: zmizelé těleso se z Rapieru odebere, vrácený slot dostane nové (dřív vypnout / zapnout).
+- Pin `src/play/arcade/__tests__/physics-despawn.test.ts` (soused spadne, vzdálená koule stojí); se starým `step.ts` červený 2/2.
+- Sady `src/play/arcade` + `evals/play/p41` 2712/2712 (míč, slučování, vytlačování, replay brána `legacy-replay-v2`, determinismus), `tsc` 0. **Neověřeno:** 120 běhů buněk `ball.*` z `difficulty.json` proti uloženým hashům a e2e `play-physics-determinism`.
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.

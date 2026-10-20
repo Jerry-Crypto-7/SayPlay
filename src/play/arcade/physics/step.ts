@@ -151,7 +151,12 @@ class PhysicsSession {
       const active = (flags & FLAG.alive) !== 0 && i !== held && (dynamic || ((flags & FLAG.solid) !== 0 && state[base + BODY.role] !== ROLE.projectile));
       let entry = this.entries.get(i);
       if (!active) {
-        if (entry?.rigid.isEnabled() === true) entry.rigid.setEnabled(false);
+        // Rapier 0.19: vypnuté těleso (`setEnabled(false)`) vyřadí ze simulace i těleso, které se ho dotýká –
+        // koule na zmizelé kouli visí bez gravitace (P54C T12r1). Odebrané těleso ne; vrácený slot dostane nové.
+        if (entry !== undefined) {
+          this.world.removeRigidBody(entry.rigid);
+          this.entries.delete(i);
+        }
         continue;
       }
       if (entry !== undefined && !this.fits(state, base, entry, dynamic)) {
@@ -161,9 +166,6 @@ class PhysicsSession {
       if (entry === undefined) {
         entry = this.create(state, base, dynamic);
         this.entries.set(i, entry);
-      } else if (!entry.rigid.isEnabled()) {
-        entry.rigid.setEnabled(true);
-        this.teleport(state, base, entry, true);
       } else if (this.changed(state, base, entry)) this.teleport(state, base, entry);
     }
     for (let k = 0; k < PHYSICS_SUBSTEPS; k += 1) this.world.step();
