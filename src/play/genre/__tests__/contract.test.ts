@@ -17,7 +17,7 @@ import { readGameSpec } from '@/play/spec';
 import { ALLOWED, liveCells } from '@/play/compose/allowed';
 
 import { classifyGenre } from '../classify';
-import { COUNT_PARAMS, FOE_DOES, GENRES, GENRE_COMPILER_VERSION, GENRE_MODES, type GenreSpec, genreSpecSchema } from '../contract';
+import { COUNT_PARAMS, FOE_DOES, GENRES, GENRE_COMPILER_VERSION, GENRE_MODES, type GenreId, type GenreSpec, genreSpecSchema } from '../contract';
 import penguin from '../__fixtures__/penguin.json';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '../index';
 
@@ -54,6 +54,8 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'crowd', mode: 'default', hero: 'penguin', cast: [{ label: 'saw', does: 'avoid' }, { label: 'giant', does: 'fight' }], setting: 'icy road' },
   // P54C T11: pouštění a slučování (Rapier – načtený v `beforeAll`).
   { genre: 'merge', mode: 'default', hero: 'cat', cast: [{ label: 'planet', does: 'collect' }], setting: 'outer space' },
+  // P54C T12: vytlačování z ringu (Rapier).
+  { genre: 'push', mode: 'default', hero: 'sumo wrestler', cast: [{ label: 'bull', does: 'fight' }], setting: 'bouncy ring' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */
@@ -146,9 +148,10 @@ describe('genre contract (P32-0 T3)', () => {
 /**
  * Kostra P54C T4: osm žánrů je v kontraktu, ale nehraje – nikdo je nevybere, dokud jejich úloha nepřepne buňku.
  * T5 přepnulo chytání (`catch`), T6 bouchání (`whack`), T7 obranu pruhů (`defense`), T8 krájení (`slice`),
- * T9 přeskákání silnice (`hop`), T10 dav a brány (`crowd`), T11 pouštění a slučování (`merge`), zbývá vytlačování.
+ * T9 přeskákání silnice (`hop`), T10 dav a brány (`crowd`), T11 pouštění a slučování (`merge`), T12 vytlačování
+ * (`push`) – kostra už žádný žánr nedrží; brány níž hlídají, kdyby se úloha žánru musela vrátit na kostru.
  */
-const STAGED = ['push'] as const;
+const STAGED: readonly GenreId[] = [];
 
 describe('staged genres (P54C T4)', () => {
   it('registers the remaining new genres with one default mode, staged, and a compile that refuses', () => {

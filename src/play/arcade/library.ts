@@ -32,6 +32,8 @@ import { CROWD_RULES, crowdControl, crowdTrack } from './pieces/crowd';
 import { crowdBot } from './pieces/crowd-bot';
 import { MERGE_RULES, mergeBox, mergeControl } from './pieces/merge-drop';
 import { mergeBot } from './pieces/merge-drop-bot';
+import { PUSH_RULES, pushControl, pushRing } from './pieces/push-ring';
+import { pushBot } from './pieces/push-ring-bot';
 import { fightBot } from './pieces/fight-bot';
 import { flapControl, flapTrack } from './pieces/flap';
 import { flapBot } from './pieces/flap-bot';
@@ -90,6 +92,7 @@ const BASE_BOTS = {
   hop_bot: hopBot,
   crowd_bot: crowdBot,
   merge_bot: mergeBot,
+  push_bot: pushBot,
 } as const;
 
 /**
@@ -122,6 +125,8 @@ export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
   crowd_track: crowdTrack,
   // P54C T11: pouštění a slučování v nádobě (Rapier).
   merge_box: mergeBox,
+  // P54C T12: vytlačování z kulatého ringu (Rapier).
+  push_ring: pushRing,
 };
 
 const BASE_CONTROLS = {
@@ -146,6 +151,8 @@ const BASE_CONTROLS = {
   crowd: crowdControl,
   // P54C T11: dávkovač nad nádobou slučování.
   merge: mergeControl,
+  // P54C T12: hrdina a soupeři v ringu (koule Rapieru, chování flanker).
+  push: pushControl,
 } as const;
 
 const PHASE_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
@@ -156,7 +163,7 @@ const PROGRESSION_CONTROLS = { ...FIGHT_CONTROLS, pacing_control: makePacingCont
 const PROGRESSION_BOTS = { ...PHASE_BOTS, pacing_bot: makePacingBot(PHASE_BOTS) as BotPiece };
 const NATIVE_LIBRARY: ArcadeLibrary = {
   controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece },
-  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES, ...CATCH_RULES, ...WHACK_RULES, ...DEFENSE_RULES, ...SLICE_RULES, ...HOP_RULES, ...CROWD_RULES, ...MERGE_RULES },
+  rules: { pacing: pacingRule as RulePiece, boss_beat: bossBeat as RulePiece, boss_beat_hit: bossBeatHit as RulePiece, arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, duel_dodge: duelDodgeRule, ...SPEC_RULES, ...FIGHT_RULES, ...ABILITY_RULES, ...CATCH_RULES, ...WHACK_RULES, ...DEFENSE_RULES, ...SLICE_RULES, ...HOP_RULES, ...CROWD_RULES, ...MERGE_RULES, ...PUSH_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

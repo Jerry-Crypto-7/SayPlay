@@ -106,6 +106,39 @@ test('published merge cell: Node and Chromium replay every checkpoint of the win
   await test.info().attach('physics-merge-checkpoints.json', { body: JSON.stringify({ seed, versionId, inputs: bot.inputs.length, hashes: node.map((point) => point.hash) }), contentType: 'application/json' });
 });
 
+// P54C T12: vytlačování – hrdina a soupeři jsou koule Rapieru, vystrčení soupeři se odstaví (nezmizí); celý vítězný běh.
+test('published push cell: Node and Chromium replay every checkpoint of the winning run exactly', async ({ page, request }) => {
+  test.setTimeout(240_000);
+  const cell = liveCells().find((candidate) => candidate.id === 'push.default');
+  expect(cell?.status).toBe('live');
+  const spec = compileRecipe(assemblyOfCell(cell!));
+  const seed = 5;
+  const published = await request.post('/api/play/games', { data: { spec, seed } });
+  expect(published.ok(), await published.text()).toBe(true);
+  const { versionId } = await published.json() as { versionId: string };
+  const fetched = await request.get(`/api/play/games/${versionId}`);
+  expect(fetched.ok(), await fetched.text()).toBe(true);
+  const game = await fetched.json() as { arcade: ArcadeWorld };
+  expect(baseControlOf(game.arcade.control).id).toBe('push');
+  expect(game.arcade.seed).toBe(seed);
+
+  await loadRapier();
+  const bot = runBot(game.arcade, ARCADE_LIBRARY, { planner: false });
+  expect(bot.outcome).toBe('won');
+  const recording = { world: game.arcade, inputs: bot.inputs, checkpoints: [0, 1, 60, 600, 1500, 2400, bot.tick] };
+  const node = await replayCheckpoints(recording);
+  expect(node.at(-1)?.hash).toBe(bot.hash);
+  expect(node.at(-1)?.outcome).toBe('won');
+  await page.goto('/play/lab/physics');
+  await expect(page.getByTestId('physics-lab')).toHaveAttribute('data-state', 'done', { timeout: 30_000 });
+  const chromium = await page.evaluate(async data => {
+    if (!window.__physicsReplay) throw new Error('Physics lab replay probe unavailable');
+    return window.__physicsReplay(data);
+  }, recording);
+  expect(chromium).toEqual(node);
+  await test.info().attach('physics-push-checkpoints.json', { body: JSON.stringify({ seed, versionId, inputs: bot.inputs.length, hashes: node.map((point) => point.hash) }), contentType: 'application/json' });
+});
+
 for (const grip of [4, 20]) {
   test(`bounded steer grip ${grip}: identical recorded braking input in Node and Chromium`, async ({page,request}) => {
     const spec=driveSpec({move:'drive',actions:[],objective:'reach',threats:[]},{genre:'voyage',mode:'race',hero:'car',setting:'city',params:{grip,brakeDrift:4}});

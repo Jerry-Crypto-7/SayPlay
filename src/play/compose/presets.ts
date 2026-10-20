@@ -37,15 +37,16 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'crowd.default': { move: 'crowd', actions: [], objective: 'defeat', threats: ['obstacle'] },
   // P54C T11: pouštění a slučování je živé (vlastní ovládání `merge`, Rapier).
   'merge.default': { move: 'drop', actions: ['merge'], objective: 'score', threats: [] },
+  // P54C T12: vytlačování z ringu je živé (vlastní ovládání `push`, Rapier).
+  'push.default': { move: 'roam', actions: ['push'], objective: 'defeat', threats: ['rival'] },
 };
 
 /**
  * Recipes of the eight P54C genres (T4). They stay out of `PRESETS` – every PRESETS entry is a
  * live cell and a `sourceFor` reading – until the genre's own task makes its cell live.
+ * P54C T12 made the last one live; the table stays for a genre whose own task has to fall back.
  */
-export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
-  'push.default': { move: 'roam', actions: ['push'], objective: 'defeat', threats: ['rival'] },
-};
+export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {};
 
 /**
  * What the sentence asked for, passed by `assemble` (P45B T9): its words and the requested

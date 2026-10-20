@@ -11,6 +11,7 @@ import { WHACK, holeOpen } from './pieces/whack';
 import { SLICE, heightAt } from './pieces/slice';
 import { type HopBotParams, hopProbeInput } from './pieces/hop-bot';
 import { crowdProbeInput } from './pieces/crowd-bot';
+import { nearestRival } from './pieces/push-ring';
 import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
 import { ballKeeperProbeInput } from './pieces/ball-probe';
@@ -287,7 +288,7 @@ export class WitnessRecorder {
     this.race = this.control === 'steer' && this.world.rules.some(rule => rule.id === 'rival_finish' && !('land' in rule.params)) ||
       this.control === 'glide' && this.world.rules.some(rule => rule.id === 'glide_finish' && rule.params.race === true);
     this.stack = this.control === 'timing' && baseControlOf(this.world.control).params.mode === 'stack';
-    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk', lanes: 'lanes', hop: 'hop', crowd: 'crowd' };
+    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk', lanes: 'lanes', hop: 'hop', crowd: 'crowd', push: 'roam' };
     this.movementVerb = this.control === 'steer' && baseControlOf(this.world.control).params.land !== undefined ? 'glide' : movement[this.control];
     this.start = world.initial;
     for (const binding of this.bindings.values()) {
@@ -490,6 +491,13 @@ export class WitnessRecorder {
     // předmět, který vytvořilo pravidlo sloučení ze dvou stejných předmětů v kontaktu, dokazuje sloučení.
     if (ref.id === 'merge_drop' && effect.kind === 'spawn' && roleAt(state, effect.template) === ROLE.collectible) this.add('drop', player, effect.template, tick, 'item-dropped', state);
     if (ref.id === 'merge_join' && effect.kind === 'spawn') this.add('merge', player, effect.template, tick, 'equal-items-merged', state);
+    // Vytlačování (P54C T12): soupeř, kterému pravidlo pádu vzalo HP, je za okrajem ringu po výpadu hrdiny – vystrčený.
+    // Pád hrdiny z ringu (ztracený život) způsobil soupeř, který u něj stojí nejblíž – ten hrdinu vystrčil (sonda hrozby).
+    if (ref.id === 'push_out' && effect.kind === 'hit' && roleAt(state, effect.body) === ROLE.enemy) this.add('push', player, effect.body, tick, 'pushed-out-of-ring', state);
+    if (ref.id === 'push_out' && effect.kind === 'damage') {
+      const shover = nearestRival(state);
+      if (shover >= 0) this.harm(shover, player, tick, 'pushed-hero-out-of-ring', state);
+    }
     // Výhra obrany: žádný nepřítel už nejde a hradba drží – hrdina ji ubránil.
     if (ref.id === 'defense_goal' && effect.kind === 'win') {
       const keep = [...this.bindings.values()].find((binding) => binding.roleId === 'castle');

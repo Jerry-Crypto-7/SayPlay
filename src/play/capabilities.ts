@@ -135,7 +135,8 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   crowd: arcade({ setting: true, cues: 'grow a crowd through gates, count masters', roles: ['obstacle', 'boss'], finish: false, labels: ['player', 'obstacle', 'boss'], mechanics: LIVES_AND_TIMER }),
   // T11 slučování: slučovaný předmět (`item`) nese model z popisku (výchozí ovoce = řada ovoce); životy bere přetečení nádoby.
   merge: arcade({ setting: true, cues: 'drop and merge, suika, 2048', roles: ['item'], finish: false, labels: ['player', 'item'], mechanics: LIVES_AND_TIMER }),
-  push: arcade({ cues: 'push rivals out of the ring, sumo', roles: [], finish: false, labels: [], mechanics: [] }),
+  // T12 vytlačování: soupeř v ringu (`rival`) nese model z popisku; životy bere pád hrdiny z ringu.
+  push: arcade({ setting: true, cues: 'push rivals out of the ring, sumo', roles: ['rival'], finish: false, labels: ['player', 'rival'], mechanics: LIVES_AND_TIMER }),
 };
 
 export const controlOf = (spec: Pick<GameSpecV1, 'control'>): ControlId => spec.control ?? 'tap_go';

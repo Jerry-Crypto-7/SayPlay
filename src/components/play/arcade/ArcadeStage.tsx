@@ -37,6 +37,7 @@ import { LaneStage, useLanesInput } from './genres/lanes/LaneScene';
 import { HopScene } from './genres/hop/HopScene';
 import { CrowdScene } from './genres/crowd/CrowdScene';
 import { MergeScene } from './genres/merge/MergeScene';
+import { PushScene } from './genres/push/PushScene';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
 import { HudBoosts, boostKeepers } from './PowerupBadge';
@@ -752,6 +753,8 @@ const StageCanvas = memo(function StageCanvas({
             <CrowdScene {...world} />
           ) : stage.scene === 'merge' ? (
             <MergeScene {...world} />
+          ) : stage.scene === 'push' ? (
+            <PushScene {...world} />
           ) : (
             <World {...world} control={control} />
           )}
