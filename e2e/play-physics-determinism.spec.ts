@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { expect, test } from '@playwright/test';
+import { baseControlOf } from '../src/play/arcade/addons';
 import type { ArcadeWorld } from '../src/play/arcade/contract';
 import { ARCADE_LIBRARY } from '../src/play/arcade/library';
 import { replayCheckpoints } from '../src/play/arcade/physics/replay-checkpoints';
@@ -46,7 +47,8 @@ for (const goal of ['goal', 'hoop', 'hole'] as const) {
     expect(fetched.ok(), await fetched.text()).toBe(true);
     const game = await fetched.json() as { arcade: ArcadeWorld };
     expect(game.arcade).toBeDefined();
-    expect(game.arcade.control.id).toBe('ball');
+    // Od P51 balí ovládání `pacing_control` (a fáze `phase_control`); test míří na ovládání pod obaly.
+    expect(baseControlOf(game.arcade.control).id).toBe('ball');
     expect(game.arcade.seed).toBe(seed);
 
     await loadRapier();
@@ -78,7 +80,7 @@ for (const grip of [4, 20]) {
     const fetched=await request.get(`/api/play/games/${versionId}`);
     expect(fetched.ok(),await fetched.text()).toBe(true);
     const {arcade:world}=await fetched.json() as {arcade:ArcadeWorld};
-    expect(world.control.params).toMatchObject({grip,brakeDrift:4});
+    expect(baseControlOf(world.control).params).toMatchObject({grip,brakeDrift:4});
     const inputs=Array.from({length:32},(_,tick)=>({tick,axis:tick<8?700:tick>=16&&tick<24?-700:0,buttons:tick>=8&&tick<16?BUTTON.DOWN:0}));
     const recording={world,inputs,checkpoints:[0,1,8,16,32]};
     const node=await replayCheckpoints(recording);
