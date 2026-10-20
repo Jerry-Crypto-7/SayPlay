@@ -3,12 +3,12 @@
  "sentence": "An elf archer shoots goblins from the treetops.",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:17:18.197Z",
- "ms": 5082,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:41.841Z",
+ "ms": 5893,
  "answer": {
-  "plan": "Create a shooter game where an elf archer battles goblins perched on treetops, with a simple wave‑based timer mechanic.",
+  "plan": "Create a shooter game where an elf archer fires arrows at goblins perched on treetops, with a simple wave‑based timing mechanic.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -56,7 +56,7 @@
    ],
    "rules": [
     {
-     "id": "spawn_wave",
+     "id": "start_wave",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -65,24 +65,24 @@
      "do": [
       {
        "startTimer": {
-        "timer": "wave",
+        "timer": "wave_timer",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "wave_start",
+     "id": "wave_spawn",
      "verb": "wait",
      "when": {
-      "timer": "wave"
+      "timer": "wave_timer"
      },
      "if": null,
      "do": [
       {
        "wave": {
         "role": "goblin",
-        "count": 3,
+        "count": 1,
         "at": "edge"
        }
       }
@@ -106,7 +106,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "wave"
+      "id": "wave_timer"
      }
     ],
     "phases": [
@@ -121,15 +121,15 @@
    },
    "boss": {
     "role": "goblin",
-    "name": "Goblin Horde",
+    "name": "Goblin Scout",
     "attack": "shoot"
    },
    "abilities": [
     "shoot"
    ],
    "segments": [
-    "moving",
     "newFoe",
+    "moving",
     "faster"
    ]
   }

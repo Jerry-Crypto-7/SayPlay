@@ -3,12 +3,12 @@
  "sentence": "Jumping arcade game in the forest",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:16:57.028Z",
- "ms": 9456,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:18.346Z",
+ "ms": 6184,
  "answer": {
-  "plan": "Create a platformer where a fox jumps through a forest, collecting acorns while avoiding falling logs and enemies, with a simple timed phase system that spawns new obstacles.",
+  "plan": "Create a platformer where a fox jumps through a forest, collecting acorns while avoiding falling logs and enemies that appear in timed waves.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -24,14 +24,14 @@
     {
      "label": "log",
      "does": "avoid",
-     "verb": "fall",
+     "verb": "avoid",
      "states": null,
      "patrol": null
     },
     {
-     "label": "wolf",
+     "label": "forest goblin",
      "does": "chase_me",
-     "verb": "hunt",
+     "verb": "chase",
      "states": null,
      "patrol": true
     }
@@ -39,14 +39,7 @@
    "heroAction": "none",
    "setting": "forest",
    "palette": "forest",
-   "params": {
-    "lengthM": 200,
-    "difficulty": 1,
-    "items": 5,
-    "lives": 3,
-    "targetScore": 500,
-    "timeLimit": 60
-   },
+   "params": null,
    "counts": {
     "collectible": 5
    },
@@ -64,10 +57,10 @@
      "count": 3
     },
     {
-     "id": "wolf",
+     "id": "goblin",
      "kind": "chaser",
-     "label": "wolf",
-     "count": 1
+     "label": "forest goblin",
+     "count": 2
     }
    ],
    "things": [
@@ -82,7 +75,7 @@
      "physics": null
     },
     {
-     "role": "wolf",
+     "role": "goblin",
      "start": "hidden",
      "physics": null
     }
@@ -121,7 +114,7 @@
      ]
     },
     {
-     "id": "spawn_wolf",
+     "id": "spawn_goblin",
      "verb": "spawn",
      "when": {
       "phase": "first"
@@ -130,7 +123,7 @@
      "do": [
       {
        "spawn": {
-        "role": "wolf",
+        "role": "goblin",
         "at": "player"
        }
       }
@@ -150,18 +143,19 @@
      ]
     },
     {
-     "id": "second_phase_action",
-     "verb": "wait",
+     "id": "wave_goblins",
+     "verb": "wave",
      "when": {
       "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "toggle": "log"
-      },
-      {
-       "toggle": "wolf"
+       "wave": {
+        "role": "goblin",
+        "count": 2,
+        "at": "edge"
+       }
       }
      ]
     }
@@ -183,19 +177,9 @@
     ],
     "events": null
    },
-   "boss": {
-    "role": "wolf",
-    "name": "Forest Wolf",
-    "attack": "charge"
-   },
-   "abilities": [
-    "dash"
-   ],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ]
+   "boss": null,
+   "abilities": null,
+   "segments": null
   }
  },
  "failure": null

@@ -3,7 +3,8 @@ import { CAPABILITIES, DUEL_HITS, duelHitOf } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/modules';
-import { DRIVE_PRESETS, NATIVE_PRESETS, TRACK_GOAL_PRESETS, assertPreset, type RecipeAssembly } from './presets';
+import { DRIVE_PRESETS, NATIVE_PRESETS, PRESETS, TRACK_GOAL_PRESETS, assertPreset, type RecipeAssembly } from './presets';
+import { wholeGame } from './assemble';
 import { CATCH_TUNING, catchSpec, withCatchBees } from './catch';
 import { driveSpec } from './drive';
 import { nativeSpec } from './native';
@@ -327,6 +328,10 @@ export function compileWith(module: GenreModule, spec: GenreSpec): GameSpecV1 {
   }
   // Limit režiséra jsou hodiny, do kterých modul plánuje délku (úkol svá kola, F3); hodiny pak nastaví `withDepth` stejně.
   if (module.clockParam !== undefined && depth.timeLimit !== undefined && depth.timeLimit > 0) own[module.clockParam] = depth.timeLimit;
+  // Žánr P54C je celá hra (`wholeGame`) bez obalu skladby, který by výhru skóre podržel: cílové skóre by ji vyhrálo
+  // dřív než její vlastní cíl (P54C T14br1: přeskákání s 10 body za 0,1 s, slučování s 2048 body za 28 s). Zahodí se.
+  const recipe = PRESETS[`${spec.genre}.${spec.mode}`];
+  if (recipe !== undefined && wholeGame(recipe)) delete depth.targetScore;
   const { params: _params, ...rest } = spec;
   const plain = (Object.keys(own).length === 0 ? rest : { ...rest, params: own }) as GenreSpec;
   const game = withEnemyAddon(withDepth(module.compile(withCounts(plain) as never), depth), spec);

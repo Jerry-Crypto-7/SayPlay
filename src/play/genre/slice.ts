@@ -49,7 +49,8 @@ export const sliceGenre: GenreModule<'slice'> = {
   cues: [],
   heroClasses: ['humanoid', 'robot', 'animal', 'monster'],
   paramBounds: {
-    items: { min: SLICE.items.min, max: SLICE.items.max },
+    // 10–21 kusů robot na semínku 2 rozsekne za 25,8–29,4 s, pod 30 s (G1; T14br1, 20 semínek, 22–50 kusů v pásmu).
+    items: { min: 22, max: SLICE.items.max },
   },
   availability: () => 'ready',
   compile: (spec) => {

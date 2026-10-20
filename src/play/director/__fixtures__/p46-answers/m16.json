@@ -3,12 +3,12 @@
  "sentence": "a kangaroo jumps over cars then collects coins on the highway",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:18:01.224Z",
- "ms": 5940,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:13:26.316Z",
+ "ms": 6835,
  "answer": {
-  "plan": "Create a platform‑style runner where a kangaroo hops over moving cars and gathers coins along a highway, with a simple time‑based phase that spawns a wave of cars every second.",
+  "plan": "Create a platformer where a kangaroo hops over cars and gathers coins on a highway, with timed phases that spawn car obstacles and coin rewards.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -35,26 +35,26 @@
    "params": {
     "lengthM": 200,
     "difficulty": 1,
-    "items": 8,
+    "items": 5,
     "lives": 3,
     "targetScore": 0,
     "timeLimit": 0
    },
    "counts": {
-    "collectible": 8
+    "collectible": 5
    },
    "ruleRoles": [
     {
      "id": "car",
      "kind": "hazard",
      "label": "car",
-     "count": null
+     "count": 5
     },
     {
      "id": "coin",
      "kind": "collectible",
      "label": "coin",
-     "count": 8
+     "count": 5
     }
    ],
    "things": [
@@ -71,56 +71,10 @@
    ],
    "rules": [
     {
-     "id": "jump_over_car",
-     "verb": "jump",
+     "id": "spawn_cars",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "car"
-      ]
-     },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
-     "do": [
-      {
-       "damage": 1
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "collect_coin",
-     "verb": "collect",
-     "when": {
-      "contact": [
-       "player",
-       "coin"
-      ]
-     },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
-     "do": [
-      {
-       "score": 100
-      },
-      {
-       "despawn": "self"
-      }
-     ]
-    },
-    {
-     "id": "spawn_wave",
-     "verb": "spawn",
-     "when": {
-      "timer": "wave_timer"
+      "phase": "first"
      },
      "if": null,
      "do": [
@@ -131,13 +85,67 @@
        }
       }
      ]
+    },
+    {
+     "id": "spawn_coins",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "coin",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "car_collision",
+     "verb": "collide",
+     "when": {
+      "contact": [
+       "player",
+       "car"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "damage": 1
+      },
+      {
+       "despawn": "self"
+      }
+     ]
+    },
+    {
+     "id": "coin_collect",
+     "verb": "collect",
+     "when": {
+      "contact": [
+       "player",
+       "coin"
+      ]
+     },
+     "if": null,
+     "do": [
+      {
+       "score": 100
+      },
+      {
+       "despawn": "self"
+      }
+     ]
     }
    ],
    "logic": {
     "vars": null,
     "timers": [
      {
-      "id": "wave_timer"
+      "id": "phase_timer"
      }
     ],
     "phases": [
@@ -151,7 +159,7 @@
     "events": null
    },
    "boss": null,
-   "abilities": null,
+   "abilities": [],
    "segments": null
   }
  },

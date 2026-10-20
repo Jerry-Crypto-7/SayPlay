@@ -3,12 +3,12 @@
  "sentence": "a stone golem crushes grave robbers in an ancient desert temple",
  "axis": "arena.fight",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:17:24.194Z",
- "ms": 5997,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:48.832Z",
+ "ms": 6990,
  "answer": {
-  "plan": "arena fight with stone golem vs grave robbers in an ancient desert temple",
+  "plan": "Arena‑fight template for a stone golem vs. grave robbers in a desert temple",
   "spec": {
    "genre": "arena",
    "mode": "fight",
@@ -18,14 +18,14 @@
      "label": "grave robber",
      "does": "fight",
      "verb": "crush",
-     "states": null,
+     "states": 2,
      "patrol": true
     },
     {
      "label": "gem",
      "does": "collect",
      "verb": "grab",
-     "states": null,
+     "states": 2,
      "patrol": false
     }
    ],
@@ -39,18 +39,18 @@
     "items": 5,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
-    "chasers": 3,
+    "chasers": 2,
     "chaserSpeed": 70,
-    "enemies": 3,
+    "enemies": 2,
     "enemyHp": 5,
     "enemySpeed": 80,
-    "playerHp": 7,
+    "playerHp": 9,
     "lives": 3,
     "targetScore": 0,
     "timeLimit": 60
    },
    "counts": {
-    "enemy": 3,
+    "enemy": 2,
     "collectible": 5
    },
    "ruleRoles": [
@@ -58,7 +58,7 @@
      "id": "robber",
      "kind": "chaser",
      "label": "grave robber",
-     "count": 3
+     "count": 2
     },
     {
      "id": "gem",
@@ -71,69 +71,37 @@
     {
      "role": "robber",
      "start": "hidden",
-     "physics": null
+     "physics": true
     },
     {
      "role": "gem",
      "start": "hidden",
-     "physics": null
+     "physics": true
     }
    ],
    "rules": [
     {
      "id": "spawnRobbers",
-     "verb": "spawn",
+     "verb": "wait",
      "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "robber",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "spawnGems",
-     "verb": "spawn",
-     "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "gem",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "waveRobbers",
-     "verb": "wave",
-     "when": {
-      "phase": "second"
+      "phase": "start"
      },
      "if": null,
      "do": [
       {
        "wave": {
         "role": "robber",
-        "count": 3,
+        "count": 2,
         "at": "edge"
        }
       }
      ]
     },
     {
-     "id": "waveGems",
-     "verb": "wave",
+     "id": "spawnGems",
+     "verb": "wait",
      "when": {
-      "phase": "second"
+      "phase": "start"
      },
      "if": null,
      "do": [
@@ -145,10 +113,51 @@
        }
       }
      ]
+    },
+    {
+     "id": "robberChase",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "set": {
+        "var": "chase",
+        "value": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "robberAttack",
+     "verb": "wait",
+     "when": {
+      "phase": "start"
+     },
+     "if": null,
+     "do": [
+      {
+       "set": {
+        "var": "attack",
+        "value": 1
+       }
+      }
+     ]
     }
    ],
    "logic": {
-    "vars": null,
+    "vars": [
+     {
+      "id": "chase",
+      "start": 0
+     },
+     {
+      "id": "attack",
+      "start": 0
+     }
+    ],
     "timers": [
      {
       "id": "phase1"
@@ -156,10 +165,13 @@
     ],
     "phases": [
      {
-      "id": "first"
+      "id": "start"
      },
      {
-      "id": "second"
+      "id": "mid"
+     },
+     {
+      "id": "end"
      }
     ],
     "events": null
@@ -170,7 +182,8 @@
     "attack": "charge"
    },
    "abilities": [
-    "dash"
+    "dash",
+    "strike"
    ],
    "segments": [
     "newFoe",

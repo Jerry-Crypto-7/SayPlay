@@ -3,12 +3,12 @@
  "sentence": "Racing car escaping and shooting enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:16:27.988Z",
- "ms": 6476,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:11:57.149Z",
+ "ms": 7629,
  "answer": {
-  "plan": "Create a driving‑shooting hybrid where a car races, evades, and fires at enemies on an open road.",
+  "plan": "Create a driving‑shooting hybrid where the player’s car races through an open country, evading obstacles while firing at enemy vehicles that spawn in waves.",
   "spec": {
    "genre": "voyage",
    "mode": "race",
@@ -22,11 +22,11 @@
      "patrol": false
     },
     {
-     "label": "police car",
-     "does": "chase_me",
-     "verb": "chase",
+     "label": "obstacle",
+     "does": "avoid",
+     "verb": "avoid",
      "states": null,
-     "patrol": true
+     "patrol": false
     }
    ],
    "heroAction": "none",
@@ -56,9 +56,9 @@
      "count": null
     },
     {
-     "id": "police",
-     "kind": "chaser",
-     "label": "police car",
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "rock",
      "count": null
     }
    ],
@@ -69,7 +69,7 @@
      "physics": null
     },
     {
-     "role": "police",
+     "role": "obstacle",
      "start": "hidden",
      "physics": null
     }
@@ -79,7 +79,7 @@
      "id": "startTimer",
      "verb": "wait",
      "when": {
-      "phase": "start"
+      "phase": "first"
      },
      "if": null,
      "do": [
@@ -92,8 +92,8 @@
      ]
     },
     {
-     "id": "spawnEnemies",
-     "verb": "spawn",
+     "id": "spawnWave",
+     "verb": "wait",
      "when": {
       "timer": "race"
      },
@@ -109,31 +109,34 @@
      ]
     },
     {
-     "id": "policeChase",
-     "verb": "chase",
+     "id": "obstacleSpawn",
+     "verb": "wait",
      "when": {
-      "phase": "start"
+      "timer": "race"
      },
      "if": null,
      "do": [
       {
        "spawn": {
-        "role": "police",
+        "role": "obstacle",
         "at": "player"
        }
       }
      ]
     },
     {
-     "id": "endRace",
-     "verb": "wait",
+     "id": "enemyShoot",
+     "verb": "shoot",
      "when": {
-      "phase": "end"
+      "contact": [
+       "player",
+       "enemy"
+      ]
      },
      "if": null,
      "do": [
       {
-       "win": true
+       "damage": 1
       }
      ]
     }
@@ -147,18 +150,18 @@
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "first"
      },
      {
-      "id": "end"
+      "id": "second"
      }
     ],
     "events": null
    },
    "boss": {
-    "role": "police",
-    "name": "Police Pursuit",
-    "attack": "charge"
+    "role": "enemy",
+    "name": "Rival Racer",
+    "attack": "shoot"
    },
    "abilities": [
     "shoot",

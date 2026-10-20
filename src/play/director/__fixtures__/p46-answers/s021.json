@@ -3,12 +3,12 @@
  "sentence": "obby game with lava and spinning bars",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:18:38.709Z",
- "ms": 5438,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:14:08.252Z",
+ "ms": 6052,
  "answer": {
-  "plan": "Create a platformer where the hero must jump over lava and avoid spinning bars, with a simple two‑phase timer that triggers a wave of new bars.",
+  "plan": "Create a platformer where the hero must jump over lava and avoid rotating bars, with timed waves of new hazards.",
   "spec": {
    "genre": "platformer",
    "mode": "default",
@@ -22,11 +22,11 @@
      "patrol": false
     },
     {
-     "label": "bar",
+     "label": "spinning bar",
      "does": "avoid",
-     "verb": "spin",
+     "verb": "rotate",
      "states": null,
-     "patrol": true
+     "patrol": false
     }
    ],
    "heroAction": "none",
@@ -38,40 +38,40 @@
     "items": 2,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": null
+    "timeLimit": 0
    },
    "counts": {
-    "collectible": 2
+    "collectible": null
    },
    "ruleRoles": [
-    {
-     "id": "bar",
-     "kind": "hazard",
-     "label": "spinning bar",
-     "count": null
-    },
     {
      "id": "lava",
      "kind": "hazard",
      "label": "lava",
-     "count": null
+     "count": 1
+    },
+    {
+     "id": "bar",
+     "kind": "hazard",
+     "label": "spinning bar",
+     "count": 1
     }
    ],
    "things": [
     {
-     "role": "bar",
-     "start": "hidden",
-     "physics": null
-    },
-    {
      "role": "lava",
      "start": "hidden",
-     "physics": null
+     "physics": true
+    },
+    {
+     "role": "bar",
+     "start": "hidden",
+     "physics": true
     }
    ],
    "rules": [
     {
-     "id": "startPhase",
+     "id": "lava_wave",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -80,42 +80,57 @@
      "do": [
       {
        "startTimer": {
-        "timer": "phase1",
+        "timer": "lava_wave",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "phase1Timer",
+     "id": "lava_spawn",
      "verb": "wait",
      "when": {
-      "timer": "phase1"
+      "timer": "lava_wave"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "second"
-      },
-      {
-       "wave": {
-        "role": "bar",
-        "count": 3,
-        "at": "edge"
+       "spawn": {
+        "role": "lava",
+        "at": "player"
        }
       }
      ]
     },
     {
-     "id": "phase2",
+     "id": "bar_wave",
      "verb": "wait",
      "when": {
-      "phase": "second"
+      "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "toggle": "bar"
+       "startTimer": {
+        "timer": "bar_wave",
+        "ticks": 120
+       }
+      }
+     ]
+    },
+    {
+     "id": "bar_spawn",
+     "verb": "wait",
+     "when": {
+      "timer": "bar_wave"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "bar",
+        "at": "player"
+       }
       }
      ]
     }
@@ -124,7 +139,10 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "lava_wave"
+     },
+     {
+      "id": "bar_wave"
      }
     ],
     "phases": [

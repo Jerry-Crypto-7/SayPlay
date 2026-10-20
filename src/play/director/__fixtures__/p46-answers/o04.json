@@ -3,13 +3,15 @@
  "sentence": "racing car escapes police and shoots enemies",
  "axis": "control:steer",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:16:39.054Z",
- "ms": 11065,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:03.815Z",
+ "ms": 6666,
  "answer": {
-  "plan": "Create a racing‑shooting car game where the player evades police chasers while blasting enemy drones on a winding highway.",
+  "plan": "Create a racing‑shooting car game where the player evades police chasers while blasting enemy vehicles on an open highway.",
   "spec": {
+   "genre": "shooter",
+   "mode": "default",
    "hero": "car",
    "cast": [
     {
@@ -28,12 +30,21 @@
     }
    ],
    "heroAction": "none",
-   "setting": "open highway",
+   "setting": "open country",
    "palette": "desert",
+   "params": {
+    "targetWidthPct": 80,
+    "movingTargets": 1,
+    "waves": 5,
+    "enemies": 6,
+    "targets": 8,
+    "lives": 3,
+    "targetScore": 2000,
+    "timeLimit": 60
+   },
    "counts": {
-    "enemy": 5,
-    "collectible": null,
-    "target": null
+    "enemy": 6,
+    "target": 8
    },
    "ruleRoles": [
     {
@@ -44,9 +55,9 @@
     },
     {
      "id": "enemy",
-     "kind": "enemy",
-     "label": "enemy drone",
-     "count": 5
+     "kind": "target",
+     "label": "enemy car",
+     "count": 6
     }
    ],
    "things": [
@@ -87,18 +98,15 @@
     "vars": null,
     "timers": [
      {
-      "id": "race_timer"
+      "id": "phase1"
      }
     ],
     "phases": [
      {
-      "id": "start"
+      "id": "phase1"
      },
      {
-      "id": "mid"
-     },
-     {
-      "id": "end"
+      "id": "phase2"
      }
     ],
     "events": null
@@ -116,96 +124,7 @@
     "newFoe",
     "moving",
     "faster"
-   ],
-   "recipe": {
-    "phases": [
-     {
-      "start": 0,
-      "speedPercent": 100,
-      "add": null
-     },
-     {
-      "start": 30,
-      "speedPercent": 120,
-      "add": null
-     },
-     {
-      "start": 60,
-      "speedPercent": 100,
-      "add": null
-     }
-    ],
-    "dependsOn": null,
-    "move": "drive",
-    "actions": [
-     "shoot",
-     "push"
-    ],
-    "objective": "escape",
-    "threats": [
-     "chaser"
-    ]
-   },
-   "params": {
-    "lengthM": 500,
-    "speed": 1,
-    "density": 0,
-    "fullRowPct": 0,
-    "ride": 0,
-    "items": 1,
-    "obstacles": 5,
-    "lives": 3,
-    "targetScore": 0,
-    "timeLimit": 60,
-    "difficulty": 0,
-    "entryDistance": 6000,
-    "chaseLead": 0,
-    "seconds": 20,
-    "pursuitCeiling": 90,
-    "itemSizePct": 100,
-    "chasers": 1,
-    "chaserSpeed": 70,
-    "enemies": 5,
-    "enemyHp": 3,
-    "enemySpeed": 50,
-    "playerHp": 3,
-    "hazards": 0,
-    "turbo": 0,
-    "roadWidth": 5000,
-    "roadEntryWidth": 5000,
-    "crashBudget": 3,
-    "namedLandingTarget": 0,
-    "touchdownSpeed": 30,
-    "gravityRisePct": 0,
-    "topSpeed": 200,
-    "gravity": 400,
-    "paceBudgetPct": 50,
-    "count": 5,
-    "targetWidthPct": 50,
-    "movingTargets": 0,
-    "waves": 5,
-    "targets": 5,
-    "goal": null,
-    "spareThrows": 0,
-    "rounds": null,
-    "bpm": null,
-    "roundRise": null,
-    "rows": null,
-    "rivals": null,
-    "half": null,
-    "preySpeed": null,
-    "drift": null,
-    "grip": null,
-    "brakeDrift": null,
-    "clearancePermille": null,
-    "clearanceRisePermille": null,
-    "size": null,
-    "corridorRisePermille": null,
-    "shotRecoveryTicks": null,
-    "shotRecoveryRiseTicks": null,
-    "paceSeconds": null
-   },
-   "unmet": []
+   ]
   }
  },
  "failure": null

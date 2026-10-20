@@ -3,12 +3,12 @@
  "sentence": "A bee gathers honey in a windy meadow before the storm hits",
  "axis": "arena",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:17:08.219Z",
- "ms": 5176,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:30.518Z",
+ "ms": 6502,
  "answer": {
-  "plan": "Create a quest‑style spatial game where a bee collects honey while avoiding a looming storm in a windy meadow.",
+  "plan": "Create a spatial quest where a bee collects honey while avoiding a looming storm in a windy meadow, using a simple timer‑driven phase change to trigger the storm’s arrival.",
   "spec": {
    "genre": "quest",
    "mode": "spatial",
@@ -33,13 +33,13 @@
    "setting": "windy meadow",
    "palette": "meadow",
    "params": {
-    "seconds": 30,
-    "paceBudgetPct": 70,
-    "count": 5,
+    "seconds": 60,
+    "paceBudgetPct": 80,
+    "count": 1,
     "chasers": 0,
     "lives": 3,
     "targetScore": 0,
-    "timeLimit": 30
+    "timeLimit": 60
    },
    "counts": {
     "enemy": 0,
@@ -50,7 +50,7 @@
      "id": "honey",
      "kind": "collectible",
      "label": "honey",
-     "count": 5
+     "count": 1
     },
     {
      "id": "storm",
@@ -63,17 +63,49 @@
     {
      "role": "honey",
      "start": "hidden",
-     "physics": false
+     "physics": null
     },
     {
      "role": "storm",
      "start": "hidden",
-     "physics": false
+     "physics": null
     }
    ],
    "rules": [
     {
-     "id": "collect_honey",
+     "id": "startStormTimer",
+     "verb": "wait",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "startTimer": {
+        "timer": "storm",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "stormArrives",
+     "verb": "wait",
+     "when": {
+      "timer": "storm"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      },
+      {
+       "toggle": "storm"
+      }
+     ]
+    },
+    {
+     "id": "collectHoney",
      "verb": "collect",
      "when": {
       "contact": [
@@ -91,15 +123,15 @@
        "grab": "other"
       },
       {
-       "count": {
-        "counter": "items",
-        "amount": 1
-       }
+       "score": 10
+      },
+      {
+       "despawn": "self"
       }
      ]
     },
     {
-     "id": "avoid_storm",
+     "id": "avoidStorm",
      "verb": "avoid",
      "when": {
       "contact": [
@@ -113,7 +145,7 @@
        "damage": 1
       },
       {
-       "respawn": true
+       "lose": true
       }
      ]
     }
@@ -122,7 +154,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "storm_timer"
+      "id": "storm"
      }
     ],
     "phases": [

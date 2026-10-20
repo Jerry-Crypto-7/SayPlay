@@ -3,78 +3,123 @@
  "sentence": "a phoenix rises from the ashes over a burning desert",
  "axis": "flap",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:17:30.186Z",
- "ms": 5992,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:54.357Z",
+ "ms": 5525,
  "answer": {
-  "plan": "Create a flap‑style game where a phoenix rises over a burning desert, collecting ashes while avoiding rising fire hazards.",
+  "plan": "Create a flap‑style game where a phoenix soars over a burning desert, collecting ashes and avoiding fire hazards while a timer triggers a wave of embers.",
   "spec": {
    "genre": "flap",
    "mode": "default",
    "hero": "phoenix",
-   "cast": [],
-   "heroAction": "fix",
+   "cast": [
+    {
+     "label": "ash",
+     "does": "collect",
+     "verb": "rise",
+     "states": 2,
+     "patrol": false
+    },
+    {
+     "label": "ember",
+     "does": "avoid",
+     "verb": "fly",
+     "states": 2,
+     "patrol": true
+    },
+    {
+     "label": "fire",
+     "does": "avoid",
+     "verb": "burst",
+     "states": 2,
+     "patrol": false
+    }
+   ],
+   "heroAction": "none",
    "setting": "desert",
    "palette": "desert",
-   "params": null,
+   "params": {
+    "lengthM": 200,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": 90
+   },
    "ruleRoles": [
-    {
-     "id": "fire",
-     "kind": "hazard",
-     "label": "fire burst",
-     "count": null
-    },
     {
      "id": "ash",
      "kind": "collectible",
      "label": "ash",
-     "count": null
+     "count": 5
+    },
+    {
+     "id": "ember",
+     "kind": "hazard",
+     "label": "ember",
+     "count": 10
+    },
+    {
+     "id": "fire",
+     "kind": "hazard",
+     "label": "fire",
+     "count": 3
     }
    ],
    "things": [
     {
-     "role": "fire",
-     "start": "hidden",
-     "physics": null
-    },
-    {
      "role": "ash",
      "start": "hidden",
-     "physics": null
+     "physics": true
+    },
+    {
+     "role": "ember",
+     "start": "hidden",
+     "physics": true
+    },
+    {
+     "role": "fire",
+     "start": "hidden",
+     "physics": true
     }
    ],
    "rules": [
     {
-     "id": "startPhase",
-     "verb": "wait",
+     "id": "collect_ash",
+     "verb": "rise",
      "when": {
-      "phase": "first"
+      "contact": [
+       "player",
+       "ash"
+      ]
      },
-     "if": null,
+     "if": [
+      {
+       "notHolding": true
+      }
+     ],
      "do": [
       {
-       "startTimer": {
-        "timer": "rise",
-        "ticks": 60
-       }
+       "grab": "other"
+      },
+      {
+       "score": 10
+      },
+      {
+       "despawn": "self"
       }
      ]
     },
     {
-     "id": "risePhase",
+     "id": "ember_wave",
      "verb": "wait",
      "when": {
-      "timer": "rise"
+      "timer": "ember_wave_timer"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "second"
-      },
-      {
        "wave": {
-        "role": "fire",
+        "role": "ember",
         "count": 3,
         "at": "edge"
        }
@@ -82,21 +127,19 @@
      ]
     },
     {
-     "id": "collectAsh",
-     "verb": "collect",
+     "id": "fire_wave",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "ash"
-      ]
+      "timer": "fire_wave_timer"
      },
      "if": null,
      "do": [
       {
-       "score": 10
-      },
-      {
-       "despawn": "self"
+       "wave": {
+        "role": "fire",
+        "count": 1,
+        "at": "edge"
+       }
       }
      ]
     }
@@ -105,7 +148,10 @@
     "vars": null,
     "timers": [
      {
-      "id": "rise"
+      "id": "ember_wave_timer"
+     },
+     {
+      "id": "fire_wave_timer"
      }
     ],
     "phases": [
@@ -119,14 +165,8 @@
     "events": null
    },
    "boss": null,
-   "abilities": [
-    "dash"
-   ],
-   "segments": [
-    "moving",
-    "trap",
-    "faster"
-   ]
+   "abilities": [],
+   "segments": null
   }
  },
  "failure": null

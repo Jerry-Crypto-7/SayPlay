@@ -132,12 +132,12 @@ describe('slice genre is live (P54C T8)', () => {
     // Honič věty je v krájení bomba: jinou roli škůdce žánr nemá.
     const chased = sliceGenre.draftFill('a cat slices fish while a dog chases it', null);
     expect(chased.cast?.every((item) => item.does === 'collect' || item.does === 'avoid')).toBe(true);
-    const read = readGenreSpec({ genre: 'slice', mode: 'default', hero: 'fox', setting: 'kitchen', cast: [{ label: 'lemon', does: 'collect' }, { label: 'rock', does: 'avoid' }], counts: { collectible: 12 } });
+    const read = readGenreSpec({ genre: 'slice', mode: 'default', hero: 'fox', setting: 'kitchen', cast: [{ label: 'lemon', does: 'collect' }, { label: 'rock', does: 'avoid' }], counts: { collectible: 24 } });
     if (!read.ok) throw new Error(read.issues.join('; '));
     const game = compileGenre(read.value);
     expect(game.roles.find((role) => role.id === 'coin')?.label).toBe('lemon');
     expect(game.roles.find((role) => role.id === 'hazard')?.label).toBe('rock');
-    expect((game.controlParams as { tuning: { items: number } }).tuning.items).toBe(12);
+    expect((game.controlParams as { tuning: { items: number } }).tuning.items).toBe(24);
     expect(COUNT_PARAMS.slice.default?.collectible).toBe('items');
     expect(game.tutorial.goalLine.length).toBeLessThanOrEqual(50);
     expect(readGenreSpec({ genre: 'slice', mode: 'default', hero: 'fox', setting: 'kitchen', counts: { collectible: SLICE.items.max + 1 } }).ok).toBe(false);

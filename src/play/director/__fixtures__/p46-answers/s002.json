@@ -3,12 +3,12 @@
  "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
  "axis": "arena.escape",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:18:33.271Z",
- "ms": 6637,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:14:02.199Z",
+ "ms": 6697,
  "answer": {
-  "plan": "Arena escape with a knight collecting keys while evading ghosts in a haunted castle.",
+  "plan": "Create an arena‑escape game where the knight collects keys while ghosts chase him.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -24,7 +24,7 @@
     {
      "label": "ghost",
      "does": "avoid",
-     "verb": "obstacle",
+     "verb": "chase",
      "states": null,
      "patrol": true
     }
@@ -71,55 +71,42 @@
     {
      "role": "ghost",
      "start": "hidden",
-     "physics": null
+     "physics": true
     },
     {
      "role": "key",
      "start": "hidden",
-     "physics": null
+     "physics": true
     }
    ],
    "rules": [
     {
-     "id": "spawn_ghosts",
-     "verb": "spawn",
+     "id": "startTimer",
+     "verb": "wait",
      "when": {
       "phase": "first"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "ghost",
-        "at": "player"
+       "startTimer": {
+        "timer": "phase1",
+        "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "spawn_keys",
-     "verb": "spawn",
+     "id": "phase1to2",
+     "verb": "wait",
      "when": {
-      "phase": "first"
+      "timer": "phase1"
      },
      "if": null,
      "do": [
       {
-       "spawn": {
-        "role": "key",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "ghost_wave",
-     "verb": "wave",
-     "when": {
-      "phase": "second"
-     },
-     "if": null,
-     "do": [
+       "goPhase": "second"
+      },
       {
        "wave": {
         "role": "ghost",
@@ -130,15 +117,19 @@
      ]
     },
     {
-     "id": "ghost_patrol",
-     "verb": "patrol",
+     "id": "phase2",
+     "verb": "wait",
      "when": {
       "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "toggle": "ghost"
+       "wave": {
+        "role": "key",
+        "count": 3,
+        "at": "edge"
+       }
       }
      ]
     }
@@ -147,7 +138,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase_timer"
+      "id": "phase1"
      }
     ],
     "phases": [
@@ -162,16 +153,16 @@
    },
    "boss": {
     "role": "ghost",
-    "name": "Spectral Wraith",
+    "name": "Spectral Warden",
     "attack": "charge"
    },
    "abilities": [
     "dash"
    ],
    "segments": [
-    "newFoe",
     "moving",
-    "faster"
+    "faster",
+    "newFoe"
    ]
   }
  },

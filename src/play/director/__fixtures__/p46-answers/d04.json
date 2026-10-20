@@ -3,12 +3,12 @@
  "sentence": "shoot down paper planes over a school playground",
  "axis": "shooter",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:18:11.650Z",
- "ms": 5129,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:13:37.704Z",
+ "ms": 5090,
  "answer": {
-  "plan": "Create a shooter where a kid uses a slingshot to shoot down paper planes flying over a school playground, with waves of planes appearing every few seconds.",
+  "plan": "Create a shooter where a kid on a school playground shoots down paper planes that spawn in waves.",
   "spec": {
    "genre": "shooter",
    "mode": "default",
@@ -17,7 +17,7 @@
     {
      "label": "paper plane",
      "does": "shoot_at",
-     "verb": "fly",
+     "verb": "shoot",
      "states": null,
      "patrol": false
     }
@@ -32,7 +32,7 @@
     "enemies": 3,
     "targets": 5,
     "lives": 3,
-    "targetScore": 200,
+    "targetScore": 2000,
     "timeLimit": 60
    },
    "counts": {
@@ -57,6 +57,22 @@
    "rules": [
     {
      "id": "spawn_planes",
+     "verb": "spawn",
+     "when": {
+      "phase": "first"
+     },
+     "if": null,
+     "do": [
+      {
+       "spawn": {
+        "role": "plane",
+        "at": "player"
+       }
+      }
+     ]
+    },
+    {
+     "id": "wave_timer",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -72,13 +88,16 @@
      ]
     },
     {
-     "id": "wave",
+     "id": "next_wave",
      "verb": "wait",
      "when": {
       "timer": "wave"
      },
      "if": null,
      "do": [
+      {
+       "goPhase": "second"
+      },
       {
        "wave": {
         "role": "plane",
@@ -89,7 +108,7 @@
      ]
     },
     {
-     "id": "reset_wave",
+     "id": "phase_two",
      "verb": "wait",
      "when": {
       "phase": "second"
@@ -97,9 +116,13 @@
      "if": null,
      "do": [
       {
-       "startTimer": {
-        "timer": "wave",
-        "ticks": 60
+       "goPhase": "first"
+      },
+      {
+       "wave": {
+        "role": "plane",
+        "count": 3,
+        "at": "edge"
        }
       }
      ]
@@ -122,19 +145,11 @@
     ],
     "events": null
    },
-   "boss": {
-    "role": "plane",
-    "name": "Paper Storm",
-    "attack": "drop"
-   },
+   "boss": null,
    "abilities": [
     "shoot"
    ],
-   "segments": [
-    "moving",
-    "newFoe",
-    "faster"
-   ]
+   "segments": null
   }
  },
  "failure": null

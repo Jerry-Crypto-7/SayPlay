@@ -156,16 +156,18 @@ describe('push genre is live (P54C T12)', () => {
   it('reads who is pushed out from the sentence, takes the count from it and keeps the copy short', () => {
     expect(pushGenre.draftFill('a sumo wrestler pushes rivals out of a bouncy ring', null).cast?.[0]).toEqual({ label: 'rival', does: 'fight' });
     expect(pushGenre.draftFill('a penguin shoves the walruses off the ice', null).cast?.[0]).toEqual({ label: 'walrus', does: 'fight' });
-    const read = readGenreSpec({ genre: 'push', mode: 'default', hero: 'cat', setting: 'dojo', cast: [{ label: 'ninja', does: 'fight' }], counts: { enemy: 4 } });
+    const read = readGenreSpec({ genre: 'push', mode: 'default', hero: 'cat', setting: 'dojo', cast: [{ label: 'ninja', does: 'fight' }], counts: { enemy: 8 } });
     if (!read.ok) throw new Error(read.issues.join('; '));
     const game = compileGenre(read.value);
-    expect(game.roles.find((role) => role.id === 'rival')).toMatchObject({ label: 'ninja', count: 4 });
-    expect(game.objective.count).toBe(4);
+    expect(game.roles.find((role) => role.id === 'rival')).toMatchObject({ label: 'ninja', count: 8 });
+    expect(game.objective.count).toBe(8);
     expect(game.objective.description).toContain('ninjas');
     expect(game.tutorial.goalLine.length).toBeLessThanOrEqual(50);
     const made = arcadeWorldOf(game, 1);
     if (!made.ok) throw new Error(made.issues.join('; '));
-    expect(made.world.rules.find((ref) => ref.id === 'push_round')?.params.sizes).toEqual([1, 1, 2]);
+    expect(made.world.rules.find((ref) => ref.id === 'push_round')?.params.sizes).toEqual([2, 3, 3]);
+    // Pod 7 soupeřů robot vyhraje pod 30 s (P54C T14br1): počet z věty pod mezí žánr nepřijme.
+    expect(readGenreSpec({ genre: 'push', mode: 'default', hero: 'cat', setting: 'dojo', counts: { enemy: 4 } }).ok).toBe(false);
     expect(readGenreSpec({ genre: 'push', mode: 'default', hero: 'cat', setting: 'dojo', counts: { enemy: 2 } }).ok).toBe(false);
     // Soupeř bez jména („rivals“) je hrdina věty: zápasník sumo proti zápasníkům sumo, ne auto z katalogu.
     const sumo = compileGenre({ genre: 'push', mode: 'default', hero: 'sumo wrestler', setting: 'bouncy ring', cast: [{ label: 'rival', does: 'fight' }] });

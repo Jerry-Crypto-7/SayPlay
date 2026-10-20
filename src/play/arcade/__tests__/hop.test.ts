@@ -142,12 +142,12 @@ describe('hop genre is live (P54C T9)', () => {
   it('reads the traffic and the goal from the sentence and keeps the row goal in bounds', () => {
     const fill = hopGenre.draftFill('a chicken crosses the busy road to reach the barn while dodging trucks', null);
     expect(fill.cast?.every((item) => item.does === 'avoid' || item.does === 'reach')).toBe(true);
-    const read = readGenreSpec({ genre: 'hop', mode: 'default', hero: 'frog', setting: 'swamp', cast: [{ label: 'taxi', does: 'avoid' }, { label: 'lily pond', does: 'reach' }], params: { rows: 12 } });
+    const read = readGenreSpec({ genre: 'hop', mode: 'default', hero: 'frog', setting: 'swamp', cast: [{ label: 'taxi', does: 'avoid' }, { label: 'lily pond', does: 'reach' }], params: { rows: 46 } });
     if (!read.ok) throw new Error(read.issues.join('; '));
     const game = compileGenre(read.value);
     expect(game.roles.find((role) => role.id === 'obstacle')?.label).toBe('taxi');
     expect(game.roles.find((role) => role.id === 'finish')?.label).toBe('lily pond');
-    expect((game.controlParams as { tuning: { rows: number } }).tuning.rows).toBe(12);
+    expect((game.controlParams as { tuning: { rows: number } }).tuning.rows).toBe(46);
     expect(game.tutorial.goalLine.length).toBeLessThanOrEqual(50);
     expect(readGenreSpec({ genre: 'hop', mode: 'default', hero: 'fox', setting: 'forest', params: { rows: HOP.rows.max + 1 } }).ok).toBe(false);
   });

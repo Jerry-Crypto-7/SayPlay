@@ -119,12 +119,12 @@ describe('whack genre is live (P54C T6)', () => {
     // Honič věty je v bouchání cíl: jinou roli nepřítele žánr nemá.
     const chased = whackGenre.draftFill('a dog bonks gophers while a wolf chases it', null);
     expect(chased.cast?.every((item) => item.does === 'shoot_at' || item.does === 'avoid')).toBe(true);
-    const read = readGenreSpec({ genre: 'whack', mode: 'default', hero: 'fox', setting: 'garden', cast: [{ label: 'rat', does: 'shoot_at' }, { label: 'kitten', does: 'avoid' }], counts: { enemy: 12 } });
+    const read = readGenreSpec({ genre: 'whack', mode: 'default', hero: 'fox', setting: 'garden', cast: [{ label: 'rat', does: 'shoot_at' }, { label: 'kitten', does: 'avoid' }], counts: { enemy: 24 } });
     if (!read.ok) throw new Error(read.issues.join('; '));
     const game = compileGenre(read.value);
     expect(game.roles.find((role) => role.id === 'target')?.label).toBe('rat');
     expect(game.roles.find((role) => role.id === 'hazard')?.label).toBe('kitten');
-    expect((game.controlParams as { tuning: { targets: number } }).tuning.targets).toBe(12);
+    expect((game.controlParams as { tuning: { targets: number } }).tuning.targets).toBe(24);
     expect(COUNT_PARAMS.whack.default?.enemy).toBe('targets');
     expect(game.tutorial.goalLine.length).toBeLessThanOrEqual(50);
     expect(readGenreSpec({ genre: 'whack', mode: 'default', hero: 'fox', setting: 'garden', counts: { enemy: WHACK.targets.max + 1 } }).ok).toBe(false);

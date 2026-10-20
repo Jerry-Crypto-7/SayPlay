@@ -102,12 +102,12 @@ describe('catch genre is live (P54C T5)', () => {
     // Honič věty padá jako bomba: chytání jinou roli nepřítele nemá.
     const chased = catchGenre.draftFill('a hamster catches seeds while a cat chases it', null);
     expect(chased.cast?.every((item) => item.does === 'collect' || item.does === 'avoid')).toBe(true);
-    const read = readGenreSpec({ genre: 'catch', mode: 'default', hero: 'fox', setting: 'orchard', cast: [{ label: 'pear', does: 'collect' }, { label: 'rotten egg', does: 'avoid' }], counts: { collectible: 12 } });
+    const read = readGenreSpec({ genre: 'catch', mode: 'default', hero: 'fox', setting: 'orchard', cast: [{ label: 'pear', does: 'collect' }, { label: 'rotten egg', does: 'avoid' }], counts: { collectible: 24 } });
     if (!read.ok) throw new Error(read.issues.join('; '));
     const game = compileGenre(read.value);
     expect(game.roles.find((role) => role.id === 'coin')?.label).toBe('pear');
     expect(game.roles.find((role) => role.id === 'hazard')?.label).toBe('rotten egg');
-    expect((game.controlParams as { tuning: { items: number } }).tuning.items).toBe(12);
+    expect((game.controlParams as { tuning: { items: number } }).tuning.items).toBe(24);
     expect(COUNT_PARAMS.catch.default?.collectible).toBe('items');
     expect(game.tutorial.goalLine.length).toBeLessThanOrEqual(50);
   });

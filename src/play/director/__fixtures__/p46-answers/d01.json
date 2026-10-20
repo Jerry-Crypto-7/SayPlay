@@ -3,19 +3,28 @@
  "sentence": "a hedgehog rolls down a mushroom hill avoiding foxes",
  "axis": "control:ball",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:18:06.520Z",
- "ms": 5294,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:13:32.613Z",
+ "ms": 6296,
  "answer": {
-  "plan": "runner",
+  "plan": "Create a platformer where a hedgehog rolls down a mushroom hill while avoiding foxes that appear as obstacles. The game will use a simple two‑phase timer logic to spawn foxes and reset the level.",
   "spec": {
+   "genre": "platformer",
+   "mode": "default",
    "hero": "hedgehog",
    "cast": [
     {
      "label": "fox",
      "does": "avoid",
-     "verb": "chase",
+     "verb": "obstacle",
+     "states": null,
+     "patrol": false
+    },
+    {
+     "label": "mushroom hill",
+     "does": "scenery",
+     "verb": "land",
      "states": null,
      "patrol": false
     }
@@ -23,44 +32,87 @@
    "heroAction": "none",
    "setting": "mushroom hill",
    "palette": "forest",
+   "params": {
+    "lengthM": 200,
+    "difficulty": 1,
+    "items": 3,
+    "lives": 3,
+    "targetScore": 0,
+    "timeLimit": null
+   },
    "counts": {
-    "enemy": 1,
-    "collectible": null,
-    "target": null
+    "collectible": null
    },
    "ruleRoles": [
     {
      "id": "fox",
-     "kind": "chaser",
+     "kind": "hazard",
      "label": "fox",
-     "count": 1
+     "count": null
+    },
+    {
+     "id": "hill",
+     "kind": "prop",
+     "label": "mushroom hill",
+     "count": null
     }
    ],
    "things": [
     {
      "role": "fox",
      "start": "hidden",
-     "physics": null
+     "physics": true
+    },
+    {
+     "role": "hill",
+     "start": "hidden",
+     "physics": false
     }
    ],
    "rules": [
     {
-     "id": "fox_chase",
-     "verb": "chase",
+     "id": "startPhase",
+     "verb": "wait",
      "when": {
-      "contact": [
-       "player",
-       "fox"
-      ]
+      "phase": "first"
      },
-     "if": [
-      {
-       "notHolding": true
-      }
-     ],
+     "if": null,
      "do": [
       {
-       "damage": 1
+       "startTimer": {
+        "timer": "spawn",
+        "ticks": 60
+       }
+      }
+     ]
+    },
+    {
+     "id": "spawnFox",
+     "verb": "wait",
+     "when": {
+      "timer": "spawn"
+     },
+     "if": null,
+     "do": [
+      {
+       "wave": {
+        "role": "fox",
+        "count": 1,
+        "at": "edge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "resetPhase",
+     "verb": "wait",
+     "when": {
+      "phase": "second"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "first"
       }
      ]
     }
@@ -69,7 +121,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "phase1"
+      "id": "spawn"
      }
     ],
     "phases": [
@@ -85,37 +137,10 @@
    "boss": {
     "role": "fox",
     "name": "Sneaky Fox",
-    "attack": "charge"
+    "attack": "stomp"
    },
    "abilities": [],
-   "segments": [
-    "newFoe",
-    "moving",
-    "faster"
-   ],
-   "recipe": {
-    "phases": [
-     {
-      "start": 0,
-      "speedPercent": 100,
-      "add": null
-     },
-     {
-      "start": 60,
-      "speedPercent": 120,
-      "add": null
-     }
-    ],
-    "dependsOn": null,
-    "move": "run",
-    "actions": [],
-    "objective": "survive",
-    "threats": [
-     "chaser"
-    ]
-   },
-   "params": null,
-   "unmet": []
+   "segments": null
   }
  },
  "failure": null

@@ -3,10 +3,10 @@
  "sentence": "A ninja frog jumps across lily pads in a swamp",
  "axis": "platformer",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:17:03.042Z",
- "ms": 6014,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:24.015Z",
+ "ms": 5668,
  "answer": {
   "plan": "Create a platform‑style jump game where a ninja frog hops over lily pads in a swamp, with timed waves of lily‑pad obstacles that appear after each second.",
   "spec": {
@@ -94,13 +94,16 @@
      ]
     },
     {
-     "id": "spawnPads",
+     "id": "wavePads",
      "verb": "wait",
      "when": {
       "timer": "padwave"
      },
      "if": null,
      "do": [
+      {
+       "goPhase": "second"
+      },
       {
        "wave": {
         "role": "pad",
@@ -119,7 +122,10 @@
      "if": null,
      "do": [
       {
-       "goPhase": "first"
+       "startTimer": {
+        "timer": "padwave",
+        "ticks": 60
+       }
       }
      ]
     }

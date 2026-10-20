@@ -478,6 +478,21 @@ Holý Rapier 0.19.3 (sloupek dvou koulí): po `setEnabled(false)` spodní koule 
 - **Staré hry míče nejsou bit po bitu – a být nemohou.** 120 běhů buněk `ball.*` z `difficulty.json` (20 semínek × 2 profily) se starým `step.ts` 120/120 shodných, s opravou má **56 jiný hash: všech 40 `ball.defeat`, 16 z 40 `ball.score+rival`, `ball.score` 0**. Výhra i tick výhry jsou stejné ve 120/120 a replay každého nového běhu sedí. Proč: v těch hrách mizí fyzikální těleso (`ball.defeat` s1: 7 úmrtí a návratů za běh) a odebrání změní vnitřní uspořádání Rapieru – první rozdíl stavu je až v tiku 229, 149 tiků po prvním zmizení, o 1 jednotku zaokrouhlení u volně se kutálejícího míče. Nic nezamrzne; je to šum floatů, ne chyba hry.
 - Zúžení opravy nepomohlo: odebírat jen fyzikální tělesa (překážky dál vypínat) i jen mrtvá fyzikální tělesa (nesené dál vypínat) dalo stejných 56 běhů s týmiž novými hashi. Bit po bitu by staré hry zůstaly jen s dvojí cestou podle žánru – zamítnuto, ponechalo by známou chybu Rapieru v publikovaných hrách míče. Uložené hashe těchto běhů nehlídá žádná brána (zmrazené přehrávky `golden/` míč nemají, `difficulty.test.ts` čte souhrn; `replay` volá mimo testy jen `arcade/compile.ts`, `arcade/verify.ts` a `verify/solve.ts`); v `difficulty.json` je přepsaných jen těch 56 hashů, souhrn a ostatní řádky beze změny.
 
+## T14br1 – výhra 30–90 s na krajích mezí
+
+Robot světa (G1), 20 semínek, každá hodnota meze (dočasné měřidlo mimo repo):
+
+- **Přeskákání `rows`:** 10 → 7,0–16,5 s; 40 → 29,3 s; 44 → 21,7 s (semínko 13 má trať s volnými řadami, není to chyba); 45–50 → 32,8–60,3 s. **Nová mez 45–50.**
+- **Vytlačování `rivals`:** 3 → 15,9 s; 6 → 29,1 s; 7–9 → 30,4–82,0 s. **Nová mez 7–9.**
+- **Pruhy:** chytání 10 a 12 kusů na semínku 8 za 29,7–29,8 s → **13–50**; bouchání 10–12 na semínku 9 za 29,4–29,9 s → **13–50**; krájení 10–21 na semínku 2 za 25,8–29,4 s → **22–50**; obrana 10–50 celá v pásmu (47,6–50,2 s), beze změny.
+- **Slučování** vlastní parametry nemá; životy 1/3/9 → 52,8–61,6 s.
+- **Druhá příčina – cílové skóre.** `targetScore` (parametr hloubky všech žánrů) vyhrál hru P54C hned: přeskákání s 10 body za 0,1 s, chytání 1,4 s, slučování s 2048 body za 28,4–34,4 s (m04 z T14b). Žánr P54C je celá hra bez obalu skladby, který výhru skóre podrží. `compileWith` ho u `wholeGame` zahodí; po opravě všech 8 žánrů s 10 body 32,9–60,6 s.
+- Meze generátorů (`HOP.rows`, `PUSH.rivals`, `CATCH.items`…) zůstaly: uložená hra s menším počtem jde otevřít. Novou hru (režisér i rychlá verze, která počet ořízne) hlídají jen meze modulu. Výchozí buňky a `specHash` v `difficulty.json` beze změny.
+- **Nahrané odpovědi T14b bez modelu:** o04 a p02–p04 mají hodnotu pod novou mezí → odpověď se odmítne (`MALFORMED`) a hraje rychlá verze (40,7 s, 53,4 s); m04 zůstává hrou režiséra, 55,8 s. `director.json` je záznam T14b a nepřeměřoval se.
+- **Prompt** `33df2757` → `88459d2e` (jen čtyři čísla mezí, bajty stejné). **P46E nahráno znovu** lokálně (gpt-oss-20b, 25 volání, 0 USD; s T14 a T14b 215 volání – strop 200 platil pro živé běhy T14, tohle je lokální a zdarma). `after.json`: hra z odpovědi 19 → 21 z 25, `ready` 22 → 24, `MALFORMED` 3 → 1; `adds` 0,50 → 0,33 (boss 8 → 7, akce 3 → 2, jen postavy 5 → 8) – nové odpovědi modelu, šum nahrávky od změny promptu nerozliším.
+- Pin `src/play/genre/__tests__/win-bounds.test.ts`: 8 žánrů P54C, oba kraje každé meze modulu a skóre 10, 6 semínek (1 a nejtěsnější). Mutace (stará mez přeskákání, cílové skóre zpět) 8/8 červených.
+- **Pozorování, neopraveno:** odpověď režiséra s hodnotou mimo meze se odmítne celá; rychlá verze hodnotu ořízne. Oříznout i v režisérovi by zachránilo hru z odpovědi – mění to čtení všech žánrů, mimo T14br1.
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.

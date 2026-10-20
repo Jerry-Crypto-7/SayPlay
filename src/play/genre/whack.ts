@@ -48,7 +48,8 @@ export const whackGenre: GenreModule<'whack'> = {
   cues: [],
   heroClasses: ['animal', 'humanoid', 'robot', 'monster'],
   paramBounds: {
-    targets: { min: WHACK.targets.min, max: WHACK.targets.max },
+    // 10–12 terčů robot na semínku 9 rozbije za 29,4–29,9 s, pod 30 s (G1; T14br1, 20 semínek, 13–50 terčů v pásmu).
+    targets: { min: 13, max: WHACK.targets.max },
   },
   availability: () => 'ready',
   compile: (spec) => {

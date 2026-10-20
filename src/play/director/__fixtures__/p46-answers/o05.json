@@ -3,12 +3,12 @@
  "sentence": "Hamster escapes a supermarket Roomba",
  "axis": "runner",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:16:47.571Z",
- "ms": 8517,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:12.161Z",
+ "ms": 8346,
  "answer": {
-  "plan": "Arena escape with a hamster evading a supermarket Roomba, featuring timed phases and a roaming chaser.",
+  "plan": "Arena escape: hamster evades a supermarket Roomba in a timed supermarket setting.",
   "spec": {
    "genre": "arena",
    "mode": "escape",
@@ -20,13 +20,6 @@
      "verb": "chase",
      "states": null,
      "patrol": false
-    },
-    {
-     "label": "coin",
-     "does": "collect",
-     "verb": "collect",
-     "states": null,
-     "patrol": false
     }
    ],
    "heroAction": "none",
@@ -34,16 +27,16 @@
    "palette": "supermarket",
    "params": {
     "entryDistance": 8000,
-    "chaseLead": 30,
+    "chaseLead": 60,
     "seconds": 30,
-    "items": 5,
+    "items": 1,
     "pursuitCeiling": 120,
     "itemSizePct": 120,
     "chasers": 1,
     "chaserSpeed": 70,
     "enemies": 1,
     "enemyHp": 3,
-    "enemySpeed": 60,
+    "enemySpeed": 80,
     "playerHp": 3,
     "lives": 3,
     "targetScore": 0,
@@ -51,7 +44,7 @@
    },
    "counts": {
     "enemy": 1,
-    "collectible": 5
+    "collectible": null
    },
    "ruleRoles": [
     {
@@ -59,22 +52,11 @@
      "kind": "chaser",
      "label": "supermarket roomba",
      "count": 1
-    },
-    {
-     "id": "coin",
-     "kind": "collectible",
-     "label": "coin",
-     "count": 5
     }
    ],
    "things": [
     {
      "role": "roomba",
-     "start": "hidden",
-     "physics": null
-    },
-    {
-     "role": "coin",
      "start": "hidden",
      "physics": null
     }
@@ -91,13 +73,13 @@
       {
        "startTimer": {
         "timer": "escape",
-        "ticks": 60
+        "ticks": 600
        }
       }
      ]
     },
     {
-     "id": "phaseTransition",
+     "id": "phaseSwitch",
      "verb": "wait",
      "when": {
       "timer": "escape"
@@ -117,19 +99,15 @@
      ]
     },
     {
-     "id": "chaserWave",
-     "verb": "wait",
+     "id": "chase",
+     "verb": "chase",
      "when": {
       "phase": "second"
      },
      "if": null,
      "do": [
       {
-       "wave": {
-        "role": "roomba",
-        "count": 1,
-        "at": "edge"
-       }
+       "damage": 1
       }
      ]
     }
@@ -156,13 +134,11 @@
     "name": "Roomba Rumble",
     "attack": "charge"
    },
-   "abilities": [
-    "dash"
-   ],
+   "abilities": [],
    "segments": [
-    "newFoe",
     "moving",
-    "faster"
+    "faster",
+    "newFoe"
    ]
   }
  },

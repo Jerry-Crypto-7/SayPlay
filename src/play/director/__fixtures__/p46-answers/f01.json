@@ -3,12 +3,12 @@
  "sentence": "a dragon guards its gold hoard from greedy knights inside a volcano",
  "axis": "arena.collect",
  "model": "gpt-oss-20b",
- "promptVersion": "33df2757",
- "directorPromptVersion": "b6bcf3fa",
- "recordedAt": "2026-10-20T20:17:13.114Z",
- "ms": 4895,
+ "promptVersion": "88459d2e",
+ "directorPromptVersion": "efeb3cd3",
+ "recordedAt": "2026-10-20T23:12:35.948Z",
+ "ms": 5430,
  "answer": {
-  "plan": "Create a defense‑style volcano game where a dragon protects its gold hoard from greedy knights.",
+  "plan": "Create a defense game where a dragon protects its gold hoard from greedy knights inside a volcano, using timed waves of knights that attack the hoard while the dragon defends.",
   "spec": {
    "genre": "defense",
    "mode": "default",
@@ -34,20 +34,20 @@
    "palette": "volcano",
    "params": null,
    "counts": {
-    "enemy": 10
+    "enemy": null
    },
    "ruleRoles": [
     {
      "id": "knight",
      "kind": "chaser",
      "label": "greedy knight",
-     "count": 10
+     "count": null
     },
     {
      "id": "hoard",
      "kind": "target",
      "label": "gold hoard",
-     "count": 1
+     "count": null
     }
    ],
    "things": [
@@ -64,23 +64,7 @@
    ],
    "rules": [
     {
-     "id": "spawn_knights",
-     "verb": "spawn",
-     "when": {
-      "phase": "first"
-     },
-     "if": null,
-     "do": [
-      {
-       "spawn": {
-        "role": "knight",
-        "at": "player"
-       }
-      }
-     ]
-    },
-    {
-     "id": "start_timer",
+     "id": "start_wave",
      "verb": "wait",
      "when": {
       "phase": "first"
@@ -89,35 +73,45 @@
      "do": [
       {
        "startTimer": {
-        "timer": "defense",
+        "timer": "wave_timer",
         "ticks": 60
        }
       }
      ]
     },
     {
-     "id": "phase_transition",
+     "id": "wave_spawn",
      "verb": "wait",
      "when": {
-      "timer": "defense"
+      "timer": "wave_timer"
      },
      "if": null,
      "do": [
       {
-       "goPhase": "second"
-      },
-      {
        "wave": {
         "role": "knight",
-        "count": 5,
+        "count": 3,
         "at": "edge"
        }
       }
      ]
     },
     {
+     "id": "wave_end",
+     "verb": "wait",
+     "when": {
+      "timer": "wave_timer"
+     },
+     "if": null,
+     "do": [
+      {
+       "goPhase": "second"
+      }
+     ]
+    },
+    {
      "id": "defend_hoard",
-     "verb": "defend",
+     "verb": "wait",
      "when": {
       "phase": "second"
      },
@@ -133,7 +127,7 @@
     "vars": null,
     "timers": [
      {
-      "id": "defense"
+      "id": "wave_timer"
      }
     ],
     "phases": [
@@ -148,7 +142,7 @@
    },
    "boss": {
     "role": "greedy knight",
-    "name": "Gold‑Hoarding Knight",
+    "name": "Knight of the Volcano",
     "attack": "shoot"
    },
    "abilities": [],

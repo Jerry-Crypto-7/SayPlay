@@ -39,7 +39,9 @@ export const hopGenre: GenreModule<'hop'> = {
   cues: [],
   heroClasses: ['animal', 'bird', 'humanoid', 'robot', 'monster'],
   paramBounds: {
-    rows: { min: HOP.rows.min, max: HOP.rows.max },
+    // Kratší trať robot na některém semínku přejde pod 30 s (G1; T14br1, 20 semínek: 44 řad 21,7 s, 45–50 řad 32,8–60,3 s).
+    // Generátor dál postaví i 10 řad (`HOP.rows`), aby uložené hry šly otevřít; nová hra dostane jen tyhle meze.
+    rows: { min: 45, max: HOP.rows.max },
   },
   availability: () => 'ready',
   compile: (spec) => {

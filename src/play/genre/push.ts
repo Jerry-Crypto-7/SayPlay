@@ -40,7 +40,9 @@ export const pushGenre: GenreModule<'push'> = {
   // Narážky žádné: věty k žánru vede klasifikátor jen se znakem žánru (T13b) – „push the cart to the top“ není ring.
   cues: [],
   heroClasses: ['animal', 'humanoid', 'robot', 'monster', 'vehicle'],
-  paramBounds: { rivals: { min: PUSH.rivals.min, max: PUSH.rivals.max } },
+  // Méně soupeřů robot vystrčí pod 30 s (G1; T14br1, 20 semínek: 3 → 15,9 s, 6 → 29,1 s, 7–9 → 30,4–82,0 s).
+  // Generátor dál postaví i 3 (`PUSH.rivals`), aby uložené hry šly otevřít; nová hra dostane jen tyhle meze.
+  paramBounds: { rivals: { min: 7, max: PUSH.rivals.max } },
   availability: () => 'ready',
   compile: (spec) => {
     const rivals = spec.params?.rivals ?? PUSH.rivals.default;

@@ -37,7 +37,8 @@ export const catchGenre: GenreModule<'catch'> = {
   cues: [],
   heroClasses: ['animal', 'humanoid', 'robot', 'monster', 'vehicle'],
   paramBounds: {
-    items: { min: CATCH.items.min, max: CATCH.items.max },
+    // 10 a 12 kusů robot na semínku 8 chytí za 29,7–29,8 s, pod 30 s (G1; T14br1, 20 semínek, 13–50 kusů v pásmu).
+    items: { min: 13, max: CATCH.items.max },
   },
   availability: () => 'ready',
   compile: (spec) => {
