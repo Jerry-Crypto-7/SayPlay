@@ -34,6 +34,7 @@ import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { LaneStage, useLanesInput } from './genres/lanes/LaneScene';
+import { HopScene } from './genres/hop/HopScene';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
 import { HudBoosts, boostKeepers } from './PowerupBadge';
@@ -743,6 +744,8 @@ const StageCanvas = memo(function StageCanvas({
             <PlatformWorld {...world} />
           ) : stage.scene === 'lanes' ? (
             <LaneStage {...world} />
+          ) : stage.scene === 'hop' ? (
+            <HopScene {...world} />
           ) : (
             <World {...world} control={control} />
           )}

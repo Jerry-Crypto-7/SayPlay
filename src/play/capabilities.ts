@@ -129,7 +129,8 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   // T6 bouchání: krtek (`target`) a hodný cíl (`hazard`) nesou model z popisku, životy berou hodné cíle a schovaní krtci.
   // T7 obrana: nepřítel vln (`chaser`) nese model z popisku, bráněná věc (`castle`) je jen popisek (hradba je primitivum); životy berou průlomy.
   lanes: arcade({ setting: true, cues: 'five lanes: catch falling things, whack moles, slice fruit, defend the lanes', roles: ['coin', 'hazard', 'target', 'chaser', 'castle'], finish: false, labels: ['player', 'coin', 'hazard', 'target', 'chaser'], mechanics: LIVES_AND_TIMER }),
-  hop: arcade({ cues: 'hop across busy lanes, crossy road, frogger', roles: [], finish: false, labels: [], mechanics: [] }),
+  // T9 přeskákání: vozidlo silnice (`obstacle`) nese model z popisku, cíl (`finish`) je páska za poslední řadou; životy berou auta, vlak a voda.
+  hop: arcade({ setting: true, cues: 'hop across busy lanes, crossy road, frogger', roles: ['obstacle', 'finish'], finish: true, labels: ['player', 'obstacle'], mechanics: LIVES_AND_TIMER }),
   crowd: arcade({ cues: 'grow a crowd through gates, count masters', roles: [], finish: false, labels: [], mechanics: [] }),
   merge: arcade({ cues: 'drop and merge, suika, 2048', roles: [], finish: false, labels: [], mechanics: [] }),
   push: arcade({ cues: 'push rivals out of the ring, sumo', roles: [], finish: false, labels: [], mechanics: [] }),

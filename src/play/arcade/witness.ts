@@ -9,6 +9,7 @@ import { axisOfLane, laneOfX } from './pieces/lanes';
 import { CATCH } from './pieces/catch-fall';
 import { WHACK, holeOpen } from './pieces/whack';
 import { SLICE, heightAt } from './pieces/slice';
+import { type HopBotParams, hopProbeInput } from './pieces/hop-bot';
 import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
 import { ballKeeperProbeInput } from './pieces/ball-probe';
@@ -166,6 +167,8 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
       return { axis: 0, buttons: state[p + BODY.y]! < desired && state[p + BODY.vy]! < 50 ? BUTTON.TAP : 0 };
     }
   }
+  // Přeskákání (P54C T9): sonda hraje jako robot, dokud by ji skok vpřed neposlal pod viděné vozidlo; pak skočí.
+  if (control === 'hop' && roleAt(state, target) === ROLE.obstacle) return hopProbeInput(observation, world.bot.params as HopBotParams, normal);
   // Obrana pruhů (P54C T7): sonda nestřílí ani nestaví – nepřítel dojde k hradbě a vezme život.
   if (control === 'lanes' && roleAt(state, target) === ROLE.chaser && world.rules.some((ref) => ref.id === 'defense_hit')) return NO_INPUT;
   // Krájení (P54C T8): sonda hraje jako robot, dokud bomba nevyletí do výšky řezu; pak švihne do jejího pruhu.
@@ -281,7 +284,7 @@ export class WitnessRecorder {
     this.race = this.control === 'steer' && this.world.rules.some(rule => rule.id === 'rival_finish' && !('land' in rule.params)) ||
       this.control === 'glide' && this.world.rules.some(rule => rule.id === 'glide_finish' && rule.params.race === true);
     this.stack = this.control === 'timing' && baseControlOf(this.world.control).params.mode === 'stack';
-    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk', lanes: 'lanes' };
+    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk', lanes: 'lanes', hop: 'hop' };
     this.movementVerb = this.control === 'steer' && baseControlOf(this.world.control).params.land !== undefined ? 'glide' : movement[this.control];
     this.start = world.initial;
     for (const binding of this.bindings.values()) {
