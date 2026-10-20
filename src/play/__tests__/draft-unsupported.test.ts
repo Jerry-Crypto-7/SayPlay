@@ -5,6 +5,8 @@ import { loadRapier } from '@/play/arcade/physics/world';
  * Naměřeno 22. 9. 2026: neumíme 38/38 (manipulate 15, build_place 12,
  * idle 8, sandbox 3), chráněné štítky 0/74, jinde jediná s126 („merge
  * watermelons like suika game“, štítek timing – slučování je poctivě idle).
+ * Od P54C T13 hraje pět vět build_place obranu pruhů (držení postaví
+ * obránce), takže hlášku nedostanou: neumíme 33/38.
  */
 
 import { readFileSync } from 'node:fs';
@@ -24,20 +26,30 @@ const corpus = JSON.parse(readFileSync(new URL('../../../evals/play/demand/corpu
 
 const UNSUPPORTED = ['manipulate', 'build_place', 'idle', 'sandbox'];
 const PROTECTED = ['runner', 'platform', 'flap', 'tap_go'];
+// Obrana před vlnami (P54C T13) – štítek korpusu zůstává build_place, hra ji ale hraje.
+const LANE_DEFENSE = ['s154', 's155', 's156', 's157', 's159'];
 
 describe('unsupportedGame over the demand corpus', () => {
-  const unsupported = corpus.filter((entry) => UNSUPPORTED.includes(entry.verb));
+  const unsupported = corpus.filter((entry) => UNSUPPORTED.includes(entry.verb) && !LANE_DEFENSE.includes(entry.id));
+  const defended = corpus.filter((entry) => LANE_DEFENSE.includes(entry.id));
   const protectedEntries = corpus.filter((entry) => PROTECTED.includes(entry.verb));
   const others = corpus.filter((entry) => !UNSUPPORTED.includes(entry.verb) && !PROTECTED.includes(entry.verb));
 
   it('keeps the corpus coverage counts', () => {
-    expect(unsupported).toHaveLength(38);
+    expect(unsupported).toHaveLength(33);
+    expect(defended.map((entry) => entry.verb)).toEqual(Array(5).fill('build_place'));
     expect(protectedEntries).toHaveLength(74);
     expect(others.filter((entry) => entry.text === 'merge watermelons like suika game')).toHaveLength(1);
   });
 
   it.each(unsupported)('flags unsupported $id: $text', (entry) => {
     expect(unsupportedGame(entry.text, draftGameSpec(entry.text))).not.toBeNull();
+  });
+
+  it.each(defended)('plays lane defense and does not flag $id: $text', (entry) => {
+    const draft = draftGameSpec(entry.text);
+    expect(draft.genre?.id).toBe('defense');
+    expect(unsupportedGame(entry.text, draft)).toBeNull();
   });
 
   it.each(protectedEntries)('never flags protected $id: $text', (entry) => {

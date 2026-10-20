@@ -239,6 +239,19 @@ gpt-oss-20b lokálně (llama.cpp, RTX 3090; Groq klíč na stroji není, viz Roz
 
 - `ruleRoles` odpovědi, které opakují roli žánru pruhů (stejný popisek a druh jako ovoce nebo bomba), shodí svědka hrozby (c05, s02). Kandidát na opravu: u žánru pruhů takové role pravidel zahodit dřív, než se hra složí.
 
+## T15 – regresní průchod (konec MVP)
+
+- **Celá sada** (`npx vitest run --reporter=json`, sama, nic jiného neběželo): 693 souborů, 15 033 testů – 15 021 zelených, 6 červených, 6 přeskočených. Po rozboru:
+  - `src/play/__tests__/draft-unsupported.test.ts`, 5 červených – **regrese P54C, opravená**. Pin poctivé hlášky (P25E) čekal hlášku „neumíme“ u všech 38 vět korpusu poptávky se štítkem manipulate / build_place / idle / sandbox. Od T13 hraje pět z nich obranu pruhů a hlášku záměrně nedostane (`draft/unsupported.ts`): s154–s157 a s159 („tower defense…“, „defend the castle from waves of goblins“, „plants vs zombies…“, „protect the cake from ants“). Test teď drží 33 vět s hláškou a pět vět jménem, které hrají `defense` bez hlášky; 208/208.
+  - `evals/play/rules/coverage.test.ts` – `beforeAll` (200 návrhů, strop 120 s) pod zátěží celé sady nedoběhl a tři testy se přeskočily. Sám 25/25 za 99 s – časový pád, ne regrese.
+  - `scripts/__tests__/submission-check.test.ts`, 1 červený – ENOENT `plans/P8-odevzdani.md` (gitignorovaný plán, ve worktree chybí). Jiný pád na chybějící `plans/…` tentokrát nebyl.
+- **Staré buňky:** `difficulty.test.ts` (přepočítá `specHash` a pásmo každé živé buňky) je v sadě zelený. `git diff ef64a59d -- evals/play/p41/difficulty.json` má 1 882 přidaných řádků (4 id v seznamu buněk a řádky `catch`, `whack`, `defense`, `slice`) a 0 odebraných ani změněných. Každá stará buňka má tedy `specHash` a pásmo jako v T1.
+- **Golden P41 proti T1:** přepsaný `regression/p41-report.json` se od commitnutého liší u 13 řádků (počty těl a pravidel, tik výhry), proto jsem golden pustil ještě jednou se `src/` z `ef64a59d`. Mimo časy se neliší ani jeden ze 40 řádků. Rozdíl proti souboru je tedy z `main` (P51 a P52 po jeho posledním zápisu v #34), ne z P54C. Artefakty `p41-report.json` a `compiled/report.json` (jen časy) vrácené.
+- **Build:** `npm run build` exit 0.
+- **E2E** (`next start` na 3321, prázdné `PLAY_STORE_DIR`, `FALLBACK_SMOKE_URL`): `play-catch` 3/3, `play-whack` 3/3, `play-defense` 3/3, `play-slice` 3/3, `play-ball` 4/4, `p36-dare` 4/4, `interface-language` 3/3, `p35-perf` 17/17, `play-physics-determinism` 6/6 (po opravě specu), `play-share` 4/5.
+  - `play-physics-determinism` byl 0/6 a s P54C nesouvisel. Test 1 potřebuje server s `PLAY_LAB=1` (stojí v hlavičce specu, laboratoř je jinak v produkci 404). Testy 2–6 četly `control.id` a `control.params` přímo, ale ovládání od P51 (#38) balí `pacing_control` a `phase_control`. Spec teď čte ovládání pod obaly (`baseControlOf` z `arcade/addons.ts`) a s `PLAY_LAB=1` je 6/6: Node a Chromium dál přehrají každý kontrolní bod míče i řízení stejně.
+  - `play-share` „without a share sheet the HUD button copies the link to this version“ je červený už na `main`, samotný opakovaně. Čeká hlášku „the link stops working when it restarts“, kterou server od P40 (#23) pošle jen bez souborového úložiště (`x-play-store: memory`). E2e server má `PLAY_STORE_DIR`, úložiště je tedy souborové a hláška správně chybí. Kód té cesty (`ShareButton.tsx`, `api/play/_publish.ts`, `version/store.ts`) ani spec P54C nezměnil. Patří k souborům P54A – zapsané, neopravené.
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.
@@ -306,3 +319,7 @@ gpt-oss-20b lokálně (llama.cpp, RTX 3090; Groq klíč na stroji není, viz Roz
 - T14: nahrávky P46E nahrané znovu (25 volání v rámci 200) místo úpravy testu – test hlídá, že číslo `after.json` je z dnešního promptu, a stará nahrávka by to už neplatila.
 - T14: nález s `ruleRoles` (c05, s02) neopravený – AC ho nežádá (hra robot vyhraje, upgrade ji označí `VERB_UNPROVED`) a oprava by měnila skládání odpovědí všech žánrů pruhů.
 - T14: dva rekurzivní `grep` po verzi promptu `4ff1d2c9` nad `evals/` prošly bajty souborů včetně `holdout.json` (bez shody, nic se nevypsalo, obsah jsem neviděl); další hledání `holdout.json` vynechává jménem (`--exclude`).
+- T15: pin poctivé hlášky (`draft-unsupported.test.ts`) dostal nový stav místo vrácení chování – hláška „neumíme“ by u obrany pruhů lhala (rozhodnutí T13); pět vět drží jménem, ať další posun neprojde potichu.
+- T15: `play-physics-determinism` byl červený už před P54C (obaly ovládání z P51), ale AC ho chce zelený a spec testuje výstup `compose/native.ts` a `compose/drive.ts` (soubory P54C) – opravené jen čtení ovládání ve specu, kód hry beze změny, samostatný commit.
+- T15: `play-share` neopravený – testuje hlášku sdílení (`src/components/play/ShareButton.tsx`, P54A) a pád je z P40, ne z P54C.
+- T15: e2e server pro `play-physics-determinism` běžel s `PLAY_LAB=1`, jak chce hlavička specu; ostatní specy běžely bez něj.
