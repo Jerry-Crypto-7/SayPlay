@@ -35,6 +35,7 @@ import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { LaneStage, useLanesInput } from './genres/lanes/LaneScene';
 import { HopScene } from './genres/hop/HopScene';
+import { CrowdScene } from './genres/crowd/CrowdScene';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
 import { HudBoosts, boostKeepers } from './PowerupBadge';
@@ -746,6 +747,8 @@ const StageCanvas = memo(function StageCanvas({
             <LaneStage {...world} />
           ) : stage.scene === 'hop' ? (
             <HopScene {...world} />
+          ) : stage.scene === 'crowd' ? (
+            <CrowdScene {...world} />
           ) : (
             <World {...world} control={control} />
           )}

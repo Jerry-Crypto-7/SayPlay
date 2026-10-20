@@ -49,6 +49,8 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'slice', mode: 'default', hero: 'ninja', cast: [{ label: 'watermelon', does: 'collect' }, { label: 'bomb', does: 'avoid' }], setting: 'dojo' },
   // P54C T9: přeskákání silnice.
   { genre: 'hop', mode: 'default', hero: 'chicken', cast: [{ label: 'taxi', does: 'avoid' }, { label: 'barn', does: 'reach' }], setting: 'farm road' },
+  // P54C T10: dav a brány.
+  { genre: 'crowd', mode: 'default', hero: 'penguin', cast: [{ label: 'saw', does: 'avoid' }, { label: 'giant', does: 'fight' }], setting: 'icy road' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */
@@ -136,9 +138,9 @@ describe('genre contract (P32-0 T3)', () => {
 /**
  * Kostra P54C T4: osm žánrů je v kontraktu, ale nehraje – nikdo je nevybere, dokud jejich úloha nepřepne buňku.
  * T5 přepnulo chytání (`catch`), T6 bouchání (`whack`), T7 obranu pruhů (`defense`), T8 krájení (`slice`),
- * T9 přeskákání silnice (`hop`), zbylé tři čekají.
+ * T9 přeskákání silnice (`hop`), T10 dav a brány (`crowd`), zbylé dva čekají.
  */
-const STAGED = ['crowd', 'merge', 'push'] as const;
+const STAGED = ['merge', 'push'] as const;
 
 describe('staged genres (P54C T4)', () => {
   it('registers the remaining new genres with one default mode, staged, and a compile that refuses', () => {

@@ -16,7 +16,7 @@
   "src/play/arcade/pieces/behaviours/__tests__/swarm.test.ts:103"
  ],
  "liveCells": {
-  "count": 59,
+  "count": 60,
   "ids": [
    "roam.catch",
    "run.escape",
@@ -52,6 +52,7 @@
    "defense.default",
    "slice.default",
    "hop.default",
+   "crowd.default",
    "runner.default+shoot_at",
    "runner.default+chase_me",
    "runner.default+chase_me+shoot_at",

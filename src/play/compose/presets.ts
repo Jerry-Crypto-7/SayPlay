@@ -33,6 +33,8 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'slice.default': { move: 'lanes', actions: ['slice'], objective: 'score', threats: ['hazard'] },
   // P54C T9: přeskákání silnice je živé (vlastní ovládání `hop`, ne pruhy).
   'hop.default': { move: 'hop', actions: [], objective: 'reach', threats: ['obstacle'] },
+  // P54C T10: dav a brány je živý (vlastní ovládání `crowd`).
+  'crowd.default': { move: 'crowd', actions: [], objective: 'defeat', threats: ['obstacle'] },
 };
 
 /**
@@ -40,7 +42,6 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
  * live cell and a `sourceFor` reading – until the genre's own task makes its cell live.
  */
 export const STAGED_PRESETS: Readonly<Record<string, Recipe>> = {
-  'crowd.default': { move: 'crowd', actions: [], objective: 'defeat', threats: ['obstacle'] },
   'merge.default': { move: 'drop', actions: ['merge'], objective: 'score', threats: [] },
   'push.default': { move: 'roam', actions: ['push'], objective: 'defeat', threats: ['rival'] },
 };
