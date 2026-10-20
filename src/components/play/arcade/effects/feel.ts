@@ -76,8 +76,18 @@ export function comboOf(effects: readonly { readonly kind: string }[]): number |
   return best;
 }
 
-/** Prostředí bez `matchMedia` (server, testy v node) je bez přání „méně pohybu“. */
-export const reducedMotion = (): boolean => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let motionQuery: { readonly source: Window['matchMedia']; readonly list: MediaQueryList } | null = null;
+
+/**
+ * Prostředí bez `matchMedia` (server, testy v node) je bez přání „méně pohybu“. Dotaz se staví
+ * jednou na `matchMedia` a jeho `matches` sleduje nastavení živě: hračkový pohyb se ptá každý
+ * snímek za každé tělo a nový dotaz pokaždé stál telefon (Pixel 7, CPU 4×) ~0,6 ms snímku (P54B T15c).
+ */
+export const reducedMotion = (): boolean => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  if (motionQuery?.source !== window.matchMedia) motionQuery = { source: window.matchMedia, list: window.matchMedia('(prefers-reduced-motion: reduce)') };
+  return motionQuery.list.matches;
+};
 
 /**
  * Visual-only impact clock; accepts the bus's validated hit, never score/spawn.

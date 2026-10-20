@@ -44,8 +44,18 @@ export const WING = 0.6;
 export const LEG = 0.5;
 export const TAIL = 0.5;
 
-/** Měřidlo a srovnání vypnou hračkový pohyb adresou `?toy=off` (P45D T3, T15). */
-const toyOff = (): boolean => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('toy') === 'off';
+let toySearch = { search: '', off: false };
+
+/**
+ * Měřidlo a srovnání vypnou hračkový pohyb adresou `?toy=off` (P45D T3, T15). Adresa se čte
+ * znovu, jen když se změní: ptá se každý snímek každé tělo (P54B T15c).
+ */
+const toyOff = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const { search } = window.location;
+  if (search !== toySearch.search) toySearch = { search, off: new URLSearchParams(search).get('toy') === 'off' };
+  return toySearch.off;
+};
 
 /** Jediný vypínač hračkového pohybu: bez `prefers-reduced-motion` a bez `?toy=off`. */
 export const toyMotionOn = (): boolean => typeof window !== 'undefined' && !toyOff() && !reducedMotion();

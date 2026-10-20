@@ -5,8 +5,8 @@
  * slitý 5, takže řada domů podél trati nestojí stovky kreslicích volání navíc.
  */
 
-import type { Bone, Material, Mesh, Object3D, Side, SkinnedMesh, Texture, TypedArray } from 'three';
-import { Box3, BufferAttribute, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, FrontSide, Group, Matrix4, Mesh as MeshClass, MeshStandardMaterial, SRGBColorSpace, SkinnedMesh as SkinnedMeshClass, Vector3 } from 'three';
+import type { AnimationClip, Bone, KeyframeTrack, Material, Mesh, Object3D, Side, SkinnedMesh, Texture, TypedArray } from 'three';
+import { Box3, BufferAttribute, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, FrontSide, Group, Matrix4, Mesh as MeshClass, MeshStandardMaterial, PropertyBinding, SRGBColorSpace, SkinnedMesh as SkinnedMeshClass, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -409,6 +409,43 @@ export function mergeRig(root: Object3D): Object3D {
     for (const source of sources) source.removeFromParent();
   }
   return root;
+}
+
+/** Odchylka od klidu, pod kterou je hodnota stopy klidová (vývoz z Blenderu má šum do ~1e-6). */
+const REST_EPS = 1e-5;
+
+/** Klidová hodnota vlastnosti uzlu, kterou stopa klipu přepisuje; jiné vlastnosti žádnou nemají. */
+function restOf(node: Object3D, property: string): readonly number[] | null {
+  if (property === 'position') return node.position.toArray();
+  if (property === 'quaternion') return node.quaternion.toArray();
+  if (property === 'scale') return node.scale.toArray();
+  return null;
+}
+
+/** Stopa po celou dobu na klidové hodnotě kosti (natočení i jako −q). */
+function atRest(track: KeyframeTrack, root: Object3D): boolean {
+  const { nodeName, objectName, propertyName, propertyIndex } = PropertyBinding.parseTrackName(track.name);
+  const node = objectName === undefined && propertyIndex === undefined ? PropertyBinding.findNode(root, nodeName) : null;
+  const rest = node === null ? null : restOf(node as Object3D, propertyName);
+  const size = track.getValueSize();
+  // Kubická stopa glTF nese u každého klíče i tečny: velikost hodnoty nesedí a stopa zůstane.
+  if (rest === null || size !== rest.length) return false;
+  const values = track.values;
+  const sign = propertyName === 'quaternion' && rest.reduce((sum, value, i) => sum + value * values[i]!, 0) < 0 ? -1 : 1;
+  return values.every((value, i) => Math.abs(value - sign * rest[i % size]!) <= REST_EPS * Math.max(1, Math.abs(rest[i % size]!)));
+}
+
+/**
+ * Klipy bez stop, které drží kost celou dobu v klidu (P54B T15c). Quaternius a KayKit vyvážejí
+ * posun, natočení i měřítko každé kosti v každém klipu a 65–80 % stop se z klidu nehne; míchač
+ * je přesto každý snímek vyhodnotí, smíchá a zapíše. Riggované zombie střelnice (69 stop,
+ * 44–52 v klidu) tím stály telefon (Pixel 7, CPU 4×) 11 % FPS. Kost, na kterou klip nesahá,
+ * drží míchač v hodnotě z doby navázání (`PropertyMixer`, zbytek váhy do 1) – tedy v klidu,
+ * na který by ji klidová stopa nastavila: póza ani prolnutí klipů se nezmění. Mění klipy na
+ * místě – volá se jednou na načtený model, před klonováním.
+ */
+export function dropRestTracks(clips: readonly AnimationClip[], root: Object3D): void {
+  for (const clip of clips) clip.tracks = clip.tracks.filter((track) => !atRest(track, root));
 }
 
 /** Nejvýš tolik pohyblivých dílů na tělo – každý je síť (a obrys) navíc. */
