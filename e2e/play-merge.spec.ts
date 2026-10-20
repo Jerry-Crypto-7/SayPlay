@@ -123,6 +123,8 @@ test.describe('merge on a phone (P54C T11)', () => {
       } else if (wants !== null && wants.axis !== 0) {
         aimX = fingerX(wants.axis);
         await finger.put(aimX, fingerY);
+        // P54C T15b: `pointermove` přijde až se snímkem – tik bez čekání může přečíst starou osu (jako `play-crowd`).
+        await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
       }
       const next = await page.evaluate(() => {
         const shell = window.__playShell as unknown as HandProbe;

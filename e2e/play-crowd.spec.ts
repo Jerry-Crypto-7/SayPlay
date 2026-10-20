@@ -113,6 +113,9 @@ test.describe('crowd on a phone (P54C T10)', () => {
       if (wants !== null && wants.axis !== 0) {
         await finger.put(halfCenter(laneOfAxis(wants.axis)), Math.round(box.y + box.height * 0.6));
         moves += 1;
+        // P54C T15b: Chromium doručí `pointermove` až se snímkem, ne hned po CDP volání – bez čekání tik občas
+        // přečetl starou osu a dav minul bránu (29 z 30 v jednom ze tří běhů).
+        await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
       }
       const next = await page.evaluate(() => {
         const shell = window.__playShell as unknown as HandProbe;

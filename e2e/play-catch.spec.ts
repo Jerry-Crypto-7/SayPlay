@@ -104,7 +104,11 @@ test.describe('catch on a phone (P54C T5)', () => {
     let last = { runState: 'running', tick: 0, score: 0, items: 0 };
     // 6 000 tiků = 100 s, nad nejdelší hru.
     while (last.runState === 'running' && last.tick < 6000) {
-      if (wants !== null && wants.axis !== 0) await finger.put(laneCenter(laneOfAxis(wants.axis)), Math.round(box.y + box.height * 0.6));
+      if (wants !== null && wants.axis !== 0) {
+        await finger.put(laneCenter(laneOfAxis(wants.axis)), Math.round(box.y + box.height * 0.6));
+        // P54C T15b: `pointermove` přijde až se snímkem – tik bez čekání může přečíst starou osu (jako `play-crowd`).
+        await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+      }
       const next = await page.evaluate(() => {
         const shell = window.__playShell as unknown as HandProbe;
         const now = shell.tickByHand();

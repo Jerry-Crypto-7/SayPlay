@@ -434,6 +434,15 @@ Nová verze promptu → 25 odpovědí nahraných znovu (`record.cmd`, 25 volán�
 - Model vyplní počty a parametry, které věta neříká, a dolní mez modulu (`rows 10`, `rivals 3`, `lives 1`) dá výhru pod 30 s → T14br1.
 - Neživé recepty odpovědi (`run/-/survive/chaser`, `jump/push/defeat/chaser`, …) spadnou na rychlou verzi → T14br2.
 
+## T15b – regresní průchod po fázi 3
+
+- **Celá sada** (`--reporter=json`, sama, nic jiného neběželo): 15 166 testů – 15 162 zelených, 1 červený, 3 přeskočené. Červený je `scripts/__tests__/submission-check.test.ts` na ENOENT `plans/P8-odevzdani.md` (gitignorovaný plán ve worktree chybí, jako v T15); přeskočené tři (`geom/compile`, `scene/spec` ×2) čekají na archiv mimo repo, beze změny. Časové pády (`coverage`, golden `p90CompileMs`) tentokrát žádné.
+- **Staré buňky:** `difficulty.test.ts` je v sadě zelený. `git diff ef64a59d -- evals/play/p41/difficulty.json`: 3 762 přidaných řádků (buňky osmi nových žánrů) a 2 změněné – `specHash` buněk `quest.spatial` a `quest.station` z T14r2 (cíl questu v množném čísle, vědomě, běhy beze změny). Jinak má každá stará buňka `specHash` a pásmo jako v T1.
+- **Artefakty:** `regression/p41-report.json` a `compiled/report.json`, které golden při běhu přepíše, vrácené (`git checkout --`), závěr se nemění.
+- **Build:** `npm run build` exit 0.
+- **E2E** (`next start` na 3321, prázdné `PLAY_STORE_DIR`, `PLAY_LAB=1`, `FALLBACK_SMOKE_URL`): `play-catch` 3/3, `play-whack` 3/3, `play-defense` 3/3, `play-slice` 3/3, `play-hop` 3/3, `play-crowd` 3/3 (po opravě testu), `play-merge` 3/3, `play-push` 3/3, `play-ball` 4/4, `p36-dare` 4/4, `interface-language` 3/3, `p35-perf` 17/17, `play-physics-determinism` 8/8, `play-share` 4/5 (týž červený test jako v T15, na `main` od P40, soubor P54A).
+  - **`play-crowd` nestabilní – opraveno v testu.** V sadě a pak v jednom ze tří samostatných běhů dav prošel 29 bran místo 30 (hra vyhraná, test chce přesně 30). Příčina: `touchMove` přes CDP doručí Chromium jako `pointermove` až s dalším snímkem, takže ruční tik občas přečetl starou osu; robot pak tah opakoval (102–110 tahů prstu v běhu). Test po každém tahu počká jeden snímek (`requestAnimationFrame`): 4/4 běhy 30/30 a stálých 17 tahů. Táž mezera stála v `play-catch` a `play-merge` (zelené, ale stejný vzor), opravené stejně, oba 2× zelené; `play-push` čeká dva snímky už od T12. Kód hry se nemění.
+
 ## Rozhodnutí
 
 - T1: větev nese datum jako ostatní worktree (`features/P54C-nove-zanry-2026-10-19`), ne kratší jméno z plánu; stojí přímo na `origin/main`.
