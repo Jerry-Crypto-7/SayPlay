@@ -1,0 +1,1251 @@
+{
+ "schema": "p55-final.v1",
+ "commit": "cae3717f",
+ "sha256": "7ee816ac289a957e17fb706956aa98c4ab6ce404b3c282cd296fca6c1bfe0537",
+ "gates": {
+  "targetGenre": 48,
+  "laneGenre": 24,
+  "distractorStays": 19,
+  "playable": 80,
+  "winSeconds": 76
+ },
+ "summary": {
+  "targetGenre": {
+   "hit": 20,
+   "of": 60
+  },
+  "laneGenre": {
+   "hit": 13,
+   "of": 32
+  },
+  "distractorStays": {
+   "hit": 18,
+   "of": 20
+  },
+  "playable": {
+   "hit": 80,
+   "of": 80
+  },
+  "winSeconds": {
+   "hit": 75,
+   "of": 80
+  },
+  "idleLoses": {
+   "hit": 80,
+   "of": 80
+  },
+  "replayEqual": {
+   "hit": 80,
+   "of": 80
+  },
+  "byGenre": {
+   "catch": {
+    "hit": 4,
+    "of": 8,
+    "played": {
+     "catch.default": 4,
+     "arena.collect": 2,
+     "runner.default": 1,
+     "quest.spatial": 1
+    }
+   },
+   "whack": {
+    "hit": 2,
+    "of": 8,
+    "played": {
+     "whack.default": 2,
+     "arena.escape": 1,
+     "voyage.race": 1,
+     "arena.collect": 2,
+     "platformer.default": 1,
+     "flap.default": 1
+    }
+   },
+   "defense": {
+    "hit": 3,
+    "of": 8,
+    "played": {
+     "defense.default": 3,
+     "arena.escape": 1,
+     "arena.collect": 2,
+     "runner.default": 1,
+     "arena.fight": 1
+    }
+   },
+   "slice": {
+    "hit": 4,
+    "of": 8,
+    "played": {
+     "slice.default": 4,
+     "voyage.race": 1,
+     "runner.default": 1,
+     "arena.collect": 1,
+     "duel.default": 1
+    }
+   },
+   "hop": {
+    "hit": 2,
+    "of": 7,
+    "played": {
+     "runner.default": 2,
+     "hop.default": 2,
+     "voyage.race": 3
+    }
+   },
+   "crowd": {
+    "hit": 2,
+    "of": 7,
+    "played": {
+     "crowd.default": 2,
+     "runner.default": 2,
+     "voyage.race": 1,
+     "arena.escape": 1,
+     "arena.collect": 1
+    }
+   },
+   "merge": {
+    "hit": 1,
+    "of": 7,
+    "played": {
+     "arena.collect": 3,
+     "throw.default": 1,
+     "merge.default": 1,
+     "shooter.default": 1,
+     "voyage.race": 1
+    }
+   },
+   "push": {
+    "hit": 2,
+    "of": 7,
+    "played": {
+     "push.default": 2,
+     "voyage.race": 1,
+     "quest.spatial": 1,
+     "arena.collect": 3
+    }
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "h01",
+   "family": "target",
+   "genre": "catch",
+   "draft": "catch.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h02",
+   "family": "target",
+   "genre": "catch",
+   "draft": "catch.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h03",
+   "family": "target",
+   "genre": "catch",
+   "draft": "catch.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h04",
+   "family": "target",
+   "genre": "catch",
+   "draft": "catch.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h05",
+   "family": "target",
+   "genre": "catch",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h06",
+   "family": "target",
+   "genre": "catch",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h07",
+   "family": "target",
+   "genre": "catch",
+   "draft": "runner.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 63.3,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h08",
+   "family": "target",
+   "genre": "catch",
+   "draft": "quest.spatial",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h09",
+   "family": "target",
+   "genre": "whack",
+   "draft": "whack.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 34.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h10",
+   "family": "target",
+   "genre": "whack",
+   "draft": "arena.escape",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 69.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h11",
+   "family": "target",
+   "genre": "whack",
+   "draft": "whack.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 34.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h12",
+   "family": "target",
+   "genre": "whack",
+   "draft": "voyage.race",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 28.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h13",
+   "family": "target",
+   "genre": "whack",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 47.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h14",
+   "family": "target",
+   "genre": "whack",
+   "draft": "platformer.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 41.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h15",
+   "family": "target",
+   "genre": "whack",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h16",
+   "family": "target",
+   "genre": "whack",
+   "draft": "flap.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 39.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h17",
+   "family": "target",
+   "genre": "defense",
+   "draft": "defense.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 47.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h18",
+   "family": "target",
+   "genre": "defense",
+   "draft": "defense.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 47.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h19",
+   "family": "target",
+   "genre": "defense",
+   "draft": "defense.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 47.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h20",
+   "family": "target",
+   "genre": "defense",
+   "draft": "arena.escape",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 40,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h21",
+   "family": "target",
+   "genre": "defense",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h22",
+   "family": "target",
+   "genre": "defense",
+   "draft": "runner.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 63.3,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h23",
+   "family": "target",
+   "genre": "defense",
+   "draft": "arena.fight",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h24",
+   "family": "target",
+   "genre": "defense",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h25",
+   "family": "target",
+   "genre": "slice",
+   "draft": "slice.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 42.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h26",
+   "family": "target",
+   "genre": "slice",
+   "draft": "slice.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 42.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h27",
+   "family": "target",
+   "genre": "slice",
+   "draft": "slice.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 42.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h28",
+   "family": "target",
+   "genre": "slice",
+   "draft": "voyage.race",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 32.9,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h29",
+   "family": "target",
+   "genre": "slice",
+   "draft": "runner.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 63.3,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h30",
+   "family": "target",
+   "genre": "slice",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h31",
+   "family": "target",
+   "genre": "slice",
+   "draft": "slice.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 42.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h32",
+   "family": "target",
+   "genre": "slice",
+   "draft": "duel.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 48.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h33",
+   "family": "target",
+   "genre": "hop",
+   "draft": "runner.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 60.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h34",
+   "family": "target",
+   "genre": "hop",
+   "draft": "hop.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 40.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h35",
+   "family": "target",
+   "genre": "hop",
+   "draft": "voyage.race",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 32.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h36",
+   "family": "target",
+   "genre": "hop",
+   "draft": "hop.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 40.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h37",
+   "family": "target",
+   "genre": "hop",
+   "draft": "voyage.race",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 32.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h38",
+   "family": "target",
+   "genre": "hop",
+   "draft": "voyage.race",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 32.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h39",
+   "family": "target",
+   "genre": "hop",
+   "draft": "runner.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 63.3,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h40",
+   "family": "target",
+   "genre": "crowd",
+   "draft": "crowd.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h41",
+   "family": "target",
+   "genre": "crowd",
+   "draft": "runner.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 60.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h42",
+   "family": "target",
+   "genre": "crowd",
+   "draft": "crowd.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h43",
+   "family": "target",
+   "genre": "crowd",
+   "draft": "runner.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 64.5,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h44",
+   "family": "target",
+   "genre": "crowd",
+   "draft": "voyage.race",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 33,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h45",
+   "family": "target",
+   "genre": "crowd",
+   "draft": "arena.escape",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 69.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h46",
+   "family": "target",
+   "genre": "crowd",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h47",
+   "family": "target",
+   "genre": "merge",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h48",
+   "family": "target",
+   "genre": "merge",
+   "draft": "throw.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 33.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h49",
+   "family": "target",
+   "genre": "merge",
+   "draft": "merge.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 55.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h50",
+   "family": "target",
+   "genre": "merge",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 30.9,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h51",
+   "family": "target",
+   "genre": "merge",
+   "draft": "shooter.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 56.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h52",
+   "family": "target",
+   "genre": "merge",
+   "draft": "voyage.race",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 32.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h53",
+   "family": "target",
+   "genre": "merge",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h54",
+   "family": "target",
+   "genre": "push",
+   "draft": "push.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 53.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h55",
+   "family": "target",
+   "genre": "push",
+   "draft": "voyage.race",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 33,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h56",
+   "family": "target",
+   "genre": "push",
+   "draft": "quest.spatial",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 41,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h57",
+   "family": "target",
+   "genre": "push",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 52.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h58",
+   "family": "target",
+   "genre": "push",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h59",
+   "family": "target",
+   "genre": "push",
+   "draft": "push.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 53.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h60",
+   "family": "target",
+   "genre": "push",
+   "draft": "arena.collect",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h61",
+   "family": "distractor",
+   "genre": null,
+   "draft": "voyage.race",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 32.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h62",
+   "family": "distractor",
+   "genre": null,
+   "draft": "platformer.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 41.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h63",
+   "family": "distractor",
+   "genre": null,
+   "draft": "arena.fight",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 55.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h64",
+   "family": "distractor",
+   "genre": null,
+   "draft": "runner.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 60.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h65",
+   "family": "distractor",
+   "genre": null,
+   "draft": "runner.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 60.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h66",
+   "family": "distractor",
+   "genre": null,
+   "draft": "runner.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 62.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h67",
+   "family": "distractor",
+   "genre": null,
+   "draft": "quest.station",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 31.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h68",
+   "family": "distractor",
+   "genre": null,
+   "draft": "arena.collect",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 21.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h69",
+   "family": "distractor",
+   "genre": null,
+   "draft": "rhythm.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 35.5,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h70",
+   "family": "distractor",
+   "genre": null,
+   "draft": "throw.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 13.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h71",
+   "family": "distractor",
+   "genre": null,
+   "draft": "arena.collect",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 45.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h72",
+   "family": "distractor",
+   "genre": null,
+   "draft": "voyage.race",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 28.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h73",
+   "family": "distractor",
+   "genre": null,
+   "draft": "quest.station",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 31.6,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h74",
+   "family": "distractor",
+   "genre": null,
+   "draft": "throw.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 13.8,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h75",
+   "family": "distractor",
+   "genre": null,
+   "draft": "runner.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 60.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h76",
+   "family": "distractor",
+   "genre": null,
+   "draft": "arena.fight",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 58.4,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h77",
+   "family": "distractor",
+   "genre": null,
+   "draft": "runner.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 60.2,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h78",
+   "family": "distractor",
+   "genre": null,
+   "draft": "whack.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 34.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h79",
+   "family": "distractor",
+   "genre": null,
+   "draft": "hop.default",
+   "genreOk": false,
+   "bot": {
+    "wins": true,
+    "seconds": 40.7,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  },
+  {
+   "id": "h80",
+   "family": "distractor",
+   "genre": null,
+   "draft": "throw.default",
+   "genreOk": true,
+   "bot": {
+    "wins": true,
+    "seconds": 31.1,
+    "idleLoses": true,
+    "replayEqual": true,
+    "failures": []
+   }
+  }
+ ]
+}

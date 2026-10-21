@@ -1,0 +1,8 @@
+{
+ "schema": "p55-holdout-opened.v1",
+ "sha256": "7ee816ac289a957e17fb706956aa98c4ab6ce404b3c282cd296fca6c1bfe0537",
+ "openedAt": "2026-10-21T08:26:32.021Z",
+ "commit": "cae3717f",
+ "by": "P55 T9 (holdout.measure.ts)",
+ "note": "Opened once for the final report; nothing is tuned on it."
+}
