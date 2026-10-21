@@ -13,6 +13,7 @@
  *   node scripts/play-p46g-blind.mjs judge [--seed 46009] [--work D:/tmp/p46g-blind] [--concurrency 3]
  *   node scripts/play-p46g-blind.mjs sheet
  *   node scripts/play-p46g-blind.mjs judge --dir evals/play/p54b --pass-at 15 --work D:/tmp/p54b-blind   (P54B T15: věty žánrů, desktop i telefon)
+ *   node scripts/play-p46g-blind.mjs judge --dir evals/play/p56b --set p56b,genres --question store --pass-at 26 --seed 56013 --work D:/tmp/p56b-blind   (P56B T13)
  *
  * `judge` zapíše `evals/play/p46g/judge.json` (projde, když „po“ vyhraje aspoň 10 z 12);
  * listy dvojic a odpovědi leží ve `--work` mimo repo a hotová odpověď se nepřeptává.
@@ -130,6 +131,14 @@ async function answerAll(jobs, work, concurrency) {
   await Promise.all(Array.from({ length: concurrency }, worker));
 }
 
+/** P56B T13 (`--question store`): stejná hra před a po, otázka kotvy – vypadá první snímek jako hotová hra z obchodu? */
+export const storeQuestion = (sentence) =>
+  `First open sheet.png in the current directory with the Read tool. It shows two screenshots side by side, LEFT and RIGHT, of the first frame of a small 3D mobile game made from the request: "${sentence}". Page text is hidden, so judge only the 3D scenes. Which first frame looks like a finished game from an app store – polished art, lighting and materials and readable characters, rather than an unfinished prototype? End your reply with exactly one line in this form and nothing after it:\nVERDICT: LEFT – <one short reason>\nor\nVERDICT: RIGHT – <one short reason>`;
+
+/** Věty sady: `p56b` = 12 vět auditu P56B, jinak `evals/play/p46g/<set>.json`; víc sad čárkou (`p56b,genres`) jako `play-look-shots.mjs`. */
+const sentencesOf = (set) =>
+  set.split(',').flatMap((name) => readJson(name === 'p56b' ? join(ROOT, 'evals', 'play', 'p56b', 'sentences.json') : join(ROOT, 'evals', 'play', 'p46g', `${name}.json`)).sentences);
+
 export const ANCHOR_QUESTION =
   'First open sheet.png in the current directory with the Read tool. It shows two screenshots side by side, LEFT and RIGHT, each from a different 3D mobile game. Interface text is cropped away, so judge only the game scene. Which one looks like a finished game from an app store – polished art, lighting and materials and readable characters, rather than an unfinished prototype? End your reply with exactly one line in this form and nothing after it:\nVERDICT: LEFT – <one short reason>\nor\nVERDICT: RIGHT – <one short reason>';
 
@@ -144,7 +153,6 @@ async function anchor(options) {
   const dir = resolve(ROOT, typeof options.dir === 'string' ? options.dir : 'evals/play/p56b');
   const ours = typeof options.ours === 'string' ? options.ours : 'before-phone';
   const set = typeof options.set === 'string' ? options.set : 'p56b';
-  const setFile = set === 'p56b' ? join(ROOT, 'evals', 'play', 'p56b', 'sentences.json') : join(ROOT, 'evals', 'play', 'p46g', `${set}.json`);
   const count = Number(options.count ?? 10);
   const seed = typeof options.seed === 'string' ? Number(options.seed) : 56021;
   const work = resolve(typeof options.work === 'string' ? options.work : 'D:/tmp/p56b-anchor');
@@ -153,7 +161,7 @@ async function anchor(options) {
   mkdirSync(work, { recursive: true });
   const games = readdirSync(refRoot).filter((name) => existsSync(join(refRoot, name, 'crop'))).sort();
   const refs = Object.fromEntries(games.map((game) => [game, readdirSync(join(refRoot, game, 'crop')).filter((file) => file.endsWith('.png')).sort()]));
-  const sentences = readJson(setFile).sentences.slice(0, count);
+  const sentences = sentencesOf(set).slice(0, count);
   const jobs = sentences.flatMap((sentence, index) => games.map((game) => ({ sentence, game, ref: refs[game][index % refs[game].length], key: `${ours}-${sentence.id}-${game}` })));
   const left = sides(seed, jobs.length);
   for (const [index, job] of jobs.entries()) {
@@ -204,7 +212,7 @@ function layout(options) {
   const pairs = typeof options.pairs === 'string' ? options.pairs : own ? 'before:after' : 'before:after,before-phone:after-phone';
   return {
     dir,
-    sentences: readJson(join(ROOT, 'evals', 'play', 'p46g', `${set}.json`)).sentences,
+    sentences: sentencesOf(set),
     profiles: pairs.split(',').map((entry) => {
       const [before, after] = entry.split(':');
       return { before, after };
@@ -230,7 +238,8 @@ async function judge(options) {
     if (!existsSync(file)) await pair(left[index] === 'before' ? before : after, left[index] === 'before' ? after : before, file);
   }
 
-  await answerAll(sentences.map((sentence) => ({ key: sentence.key, prompt: question(sentence.text) })), work, concurrency);
+  const questionOf = options.question === 'store' ? storeQuestion : question;
+  await answerAll(sentences.map((sentence) => ({ key: sentence.key, prompt: questionOf(sentence.text) })), work, concurrency);
 
   const pairs = sentences.map((sentence, index) => {
     const { attempts } = readJson(join(work, `${sentence.key}-answer.json`));
@@ -240,7 +249,10 @@ async function judge(options) {
   });
   const totalOf = (list) => {
     const afterWins = list.filter((entry) => entry.afterWon === true).length;
-    return { afterWins, beforeWins: list.filter((entry) => entry.afterWon === false).length, unanswered: list.filter((entry) => entry.afterWon === null).length, of: list.length, passAt, pass: afterWins >= passAt };
+    const answered = list.filter((entry) => entry.afterWon !== null).length;
+    const share = (count) => (answered === 0 ? null : Math.round((count / answered) * 1000) / 1000);
+    // `leftShare` (P56B T13): soudce, který volí jednu stranu, by se tvářil jako výsledek.
+    return { afterWins, beforeWins: answered - afterWins, unanswered: list.length - answered, of: list.length, share: share(afterWins), leftShare: share(list.filter((entry) => entry.verdict === 'LEFT').length), passAt, pass: afterWins >= passAt };
   };
   const totals = profiles.map(({ after }) => ({ profile: after, ...totalOf(pairs.filter((entry) => entry.profile === undefined || entry.profile === after)) }));
   const result = {
@@ -248,7 +260,7 @@ async function judge(options) {
       ? 'P46G T9 blind judgement: the same game at the same demo tick, before P46G (T1 2c95c85c, evals/play/p46g/before) and after (evals/play/p46g/after), side by side without labels. See README.md.'
       : `Blind judgement of ${profiles.map(({ before, after }) => `${before} vs ${after}`).join(' and ')}: the same game at the same demo tick, side by side without labels. See README.md.`,
     judgedAt: new Date().toISOString(),
-    judge: { model: MODEL, how: 'claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once', question: question('<sentence>') },
+    judge: { model: MODEL, how: 'claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once', question: questionOf('<sentence>') },
     order: { prng: 'pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentence order, profile after profile; 0 = before is LEFT', seed },
     total: profiles.length === 1 ? totals[0] : totals,
     pairs,

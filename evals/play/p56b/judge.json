@@ -1,0 +1,729 @@
+{
+ "about": "P56B T13 attempt 1 (HEAD ea9466c2 vs 72665fdc): the same game at the same demo tick, before vs after, desktop and Pixel 7, side by side without labels. See README.md.",
+ "judgedAt": "2026-10-21T20:46:40.535Z",
+ "judge": {
+  "model": "claude-opus-5-5",
+  "how": "claude -p --safe-mode --tools Read, one call per pair, sheet.png alone in a fresh empty mkdtemp dir as cwd; unparseable answer re-asked once",
+  "question": "First open sheet.png in the current directory with the Read tool. It shows two screenshots side by side, LEFT and RIGHT, of the first frame of a small 3D mobile game made from the request: \"<sentence>\". Page text is hidden, so judge only the 3D scenes. Which first frame looks like a finished game from an app store – polished art, lighting and materials and readable characters, rather than an unfinished prototype? End your reply with exactly one line in this form and nothing after it:\nVERDICT: LEFT – <one short reason>\nor\nVERDICT: RIGHT – <one short reason>"
+ },
+ "order": {
+  "prng": "pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in sentence order, profile after profile; 0 = before is LEFT",
+  "seed": 56013,
+  "note": "desktop and phone judged in two runs, each with its own side stream from the same seed"
+ },
+ "gate": {
+  "afterShareAtLeast": 0.75,
+  "leftShareBetween": [
+   0.35,
+   0.65
+  ]
+ },
+ "total": [
+  {
+   "profile": "after",
+   "afterWins": 21,
+   "beforeWins": 13,
+   "unanswered": 0,
+   "of": 34,
+   "share": 0.618,
+   "leftShare": 0.706,
+   "passAt": 26,
+   "pass": false,
+   "gatePass": false
+  },
+  {
+   "profile": "after-phone",
+   "afterWins": 26,
+   "beforeWins": 8,
+   "unanswered": 0,
+   "of": 34,
+   "share": 0.765,
+   "leftShare": 0.559,
+   "passAt": 26,
+   "pass": true,
+   "gatePass": true
+  }
+ ],
+ "pairs": [
+  {
+   "id": "01-frog",
+   "sentence": "a frog catching flies on a lily pad",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "more consistent foliage materials and lighting, though neither scene shows a frog or lily pad",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "02-zombie",
+   "sentence": "zombies attack my farm at night",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "consistent night lighting and props, while the right frame's props look like broken white materials",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "03-ninja",
+   "sentence": "a ninja slicing fruit",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "wood-toned lanes stand out from the grass, while RIGHT's flat mint-green lanes look like placeholders",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "04-shark",
+   "sentence": "racing a shark through a coral reef",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "the faceted coral arch looks more detailed than LEFT's flat dark blob in an otherwise identical scene",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "05-pizza",
+   "sentence": "stack pizzas as high as the moon",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "warmer, more saturated pizza materials make the main subject readable",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "06-cat",
+   "sentence": "my cat defends the couch from vacuum robots",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "textured lanes and detailed enemy figures, where RIGHT has a flat green placeholder block",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "07-goalkeeper",
+   "sentence": "a goalkeeper saves penalty kicks in a packed stadium",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "nearly identical scenes, but the left frame's trees and materials render cleanly without the right frame's broken textures",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "08-gems",
+   "sentence": "match three glowing gems to unlock a treasure chest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "textured mossy rocks and a closer camera with readable characters, versus RIGHT's plain placeholder boxes",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "09-astro",
+   "sentence": "an astronaut dodges asteroids to reach the space station",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "has more asteroids and no placeholder grey box like the one in RIGHT",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "10-chef",
+   "sentence": "a chef flips pancakes for a line of hungry customers",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "shaded metallic pans and softer lighting give it slightly more polish",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "11-drum",
+   "sentence": "drum to the beat at a rock concert",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "marginally cleaner framing of an otherwise identical, off-theme prototype scene",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "12-ghost",
+   "sentence": "escape a haunted mansion while a ghost chases you",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "consistent foggy night lighting and props, while the right has washed-out, glaring white prop materials",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-runner",
+   "sentence": "A fox runs through a forest away from a bear",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the RIGHT frame has an untextured gray placeholder box on the path and flatter, darker lighting",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-race",
+   "sentence": "A jeep races through the jungle",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "richer, more consistent lighting and color on the foliage give a more finished look",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-platform",
+   "sentence": "A squirrel jumps over logs in a forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "Slightly richer detail and more natural shadows on otherwise identical scenes.",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-arena",
+   "sentence": "Collect ten acorns in a forest while avoiding a fox",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "closer camera makes the characters and acorns easier to read, with shadows that ground them",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-fight",
+   "sentence": "A bear fights three wolves in a dark forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "textured, shaded wolves and a readable bear, while the right shows flat white wolves and a tiny bear",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-quest",
+   "sentence": "A knight lights the torches in a dark castle",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "Modeled rubble props and a closer camera replace the LEFT frame's placeholder black cubes, making the scene look polished and readable.",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-agar",
+   "sentence": "like agar.io but you are a fish eating smaller fish",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "richer foreground detail, fog and lighting look more finished, though neither looks like a fish game",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-walker",
+   "sentence": "A fox sneaks past guards in a forest to steal eggs",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "slightly clearer lighting and wall shading, though both look like unfinished prototypes",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-glide",
+   "sentence": "A fish swims through a coral reef",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "slightly richer, more detailed reef props, though both look unfinished",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-ball",
+   "sentence": "A dog plays football against a fox in a meadow",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "richer lighting and shading on the trees and characters give more depth than the washed-out left frame",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-flap",
+   "sentence": "like flappy bird but in a jungle",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "marginally crisper and more readable, but both frames look like the same unfinished prototype",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-shooter",
+   "sentence": "A ranger shoots zombies in a forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "essentially a tie; left's render is marginally crisper and better framed",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-throw",
+   "sentence": "throw acorns at targets in a forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "richer lighting and contrast make the characters and targets easier to read",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-timing",
+   "sentence": "stack blocks as high as you can",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "nearly identical scenes, but LEFT's framing is slightly cleaner and more balanced",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-rhythm",
+   "sentence": "tap to the beat with glowing tiles",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "Nearly identical to RIGHT, both look unfinished; LEFT's lanes look a little brighter, if anything.",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-duel",
+   "sentence": "Two knights duel in a castle",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "slightly richer contrast and shading give the same scene more depth",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-voyage",
+   "sentence": "A pirate ship dodges cannonballs while sailing between islands to find buried treasure",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "slightly richer colors and clearer framing in otherwise near-identical scenes",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-lander",
+   "sentence": "A rocket lands on Mars",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "the same scene, but the rocket is easier to read and the extra meteor glow adds a bit more polish",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-catch",
+   "sentence": "a bear catches falling honey jars in a basket",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "faceted foliage canopy and textured bear look more crafted than the right's flat green slab and black-silhouette bear",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-whack",
+   "sentence": "pop the balloons rising from the circus tents but spare the clowns",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "nearly identical prototypes, but LEFT frames the fox character more completely and reads slightly cleaner",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-defense",
+   "sentence": "a wizard defends his tower from goblin hordes",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "visible goblin horde and dirt lanes, versus a placeholder green box on the right",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "g-slice",
+   "sentence": "a ninja slices fruit tossed in the air but avoids the bombs",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "textured wooden lanes stand out clearly, while the left's flat green lanes look like placeholders",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after"
+  },
+  {
+   "id": "01-frog",
+   "sentence": "a frog catching flies on a lily pad",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "slightly crisper colors and contrast, though neither shows the frog scene",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "02-zombie",
+   "sentence": "zombies attack my farm at night",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "closer camera and better lighting make the characters and materials readable, while the left is murky and hard to make out",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "03-ninja",
+   "sentence": "a ninja slicing fruit",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "its brown tiles stand out from the grass, while the right's flat green tiles look like placeholders.",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "04-shark",
+   "sentence": "racing a shark through a coral reef",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "soft contact shadows and more reef life make the scene look a bit more grounded and polished",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "05-pizza",
+   "sentence": "stack pizzas as high as the moon",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "its pizzas are vivid and readable, while RIGHT's look faded",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "06-cat",
+   "sentence": "my cat defends the couch from vacuum robots",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "more detailed materials and back-row models, though both still look like prototypes",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "07-goalkeeper",
+   "sentence": "a goalkeeper saves penalty kicks in a packed stadium",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "slightly larger, more readable characters in otherwise near-identical prototype scenes",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "08-gems",
+   "sentence": "match three glowing gems to unlock a treasure chest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "readable fox character and shaded rocks, while the right shows untextured gray placeholder boxes",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "09-astro",
+   "sentence": "an astronaut dodges asteroids to reach the space station",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "a detailed asteroid replaces the right's plain grey placeholder box, so the theme is clearer",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "10-chef",
+   "sentence": "a chef flips pancakes for a line of hungry customers",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "shaded pan materials, a clear spatula and softer lighting look a little more polished than LEFT's flat shapes.",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "11-drum",
+   "sentence": "drum to the beat at a rock concert",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "Cleaner lane framing and slightly sharper scene, though both frames look like prototypes.",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "12-ghost",
+   "sentence": "escape a haunted mansion while a ghost chases you",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "richer moonlit lighting, real shadows and textured materials give a more polished, app-store look",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-runner",
+   "sentence": "A fox runs through a forest away from a bear",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "real textured log obstacle versus the right frame's untextured grey placeholder box",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-race",
+   "sentence": "A jeep races through the jungle",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "the vehicles are slightly larger and easier to read in an otherwise identical scene.",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-platform",
+   "sentence": "A squirrel jumps over logs in a forest",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "nearly identical scenes, but slightly cleaner squirrel and birds in the sky make it feel more alive",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-arena",
+   "sentence": "Collect ten acorns in a forest while avoiding a fox",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "no placeholder cube, plus shadowed props and a more readable fox",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-fight",
+   "sentence": "A bear fights three wolves in a dark forest",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "the forest backdrop and uncropped framing make it look like a finished scene, while LEFT's cut-off wolf and bare ground look like a prototype",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-quest",
+   "sentence": "A knight lights the torches in a dark castle",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "modeled ruins and a clearer knight under torchlight, while the left has black placeholder boxes",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-agar",
+   "sentence": "like agar.io but you are a fish eating smaller fish",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "closer camera makes the characters and lighting more readable, though both look like prototypes",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-walker",
+   "sentence": "A fox sneaks past guards in a forest to steal eggs",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "fuller shadows add depth, and its walls have no visible seams",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-glide",
+   "sentence": "A fish swims through a coral reef",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "the frames look the same, both are prototype-level, so this pick is a coin-flip",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-ball",
+   "sentence": "A dog plays football against a fox in a meadow",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "slightly livelier scene (more birds) and better-shaded foxes in an otherwise identical frame",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-flap",
+   "sentence": "like flappy bird but in a jungle",
+   "afterSide": "LEFT",
+   "verdict": "RIGHT",
+   "reason": "nearly identical prototypes; slightly stronger vignette and contrast give marginally more depth",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-shooter",
+   "sentence": "A ranger shoots zombies in a forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "slightly richer ground lighting and a clearer ranger and arrow, though both are nearly identical and look unfinished",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-throw",
+   "sentence": "throw acorns at targets in a forest",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "posts and hoops have consistent grounded shadows, while RIGHT shows missing shadows and a stray shadow artifact",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-timing",
+   "sentence": "stack blocks as high as you can",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "the stack is larger and centered, and the framing and fog are cleaner, so it reads more like a finished game",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-rhythm",
+   "sentence": "tap to the beat with glowing tiles",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "nearly identical, but slightly richer material detail on the scenery",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-duel",
+   "sentence": "Two knights duel in a castle",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "richer, higher-contrast lighting and stronger shadows make the knights slightly more readable",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-voyage",
+   "sentence": "A pirate ship dodges cannonballs while sailing between islands to find buried treasure",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "slightly richer lighting and vignette give more depth, though both look like prototypes",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-lander",
+   "sentence": "A rocket lands on Mars",
+   "afterSide": "RIGHT",
+   "verdict": "LEFT",
+   "reason": "sharper materials and contrast make the scene look more polished and readable than the hazy RIGHT frame",
+   "afterWon": false,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-catch",
+   "sentence": "a bear catches falling honey jars in a basket",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "real faceted tree canopy, textured bear and detailed tiles vs. a flat slab and a silhouette bear",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-whack",
+   "sentence": "pop the balloons rising from the circus tents but spare the clowns",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "Nearly identical prototypes, but the left frames the fox and holes slightly better.",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-defense",
+   "sentence": "a wizard defends his tower from goblin hordes",
+   "afterSide": "LEFT",
+   "verdict": "LEFT",
+   "reason": "textured lanes and a visible enemy horde, where the right has only flat green blocks",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  },
+  {
+   "id": "g-slice",
+   "sentence": "a ninja slices fruit tossed in the air but avoids the bombs",
+   "afterSide": "RIGHT",
+   "verdict": "RIGHT",
+   "reason": "textured brown pads give better contrast and depth than LEFT's flat pale-green placeholder tiles",
+   "afterWon": true,
+   "asks": 1,
+   "profile": "after-phone"
+  }
+ ]
+}

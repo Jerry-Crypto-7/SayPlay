@@ -151,3 +151,14 @@ Snímky `shots --set genres --only g-catch,g-whack,g-defense,g-slice` jsou mimo 
 - Soudce: `claude -p --safe-mode --tools Read`, jedna dvojice na volání, `sheet.png` sám v čerstvém prázdném `mkdtemp`, strana z `pure-rand` (seed 56021). Otázka a model v `anchor-before.json` → `judge`.
 
 Brána T13: `anchor-after` ≥ 0 + 0,15.
+
+## Slepý soud, pokus 1 (T13, HEAD `ea9466c2`) – desktop neprošel
+
+`node scripts/play-p46g-blind.mjs judge --dir evals/play/p56b --set p56b,genres --pairs <před>:<po> --question store --pass-at 26 --seed 56013` zvlášť pro desktop a telefon (34 + 34 dvojic, otázka „which first frame looks like a finished game from an app store“), sloučeno do `judge.json`. Snímky „před“: `before/`, `before-phone/` z T1 + 4 věty pruhů ze základu (`72665fdc`, SwiftShader jako T1); „po“: `after/`, `after-phone/` (mimo git jako `before/`, 0× 404, 0 chyb).
+
+- **Telefon prošel:** nový vzhled 26/34 (0,765, brána 0,75), levá strana 0,559.
+- **Desktop neprošel:** 21/34 (0,618) a soudce volí levou stranu v 0,706 (povoleno 0,35–0,65). Nový vzhled vlevo vyhrál 14/17, vpravo jen 7/17 – kde se scény liší málo, rozhoduje strana.
+- **Co soud jmenoval (13 proher desktopu):** noc 02-zombie a 12-ghost – „props look like broken white materials“, „washed-out, glaring white prop materials“; listí a stromy 01-frog, 07-goalkeeper, g-race, g-ball – „broken textures“, „more consistent foliage“; pět dvojic „nearly identical“ (g-timing, g-rhythm, g-voyage, g-walker, g-lander).
+- **Příčina noci (pozorování):** na snímku 12-ghost jsou náhrobky, lavička a keře s texturou bílé s tmavými pruhy, na `72665fdc` tlumeně modré; velké skály bez textury vypadají v obou podobně. **Odvozeno:** světlý kámen textury × expozice noci 2,4× (T7 `NIGHT_EXPOSURE`) se v ACES přepálí do bílé, tmavé barvy palety ne.
+- **Vyvrácená hypotéza:** toon kopie texturovaných modelů bez tří stupňů světla (jen paleta a okraj) – přestavěno a vyfoceno, 12-ghost ani 07-goalkeeper se viditelně nezměnily; změna vrácena, necommitnutá.
+- Kotva, `perf --vs` a e2e brány v pokusu 1 neběžely – měří se až na vzhledu, který soud projde.
