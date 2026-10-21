@@ -17,9 +17,10 @@ import { useCallback, useMemo, useRef } from 'react';
 import { type Group, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
-import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
 import { riggedCharacter } from '@/play/arcade/models';
-import { CATCH } from '@/play/arcade/pieces/catch-fall';
+import { CATCH, catchInView } from '@/play/arcade/pieces/catch-fall';
+import { type LaneEventKind, eventOfMark } from '@/play/arcade/pieces/lane-events';
 import { LANES, laneX } from '@/play/arcade/pieces/lanes';
 
 import { renderHeld } from '../../effects/render-feel';
@@ -80,13 +81,34 @@ function Bomb() {
   );
 }
 
+/** Zlatý cíl události (P55 T5): svítí, ať je z dálky vidět, že stojí za odbočku. */
+function Golden() {
+  return (
+    <mesh position={[0, THING / 2, 0]} castShadow>
+      <icosahedronGeometry args={[THING / 2, 0]} />
+      <meshStandardMaterial color={color['sun-deep']} emissive={color.sun} emissiveIntensity={0.7} roughness={0.3} metalness={0.4} />
+    </mesh>
+  );
+}
+
+/** Kroužek kolem bonusu série a spěchu: ovoce navíc, které se do cíle nepočítá. */
+function BonusHalo() {
+  return (
+    <mesh position={[0, THING / 2, 0]}>
+      <torusGeometry args={[THING * 0.62, 0.05, 6, 20]} />
+      <meshStandardMaterial color={color['sun-soft']} emissive={color.sun} emissiveIntensity={0.8} />
+    </mesh>
+  );
+}
+
 export function CatchScene({ session, cast, surface, scene: look, ghost }: CatchSceneProps) {
   const world = session.world;
   const things = useMemo(() => {
-    const out: { readonly index: number; readonly bomb: boolean }[] = [];
+    const out: { readonly index: number; readonly bomb: boolean; readonly event: LaneEventKind | null }[] = [];
+    const initial = Int32Array.from(world.initial);
     for (let index = 1; index < (world.initial[HEADER.bodyCount] as number); index += 1) {
       const role = world.initial[bodyBase(index) + BODY.role];
-      if (role === ROLE.collectible || role === ROLE.hazard) out.push({ index, bomb: role === ROLE.hazard });
+      if (role === ROLE.collectible || role === ROLE.hazard) out.push({ index, bomb: role === ROLE.hazard, event: eventOfMark(bodyHp(initial, index)) });
     }
     return out;
   }, [world]);
@@ -116,7 +138,7 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
       const group = groups.current[thing.index];
       if (group === null || group === undefined) continue;
       const base = bodyBase(thing.index);
-      group.visible = ((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && (state[base + BODY.y] as number) <= CATCH.viewTop;
+      group.visible = ((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && catchInView(state, thing.index);
       if (group.visible) group.position.set(-at(thing.index, BODY.x), at(thing.index, BODY.y), 0);
     }
     // Na výšku rozhoduje šíře pruhů, na šířku výška pádu; volná výška jde z větší části pod zem (pole před hrdinou).
@@ -143,7 +165,8 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
       {Array.from({ length: LANES.count }, (_, lane) => (
         <mesh key={lane} position={[-laneX(lane) / UNIT, -0.01, 0]} receiveShadow>
           <boxGeometry args={[LANE_M * 0.94, 0.04, 3]} />
-          <meshStandardMaterial color={lane % 2 === 0 ? color.mint : color['mint-deep']} />
+          {/* Světlá deska (P55 T5): ovoce, bomby i bonusy na ní čtou dál než na zelené. */}
+          <meshStandardMaterial color={lane % 2 === 0 ? color.paper : color['cream-deep']} />
         </mesh>
       ))}
       <mesh position={[0, CANOPY.bottom + CANOPY.h / 2, 0.6]}>
@@ -173,15 +196,18 @@ export function CatchScene({ session, cast, surface, scene: look, ghost }: Catch
             groups.current[thing.index] = group;
           }}
           visible={false}
-          userData={{ frame: 'target', item: thing.bomb ? 'hazard' : 'coin' }}
+          userData={{ frame: 'target', item: thing.bomb ? 'hazard' : 'coin', ...(thing.event === null ? {} : { event: thing.event }) }}
         >
           {thing.bomb ? (
             bombModel !== undefined ? <FittedModel id={bombModel} w={THING} h={THING} d={THING} fallback={color.ink} /> : <Bomb />
+          ) : thing.event === 'golden' ? (
+            <Golden />
           ) : fruitModel !== undefined ? (
             <FittedModel id={fruitModel} w={THING} h={THING} d={THING} fallback={color.sun} />
           ) : (
             <Fruit />
           )}
+          {thing.event === 'series' || thing.event === 'rush' ? <BonusHalo /> : null}
         </group>
       ))}
     </>

@@ -38,8 +38,10 @@ import {
   type RulePiece,
   START_LIVES,
   bodyBase,
+  bodyHp,
   targetStateOf,
 } from '../contract';
+import { EVENT_MARK, LANE_EVENTS, type LaneEvent, laneEventCursor, laneEventRng, planLaneEvents, stepLane } from './lane-events';
 import { LANES, LANE_START, laneOfX, laneX } from './lanes';
 import { nextMultiplier } from './rules';
 
@@ -65,8 +67,9 @@ export const CATCH = {
   /**
    * Propadlé ovoce bez trestu; každé další stojí život. Ladění 20. 10. (20 / 60 semínek, začátečník):
    * 2 → 0,15, 3 → 0,35 / 0,43, 4 → 0,50 / 0,57; intermediate a robot světa 1,0 ve všech.
+   * P55 T5: bonusy událostí na sebe berou chyby začátečníka (honí bonus, ne ovoce), se 4 vyhrával 0,8 – proto 3.
    */
-  free: 4,
+  free: 3,
   points: 10,
   items: { min: 10, max: 50, default: 30 },
   /** Cíl, pod kterým se rozestupy natahují, ať hra trvá aspoň půl minuty. */
@@ -99,6 +102,9 @@ export const visibleTicks = (speed: number): number => Math.floor((CATCH.viewTop
  */
 export const landingTick = (y: number, speed: number, tick: number): number => tick - 1 + Math.ceil((y - CATCH.catchY) / speed);
 
+/** Je věc v obraze (pod korunou)? Scéna ji kreslí až odsud, ohlášení události ji odsud počítá. */
+export const catchInView = (state: Int32Array, body: number): boolean => (state[bodyBase(body) + BODY.y] as number) <= CATCH.viewTop;
+
 /** Výška věci v tiku 0, aby lapací čáru protnula v tiku `landing`. */
 const dropHeight = (landing: number, speed: number): number => CATCH.catchY + speed * (landing + 1);
 
@@ -108,7 +114,15 @@ export interface Drop {
   readonly lane: number;
   readonly speed: number;
   readonly bomb: boolean;
+  /** Bonus události (P55 T5, `EVENT_MARK`): body a kombo, do cíle se nepočítá a propadnout smí; 0 = běžné ovoce. */
+  readonly mark: number;
 }
+
+/** Rozestup bonusů série a spěchu (tiky): rychle za sebou, ale robot s reakcí je stihne. */
+const BONUS_GAP = [14, 20] as const;
+/** Zlatý cíl padá rychleji (‰ rychlosti třetiny), nejvýš tak, aby byl vidět aspoň `GOLDEN_MIN_VISIBLE` tiků. */
+const GOLDEN_SPEED = 1500;
+const GOLDEN_MIN_VISIBLE = 22;
 
 export const catchParams = z
   .object({
@@ -129,7 +143,20 @@ const thirdOf = (index: number, items: number): number => Math.min(2, Math.floor
  * než předchozí; prvních `free + lives` kusů nepadá do startovního pruhu.
  */
 export function catchDrops(seed: number, params: CatchParams, lives: number): Drop[] {
+  // Osa událostí potřebuje délku hry: nejdřív rozpis bez nich (týž los rozvržení), pak s nimi.
+  const plain = layDrops(seed, params, lives, null);
+  return layDrops(seed, params, lives, planLaneEvents(seed, (plain.at(-1) as Drop).landing));
+}
+
+/**
+ * Rozpis dopadů; s `events` padají do mezer mezi ovocem bonusy událostí (P55 T5). Los ovoce a bomb jde ze
+ * streamu rozvržení v témž pořadí s událostmi i bez nich – bonusy mají vlastní stream (`laneEventRng`) a ovoce
+ * jen posunou, když mezera na bonus nestačí.
+ */
+function layDrops(seed: number, params: CatchParams, lives: number, events: readonly LaneEvent[] | null): Drop[] {
   const rng = createCompileRng(seed ^ SALT);
+  const bonusRng = laneEventRng(seed);
+  const cursor = events === null ? null : laneEventCursor(events);
   const fruit = params.items + CATCH.free + lives - 1;
   const guarded = CATCH.free + lives;
   const stretch = stretchOf(params.items);
@@ -143,14 +170,46 @@ export function catchDrops(seed: number, params: CatchParams, lives: number): Dr
     const next = rng.pick(options);
     const [low, high] = CATCH.gaps[third] as readonly [number, number];
     const wanted = Math.round((rng.int(low, high) * stretch) / 1000);
-    landing = index === 0 ? CATCH.firstLanding : landing + Math.max(wanted, travelTicks(Math.abs(next - lane)) + CATCH.margin);
-    drops.push({ landing, lane: next, speed, bomb: false });
+    if (index === 0) landing = CATCH.firstLanding;
+    else {
+      // Bonusy v mezeře: od posledního ovoce směrem k dalšímu, každý dosažitelný z předchozího.
+      // Ovoce dopadne tam, kde by dopadlo bez událostí: bonus přibude, jen když se do mezery vejde i s cestou
+      // k dalšímu ovoci – obtížnost ovoce se nemění, honit bonus je riziko navíc.
+      const due = landing + Math.max(wanted, travelTicks(Math.abs(next - lane)) + CATCH.margin);
+      let at = landing;
+      let atLane = lane;
+      const put = (mark: number, gap: number, to: number, fall: number): void => {
+        const when = at + Math.max(gap, travelTicks(Math.abs(to - atLane)) + CATCH.margin);
+        if (when + travelTicks(Math.abs(next - to)) + CATCH.margin > due) return;
+        const from = atLane;
+        at = when;
+        atLane = to;
+        drops.push({ landing: at, lane: to, speed: fall, bomb: false, mark });
+        // Jako u ovoce: kdo za bonusem jede pozdě, stojí v pruhu, odkud jel, a chytí bombu.
+        // Zlatý cíl jde dvěma kroky a na kraji se vrátí do výchozího pruhu – tam bomba nepatří.
+        if (from !== to) drops.push({ landing: at, lane: from, speed: fall, bomb: true, mark: 0 });
+      };
+      // Série a zlatý cíl vedou od cesty k dalšímu ovoci: kdo je honí, riskuje, že ovoce nestihne.
+      const away = next >= LANE_START ? 0 : LANES.count - 1;
+      const event = cursor?.take(landing) ?? null;
+      if (event?.kind === 'series') {
+        for (let n = bonusRng.int(...LANE_EVENTS.series); n > 0; n -= 1) put(EVENT_MARK.series, bonusRng.int(...BONUS_GAP), stepLane(atLane, away, LANES.count, bonusRng), speed);
+      } else if (event?.kind === 'golden') {
+        // Zlatý cíl padá rychleji a až dva pruhy stranou: odbočka za víc bodů.
+        const fall = Math.min(Math.round((speed * GOLDEN_SPEED) / 1000), Math.floor((CATCH.viewTop - CATCH.catchY) / GOLDEN_MIN_VISIBLE));
+        put(EVENT_MARK.golden, bonusRng.int(24, 36), stepLane(stepLane(atLane, away, LANES.count, bonusRng), away, LANES.count, bonusRng), fall);
+      } else if (cursor?.inRush(landing) === true) {
+        for (let n = 2; n > 0; n -= 1) put(EVENT_MARK.rush, bonusRng.int(...BONUS_GAP), stepLane(atLane, next, LANES.count, bonusRng), speed);
+      }
+      landing = due;
+    }
+    drops.push({ landing, lane: next, speed, bomb: false, mark: 0 });
     if (rng.int(0, 999) < (CATCH.decoys[third] as number)) {
       // Bomba na cestě: pruh, ve kterém stojí, kdo k ovoci nedojel (u sousedního pruhu ten, odkud jde).
       const path = Math.abs(next - lane) >= 2 ? next - Math.sign(next - lane) : lane;
       const others = Array.from({ length: LANES.count }, (_, candidate) => candidate).filter((candidate) => candidate !== next);
       const onPath = index > 0 && rng.int(0, 1) === 0;
-      drops.push({ landing, lane: onPath ? path : rng.pick(others), speed, bomb: true });
+      drops.push({ landing, lane: onPath ? path : rng.pick(others), speed, bomb: true, mark: 0 });
     }
     lane = next;
   }
@@ -172,6 +231,7 @@ export function catchLevel(seed: number, params: CatchParams, lives: number): Ar
         solid: false,
         vy: -drop.speed,
         kinematic: true,
+        ...(drop.mark > 0 ? { hp: drop.mark } : {}),
       }),
     ),
   ];
@@ -182,7 +242,7 @@ export function catchLevel(seed: number, params: CatchParams, lives: number): Ar
 export function dropsOf(level: ArcadeLevel): Drop[] {
   return level.bodies.slice(1).map((body) => {
     const speed = -(body.vy ?? 0);
-    return { landing: landingTick(body.y, speed, 0), lane: laneOfX(body.x), speed, bomb: body.role === 'hazard' };
+    return { landing: landingTick(body.y, speed, 0), lane: laneOfX(body.x), speed, bomb: body.role === 'hazard', mark: body.hp ?? 0 };
   });
 }
 
@@ -190,8 +250,10 @@ export function dropsOf(level: ArcadeLevel): Drop[] {
 export function checkCatchLevel(level: ArcadeLevel, params: CatchParams, lives: number): string[] {
   const issues: string[] = [];
   const drops = dropsOf(level);
+  // Dosažitelnost platí pro všechno, co se chytá (i bonusy – robot je honí); počet a nečinný hráč jen pro ovoce cíle.
   const fruit = drops.filter((drop) => !drop.bomb);
-  if (fruit.length < params.items + CATCH.free + lives - 1) issues.push(`only ${fruit.length} things fall – catching ${params.items} needs ${params.items + CATCH.free + lives - 1}`);
+  const counted = fruit.filter((drop) => drop.mark === 0);
+  if (counted.length < params.items + CATCH.free + lives - 1) issues.push(`only ${counted.length} things fall – catching ${params.items} needs ${params.items + CATCH.free + lives - 1}`);
   level.bodies.slice(1).forEach((body, index) => {
     const drop = drops[index] as Drop;
     if (body.kinematic !== true || drop.speed <= 0 || body.y !== dropHeight(drop.landing, drop.speed)) issues.push(`thing ${index + 1} does not cross the catch line on a whole tick`);
@@ -204,9 +266,11 @@ export function checkCatchLevel(level: ArcadeLevel, params: CatchParams, lives: 
     // Robot vyjede po dopadu předchozího, nebo až ovoce uvidí (o reakci později); obojí musí stačit na jízdu.
     const from = Math.max(previous + 1, drop.landing + 1 - visibleTicks(drop.speed) + CATCH_BOT_REACTION);
     if (drop.landing - from + 1 < travelTicks(lanes) + CATCH.margin) issues.push(`fruit ${index + 1} in lane ${drop.lane} lands ${drop.landing - previous} ticks after the last, too soon to cross ${lanes} lanes`);
-    if (index < CATCH.free + lives && drop.lane === LANE_START) issues.push(`fruit ${index + 1} falls into the start lane, where an idle player would catch it`);
     lane = drop.lane;
     previous = drop.landing;
+  });
+  counted.forEach((drop, index) => {
+    if (index < CATCH.free + lives && drop.lane === LANE_START) issues.push(`fruit ${index + 1} falls into the start lane, where an idle player would catch it`);
   });
   for (const bomb of drops.filter((drop) => drop.bomb)) {
     if (!fruit.some((drop) => drop.landing === bomb.landing && drop.lane !== bomb.lane)) issues.push(`the bomb at tick ${bomb.landing} has no fruit in another lane beside it`);
@@ -240,7 +304,8 @@ export const catchFall: ModeGeneratorPiece<CatchParams> = {
   id: 'catch_fall',
   params: catchParams,
   roles: ['player', 'collectible', 'hazard'],
-  cost: (params) => ({ bodies: 1 + 2 * (params.items + CATCH.free + 8), rules: 4 }),
+  // Rezerva na bonusy událostí (P55 T5): série, zlaté cíle a spěch přes celou hru.
+  cost: (params) => ({ bodies: 1 + 2 * (params.items + CATCH.free + 8) + 80, rules: 4 }),
   generate: (seed, params) => catchLevel(seed, params, START_LIVES),
   parts: catchParts,
 };
@@ -300,6 +365,16 @@ export const catchFallRule: RulePiece<z.infer<typeof fallParams>> = {
       const caught = underThing(state, player, body);
       if (role === ROLE.hazard) {
         if (caught) effects.push({ kind: 'damage', amount: 1 }, { kind: 'despawn', body });
+        continue;
+      }
+      // Bonus události (P55 T5): body a kombo, do cíle se nepočítá; propadlý nic nestojí.
+      const mark = bodyHp(state, body);
+      if (mark > 0) {
+        if (!caught) continue;
+        const multiplier = params.combo === undefined ? 1 : nextMultiplier(state, params.combo);
+        const points = params.points * (mark === EVENT_MARK.golden ? LANE_EVENTS.goldenPoints : 1);
+        effects.push({ kind: 'score', amount: points * multiplier }, { kind: 'despawn', body });
+        if (params.combo !== undefined) effects.push({ kind: 'combo', body: params.combo, multiplier });
         continue;
       }
       if (caught) {

@@ -17,6 +17,7 @@ import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUN
 import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, chaserName, enemyModel, heroModel, preyModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
+import { catchInView } from '@/play/arcade/pieces/catch-fall';
 import { bossKindOf } from '@/play/arcade/pieces/pacing';
 import { targetModelOf } from '@/play/arcade/target-model';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
@@ -55,6 +56,7 @@ import { isTyping } from './input';
 import { heroActionOf } from './action-cue/cues';
 import { verbLine, verbLineShown } from './action-cue/verb-line';
 import { VerbLine } from './action-cue/VerbLine';
+import { LaneEventBanner } from './LaneEventBanner';
 import { PacingBanner } from './PacingBanner';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { holdUntilTouch, wakesGame } from './ready-gate';
@@ -911,6 +913,7 @@ function ArcadePlayGame({
             {/* Sloveso, které hra hraje (P43 T7), první tři vteřiny po prvním tahu. Cílovou větu doplňuje, nenahrazuje. */}
             {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null) && <VerbLine line={verb} />}
             <PacingBanner session={session} enabled={running && active} foe={foe} boss={spec.boss?.name} />
+            {nativeRule(session.world.rules, 'catch_fall') !== undefined && <LaneEventBanner session={session} enabled={running && active} visible={catchInView} />}
           </>
         }
       />

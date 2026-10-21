@@ -1791,6 +1791,11 @@ button.play-version-switch__item:not(:disabled) {
   animation: play-pacing-banner var(--sp-duration-celebrate) var(--sp-ease-pop) both;
 }
 
+/* Ohlášení události pruhů (P55 T5): pod bannerem průběhu, ať se nepřekryjí, když přijdou naráz. */
+.play-lane-event {
+  top: 34%;
+}
+
 /* Náběh přes vlastnost `scale`: `transform` nese náklon štítku kitu a `sp-pop-in` by ho po dobu náběhu přepsal. */
 @keyframes play-pacing-banner {
   from {

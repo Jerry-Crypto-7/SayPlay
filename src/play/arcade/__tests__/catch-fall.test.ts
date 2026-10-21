@@ -15,6 +15,8 @@ import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step } from '.
 import { ARCADE_LIBRARY, MODE_GENERATORS } from '../library';
 import { CATCH, catchDrops, catchLevel, catchParams, checkCatchLevel, landingTick, travelTicks } from '../pieces/catch-fall';
 import { catchBot } from '../pieces/catch-fall-bot';
+import { EVENT_MARK, LANE_EVENTS } from '../pieces/lane-events';
+import { funMetrics, traceRun } from '../telemetry';
 import { LANES, LANE_START, axisOfLane, laneX } from '../pieces/lanes';
 import { BOT_PROFILES, type BotProfile, runBot } from '../verify';
 import { assemblyOfCell, liveCells } from '../../compose/allowed';
@@ -258,5 +260,42 @@ describe('catch difficulty band (G3 on 20 seeds; the gate itself is difficulty.t
   it('the bot piece is registered and reacts like the generator assumes', () => {
     expect(ARCADE_LIBRARY.bots.catch_bot).toBe(catchBot);
     expect(catchBot.reactionTicks).toBe(8);
+  });
+});
+
+describe('catch lane events (P55 T5)', () => {
+  it('a caught bonus scores without counting toward the goal; a missed one costs nothing', () => {
+    const golden = { ...thing('collectible', LANE_START, 20), hp: EVENT_MARK.golden };
+    const caught = playFor(handWorld([golden]), 40);
+    expect(items(caught)).toBe(0);
+    expect(caught[HEADER.counters + COUNTER.score]).toBe(CATCH.points * LANE_EVENTS.goldenPoints);
+    // Víc propadlých bonusů, než je volných ovocí: žádný život.
+    const bonuses = Array.from({ length: CATCH.free + 2 }, (_, index) => ({ ...thing('collectible', 0, 20 + 20 * index), hp: EVENT_MARK.series }));
+    expect(health(playFor(handWorld(bonuses), 20 + 20 * (CATCH.free + 2)))).toBe(START_LIVES);
+  });
+
+  it('every game has a rush and a bonus within 10 s; every event kind shows up across 20 seeds', () => {
+    const seen = new Set<number>();
+    for (const seed of SEEDS) {
+      const bonuses = catchDrops(seed, DEFAULTS, START_LIVES).filter((drop) => drop.mark > 0);
+      for (const drop of bonuses) seen.add(drop.mark);
+      expect(bonuses.some((drop) => drop.mark === EVENT_MARK.rush), `seed ${seed}`).toBe(true);
+      expect(bonuses[0]!.landing, `seed ${seed}`).toBeLessThanOrEqual(600);
+    }
+    expect(seen).toEqual(new Set(Object.values(EVENT_MARK)));
+  });
+
+  it('seed 1: lively from start to finish and still a 30–90 s win (baseline 1.14 events/s)', () => {
+    const world = worldOf(1);
+    const bot = runBot(world, undefined, { profile: 'intermediate' });
+    const trace = traceRun(world, bot.inputs);
+    const fun = funMetrics(trace);
+    expect(fun.eventsPerS).toBeGreaterThanOrEqual(1.71);
+    expect(fun.longestGapS).toBeLessThanOrEqual(3);
+    const own = runBot(world);
+    expect(own.outcome).toBe('won');
+    expect(own.tick / ARCADE_HZ).toBeGreaterThanOrEqual(30);
+    expect(own.tick / ARCADE_HZ).toBeLessThanOrEqual(90);
+    expect(traceRun(worldOf(1), bot.inputs).hash).toBe(trace.hash);
   });
 });
