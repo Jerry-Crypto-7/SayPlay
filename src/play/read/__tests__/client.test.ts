@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { memoryAnswerStore } from '@/server/answer-cache';
-import type { Reservation, SpendCap } from '@/server/spend-cap';
+import { processSpendCap, resetProcessSpendCap, type Reservation, type SpendCap } from '@/server/spend-cap';
 
 import { DEFAULT_READER_BUDGET_MS, readBeforeDraft, readerCacheKey, readerConfigFromEnv, readerPromptVersion, readSentence } from '../client';
 import { READING_JSON_SCHEMA, readingSchema, type Reading } from '../schema';
@@ -149,6 +149,7 @@ const GROQ = {
 const LOCAL = { PLAY_READER: 'on', PLAY_READER_ENDPOINT: 'llamacpp:http://127.0.0.1:8792', PLAY_READER_MODEL: 'gpt-oss-20b' } as const;
 
 type FetchArgs = [input: string | URL | Request, init?: RequestInit];
+const VISITOR = '203.0.113.7';
 
 const replying = (content: string, status = 200) =>
   vi.fn(async (..._args: FetchArgs) =>
@@ -234,7 +235,7 @@ describe('readBeforeDraft on a hosted reader', () => {
   it('reserves the worst case in the cap, calls once and settles the receipt', async () => {
     const fetchImpl = replying(JSON.stringify(READING));
     const { cap, reserved, settled } = bookkeeping();
-    await expect(readBeforeDraft('a corgi runs', GROQ, { fetchImpl, cap, store: null })).resolves.toEqual(READING);
+    await expect(readBeforeDraft('a corgi runs', GROQ, { fetchImpl, cap, store: null, caller: VISITOR })).resolves.toEqual(READING);
     expect(fetchImpl).toHaveBeenCalledOnce();
     const [url, init] = fetchImpl.mock.calls[0]!;
     expect(String(url)).toBe('https://api.groq.com/openai/v1/chat/completions');
@@ -248,7 +249,7 @@ describe('readBeforeDraft on a hosted reader', () => {
   it('never reserves nor calls without a key', async () => {
     const fetchImpl = replying(JSON.stringify(READING));
     const { cap } = bookkeeping();
-    await expect(readBeforeDraft('a corgi runs', { ...GROQ, PLAY_READER_KEY: '' }, { fetchImpl, cap, store: null })).resolves.toBeNull();
+    await expect(readBeforeDraft('a corgi runs', { ...GROQ, PLAY_READER_KEY: '' }, { fetchImpl, cap, store: null, caller: VISITOR })).resolves.toBeNull();
     expect(cap.reserve).not.toHaveBeenCalled();
     expect(fetchImpl).not.toHaveBeenCalled();
   });
@@ -256,7 +257,7 @@ describe('readBeforeDraft on a hosted reader', () => {
   it('returns null without a call when the cap refuses', async () => {
     const fetchImpl = replying(JSON.stringify(READING));
     const { cap, reserved } = bookkeeping(false);
-    await expect(readBeforeDraft('a corgi runs', GROQ, { fetchImpl, cap, store: null })).resolves.toBeNull();
+    await expect(readBeforeDraft('a corgi runs', GROQ, { fetchImpl, cap, store: null, caller: VISITOR })).resolves.toBeNull();
     expect(reserved).toHaveLength(1);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
@@ -268,7 +269,7 @@ describe('readBeforeDraft on a hosted reader', () => {
     writeFileSync(file, JSON.stringify({ enabled: true, capUsd: 5, off: ['upstream'] }), 'utf8');
     const fetchImpl = replying(JSON.stringify(READING));
     const { cap } = bookkeeping();
-    await expect(readBeforeDraft('a corgi runs', { ...GROQ, WORLDSMITH_CONTROL_FILE: file }, { fetchImpl, cap, store: null })).resolves.toBeNull();
+    await expect(readBeforeDraft('a corgi runs', { ...GROQ, WORLDSMITH_CONTROL_FILE: file }, { fetchImpl, cap, store: null, caller: VISITOR })).resolves.toBeNull();
     expect(cap.reserve).not.toHaveBeenCalled();
     expect(fetchImpl).not.toHaveBeenCalled();
   });
@@ -283,10 +284,39 @@ describe('readBeforeDraft on a hosted reader', () => {
     ['JSON that breaks the contract', () => replying(JSON.stringify({ ...READING, control: 'fly' })), 'receipt'],
   ] as const)('returns null on %s and still settles the reservation', async (_name, make, charge) => {
     const { cap, settled } = bookkeeping();
-    await expect(readBeforeDraft('a corgi runs', GROQ, { fetchImpl: make(), cap, store: null })).resolves.toBeNull();
+    await expect(readBeforeDraft('a corgi runs', GROQ, { fetchImpl: make(), cap, store: null, caller: VISITOR })).resolves.toBeNull();
     expect(settled).toHaveLength(1);
     if (charge === 'unknown') expect(settled[0]).toBe('unknown');
     else expect(settled[0]).toBeGreaterThan(0);
+  });
+});
+
+describe('readBeforeDraft paid limits (T4 review)', () => {
+  it('never pays without a caller', async () => {
+    const fetchImpl = replying(JSON.stringify(READING));
+    const { cap } = bookkeeping();
+    await expect(readBeforeDraft('a corgi runs', GROQ, { fetchImpl, cap, store: null })).resolves.toBeNull();
+    expect(cap.reserve).not.toHaveBeenCalled();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it('stops a caller at PLAY_READER_CALLS_PER_CALLER and releases the reservation', async () => {
+    const fetchImpl = replying(JSON.stringify(READING));
+    const { cap, settled } = bookkeeping();
+    const env = { ...GROQ, PLAY_READER_CALLS_PER_CALLER: '1' };
+    await expect(readBeforeDraft('a corgi runs', env, { fetchImpl, cap, store: null, caller: 'quota-visitor' })).resolves.toEqual(READING);
+    await expect(readBeforeDraft('a pug swims', env, { fetchImpl, cap, store: null, caller: 'quota-visitor' })).resolves.toBeNull();
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    expect(settled.at(-1)).toBe(0);
+  });
+
+  it("pays from the reader's own cap: unset is zero and the director's cap stays untouched", async () => {
+    resetProcessSpendCap();
+    const fetchImpl = replying(JSON.stringify(READING));
+    await expect(readBeforeDraft('a corgi runs', GROQ, { fetchImpl, store: null, caller: VISITOR })).resolves.toBeNull();
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(processSpendCap().snapshot().callsMade).toBe(0);
+    resetProcessSpendCap();
   });
 });
 
@@ -296,7 +326,7 @@ describe('readBeforeDraft budget', () => {
     const fetchImpl = hanging();
     const { cap, settled } = bookkeeping();
     let result: Reading | null | 'pending' = 'pending';
-    const pending = readBeforeDraft('a corgi runs', GROQ, { fetchImpl, cap, store: null }).then((reading) => (result = reading));
+    const pending = readBeforeDraft('a corgi runs', GROQ, { fetchImpl, cap, store: null, caller: VISITOR }).then((reading) => (result = reading));
     await vi.advanceTimersByTimeAsync(699);
     expect(fetchImpl).toHaveBeenCalledOnce();
     expect(result).toBe('pending');
@@ -314,7 +344,7 @@ describe('readBeforeDraft budget', () => {
 
   it('a free local reader is never reserved', async () => {
     const { cap } = bookkeeping();
-    await expect(readBeforeDraft('a corgi runs', LOCAL, { fetchImpl: replying(JSON.stringify(READING)), cap, store: null })).resolves.toEqual(READING);
+    await expect(readBeforeDraft('a corgi runs', LOCAL, { fetchImpl: replying(JSON.stringify(READING)), cap, store: null, caller: VISITOR })).resolves.toEqual(READING);
     expect(cap.reserve).not.toHaveBeenCalled();
   });
 

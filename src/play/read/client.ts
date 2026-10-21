@@ -16,8 +16,9 @@ import { EMISSION_MODEL } from '../../model/prompt';
 import { ANSWER_TTL_SECONDS, answerStoreFromEnv, normalizeSentence, type AnswerStore } from '../../server/answer-cache';
 import { killState } from '../../server/kill-switch';
 import type { GenerationCall, GenerationOutcome } from '../../server/pipeline';
-import { costUsd, processSpendCap, type SpendCap } from '../../server/spend-cap';
+import { costUsd, processReaderSpendCap, type SpendCap } from '../../server/spend-cap';
 import { chatConfigFromEnv, CODEX_CLI_ENDPOINT, LLAMACPP_PREFIX, upstreamBranch, type UpstreamConfig } from '../../server/upstream';
+import { versionStoreFromEnv } from '../version';
 import { readerSystemPrompt } from './prompt';
 import { READING_JSON_SCHEMA, readingSchema, type Reading } from './schema';
 
@@ -34,8 +35,23 @@ export interface ReaderDeps {
   readonly fetchImpl?: typeof fetch;
   /** `null` = bez cache. Chybí = úložiště cache odpovědí podle prostředí. */
   readonly store?: AnswerStore | null;
-  /** Chybí = procesní strop režiséra (`processSpendCap()`). */
+  /** Chybí = vlastní procesní strop čtečky (`processReaderSpendCap()`), ne strop režiséra. */
   readonly cap?: Pick<SpendCap, 'reserve'>;
+  /** Volající (route tvorby); placené čtení bez něj neodejde a jeho denní počet drží `PLAY_READER_CALLS_PER_CALLER`. */
+  readonly caller?: string;
+}
+
+/** Placených čtení na volajícího za den, když `PLAY_READER_CALLS_PER_CALLER` chybí nebo nedává smysl. */
+export const DEFAULT_READS_PER_CALLER = 30;
+
+/** Denní počítadlo volajícího vedle kvóty režiséra (klíč `reader:<volající>`); nedostupné úložiště čtení nepustí. */
+async function callerMayRead(caller: string, env: Env): Promise<boolean> {
+  const limit = Number(env.PLAY_READER_CALLS_PER_CALLER);
+  try {
+    return await versionStoreFromEnv(env).takeDirectorCall(`reader:${caller}`, Number.isInteger(limit) && limit > 0 ? limit : DEFAULT_READS_PER_CALLER);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -190,11 +206,13 @@ async function callReader(text: string, config: UpstreamConfig, env: Env, deps: 
   const worstCaseUsd = branch.worstCaseUsd(call);
   if (worstCaseUsd <= 0) return readingOf(await branch.generate(call, signal));
 
+  // Placeně jen za známého volajícího (revize T4): režisér na pozadí volajícího nepředá, takže větu znovu nezaplatí.
+  if (deps.caller === undefined) return null;
   if ((await killState(env, fetchImpl)).upstream) return null;
-  const reservation = await (deps.cap ?? processSpendCap()).reserve(worstCaseUsd);
+  const reservation = await (deps.cap ?? processReaderSpendCap()).reserve(worstCaseUsd);
   if (!reservation.ok) return null;
-  // Rozpočet vypršel během rezervace: volání neodejde, nic se neutratilo.
-  if (signal.aborted) {
+  // Počet volajícího až po rezervaci (jako režisér, R8); rozpočet vypršel = volání neodejde, nic se neutratilo.
+  if (signal.aborted || !(await callerMayRead(deps.caller, env)) || signal.aborted) {
     await reservation.settle(0);
     return null;
   }

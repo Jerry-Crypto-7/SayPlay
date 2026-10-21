@@ -141,7 +141,7 @@ export async function POST(request: Request): Promise<Response> {
     // Await the cold engine here; background preloading alone is a race. Always, not only
     // when the sentence says ball: the model reader may pick a ball game the words missed.
     await loadRapier();
-    const meta = draftGameSpecWithMeta(sentence, 1, { reading: await readBeforeDraft(sentence) });
+    const meta = draftGameSpecWithMeta(sentence, 1, { reading: await readBeforeDraft(sentence, process.env, { caller }) });
     const drafted = meta.spec;
     const origin = { sentence, seed: seed ?? null, ...(meta.readBy === 'model' ? { readBy: 'model' as const } : {}) };
     const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin });
