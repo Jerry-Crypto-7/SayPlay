@@ -34,6 +34,12 @@ describe('verbPlayedBy', () => {
     expect(verbPlayedBy(['fight'], 'arena', 'escape', false)).toBe(false);
     expect(verbPlayedBy(['escape'], 'arena', 'escape', false)).toBe(true);
   });
+
+  it('a base form with several rows is played by each of them: defend is the arena fight and the lane defense (P54C T13)', () => {
+    expect(verbPlayedBy(['defend'], 'arena', 'fight', false)).toBe(true);
+    expect(verbPlayedBy(['defend'], 'defense', 'default', false)).toBe(true);
+    expect(verbPlayedBy(['defend'], 'arena', 'escape', false)).toBe(false);
+  });
 });
 
 describe('classifyGenre', () => {
