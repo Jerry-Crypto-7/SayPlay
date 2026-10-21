@@ -149,9 +149,38 @@ function bare(phrase: string | null): string | null {
 /** Hrdina, kterého čtečka píše, když věta žádného nemá; klíčová slova pak mají přednost. */
 const GENERIC_HERO = /^(?:player|you|me|i|character|hero|protagonist|user|person)$/;
 
+/** Role čtení, které jsou ve hře protivníkem, když věta jiného nejmenuje (P56A T6). */
+const READ_FOE_KINDS: ReadonlySet<Reading['roles'][number]['kind']> = new Set(['threat', 'chaser', 'target', 'hazard', 'obstacle']);
+
+/** Hrdina čtení – podmět věty; `null`, když ho věta nejmenuje („you“, „my farm“, P56A T6). */
+export function readingHero(reading: Reading): string | null {
+  const hero = bare(reading.hero);
+  return hero !== null && !GENERIC_HERO.test(hero) ? hero : null;
+}
+
+/**
+ * Sedí hrdina ze slov věty čtení (P56A T6)? Ne, když čtení vybralo za podmět jiné slovo téže věty („an ogre arm wrestles“),
+ * když je to místo („as high as the moon“) nebo ho čtení má za protivníka, věc či roli („zombies attack my farm“) – pak
+ * hraje podmět čtení. Hrdinu, kterého věta jmenuje (corgi), ale čtení nepřepíše slovem, které ve větě není.
+ */
+export function heroFitsReading(label: string, reading: Reading, sentence: string): boolean {
+  const head = (phrase: string): string => singular(phrase).split(' ').at(-1) ?? phrase;
+  const phrase = bare(label) ?? label;
+  const word = head(phrase);
+  const hero = readingHero(reading);
+  if (hero !== null && head(hero) === word) return true;
+  if (hero !== null && sentence.toLowerCase().split(/[^a-z]+/).some((token) => token !== '' && singular(token) === head(hero))) return false;
+  const taken = [reading.foe, reading.item, reading.setting, ...reading.roles.map((role) => role.noun)];
+  return !isPlace(phrase) && !taken.some((noun) => {
+    const said = bare(noun);
+    return said !== null && head(said) === word;
+  });
+}
+
 /**
  * Role věty ze čtení, doplněné klíčovými slovy (P29B T4): co čtení jmenuje,
  * přebije lexikon, zbytek (spínače, brány, plížení…) zůstane z `readRoles`.
+ * Protivník čtení (`foe`) jde za pronásledovatelem (P56A T6).
  */
 function rolesFrom(sentence: string, reading: Reading | null): SentenceRoles {
   const roles = readRoles(sentence);
@@ -160,13 +189,14 @@ function rolesFrom(sentence: string, reading: Reading | null): SentenceRoles {
     const found = reading.roles.find((entry) => entry.kind === kind);
     return found === undefined ? null : bare(found.noun);
   };
-  const hero = bare(reading.hero);
-  const collectible = noun('collectible');
+  // Věc, se kterou hrdina pracuje (`item`, P56A T6: „knits a sweater“), je sbíraná věc, když čtení žádnou nemá – místo ne.
+  const item = bare(reading.item);
+  const collectible = noun('collectible') ?? (item === null || isPlace(item) ? null : item);
   const chaser = noun('chaser');
-  const threat = noun('threat');
+  const threat = bare(reading.foe) ?? noun('threat');
   return {
     ...roles,
-    player: hero !== null && !GENERIC_HERO.test(hero) ? hero : roles.player,
+    player: readingHero(reading) ?? roles.player,
     chaser: chaser ?? roles.chaser,
     collectible: collectible === null ? roles.collectible : singular(collectible),
     collectibleMany: collectible === null ? roles.collectibleMany : singular(collectible) !== collectible,
@@ -1176,7 +1206,7 @@ function draftGenre(
   // Absurdní přenos (P37A T5): věta bez herního slovesa má hrdinu ze seznamů přenosu, nebo podmět se slovesem na -ing
   // („purple elephants doing taxes“) – „long queue“ ani „hour“ hrdina není.
   const noVerb = twist !== null && choice.score === 0;
-  const heroSaid = noVerb
+  const wordsHero = noVerb
     ? (twist.hero ?? nouns.hero)
     : (cleanLabel(fill.hero) ??
       pair ??
@@ -1187,6 +1217,8 @@ function draftGenre(
       topicHero ??
       // Ve sporu je blízký soupeř („argue with my wife“), ne hrdina.
       (fight ? null : (twist?.hero ?? null)));
+  // P56A T6: hrdina slov, kterého čtení má za protivníka, věc nebo místo, ustoupí podmětu čtení; bez něj hrdina světa.
+  const heroSaid = reading === null || wordsHero === null || heroFitsReading(wordsHero, reading, sentence) ? wordsHero : readingHero(reading);
   const catcher = CATCH_BEFORE.exec(text)?.[1];
   const verb = ranking.verb ?? 'use';
   const family = familyOf(ranking.verb);
@@ -1250,7 +1282,7 @@ function draftGenre(
   const filled = cleanLabel(fill.setting);
   const setting = placeOf(filled, true) ?? placeOf(roles.setting, true) ?? placeOf(filled, false) ?? placeOf(roles.setting, false) ?? VERB_SETTING[verb] ?? GENRE_SETTING[choice.genre];
   const place = lookFor(setting) === null ? lookFor(text) : null;
-  const hero = heroSaid ?? defaultHero(setting, choice.genre, sentence);
+  const hero = heroSaid ?? defaultHero(setting, choice.genre, sentence, reading !== null);
   // Nepřítel a sbíraná věc, které věta neříká, jsou z prostředí (P32B T3) – jen když nezdvojí roli, kterou hra už má.
   const spare = (label: string, taken: readonly (string | null)[]): string | null => (named.has(label) || taken.includes(label) ? null : label);
   // Les dá vlka, jen když věta žádného protivníka nejmenuje. Skákačka a poletování mají vlastní překážku
@@ -1267,7 +1299,10 @@ function draftGenre(
   const caught = choice.genre === 'arena' && roles.target !== null ? extractIntent(sentence) : null;
   const shotAt = caught?.items.some((item) => item.verb === 'catch') === true && saidAbilities(sentence, caught).includes('shoot') ? singular(roles.target!) : null;
   // Protivník, kterého hra sestřelí, zůstává zvířetem prostředí; jen ten, kterému se uhýbá, je překážka trati (P46D T6).
-  const foeLabel = enemy ?? saidFoe ?? (ownHazard || ownRival || shotAt !== null ? null : spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]));
+  // P56A T6: obsazení ze čtení před výchozím místem – role, kterou čtečka ve větě našla („from travelers“), dřív než vlk.
+  const readFoe = reading?.roles.find((entry) => READ_FOE_KINDS.has(entry.kind))?.noun ?? null;
+  const placeFoe = (): string | null => (readFoe === null ? null : spare(singular(bare(readFoe) ?? readFoe), [singular(hero)])) ?? spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]);
+  const foeLabel = enemy ?? saidFoe ?? (ownHazard || ownRival || shotAt !== null ? null : placeFoe());
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
   // Střílečka nic nesbírá a hod hází, co řekne věta, jinak míč – věc z prostředí by z mince udělala náboj.
@@ -1291,9 +1326,12 @@ function draftGenre(
   // obecné role výš znají jen jednoho protivníka a jednu věc ke sběru – hodný cíl a bráněný hrad by zahodily.
   // Předmět hlavního slovesa klasifikátoru („tap the ghosts…“) přibude, jen když ho modul nečetl. Od T13b totéž
   // žánry fáze 3 (přeskákání, dav, slučování, vytlačování): role jim dá jejich `draftFill`.
+  // Jen sloveso tohoto žánru (P56A T6): „zombies attack my farm“ hraje obranu ze čtení a farma, kterou „attack“ v Aréně
+  // bije, by se stala protivníkem.
   const recipe = PRESETS[`${choice.genre}.${choice.mode}`];
   const lanes = recipe !== undefined && wholeGame(recipe);
-  const cast = lanes ? castOf(fill.cast ?? [], verbThing) : castOf([
+  const ownVerb = ranking.pick !== null && ranking.pick.genre === choice.genre && ranking.pick.mode === choice.mode;
+  const cast = lanes ? castOf(fill.cast ?? [], ownVerb ? verbThing : []) : castOf([
     ...(foeLabel === null ? [] : [{ label: foeLabel, does: doesOf(foeLabel, ownFoe) }]),
     ...(shotAt === null || shotAt === foeLabel ? [] : [{ label: shotAt, does: 'shoot_at' as const }]),
     ...(item === null ? [] : [item]),
