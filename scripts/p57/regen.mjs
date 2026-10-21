@@ -32,7 +32,7 @@ const CLASSES = {
   swimmer: ['clownfish', 'koi', 'turbot', 'manta ray'],
   vehicle: ['moon lander', 'planet rover', 'mine cart', 'train', 'fighter jet', 'sailboat', 'ride'],
 };
-const classOf = (noun) => Object.keys(CLASSES).find((name) => CLASSES[name].includes(noun)) ?? 'prop';
+export const classOf = (noun) => Object.keys(CLASSES).find((name) => CLASSES[name].includes(noun)) ?? 'prop';
 
 /** Cíle T6 v pořadí `below6` (podle použití), bez top 50. */
 export const targets = (judge, usage) => {
@@ -104,8 +104,8 @@ export async function fit(input, output, oldDims, budget) {
   return { fit: 'ok', scale: scale.map((value) => Number(value.toFixed(4))), triangles: tris, dims: [0, 1, 2].map((axis) => after.max[axis] - after.min[axis]) };
 }
 
-const dimsOf = (bounds) => [0, 1, 2].map((axis) => bounds.max[axis] - bounds.min[axis]);
-const shuffleKey = (seed, key) => createHash('sha256').update(`${seed}:${key}`).digest('hex');
+export const dimsOf = (bounds) => [0, 1, 2].map((axis) => bounds.max[axis] - bounds.min[axis]);
+export const shuffleKey = (seed, key) => createHash('sha256').update(`${seed}:${key}`).digest('hex');
 
 async function main() {
   if (!process.features.typescript) {
