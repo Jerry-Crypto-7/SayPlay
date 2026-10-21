@@ -37,6 +37,8 @@ Měřeno `micro-cost.measure.ts` → `micro-cost.json`: věta „a fox in a fore
 
 „Hodiny 6 → 5 s“: přežití se po kolech zkracuje o 1 s až na `fastest` (`roundSeconds`); test ověřuje kolo 1 i kolo 5.
 
+**Přeměřeno v T7 na semínkách řetězu.** Semínka 1–40 dávají generátorům málo rozptýlený stav (xoroshiro ze malého čísla) a „šťastné“ úrovně: na 60 semínkách z celého rozsahu, jaká losuje řetěz, robot vyhrál chytání s cílem 40 jen 39/60 a bouchání 41/60 (na 1–40 vždy 40/40). Cíl obou je proto **20** (60/60, robot 5,2–6,9 s). Boss obrany končil za 6,5–9,5 s, tedy kratší než běžné kolo v tempu 1300 – teď **`enemies` 16, cíl 240** (40/40, 8,7–12,4 s, jako ostatní bossové). `micro.test.ts` ověřuje i 6 semínek z `roundSeeds`. Řádky tabulky výš jsou z T4 a pro tyto tři záznamy už neplatí.
+
 ## Jak kolo vznikne (zjištěno kalibrací)
 
 - **Parametry žánru jdou rovnou do `compileGenre`**, mimo `readGenreSpec`: jeho meze hlídají celou hru 30–90 s (catch `items` ≥ 13, hop `rows` ≥ 45). Generátory mají vlastní spodní meze (catch, whack, slice, defense ≥ 10) – tabulka je drží.

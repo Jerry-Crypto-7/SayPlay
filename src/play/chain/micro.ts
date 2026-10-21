@@ -55,13 +55,13 @@ export const MICRO: readonly MicroEntry[] = [
   { key: 'timing.stack', control: 'timing', kind: 'achieve', seconds: 8, card: 'Stack!', params: { rounds: 10 } },
   { key: 'timing.precision', control: 'timing', kind: 'achieve', seconds: 8, card: 'Time it!', params: { rounds: 10 } },
   { key: 'rhythm.default', control: 'rhythm', kind: 'survive', seconds: 6, fastest: 5, card: 'Tap the beat!', params: { seconds: 10 } },
-  { key: 'catch.default', control: 'lanes', kind: 'achieve', seconds: 8, card: 'Catch!', params: { items: 10 }, target: 40 },
-  { key: 'whack.default', control: 'lanes', kind: 'achieve', seconds: 8, card: 'Whack!', params: { targets: 10 }, target: 40 },
+  { key: 'catch.default', control: 'lanes', kind: 'achieve', seconds: 8, card: 'Catch!', params: { items: 10 }, target: 20 },
+  { key: 'whack.default', control: 'lanes', kind: 'achieve', seconds: 8, card: 'Whack!', params: { targets: 10 }, target: 20 },
   { key: 'defense.default', control: 'lanes', kind: 'achieve', seconds: 8, card: 'Hold the line!', params: { enemies: 10 }, target: 50 },
   { key: 'duel.default', control: 'duel', kind: 'achieve', seconds: 8, card: 'Fight!', params: { rounds: 1 } },
   { key: 'crowd.default', control: 'crowd', kind: 'achieve', seconds: 8, card: 'Grow the crowd!', target: 20 },
   { key: 'shooter.default.boss', control: 'shooter', kind: 'achieve', seconds: 15, card: 'Shoot the boss!', boss: true, params: { waves: 2, enemies: 4, targets: 3 } },
-  { key: 'defense.default.boss', control: 'lanes', kind: 'achieve', seconds: 15, card: 'Stop the horde!', boss: true, params: { enemies: 10 }, target: 120 },
+  { key: 'defense.default.boss', control: 'lanes', kind: 'achieve', seconds: 15, card: 'Stop the horde!', boss: true, params: { enemies: 16 }, target: 240 },
   { key: 'duel.default.boss', control: 'duel', kind: 'achieve', seconds: 15, card: 'Beat the boss!', boss: true, params: { rounds: 2 } },
 ];
 

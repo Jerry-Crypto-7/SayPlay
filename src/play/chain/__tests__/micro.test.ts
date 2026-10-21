@@ -13,8 +13,13 @@ import { runBot } from '@/play/arcade/verify';
 import { draftGenreFor } from '@/play/draft/draft';
 
 import { MICRO, type MicroEntry, genreModeOf, microSpec } from '../micro';
+import { roundSeeds } from '../run';
 
-const SEEDS = [1, 2, 8, 9, 13, 20] as const;
+/**
+ * Malá semínka dávají generátorům málo rozptýlený stav a „šťastné“ úrovně (cíl 40 u chytání prošel na 1–40 vždy,
+ * na semínkách řetězu jen v 39/60, T7) – proto i semínka z celého rozsahu, jaká losuje řetěz.
+ */
+const SEEDS = [1, 2, 8, 9, 13, 20, ...roundSeeds(7, 6)] as const;
 /** Poslední kolo nejdelšího řetězu (5 kol) – nejkratší hodiny přežití. */
 const LAST_ROUND = 4;
 const SENTENCE = 'a fox in a forest';
