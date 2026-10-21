@@ -97,5 +97,22 @@ def quantize(rgb: np.ndarray, k: int = 10, iterations: int = 12) -> np.ndarray:
     return centers[labels]
 
 
-def stylize(rgb: np.ndarray, k: int = 10) -> np.ndarray:
-    return guard_purple(quantize(rgb, k))
+ACCENT_RADIUS = (
+    0.12  # vrcholy do této vzdálenosti (sRGB) od nejsytější barvy patří k akcentu
+)
+
+
+def with_accent(rgb: np.ndarray, styled: np.ndarray) -> np.ndarray:
+    """Profil hero: nejsytější barva modelu jako barva navíc. Drobný jasný detail (oko,
+    zobák, knoflík) by k-means zprůměroval do velké okolní plochy."""
+    hsv = rgb_to_hsv(rgb)
+    seed = rgb[np.argmax(hsv[:, 1] * hsv[:, 2])]
+    near = ((rgb - seed) ** 2).sum(axis=1) <= ACCENT_RADIUS**2
+    out = styled.copy()
+    out[near] = rgb[near].mean(axis=0)
+    return out
+
+
+def stylize(rgb: np.ndarray, k: int = 10, accent: bool = False) -> np.ndarray:
+    styled = quantize(rgb, k)
+    return guard_purple(with_accent(rgb, styled) if accent else styled)
