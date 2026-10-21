@@ -30,7 +30,7 @@ Soudce P45 (`pairwise`, Codex, prázdný adresář jen se `sheet.png`) vidí dva
 **Ostatní brány T8:**
 
 - **E2e na telefonu** (`play-catch`, `play-whack`, `play-defense`, `play-slice`): 12/12; vítězná cesta prstem teď čeká ohlášení události (`data-testid="play-lane-event"`) do 10 s a mezi nimi spěch.
-- **FPS** (Pixel 7, CPU 4×, d3d11, A/B prokládaně, 4 opakování, mediány; `fps-before.json` = `origin/main`, `fps-after.json` = HEAD): catch 57,2 → 58,1, whack 57,9 → 55,6, slice 57,2 → 55,2, defense 49,5 → 48,0. Všechny nad 30, nejhorší změna −4 % (v šumu ±10 %).
+- **FPS** (Pixel 7, CPU 4×, d3d11, A/B prokládaně, 4 opakování, mediány; `scripts/play-look-shots.mjs perf`; věty P54C dev `c01`, `w01`, `s01`, `f01` – kopie vět se v sadách necommitují, `p54c/__tests__/sets.test.ts`; `fps-before.json` = `origin/main`, `fps-after.json` = HEAD): catch 57,2 → 58,1, whack 57,9 → 55,6, slice 57,2 → 55,2, defense 49,5 → 48,0. Všechny nad 30, nejhorší změna −4 % (v šumu ±10 %).
 - **P45 fun meter** (`fun-meter.json`, cíle dev sady P54C po 8 na žánr, robot `intermediate`): hratelné 32/32; mrtvý čas (medián) catch 1,74 s, whack 1,77 s, slice 2,59 s, defense 1,62 s; růst 1,00 ve všech čtyřech.
 - **Replay brána** (7 souborů z P54C): 80/80.
 

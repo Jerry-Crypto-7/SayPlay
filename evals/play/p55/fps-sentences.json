@@ -1,9 +1,0 @@
-{
- "note": "P55 T8: one P54C dev target per lane genre for the phone FPS A/B (scripts/play-look-shots.mjs perf --set ../p55/fps-sentences); both origin/main and HEAD build these into the named lane genre.",
- "sentences": [
-  { "id": "catch-c01", "text": "a bear catches falling honey jars in a basket" },
-  { "id": "whack-w01", "text": "whack the moles popping out of the garden holes" },
-  { "id": "slice-s01", "text": "slice flying watermelons in half with a katana" },
-  { "id": "defense-f01", "text": "defend the castle from waves of orcs marching down the road" }
- ]
-}
