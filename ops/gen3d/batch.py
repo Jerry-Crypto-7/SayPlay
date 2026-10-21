@@ -20,12 +20,12 @@ import os
 import re
 import subprocess
 import time
-import tomllib
 from collections.abc import Callable, Sequence
 from datetime import date
 from pathlib import Path
 
 import cache
+import tomllib
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -101,10 +101,14 @@ def write_nouns(counted: list[tuple[str, int]], path: Path = NOUNS_FILE) -> None
 
 
 def prompt_for(noun: str, body: str, variant: str) -> str:
-    """Zadání obrázku: šablona třídy (neznámá třída → `prop`) a rozlišovací znak za jménem."""
+    """Zadání obrázku: šablona třídy (neznámá třída → `prop`) a rozlišovací znak za jménem.
+
+    Za znakem jde oprava z tabulky `[judge_fix]` (P57 T6): obráceně, co slepý soudce
+    starému modelu vytkl („glassy, noisy“ → „matte, smooth“).
+    """
     templates = CONFIG["prompts"].get(body, CONFIG["prompts"]["prop"])
-    feature = FEATURES.get(noun)
-    return templates[variant].format(noun=f"{noun}, {feature}" if feature else noun)
+    traits = [FEATURES.get(noun), FEATURES.get("judge_fix", {}).get(noun)]
+    return templates[variant].format(noun=", ".join([noun, *filter(None, traits)]))
 
 
 def load_classes(path: Path) -> dict[str, str]:
@@ -387,6 +391,7 @@ def main() -> None:
 
     import precheck
     from comfy_client import ComfyClient
+
     from server import generate
 
     classes = load_classes(args.source)

@@ -8,11 +8,10 @@ import json
 import subprocess
 from pathlib import Path
 
+import precheck
 import pytest
 from test_batch import fake_result
 from test_server import FakeComfy as MeshComfy
-
-import precheck
 
 
 class FakeComfy(MeshComfy):
@@ -27,8 +26,9 @@ class FakeComfy(MeshComfy):
 
 
 import batch
-import server
 from comfy_client import ComfyError
+
+import server
 
 
 def test_class_picks_its_template_and_unknown_class_falls_back_to_prop():
@@ -55,6 +55,22 @@ def test_feature_line_follows_the_noun():
     prompt = batch.prompt_for("orca", "swimmer", "a")
     assert prompt.startswith("a orca, black and white killer whale")
     assert "fins" in prompt
+
+
+def test_judge_fix_follows_the_feature_and_reaches_nouns_without_one(monkeypatch):
+    # P57 T6: bez opravy by přegenerování dostalo stejné zadání jako starý model.
+    features = {
+        "orca": "black and white killer whale",
+        "judge_fix": {"orca": "matte toy", "kettle": "smooth enamel"},
+    }
+    monkeypatch.setattr(batch, "FEATURES", features)
+    assert batch.prompt_for("orca", "prop", "a").startswith(
+        "a orca, black and white killer whale, matte toy, low-poly"
+    )
+    assert batch.prompt_for("kettle", "prop", "a").startswith(
+        "a kettle, smooth enamel, low-poly"
+    )
+    assert batch.prompt_for("teapot", "prop", "a").startswith("a teapot, low-poly")
 
 
 def test_json_list_carries_class_and_flat_wins(tmp_path):
