@@ -6,6 +6,8 @@
  * tvorbu prodloužit nejvýš o `PLAY_READER_BUDGET_MS` – měřeno falešnými hodinami.
  */
 
+import { readFileSync } from 'node:fs';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { direct } from '@/play/director';
@@ -31,6 +33,13 @@ const READING: Reading = {
   world: null,
   title: null,
 };
+
+// P56A T10: fyzika se načítá za závorou, kterou test drží zavřenou – čtečka se musí zeptat dřív, než se otevře.
+const rapier = vi.hoisted(() => ({ gate: Promise.resolve() }));
+vi.mock('@/play/arcade/physics/world', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/play/arcade/physics/world')>();
+  return { ...actual, loadRapier: async () => { await rapier.gate; return actual.loadRapier(); } };
+});
 
 vi.mock('../_director', () => ({
   getDirector: () => async () => ({ ok: true, spec: draftGameSpec(SENTENCE), source: 'draft', repairRounds: 0, fallbackReason: 'NO_MODEL', warnings: [], ms: 1, calls: 0, callerLimited: false }),
@@ -133,6 +142,35 @@ describe('create route reads the sentence before drafting', () => {
     vi.useRealTimers();
     expect(await publishedSpec(await pending)).toEqual(draftGameSpec(SENTENCE));
   });
+
+  // P56A T10: čtečka za načítáním fyziky by přidala svůj rozpočet ke každé větě; souběžně se ptá hned.
+  it('asks the reader while the physics engine is still loading', async () => {
+    vi.stubEnv('PLAY_READER', 'on');
+    vi.stubGlobal('fetch', answering);
+    let open = (): void => undefined;
+    rapier.gate = new Promise<void>((resolve) => { open = resolve; });
+    try {
+      const pending = create();
+      await vi.waitFor(() => expect(answering).toHaveBeenCalledOnce());
+      open();
+      expect(await publishedSpec(await pending)).toEqual(draftGameSpecWithMeta(SENTENCE, 1, { reading: READING }).spec);
+    } finally {
+      open();
+      rapier.gate = Promise.resolve();
+    }
+  });
+
+  // P56A T10: vypnutá čtečka = rychlá cesta jako dřív u třiceti vět výchozích čísel (T1: audit-12 + prvních 18 z p30 dev).
+  it('with the reader off publishes the keyword draft of every baseline sentence and calls nothing', async () => {
+    vi.stubGlobal('fetch', answering);
+    const set = (path: string) => (JSON.parse(readFileSync(path, 'utf8')) as { sentences: { text: string }[] }).sentences.map((row) => row.text);
+    const sentences = [...set('evals/play/p56a/audit-12.json'), ...set('evals/play/p30/dev.json')].slice(0, 30);
+    for (const sentence of sentences) {
+      resetRateWindows();
+      expect(await publishedSpec(await create(sentence)), sentence).toEqual(draftGameSpec(sentence));
+    }
+    expect(answering).not.toHaveBeenCalled();
+  }, 300_000);
 
   it.each(['soon', '0', '-5', '2.5', '200000'])('a budget of %s is not a whole number in 1..120000 and falls back to 700 ms', async (budget) => {
     vi.stubEnv('PLAY_READER', 'on');

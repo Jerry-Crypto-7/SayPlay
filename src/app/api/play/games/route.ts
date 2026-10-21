@@ -136,12 +136,14 @@ export async function POST(request: Request): Promise<Response> {
     const seeds = seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim()));
     const ackMs = performance.now() - received;
     // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
-    // P29B T5: zapnutá lokální čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`.
+    // P29B T5: zapnutá čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`; P56A T10: souběžně
+    // s načítáním fyziky, ne za ním – jinak by její rozpočet přibyl ke studenému startu. Nikdy neodmítne (`null`).
+    const reading = readBeforeDraft(sentence, process.env, { caller });
     // Ball composition verifies a real physics run before returning a draft.
     // Await the cold engine here; background preloading alone is a race. Always, not only
     // when the sentence says ball: the model reader may pick a ball game the words missed.
     await loadRapier();
-    const meta = draftGameSpecWithMeta(sentence, 1, { reading: await readBeforeDraft(sentence, process.env, { caller }) });
+    const meta = draftGameSpecWithMeta(sentence, 1, { reading: await reading });
     const drafted = meta.spec;
     const origin = { sentence, seed: seed ?? null, ...(meta.readBy === 'model' ? { readBy: 'model' as const } : {}) };
     const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin });
