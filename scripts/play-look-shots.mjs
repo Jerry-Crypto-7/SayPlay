@@ -12,6 +12,9 @@
  *   node scripts/play-look-shots.mjs diff <dirA> <dirB>
  *   node scripts/play-look-shots.mjs perf --base http://127.0.0.1:3251 --out evals/play/p46g/perf-before.json [--repeats 3] [--only …]
  *   node scripts/play-look-shots.mjs perf --base <před> --out before.json --vs <po> --out-vs after.json [--repeats 2]   (A/B prokládaně)
+ *   node scripts/play-look-shots.mjs luma <dir> [--out luma.json]   (jas plátna, P56B)
+ *   node scripts/play-look-shots.mjs feed --base <url> [--out feed.json]   (karty feedu s obrázkem /og, P56B)
+ *   `--set p56b` = 12 vět auditu P56B (`evals/play/p56b/sentences.json`); sady jdou spojit čárkou (`--set p56b,genres`).
  *
  * `diff` porovná snímky dvou běhů pixel po pixelu (podíl pixelů, které se liší
  * o víc než 8 v některém kanálu) – opakovatelnost sady. `perf` měří FPS
@@ -25,8 +28,10 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-/** Sada vět: `sentences` (12 vět T1, srovnání před a po) nebo `genres` (věta na žánr, T7). */
-const sentencesOf = (set = 'sentences') => JSON.parse(readFileSync(join(ROOT, 'evals', 'play', 'p46g', `${set}.json`), 'utf8')).sentences;
+/** Sady mimo `evals/play/p46g/`: `p56b` = 12 vět auditu P56B (21. 10.). */
+const SET_FILES = { p56b: join(ROOT, 'evals', 'play', 'p56b', 'sentences.json') };
+/** Sada vět: `sentences` (12 vět T1, srovnání před a po), `genres` (věta na žánr, T7) nebo `p56b`; víc sad čárkou (`p56b,genres`). */
+const sentencesOf = (set = 'sentences') => set.split(',').flatMap((name) => JSON.parse(readFileSync(SET_FILES[name] ?? join(ROOT, 'evals', 'play', 'p46g', `${name}.json`), 'utf8')).sentences);
 export const TICKS = 150;
 /** Kanálový rozdíl, pod kterým se pixel bere jako stejný (šum vyhlazování hran). */
 const PIXEL_TOLERANCE = 8;
@@ -119,8 +124,14 @@ async function shots(options) {
   const phone = options.profile === 'pixel7';
   const page = phone ? await (await browser.newContext(pixel7())).newPage() : await browser.newPage({ viewport: { width: 1280, height: 800 } });
   const manifest = { ticks, renderer: options.gpu === true ? 'd3d11' : 'swiftshader', viewport: phone ? 'Pixel 7' : '1280x800', shots: [] };
+  // 404 na `/assets/` (P56B T1): chybějící model se kreslí jako náhradní kvádr a hra běží dál, na snímku to nikdo nepozná.
+  const missing = [];
+  page.on('response', (response) => {
+    if (response.status() === 404 && response.url().includes('/assets/')) missing.push(new URL(response.url()).pathname);
+  });
   try {
     for (const sentence of chosen(options)) {
+      const missingBefore = missing.length;
       const game = await publish(base, sentence.text);
       // Meze 120 s: SwiftShader kreslí na CPU a pod souběžnými běhy (CPU 100 %, 19. 10.) výchozích 30 s nestačí.
       await page.goto(`${base}/play/${game.versionId}`, { timeout: 120_000 });
@@ -135,16 +146,68 @@ async function shots(options) {
       await page.screenshot({ path: join(out, `${sentence.id}.png`), timeout: 120_000 });
       // Ovládání, které plocha opravdu kreslí: souboj má ve specu `move_free`, ve hře `fight`.
       const stage = await page.getByTestId('arcade-stage').getAttribute('data-control').catch(() => null);
-      const row = { id: sentence.id, text: sentence.text, want: sentence.genre, ...game, stage, tick: state?.tick ?? null, runState: state?.runState ?? null, meshes: render.meshes, calls: render.calls };
+      const row = { id: sentence.id, text: sentence.text, want: sentence.genre, ...game, stage, tick: state?.tick ?? null, runState: state?.runState ?? null, meshes: render.meshes, calls: render.calls, assets404: missing.slice(missingBefore) };
       manifest.shots.push(row);
-      // Sada `genres` čeká ovládání plochy (aréna, úkol i agar jsou `move_free`), sada T1 žánr.
+      // Sada `genres` čeká ovládání plochy (aréna, úkol i agar jsou `move_free`), sada T1 žánr; sada `p56b` nečeká nic.
       const [got, wanted] = sentence.control === undefined ? [game.genre, sentence.genre] : [stage, sentence.control];
-      console.log(`${sentence.id}: ${game.genre}/${game.setting} tick ${row.tick} ${row.runState} – ${row.meshes} sítí, ${row.calls} volání${got === wanted ? '' : `  ! čekané ${wanted}`}`);
+      console.log(`${sentence.id}: ${game.genre}/${game.setting} tick ${row.tick} ${row.runState} – ${row.meshes} sítí, ${row.calls} volání, ${row.assets404.length}× 404${wanted === undefined || got === wanted ? '' : `  ! čekané ${wanted}`}`);
     }
   } finally {
     await browser.close();
   }
+  manifest.assets404 = missing.length;
   writeJson(join(out, 'manifest.json'), manifest);
+}
+
+/** Jas pod touto mezí (luma 0–1) je „černá“ – audit 21. 10.: noc skoro černá. */
+const DARK = 0.04;
+
+/** Střední luma Rec. 709 z hodnot sRGB (0–1) a podíl pixelů pod `DARK`. */
+async function lumaOf(file) {
+  const sharp = require('sharp');
+  const { data } = await sharp(file).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  let sum = 0;
+  let dark = 0;
+  for (let i = 0; i < data.length; i += 3) {
+    const y = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+    sum += y;
+    if (y < DARK) dark += 1;
+  }
+  const pixels = data.length / 3;
+  return { mean: sum / pixels, dark: dark / pixels };
+}
+
+/** `luma <dir> [--out file]` (P56B T1): jas plátna každého snímku – snímek je jen plátno (`SCENE_ONLY`). */
+async function luma(options) {
+  const dir = options._[1];
+  if (dir === undefined) throw new Error('luma needs <dir>');
+  const rows = [];
+  for (const file of readdirSync(resolve(ROOT, dir)).filter((name) => name.endsWith('.png')).sort()) {
+    const { mean, dark } = await lumaOf(join(resolve(ROOT, dir), file));
+    rows.push({ id: file.slice(0, -4), mean: Math.round(mean * 1000) / 1000, dark: Math.round(dark * 1000) / 1000 });
+    console.log(`${file}: jas ${mean.toFixed(3)}, pod ${DARK} ${(dark * 100).toFixed(1)} %`);
+  }
+  if (typeof options.out === 'string') writeJson(resolve(ROOT, options.out), { dark: DARK, rows });
+  return rows;
+}
+
+/** `feed --base <url>` (P56B T1): kolik obrázků karet feedu na `/play` je obrázek odkazu `/og` místo snímku hry. */
+async function feed(options) {
+  const base = options.base;
+  if (typeof base !== 'string') throw new Error('feed needs --base <url>');
+  const browser = await browserFor(options.gpu === true);
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await page.goto(`${base}/play`, { timeout: 120_000 });
+    await page.getByTestId('feed-card').first().waitFor({ timeout: 60_000 });
+    const sources = await page.$$eval('[data-testid="feed-card"] img, [data-testid="play-feed-card"] img', (images) => images.map((image) => image.getAttribute('src') ?? ''));
+    const report = { cards: sources.length, og: sources.filter((src) => src.includes('/og')).length, curated: sources.filter((src) => src.startsWith('/feed-thumbs/')).length, sources };
+    console.log(`${report.cards} obrázků karet: ${report.og} /og, ${report.curated} kurátorských snímků`);
+    if (typeof options.out === 'string') writeJson(resolve(ROOT, options.out), report);
+    return report;
+  } finally {
+    await browser.close();
+  }
 }
 
 /** Podíl pixelů, které se liší o víc než `PIXEL_TOLERANCE` v některém kanálu. */
@@ -274,9 +337,9 @@ async function perf(options) {
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   const options = args();
-  const command = { shots, diff, perf }[options._[0]];
+  const command = { shots, diff, perf, luma, feed }[options._[0]];
   if (command === undefined) {
-    console.error('usage: play-look-shots.mjs shots|diff|perf …');
+    console.error('usage: play-look-shots.mjs shots|diff|perf|luma|feed …');
     process.exit(2);
   }
   await command(options);
