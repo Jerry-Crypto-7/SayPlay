@@ -905,6 +905,7 @@ function ArcadePlayGame({
         // Sloveso věty na tlačítkách akcí (P47B T10) – jen popisek, svět ho nečte.
         abilityWords={spec.abilityWords}
         host={host}
+        keepFrame={versionId}
         overlay={
           <>
             <Weather session={session} theme={spec.theme} />
