@@ -187,44 +187,75 @@ const DEFAULT_FALLBACK_MAX_OUTPUT_TOKENS = 4000;
  */
 export const OPENAI_PREFIX = 'openai:';
 
+/** V čem se role nad `chatConfigFromEnv` liší; všechno ostatní je jeden kód. */
+export interface ChatDefaults {
+  readonly localModel: string;
+  readonly localMaxOutputTokens: number;
+  readonly hostedMaxOutputTokens: number;
+  readonly timeoutMs: number;
+}
+
+const FALLBACK_DEFAULTS: ChatDefaults = {
+  localModel: 'local-fallback',
+  localMaxOutputTokens: DEFAULT_FALLBACK_MAX_OUTPUT_TOKENS,
+  hostedMaxOutputTokens: DEFAULT_MAX_OUTPUT_TOKENS,
+  timeoutMs: DEFAULT_TIMEOUT_MS,
+};
+
 function fallbackConfigFromEnv(env: Record<string, string | undefined>): UpstreamConfig | null {
-  const endpoint = (env.WORLDSMITH_FALLBACK_ENDPOINT ?? '').trim();
-  if (/^openai:https?:\/\/\S+$/.test(endpoint)) return hostedFallbackFromEnv(endpoint, env);
+  return chatConfigFromEnv(env, 'WORLDSMITH_FALLBACK', FALLBACK_DEFAULTS);
+}
+
+/**
+ * Konfigurace `openai:` nebo `llamacpp:` z proměnných `<prefix>_ENDPOINT`,
+ * `_KEY`, `_MODEL`, `_USD_PER_MTOK_IN|OUT`, `_EFFORT`, `_MAX_OUTPUT_TOKENS`
+ * a `_TIMEOUT_MS`. Záloha režiséra (P29B T7, P30A T2) a čtečka věty (P56A T4)
+ * ji staví týmž kódem, takže placená čtečka drží tytéž odmítnutí jako placená
+ * záloha. Klíč se tím čte jen tady, na serverové cestě.
+ */
+export function chatConfigFromEnv(
+  env: Record<string, string | undefined>,
+  prefix: 'WORLDSMITH_FALLBACK' | 'PLAY_READER',
+  defaults: ChatDefaults,
+): UpstreamConfig | null {
+  const read = (name: string): string | undefined => env[`${prefix}_${name}`];
+  const endpoint = (read('ENDPOINT') ?? '').trim();
+  if (/^openai:https?:\/\/\S+$/.test(endpoint)) return hostedConfigFromEnv(endpoint, read, defaults);
   if (!/^llamacpp:https?:\/\/\S+$/.test(endpoint)) return null;
   return {
     endpoint,
     // Klíč `llama-server --api-key`; za veřejným tunelem povinný, lokálně smí chybět.
-    apiKey: (env.WORLDSMITH_FALLBACK_KEY ?? '').trim(),
-    model: (env.WORLDSMITH_FALLBACK_MODEL ?? '').trim() || 'local-fallback',
+    apiKey: (read('KEY') ?? '').trim(),
+    model: (read('MODEL') ?? '').trim() || defaults.localModel,
     effort: DEFAULT_EFFORT,
     pricing: { usdPerMTokIn: 0, usdPerMTokOut: 0 },
-    maxOutputTokens: positiveNumber(env.WORLDSMITH_FALLBACK_MAX_OUTPUT_TOKENS, DEFAULT_FALLBACK_MAX_OUTPUT_TOKENS),
-    timeoutMs: positiveNumber(env.WORLDSMITH_FALLBACK_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
+    maxOutputTokens: positiveNumber(read('MAX_OUTPUT_TOKENS'), defaults.localMaxOutputTokens),
+    timeoutMs: positiveNumber(read('TIMEOUT_MS'), defaults.timeoutMs),
     profile: 'subscription',
     callCap: null,
   };
 }
 
 /**
- * Placená záloha (P30A T2). Táž doktrína jako primár v `upstreamConfigFromEnv`:
- * bez klíče, modelu nebo kladné ceny výstupu to není záloha zdarma, ale
- * nekonfigurace – a nekonfigurovaná záloha se nezapne vůbec.
+ * Placená cesta (P30A T2). Táž doktrína jako primár v `upstreamConfigFromEnv`:
+ * bez klíče, modelu nebo kladné ceny výstupu to není cesta zdarma, ale
+ * nekonfigurace – a nekonfigurovaná cesta se nezapne vůbec.
  */
-function hostedFallbackFromEnv(endpoint: string, env: Record<string, string | undefined>): UpstreamConfig | null {
-  const apiKey = (env.WORLDSMITH_FALLBACK_KEY ?? '').trim();
-  const model = (env.WORLDSMITH_FALLBACK_MODEL ?? '').trim();
-  const usdPerMTokOut = Number(env.WORLDSMITH_FALLBACK_USD_PER_MTOK_OUT);
-  const maxOutputTokens = positiveNumber(env.WORLDSMITH_FALLBACK_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS);
+function hostedConfigFromEnv(endpoint: string, read: (name: string) => string | undefined, defaults: ChatDefaults): UpstreamConfig | null {
+  const apiKey = (read('KEY') ?? '').trim();
+  const model = (read('MODEL') ?? '').trim();
+  const usdPerMTokOut = Number(read('USD_PER_MTOK_OUT'));
+  const maxOutputTokens = positiveNumber(read('MAX_OUTPUT_TOKENS'), defaults.hostedMaxOutputTokens);
   if (apiKey === '' || model === '') return null;
   if (!Number.isFinite(usdPerMTokOut) || usdPerMTokOut <= 0 || (maxOutputTokens * usdPerMTokOut) / 1_000_000 <= 0) return null;
   return {
     endpoint,
     apiKey,
     model,
-    effort: effortLevel(env.WORLDSMITH_FALLBACK_EFFORT),
-    pricing: { usdPerMTokIn: inputPrice(env.WORLDSMITH_FALLBACK_USD_PER_MTOK_IN, usdPerMTokOut), usdPerMTokOut },
+    effort: effortLevel(read('EFFORT')),
+    pricing: { usdPerMTokIn: inputPrice(read('USD_PER_MTOK_IN'), usdPerMTokOut), usdPerMTokOut },
     maxOutputTokens,
-    timeoutMs: positiveNumber(env.WORLDSMITH_FALLBACK_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
+    timeoutMs: positiveNumber(read('TIMEOUT_MS'), defaults.timeoutMs),
     profile: 'api',
     callCap: null,
   };

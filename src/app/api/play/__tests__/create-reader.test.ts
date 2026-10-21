@@ -12,6 +12,7 @@ import { direct } from '@/play/director';
 import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft';
 import type { Reading } from '@/play/read/schema';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
+import { resetProcessAnswerStore } from '@/server/answer-cache';
 import { resetRateWindows } from '@/server/rate-limit';
 import { upstreamBranch } from '@/server/upstream';
 
@@ -65,6 +66,8 @@ async function publishedSpec(response: Response): Promise<unknown> {
 beforeEach(() => {
   __resetProcessVersionStore();
   resetRateWindows();
+  // Čtečka si čtení pamatuje po větě (P56A T4); každý test čte znovu.
+  resetProcessAnswerStore();
   vi.stubEnv('PLAY_READER_ENDPOINT', 'http://reader.test');
 });
 
@@ -131,7 +134,7 @@ describe('create route reads the sentence before drafting', () => {
     expect(await publishedSpec(await pending)).toEqual(draftGameSpec(SENTENCE));
   });
 
-  it.each(['soon', '0', '-5', '2.5', '20000'])('a budget of %s is not a whole number in 1..10000 and falls back to 1500 ms', async (budget) => {
+  it.each(['soon', '0', '-5', '2.5', '200000'])('a budget of %s is not a whole number in 1..120000 and falls back to 700 ms', async (budget) => {
     vi.stubEnv('PLAY_READER', 'on');
     vi.stubEnv('PLAY_READER_BUDGET_MS', budget);
     vi.stubGlobal('fetch', silent);
@@ -141,7 +144,7 @@ describe('create route reads the sentence before drafting', () => {
       settled = true;
       return response;
     });
-    await vi.advanceTimersByTimeAsync(1499);
+    await vi.advanceTimersByTimeAsync(699);
     expect(settled).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
     vi.useRealTimers();
