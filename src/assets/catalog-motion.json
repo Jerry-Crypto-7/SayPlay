@@ -1,6 +1,6 @@
 {
  "version": 1,
- "catalogHash": "627cebf6e5022e9f470d331e062ff24be176c6b2768084e01f726c9c9bc24d96",
+ "catalogHash": "7570d3167a05c093e2fcd8a4c42f7a72bdab576adfaa3c6f672c5caf4ed30a40",
  "models": {
   "aquarium": {"class":"prop"},
   "seated-person": {"class":"biped","regions":{"legY":0.371}},
@@ -901,7 +901,7 @@
   "gen3d-robot-arm": {"class":"biped","regions":{"legY":0.249}},
   "gen3d-ray-gun": {"class":"prop"},
   "gen3d-energy-drink": {"class":"biped","regions":{"legY":0.25}},
-  "gen3d-oil-barrel": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-oil-barrel": {"class":"biped","regions":{"legY":0.248}},
   "gen3d-toolbox": {"class":"prop"},
   "gen3d-chainsaw": {"class":"prop"},
   "gen3d-lawn-mower": {"class":"prop"},
@@ -1079,7 +1079,7 @@
   "gen3d-firewood-basket": {"class":"prop"},
   "gen3d-dingo": {"class":"prop"},
   "gen3d-lake-buoy": {"class":"biped","regions":{"legY":0.249}},
-  "gen3d-funeral-urn": {"class":"biped","regions":{"legY":0.25}},
+  "gen3d-funeral-urn": {"class":"biped","regions":{"legY":0.252}},
   "gen3d-ice-spike": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-cereal-box": {"class":"biped","regions":{"legY":0.25}},
   "gen3d-water-heater": {"class":"biped","regions":{"legY":0.25}},

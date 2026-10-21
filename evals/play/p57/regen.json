@@ -26,6 +26,32 @@
    ],
    "startedAt": "2026-10-21T19:54:06.536Z",
    "finishedAt": "2026-10-21T21:25:19.966Z"
+  },
+  "2": {
+   "ids": [
+    "gen3d-flour-sack",
+    "gen3d-fruit-crate",
+    "gen3d-wine-barrel",
+    "gen3d-floating-dock",
+    "gen3d-sailboat",
+    "gen3d-snowman-with-hat",
+    "gen3d-frozen-dead-tree",
+    "gen3d-ice-block-pile",
+    "gen3d-fruit-stand",
+    "gen3d-ice-igloo",
+    "gen3d-mushroom-cluster",
+    "gen3d-broken-gravestone",
+    "gen3d-cemetery-bench",
+    "gen3d-container",
+    "gen3d-fern",
+    "gen3d-funeral-urn",
+    "gen3d-gift-box",
+    "gen3d-industrial-fan",
+    "gen3d-log-cabin",
+    "gen3d-oil-barrel"
+   ],
+   "startedAt": "2026-10-21T21:47:54.220Z",
+   "finishedAt": "2026-10-21T23:17:51.371Z"
   }
  },
  "models": {
@@ -716,6 +742,676 @@
    ],
    "newScore": null,
    "result": "rejected-bounds"
+  },
+  "gen3d-flour-sack": {
+   "noun": "flour sack",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.063,
+      0.9931,
+      0.747
+     ],
+     "triangles": 3556,
+     "dims": [
+      0.84498,
+      0.9926383341975278,
+      0.59612
+     ],
+     "score": 5,
+     "reason": "Sack: Clear sack silhouette but glossy noisy shading, off-style."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-fruit-crate": {
+   "noun": "fruit crate",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0797,
+      1.0797,
+      1.0797
+     ],
+     "triangles": 3885,
+     "dims": [
+      1.2881477654391946,
+      1.059533181377417,
+      1.2842095716725814
+     ],
+     "score": 4,
+     "reason": "Fruit crate: Recognisable, but crate faces are crumpled and noisy, scan-like."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-wine-barrel": {
+   "noun": "wine barrel",
+   "oldScore": 3,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "kept-old"
+  },
+  "gen3d-floating-dock": {
+   "noun": "floating dock",
+   "oldScore": 3,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0066,
+      1.0066,
+      1.0066
+     ],
+     "triangles": 3671,
+     "dims": [
+      2.595778094287824,
+      1.0065983443461004,
+      2.5888634513728563
+     ],
+     "score": 3,
+     "reason": "Table with barrels: Ambiguous object, melted blue blobs under lumpy tabletop."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "gen3d-sailboat": {
+   "noun": "sailboat",
+   "oldScore": 5,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9748,
+      0.9992,
+      0.6964
+     ],
+     "triangles": 3872,
+     "dims": [
+      0.37532,
+      0.9981400000000001,
+      0.73774
+     ],
+     "score": 6,
+     "reason": "Toy boat: Chunky toy boat, but mast oversized and plain, no sail."
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-snowman-with-hat": {
+   "noun": "snowman with hat",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.154,
+      0.9946,
+      0.8042
+     ],
+     "triangles": 3470,
+     "dims": [
+      1.00862,
+      0.99434,
+      0.52552
+     ],
+     "score": 8,
+     "reason": "Snowman: Charming, clean toy-like snowman with clear silhouette."
+    }
+   ],
+   "newScore": 8,
+   "result": "replaced"
+  },
+  "gen3d-frozen-dead-tree": {
+   "noun": "frozen dead tree",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9695,
+      1.0013,
+      0.7662
+     ],
+     "triangles": 4031,
+     "dims": [
+      0.77524,
+      0.9990199999999999,
+      0.6253600000000001
+     ],
+     "score": 7,
+     "reason": "Bare tree: Clean stylized silhouette, solid colour; branches somewhat thin."
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "gen3d-ice-block-pile": {
+   "noun": "ice block pile",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.4687,
+      1.0007,
+      1.3259
+     ],
+     "triangles": 3013,
+     "dims": [
+      1.4023156837881632,
+      0.9992826709707692,
+      1.3182878293495661
+     ],
+     "score": 4,
+     "reason": "Ice blocks: Ice cube pile readable but surfaces dented and glitchy."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-fruit-stand": {
+   "noun": "fruit stand",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": null,
+   "result": "rejected-bounds"
+  },
+  "gen3d-ice-igloo": {
+   "noun": "ice igloo",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 7,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.999,
+      0.999,
+      0.999
+     ],
+     "triangles": 3984,
+     "dims": [
+      1.360730642932804,
+      0.9990425390083207,
+      1.3656648145989951
+     ],
+     "score": 3,
+     "reason": "igloo: Torn faceted blob with holes; barely reads as igloo"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "gen3d-mushroom-cluster": {
+   "noun": "mushroom cluster",
+   "oldScore": 2,
+   "oldJudge": "codex",
+   "oldOpus": 2,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0349,
+      1.0349,
+      1.0349
+     ],
+     "triangles": 3557,
+     "dims": [
+      1.1049538248182218,
+      1.022297285577369,
+      1.0449985706848244
+     ],
+     "score": 3,
+     "reason": "Mushroom cluster: Melted blob of caps; shading shards, hard to read."
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "gen3d-broken-gravestone": {
+   "noun": "broken gravestone",
+   "oldScore": 3,
+   "oldJudge": "claude",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0859,
+      1.0002,
+      1.4527
+     ],
+     "triangles": 3828,
+     "dims": [
+      0.8161399999999999,
+      0.99739,
+      0.49307181642879006
+     ],
+     "score": 4,
+     "reason": "Gravestone: Crumpled, shard-like faces make the plain tombstone noisy."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-cemetery-bench": {
+   "noun": "cemetery bench",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "bounds"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      0.8343,
+      0.9942,
+      0.7194
+     ],
+     "triangles": 3792,
+     "dims": [
+      1.3013824554633149,
+      0.9743659231746196,
+      0.6881743909411009
+     ],
+     "score": 5,
+     "reason": "Park bench: Good bench shape, but grimy texture and stray orange fragments."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-container": {
+   "noun": "container",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.7547,
+      1.0001,
+      0.7565
+     ],
+     "triangles": 3883,
+     "dims": [
+      0.94122,
+      0.9999853959436846,
+      0.943412830856935
+     ],
+     "score": 6,
+     "reason": "green bin: Bright clean box, slightly wrinkled warped sides"
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-fern": {
+   "noun": "fern",
+   "oldScore": 4,
+   "oldJudge": "claude",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0313,
+      1.0313,
+      1.0313
+     ],
+     "triangles": 3668,
+     "dims": [
+      1.2418570970148886,
+      1.0279158192456495,
+      1.2878533637758576
+     ],
+     "score": 6,
+     "reason": "leafy plant: Clean bright low-poly plant, slightly spiky and thin"
+    }
+   ],
+   "newScore": 6,
+   "result": "replaced"
+  },
+  "gen3d-funeral-urn": {
+   "noun": "funeral urn",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "gate": "RuntimeError: quality gate: inconsistent face winding – shredded mesh (was it remeshed?)"
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0092,
+      1.0092,
+      1.0092
+     ],
+     "triangles": 3998,
+     "dims": [
+      0.5521447008633258,
+      1.0089378613193205,
+      0.5512964501218629
+     ],
+     "score": 7,
+     "reason": "Urn: Clean urn silhouette; dark, slightly dull colouring and smudged band."
+    }
+   ],
+   "newScore": 7,
+   "result": "replaced"
+  },
+  "gen3d-gift-box": {
+   "noun": "gift box",
+   "oldScore": 4,
+   "oldJudge": "codex",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0553,
+      1.0553,
+      1.0553
+     ],
+     "triangles": 2743,
+     "dims": [
+      0.9817647907070761,
+      1.0504287118814262,
+      0.987521095405171
+     ],
+     "score": 4,
+     "reason": "Gift box: Chrome reflective faceted surfaces, crumpled ribbon, not toy-like."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0151,
+      1.0151,
+      1.0151
+     ],
+     "triangles": 2698,
+     "dims": [
+      1.024631908237295,
+      1.0067962437112508,
+      1.0330490391595435
+     ],
+     "score": 4,
+     "reason": "Gift box: Gift readable but faceted, glitchy shading looks crumpled."
+    }
+   ],
+   "newScore": 4,
+   "result": "kept-old"
+  },
+  "gen3d-industrial-fan": {
+   "noun": "industrial fan",
+   "oldScore": 3,
+   "oldJudge": "codex",
+   "oldOpus": 3,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.0144,
+      1.0074,
+      1.2177
+     ],
+     "triangles": 3441,
+     "dims": [
+      0.9020000000000001,
+      1.0000099999999998,
+      0.6151188316473113
+     ],
+     "score": 3,
+     "reason": "Desk fan: Shattered spiky cage shards, glassy techy look, messy blades."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "bounds"
+    }
+   ],
+   "newScore": 3,
+   "result": "kept-old"
+  },
+  "gen3d-log-cabin": {
+   "noun": "log cabin",
+   "oldScore": 3,
+   "oldJudge": "codex",
+   "oldOpus": 4,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      1.2368,
+      1.0031,
+      1.0676
+     ],
+     "triangles": 3834,
+     "dims": [
+      1.34906,
+      0.99938,
+      1.1273399999999998
+     ],
+     "score": 5,
+     "reason": "Log cabin: Readable hut shape but lumpy, smeared scan-like textures."
+    },
+    {
+     "round": 2,
+     "prompt": "a",
+     "seed": 2,
+     "fit": "ok",
+     "scale": [
+      1.0433,
+      1.0433,
+      1.0433
+     ],
+     "triangles": 3574,
+     "dims": [
+      1.2914900612896978,
+      1.043100444090043,
+      1.1775927248571012
+     ],
+     "score": 4,
+     "reason": "Wooden hut: Melted, crumpled surfaces; reads as a house but very noisy."
+    }
+   ],
+   "newScore": 5,
+   "result": "kept-old"
+  },
+  "gen3d-oil-barrel": {
+   "noun": "oil barrel",
+   "oldScore": 5,
+   "oldJudge": "claude",
+   "oldOpus": 5,
+   "attempts": [
+    {
+     "round": 1,
+     "prompt": "b",
+     "seed": 1,
+     "fit": "ok",
+     "scale": [
+      0.9939,
+      0.9939,
+      0.9939
+     ],
+     "triangles": 4044,
+     "dims": [
+      0.700698042437508,
+      0.9938461788440166,
+      0.7006373774893679
+     ],
+     "score": 8,
+     "reason": "oil barrel: Clean silhouette, bright solid colour, toy-like"
+    }
+   ],
+   "newScore": 8,
+   "result": "replaced"
   }
  }
 }
