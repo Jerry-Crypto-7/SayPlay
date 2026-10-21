@@ -25,6 +25,20 @@ export const PALETTE_SIZE = 6;
 export const PALETTE_MIX = 0.3;
 /** Síla okraje ve dne. */
 export const TOON_RIM_DAY = 0.15;
+/** Síla okraje pod tmavým obzorem (noc, vesmír, jeskyně): v noci nese kontury okraj (P56B T7). */
+export const TOON_RIM_NIGHT = 0.5;
+/**
+ * Lineární jas obzoru, pod kterým je scéna noční: noc `#172c45` ~0,024, strašidelný hřbitov ~0,03, vesmír a jeskyně
+ * pod 0,03; podmořský svět (0,14), sopka (0,12) a strašidelný hrad (0,14) už ne.
+ */
+const DARK_HORIZON = [0.03, 0.1] as const;
+
+/** Jak noční je obloha sady: 0 den, 1 noc (P56B T7) – podle ní sílí okraj toonu a expozice rigu. */
+export function darkness(look: Pick<Look, 'horizon'>): number {
+  const { r, g, b } = new Color(look.horizon);
+  const horizon = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return Math.min(Math.max((DARK_HORIZON[1] - horizon) / (DARK_HORIZON[1] - DARK_HORIZON[0]), 0), 1);
+}
 
 /** Paleta jde do shaderu už v Oklab (spočítaná jednou na sadu), barva pixelu se převádí tam a zpět. */
 export const toon = {
@@ -115,7 +129,7 @@ export function setScenePalette(look: Pick<Look, 'ground' | 'tint' | 'block' | '
   });
   toon.mix.value = PALETTE_MIX;
   toon.rimColor.value.set(look.light[0]);
-  toon.rim.value = TOON_RIM_DAY;
+  toon.rim.value = TOON_RIM_DAY + (TOON_RIM_NIGHT - TOON_RIM_DAY) * darkness(look);
 }
 
 /**

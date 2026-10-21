@@ -19,11 +19,11 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { type RefObject, useEffect, useMemo, useRef } from 'react';
 import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mesh, type Object3D, type PerspectiveCamera, ShaderMaterial, SphereGeometry, Vector3 } from 'three';
 
-import type { Look, LookId } from '@/play/arcade/look';
+import { type Look, type LookId, NIGHT } from '@/play/arcade/look';
 
 import { Ambient } from '../Ambient';
 import { setCharacterRim } from '../load';
-import { setScenePalette } from './toon';
+import { darkness, setScenePalette } from './toon';
 import { Wind } from '../Vegetation';
 import { LOOK_FAMILY } from './grade';
 import { Post, useQualityTier } from './Post';
@@ -127,6 +127,35 @@ function Sky({ look, control }: { readonly look: Look; readonly control: string 
   return <mesh geometry={geometry} material={material} renderOrder={SKY_ORDER} frustumCulled={false} userData={{ rigShadow: 'none' }} />;
 }
 
+/** Lineární jas `#rrggbb`. */
+const luminanceOf = (hex: string): number => {
+  const { r, g, b } = new Color(hex);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+/** Světlo na matné ploše jako `brightness` v katalogu: polokoule shora a slunce. */
+const brightnessOf = (look: Pick<Look, 'light' | 'sun' | 'sunColor'>): number => look.light[2] * luminanceOf(look.light[0]) + look.sun * luminanceOf(look.sunColor);
+
+/**
+ * Tmavá sada bez noci a nálady (hřbitov, jeskyně) nesvítí slaběji než noc (P56B T7) – stejná mez,
+ * jakou katalog dává náladám (`withMood`); noc a nálady ji už mají, pro ně je to beze změny.
+ */
+export function lightFloor(look: Look): Pick<Look, 'light' | 'sun'> {
+  const lift = brightnessOf(NIGHT) / brightnessOf(look);
+  return lift <= 1 ? look : { light: [look.light[0], look.light[1], look.light[2] * lift], sun: look.sun * lift };
+}
+
+/** Kolikrát noc zvedne expozici (P56B T7): oko přivyklé tmě, jinak je noc skoro černá (audit 21. 10.). */
+export const NIGHT_EXPOSURE = 2.4;
+
+/**
+ * Expozice sady se světlem po `lightFloor`: tmavá obloha (`darkness`) a světlo u noční meze ji zvednou až na
+ * `NIGHT_EXPOSURE`×; se světlem dvojnásobku noci (vesmír se sluncem) a pod světlou oblohou (bouřka, mlha) zůstane.
+ */
+export function exposureOf(look: Look): number {
+  const dim = Math.min(Math.max(2 - brightnessOf(look) / brightnessOf(NIGHT), 0), 1);
+  return look.exposure * (1 + (NIGHT_EXPOSURE - 1) * darkness(look) * dim);
+}
+
 /** Jak daleko před hrdinou je střed výřezu stínu (m) – kamera se dívá dopředu. Polovina hrany je z úrovně kvality. */
 const SHADOW_LEAD = 6;
 const SUN_DISTANCE = 40;
@@ -144,7 +173,7 @@ const heroOf = (scene: Object3D): Object3D | null => {
  * značka jako sonda záběru), dokud ho scéna nemá, s kamerou. Hrdina je ze snímku
  * předtím – posun výřezu o jeden snímek stín nepohne, ten závisí jen na tělech.
  */
-function Sun({ look, control, mapSize, half }: { readonly look: Look; readonly control: string; readonly mapSize: number; readonly half: number }) {
+function Sun({ look, sun: intensity, control, mapSize, half }: { readonly look: Look; readonly sun: number; readonly control: string; readonly mapSize: number; readonly half: number }) {
   const light = useRef<DirectionalLight>(null);
   const scene = useThree((three) => three.scene);
   const toSun = useMemo(() => viewToWorld(look.sunDir, control).multiplyScalar(SUN_DISTANCE), [look, control]);
@@ -181,7 +210,7 @@ function Sun({ look, control, mapSize, half }: { readonly look: Look; readonly c
     sun.position.copy(at).add(toSun);
   });
 
-  return <directionalLight ref={light} color={look.sunColor} intensity={look.sun} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={4} />;
+  return <directionalLight ref={light} color={look.sunColor} intensity={intensity} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={4} />;
 }
 
 /**
@@ -265,6 +294,7 @@ function Exposure({ exposure }: { readonly exposure: number }) {
 
 export function StyleRig({ look, lookId, control, surface }: { readonly look: Look; readonly lookId: LookId; readonly control: string; readonly surface: RefObject<HTMLDivElement | null> }) {
   const tier = useQualityTier(surface);
+  const lit = useMemo(() => ({ ...look, ...lightFloor(look) }), [look]);
   // Okrajový svit postav barvou oblohy sady (P54B T14): jen uniformy, materiály se nepřekládají.
   // Paleta, přimíchání a okraj toonu sady (P56B T6): také jen uniformy.
   useEffect(() => {
@@ -276,10 +306,10 @@ export function StyleRig({ look, lookId, control, surface }: { readonly look: Lo
       <color attach="background" args={[look.horizon]} />
       <fog attach="fog" args={[look.horizon, ...look.fog]} />
       <FarAtFog far={look.fog[1]} />
-      <Exposure exposure={look.exposure} />
+      <Exposure exposure={exposureOf(lit)} />
       <Sky look={look} control={control} />
-      <hemisphereLight args={[...look.light]} />
-      <Sun look={look} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
+      <hemisphereLight args={[...lit.light]} />
+      <Sun look={look} sun={lit.sun} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       <ShadowFlags />
       <SceneryWindow />
       {/* Život v pozadí kolem orientačního bodu scény (P54B T10) a vítr ve vegetaci (T13). */}

@@ -69,6 +69,21 @@ Obojí opravil `bc9c9408` (T3).
 
 Medián všech šesti běhů klesl o víc než 20 %. **Odchylka od AC:** 08-gems na výšku drží nepřítele v obraze v 69 % tiků, ne 85 %. Nepřítel tam celou hru bloudí 6–16 m do strany a do úzkého obrazu se s hrdinou vejde jen s kamerou tak daleko, že hrdina klesne pod podlahu `e2e/p32-arena.spec.ts` (8 % výšky obrazu na telefonu): první verze T9 (natažení 2,5×) dala 92 %, ale kočce na Pixel 7 jen 6,4 % výšky a e2e spadl. Platí podlaha hrdiny (natažení 1,8×, na výšku 2,1×, hrdina ≥ 7,8 % a 8,6 %); zbytek nepřátel ukazuje šipka na okraji. Test pro tento jediný běh hlídá 0,65.
 
+## Noc (T7)
+
+`shots --set p56b --only 02-zombie,12-ghost,09-astro` desktop i Pixel 7 na buildu T7, pak `luma` → `luma-after-t7.json`, `luma-after-t7-phone.json` (snímky `after-t7/`, `after-t7-phone/` mimo git jako `before/`):
+
+| Scéna | desktop T1 → T7 (brána) | telefon T1 → T7 (brána) | pod 0,04 |
+|---|---|---|---|
+| 02-zombie (farma v noci) | 0,122 → 0,227 (0,220) | 0,111 → 0,255 (0,200) | 0 % |
+| 12-ghost (strašidelný dům) | 0,165 → 0,305 (0,297) | 0,208 → 0,407 (0,374) | 0 % |
+| 09-astro (vesmír, kontrola) | 0,269 → 0,276 | 0,342 → 0,347 | 0,2 % |
+
+- **Jen měsíc nestačil:** slunce noci 0,35 → 0,9, studené, shora a zezadu (`sunDir` noci), a okraj toonu 0,15 → 0,5 pod tmavým obzorem daly 0,150 a 0,202 na desktopu (1,23×). Zbytek nese **přizpůsobení expozice tmě** v rigu (`exposureOf`, 2,4×): jen tmavá obloha (`darkness`, lineární jas obzoru pod 0,1) a zároveň světlo u noční meze. Vesmír (slunce 1,6), bouřka a mlha (světlá obloha), podmořský svět a sopka (obzor nad 0,1) zůstávají beze změny.
+- **Mez tmavých sad:** hřbitov a jeskyně bez noci a nálady svítí aspoň jako noc (`lightFloor`, stejný vzorec a stejná noc jako `withMood` v katalogu). Řešené v rigu, ne v `sceneLook` – katalog mimo řádky `NIGHT` sdílí P56A.
+- Silnější noc zvedá i mez nálad (`withMood` počítá z `NIGHT`): bouřka, šero a strašidelno na denní sadě svítí aspoň 0,99 místo 0,61 (jas polokoule a slunce, lineární).
+- Bílý nepřítel na desktopovém snímku 02 je záblesk zásahu (`FightFx`, řízený časem, ne tikem); bez něj ~0,222.
+
 ## Kotva proti hrám z obchodu (T2)
 
 `anchor-before.json` (`node scripts/play-p46g-blind.mjs anchor --anchor D:/tmp/p56b-ref --dir evals/play/p56b --ours before-phone --set p56b --out evals/play/p56b/anchor-before.json`): **náš snímek vyhrál 0 z 30 dvojic** (0/10 proti každé hře), levá strana vyhrála 0,5 – soudce stranu nepreferuje.
