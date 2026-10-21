@@ -151,6 +151,16 @@ describe('promote-batch --replace (P57 T5)', () => {
     expect(existsSync(replacedDir)).toBe(false);
   }, 180_000);
 
+  it('the hero profile simplifies LOD1 toward the replaced one instead of refusing it as heavier (P57 T8)', async () => {
+    const { root, grass, replacedDir } = makeReplaceRoot();
+    // Žalud (4 740) do trávy (LOD1 96): na 96 trojúhelníků při stejné velikosti zjednodušit nejde;
+    // hero to zkusí se starým LOD1 jako stropem (výchozí profil odmítne až po normalizaci jako `lod1:`).
+    const heavy = await scaled(root, 'public/assets/worldstream/gen3d/gen3d-acorn-lod0.glb', [0.4988, 1.2021, 0.6969]);
+    const { replaced, skipped } = await replaceModels({ schema: 'catalog-batch.v1', entries: [entry(TEST_GRASS, ['grass'], { glb: heavy })] }, { root, sync: false, replacedDir, profile: 'hero' });
+    expect(replaced).toEqual([]);
+    expect(skipped).toEqual([{ id: TEST_GRASS, reason: `normalize: LOD1 cannot be made lighter than LOD0 and at most ${grass.lods[1].triangles} triangles at the same size` }]);
+  }, 180_000);
+
   it('checkReplaced flags a replaced model whose bounds, file or disclosure drifted', async () => {
     const { root, grass, replacedDir } = makeReplaceRoot();
     const glb = await scaled(root, grass.lods[0].path.replace('/', 'public/').replace(TEST_GRASS, GRASS), [1.05, 1.05, 1.05]);

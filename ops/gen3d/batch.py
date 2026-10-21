@@ -378,6 +378,8 @@ def main() -> None:
     parser.add_argument("--judge", choices=("codex", "claude"), default="codex")
     parser.add_argument("--no-quarantine", action="store_true")
     parser.add_argument("--start-comfy", action="store_true")
+    # P57 T8: top 50 dodělané profilem „hero“ (víc trojúhelníků, ochrana hran).
+    parser.add_argument("--profile", choices=("default", "hero"), default="default")
     args = parser.parse_args()
 
     if args.derive:
@@ -408,7 +410,9 @@ def main() -> None:
             def check(image: Path) -> dict:
                 return precheck.check(noun, image, judge=args.judge)
 
-        return generate(comfy, noun, out_dir, seed, prompt=prompt, check=check)
+        return generate(
+            comfy, noun, out_dir, seed, prompt=prompt, check=check, profile=args.profile
+        )
 
     comfy = ComfyClient()
     with comfy_running(comfy, args.start_comfy):

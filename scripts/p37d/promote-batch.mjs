@@ -35,7 +35,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { getBounds } from '@gltf-transform/functions';
 
 import { catalogIndex } from '../assets/cc0/promote.mjs';
-import { normalizeModel, renderPreview } from '../assets/cc0/normalize.mjs';
+import { HERO_MAX_TRIANGLES, normalizeModel, renderPreview } from '../assets/cc0/normalize.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../..');
@@ -219,8 +219,9 @@ function syncCatalog(root) {
 /**
  * Vymění modely, které už v katalogu jsou, pod stejným id (P57). Nic nezapíše, když
  * žádný neprojde; staré soubory zkopíruje do `replacedDir/<id>/v<verze>/` dřív, než je přepíše.
+ * `profile: 'hero'` (P57 T8) pustí LOD0 až k `HERO_MAX_TRIANGLES` a LOD1 zjednoduší na starý LOD1.
  */
-export async function replaceModels(batch, { root = ROOT, sync = true, replacedDir = REPLACED_DIR } = {}) {
+export async function replaceModels(batch, { root = ROOT, sync = true, replacedDir = REPLACED_DIR, profile = 'default' } = {}) {
   const read = (file) => JSON.parse(readFileSync(path.join(root, file), 'utf8'));
   const catalog = read('src/assets/catalog.json');
   const disclosure = read('disclosure.json');
@@ -238,6 +239,7 @@ export async function replaceModels(batch, { root = ROOT, sync = true, replacedD
       continue;
     }
     const work = mkdtempSync(path.join(os.tmpdir(), 'p57-replace-'));
+    const oldLod1 = old.lods.find((lod) => lod.level === 1);
     try {
       const licenseFile = path.join(work, 'license-evidence.txt');
       writeFileSync(licenseFile, `${LICENSE}: ${sourceOf(entry)} Checked: ${entry.checked.judge}.\n`);
@@ -247,6 +249,7 @@ export async function replaceModels(batch, { root = ROOT, sync = true, replacedD
           input: entry.glb, assetId: entry.id, label: old.tags[0], tags: old.tags,
           pack: { id: 'gen3d', pageUrl: entry.source.pipeline, author: AUTHOR, license: LICENSE },
           licenseFile, sourceFile: path.basename(entry.glb), style: false,
+          ...(profile === 'hero' ? { maxTriangles: HERO_MAX_TRIANGLES, lod1Max: oldLod1.triangles } : {}),
         });
       } catch (error) {
         skipped.push({ id: entry.id, reason: `normalize: ${error.message}` });
@@ -254,7 +257,6 @@ export async function replaceModels(batch, { root = ROOT, sync = true, replacedD
       }
       const bounds = outward(record.candidate.bounds);
       const axis = [0, 1, 2].find((axis) => Math.abs(extent(bounds, axis) / extent(old.bounds, axis) - 1) > MAX_SIZE_CHANGE);
-      const oldLod1 = old.lods.find((lod) => lod.level === 1);
       if (axis !== undefined) {
         const change = Math.round((extent(bounds, axis) / extent(old.bounds, axis) - 1) * 100);
         skipped.push({ id: entry.id, reason: `bounds: ${'xyz'[axis]} ${extent(old.bounds, axis).toFixed(3)} -> ${extent(bounds, axis).toFixed(3)} m (${change > 0 ? '+' : ''}${change} %), over ±${MAX_SIZE_CHANGE * 100} %` });

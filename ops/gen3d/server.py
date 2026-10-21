@@ -15,18 +15,17 @@ import os
 import queue
 import re
 import threading
-import tomllib
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, Header, HTTPException
-from pydantic import BaseModel
-
 import cache
+import tomllib
 from comfy_client import ComfyClient, outputs_of
+from fastapi import Depends, FastAPI, Header, HTTPException
 from finish import finish
+from pydantic import BaseModel
 
 HERE = Path(__file__).resolve().parent
 HOST, PORT = "127.0.0.1", 8790
@@ -90,11 +89,13 @@ def generate(
     seed: int = 0,
     prompt: str | None = None,
     check: Callable[[Path], dict] | None = None,
+    profile: str = "default",
 ) -> dict:
     """Obrázek -> TRELLIS.2 -> dodělávka. Vyhazuje výjimku s důvodem, když cokoliv selže.
 
     `prompt` je hotové zadání obrázku (dávka P45E podle třídy), jinak `prompts.prop.a`.
     `check` dostane stažený obrázek dřív, než karta pustí síť; výjimkou slovo shodí (P45E T2).
+    `profile` je profil dodělávky (`finish.PROFILES`; „hero“ pro top 50 v P57 T8).
     """
     name = out_dir.name
     image_graph = copy.deepcopy(WORKFLOWS[f"image_{CONFIG['image_model']}"])
@@ -118,7 +119,7 @@ def generate(
         outputs_of(comfy.run(mesh_graph), "save_glb")[0], out_dir / "raw.glb"
     )
 
-    result = finish(raw, out_dir, name)
+    result = finish(raw, out_dir, name, profile=profile)
     raw.unlink()
     if not result["gate"]["passed"]:
         raise RuntimeError("quality gate: " + "; ".join(result["gate"]["reasons"]))
