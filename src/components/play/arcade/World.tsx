@@ -53,7 +53,7 @@ import { ShooterRig } from './shooter/ShooterRig';
 import { GlideBackdrop, GLIDE_SCENE_KINDS, placeGlide } from './glide/GlideScene';
 import { WalkerBackdrop, WALKER_SCENE_KINDS, placeWalker } from './walker/WalkerScene';
 import { BallBackdrop, BALL_SCENE_KINDS, placeBall } from './ball/BallScene';
-import { SteerBackdrop, placeChase } from './steer/SteerScene';
+import { STEER_SCENE_KINDS, SteerBackdrop, placeChase } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
 import { type ToyTarget, applyToy, toyIdleOf, toyMotionOn, toyTickOf } from './toy/applyToy';
 import { bodyClassOf, motionOf } from './toy/body-class';
@@ -664,7 +664,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou; počítadlo komba scéna nekreslí taky.
-        (drawsNothing(view) && cast.objectives[view.index] === undefined) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) || (control === 'ball' && BALL_SCENE_KINDS.has(view.kind)) ? null : (
+        (drawsNothing(view) && cast.objectives[view.index] === undefined) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) || (control === 'ball' && BALL_SCENE_KINDS.has(view.kind)) || (control === 'steer' && STEER_SCENE_KINDS.has(view.kind)) ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
             {/* Činnost hrdiny (P37B T2): ostatní těla a `none` dostanou model beze změny stromu. */}
             <HeroActionBody action={view.role === ROLE.player ? heroAction : 'none'} session={session} h={view.h}>

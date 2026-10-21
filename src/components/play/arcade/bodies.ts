@@ -34,6 +34,8 @@ export interface BodyView {
   readonly w: number;
   readonly h: number;
   readonly d: number;
+  /** Počítadlo dílu (`keeper` v parametrech ovládání, robota nebo pravidel): drží stav, ne věc scény. */
+  readonly keeper?: boolean;
 }
 
 /**
@@ -42,16 +44,39 @@ export interface BodyView {
  * by scéna stahovala neexistující `player-lod1.glb`. Věci pravidel mají vlastní kód role od 32.
  * Logické tělo (P45B, `isLogicBody`) nese jen stav logiky, taky se nekreslí.
  * Počítadlo průběhu (`pacingKeeper`, P45C) nese druh hrdiny s rolí překážky: pozná se
- * podle velikosti 1 × 1 × 1 jednotka, jakou žádná věc scény nemá.
+ * podle velikosti 1 × 1 × 1 jednotka, jakou žádná věc scény nemá. Počítadla, která nesou
+ * stav ve velikosti (P56B T3: 0,06 × 0 × 0 m u běžce), pozná `keeper` z parametrů dílů.
  */
-export const drawsNothing = (view: Pick<BodyView, 'kind' | 'role' | 'w' | 'h' | 'd'>): boolean =>
-  view.kind === 'gate' || view.role === ROLE.thing || isLogicBody(view.role) || Math.max(view.w, view.h, view.d) * UNIT <= 1;
+export const drawsNothing = (view: Pick<BodyView, 'kind' | 'role' | 'w' | 'h' | 'd' | 'keeper'>): boolean =>
+  view.keeper === true || view.kind === 'gate' || view.role === ROLE.thing || isLogicBody(view.role) || Math.max(view.w, view.h, view.d) * UNIT <= 1;
 
 const kindOf = (session: Pick<ArcadeSession, 'world'>, code: number): string => session.world.kinds[code] ?? 'crate';
+
+const keepersByWorld = new WeakMap<object, ReadonlySet<number>>();
+
+/** Indexy těl, na která ukazuje parametr `keeper` kdekoli v ovládání, robotovi a pravidlech světa. */
+function keepersOf(world: ArcadeSession['world']): ReadonlySet<number> {
+  const known = keepersByWorld.get(world);
+  if (known !== undefined) return known;
+  const keepers = new Set<number>();
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) value.forEach(walk);
+    else if (typeof value === 'object' && value !== null) {
+      for (const [key, inner] of Object.entries(value)) {
+        if (key === 'keeper' && typeof inner === 'number') keepers.add(inner);
+        else walk(inner);
+      }
+    }
+  };
+  walk([world.control, world.bot, world.rules]);
+  keepersByWorld.set(world, keepers);
+  return keepers;
+}
 
 export function bodiesOf(session: Pick<ArcadeSession, 'world' | 'state'>): readonly BodyView[] {
   const state = session.state();
   const count = state[HEADER.bodyCount] as number;
+  const keepers = keepersOf(session.world);
   const views: BodyView[] = [];
   for (let index = 0; index < count; index += 1) {
     const base = bodyBase(index);
@@ -62,6 +87,7 @@ export function bodiesOf(session: Pick<ArcadeSession, 'world' | 'state'>): reado
       w: (state[base + BODY.w] as number) / UNIT,
       h: (state[base + BODY.h] as number) / UNIT,
       d: (state[base + BODY.d] as number) / UNIT,
+      ...(keepers.has(index) ? { keeper: true } : {}),
     });
   }
   return views;

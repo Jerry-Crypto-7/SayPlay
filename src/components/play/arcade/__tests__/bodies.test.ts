@@ -68,6 +68,24 @@ describe('drawn bodies', () => {
     expect(views.filter((view) => !drawsNothing(view)).map((view) => view.role)).toContain(ROLE.powerup);
   });
 
+  // P56B T3: počítadlo akcí hrdiny (P46A) nese druh hrdiny a cooldown ve velikosti (0,06 × 0 × 0 m po dashi) –
+  // mez „≤ 1 jednotka“ ho nepoznala a scéna běžce stahovala `player-lod1.glb` (404 u 09-astro, 12-ghost, g-runner).
+  it('no counter body carrying the hero kind is drawn, even after the bot used its actions', async () => {
+    await (await import('@/play/arcade/physics/world')).loadRapier();
+    const spec = draftGameSpec('an astronaut dodges asteroids to reach the space station');
+    const built = arcadeWorldOf(spec, 1);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    const session = createArcadeSession(built.world);
+    const hero = bodiesOf(session).find((view) => view.role === ROLE.player)!.kind;
+    const drawnCounters = new Set<string>();
+    for (let tick = 0; tick < 600; tick += 1) {
+      if (tick % 20 === 0) session.press(BUTTON.ACTION_A);
+      session.stepOnce();
+      for (const view of bodiesOf(session)) if (view.kind === hero && view.role !== ROLE.player && !drawsNothing(view)) drawnCounters.add(`#${String(view.index)} role ${String(view.role)} ${String(view.w)}×${String(view.h)}×${String(view.d)}`);
+    }
+    expect([...drawnCounters]).toEqual([]);
+  });
+
   it('the logic body of an arcade-v3 world draws nothing, so no player model mounts for it (P45B R2)', () => {
     const spec = draftGameSpec('toaster tornado');
     expect(spec.logic).toBeDefined();
