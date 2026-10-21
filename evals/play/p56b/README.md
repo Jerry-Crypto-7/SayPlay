@@ -37,7 +37,10 @@ Obojí opravil `bc9c9408` (T3).
 
 ### Šum FPS
 
-`perf --base A --vs A --repeats 3` (Pixel 7, CPU 4×, prokládaně A, A′ scénu po scéně, 30 scén): _doplní měření_.
+`perf --base A --vs A --repeats 3` (Pixel 7, CPU 4×, prokládaně A, A′ scénu po scéně, 30 scén; `perf-before.json` = A, `perf-noise-b.json` = A′, souhrn `perf-noise.json`): **šum = medián |A′/A − 1| = 0,08** (p90 0,32, medián poměru 1,005). Brány T8 a T13 tedy čtou „po/před ≥ 0,92“.
+
+- Měřeno pod zátěží: během běhu na stroji dvakrát doběhl `npm run build` a snímky T6 – prokládání ji nese oběma stranám stejně, šum je proto spíš horní odhad.
+- Pod 40 FPS už na základu (A): 01-frog, 02-zombie, 09-astro, 10-chef, 12-ghost, g-runner, g-race, g-platform – brána T8 „žádná scéna pod 40, která v A byla nad 40“ se jich netýká.
 
 ## Černá obrazovka před prvním snímkem (T4)
 

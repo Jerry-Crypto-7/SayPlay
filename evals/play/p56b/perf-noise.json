@@ -1,0 +1,202 @@
+{
+  "what": "FPS noise: the same 72665fdc server measured twice, interleaved A, A′ scene by scene (perf --base A --vs A, Pixel 7, CPU 4x, --repeats 3)",
+  "base": "http://127.0.0.1:3157",
+  "repeats": 3,
+  "measuredAt": "2026-10-21T15:44:06.572Z",
+  "scenes": 30,
+  "noise": 0.08,
+  "p90": 0.322,
+  "medianRatio": 1.005,
+  "under40": [
+    "01-frog",
+    "02-zombie",
+    "09-astro",
+    "10-chef",
+    "12-ghost",
+    "g-runner",
+    "g-race",
+    "g-platform"
+  ],
+  "rows": [
+    {
+      "id": "01-frog",
+      "a": 28.2,
+      "aPrime": 7.6,
+      "ratio": 0.27
+    },
+    {
+      "id": "02-zombie",
+      "a": 38.2,
+      "aPrime": 47.3,
+      "ratio": 1.238
+    },
+    {
+      "id": "03-ninja",
+      "a": 54,
+      "aPrime": 55.8,
+      "ratio": 1.033
+    },
+    {
+      "id": "04-shark",
+      "a": 41.8,
+      "aPrime": 47,
+      "ratio": 1.124
+    },
+    {
+      "id": "05-pizza",
+      "a": 58.1,
+      "aPrime": 58.3,
+      "ratio": 1.003
+    },
+    {
+      "id": "06-cat",
+      "a": 50.1,
+      "aPrime": 53.9,
+      "ratio": 1.076
+    },
+    {
+      "id": "07-goalkeeper",
+      "a": 50.9,
+      "aPrime": 48.3,
+      "ratio": 0.949
+    },
+    {
+      "id": "08-gems",
+      "a": 53.7,
+      "aPrime": 47.6,
+      "ratio": 0.886
+    },
+    {
+      "id": "09-astro",
+      "a": 39.4,
+      "aPrime": 49.6,
+      "ratio": 1.259
+    },
+    {
+      "id": "10-chef",
+      "a": 27.2,
+      "aPrime": 31,
+      "ratio": 1.14
+    },
+    {
+      "id": "11-drum",
+      "a": 42.6,
+      "aPrime": 34.8,
+      "ratio": 0.817
+    },
+    {
+      "id": "12-ghost",
+      "a": 18,
+      "aPrime": 24.1,
+      "ratio": 1.339
+    },
+    {
+      "id": "g-runner",
+      "a": 26.9,
+      "aPrime": 22.4,
+      "ratio": 0.833
+    },
+    {
+      "id": "g-race",
+      "a": 28.9,
+      "aPrime": 36.2,
+      "ratio": 1.253
+    },
+    {
+      "id": "g-platform",
+      "a": 23.1,
+      "aPrime": 29.5,
+      "ratio": 1.277
+    },
+    {
+      "id": "g-arena",
+      "a": 53.3,
+      "aPrime": 49.2,
+      "ratio": 0.923
+    },
+    {
+      "id": "g-fight",
+      "a": 56.8,
+      "aPrime": 57.2,
+      "ratio": 1.007
+    },
+    {
+      "id": "g-quest",
+      "a": 42.8,
+      "aPrime": 48,
+      "ratio": 1.121
+    },
+    {
+      "id": "g-agar",
+      "a": 57.4,
+      "aPrime": 52.6,
+      "ratio": 0.916
+    },
+    {
+      "id": "g-walker",
+      "a": 54.5,
+      "aPrime": 56.3,
+      "ratio": 1.033
+    },
+    {
+      "id": "g-glide",
+      "a": 56.4,
+      "aPrime": 58.2,
+      "ratio": 1.032
+    },
+    {
+      "id": "g-ball",
+      "a": 44,
+      "aPrime": 54,
+      "ratio": 1.227
+    },
+    {
+      "id": "g-flap",
+      "a": 58.4,
+      "aPrime": 58.6,
+      "ratio": 1.003
+    },
+    {
+      "id": "g-shooter",
+      "a": 44.1,
+      "aPrime": 45.5,
+      "ratio": 1.032
+    },
+    {
+      "id": "g-throw",
+      "a": 55.6,
+      "aPrime": 53.9,
+      "ratio": 0.969
+    },
+    {
+      "id": "g-timing",
+      "a": 58.4,
+      "aPrime": 58.2,
+      "ratio": 0.997
+    },
+    {
+      "id": "g-rhythm",
+      "a": 57.7,
+      "aPrime": 39.1,
+      "ratio": 0.678
+    },
+    {
+      "id": "g-duel",
+      "a": 58.7,
+      "aPrime": 58.5,
+      "ratio": 0.997
+    },
+    {
+      "id": "g-voyage",
+      "a": 49.7,
+      "aPrime": 49.8,
+      "ratio": 1.002
+    },
+    {
+      "id": "g-lander",
+      "a": 58.6,
+      "aPrime": 58.2,
+      "ratio": 0.993
+    }
+  ]
+}
