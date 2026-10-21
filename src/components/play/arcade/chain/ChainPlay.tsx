@@ -217,6 +217,21 @@ function ChainRun({
         session.begin();
         session.current().startDemo();
       },
+      /**
+       * Klip slepého soudce (T14): robot kola (`startDemo`) dotočený synchronně do místního tiku `to`, takže snímek
+       * ukáže stav v tom tiku; mezi snímky hraje dál týž robot v reálném čase. `Infinity` kolo dohraje. `null` = karta nebo konec.
+       */
+      demoTo: (to: number) => {
+        if (session.card() > 0 || session.outcome() !== 'running') return null;
+        const playing = session.round();
+        const live = session.current();
+        if (live.demo() === null) {
+          session.begin();
+          live.startDemo();
+        }
+        while (live.snapshot().runState === 'running' && live.snapshot().tick < Math.min(to, ARCADE_LIMITS.maxTicks)) live.stepOnce();
+        return { round: playing, tick: live.snapshot().tick, runState: live.snapshot().runState };
+      },
       playRound: (how: 'bot' | 'idle') => {
         const live = session.current();
         const inputs = how === 'bot' ? live.botInputs() : [];
