@@ -120,7 +120,7 @@ async function shots(options) {
   const ticks = Number(options.ticks ?? TICKS);
   mkdirSync(out, { recursive: true });
   const browser = await browserFor(options.gpu === true);
-  // `--profile pixel7` (P54B T2): telefon – úzký dotykový pohled, scéna startuje na úrovni `low`.
+  // `--profile pixel7` (P54B T2): telefon – úzký dotykový pohled, scéna startuje na úrovni `medium` (od P56B T8).
   const phone = options.profile === 'pixel7';
   const page = phone ? await (await browser.newContext(pixel7())).newPage() : await browser.newPage({ viewport: { width: 1280, height: 800 } });
   const manifest = { ticks, renderer: options.gpu === true ? 'd3d11' : 'swiftshader', viewport: phone ? 'Pixel 7' : '1280x800', shots: [] };
@@ -287,7 +287,9 @@ async function measureOnce(browser, base, versionId) {
     });
     await sleep(1500);
     const fps = await sampleFps(page, 10_000);
-    return { fps, calls: await page.evaluate(() => window.__playRender?.().calls ?? null) };
+    // Úroveň kvality na konci okna (P56B T8): drží telefon `medium`, nebo spadl na `low`?
+    const quality = await page.getByTestId('arcade-stage').first().getAttribute('data-quality', { timeout: 5_000 }).catch(() => null);
+    return { fps, quality, calls: await page.evaluate(() => window.__playRender?.().calls ?? null) };
   } finally {
     await context.close();
   }
@@ -318,6 +320,7 @@ async function perf(options) {
       const games = await Promise.all(bases.map((url) => publish(url, sentence.text)));
       const samples = bases.map(() => []);
       const calls = bases.map(() => null);
+      const qualities = bases.map(() => []);
       for (let run = 0; run < repeats; run += 1) {
         // Pořadí A B, B A, A B…: rostoucí zátěž by jinak vždy dopadla na B (20. 10.: B druhé = −5,5 % medián).
         const order = run % 2 === 0 ? [...bases.entries()] : [...bases.entries()].reverse();
@@ -325,10 +328,11 @@ async function perf(options) {
           const measured = await measureOnce(browser, url, games[index].versionId);
           samples[index].push(measured.fps);
           calls[index] = measured.calls;
+          qualities[index].push(measured.quality);
         }
       }
       for (const [index, url] of bases.entries()) {
-        const row = { id: sentence.id, genre: games[index].genre, fpsMedian: Math.round(median(samples[index]) * 10) / 10, samples: samples[index].map((fps) => Math.round(fps * 10) / 10), calls: calls[index] };
+        const row = { id: sentence.id, genre: games[index].genre, fpsMedian: Math.round(median(samples[index]) * 10) / 10, samples: samples[index].map((fps) => Math.round(fps * 10) / 10), quality: qualities[index], calls: calls[index] };
         rows[index].push(row);
         console.log(`${sentence.id}${bases.length > 1 ? ` [${url}]` : ''}: ${row.fpsMedian} FPS (${row.samples.join(' ')}), ${row.calls} volání`);
       }

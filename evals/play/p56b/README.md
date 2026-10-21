@@ -84,6 +84,15 @@ Medián všech šesti běhů klesl o víc než 20 %. **Odchylka od AC:** 08-gems
 - Silnější noc zvedá i mez nálad (`withMood` počítá z `NIGHT`): bouřka, šero a strašidelno na denní sadě svítí aspoň 0,99 místo 0,61 (jas polokoule a slunce, lineární).
 - Bílý nepřítel na desktopovém snímku 02 je záblesk zásahu (`FightFx`, řízený časem, ne tikem); bez něj ~0,222.
 
+## Telefon startuje na `medium` (T8)
+
+`perf --base http://127.0.0.1:3157 --vs http://127.0.0.1:3158 --repeats 3 --set p56b,genres` (A = `72665fdc`, B = HEAD s T3–T8, Pixel 7, CPU 4×, d3d11, prokládaně scénu po scéně; souhrn `perf-t8.json`, `perf` nově zapisuje úroveň kvality na konci každého okna):
+
+- **Brána prošla krokem (1):** medián poměru B/A **0,941** (brána ≥ 0,92 = 1 − šum T1), žádná scéna neklesla pod 40 FPS, která v A byla nad 40 (pod 40 jsou v obou g-arena a g-fight). Kroky (2) bez AO a (3) bez bloomu nebyly potřeba.
+- Nejvíc ztrácí g-runner 0,74, g-glide 0,79, g-race 0,82, g-ball a 11-drum 0,83 – samé scény, kde B během okna sestoupil z `medium` na `low`; sestup trvá 3 s pod 45 FPS a ty jsou v okně vidět.
+- **Úrovně na konci oken:** B na `medium` ve všech třech oknech v 10 z 30 scén, aspoň jednou na `high` v 5 (03, 05, 06, g-timing, g-lander), na `low` ve všech třech oknech v 5 (g-arena, g-fight, g-quest, g-ball, g-shooter). A (start `low`) v 15 scénách aspoň jednou vystoupal na `medium`, na `high` nikdy. Emulace brzdí CPU, ne GPU – skutečný telefon rozhodne HALT po T13.
+- Měřeno na méně vytíženém stroji než šum T1 (medián A 56,9 FPS, v T1 bylo pod 40 osm scén).
+
 ## Kotva proti hrám z obchodu (T2)
 
 `anchor-before.json` (`node scripts/play-p46g-blind.mjs anchor --anchor D:/tmp/p56b-ref --dir evals/play/p56b --ours before-phone --set p56b --out evals/play/p56b/anchor-before.json`): **náš snímek vyhrál 0 z 30 dvojic** (0/10 proti každé hře), levá strana vyhrála 0,5 – soudce stranu nepreferuje.
