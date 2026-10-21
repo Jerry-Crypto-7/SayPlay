@@ -1,0 +1,58 @@
+{
+ "profile": "Pixel 7, CPU 4x, d3d11",
+ "base": "http://127.0.0.1:3102",
+ "interleavedWith": "http://127.0.0.1:3111",
+ "repeats": 4,
+ "windowMs": 10000,
+ "measuredAt": "2026-10-21T08:21:14.205Z",
+ "rows": [
+  {
+   "id": "catch-c01",
+   "genre": "lanes",
+   "fpsMedian": 58.1,
+   "samples": [
+    57.9,
+    58.2,
+    58.1,
+    58.4
+   ],
+   "calls": 25
+  },
+  {
+   "id": "whack-w01",
+   "genre": "lanes",
+   "fpsMedian": 55.6,
+   "samples": [
+    54.4,
+    55.6,
+    58.6,
+    55.7
+   ],
+   "calls": 43
+  },
+  {
+   "id": "slice-s01",
+   "genre": "lanes",
+   "fpsMedian": 55.2,
+   "samples": [
+    57.2,
+    55.2,
+    55.2,
+    55
+   ],
+   "calls": 42
+  },
+  {
+   "id": "defense-f01",
+   "genre": "lanes",
+   "fpsMedian": 48,
+   "samples": [
+    49.6,
+    49,
+    46.3,
+    46.9
+   ],
+   "calls": 79
+  }
+ ]
+}
