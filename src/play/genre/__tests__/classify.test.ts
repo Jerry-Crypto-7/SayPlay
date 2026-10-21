@@ -155,6 +155,46 @@ describe('classifyGenre', () => {
     expect(result.ranked[0].why).toContain('reading');
   });
 
+  // P56A T5 (majitel 21. 10., varianta a): slyší-li slovník první nový žánr P54C, rozhodne slovník; jinak platné čtení
+  // rozhoduje žánr i režim, i proti dobře slyšenému slovesu. Režim, který nehraje (`fallback`), čtení nerozhodne.
+  describe('the reading genre decides unless the keywords hear a new genre (P56A T5)', () => {
+    const read = (genre: Reading['genre']): Reading => ({
+      control: 'move_free', verbs: [], hero: null, roles: [], setting: null, mood: null,
+      numbers: { seconds: null, counts: [] }, genre, foe: null, item: null, world: null, title: null,
+    });
+    const order = (sentence: string, reading: Reading | null, modules: Parameters<typeof classifyGenre>[2] = genreDoubles()) => classifyGenre(sentence, reading, modules).ranked.map((choice) => `${choice.genre}.${choice.mode}`);
+
+    it('goes first over a heard old-genre verb and leaves the rest in keyword order', () => {
+      const sentence = 'Two knights duel in a castle';
+      const ranked = classifyGenre(sentence, read({ genre: 'arena', mode: 'collect' }), genreDoubles()).ranked;
+      expect(ranked[0]).toMatchObject({ genre: 'arena', mode: 'collect' });
+      expect(ranked[0].score).toBeGreaterThan(0);
+      expect(ranked[0].why).toContain('reading genre');
+      expect(ranked.slice(1).map((choice) => `${choice.genre}.${choice.mode}`)).toEqual(order(sentence, null).filter((id) => id !== 'arena.collect'));
+    });
+
+    it('yields to the keywords when they hear a new genre first, also against the reading verbs', () => {
+      const sentence = 'a bear catches falling honey jars in a basket';
+      expect(order(sentence, null, GENRE_MODULES)[0]).toBe('catch.default');
+      const pulled = { ...read({ genre: 'runner', mode: 'default' }), verbs: [{ word: 'run', class: 'runner' as const }, { word: 'dash', class: 'runner' as const }, { word: 'sprint', class: 'runner' as const }] };
+      const ranked = classifyGenre(sentence, pulled, GENRE_MODULES).ranked;
+      expect(ranked[0]).toMatchObject({ genre: 'catch', mode: 'default' });
+      expect(ranked[0].why).not.toContain('reading genre');
+    });
+
+    it('reads a new genre the keywords do not hear', () => {
+      expect(order('Two knights duel in a castle', read({ genre: 'catch', mode: 'default' }), GENRE_MODULES)[0]).toBe('catch.default');
+    });
+
+    it('does not decide a mode that plays a stand-in', () => {
+      expect(order('Two knights duel in a castle', read({ genre: 'quest', mode: 'station' }), genreDoubles(['quest.station']))[0]).toBe('duel.default');
+    });
+
+    it('a null genre leaves the keyword order', () => {
+      expect(order('Two knights duel in a castle', read(null))).toEqual(order('Two knights duel in a castle', null));
+    });
+  });
+
   // P39 T5: hlavní sloveso říká, co jeho předmět ve hře dělá; pohyb a načasování předmět obsazení nemají.
   it('says what the main verb does to its object', () => {
     const does = (sentence: string) => classifyGenre(sentence, null, GENRE_MODULES).does;
@@ -229,6 +269,18 @@ describe('classifyGenre', () => {
     expect(Object.values(hits).reduce((sum, hit) => sum + hit, 0)).toBeGreaterThanOrEqual(52);
     expect(lost).toEqual([]);
     expect(strayed).toEqual([]);
+  });
+
+  // P56A T5: zlatý test – bez čtení je celé pořadí u každé věty tří dev sad totéž jako ve výchozích číslech P56A (T1).
+  it('keeps the whole keyword order of every dev sentence without a reading (P56A baseline)', () => {
+    const baseline = JSON.parse(readFileSync(new URL('../../../../evals/play/p56a/baseline.json', import.meta.url), 'utf8')) as { sets: Record<string, { rows: { id: string; ranked: string }[] }> };
+    const sets = { p30Dev: 'p30/dev.json', p54cDev: 'p54c/dev.json', p55HoldoutOpened: 'p55/holdout.json' };
+    for (const [name, path] of Object.entries(sets)) {
+      const was = new Map(baseline.sets[name]!.rows.map((row) => [row.id, row.ranked]));
+      const sentences = (JSON.parse(readFileSync(new URL(`../../../../evals/play/${path}`, import.meta.url), 'utf8')) as { sentences: { id: string; text: string }[] }).sentences;
+      expect(sentences).toHaveLength(was.size);
+      for (const { id, text } of sentences) expect(classifyGenre(text, null, GENRE_MODULES).ranked.map((choice) => `${choice.genre}.${choice.mode}`).join(' '), `${name} ${id}`).toBe(was.get(id));
+    }
   });
 
   it('never throws on the draft corpora and never lands a new game on a legacy control', () => {
