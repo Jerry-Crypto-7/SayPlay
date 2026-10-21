@@ -13,15 +13,18 @@ import type { Honesty } from '@/play/draft/unsupported';
 export function HonestyStrip({ honesty }: { readonly honesty: Honesty }) {
   const [open, setOpen] = useState(true);
   if (!open) return null;
+  const short = honesty.kind === 'no_verb' || honesty.kind === 'actions' || honesty.kind === 'played_as';
+  // Proužek má jeden řádek s výpustkou (P56B T5); celý text zůstává v `title`.
+  const full = short ? honesty.reason : `This one isn't playable yet – here's the closest game we can build. ${honesty.reason} You're playing ${honesty.closest} instead.`;
   return (
     <aside className="play-honest" data-testid="play-honest" role="status">
-      {honesty.kind === 'no_verb' || honesty.kind === 'actions' || honesty.kind === 'played_as' ? (
+      {short ? (
         // P28D T4: věta hru nechtěla – hláška řekne, co se hraje a jak větu napsat příště.
-        <p className="play-honest-text">
+        <p className="play-honest-text" title={full}>
           <strong data-testid="play-honest-reason">{honesty.reason}</strong>
         </p>
       ) : (
-        <p className="play-honest-text">
+        <p className="play-honest-text" title={full}>
           <strong>This one isn&apos;t playable yet – here&apos;s the closest game we can build.</strong>{' '}
           <span data-testid="play-honest-reason">
             {honesty.reason} You&apos;re playing {honesty.closest} instead.
