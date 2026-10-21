@@ -8,10 +8,11 @@ import json
 import subprocess
 from pathlib import Path
 
-import precheck
 import pytest
 from test_batch import fake_result
 from test_server import FakeComfy as MeshComfy
+
+import precheck
 
 
 class FakeComfy(MeshComfy):
@@ -26,9 +27,8 @@ class FakeComfy(MeshComfy):
 
 
 import batch
-from comfy_client import ComfyError
-
 import server
+from comfy_client import ComfyError
 
 
 def test_class_picks_its_template_and_unknown_class_falls_back_to_prop():
@@ -71,6 +71,20 @@ def test_judge_fix_follows_the_feature_and_reaches_nouns_without_one(monkeypatch
         "a kettle, smooth enamel, low-poly"
     )
     assert batch.prompt_for("teapot", "prop", "a").startswith("a teapot, low-poly")
+    # P57 T8: druhé kolo nese důvod soudce z prvního místo tabulky.
+    assert batch.prompt_for("orca", "prop", "a", "rounder fins").startswith(
+        "a orca, black and white killer whale, rounder fins, low-poly"
+    )
+
+
+def test_json_list_carries_the_second_round_fix(tmp_path):
+    source = tmp_path / "nouns.json"
+    nouns = [
+        {"noun": "orca", "class": "swimmer", "flat": False, "fix": "rounder fins"},
+        {"noun": "kettle", "class": "prop", "flat": False},
+    ]
+    source.write_text(json.dumps({"nouns": nouns}), encoding="utf-8")
+    assert batch.load_fixes(source) == {"orca": "rounder fins"}
 
 
 def test_json_list_carries_class_and_flat_wins(tmp_path):

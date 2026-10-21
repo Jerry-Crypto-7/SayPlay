@@ -20,13 +20,13 @@ import os
 import re
 import subprocess
 import time
+import tomllib
 import urllib.error
 from collections.abc import Callable, Sequence
 from datetime import date
 from pathlib import Path
 
 import cache
-import tomllib
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -101,14 +101,15 @@ def write_nouns(counted: list[tuple[str, int]], path: Path = NOUNS_FILE) -> None
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def prompt_for(noun: str, body: str, variant: str) -> str:
+def prompt_for(noun: str, body: str, variant: str, fix: str | None = None) -> str:
     """Zadání obrázku: šablona třídy (neznámá třída → `prop`) a rozlišovací znak za jménem.
 
     Za znakem jde oprava z tabulky `[judge_fix]` (P57 T6): obráceně, co slepý soudce
-    starému modelu vytkl („glassy, noisy“ → „matte, smooth“).
+    starému modelu vytkl („glassy, noisy“ → „matte, smooth“). `fix` ji nahradí
+    (P57 T8: druhé kolo s důvodem soudce z prvního).
     """
     templates = CONFIG["prompts"].get(body, CONFIG["prompts"]["prop"])
-    traits = [FEATURES.get(noun), FEATURES.get("judge_fix", {}).get(noun)]
+    traits = [FEATURES.get(noun), fix or FEATURES.get("judge_fix", {}).get(noun)]
     return templates[variant].format(noun=", ".join([noun, *filter(None, traits)]))
 
 
@@ -124,6 +125,14 @@ def load_classes(path: Path) -> dict[str, str]:
         cache.normalize(entry["noun"]): "flat" if entry["flat"] else entry["class"]
         for entry in entries
     }
+
+
+def load_fixes(path: Path) -> dict[str, str]:
+    """Oprava zadání podle jména z pole `fix` seznamu `{"nouns": [...]}` (P57 T8, druhé kolo)."""
+    if path.suffix != ".json":
+        return {}
+    entries = json.loads(path.read_text(encoding="utf-8"))["nouns"]
+    return {cache.normalize(e["noun"]): e["fix"] for e in entries if e.get("fix")}
 
 
 def load_nouns(path: Path) -> list[str]:
@@ -398,10 +407,10 @@ def main() -> None:
 
     import precheck
     from comfy_client import ComfyClient
-
     from server import generate
 
     classes = load_classes(args.source)
+    fixes = load_fixes(args.source)
 
     def make(noun: str, out_dir: Path, seed: int, prompt: str) -> dict:
         check = None
@@ -428,7 +437,7 @@ def main() -> None:
             deadline=deadline,
             attempts=[(a[0], int(a[1:])) for a in args.attempts.split(",")],
             prompt_of=lambda noun, variant: prompt_for(
-                noun, classes.get(noun, "prop"), variant
+                noun, classes.get(noun, "prop"), variant, fixes.get(noun)
             ),
         )
     subprocess.run(
