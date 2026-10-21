@@ -100,6 +100,7 @@ import {
   singular,
   type SentenceRoles,
   toolsOf,
+  withArticle,
   withoutPossessor,
 } from './lexicon';
 
@@ -366,11 +367,6 @@ function cap(text: string, max: number): string {
   const cut = text.slice(0, max - 1);
   const space = cut.lastIndexOf(' ');
   return `${(space > 0 ? cut.slice(0, space) : cut).trimEnd()}…`;
-}
-
-/** „a key“, „an iron key“ – podle první hlásky, ne pravopisu (stačí na popisky rolí). */
-function withArticle(noun: string): string {
-  return `${/^[aeiou]/i.test(noun) ? 'an' : 'a'} ${noun}`;
 }
 
 function label(text: string | null, fallback: string): string {
@@ -1260,6 +1256,9 @@ function draftGenre(
   // Les dá vlka, jen když věta žádného protivníka nejmenuje. Skákačka a poletování mají vlastní překážku
   // (bodák, trubka), kterou protivník z prostředí nepřejmenuje – primitiv zůstává, kde věta nic neřekla.
   const ownHazard = choice.genre === 'platformer' || choice.genre === 'flap';
+  // Rvačka v Aréně bez jmenovaného soupeře bojuje se sobě rovnými (`compileArena`), ne se zvířetem prostředí –
+  // „zombies attack my farm“ dávalo „Knock out 5 waves of bees“ (P56A T9).
+  const ownRival = choice.genre === 'arena' && fight;
   // P38: střelba na skoku nebo běhu – protivník bez slovesa se sestřelí a `compileWith` z toho udělá doplněk `shoot`.
   const rideShot = ranking.ride === 'shoot' && (choice.genre === 'platformer' || choice.genre === 'runner');
   const ownFoe: CastRole = rideShot ? 'shoot_at' : fight ? 'fight' : FOE_DOES[choice.genre];
@@ -1268,7 +1267,7 @@ function draftGenre(
   const caught = choice.genre === 'arena' && roles.target !== null ? extractIntent(sentence) : null;
   const shotAt = caught?.items.some((item) => item.verb === 'catch') === true && saidAbilities(sentence, caught).includes('shoot') ? singular(roles.target!) : null;
   // Protivník, kterého hra sestřelí, zůstává zvířetem prostředí; jen ten, kterému se uhýbá, je překážka trati (P46D T6).
-  const foeLabel = enemy ?? saidFoe ?? (ownHazard || shotAt !== null ? null : spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]));
+  const foeLabel = enemy ?? saidFoe ?? (ownHazard || ownRival || shotAt !== null ? null : spare(defaultFoe(setting, choice.genre, ownFoe).label, [singular(hero)]));
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
   // Střílečka nic nesbírá a hod hází, co řekne věta, jinak míč – věc z prostředí by z mince udělala náboj.

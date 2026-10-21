@@ -147,4 +147,24 @@ test.describe('/play/[id] – instant retry (P36B T3)', () => {
     const tick = await page.evaluate(() => window.__playShell!.tick());
     await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(tick);
   });
+
+  test('a loss without a single point says Try again!, a loss with points still says So close. (P56A T9)', async ({ page, request }) => {
+    type Hand = { idleRun: () => { runState: string }; handPlay: (until: 'score') => { runState: string; score: number } };
+    await page.goto(await publish(request, 'dodge the falling rocks'));
+    await startGame(page);
+    await page.waitForFunction(() => window.__playShell!.tick() > 60, undefined, { timeout: 30_000 });
+    // Nečinný běžec narazí bez jediného bodu: „So close.“ by lhalo.
+    expect(await page.evaluate(() => (window.__playShell as unknown as Hand).idleRun().runState)).toBe('lost');
+    const title = page.getByTestId('play-postrun').locator('.play-result-title');
+    await expect(title).toHaveText('Try again!');
+
+    // Robot do prvního bodu, pak ruce pryč: běh prohraje s body a nadpis zůstává „So close.“.
+    await page.keyboard.press('r');
+    await expect(page.getByTestId('play-postrun')).toHaveCount(0);
+    const scored = await page.evaluate(() => (window.__playShell as unknown as Hand).handPlay('score'));
+    expect(scored).toMatchObject({ runState: 'running' });
+    expect(scored.score).toBeGreaterThan(0);
+    await expect(page.getByTestId('play-outcome')).toHaveAttribute('data-outcome', 'lost', { timeout: 60_000 });
+    await expect(title).toHaveText('So close.');
+  });
 });

@@ -11,7 +11,7 @@
 
 import { lookFor } from '../arcade/look';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SECTIONS, RUNNER_SPEEDS, RUNNER_TRACK } from '../arcade/pieces/runner';
-import { nounPhrase, singular } from '../draft/lexicon';
+import { nounPhrase, singular, withArticle } from '../draft/lexicon';
 
 import { type GenreModule, addonRoles, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 import { defaultObstacle } from './roles';
@@ -88,7 +88,7 @@ export const runnerGenre: GenreModule<'runner'> = {
       },
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} Run`,
-      objective: { kind: 'reach', description: `Run to the finish without hitting a ${obstacle}.`, role: 'finish' },
+      objective: { kind: 'reach', description: `Run to the finish without hitting ${withArticle(obstacle)}.`, role: 'finish' },
       // Náraz ubere život a běh jede dál (P36A T2).
       mechanics: [livesMechanic()],
       // Počet role čte generátor (`COUNTED_ROLES`): řady překážek a mince na trati.
