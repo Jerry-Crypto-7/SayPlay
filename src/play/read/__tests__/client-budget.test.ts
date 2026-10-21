@@ -8,7 +8,8 @@ import type { Reading } from '../schema';
 
 // P56A T4-R1: kolik z 700 ms zbude na model. Každý let do úložiště (cache, vypínač, kniha stropu,
 // počet volajícího) tu trvá 100 ms na falešných hodinách; vypínač a počet volajícího jdou přes
-// vlastní moduly, proto jsou podvržené tady, ne v `client.test.ts`.
+// vlastní moduly, proto jsou podvržené tady, ne v `client.test.ts`. Skutečný počet volajícího je
+// při prvním čtení dne dva lety (INCR, pak EXPIRE, `version/store.ts`) – modelu pak zbude o let méně.
 const FLIGHT_MS = 100;
 const flight = <T>(value: T) => new Promise<T>((resolve) => setTimeout(() => resolve(value), FLIGHT_MS));
 

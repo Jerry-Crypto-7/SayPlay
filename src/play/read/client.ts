@@ -227,7 +227,8 @@ async function paidReading(
   if (deps.caller === undefined) return null;
   if (await killed) return null;
   // Kniha stropu a počet volajícího letí souběžně (T4-R1), ať z rozpočtu zbude modelu: před voláním
-  // jsou tak dva lety, ne čtyři. Daň: odmítnutí stropem volajícímu spálí jedno čtení dne.
+  // jsou tak dva lety, ne čtyři (první čtení volajícího za den tři: INCR a EXPIRE). Daň: odmítnutí
+  // stropem i rozpočet, který vyprší během těch letů, volajícímu spálí jedno čtení dne bez volání.
   const [reservation, mayRead] = await Promise.all([(deps.cap ?? processReaderSpendCap()).reserve(worstCaseUsd), callerMayRead(deps.caller, env)]);
   if (!reservation.ok) return null;
   // Rozpočet vypršel = volání neodejde, nic se neutratilo.
