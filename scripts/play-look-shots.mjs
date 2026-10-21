@@ -129,9 +129,16 @@ async function shots(options) {
   page.on('response', (response) => {
     if (response.status() === 404 && response.url().includes('/assets/')) missing.push(new URL(response.url()).pathname);
   });
+  // Chyby stránky a překladu shaderu (P56B T6): rozbitý patch shaderu nechá scénu kreslit dál bez materiálu.
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(`pageerror: ${error.message.slice(0, 200)}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error' && /THREE\.WebGLProgram|Shader Error|ERROR: \d+:/.test(message.text())) errors.push(`shader: ${message.text().slice(0, 200)}`);
+  });
   try {
     for (const sentence of chosen(options)) {
       const missingBefore = missing.length;
+      const errorsBefore = errors.length;
       const game = await publish(base, sentence.text);
       // Meze 120 s: SwiftShader kreslí na CPU a pod souběžnými běhy (CPU 100 %, 19. 10.) výchozích 30 s nestačí.
       await page.goto(`${base}/play/${game.versionId}`, { timeout: 120_000 });
@@ -146,16 +153,17 @@ async function shots(options) {
       await page.screenshot({ path: join(out, `${sentence.id}.png`), timeout: 120_000 });
       // Ovládání, které plocha opravdu kreslí: souboj má ve specu `move_free`, ve hře `fight`.
       const stage = await page.getByTestId('arcade-stage').getAttribute('data-control').catch(() => null);
-      const row = { id: sentence.id, text: sentence.text, want: sentence.genre, ...game, stage, tick: state?.tick ?? null, runState: state?.runState ?? null, meshes: render.meshes, calls: render.calls, assets404: missing.slice(missingBefore) };
+      const row = { id: sentence.id, text: sentence.text, want: sentence.genre, ...game, stage, tick: state?.tick ?? null, runState: state?.runState ?? null, meshes: render.meshes, calls: render.calls, assets404: missing.slice(missingBefore), errors: errors.slice(errorsBefore) };
       manifest.shots.push(row);
       // Sada `genres` čeká ovládání plochy (aréna, úkol i agar jsou `move_free`), sada T1 žánr; sada `p56b` nečeká nic.
       const [got, wanted] = sentence.control === undefined ? [game.genre, sentence.genre] : [stage, sentence.control];
-      console.log(`${sentence.id}: ${game.genre}/${game.setting} tick ${row.tick} ${row.runState} – ${row.meshes} sítí, ${row.calls} volání, ${row.assets404.length}× 404${wanted === undefined || got === wanted ? '' : `  ! čekané ${wanted}`}`);
+      console.log(`${sentence.id}: ${game.genre}/${game.setting} tick ${row.tick} ${row.runState} – ${row.meshes} sítí, ${row.calls} volání, ${row.assets404.length}× 404, ${row.errors.length} chyb${wanted === undefined || got === wanted ? '' : `  ! čekané ${wanted}`}`);
     }
   } finally {
     await browser.close();
   }
   manifest.assets404 = missing.length;
+  manifest.errors = errors.length;
   writeJson(join(out, 'manifest.json'), manifest);
 }
 

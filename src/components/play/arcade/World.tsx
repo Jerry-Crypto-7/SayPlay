@@ -41,7 +41,7 @@ import { headingOf, turnToward } from './characterMotion';
 import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
-import { loadBodyModel, rimLit, toyPartsOf } from './look/load';
+import { loadBodyModel, rimLit, toonLit, toyPartsOf } from './look/load';
 import { deformBody } from './look/toy-deform';
 import { HeroActionBody } from './hero-action/HeroActionBody';
 import { type Ink, InkOutline } from './look/rig/InkOutline';
@@ -191,7 +191,9 @@ export function toyTargetOf(inner: Object3D): ToyTarget {
 export function fitModel(model: Object3D, { id, w, h, d, character = false, fill = false, posed = false, rim = false }: Fit): Object3D {
   const copy = model.clone(true);
   // Svit před deformací: kopie deformace volá úpravu shaderu zdroje, svit tak nese i ohnuté tělo.
+  // Kulisa s texturou, která se neslila, dostane toon s paletou sady; postava toon bez palety ve svitu (P56B T6).
   if (rim) rimLit(copy);
+  else toonLit(copy);
   const box = new Box3().setFromObject(copy);
   const size = box.getSize(new Vector3());
   const along = (length: number): number => Math.max(length, 1e-3);

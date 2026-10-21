@@ -23,6 +23,7 @@ import type { Look, LookId } from '@/play/arcade/look';
 
 import { Ambient } from '../Ambient';
 import { setCharacterRim } from '../load';
+import { setScenePalette } from './toon';
 import { Wind } from '../Vegetation';
 import { LOOK_FAMILY } from './grade';
 import { Post, useQualityTier } from './Post';
@@ -265,7 +266,11 @@ function Exposure({ exposure }: { readonly exposure: number }) {
 export function StyleRig({ look, lookId, control, surface }: { readonly look: Look; readonly lookId: LookId; readonly control: string; readonly surface: RefObject<HTMLDivElement | null> }) {
   const tier = useQualityTier(surface);
   // Okrajový svit postav barvou oblohy sady (P54B T14): jen uniformy, materiály se nepřekládají.
-  useEffect(() => setCharacterRim(look), [look]);
+  // Paleta, přimíchání a okraj toonu sady (P56B T6): také jen uniformy.
+  useEffect(() => {
+    setCharacterRim(look);
+    setScenePalette(look);
+  }, [look]);
   return (
     <>
       <color attach="background" args={[look.horizon]} />
