@@ -885,10 +885,12 @@ function ArcadePlayGame({
   const laneEventView = laneEventViewOf(session.world.rules);
 
   return (
-    // Pod plátnem obloha sady (P32D T6): do prvního snímku scény je vidět ona, ne tmavé pozadí stránky.
+    // Pod plátnem obzor sady (P32D T6, P56B T4): do prvního snímku scény je vidět on, ne tmavé pozadí stránky.
+    // Obzor, ne `sky`: vesmírná `sky` je skoro černá a pomalý první snímek (překlad shaderů) dal černou obrazovku;
+    // obzor je i barva pozadí scény (`StyleRig`), takže první snímek na něj navazuje.
     // `data-playing`: hráč už hraje (první tah proběhl, ne přehrávaná ukázka) – lišta domova (P34 T3) mu ustoupí.
-    // Obloha jde do proměnné `--_sky`: na desktopu jí je jen scéna 16:9, okolí je krémové (kit `05-layout.md`).
-    <main ref={shell} className="play-shell" data-playing={active && demo === null && snapshot.tick > 0 ? 'true' : 'false'} style={{ '--_sky': scene.sky } as CSSProperties}>
+    // Barva jde do proměnné `--_sky`: na desktopu jí je jen scéna 16:9, okolí je krémové (kit `05-layout.md`).
+    <main ref={shell} className="play-shell" data-playing={active && demo === null && snapshot.tick > 0 ? 'true' : 'false'} style={{ '--_sky': scene.horizon } as CSSProperties}>
       <ArcadeStage
         session={session}
         cast={cast}

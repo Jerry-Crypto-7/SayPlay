@@ -39,6 +39,16 @@ Obojí opravil `bc9c9408` (T3).
 
 `perf --base A --vs A --repeats 3` (Pixel 7, CPU 4×, prokládaně A, A′ scénu po scéně, 30 scén): _doplní měření_.
 
+## Černá obrazovka před prvním snímkem (T4)
+
+**Reprodukce** (`e2e/p56b-first-frame.spec.ts`: časová řada jasu plátna po 250 ms od zmizení karty kroků, 4 s, `/assets/` zdržené o 5 s):
+
+- Na GPU stroji černá nevznikne ani se zdrženými modely – scéna na modely nečeká, obloha, zem a mlha se kreslí hned (hypotéza (a) „`Suspense` čeká na modely“ neplatí).
+- Vzniká jen při pomalém prvním snímku (SwiftShader 87 % černých pixelů; na slabém telefonu překlad shaderů): do té doby je vidět podklad pod plátnem, a ten byl `scene.sky`.
+- **Příčina (c):** vesmírná `sky` `#020617` je sama pod mezí černé (luma < 0,04) – jediná sada, jejíž `sky` pod mez spadne. Na `72665fdc` sonda padá přesně tady: podklad `rgb(2,6,23)` u 09-astro, desktop i telefon.
+
+**Oprava:** podklad pod plátnem (`--_sky` v `ArcadePlay` a `GridShell`) je `horizon` scény po náladě a denní době – táž barva, kterou `StyleRig` kreslí jako pozadí scény, takže první snímek na ni navazuje; obzor žádné sady pod 0,04 není (nejtmavší je vesmír `#0b1730`, luma 0,087; tóny nálad jsou všechny nad 0,2, takže je nestáhnou níž). Po opravě: 6 vět × desktop + Pixel 7, žádný vzorek nad 2,6 % černých pixelů; `p32-first-seconds` čeká obzor scény (`sceneLook(theme).horizon`), ne syrovou barvu sady – věta „haunted castle“ má náladu, která obzor ztmaví.
+
 ## Kotva proti hrám z obchodu (T2)
 
 `anchor-before.json` (`node scripts/play-p46g-blind.mjs anchor --anchor D:/tmp/p56b-ref --dir evals/play/p56b --ours before-phone --set p56b --out evals/play/p56b/anchor-before.json`): **náš snímek vyhrál 0 z 30 dvojic** (0/10 proti každé hře), levá strana vyhrála 0,5 – soudce stranu nepreferuje.
