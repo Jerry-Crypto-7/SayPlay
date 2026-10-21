@@ -208,7 +208,18 @@ export function fitModel(model: Object3D, { id, w, h, d, character = false, fill
   return copy;
 }
 
-export function FittedModel({ id, w, h, d, fallback, character = false, fill = false, posed = false, rim = false }: Fit & { readonly fallback: string }) {
+const idle = (): ClipState => 'idle';
+
+/**
+ * Model vepsaný do kvádru těla. Id postavy s kostrou (`rigged:`, hrdina z `cast.player` ve scénách
+ * žánrů) kreslí `RiggedModel` v klidu – statická cesta by ho stáhla jako model katalogu (P56B T3: 404).
+ */
+export function FittedModel(props: Fit & { readonly fallback: string }) {
+  const rig = riggedCharacter(props.id);
+  return rig === undefined ? <StaticModel {...props} /> : <RiggedModel character={rig} h={props.h} clip={idle} fallback={props.fallback} />;
+}
+
+function StaticModel({ id, w, h, d, fallback, character = false, fill = false, posed = false, rim = false }: Fit & { readonly fallback: string }) {
   const [model, setModel] = useState<Object3D | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
