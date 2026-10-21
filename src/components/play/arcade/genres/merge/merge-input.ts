@@ -20,11 +20,24 @@ import type { ArcadeSession } from '../../session';
 /** Jak blízko cíle (j) dávkovač pustí předmět čekajícího pustu. */
 const AIM = 20;
 
-/** Místo v nádobě (j jádra) pod zlomkem šíře plátna `fraction`, podle krajů dosahu `edges` (zlomky pro −dosah a +dosah). */
+/**
+ * Místo v nádobě (j jádra) pod zlomkem šíře plátna `fraction`, podle krajů dosahu `edges` (zlomky pro −dosah a +dosah).
+ * Oříznuté na dosah: prst za krajem míří na kraj, jinak by pust čekal na místo, kam dávkovač nikdy nedojede.
+ */
 export function spotOf(fraction: number, edges: readonly [number, number], reach: number): number {
   const [left, right] = edges;
   if (right === left) return 0;
-  return Math.round(-reach + ((fraction - left) / (right - left)) * 2 * reach);
+  const x = Math.round(-reach + ((fraction - left) / (right - left)) * 2 * reach);
+  return Math.max(-reach, Math.min(reach, x)) || 0;
+}
+
+/** Čekající pust: místo v nádobě (prst), `'here'` = kdekoli, kde dávkovač právě je (klávesa), `null` = nic nečeká. */
+export type PendingDrop = number | 'here' | null;
+
+/** Má čekající pust padnout teď? Předmět musí být připravený (`clock` 0) a u prstu dávkovač nad cílem. */
+export function dropNow(pending: PendingDrop, dropperX: number, clock: number): boolean {
+  if (pending === null || clock > 0) return false;
+  return pending === 'here' || Math.abs(dropperX - pending) <= AIM;
 }
 
 /** Kraje dosahu z `data-drop-edges`, nebo `null`, dokud je scéna nezapsala. */
@@ -64,8 +77,8 @@ export function useMergeInput(session: ArcadeSession, target: React.RefObject<HT
     if (!active || element === null) return;
     const reach = dropLimit(sizeOf(1));
     let finger: number | null = null;
-    /** Cíl, nad kterým se má pustit (j jádra); `null` = nic nečeká. */
-    let pending: number | null = null;
+    let pending: PendingDrop = null;
+    const held = new Set<number>();
     const dropperX = (): number => session.state()[bodyBase(session.state()[HEADER.player] as number) + BODY.x] as number;
     const aim = (x: number): void => session.hold(axisFor(x, reach));
     const spot = (event: PointerEvent): number | null => {
@@ -75,10 +88,11 @@ export function useMergeInput(session: ArcadeSession, target: React.RefObject<HT
       return spotOf((event.clientX - rect.left) / rect.width, edges, reach);
     };
     const settle = (): void => {
-      if (pending === null || clockOf(session.state()) > 0 || Math.abs(dropperX() - pending) > AIM) return;
+      if (!dropNow(pending, dropperX(), clockOf(session.state()))) return;
       pending = null;
       session.press(BUTTON.TAP);
-      if (finger === null) session.hold(0);
+      // Držená šipka jede dál; stojí se jen, když nic nedrží ani prst, ani klávesa.
+      if (finger === null && held.size === 0) session.hold(0);
     };
     controller.current = { settle };
     const onDown = (event: PointerEvent) => {
@@ -99,11 +113,15 @@ export function useMergeInput(session: ArcadeSession, target: React.RefObject<HT
       finger = null;
       if (event.type !== 'pointerup') return;
       // Pustí se nad místem, kam prst naposled mířil (dávkovač tam ještě dojede, je-li daleko).
-      pending = spot(event) ?? dropperX();
-      aim(pending);
+      const x = spot(event);
+      if (x === null) {
+        pending = 'here';
+      } else {
+        pending = x;
+        aim(x);
+      }
       settle();
     };
-    const held = new Set<number>();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const action = keyAction(event.key);
@@ -111,7 +129,8 @@ export function useMergeInput(session: ArcadeSession, target: React.RefObject<HT
       event.preventDefault();
       if (event.repeat) return;
       if (action === 0) {
-        pending = dropperX();
+        // Klávesa pustí tam, kde dávkovač bude, až je předmět připravený – i když mezitím jede pod šipkou.
+        pending = 'here';
         settle();
         return;
       }
@@ -125,7 +144,7 @@ export function useMergeInput(session: ArcadeSession, target: React.RefObject<HT
       const other = [...held].at(-1);
       // Puštěná šipka zastaví dávkovač, kde je; druhá držená šipka jede dál.
       if (other !== undefined) aim(other * reach);
-      else if (pending === null) session.hold(0);
+      else if (typeof pending !== 'number') session.hold(0);
     };
     element.addEventListener('pointerdown', onDown);
     element.addEventListener('pointermove', onMove);
