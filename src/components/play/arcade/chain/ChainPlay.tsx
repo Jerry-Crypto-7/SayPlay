@@ -9,10 +9,10 @@
  */
 
 import dynamic from 'next/dynamic';
-import { type CSSProperties, memo, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { type CSSProperties, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, type ArcadeWorld } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, preyModel, propModels, riggedModelOf, sceneModelOf } from '@/play/arcade/models';
 import { bossKindOf } from '@/play/arcade/pieces/pacing';
@@ -22,6 +22,7 @@ import { type Par, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 
 import type { Dare } from '../../best';
+import { StageHost } from '../../feed/StageHost';
 import type { StageTunnel } from '../../feed/stage-tunnel';
 import { loopTouch } from '../../loop-client';
 import { PostRun, type RunFacts } from '../../PostRun';
@@ -69,7 +70,19 @@ function castOf(spec: GameSpecV1, world: ArcadeWorld): Cast {
 /** Index kola, jehož relaci `current()` vrací: během karty to, které skončilo. */
 const shownRound = (session: ChainSession): number => (session.card() > 0 ? session.round() - 1 : session.round());
 
-export function ChainPlay({
+type ChainPlayProps = Parameters<typeof ChainRun>[0];
+
+/**
+ * Bez hostitele feedu (`/play/[id]`) dostane řetěz jedno trvalé plátno (`StageHost`, P54A T5) přes všechna kola:
+ * scéna kola se remountuje, ale WebGL kontext a renderer zůstanou – vlastní `<Canvas>` na kolo stál na telefonu
+ * při každém přechodu snímek 150–280 ms (T13).
+ */
+export function ChainPlay(props: ChainPlayProps) {
+  if (props.host !== undefined) return <ChainRun {...props} />;
+  return <StageHost>{(host) => <ChainRun {...props} host={host} />}</StageHost>;
+}
+
+function ChainRun({
   versionId,
   spec,
   chain,
@@ -171,6 +184,62 @@ export function ChainPlay({
   // Duch v jiném kole se nekreslí; HUD řekne, ve kterém je.
   const ghostAt = ghost === null ? null : ghost.replay.at(session.tick());
 
+  // Sonda času do ovladatelné hry (jako `ArcadePlay`, P32D T2): první skutečný vstup kola 1 na `arcade-stage`.
+  const shell = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (at !== 0) return;
+    let done = false;
+    return round.subscribe(() => {
+      if (done || !round.humanRun()) return;
+      const first = round.inputs()[0];
+      const stage = shell.current?.querySelector('[data-testid="arcade-stage"]');
+      if (first === undefined || !stage) return;
+      done = true;
+      stage.setAttribute('data-input-tick', String(first.tick));
+      stage.setAttribute('data-input-at', String(Date.now()));
+    });
+  }, [at, round]);
+
+  // Sonda e2e (T13): kolo, které se hraje, od jeho tiku 0 – stisky robota kola (`bot`) nebo žádné (`idle`),
+  // tik po tiku cestou klávesnice, takže záznam je hráčův a Dare z něj přehraje server.
+  useEffect(() => {
+    if (!active) return;
+    const probe = {
+      tick: () => session.tick(),
+      round: () => session.round(),
+      card: () => session.card(),
+      lives: () => session.lives(),
+      outcome: () => session.outcome(),
+      hash: () => session.hash(),
+      start: () => session.begin(),
+      /** Robot kola v reálném čase (`startDemo`): měření snímků na telefonu, kolo i přechod se kreslí jako u hráče. */
+      demo: () => {
+        session.begin();
+        session.current().startDemo();
+      },
+      playRound: (how: 'bot' | 'idle') => {
+        const live = session.current();
+        const inputs = how === 'bot' ? live.botInputs() : [];
+        live.restart();
+        if (session.round() === 0) session.begin();
+        let next = 0;
+        while (live.snapshot().runState === 'running' && live.snapshot().tick < ARCADE_LIMITS.maxTicks) {
+          const tick = live.snapshot().tick;
+          while (next < inputs.length && inputs[next]!.tick < tick) next += 1;
+          const event = inputs[next]?.tick === tick ? inputs[next] : undefined;
+          live.hold(event?.axis ?? 0);
+          live.press(event?.buttons ?? 0);
+          live.stepOnce();
+        }
+        return { runState: live.snapshot().runState, round: session.results().length, lives: session.lives(), outcome: session.outcome(), tick: session.tick() };
+      },
+    };
+    window.__playShell = probe as unknown as Window['__playShell'];
+    return () => {
+      if (window.__playShell === (probe as unknown)) delete window.__playShell;
+    };
+  }, [active, session]);
+
   const over = outcome !== 'running';
   // Výhra pošle záznam s globálními tiky jako výzvu hned, ne až po stisku – nabídka sdílení chce čerstvé gesto.
   const [dare, setDare] = useState<DarePublish | undefined>(undefined);
@@ -214,7 +283,7 @@ export function ChainPlay({
   const playing = active && card === 0 && !over && snapshot.runState === 'running';
 
   return (
-    <main className="play-shell" data-chain-round={at + 1} data-chain-view={view} style={{ '--_sky': scene.sky } as CSSProperties}>
+    <main ref={shell} className="play-shell" data-chain-round={at + 1} data-chain-view={view} style={{ '--_sky': scene.sky } as CSSProperties}>
       <ArcadeStage
         key={`${String(attempt)}-${String(at)}`}
         session={round}
