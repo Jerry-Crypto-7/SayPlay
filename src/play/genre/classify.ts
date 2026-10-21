@@ -483,7 +483,8 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     // P56A T5: slyší-li slovník první nový žánr, rozhodne on – body ze sloves čtení ho nepřeskočí. Jinak rozhoduje platný
     // žánr čtení, který hraje; slovník řadí zbytek, kam se ustupuje, když se režim čtení nepřeloží nebo neprojde robotem.
     const heard = order(null)[0];
-    const read = reading.genre;
+    // Čtení uložená před P56A T3 (`read/__fixtures__/readings.json`) pole `genre` nemají.
+    const read = reading.genre ?? null;
     if (heard !== undefined && heard.score > 0 && NEW_GENRES.has(key(heard))) decided = key(heard);
     else if (read !== null && scores.has(key(read)) && availability(read) === 'ready') {
       decided = key(read);
