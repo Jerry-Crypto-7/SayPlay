@@ -28,13 +28,22 @@ const GATES = { targetGenre: 48, laneGenre: 24, distractorStays: 19, playable: 8
 
 interface HoldoutSentence { readonly id: string; readonly family: 'target' | 'distractor'; readonly genre: string | null; readonly text: string }
 
+interface HoldoutRow {
+  readonly id: string;
+  readonly family: HoldoutSentence['family'];
+  readonly genre: string | null;
+  readonly draft: string | null;
+  readonly genreOk: boolean;
+  readonly bot: { readonly wins: boolean; readonly seconds: number | null; readonly idleLoses: boolean; readonly replayEqual: boolean; readonly failures: readonly string[] };
+}
+
 const isNew = (genre: string | null): boolean => (P55_GENRES as readonly string[]).includes(genre ?? '');
 
 it('opens the sealed P55 holdout once and writes final.json (T9)', async () => {
   const commit = execFileSync('git', ['--no-replace-objects', 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
   const bytes = openSealedOnce(DIR, P55_HOLDOUT_SHA256, commit, 'P55 T9 (holdout.measure.ts)');
   await loadRapier();
-  const rows = [];
+  const rows: HoldoutRow[] = [];
   for (const sentence of (JSON.parse(bytes) as { sentences: HoldoutSentence[] }).sentences) {
     const base = { id: sentence.id, family: sentence.family, genre: sentence.genre };
     let meta: ReturnType<typeof draftGameSpecWithMeta>;
