@@ -83,11 +83,14 @@ export interface ArcadeParts {
  * Základní ovládání pod obalem `addon_control` – doplněk po `+shoot` musí dál
  * poznat běžce a scéna podle něj volí kameru a vstup.
  */
+/** Obaly s `params.base` – doplňky, fáze, průběh, skládání a mutátory řetězu (P56C T15, `pieces/mirror.ts`). */
+const WRAPPING_CONTROLS: ReadonlySet<string> = new Set(['addon_control', 'phase_control', 'pacing_control', 'assembly_control', 'mirror_control']);
+const WRAPPING_BOTS: ReadonlySet<string> = new Set(['addon_bot', 'phase_bot', 'pacing_bot', 'assembly_bot', 'mirror_bot', 'vanishing_floor_bot']);
 export const baseControlOf = (control: PieceRef): PieceRef =>
-  control.id === 'addon_control' || control.id === 'phase_control' || control.id === 'pacing_control' || control.id === 'assembly_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
+  WRAPPING_CONTROLS.has(control.id) ? baseControlOf((control.params as { base: PieceRef }).base) : control;
 /** Základní robot pod obaly doplňků, fází, průběhu a skládání – scéna z něj čte trať (`course`). */
 export const baseBotOf = (bot: PieceRef): PieceRef =>
-  bot.id === 'addon_bot' || bot.id === 'phase_bot' || bot.id === 'pacing_bot' || bot.id === 'assembly_bot' ? baseBotOf((bot.params as { base: PieceRef }).base) : bot;
+  WRAPPING_BOTS.has(bot.id) ? baseBotOf((bot.params as { base: PieceRef }).base) : bot;
 const baseControl = (parts: ArcadeParts): PieceRef => baseControlOf(parts.control);
 
 export { mapUnderlying, underlyingRule } from './contract';
