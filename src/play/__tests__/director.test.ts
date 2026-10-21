@@ -20,6 +20,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { memoryAnswerStore } from '@/server/answer-cache';
 
 import { arcadeWorldOf } from '../arcade/compile';
+import { sentenceSky } from '../arcade/look';
 import { loadRapier } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
 import { GENRE_ANSWERS, answerFixture, genreAnswer } from '../director/__fixtures__';
@@ -53,7 +54,12 @@ function compiled(answer = genreAnswer(), sentence?: string): GameSpecV1 {
   return compileRecipe(assemblyOfCell(cell, { ...read.genre, genre: cell.preset.genre, mode: cell.preset.mode } as GenreSpec));
 }
 
-const KEYPOINT: RepairIssue = { code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: 'keypoint winnable failed: the robot never won', repairHint: 'fix the game or the claim' };
+/** Hra, jak ji `direct` vrátí: světlo z věty (P54B T11, `sentenceSky`) přidá až po ověření, robot soudí `compiled()` bez něj. */
+function lit(spec: GameSpecV1, sentence = SENTENCE): GameSpecV1 {
+  return { ...spec, theme: { ...spec.theme, ...sentenceSky(sentence, spec.theme) } };
+}
+
+const KEYPOINT: RepairIssue ={ code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: 'keypoint winnable failed: the robot never won', repairHint: 'fix the game or the claim' };
 
 /** Robot, který neprojde hru přesně tak, jak ji z `answer` složil modul žánru; projde cokoli, co záplata změnila. */
 const checkFor =
@@ -167,7 +173,7 @@ describe('direct – the model answers', () => {
     const branch = fakeBranch([answered(genreAnswer())]);
     const game = await run(branch);
     expect(game).toMatchObject({ ok: true, source: 'authored', repairRounds: 0, fallbackReason: null, calls: 1 });
-    expect(game.spec).toEqual(compiled());
+    expect(game.spec).toEqual(lit(compiled()));
     expect(game.spec).toMatchObject({ control: 'move_free', genre: { id: 'arena', mode: 'collect' } });
     expect(branch.calls).toHaveLength(1);
     const request = branch.calls[0]!.request;
@@ -212,7 +218,7 @@ describe('direct – the model answers', () => {
     ]);
     const game = await run(branch, { check });
     expect(game).toMatchObject({ source: 'authored', repairRounds: 1, fallbackReason: null, calls: 2 });
-    expect(game.spec).toEqual({ ...compiled(), title: 'Fox Night Escape' });
+    expect(game.spec).toEqual(lit({ ...compiled(), title: 'Fox Night Escape' }));
     expect(branch.calls).toHaveLength(2);
   });
 
@@ -319,7 +325,7 @@ describe('direct – failure paths fall back to the draft, never throw', () => {
     const game = await run(branch, { check, cache });
     // Hru, kterou kritik pustil, soudí až publikace (NOT_PLAYABLE); do cache nejde, příští pokus dostane novou šanci.
     expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED', repairRounds: 2, calls: 3 });
-    expect(game.spec).toEqual(compiled());
+    expect(game.spec).toEqual(lit(compiled()));
     expect(branch.calls).toHaveLength(3);
     expect(writes).toEqual([]);
   });
@@ -372,7 +378,7 @@ describe('direct – cache', () => {
     const branch = fakeBranch([answered(genreAnswer())]);
     const game = await run(branch, { cache });
     expect(game).toMatchObject({ source: 'authored', calls: 1 });
-    expect(game.spec).toEqual(compiled());
+    expect(game.spec).toEqual(lit(compiled()));
   });
 
   it('an unrepaired game played as the draft genre is never written – the next direct calls the model again', async () => {
