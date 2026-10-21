@@ -1,0 +1,85 @@
+{
+ "schema": "p55-fun.v1",
+ "a": {
+  "base": "http://127.0.0.1:3111",
+  "run": "p55-t6-a",
+  "commit": "ada7dd8b",
+  "side": "lane genres on origin/main, before P55"
+ },
+ "b": {
+  "base": "http://127.0.0.1:3102",
+  "run": "p55-t6-b",
+  "commit": "bb7d5136",
+  "side": "lane events, HEAD"
+ },
+ "genres": [
+  "catch"
+ ],
+ "pick": "pure-rand xoroshiro128plus(55006): uniformInt without replacement per genre in turn (catch) over P54C dev targets",
+ "target": "P55 wins >= 2/3",
+ "skipped": false,
+ "summary": {
+  "n": 3,
+  "newWins": 3,
+  "oldWins": 0,
+  "ties": 0,
+  "leftWinShare": 0.333
+ },
+ "met": true,
+ "pairs": [
+  {
+   "id": "c02",
+   "text": "catch the falling apples but dodge the rotten ones",
+   "genre": "catch.default",
+   "old": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Fox Catch"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Fox Catch"
+   },
+   "left": "a",
+   "winner": "new",
+   "why": "Game B has more falling coins and dark hazards at once, with threats nearer the player and crowded action in the later scenes. Game A stays comparatively sparse, with longer empty stretches and little visible buildup."
+  },
+  {
+   "id": "c03",
+   "text": "a penguin catches fish raining from the sky on an iceberg",
+   "genre": "catch.default",
+   "old": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Penguin Catch"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Penguin Catch"
+   },
+   "left": "a",
+   "winner": "new",
+   "why": "Game B has denser waves of yellow pickups and black bombs, with threats approaching the robot and renewed clusters late in play. Game A stays sparse, with long gaps between isolated objects and little visible buildup."
+  },
+  {
+   "id": "c04",
+   "text": "catch falling stars with a bucket before they hit the ground",
+   "genre": "catch.default",
+   "old": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Fox Catch"
+   },
+   "new": {
+    "genre": "lanes",
+    "generator": "catch_fall",
+    "title": "Fox Catch"
+   },
+   "left": "b",
+   "winner": "new",
+   "why": "Game A builds to a busier finish, with multiple bombs, ringed stars, and yellow pickups at different heights, including bombs close to the player. Game B has similar early action but becomes sparse near the end, with only a lone nearby bomb visible in the final scene."
+  }
+ ]
+}
