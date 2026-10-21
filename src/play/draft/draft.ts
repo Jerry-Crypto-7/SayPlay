@@ -1274,14 +1274,20 @@ function draftGenre(
   // („shoots arrows at goblins“: šíp letí, terčem je goblin – T7).
   const heroLabel = heroSaid === null ? null : singular(heroSaid);
   const verbThing = object === null || ranking.does === null || toolsOf(sentence).includes(singular(object)) ? [] : [{ label: singular(object), does: ranking.does }];
-  const spoken = [...roles.named, ...verbThing].filter(({ label }) => !isPlace(label) && label !== heroLabel);
+  // Místo čtení není role (P56A T7): „escape a haunted mansion“ – sídlo nehoní, i když ho sady podle hlavy neznají.
+  const readPlace = reading === null ? null : bare(reading.setting);
+  const spoken = [...roles.named, ...verbThing].filter(({ label }) => !isPlace(label) && label !== heroLabel && (readPlace === null || singular(label) !== singular(readPlace)));
   const saidFoe = spoken.find((item) => item.does === null || FOE_ROLES.has(item.does))?.label ?? null;
   // „at kids“, „at rubber ducks“: fráze, která jmenuje roli, není místo; přednost má místo, které sada zná.
   const named = new Set([target, enemy, collectible, ...spoken.map((item) => item.label)].flatMap((label) => (label === null ? [] : [singular(label)])));
   const placeOf = (phrase: string | null, known: boolean): string | null => (phrase === null || named.has(singular(phrase)) || (known && lookFor(phrase) === null) ? null : phrase);
   const filled = cleanLabel(fill.setting);
-  const setting = placeOf(filled, true) ?? placeOf(roles.setting, true) ?? placeOf(filled, false) ?? placeOf(roles.setting, false) ?? VERB_SETTING[verb] ?? GENRE_SETTING[choice.genre];
-  const place = lookFor(setting) === null ? lookFor(text) : null;
+  const saidPlace = placeOf(filled, true) ?? placeOf(roles.setting, true) ?? placeOf(filled, false) ?? placeOf(roles.setting, false);
+  // P56A T7: místo, které věta jmenuje a sady znají, rozhodne; jinak svět čtení – před slovy celé věty i místem slovesa
+  // nebo žánru („my cat defends the couch“ je obývák, ne hradby obrany).
+  const world = saidPlace !== null && lookFor(saidPlace) !== null ? null : (reading?.world ?? null);
+  const setting = saidPlace ?? world?.replace(/_/g, ' ') ?? VERB_SETTING[verb] ?? GENRE_SETTING[choice.genre];
+  const place = world ?? (lookFor(setting) === null ? lookFor(text) : null);
   const hero = heroSaid ?? defaultHero(setting, choice.genre, sentence, reading !== null);
   // Nepřítel a sbíraná věc, které věta neříká, jsou z prostředí (P32B T3) – jen když nezdvojí roli, kterou hra už má.
   const spare = (label: string, taken: readonly (string | null)[]): string | null => (named.has(label) || taken.includes(label) ? null : label);
