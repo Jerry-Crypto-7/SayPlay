@@ -219,6 +219,9 @@ describe('classifyGenre', () => {
       else if (hitBefore.has(row.id)) lost.push(`${row.id}: ${first.genre}.${first.mode}`);
     }
     for (const genre of ['catch', 'whack', 'defense', 'slice']) expect(hits[genre] ?? 0, genre).toBeGreaterThanOrEqual(6);
+    // T4: každý žánr fáze 3 (7 vět) aspoň 6 a celkem ≥ 52/60 – rezerva proti přeučení na zapečetěné sadě P55.
+    for (const genre of ['hop', 'crowd', 'merge', 'push']) expect(hits[genre] ?? 0, genre).toBeGreaterThanOrEqual(6);
+    expect(Object.values(hits).reduce((sum, hit) => sum + hit, 0)).toBeGreaterThanOrEqual(52);
     expect(lost).toEqual([]);
     expect(strayed).toEqual([]);
   });

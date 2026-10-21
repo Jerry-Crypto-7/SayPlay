@@ -129,7 +129,7 @@ const STRONGHOLD = String.raw`(?:castles?|base|bases|towers?|gates?|walls?|villa
 const FLUNG = String.raw`(?:thrown|tossed|flung|launched|hurled|(?:jump|jumps|jumping|leap|leaps|leaping|fly|flies|flying|shoot|shoots|shooting|pop|pops|popping) (?:out|up)|in the air|into the air|mid-?air)\b`;
 // P54C T13b: znaky žánrů fáze 3, čtené stejně – pohledem dopředu za slovesem (nebo za jménem hry).
 /** Přes co se přeskáká: silnice, provoz, koleje („crosses a busy road“, „hops across train tracks“). */
-const TRAFFIC = String.raw`(?:roads?|streets?|highways?|freeways?|motorways?|traffic|crossings?|intersections?|(?:train |railway |rail )?tracks|rails|railways?|(?:country|traffic|busy|highway) lanes)\b`;
+const TRAFFIC = String.raw`(?:roads?|streets?|highways?|freeways?|motorways?|traffic|crossings?|intersections?|(?:train |railway |rail )?tracks|rails|railways?|(?:country|traffic|busy|highway) lanes|lanes of (?:[a-z]+ )?(?:cars|traffic|trucks|vehicles|buses))\b`;
 /** Řeka po kládách („cross the river by jumping on floating logs“); „jumps over logs“ je překážka plošinovky. */
 const LOGS = String.raw`(?:floating|drifting|river) logs?\b`;
 /** Kdo v davu roste: dav, armáda, roj. */
@@ -246,6 +246,8 @@ const VERBS: readonly Verb[] = [
     String.raw`\b(?:pick(?:s|ing)?|choos(?:e|es|ing)) (?:the |a |an )?(?:right |best |correct |good )?gates\b(?=[^.;]*\b(?:${GROUP}|${GROWS}|bigger|larger)\b)`,
     String.raw`\b${GROWS}(?= (?:up )?(?:your|the|a|an|his|her|their|our|my) (?:[a-z'-]+ )?${GROUP}\b)`,
     String.raw`\b(?:growing|multiplying|ever-growing) ${GROUP}\b`,
+    // P55 T4: brány, které dav násobí („pick the x2 gates“, „flying through doubling hoops“, „gates that add more zombies“).
+    String.raw`\b(?:x\d+|×\d+|\+\d+|doubling|multiplying|multiplier|bonus) (?:gates|hoops|rings|portals)\b|\b(?:gates|hoops|portals) that (?:add|double|multiply|give you) (?:more|extra)\b`,
     String.raw`\bmak(?:e|es|ing)(?= (?:your|the|a|an|his|her|their|our|my) (?:[a-z'-]+ )?${GROUP} (?:bigger|larger|grow)\b)`,
   ].join('|'))),
   // Slučují se stejné kusy („merge matching candies“, „combine equal ones like 2048“), kusy v nádobě („merge the fruits
@@ -341,7 +343,7 @@ const NAMES: readonly (readonly [Pair, RegExp])[] = [
   [MERGE, /\bsuika\b|\b2048\b|\bwatermelon game\b|\bmerge (?:game|puzzle)\b/],
   [PUSH, /\bsumo\b|\bbumper (?:cars?|boats?|balls?)\b/],
   [PLATFORMER, /\bmario\b(?! kart)|\bobby\b|\bparkour\b|\bfall guys\b|\bobstacle course\b|\bsonic\b/],
-  [RACE, /\bkarts?\b|\bdrift(?:s|ing)?\b|\bmotorbikes?\b|\bbikes?\b|\bcars?\b|\bboats?\b|\bplanes?\b|\bspaceships?\b|\bsubmarines?\b|\btractors?\b|\bstunts?\b|\bramps?\b/],
+  [RACE, /\bkarts?\b|\bdrift(?:s|ing)?\b|\bmotorbikes?\b|\bbikes?\b|(?<!bumper )\bcars?\b|\bboats?\b|\bplanes?\b|\bspaceships?\b|\bsubmarines?\b|\btractors?\b|\bstunts?\b|\bramps?\b/],
   [FLAP, /\bflapp?y\b/],
   [RHYTHM, /\bpiano tiles\b|\bbeat saber\b|\bguitar hero\b|\bthe beat\b|\bdrummers?\b|\bdrums?\b|\bsongs?\b|\bmusic(?:al)?\b|\bdisco\b|\bconcert\b|\bkaraoke\b/],
   [DUEL, /\brivals?\b|\bhigh noon\b|\bshowdown\b|\bstand-?off\b|\bquick ?draw\b/],
