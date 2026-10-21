@@ -145,6 +145,9 @@ const GROQ = {
   PLAY_READER_MODEL: 'openai/gpt-oss-20b',
   PLAY_READER_USD_PER_MTOK_IN: '0.075',
   PLAY_READER_USD_PER_MTOK_OUT: '0.30',
+  // Počítadlo na návštěvníka jde do souborového úložiště; čerstvá složka na běh, jinak druhý běh
+  // téhož dne začne s vyčerpanou kvótou a zapisuje do skutečného data/play/store.
+  PLAY_STORE_DIR: mkdtempSync(join(tmpdir(), 'p56a-reader-quota-')),
 } as const;
 const LOCAL = { PLAY_READER: 'on', PLAY_READER_ENDPOINT: 'llamacpp:http://127.0.0.1:8792', PLAY_READER_MODEL: 'gpt-oss-20b' } as const;
 
