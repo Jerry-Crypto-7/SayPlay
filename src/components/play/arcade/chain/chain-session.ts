@@ -31,6 +31,8 @@ export interface ChainSession {
   score(): number;
   /** Globální tik řetězu. */
   tick(): number;
+  /** Globální tik, ve kterém začalo kolo relace `current()` (duch kola, T12). */
+  start(): number;
   outcome(): ArcadeOutcome;
   results(): readonly ('won' | 'lost')[];
   /** Stisk do kola; během karty a po konci se zahodí. */
@@ -135,6 +137,7 @@ export function createChainSession(chain: ChainWorld, { gate = false, first = {}
     lives: () => lives,
     score: () => score,
     tick,
+    start: () => starts.at(-1)!,
     outcome: () => outcome,
     results: () => results,
     press: (buttons, axis) => {

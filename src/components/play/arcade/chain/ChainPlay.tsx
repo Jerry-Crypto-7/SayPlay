@@ -4,7 +4,8 @@
  * Hráč řetězu mikroher (P56C T11): kolo je obyčejná `ArcadeStage` nad relací kola (`key` kola, takže scéna,
  * vstupy a modely začnou u každého kola znovu), mezi koly karta se slovesem, nahoře HUD kola a životů a na
  * konci výsledek se hvězdami proti paru robota řetězu (`starsFor`). Relaci a záznam drží `createChainSession`;
- * tenhle soubor jen kreslí. Výzva a duch řetězu přijdou v T12, AI verze ani remix řetěz nemá (debata T9).
+ * tenhle soubor jen kreslí. Duch a výzva jdou přes celý řetěz v globálních ticích (T12); AI verze ani remix
+ * řetěz nemá (debata T9).
  */
 
 import dynamic from 'next/dynamic';
@@ -20,12 +21,16 @@ import { roundClock } from '@/play/chain/run';
 import { type Par, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 
+import type { Dare } from '../../best';
 import type { StageTunnel } from '../../feed/stage-tunnel';
 import { loopTouch } from '../../loop-client';
 import { PostRun, type RunFacts } from '../../PostRun';
 import { useRemixJob } from '../../RemixBox';
-import { BuildingScreen, GameHud, objectiveShown } from '../../ui';
+import { type DarePublish, publishDare } from '../../ShareButton';
+import { BuildingScreen, GameHud, type HudCounter, objectiveShown } from '../../ui';
 import { heroActionOf } from '../action-cue/cues';
+import type { GhostLabel } from '../Ghost';
+import { type ChainGhostReplay, fetchChainGhost } from './chain-ghost';
 import { wakesGame } from '../ready-gate';
 import type { Cast } from '../World';
 import { ChainCard } from './ChainCard';
@@ -72,7 +77,13 @@ export function ChainPlay({
   active = true,
   inFeed = false,
   host,
+  challenge = null,
+  bestDare,
 }: {
+  /** Výzva kamaráda z `?dare=`, ověřená serverem; její běh hraje duch. */
+  readonly challenge?: Dare | null;
+  /** Id nejlepšího běhu ze stránky pro ducha; `null` = žádný, `undefined` = bez ducha nejlepšího běhu (feed). */
+  readonly bestDare?: string | null;
   readonly versionId: string;
   /** Spec hry – kolo 1; název a téma řetězu. */
   readonly spec: GameSpecV1;
@@ -136,7 +147,48 @@ export function ChainPlay({
     };
   }, [active, session, versionId]);
 
+  // Duch řetězu (T12): kamarád z odkazu výzvy má přednost před nejlepším během. Kreslí se jen v kole, kde je.
+  const [ghost, setGhost] = useState<{ readonly replay: ChainGhostReplay; readonly label: GhostLabel } | null>(null);
+  useEffect(() => {
+    if (!active) return;
+    const friend = challenge === null ? null : new URLSearchParams(window.location.search).get('dare');
+    let live = true;
+    void (async () => {
+      const fromFriend = friend === null ? null : await fetchChainGhost(versionId, friend, chain);
+      if (fromFriend !== null) return { replay: fromFriend, label: 'friend' as const };
+      if (bestDare === undefined || bestDare === null || bestDare === friend) return null;
+      const best = await fetchChainGhost(versionId, bestDare, chain);
+      return best === null ? null : { replay: best, label: 'best' as const };
+    })().then((found) => {
+      if (live) setGhost(found);
+    });
+    return () => {
+      live = false;
+      setGhost(null);
+    };
+  }, [active, versionId, challenge, bestDare, chain]);
+  const roundGhost = useMemo(() => (ghost === null ? undefined : { source: ghost.replay.forRound(at, session.start()), label: ghost.label }), [ghost, at, round, session]);
+  // Duch v jiném kole se nekreslí; HUD řekne, ve kterém je.
+  const ghostAt = ghost === null ? null : ghost.replay.at(session.tick());
+
   const over = outcome !== 'running';
+  // Výhra pošle záznam s globálními tiky jako výzvu hned, ne až po stisku – nabídka sdílení chce čerstvé gesto.
+  const [dare, setDare] = useState<DarePublish | undefined>(undefined);
+  useEffect(() => {
+    if (outcome !== 'won') {
+      setDare(undefined);
+      return;
+    }
+    let live = true;
+    setDare({ state: 'pending' });
+    publishDare(versionId, session.inputs(), []).then(
+      (dareId) => live && setDare({ state: 'ready', dareId }),
+      () => live && setDare({ state: 'failed' }),
+    );
+    return () => {
+      live = false;
+    };
+  }, [outcome, versionId, session, attempt]);
   const [settled, setSettled] = useState(false);
   useEffect(() => {
     if (!over) {
@@ -172,6 +224,7 @@ export function ChainPlay({
         enabled={playing}
         heroAction={heroActionOf(roundSpec)}
         abilityWords={roundSpec.abilityWords}
+        ghost={roundGhost}
         host={host}
       />
       <GameHud
@@ -181,6 +234,7 @@ export function ChainPlay({
         counters={[
           { label: 'round', count: at + 1, text: `${String(at + 1)}/${String(rounds)}`, icon: 'flag' },
           { label: 'lives', count: session.lives(), text: String(session.lives()), icon: 'heart' },
+          ...(ghostAt !== null && ghostAt.round !== at ? [{ label: 'ghost', count: ghostAt.round + 1, text: `Ghost ${String(ghostAt.round + 1)}/${String(rounds)}` } satisfies HudCounter] : []),
         ]}
         clock={clock === null ? { seconds: snapshot.tick / ARCADE_HZ, countdown: false } : { seconds: (clock - snapshot.tick) / ARCADE_HZ, countdown: true }}
         objective={!over && objectiveShown(snapshot.tick, ARCADE_HZ, false)}
@@ -191,8 +245,10 @@ export function ChainPlay({
           versionId={versionId}
           remix={remix}
           facts={facts}
-          // Sdílení a výzva řetězu přijdou v T12; remix řetězu server odmítá (422), proto jen znovu hrát.
-          offline
+          dare={dare}
+          challenge={challenge}
+          // Remix řetězu server odmítá (422, debata T9).
+          remixable={false}
           onReplay={(via) => {
             session.restart();
             setAttempt((value) => value + 1);

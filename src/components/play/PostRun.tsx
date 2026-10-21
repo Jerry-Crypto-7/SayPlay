@@ -256,9 +256,12 @@ export function PostRun({
   dare,
   challenge = null,
   offline = false,
+  remixable = true,
   record = null,
   onReplay,
 }: {
+  /** Řetěz mikroher (P56C T12) remix nemá – server ho odmítne (422), tlačítko by vedlo do chyby. */
+  readonly remixable?: boolean;
   readonly versionId: string;
   readonly remix: RemixJob;
   readonly facts: RunFacts;
@@ -451,9 +454,11 @@ export function PostRun({
               {won ? dareAction : replay}
               <div className="play-result-more">
                 {won ? replay : dareAction}
-                <Button variant="secondary" aria-haspopup="dialog" onClick={() => setChanging(true)}>
-                  {REMIX_IT}
-                </Button>
+                {remixable && (
+                  <Button variant="secondary" aria-haspopup="dialog" onClick={() => setChanging(true)}>
+                    {REMIX_IT}
+                  </Button>
+                )}
                 {next !== null && (
                   <Button variant="secondary" data-testid="play-next-game" onClick={next}>
                     Next game

@@ -75,7 +75,7 @@ const load = cache(async (id: string): Promise<Loaded> => {
     versions.childrenOf(id),
     versions.lineageOf(id),
     sentenceOf(versions, game),
-    game.arcade === undefined ? null : versions.bestDare(id),
+    game.arcade === undefined && game.chain === undefined ? null : versions.bestDare(id),
   ]);
   const honesty = await honestyOf(versions, game);
   return { kind: 'game', game, children, lineage, honesty, sentence, bestDare: best?.dareId ?? null };
@@ -124,7 +124,7 @@ export default async function PlayGamePage({ params, searchParams }: PageProps) 
   // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`, řetěz mikroher (P56C) v `chain`; hra bez nich nemá kde běžet.
   if (game.blueprint === null && game.arcade === undefined && game.chain === undefined) notFound();
   // Výzvu nese jen arkáda (P36B T5) – mřížková hra odkaz s `dare=` otevře jako obyčejnou hru.
-  const challenge = game.arcade === undefined ? null : await challengeOf(id, (await searchParams).dare);
+  const challenge = game.arcade === undefined && game.chain === undefined ? null : await challengeOf(id, (await searchParams).dare);
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
   // Rapier (P32D T4) se začne stahovat v renderu stránky, souběžně se scénou – hra bez těles ho nestáhne.
   return (
