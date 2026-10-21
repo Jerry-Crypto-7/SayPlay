@@ -7,10 +7,14 @@
  * žádné jméno ani cesta není.
  */
 
-/** `[{ sheet: 'grid-001', cells: [assetId, …] }]` pro celý katalog. */
-export function gridPlan(assets, size) {
+/**
+ * `[{ sheet: 'grid-001', cells: [assetId, …] }]` pro celý katalog. `keepOrder` (P57 T3) nechá
+ * pořadí, jak přišlo (nejpoužívanější modely na prvních listech); listy se jmenují dál jen číslem.
+ */
+export function gridPlan(assets, size, { keepOrder = false } = {}) {
   const perSheet = size * size;
-  const ids = assets.map((asset) => asset.assetId).sort();
+  const ids = assets.map((asset) => asset.assetId);
+  if (!keepOrder) ids.sort();
   const sheets = [];
   for (let start = 0; start < ids.length; start += perSheet) {
     sheets.push({ sheet: `grid-${String(sheets.length + 1).padStart(3, '0')}`, cells: ids.slice(start, start + perSheet) });

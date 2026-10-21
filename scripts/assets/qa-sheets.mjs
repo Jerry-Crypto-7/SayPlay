@@ -9,6 +9,7 @@
  * node scripts/assets/qa-sheets.mjs --out <adresář>    jinam než D:/caches/p30d/sheets
  * node scripts/assets/qa-sheets.mjs --glb-list <json>  modely mimo katalog: [{ "id", "glb" }] (P37D)
  * node scripts/assets/qa-sheets.mjs --grid 3 --out D:/caches/p43/grids   mřížky 3×3 pro slepý soud (P43)
+ * node scripts/assets/qa-sheets.mjs --grid 3 --ids <json> --out <adresář> jen vybrané id v daném pořadí (P57)
  * ```
  *
  * Rozvržení listu: vlevo nahoře zepředu, vpravo nahoře z boku, vlevo dole
@@ -37,6 +38,8 @@ const flag = (name) => {
 const outDir = flag('--out') ?? 'D:/caches/p30d/sheets';
 const only = flag('--only')?.split(',');
 const gridSize = flag('--grid') === null ? null : Number(flag('--grid'));
+// `--ids <json>` (P57 T3): jen tyhle assetId na mřížkách, v pořadí ze souboru (nejpoužívanější první).
+const idOrder = flag('--ids') ? JSON.parse(readFileSync(flag('--ids'), 'utf8')) : null;
 
 // Modely z cache výroby (P37D) leží mimo `public/`; každý dostane vlastní adresu `/ext/<pořadí>.glb`.
 const external = flag('--glb-list') ? JSON.parse(readFileSync(flag('--glb-list'), 'utf8')) : null;
@@ -187,7 +190,7 @@ const lod0Of = (asset) => asset.lods?.find((lod) => lod.level === 0) ?? asset.lo
 if (gridSize !== null) {
   // Mřížkové listy (P43 T10): `grid-index.json` je jediná cesta z buňky zpět na model.
   const byId = new Map(catalog.map((asset) => [asset.assetId, asset]));
-  const plan = gridPlan(catalog, gridSize);
+  const plan = idOrder ? gridPlan(idOrder.map((assetId) => ({ assetId })), gridSize, { keepOrder: true }) : gridPlan(catalog, gridSize);
   writeFileSync(join(outDir, 'grid-index.json'), `${JSON.stringify({ size: gridSize, sheets: plan }, null, 1)}\n`);
   page = await browser.newPage();
   await page.goto(base);
