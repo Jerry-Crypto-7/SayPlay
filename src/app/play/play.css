@@ -3462,6 +3462,18 @@ button.play-feed-card {
   margin: 0;
 }
 
+.play-chain-card-twist {
+  display: inline-block;
+  margin: var(--sp-space-3) 0 0;
+  padding: var(--sp-space-1) var(--sp-space-4);
+  background: var(--sp-color-sun);
+  color: var(--sp-color-ink);
+  border: var(--sp-border-thin) solid var(--sp-outline);
+  border-radius: var(--sp-radius-pill);
+  font-size: var(--sp-text-title-size);
+  font-weight: 900;
+}
+
 @keyframes play-chain-card-in {
   from { opacity: 0; translate: 0 24px; }
   to { opacity: 1; translate: 0 0; }

@@ -323,7 +323,7 @@ function ChainRun({
         clock={clock === null ? { seconds: snapshot.tick / ARCADE_HZ, countdown: false } : { seconds: (clock - snapshot.tick) / ARCADE_HZ, countdown: true }}
         objective={!over && objectiveShown(snapshot.tick, ARCADE_HZ, false)}
       />
-      {carding && !over && <ChainCard card={chain.rounds[session.round()]!.card} round={session.round() + 1} rounds={rounds} />}
+      {carding && !over && <ChainCard card={chain.rounds[session.round()]!.card} twist={chain.rounds[session.round()]!.twist} round={session.round() + 1} rounds={rounds} />}
       {over && settled && (
         <PostRun
           versionId={versionId}

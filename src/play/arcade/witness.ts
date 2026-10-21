@@ -1,4 +1,4 @@
-import { baseControlOf, underlyingRule } from './addons';
+import { baseBotOf, baseControlOf, underlyingRule } from './addons';
 /** P41: důkazy měřené při hraní, nikdy odvozené jen z názvu slovesa či výhry. */
 import { singular } from '@/play/draft/lexicon';
 import type { IntentTriple } from '@/play/intent/contract';
@@ -174,7 +174,8 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
     }
   }
   // Přeskákání (P54C T9): sonda hraje jako robot, dokud by ji skok vpřed neposlal pod viděné vozidlo; pak skočí.
-  if (control === 'hop' && roleAt(state, target) === ROLE.obstacle) return hopProbeInput(observation, world.bot.params as HopBotParams, normal);
+  // Robot kola s mutátorem je obal (`vanishing_floor_bot`, `mirror_bot`); parametry přeskákání nese ten uvnitř.
+  if (control === 'hop' && roleAt(state, target) === ROLE.obstacle) return hopProbeInput(observation, baseBotOf(world.bot).params as HopBotParams, normal);
   // Dav a brány (P54C T10): sonda hraje jako robot, dokud překážka není těsně před ní; pak zahne do jejího pruhu.
   if (control === 'crowd' && roleAt(state, target) === ROLE.obstacle) return crowdProbeInput(observation, target, normal);
   // Obrana pruhů (P54C T7): sonda nestřílí ani nestaví – nepřítel dojde k hradbě a vezme život.

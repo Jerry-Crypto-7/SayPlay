@@ -16,6 +16,12 @@ export const CARD_TICKS = 60;
 /** Životy celého řetězu; prohra kola stojí jeden. */
 export const CHAIN_LIVES = START_LIVES;
 
+/**
+ * Kola 2 až N−1 dostanou jeden mutátor z `mutator-compat.json` (T16); `false` = řetěz jako v T14.
+ * Vypnuto: slepý soud s mutátory proti bez nich dal 12 remíz z 12 – na snímcích je soudce nerozezná (`evals/play/p56c/mutators.md`).
+ */
+export const CHAIN_MUTATORS = false;
+
 /** Tempo přehrávání kol v promile (1000 = 60 tiků za sekundu). Jen klient – hash ani záznam ho nevidí. */
 export const RATE_STEPS = [1000, 1075, 1150, 1225, 1300] as const;
 
@@ -26,7 +32,10 @@ export interface ChainRound {
   readonly card: string;
   readonly rate: number;
   readonly boss: boolean;
+  /** Mutátor kola (`MUTATOR_IDS`); svět kola ho už nese (`mutateWorld`). */
   readonly mutator?: string;
+  /** Karta mutátoru pod slovesem („Mirror!“) – uložená při stavbě, klient `mutators.ts` nenačte. */
+  readonly twist?: string;
 }
 
 export interface ChainWorld {

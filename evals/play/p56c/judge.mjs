@@ -76,14 +76,14 @@ const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const writeJson = (path, value) => writeFileSync(path, `${JSON.stringify(value, null, 1)}\n`);
 const round3 = (value) => Math.round(value * 1000) / 1000;
 
-async function publish(base, body) {
+export async function publish(base, body) {
   const response = await fetch(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   const created = await response.json().catch(() => null);
   if (!response.ok || typeof created?.versionId !== 'string') throw new Error(`POST /api/play/games → ${String(response.status)} ${JSON.stringify(created).slice(0, 200)}`);
   return created.versionId;
 }
 
-async function gameOf(base, id) {
+export async function gameOf(base, id) {
   const body = await (await fetch(`${base}/api/play/games/${id}`, { cache: 'no-store' })).json();
   return body.game ?? body;
 }
@@ -107,7 +107,7 @@ const roundOpen = (page, round) =>
  * Klip řetězu: první průchod robotem změří délku každého kola, druhý (nová stránka) fotí plánované tiky. Robot kola
  * převezme kolo hned po kartě (`demoTo(0)`), scéna se postaví, zatímco hraje, a `demoTo(tik)` ho dotočí na snímek.
  */
-async function chainClip(page, url, path) {
+export async function chainClip(page, url, path) {
   await openChain(page, url);
   const rounds = [];
   for (let round = 0; ; round += 1) {
@@ -177,7 +177,7 @@ async function singleClip(page, url, path) {
 }
 
 /** List pro soudce: sloupec A vlevo, B vpravo, řádky jsou snímky v čase; popisky řádků neutrální (číslo snímku). */
-async function sheet(page, left, right, path) {
+export async function sheet(page, left, right, path) {
   const rows = Math.max(left.length, right.length);
   const cell = (file) => (file === undefined ? '<div class="none"></div>' : `<img src="data:image/png;base64,${readFileSync(file).toString('base64')}">`);
   const body = Array.from({ length: rows }, (_, row) => `<tr><td class="t">${String(row + 1)}</td><td>${cell(left[row])}</td><td>${cell(right[row])}</td></tr>`).join('');

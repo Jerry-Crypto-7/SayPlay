@@ -80,12 +80,19 @@ test.describe('/play/[id] – a microgame chain (P56C T13)', () => {
     const rounds = Number((await page.getByTestId('hud-counter-round').textContent())!.split('/').at(-1));
     expect(rounds).toBeGreaterThanOrEqual(3);
 
-    // Kolo 1 vyhraje robot kola; karta ukáže sloveso kola 2 a zmizí.
+    // Mutátory (T16): karta ukáže mutátor kola 2 z uloženého řetězu pod slovesem; vypnuté (`CHAIN_MUTATORS`) = žádný.
+    // Zelené s mutátorem 21. 10. (chromium 2/2, pixel7-touch 1/1: d01 kolo 2 „Tiny hero!“) před vypnutím po slepém soudu.
+    const stored = (await (await request.get(`/api/play/games/${id}`)).json()) as { chain: { rounds: { card: string; twist?: string }[] } };
+    const twist = stored.chain.rounds[1]!.twist;
+
+    // Kolo 1 vyhraje robot kola; karta ukáže sloveso kola 2 (a jeho mutátor) a zmizí.
     let end = await playRound(page, 'bot');
     expect(end).toMatchObject({ runState: 'won', round: 1, lives: 3, outcome: 'running' });
     const card = page.getByTestId('play-chain-card');
     await expect(card).toHaveAttribute('data-round', '2');
-    await expect(card).not.toBeEmpty();
+    await expect(card).toContainText(stored.chain.rounds[1]!.card);
+    if (twist === undefined) await expect(page.getByTestId('play-chain-twist')).toHaveCount(0);
+    else await expect(page.getByTestId('play-chain-twist')).toHaveText(twist);
     await roundOpen(page, 2);
     await expect(card).toHaveCount(0);
     await expect(page.getByTestId('hud-counter-round')).toContainText(`2/${String(rounds)}`);

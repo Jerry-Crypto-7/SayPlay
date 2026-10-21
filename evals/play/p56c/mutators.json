@@ -1,0 +1,183 @@
+{
+ "schema": "p56c-judge-mutators.v1",
+ "date": "2026-10-21",
+ "commit": "3b777b62",
+ "base": "http://127.0.0.1:3111",
+ "basePlain": "http://127.0.0.1:3112",
+ "a": "p56c-t16-mutators-plain",
+ "b": "p56c-t16-mutators-twisted",
+ "seed": 56014,
+ "frames": 8,
+ "question": "The attached image shows two small 3D video games side by side, each played by the same robot player. Game A is the left column, game B the right column. Rows go down in time: eight frames spread evenly from the start to the end of each game's play. Page text is hidden, so judge only what the 3D scenes show. Which one would you rather keep playing, and which shows more different games? Pick the game that wins on both together; answer \"tie\" only when neither is better. Reply only with the JSON the schema asks for: winner = \"A\", \"B\" or \"tie\"; why = one or two sentences naming what you see in each game.",
+ "target": "mutators win >= 0.6 of decided pairs",
+ "notChain": [],
+ "skipped": false,
+ "summary": {
+  "n": 12,
+  "mutatorWins": 0,
+  "plainWins": 0,
+  "ties": 12,
+  "decided": 0,
+  "mutatorShareDecided": null,
+  "leftWinShare": null
+ },
+ "met": false,
+ "pairs": [
+  {
+   "id": "d01",
+   "mutatorKeys": [
+    "runner.default",
+    "hop.default + tiny_hero",
+    "crowd.default + mirror",
+    "timing.precision + vanishing_floor",
+    "defense.default.boss"
+   ],
+   "left": "mutators",
+   "winner": "tie",
+   "why": "Both show the same variety: a snowy course, roads with rolling obstacles, multiplier gates, an icy arena, and a lane-based target game. A has a larger igloo in the opening scene, but neither shows clearly more varied or more inviting gameplay."
+  },
+  {
+   "id": "d02",
+   "mutatorKeys": [
+    "catch.default",
+    "runner.default + shield_start",
+    "flap.default + shield_start",
+    "rhythm.default + mirror",
+    "duel.default.boss"
+   ],
+   "left": "mutators",
+   "winner": "tie",
+   "why": "Both show the same variety: a platform-and-target scene, an animal running down a wooded road, colored lanes with obstacles, and an animal fight. Neither shows a clear advantage in visual variety or reasons to keep playing."
+  },
+  {
+   "id": "d04",
+   "mutatorKeys": [
+    "platformer.default",
+    "timing.stack + shield_start",
+    "defense.default + extra_foes",
+    "duel.default + vanishing_floor",
+    "shooter.default.boss"
+   ],
+   "left": "plain",
+   "winner": "tie",
+   "why": "Both games show the same variety: volcanic platforms, a green obstacle, a suspended bridge, a robot beside a boulder, and laser aiming across a canyon. Their later scenes are nearly identical, so neither offers a clear advantage in variety or appeal."
+  },
+  {
+   "id": "d05",
+   "mutatorKeys": [
+    "catch.default",
+    "platformer.default + tiny_hero",
+    "duel.default + giant_foes",
+    "rhythm.default + vanishing_floor",
+    "shooter.default.boss"
+   ],
+   "left": "mutators",
+   "winner": "tie",
+   "why": "Both show the same variety: hoop challenges, platform jumps, balancing a ball on an orange pillar, colored lanes, and aiming at distant targets. B has slightly closer framing in places, but neither shows clearly more games or more appealing play."
+  },
+  {
+   "id": "d23",
+   "mutatorKeys": [
+    "timing.stack",
+    "runner.default + one_hit",
+    "whack.default + tiny_hero",
+    "platformer.default + shield_start",
+    "shooter.default.boss"
+   ],
+   "left": "plain",
+   "winner": "tie",
+   "why": "Both show the same variety: a block obstacle, a bat flying down a road, mallets over holes, cliff platforms, and aiming at distant targets. Their scenery and action look equally appealing, with only small differences in positions and wing poses."
+  },
+  {
+   "id": "d24",
+   "mutatorKeys": [
+    "defense.default",
+    "flap.default + rush",
+    "rhythm.default + mirror",
+    "runner.default + one_hit",
+    "shooter.default.boss"
+   ],
+   "left": "mutators",
+   "winner": "tie",
+   "why": "Both show the same variety: a lane-and-ball setup, green obstacle course, colored track, road ride, and open-field target aiming. Their scenery and progression are nearly identical, so neither looks more varied or more compelling to keep playing."
+  },
+  {
+   "id": "d25",
+   "mutatorKeys": [
+    "catch.default",
+    "timing.stack + vanishing_floor",
+    "duel.default + giant_foes",
+    "runner.default + mirror",
+    "shooter.default.boss"
+   ],
+   "left": "mutators",
+   "winner": "tie",
+   "why": "Both show the same variety: a platform area, a tornado near a windmill, a tall target with a health bar, a forest path, and open-field shooting. B has slightly closer target framing, but neither shows clearly more varied or more engaging play."
+  },
+  {
+   "id": "d26",
+   "mutatorKeys": [
+    "catch.default",
+    "timing.stack + hero_grows",
+    "flap.default + rush",
+    "runner.default + one_hit",
+    "duel.default.boss"
+   ],
+   "left": "mutators",
+   "winner": "tie",
+   "why": "Both show the same variety: a platform beneath an overhead block, a wooden tower near windmills, a green obstacle course, a forest run, and encounters with colorful figures. B has a denser obstacle layout, but neither visibly offers more different games or a clear reason to keep playing longer."
+  },
+  {
+   "id": "d33",
+   "mutatorKeys": [
+    "flap.default",
+    "catch.default + hero_grows",
+    "rhythm.default + tiny_hero",
+    "timing.stack + shield_start",
+    "shooter.default.boss"
+   ],
+   "left": "plain",
+   "winner": "tie",
+   "why": "Both show underwater obstacle navigation, a ball-and-hoop scene, a lane with a paddle, stacked platforms, and laser aiming and firing. A has a wider paddle and B has a slightly different platform arrangement, but neither shows more game variety or a clear reason to keep playing longer."
+  },
+  {
+   "id": "d34",
+   "mutatorKeys": [
+    "catch.default",
+    "runner.default + shield_start",
+    "duel.default + vanishing_floor",
+    "hop.default + tiny_hero",
+    "shooter.default.boss"
+   ],
+   "left": "plain",
+   "winner": "tie",
+   "why": "Both show the same variety: a furniture-lined running course, a giant cat encounter, busy traffic crossings, and aiming around a foggy arena. A has more orange traffic markers and a different opening object, but neither looks clearly more varied or more engaging."
+  },
+  {
+   "id": "d35",
+   "mutatorKeys": [
+    "timing.stack",
+    "runner.default + hero_grows",
+    "duel.default + shield_start",
+    "platformer.default + double_speed",
+    "defense.default.boss"
+   ],
+   "left": "plain",
+   "winner": "tie",
+   "why": "Both show the same variety: a fox running along a road, striking a training dummy, crossing rocky platforms, and playing a lane-based musical game. The small framing and position differences give neither a clear edge in variety or appeal."
+  },
+  {
+   "id": "d36",
+   "mutatorKeys": [
+    "runner.default",
+    "crowd.default + giant_foes",
+    "shooter.default + vanishing_floor",
+    "duel.default + tiny_hero",
+    "defense.default.boss"
+   ],
+   "left": "plain",
+   "winner": "tie",
+   "why": "Both show the same variety: street running, numbered gates, aiming across a plaza, an orange training target, and a green lane game. A’s character appears larger in the target scenes, but neither shows clearly more games or more compelling play."
+  }
+ ]
+}

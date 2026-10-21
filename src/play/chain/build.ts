@@ -15,18 +15,21 @@ import { CAST_MAX, FOE_DOES, type GenreSpec } from '../genre/contract';
 import type { VerbClass } from '../read/schema';
 import { createStreams, nextInt } from '../../sim/rng';
 import type { GameSpecV1 } from '../spec';
-import { CARD_TICKS, CHAIN_LIVES, CHAIN_RUNTIME_VERSION, type ChainRound, type ChainWorld } from './contract';
+import { CARD_TICKS, CHAIN_LIVES, CHAIN_MUTATORS, CHAIN_RUNTIME_VERSION, type ChainRound, type ChainWorld } from './contract';
 import { MICRO, type MicroEntry, type MicroKey, genreModeOf, microSpec } from './micro';
+import { MUTATOR_COMPAT, MUTATOR_IDS, MUTATORS, type MutatorId, mutateWorld, mutatedSpec } from './mutators';
 import type { SentenceRead } from './read';
 import { roundRate, roundSeeds } from './run';
 import { CHAIN_SECONDS, chainLengthSec } from './verify';
 
 export interface RoundPlan {
+  /** Spec kola už s mutátorem (`mutatedSpec`); úpravu světa (`mutateWorld`) pustí `chainFromSpecs`. */
   readonly spec: GameSpecV1;
   readonly key: MicroKey;
   readonly card: string;
   readonly boss: boolean;
-  readonly mutator?: string;
+  readonly mutator?: MutatorId;
+  readonly twist?: string;
   /** Semínko světa kola, které už vybral stavitel (`buildChain`); bez něj los ze streamu `chain`. */
   readonly seed?: number;
 }
@@ -41,8 +44,10 @@ export function chainFromSpecs(seed: number, plans: readonly RoundPlan[]): { rea
   const issues: string[] = [];
   plans.forEach(({ seed: own, ...plan }, index) => {
     const made = arcadeWorldOf(plan.spec, own ?? seeds[index]!);
-    if (!made.ok) issues.push(...made.issues.map((issue) => `round ${index + 1} (${plan.key}): ${issue}`));
-    else rounds.push({ ...plan, world: made.world, rate: roundRate(index) });
+    if (!made.ok) return void issues.push(...made.issues.map((issue) => `round ${index + 1} (${plan.key}): ${issue}`));
+    const world = plan.mutator === undefined ? made.world : mutateWorld(made.world, plan.mutator);
+    if (world === null) issues.push(`round ${index + 1} (${plan.key}): mutator ${plan.mutator!} changes nothing`);
+    else rounds.push({ ...plan, world, rate: roundRate(index) });
   });
   if (issues.length > 0) return { ok: false, issues };
   return { ok: true, chain: { runtimeVersion: CHAIN_RUNTIME_VERSION, seed, lives: CHAIN_LIVES, cardTicks: CARD_TICKS, rounds } };
@@ -125,16 +130,26 @@ function sameWorld(draft: GenreSpec, shared: Pick<GenreSpec, 'hero' | 'setting' 
 
 interface Built {
   readonly plan: RoundPlan;
+  readonly entry: MicroEntry;
+  /** Návrh kola ve světě věty – z něj spec kola s mutátorem. */
+  readonly base: GenreSpec;
   readonly control: MicroEntry['control'];
   readonly ticks: number;
 }
+
+/** Mutátory, které tabulka mikrohře povoluje; obrazové (`spotlight`) ne – kolem hrdiny zatím nikdo nekreslí. */
+const mutatorsFor = (key: MicroKey): MutatorId[] => MUTATOR_IDS.filter((id) => MUTATORS[id].visual !== true && MUTATOR_COMPAT[id].includes(key));
 
 const draftOf = (sentence: string, entry: MicroEntry): GenreSpec | null => {
   const { genre, mode } = genreModeOf(entry);
   return draftGenreFor(sentence, genre, mode);
 };
 
-export function buildChain(sentence: string, read: SentenceRead, seed: number): { readonly ok: true; readonly chain: ChainWorld } | { readonly ok: false; readonly issues: readonly string[] } {
+/**
+ * `mutators`: kola 2 až N−1 s mutátorem; výchozí `CHAIN_MUTATORS`, `PLAY_CHAIN_MUTATORS=0` vypne i zapnuté
+ * (druhá strana slepého soudu `judge-mutators.mjs` na témž buildu).
+ */
+export function buildChain(sentence: string, read: SentenceRead, seed: number, mutators: boolean = CHAIN_MUTATORS && process.env.PLAY_CHAIN_MUTATORS !== '0'): { readonly ok: true; readonly chain: ChainWorld } | { readonly ok: false; readonly issues: readonly string[] } {
   // Výběr i semínka kol z jednoho streamu `chain`; `chainFromSpecs` pak los nepotřebuje.
   const stream = createStreams(seed).chain;
   const plain = shuffled(MICRO.filter((entry) => entry.boss !== true).map((entry) => entry.key), stream);
@@ -153,14 +168,15 @@ export function buildChain(sentence: string, read: SentenceRead, seed: number): 
   const roundOf = (entry: MicroEntry, round: number): Built | null => {
     const draft = draftOf(sentence, entry);
     if (draft === null) return null;
-    const spec = microSpec(sameWorld(draft, shared, entry.boss === true ? read.foe : null), entry, round);
+    const base = sameWorld(draft, shared, entry.boss === true ? read.foe : null);
+    const spec = microSpec(base, entry, round);
     for (let attempt = 0; attempt < SEED_TRIES; attempt += 1) {
       const world = nextInt(stream, 1, 0x7fffffff);
       const made = arcadeWorldOf(spec, world);
       if (!made.ok) continue;
       const bot = runBot(made.world);
       if (bot.outcome === 'won' && replay(made.world, [], ARCADE_LIBRARY).outcome !== 'won') {
-        return { plan: { spec, key: entry.key, card: entry.card, boss: entry.boss === true, seed: world }, control: entry.control, ticks: bot.tick };
+        return { plan: { spec, key: entry.key, card: entry.card, boss: entry.boss === true, seed: world }, entry, base, control: entry.control, ticks: bot.tick };
       }
     }
     return null;
@@ -196,6 +212,23 @@ export function buildChain(sentence: string, read: SentenceRead, seed: number): 
     const shortest = rounds.reduce((best, round, index) => (index > 0 && round.ticks < rounds[best]!.ticks ? index : best), 1);
     const longer = roundOf(entry, shortest);
     if (longer !== null && longer.ticks > rounds[shortest]!.ticks) rounds[shortest] = longer;
+  }
+
+  // Mutátory až nad hotovými koly a dalšími losy streamu: kola i jejich rozložení zůstanou jako bez mutátorů.
+  // Kolo vezme první mutátor v pořadí losu, který na rozložení kola robot vyhraje, nečinný prohraje a řetěz nezkrátí pod 30 s.
+  for (let index = 1; mutators && index < rounds.length; index += 1) {
+    const plain = rounds[index]!;
+    for (const id of shuffled(mutatorsFor(plain.entry.key), stream)) {
+      const spec = mutatedSpec(plain.base, plain.entry, index, id);
+      const made = spec === null ? null : arcadeWorldOf(spec, plain.plan.seed!);
+      const world = made === null || !made.ok ? null : mutateWorld(made.world, id);
+      if (spec === null || world === null) continue;
+      const bot = runBot(world);
+      if (bot.outcome !== 'won' || replay(world, [], ARCADE_LIBRARY).outcome === 'won') continue;
+      rounds[index] = { ...plain, plan: { ...plain.plan, spec, mutator: id, twist: MUTATORS[id].card }, ticks: bot.tick };
+      if (lengthOf() >= CHAIN_SECONDS.min) break;
+      rounds[index] = plain;
+    }
   }
   return chainFromSpecs(seed, [...rounds, boss].map((round) => round.plan));
 }
