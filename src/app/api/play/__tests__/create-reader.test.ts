@@ -24,6 +24,11 @@ const READING: Reading = {
   setting: 'a castle',
   mood: null,
   numbers: { seconds: null, counts: [] },
+  genre: null,
+  foe: null,
+  item: null,
+  world: null,
+  title: null,
 };
 
 vi.mock('../_director', () => ({

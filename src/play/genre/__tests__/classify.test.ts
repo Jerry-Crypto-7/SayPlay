@@ -144,6 +144,11 @@ describe('classifyGenre', () => {
       setting: 'forest',
       mood: null,
       numbers: { seconds: null, counts: [] },
+      genre: null,
+      foe: null,
+      item: null,
+      world: null,
+      title: null,
     };
     const result = classifyGenre('A fox in a forest', reading, genreDoubles());
     expect(result.ranked[0]).toMatchObject({ genre: 'arena', mode: 'escape' });

@@ -14,6 +14,11 @@ const READING: Reading = {
   setting: 'neon city',
   mood: 'fast',
   numbers: { seconds: null, counts: [3] },
+  genre: { genre: 'runner', mode: 'default' },
+  foe: null,
+  item: 'bone',
+  world: 'city',
+  title: 'Neon Bone Dash',
 };
 
 type Handler = (req: IncomingMessage, body: string, res: ServerResponse) => void;
@@ -63,7 +68,7 @@ describe('readingSchema', () => {
 
   it('gives llama.cpp a schema where every field is required', () => {
     expect(READING_JSON_SCHEMA.$schema).toBeUndefined();
-    expect(READING_JSON_SCHEMA.required).toEqual(['control', 'verbs', 'hero', 'roles', 'setting', 'mood', 'numbers']);
+    expect(READING_JSON_SCHEMA.required).toEqual(['control', 'verbs', 'hero', 'roles', 'setting', 'mood', 'numbers', 'genre', 'foe', 'item', 'world', 'title']);
     expect(READING_JSON_SCHEMA.additionalProperties).toBe(false);
   });
 });

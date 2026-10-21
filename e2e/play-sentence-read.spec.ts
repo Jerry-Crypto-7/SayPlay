@@ -23,6 +23,11 @@ const READING = {
   setting: 'an ice floe',
   mood: null,
   numbers: { seconds: null, counts: [] },
+  genre: null,
+  foe: null,
+  item: null,
+  world: null,
+  title: null,
 };
 
 let reader: Server;

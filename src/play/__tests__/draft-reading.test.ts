@@ -25,6 +25,11 @@ const reading = (over: Partial<Reading>): Reading => ({
   setting: null,
   mood: null,
   numbers: { seconds: null, counts: [] },
+  genre: null,
+  foe: null,
+  item: null,
+  world: null,
+  title: null,
   ...over,
 });
 
