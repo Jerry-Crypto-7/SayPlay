@@ -4,24 +4,25 @@ import { arcadeWorldOf } from '@/play/arcade/compile';
 import { NO_INPUT, type InputEvent } from '@/play/arcade/contract';
 import { instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
-import { catchInView } from '@/play/arcade/pieces/catch-fall';
 import { planLaneEvents } from '@/play/arcade/pieces/lane-events';
 import { runBot } from '@/play/arcade/verify';
 import { assemblyOfCell, liveCells } from '@/play/compose/allowed';
 import { compileRecipe } from '@/play/compose/compile';
 
-import { createLaneEventWatch } from '../LaneEventBanner';
+import { createLaneEventWatch, laneEventViewOf } from '../LaneEventBanner';
 
-describe('lane event banner (P55 T5)', () => {
-  it('announces each event once as its first bonus comes into view, the first within 10 s', () => {
-    const cell = liveCells().find((candidate) => candidate.id === 'catch.default')!;
+describe('lane event banner (P55)', () => {
+  it.each(['catch', 'whack', 'slice', 'defense'])('%s: announces events as their bonuses come into view, the first within 10 s', (genre) => {
+    const cell = liveCells().find((candidate) => candidate.id === `${genre}.default`)!;
     const made = arcadeWorldOf(compileRecipe(assemblyOfCell(cell)), 1);
     if (!made.ok) throw new Error(made.issues.join('; '));
     const world = made.world;
+    const view = laneEventViewOf(world.rules);
+    expect(view).not.toBeNull();
     const inputs = runBot(world).inputs;
     const program = loadProgram(world, ARCADE_LIBRARY);
     const state = instantiate(world);
-    const watch = createLaneEventWatch(catchInView);
+    const watch = createLaneEventWatch(view!);
     const starts: { tick: number; kind: string }[] = [];
     let last: string | null = null;
     let next = 0;
@@ -34,7 +35,13 @@ describe('lane event banner (P55 T5)', () => {
     }
     expect(starts[0]!.tick).toBeLessThanOrEqual(600);
     expect(starts.some((start) => start.kind === 'rush')).toBe(true);
-    // Série je jedno ohlášení, ne jedno za bonus: ohlášení nejvýš tolik, kolik je naplánovaných událostí.
-    expect(starts.length).toBeLessThanOrEqual(planLaneEvents(1, 5400).length);
+    if (genre === 'catch') {
+      // Série je jedno ohlášení, ne jedno za bonus: ohlášení nejvýš tolik, kolik je naplánovaných událostí.
+      expect(starts.length).toBeLessThanOrEqual(planLaneEvents(1, 5400).length);
+    }
+  });
+
+  it('a genre without lane events gets no banner', () => {
+    expect(laneEventViewOf([])).toBeNull();
   });
 });

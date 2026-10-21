@@ -21,7 +21,8 @@ import { type Group, type Mesh, type PerspectiveCamera, Vector3 } from 'three';
 import { color } from '@/brand/tokens';
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp, nativeRule } from '@/play/arcade/contract';
 import { riggedCharacter } from '@/play/arcade/models';
-import { DEFENSE } from '@/play/arcade/pieces/lane-defense';
+import { DEFENSE, SHOWN_BEYOND, defenseInView } from '@/play/arcade/pieces/lane-defense';
+import { eventOfMark } from '@/play/arcade/pieces/lane-events';
 import { LANES, heldTicks, laneOf, laneX } from '@/play/arcade/pieces/lanes';
 
 import { renderHeld } from '../../effects/render-feel';
@@ -48,8 +49,10 @@ const PITCH = 0.95;
 const LOOK = new Vector3(0, 0, (FAR - 1) / 2);
 /** Hloubka, ve které se promítají hranice pruhů pro prst: uprostřed pole. */
 const EDGE_Z = (WALL.z + FAR) / 2;
-/** Slotů zásoby: pěšáků naráz v poli, obránců (jeden na pruh) a šípů ve vzduchu. */
-const SLOTS = { marchers: 8, guards: LANES.count, shots: 8 } as const;
+/** Slotů zásoby: pěšáků naráz v poli, obránců (jeden na pruh), šípů ve vzduchu a bonusů událostí. */
+const SLOTS = { marchers: 8, guards: LANES.count, shots: 8, bonuses: 8 } as const;
+/** Bonus události se vznáší nad pruhem (m), ať ho hráč nesplete s pěšákem. */
+const BONUS = { r: m(DEFENSE.bonus.w) / 2, y: m(DEFENSE.bonus.h) * 0.75 };
 /** Útočník je rychlejší než tohle (jednotky za tik) – kreslí se předkloněný v běhu. */
 const RUNNER_SPEED = 300;
 /** Záblesk zásahu (s). */
@@ -102,6 +105,31 @@ function Guard() {
   );
 }
 
+/**
+ * Bonus události (P55 T5): zlatý cíl svítí (`sun-deep` se `sun` záři), série a spěch jsou nebeská koule
+ * s kroužkem `sun-soft`. Oba tvary jsou ve slotu, snímek ukáže ten podle značky.
+ */
+function Bonus() {
+  return (
+    <>
+      <mesh name="golden" castShadow>
+        <icosahedronGeometry args={[BONUS.r, 0]} />
+        <meshStandardMaterial color={color['sun-deep']} emissive={color.sun} emissiveIntensity={0.7} roughness={0.3} metalness={0.4} />
+      </mesh>
+      <group name="plain">
+        <mesh castShadow>
+          <sphereGeometry args={[BONUS.r * 0.8, 16, 12]} />
+          <meshStandardMaterial color={color.sky} roughness={0.5} />
+        </mesh>
+        <mesh>
+          <torusGeometry args={[BONUS.r * 1.15, 0.06, 6, 24]} />
+          <meshStandardMaterial color={color['sun-soft']} emissive={color['sun-soft']} emissiveIntensity={0.8} />
+        </mesh>
+      </group>
+    </>
+  );
+}
+
 export function DefenseScene({ session, cast, surface, scene: look, ghost }: DefenseSceneProps) {
   const world = session.world;
   const ids = useMemo(() => {
@@ -110,7 +138,7 @@ export function DefenseScene({ session, cast, surface, scene: look, ghost }: Def
     const kind = (body: number | undefined): number => (body === undefined ? -1 : (world.initial[bodyBase(body) + BODY.kind] as number));
     return { bolt: kind(shot?.bolt), arrow: kind(shot?.arrow), defender: kind(shot?.defender), boss: hit?.boss ?? -1 };
   }, [world]);
-  const groups = useRef<{ marchers: (Group | null)[]; guards: (Group | null)[]; shots: (Group | null)[] }>({ marchers: [], guards: [], shots: [] });
+  const groups = useRef<{ marchers: (Group | null)[]; guards: (Group | null)[]; shots: (Group | null)[]; bonuses: (Group | null)[] }>({ marchers: [], guards: [], shots: [], bonuses: [] });
   const slots = useRef(emptySlots(SLOTS.marchers));
   const boss = useRef<Group | null>(null);
   const bossBar = useRef<Mesh | null>(null);
@@ -150,7 +178,7 @@ export function DefenseScene({ session, cast, surface, scene: look, ghost }: Def
     }
 
     // Kdo vyšel zpoza plotu, dostane slot; zásah ho krátce rozsvítí.
-    const visible = (index: number): boolean => isAlive(index) && state[bodyBase(index) + BODY.role] === ROLE.chaser && (state[bodyBase(index) + BODY.z] as number) - (state[bodyBase(index) + BODY.d] as number) / 2 <= DEFENSE.far + 600;
+    const visible = (index: number): boolean => isAlive(index) && state[bodyBase(index) + BODY.role] === ROLE.chaser && (state[bodyBase(index) + BODY.z] as number) - (state[bodyBase(index) + BODY.d] as number) / 2 <= DEFENSE.far + SHOWN_BEYOND;
     const wanted: number[] = [];
     for (let index = 0; index < count; index += 1) if (index !== ids.boss && visible(index)) wanted.push(index);
     const pool = slots.current;
@@ -180,6 +208,23 @@ export function DefenseScene({ session, cast, surface, scene: look, ghost }: Def
     big.body = ids.boss >= 0 && visible(ids.boss) ? ids.boss : -1;
     place(boss.current, big);
     if (bossBar.current !== null && big.body >= 0) bossBar.current.scale.set(Math.max(0.001, bodyHp(state, big.body) / DEFENSE.boss.hp), 1, 1);
+
+    // Bonusy událostí v obraze (před hradbou); kdo prošel hradbou, zmizí. Vznášejí se a točí.
+    const bonuses: number[] = [];
+    for (let index = 0; index < count; index += 1) if (defenseInView(state, index)) bonuses.push(index);
+    groups.current.bonuses.forEach((group, index) => {
+      if (group === null) return;
+      const body = bonuses[index];
+      group.visible = body !== undefined;
+      if (body === undefined) return;
+      const event = eventOfMark(bodyHp(state, body));
+      group.position.set(-at(body, BODY.x), BONUS.y + Math.sin(time.current * 4 + body) * 0.12, at(body, BODY.z));
+      group.userData.event = event;
+      for (const child of group.children) {
+        child.visible = (child.name === 'golden') === (event === 'golden');
+        if (child.name === 'golden') child.rotation.set(0, time.current * 2, 0);
+      }
+    });
 
     // Obránci a šípy jsou kopie předloh za úrovní; kreslí se, kolik jich žije.
     const guards: number[] = [];
@@ -298,6 +343,18 @@ export function DefenseScene({ session, cast, surface, scene: look, ghost }: Def
           <meshStandardMaterial color={color.tomato} />
         </mesh>
       </group>
+      {Array.from({ length: SLOTS.bonuses }, (_, index) => (
+        <group
+          key={`bonus-${index}`}
+          ref={(group) => {
+            groups.current.bonuses[index] = group;
+          }}
+          visible={false}
+          userData={{ frame: 'target', item: 'bonus' }}
+        >
+          <Bonus />
+        </group>
+      ))}
       {Array.from({ length: SLOTS.guards }, (_, index) => (
         <group
           key={`guard-${index}`}

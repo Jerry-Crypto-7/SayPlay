@@ -7,8 +7,8 @@
  *
  * Co jádro nevidí (vykouknutí a zasunutí cíle, zplacknutí po ráně, kladivo, kamera), je jen obraz:
  * stav ani hash nemění. Výšku cíle jádro používá jako hodiny okna (`WHACK.band`), scéna z ní
- * počítá jen, jak daleko cíl z díry kouká. Kreslí se z malé zásoby slotů: naráz koukají nejvýš
- * dva cíle (krtek a hodný soused), takže zásoba drží počet sítí i rigovaných modelů nízko.
+ * počítá jen, jak daleko cíl z díry kouká. Kreslí se z malé zásoby slotů pro každý druh (krtek, hodný
+ * soused, bonus série a spěchu s kroužkem, zlatý cíl – P55 T5), takže počet sítí i rigovaných modelů zůstane nízký.
  * Plocha dostane `data-lane-edges` (hranice děr na řadě, zleva doprava), podle kterých prst trefí
  * díru (`lanes-input.ts`), a `data-player-x` pro vyskakující body.
  * Modely jsou z knihovny podle popisku (`cast.props.target` krtek, `cast.props.hazard` hodný cíl);
@@ -20,8 +20,9 @@ import { useCallback, useMemo, useRef } from 'react';
 import { type Group, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color } from '@/brand/tokens';
-import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
 import { riggedCharacter } from '@/play/arcade/models';
+import { type LaneEventKind, eventOfMark } from '@/play/arcade/pieces/lane-events';
 import { LANES, laneOf, laneX } from '@/play/arcade/pieces/lanes';
 import { WHACK } from '@/play/arcade/pieces/whack';
 
@@ -47,6 +48,10 @@ const SQUASH_S = 0.18;
 const SWING = { down: 0.07, up: 0.18, raised: -0.6, struck: 0.5 } as const;
 /** Slotů zásoby na krtky a na hodné cíle: naráz koukají nejvýš dva, přechod třetin a zplacknutí přidají pár. */
 const SLOTS = 4;
+/** Druhy cílů, každý s vlastní zásobou slotů: bonusy událostí (P55 T5) koukají až z pěti děr naráz. */
+const KINDS = ['mole', 'good', 'bonus', 'golden'] as const;
+type Kind = (typeof KINDS)[number];
+const POOL: Readonly<Record<Kind, number>> = { mole: SLOTS, good: SLOTS, bonus: LANES.count + 1, golden: 2 };
 /** Kamera kouká na řadu děr shora pod tímhle úhlem (rad). */
 const PITCH = 0.7;
 const LOOK = new Vector3(0, 0.6, HOLE_Z / 2 + 0.2);
@@ -66,7 +71,13 @@ interface Slot {
   squash: number;
 }
 
-const emptySlots = (): Slot[] => Array.from({ length: SLOTS }, () => ({ body: -1, squash: 0 }));
+const emptySlots = (kind: Kind): Slot[] => Array.from({ length: POOL[kind] }, () => ({ body: -1, squash: 0 }));
+const perKind = <T,>(make: (kind: Kind) => T): Record<Kind, T> => ({ mole: make('mole'), good: make('good'), bonus: make('bonus'), golden: make('golden') });
+
+function kindOf(role: number, event: LaneEventKind | null): Kind {
+  if (role === ROLE.hazard) return 'good';
+  return event === null ? 'mole' : event === 'golden' ? 'golden' : 'bonus';
+}
 
 function Mole() {
   return (
@@ -115,6 +126,26 @@ function Bunny() {
   );
 }
 
+/** Zlatý cíl události (P55 T5): svítí, ať je hned vidět, že stojí za ránu navíc. */
+function Golden() {
+  return (
+    <mesh position={[0, 0.55, 0]} castShadow>
+      <icosahedronGeometry args={[0.48, 0]} />
+      <meshStandardMaterial color={color['sun-deep']} emissive={color.sun} emissiveIntensity={0.7} roughness={0.3} metalness={0.4} />
+    </mesh>
+  );
+}
+
+/** Kroužek kolem bonusu série a spěchu: krtek navíc, který se do cíle nepočítá. */
+function BonusHalo() {
+  return (
+    <mesh position={[0, 0.55, 0]} rotation={[Math.PI / 2, 0, 0]}>
+      <torusGeometry args={[0.62, 0.05, 6, 20]} />
+      <meshStandardMaterial color={color['sun-soft']} emissive={color.sun} emissiveIntensity={0.8} />
+    </mesh>
+  );
+}
+
 /** Model z knihovny podle id, rigovaný přes `RiggedModel`, jinak vepsaný; bez id primitivum. */
 function Prop({ id, fallback, primitive }: { readonly id: string | undefined; readonly fallback: string; readonly primitive: React.ReactNode }) {
   if (id === undefined) return <>{primitive}</>;
@@ -130,15 +161,16 @@ function Prop({ id, fallback, primitive }: { readonly id: string | undefined; re
 export function WhackScene({ session, cast, surface, scene: look, ghost }: WhackSceneProps) {
   const world = session.world;
   const targets = useMemo(() => {
-    const out: { readonly index: number; readonly good: boolean }[] = [];
+    const out: { readonly index: number; readonly kind: Kind }[] = [];
+    const initial = Int32Array.from(world.initial);
     for (let index = 1; index < (world.initial[HEADER.bodyCount] as number); index += 1) {
-      const role = world.initial[bodyBase(index) + BODY.role];
-      if (role === ROLE.target || role === ROLE.hazard) out.push({ index, good: role === ROLE.hazard });
+      const role = world.initial[bodyBase(index) + BODY.role] as number;
+      if (role === ROLE.target || role === ROLE.hazard) out.push({ index, kind: kindOf(role, eventOfMark(bodyHp(initial, index))) });
     }
     return out;
   }, [world]);
-  const groups = useRef<{ mole: (Group | null)[]; good: (Group | null)[] }>({ mole: [], good: [] });
-  const slots = useRef<{ mole: Slot[]; good: Slot[] }>({ mole: emptySlots(), good: emptySlots() });
+  const groups = useRef<Record<Kind, (Group | null)[]>>(perKind(() => []));
+  const slots = useRef<Record<Kind, Slot[]>>(perKind(emptySlots));
   const seen = useRef<Uint8Array>(new Uint8Array(0));
   const hero = useRef<Group | null>(null);
   const hammer = useRef<Group | null>(null);
@@ -176,19 +208,18 @@ export function WhackScene({ session, cast, surface, scene: look, ghost }: Whack
 
     // Kdo kouká z díry, dostane slot; cíl zasažený v okně se ještě chvíli zplackává.
     if (seen.current.length !== targets.length) seen.current = new Uint8Array(targets.length);
-    const showing = { mole: [] as number[], good: [] as number[] };
+    const showing = perKind((): number[] => []);
     targets.forEach((target, order) => {
       const base = bodyBase(target.index);
       const alive = ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
-      const pool = target.good ? slots.current.good : slots.current.mole;
-      const own = pool.find((slot) => slot.body === target.index);
+      const own = slots.current[target.kind].find((slot) => slot.body === target.index);
       if (seen.current[order] === 1 && !alive && (state[base + BODY.y] as number) < WHACK.band && own !== undefined) own.squash = SQUASH_S;
       seen.current[order] = alive ? 1 : 0;
       const y = at(target.index, BODY.y);
       const open = alive && y >= 0 && y < WHACK.band;
-      if (open || (own !== undefined && own.squash > 0)) (target.good ? showing.good : showing.mole).push(target.index);
+      if (open || (own !== undefined && own.squash > 0)) showing[target.kind].push(target.index);
     });
-    for (const kind of ['mole', 'good'] as const) {
+    for (const kind of KINDS) {
       const pool = slots.current[kind];
       const wanted = showing[kind];
       // Sloty, jejichž cíl už nekouká, se uvolní; nový cíl dostane první volný (pořadí slotů zůstane, model se nepřestaví).
@@ -269,17 +300,24 @@ export function WhackScene({ session, cast, surface, scene: look, ghost }: Whack
         </mesh>
       </group>
       <GhostSlot ghost={ghost} session={session} place={ghostSpot} />
-      {(['mole', 'good'] as const).map((kind) =>
-        Array.from({ length: SLOTS }, (_, index) => (
+      {KINDS.map((kind) =>
+        Array.from({ length: POOL[kind] }, (_, index) => (
           <group
             key={`${kind}-${index}`}
             ref={(group) => {
               groups.current[kind][index] = group;
             }}
             visible={false}
-            userData={{ frame: 'target', item: kind === 'good' ? 'hazard' : 'target' }}
+            userData={{ frame: 'target', item: kind === 'good' ? 'hazard' : 'target', ...(kind === 'golden' ? { event: 'golden' } : kind === 'bonus' ? { event: 'bonus' } : {}) }}
           >
-            {kind === 'good' ? <Prop id={goodModel} fallback={color.cream} primitive={<Bunny />} /> : <Prop id={moleModel} fallback={color['ink-soft']} primitive={<Mole />} />}
+            {kind === 'good' ? (
+              <Prop id={goodModel} fallback={color.cream} primitive={<Bunny />} />
+            ) : kind === 'golden' ? (
+              <Golden />
+            ) : (
+              <Prop id={moleModel} fallback={color['ink-soft']} primitive={<Mole />} />
+            )}
+            {kind === 'bonus' ? <BonusHalo /> : null}
           </group>
         )),
       )}

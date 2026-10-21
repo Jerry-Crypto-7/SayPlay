@@ -15,8 +15,10 @@ import { ARCADE_HZ, type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, type BodyI
 import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step } from '../kernel';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from '../library';
 import { LANES, LANE_START, axisOfLane, laneX } from '../pieces/lanes';
-import { ESCAPED, WHACK, checkWhackLevel, startY, whackLevel, whackParams, whackPops, windowOf } from '../pieces/whack';
+import { EVENT_MARK, LANE_EVENTS } from '../pieces/lane-events';
+import { ESCAPED, type Pop, WHACK, checkWhackLevel, startY, whackInView, whackLevel, whackParams, whackPlainPops, whackPops, windowOf } from '../pieces/whack';
 import { whackBot } from '../pieces/whack-bot';
+import { funMetrics, traceRun } from '../telemetry';
 import { BOT_PROFILES, type BotProfile, runBot, verifyArcade } from '../verify';
 import { assemblyOfCell, liveCells } from '../../compose/allowed';
 import { compileRecipe } from '../../compose/compile';
@@ -308,5 +310,60 @@ describe('whack difficulty band (G3 on 20 seeds; the gate itself is difficulty.t
   it('the bot piece is registered and reacts like the generator assumes', () => {
     expect(ARCADE_LIBRARY.bots.whack_bot).toBe(whackBot);
     expect(whackBot.reactionTicks).toBe(8);
+  });
+});
+
+describe('whack lane events (P55 T5)', () => {
+  const bonus = (mark: number, hole: number, up: number, window = 30): BodyInit => ({ ...pop('target', hole, up, window), hp: mark });
+
+  it('a whacked bonus scores without counting toward the goal; a hidden one costs nothing', () => {
+    const golden = handWorld([bonus(EVENT_MARK.golden, 0, 30, 20)]);
+    const hit = playFor(golden, 60, tapAt(40, 0));
+    expect(items(hit)).toBe(0);
+    expect(score(hit)).toBe(WHACK.points * LANE_EVENTS.goldenPoints);
+    expect(whackInView(playFor(golden, 35), 1)).toBe(true);
+    expect(whackInView(playFor(golden, 30), 1)).toBe(false);
+    // Víc schovaných bonusů, než je volných krtků: žádný život.
+    const bonuses = Array.from({ length: WHACK.free + 2 }, (_, index) => bonus(EVENT_MARK.series, index % LANES.count, 20 + 40 * index, 20));
+    expect(health(playFor(handWorld(bonuses), 40 + 40 * (WHACK.free + 2)))).toBe(START_LIVES);
+  });
+
+  it('moles and good targets pop exactly as without events; a rush and a bonus within 10 s on every seed', () => {
+    const seen = new Set<number>();
+    for (const seed of SEEDS) {
+      const pops = whackPops(seed, DEFAULTS, START_LIVES);
+      expect(pops.filter((entry) => entry.mark === 0), `seed ${seed}`).toEqual(whackPlainPops(seed, DEFAULTS, START_LIVES));
+      const bonuses = pops.filter((entry) => entry.mark > 0).sort((a, b) => a.up - b.up);
+      for (const entry of bonuses) seen.add(entry.mark);
+      expect(bonuses.some((entry) => entry.mark === EVENT_MARK.rush), `seed ${seed}`).toBe(true);
+      expect(bonuses[0]!.up, `seed ${seed}`).toBeLessThanOrEqual(600);
+    }
+    expect(seen).toEqual(new Set(Object.values(EVENT_MARK)));
+  });
+
+  it('the middle third has more targets out at once than without events', () => {
+    const third = (pops: readonly Pop[]): number => {
+      const moles = pops.filter((entry) => !entry.good && entry.mark === 0);
+      const [from, to] = [moles[Math.floor(DEFAULTS.targets / 3)]!.up, moles[Math.floor((2 * DEFAULTS.targets) / 3)]!.up];
+      let most = 0;
+      for (let tick = from; tick < to; tick += 1) most = Math.max(most, pops.filter((entry) => entry.up <= tick && tick < entry.up + entry.window).length);
+      return most;
+    };
+    const richer = SEEDS.filter((seed) => third(whackPops(seed, DEFAULTS, START_LIVES)) > third(whackPlainPops(seed, DEFAULTS, START_LIVES)));
+    expect(richer.length).toBeGreaterThanOrEqual(15);
+  });
+
+  it('seed 1: lively from start to finish and still a 30–90 s win (baseline 1.18 events/s)', () => {
+    const world = worldOf(1);
+    const bot = runBot(world, undefined, { profile: 'intermediate' });
+    const trace = traceRun(world, bot.inputs);
+    const fun = funMetrics(trace);
+    expect(fun.eventsPerS).toBeGreaterThanOrEqual(1.77);
+    expect(fun.longestGapS).toBeLessThanOrEqual(3);
+    const own = runBot(world);
+    expect(own.outcome).toBe('won');
+    expect(own.tick / ARCADE_HZ).toBeGreaterThanOrEqual(30);
+    expect(own.tick / ARCADE_HZ).toBeLessThanOrEqual(90);
+    expect(traceRun(worldOf(1), bot.inputs).hash).toBe(trace.hash);
   });
 });

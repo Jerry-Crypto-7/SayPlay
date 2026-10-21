@@ -7,8 +7,12 @@
 
 import { useState, useSyncExternalStore } from 'react';
 
-import { BODY, FLAG, HEADER, ROLE, bodyBase, bodyHp } from '@/play/arcade/contract';
+import { type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase, bodyHp, nativeRule } from '@/play/arcade/contract';
+import { catchInView } from '@/play/arcade/pieces/catch-fall';
+import { defenseInView } from '@/play/arcade/pieces/lane-defense';
 import { type LaneEventKind, eventOfMark } from '@/play/arcade/pieces/lane-events';
+import { sliceInView } from '@/play/arcade/pieces/slice';
+import { whackInView } from '@/play/arcade/pieces/whack';
 
 import { PACING_BANNER_TICKS } from './PacingBanner';
 import type { ArcadeSession } from './session';
@@ -45,7 +49,9 @@ export function createLaneEventWatch(visible: (state: Int32Array, body: number) 
       const count = state[HEADER.bodyCount] as number;
       for (let body = 0; body < count && inView === null; body += 1) {
         const base = bodyBase(body);
-        if (((state[base + BODY.flags] as number) & FLAG.alive) === 0 || state[base + BODY.role] !== ROLE.collectible) continue;
+        // Bonus je sbíraná věc (catch, slice, defense) nebo cíl (whack); HP jiných rolí je zdraví, ne značka.
+        const role = state[base + BODY.role];
+        if (((state[base + BODY.flags] as number) & FLAG.alive) === 0 || (role !== ROLE.collectible && role !== ROLE.target)) continue;
         const kind = eventOfMark(bodyHp(state, body));
         if (kind !== null && visible(state, body)) inView = kind;
       }
@@ -54,6 +60,15 @@ export function createLaneEventWatch(visible: (state: Int32Array, body: number) 
       return shown !== null && tick - shown.from < PACING_BANNER_TICKS ? shown.kind : null;
     },
   };
+}
+
+/** Co je u pruhového žánru „v obraze“, podle jeho pravidla; žánr bez událostí → `null` (banner se nekreslí). */
+export function laneEventViewOf(rules: ArcadeWorld['rules']): ((state: Int32Array, body: number) => boolean) | null {
+  if (nativeRule(rules, 'catch_fall') !== undefined) return catchInView;
+  if (nativeRule(rules, 'whack_hit') !== undefined) return whackInView;
+  if (nativeRule(rules, 'defense_hit') !== undefined) return defenseInView;
+  if (nativeRule(rules, 'slice_cut') !== undefined) return sliceInView;
+  return null;
 }
 
 export function LaneEventBanner({ session, enabled, visible }: {

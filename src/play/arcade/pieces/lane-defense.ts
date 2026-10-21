@@ -40,6 +40,7 @@ import {
   bodyBase,
   bodyHp,
 } from '../contract';
+import { EVENT_MARK, LANE_EVENTS, laneEventRng, planLaneEvents, stepLane } from './lane-events';
 import { LANES, LANE_START, heldTicks, laneOf, laneOfX, laneX, tappedIn } from './lanes';
 import { nextMultiplier } from './rules';
 import { WAVE_COUNTER, waveSpeedStep } from './waves';
@@ -111,10 +112,20 @@ export const DEFENSE = {
   spawnSlots: 24,
   /** Rezerva robota před průlomem (tiky) v kontrole hratelnosti. */
   margin: 3,
+  /**
+   * Bonusové cíle událostí (P55 T5): jdou pruhem jako nepřítel, ale padnou jen šípu hrdiny, do cíle se
+   * nepočítají a kdo je nesestřelí, nic neztratí – projdou hradbou a zmizí z obrazu. Série a spěch jdou
+   * `speed`, zlatý cíl `goldenSpeed` (kratší okno). Rozestupy vstupů: série `series`, spěch `rush`,
+   * série v přestávce mezi vlnami `breaks` (tiky).
+   */
+  bonus: { w: 900, h: 900, d: 900, speed: 100, goldenSpeed: 200, series: [30, 45], rush: [20, 30], breaks: [60, 90] },
 } as const;
 
 /** Reakce robota světa – kontrola hratelnosti s ní počítá. */
 export const DEFENSE_BOT_REACTION = 8;
+
+/** Scéna kreslí, co má čelo nejvýš tolik za `far` (vykukuje zpoza plotu). */
+export const SHOWN_BEYOND = 600;
 
 const SALT = 0x5d3f;
 
@@ -232,10 +243,77 @@ export function defenseMarch(seed: number, params: DefenseParams): March[] {
   });
 }
 
-/** Indexy těl úrovně obrany: hrdina 0, hradba 1, nepřátelé od 2, za nimi předlohy šípu, šípu obránce a obránce. */
+/** Bonusový cíl události (P55 T5): tik vstupu do obrazu, pruh, rychlost a značka (`EVENT_MARK`). */
+export interface Bonus {
+  readonly enter: number;
+  readonly lane: number;
+  readonly speed: number;
+  readonly mark: number;
+}
+
+/** Krok, ve kterém čelo bonusu dojde k hradbě: od něj už ho šíp netrefí. */
+const leaveOf = (bonus: Pick<Bonus, 'enter' | 'speed'>): number => breachStep(startZ(bonus.enter, bonus.speed), bonus.speed, DEFENSE.bonus.d);
+
+/** Rezerva (tiky) mezi oknem bonusu a oknem čehokoli jiného v témže pruhu. */
+const BONUS_CLEAR = 12;
+
+/**
+ * Bonusy událostí (P55 T5) nad hotovým rozpisem nepřátel: série a zlaté cíle podle osy `planLaneEvents`,
+ * spěch v poslední třetině a série v každé přestávce mezi vlnami (tam by hra jinak osm vteřin mlčela).
+ * Tahá jen z vlastního streamu (`laneEventRng`), takže nepřátelé jdou s bonusy i bez nich stejně. Bonus
+ * jde jen do pruhu, kde po celé jeho okno (vstup → hradba) nejde nikdo jiný: šíp na bonus netrefí
+ * nepřítele, šíp na nepřítele netrefí bonus. Kam se nevejde, tam nepřijde.
+ */
+export function defenseBonuses(seed: number, march: readonly March[]): Bonus[] {
+  const rng = laneEventRng(seed);
+  const { speed, goldenSpeed } = DEFENSE.bonus;
+  const length = (march.at(-1) as March).enter;
+  const busy = march.map((step) => ({ lane: step.lane, from: step.enter - 1, to: breachOf(step) }));
+  const bonuses: Bonus[] = [];
+  const clear = (lane: number, from: number, to: number): boolean => !busy.some((other) => other.lane === lane && other.from <= to + BONUS_CLEAR && from <= other.to + BONUS_CLEAR);
+  /** Položí bonus do pruhu `lane`, nebo do nejbližšího volného; vrátí pruh, kam šel (`null` = nikam). */
+  const put = (mark: number, enter: number, lane: number, pace: number): number | null => {
+    if (enter >= length) return null;
+    const to = leaveOf({ enter, speed: pace });
+    const order = Array.from({ length: LANES.count }, (_, k) => k).sort((a, b) => Math.abs(a - lane) - Math.abs(b - lane) || a - b);
+    const chosen = order.find((candidate) => clear(candidate, enter - 1, to));
+    if (chosen === undefined) return null;
+    bonuses.push({ enter, lane: chosen, speed: pace, mark });
+    busy.push({ lane: chosen, from: enter - 1, to });
+    return chosen;
+  };
+  /** Série `count` bonusů od tiku `at`, pruh po pruhu přes pole. */
+  const series = (mark: number, at: number, count: number, gaps: readonly [number, number]): void => {
+    let lane = rng.int(0, LANES.count - 1);
+    const away = lane >= LANE_START ? 0 : LANES.count - 1;
+    for (let n = 0, tick = at; n < count; n += 1, tick += rng.int(...gaps)) {
+      lane = put(mark, tick, lane, speed) ?? lane;
+      lane = stepLane(lane, away, LANES.count, rng);
+    }
+  };
+  // Přestávky mezi vlnami napřed: od posledního vstupu vlny do prvního vstupu další jde série po celou dobu.
+  march.forEach((step, index) => {
+    const before = march[index - 1];
+    if (before === undefined || before.wave === step.wave) return;
+    const [low, high] = DEFENSE.bonus.breaks;
+    series(EVENT_MARK.series, before.enter + rng.int(low, high), Math.floor((step.enter - before.enter) / low), [low, high]);
+  });
+  // Pak osa událostí do volných pruhů.
+  for (const event of planLaneEvents(seed, length)) {
+    if (event.kind === 'series') series(EVENT_MARK.series, event.at, rng.int(...LANE_EVENTS.series), DEFENSE.bonus.series);
+    else if (event.kind === 'golden') put(EVENT_MARK.golden, event.at, rng.int(0, LANES.count - 1), goldenSpeed);
+    else {
+      const [low, high] = DEFENSE.bonus.rush;
+      series(EVENT_MARK.rush, event.at, Math.ceil((event.until - event.at) / low), [low, high]);
+    }
+  }
+  return bonuses.sort((a, b) => a.enter - b.enter || a.lane - b.lane);
+}
+
+/** Indexy těl úrovně obrany: hrdina 0, hradba 1, nepřátelé od 2, za nimi bonusy událostí a předlohy šípu, šípu obránce a obránce. */
 export const DEFENSE_BODIES = { castle: 1, firstEnemy: 2 } as const;
 
-/** Úroveň obrany: hrdina za hradbou ve startovním pruhu, nepřátelé za obrazem a předlohy. */
+/** Úroveň obrany: hrdina za hradbou ve startovním pruhu, nepřátelé a bonusy za obrazem a předlohy. */
 export function defenseLevel(seed: number, params: DefenseParams): ArcadeLevel {
   const march = defenseMarch(seed, params);
   const { wall, castle, enemy, boss, bolt, arrow, defender } = DEFENSE;
@@ -245,6 +323,11 @@ export function defenseLevel(seed: number, params: DefenseParams): ArcadeLevel {
     ...march.map((step): BodyInit => {
       const size = step.boss ? { w: boss.w, h: boss.h, d: boss.d } : enemy;
       return { role: 'chaser', kind: 'chaser', x: laneX(step.lane), y: 0, z: startZ(step.enter, step.speed), ...size, solid: false, vz: -step.speed, kinematic: true, hp: step.hp };
+    }),
+    // Bonusy událostí: značka v HP (`EVENT_MARK`) – role `collectible`, takže HP tu zdraví nepřítele nenese.
+    ...defenseBonuses(seed, march).map((bonus): BodyInit => {
+      const { w, h, d } = DEFENSE.bonus;
+      return { role: 'collectible', kind: 'bonus', x: laneX(bonus.lane), y: 0, z: startZ(bonus.enter, bonus.speed), w, h, d, solid: false, vz: -bonus.speed, kinematic: true, hp: bonus.mark };
     }),
     { role: 'projectile', kind: 'bolt', x: 0, y: bolt.y, z: wall, w: bolt.w, h: bolt.h, d: bolt.d, solid: false, template: true, lifetime: bolt.lifetime },
     { role: 'projectile', kind: 'arrow', x: 0, y: arrow.y, z: wall, w: arrow.w, h: arrow.h, d: arrow.d, solid: false, template: true, lifetime: arrow.lifetime },
@@ -268,6 +351,23 @@ export function marchOf(level: ArcadeLevel): March[] {
     return [{ enter: speed > 0 ? (body.z - DEFENSE.far) / speed : -1, lane: laneOfX(body.x), speed, hp: body.hp ?? 0, wave: -1, boss: body.w === DEFENSE.boss.w }];
   });
 }
+
+/** Bonusy událostí zpět z hotové úrovně (pořadí těl). */
+export function bonusesOf(level: ArcadeLevel): Bonus[] {
+  return level.bodies.flatMap((body): Bonus[] => {
+    if (body.role !== 'collectible') return [];
+    const speed = -(body.vz ?? 0);
+    return [{ enter: speed > 0 ? (body.z - DEFENSE.far) / speed : -1, lane: laneOfX(body.x), speed, mark: body.hp ?? 0 }];
+  });
+}
+
+/** Je bonus (role `collectible`) živý a v obraze – vyšel zpoza plotu a ještě nedošel k hradbě? Scéna i ohlášení události. */
+export const defenseInView = (state: Int32Array, body: number): boolean => {
+  const base = bodyBase(body);
+  if (((state[base + BODY.flags] as number) & FLAG.alive) === 0 || state[base + BODY.role] !== ROLE.collectible) return false;
+  const front = frontOf(state, body);
+  return front > DEFENSE.wall && front <= DEFENSE.far + SHOWN_BEYOND;
+};
 
 /**
  * Stihne sám hrdina všechny? Každé HP je jedna rána luku (přebíjení `reload`), uvolněná, když robot
@@ -312,6 +412,14 @@ export function checkDefenseLevel(level: ArcadeLevel, params: DefenseParams): st
       for (const earlier of here.slice(0, index)) if (!keepsApart(earlier, later)) issues.push(`lane ${lane}: an enemy from tick ${later.enter} walks into the one from tick ${earlier.enter}`);
     });
   }
+  // Bonus jde pruhem sám: po celé jeho okno v něm nejde nepřítel ani jiný bonus.
+  const bonuses = bonusesOf(level);
+  const windows = [...march.map((step) => ({ lane: step.lane, from: step.enter - 1, to: breachOf(step) })), ...bonuses.map((bonus) => ({ lane: bonus.lane, from: bonus.enter - 1, to: leaveOf(bonus) }))];
+  bonuses.forEach((bonus, order) => {
+    const own = windows[march.length + order] as (typeof windows)[number];
+    if (bonus.speed <= 0 || !Number.isInteger(bonus.enter) || bonus.enter < 0) issues.push(`bonus ${order + 1} does not walk down a lane into view on a whole tick`);
+    if (windows.some((other) => other !== own && other.lane === own.lane && other.from <= own.to && own.from <= other.to)) issues.push(`bonus ${order + 1} shares lane ${bonus.lane} with another target`);
+  });
   const overrun = firstOverrun(march);
   if (overrun >= 0) issues.push(`enemy ${overrun + 1} reaches the wall before the hero alone could shoot it down`);
   const last = Math.max(0, ...march.map(breachOf));
@@ -355,7 +463,8 @@ export const laneDefense: ModeGeneratorPiece<DefenseParams> = {
   id: 'lane_defense',
   params: defenseParams,
   roles: ['player', 'chaser'],
-  cost: (params) => ({ bodies: 5 + params.enemies + DEFENSE.spawnSlots, rules: 5 }),
+  // Rezerva na bonusy událostí (P55 T5): série, zlaté cíle, spěch a série v přestávkách.
+  cost: (params) => ({ bodies: 5 + params.enemies + DEFENSE.spawnSlots + 80, rules: 5 }),
   generate: (seed, params) => defenseLevel(seed, params),
   parts: defenseParts,
 };
@@ -395,6 +504,16 @@ function marchersIn(state: Int32Array, lane: number): number[] {
   for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
     const base = bodyBase(body);
     if (state[base + BODY.role] === ROLE.chaser && alive(state, body) && laneOfX(state[base + BODY.x] as number) === lane) found.push(body);
+  }
+  return found;
+}
+
+/** Živé bonusy událostí v pruhu `lane`, které ještě nedošly k hradbě. */
+function bonusesIn(state: Int32Array, lane: number): number[] {
+  const found: number[] = [];
+  for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+    const base = bodyBase(body);
+    if (state[base + BODY.role] === ROLE.collectible && alive(state, body) && laneOfX(state[base + BODY.x] as number) === lane && frontOf(state, body) > DEFENSE.wall) found.push(body);
   }
   return found;
 }
@@ -468,6 +587,7 @@ export const defenseHitRule: RulePiece<z.infer<typeof hitParams>> = {
     const effects: ArcadeEffect[] = [];
     const count = state[HEADER.bodyCount] as number;
     const damage = new Map<number, number>();
+    const taken = new Set<number>();
     const hp = (body: number): number => bodyHp(state, body) - (damage.get(body) ?? 0);
     for (let shot = state[HEADER.spawnBase] as number; shot < count; shot += 1) {
       const base = bodyBase(shot);
@@ -477,12 +597,27 @@ export const defenseHitRule: RulePiece<z.infer<typeof hitParams>> = {
       for (const body of marchersIn(state, laneOfX(state[base + BODY.x] as number))) {
         if (hp(body) > 0 && frontOf(state, body) <= tip && (foe < 0 || (state[bodyBase(body) + BODY.z] as number) < (state[bodyBase(foe) + BODY.z] as number))) foe = body;
       }
+      // Bonus události (P55 T5) padne jen šípu hrdiny, a to jen před hradbou: body × kombo, do cíle se nepočítá.
+      const own = kindOf(state, shot) === kindOf(state, params.bolt);
+      let bonus = -1;
+      if (own) {
+        for (const body of bonusesIn(state, laneOfX(state[base + BODY.x] as number))) {
+          if (!taken.has(body) && frontOf(state, body) <= tip && (bonus < 0 || (state[bodyBase(body) + BODY.z] as number) < (state[bodyBase(bonus) + BODY.z] as number))) bonus = body;
+        }
+      }
+      if (bonus >= 0 && (foe < 0 || (state[bodyBase(bonus) + BODY.z] as number) < (state[bodyBase(foe) + BODY.z] as number))) {
+        taken.add(bonus);
+        const multiplier = params.combo !== undefined ? nextMultiplier(state, params.combo) : 1;
+        const points = params.points * (bodyHp(state, bonus) === EVENT_MARK.golden ? LANE_EVENTS.goldenPoints : 1);
+        effects.push({ kind: 'despawn', body: shot }, { kind: 'despawn', body: bonus }, { kind: 'score', amount: points * multiplier });
+        if (params.combo !== undefined) effects.push({ kind: 'combo', body: params.combo, multiplier });
+        continue;
+      }
       if (foe < 0) continue;
       damage.set(foe, (damage.get(foe) ?? 0) + 1);
       effects.push({ kind: 'hit', body: foe, by: shot, amount: 1 }, { kind: 'despawn', body: shot });
       if (hp(foe) > 0) continue;
       // Šíp hrdiny násobí kombem, šíp obránce dá holé body.
-      const own = kindOf(state, shot) === kindOf(state, params.bolt);
       const amount = foe === params.boss ? params.bossPoints : params.points;
       const multiplier = own && params.combo !== undefined ? nextMultiplier(state, params.combo) : 1;
       effects.push({ kind: 'despawn', body: foe }, { kind: 'count', counter: 'items', amount: 1 }, { kind: 'score', amount: amount * multiplier });
